@@ -3,10 +3,11 @@ import { updatePattern, getPattern, deletePattern } from '@/lib/patterns';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const pattern = getPattern(params.id);
+    const resolvedParams = await Promise.resolve(params);
+    const pattern = getPattern(resolvedParams.id);
     if (!pattern) {
       return NextResponse.json({ error: 'Pattern not found' }, { status: 404 });
     }
@@ -19,11 +20,12 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
+    const resolvedParams = await Promise.resolve(params);
     const body = await request.json();
-    const pattern = updatePattern(params.id, body);
+    const pattern = updatePattern(resolvedParams.id, body);
     if (!pattern) {
       return NextResponse.json({ error: 'Pattern not found' }, { status: 404 });
     }
@@ -36,10 +38,11 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const deleted = deletePattern(params.id);
+    const resolvedParams = await Promise.resolve(params);
+    const deleted = deletePattern(resolvedParams.id);
     if (!deleted) {
       return NextResponse.json({ error: 'Pattern not found' }, { status: 404 });
     }

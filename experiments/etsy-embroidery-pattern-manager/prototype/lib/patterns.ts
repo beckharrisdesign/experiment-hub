@@ -7,7 +7,6 @@ export function getAllPatterns(): Pattern[] {
   return rows.map((row) => ({
     id: row.id,
     name: row.name,
-    status: row.status as Pattern['status'],
     notes: row.notes || undefined,
     category: row.category || undefined,
     difficulty: row.difficulty as Pattern['difficulty'] || undefined,
@@ -25,7 +24,6 @@ export function getPattern(id: string): Pattern | null {
   return {
     id: row.id,
     name: row.name,
-    status: row.status as Pattern['status'],
     notes: row.notes || undefined,
     category: row.category || undefined,
     difficulty: row.difficulty as Pattern['difficulty'] || undefined,
@@ -38,7 +36,6 @@ export function getPattern(id: string): Pattern | null {
 
 export function createPattern(data: {
   name: string;
-  status?: Pattern['status'];
   notes?: string;
   category?: string;
   difficulty?: Pattern['difficulty'];
@@ -48,12 +45,11 @@ export function createPattern(data: {
   const now = new Date().toISOString();
 
   db.prepare(`
-    INSERT INTO patterns (id, name, status, notes, category, difficulty, style, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO patterns (id, name, notes, category, difficulty, style, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id,
     data.name,
-    data.status || 'idea',
     data.notes || null,
     data.category || null,
     data.difficulty || null,
@@ -72,10 +68,6 @@ export function updatePattern(id: string, data: Partial<Pattern>): Pattern | nul
   if (data.name !== undefined) {
     updates.push('name = ?');
     values.push(data.name);
-  }
-  if (data.status !== undefined) {
-    updates.push('status = ?');
-    values.push(data.status);
   }
   if (data.notes !== undefined) {
     updates.push('notes = ?');

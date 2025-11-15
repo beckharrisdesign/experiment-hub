@@ -27,14 +27,9 @@ export default function Header() {
 
   const navItems: NavItem[] = [
     { href: '/', label: 'Dashboard' },
-    { href: '/brand-identity', label: 'Brand Identity' },
-    { href: '/patterns', label: 'Product Planning' },
-    { href: '/listings', label: 'Listings', requiresBrandIdentity: true },
-    { href: '/communication', label: 'Communication', requiresBrandIdentity: true },
-    { href: '/images', label: 'Images', disabled: true },
-    { href: '/seo', label: 'SEO', disabled: true },
-    { href: '/export', label: 'Export', requiresBrandIdentity: true },
-    { href: '/admin', label: 'Admin' },
+    { href: '/patterns', label: 'Patterns' },
+    { href: '/products', label: 'Products' },
+    { href: '/store', label: 'Store' },
   ];
 
   const isActive = (href: string) => {
@@ -46,7 +41,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-background-primary border-b border-border backdrop-blur-sm bg-opacity-95">
-      <div className="container mx-auto px-4">
+      <div className="px-4">
         <div className="flex items-center gap-6 h-14">
           {/* Logo/Title */}
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition flex-shrink-0">
@@ -54,7 +49,7 @@ export default function Header() {
           </Link>
 
           {/* Navigation */}
-          <nav className="flex items-center gap-1 overflow-x-auto">
+          <nav className="flex items-center gap-1 overflow-x-auto flex-1">
             {navItems.map((item) => {
               const isDisabled = item.disabled || (item.requiresBrandIdentity && !hasBrandIdentity);
               const active = isActive(item.href);

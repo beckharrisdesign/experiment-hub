@@ -8,7 +8,13 @@
     "build": "next build",
     "start": "next start -p 3001",
     "lint": "next lint",
-    "db:migrate": "node scripts/migrate.js"
+    "db:migrate": "node scripts/migrate.js",
+    "test": "playwright test --project=chromium",
+    "test:all": "playwright test",
+    "test:headed": "playwright test --headed --project=chromium",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:ci": "CI=true playwright test --project=chromium"
   },
   "dependencies": {
     "@types/node": "^24.10.1",
@@ -24,6 +30,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.48.0",
     "@types/better-sqlite3": "^7.6.12",
     "autoprefixer": "^10.4.22",
     "eslint": "^9.39.1",

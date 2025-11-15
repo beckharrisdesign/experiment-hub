@@ -1,119 +1,242 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getBrandIdentity } from '@/lib/brand-identity';
+import { useRouter } from 'next/navigation';
+import { Pattern, Product } from '@/types';
+import Toast from '@/components/shared/Toast';
+import Spinner from '@/components/shared/Spinner';
+
+interface ToastState {
+  message: string;
+  type: 'success' | 'error' | 'info';
+  isVisible: boolean;
+}
 
 export default function HomePage() {
-  const brandIdentity = getBrandIdentity();
-  const hasBrandIdentity = !!brandIdentity;
+  const router = useRouter();
+  const [patterns, setPatterns] = useState<Pattern[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type, isVisible: true });
+  };
+
+  const hideToast = () => {
+    setToast({ ...toast, isVisible: false });
+  };
+
+  const fetchData = async () => {
+    try {
+      const [patternsResponse, productsResponse] = await Promise.all([
+        fetch('/api/patterns'),
+        fetch('/api/products'),
+      ]);
+
+      const patternsData: Pattern[] = patternsResponse.ok ? await patternsResponse.json() : [];
+      const productsData: Product[] = productsResponse.ok ? await productsResponse.json() : [];
+
+      // Sort patterns by updated date (newest first)
+      patternsData.sort((a, b) => {
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      });
+
+      // Sort products by status and then by updated date
+      const productStatusOrder = { draft: 1, ready: 2, listed: 3 };
+      productsData.sort((a, b) => {
+        const statusDiff = (productStatusOrder[a.status] || 0) - (productStatusOrder[b.status] || 0);
+        if (statusDiff !== 0) return statusDiff;
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      });
+
+      setPatterns(patternsData);
+      setProducts(productsData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      showToast('Error loading data', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const getProductStatusColor = (status: Product['status']) => {
+    const colors = {
+      draft: 'bg-gray-500',
+      ready: 'bg-green-500',
+      listed: 'bg-purple-500',
+    };
+    return colors[status] || 'bg-gray-500';
+  };
+
+  const getProductTypeLabel = (type: Product['type']) => {
+    switch (type) {
+      case 'printable-pdf':
+        return 'PDF';
+      case 'svg':
+        return 'SVG';
+      case 'kit':
+        return 'Kit';
+      case 'custom':
+        return 'Custom';
+      default:
+        return type;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background-primary text-text-primary">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <header className="mb-12">
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-text-secondary">Workflow automation for pattern creators</p>
+      <div className="px-4 py-8 max-w-7xl mx-auto">
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-text-secondary mt-2">
+            Overview of your patterns and products
+          </p>
         </header>
 
-        {!hasBrandIdentity && (
-          <div className="mb-8 p-6 bg-background-secondary border border-border rounded-lg">
-            <h2 className="text-xl font-semibold mb-2">Get Started</h2>
-            <p className="text-text-secondary mb-4">
-              Start by setting up your store brand identity. This will inform all generated content.
-            </p>
-            <Link
-              href="/brand-identity"
-              className="inline-block px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition"
-            >
-              Set Up Brand Identity
-            </Link>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Patterns Section */}
+          <div className="bg-background-secondary border border-border rounded-lg overflow-hidden">
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Patterns</h2>
+              <Link
+                href="/patterns"
+                className="text-sm text-accent-primary hover:underline"
+              >
+                View All →
+              </Link>
+            </div>
+            {loading ? (
+              <div className="p-6 flex items-center gap-3 text-text-secondary text-sm">
+                <Spinner size="sm" />
+                <span>Loading patterns...</span>
+              </div>
+            ) : patterns.length === 0 ? (
+              <div className="p-6 text-text-secondary text-sm">
+                No patterns yet.{' '}
+                <Link href="/patterns" className="text-accent-primary hover:underline">
+                  Create your first pattern
+                </Link>
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {patterns.slice(0, 5).map((pattern) => (
+                  <div
+                    key={pattern.id}
+                    className="p-4 hover:bg-background-tertiary transition"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <Link
+                          href={`/patterns/${pattern.id}`}
+                          className="block hover:text-accent-primary transition"
+                        >
+                          <div className="font-medium text-text-primary mb-1 truncate">
+                            {pattern.name}
+                          </div>
+                          {pattern.notes && (
+                            <div className="text-sm text-text-secondary line-clamp-1">
+                              {pattern.notes}
+                            </div>
+                          )}
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {patterns.length > 5 && (
+                  <div className="p-4 text-center">
+                    <Link
+                      href="/patterns"
+                      className="text-sm text-accent-primary hover:underline"
+                    >
+                      View {patterns.length - 5} more patterns →
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <FeatureCard
-            title="Brand Identity"
-            description="Set up your store name, tone, and creative direction"
-            href="/brand-identity"
-            status={hasBrandIdentity ? 'complete' : 'available'}
-          />
-          <FeatureCard
-            title="Product Planning"
-            description="Track pattern ideas and plan releases"
-            href="/patterns"
-            status="available"
-          />
-          <FeatureCard
-            title="Listing Authoring"
-            description="Generate optimized Etsy listing content"
-            href="/listings"
-            status={hasBrandIdentity ? 'available' : 'locked'}
-          />
-          <FeatureCard
-            title="Customer Communication"
-            description="Generate order confirmations and support messages"
-            href="/communication"
-            status={hasBrandIdentity ? 'available' : 'locked'}
-          />
-          <FeatureCard
-            title="Image Generation"
-            description="Generate store assets and product images"
-            href="/images"
-            status="coming-soon"
-          />
-          <FeatureCard
-            title="SEO & Keywords"
-            description="Research and optimize keywords"
-            href="/seo"
-            status="coming-soon"
-          />
-          <FeatureCard
-            title="Export"
-            description="Export complete listing packages"
-            href="/export"
-            status={hasBrandIdentity ? 'available' : 'locked'}
-          />
+          {/* Products Section */}
+          <div className="bg-background-secondary border border-border rounded-lg overflow-hidden">
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Products</h2>
+              <Link
+                href="/products"
+                className="text-sm text-accent-primary hover:underline"
+              >
+                View All →
+              </Link>
+            </div>
+            {loading ? (
+              <div className="p-6 flex items-center gap-3 text-text-secondary text-sm">
+                <Spinner size="sm" />
+                <span>Loading products...</span>
+              </div>
+            ) : products.length === 0 ? (
+              <div className="p-6 text-text-secondary text-sm">
+                No products yet.{' '}
+                <Link href="/products" className="text-accent-primary hover:underline">
+                  Create your first product
+                </Link>
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {products.slice(0, 5).map((product) => (
+                  <div
+                    key={product.id}
+                    className="p-4 hover:bg-background-tertiary transition"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <Link
+                          href={`/products/${product.id}`}
+                          className="block hover:text-accent-primary transition"
+                        >
+                          <div className="font-medium text-text-primary mb-1 truncate">
+                            {product.title || product.name}
+                          </div>
+                          <div className="text-sm text-text-secondary">
+                            {getProductTypeLabel(product.type)}
+                            {product.price && ` • $${product.price.toFixed(2)}`}
+                          </div>
+                        </Link>
+                      </div>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full text-white ${getProductStatusColor(product.status)}`}>
+                        {product.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {products.length > 5 && (
+                  <div className="p-4 text-center">
+                    <Link
+                      href="/products"
+                      className="text-sm text-accent-primary hover:underline"
+                    >
+                      View {products.length - 5} more products →
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-
       </div>
+
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
     </div>
   );
 }
-
-function FeatureCard({
-  title,
-  description,
-  href,
-  status,
-}: {
-  title: string;
-  description: string;
-  href: string;
-  status: 'complete' | 'available' | 'locked' | 'coming-soon';
-}) {
-  const statusColors = {
-    complete: 'border-green-500',
-    available: 'border-accent-primary',
-    locked: 'border-border opacity-50',
-    'coming-soon': 'border-border opacity-50',
-  };
-
-  const statusText = {
-    complete: '✓ Complete',
-    available: '→ Available',
-    locked: '🔒 Requires Brand Identity',
-    'coming-soon': '🚧 Coming Soon',
-  };
-
-  return (
-    <Link
-      href={status === 'locked' || status === 'coming-soon' ? '#' : href}
-      className={`block p-6 bg-background-secondary border rounded-lg hover:bg-background-tertiary transition ${
-        status === 'locked' || status === 'coming-soon' ? 'cursor-not-allowed' : ''
-      } ${statusColors[status]}`}
-    >
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-text-secondary text-sm mb-4">{description}</p>
-      <span className="text-xs text-text-muted">{statusText[status]}</span>
-    </Link>
-  );
-}
-

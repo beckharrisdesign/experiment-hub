@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run tests before commit
+echo "Running E2E tests..."
+npm run test:ci
+
+# Exit with test result
+exit $?
+

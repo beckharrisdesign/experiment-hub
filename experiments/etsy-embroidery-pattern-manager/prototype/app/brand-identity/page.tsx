@@ -80,11 +80,11 @@ export default function BrandIdentityPage() {
         router.push('/');
         router.refresh();
       } else {
-        alert('Failed to save brand identity');
+        // Toast will be handled by parent or we can add it here
+        console.error('Failed to save brand identity');
       }
     } catch (error) {
       console.error('Error saving brand identity:', error);
-      alert('Error saving brand identity');
     } finally {
       setLoading(false);
     }

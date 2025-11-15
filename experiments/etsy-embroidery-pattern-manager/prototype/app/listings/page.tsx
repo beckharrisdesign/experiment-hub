@@ -2,12 +2,29 @@
 
 import { useState, useEffect } from 'react';
 import { Listing } from '@/types';
+import Toast from '@/components/shared/Toast';
+import Spinner from '@/components/shared/Spinner';
+
+interface ToastState {
+  message: string;
+  type: 'success' | 'error' | 'info';
+  isVisible: boolean;
+}
 
 export default function ListingsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [patterns, setPatterns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPattern, setSelectedPattern] = useState<string>('');
+  const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type, isVisible: true });
+  };
+
+  const hideToast = () => {
+    setToast({ ...toast, isVisible: false });
+  };
 
   useEffect(() => {
     fetchListings();
@@ -33,7 +50,7 @@ export default function ListingsPage() {
       const response = await fetch('/api/patterns');
       if (response.ok) {
         const data = await response.json();
-        setPatterns(data.filter((p: any) => p.status === 'ready'));
+        setPatterns(data);
       }
     } catch (error) {
       console.error('Error fetching patterns:', error);
@@ -52,14 +69,15 @@ export default function ListingsPage() {
       });
 
       if (response.ok) {
+        showToast('Listing generated successfully', 'success');
         fetchListings();
         setSelectedPattern('');
       } else {
-        alert('Failed to generate listing');
+        showToast('Failed to generate listing', 'error');
       }
     } catch (error) {
       console.error('Error generating listing:', error);
-      alert('Error generating listing');
+      showToast('Error generating listing', 'error');
     } finally {
       setLoading(false);
     }
@@ -68,13 +86,14 @@ export default function ListingsPage() {
   const handleExport = (listing: Listing) => {
     const exportText = `Title: ${listing.title}\n\nDescription:\n${listing.description}\n\nTags: ${listing.tags.join(', ')}\n\nCategory: ${listing.category || 'N/A'}\nPrice: $${listing.price || 'N/A'}`;
     navigator.clipboard.writeText(exportText);
-    alert('Listing content copied to clipboard!');
+    showToast('Listing content copied to clipboard!', 'success');
   };
 
   if (loading && listings.length === 0) {
     return (
-      <div className="min-h-screen bg-background-primary text-text-primary flex items-center justify-center">
-        <p>Loading...</p>
+      <div className="min-h-screen bg-background-primary text-text-primary flex items-center justify-center gap-3">
+        <Spinner size="md" />
+        <p className="text-text-secondary">Loading...</p>
       </div>
     );
   }
@@ -95,7 +114,7 @@ export default function ListingsPage() {
               onChange={(e) => setSelectedPattern(e.target.value)}
               className="flex-1 px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
             >
-              <option value="">Select a pattern (status: ready)</option>
+              <option value="">Select a pattern</option>
               {patterns.map((pattern) => (
                 <option key={pattern.id} value={pattern.id}>
                   {pattern.name}
@@ -105,9 +124,16 @@ export default function ListingsPage() {
             <button
               onClick={handleGenerate}
               disabled={!selectedPattern || loading}
-              className="px-6 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition disabled:opacity-50"
+              className="px-6 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition disabled:opacity-50 flex items-center gap-2"
             >
-              {loading ? 'Generating...' : 'Generate Listing'}
+              {loading ? (
+                <>
+                  <Spinner size="sm" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                'Generate Listing'
+              )}
             </button>
           </div>
         </div>
@@ -158,6 +184,14 @@ export default function ListingsPage() {
           )}
         </div>
       </div>
+
+      {/* Toast Notification */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
     </div>
   );
 }

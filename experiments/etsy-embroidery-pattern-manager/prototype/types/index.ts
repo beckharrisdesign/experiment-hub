@@ -16,7 +16,6 @@ export interface BrandIdentity {
 export interface Pattern {
   id: string;
   name: string;
-  status: 'idea' | 'in-progress' | 'ready' | 'listed';
   notes?: string;
   category?: string;
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
@@ -35,7 +34,24 @@ export interface Release {
   updatedAt: string;
 }
 
-// Listing Types
+// Product Types (different offerings from a pattern)
+export interface Product {
+  id: string;
+  patternId: string;
+  name: string;
+  type: 'printable-pdf' | 'svg' | 'kit' | 'custom';
+  status: 'draft' | 'ready' | 'listed';
+  title?: string;
+  description?: string;
+  tags?: string[];
+  category?: string;
+  price?: number;
+  seoScore?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Listing Types (legacy - will be migrated to products)
 export interface Listing {
   id: string;
   patternId: string;

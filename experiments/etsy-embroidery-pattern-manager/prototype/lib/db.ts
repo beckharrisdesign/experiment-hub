@@ -36,7 +36,6 @@ export function initDatabase() {
     CREATE TABLE IF NOT EXISTS patterns (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
-      status TEXT NOT NULL CHECK(status IN ('idea', 'in-progress', 'ready', 'listed')),
       notes TEXT,
       category TEXT,
       difficulty TEXT CHECK(difficulty IN ('beginner', 'intermediate', 'advanced')),
@@ -59,7 +58,27 @@ export function initDatabase() {
     )
   `);
 
-  // Listings table
+  // Products table (different offerings from a pattern: PDF, SVG, kit, etc.)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS products (
+      id TEXT PRIMARY KEY,
+      pattern_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL CHECK(type IN ('printable-pdf', 'svg', 'kit', 'custom')),
+      status TEXT NOT NULL CHECK(status IN ('draft', 'ready', 'listed')),
+      title TEXT,
+      description TEXT,
+      tags TEXT, -- JSON array
+      category TEXT,
+      price REAL,
+      seo_score INTEGER,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (pattern_id) REFERENCES patterns(id)
+    )
+  `);
+
+  // Listings table (legacy - will be migrated to products)
   db.exec(`
     CREATE TABLE IF NOT EXISTS listings (
       id TEXT PRIMARY KEY,
