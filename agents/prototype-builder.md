@@ -92,11 +92,16 @@ prototype/
 
 #### For Web Applications
 - Create Next.js app structure (if using Next.js)
-- Set up Tailwind CSS configuration
-- Create basic layout component
-- Add initial page structure
-- Include dark mode setup (per PRD requirements)
+- Set up Tailwind CSS configuration with dark mode variables
+- Create `postcss.config.js` for Tailwind
+- Create basic layout component with dark mode
+- Add initial page structure (home/dashboard)
+- Create `app/globals.css` with Tailwind directives and CSS variables
+- Set up TypeScript paths (`@/*` alias)
 - Create reusable component structure
+- Set up API routes structure (`app/api/`)
+- Initialize database if needed (auto-create on import)
+- Create `.gitignore` with standard Next.js ignores plus `.env.local`, database files
 
 #### For CLI Tools
 - Create entry point
@@ -110,33 +115,111 @@ prototype/
 - Add TypeScript definitions if applicable
 - Include example usage
 
-### Step 5: Create Configuration Files
+### Step 5: Assign Port and Configure for Seamless Startup
+
+**Port Assignment**:
+- Check `PROTOTYPE_PORTS.md` for next available port
+- Assign port starting from 3001 (3000 is Experiment Hub)
+- Update prototype entry in `data/prototypes.json` with `port` field
+- Configure `package.json` scripts to use assigned port:
+  ```json
+  {
+    "scripts": {
+      "dev": "next dev -p 3001",
+      "start": "next start -p 3001"
+    }
+  }
+  ```
+
+**Environment Setup**:
+- Create `.env.local.example` file with required environment variables
+- Include comments explaining each variable
+- For Next.js apps, common variables include:
+  - API keys (OpenAI, etc.)
+  - Database paths
+  - Upload/export directories
+- Document in README that user needs to copy `.env.local.example` to `.env.local`
+
+### Step 6: Create Configuration Files
 
 #### package.json
 - Include necessary dependencies
-- Set up scripts (dev, build, test)
+- Set up scripts (dev, build, test) with assigned port
 - Add project metadata
 - Include experiment reference
+- Ensure all required dependencies are listed (e.g., better-sqlite3, openai, sharp)
+
+#### TypeScript Configuration (if using TypeScript)
+- Create `tsconfig.json` with proper paths configuration
+- Use `@/*` path alias for imports
+- Include Next.js recommended settings
+- Ensure `jsx` is set to `react-jsx` for Next.js
+
+#### Environment Files
+- Create `.env.local.example` with all required variables
+- Document which variables are required vs optional
+- Include helpful comments
+
+#### Database Setup (if needed)
+- Create database initialization in `lib/db.ts` or similar
+- Use SQLite (better-sqlite3) for local-first MVP
+- Auto-initialize schema on first import
+- Ensure data directory is created automatically
 
 #### README.md
 Include:
 - Experiment statement
-- Quick start instructions
+- **Port number** (e.g., "Runs on port 3001")
+- Quick start instructions:
+  - Install dependencies: `npm install`
+  - Set up environment: `cp .env.local.example .env.local`
+  - Start server: `npm run dev`
 - Key features from PRD
 - Implementation status
 - Next steps
+- Link to prototype: `http://localhost:3001` (or assigned port)
 
-### Step 6: Implementation Guidance
-**⚠️ APPROVAL CHECKPOINT**: Before generating any files, present the complete proposed structure, key files to be created, and dependencies to the user and **WAIT for explicit approval** before writing any code or configuration files.
+### Step 7: Ensure Seamless Startup
+
+**Before Completion, Verify**:
+1. ✅ Port is assigned and configured in `package.json`
+2. ✅ `.env.local.example` exists with all required variables
+3. ✅ Database initialization is automatic (if using database)
+4. ✅ TypeScript configuration is correct (if using TypeScript)
+5. ✅ All dependencies are listed in `package.json`
+6. ✅ README includes port number and startup instructions
+7. ✅ Prototype entry in `data/prototypes.json` includes `port` field
+8. ✅ `.gitignore` includes `.env.local`, `node_modules`, database files
+
+**Common Issues to Prevent**:
+- Missing environment variables causing startup failures
+- Port conflicts (always check PROTOTYPE_PORTS.md)
+- TypeScript errors in initial code
+- Missing database initialization
+- Incorrect path aliases
+
+### Step 8: Implementation Guidance
+**⚠️ APPROVAL CHECKPOINT**: Before generating any files, present the complete proposed structure, key files to be created, dependencies, and assigned port to the user and **WAIT for explicit approval** before writing any code or configuration files.
 
 Provide clear next steps:
 - What to implement first (MVP features)
 - Key technical decisions needed
-- Dependencies to install
+- Dependencies to install: `npm install`
+- Environment setup: Copy `.env.local.example` to `.env.local` and add required keys
 - Testing approach
-- How to run the prototype
+- How to run the prototype: `npm run dev` (will start on assigned port)
+- Direct link: `http://localhost:3001` (or assigned port)
 
 **⚠️ COMPLETION**: After generating the prototype structure, inform the user that the prototype is ready. Provide implementation guidance but **DO NOT automatically proceed** to implementing features. Wait for explicit user direction.
+
+**Post-Generation Checklist**:
+- [ ] Port assigned and configured
+- [ ] Environment file template created
+- [ ] Database auto-initializes (if applicable)
+- [ ] TypeScript compiles without errors
+- [ ] README includes port and startup steps
+- [ ] Prototype entry updated with port
+- [ ] User can run `npm install && npm run dev` successfully
 
 ## Code Generation Guidelines
 
@@ -196,15 +279,53 @@ prototype/
 - All generated files must be valid
 - Directory structure must be created
 - Configuration files must be properly formatted
-- README must include experiment context
-- Prototype entry must be updated with correct path
+- README must include experiment context, port number, and startup instructions
+- Prototype entry must be updated with correct path and port
+- `.env.local.example` must include all required variables with comments
+- TypeScript must compile without errors (`npx tsc --noEmit`)
+- Port must be assigned and configured in `package.json`
+- Database must auto-initialize if used
+- `.gitignore` must exclude sensitive files and build artifacts
 
 ## Error Handling
 - If PRD doesn't exist, return error
 - If prototype directory already has content, ask user
 - Validate all file paths before writing
 - Check for required dependencies
+- Verify port is not already assigned (check PROTOTYPE_PORTS.md)
+- Ensure TypeScript configuration is valid
 - Roll back if any critical step fails
+
+## Common Setup Issues to Prevent
+
+**Port Conflicts**:
+- Always check PROTOTYPE_PORTS.md before assigning
+- Verify port is not in use: `lsof -i :3001`
+- Use sequential port assignment
+
+**Environment Variables**:
+- Always create `.env.local.example` template
+- Document which variables are required vs optional
+- Include helpful comments in template
+- Never commit actual `.env.local` file
+
+**TypeScript Errors**:
+- Ensure `tsconfig.json` has correct paths configuration
+- Use `@/*` alias for imports
+- Set `jsx: "react-jsx"` for Next.js
+- Include proper type definitions
+
+**Database Initialization**:
+- Auto-create database directory if it doesn't exist
+- Auto-initialize schema on first import
+- Handle database file in `.gitignore`
+- Provide clear error messages if database fails
+
+**Dependency Issues**:
+- List all required dependencies in `package.json`
+- Include both dependencies and devDependencies
+- Use compatible versions
+- Test that `npm install` works
 
 ## Integration Points
 - Reference `design-guidelines.md` for UI/UX implementation
@@ -214,8 +335,29 @@ prototype/
 
 ## Next Steps After Generation
 1. Review generated structure
-2. Install dependencies
-3. Implement core features from PRD
-4. Test basic functionality
-5. Iterate based on experiment goals
+2. **Install dependencies**: `npm install` in prototype directory
+3. **Set up environment**: Copy `.env.local.example` to `.env.local` and add required API keys
+4. **Start prototype**: `npm run dev` (will run on assigned port)
+5. **Access prototype**: Open `http://localhost:3001` (or assigned port) in browser
+6. **Verify in Experiment Hub**: Check that prototype link appears in experiment detail page
+7. Implement core features from PRD
+8. Test basic functionality
+9. Iterate based on experiment goals
+
+## Port Management
+
+**Always**:
+- Check `PROTOTYPE_PORTS.md` before assigning a port
+- Use sequential ports starting from 3001
+- Update `PROTOTYPE_PORTS.md` with new assignment
+- Configure port in `package.json` scripts
+- Add `port` field to prototype entry in `data/prototypes.json`
+
+**Port Assignment Process**:
+1. Read `PROTOTYPE_PORTS.md` to find next available port
+2. Assign port to new prototype
+3. Update `PROTOTYPE_PORTS.md` with new entry
+4. Configure `package.json` with port in dev/start scripts
+5. Add `port` field to `data/prototypes.json` prototype entry
+6. Document port in README.md
 

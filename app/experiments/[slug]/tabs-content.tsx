@@ -462,6 +462,22 @@ export default function TabsContent({
                     ✓ Prototype files exist
                   </div>
                 )}
+                {prototype.port && (
+                  <div className="mt-3">
+                    <a
+                      href={`http://localhost:${prototype.port}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition text-sm font-medium"
+                    >
+                      Open Prototype →
+                      <span className="font-mono text-xs opacity-75">:${prototype.port}</span>
+                    </a>
+                    <p className="mt-2 text-xs text-text-muted">
+                      Make sure the prototype is running: <code className="bg-background-tertiary px-1.5 py-0.5 rounded">npm run dev</code> in the prototype directory
+                    </p>
+                  </div>
+                )}
               </div>
             </section>
           )}

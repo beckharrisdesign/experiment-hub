@@ -33,6 +33,7 @@ export interface Prototype {
   createdDate: string;
   lastModified: string;
   tags: string[];
+  port?: number; // Port number for running prototype (e.g., 3001, 3002)
 }
 
 export interface Documentation {

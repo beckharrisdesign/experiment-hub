@@ -39,16 +39,27 @@ export default async function PrototypesPage() {
                     <div className="flex-1">
                       <h3 className="font-medium text-text-primary">{prototype.title}</h3>
                       <p className="mt-1 text-sm text-text-secondary">{prototype.description}</p>
-                      {prototype.experimentName && (
-                        <div className="mt-2 text-sm text-text-muted">
+                      <div className="mt-3 flex flex-wrap items-center gap-3">
+                        {prototype.port && (
+                          <a
+                            href={`http://localhost:${prototype.port}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-accent-primary text-white rounded hover:opacity-90 transition text-sm font-medium"
+                          >
+                            Open Prototype →
+                            <span className="font-mono text-xs opacity-75">:${prototype.port}</span>
+                          </a>
+                        )}
+                        {prototype.experimentName && (
                           <Link
                             href={`/experiments/${slugify(prototype.experimentName)}`}
-                            className="hover:text-accent-primary"
+                            className="text-sm text-text-muted hover:text-accent-primary"
                           >
                             View Experiment →
                           </Link>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                     <StatusBadge status={prototype.status} />
                   </div>
