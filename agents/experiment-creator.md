@@ -71,8 +71,9 @@ This agent helps refine experiment ideas and creates structured experiment entri
 - Link them in a one-to-one relationship
 - Set default status to "Active"
 - Generate timestamps for created date
+- **DO NOT generate experiment scores** - scores should be generated after market research provides context (TAM/SAM/SOM, competitive analysis, etc.)
 
-**⚠️ COMPLETION**: After creating the experiment, inform the user that the experiment is ready. **DO NOT automatically proceed** to creating a PRD. Wait for the user to explicitly request `@prd-writer`.
+**⚠️ COMPLETION**: After creating the experiment, inform the user that the experiment is ready. **DO NOT automatically proceed** to creating a PRD or generating scores. Wait for the user to explicitly request `@market-research` (which will generate scores after market analysis) or `@prd-writer`.
 
 ## Example Interaction
 

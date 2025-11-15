@@ -200,7 +200,39 @@ Break down the market into addressable segments:
 - Update experiment metadata with market research reference
 - Include TAM/SAM/SOM estimates in experiment metadata for quick reference
 
-**⚠️ COMPLETION**: After saving the report, inform the user that market research is complete. The report can inform PRD creation, but **DO NOT automatically proceed** to PRD creation. Wait for explicit user request.
+### Step 9: Generate Experiment Scores
+**⚠️ IMPORTANT**: Scores should be generated AFTER market research is complete, as market analysis provides essential context for scoring.
+
+Using the scoring criteria from `agents/scoring-criteria.md`, generate scores for all five dimensions:
+
+1. **Business Opportunity (B)**: Based on TAM/SAM/SOM estimates and revenue potential
+   - Use TAM size and revenue path to determine score (1-5)
+   - Reference scoring criteria: $1B+ TAM = 5, $500M+ = 4, $100M+ = 3, etc.
+
+2. **Personal Impact (P)**: Based on experiment statement and user context
+   - Assess how much the user would personally use/benefit from this
+   - Consider if it solves a daily/regular/occasional problem
+
+3. **Competitive Advantage (C)**: Based on competitive analysis from market research
+   - Use competitive landscape findings to assess differentiation
+   - Low competition/unique approach = 5, saturated market = 1
+
+4. **Platform Cost ($)**: Based on technical complexity and buildability
+   - Assess solo buildability with AI tools (Cursor)
+   - Consider infrastructure complexity and ongoing costs
+   - Reference scoring criteria for time estimates and cost ranges
+
+5. **Social Impact (S)**: Based on market research findings about market need
+   - Consider if the world needs this, who it serves
+   - Assess positive impact and contribution
+
+**⚠️ APPROVAL CHECKPOINT**: Present the proposed scores with brief rationale for each dimension and **WAIT for explicit approval** before updating the experiment metadata.
+
+After approval:
+- Update `data/experiments.json` with the scores
+- Include brief rationale in a comment or note
+
+**⚠️ COMPLETION**: After saving the report and scores, inform the user that market research and scoring are complete. The report can inform PRD creation, but **DO NOT automatically proceed** to PRD creation. Wait for explicit user request.
 
 ## Research Methodology
 

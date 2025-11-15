@@ -53,7 +53,7 @@ This directory contains agent instructions and guidelines for the Experiment Hub
    - Refines concept (⚠️ requires approval)
    - Generates statement and tags (⚠️ requires approval)
    - Creates directory structure
-   - Generates metadata
+   - Generates metadata (NO scores - scores generated after market research)
    - Links Documentation and Prototype
    ⚠️ Stops here - waits for explicit user request to proceed
    ↓
@@ -62,7 +62,9 @@ This directory contains agent instructions and guidelines for the Experiment Hub
    - Researches market size and trends
    - Calculates TAM/SAM/SOM estimates (⚠️ requires approval)
    - Generates market research report
+   - Generates experiment scores based on market analysis (⚠️ requires approval)
    - Saves to docs/market-research.md
+   - Updates experiment metadata with scores
    ⚠️ Stops here - can inform PRD but waits for explicit user request
    ↓
 4. @prd-writer creates PRD (user must explicitly request)
