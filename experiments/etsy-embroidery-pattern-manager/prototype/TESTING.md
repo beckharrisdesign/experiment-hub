@@ -66,8 +66,6 @@ npm run test:ci
 ## What Gets Tested
 
 ✅ Navigation between main views  
-✅ Keyboard shortcuts (Ctrl+S / Cmd+S)  
-✅ Auto-save functionality  
 ✅ Image paste UI  
 🚧 Form validation (coming soon)  
 🚧 API error handling (coming soon)  

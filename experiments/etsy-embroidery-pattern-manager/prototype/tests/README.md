@@ -6,8 +6,6 @@ This directory contains automated tests for the Shop Manager prototype.
 
 - **`e2e/`**: End-to-end tests using Playwright
   - `navigation.spec.ts`: Tests for loading main views and navigation
-  - `keyboard-shortcuts.spec.ts`: Tests for keyboard commands (Ctrl+S, etc.)
-  - `auto-save.spec.ts`: Tests for auto-save functionality
   - `image-paste.spec.ts`: Tests for paste-to-upload functionality
 
 ## Running Tests
@@ -72,8 +70,6 @@ Tests are designed to run as **acceptance criteria** for commits, not as interac
 ## Test Coverage Goals
 
 - ✅ All main navigation routes
-- ✅ Keyboard shortcuts (Ctrl+S / Cmd+S)
-- ✅ Auto-save functionality
 - ✅ Image paste functionality
 - 🚧 Form validation
 - 🚧 API error handling

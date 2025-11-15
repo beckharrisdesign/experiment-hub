@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Pattern, Listing } from '@/types';
@@ -22,12 +22,8 @@ export default function PatternDetailPage() {
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [autoSaving, setAutoSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const patternSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const listingSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [patternFormData, setPatternFormData] = useState({
     name: '',
     notes: '',
@@ -46,12 +42,10 @@ export default function PatternDetailPage() {
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
 
   useEffect(() => {
-    console.log('PatternDetailPage mounted with patternId:', patternId);
     if (patternId) {
       fetchPattern();
       fetchListing();
     } else {
-      console.error('No patternId provided');
       setLoading(false);
     }
   }, [patternId]);
@@ -102,31 +96,6 @@ export default function PatternDetailPage() {
       document.removeEventListener('paste', handlePaste);
     };
   }, [showToast]);
-
-  // Handle Ctrl+S / Cmd+S to show "saved" feedback
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault();
-        // Trigger immediate save if there's a pending auto-save
-        if (patternSaveTimeoutRef.current) {
-          clearTimeout(patternSaveTimeoutRef.current);
-          savePattern(false);
-        }
-        if (listingSaveTimeoutRef.current) {
-          clearTimeout(listingSaveTimeoutRef.current);
-          saveListing(false);
-        }
-        showToast('Saved', 'success');
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [showToast, savePattern, saveListing]);
 
   const fetchPattern = async () => {
     try {
@@ -187,10 +156,11 @@ export default function PatternDetailPage() {
     }
   };
 
-  const savePattern = useCallback(async (showFeedback = false) => {
+  const handlePatternSave = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!pattern) return;
 
-    setAutoSaving(true);
+    setSaving(true);
     try {
       const response = await fetch(`/api/patterns/${patternId}`, {
         method: 'PATCH',
@@ -199,39 +169,26 @@ export default function PatternDetailPage() {
       });
 
       if (response.ok) {
-        setLastSaved(new Date());
-        if (showFeedback) {
-          showToast('Pattern saved', 'success');
-        }
+        showToast('Pattern saved successfully', 'success');
         fetchPattern();
       } else {
-        if (showFeedback) {
-          showToast('Failed to save pattern', 'error');
-        }
+        showToast('Failed to save pattern', 'error');
       }
     } catch (error) {
       console.error('Error saving pattern:', error);
-      if (showFeedback) {
-        showToast('Error saving pattern', 'error');
-      }
+      showToast('Error saving pattern', 'error');
     } finally {
-      setAutoSaving(false);
+      setSaving(false);
     }
-  }, [patternId, patternFormData, pattern, showToast]);
-
-  const handlePatternSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // Clear any pending auto-save
-    if (patternSaveTimeoutRef.current) {
-      clearTimeout(patternSaveTimeoutRef.current);
-    }
-    await savePattern(true);
   };
 
-  const saveListing = useCallback(async (showFeedback = false) => {
-    if (!listing) return;
+  const handleListingSave = async () => {
+    if (!listing) {
+      showToast('Please generate a listing first', 'info');
+      return;
+    }
 
-    setAutoSaving(true);
+    setSaving(true);
     try {
       const response = await fetch(`/api/listings/${listing.id}`, {
         method: 'PATCH',
@@ -246,79 +203,18 @@ export default function PatternDetailPage() {
       });
 
       if (response.ok) {
-        setLastSaved(new Date());
-        if (showFeedback) {
-          showToast('Listing saved', 'success');
-        }
+        showToast('Listing saved successfully', 'success');
         fetchListing();
       } else {
-        if (showFeedback) {
-          showToast('Failed to save listing', 'error');
-        }
+        showToast('Failed to save listing', 'error');
       }
     } catch (error) {
       console.error('Error saving listing:', error);
-      if (showFeedback) {
-        showToast('Error saving listing', 'error');
-      }
+      showToast('Error saving listing', 'error');
     } finally {
-      setAutoSaving(false);
+      setSaving(false);
     }
-  }, [listing, listingFormData, showToast]);
-
-  const handleListingSave = async () => {
-    if (!listing) {
-      showToast('Please generate a listing first', 'info');
-      return;
-    }
-    // Clear any pending auto-save
-    if (listingSaveTimeoutRef.current) {
-      clearTimeout(listingSaveTimeoutRef.current);
-    }
-    await saveListing(true);
   };
-
-  // Auto-save pattern data when form changes
-  useEffect(() => {
-    if (!pattern || loading) return; // Don't auto-save on initial load
-
-    // Clear existing timeout
-    if (patternSaveTimeoutRef.current) {
-      clearTimeout(patternSaveTimeoutRef.current);
-    }
-
-    // Set new timeout for auto-save (1.5 seconds after user stops typing)
-    patternSaveTimeoutRef.current = setTimeout(() => {
-      savePattern(false);
-    }, 1500);
-
-    return () => {
-      if (patternSaveTimeoutRef.current) {
-        clearTimeout(patternSaveTimeoutRef.current);
-      }
-    };
-  }, [patternFormData, pattern, loading, savePattern]);
-
-  // Auto-save listing data when form changes
-  useEffect(() => {
-    if (!listing || loading) return; // Don't auto-save on initial load
-
-    // Clear existing timeout
-    if (listingSaveTimeoutRef.current) {
-      clearTimeout(listingSaveTimeoutRef.current);
-    }
-
-    // Set new timeout for auto-save (1.5 seconds after user stops typing)
-    listingSaveTimeoutRef.current = setTimeout(() => {
-      saveListing(false);
-    }, 1500);
-
-    return () => {
-      if (listingSaveTimeoutRef.current) {
-        clearTimeout(listingSaveTimeoutRef.current);
-      }
-    };
-  }, [listingFormData, listing, loading, saveListing]);
 
   const handleGenerateListing = async () => {
     if (!pattern) return;
@@ -342,7 +238,7 @@ export default function PatternDetailPage() {
           price: newListing.price?.toString() || '',
         });
         showToast('Listing generated successfully', 'success');
-        fetchPattern();
+        fetchListing();
       } else {
         showToast('Failed to generate listing', 'error');
       }
@@ -388,25 +284,12 @@ export default function PatternDetailPage() {
     <div className="min-h-screen bg-background-primary text-text-primary">
       <div className="px-4 py-8 max-w-7xl mx-auto">
         <header className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={() => router.back()}
-              className="text-text-secondary hover:text-text-primary transition"
-            >
-              ← Back
-            </button>
-            {autoSaving && (
-              <div className="flex items-center gap-2 text-sm text-text-secondary">
-                <Spinner size="sm" />
-                <span>Saving...</span>
-              </div>
-            )}
-            {lastSaved && !autoSaving && (
-              <div className="text-xs text-text-muted">
-                Saved {lastSaved.toLocaleTimeString()}
-              </div>
-            )}
-          </div>
+          <button
+            onClick={() => router.back()}
+            className="text-text-secondary hover:text-text-primary transition mb-4"
+          >
+            ← Back
+          </button>
           <h1 className="text-3xl font-bold">Edit Product</h1>
         </header>
 
@@ -463,10 +346,7 @@ export default function PatternDetailPage() {
 
           {/* Pattern Details Form */}
           <form onSubmit={handlePatternSave} className="bg-background-secondary border border-border rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Pattern Details</h2>
-              <span className="text-xs text-text-muted">Auto-saves as you type</span>
-            </div>
+            <h2 className="text-xl font-semibold mb-4">Pattern Details</h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Pattern Name *</label>
@@ -525,6 +405,29 @@ export default function PatternDetailPage() {
                   placeholder="Pattern ideas, inspiration, design notes..."
                 />
               </div>
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition disabled:opacity-50 flex items-center gap-2"
+                >
+                  {saving ? (
+                    <>
+                      <Spinner size="sm" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    'Save Pattern'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="px-4 py-2 bg-background-tertiary border border-border rounded hover:bg-background-primary transition"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </form>
 
@@ -532,9 +435,6 @@ export default function PatternDetailPage() {
           <div className="bg-background-secondary border border-border rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Listing</h2>
-              {listing && (
-                <span className="text-xs text-text-muted">Auto-saves as you type</span>
-              )}
               {!listing && (
                 <button
                   onClick={handleGenerateListing}
@@ -641,8 +541,21 @@ export default function PatternDetailPage() {
                     />
                   </div>
                 </div>
-                <div className="text-xs text-text-muted mt-2">
-                  Auto-saves as you type
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleListingSave}
+                    disabled={saving || !listingFormData.title || !listingFormData.description}
+                    className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {saving ? (
+                      <>
+                        <Spinner size="sm" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      'Save Listing'
+                    )}
+                  </button>
                 </div>
               </div>
             ) : (
