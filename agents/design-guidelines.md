@@ -41,6 +41,24 @@ This agent provides design principles, UX guidelines, and quality checks to ensu
 - **Consistent Patterns**: Reuse interaction patterns
 - **Error Prevention**: Design to prevent mistakes
 
+### 5. Design for Scanning
+- **Single-Line Rows**: Keep table/list rows to one line when possible for better vertical scanning
+- **Columnar Data**: Place related data in columns for easy left-right comparison
+- **Consistent Alignment**: Align similar data types (numbers, dates, text) consistently
+- **Visual Rhythm**: Maintain consistent row height and spacing for smooth vertical scanning
+- **Horizontal Scanning**: Design columns so users can quickly compare values across rows
+- **Vertical Scanning**: Design rows so users can quickly scan down a column
+- **Information Density**: Balance information density with scannability—too sparse wastes space, too dense is hard to scan
+
+### 6. Design with Real Data
+- **Use Real Data Early**: Design interfaces with actual data, not placeholders or lorem ipsum
+- **Prototype with Live Data**: Build prototypes that connect to real data sources when possible
+- **Organic Improvement**: Working with real data reveals issues and opportunities naturally
+- **Edge Cases Surface**: Real data exposes edge cases, formatting issues, and usability problems
+- **Iterative Refinement**: Each interaction with real data suggests improvements
+- **Avoid Mock Data Traps**: Mock data can hide problems that only appear with real content
+- **Data-Driven Design**: Let data characteristics inform design decisions (length, format, relationships)
+
 ## Visual Design System
 
 ### Color Palette

@@ -17,8 +17,8 @@ const scoreLabels = {
 const scoreDescriptions = {
   businessOpportunity: "Market potential and revenue opportunity",
   personalImpact: "Would I personally use/benefit from this?",
-  competitiveAdvantage: "Low competition = 5, High competition = 1",
-  platformCost: "Low cost/easy = 5, High cost/complex = 1",
+  competitiveAdvantage: "Market competition and differentiation",
+  platformCost: "Solo buildability with AI tools (Cursor) + infrastructure complexity",
   socialImpact: "Fun, joy, and whether the world needs this",
 };
 

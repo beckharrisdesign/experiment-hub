@@ -2,11 +2,11 @@ export type ExperimentStatus = "Active" | "Completed" | "Abandoned" | "On Hold";
 export type PrototypeStatus = "Active" | "Completed" | "Abandoned";
 
 export interface ExperimentScores {
-  businessOpportunity: number; // 1-5: Market potential and revenue opportunity
-  personalImpact: number; // 1-5: Would I personally use/benefit from this?
-  competitiveAdvantage: number; // 1-5: Low competition = 5, High competition = 1
-  platformCost: number; // 1-5: Low cost/easy = 5, High cost/complex = 1
-  socialImpact: number; // 1-5: Fun, joy, and whether the world needs this
+  businessOpportunity: number; // 1-5: Market potential and revenue opportunity (see agents/scoring-criteria.md)
+  personalImpact: number; // 1-5: Would I personally use/benefit from this? (see agents/scoring-criteria.md)
+  competitiveAdvantage: number; // 1-5: Market competition and differentiation (see agents/scoring-criteria.md)
+  platformCost: number; // 1-5: Solo buildability with AI tools (Cursor) + infrastructure complexity (see agents/scoring-criteria.md)
+  socialImpact: number; // 1-5: Fun, joy, and whether the world needs this (see agents/scoring-criteria.md)
 }
 
 export interface Experiment {

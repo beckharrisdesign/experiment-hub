@@ -152,6 +152,44 @@ export function parsePRD(prdContent: string) {
 }
 
 /**
+ * Convert value string (e.g., "50K", "1.5M") to number
+ */
+function parseValue(value: string): number {
+  const num = parseFloat(value);
+  const suffix = value.toUpperCase().replace(/[\d.]/g, "");
+  let multiplier = 1;
+  if (suffix === "K") multiplier = 1000;
+  else if (suffix === "M") multiplier = 1000000;
+  else if (suffix === "B") multiplier = 1000000000;
+  return num * multiplier;
+}
+
+/**
+ * Format number back to string with appropriate suffix
+ */
+function formatValue(num: number): string {
+  if (num >= 1000000000) return `$${(num / 1000000000).toFixed(1)}B`;
+  if (num >= 1000000) return `$${(num / 1000000).toFixed(1)}M`;
+  if (num >= 1000) return `$${(num / 1000).toFixed(0)}K`;
+  return `$${num.toFixed(0)}`;
+}
+
+/**
+ * Calculate midpoint of a range and return formatted string
+ */
+function calculateMidpoint(low: string, high: string): string {
+  try {
+    const lowNum = parseValue(low);
+    const highNum = parseValue(high);
+    const midpoint = (lowNum + highNum) / 2;
+    return formatValue(midpoint);
+  } catch {
+    // If parsing fails, return the low value
+    return `$${low}`;
+  }
+}
+
+/**
  * Extract key information from Market Research markdown
  */
 export function parseMarketResearch(mrContent: string) {
@@ -177,12 +215,40 @@ export function parseMarketResearch(mrContent: string) {
   const samMatch = combinedSection.match(/SAM[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
   const somMatch = combinedSection.match(/SOM[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
   
+  // Extract Year 1 and Year 3 SOM
+  const somYear1Match = combinedSection.match(/SOM\s*\(Year\s*1\)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
+  const somYear3Match = combinedSection.match(/SOM\s*\(Year\s*3\)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
+  
+  // Calculate midpoint for ranges, or use single value
+  const somYear1 = somYear1Match 
+    ? (somYear1Match[2] 
+        ? calculateMidpoint(somYear1Match[1], somYear1Match[2])
+        : `$${somYear1Match[1]}`)
+    : null;
+  const somYear3 = somYear3Match 
+    ? (somYear3Match[2] 
+        ? calculateMidpoint(somYear3Match[1], somYear3Match[2])
+        : `$${somYear3Match[1]}`)
+    : null;
+  
+  // Extract Market Opportunity Assessment (MOA)
+  const moaMatch = combinedSection.match(/Market Opportunity Assessment[^:]*:\s*\*\*([^*]+)\*\*/i);
+  const moa = moaMatch ? moaMatch[1].trim() : null;
+  
+  // Extract Go/No-Go Recommendation
+  const goNoGoMatch = combinedSection.match(/Go\/No-Go Recommendation[^:]*:\s*\*\*([^*]+)\*\*/i);
+  const goNoGo = goNoGoMatch ? goNoGoMatch[1].trim() : null;
+  
   return {
     executiveSummary: sections["Executive Summary"]?.join("\n") || "",
     tam: tamMatch ? (tamMatch[2] ? `$${tamMatch[1]} - $${tamMatch[2]}` : `$${tamMatch[1]}`) : null,
     sam: samMatch ? (samMatch[2] ? `$${samMatch[1]} - $${samMatch[2]}` : `$${samMatch[1]}`) : null,
     som: somMatch ? (somMatch[2] ? `$${somMatch[1]} - $${somMatch[2]}` : `$${somMatch[1]}`) : null,
-    goNoGo: sections["Go/No-Go Recommendation"]?.join("\n") || sections["Recommendations"]?.join("\n") || "",
+    somYear1: somYear1,
+    somYear3: somYear3,
+    moa: moa,
+    goNoGo: goNoGo,
+    goNoGoFull: sections["Go/No-Go Recommendation"]?.join("\n") || sections["Recommendations"]?.join("\n") || "",
     fullContent: mrContent,
   };
 }
