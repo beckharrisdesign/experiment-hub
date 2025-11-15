@@ -398,11 +398,11 @@ The market encompasses:
 
 ### Market Barriers
 
-**1. Technology Complexity**
-- AI/ML development requires expertise
-- Edge detection accuracy challenges
-- User experience must be simple despite complexity
-- **Mitigation**: Focus on core AI quality, intuitive UX
+**1. Technology Complexity (REDUCED)**
+- Using pre-trained ML models/APIs eliminates need for custom model development
+- Edge detection via existing APIs (OpenAI Vision, specialized services) reduces complexity
+- User experience must be simple despite underlying complexity
+- **Mitigation**: Leverage managed AI APIs, focus on integration and UX rather than ML development
 
 **2. Market Education**
 - New category (AI photo-to-embroidery)
@@ -456,10 +456,11 @@ The market encompasses:
 - Poor results will hurt adoption
 - **Mitigation**: Invest in AI quality, extensive testing, user feedback loops
 
-**2. Scalability of AI Processing (MEDIUM)**
-- AI processing can be resource-intensive
-- Cost per processing may be high
-- **Mitigation**: Optimize models, use efficient cloud services, batch processing
+**2. Scalability of AI Processing (LOW-MEDIUM)**
+- Using pre-trained ML models/APIs (OpenAI Vision, specialized edge detection APIs) instead of custom model training
+- Pay-per-use API costs ($0.01-$0.10 per image) scale with usage
+- No fixed GPU infrastructure required
+- **Mitigation**: Use managed AI APIs, serverless architecture, optimize API usage
 
 **3. Technology Obsolescence (LOW-MEDIUM)**
 - AI/ML technology evolving rapidly
@@ -508,6 +509,7 @@ The market encompasses:
 - Multiple revenue streams (digital, printing, kits)
 - Technology trend (65% of machines use AI/digital)
 - Low initial capital requirements (digital-first approach)
+- Reduced infrastructure complexity using pre-trained ML APIs (no custom model training, pay-per-use scaling)
 
 **Concerns:**
 - Market size requires validation (emerging category)
@@ -529,11 +531,13 @@ The market encompasses:
 ### Strategic Recommendations
 
 **1. MVP Phase (Months 1-3)**
-- Core AI edge detection and embellishment generation
+- Core AI edge detection using pre-trained models/APIs (OpenAI Vision or specialized edge detection APIs)
+- Embellishment generation via API integration
 - Single payment for digital download ($20-50)
 - Basic embroidery guide generation
-- Target: 50-100 early users, validate AI quality
-- **Goal**: Prove AI quality and user demand
+- Serverless architecture (Vercel/Netlify) with managed AI APIs
+- Target: 50-100 early users, validate AI quality and API performance
+- **Goal**: Prove AI quality via APIs and user demand
 
 **2. Product-Market Fit (Months 4-6)**
 - Improve AI accuracy and embellishment variety
@@ -559,10 +563,10 @@ The market encompasses:
 ### Key Success Factors
 
 **1. AI Quality**
-- Accurate edge detection
+- Accurate edge detection via pre-trained APIs (OpenAI Vision, specialized services)
 - High-quality embellishment generation
-- Fast processing times
-- Consistent results
+- Fast processing times (API-based, no model training overhead)
+- Consistent results (managed API services)
 
 **2. User Experience**
 - Simple, intuitive interface

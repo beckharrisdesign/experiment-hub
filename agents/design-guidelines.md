@@ -59,6 +59,14 @@ This agent provides design principles, UX guidelines, and quality checks to ensu
 - **Avoid Mock Data Traps**: Mock data can hide problems that only appear with real content
 - **Data-Driven Design**: Let data characteristics inform design decisions (length, format, relationships)
 
+### 7. Consistency of Navigation and Content
+- **Click-to-Content Match**: What you click on should match what you get—if a tab says "Market Research", the content that loads should also say "Market Research"
+- **Label Consistency**: Navigation labels, page titles, and content headers should align
+- **Predictable Behavior**: Users should be able to predict what content will appear based on navigation labels
+- **Clear Feedback**: The active state and content should reinforce the navigation choice
+- **No Surprises**: Avoid mismatched labels that confuse users about where they are
+- **Hierarchical Clarity**: Navigation structure should match content structure
+
 ## Visual Design System
 
 ### Color Palette
