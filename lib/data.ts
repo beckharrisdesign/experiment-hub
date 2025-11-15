@@ -179,9 +179,9 @@ export function parseMarketResearch(mrContent: string) {
   
   return {
     executiveSummary: sections["Executive Summary"]?.join("\n") || "",
-    tam: tamMatch ? (tamMatch[2] ? `${tamMatch[1]} - ${tamMatch[2]}` : tamMatch[1]) : null,
-    sam: samMatch ? (samMatch[2] ? `${samMatch[1]} - ${samMatch[2]}` : samMatch[1]) : null,
-    som: somMatch ? (somMatch[2] ? `${somMatch[1]} - ${somMatch[2]}` : somMatch[1]) : null,
+    tam: tamMatch ? (tamMatch[2] ? `$${tamMatch[1]} - $${tamMatch[2]}` : `$${tamMatch[1]}`) : null,
+    sam: samMatch ? (samMatch[2] ? `$${samMatch[1]} - $${samMatch[2]}` : `$${samMatch[1]}`) : null,
+    som: somMatch ? (somMatch[2] ? `$${somMatch[1]} - $${somMatch[2]}` : `$${somMatch[1]}`) : null,
     goNoGo: sections["Go/No-Go Recommendation"]?.join("\n") || sections["Recommendations"]?.join("\n") || "",
     fullContent: mrContent,
   };

@@ -13,31 +13,58 @@ interface ExperimentWithRelated extends Experiment {
   documentation?: Documentation | null;
   hasPRDFile?: boolean;
   hasPrototypeDir?: boolean;
+  tam?: string | null;
 }
 
 interface HomePageClientProps {
   initialExperiments: ExperimentWithRelated[];
 }
 
-function ScoreCell({ value }: { value: number | undefined }) {
-  if (value === undefined) {
+function CompactScores({ scores }: { scores?: Experiment["scores"] }) {
+  if (!scores) {
     return <span className="text-text-muted">—</span>;
   }
+
+  const scoreValues = [
+    { label: "B", value: scores.businessOpportunity },
+    { label: "P", value: scores.personalImpact },
+    { label: "C", value: scores.competitiveAdvantage },
+    { label: "$", value: scores.platformCost },
+    { label: "S", value: scores.socialImpact },
+  ];
+
+  const hasUndefined = scoreValues.some((item) => item.value === undefined);
+
+  if (hasUndefined) {
+    return <span className="text-text-muted">—</span>;
+  }
+
   return (
-    <div className="flex items-center justify-center gap-1">
-      <span className="font-medium text-text-primary">{value}</span>
-      <div className="flex gap-0.5">
-        {[1, 2, 3, 4, 5].map((num) => (
+    <div className="flex items-center justify-center gap-1.5">
+      {scoreValues.map((item, index) => {
+        const getBadgeColor = (value: number | undefined) => {
+          if (value === 5) return "bg-green-600 border-green-500";
+          if (value === 4) return "bg-lime-500 border-lime-400";
+          return "bg-background-tertiary border-border";
+        };
+
+        return (
           <div
-            key={num}
-            className={`h-2 w-2 rounded ${
-              num <= value
-                ? "bg-accent-primary"
-                : "bg-background-tertiary border border-border"
-            }`}
-          />
-        ))}
-      </div>
+            key={index}
+            className="flex flex-col items-center gap-0.5"
+            title={`${item.label === "B" ? "Business" : item.label === "P" ? "Personal" : item.label === "C" ? "Competitive" : item.label === "$" ? "Cost" : "Social"}: ${item.value}/5`}
+          >
+            <span className="text-xs text-text-muted">{item.label}</span>
+            <span
+              className={`inline-flex items-center justify-center h-6 w-6 rounded-md border text-xs font-medium text-white ${getBadgeColor(
+                item.value
+              )}`}
+            >
+              {item.value}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -83,19 +110,10 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                   Experiment
                 </th>
                 <th className="px-4 py-3 text-center text-sm font-semibold text-text-primary">
-                  Business
+                  TAM
                 </th>
                 <th className="px-4 py-3 text-center text-sm font-semibold text-text-primary">
-                  Personal
-                </th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-text-primary">
-                  Competitive
-                </th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-text-primary">
-                  Cost
-                </th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-text-primary">
-                  Social
+                  Scores
                 </th>
                 <th className="px-4 py-3 text-center text-sm font-semibold text-text-primary">
                   PRD
@@ -125,20 +143,15 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                       </div>
                     </Link>
                   </td>
-                  <td className="px-4 py-3">
-                    <ScoreCell value={experiment.scores?.businessOpportunity} />
+                  <td className="px-4 py-3 text-center">
+                    {experiment.tam ? (
+                      <span className="text-sm text-text-primary font-mono">{experiment.tam}</span>
+                    ) : (
+                      <span className="text-text-muted">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
-                    <ScoreCell value={experiment.scores?.personalImpact} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <ScoreCell value={experiment.scores?.competitiveAdvantage} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <ScoreCell value={experiment.scores?.platformCost} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <ScoreCell value={experiment.scores?.socialImpact} />
+                    <CompactScores scores={experiment.scores} />
                   </td>
                   <td className="px-4 py-3 text-center">
                     {experiment.hasPRDFile ? (
