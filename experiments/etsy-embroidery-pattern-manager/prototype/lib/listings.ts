@@ -7,14 +7,13 @@ import { generateContent } from './openai';
 export function getAllListings(): Listing[] {
   const rows = db.prepare('SELECT * FROM listings ORDER BY created_at DESC').all() as any[];
   return rows.map((row) => {
-    // Get pattern IDs from product_template_patterns junction table
-    const productTemplateId = row.product_template_id || row.product_id; // Support migration
-    const patternRows = db.prepare('SELECT pattern_id FROM product_template_patterns WHERE product_template_id = ?').all(productTemplateId) as any[];
+    // Get pattern IDs from listing_patterns junction table
+    const patternRows = db.prepare('SELECT pattern_id FROM listing_patterns WHERE listing_id = ?').all(row.id) as any[];
     const patternIds = patternRows.map((p: any) => p.pattern_id);
     
     return {
       id: row.id,
-      productTemplateId: productTemplateId,
+      productTemplateId: row.product_template_id || row.product_id, // Support migration
       patternIds,
       title: row.title,
       description: row.description,
@@ -32,14 +31,13 @@ export function getListing(id: string): Listing | null {
   const row = db.prepare('SELECT * FROM listings WHERE id = ?').get(id) as any;
   if (!row) return null;
 
-  // Get pattern IDs from product_template_patterns junction table
-  const productTemplateId = row.product_template_id || row.product_id; // Support migration
-  const patternRows = db.prepare('SELECT pattern_id FROM product_template_patterns WHERE product_template_id = ?').all(productTemplateId) as any[];
+  // Get pattern IDs from listing_patterns junction table
+  const patternRows = db.prepare('SELECT pattern_id FROM listing_patterns WHERE listing_id = ?').all(id) as any[];
   const patternIds = patternRows.map((p: any) => p.pattern_id);
 
   return {
     id: row.id,
-    productTemplateId: productTemplateId,
+    productTemplateId: row.product_template_id || row.product_id, // Support migration
     patternIds,
     title: row.title,
     description: row.description,
@@ -52,9 +50,9 @@ export function getListing(id: string): Listing | null {
   };
 }
 
-// Generate listing from product template and pattern(s)
-// The product template already has patternIds associated via product_template_patterns
-export async function generateListing(productTemplateId: string, patternNames: string[]): Promise<Listing> {
+// Generate listing from product template and selected pattern(s)
+// patternIds: the specific patterns to include in this listing (selected from template's available patterns)
+export async function generateListing(productTemplateId: string, patternIds: string[]): Promise<Listing> {
   const brandIdentity = getBrandIdentity();
   if (!brandIdentity) {
     throw new Error('Brand identity must be set before generating listings');
@@ -66,13 +64,16 @@ export async function generateListing(productTemplateId: string, patternNames: s
     throw new Error('Product template not found');
   }
 
-  // Get pattern IDs from product_template_patterns
-  const patternRows = db.prepare('SELECT pattern_id FROM product_template_patterns WHERE product_template_id = ?').all(productTemplateId) as any[];
-  const patternIds = patternRows.map((p: any) => p.pattern_id);
-
   if (patternIds.length === 0) {
-    throw new Error('Product template must have at least one pattern associated');
+    throw new Error('At least one pattern must be selected for the listing');
   }
+  
+  // Get pattern names for listing generation
+  const { getPattern } = await import('./patterns');
+  const patternNames = patternIds.map(id => {
+    const pattern = getPattern(id);
+    return pattern?.name || id;
+  });
 
   // Parse types from JSON array or single string (backward compatibility)
   let types: string[] = [];
@@ -152,6 +153,17 @@ Return a JSON object with:
     now
   );
 
+  // Insert pattern associations in listing_patterns junction table
+  if (patternIds.length > 0) {
+    const insertPattern = db.prepare('INSERT INTO listing_patterns (listing_id, pattern_id, created_at) VALUES (?, ?, ?)');
+    const insertPatterns = db.transaction((patternIds: string[]) => {
+      for (const patternId of patternIds) {
+        insertPattern.run(id, patternId, now);
+      }
+    });
+    insertPatterns(patternIds);
+  }
+
   return getListing(id)!;
 }
 
@@ -159,13 +171,13 @@ Return a JSON object with:
 export function getListingsByProductTemplate(productTemplateId: string): Listing[] {
   const rows = db.prepare('SELECT * FROM listings WHERE product_template_id = ? ORDER BY created_at DESC').all(productTemplateId) as any[];
   return rows.map((row) => {
-    const productTemplateId = row.product_template_id || row.product_id; // Support migration
-    const patternRows = db.prepare('SELECT pattern_id FROM product_template_patterns WHERE product_template_id = ?').all(productTemplateId) as any[];
+    // Get pattern IDs from listing_patterns junction table
+    const patternRows = db.prepare('SELECT pattern_id FROM listing_patterns WHERE listing_id = ?').all(row.id) as any[];
     const patternIds = patternRows.map((p: any) => p.pattern_id);
     
     return {
       id: row.id,
-      productTemplateId: productTemplateId,
+      productTemplateId: row.product_template_id || row.product_id, // Support migration
       patternIds,
       title: row.title,
       description: row.description,
@@ -181,26 +193,26 @@ export function getListingsByProductTemplate(productTemplateId: string): Listing
 
 // Get all listings that include a specific pattern
 export function getListingsByPattern(patternId: string): Listing[] {
-  // Find all product templates that include this pattern
-  const productTemplateRows = db.prepare('SELECT product_template_id FROM product_template_patterns WHERE pattern_id = ?').all(patternId) as any[];
-  const productTemplateIds = productTemplateRows.map((p: any) => p.product_template_id);
+  // Find all listings that include this pattern
+  const listingRows = db.prepare('SELECT listing_id FROM listing_patterns WHERE pattern_id = ?').all(patternId) as any[];
+  const listingIds = listingRows.map((p: any) => p.listing_id);
   
-  if (productTemplateIds.length === 0) {
+  if (listingIds.length === 0) {
     return [];
   }
   
-  // Get all listings for those product templates
-  const placeholders = productTemplateIds.map(() => '?').join(',');
-  const rows = db.prepare(`SELECT * FROM listings WHERE product_template_id IN (${placeholders}) ORDER BY created_at DESC`).all(...productTemplateIds) as any[];
+  // Get all listings
+  const placeholders = listingIds.map(() => '?').join(',');
+  const rows = db.prepare(`SELECT * FROM listings WHERE id IN (${placeholders}) ORDER BY created_at DESC`).all(...listingIds) as any[];
   
   return rows.map((row) => {
-    const productTemplateId = row.product_template_id || row.product_id; // Support migration
-    const patternRows = db.prepare('SELECT pattern_id FROM product_template_patterns WHERE product_template_id = ?').all(productTemplateId) as any[];
+    // Get pattern IDs from listing_patterns junction table
+    const patternRows = db.prepare('SELECT pattern_id FROM listing_patterns WHERE listing_id = ?').all(row.id) as any[];
     const patternIds = patternRows.map((p: any) => p.pattern_id);
     
     return {
       id: row.id,
-      productTemplateId: productTemplateId,
+      productTemplateId: row.product_template_id || row.product_id, // Support migration
       patternIds,
       title: row.title,
       description: row.description,
@@ -243,15 +255,31 @@ export function updateListing(id: string, data: Partial<Listing>): Listing | nul
     values.push(data.seoScore || null);
   }
 
-  if (updates.length === 0) {
-    return getListing(id);
+  // Update listing fields
+  if (updates.length > 0) {
+    updates.push('updated_at = ?');
+    values.push(new Date().toISOString());
+    values.push(id);
+    db.prepare(`UPDATE listings SET ${updates.join(', ')} WHERE id = ?`).run(...values);
   }
 
-  updates.push('updated_at = ?');
-  values.push(new Date().toISOString());
-  values.push(id);
+  // Update pattern associations if provided
+  if (data.patternIds !== undefined) {
+    const now = new Date().toISOString();
+    // Delete existing associations
+    db.prepare('DELETE FROM listing_patterns WHERE listing_id = ?').run(id);
+    // Insert new associations
+    if (data.patternIds.length > 0) {
+      const insertPattern = db.prepare('INSERT INTO listing_patterns (listing_id, pattern_id, created_at) VALUES (?, ?, ?)');
+      const insertPatterns = db.transaction((patternIds: string[]) => {
+        for (const patternId of patternIds) {
+          insertPattern.run(id, patternId, now);
+        }
+      });
+      insertPatterns(data.patternIds);
+    }
+  }
 
-  db.prepare(`UPDATE listings SET ${updates.join(', ')} WHERE id = ?`).run(...values);
   return getListing(id);
 }
 

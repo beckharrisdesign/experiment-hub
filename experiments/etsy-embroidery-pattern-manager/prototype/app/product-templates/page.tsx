@@ -69,6 +69,10 @@ export default function ProductTemplatesPage() {
     return type.charAt(0).toUpperCase() + type.slice(1); // Capitalize first letter
   };
 
+  const getNumberOfItemsLabel = (numberOfItems: 'single' | 'three' | 'five') => {
+    return numberOfItems === 'single' ? 'Single' : numberOfItems === 'three' ? 'Three' : 'Five';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background-primary text-text-primary flex items-center justify-center gap-3">
@@ -112,8 +116,8 @@ export default function ProductTemplatesPage() {
               <thead>
                 <tr className="border-b border-border bg-background-tertiary">
                   <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Product Template</th>
-                  <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Pattern</th>
                   <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Type</th>
+                  <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Number of Items</th>
                   <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Actions</th>
                 </tr>
               </thead>
@@ -136,31 +140,21 @@ export default function ProductTemplatesPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      {productTemplate.patterns && productTemplate.patterns.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {productTemplate.patterns.map((pattern) => (
-                            <Link
-                              key={pattern.id}
-                              href={`/patterns/${pattern.id}`}
-                              className="text-accent-primary hover:underline text-sm"
-                            >
-                              {pattern.name}
-                            </Link>
+                      <div className="flex flex-wrap gap-1">
+                        {productTemplate.types
+                          .filter((type): type is ProductTemplateType => type === 'digital' || type === 'physical')
+                          .map((type, index) => (
+                            <span key={type} className="text-sm text-text-secondary">
+                              {index > 0 && <span className="text-text-secondary">, </span>}
+                              {getTypeLabel(type)}
+                            </span>
                           ))}
-                        </div>
-                      ) : (
-                        <span className="text-text-muted text-sm">No patterns</span>
-                      )}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {productTemplate.types.map((type, index) => (
-                          <span key={type} className="text-sm text-text-secondary">
-                            {index > 0 && <span className="text-text-secondary">, </span>}
-                            {getTypeLabel(type)}
-                          </span>
-                        ))}
-                      </div>
+                      <span className="text-sm text-text-primary font-medium">
+                        {getNumberOfItemsLabel(productTemplate.numberOfItems || 'single')}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <button

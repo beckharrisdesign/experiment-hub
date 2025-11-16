@@ -19,6 +19,7 @@ export default function NewProductTemplatePage() {
   const [productTemplateFormData, setProductTemplateFormData] = useState({
     name: 'Single Digital Pattern Download',
     types: ['digital'] as ProductTemplateType[],
+    numberOfItems: 'single' as 'single' | 'three' | 'five',
     commonInstructions: '',
   });
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
@@ -47,6 +48,7 @@ export default function NewProductTemplatePage() {
           body: JSON.stringify({
           name: productTemplateFormData.name,
           types: productTemplateFormData.types,
+          numberOfItems: productTemplateFormData.numberOfItems,
           commonInstructions: productTemplateFormData.commonInstructions || null,
         }),
       });
@@ -146,6 +148,35 @@ export default function NewProductTemplatePage() {
                 {productTemplateFormData.types.length === 0 && (
                   <p className="text-xs text-red-400 mt-1">Please select at least one type</p>
                 )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Number of Items *</label>
+                <p className="text-xs text-text-secondary mb-2">
+                  How many items are bundled in listings using this template
+                </p>
+                <div className="space-y-2">
+                  {(['single', 'three', 'five'] as const).map((count) => (
+                    <label
+                      key={count}
+                      className="flex items-center gap-2 p-2 hover:bg-background-secondary rounded cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        name="numberOfItems"
+                        checked={productTemplateFormData.numberOfItems === count}
+                        onChange={() => {
+                          setProductTemplateFormData({
+                            ...productTemplateFormData,
+                            numberOfItems: count,
+                          });
+                        }}
+                        className="rounded border-border"
+                      />
+                      <span className="text-sm capitalize">{count === 'single' ? 'Single' : count === 'three' ? 'Three' : 'Five'}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

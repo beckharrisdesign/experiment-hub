@@ -47,6 +47,7 @@ export interface ProductTemplate {
   id: string;
   name: string; // Template name (e.g., "Digital PDF Listing", "Embroidery Kit", "3-Pattern Bundle")
   types: ProductTemplateType[]; // Can have multiple types
+  numberOfItems: 'single' | 'three' | 'five'; // Number of items in the bundle
   patternIds: string[]; // Can be 0, 1, or many patterns
   title?: string; // Reserved for future use
   commonInstructions?: string; // Common instructions that apply to all listings using this template

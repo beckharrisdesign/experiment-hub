@@ -27,6 +27,7 @@ export function getAllProductTemplates(): ProductTemplate[] {
       patternIds,
       name: row.name,
       types,
+      numberOfItems: (row.number_of_items || 'single') as 'single' | 'three' | 'five',
       title: row.title || undefined,
       commonInstructions: row.description || undefined, // Map DB description to commonInstructions
       seoScore: row.seo_score || undefined,
@@ -104,6 +105,7 @@ export function getProductTemplatesByPattern(patternId: string): ProductTemplate
       patternIds,
       name: row.name,
       types,
+      numberOfItems: (row.number_of_items || 'single') as 'single' | 'three' | 'five',
       title: row.title || undefined,
       commonInstructions: row.description || undefined, // Map DB description to commonInstructions
       seoScore: row.seo_score || undefined,
@@ -117,6 +119,7 @@ export function getProductTemplatesByPattern(patternId: string): ProductTemplate
 export function createProductTemplate(data: {
   name: string;
   types: ProductTemplateType[];
+  numberOfItems?: 'single' | 'three' | 'five';
   patternIds?: string[]; // Can be empty, 1, or many
   title?: string;
   commonInstructions?: string;
@@ -126,18 +129,20 @@ export function createProductTemplate(data: {
   const now = new Date().toISOString();
   const patternIds = data.patternIds || [];
   const types = data.types || [];
+  const numberOfItems = data.numberOfItems || 'single';
 
   // Insert product template
   // Store types as JSON array in type column
   // Map commonInstructions to description column in DB
   // Status column is required by DB schema but not used in UI - set to 'draft' as default
   db.prepare(`
-    INSERT INTO product_templates (id, name, type, status, title, description, tags, category, price, image_url, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO product_templates (id, name, type, number_of_items, status, title, description, tags, category, price, image_url, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id,
     data.name,
     JSON.stringify(types),
+    numberOfItems,
     'draft', // status - required by DB but not used in UI
     data.title || null,
     data.commonInstructions || null,
@@ -175,6 +180,10 @@ export function updateProductTemplate(id: string, data: Partial<ProductTemplate>
     // Store types as JSON array
     updates.push('type = ?');
     values.push(JSON.stringify(data.types.length > 0 ? data.types : []));
+  }
+  if (data.numberOfItems !== undefined) {
+    updates.push('number_of_items = ?');
+    values.push(data.numberOfItems);
   }
   if (data.title !== undefined) {
     updates.push('title = ?');

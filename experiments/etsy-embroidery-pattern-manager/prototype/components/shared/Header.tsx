@@ -29,6 +29,7 @@ export default function Header() {
     { href: '/', label: 'Dashboard' },
     { href: '/patterns', label: 'Patterns' },
     { href: '/product-templates', label: 'Product Templates' },
+    { href: '/listings', label: 'Listings' },
     { href: '/store', label: 'Store' },
   ];
 

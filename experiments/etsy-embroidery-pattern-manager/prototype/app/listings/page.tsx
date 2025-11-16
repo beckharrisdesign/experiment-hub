@@ -119,7 +119,7 @@ export default function ListingsPage() {
     <div className="min-h-screen bg-background-primary text-text-primary">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Listing Authoring</h1>
+          <h1 className="text-3xl font-bold mb-2">Listings</h1>
           <p className="text-text-secondary">Generate optimized Etsy listing content</p>
         </header>
 

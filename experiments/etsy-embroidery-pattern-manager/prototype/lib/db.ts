@@ -147,6 +147,15 @@ export function initDatabase() {
   } catch (e) {
     // Column already exists, ignore error
   }
+  
+  // Add numberOfItems column if it doesn't exist (for existing databases)
+  try {
+    db.exec(`ALTER TABLE product_templates ADD COLUMN number_of_items TEXT CHECK(number_of_items IN ('single', 'three', 'five'))`);
+    // Set default value for existing rows
+    db.exec(`UPDATE product_templates SET number_of_items = 'single' WHERE number_of_items IS NULL`);
+  } catch (e) {
+    // Column already exists, ignore error
+  }
 
   // Migration: Remove CHECK constraint on type column to allow JSON arrays
   // SQLite doesn't support ALTER TABLE to modify CHECK constraints, so we need to recreate the table
@@ -210,11 +219,11 @@ export function initDatabase() {
   }
 
   // Listings table - A listing = Product Template + Pattern(s)
-  // Patterns come from product_template_patterns junction table via product_template_id
+  // Patterns are stored in listing_patterns junction table (allows different listings from same template to have different patterns)
   db.exec(`
     CREATE TABLE IF NOT EXISTS listings (
       id TEXT PRIMARY KEY,
-      product_template_id TEXT NOT NULL, -- References product template (patterns come from product_template_patterns)
+      product_template_id TEXT NOT NULL, -- References product template
       title TEXT NOT NULL,
       description TEXT NOT NULL,
       tags TEXT NOT NULL, -- JSON array
@@ -224,6 +233,20 @@ export function initDatabase() {
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (product_template_id) REFERENCES product_templates(id) ON DELETE CASCADE
+    )
+  `);
+  
+  // Listing-Pattern junction table (many-to-many relationship)
+  // Stores which patterns are included in each specific listing
+  // This allows different listings from the same template to have different pattern selections
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS listing_patterns (
+      listing_id TEXT NOT NULL,
+      pattern_id TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (listing_id, pattern_id),
+      FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE CASCADE,
+      FOREIGN KEY (pattern_id) REFERENCES patterns(id) ON DELETE CASCADE
     )
   `);
   

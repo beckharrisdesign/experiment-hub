@@ -41,6 +41,10 @@ export default function PatternDetailPage() {
   });
   const [tagInput, setTagInput] = useState('');
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
+  const [showPatternSelectionModal, setShowPatternSelectionModal] = useState(false);
+  const [selectedProductTemplate, setSelectedProductTemplate] = useState<any>(null);
+  const [selectedPatternIds, setSelectedPatternIds] = useState<string[]>([]);
+  const [availablePatterns, setAvailablePatterns] = useState<Pattern[]>([]);
 
   useEffect(() => {
     if (patternId) {
@@ -271,7 +275,6 @@ export default function PatternDetailPage() {
   const handleGenerateListing = async () => {
     if (!pattern) return;
 
-    setSaving(true);
     try {
       // First, find product templates that include this pattern
       const productTemplatesResponse = await fetch('/api/product-templates');
@@ -289,12 +292,44 @@ export default function PatternDetailPage() {
       }
       
       // Use the first product template that includes this pattern
-      const productTemplateId = productTemplatesWithPattern[0].id;
+      const productTemplate = productTemplatesWithPattern[0];
+      setSelectedProductTemplate(productTemplate);
       
+      // Load all patterns from the template
+      const patternsResponse = await fetch('/api/patterns');
+      if (patternsResponse.ok) {
+        const allPatterns = await patternsResponse.json();
+        const templatePatterns = allPatterns.filter((p: Pattern) => productTemplate.patternIds.includes(p.id));
+        setAvailablePatterns(templatePatterns);
+        
+        // Pre-select the current pattern
+        const expectedCount = productTemplate.numberOfItems === 'single' ? 1 
+          : productTemplate.numberOfItems === 'three' ? 3 
+          : 5;
+        
+        if (expectedCount === 1) {
+          setSelectedPatternIds([pattern.id]);
+          // If single, generate immediately
+          await generateListingWithPatterns(productTemplate.id, [pattern.id]);
+        } else {
+          // Show modal for selection
+          setSelectedPatternIds([pattern.id]);
+          setShowPatternSelectionModal(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error generating listing:', error);
+      showToast('Error generating listing', 'error');
+    }
+  };
+
+  const generateListingWithPatterns = async (productTemplateId: string, patternIds: string[]) => {
+    setSaving(true);
+    try {
       const response = await fetch('/api/listings/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productTemplateId }),
+        body: JSON.stringify({ productTemplateId, patternIds }),
       });
 
       if (response.ok) {
@@ -309,6 +344,7 @@ export default function PatternDetailPage() {
         });
         showToast('Listing generated successfully', 'success');
         fetchListing();
+        setShowPatternSelectionModal(false);
       } else {
         const error = await response.json();
         showToast(error.error || 'Failed to generate listing', 'error');
@@ -318,6 +354,26 @@ export default function PatternDetailPage() {
       showToast('Error generating listing', 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handlePatternToggle = (patternId: string) => {
+    if (!selectedProductTemplate) return;
+    
+    const expectedCount = selectedProductTemplate.numberOfItems === 'single' ? 1 
+      : selectedProductTemplate.numberOfItems === 'three' ? 3 
+      : 5;
+    
+    if (selectedPatternIds.includes(patternId)) {
+      // Deselect
+      setSelectedPatternIds(selectedPatternIds.filter(id => id !== patternId));
+    } else {
+      // Select (but limit to expected count)
+      if (selectedPatternIds.length < expectedCount) {
+        setSelectedPatternIds([...selectedPatternIds, patternId]);
+      } else {
+        showToast(`You can only select ${expectedCount} pattern(s) for this template`, 'error');
+      }
     }
   };
 
@@ -637,6 +693,86 @@ export default function PatternDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Pattern Selection Modal */}
+      {showPatternSelectionModal && selectedProductTemplate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-background-primary border border-border rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold mb-4">Select Patterns for Listing</h2>
+            <p className="text-text-secondary mb-4">
+              Template requires {selectedProductTemplate.numberOfItems === 'single' ? '1' : selectedProductTemplate.numberOfItems === 'three' ? '3' : '5'} pattern(s). 
+              Select {selectedProductTemplate.numberOfItems === 'single' ? '1' : selectedProductTemplate.numberOfItems === 'three' ? '3' : '5'} pattern(s) from the available options:
+            </p>
+            
+            <div className="space-y-2 mb-6">
+              {availablePatterns.map((p) => {
+                const isSelected = selectedPatternIds.includes(p.id);
+                const expectedCount = selectedProductTemplate.numberOfItems === 'single' ? 1 
+                  : selectedProductTemplate.numberOfItems === 'three' ? 3 
+                  : 5;
+                const canSelect = isSelected || selectedPatternIds.length < expectedCount;
+                
+                return (
+                  <label
+                    key={p.id}
+                    className={`flex items-center gap-3 p-3 border rounded cursor-pointer transition ${
+                      isSelected 
+                        ? 'bg-accent-primary bg-opacity-20 border-accent-primary' 
+                        : canSelect
+                        ? 'bg-background-secondary border-border hover:bg-background-tertiary'
+                        : 'bg-background-secondary border-border opacity-50 cursor-not-allowed'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handlePatternToggle(p.id)}
+                      disabled={!canSelect && !isSelected}
+                      className="rounded border-border"
+                    />
+                    <span className="flex-1 font-medium">{p.name}</span>
+                    {p.category && (
+                      <span className="text-sm text-text-secondary">{p.category}</span>
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+            
+            <div className="flex gap-4 justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPatternSelectionModal(false);
+                  setSelectedPatternIds([]);
+                }}
+                className="px-6 py-2 bg-background-tertiary border border-border rounded hover:bg-background-primary transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (selectedProductTemplate) {
+                    const expectedCount = selectedProductTemplate.numberOfItems === 'single' ? 1 
+                      : selectedProductTemplate.numberOfItems === 'three' ? 3 
+                      : 5;
+                    if (selectedPatternIds.length === expectedCount) {
+                      generateListingWithPatterns(selectedProductTemplate.id, selectedPatternIds);
+                    } else {
+                      showToast(`Please select exactly ${expectedCount} pattern(s)`, 'error');
+                    }
+                  }
+                }}
+                disabled={saving || selectedPatternIds.length !== (selectedProductTemplate.numberOfItems === 'single' ? 1 : selectedProductTemplate.numberOfItems === 'three' ? 3 : 5)}
+                className="px-6 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition disabled:opacity-50"
+              >
+                {saving ? 'Generating...' : 'Generate Listing'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toast Notification */}
       <Toast
