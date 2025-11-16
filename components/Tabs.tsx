@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Tab {
   id: string;
@@ -14,7 +14,31 @@ interface TabsProps {
 }
 
 export default function Tabs({ tabs, defaultTab }: TabsProps) {
-  const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id);
+  // Check URL hash on mount to set initial tab
+  const getInitialTab = () => {
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash.slice(1); // Remove the #
+      if (hash && tabs.find((tab) => tab.id === hash)) {
+        return hash;
+      }
+    }
+    return defaultTab || tabs[0]?.id;
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+
+  // Update tab when hash changes
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash && tabs.find((tab) => tab.id === hash)) {
+        setActiveTab(hash);
+      }
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, [tabs]);
 
   const activeTabContent = tabs.find((tab) => tab.id === activeTab)?.content;
 
@@ -26,7 +50,15 @@ export default function Tabs({ tabs, defaultTab }: TabsProps) {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id);
+                // Update URL hash without scrolling
+                if (typeof window !== "undefined") {
+                  const url = new URL(window.location.href);
+                  url.hash = tab.id;
+                  window.history.replaceState(null, "", url.toString());
+                }
+              }}
               className={`
                 whitespace-nowrap border-b-2 px-1 py-4 text-xs font-medium transition-colors
                 ${

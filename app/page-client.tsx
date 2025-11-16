@@ -4,11 +4,13 @@ import { useState, useMemo } from "react";
 import SearchBar from "@/components/SearchBar";
 import Header from "@/components/Header";
 import Tooltip from "@/components/Tooltip";
+import PrototypeStatus from "@/components/PrototypeStatus";
+import Button from "@/components/Button";
 import type { Experiment, Prototype, Documentation } from "@/types";
 import { slugify } from "@/lib/utils";
 import Link from "next/link";
 
-type SortColumn = "name" | "year1" | "year3" | "businessOpportunity" | "personalImpact" | "competitiveAdvantage" | "platformCost" | "socialImpact" | "total";
+type SortColumn = "name" | "businessOpportunity" | "personalImpact" | "competitiveAdvantage" | "platformCost" | "socialImpact" | "total";
 type SortDirection = "asc" | "desc";
 
 interface ExperimentWithRelated extends Experiment {
@@ -16,10 +18,23 @@ interface ExperimentWithRelated extends Experiment {
   documentation?: Documentation | null;
   hasPRDFile?: boolean;
   hasPrototypeDir?: boolean;
+  hasMRFile?: boolean;
   moa?: string | null;
   goNoGo?: string | null;
   somYear1?: string | null;
   somYear3?: string | null;
+}
+
+function getPrototypeUrl(prototype: Prototype | null | undefined, experimentSlug: string): string | null {
+  if (!prototype) return null;
+  
+  // If prototype has a port, link to localhost:port
+  if (prototype.port) {
+    return `http://localhost:${prototype.port}`;
+  }
+  
+  // Otherwise, link to the experiment detail page (where prototype info is shown)
+  return `/experiments/${experimentSlug}`;
 }
 
 interface HomePageClientProps {
@@ -31,17 +46,19 @@ function ScoreBadge({ value, label, fullName }: { value: number | undefined; lab
     return <span className="text-text-muted">—</span>;
   }
 
-  const getBadgeColor = (val: number) => {
-    if (val === 5) return "bg-green-600 border-green-500";
-    if (val === 4) return "bg-lime-500/30 border-lime-400/30";
-    return "bg-background-tertiary border-border";
+  // Color scale for numerals: 5 = green, 4 = lime, 3 = yellow, 2 = orange, 1 = red
+  const getNumberColor = (val: number) => {
+    if (val === 5) return "text-green-600";
+    if (val === 4) return "text-lime-600";
+    if (val === 3) return "text-yellow-600";
+    if (val === 2) return "text-orange-600";
+    return "text-red-600";
   };
 
+  // Minimal gray badge with colored numeral
   return (
     <span
-      className={`inline-flex items-center justify-center h-6 w-6 rounded-md border text-xs font-medium text-white ${getBadgeColor(
-        value
-      )}`}
+      className={`inline-flex items-center justify-center h-5 w-5 rounded text-xs font-normal bg-background-tertiary ${getNumberColor(value)}`}
       title={`${fullName}: ${value}/5`}
     >
       {value}
@@ -88,6 +105,7 @@ interface SortableHeaderProps {
   sortColumn: SortColumn;
   sortDirection: SortDirection;
   onSort: (column: SortColumn) => void;
+  className?: string;
 }
 
 function SortableHeader({ 
@@ -96,14 +114,19 @@ function SortableHeader({
   tooltip,
   sortColumn,
   sortDirection,
-  onSort
+  onSort,
+  className = ""
 }: SortableHeaderProps) {
   const isActive = sortColumn === column;
+  // Compact padding for scoring columns (B, P, C, $, S, Total)
+  const isScoringColumn = ['businessOpportunity', 'personalImpact', 'competitiveAdvantage', 'platformCost', 'socialImpact', 'total'].includes(column);
+  const paddingClass = isScoringColumn ? 'px-1.5 py-2' : 'px-4 py-3';
+  
   return (
     <th 
-      className={`px-4 py-3 text-center text-sm font-semibold text-text-primary whitespace-nowrap cursor-pointer hover:bg-background-secondary transition-colors ${
+      className={`${paddingClass} text-center text-sm font-semibold text-text-primary whitespace-nowrap cursor-pointer hover:bg-background-secondary transition-colors ${
         isActive ? "bg-background-secondary" : ""
-      }`}
+      } ${className}`}
       onClick={() => onSort(column)}
     >
       <Tooltip content={tooltip} position="bottom">
@@ -156,14 +179,6 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
         case "name":
           aValue = a.name.toLowerCase();
           bValue = b.name.toLowerCase();
-          break;
-        case "year1":
-          aValue = parseSOMValue(a.somYear1);
-          bValue = parseSOMValue(b.somYear1);
-          break;
-        case "year3":
-          aValue = parseSOMValue(a.somYear3);
-          bValue = parseSOMValue(b.somYear3);
           break;
         case "businessOpportunity":
           aValue = a.scores?.businessOpportunity ?? 0;
@@ -223,13 +238,32 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
         <div className="overflow-x-auto rounded-lg border border-border bg-background-secondary">
           <table className="w-full">
             <thead>
+              {/* Group Headers Row */}
+              <tr className="border-b border-border bg-background-tertiary">
+                <th className="px-4 py-2 text-left text-xs font-medium text-text-secondary">
+                  Experiment
+                </th>
+                <th colSpan={6} className="px-4 py-2 text-left text-xs font-medium text-text-secondary border-l-2 border-accent-primary/30">
+                  Market Validation
+                </th>
+                <th colSpan={1} className="px-2 py-2 text-left text-xs font-medium text-text-secondary border-l-2 border-accent-primary/30">
+                  Market Validation
+                </th>
+                <th colSpan={1} className="px-2 py-2 text-left text-xs font-medium text-text-secondary border-l-2 border-accent-primary/30">
+                  PRD
+                </th>
+                <th colSpan={1} className="px-2 py-2 text-left text-xs font-medium text-text-secondary border-l-2 border-accent-primary/30">
+                  Prototype
+                </th>
+              </tr>
+              {/* Column Headers Row */}
               <tr className="border-b border-border bg-background-tertiary">
                 <th 
                   className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap cursor-pointer hover:bg-background-secondary transition-colors"
                   onClick={() => handleSort("name")}
                 >
                   <div className="flex items-center gap-1">
-                    <span>Experiment</span>
+                    <span>Name</span>
                     {sortColumn === "name" && (
                       <span className="text-xs text-accent-primary">
                         {sortDirection === "asc" ? "↑" : "↓"}
@@ -238,29 +272,12 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                   </div>
                 </th>
                 <SortableHeader 
-                  column="year1"
-                  tooltip="Year 1 Revenue Estimate: Projected revenue in first year based on market research assumptions (customer acquisition, conversion rates, pricing). Midpoint of range shown."
-                  sortColumn={sortColumn}
-                  sortDirection={sortDirection}
-                  onSort={handleSort}
-                >
-                  Year 1
-                </SortableHeader>
-                <SortableHeader 
-                  column="year3"
-                  tooltip="Year 3 Revenue Estimate: Projected revenue in third year based on market research assumptions (growth trajectory, market penetration, customer base expansion). Midpoint of range shown."
-                  sortColumn={sortColumn}
-                  sortDirection={sortDirection}
-                  onSort={handleSort}
-                >
-                  Year 3
-                </SortableHeader>
-                <SortableHeader 
                   column="businessOpportunity"
                   tooltip="Business Opportunity: Market potential and revenue opportunity (1-5). Higher is better."
                   sortColumn={sortColumn}
                   sortDirection={sortDirection}
                   onSort={handleSort}
+                  className="border-l-2 border-accent-primary/30"
                 >
                   B
                 </SortableHeader>
@@ -309,13 +326,18 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                 >
                   Total
                 </SortableHeader>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-text-primary whitespace-nowrap">
-                  <Tooltip content="PRD: Product Requirements Document exists" position="bottom">
+                <th className="px-2 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap border-l-2 border-accent-primary/30">
+                  <Tooltip content="Market Validation: Market Research & Scoring actions" position="bottom">
+                    <span className="cursor-help">Market Validation</span>
+                  </Tooltip>
+                </th>
+                <th className="px-2 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap border-l-2 border-accent-primary/30">
+                  <Tooltip content="PRD: Product Requirements Document actions" position="bottom">
                     <span className="cursor-help">PRD</span>
                   </Tooltip>
                 </th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-text-primary whitespace-nowrap">
-                  <Tooltip content="Prototype: Prototype code/files exist" position="bottom">
+                <th className="px-2 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap border-l-2 border-accent-primary/30">
+                  <Tooltip content="Prototype: View prototype (when running) or Start/Stop server" position="bottom">
                     <span className="cursor-help">Prototype</span>
                   </Tooltip>
                 </th>
@@ -335,84 +357,147 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                       <span className="font-medium text-text-primary">{experiment.name}</span>
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-center">
-                    {experiment.somYear1 ? (
-                      <Tooltip content="Year 1 revenue estimate (midpoint of range). Based on: early adopter phase, limited marketing, MVP validation. Assumes 0.01-0.1% market share with conservative conversion rates." position="top">
-                        <span className="text-sm text-text-primary font-mono cursor-help">
-                          {experiment.somYear1}
-                        </span>
-                      </Tooltip>
-                    ) : (
-                      <span className="text-text-muted">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {experiment.somYear3 ? (
-                      <Tooltip content="Year 3 revenue estimate (midpoint of range). Based on: established product, word-of-mouth growth, improved SEO/marketing. Assumes 0.5-1% market share with optimized conversion rates." position="top">
-                        <span className="text-sm text-text-primary font-mono cursor-help">
-                          {experiment.somYear3}
-                        </span>
-                      </Tooltip>
-                    ) : (
-                      <span className="text-text-muted">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-1.5 py-2 text-center border-l-2 border-accent-primary/30">
                     <ScoreBadge value={experiment.scores?.businessOpportunity} label="B" fullName="Business Opportunity" />
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-1.5 py-2 text-center">
                     <ScoreBadge value={experiment.scores?.personalImpact} label="P" fullName="Personal Impact" />
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-1.5 py-2 text-center">
                     <ScoreBadge value={experiment.scores?.competitiveAdvantage} label="C" fullName="Competitive Advantage" />
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-1.5 py-2 text-center">
                     <ScoreBadge value={experiment.scores?.platformCost} label="$" fullName="Platform Cost" />
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-1.5 py-2 text-center">
                     <ScoreBadge value={experiment.scores?.socialImpact} label="S" fullName="Social Impact" />
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-1.5 py-2 text-center">
                     {(() => {
                       const total = calculateTotalScore(experiment.scores);
                       if (total === null) {
                         return <span className="text-text-muted">—</span>;
                       }
                       const percentage = Math.round((total / 25) * 100);
+                      
+                      // Color scale for total score: 20-25 = green, 15-19 = yellow, 10-14 = orange, 5-9 = red
+                      const getTotalBadgeColor = (score: number) => {
+                        if (score >= 20) return "bg-green-600 border-green-500 text-white";
+                        if (score >= 15) return "bg-yellow-500/80 border-yellow-400/80 text-white";
+                        if (score >= 10) return "bg-orange-500/80 border-orange-400/80 text-white";
+                        return "bg-red-500/80 border-red-400/80 text-white";
+                      };
+                      
                       return (
                         <Tooltip content={`Total: ${total}/25 (${percentage}%). Sum of B+P+C+$+S, equally weighted.`} position="top">
-                          <span className="text-sm font-semibold text-text-primary cursor-help">
-                            {total}/25
+                          <span
+                            className={`inline-flex items-center justify-center h-6 w-8 rounded-md border text-xs font-semibold cursor-help ${getTotalBadgeColor(total)}`}
+                          >
+                            {total}
                           </span>
                         </Tooltip>
                       );
                     })()}
                   </td>
-                  <td className="px-4 py-3 text-center">
-                    {experiment.hasPRDFile ? (
-                      <Link
-                        href={`/experiments/${slugify(experiment.name)}`}
-                        className="text-accent-primary hover:underline"
-                        title="PRD exists"
-                      >
-                        ✓
-                      </Link>
-                    ) : (
-                      <span className="text-text-muted">—</span>
-                    )}
+                  <td className="px-2 py-3 text-center border-l-2 border-accent-primary/30">
+                    {(() => {
+                      // Workflow State Machine: New → Market Validation → PRD → Prototype
+                      // Market Validation column logic
+                      // State 1: New experiment - show Create for Market Validation
+                      if (!experiment.hasMRFile) {
+                        return (
+                          <Button
+                            as="link"
+                            variant="secondary"
+                            href={`/experiments/${slugify(experiment.name)}#market-research`}
+                            title="Create Market Validation"
+                          >
+                            Create
+                          </Button>
+                        );
+                      }
+                      // States 2, 3, 4: Market Validation complete - show View
+                      return (
+                        <Button
+                          as="link"
+                          variant="primary"
+                          href={`/experiments/${slugify(experiment.name)}#market-research`}
+                          title="View Market Validation"
+                        >
+                          View
+                        </Button>
+                      );
+                    })()}
                   </td>
-                  <td className="px-4 py-3 text-center">
-                    {experiment.hasPrototypeDir ? (
-                      <Link
-                        href={`/experiments/${slugify(experiment.name)}`}
-                        className="text-accent-primary hover:underline"
-                        title="Prototype exists"
-                      >
-                        ✓
-                      </Link>
-                    ) : (
-                      <span className="text-text-muted">—</span>
-                    )}
+                  <td className="px-2 py-3 text-center border-l-2 border-accent-primary/30">
+                    {(() => {
+                      // PRD column logic
+                      // States 1 & 2: No PRD yet - show Create or blank
+                      if (!experiment.hasMRFile) {
+                        // State 1: Can't create PRD without Market Validation
+                        return null;
+                      }
+                      if (!experiment.hasPRDFile) {
+                        // State 2: Market Validation complete - show Create for PRD
+                        return (
+                          <Button
+                            as="link"
+                            variant="secondary"
+                            href={`/experiments/${slugify(experiment.name)}#prd`}
+                            title="Create PRD"
+                          >
+                            Create
+                          </Button>
+                        );
+                      }
+                      // States 3 & 4: PRD complete - show View
+                      return (
+                        <Button
+                          as="link"
+                          variant="primary"
+                          href={`/experiments/${slugify(experiment.name)}#prd`}
+                          title="View PRD"
+                        >
+                          View
+                        </Button>
+                      );
+                    })()}
+                  </td>
+                  <td className="px-2 py-3 text-left border-l-2 border-accent-primary/30">
+                    {(() => {
+                      // Prototype column logic
+                      // State 1: No Market Validation yet - blank (enforce workflow order)
+                      if (!experiment.hasMRFile) {
+                        return null;
+                      }
+                      // States 1 & 2: No PRD yet - blank
+                      if (!experiment.hasPRDFile) {
+                        return null;
+                      }
+                      // State 3: PRD complete, no prototype - show Create for Prototype
+                      if (!experiment.hasPrototypeDir) {
+                        return (
+                          <Button
+                            as="link"
+                            variant="secondary"
+                            href={`/experiments/${slugify(experiment.name)}`}
+                            title="Create Prototype"
+                          >
+                            Create
+                          </Button>
+                        );
+                      }
+                      // State 4: Prototype exists - show PrototypeStatus
+                      return (
+                        <PrototypeStatus
+                          port={experiment.prototype?.port}
+                          hasPrototype={experiment.hasPrototypeDir || false}
+                          prototypeUrl={getPrototypeUrl(experiment.prototype, slugify(experiment.name))}
+                          experimentSlug={slugify(experiment.name)}
+                          showActions={false}
+                        />
+                      );
+                    })()}
                   </td>
                 </tr>
               ))}

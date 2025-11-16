@@ -1,4 +1,4 @@
-import { getExperiments, getPrototypes, getDocumentation, hasPRD, hasPrototype, readMarketResearch, parseMarketResearch } from "@/lib/data";
+import { getExperiments, getPrototypes, getDocumentation, hasPRD, hasPrototype, hasMarketResearch, readMarketResearch, parseMarketResearch } from "@/lib/data";
 import HomePageClient from "./page-client";
 import type { Experiment, Prototype, Documentation } from "@/types";
 
@@ -7,6 +7,7 @@ interface ExperimentWithRelated extends Experiment {
   documentation?: Documentation | null;
   hasPRDFile?: boolean;
   hasPrototypeDir?: boolean;
+  hasMRFile?: boolean;
   moa?: string | null;
   goNoGo?: string | null;
   somYear1?: string | null;
@@ -44,6 +45,7 @@ export default async function HomePage() {
         documentation: docs.find((d) => d.experimentId === exp.id) || null,
         hasPRDFile: await hasPRD(exp.directory),
         hasPrototypeDir: await hasPrototype(exp.directory),
+        hasMRFile: await hasMarketResearch(exp.directory),
         moa,
         goNoGo,
         somYear1,
