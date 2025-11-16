@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Listing } from '@/types';
 import Toast from '@/components/shared/Toast';
 import Spinner from '@/components/shared/Spinner';
@@ -12,10 +13,12 @@ interface ToastState {
 }
 
 export default function ListingsPage() {
+  const router = useRouter();
   const [listings, setListings] = useState<Listing[]>([]);
   const [patterns, setPatterns] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bulkGenerating, setBulkGenerating] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
 
@@ -64,9 +67,8 @@ export default function ListingsPage() {
       const response = await fetch('/api/product-templates');
       if (response.ok) {
         const data = await response.json();
-        // Only show product templates that have at least one pattern
-        const productTemplatesWithPatterns = data.filter((p: any) => p.patternIds && p.patternIds.length > 0);
-        setProducts(productTemplatesWithPatterns);
+        // Show all templates - any pattern can be used with any template
+        setProducts(data);
       }
     } catch (error) {
       console.error('Error fetching product templates:', error);
@@ -106,6 +108,81 @@ export default function ListingsPage() {
     showToast('Listing content copied to clipboard!', 'success');
   };
 
+  const handleBulkGenerate = async () => {
+    setBulkGenerating(true);
+    try {
+      const response = await fetch('/api/listings/bulk-generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateName: 'Single Digital Download' }),
+      });
+
+      const responseStatus = response.status;
+      const responseStatusText = response.statusText;
+      const responseOk = response.ok;
+      
+      console.log('Bulk generate response:', { 
+        status: responseStatus, 
+        statusText: responseStatusText, 
+        ok: responseOk,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+      
+      if (responseOk) {
+        const data = await response.json();
+        console.log('Bulk generate success data:', data);
+        showToast(
+          `Generated ${data.successful} listing${data.successful !== 1 ? 's' : ''} successfully${data.failed > 0 ? ` (${data.failed} failed)` : ''}`,
+          data.failed > 0 ? 'info' : 'success'
+        );
+        fetchListings();
+      } else {
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          // Clone the response so we can read it multiple times
+          const responseClone = response.clone();
+          const errorData = await responseClone.json();
+          console.log('Bulk generate error data:', errorData);
+          if (errorData && errorData.error) {
+            errorMessage = errorData.error;
+          } else if (errorData && Object.keys(errorData).length > 0) {
+            errorMessage = JSON.stringify(errorData);
+          }
+        } catch (e) {
+          console.log('Failed to parse error as JSON, trying text:', e);
+          // Response is not JSON (might be HTML error page), try to extract error message
+          try {
+            const responseClone = response.clone();
+            const text = await responseClone.text();
+            console.log('Bulk generate error text (first 500 chars):', text.substring(0, 500));
+            
+            // Try to extract error message from Next.js error page JSON
+            const jsonMatch = text.match(/"message":"([^"]+)"/);
+            if (jsonMatch && jsonMatch[1]) {
+              errorMessage = jsonMatch[1];
+            } else if (text.length < 500) {
+              // If it's a short text response, use it
+              errorMessage = text;
+            } else {
+              // For HTML error pages, use a generic message
+              errorMessage = `Server error: ${responseStatus} ${responseStatusText}`;
+            }
+          } catch (textError) {
+            console.log('Failed to read error as text:', textError);
+            errorMessage = `Server error: ${responseStatus} ${responseStatusText}`;
+          }
+        }
+        console.error('Bulk generate error:', { status: response.status, statusText: response.statusText, message: errorMessage });
+        showToast(errorMessage, 'error');
+      }
+    } catch (error: any) {
+      console.error('Error bulk generating listings:', error);
+      showToast(error.message || 'Error bulk generating listings. Check console for details.', 'error');
+    } finally {
+      setBulkGenerating(false);
+    }
+  };
+
   if (loading && listings.length === 0) {
     return (
       <div className="min-h-screen bg-background-primary text-text-primary flex items-center justify-center gap-3">
@@ -124,7 +201,31 @@ export default function ListingsPage() {
         </header>
 
         <div className="mb-8 bg-background-secondary border border-border rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Generate New Listing</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Generate New Listing</h2>
+            <div className="flex gap-3">
+              <button
+                onClick={handleBulkGenerate}
+                disabled={bulkGenerating}
+                className="px-4 py-2 bg-background-tertiary border border-border rounded hover:bg-background-primary transition disabled:opacity-50 flex items-center gap-2"
+              >
+                {bulkGenerating ? (
+                  <>
+                    <Spinner size="sm" />
+                    <span>Generating...</span>
+                  </>
+                ) : (
+                  'Bulk Generate (Single Digital Download)'
+                )}
+              </button>
+              <button
+                onClick={() => router.push('/listings/new')}
+                className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition"
+              >
+                Create New Listing
+              </button>
+            </div>
+          </div>
           <div className="flex gap-4">
             <select
               value={selectedProduct}
@@ -132,14 +233,11 @@ export default function ListingsPage() {
               className="flex-1 px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
             >
               <option value="">Select a product template</option>
-              {products.map((productTemplate) => {
-                const productTemplatePatterns = patterns.filter((p) => productTemplate.patternIds?.includes(p.id));
-                return (
-                  <option key={productTemplate.id} value={productTemplate.id}>
-                    {productTemplate.name} ({productTemplate.patternIds?.length || 0} pattern{productTemplate.patternIds?.length !== 1 ? 's' : ''})
-                  </option>
-                );
-              })}
+              {products.map((productTemplate) => (
+                <option key={productTemplate.id} value={productTemplate.id}>
+                  {productTemplate.name}
+                </option>
+              ))}
             </select>
             <button
               onClick={handleGenerate}

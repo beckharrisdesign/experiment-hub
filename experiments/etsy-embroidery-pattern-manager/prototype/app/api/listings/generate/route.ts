@@ -4,43 +4,37 @@ import { getProductTemplate } from '@/lib/product-templates';
 import { getPattern } from '@/lib/patterns';
 
 export async function POST(request: NextRequest) {
+  console.log('[API /listings/generate] Request received');
   try {
     const body = await request.json();
+    console.log('[API /listings/generate] Request body:', body);
     const { productTemplateId, patternIds } = body;
 
+    console.log('[API /listings/generate] Product template ID:', productTemplateId);
+    console.log('[API /listings/generate] Pattern IDs:', patternIds);
+
     if (!productTemplateId) {
+      console.log('[API /listings/generate] Error: Product template ID is required');
       return NextResponse.json({ error: 'Product template ID is required' }, { status: 400 });
     }
 
     const productTemplate = getProductTemplate(productTemplateId);
+    console.log('[API /listings/generate] Product template found:', productTemplate ? productTemplate.name : 'NOT FOUND');
     if (!productTemplate) {
+      console.log('[API /listings/generate] Error: Product template not found');
       return NextResponse.json({ error: 'Product template not found' }, { status: 404 });
     }
 
-    // Determine which patterns to use
-    let selectedPatternIds: string[];
-    
-    if (patternIds && patternIds.length > 0) {
-      // Use provided patternIds
-      selectedPatternIds = patternIds;
-    } else {
-      // No patternIds provided - use all patterns from template if single, otherwise require selection
-      const expectedCount = productTemplate.numberOfItems === 'single' ? 1 
-        : productTemplate.numberOfItems === 'three' ? 3 
-        : 5;
-      
-      if (expectedCount === 1 && productTemplate.patternIds.length === 1) {
-        // Single item template with one pattern - use it automatically
-        selectedPatternIds = productTemplate.patternIds;
-      } else {
-        // Multiple items required - patternIds must be provided
-        return NextResponse.json({ 
-          error: `This template requires ${expectedCount} pattern(s). Please select which patterns to include.` 
-        }, { status: 400 });
-      }
-    }
+    console.log('[API /listings/generate] Template details:', {
+      id: productTemplate.id,
+      name: productTemplate.name,
+      numberOfItems: productTemplate.numberOfItems,
+      types: productTemplate.types,
+    });
 
-    if (selectedPatternIds.length === 0) {
+    // patternIds must be provided - any pattern can be used with any template
+    if (!patternIds || patternIds.length === 0) {
+      console.log('[API /listings/generate] Error: No pattern IDs provided');
       return NextResponse.json({ error: 'At least one pattern must be selected' }, { status: 400 });
     }
 
@@ -49,25 +43,38 @@ export async function POST(request: NextRequest) {
       : productTemplate.numberOfItems === 'three' ? 3 
       : 5;
     
-    if (selectedPatternIds.length !== expectedCount) {
+    console.log('[API /listings/generate] Expected pattern count:', expectedCount);
+    console.log('[API /listings/generate] Actual pattern count:', patternIds.length);
+    
+    if (patternIds.length !== expectedCount) {
+      console.log('[API /listings/generate] Error: Pattern count mismatch');
       return NextResponse.json({ 
-        error: `Template requires ${expectedCount} pattern(s), but ${selectedPatternIds.length} were selected` 
+        error: `Template requires ${expectedCount} pattern(s), but ${patternIds.length} were selected` 
       }, { status: 400 });
     }
 
-    // Validate that all selected patterns are in the template's available patterns
-    const invalidPatterns = selectedPatternIds.filter(id => !productTemplate.patternIds.includes(id));
-    if (invalidPatterns.length > 0) {
-      return NextResponse.json({ 
-        error: `Some selected patterns are not available in this template` 
-      }, { status: 400 });
-    }
+    const selectedPatternIds = patternIds;
+    console.log('[API /listings/generate] Calling generateListing with:', {
+      productTemplateId,
+      selectedPatternIds,
+    });
 
     const listing = await generateListing(productTemplateId, selectedPatternIds);
+    console.log('[API /listings/generate] Listing generated successfully:', {
+      id: listing.id,
+      title: listing.title,
+      productTemplateId: listing.productTemplateId,
+      patternIds: listing.patternIds,
+    });
+    
     return NextResponse.json(listing);
   } catch (error) {
-    console.error('Error generating listing:', error);
-    return NextResponse.json({ error: 'Failed to generate listing' }, { status: 500 });
+    console.error('[API /listings/generate] Error generating listing:', error);
+    console.error('[API /listings/generate] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    return NextResponse.json({ 
+      error: 'Failed to generate listing',
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
   }
 }
 

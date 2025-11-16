@@ -58,17 +58,56 @@ export interface ProductTemplate {
 }
 
 // Listing Types - A listing = Product Template + Pattern(s)
-// Patterns are associated with the product template via product_template_patterns junction table
+// The listing combines details from both the template and pattern(s)
+// The listing stores references back to both the template and pattern objects
 export interface Listing {
   id: string;
-  productTemplateId: string; // References product template
-  patternIds: string[]; // Patterns associated with this product template (derived from product_template_patterns)
-  title: string;
+  productTemplateId: string; // Backward reference to product template
+  patternIds: string[]; // Backward references to pattern objects (via listing_patterns junction table)
+  
+  // Basic Information
+  title: string; // Max 140 characters
   description: string;
-  tags: string[];
-  category?: string;
+  
+  // Media
+  photos?: string[]; // Up to 20 photos/videos
+  digitalFiles?: string[]; // Up to 5 digital files
+  digitalNote?: string; // Note to buyers for digital items
+  
+  // Personalization
+  offerPersonalization?: boolean;
+  personalizationOptions?: string[];
+  
+  // Price & Inventory
   price?: number;
+  quantity?: number;
+  sku?: string;
+  
+  // Details
+  category?: string; // Etsy category path
+  attributes?: {
+    craftType?: string[]; // Required for patterns
+    occasion?: string[];
+    holiday?: string[];
+    [key: string]: string[] | undefined; // Other attributes
+  };
+  tags?: string[]; // Up to 13 tags
+  materials?: string[];
+  
+  // Processing & Shipping
+  processingTime?: string; // For digital: "Instant download"
+  shippingProfileId?: string;
+  
+  // Settings
+  returnsAccepted?: boolean;
+  shopSectionId?: string;
+  featured?: boolean;
+  renewalOption?: 'automatic' | 'manual';
+  
+  // SEO & Analytics
   seoScore?: number;
+  
+  // Metadata
   createdAt: string;
   updatedAt: string;
 }
