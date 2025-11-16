@@ -1,15 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Pattern } from '@/types';
 import Spinner from '@/components/shared/Spinner';
+import PatternItem from '@/components/patterns/PatternItem';
+import Toast from '@/components/shared/Toast';
+
+interface ToastState {
+  message: string;
+  type: 'success' | 'error' | 'info';
+  isVisible: boolean;
+}
 
 export default function PatternsPage() {
   const router = useRouter();
   const [patterns, setPatterns] = useState<Pattern[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -18,12 +27,17 @@ export default function PatternsPage() {
     difficulty: '' as Pattern['difficulty'] | '',
     style: '',
   });
+  const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
 
-  useEffect(() => {
-    fetchPatterns();
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type, isVisible: true });
   }, []);
 
-  const fetchPatterns = async () => {
+  const hideToast = useCallback(() => {
+    setToast((prev) => ({ ...prev, isVisible: false }));
+  }, []);
+
+  const fetchPatterns = useCallback(async () => {
     try {
       const response = await fetch('/api/patterns');
       if (response.ok) {
@@ -39,7 +53,150 @@ export default function PatternsPage() {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  const handleImageUpload = useCallback(async (files: File[]) => {
+    if (!files || files.length === 0) {
+      showToast('Please select at least one image', 'info');
+      return;
+    }
+
+    console.log('Files to upload:', files.length);
+    files.forEach((file, index) => {
+      console.log(`File ${index}:`, {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        lastModified: file.lastModified,
+        isFile: file instanceof File
+      });
+    });
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      files.forEach((file, index) => {
+        console.log(`Appending file ${index}:`, file.name);
+        formData.append('images', file);
+      });
+
+      // Verify FormData contents
+      console.log('FormData entries:');
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`  ${key}:`, {
+            name: value.name,
+            type: value.type,
+            size: value.size
+          });
+        } else {
+          console.log(`  ${key}:`, value);
+        }
+      }
+
+      console.log('Sending request to /api/patterns/upload...');
+      const response = await fetch('/api/patterns/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      console.log('Response received:', {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Success response:', result);
+        showToast(
+          `Successfully created ${result.count} pattern${result.count > 1 ? 's' : ''} from image${result.count > 1 ? 's' : ''}`,
+          'success'
+        );
+        fetchPatterns();
+      } else {
+        let errorMessage = 'Failed to upload images';
+        try {
+          const errorText = await response.text();
+          console.error('Error response text:', errorText);
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.error || errorJson.details || errorMessage;
+            console.error('Parsed error JSON:', errorJson);
+          } catch (e) {
+            errorMessage = errorText || errorMessage;
+          }
+        } catch (parseError) {
+          console.error('Error parsing error response:', parseError);
+          errorMessage = `Server error (${response.status}): ${response.statusText}`;
+        }
+        console.error('Upload error:', errorMessage, 'Status:', response.status);
+        showToast(errorMessage, 'error');
+      }
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      showToast(`Error uploading images: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+    } finally {
+      setUploading(false);
+    }
+  }, [showToast, fetchPatterns]);
+
+  useEffect(() => {
+    fetchPatterns();
+  }, [fetchPatterns]);
+
+  // Handle paste events for image upload
+  useEffect(() => {
+    const handlePaste = async (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      // Look for images in clipboard
+      const imageFiles: File[] = [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.indexOf('image') !== -1) {
+          const blob = item.getAsFile();
+          if (blob) {
+            const file = new File([blob], `pasted-image-${Date.now()}.png`, { type: blob.type });
+            imageFiles.push(file);
+          }
+        }
+      }
+
+      if (imageFiles.length > 0) {
+        e.preventDefault();
+        await handleImageUpload(imageFiles);
+      }
+    };
+
+    document.addEventListener('paste', handlePaste);
+    return () => {
+      document.removeEventListener('paste', handlePaste);
+    };
+  }, [handleImageUpload]);
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      handleImageUpload(files);
+    }
   };
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files).filter((file) =>
+      file.type.startsWith('image/')
+    );
+    if (files.length > 0) {
+      handleImageUpload(files);
+    }
+  }, [handleImageUpload]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,13 +234,44 @@ export default function PatternsPage() {
             <h1 className="text-3xl font-bold">Patterns</h1>
             <p className="text-text-secondary mt-2">Manage your embroidery patterns</p>
           </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition"
-          >
-            {showForm ? 'Cancel' : '+ New Pattern'}
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="px-4 py-2 bg-background-tertiary border border-border rounded hover:bg-background-primary transition"
+            >
+              {showForm ? 'Cancel' : '+ New Pattern'}
+            </button>
+            <label className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition cursor-pointer">
+              {uploading ? 'Uploading...' : '📷 Upload Images'}
+              <input
+                type="file"
+                multiple
+                accept="image/*,.png,.jpg,.jpeg,.gif,.webp,.svg,.bmp,.ico,.tiff,.tif,.heic,.heif"
+                onChange={handleFileInputChange}
+                className="hidden"
+                disabled={uploading}
+              />
+            </label>
+          </div>
         </header>
+
+        {/* Image Upload Area */}
+        <div
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          className="mb-8 bg-background-secondary border-2 border-dashed border-border rounded-lg p-12 text-center hover:border-accent-primary transition"
+        >
+          <div className="max-w-md mx-auto">
+            <div className="text-4xl mb-4">📷</div>
+            <h3 className="text-xl font-semibold mb-2">Upload Images to Create Patterns</h3>
+            <p className="text-text-secondary mb-4">
+              Drag and drop images here, paste images (⌘V / Ctrl+V), or click the button above
+            </p>
+            <p className="text-sm text-text-muted">
+              Each image will automatically create a new pattern with a default name
+            </p>
+          </div>
+        </div>
 
         {showForm && (
           <form onSubmit={handleSubmit} className="mb-8 bg-background-secondary border border-border rounded-lg p-6">
@@ -167,62 +355,24 @@ export default function PatternsPage() {
                   key={pattern.id}
                   className="p-6 hover:bg-background-tertiary transition"
                 >
-                  <div className="flex items-start gap-4">
-                    {/* Thumbnail Image */}
-                    <Link
-                      href={`/patterns/${pattern.id}`}
-                      className="flex-shrink-0"
-                    >
-                      <div className="w-20 h-20 bg-background-tertiary border border-border rounded flex items-center justify-center overflow-hidden">
-                        {/* TODO: Replace with actual image when image storage is implemented */}
-                        <span className="text-text-muted text-xs text-center px-2">
-                          {pattern.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    </Link>
-                    
-                    {/* Pattern Info */}
-                    <div className="flex-1 min-w-0 flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <Link
-                          href={`/patterns/${pattern.id}`}
-                          className="block hover:text-accent-primary transition"
-                        >
-                          <h3 className="text-lg font-semibold text-text-primary mb-2">
-                            {pattern.name}
-                          </h3>
-                          {pattern.notes && (
-                            <p className="text-sm text-text-secondary mb-2 line-clamp-2">
-                              {pattern.notes}
-                            </p>
-                          )}
-                          <div className="flex flex-wrap gap-3 text-xs text-text-muted">
-                            {pattern.category && (
-                              <span>Category: {pattern.category}</span>
-                            )}
-                            {pattern.difficulty && (
-                              <span>Difficulty: {pattern.difficulty}</span>
-                            )}
-                            {pattern.style && (
-                              <span>Style: {pattern.style}</span>
-                            )}
-                          </div>
-                        </Link>
-                      </div>
-                      <button
-                        onClick={() => router.push(`/patterns/${pattern.id}`)}
-                        className="px-3 py-1.5 text-xs bg-background-tertiary border border-border rounded hover:bg-background-primary transition flex-shrink-0"
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  </div>
+                  <PatternItem
+                    pattern={pattern}
+                    showDetails={true}
+                    onEdit={() => router.push(`/patterns/${pattern.id}`)}
+                  />
                 </div>
               ))}
             </div>
           </div>
         )}
       </div>
+
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
     </div>
   );
 }

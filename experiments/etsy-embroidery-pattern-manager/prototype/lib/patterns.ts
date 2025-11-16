@@ -12,6 +12,7 @@ export function getAllPatterns(): Pattern[] {
     difficulty: row.difficulty as Pattern['difficulty'] || undefined,
     style: row.style || undefined,
     releaseId: row.release_id || undefined,
+    imageUrl: row.image_url || undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }));
@@ -29,6 +30,7 @@ export function getPattern(id: string): Pattern | null {
     difficulty: row.difficulty as Pattern['difficulty'] || undefined,
     style: row.style || undefined,
     releaseId: row.release_id || undefined,
+    imageUrl: row.image_url || undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -40,13 +42,14 @@ export function createPattern(data: {
   category?: string;
   difficulty?: Pattern['difficulty'];
   style?: string;
+  imageUrl?: string;
 }): Pattern {
   const id = randomUUID();
   const now = new Date().toISOString();
 
   db.prepare(`
-    INSERT INTO patterns (id, name, notes, category, difficulty, style, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO patterns (id, name, notes, category, difficulty, style, image_url, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id,
     data.name,
@@ -54,6 +57,7 @@ export function createPattern(data: {
     data.category || null,
     data.difficulty || null,
     data.style || null,
+    data.imageUrl || null,
     now,
     now
   );
@@ -88,6 +92,10 @@ export function updatePattern(id: string, data: Partial<Pattern>): Pattern | nul
   if (data.releaseId !== undefined) {
     updates.push('release_id = ?');
     values.push(data.releaseId || null);
+  }
+  if (data.imageUrl !== undefined) {
+    updates.push('image_url = ?');
+    values.push(data.imageUrl || null);
   }
 
   if (updates.length === 0) {

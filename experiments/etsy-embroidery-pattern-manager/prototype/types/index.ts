@@ -21,6 +21,7 @@ export interface Pattern {
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
   style?: string;
   releaseId?: string;
+  imageUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -47,6 +48,7 @@ export interface Product {
   category?: string;
   price?: number;
   seoScore?: number;
+  imageUrl?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -22,6 +22,7 @@ export default function PatternDetailPage() {
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [patternFormData, setPatternFormData] = useState({
@@ -110,6 +111,11 @@ export default function PatternDetailPage() {
           difficulty: data.difficulty || '',
           style: data.style || '',
         });
+        
+        // Set image preview if image exists
+        if (data.imageUrl) {
+          setImagePreview(data.imageUrl);
+        }
       } else {
         showToast('Pattern not found', 'error');
         router.push('/patterns');
@@ -153,6 +159,51 @@ export default function PatternDetailPage() {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageUpload = async () => {
+    if (!imageFile || !patternId) {
+      showToast('Please select an image first', 'info');
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+
+      const response = await fetch(`/api/patterns/${patternId}/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const { imageUrl } = await response.json();
+        
+        // Update pattern with image URL
+        const updateResponse = await fetch(`/api/patterns/${patternId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageUrl }),
+        });
+
+        if (updateResponse.ok) {
+          showToast('Image uploaded and saved successfully', 'success');
+          setImageFile(null);
+          fetchPattern(); // Refresh pattern data
+        } else {
+          showToast('Failed to save image URL', 'error');
+        }
+      } else {
+        const error = await response.json();
+        showToast(error.error || 'Failed to upload image', 'error');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      showToast('Error uploading image', 'error');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -306,9 +357,10 @@ export default function PatternDetailPage() {
                     className="w-full aspect-square object-cover rounded border border-border"
                   />
                   <button
+                    type="button"
                     onClick={() => {
                       setImageFile(null);
-                      setImagePreview(null);
+                      setImagePreview(pattern?.imageUrl || null);
                     }}
                     className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition"
                   >
@@ -330,16 +382,15 @@ export default function PatternDetailPage() {
                   </label>
                 </div>
               )}
-              {!imagePreview && (
-                <label className="block mt-4">
-                  <span className="sr-only">Upload image</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="block w-full text-sm text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-accent-primary file:text-white hover:file:opacity-90 file:cursor-pointer"
-                  />
-                </label>
+              {imageFile && imagePreview && imagePreview !== pattern?.imageUrl && (
+                <button
+                  type="button"
+                  onClick={handleImageUpload}
+                  disabled={uploadingImage}
+                  className="mt-4 w-full px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition disabled:opacity-50"
+                >
+                  {uploadingImage ? 'Uploading...' : 'Save Image'}
+                </button>
               )}
             </div>
           </div>

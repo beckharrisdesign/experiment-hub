@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Pattern, Product } from '@/types';
 import Toast from '@/components/shared/Toast';
 import Spinner from '@/components/shared/Spinner';
+import PatternItem from '@/components/patterns/PatternItem';
 
 interface ToastState {
   message: string;
@@ -131,23 +132,10 @@ export default function HomePage() {
                     key={pattern.id}
                     className="p-4 hover:bg-background-tertiary transition"
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <Link
-                          href={`/patterns/${pattern.id}`}
-                          className="block hover:text-accent-primary transition"
-                        >
-                          <div className="font-medium text-text-primary mb-1 truncate">
-                            {pattern.name}
-                          </div>
-                          {pattern.notes && (
-                            <div className="text-sm text-text-secondary line-clamp-1">
-                              {pattern.notes}
-                            </div>
-                          )}
-                        </Link>
-                      </div>
-                    </div>
+                    <PatternItem
+                      pattern={pattern}
+                      showDetails={false}
+                    />
                   </div>
                 ))}
                 {patterns.length > 5 && (

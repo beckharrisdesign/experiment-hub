@@ -16,6 +16,7 @@ export function getAllProducts(): Product[] {
     category: row.category || undefined,
     price: row.price || undefined,
     seoScore: row.seo_score || undefined,
+    imageUrl: row.image_url || undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }));
@@ -37,6 +38,7 @@ export function getProduct(id: string): Product | null {
     category: row.category || undefined,
     price: row.price || undefined,
     seoScore: row.seo_score || undefined,
+    imageUrl: row.image_url || undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -56,6 +58,7 @@ export function getProductsByPattern(patternId: string): Product[] {
     category: row.category || undefined,
     price: row.price || undefined,
     seoScore: row.seo_score || undefined,
+    imageUrl: row.image_url || undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }));
@@ -71,14 +74,15 @@ export function createProduct(data: {
   tags?: string[];
   category?: string;
   price?: number;
+  imageUrl?: string;
 }): Product {
   const id = randomUUID();
   const now = new Date().toISOString();
   const status = data.status || 'draft';
 
   db.prepare(`
-    INSERT INTO products (id, pattern_id, name, type, status, title, description, tags, category, price, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO products (id, pattern_id, name, type, status, title, description, tags, category, price, image_url, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id,
     data.patternId,
@@ -90,6 +94,7 @@ export function createProduct(data: {
     data.tags ? JSON.stringify(data.tags) : null,
     data.category || null,
     data.price || null,
+    data.imageUrl || null,
     now,
     now
   );
@@ -136,6 +141,10 @@ export function updateProduct(id: string, data: Partial<Product>): Product | nul
   if (data.seoScore !== undefined) {
     updates.push('seo_score = ?');
     values.push(data.seoScore || null);
+  }
+  if (data.imageUrl !== undefined) {
+    updates.push('image_url = ?');
+    values.push(data.imageUrl || null);
   }
 
   if (updates.length === 0) {

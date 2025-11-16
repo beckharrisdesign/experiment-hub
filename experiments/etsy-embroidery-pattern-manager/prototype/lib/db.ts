@@ -41,11 +41,19 @@ export function initDatabase() {
       difficulty TEXT CHECK(difficulty IN ('beginner', 'intermediate', 'advanced')),
       style TEXT,
       release_id TEXT,
+      image_url TEXT,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (release_id) REFERENCES releases(id)
     )
   `);
+  
+  // Add image_url column if it doesn't exist (for existing databases)
+  try {
+    db.exec(`ALTER TABLE patterns ADD COLUMN image_url TEXT`);
+  } catch (e) {
+    // Column already exists, ignore error
+  }
 
   // Releases table
   db.exec(`
@@ -72,11 +80,19 @@ export function initDatabase() {
       category TEXT,
       price REAL,
       seo_score INTEGER,
+      image_url TEXT,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (pattern_id) REFERENCES patterns(id)
     )
   `);
+  
+  // Add image_url column if it doesn't exist (for existing databases)
+  try {
+    db.exec(`ALTER TABLE products ADD COLUMN image_url TEXT`);
+  } catch (e) {
+    // Column already exists, ignore error
+  }
 
   // Listings table (legacy - will be migrated to products)
   db.exec(`
