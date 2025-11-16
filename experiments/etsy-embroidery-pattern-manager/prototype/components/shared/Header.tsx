@@ -28,7 +28,7 @@ export default function Header() {
   const navItems: NavItem[] = [
     { href: '/', label: 'Dashboard' },
     { href: '/patterns', label: 'Patterns' },
-    { href: '/products', label: 'Products' },
+    { href: '/product-templates', label: 'Product Templates' },
     { href: '/store', label: 'Store' },
   ];
 

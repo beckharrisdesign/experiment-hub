@@ -6,27 +6,41 @@ import { generateContent } from './openai';
 
 export function getAllListings(): Listing[] {
   const rows = db.prepare('SELECT * FROM listings ORDER BY created_at DESC').all() as any[];
-  return rows.map((row) => ({
-    id: row.id,
-    patternId: row.pattern_id,
-    title: row.title,
-    description: row.description,
-    tags: JSON.parse(row.tags),
-    category: row.category || undefined,
-    price: row.price || undefined,
-    seoScore: row.seo_score || undefined,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  }));
+  return rows.map((row) => {
+    // Get pattern IDs from product_template_patterns junction table
+    const productTemplateId = row.product_template_id || row.product_id; // Support migration
+    const patternRows = db.prepare('SELECT pattern_id FROM product_template_patterns WHERE product_template_id = ?').all(productTemplateId) as any[];
+    const patternIds = patternRows.map((p: any) => p.pattern_id);
+    
+    return {
+      id: row.id,
+      productTemplateId: productTemplateId,
+      patternIds,
+      title: row.title,
+      description: row.description,
+      tags: JSON.parse(row.tags),
+      category: row.category || undefined,
+      price: row.price || undefined,
+      seoScore: row.seo_score || undefined,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  });
 }
 
 export function getListing(id: string): Listing | null {
   const row = db.prepare('SELECT * FROM listings WHERE id = ?').get(id) as any;
   if (!row) return null;
 
+  // Get pattern IDs from product_template_patterns junction table
+  const productTemplateId = row.product_template_id || row.product_id; // Support migration
+  const patternRows = db.prepare('SELECT pattern_id FROM product_template_patterns WHERE product_template_id = ?').all(productTemplateId) as any[];
+  const patternIds = patternRows.map((p: any) => p.pattern_id);
+
   return {
     id: row.id,
-    patternId: row.pattern_id,
+    productTemplateId: productTemplateId,
+    patternIds,
     title: row.title,
     description: row.description,
     tags: JSON.parse(row.tags),
@@ -38,11 +52,41 @@ export function getListing(id: string): Listing | null {
   };
 }
 
-export async function generateListing(patternId: string, patternName: string): Promise<Listing> {
+// Generate listing from product template and pattern(s)
+// The product template already has patternIds associated via product_template_patterns
+export async function generateListing(productTemplateId: string, patternNames: string[]): Promise<Listing> {
   const brandIdentity = getBrandIdentity();
   if (!brandIdentity) {
     throw new Error('Brand identity must be set before generating listings');
   }
+
+  // Get product template info
+  const productTemplate = db.prepare('SELECT * FROM product_templates WHERE id = ?').get(productTemplateId) as any;
+  if (!productTemplate) {
+    throw new Error('Product template not found');
+  }
+
+  // Get pattern IDs from product_template_patterns
+  const patternRows = db.prepare('SELECT pattern_id FROM product_template_patterns WHERE product_template_id = ?').all(productTemplateId) as any[];
+  const patternIds = patternRows.map((p: any) => p.pattern_id);
+
+  if (patternIds.length === 0) {
+    throw new Error('Product template must have at least one pattern associated');
+  }
+
+  // Parse types from JSON array or single string (backward compatibility)
+  let types: string[] = [];
+  if (productTemplate.type) {
+    try {
+      types = JSON.parse(productTemplate.type);
+      if (!Array.isArray(types)) {
+        types = [productTemplate.type];
+      }
+    } catch {
+      types = [productTemplate.type];
+    }
+  }
+  const isBundle = patternNames.length > 1;
 
   const systemPrompt = `You are an expert Etsy SEO copywriter. Generate optimized Etsy listing content that:
 - Uses the store's brand tone: ${brandIdentity.brandTone}
@@ -51,7 +95,13 @@ export async function generateListing(patternId: string, patternName: string): P
 - Is keyword-rich and natural
 - Matches the brand's ${brandIdentity.brandTone} tone`;
 
-  const prompt = `Generate an Etsy listing for an embroidery pattern called "${patternName}".
+  const patternNameText = patternNames.length === 1 
+    ? patternNames[0]
+    : `${patternNames.length}-Pattern Bundle: ${patternNames.join(', ')}`;
+
+  const prompt = `Generate an Etsy listing for ${isBundle ? 'a bundle of' : 'an'} embroidery pattern${patternNames.length > 1 ? 's' : ''} called "${patternNameText}".
+Product template types: ${types.join(', ')}
+${isBundle ? `This is a bundle of ${patternNames.length} patterns.` : ''}
 
 Return a JSON object with:
 {
@@ -76,11 +126,11 @@ Return a JSON object with:
   } catch (e) {
     // Fallback listing
     listingData = {
-      title: `${patternName} - Embroidery Pattern`,
-      description: `Beautiful ${patternName} embroidery pattern. Perfect for your next project!`,
+      title: `${patternNameText} - Embroidery Pattern${patternNames.length > 1 ? ' Bundle' : ''}`,
+      description: `Beautiful ${patternNameText} embroidery pattern${patternNames.length > 1 ? ' bundle' : ''}. Perfect for your next project!`,
       tags: ['embroidery', 'pattern', 'digital', 'download', 'craft', 'stitch', 'handmade', 'diy', 'needlework', 'sewing', 'art', 'design', 'creative'],
       category: 'Crafts',
-      price: 5.99,
+      price: patternNames.length > 1 ? (5.99 * patternNames.length * 0.8) : 5.99, // Bundle discount
     };
   }
 
@@ -88,11 +138,11 @@ Return a JSON object with:
   const now = new Date().toISOString();
 
   db.prepare(`
-    INSERT INTO listings (id, pattern_id, title, description, tags, category, price, created_at, updated_at)
+    INSERT INTO listings (id, product_template_id, title, description, tags, category, price, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id,
-    patternId,
+    productTemplateId,
     listingData.title,
     listingData.description,
     JSON.stringify(listingData.tags),
@@ -103,6 +153,65 @@ Return a JSON object with:
   );
 
   return getListing(id)!;
+}
+
+// Get all listings for a specific product template
+export function getListingsByProductTemplate(productTemplateId: string): Listing[] {
+  const rows = db.prepare('SELECT * FROM listings WHERE product_template_id = ? ORDER BY created_at DESC').all(productTemplateId) as any[];
+  return rows.map((row) => {
+    const productTemplateId = row.product_template_id || row.product_id; // Support migration
+    const patternRows = db.prepare('SELECT pattern_id FROM product_template_patterns WHERE product_template_id = ?').all(productTemplateId) as any[];
+    const patternIds = patternRows.map((p: any) => p.pattern_id);
+    
+    return {
+      id: row.id,
+      productTemplateId: productTemplateId,
+      patternIds,
+      title: row.title,
+      description: row.description,
+      tags: JSON.parse(row.tags),
+      category: row.category || undefined,
+      price: row.price || undefined,
+      seoScore: row.seo_score || undefined,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  });
+}
+
+// Get all listings that include a specific pattern
+export function getListingsByPattern(patternId: string): Listing[] {
+  // Find all product templates that include this pattern
+  const productTemplateRows = db.prepare('SELECT product_template_id FROM product_template_patterns WHERE pattern_id = ?').all(patternId) as any[];
+  const productTemplateIds = productTemplateRows.map((p: any) => p.product_template_id);
+  
+  if (productTemplateIds.length === 0) {
+    return [];
+  }
+  
+  // Get all listings for those product templates
+  const placeholders = productTemplateIds.map(() => '?').join(',');
+  const rows = db.prepare(`SELECT * FROM listings WHERE product_template_id IN (${placeholders}) ORDER BY created_at DESC`).all(...productTemplateIds) as any[];
+  
+  return rows.map((row) => {
+    const productTemplateId = row.product_template_id || row.product_id; // Support migration
+    const patternRows = db.prepare('SELECT pattern_id FROM product_template_patterns WHERE product_template_id = ?').all(productTemplateId) as any[];
+    const patternIds = patternRows.map((p: any) => p.pattern_id);
+    
+    return {
+      id: row.id,
+      productTemplateId: productTemplateId,
+      patternIds,
+      title: row.title,
+      description: row.description,
+      tags: JSON.parse(row.tags),
+      category: row.category || undefined,
+      price: row.price || undefined,
+      seoScore: row.seo_score || undefined,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  });
 }
 
 export function updateListing(id: string, data: Partial<Listing>): Listing | null {

@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Product, Pattern } from '@/types';
+import { ProductTemplate, Pattern, ProductTemplateType } from '@/types';
 import Toast from '@/components/shared/Toast';
 import Spinner from '@/components/shared/Spinner';
 
-interface ProductWithPattern extends Product {
-  pattern?: Pattern;
+interface ProductTemplateWithPatterns extends ProductTemplate {
+  patterns?: Pattern[];
 }
 
 interface ToastState {
@@ -17,9 +17,9 @@ interface ToastState {
   isVisible: boolean;
 }
 
-export default function ProductsPage() {
+export default function ProductTemplatesPage() {
   const router = useRouter();
-  const [products, setProducts] = useState<ProductWithPattern[]>([]);
+  const [productTemplates, setProductTemplates] = useState<ProductTemplateWithPatterns[]>([]);
   const [patterns, setPatterns] = useState<Pattern[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
@@ -38,56 +38,35 @@ export default function ProductsPage() {
 
   const fetchData = async () => {
     try {
-      const [productsResponse, patternsResponse] = await Promise.all([
-        fetch('/api/products'),
+      const [productTemplatesResponse, patternsResponse] = await Promise.all([
+        fetch('/api/product-templates'),
         fetch('/api/patterns'),
       ]);
 
-      const productsData: Product[] = productsResponse.ok ? await productsResponse.json() : [];
+      const productTemplatesData: ProductTemplate[] = productTemplatesResponse.ok ? await productTemplatesResponse.json() : [];
       const patternsData: Pattern[] = patternsResponse.ok ? await patternsResponse.json() : [];
 
-      // Match patterns to products
-      const productsWithPatterns: ProductWithPattern[] = productsData.map((product) => ({
-        ...product,
-        pattern: patternsData.find((p) => p.id === product.patternId),
+      // Match patterns to product templates (product templates can have multiple patterns now)
+      const productTemplatesWithPatterns: ProductTemplateWithPatterns[] = productTemplatesData.map((productTemplate) => ({
+        ...productTemplate,
+        patterns: productTemplate.patternIds
+          ? patternsData.filter((p) => productTemplate.patternIds.includes(p.id))
+          : [],
       }));
 
-      setProducts(productsWithPatterns);
+      setProductTemplates(productTemplatesWithPatterns);
       setPatterns(patternsData);
     } catch (error) {
       console.error('Error fetching data:', error);
-      showToast('Error loading products', 'error');
+      showToast('Error loading product templates', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusColor = (status: Product['status']) => {
-    switch (status) {
-      case 'listed':
-        return 'bg-purple-500';
-      case 'ready':
-        return 'bg-green-500';
-      case 'draft':
-        return 'bg-gray-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
 
-  const getTypeLabel = (type: Product['type']) => {
-    switch (type) {
-      case 'printable-pdf':
-        return 'PDF';
-      case 'svg':
-        return 'SVG';
-      case 'kit':
-        return 'Kit';
-      case 'custom':
-        return 'Custom';
-      default:
-        return type;
-    }
+  const getTypeLabel = (type: ProductTemplateType) => {
+    return type.charAt(0).toUpperCase() + type.slice(1); // Capitalize first letter
   };
 
   if (loading) {
@@ -104,27 +83,27 @@ export default function ProductsPage() {
       <div className="px-4 py-8 max-w-7xl mx-auto">
         <header className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Products</h1>
+            <h1 className="text-3xl font-bold">Product Templates</h1>
             <p className="text-text-secondary mt-2">
-              Manage different product offerings from your patterns
+              Manage product templates that can be applied to your patterns
             </p>
           </div>
           <button
-            onClick={() => router.push('/products/new')}
+            onClick={() => router.push('/product-templates/new')}
             className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition"
           >
-            + New Product
+            + New Product Template
           </button>
         </header>
 
-        {products.length === 0 ? (
+        {productTemplates.length === 0 ? (
           <div className="bg-background-secondary border border-border rounded-lg p-12 text-center">
-            <p className="text-text-secondary mb-4">No products yet</p>
+            <p className="text-text-secondary mb-4">No product templates yet</p>
             <button
-              onClick={() => router.push('/products/new')}
+              onClick={() => router.push('/product-templates/new')}
               className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition"
             >
-              Create Your First Product
+              Create Your First Product Template
             </button>
           </div>
         ) : (
@@ -132,60 +111,60 @@ export default function ProductsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-background-tertiary">
-                  <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Status</th>
-                  <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Product</th>
+                  <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Product Template</th>
                   <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Pattern</th>
                   <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Type</th>
-                  <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Price</th>
                   <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {products.map((product) => (
+                {productTemplates.map((productTemplate) => (
                   <tr
-                    key={product.id}
+                    key={productTemplate.id}
                     className="border-b border-border hover:bg-background-tertiary transition"
                   >
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1.5 text-xs font-medium rounded-full text-white ${getStatusColor(product.status)}`}>
-                        {product.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
                       <div>
                         <div className="font-medium text-text-primary">
-                          {product.title || product.name}
+                          {productTemplate.title || productTemplate.name}
                         </div>
-                        {product.description && (
+                        {productTemplate.commonInstructions && (
                           <div className="text-sm text-text-secondary line-clamp-1 mt-1">
-                            {product.description}
+                            {productTemplate.commonInstructions}
                           </div>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      {product.pattern ? (
-                        <Link
-                          href={`/patterns/${product.pattern.id}`}
-                          className="text-accent-primary hover:underline"
-                        >
-                          {product.pattern.name}
-                        </Link>
+                      {productTemplate.patterns && productTemplate.patterns.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {productTemplate.patterns.map((pattern) => (
+                            <Link
+                              key={pattern.id}
+                              href={`/patterns/${pattern.id}`}
+                              className="text-accent-primary hover:underline text-sm"
+                            >
+                              {pattern.name}
+                            </Link>
+                          ))}
+                        </div>
                       ) : (
-                        <span className="text-text-muted">Unknown pattern</span>
+                        <span className="text-text-muted text-sm">No patterns</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-text-secondary">{getTypeLabel(product.type)}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-text-secondary">
-                        {product.price ? `$${product.price.toFixed(2)}` : '-'}
-                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {productTemplate.types.map((type, index) => (
+                          <span key={type} className="text-sm text-text-secondary">
+                            {index > 0 && <span className="text-text-secondary">, </span>}
+                            {getTypeLabel(type)}
+                          </span>
+                        ))}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <button
-                        onClick={() => router.push(`/products/${product.id}`)}
+                        onClick={() => router.push(`/product-templates/${productTemplate.id}`)}
                         className="px-3 py-1.5 text-xs bg-background-tertiary border border-border rounded hover:bg-background-primary transition"
                       >
                         Edit

@@ -133,7 +133,8 @@ export default function PatternDetailPage() {
       const response = await fetch('/api/listings');
       if (response.ok) {
         const listings: Listing[] = await response.json();
-        const productListing = listings.find((l) => l.patternId === patternId);
+        // Find listing that includes this pattern
+        const productListing = listings.find((l) => l.patternIds?.includes(patternId));
         if (productListing) {
           setListing(productListing);
           setListingFormData({
@@ -272,10 +273,28 @@ export default function PatternDetailPage() {
 
     setSaving(true);
     try {
+      // First, find product templates that include this pattern
+      const productTemplatesResponse = await fetch('/api/product-templates');
+      if (!productTemplatesResponse.ok) {
+        showToast('Failed to load product templates', 'error');
+        return;
+      }
+      
+      const allProductTemplates = await productTemplatesResponse.json();
+      const productTemplatesWithPattern = allProductTemplates.filter((p: any) => p.patternIds?.includes(pattern.id));
+      
+      if (productTemplatesWithPattern.length === 0) {
+        showToast('No product template found for this pattern. Please create a product template first.', 'error');
+        return;
+      }
+      
+      // Use the first product template that includes this pattern
+      const productTemplateId = productTemplatesWithPattern[0].id;
+      
       const response = await fetch('/api/listings/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ patternId: pattern.id }),
+        body: JSON.stringify({ productTemplateId }),
       });
 
       if (response.ok) {
@@ -291,7 +310,8 @@ export default function PatternDetailPage() {
         showToast('Listing generated successfully', 'success');
         fetchListing();
       } else {
-        showToast('Failed to generate listing', 'error');
+        const error = await response.json();
+        showToast(error.error || 'Failed to generate listing', 'error');
       }
     } catch (error) {
       console.error('Error generating listing:', error);

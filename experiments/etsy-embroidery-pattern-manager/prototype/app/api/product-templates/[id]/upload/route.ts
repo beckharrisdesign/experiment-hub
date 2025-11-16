@@ -5,9 +5,10 @@ import { randomUUID } from 'crypto';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
+    const resolvedParams = await Promise.resolve(params);
     const formData = await request.formData();
     const file = formData.get('image') as File;
     
@@ -21,12 +22,12 @@ export async function POST(
     }
 
     // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'products');
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'product-templates');
     await mkdir(uploadsDir, { recursive: true });
 
     // Generate unique filename
     const fileExtension = file.name.split('.').pop() || 'png';
-    const fileName = `${params.id}-${randomUUID()}.${fileExtension}`;
+    const fileName = `${resolvedParams.id}-${randomUUID()}.${fileExtension}`;
     const filePath = path.join(uploadsDir, fileName);
 
     // Convert file to buffer and save
@@ -35,7 +36,7 @@ export async function POST(
     await writeFile(filePath, buffer);
 
     // Return the relative URL path
-    const imageUrl = `/uploads/products/${fileName}`;
+    const imageUrl = `/uploads/product-templates/${fileName}`;
     
     return NextResponse.json({ imageUrl });
   } catch (error) {

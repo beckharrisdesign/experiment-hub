@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Pattern, Product } from '@/types';
+import { Pattern, ProductTemplate } from '@/types';
 import Toast from '@/components/shared/Toast';
 import Spinner from '@/components/shared/Spinner';
 import PatternItem from '@/components/patterns/PatternItem';
@@ -17,7 +17,7 @@ interface ToastState {
 export default function HomePage() {
   const router = useRouter();
   const [patterns, setPatterns] = useState<Pattern[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [productTemplates, setProductTemplates] = useState<ProductTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
 
@@ -35,29 +35,29 @@ export default function HomePage() {
 
   const fetchData = async () => {
     try {
-      const [patternsResponse, productsResponse] = await Promise.all([
+      const [patternsResponse, productTemplatesResponse] = await Promise.all([
         fetch('/api/patterns'),
-        fetch('/api/products'),
+        fetch('/api/product-templates'),
       ]);
 
       const patternsData: Pattern[] = patternsResponse.ok ? await patternsResponse.json() : [];
-      const productsData: Product[] = productsResponse.ok ? await productsResponse.json() : [];
+      const productTemplatesData: ProductTemplate[] = productTemplatesResponse.ok ? await productTemplatesResponse.json() : [];
 
       // Sort patterns by updated date (newest first)
       patternsData.sort((a, b) => {
         return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
       });
 
-      // Sort products by status and then by updated date
-      const productStatusOrder = { draft: 1, ready: 2, listed: 3 };
-      productsData.sort((a, b) => {
-        const statusDiff = (productStatusOrder[a.status] || 0) - (productStatusOrder[b.status] || 0);
+      // Sort product templates by status and then by updated date
+      const productTemplateStatusOrder = { draft: 1, ready: 2, listed: 3 };
+      productTemplatesData.sort((a, b) => {
+        const statusDiff = (productTemplateStatusOrder[a.status] || 0) - (productTemplateStatusOrder[b.status] || 0);
         if (statusDiff !== 0) return statusDiff;
         return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
       });
 
       setPatterns(patternsData);
-      setProducts(productsData);
+      setProductTemplates(productTemplatesData);
     } catch (error) {
       console.error('Error fetching data:', error);
       showToast('Error loading data', 'error');
@@ -67,7 +67,7 @@ export default function HomePage() {
   };
 
 
-  const getProductStatusColor = (status: Product['status']) => {
+  const getProductTemplateStatusColor = (status: ProductTemplate['status']) => {
     const colors = {
       draft: 'bg-gray-500',
       ready: 'bg-green-500',
@@ -76,7 +76,7 @@ export default function HomePage() {
     return colors[status] || 'bg-gray-500';
   };
 
-  const getProductTypeLabel = (type: Product['type']) => {
+  const getProductTemplateTypeLabel = (type: ProductTemplate['type']) => {
     switch (type) {
       case 'printable-pdf':
         return 'PDF';
@@ -97,7 +97,7 @@ export default function HomePage() {
         <header className="mb-8">
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-text-secondary mt-2">
-            Overview of your patterns and products
+            Overview of your patterns and product templates
           </p>
         </header>
 
@@ -152,12 +152,12 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Products Section */}
+          {/* Product Templates Section */}
           <div className="bg-background-secondary border border-border rounded-lg overflow-hidden">
             <div className="p-6 border-b border-border flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Products</h2>
+              <h2 className="text-xl font-semibold">Product Templates</h2>
               <Link
-                href="/products"
+                href="/product-templates"
                 className="text-sm text-accent-primary hover:underline"
               >
                 View All →
@@ -166,50 +166,50 @@ export default function HomePage() {
             {loading ? (
               <div className="p-6 flex items-center gap-3 text-text-secondary text-sm">
                 <Spinner size="sm" />
-                <span>Loading products...</span>
+                <span>Loading product templates...</span>
               </div>
-            ) : products.length === 0 ? (
+            ) : productTemplates.length === 0 ? (
               <div className="p-6 text-text-secondary text-sm">
-                No products yet.{' '}
-                <Link href="/products" className="text-accent-primary hover:underline">
-                  Create your first product
+                No product templates yet.{' '}
+                <Link href="/product-templates" className="text-accent-primary hover:underline">
+                  Create your first product template
                 </Link>
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {products.slice(0, 5).map((product) => (
+                {productTemplates.slice(0, 5).map((productTemplate) => (
                   <div
-                    key={product.id}
+                    key={productTemplate.id}
                     className="p-4 hover:bg-background-tertiary transition"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <Link
-                          href={`/products/${product.id}`}
+                          href={`/product-templates/${productTemplate.id}`}
                           className="block hover:text-accent-primary transition"
                         >
                           <div className="font-medium text-text-primary mb-1 truncate">
-                            {product.title || product.name}
+                            {productTemplate.title || productTemplate.name}
                           </div>
                           <div className="text-sm text-text-secondary">
-                            {getProductTypeLabel(product.type)}
-                            {product.price && ` • $${product.price.toFixed(2)}`}
+                            {getProductTemplateTypeLabel(productTemplate.type)}
+                            {productTemplate.price && ` • $${productTemplate.price.toFixed(2)}`}
                           </div>
                         </Link>
                       </div>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full text-white ${getProductStatusColor(product.status)}`}>
-                        {product.status}
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full text-white ${getProductTemplateStatusColor(productTemplate.status)}`}>
+                        {productTemplate.status}
                       </span>
                     </div>
                   </div>
                 ))}
-                {products.length > 5 && (
+                {productTemplates.length > 5 && (
                   <div className="p-4 text-center">
                     <Link
-                      href="/products"
+                      href="/product-templates"
                       className="text-sm text-accent-primary hover:underline"
                     >
-                      View {products.length - 5} more products →
+                      View {productTemplates.length - 5} more product templates →
                     </Link>
                   </div>
                 )}

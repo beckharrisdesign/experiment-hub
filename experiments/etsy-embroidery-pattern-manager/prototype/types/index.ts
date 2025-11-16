@@ -35,28 +35,33 @@ export interface Release {
   updatedAt: string;
 }
 
-// Product Types (different offerings from a pattern)
-export interface Product {
+// Product Template Types (templates that can be applied to one or more patterns)
+// Examples:
+// - Single digital listing (1 pattern)
+// - Single embroidery kit (1 pattern)
+// - Bundle of 3 digital patterns (3 patterns)
+// - Custom bundle (N patterns)
+export type ProductTemplateType = 'digital' | 'physical';
+
+export interface ProductTemplate {
   id: string;
-  patternId: string;
-  name: string;
-  type: 'printable-pdf' | 'svg' | 'kit' | 'custom';
-  status: 'draft' | 'ready' | 'listed';
-  title?: string;
-  description?: string;
-  tags?: string[];
-  category?: string;
-  price?: number;
+  name: string; // Template name (e.g., "Digital PDF Listing", "Embroidery Kit", "3-Pattern Bundle")
+  types: ProductTemplateType[]; // Can have multiple types
+  patternIds: string[]; // Can be 0, 1, or many patterns
+  title?: string; // Reserved for future use
+  commonInstructions?: string; // Common instructions that apply to all listings using this template
   seoScore?: number;
   imageUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-// Listing Types (legacy - will be migrated to products)
+// Listing Types - A listing = Product Template + Pattern(s)
+// Patterns are associated with the product template via product_template_patterns junction table
 export interface Listing {
   id: string;
-  patternId: string;
+  productTemplateId: string; // References product template
+  patternIds: string[]; // Patterns associated with this product template (derived from product_template_patterns)
   title: string;
   description: string;
   tags: string[];

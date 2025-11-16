@@ -14,8 +14,9 @@ interface ToastState {
 export default function ListingsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [patterns, setPatterns] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPattern, setSelectedPattern] = useState<string>('');
+  const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -29,6 +30,7 @@ export default function ListingsPage() {
   useEffect(() => {
     fetchListings();
     fetchPatterns();
+    fetchProducts();
   }, []);
 
   const fetchListings = async () => {
@@ -57,23 +59,38 @@ export default function ListingsPage() {
     }
   };
 
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('/api/product-templates');
+      if (response.ok) {
+        const data = await response.json();
+        // Only show product templates that have at least one pattern
+        const productTemplatesWithPatterns = data.filter((p: any) => p.patternIds && p.patternIds.length > 0);
+        setProducts(productTemplatesWithPatterns);
+      }
+    } catch (error) {
+      console.error('Error fetching product templates:', error);
+    }
+  };
+
   const handleGenerate = async () => {
-    if (!selectedPattern) return;
+    if (!selectedProduct) return;
 
     setLoading(true);
     try {
       const response = await fetch('/api/listings/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ patternId: selectedPattern }),
+        body: JSON.stringify({ productTemplateId: selectedProduct }),
       });
 
       if (response.ok) {
         showToast('Listing generated successfully', 'success');
         fetchListings();
-        setSelectedPattern('');
+        setSelectedProduct('');
       } else {
-        showToast('Failed to generate listing', 'error');
+        const error = await response.json();
+        showToast(error.error || 'Failed to generate listing', 'error');
       }
     } catch (error) {
       console.error('Error generating listing:', error);
@@ -110,20 +127,23 @@ export default function ListingsPage() {
           <h2 className="text-xl font-semibold mb-4">Generate New Listing</h2>
           <div className="flex gap-4">
             <select
-              value={selectedPattern}
-              onChange={(e) => setSelectedPattern(e.target.value)}
+              value={selectedProduct}
+              onChange={(e) => setSelectedProduct(e.target.value)}
               className="flex-1 px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
             >
-              <option value="">Select a pattern</option>
-              {patterns.map((pattern) => (
-                <option key={pattern.id} value={pattern.id}>
-                  {pattern.name}
-                </option>
-              ))}
+              <option value="">Select a product template</option>
+              {products.map((productTemplate) => {
+                const productTemplatePatterns = patterns.filter((p) => productTemplate.patternIds?.includes(p.id));
+                return (
+                  <option key={productTemplate.id} value={productTemplate.id}>
+                    {productTemplate.name} ({productTemplate.patternIds?.length || 0} pattern{productTemplate.patternIds?.length !== 1 ? 's' : ''})
+                  </option>
+                );
+              })}
             </select>
             <button
               onClick={handleGenerate}
-              disabled={!selectedPattern || loading}
+              disabled={!selectedProduct || loading}
               className="px-6 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition disabled:opacity-50 flex items-center gap-2"
             >
               {loading ? (
@@ -140,13 +160,17 @@ export default function ListingsPage() {
 
         <div className="space-y-4">
           {listings.map((listing) => {
-            const pattern = patterns.find((p) => p.id === listing.patternId);
+            const listingPatterns = patterns.filter((p) => listing.patternIds?.includes(p.id));
             return (
               <div key={listing.id} className="bg-background-secondary border border-border rounded-lg p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="text-xl font-semibold mb-2">{listing.title}</h3>
-                    {pattern && <p className="text-sm text-text-secondary">Pattern: {pattern.name}</p>}
+                    {listingPatterns.length > 0 && (
+                      <p className="text-sm text-text-secondary">
+                        Pattern{listingPatterns.length > 1 ? 's' : ''}: {listingPatterns.map((p) => p.name).join(', ')}
+                      </p>
+                    )}
                   </div>
                   <button
                     onClick={() => handleExport(listing)}
