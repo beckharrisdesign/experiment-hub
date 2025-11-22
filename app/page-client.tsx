@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Tooltip from "@/components/Tooltip";
 import PrototypeStatus from "@/components/PrototypeStatus";
 import Button from "@/components/Button";
+import ScoreBadge from "@/components/ScoreBadge";
 import type { Experiment, Prototype, Documentation } from "@/types";
 import { slugify } from "@/lib/utils";
 import Link from "next/link";
@@ -41,30 +42,6 @@ interface HomePageClientProps {
   initialExperiments: ExperimentWithRelated[];
 }
 
-function ScoreBadge({ value, label, fullName }: { value: number | undefined; label: string; fullName: string }) {
-  if (value === undefined) {
-    return <span className="text-text-muted">—</span>;
-  }
-
-  // Color scale for numerals: 5 = green, 4 = lime, 3 = yellow, 2 = orange, 1 = red
-  const getNumberColor = (val: number) => {
-    if (val === 5) return "text-green-600";
-    if (val === 4) return "text-lime-600";
-    if (val === 3) return "text-yellow-600";
-    if (val === 2) return "text-orange-600";
-    return "text-red-600";
-  };
-
-  // Minimal gray badge with colored numeral
-  return (
-    <span
-      className={`inline-flex items-center justify-center h-5 w-5 rounded text-xs font-normal bg-background-tertiary ${getNumberColor(value)}`}
-      title={`${fullName}: ${value}/5`}
-    >
-      {value}
-    </span>
-  );
-}
 
 function calculateTotalScore(scores: ExperimentWithRelated["scores"]): number | null {
   if (!scores) return null;
@@ -247,9 +224,6 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                   Market Validation
                 </th>
                 <th colSpan={1} className="px-2 py-2 text-left text-xs font-medium text-text-secondary border-l-2 border-accent-primary/30">
-                  Market Validation
-                </th>
-                <th colSpan={1} className="px-2 py-2 text-left text-xs font-medium text-text-secondary border-l-2 border-accent-primary/30">
                   PRD
                 </th>
                 <th colSpan={1} className="px-2 py-2 text-left text-xs font-medium text-text-secondary border-l-2 border-accent-primary/30">
@@ -327,11 +301,6 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                   Total
                 </SortableHeader>
                 <th className="px-2 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap border-l-2 border-accent-primary/30">
-                  <Tooltip content="Market Validation: Market Research & Scoring actions" position="bottom">
-                    <span className="cursor-help">Market Validation</span>
-                  </Tooltip>
-                </th>
-                <th className="px-2 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap border-l-2 border-accent-primary/30">
                   <Tooltip content="PRD: Product Requirements Document actions" position="bottom">
                     <span className="cursor-help">PRD</span>
                   </Tooltip>
@@ -357,78 +326,65 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                       <span className="font-medium text-text-primary">{experiment.name}</span>
                     </Link>
                   </td>
-                  <td className="px-1.5 py-2 text-center border-l-2 border-accent-primary/30">
-                    <ScoreBadge value={experiment.scores?.businessOpportunity} label="B" fullName="Business Opportunity" />
-                  </td>
-                  <td className="px-1.5 py-2 text-center">
-                    <ScoreBadge value={experiment.scores?.personalImpact} label="P" fullName="Personal Impact" />
-                  </td>
-                  <td className="px-1.5 py-2 text-center">
-                    <ScoreBadge value={experiment.scores?.competitiveAdvantage} label="C" fullName="Competitive Advantage" />
-                  </td>
-                  <td className="px-1.5 py-2 text-center">
-                    <ScoreBadge value={experiment.scores?.platformCost} label="$" fullName="Platform Cost" />
-                  </td>
-                  <td className="px-1.5 py-2 text-center">
-                    <ScoreBadge value={experiment.scores?.socialImpact} label="S" fullName="Social Impact" />
-                  </td>
-                  <td className="px-1.5 py-2 text-center">
-                    {(() => {
-                      const total = calculateTotalScore(experiment.scores);
-                      if (total === null) {
-                        return <span className="text-text-muted">—</span>;
-                      }
-                      const percentage = Math.round((total / 25) * 100);
-                      
-                      // Color scale for total score: 20-25 = green, 15-19 = yellow, 10-14 = orange, 5-9 = red
-                      const getTotalBadgeColor = (score: number) => {
-                        if (score >= 20) return "bg-green-600 border-green-500 text-white";
-                        if (score >= 15) return "bg-yellow-500/80 border-yellow-400/80 text-white";
-                        if (score >= 10) return "bg-orange-500/80 border-orange-400/80 text-white";
-                        return "bg-red-500/80 border-red-400/80 text-white";
-                      };
-                      
-                      return (
-                        <Tooltip content={`Total: ${total}/25 (${percentage}%). Sum of B+P+C+$+S, equally weighted.`} position="top">
-                          <span
-                            className={`inline-flex items-center justify-center h-6 w-8 rounded-md border text-xs font-semibold cursor-help ${getTotalBadgeColor(total)}`}
-                          >
-                            {total}
-                          </span>
-                        </Tooltip>
-                      );
-                    })()}
-                  </td>
-                  <td className="px-2 py-3 text-center border-l-2 border-accent-primary/30">
-                    {(() => {
-                      // Workflow State Machine: New → Market Validation → PRD → Prototype
-                      // Market Validation column logic
-                      // State 1: New experiment - show Create for Market Validation
-                      if (!experiment.hasMRFile) {
-                        return (
-                          <Button
-                            as="link"
-                            variant="secondary"
-                            href={`/experiments/${slugify(experiment.name)}#market-research`}
-                            title="Create Market Validation"
-                          >
-                            Create
-                          </Button>
-                        );
-                      }
-                      // States 2, 3, 4: Market Validation complete - show View
-                      return (
-                        <Button
-                          as="link"
-                          variant="primary"
-                          href={`/experiments/${slugify(experiment.name)}#market-research`}
-                          title="View Market Validation"
-                        >
-                          View
-                        </Button>
-                      );
-                    })()}
-                  </td>
+                  {!experiment.hasMRFile ? (
+                    // State 1: New Experiment - show Create button spanning all Market Validation columns
+                    <td colSpan={6} className="px-2 py-3 text-center border-l-2 border-accent-primary/30">
+                      <Button
+                        as="link"
+                        variant="secondary"
+                        href={`/experiments/${slugify(experiment.name)}#market-research`}
+                        title="Create Market Validation"
+                      >
+                        Create
+                      </Button>
+                    </td>
+                  ) : (
+                    // States 2, 3, 4: Market Validation complete - show individual score columns
+                    <>
+                      <td className="px-1.5 py-2 text-center border-l-2 border-accent-primary/30">
+                        <ScoreBadge value={experiment.scores?.businessOpportunity} label="B" fullName="Business Opportunity" />
+                      </td>
+                      <td className="px-1.5 py-2 text-center">
+                        <ScoreBadge value={experiment.scores?.personalImpact} label="P" fullName="Personal Impact" />
+                      </td>
+                      <td className="px-1.5 py-2 text-center">
+                        <ScoreBadge value={experiment.scores?.competitiveAdvantage} label="C" fullName="Competitive Advantage" />
+                      </td>
+                      <td className="px-1.5 py-2 text-center">
+                        <ScoreBadge value={experiment.scores?.platformCost} label="$" fullName="Platform Cost" />
+                      </td>
+                      <td className="px-1.5 py-2 text-center">
+                        <ScoreBadge value={experiment.scores?.socialImpact} label="S" fullName="Social Impact" />
+                      </td>
+                      <td className="px-1.5 py-2 text-center">
+                        {(() => {
+                          const total = calculateTotalScore(experiment.scores);
+                          if (total === null) {
+                            return <span className="text-text-muted">—</span>;
+                          }
+                          const percentage = Math.round((total / 25) * 100);
+                          
+                          // Color scale for total score: 20-25 = green, 15-19 = yellow, 10-14 = orange, 5-9 = red
+                          const getTotalBadgeColor = (score: number) => {
+                            if (score >= 20) return "bg-green-600 border-green-500 text-white";
+                            if (score >= 15) return "bg-yellow-500/80 border-yellow-400/80 text-white";
+                            if (score >= 10) return "bg-orange-500/80 border-orange-400/80 text-white";
+                            return "bg-red-500/80 border-red-400/80 text-white";
+                          };
+                          
+                          return (
+                            <Tooltip content={`Total: ${total}/25 (${percentage}%). Sum of B+P+C+$+S, equally weighted.`} position="top">
+                              <span
+                                className={`inline-flex items-center justify-center h-6 w-8 rounded-md border text-xs font-semibold cursor-help ${getTotalBadgeColor(total)}`}
+                              >
+                                {total}
+                              </span>
+                            </Tooltip>
+                          );
+                        })()}
+                      </td>
+                    </>
+                  )}
                   <td className="px-2 py-3 text-center border-l-2 border-accent-primary/30">
                     {(() => {
                       // PRD column logic

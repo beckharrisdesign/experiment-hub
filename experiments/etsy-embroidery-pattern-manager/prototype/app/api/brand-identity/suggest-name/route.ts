@@ -3,6 +3,23 @@ import { generateContent } from '@/lib/openai';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if OpenAI is available
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { 
+          error: 'OpenAI integration is not available. OPENAI_API_KEY is not set.',
+          suggestions: [
+            'Stitch & Pattern',
+            'Embroidery Dreams',
+            'Thread & Design',
+            'Pattern Play',
+            'Stitch Craft',
+          ]
+        },
+        { status: 200 } // Return 200 with fallback suggestions
+      );
+    }
+
     const body = await request.json();
     const { visualStyle, brandTone } = body;
 

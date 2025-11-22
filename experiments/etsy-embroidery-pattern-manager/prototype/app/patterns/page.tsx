@@ -14,9 +14,13 @@ interface ToastState {
   isVisible: boolean;
 }
 
+interface PatternWithTemplates extends Pattern {
+  templates?: Array<{ id: string; name: string }>;
+}
+
 export default function PatternsPage() {
   const router = useRouter();
-  const [patterns, setPatterns] = useState<Pattern[]>([]);
+  const [patterns, setPatterns] = useState<PatternWithTemplates[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -39,14 +43,27 @@ export default function PatternsPage() {
 
   const fetchPatterns = useCallback(async () => {
     try {
-      const response = await fetch('/api/patterns');
-      if (response.ok) {
-        const data = await response.json();
+      // Fetch both patterns and templates from central source
+      const [patternsResponse, templatesResponse] = await Promise.all([
+        fetch('/api/patterns'),
+        fetch('/api/product-templates'),
+      ]);
+
+      if (patternsResponse.ok && templatesResponse.ok) {
+        const patternsData: Pattern[] = await patternsResponse.json();
+        const templatesData = await templatesResponse.json();
+
+        // Patterns don't need to be pre-associated with templates - any pattern can be used with any template
+        const patternsWithTemplates: PatternWithTemplates[] = patternsData.map((pattern) => ({
+          ...pattern,
+          templates: [], // No pre-filtering - templates are selected when creating listings
+        }));
+
         // Sort by updated date (newest first)
-        data.sort((a: Pattern, b: Pattern) => {
+        patternsWithTemplates.sort((a, b) => {
           return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
         });
-        setPatterns(data);
+        setPatterns(patternsWithTemplates);
       }
     } catch (error) {
       console.error('Error fetching patterns:', error);

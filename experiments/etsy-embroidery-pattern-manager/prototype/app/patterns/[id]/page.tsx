@@ -276,7 +276,7 @@ export default function PatternDetailPage() {
     if (!pattern) return;
 
     try {
-      // First, find product templates that include this pattern
+      // Get all product templates - any template can be used with any pattern
       const productTemplatesResponse = await fetch('/api/product-templates');
       if (!productTemplatesResponse.ok) {
         showToast('Failed to load product templates', 'error');
@@ -284,23 +284,22 @@ export default function PatternDetailPage() {
       }
       
       const allProductTemplates = await productTemplatesResponse.json();
-      const productTemplatesWithPattern = allProductTemplates.filter((p: any) => p.patternIds?.includes(pattern.id));
       
-      if (productTemplatesWithPattern.length === 0) {
-        showToast('No product template found for this pattern. Please create a product template first.', 'error');
+      if (allProductTemplates.length === 0) {
+        showToast('No product templates available. Please create a product template first.', 'error');
         return;
       }
       
-      // Use the first product template that includes this pattern
-      const productTemplate = productTemplatesWithPattern[0];
+      // Use the first single-item template, or let user select
+      const singleTemplate = allProductTemplates.find((p: any) => p.numberOfItems === 'single');
+      const productTemplate = singleTemplate || allProductTemplates[0];
       setSelectedProductTemplate(productTemplate);
       
-      // Load all patterns from the template
+      // Load all patterns - any pattern can be selected
       const patternsResponse = await fetch('/api/patterns');
       if (patternsResponse.ok) {
         const allPatterns = await patternsResponse.json();
-        const templatePatterns = allPatterns.filter((p: Pattern) => productTemplate.patternIds.includes(p.id));
-        setAvailablePatterns(templatePatterns);
+        setAvailablePatterns(allPatterns);
         
         // Pre-select the current pattern
         const expectedCount = productTemplate.numberOfItems === 'single' ? 1 

@@ -46,12 +46,10 @@ export default function ProductTemplatesPage() {
       const productTemplatesData: ProductTemplate[] = productTemplatesResponse.ok ? await productTemplatesResponse.json() : [];
       const patternsData: Pattern[] = patternsResponse.ok ? await patternsResponse.json() : [];
 
-      // Match patterns to product templates (product templates can have multiple patterns now)
+      // Templates don't need pre-associated patterns - any pattern can be used with any template
       const productTemplatesWithPatterns: ProductTemplateWithPatterns[] = productTemplatesData.map((productTemplate) => ({
         ...productTemplate,
-        patterns: productTemplate.patternIds
-          ? patternsData.filter((p) => productTemplate.patternIds.includes(p.id))
-          : [],
+        patterns: [], // No pre-filtering - patterns are selected when creating listings
       }));
 
       setProductTemplates(productTemplatesWithPatterns);

@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import PrototypeStatus from "@/components/PrototypeStatus";
+import ScoreDisplay from "@/components/ScoreDisplay";
 
 export default function WorkflowPage() {
   const states = [
@@ -11,6 +12,7 @@ export default function WorkflowPage() {
       hasPRDFile: false,
       hasPrototypeDir: false,
       description: "Experiment is brand new. Only Market Validation step is available.",
+      scores: null,
     },
     {
       state: "Market Validation",
@@ -19,6 +21,13 @@ export default function WorkflowPage() {
       hasPRDFile: false,
       hasPrototypeDir: false,
       description: "Market Research & Scoring is complete. PRD creation is now available.",
+      scores: {
+        businessOpportunity: 4,
+        personalImpact: 5,
+        competitiveAdvantage: 3,
+        platformCost: 4,
+        socialImpact: 5,
+      },
     },
     {
       state: "PRD",
@@ -27,6 +36,13 @@ export default function WorkflowPage() {
       hasPRDFile: true,
       hasPrototypeDir: false,
       description: "PRD exists. Can view PRD. Prototype creation is now available.",
+      scores: {
+        businessOpportunity: 4,
+        personalImpact: 5,
+        competitiveAdvantage: 3,
+        platformCost: 4,
+        socialImpact: 5,
+      },
     },
     {
       state: "Prototype",
@@ -35,6 +51,13 @@ export default function WorkflowPage() {
       hasPRDFile: true,
       hasPrototypeDir: true,
       description: "Prototype exists. Can view PRD and work with prototype (start/stop server, view prototype).",
+      scores: {
+        businessOpportunity: 4,
+        personalImpact: 5,
+        competitiveAdvantage: 3,
+        platformCost: 4,
+        socialImpact: 5,
+      },
     },
   ];
 
@@ -51,16 +74,8 @@ export default function WorkflowPage() {
         </Button>
       );
     }
-    return (
-      <Button
-        as="link"
-        variant="primary"
-        href="#market-research"
-        title="View Market Validation"
-      >
-        View
-      </Button>
-    );
+    // Show the five-part score display when Market Validation is complete
+    return <ScoreDisplay scores={state.scores} />;
   };
 
   const renderPRDColumn = (state: typeof states[0]) => {

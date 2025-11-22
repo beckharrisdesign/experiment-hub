@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { Pattern } from '@/types';
 
 interface PatternItemProps {
-  pattern: Pattern & { imageUrl?: string };
+  pattern: Pattern & { 
+    imageUrl?: string;
+  };
   showDetails?: boolean;
   onEdit?: () => void;
   className?: string;

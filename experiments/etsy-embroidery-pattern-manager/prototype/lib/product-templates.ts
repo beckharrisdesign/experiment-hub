@@ -64,6 +64,7 @@ export function getProductTemplate(id: string): ProductTemplate | null {
     patternIds,
     name: row.name,
     types,
+    numberOfItems: (row.number_of_items || 'single') as 'single' | 'three' | 'five',
     title: row.title || undefined,
     commonInstructions: row.description || undefined, // Map DB description to commonInstructions
     seoScore: row.seo_score || undefined,
