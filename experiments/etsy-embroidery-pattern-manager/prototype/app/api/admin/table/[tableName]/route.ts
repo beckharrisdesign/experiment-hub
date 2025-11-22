@@ -3,10 +3,11 @@ import db from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { tableName: string } }
+  { params }: { params: Promise<{ tableName: string }> | { tableName: string } }
 ) {
   try {
-    const tableName = params.tableName;
+    const resolvedParams = await Promise.resolve(params);
+    const tableName = resolvedParams.tableName;
     
     // Sanitize table name to prevent SQL injection
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(tableName)) {

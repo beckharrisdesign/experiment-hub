@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Pattern, ProductTemplate, Listing } from '@/types';
+import { Pattern, Template, Listing } from '@/types';
 import Toast from '@/components/shared/Toast';
 import Spinner from '@/components/shared/Spinner';
 import PatternItem from '@/components/patterns/PatternItem';
+import PageHeader from '@/components/shared/PageHeader';
 
 interface ToastState {
   message: string;
@@ -17,7 +18,7 @@ interface ToastState {
 export default function HomePage() {
   const router = useRouter();
   const [patterns, setPatterns] = useState<Pattern[]>([]);
-  const [productTemplates, setProductTemplates] = useState<ProductTemplate[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
@@ -36,14 +37,14 @@ export default function HomePage() {
 
   const fetchData = async () => {
     try {
-      const [patternsResponse, productTemplatesResponse, listingsResponse] = await Promise.all([
+      const [patternsResponse, templatesResponse, listingsResponse] = await Promise.all([
         fetch('/api/patterns'),
-        fetch('/api/product-templates'),
+        fetch('/api/templates'),
         fetch('/api/listings'),
       ]);
 
       const patternsData: Pattern[] = patternsResponse.ok ? await patternsResponse.json() : [];
-      const productTemplatesData: ProductTemplate[] = productTemplatesResponse.ok ? await productTemplatesResponse.json() : [];
+      const templatesData: Template[] = templatesResponse.ok ? await templatesResponse.json() : [];
       const listingsData: Listing[] = listingsResponse.ok ? await listingsResponse.json() : [];
 
       // Sort patterns by updated date (newest first)
@@ -51,8 +52,8 @@ export default function HomePage() {
         return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
       });
 
-      // Sort product templates by updated date (newest first)
-      productTemplatesData.sort((a, b) => {
+      // Sort templates by updated date (newest first)
+      templatesData.sort((a, b) => {
         return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
       });
 
@@ -62,7 +63,7 @@ export default function HomePage() {
       });
 
       setPatterns(patternsData);
-      setProductTemplates(productTemplatesData);
+      setTemplates(templatesData);
       setListings(listingsData);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -75,12 +76,10 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background-primary text-text-primary">
       <div className="px-4 py-8 max-w-7xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-text-secondary mt-2">
-            Overview of your patterns, templates, and listings
-          </p>
-        </header>
+        <PageHeader
+          title="Dashboard"
+          description="Overview of your patterns, templates, and listings"
+        />
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {/* Patterns Section */}
@@ -89,7 +88,15 @@ export default function HomePage() {
             <div className="p-4 bg-background-tertiary border-b border-border">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Patterns</h2>
-                <span className="text-2xl font-bold text-accent-primary">{patterns.length}</span>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href="/patterns"
+                    className="px-2.5 py-1.5 text-sm bg-background-tertiary border border-border rounded hover:bg-background-primary transition"
+                  >
+                    +
+                  </Link>
+                  <span className="text-2xl font-bold text-accent-primary">{patterns.length}</span>
+                </div>
               </div>
             </div>
             
@@ -100,18 +107,15 @@ export default function HomePage() {
               </div>
             ) : patterns.length === 0 ? (
               <div className="p-6 text-text-secondary text-sm">
-                No patterns yet.{' '}
-                <Link href="/patterns" className="text-accent-primary hover:underline">
-                  Create your first pattern
-                </Link>
+                No patterns yet.
               </div>
             ) : (
               <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
                 <table className="w-full">
-                  <thead className="sticky top-0 bg-background-tertiary z-10">
+                  <thead className="bg-background-tertiary">
                     <tr className="border-b border-border">
+                      <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Image</th>
                       <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Name</th>
-                      <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Category</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -121,17 +125,27 @@ export default function HomePage() {
                         className="border-b border-border hover:bg-background-tertiary transition"
                       >
                         <td className="px-6 py-4">
+                          <div className="w-12 h-12 bg-background-tertiary border border-border rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {pattern.imageUrl ? (
+                              <img
+                                src={pattern.imageUrl}
+                                alt={pattern.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-text-muted text-xs">
+                                {pattern.name.charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
                           <Link
                             href={`/patterns/${pattern.id}`}
-                            className="font-medium text-text-primary hover:text-accent-primary transition block"
+                            className="text-sm font-medium text-text-primary hover:text-accent-primary transition block"
                           >
                             {pattern.name}
                           </Link>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm text-text-secondary">
-                            {pattern.category || '—'}
-                          </span>
                         </td>
                       </tr>
                     ))}
@@ -147,7 +161,15 @@ export default function HomePage() {
             <div className="p-4 bg-background-tertiary border-b border-border">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Templates</h2>
-                <span className="text-2xl font-bold text-accent-primary">{productTemplates.length}</span>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href="/templates/new"
+                    className="px-2.5 py-1.5 text-sm bg-background-tertiary border border-border rounded hover:bg-background-primary transition"
+                  >
+                    +
+                  </Link>
+                  <span className="text-2xl font-bold text-accent-primary">{templates.length}</span>
+                </div>
               </div>
             </div>
             
@@ -156,42 +178,31 @@ export default function HomePage() {
                 <Spinner size="sm" />
                 <span>Loading templates...</span>
               </div>
-            ) : productTemplates.length === 0 ? (
+            ) : templates.length === 0 ? (
               <div className="p-6 text-text-secondary text-sm">
-                No templates yet.{' '}
-                <Link href="/product-templates" className="text-accent-primary hover:underline">
-                  Create your first template
-                </Link>
+                No templates yet.
               </div>
             ) : (
               <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
                 <table className="w-full">
-                  <thead className="sticky top-0 bg-background-tertiary z-10">
+                  <thead className="bg-background-tertiary">
                     <tr className="border-b border-border">
                       <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Name</th>
-                      <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Type</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {productTemplates.map((productTemplate) => (
+                    {templates.map((template) => (
                       <tr
-                        key={productTemplate.id}
+                        key={template.id}
                         className="border-b border-border hover:bg-background-tertiary transition"
                       >
                         <td className="px-6 py-4">
                           <Link
-                            href={`/product-templates/${productTemplate.id}`}
-                            className="font-medium text-text-primary hover:text-accent-primary transition block"
+                            href={`/templates/${template.id}`}
+                            className="text-sm font-medium text-text-primary hover:text-accent-primary transition block"
                           >
-                            {productTemplate.name}
+                            {template.name}
                           </Link>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm text-text-secondary">
-                            {Array.isArray(productTemplate.types) 
-                              ? productTemplate.types.join(', ') 
-                              : productTemplate.types || '—'} • {productTemplate.numberOfItems}
-                          </span>
                         </td>
                       </tr>
                     ))}
@@ -207,7 +218,15 @@ export default function HomePage() {
             <div className="p-4 bg-background-tertiary border-b border-border">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Listings</h2>
-                <span className="text-2xl font-bold text-accent-primary">{listings.length}</span>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href="/listings/new"
+                    className="px-2.5 py-1.5 text-sm bg-background-tertiary border border-border rounded hover:bg-background-primary transition"
+                  >
+                    +
+                  </Link>
+                  <span className="text-2xl font-bold text-accent-primary">{listings.length}</span>
+                </div>
               </div>
             </div>
             
@@ -218,15 +237,12 @@ export default function HomePage() {
               </div>
             ) : listings.length === 0 ? (
               <div className="p-6 text-text-secondary text-sm">
-                No listings yet.{' '}
-                <Link href="/listings/new" className="text-accent-primary hover:underline">
-                  Create your first listing
-                </Link>
+                No listings yet.
               </div>
             ) : (
               <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
                 <table className="w-full">
-                  <thead className="sticky top-0 bg-background-tertiary z-10">
+                  <thead className="bg-background-tertiary">
                     <tr className="border-b border-border">
                       <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Title</th>
                       <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Price</th>
@@ -239,7 +255,7 @@ export default function HomePage() {
                         className="border-b border-border hover:bg-background-tertiary transition"
                       >
                         <td className="px-6 py-4">
-                          <div className="font-medium text-text-primary line-clamp-2">
+                          <div className="text-sm font-medium text-text-primary line-clamp-2">
                             {listing.title}
                           </div>
                         </td>

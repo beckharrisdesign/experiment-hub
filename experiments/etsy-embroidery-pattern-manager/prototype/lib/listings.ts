@@ -1,5 +1,5 @@
 import db from './db';
-import { Listing, Pattern, ProductTemplate, BrandIdentity } from '@/types';
+import { Listing, Pattern, Template, BrandIdentity } from '@/types';
 import { randomUUID } from 'crypto';
 import { getBrandIdentity } from './brand-identity';
 import { getPattern } from './patterns';
@@ -7,22 +7,23 @@ import { getProductTemplate } from './product-templates';
 
 export function getAllListings(): Listing[] {
   const rows = db.prepare('SELECT * FROM listings ORDER BY created_at DESC').all() as any[];
-  return rows
-    .map((row) => {
-      // Get pattern IDs from listing_patterns junction table
-      const patternRows = db.prepare('SELECT pattern_id FROM listing_patterns WHERE listing_id = ?').all(row.id) as any[];
-      const patternIds = patternRows.map((p: any) => p.pattern_id);
-      
-      // REQUIREMENT: Each listing must have both a pattern and a template
-      // Filter out invalid listings that don't meet this requirement
-      if (patternIds.length === 0 || !row.product_template_id) {
-        console.warn(`[getAllListings] Invalid listing ${row.id}: missing pattern or template. Pattern IDs: ${patternIds.length}, Template ID: ${row.product_template_id || 'missing'}`);
-        return null;
-      }
-      
-      return {
+  const listings: Listing[] = [];
+  
+  for (const row of rows) {
+    // Get pattern IDs from listing_patterns junction table
+    const patternRows = db.prepare('SELECT pattern_id FROM listing_patterns WHERE listing_id = ?').all(row.id) as any[];
+    const patternIds = patternRows.map((p: any) => p.pattern_id);
+    
+    // REQUIREMENT: Each listing must have both a pattern and a template
+    // Filter out invalid listings that don't meet this requirement
+    if (patternIds.length === 0 || !row.product_template_id) {
+      console.warn(`[getAllListings] Invalid listing ${row.id}: missing pattern or template. Pattern IDs: ${patternIds.length}, Template ID: ${row.product_template_id || 'missing'}`);
+      continue;
+    }
+    
+    listings.push({
       id: row.id,
-      productTemplateId: row.product_template_id,
+      templateId: row.product_template_id,
       patternIds,
       title: row.title,
       description: row.description,
@@ -47,9 +48,10 @@ export function getAllListings(): Listing[] {
       seoScore: row.seo_score || undefined,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
-    };
-  })
-    .filter((listing): listing is Listing => listing !== null); // Remove null entries (invalid listings)
+    });
+  }
+  
+  return listings;
 }
 
 export function getListing(id: string): Listing | null {
@@ -68,7 +70,7 @@ export function getListing(id: string): Listing | null {
 
   return {
     id: row.id,
-    productTemplateId: row.product_template_id || row.product_id, // Support migration
+    templateId: row.product_template_id || row.product_id, // Support migration
     patternIds,
     title: row.title,
     description: row.description,
@@ -101,7 +103,7 @@ export function getListing(id: string): Listing | null {
  */
 async function generateListingWithAgent(
   patterns: Pattern[],
-  productTemplate: ProductTemplate,
+  productTemplate: Template,
   brandIdentity: BrandIdentity
 ): Promise<{
   title: string;
@@ -351,7 +353,7 @@ export async function generateListing(productTemplateId: string, patternIds: str
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id,
-    productTemplateId,
+    productTemplateId, // Database column name (still uses product_template_id)
     listingData.title,
     listingData.description,
     JSON.stringify(listingData.tags || []),
@@ -396,7 +398,7 @@ export async function generateListing(productTemplateId: string, patternIds: str
   console.log('[generateListing] Final listing retrieved:', {
     id: finalListing?.id,
     title: finalListing?.title,
-    productTemplateId: finalListing?.productTemplateId,
+    templateId: finalListing?.templateId,
     patternIds: finalListing?.patternIds,
   });
   console.log('[generateListing] Listing generation complete');
@@ -405,7 +407,7 @@ export async function generateListing(productTemplateId: string, patternIds: str
 }
 
 // Get all listings for a specific product template
-export function getListingsByProductTemplate(productTemplateId: string): Listing[] {
+export function getListingsByTemplate(productTemplateId: string): Listing[] {
   const rows = db.prepare('SELECT * FROM listings WHERE product_template_id = ? ORDER BY created_at DESC').all(productTemplateId) as any[];
   return rows.map((row) => {
     // Get pattern IDs from listing_patterns junction table
@@ -414,7 +416,7 @@ export function getListingsByProductTemplate(productTemplateId: string): Listing
     
     return {
       id: row.id,
-      productTemplateId: row.product_template_id,
+      templateId: row.product_template_id,
       patternIds,
       title: row.title,
       description: row.description,
@@ -449,7 +451,7 @@ export function getListingsByPattern(patternId: string): Listing[] {
     
     return {
       id: row.id,
-      productTemplateId: row.product_template_id,
+      templateId: row.product_template_id,
       patternIds,
       title: row.title,
       description: row.description,
@@ -618,7 +620,7 @@ export function updateListing(id: string, data: Partial<Listing>): Listing | nul
   console.log('[updateListing] Retrieved updated listing:', updatedListing ? {
     id: updatedListing.id,
     title: updatedListing.title,
-    productTemplateId: updatedListing.productTemplateId,
+    templateId: updatedListing.templateId,
     patternIds: updatedListing.patternIds,
   } : 'NOT FOUND');
   console.log('[updateListing] Update complete');

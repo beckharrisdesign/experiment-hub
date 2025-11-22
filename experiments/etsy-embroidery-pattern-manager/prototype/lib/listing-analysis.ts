@@ -1,4 +1,4 @@
-import { Listing, Pattern, ProductTemplate, BrandIdentity, SEOAnalysis } from '@/types';
+import { Listing, Pattern, Template, BrandIdentity, SEOAnalysis } from '@/types';
 import { getPattern } from './patterns';
 import { getProductTemplate } from './product-templates';
 import { getBrandIdentity } from './brand-identity';
@@ -87,16 +87,16 @@ export async function analyzeListing(listingId: string): Promise<ListingAnalysis
     return pattern;
   });
 
-  const productTemplate = getProductTemplate(listing.productTemplateId);
+  const productTemplate = getProductTemplate(listing.templateId);
   if (!productTemplate) {
-    throw new Error('Product template not found');
+    throw new Error('Template not found');
   }
 
   // Build context for analysis
   const listingContext = `Current Listing:
 - Title: "${listing.title}" (${listing.title.length} characters)
 - Description: ${listing.description.length} characters
-- Tags: ${listing.tags.length} tags - ${listing.tags.join(', ')}
+- Tags: ${(listing.tags || []).length} tags - ${(listing.tags || []).join(', ')}
 - Category: ${listing.category || 'Not set'}
 - Price: ${listing.price ? `$${listing.price.toFixed(2)}` : 'Not set'}`;
 

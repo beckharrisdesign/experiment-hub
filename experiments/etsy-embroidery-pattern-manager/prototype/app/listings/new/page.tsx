@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ProductTemplate, Pattern, Listing } from '@/types';
+import { Template, Pattern, Listing } from '@/types';
 import Toast from '@/components/shared/Toast';
 import Spinner from '@/components/shared/Spinner';
+import TemplateItem from '@/components/product-templates/TemplateItem';
+import PageHeader from '@/components/shared/PageHeader';
 
 interface ToastState {
   message: string;
@@ -17,9 +19,9 @@ type Step = 'template' | 'patterns' | 'edit';
 export default function NewListingPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>('template');
-  const [productTemplates, setProductTemplates] = useState<ProductTemplate[]>([]);
+  const [productTemplates, setTemplates] = useState<Template[]>([]);
   const [patterns, setPatterns] = useState<Pattern[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<ProductTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [availablePatterns, setAvailablePatterns] = useState<Pattern[]>([]);
   const [selectedPatternIds, setSelectedPatternIds] = useState<string[]>([]);
   const [generatedListing, setGeneratedListing] = useState<Listing | null>(null);
@@ -32,7 +34,7 @@ export default function NewListingPage() {
   };
 
   useEffect(() => {
-    fetchProductTemplates();
+    fetchTemplates();
     fetchPatterns();
   }, []);
 
@@ -46,13 +48,13 @@ export default function NewListingPage() {
     }
   }, [selectedTemplate, patterns]);
 
-  const fetchProductTemplates = async () => {
+  const fetchTemplates = async () => {
     try {
       const response = await fetch('/api/product-templates');
       if (response.ok) {
         const data = await response.json();
         // Show all templates - patterns will be selected in the next step
-        setProductTemplates(data);
+        setTemplates(data);
       }
     } catch (error) {
       console.error('Error fetching product templates:', error);
@@ -234,7 +236,7 @@ export default function NewListingPage() {
   return (
     <div className="min-h-screen bg-background-primary text-text-primary">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <header className="mb-8">
+        <PageHeader>
           <button
             onClick={() => router.push('/listings')}
             className="text-text-secondary hover:text-text-primary mb-4"
@@ -264,7 +266,7 @@ export default function NewListingPage() {
               <span className="font-medium">Edit Details</span>
             </div>
           </div>
-        </header>
+        </PageHeader>
 
         <div className="bg-background-secondary border border-border rounded-lg p-6">
           {step === 'template' && (
@@ -277,16 +279,12 @@ export default function NewListingPage() {
                     onClick={() => handleTemplateSelect(template.id)}
                     className="w-full text-left p-4 bg-background-tertiary border border-border rounded hover:border-accent-primary/50 hover:bg-background-primary transition"
                   >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-semibold text-text-primary">{template.name}</h3>
-                        <p className="text-sm text-text-secondary mt-1">
-                          {template.numberOfItems === 'single' ? 'Select 1 pattern' : 
-                           template.numberOfItems === 'three' ? 'Select 3 patterns' : 
-                           'Select 5 patterns'}
-                        </p>
-                      </div>
-                      <span className="text-accent-primary">→</span>
+                    <TemplateItem 
+                      template={template} 
+                      showDetails={true}
+                    />
+                    <div className="mt-2 text-right">
+                      <span className="text-accent-primary text-sm">→ Select</span>
                     </div>
                   </button>
                 ))}
@@ -416,10 +414,10 @@ export default function NewListingPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-2">
-                    Tags ({generatedListing.tags.length}/13)
+                    Tags ({(generatedListing.tags || []).length}/13)
                   </label>
                   <div className="flex flex-wrap gap-2 mb-2">
-                    {generatedListing.tags.map((tag, idx) => (
+                    {(generatedListing.tags || []).map((tag, idx) => (
                       <span
                         key={idx}
                         className="px-3 py-1 bg-background-tertiary border border-border rounded text-sm flex items-center gap-2"
@@ -427,7 +425,7 @@ export default function NewListingPage() {
                         {tag}
                         <button
                           onClick={() => {
-                            const newTags = generatedListing.tags.filter((_, i) => i !== idx);
+                            const newTags = (generatedListing.tags || []).filter((_, i) => i !== idx);
                             handleUpdateTags(newTags);
                           }}
                           className="text-text-secondary hover:text-text-primary"
@@ -443,8 +441,9 @@ export default function NewListingPage() {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                         const newTag = e.currentTarget.value.trim();
-                        if (generatedListing.tags.length < 13 && !generatedListing.tags.includes(newTag)) {
-                          handleUpdateTags([...generatedListing.tags, newTag]);
+                        const currentTags = generatedListing.tags || [];
+                        if (currentTags.length < 13 && !currentTags.includes(newTag)) {
+                          handleUpdateTags([...currentTags, newTag]);
                           e.currentTarget.value = '';
                         }
                       }

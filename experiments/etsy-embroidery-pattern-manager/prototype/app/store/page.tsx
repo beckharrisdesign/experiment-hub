@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { BrandIdentity } from '@/types';
 import Toast from '@/components/shared/Toast';
 import Spinner from '@/components/shared/Spinner';
+import PageHeader from '@/components/shared/PageHeader';
 
 interface ToastState {
   message: string;
@@ -57,12 +58,10 @@ export default function StorePage() {
   return (
     <div className="min-h-screen bg-background-primary text-text-primary">
       <div className="px-4 py-8 max-w-7xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold">Store</h1>
-          <p className="text-text-secondary mt-2">
-            Manage your store brand identity and settings
-          </p>
-        </header>
+        <PageHeader
+          title="Store"
+          description="Manage your store brand identity and settings"
+        />
 
         <div className="space-y-6">
           {/* Brand Identity Card */}
@@ -76,41 +75,98 @@ export default function StorePage() {
                 {brandIdentity ? 'Edit' : 'Setup'}
               </Link>
             </div>
-            {brandIdentity ? (
-              <div className="space-y-3">
-                <div>
-                  <span className="text-sm text-text-secondary">Store Name:</span>
-                  <span className="ml-2 text-text-primary font-medium">{brandIdentity.storeName}</span>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {brandIdentity?.storeName ? (
+                    <>
+                      <span className="text-green-500">✓</span>
+                      <span className="text-sm text-text-secondary">Store Name:</span>
+                      <span className="ml-2 text-text-primary font-medium">{brandIdentity.storeName}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-text-muted">○</span>
+                      <span className="text-sm text-text-secondary">Store Name:</span>
+                      <span className="ml-2 text-text-muted italic">Not set</span>
+                    </>
+                  )}
                 </div>
-                <div>
-                  <span className="text-sm text-text-secondary">Brand Tone:</span>
-                  <span className="ml-2 text-text-primary capitalize">{brandIdentity.brandTone}</span>
-                </div>
-                <div>
-                  <span className="text-sm text-text-secondary">Visual Style:</span>
-                  <span className="ml-2 text-text-primary capitalize">{brandIdentity.creativeDirection.visualStyle}</span>
-                </div>
-                {brandIdentity.creativeDirection.colorPalette && brandIdentity.creativeDirection.colorPalette.length > 0 && (
-                  <div>
-                    <span className="text-sm text-text-secondary">Color Palette:</span>
-                    <div className="flex gap-2 mt-2">
-                      {brandIdentity.creativeDirection.colorPalette.map((color, idx) => (
-                        <div
-                          key={idx}
-                          className="w-8 h-8 rounded border border-border"
-                          style={{ backgroundColor: color }}
-                          title={color}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
-            ) : (
-              <p className="text-text-secondary text-sm">
-                Set up your brand identity to start generating listings and content.
-              </p>
-            )}
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {brandIdentity?.brandTone ? (
+                    <>
+                      <span className="text-green-500">✓</span>
+                      <span className="text-sm text-text-secondary">Brand Tone:</span>
+                      <span className="ml-2 text-text-primary capitalize">{brandIdentity.brandTone}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-text-muted">○</span>
+                      <span className="text-sm text-text-secondary">Brand Tone:</span>
+                      <span className="ml-2 text-text-muted italic">Not set</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {brandIdentity?.creativeDirection?.visualStyle ? (
+                    <>
+                      <span className="text-green-500">✓</span>
+                      <span className="text-sm text-text-secondary">Visual Style:</span>
+                      <span className="ml-2 text-text-primary capitalize">{brandIdentity.creativeDirection.visualStyle}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-text-muted">○</span>
+                      <span className="text-sm text-text-secondary">Visual Style:</span>
+                      <span className="ml-2 text-text-muted italic">Not set</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {brandIdentity?.creativeDirection?.colorPalette && brandIdentity.creativeDirection.colorPalette.length > 0 ? (
+                    <>
+                      <span className="text-green-500">✓</span>
+                      <span className="text-sm text-text-secondary">Color Palette:</span>
+                      <div className="flex gap-2 ml-2">
+                        {brandIdentity.creativeDirection.colorPalette.map((color, idx) => (
+                          <div
+                            key={idx}
+                            className="w-8 h-8 rounded border border-border"
+                            style={{ backgroundColor: color }}
+                            title={color}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-text-muted">○</span>
+                      <span className="text-sm text-text-secondary">Color Palette:</span>
+                      <span className="ml-2 text-text-muted italic">Not set</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              {brandIdentity?.creativeDirection?.typography && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-500">✓</span>
+                    <span className="text-sm text-text-secondary">Typography:</span>
+                    <span className="ml-2 text-text-primary">{brandIdentity.creativeDirection.typography}</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Coming Soon Sections */}

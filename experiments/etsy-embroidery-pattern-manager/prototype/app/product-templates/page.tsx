@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ProductTemplate, Pattern, ProductTemplateType } from '@/types';
+import { Template, Pattern, TemplateType } from '@/types';
 import Toast from '@/components/shared/Toast';
 import Spinner from '@/components/shared/Spinner';
+import PageHeader from '@/components/shared/PageHeader';
 
-interface ProductTemplateWithPatterns extends ProductTemplate {
+interface TemplateWithPatterns extends Template {
   patterns?: Pattern[];
 }
 
@@ -17,9 +18,9 @@ interface ToastState {
   isVisible: boolean;
 }
 
-export default function ProductTemplatesPage() {
+export default function TemplatesPage() {
   const router = useRouter();
-  const [productTemplates, setProductTemplates] = useState<ProductTemplateWithPatterns[]>([]);
+  const [templates, setTemplates] = useState<TemplateWithPatterns[]>([]);
   const [patterns, setPatterns] = useState<Pattern[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
@@ -38,32 +39,32 @@ export default function ProductTemplatesPage() {
 
   const fetchData = async () => {
     try {
-      const [productTemplatesResponse, patternsResponse] = await Promise.all([
-        fetch('/api/product-templates'),
+      const [templatesResponse, patternsResponse] = await Promise.all([
+        fetch('/api/templates'),
         fetch('/api/patterns'),
       ]);
 
-      const productTemplatesData: ProductTemplate[] = productTemplatesResponse.ok ? await productTemplatesResponse.json() : [];
+      const templatesData: Template[] = templatesResponse.ok ? await templatesResponse.json() : [];
       const patternsData: Pattern[] = patternsResponse.ok ? await patternsResponse.json() : [];
 
       // Templates don't need pre-associated patterns - any pattern can be used with any template
-      const productTemplatesWithPatterns: ProductTemplateWithPatterns[] = productTemplatesData.map((productTemplate) => ({
-        ...productTemplate,
+      const templatesWithPatterns: TemplateWithPatterns[] = templatesData.map((template) => ({
+        ...template,
         patterns: [], // No pre-filtering - patterns are selected when creating listings
       }));
 
-      setProductTemplates(productTemplatesWithPatterns);
+      setTemplates(templatesWithPatterns);
       setPatterns(patternsData);
     } catch (error) {
       console.error('Error fetching data:', error);
-      showToast('Error loading product templates', 'error');
+      showToast('Error loading templates', 'error');
     } finally {
       setLoading(false);
     }
   };
 
 
-  const getTypeLabel = (type: ProductTemplateType) => {
+  const getTypeLabel = (type: TemplateType) => {
     return type.charAt(0).toUpperCase() + type.slice(1); // Capitalize first letter
   };
 
@@ -83,89 +84,105 @@ export default function ProductTemplatesPage() {
   return (
     <div className="min-h-screen bg-background-primary text-text-primary">
       <div className="px-4 py-8 max-w-7xl mx-auto">
-        <header className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Product Templates</h1>
-            <p className="text-text-secondary mt-2">
-              Manage product templates that can be applied to your patterns
-            </p>
-          </div>
-          <button
-            onClick={() => router.push('/product-templates/new')}
-            className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition"
-          >
-            + New Product Template
-          </button>
-        </header>
-
-        {productTemplates.length === 0 ? (
-          <div className="bg-background-secondary border border-border rounded-lg p-12 text-center">
-            <p className="text-text-secondary mb-4">No product templates yet</p>
+        <PageHeader
+          title="Templates"
+          description="Manage templates that can be applied to your patterns"
+          action={
             <button
-              onClick={() => router.push('/product-templates/new')}
+              onClick={() => router.push('/templates/new')}
               className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition"
             >
-              Create Your First Product Template
+              + New Template
             </button>
+          }
+        />
+
+        {templates.length === 0 ? (
+          <div className="bg-background-secondary border border-border rounded-lg p-12 text-center">
+            <p className="text-text-secondary mb-4">No templates yet</p>
+            <p className="text-sm text-text-muted">
+              Create a new template to get started
+            </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-background-tertiary">
-                  <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Product Template</th>
-                  <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Type</th>
-                  <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Number of Items</th>
-                  <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {productTemplates.map((productTemplate) => (
-                  <tr
-                    key={productTemplate.id}
-                    className="border-b border-border hover:bg-background-tertiary transition"
-                  >
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="font-medium text-text-primary">
-                          {productTemplate.title || productTemplate.name}
-                        </div>
-                        {productTemplate.commonInstructions && (
-                          <div className="text-sm text-text-secondary line-clamp-1 mt-1">
-                            {productTemplate.commonInstructions}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {productTemplate.types
-                          .filter((type): type is ProductTemplateType => type === 'digital' || type === 'physical')
-                          .map((type, index) => (
-                            <span key={type} className="text-sm text-text-secondary">
-                              {index > 0 && <span className="text-text-secondary">, </span>}
-                              {getTypeLabel(type)}
-                            </span>
-                          ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-text-primary font-medium">
-                        {getNumberOfItemsLabel(productTemplate.numberOfItems || 'single')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => router.push(`/product-templates/${productTemplate.id}`)}
-                        className="px-3 py-1.5 text-xs bg-background-tertiary border border-border rounded hover:bg-background-primary transition"
-                      >
-                        Edit
-                      </button>
-                    </td>
+          <div className="bg-background-secondary border border-border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-background-tertiary">
+                    <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Image</th>
+                    <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Name</th>
+                    <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Type</th>
+                    <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Items</th>
+                    <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Updated</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {templates.map((template) => {
+                    const updatedDate = new Date(template.updatedAt);
+                    const formattedDate = updatedDate.toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    });
+                    
+                    return (
+                      <tr
+                        key={template.id}
+                        className="border-b border-border hover:bg-background-tertiary transition cursor-pointer"
+                        onClick={() => router.push(`/templates/${template.id}`)}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="w-16 h-16 bg-background-tertiary border border-border rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {template.imageUrl ? (
+                              <img
+                                src={template.imageUrl}
+                                alt={template.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-text-muted text-xs">
+                                {template.name.charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Link
+                            href={`/templates/${template.id}`}
+                            className="font-medium text-text-primary hover:text-accent-primary transition block"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {template.title || template.name}
+                          </Link>
+                          {template.commonInstructions && (
+                            <div className="text-xs text-text-secondary mt-1 line-clamp-1">
+                              {template.commonInstructions}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-text-secondary">
+                            {template.types
+                              .filter((type): type is TemplateType => type === 'digital' || type === 'physical')
+                              .map((type) => getTypeLabel(type))
+                              .join(', ') || '—'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-text-secondary">
+                            {getNumberOfItemsLabel(template.numberOfItems || 'single')}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-text-secondary">{formattedDate}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

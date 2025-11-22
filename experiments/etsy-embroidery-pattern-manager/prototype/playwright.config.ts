@@ -43,8 +43,6 @@ export default defineConfig({
     timeout: 120 * 1000,
     stdout: 'ignore',
     stderr: 'pipe',
-    // Kill server after tests complete
-    killOnExit: true,
   },
 });
 

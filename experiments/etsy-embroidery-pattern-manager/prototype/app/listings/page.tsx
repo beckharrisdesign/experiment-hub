@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Listing } from '@/types';
 import Toast from '@/components/shared/Toast';
 import Spinner from '@/components/shared/Spinner';
+import PageHeader from '@/components/shared/PageHeader';
 
 interface ToastState {
   message: string;
@@ -86,18 +87,18 @@ export default function ListingsPage() {
   return (
     <div className="min-h-screen bg-background-primary text-text-primary">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <header className="mb-8 flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Listings</h1>
-            <p className="text-text-secondary">Generate optimized Etsy listing content</p>
-          </div>
-          <button
-            onClick={() => router.push('/listings/new')}
-            className="px-6 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition"
-          >
-            Create New Listing
-          </button>
-        </header>
+        <PageHeader
+          title="Listings"
+          description="Generate optimized Etsy listing content"
+          action={
+            <button
+              onClick={() => router.push('/listings/new')}
+              className="px-6 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition"
+            >
+              Create New Listing
+            </button>
+          }
+        />
 
         {listings.length === 0 ? (
           <div className="text-center py-12 text-text-secondary">
@@ -119,7 +120,7 @@ export default function ListingsPage() {
                 <tbody>
                   {listings.map((listing) => {
                     const listingPatterns = patterns.filter((p) => listing.patternIds?.includes(p.id));
-                    const template = products.find((p) => p.id === listing.productTemplateId);
+                    const template = products.find((p) => p.id === listing.templateId);
                     const updatedDate = new Date(listing.updatedAt);
                     const formattedDate = updatedDate.toLocaleDateString('en-US', {
                       month: 'short',

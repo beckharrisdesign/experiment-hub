@@ -3,6 +3,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { createPattern } from '@/lib/patterns';
+import { analyzeImage } from '@/lib/openai';
 
 // Disable body parsing, we'll handle it manually
 export const runtime = 'nodejs';
@@ -48,13 +49,15 @@ export async function POST(request: NextRequest) {
     }
     
     console.log('Files array details:');
-    files.forEach((f, i) => {
+    files.forEach((f: any, i) => {
+      const isFile = f instanceof File;
+      const isBlob = f instanceof Blob;
       console.log(`  File ${i}:`, {
-        isFile: f instanceof File,
-        isBlob: f instanceof Blob,
-        name: f instanceof File ? f.name : (f instanceof Blob ? 'blob' : 'unknown'),
-        type: f instanceof File ? f.type : (f instanceof Blob ? f.type : 'unknown'),
-        size: f instanceof File ? f.size : (f instanceof Blob ? f.size : 'unknown'),
+        isFile,
+        isBlob,
+        name: isFile ? f.name : (isBlob ? 'blob' : 'unknown'),
+        type: isFile ? f.type : (isBlob ? f.type : 'unknown'),
+        size: isFile ? f.size : (isBlob ? f.size : 'unknown'),
         constructor: f?.constructor?.name
       });
     });
@@ -74,7 +77,8 @@ export async function POST(request: NextRequest) {
     }> = [];
 
     for (let i = 0; i < files.length; i++) {
-      let file = files[i];
+      let file: File | FormDataEntryValue = files[i];
+      let fileAsFile: File | null = null;
       const validation: Record<string, { passed: boolean; reason?: string }> = {};
       let rejectionReason: string | undefined;
       
@@ -83,30 +87,31 @@ export async function POST(request: NextRequest) {
         console.log(`FILE ${i + 1} of ${files.length}: VALIDATION START`);
         console.log(`${'='.repeat(60)}`);
         
+        const fileAny: any = file;
         const initialInfo = {
-          name: file instanceof File ? file.name : 'unknown',
-          type: file instanceof File ? file.type : 'unknown',
-          size: file instanceof File ? file.size : 'unknown',
-          isFile: file instanceof File,
-          isBlob: file instanceof Blob,
-          constructor: file?.constructor?.name,
+          name: fileAny instanceof File ? fileAny.name : 'unknown',
+          type: fileAny instanceof File ? fileAny.type : 'unknown',
+          size: fileAny instanceof File ? fileAny.size : 'unknown',
+          isFile: fileAny instanceof File,
+          isBlob: fileAny instanceof Blob,
+          constructor: fileAny?.constructor?.name,
         };
         console.log('Initial file info:', initialInfo);
 
         // CHECK 1: Is it a File object?
         console.log(`\n[CHECK 1] Is File object?`);
-        if (!(file instanceof File)) {
+        if (!(fileAny instanceof File)) {
           validation['isFileObject'] = { 
             passed: false, 
-            reason: `Not a File instance. Type: ${typeof file}, Constructor: ${file?.constructor?.name}` 
+            reason: `Not a File instance. Type: ${typeof fileAny}, Constructor: ${fileAny?.constructor?.name}` 
           };
           console.log(`  ❌ FAILED: ${validation['isFileObject'].reason}`);
           
           // Try to convert if it's a Blob
-          if (file instanceof Blob) {
+          if (fileAny instanceof Blob) {
             console.log(`  ⚠️  Attempting to convert Blob to File...`);
-            const fileName = `image-${i}.${file.type.split('/')[1] || 'png'}`;
-            file = new File([file], fileName, { type: file.type });
+            const fileName = `image-${i}.${fileAny.type.split('/')[1] || 'png'}`;
+            file = new File([fileAny], fileName, { type: fileAny.type });
             validation['isFileObject'] = { 
               passed: true, 
               reason: 'Converted from Blob to File' 
@@ -133,9 +138,14 @@ export async function POST(request: NextRequest) {
           console.log(`  ✅ PASSED: Is a File object`);
         }
 
+        // At this point, file should be a File - ensure fileAsFile is set
+        if (!fileAsFile) {
+          fileAsFile = file as File;
+        }
+
         // CHECK 2: File has a name
         console.log(`\n[CHECK 2] Has file name?`);
-        if (!file.name || file.name.trim() === '') {
+        if (!fileAsFile.name || fileAsFile.name.trim() === '') {
           validation['hasFileName'] = { 
             passed: false, 
             reason: 'File has no name or empty name' 
@@ -152,12 +162,12 @@ export async function POST(request: NextRequest) {
           continue;
         } else {
           validation['hasFileName'] = { passed: true };
-          console.log(`  ✅ PASSED: File name is "${file.name}"`);
+          console.log(`  ✅ PASSED: File name is "${fileAsFile.name}"`);
         }
 
         // CHECK 3: File has size > 0
         console.log(`\n[CHECK 3] Has file size > 0?`);
-        if (file.size === 0) {
+        if (fileAsFile.size === 0) {
           validation['hasSize'] = { 
             passed: false, 
             reason: `File size is 0 bytes` 
@@ -166,27 +176,27 @@ export async function POST(request: NextRequest) {
           rejectionReason = validation['hasSize'].reason;
           validationResults.push({
             index: i,
-            fileName: file.name,
+            fileName: fileAsFile.name,
             checks: validation,
             finalStatus: 'rejected',
             rejectionReason
           });
           continue;
         } else {
-          validation['hasSize'] = { passed: true, reason: `File size is ${file.size} bytes` };
+          validation['hasSize'] = { passed: true, reason: `File size is ${fileAsFile.size} bytes` };
           console.log(`  ✅ PASSED: ${validation['hasSize'].reason}`);
         }
 
         // CHECK 4: Has image MIME type
         console.log(`\n[CHECK 4] Has image MIME type?`);
-        const hasImageType = file.type && file.type.startsWith('image/');
+        const hasImageType = fileAsFile.type && fileAsFile.type.startsWith('image/');
         if (hasImageType) {
-          validation['hasImageType'] = { passed: true, reason: `MIME type is "${file.type}"` };
+          validation['hasImageType'] = { passed: true, reason: `MIME type is "${fileAsFile.type}"` };
           console.log(`  ✅ PASSED: ${validation['hasImageType'].reason}`);
         } else {
           validation['hasImageType'] = { 
             passed: false, 
-            reason: file.type ? `MIME type is "${file.type}" (not image/*)` : 'No MIME type set' 
+            reason: fileAsFile.type ? `MIME type is "${fileAsFile.type}" (not image/*)` : 'No MIME type set' 
           };
           console.log(`  ❌ FAILED: ${validation['hasImageType'].reason}`);
         }
@@ -194,16 +204,16 @@ export async function POST(request: NextRequest) {
         // CHECK 5: Has image file extension
         console.log(`\n[CHECK 5] Has image file extension?`);
         const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg|bmp|ico|tiff|tif|heic|heif)$/i;
-        const hasImageExtension = file.name && imageExtensions.test(file.name);
+        const hasImageExtension = fileAsFile.name && imageExtensions.test(fileAsFile.name);
         if (hasImageExtension) {
-          const match = file.name.match(imageExtensions);
+          const match = fileAsFile.name.match(imageExtensions);
           validation['hasImageExtension'] = { 
             passed: true, 
             reason: `File extension "${match?.[0]}" is a recognized image format` 
           };
           console.log(`  ✅ PASSED: ${validation['hasImageExtension'].reason}`);
         } else {
-          const ext = file.name.split('.').pop() || 'none';
+          const ext = fileAsFile.name.split('.').pop() || 'none';
           validation['hasImageExtension'] = { 
             passed: false, 
             reason: `File extension ".${ext}" is not a recognized image format` 
@@ -213,7 +223,7 @@ export async function POST(request: NextRequest) {
 
         // CHECK 6: Overall validation - accept if has type OR extension OR just has content
         console.log(`\n[CHECK 6] Overall validation decision`);
-        const willAccept = hasImageType || hasImageExtension || (file.name && file.size > 0);
+        const willAccept = hasImageType || hasImageExtension || (fileAsFile.name && fileAsFile.size > 0);
         
         if (!willAccept) {
           validation['overallValidation'] = { 
@@ -224,7 +234,7 @@ export async function POST(request: NextRequest) {
           rejectionReason = validation['overallValidation'].reason;
           validationResults.push({
             index: i,
-            fileName: file.name,
+            fileName: fileAsFile.name,
             checks: validation,
             finalStatus: 'rejected',
             rejectionReason
@@ -246,10 +256,10 @@ export async function POST(request: NextRequest) {
         }
 
         console.log(`\n✅ FILE ${i + 1} PASSED ALL VALIDATION CHECKS`);
-        console.log(`   Proceeding to process: ${file.name}`);
+        console.log(`   Proceeding to process: ${fileAsFile.name}`);
 
         // Generate unique filename
-        const fileExtension = file.name.split('.').pop() || 'png';
+        const fileExtension = fileAsFile.name.split('.').pop() || 'png';
         const patternId = randomUUID();
         const fileName = `${patternId}-${randomUUID()}.${fileExtension}`;
         const filePath = path.join(uploadsDir, fileName);
@@ -258,7 +268,7 @@ export async function POST(request: NextRequest) {
         
         // Convert file to buffer and save
         console.log(`  Reading file bytes...`);
-        const bytes = await file.arrayBuffer();
+        const bytes = await fileAsFile.arrayBuffer();
         console.log(`  File bytes read: ${bytes.byteLength} bytes`);
         const buffer = Buffer.from(bytes);
         console.log(`  Buffer created: ${buffer.length} bytes`);
@@ -272,14 +282,27 @@ export async function POST(request: NextRequest) {
         console.log(`  File verification: ${stats.size} bytes on disk`);
 
         // Generate pattern name from filename (remove extension)
-        const baseName = file.name.replace(/\.[^/.]+$/, '');
+        const baseName = fileAsFile.name.replace(/\.[^/.]+$/, '');
         const patternName = baseName || `Pattern ${new Date().toLocaleDateString()}`;
         const imageUrl = `/uploads/patterns/${fileName}`;
 
-        // Create pattern with default values
+        // Analyze image using listing agent to generate description
+        let generatedNotes: string | undefined;
+        try {
+          console.log(`  Analyzing image with listing agent...`);
+          generatedNotes = await analyzeImage(filePath);
+          console.log(`  ✓ Image analyzed, description generated (${generatedNotes.length} chars)`);
+        } catch (analysisError) {
+          console.warn(`  ⚠️  Image analysis failed:`, analysisError);
+          // Continue without description if analysis fails
+          generatedNotes = undefined;
+        }
+
+        // Create pattern with image analysis description
         const pattern = createPattern({
           name: patternName,
           imageUrl: imageUrl,
+          notes: generatedNotes,
         });
 
         console.log('Pattern created:', pattern.id, pattern.name);
@@ -291,13 +314,13 @@ export async function POST(request: NextRequest) {
         
         validationResults.push({
           index: i,
-          fileName: file.name,
+          fileName: fileAsFile.name,
           checks: validation,
           finalStatus: 'accepted'
         });
       } catch (fileError) {
         console.error(`\n❌❌❌ ERROR PROCESSING FILE ${i + 1} ❌❌❌`);
-        console.error(`   File: ${file.name}`);
+        console.error(`   File: ${fileAsFile?.name || 'unknown'}`);
         console.error(`   Error:`, fileError);
         if (fileError instanceof Error) {
           console.error(`   Error message: ${fileError.message}`);
@@ -306,7 +329,7 @@ export async function POST(request: NextRequest) {
         
         validationResults.push({
           index: i,
-          fileName: file.name,
+          fileName: fileAsFile?.name || (file as any)?.name || 'unknown',
           checks: validation,
           finalStatus: 'rejected',
           rejectionReason: fileError instanceof Error ? fileError.message : 'Unknown error during processing'

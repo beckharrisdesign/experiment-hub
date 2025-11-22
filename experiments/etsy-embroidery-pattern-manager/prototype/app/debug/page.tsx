@@ -4,7 +4,9 @@ import { useState } from 'react';
 import Toast from '@/components/shared/Toast';
 import Spinner from '@/components/shared/Spinner';
 import PatternItem from '@/components/patterns/PatternItem';
-import { Pattern } from '@/types';
+import TemplateItem from '@/components/product-templates/TemplateItem';
+import { Pattern, Template } from '@/types';
+import PageHeader from '@/components/shared/PageHeader';
 
 interface ToastState {
   message: string;
@@ -47,15 +49,36 @@ export default function DebugPage() {
     updatedAt: new Date().toISOString(),
   };
 
+  const sampleTemplate: Template = {
+    id: 'sample-template-1',
+    name: 'Single Digital Download',
+    types: ['digital'],
+    numberOfItems: 'single',
+    patternIds: [],
+    commonInstructions: 'Instant download after purchase. Includes PDF pattern file and instructions.',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  const sampleTemplateWithImage: Template = {
+    id: 'sample-template-2',
+    name: '3-Pattern Bundle',
+    types: ['digital'],
+    numberOfItems: 'three',
+    patternIds: [],
+    commonInstructions: 'Bundle of three coordinating patterns. Great value!',
+    imageUrl: '/uploads/templates/sample.jpg',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
   return (
     <div className="min-h-screen bg-background-primary text-text-primary">
       <div className="px-4 py-8 max-w-7xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold">Component Debug</h1>
-          <p className="text-text-secondary mt-2">
-            Sample instances of all common components
-          </p>
-        </header>
+        <PageHeader
+          title="Component Debug"
+          description="Sample instances of all common components"
+        />
 
         <div className="space-y-12">
           {/* Toast Component */}
@@ -126,6 +149,28 @@ export default function DebugPage() {
               <div className="bg-background-tertiary border border-border rounded-lg p-4">
                 <h3 className="text-lg font-medium mb-3 text-text-secondary">With Details (With Image)</h3>
                 <PatternItem pattern={samplePatternWithImage} showDetails={true} />
+              </div>
+            </div>
+          </section>
+
+          {/* TemplateItem Component */}
+          <section className="bg-background-secondary border border-border rounded-lg p-6">
+            <h2 className="text-2xl font-semibold mb-4">TemplateItem Component</h2>
+            <p className="text-text-secondary mb-4">
+              Template item display with and without images.
+            </p>
+            <div className="space-y-6">
+              <div className="bg-background-tertiary border border-border rounded-lg p-4">
+                <h3 className="text-lg font-medium mb-3 text-text-secondary">With Details (No Image)</h3>
+                <TemplateItem template={sampleTemplate} showDetails={true} />
+              </div>
+              <div className="bg-background-tertiary border border-border rounded-lg p-4">
+                <h3 className="text-lg font-medium mb-3 text-text-secondary">Without Details (No Image)</h3>
+                <TemplateItem template={sampleTemplate} showDetails={false} />
+              </div>
+              <div className="bg-background-tertiary border border-border rounded-lg p-4">
+                <h3 className="text-lg font-medium mb-3 text-text-secondary">With Details (With Image)</h3>
+                <TemplateItem template={sampleTemplateWithImage} showDetails={true} />
               </div>
             </div>
           </section>

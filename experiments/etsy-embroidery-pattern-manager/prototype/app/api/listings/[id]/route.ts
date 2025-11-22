@@ -43,11 +43,11 @@ export async function PATCH(
       }
     }
     
-    // Validate that productTemplateId is not being removed
-    if (body.productTemplateId !== undefined && !body.productTemplateId) {
-      console.log('[API /listings/[id] PATCH] Error: productTemplateId cannot be removed');
+    // Validate that templateId is not being removed
+    if (body.templateId !== undefined && !body.templateId) {
+      console.log('[API /listings/[id] PATCH] Error: templateId cannot be removed');
       return NextResponse.json({ 
-        error: 'A listing must have a product template. Cannot remove the template.' 
+        error: 'A listing must have a template. Cannot remove the template.' 
       }, { status: 400 });
     }
     
@@ -62,7 +62,7 @@ export async function PATCH(
     console.log('[API /listings/[id] PATCH] Updated listing:', {
       id: updated.id,
       title: updated.title,
-      productTemplateId: updated.productTemplateId,
+      templateId: updated.templateId,
       patternIds: updated.patternIds,
     });
     

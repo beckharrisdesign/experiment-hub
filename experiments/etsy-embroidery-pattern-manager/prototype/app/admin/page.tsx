@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import PageHeader from '@/components/shared/PageHeader';
 
 interface TableData {
   tableName: string;
@@ -91,10 +92,10 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-background-primary text-text-primary">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Database Admin</h1>
-          <p className="text-text-secondary">View and manage SQLite database</p>
-        </header>
+        <PageHeader
+          title="Database Admin"
+          description="View and manage SQLite database"
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Tables List */}

@@ -1,8 +1,8 @@
 import db from './db';
-import { ProductTemplate, ProductTemplateType } from '@/types';
+import { Template, TemplateType } from '@/types';
 import { randomUUID } from 'crypto';
 
-export function getAllProductTemplates(): ProductTemplate[] {
+export function getAllProductTemplates(): Template[] {
   const rows = db.prepare('SELECT * FROM product_templates ORDER BY created_at DESC').all() as any[];
   return rows.map((row) => {
     // Get pattern IDs from junction table
@@ -10,15 +10,15 @@ export function getAllProductTemplates(): ProductTemplate[] {
     const patternIds = patternRows.map((pr: any) => pr.pattern_id);
     
     // Handle types: can be JSON array or single string (for backward compatibility)
-    let types: ProductTemplateType[] = [];
+    let types: TemplateType[] = [];
     if (row.type) {
       try {
         types = JSON.parse(row.type);
         if (!Array.isArray(types)) {
-          types = [row.type as ProductTemplateType];
+          types = [row.type as TemplateType];
         }
       } catch {
-        types = [row.type as ProductTemplateType];
+        types = [row.type as TemplateType];
       }
     }
     
@@ -38,7 +38,7 @@ export function getAllProductTemplates(): ProductTemplate[] {
   });
 }
 
-export function getProductTemplate(id: string): ProductTemplate | null {
+export function getProductTemplate(id: string): Template | null {
   const row = db.prepare('SELECT * FROM product_templates WHERE id = ?').get(id) as any;
   if (!row) return null;
 
@@ -47,15 +47,15 @@ export function getProductTemplate(id: string): ProductTemplate | null {
   const patternIds = patternRows.map((pr: any) => pr.pattern_id);
 
   // Handle types: can be JSON array or single string (for backward compatibility)
-  let types: ProductTemplateType[] = [];
+  let types: TemplateType[] = [];
   if (row.type) {
     try {
       types = JSON.parse(row.type);
       if (!Array.isArray(types)) {
-        types = [row.type as ProductTemplateType];
+        types = [row.type as TemplateType];
       }
     } catch {
-      types = [row.type as ProductTemplateType];
+      types = [row.type as TemplateType];
     }
   }
 
@@ -74,7 +74,7 @@ export function getProductTemplate(id: string): ProductTemplate | null {
   };
 }
 
-export function getProductTemplatesByPattern(patternId: string): ProductTemplate[] {
+export function getProductTemplatesByPattern(patternId: string): Template[] {
   // Get product templates through junction table
   const productTemplateRows = db.prepare(`
     SELECT pt.* FROM product_templates pt
@@ -89,15 +89,15 @@ export function getProductTemplatesByPattern(patternId: string): ProductTemplate
     const patternIds = patternRows.map((pr: any) => pr.pattern_id);
     
     // Handle types: can be JSON array or single string (for backward compatibility)
-    let types: ProductTemplateType[] = [];
+    let types: TemplateType[] = [];
     if (row.type) {
       try {
         types = JSON.parse(row.type);
         if (!Array.isArray(types)) {
-          types = [row.type as ProductTemplateType];
+          types = [row.type as TemplateType];
         }
       } catch {
-        types = [row.type as ProductTemplateType];
+        types = [row.type as TemplateType];
       }
     }
     
@@ -119,13 +119,13 @@ export function getProductTemplatesByPattern(patternId: string): ProductTemplate
 
 export function createProductTemplate(data: {
   name: string;
-  types: ProductTemplateType[];
+  types: TemplateType[];
   numberOfItems?: 'single' | 'three' | 'five';
   patternIds?: string[]; // Can be empty, 1, or many
   title?: string;
   commonInstructions?: string;
   imageUrl?: string;
-}): ProductTemplate {
+}): Template {
   const id = randomUUID();
   const now = new Date().toISOString();
   const patternIds = data.patternIds || [];
@@ -169,7 +169,7 @@ export function createProductTemplate(data: {
   return getProductTemplate(id)!;
 }
 
-export function updateProductTemplate(id: string, data: Partial<ProductTemplate>): ProductTemplate | null {
+export function updateProductTemplate(id: string, data: Partial<Template>): Template | null {
   const updates: string[] = [];
   const values: any[] = [];
 

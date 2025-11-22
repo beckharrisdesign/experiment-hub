@@ -35,18 +35,18 @@ export interface Release {
   updatedAt: string;
 }
 
-// Product Template Types (templates that can be applied to one or more patterns)
+// Template Types (templates that can be applied to one or more patterns)
 // Examples:
 // - Single digital listing (1 pattern)
 // - Single embroidery kit (1 pattern)
 // - Bundle of 3 digital patterns (3 patterns)
 // - Custom bundle (N patterns)
-export type ProductTemplateType = 'digital' | 'physical';
+export type TemplateType = 'digital' | 'physical';
 
-export interface ProductTemplate {
+export interface Template {
   id: string;
   name: string; // Template name (e.g., "Digital PDF Listing", "Embroidery Kit", "3-Pattern Bundle")
-  types: ProductTemplateType[]; // Can have multiple types
+  types: TemplateType[]; // Can have multiple types
   numberOfItems: 'single' | 'three' | 'five'; // Number of items in the bundle
   patternIds: string[]; // Can be 0, 1, or many patterns
   title?: string; // Reserved for future use
@@ -62,7 +62,7 @@ export interface ProductTemplate {
 // The listing stores references back to both the template and pattern objects
 export interface Listing {
   id: string;
-  productTemplateId: string; // Backward reference to product template
+  templateId: string; // Backward reference to template
   patternIds: string[]; // Backward references to pattern objects (via listing_patterns junction table)
   
   // Basic Information

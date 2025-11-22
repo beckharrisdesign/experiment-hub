@@ -2,9 +2,10 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ProductTemplate, ProductTemplateType } from '@/types';
+import { Template, TemplateType } from '@/types';
 import Toast from '@/components/shared/Toast';
 import Spinner from '@/components/shared/Spinner';
+import PageHeader from '@/components/shared/PageHeader';
 
 interface ToastState {
   message: string;
@@ -12,13 +13,13 @@ interface ToastState {
   isVisible: boolean;
 }
 
-export default function NewProductTemplatePage() {
+export default function NewTemplatePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [productTemplateFormData, setProductTemplateFormData] = useState({
+  const [templateFormData, setTemplateFormData] = useState({
     name: 'Single Digital Pattern Download',
-    types: ['digital'] as ProductTemplateType[],
+    types: ['digital'] as TemplateType[],
     numberOfItems: 'single' as 'single' | 'three' | 'five',
     commonInstructions: '',
   });
@@ -35,35 +36,35 @@ export default function NewProductTemplatePage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!productTemplateFormData.name || productTemplateFormData.types.length === 0) {
+    if (!templateFormData.name || templateFormData.types.length === 0) {
       showToast('Name and at least one type are required', 'error');
       return;
     }
 
     setSaving(true);
     try {
-      const response = await fetch('/api/product-templates', {
+      const response = await fetch('/api/templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-          name: productTemplateFormData.name,
-          types: productTemplateFormData.types,
-          numberOfItems: productTemplateFormData.numberOfItems,
-          commonInstructions: productTemplateFormData.commonInstructions || null,
+          name: templateFormData.name,
+          types: templateFormData.types,
+          numberOfItems: templateFormData.numberOfItems,
+          commonInstructions: templateFormData.commonInstructions || null,
         }),
       });
 
       if (response.ok) {
-        const newProductTemplate = await response.json();
-        showToast('Product template created successfully', 'success');
-        router.push(`/product-templates/${newProductTemplate.id}`);
+        const newTemplate = await response.json();
+        showToast('Template created successfully', 'success');
+        router.push(`/templates/${newTemplate.id}`);
       } else {
         const error = await response.json();
-        showToast(error.error || 'Failed to create product template', 'error');
+        showToast(error.error || 'Failed to create template', 'error');
       }
     } catch (error) {
-      console.error('Error creating product template:', error);
-      showToast('Error creating product template', 'error');
+      console.error('Error creating template:', error);
+      showToast('Error creating template', 'error');
     } finally {
       setSaving(false);
     }
@@ -81,18 +82,11 @@ export default function NewProductTemplatePage() {
   return (
     <div className="min-h-screen bg-background-primary text-text-primary">
       <div className="px-4 py-8 max-w-7xl mx-auto">
-        <header className="mb-8">
-          <button
-            onClick={() => router.back()}
-            className="text-text-secondary hover:text-text-primary transition mb-4"
-          >
-            ← Back
-          </button>
-          <h1 className="text-3xl font-bold">Create Product Template</h1>
-          <p className="text-text-secondary mt-2">
-            Product templates can be applied to one or more patterns
-          </p>
-        </header>
+        <PageHeader
+          title="Create Template"
+          description="Templates can be applied to one or more patterns"
+          backButton={true}
+        />
 
         <form onSubmit={handleSave} className="space-y-6">
           {/* Basic Info Section */}
@@ -104,8 +98,8 @@ export default function NewProductTemplatePage() {
                 <label className="block text-sm font-medium mb-2">Template Name *</label>
                 <input
                   type="text"
-                  value={productTemplateFormData.name}
-                  onChange={(e) => setProductTemplateFormData({ ...productTemplateFormData, name: e.target.value })}
+                  value={templateFormData.name}
+                  onChange={(e) => setTemplateFormData({ ...templateFormData, name: e.target.value })}
                   className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
                   placeholder="e.g., Single Digital Pattern Download"
                   required
@@ -118,24 +112,24 @@ export default function NewProductTemplatePage() {
                   Select one or more types for this template
                 </p>
                 <div className="space-y-2">
-                  {(['digital', 'physical'] as ProductTemplateType[]).map((type) => (
+                  {(['digital', 'physical'] as TemplateType[]).map((type) => (
                     <label
                       key={type}
                       className="flex items-center gap-2 p-2 hover:bg-background-secondary rounded cursor-pointer"
                     >
                       <input
                         type="checkbox"
-                        checked={productTemplateFormData.types.includes(type)}
+                        checked={templateFormData.types.includes(type)}
                         onChange={(e) => {
                           if (e.target.checked) {
-                            setProductTemplateFormData({
-                              ...productTemplateFormData,
-                              types: [...productTemplateFormData.types, type],
+                            setTemplateFormData({
+                              ...templateFormData,
+                              types: [...templateFormData.types, type],
                             });
                           } else {
-                            setProductTemplateFormData({
-                              ...productTemplateFormData,
-                              types: productTemplateFormData.types.filter((t) => t !== type),
+                            setTemplateFormData({
+                              ...templateFormData,
+                              types: templateFormData.types.filter((t) => t !== type),
                             });
                           }
                         }}
@@ -145,7 +139,7 @@ export default function NewProductTemplatePage() {
                     </label>
                   ))}
                 </div>
-                {productTemplateFormData.types.length === 0 && (
+                {templateFormData.types.length === 0 && (
                   <p className="text-xs text-red-400 mt-1">Please select at least one type</p>
                 )}
               </div>
@@ -164,10 +158,10 @@ export default function NewProductTemplatePage() {
                       <input
                         type="radio"
                         name="numberOfItems"
-                        checked={productTemplateFormData.numberOfItems === count}
+                        checked={templateFormData.numberOfItems === count}
                         onChange={() => {
-                          setProductTemplateFormData({
-                            ...productTemplateFormData,
+                          setTemplateFormData({
+                            ...templateFormData,
                             numberOfItems: count,
                           });
                         }}
@@ -192,8 +186,8 @@ export default function NewProductTemplatePage() {
               <div>
                 <label className="block text-sm font-medium mb-2">Common Instructions</label>
                 <textarea
-                  value={productTemplateFormData.commonInstructions}
-                  onChange={(e) => setProductTemplateFormData({ ...productTemplateFormData, commonInstructions: e.target.value })}
+                  value={templateFormData.commonInstructions}
+                  onChange={(e) => setTemplateFormData({ ...templateFormData, commonInstructions: e.target.value })}
                   className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
                   rows={4}
                   placeholder="Common instructions that will be included in all listings using this template"

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BrandIdentity } from '@/types';
+import PageHeader from '@/components/shared/PageHeader';
 
 export default function BrandIdentityPage() {
   const router = useRouter();
@@ -116,9 +117,54 @@ export default function BrandIdentityPage() {
   return (
     <div className="min-h-screen bg-background-primary text-text-primary">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Brand Identity Setup</h1>
-          <p className="text-text-secondary">Define your store's brand to ensure consistent content</p>
+        <PageHeader>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Brand Identity Setup</h1>
+              <p className="text-text-secondary">Define your store's brand to ensure consistent content</p>
+            </div>
+            {!existingData && (
+              <button
+                type="button"
+                onClick={async () => {
+                  const testData: Partial<BrandIdentity> = {
+                    storeName: 'Test Embroidery Shop',
+                    brandTone: 'friendly' as BrandIdentity['brandTone'],
+                    creativeDirection: {
+                      visualStyle: 'botanical' as BrandIdentity['creativeDirection']['visualStyle'],
+                      colorPalette: ['sage green', 'cream', 'dusty rose'],
+                      typography: 'Modern serif',
+                    },
+                  };
+                  setFormData(testData);
+                  setLoading(true);
+                  
+                  try {
+                    const response = await fetch('/api/brand-identity', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(testData),
+                    });
+
+                    if (response.ok) {
+                      router.push('/');
+                      router.refresh();
+                    } else {
+                      console.error('Failed to save brand identity');
+                    }
+                  } catch (error) {
+                    console.error('Error saving brand identity:', error);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+                className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition disabled:opacity-50 text-sm"
+              >
+                {loading ? 'Setting up...' : 'Quick Setup (Test)'}
+              </button>
+            )}
+          </div>
           {existingData && (
             <div className="mt-4 p-4 bg-background-secondary border border-border rounded-lg">
               <p className="text-sm text-text-secondary">
@@ -126,7 +172,7 @@ export default function BrandIdentityPage() {
               </p>
             </div>
           )}
-        </header>
+        </PageHeader>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Step 1: Store Name */}

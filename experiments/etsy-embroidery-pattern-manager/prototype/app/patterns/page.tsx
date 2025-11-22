@@ -7,6 +7,7 @@ import { Pattern } from '@/types';
 import Spinner from '@/components/shared/Spinner';
 import PatternItem from '@/components/patterns/PatternItem';
 import Toast from '@/components/shared/Toast';
+import PageHeader from '@/components/shared/PageHeader';
 
 interface ToastState {
   message: string;
@@ -18,19 +19,24 @@ interface PatternWithTemplates extends Pattern {
   templates?: Array<{ id: string; name: string }>;
 }
 
+interface ImageMetadata {
+  width?: number;
+  height?: number;
+  format?: string;
+  fileSize?: number;
+  resolution?: string;
+  formattedSize?: string;
+}
+
+interface PatternWithMetadata extends PatternWithTemplates {
+  imageMetadata?: ImageMetadata | null;
+}
+
 export default function PatternsPage() {
   const router = useRouter();
-  const [patterns, setPatterns] = useState<PatternWithTemplates[]>([]);
+  const [patterns, setPatterns] = useState<PatternWithMetadata[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    notes: '',
-    category: '',
-    difficulty: '' as Pattern['difficulty'] | '',
-    style: '',
-  });
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
 
   const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -63,7 +69,37 @@ export default function PatternsPage() {
         patternsWithTemplates.sort((a, b) => {
           return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
         });
-        setPatterns(patternsWithTemplates);
+        
+        // Fetch image metadata for patterns with images
+        const patternsWithMetadata: PatternWithMetadata[] = await Promise.all(
+          patternsWithTemplates.map(async (pattern) => {
+            if (!pattern.imageUrl) {
+              return { ...pattern, imageMetadata: null };
+            }
+            
+            try {
+              const metadataResponse = await fetch(`/api/patterns/${pattern.id}/metadata`);
+              if (metadataResponse.ok) {
+                const metadata = await metadataResponse.json();
+                console.log(`[Patterns] Metadata for ${pattern.id}:`, metadata);
+                return { ...pattern, imageMetadata: metadata };
+              } else {
+                const errorText = await metadataResponse.text();
+                console.error(`[Patterns] Metadata fetch failed for pattern ${pattern.id}:`, {
+                  status: metadataResponse.status,
+                  statusText: metadataResponse.statusText,
+                  error: errorText
+                });
+              }
+            } catch (error) {
+              console.error(`[Patterns] Error fetching metadata for pattern ${pattern.id}:`, error);
+            }
+            
+            return { ...pattern, imageMetadata: null };
+          })
+        );
+        
+        setPatterns(patternsWithMetadata);
       }
     } catch (error) {
       console.error('Error fetching patterns:', error);
@@ -215,24 +251,6 @@ export default function PatternsPage() {
     e.preventDefault();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('/api/patterns', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        setShowForm(false);
-        setFormData({ name: '', notes: '', category: '', difficulty: '', style: '' });
-        fetchPatterns();
-      }
-    } catch (error) {
-      console.error('Error creating pattern:', error);
-    }
-  };
 
   if (loading) {
     return (
@@ -246,139 +264,149 @@ export default function PatternsPage() {
   return (
     <div className="min-h-screen bg-background-primary text-text-primary">
       <div className="px-4 py-8 max-w-7xl mx-auto">
-        <header className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Patterns</h1>
-            <p className="text-text-secondary mt-2">Manage your embroidery patterns</p>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="px-4 py-2 bg-background-tertiary border border-border rounded hover:bg-background-primary transition"
-            >
-              {showForm ? 'Cancel' : '+ New Pattern'}
-            </button>
-            <label className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition cursor-pointer">
-              {uploading ? 'Uploading...' : '📷 Upload Images'}
-              <input
-                type="file"
-                multiple
-                accept="image/*,.png,.jpg,.jpeg,.gif,.webp,.svg,.bmp,.ico,.tiff,.tif,.heic,.heif"
-                onChange={handleFileInputChange}
-                className="hidden"
-                disabled={uploading}
-              />
-            </label>
-          </div>
-        </header>
-
-        {/* Image Upload Area */}
-        <div
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          className="mb-8 bg-background-secondary border-2 border-dashed border-border rounded-lg p-12 text-center hover:border-accent-primary transition"
-        >
-          <div className="max-w-md mx-auto">
-            <div className="text-4xl mb-4">📷</div>
-            <h3 className="text-xl font-semibold mb-2">Upload Images to Create Patterns</h3>
-            <p className="text-text-secondary mb-4">
-              Drag and drop images here, paste images (⌘V / Ctrl+V), or click the button above
-            </p>
-            <p className="text-sm text-text-muted">
-              Each image will automatically create a new pattern with a default name
-            </p>
-          </div>
-        </div>
-
-        {showForm && (
-          <form onSubmit={handleSubmit} className="mb-8 bg-background-secondary border border-border rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Create New Pattern</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Pattern Name *</label>
+        <PageHeader
+          title="Patterns"
+          description="Manage your embroidery patterns"
+          action={
+            <div className="flex flex-col items-end gap-3">
+              <label className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition cursor-pointer">
+                {uploading ? 'Uploading...' : '📷 Upload Images'}
                 <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
-                  required
+                  type="file"
+                  multiple
+                  accept="image/*,.png,.jpg,.jpeg,.gif,.webp,.svg,.bmp,.ico,.tiff,.tif,.heic,.heif"
+                  onChange={handleFileInputChange}
+                  className="hidden"
+                  disabled={uploading}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Category</label>
-                <input
-                  type="text"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Difficulty</label>
-                <select
-                  value={formData.difficulty}
-                  onChange={(e) => setFormData({ ...formData, difficulty: e.target.value as Pattern['difficulty'] })}
-                  className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
-                >
-                  <option value="">Select difficulty</option>
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Style</label>
-                <input
-                  type="text"
-                  value={formData.style}
-                  onChange={(e) => setFormData({ ...formData, style: e.target.value })}
-                  className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">Notes</label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
-                  rows={3}
-                />
+              </label>
+              {/* Compact Dropzone in Upper Right */}
+              <div
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                className="w-64 bg-background-secondary border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-accent-primary transition"
+              >
+                <div className="text-2xl mb-2">📷</div>
+                <p className="text-xs text-text-secondary mb-1">
+                  Drag & drop or paste (⌘V)
+                </p>
+                <p className="text-xs text-text-muted">
+                  Each image creates a pattern
+                </p>
               </div>
             </div>
-            <button
-              type="submit"
-              className="mt-4 px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition"
-            >
-              Create Pattern
-            </button>
-          </form>
-        )}
+          }
+        />
 
         {patterns.length === 0 ? (
           <div className="bg-background-secondary border border-border rounded-lg p-12 text-center">
             <p className="text-text-secondary mb-4">No patterns yet</p>
-            <button
-              onClick={() => setShowForm(true)}
-              className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition"
-            >
-              Create Your First Pattern
-            </button>
+            <p className="text-sm text-text-muted">
+              Upload images using the file picker or drag & drop above to create patterns
+            </p>
           </div>
         ) : (
           <div className="bg-background-secondary border border-border rounded-lg overflow-hidden">
-            <div className="divide-y divide-border">
-              {patterns.map((pattern) => (
-                <div
-                  key={pattern.id}
-                  className="p-6 hover:bg-background-tertiary transition"
-                >
-                  <PatternItem
-                    pattern={pattern}
-                    showDetails={true}
-                    onEdit={() => router.push(`/patterns/${pattern.id}`)}
-                  />
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full table-auto">
+                <thead>
+                  <tr className="border-b border-border bg-background-tertiary">
+                    <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary whitespace-nowrap">Image</th>
+                    <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary whitespace-nowrap">Name</th>
+                    <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary whitespace-nowrap">Category</th>
+                    <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary whitespace-nowrap">Difficulty</th>
+                    <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary whitespace-nowrap">Style</th>
+                    <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary whitespace-nowrap">Format</th>
+                    <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary whitespace-nowrap">Size</th>
+                    <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary whitespace-nowrap">Dimensions</th>
+                    <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary whitespace-nowrap">Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {patterns.map((pattern) => {
+                    const updatedDate = new Date(pattern.updatedAt);
+                    const formattedDate = updatedDate.toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    });
+                    
+                    return (
+                      <tr
+                        key={pattern.id}
+                        className="border-b border-border hover:bg-background-tertiary transition cursor-pointer"
+                        onClick={() => router.push(`/patterns/${pattern.id}`)}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="w-16 h-16 bg-background-tertiary border border-border rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {pattern.imageUrl ? (
+                              <img
+                                src={pattern.imageUrl}
+                                alt={pattern.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-text-muted text-xs">
+                                {pattern.name.charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <Link
+                            href={`/patterns/${pattern.id}`}
+                            className="font-medium text-text-primary hover:text-accent-primary transition block truncate max-w-xs"
+                            onClick={(e) => e.stopPropagation()}
+                            title={pattern.name}
+                          >
+                            {pattern.name}
+                          </Link>
+                          {pattern.notes && (
+                            <div className="text-xs text-text-secondary mt-1 truncate max-w-xs" title={pattern.notes}>
+                              {pattern.notes}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-text-secondary truncate block max-w-xs" title={pattern.category || undefined}>
+                            {pattern.category || '—'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-text-secondary">
+                            {pattern.difficulty ? pattern.difficulty.charAt(0).toUpperCase() + pattern.difficulty.slice(1) : '—'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-text-secondary truncate block max-w-xs" title={pattern.style || undefined}>
+                            {pattern.style || '—'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-text-secondary">
+                            {pattern.imageMetadata?.format || '—'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-text-secondary">
+                            {pattern.imageMetadata?.formattedSize || '—'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-text-secondary">
+                            {pattern.imageMetadata?.width && pattern.imageMetadata?.height
+                              ? `${pattern.imageMetadata.width}×${pattern.imageMetadata.height}`
+                              : '—'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-text-secondary">{formattedDate}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         )}

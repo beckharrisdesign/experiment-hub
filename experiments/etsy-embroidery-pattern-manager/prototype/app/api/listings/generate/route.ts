@@ -8,17 +8,17 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     console.log('[API /listings/generate] Request body:', body);
-    const { productTemplateId, patternIds } = body;
+    const { templateId, patternIds } = body;
 
-    console.log('[API /listings/generate] Product template ID:', productTemplateId);
+    console.log('[API /listings/generate] Product template ID:', templateId);
     console.log('[API /listings/generate] Pattern IDs:', patternIds);
 
-    if (!productTemplateId) {
+    if (!templateId) {
       console.log('[API /listings/generate] Error: Product template ID is required');
       return NextResponse.json({ error: 'Product template ID is required' }, { status: 400 });
     }
 
-    const productTemplate = getProductTemplate(productTemplateId);
+    const productTemplate = getProductTemplate(templateId);
     console.log('[API /listings/generate] Product template found:', productTemplate ? productTemplate.name : 'NOT FOUND');
     if (!productTemplate) {
       console.log('[API /listings/generate] Error: Product template not found');
@@ -55,15 +55,15 @@ export async function POST(request: NextRequest) {
 
     const selectedPatternIds = patternIds;
     console.log('[API /listings/generate] Calling generateListing with:', {
-      productTemplateId,
+      templateId,
       selectedPatternIds,
     });
 
-    const listing = await generateListing(productTemplateId, selectedPatternIds);
+    const listing = await generateListing(templateId, selectedPatternIds);
     console.log('[API /listings/generate] Listing generated successfully:', {
       id: listing.id,
       title: listing.title,
-      productTemplateId: listing.productTemplateId,
+      templateId: listing.templateId,
       patternIds: listing.patternIds,
     });
     

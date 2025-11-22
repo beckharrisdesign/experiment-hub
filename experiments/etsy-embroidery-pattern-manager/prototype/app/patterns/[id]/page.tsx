@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Pattern, Listing } from '@/types';
 import Toast from '@/components/shared/Toast';
 import Spinner from '@/components/shared/Spinner';
+import PageHeader from '@/components/shared/PageHeader';
 
 interface ToastState {
   message: string;
@@ -45,6 +46,7 @@ export default function PatternDetailPage() {
   const [selectedProductTemplate, setSelectedProductTemplate] = useState<any>(null);
   const [selectedPatternIds, setSelectedPatternIds] = useState<string[]>([]);
   const [availablePatterns, setAvailablePatterns] = useState<Pattern[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (patternId) {
@@ -393,6 +395,31 @@ export default function PatternDetailPage() {
     });
   };
 
+  const handleDeletePattern = async () => {
+    if (!pattern) return;
+
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/patterns/${patternId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        showToast('Pattern deleted successfully', 'success');
+        router.push('/patterns');
+      } else {
+        const error = await response.json();
+        showToast(error.error || 'Failed to delete pattern', 'error');
+      }
+    } catch (error) {
+      console.error('Error deleting pattern:', error);
+      showToast('Error deleting pattern', 'error');
+    } finally {
+      setSaving(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background-primary text-text-primary flex items-center justify-center gap-3">
@@ -409,153 +436,161 @@ export default function PatternDetailPage() {
   return (
     <div className="min-h-screen bg-background-primary text-text-primary">
       <div className="px-4 py-8 max-w-7xl mx-auto">
-        <header className="mb-8">
-          <button
-            onClick={() => router.back()}
-            className="text-text-secondary hover:text-text-primary transition mb-4"
-          >
-            ← Back
-          </button>
-          <h1 className="text-3xl font-bold">Edit Product</h1>
-        </header>
+        <PageHeader
+          title="Edit Pattern"
+          backButton={true}
+        />
 
         <div className="space-y-6">
-          {/* Image Section */}
-          <div className="bg-background-secondary border border-border rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Main Image</h2>
-            <div className="max-w-xs">
-              {imagePreview ? (
-                <div className="relative">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full aspect-square object-cover rounded border border-border"
+          {/* Pattern Details and Image Section - Side by Side */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Pattern Details Form - Left Two Thirds */}
+            <form onSubmit={handlePatternSave} className="md:col-span-2 bg-background-secondary border border-border rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Pattern Details</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Pattern Name *</label>
+                  <input
+                    type="text"
+                    value={patternFormData.name}
+                    onChange={(e) => setPatternFormData({ ...patternFormData, name: e.target.value })}
+                    className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
+                    required
                   />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Category</label>
+                    <input
+                      type="text"
+                      value={patternFormData.category}
+                      onChange={(e) => setPatternFormData({ ...patternFormData, category: e.target.value })}
+                      className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
+                      placeholder="e.g., Floral, Geometric, Animals"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Difficulty</label>
+                    <select
+                      value={patternFormData.difficulty}
+                      onChange={(e) => setPatternFormData({ ...patternFormData, difficulty: e.target.value as Pattern['difficulty'] })}
+                      className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
+                    >
+                      <option value="">Select difficulty</option>
+                      <option value="beginner">Beginner</option>
+                      <option value="intermediate">Intermediate</option>
+                      <option value="advanced">Advanced</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Style</label>
+                    <input
+                      type="text"
+                      value={patternFormData.style}
+                      onChange={(e) => setPatternFormData({ ...patternFormData, style: e.target.value })}
+                      className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
+                      placeholder="e.g., Modern, Vintage, Minimalist"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Notes</label>
+                  <textarea
+                    value={patternFormData.notes}
+                    onChange={(e) => setPatternFormData({ ...patternFormData, notes: e.target.value })}
+                    className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
+                    rows={4}
+                    placeholder="Pattern ideas, inspiration, design notes..."
+                  />
+                </div>
+                <div className="flex gap-3 justify-between">
+                  <div className="flex gap-3">
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {saving ? (
+                        <>
+                          <Spinner size="sm" />
+                          <span>Saving...</span>
+                        </>
+                      ) : (
+                        'Save Pattern'
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => router.back()}
+                      className="px-4 py-2 bg-background-tertiary border border-border rounded hover:bg-background-primary transition"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => {
-                      setImageFile(null);
-                      setImagePreview(pattern?.imageUrl || null);
-                    }}
-                    className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    disabled={saving}
+                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50"
                   >
-                    Remove
+                    Delete
                   </button>
                 </div>
-              ) : (
-                <div className="w-full aspect-square bg-background-tertiary border-2 border-dashed border-border rounded flex flex-col items-center justify-center">
-                  <span className="text-text-muted text-sm mb-2">No image</span>
-                  <div className="text-xs text-text-muted mb-3">Paste an image (⌘V / Ctrl+V) or</div>
-                  <label className="px-4 py-2 bg-background-primary border border-border rounded hover:bg-background-secondary transition cursor-pointer text-sm">
-                    Upload Image
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
+              </div>
+            </form>
+
+            {/* Image Section - Right Third */}
+            <div className="bg-background-secondary border border-border rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Main Image</h2>
+              <div>
+                {imagePreview ? (
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full aspect-square object-cover rounded border border-border"
                     />
-                  </label>
-                </div>
-              )}
-              {imageFile && imagePreview && imagePreview !== pattern?.imageUrl && (
-                <button
-                  type="button"
-                  onClick={handleImageUpload}
-                  disabled={uploadingImage}
-                  className="mt-4 w-full px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition disabled:opacity-50"
-                >
-                  {uploadingImage ? 'Uploading...' : 'Save Image'}
-                </button>
-              )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageFile(null);
+                        setImagePreview(pattern?.imageUrl || null);
+                      }}
+                      className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-full aspect-square bg-background-tertiary border-2 border-dashed border-border rounded flex flex-col items-center justify-center">
+                    <span className="text-text-muted text-sm mb-2">No image</span>
+                    <div className="text-xs text-text-muted mb-3">Paste an image (⌘V / Ctrl+V) or</div>
+                    <label className="px-4 py-2 bg-background-primary border border-border rounded hover:bg-background-secondary transition cursor-pointer text-sm">
+                      Upload Image
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                )}
+                {imageFile && imagePreview && imagePreview !== pattern?.imageUrl && (
+                  <button
+                    type="button"
+                    onClick={handleImageUpload}
+                    disabled={uploadingImage}
+                    className="mt-4 w-full px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition disabled:opacity-50"
+                  >
+                    {uploadingImage ? 'Uploading...' : 'Save Image'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-
-          {/* Pattern Details Form */}
-          <form onSubmit={handlePatternSave} className="bg-background-secondary border border-border rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Pattern Details</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Pattern Name *</label>
-                <input
-                  type="text"
-                  value={patternFormData.name}
-                  onChange={(e) => setPatternFormData({ ...patternFormData, name: e.target.value })}
-                  className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Category</label>
-                  <input
-                    type="text"
-                    value={patternFormData.category}
-                    onChange={(e) => setPatternFormData({ ...patternFormData, category: e.target.value })}
-                    className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
-                    placeholder="e.g., Floral, Geometric, Animals"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Difficulty</label>
-                  <select
-                    value={patternFormData.difficulty}
-                    onChange={(e) => setPatternFormData({ ...patternFormData, difficulty: e.target.value as Pattern['difficulty'] })}
-                    className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
-                  >
-                    <option value="">Select difficulty</option>
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Style</label>
-                  <input
-                    type="text"
-                    value={patternFormData.style}
-                    onChange={(e) => setPatternFormData({ ...patternFormData, style: e.target.value })}
-                    className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
-                    placeholder="e.g., Modern, Vintage, Minimalist"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Notes</label>
-                <textarea
-                  value={patternFormData.notes}
-                  onChange={(e) => setPatternFormData({ ...patternFormData, notes: e.target.value })}
-                  className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary"
-                  rows={4}
-                  placeholder="Pattern ideas, inspiration, design notes..."
-                />
-              </div>
-              <div className="flex gap-3">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition disabled:opacity-50 flex items-center gap-2"
-                >
-                  {saving ? (
-                    <>
-                      <Spinner size="sm" />
-                      <span>Saving...</span>
-                    </>
-                  ) : (
-                    'Save Pattern'
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => router.back()}
-                  className="px-4 py-2 bg-background-tertiary border border-border rounded hover:bg-background-primary transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </form>
 
           {/* Listing Section */}
           <div className="bg-background-secondary border border-border rounded-lg p-6">
@@ -767,6 +802,43 @@ export default function PatternDetailPage() {
                 className="px-6 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition disabled:opacity-50"
               >
                 {saving ? 'Generating...' : 'Generate Listing'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-background-primary border border-border rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-2xl font-bold mb-4">Delete Pattern</h2>
+            <p className="text-text-secondary mb-6">
+              Are you sure you want to delete "{pattern?.name}"? This action cannot be undone and will also delete any associated listings.
+            </p>
+            <div className="flex gap-4 justify-end">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={saving}
+                className="px-6 py-2 bg-background-tertiary border border-border rounded hover:bg-background-primary transition disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeletePattern}
+                disabled={saving}
+                className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50 flex items-center gap-2"
+              >
+                {saving ? (
+                  <>
+                    <Spinner size="sm" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  'Delete Pattern'
+                )}
               </button>
             </div>
           </div>

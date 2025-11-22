@@ -28,7 +28,7 @@ export default function Header() {
   const navItems: NavItem[] = [
     { href: '/', label: 'Dashboard' },
     { href: '/patterns', label: 'Patterns' },
-    { href: '/product-templates', label: 'Templates' },
+    { href: '/templates', label: 'Templates' },
     { href: '/listings', label: 'Listings' },
     { href: '/store', label: 'Store' },
     { href: '/debug', label: 'Debug' },
@@ -42,7 +42,16 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background-primary border-b border-border backdrop-blur-sm bg-opacity-95">
+    <header 
+      className="sticky top-0 left-0 right-0 z-50 bg-background-primary border-b border-border shadow-sm"
+      style={{ 
+        position: 'sticky',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50
+      }}
+    >
       <div className="px-4">
         <div className="flex items-center gap-6 h-14">
           {/* Logo/Title */}
