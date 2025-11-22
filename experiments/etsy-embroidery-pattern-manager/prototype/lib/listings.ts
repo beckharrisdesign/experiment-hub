@@ -1,16 +1,26 @@
 import db from './db';
-import { Listing } from '@/types';
+import { Listing, Pattern, ProductTemplate, BrandIdentity } from '@/types';
 import { randomUUID } from 'crypto';
 import { getBrandIdentity } from './brand-identity';
+import { getPattern } from './patterns';
+import { getProductTemplate } from './product-templates';
 
 export function getAllListings(): Listing[] {
   const rows = db.prepare('SELECT * FROM listings ORDER BY created_at DESC').all() as any[];
-  return rows.map((row) => {
-    // Get pattern IDs from listing_patterns junction table
-    const patternRows = db.prepare('SELECT pattern_id FROM listing_patterns WHERE listing_id = ?').all(row.id) as any[];
-    const patternIds = patternRows.map((p: any) => p.pattern_id);
-    
-    return {
+  return rows
+    .map((row) => {
+      // Get pattern IDs from listing_patterns junction table
+      const patternRows = db.prepare('SELECT pattern_id FROM listing_patterns WHERE listing_id = ?').all(row.id) as any[];
+      const patternIds = patternRows.map((p: any) => p.pattern_id);
+      
+      // REQUIREMENT: Each listing must have both a pattern and a template
+      // Filter out invalid listings that don't meet this requirement
+      if (patternIds.length === 0 || !row.product_template_id) {
+        console.warn(`[getAllListings] Invalid listing ${row.id}: missing pattern or template. Pattern IDs: ${patternIds.length}, Template ID: ${row.product_template_id || 'missing'}`);
+        return null;
+      }
+      
+      return {
       id: row.id,
       productTemplateId: row.product_template_id,
       patternIds,
@@ -38,7 +48,8 @@ export function getAllListings(): Listing[] {
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
-  });
+  })
+    .filter((listing): listing is Listing => listing !== null); // Remove null entries (invalid listings)
 }
 
 export function getListing(id: string): Listing | null {
@@ -48,6 +59,12 @@ export function getListing(id: string): Listing | null {
   // Get pattern IDs from listing_patterns junction table
   const patternRows = db.prepare('SELECT pattern_id FROM listing_patterns WHERE listing_id = ?').all(id) as any[];
   const patternIds = patternRows.map((p: any) => p.pattern_id);
+
+  // REQUIREMENT: Each listing must have both a pattern and a template
+  if (patternIds.length === 0 || !row.product_template_id) {
+    console.warn(`[getListing] Invalid listing ${id}: missing pattern or template. Pattern IDs: ${patternIds.length}, Template ID: ${row.product_template_id || 'missing'}`);
+    return null;
+  }
 
   return {
     id: row.id,
@@ -79,6 +96,168 @@ export function getListing(id: string): Listing | null {
   };
 }
 
+/**
+ * Agent-based listing generation that connects patterns, templates, and brand identity
+ */
+async function generateListingWithAgent(
+  patterns: Pattern[],
+  productTemplate: ProductTemplate,
+  brandIdentity: BrandIdentity
+): Promise<{
+  title: string;
+  description: string;
+  tags: string[];
+  category: string;
+  price: number;
+  seoScore?: number;
+}> {
+  const isBundle = patterns.length > 1;
+  const patternNames = patterns.map(p => p.name);
+  
+  // Build comprehensive context for the agent
+  const patternsContext = patterns.map((pattern, idx) => {
+    return `Pattern ${idx + 1}: "${pattern.name}"
+${pattern.category ? `- Category: ${pattern.category}` : ''}
+${pattern.difficulty ? `- Difficulty: ${pattern.difficulty}` : ''}
+${pattern.style ? `- Style: ${pattern.style}` : ''}
+${pattern.notes ? `- Notes: ${pattern.notes}` : ''}`;
+  }).join('\n\n');
+
+  const templateContext = `Template: "${productTemplate.name}"
+- Types: ${productTemplate.types.join(', ')}
+- Number of Items: ${productTemplate.numberOfItems}
+${productTemplate.commonInstructions ? `- Common Instructions: ${productTemplate.commonInstructions}` : ''}`;
+
+  const brandContext = `Store: "${brandIdentity.storeName}"
+- Brand Tone: ${brandIdentity.brandTone}
+- Visual Style: ${brandIdentity.creativeDirection.visualStyle}
+${brandIdentity.creativeDirection.colorPalette.length > 0 ? `- Color Palette: ${brandIdentity.creativeDirection.colorPalette.join(', ')}` : ''}`;
+
+  // Agent system prompt based on listing-generator.md
+  const systemPrompt = `You are an expert Etsy SEO copywriter and listing strategist. Your role is to create compelling, search-optimized listings that connect product details, brand identity, and market context.
+
+Key responsibilities:
+1. Analyze relationships between patterns, template structure, and brand identity
+2. Generate SEO-optimized content that balances search visibility with brand voice
+3. Apply brand tone consistently throughout (${brandIdentity.brandTone})
+4. Ensure all content meets Etsy requirements (140 char title, 13 tags, etc.)
+
+Brand Tone Guidelines:
+${getBrandToneGuidelines(brandIdentity.brandTone)}
+
+Always return valid JSON with exactly this structure:
+{
+  "title": "SEO-optimized title (max 140 characters)",
+  "description": "Structured description using brand tone",
+  "tags": ["tag1", "tag2", ...] (exactly 13 tags, no duplicates),
+  "category": "suggested Etsy category path",
+  "price": suggested_price_number,
+  "seoScore": calculated_score_0_100
+}`;
+
+  // Comprehensive user prompt
+  const userPrompt = `Generate an optimized Etsy listing by connecting all these pieces:
+
+${brandContext}
+
+${templateContext}
+
+${patternsContext}
+
+Context:
+- This is ${isBundle ? `a bundle of ${patterns.length} patterns` : 'a single pattern listing'}
+- Product type: ${productTemplate.types.join(' and ')}
+- ${isBundle ? 'Bundle pricing should reflect value (typically 20-30% discount)' : 'Single pattern pricing'}
+
+Requirements:
+1. Title: Max 140 characters, include pattern name(s), product type, key keywords
+2. Description: Use ${brandIdentity.brandTone} tone, include:
+   - Engaging opening
+   - What's included (from template types)
+   - Pattern details (from pattern information)
+   - Usage instructions (from template commonInstructions if available)
+   - Brand-appropriate closing
+3. Tags: Exactly 13 tags covering: pattern type, craft type, style, difficulty, use cases, category
+4. Category: Appropriate Etsy category path
+5. Price: Reasonable for product type${isBundle ? ' with bundle discount' : ''}
+6. SEO Score: Calculate based on title optimization, description quality, tag coverage, category match, brand consistency
+
+Return your response as a JSON object with the exact structure specified in the system prompt.`;
+
+  const { generateContent } = await import('./openai');
+  
+  // Use JSON mode for structured responses
+  const response = await generateContent(
+    userPrompt, 
+    systemPrompt + '\n\nIMPORTANT: You must return ONLY valid JSON, no additional text or markdown formatting.',
+    {
+      temperature: 0.7,
+      maxTokens: 2000,
+      responseFormat: { type: 'json_object' },
+    }
+  );
+  
+  // Parse JSON from response (should be clean JSON with JSON mode)
+  let listingData: any;
+  try {
+    // Try direct parse first (JSON mode should return clean JSON)
+    listingData = JSON.parse(response.trim());
+  } catch (e) {
+    // Fallback: try to extract JSON if there's any wrapper text
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('No JSON found in agent response');
+    }
+    listingData = JSON.parse(jsonMatch[0]);
+  }
+  
+  // Validate and ensure required fields
+  if (!listingData.title || !listingData.description || !listingData.tags) {
+    throw new Error('Agent response missing required fields');
+  }
+  
+  // Ensure exactly 13 tags
+  if (!Array.isArray(listingData.tags) || listingData.tags.length !== 13) {
+    throw new Error(`Agent returned ${listingData.tags?.length || 0} tags, expected exactly 13`);
+  }
+  
+  return listingData;
+}
+
+function getBrandToneGuidelines(tone: BrandIdentity['brandTone']): string {
+  const guidelines: Record<BrandIdentity['brandTone'], string> = {
+    friendly: `- Warm, conversational language
+- Use "you" and "your"
+- Emojis are acceptable
+- Encouraging and supportive tone
+- Example: "You'll love creating this beautiful pattern!"`,
+    professional: `- Polished, business-like language
+- Clear and direct
+- Minimal emojis
+- Focus on quality and value
+- Example: "This professional-grade pattern includes..."`,
+    whimsical: `- Playful, creative language
+- Fun descriptions
+- Emojis welcome
+- Lighthearted tone
+- Example: "Get ready to stitch something magical! ✨"`,
+    minimalist: `- Clean, simple language
+- Focus on essentials
+- No emojis
+- Straightforward tone
+- Example: "Embroidery pattern. Digital download."`,
+    vintage: `- Classic, nostalgic language
+- Timeless descriptions
+- Elegant tone
+- Example: "A timeless pattern inspired by classic designs..."`,
+    modern: `- Contemporary language
+- Current terminology
+- Sleek descriptions
+- Example: "Contemporary embroidery pattern with modern aesthetic..."`,
+  };
+  return guidelines[tone] || guidelines.friendly;
+}
+
 // Generate listing from product template and selected pattern(s)
 // patternIds: the specific patterns to include in this listing (selected from template's available patterns)
 export async function generateListing(productTemplateId: string, patternIds: string[]): Promise<Listing> {
@@ -92,9 +271,9 @@ export async function generateListing(productTemplateId: string, patternIds: str
     throw new Error('Brand identity must be set before generating listings');
   }
 
-  // Get product template info
-  const productTemplate = db.prepare('SELECT * FROM product_templates WHERE id = ?').get(productTemplateId) as any;
-  console.log('[generateListing] Product template from DB:', productTemplate ? productTemplate.name : 'NOT FOUND');
+  // Get product template using library function
+  const productTemplate = getProductTemplate(productTemplateId);
+  console.log('[generateListing] Product template found:', productTemplate ? productTemplate.name : 'NOT FOUND');
   if (!productTemplate) {
     throw new Error('Product template not found');
   }
@@ -103,41 +282,18 @@ export async function generateListing(productTemplateId: string, patternIds: str
     throw new Error('At least one pattern must be selected for the listing');
   }
   
-  // Get pattern names for listing generation
-  const { getPattern } = await import('./patterns');
-  const patternNames = patternIds.map(id => {
+  // Get full pattern objects (not just names)
+  const patterns = patternIds.map(id => {
     const pattern = getPattern(id);
-    console.log('[generateListing] Pattern lookup:', { id, name: pattern?.name || 'NOT FOUND' });
-    return pattern?.name || id;
-  });
-  console.log('[generateListing] Pattern names:', patternNames);
-
-  // Parse types from JSON array or single string (backward compatibility)
-  let types: string[] = [];
-  if (productTemplate.type) {
-    try {
-      types = JSON.parse(productTemplate.type);
-      if (!Array.isArray(types)) {
-        types = [productTemplate.type];
-      }
-    } catch {
-      types = [productTemplate.type];
+    if (!pattern) {
+      throw new Error(`Pattern ${id} not found`);
     }
-  }
-  console.log('[generateListing] Template types:', types);
-  const isBundle = patternNames.length > 1;
+    return pattern;
+  });
+  console.log('[generateListing] Patterns loaded:', patterns.map(p => p.name));
+
+  const isBundle = patterns.length > 1;
   console.log('[generateListing] Is bundle:', isBundle);
-
-  const systemPrompt = `You are an expert Etsy SEO copywriter. Generate optimized Etsy listing content that:
-- Uses the store's brand tone: ${brandIdentity.brandTone}
-- Includes the store name: ${brandIdentity.storeName}
-- Is optimized for Etsy search (140 character title, 13 tags)
-- Is keyword-rich and natural
-- Matches the brand's ${brandIdentity.brandTone} tone`;
-
-  const patternNameText = patternNames.length === 1 
-    ? patternNames[0]
-    : `${patternNames.length}-Pattern Bundle: ${patternNames.join(', ')}`;
 
   // Check if OpenAI is available
   let listingData: any;
@@ -146,47 +302,27 @@ export async function generateListing(productTemplateId: string, patternIds: str
   
   if (hasOpenAI) {
     try {
-      console.log('[generateListing] Attempting OpenAI generation...');
-      const { generateContent } = await import('./openai');
-      const prompt = `Generate an Etsy listing for ${isBundle ? 'a bundle of' : 'an'} embroidery pattern${patternNames.length > 1 ? 's' : ''} called "${patternNameText}".
-Product template types: ${types.join(', ')}
-${isBundle ? `This is a bundle of ${patternNames.length} patterns.` : ''}
-
-Return a JSON object with:
-{
-  "title": "SEO-optimized title (max 140 characters)",
-  "description": "Structured description with pattern overview, what's included, usage instructions (use brand tone: ${brandIdentity.brandTone})",
-  "tags": ["tag1", "tag2", ...] (exactly 13 tags),
-  "category": "suggested Etsy category",
-  "price": suggested price (number)
-}`;
-
-      const response = await generateContent(prompt, systemPrompt);
-      console.log('[generateListing] OpenAI response received, length:', response.length);
-      
-      // Parse JSON from response
-      try {
-        const jsonMatch = response.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          listingData = JSON.parse(jsonMatch[0]);
-          console.log('[generateListing] Parsed OpenAI response:', listingData);
-        } else {
-          throw new Error('No JSON found in response');
-        }
-      } catch (e) {
-        console.log('[generateListing] Failed to parse OpenAI response, using fallback:', e);
-        // Fall through to fallback
-        throw e;
-      }
+      console.log('[generateListing] Attempting agent-based generation...');
+      listingData = await generateListingWithAgent(patterns, productTemplate, brandIdentity);
+      console.log('[generateListing] Agent response received:', {
+        title: listingData.title?.substring(0, 50) + '...',
+        tagsCount: listingData.tags?.length,
+        hasPrice: !!listingData.price,
+      });
     } catch (e) {
-      // Fall through to fallback if OpenAI fails
-      console.log('[generateListing] OpenAI generation failed, using fallback:', e);
+      console.log('[generateListing] Agent generation failed, using fallback:', e);
+      // Fall through to fallback
     }
   }
   
   // Use fallback listing if OpenAI is not available or failed
   if (!listingData) {
     console.log('[generateListing] Using fallback listing data');
+    const patternNames = patterns.map(p => p.name);
+    const patternNameText = patternNames.length === 1 
+      ? patternNames[0]
+      : `${patternNames.length}-Pattern Bundle: ${patternNames.join(', ')}`;
+    
     listingData = {
       title: `${patternNameText} - Embroidery Pattern${patternNames.length > 1 ? ' Bundle' : ''}`,
       description: `Beautiful ${patternNameText} embroidery pattern${patternNames.length > 1 ? ' bundle' : ''}. Perfect for your next project!`,
@@ -453,24 +589,29 @@ export function updateListing(id: string, data: Partial<Listing>): Listing | nul
   }
 
   // Update pattern associations if provided
+  // REQUIREMENT: Each listing must have at least one pattern
   if (data.patternIds !== undefined) {
     console.log('[updateListing] Updating pattern associations:', data.patternIds);
+    
+    // Validate: listings must have at least one pattern
+    if (data.patternIds.length === 0) {
+      throw new Error('A listing must have at least one pattern. Cannot remove all patterns.');
+    }
+    
     const now = new Date().toISOString();
     // Delete existing associations
     db.prepare('DELETE FROM listing_patterns WHERE listing_id = ?').run(id);
     console.log('[updateListing] Deleted existing pattern associations');
     // Insert new associations
-    if (data.patternIds.length > 0) {
-      const insertPattern = db.prepare('INSERT INTO listing_patterns (listing_id, pattern_id, created_at) VALUES (?, ?, ?)');
-      const insertPatterns = db.transaction((patternIds: string[]) => {
-        for (const patternId of patternIds) {
-          insertPattern.run(id, patternId, now);
-          console.log('[updateListing] Associated pattern:', patternId, 'with listing:', id);
-        }
-      });
-      insertPatterns(data.patternIds);
-      console.log('[updateListing] Pattern associations updated');
-    }
+    const insertPattern = db.prepare('INSERT INTO listing_patterns (listing_id, pattern_id, created_at) VALUES (?, ?, ?)');
+    const insertPatterns = db.transaction((patternIds: string[]) => {
+      for (const patternId of patternIds) {
+        insertPattern.run(id, patternId, now);
+        console.log('[updateListing] Associated pattern:', patternId, 'with listing:', id);
+      }
+    });
+    insertPatterns(data.patternIds);
+    console.log('[updateListing] Pattern associations updated');
   }
 
   const updatedListing = getListing(id);

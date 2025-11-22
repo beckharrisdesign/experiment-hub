@@ -117,7 +117,11 @@ export default function NewListingPage() {
 
     if (!selectedTemplate || !canProceedToGenerate()) {
       console.log('[Listing Creation] Validation failed - missing template or patterns');
-      showToast('Please select the required number of patterns', 'error');
+      if (!selectedTemplate) {
+        showToast('Please select a product template', 'error');
+      } else {
+        showToast(`Please select ${getRequiredPatternCount()} pattern${getRequiredPatternCount() !== 1 ? 's' : ''}`, 'error');
+      }
       return;
     }
 
@@ -148,9 +152,26 @@ export default function NewListingPage() {
         setGeneratedListing(listing);
         setStep('edit');
       } else {
-        const error = await response.json();
-        console.error('[Listing Creation] Error response:', error);
-        showToast(error.error || 'Failed to generate listing', 'error');
+        // Better error handling - try to parse JSON, fallback to text
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorText = await response.text();
+          console.error('[Listing Creation] Error response text:', errorText);
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.error || errorJson.details || errorMessage;
+            console.error('[Listing Creation] Parsed error JSON:', errorJson);
+          } catch (e) {
+            // Not JSON, use text if available
+            if (errorText && errorText.length > 0) {
+              errorMessage = errorText;
+            }
+          }
+        } catch (parseError) {
+          console.error('[Listing Creation] Error parsing error response:', parseError);
+        }
+        console.error('[Listing Creation] Final error message:', errorMessage);
+        showToast(errorMessage, 'error');
       }
     } catch (error) {
       console.error('[Listing Creation] Exception during listing generation:', error);

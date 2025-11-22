@@ -100,6 +100,8 @@ export function initDatabase() {
 
   // Listings table - Clean schema
   // A listing = Product Template + Pattern(s)
+  // REQUIREMENT: Each listing MUST have both a product_template_id and at least one pattern
+  // Multiple listings can exist for the same pattern+template combination (for testing variations)
   // The listing combines details from both template and pattern(s)
   // Stores backward references to both product_template_id and pattern_ids (via junction table)
   // NO pattern_id column - patterns are stored in listing_patterns junction table only
@@ -201,13 +203,65 @@ function migrateFromLegacySchema() {
 // Migrate listings table - recreate with clean schema
 function migrateListingsTable() {
   try {
+    // Check if listings table exists
     const tableInfo = db.prepare("PRAGMA table_info(listings)").all() as any[];
     const hasListingsTable = tableInfo.length > 0;
+    
+    // If table doesn't exist, create it
+    if (!hasListingsTable) {
+      console.log('[Migration] Creating new listings table...');
+      db.exec(`
+        CREATE TABLE listings (
+          id TEXT PRIMARY KEY,
+          product_template_id TEXT NOT NULL, -- Backward reference to product template
+          title TEXT NOT NULL,
+          description TEXT NOT NULL,
+          tags TEXT, -- JSON array (up to 13 tags)
+          category TEXT,
+          price REAL,
+          quantity INTEGER,
+          sku TEXT,
+          photos TEXT, -- JSON array (up to 20 photos/videos)
+          digital_files TEXT, -- JSON array (up to 5 files)
+          digital_note TEXT,
+          offer_personalization INTEGER DEFAULT 0, -- Boolean
+          personalization_options TEXT, -- JSON array
+          attributes TEXT, -- JSON object (craftType, occasion, holiday, etc.)
+          materials TEXT, -- JSON array
+          processing_time TEXT,
+          shipping_profile_id TEXT,
+          returns_accepted INTEGER DEFAULT 0, -- Boolean
+          shop_section_id TEXT,
+          featured INTEGER DEFAULT 0, -- Boolean
+          renewal_option TEXT DEFAULT 'automatic', -- 'automatic' | 'manual'
+          seo_score INTEGER,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (product_template_id) REFERENCES product_templates(id) ON DELETE CASCADE
+        )
+      `);
+      console.log('[Migration] New listings table created');
+      return; // Exit early - no migration needed
+    }
+    
+    // Clean up any leftover backup table from a previous failed migration
+    try {
+      const hasBackup = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='listings_old_backup'").get() as any;
+      if (hasBackup) {
+        console.log('[Migration] Found leftover backup table from previous migration - cleaning up...');
+        db.exec('DROP TABLE IF EXISTS listings_old_backup');
+        console.log('[Migration] Backup table cleaned up');
+      }
+    } catch (cleanupError) {
+      console.warn('[Migration] Could not check for leftover backup table:', cleanupError);
+    }
+    
+    // Check for legacy columns
     const hasOldPatternId = tableInfo.some((col: any) => col.name === 'pattern_id');
     const hasOldProductId = tableInfo.some((col: any) => col.name === 'product_id');
     
     // If listings table exists with legacy columns, migrate it
-    if (hasListingsTable && (hasOldPatternId || hasOldProductId)) {
+    if (hasOldPatternId || hasOldProductId) {
       console.log('[Migration] Migrating listings table to clean schema...');
       
       // Backup existing listings data
@@ -360,42 +414,18 @@ function migrateListingsTable() {
       // Re-enable foreign keys
       db.pragma('foreign_keys = ON');
       
-      // Drop backup table
-      db.exec('DROP TABLE listings_old_backup');
+      // Drop backup table only after successful migration
+      try {
+        db.exec('DROP TABLE IF EXISTS listings_old_backup');
+        console.log('[Migration] Backup table cleaned up');
+      } catch (dropError) {
+        console.warn('[Migration] Could not drop backup table (may not exist):', dropError);
+      }
       
       console.log('[Migration] Listings table migration complete');
-    } else if (!hasListingsTable) {
-      // Create new listings table if it doesn't exist
-      db.exec(`
-        CREATE TABLE listings (
-          id TEXT PRIMARY KEY,
-          product_template_id TEXT NOT NULL, -- Backward reference to product template
-          title TEXT NOT NULL,
-          description TEXT NOT NULL,
-          tags TEXT, -- JSON array (up to 13 tags)
-          category TEXT,
-          price REAL,
-          quantity INTEGER,
-          sku TEXT,
-          photos TEXT, -- JSON array (up to 20 photos/videos)
-          digital_files TEXT, -- JSON array (up to 5 files)
-          digital_note TEXT,
-          offer_personalization INTEGER DEFAULT 0, -- Boolean
-          personalization_options TEXT, -- JSON array
-          attributes TEXT, -- JSON object (craftType, occasion, holiday, etc.)
-          materials TEXT, -- JSON array
-          processing_time TEXT,
-          shipping_profile_id TEXT,
-          returns_accepted INTEGER DEFAULT 0, -- Boolean
-          shop_section_id TEXT,
-          featured INTEGER DEFAULT 0, -- Boolean
-          renewal_option TEXT DEFAULT 'automatic', -- 'automatic' | 'manual'
-          seo_score INTEGER,
-          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (product_template_id) REFERENCES product_templates(id) ON DELETE CASCADE
-        )
-      `);
+    } else {
+      // Table exists and is already in correct format - no migration needed
+      console.log('[Migration] Listings table is already in correct format - no migration needed');
     }
   } catch (e) {
     console.error('[Migration] Error migrating listings table:', e);
@@ -406,9 +436,86 @@ function migrateListingsTable() {
         console.log('[Migration] Restoring from backup...');
         db.exec('DROP TABLE IF EXISTS listings');
         db.exec('ALTER TABLE listings_old_backup RENAME TO listings');
+        console.log('[Migration] Backup restored successfully');
+      } else {
+        console.log('[Migration] No backup table found - migration may have failed before backup was created');
+        // Ensure listings table exists even if migration failed
+        const hasListings = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='listings'").get() as any;
+        if (!hasListings) {
+          console.log('[Migration] Creating listings table as fallback...');
+          db.exec(`
+            CREATE TABLE listings (
+              id TEXT PRIMARY KEY,
+              product_template_id TEXT NOT NULL,
+              title TEXT NOT NULL,
+              description TEXT NOT NULL,
+              tags TEXT,
+              category TEXT,
+              price REAL,
+              quantity INTEGER,
+              sku TEXT,
+              photos TEXT,
+              digital_files TEXT,
+              digital_note TEXT,
+              offer_personalization INTEGER DEFAULT 0,
+              personalization_options TEXT,
+              attributes TEXT,
+              materials TEXT,
+              processing_time TEXT,
+              shipping_profile_id TEXT,
+              returns_accepted INTEGER DEFAULT 0,
+              shop_section_id TEXT,
+              featured INTEGER DEFAULT 0,
+              renewal_option TEXT DEFAULT 'automatic',
+              seo_score INTEGER,
+              created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY (product_template_id) REFERENCES product_templates(id) ON DELETE CASCADE
+            )
+          `);
+        }
       }
     } catch (restoreError) {
       console.error('[Migration] Failed to restore from backup:', restoreError);
+      // Last resort: ensure listings table exists
+      try {
+        const hasListings = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='listings'").get() as any;
+        if (!hasListings) {
+          console.log('[Migration] Creating listings table as last resort...');
+          db.exec(`
+            CREATE TABLE listings (
+              id TEXT PRIMARY KEY,
+              product_template_id TEXT NOT NULL,
+              title TEXT NOT NULL,
+              description TEXT NOT NULL,
+              tags TEXT,
+              category TEXT,
+              price REAL,
+              quantity INTEGER,
+              sku TEXT,
+              photos TEXT,
+              digital_files TEXT,
+              digital_note TEXT,
+              offer_personalization INTEGER DEFAULT 0,
+              personalization_options TEXT,
+              attributes TEXT,
+              materials TEXT,
+              processing_time TEXT,
+              shipping_profile_id TEXT,
+              returns_accepted INTEGER DEFAULT 0,
+              shop_section_id TEXT,
+              featured INTEGER DEFAULT 0,
+              renewal_option TEXT DEFAULT 'automatic',
+              seo_score INTEGER,
+              created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY (product_template_id) REFERENCES product_templates(id) ON DELETE CASCADE
+            )
+          `);
+        }
+      } catch (finalError) {
+        console.error('[Migration] Failed to create listings table as fallback:', finalError);
+      }
     }
   }
 }

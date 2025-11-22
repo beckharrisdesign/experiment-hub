@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/katybharris/Documents/code/experiment-hub"
+      ]
+    },
+    "experiment-logs": {
+      "command": "node",
+      "args": [
+        "/Users/katybharris/Documents/code/experiment-hub/scripts/mcp-log-server.js"
+      ],
+      "env": {
+        "EXPERIMENTS_DIR": "/Users/katybharris/Documents/code/experiment-hub/experiments"
+      }
+    }
+  }
+}
+

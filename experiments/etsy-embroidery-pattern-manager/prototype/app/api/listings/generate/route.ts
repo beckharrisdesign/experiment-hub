@@ -70,11 +70,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(listing);
   } catch (error) {
     console.error('[API /listings/generate] Error generating listing:', error);
+    console.error('[API /listings/generate] Error type:', error?.constructor?.name);
+    console.error('[API /listings/generate] Error message:', error instanceof Error ? error.message : String(error));
     console.error('[API /listings/generate] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-    return NextResponse.json({ 
+    
+    // Ensure we always return a proper error response
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorDetails = {
       error: 'Failed to generate listing',
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 });
+      details: errorMessage,
+      ...(error instanceof Error && error.stack ? { stack: error.stack.split('\n').slice(0, 5) } : {}),
+    };
+    
+    console.error('[API /listings/generate] Returning error response:', errorDetails);
+    return NextResponse.json(errorDetails, { status: 500 });
   }
 }
 

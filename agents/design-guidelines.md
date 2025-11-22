@@ -145,6 +145,7 @@ This agent provides design principles, UX guidelines, and quality checks to ensu
 - **Size**: sm, md, lg variants
 - **States**: Default, hover, active, disabled
 - **Spacing**: Consistent padding (px-4 py-2 for md)
+- **Call-to-Action Rule**: All primary calls to action within containers or cards must be button components, not text links. This ensures clear visual hierarchy, better accessibility, and consistent interaction patterns. Use text links only for secondary actions or inline navigation.
 
 #### Input Fields
 - Dark background with border
@@ -189,6 +190,14 @@ This agent provides design principles, UX guidelines, and quality checks to ensu
 - **Errors**: Clear, actionable error messages
 - **Success**: Confirmation of successful actions
 - **Progressive**: Break complex forms into steps
+
+### Call-to-Action Patterns
+- **Primary Actions**: Always use button components for primary calls to action within containers or cards
+- **Visual Hierarchy**: Buttons provide clear visual weight and hierarchy compared to text links
+- **Accessibility**: Buttons are more accessible with proper ARIA roles and keyboard navigation
+- **Consistency**: Using buttons for primary actions creates predictable interaction patterns
+- **Text Links**: Reserve text links for secondary actions, inline navigation, or contextual links within content
+- **Container Context**: Within cards, containers, or modal dialogs, primary actions should always be buttons
 
 ### Loading States
 - **Skeleton Screens**: Show structure while loading
@@ -273,6 +282,7 @@ When designing or reviewing UI/UX:
 - [ ] Helpful empty states
 - [ ] Clear error messages
 - [ ] Fast load times
+- [ ] Primary calls to action use button components (not text links) in containers/cards
 
 ### Accessibility
 - [ ] Keyboard navigation works

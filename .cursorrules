@@ -1,0 +1,19 @@
+# Cursor Rules for Experiment Hub
+
+## Log Capture
+- All Next.js dev servers should output logs to `.next/turbopack.log` or a project-specific log file
+- Logs should be accessible via MCP filesystem resources
+
+## Analysis and Recommendations
+- **Prefer chat-based analysis** over creating documentation files for:
+  - Quick comparisons (pros/cons, approach comparisons)
+  - Recommendations and decision-making
+  - Exploratory analysis
+  - One-off explanations
+- **Use documentation files** when:
+  - Information needs to be referenced later (setup guides, troubleshooting)
+  - Content is part of project documentation (architecture, design decisions)
+  - Multiple people need to access it
+  - It's a living document that will be updated over time
+- **Default to chat** unless there's a clear reason a file is needed
+

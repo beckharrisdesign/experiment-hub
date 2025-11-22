@@ -32,6 +32,25 @@ export async function PATCH(
     console.log('[API /listings/[id] PATCH] Request body keys:', Object.keys(body));
     console.log('[API /listings/[id] PATCH] Request body:', body);
     
+    // REQUIREMENT: Each listing must have both a pattern and a template
+    // Validate that if patternIds is being updated, it's not empty
+    if (body.patternIds !== undefined) {
+      if (!Array.isArray(body.patternIds) || body.patternIds.length === 0) {
+        console.log('[API /listings/[id] PATCH] Error: patternIds must be a non-empty array');
+        return NextResponse.json({ 
+          error: 'A listing must have at least one pattern. Cannot remove all patterns.' 
+        }, { status: 400 });
+      }
+    }
+    
+    // Validate that productTemplateId is not being removed
+    if (body.productTemplateId !== undefined && !body.productTemplateId) {
+      console.log('[API /listings/[id] PATCH] Error: productTemplateId cannot be removed');
+      return NextResponse.json({ 
+        error: 'A listing must have a product template. Cannot remove the template.' 
+      }, { status: 400 });
+    }
+    
     const updated = updateListing(listingId, body);
     console.log('[API /listings/[id] PATCH] Update result:', updated ? 'Success' : 'Not found');
     

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
             'Stitch Craft',
           ]
         },
-        { status: 200 } // Return 200 with fallback suggestions
+        { status: 503 } // Service Unavailable - service not properly configured
       );
     }
 

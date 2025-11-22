@@ -28,9 +28,10 @@ export default function Header() {
   const navItems: NavItem[] = [
     { href: '/', label: 'Dashboard' },
     { href: '/patterns', label: 'Patterns' },
-    { href: '/product-templates', label: 'Product Templates' },
+    { href: '/product-templates', label: 'Templates' },
     { href: '/listings', label: 'Listings' },
     { href: '/store', label: 'Store' },
+    { href: '/debug', label: 'Debug' },
   ];
 
   const isActive = (href: string) => {

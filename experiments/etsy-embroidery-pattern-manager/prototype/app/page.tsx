@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Pattern, ProductTemplate } from '@/types';
+import { Pattern, ProductTemplate, Listing } from '@/types';
 import Toast from '@/components/shared/Toast';
 import Spinner from '@/components/shared/Spinner';
 import PatternItem from '@/components/patterns/PatternItem';
@@ -18,6 +18,7 @@ export default function HomePage() {
   const router = useRouter();
   const [patterns, setPatterns] = useState<Pattern[]>([]);
   const [productTemplates, setProductTemplates] = useState<ProductTemplate[]>([]);
+  const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
 
@@ -35,59 +36,39 @@ export default function HomePage() {
 
   const fetchData = async () => {
     try {
-      const [patternsResponse, productTemplatesResponse] = await Promise.all([
+      const [patternsResponse, productTemplatesResponse, listingsResponse] = await Promise.all([
         fetch('/api/patterns'),
         fetch('/api/product-templates'),
+        fetch('/api/listings'),
       ]);
 
       const patternsData: Pattern[] = patternsResponse.ok ? await patternsResponse.json() : [];
       const productTemplatesData: ProductTemplate[] = productTemplatesResponse.ok ? await productTemplatesResponse.json() : [];
+      const listingsData: Listing[] = listingsResponse.ok ? await listingsResponse.json() : [];
 
       // Sort patterns by updated date (newest first)
       patternsData.sort((a, b) => {
         return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
       });
 
-      // Sort product templates by status and then by updated date
-      const productTemplateStatusOrder = { draft: 1, ready: 2, listed: 3 };
+      // Sort product templates by updated date (newest first)
       productTemplatesData.sort((a, b) => {
-        const statusDiff = (productTemplateStatusOrder[a.status] || 0) - (productTemplateStatusOrder[b.status] || 0);
-        if (statusDiff !== 0) return statusDiff;
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      });
+
+      // Sort listings by updated date (newest first)
+      listingsData.sort((a, b) => {
         return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
       });
 
       setPatterns(patternsData);
       setProductTemplates(productTemplatesData);
+      setListings(listingsData);
     } catch (error) {
       console.error('Error fetching data:', error);
       showToast('Error loading data', 'error');
     } finally {
       setLoading(false);
-    }
-  };
-
-
-  const getProductTemplateStatusColor = (status: ProductTemplate['status']) => {
-    const colors = {
-      draft: 'bg-gray-500',
-      ready: 'bg-green-500',
-      listed: 'bg-purple-500',
-    };
-    return colors[status] || 'bg-gray-500';
-  };
-
-  const getProductTemplateTypeLabel = (type: ProductTemplate['type']) => {
-    switch (type) {
-      case 'printable-pdf':
-        return 'PDF';
-      case 'svg':
-        return 'SVG';
-      case 'kit':
-        return 'Kit';
-      case 'custom':
-        return 'Custom';
-      default:
-        return type;
     }
   };
 
@@ -97,22 +78,21 @@ export default function HomePage() {
         <header className="mb-8">
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-text-secondary mt-2">
-            Overview of your patterns and product templates
+            Overview of your patterns, templates, and listings
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {/* Patterns Section */}
           <div className="bg-background-secondary border border-border rounded-lg overflow-hidden">
-            <div className="p-6 border-b border-border flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Patterns</h2>
-              <Link
-                href="/patterns"
-                className="text-sm text-accent-primary hover:underline"
-              >
-                View All →
-              </Link>
+            {/* Summary Card */}
+            <div className="p-4 bg-background-tertiary border-b border-border">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Patterns</h2>
+                <span className="text-2xl font-bold text-accent-primary">{patterns.length}</span>
+              </div>
             </div>
+            
             {loading ? (
               <div className="p-6 flex items-center gap-3 text-text-secondary text-sm">
                 <Spinner size="sm" />
@@ -126,93 +106,152 @@ export default function HomePage() {
                 </Link>
               </div>
             ) : (
-              <div className="divide-y divide-border">
-                {patterns.slice(0, 5).map((pattern) => (
-                  <div
-                    key={pattern.id}
-                    className="p-4 hover:bg-background-tertiary transition"
-                  >
-                    <PatternItem
-                      pattern={pattern}
-                      showDetails={false}
-                    />
-                  </div>
-                ))}
-                {patterns.length > 5 && (
-                  <div className="p-4 text-center">
-                    <Link
-                      href="/patterns"
-                      className="text-sm text-accent-primary hover:underline"
-                    >
-                      View {patterns.length - 5} more patterns →
-                    </Link>
-                  </div>
-                )}
+              <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+                <table className="w-full">
+                  <thead className="sticky top-0 bg-background-tertiary z-10">
+                    <tr className="border-b border-border">
+                      <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Name</th>
+                      <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Category</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {patterns.map((pattern) => (
+                      <tr
+                        key={pattern.id}
+                        className="border-b border-border hover:bg-background-tertiary transition"
+                      >
+                        <td className="px-6 py-4">
+                          <Link
+                            href={`/patterns/${pattern.id}`}
+                            className="font-medium text-text-primary hover:text-accent-primary transition block"
+                          >
+                            {pattern.name}
+                          </Link>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-text-secondary">
+                            {pattern.category || '—'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
 
-          {/* Product Templates Section */}
+          {/* Templates Section */}
           <div className="bg-background-secondary border border-border rounded-lg overflow-hidden">
-            <div className="p-6 border-b border-border flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Product Templates</h2>
-              <Link
-                href="/product-templates"
-                className="text-sm text-accent-primary hover:underline"
-              >
-                View All →
-              </Link>
+            {/* Summary Card */}
+            <div className="p-4 bg-background-tertiary border-b border-border">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Templates</h2>
+                <span className="text-2xl font-bold text-accent-primary">{productTemplates.length}</span>
+              </div>
             </div>
+            
             {loading ? (
               <div className="p-6 flex items-center gap-3 text-text-secondary text-sm">
                 <Spinner size="sm" />
-                <span>Loading product templates...</span>
+                <span>Loading templates...</span>
               </div>
             ) : productTemplates.length === 0 ? (
               <div className="p-6 text-text-secondary text-sm">
-                No product templates yet.{' '}
+                No templates yet.{' '}
                 <Link href="/product-templates" className="text-accent-primary hover:underline">
-                  Create your first product template
+                  Create your first template
                 </Link>
               </div>
             ) : (
-              <div className="divide-y divide-border">
-                {productTemplates.slice(0, 5).map((productTemplate) => (
-                  <div
-                    key={productTemplate.id}
-                    className="p-4 hover:bg-background-tertiary transition"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <Link
-                          href={`/product-templates/${productTemplate.id}`}
-                          className="block hover:text-accent-primary transition"
-                        >
-                          <div className="font-medium text-text-primary mb-1 truncate">
-                            {productTemplate.title || productTemplate.name}
+              <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+                <table className="w-full">
+                  <thead className="sticky top-0 bg-background-tertiary z-10">
+                    <tr className="border-b border-border">
+                      <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Name</th>
+                      <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Type</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {productTemplates.map((productTemplate) => (
+                      <tr
+                        key={productTemplate.id}
+                        className="border-b border-border hover:bg-background-tertiary transition"
+                      >
+                        <td className="px-6 py-4">
+                          <Link
+                            href={`/product-templates/${productTemplate.id}`}
+                            className="font-medium text-text-primary hover:text-accent-primary transition block"
+                          >
+                            {productTemplate.name}
+                          </Link>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-text-secondary">
+                            {Array.isArray(productTemplate.types) 
+                              ? productTemplate.types.join(', ') 
+                              : productTemplate.types || '—'} • {productTemplate.numberOfItems}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Listings Section */}
+          <div className="bg-background-secondary border border-border rounded-lg overflow-hidden">
+            {/* Summary Card */}
+            <div className="p-4 bg-background-tertiary border-b border-border">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Listings</h2>
+                <span className="text-2xl font-bold text-accent-primary">{listings.length}</span>
+              </div>
+            </div>
+            
+            {loading ? (
+              <div className="p-6 flex items-center gap-3 text-text-secondary text-sm">
+                <Spinner size="sm" />
+                <span>Loading listings...</span>
+              </div>
+            ) : listings.length === 0 ? (
+              <div className="p-6 text-text-secondary text-sm">
+                No listings yet.{' '}
+                <Link href="/listings/new" className="text-accent-primary hover:underline">
+                  Create your first listing
+                </Link>
+              </div>
+            ) : (
+              <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+                <table className="w-full">
+                  <thead className="sticky top-0 bg-background-tertiary z-10">
+                    <tr className="border-b border-border">
+                      <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Title</th>
+                      <th className="text-left px-6 py-3 text-sm font-semibold text-text-secondary">Price</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {listings.map((listing) => (
+                      <tr
+                        key={listing.id}
+                        className="border-b border-border hover:bg-background-tertiary transition"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-text-primary line-clamp-2">
+                            {listing.title}
                           </div>
-                          <div className="text-sm text-text-secondary">
-                            {getProductTemplateTypeLabel(productTemplate.type)}
-                            {productTemplate.price && ` • $${productTemplate.price.toFixed(2)}`}
-                          </div>
-                        </Link>
-                      </div>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full text-white ${getProductTemplateStatusColor(productTemplate.status)}`}>
-                        {productTemplate.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-                {productTemplates.length > 5 && (
-                  <div className="p-4 text-center">
-                    <Link
-                      href="/product-templates"
-                      className="text-sm text-accent-primary hover:underline"
-                    >
-                      View {productTemplates.length - 5} more product templates →
-                    </Link>
-                  </div>
-                )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-text-secondary">
+                            {listing.price ? `$${listing.price.toFixed(2)}` : '—'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

@@ -26,7 +26,15 @@ export const openai = {
   },
 } as OpenAI;
 
-export async function generateContent(prompt: string, systemPrompt?: string): Promise<string> {
+export async function generateContent(
+  prompt: string, 
+  systemPrompt?: string,
+  options?: {
+    temperature?: number;
+    maxTokens?: number;
+    responseFormat?: { type: 'json_object' };
+  }
+): Promise<string> {
   // Check for API key before attempting to use OpenAI
   if (!process.env.OPENAI_API_KEY) {
     throw new Error('OPENAI_API_KEY is not set in environment variables. OpenAI integration is not available.');
@@ -39,8 +47,9 @@ export async function generateContent(prompt: string, systemPrompt?: string): Pr
       ...(systemPrompt ? [{ role: 'system' as const, content: systemPrompt }] : []),
       { role: 'user' as const, content: prompt },
     ],
-    temperature: 0.7,
-    max_tokens: 1000,
+    temperature: options?.temperature ?? 0.7,
+    max_tokens: options?.maxTokens ?? 2000, // Increased for more comprehensive responses
+    ...(options?.responseFormat ? { response_format: options.responseFormat } : {}),
   });
 
   return response.choices[0]?.message?.content || '';
