@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getAllZipCodes, getZipCodesByHardinessZone, getUSDAPlantsCount } from '@/lib/data';
+import { getAllZipCodes, getZipCodesByHardinessZone } from '@/lib/data';
 
 export default function HomePage() {
   const allZips = getAllZipCodes();
@@ -30,14 +30,14 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Seed Finder</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Find Seeds for Your Zone</h1>
         <p className="text-lg text-gray-600 mb-8">
-          Find seeds that grow in your zip code's hardiness zone
+          Discover seeds and plants that grow in your zip code's hardiness zone
         </p>
         
         {/* Top 10 Metro Areas */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Top 10 Metro Areas</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Top 10 Metro Areas</h2>
           <p className="text-gray-600 mb-4 text-sm">
             Browse seeds for major metropolitan areas in the United States:
           </p>
@@ -64,7 +64,7 @@ export default function HomePage() {
 
         {/* Hardiness Zones */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Hardiness Zones</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Hardiness Zones</h2>
           <p className="text-gray-600 mb-4 text-sm">
             Browse seeds by USDA hardiness zone. Each zone represents the average annual minimum temperature range:
           </p>
@@ -91,23 +91,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Browse Plants */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Browse Plants</h2>
-          <p className="text-gray-600 mb-4">
-            Explore the USDA Plants database with {getUSDAPlantsCount().toLocaleString()} plants:
-          </p>
-          <Link 
-            href="/plants"
-            className="inline-block px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
-          >
-            Browse All Plants →
-          </Link>
-        </div>
-
         {/* Try it out */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Try it out</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Try it out</h2>
           <p className="text-gray-600 mb-4">
             Enter a zip code to see seeds that grow in that area:
           </p>
