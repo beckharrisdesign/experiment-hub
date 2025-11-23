@@ -5,11 +5,8 @@ import {
   getExperimentBySlug,
   getPrototypeByExperimentId,
   getDocumentationByExperimentId,
-  hasPRD,
-  hasMarketResearch,
-  hasPrototype,
+  checkExperimentFiles,
   readPRD,
-  readMarketResearch,
   parsePRD,
   parseMarketResearch,
 } from "@/lib/data";
@@ -47,48 +44,44 @@ export default async function ExperimentDetailPage({
     notFound();
   }
 
-  let prototype = null;
-  let documentation = null;
-  
-  try {
-    prototype = await getPrototypeByExperimentId(experiment.id);
-    documentation = await getDocumentationByExperimentId(experiment.id);
-  } catch (error: any) {
-    console.error("[ExperimentDetailPage] Error fetching related data:", error);
-    // Continue without prototype/documentation
-  }
+  // Parallelize all data fetching operations
+  const [prototype, documentation, fileChecks] = await Promise.all([
+    getPrototypeByExperimentId(experiment.id).catch(() => null),
+    getDocumentationByExperimentId(experiment.id).catch(() => null),
+    checkExperimentFiles(experiment.directory).catch(() => ({
+      hasPRDFile: false,
+      hasPrototypeDir: false,
+      hasMRFile: false,
+      mrContent: null,
+    })),
+  ]);
 
-  const hasPRDFile = await hasPRD(experiment.directory);
-  const hasMRFile = await hasMarketResearch(experiment.directory);
-  const hasPrototypeFiles = await hasPrototype(experiment.directory);
+  const { hasPRDFile, hasPrototypeDir: hasPrototypeFiles, hasMRFile, mrContent } = fileChecks;
 
-  // Read and parse documents
-  let prd = null;
-  let mr = null;
-  
-  try {
-    if (hasPRDFile) {
-      const prdContent = await readPRD(experiment.directory);
-      if (prdContent && prdContent.trim().length > 0) {
-        prd = parsePRD(prdContent);
+  // Read and parse documents in parallel
+  const [prd, mr] = await Promise.all([
+    (async () => {
+      if (!hasPRDFile) return null;
+      try {
+        const prdContent = await readPRD(experiment.directory);
+        if (prdContent && prdContent.trim().length > 0) {
+          return parsePRD(prdContent);
+        }
+      } catch (error) {
+        console.error("[ExperimentDetailPage] Error reading/parsing PRD:", error);
       }
-    }
-  } catch (error) {
-    console.error("[ExperimentDetailPage] Error reading/parsing PRD:", error);
-    // Continue without PRD
-  }
-  
-  try {
-    if (hasMRFile) {
-      const mrContent = await readMarketResearch(experiment.directory);
-      if (mrContent && mrContent.trim().length > 0) {
-        mr = parseMarketResearch(mrContent);
+      return null;
+    })(),
+    (async () => {
+      if (!mrContent) return null;
+      try {
+        return parseMarketResearch(mrContent);
+      } catch (error) {
+        console.error("[ExperimentDetailPage] Error parsing Market Research:", error);
       }
-    }
-  } catch (error) {
-    console.error("[ExperimentDetailPage] Error reading/parsing Market Research:", error);
-    // Continue without Market Research
-  }
+      return null;
+    })(),
+  ]);
 
   return (
     <div className="min-h-screen">

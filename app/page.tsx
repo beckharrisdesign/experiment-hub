@@ -15,49 +15,75 @@ interface ExperimentWithRelated extends Experiment {
 }
 
 export default async function HomePage() {
-  const experiments = await getExperiments();
-  const prototypes = await getPrototypes();
-  const docs = await getDocumentation();
+  try {
+    const experiments = await getExperiments();
+    const prototypes = await getPrototypes();
+    const docs = await getDocumentation();
 
-  // Enrich experiments with related data
-  // All file checks are now batched and parallelized per experiment
-  const experimentsWithRelated: ExperimentWithRelated[] = await Promise.all(
-    experiments.map(async (exp) => {
-      // Batch all file system operations in parallel for this experiment
-      const fileChecks = await checkExperimentFiles(exp.directory);
-      
-      // Parse market research if available
-      let moa: string | null = null;
-      let goNoGo: string | null = null;
-      let somYear1: string | null = null;
-      let somYear3: string | null = null;
-      
-      if (fileChecks.mrContent) {
+    // Create Maps for O(1) lookups instead of O(n) array.find() operations
+    const prototypeMap = new Map(prototypes.map((p) => [p.experimentId, p]));
+    const docsMap = new Map(docs.map((d) => [d.experimentId, d]));
+
+    // Enrich experiments with related data
+    // All file checks are now batched and parallelized per experiment
+    const experimentsWithRelated: ExperimentWithRelated[] = await Promise.all(
+      experiments.map(async (exp) => {
         try {
-          const mr = parseMarketResearch(fileChecks.mrContent);
-          moa = mr.moa;
-          goNoGo = mr.goNoGo;
-          somYear1 = mr.somYear1;
-          somYear3 = mr.somYear3;
-        } catch {
-          // Error parsing market research, continue without it
+          // Batch all file system operations in parallel for this experiment
+          const fileChecks = await checkExperimentFiles(exp.directory);
+          
+          // Parse market research if available
+          let moa: string | null = null;
+          let goNoGo: string | null = null;
+          let somYear1: string | null = null;
+          let somYear3: string | null = null;
+          
+          if (fileChecks.mrContent) {
+            try {
+              const mr = parseMarketResearch(fileChecks.mrContent);
+              moa = mr.moa;
+              goNoGo = mr.goNoGo;
+              somYear1 = mr.somYear1;
+              somYear3 = mr.somYear3;
+            } catch {
+              // Error parsing market research, continue without it
+            }
+          }
+
+          return {
+            ...exp,
+            prototype: prototypeMap.get(exp.id) || null,
+            documentation: docsMap.get(exp.id) || null,
+            hasPRDFile: fileChecks.hasPRDFile,
+            hasPrototypeDir: fileChecks.hasPrototypeDir,
+            hasMRFile: fileChecks.hasMRFile,
+            moa,
+            goNoGo,
+            somYear1,
+            somYear3,
+          };
+        } catch (error) {
+          console.error(`[HomePage] Error processing experiment ${exp.id}:`, error);
+          // Return experiment with minimal data if processing fails
+          return {
+            ...exp,
+            prototype: prototypeMap.get(exp.id) || null,
+            documentation: docsMap.get(exp.id) || null,
+            hasPRDFile: false,
+            hasPrototypeDir: false,
+            hasMRFile: false,
+            moa: null,
+            goNoGo: null,
+            somYear1: null,
+            somYear3: null,
+          };
         }
-      }
+      })
+    );
 
-      return {
-        ...exp,
-        prototype: prototypes.find((p) => p.experimentId === exp.id) || null,
-        documentation: docs.find((d) => d.experimentId === exp.id) || null,
-        hasPRDFile: fileChecks.hasPRDFile,
-        hasPrototypeDir: fileChecks.hasPrototypeDir,
-        hasMRFile: fileChecks.hasMRFile,
-        moa,
-        goNoGo,
-        somYear1,
-        somYear3,
-      };
-    })
-  );
-
-  return <HomePageClient initialExperiments={experimentsWithRelated} />;
+    return <HomePageClient initialExperiments={experimentsWithRelated} />;
+  } catch (error) {
+    console.error("[HomePage] Fatal error:", error);
+    throw error;
+  }
 }

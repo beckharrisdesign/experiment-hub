@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import SearchBar from "@/components/SearchBar";
 import Header from "@/components/Header";
 import Tooltip from "@/components/Tooltip";
 import PrototypeStatus from "@/components/PrototypeStatus";
@@ -121,7 +120,6 @@ function SortableHeader({
 }
 
 export default function HomePageClient({ initialExperiments }: HomePageClientProps) {
-  const [searchQuery, setSearchQuery] = useState("");
   const [sortColumn, setSortColumn] = useState<SortColumn>("total");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
@@ -134,21 +132,9 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
     }
   };
 
-  const filteredAndSortedExperiments = useMemo(() => {
-    // First filter
-    let filtered = initialExperiments;
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = initialExperiments.filter(
-        (exp) =>
-          exp.name.toLowerCase().includes(query) ||
-          exp.statement.toLowerCase().includes(query) ||
-          exp.tags.some((tag) => tag.toLowerCase().includes(query))
-      );
-    }
-
-    // Then sort
-    return [...filtered].sort((a, b) => {
+  const sortedExperiments = useMemo(() => {
+    // Sort experiments
+    return [...initialExperiments].sort((a, b) => {
       let aValue: any;
       let bValue: any;
 
@@ -194,17 +180,13 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
       if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
       return 0;
     });
-  }, [initialExperiments, searchQuery, sortColumn, sortDirection]);
+  }, [initialExperiments, sortColumn, sortDirection]);
 
   return (
     <div className="min-h-screen">
       <Header />
       <div className="p-8">
-        <div className="mb-6">
-          <SearchBar placeholder="Search experiments..." onSearch={setSearchQuery} />
-        </div>
-
-      {filteredAndSortedExperiments.length === 0 ? (
+      {sortedExperiments.length === 0 ? (
         <div className="rounded-lg border border-border bg-background-secondary p-8 text-center">
           <p className="text-text-secondary">No experiments found.</p>
           <p className="mt-2 text-sm text-text-muted">
@@ -313,7 +295,7 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
               </tr>
             </thead>
             <tbody>
-              {filteredAndSortedExperiments.map((experiment) => (
+              {sortedExperiments.map((experiment) => (
                 <tr
                   key={experiment.id}
                   className="border-b border-border transition-colors hover:bg-background-tertiary"
