@@ -122,6 +122,34 @@ export async function readMarketResearch(experimentDirectory: string): Promise<s
 }
 
 /**
+ * Batch check all experiment files in parallel for better performance
+ * This avoids N+1 file system operations
+ */
+export async function checkExperimentFiles(experimentDirectory: string): Promise<{
+  hasPRDFile: boolean;
+  hasPrototypeDir: boolean;
+  hasMRFile: boolean;
+  mrContent: string | null;
+}> {
+  // Run all file checks in parallel
+  const [hasPRDFile, hasPrototypeDir, mrContent] = await Promise.all([
+    hasPRD(experimentDirectory),
+    hasPrototype(experimentDirectory),
+    readMarketResearch(experimentDirectory).catch(() => null),
+  ]);
+
+  // hasMRFile is true if we successfully read the content
+  const hasMRFile = mrContent !== null;
+
+  return {
+    hasPRDFile,
+    hasPrototypeDir,
+    hasMRFile,
+    mrContent,
+  };
+}
+
+/**
  * Extract key information from PRD markdown
  */
 export function parsePRD(prdContent: string) {

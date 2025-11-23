@@ -7,11 +7,11 @@ interface BaseButtonProps {
   className?: string;
 }
 
-interface ButtonProps extends BaseButtonProps, ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends BaseButtonProps, Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
   as?: "button";
 }
 
-interface LinkButtonProps extends BaseButtonProps, AnchorHTMLAttributes<HTMLAnchorElement> {
+interface LinkButtonProps extends BaseButtonProps, Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "children"> {
   as: "a";
   href: string;
   target?: string;
@@ -21,6 +21,7 @@ interface LinkButtonProps extends BaseButtonProps, AnchorHTMLAttributes<HTMLAnch
 interface NextLinkButtonProps extends BaseButtonProps {
   as: "link";
   href: string;
+  title?: string;
 }
 
 type ButtonComponentProps = ButtonProps | LinkButtonProps | NextLinkButtonProps;
