@@ -1,21 +1,27 @@
 import React from 'react';
 
 // Phone frame component
-function PhoneFrame({ children, crop = 'full' }: { children: React.ReactNode; crop?: 'full' | 'top' | 'middle' | 'bottom' }) {
+function PhoneFrame({ children, crop = 'full' }: { children: React.ReactNode; crop?: 'full' | 'top' | 'middle' | 'bottom' | 'square' }) {
   const cropStyles = {
     full: { clipPath: 'inset(0 0 0 0)' },
     top: { clipPath: 'inset(0 0 40% 0)' },
     middle: { clipPath: 'inset(20% 0 20% 0)' },
     bottom: { clipPath: 'inset(40% 0 0 0)' },
+    square: { clipPath: 'inset(0 0 44% 0)' }, // Crop to show top square portion (280px height from 500px)
   };
   
+  // For square crop, we need to adjust the frame dimensions
+  const isSquare = crop === 'square';
+  const frameWidth = isSquare ? '280px' : '280px';
+  const frameHeight = isSquare ? '280px' : '500px';
+  
   return (
-    <div className="relative pointer-events-none select-none" style={{ width: '280px', height: '500px' }}>
-      {/* Phone bezel */}
-      <div className="absolute inset-0 bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl">
+    <div className="relative pointer-events-none select-none" style={{ width: frameWidth, height: frameHeight }}>
+      {/* Phone bezel - cropped to square */}
+      <div className="absolute inset-0 bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl overflow-hidden" style={isSquare ? { clipPath: 'inset(0 0 44% 0)' } : {}}>
         <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden relative">
-          {/* Notch */}
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-gray-900 rounded-b-2xl z-10"></div>
+          {/* Notch - hidden in square crop */}
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-gray-900 rounded-b-2xl z-10" style={{ display: isSquare ? 'none' : 'block' }}></div>
           {/* Screen content with crop */}
           <div className="w-full h-full" style={{ ...cropStyles[crop], filter: 'brightness(0.98)' }}>
             <div className="pointer-events-none">
@@ -65,7 +71,7 @@ function DesktopFrame({ children, crop = 'full' }: { children: React.ReactNode; 
 
 export function SeedListMockup() {
   return (
-    <PhoneFrame crop="full">
+    <PhoneFrame crop="square">
       <div className="bg-white w-full h-full overflow-hidden">
         {/* Top navigation menu */}
         <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
@@ -202,7 +208,7 @@ export function SearchMockup() {
 
 export function UseFirstListMockup() {
   return (
-    <PhoneFrame crop="middle">
+    <PhoneFrame crop="square">
       <div className="bg-white w-full h-full overflow-hidden">
         {/* Top navigation menu */}
         <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">

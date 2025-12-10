@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { SeedListMockup, SearchMockup, UseFirstListMockup, SeedDetailMockup, SeedListDesktopMockup } from '@/components/Mockups';
+import { SeedListMockup, UseFirstListMockup } from '@/components/Mockups';
 
 export default function LandingPage() {
   const [showForm, setShowForm] = useState(false);
@@ -196,83 +196,69 @@ export default function LandingPage() {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-8 items-center mb-12">
-            {/* Left: Features */}
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg mb-1">Quick Inventory</h3>
-                  <p className="text-gray-600 text-sm">
-                    Add seeds in seconds. Just name, variety, and source. Add details later if you want.
-                  </p>
+          {/* Features with Mockups - First and Last only */}
+          <div className="space-y-8 md:space-y-12 mb-12">
+            {/* Feature 1: Quick Inventory */}
+            <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
+              <div className="order-2 md:order-1">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-xl md:text-2xl mb-2">Quick Inventory</h3>
+                    <p className="text-gray-600">
+                      Add seeds in seconds. Just name, variety, and source. Add details later if you want.
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-start gap-4">
+              <div className="order-1 md:order-2 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-4 md:p-6 flex items-center justify-center overflow-hidden shadow-sm aspect-square">
+                <div className="scale-75 md:scale-90 transform hover:scale-80 md:hover:scale-95 transition-transform opacity-90">
+                  <SeedListMockup />
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 2: Instant Search - No mockup */}
+            <div className="flex justify-center">
+              <div className="flex items-start gap-4 max-w-2xl">
                 <div className="flex-shrink-0 w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
                   <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-1">Instant Search</h3>
-                  <p className="text-gray-600 text-sm">
+                  <h3 className="font-semibold text-xl md:text-2xl mb-2">Instant Search</h3>
+                  <p className="text-gray-600">
                     Find any seed in under 10 seconds. Search by name, variety, or category.
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg mb-1">Use-First List</h3>
-                  <p className="text-gray-600 text-sm">
-                    See which seeds are expiring soon, so you use them before they go bad.
-                  </p>
+            </div>
+
+            {/* Feature 3: Use-First List */}
+            <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
+              <div className="order-2 md:order-1">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-xl md:text-2xl mb-2">Use-First List</h3>
+                    <p className="text-gray-600">
+                      See which seeds are expiring soon, so you use them before they go bad.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            {/* Right: App Mockups */}
-            <div className="relative">
-              <div className="grid grid-cols-2 gap-6">
-                {/* Mobile mockups - uniform containers */}
-                <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6 flex items-center justify-center overflow-hidden" style={{ height: '400px' }}>
-                  <div className="transform hover:scale-105 transition-transform opacity-90">
-                    <SeedListMockup />
-                  </div>
-                </div>
-                
-                <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6 flex items-center justify-center overflow-hidden" style={{ height: '400px' }}>
-                  <div className="transform hover:scale-105 transition-transform opacity-90">
-                    <SearchMockup />
-                  </div>
-                </div>
-                
-                <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6 flex items-center justify-center overflow-hidden" style={{ height: '400px' }}>
-                  <div className="transform hover:scale-105 transition-transform opacity-90">
-                    <UseFirstListMockup />
-                  </div>
-                </div>
-                
-                <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6 flex items-center justify-center overflow-hidden" style={{ height: '400px' }}>
-                  <div className="transform hover:scale-105 transition-transform opacity-90">
-                    <SeedDetailMockup />
-                  </div>
-                </div>
-                
-                {/* Desktop mockup spans 2 columns */}
-                <div className="col-span-2 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6 flex items-center justify-center overflow-hidden" style={{ height: '400px' }}>
-                  <div className="w-full max-w-5xl transform hover:scale-[1.02] transition-transform opacity-90">
-                    <SeedListDesktopMockup />
-                  </div>
+              <div className="order-1 md:order-2 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-4 md:p-6 flex items-center justify-center overflow-hidden shadow-sm aspect-square">
+                <div className="scale-75 md:scale-90 transform hover:scale-80 md:hover:scale-95 transition-transform opacity-90">
+                  <UseFirstListMockup />
                 </div>
               </div>
             </div>
