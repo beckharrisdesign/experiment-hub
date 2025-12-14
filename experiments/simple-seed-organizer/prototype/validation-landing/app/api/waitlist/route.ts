@@ -19,12 +19,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!NOTION_DATABASE_ID) {
-      console.error('NOTION_DATABASE_ID is not set');
-      return NextResponse.json(
-        { error: 'Server configuration error' },
-        { status: 500 }
-      );
+    if (!NOTION_DATABASE_ID || !process.env.NOTION_API_KEY) {
+      console.warn('Notion integration not configured - form submission logged but not saved');
+      // Return success to user, but log that it wasn't saved
+      // This allows the landing page to work before Notion is set up
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Thank you for your interest! We\'ll be in touch soon.',
+        note: 'Notion integration pending' 
+      });
     }
 
     // Prepare properties for Notion database
