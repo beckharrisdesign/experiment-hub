@@ -72,6 +72,22 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(plant_symbol, hardiness_zone)
   );
+
+  -- Recommended varietals for specific locations
+  CREATE TABLE IF NOT EXISTS recommended_varietals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    seed_id TEXT,
+    plant_symbol TEXT,
+    location TEXT NOT NULL,
+    variety_name TEXT NOT NULL,
+    heat_tolerance TEXT,
+    disease_resistance TEXT,
+    notes TEXT,
+    source TEXT,
+    is_primary BOOLEAN DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(seed_id, plant_symbol, location, variety_name)
+  );
 `);
 
 // Create indexes (only if tables/columns exist)
@@ -82,6 +98,9 @@ try {
     CREATE INDEX IF NOT EXISTS idx_usda_plants_family ON usda_plants(family);
     CREATE INDEX IF NOT EXISTS idx_plant_hardiness_zones_symbol ON plant_hardiness_zones(plant_symbol);
     CREATE INDEX IF NOT EXISTS idx_plant_hardiness_zones_zone ON plant_hardiness_zones(hardiness_zone);
+    CREATE INDEX IF NOT EXISTS idx_recommended_varietals_seed_id ON recommended_varietals(seed_id);
+    CREATE INDEX IF NOT EXISTS idx_recommended_varietals_plant_symbol ON recommended_varietals(plant_symbol);
+    CREATE INDEX IF NOT EXISTS idx_recommended_varietals_location ON recommended_varietals(location);
   `);
   
   // Only create this index if usda_symbol column exists

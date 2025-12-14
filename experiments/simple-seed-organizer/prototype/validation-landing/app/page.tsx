@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { SeedListMockup, UseFirstListMockup } from '@/components/Mockups';
 
 export default function LandingPage() {
   const [showForm, setShowForm] = useState(false);
@@ -15,17 +14,43 @@ export default function LandingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Connect to email service (Mailchimp, ConvertKit, etc.)
-    // For now, just log and show success
-    console.log('Form submitted:', formData);
-    setSubmitted(true);
     
-    // Track conversion in analytics
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'form_submission', {
-        event_category: 'engagement',
-        event_label: 'early_access_signup',
+    try {
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('Failed to submit form:', error);
+        alert('Something went wrong. Please try again.');
+        return;
+      }
+
+      setSubmitted(true);
+      
+      // Track Meta Pixel CompleteRegistration event
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'CompleteRegistration', {
+          value: 0.25,
+          currency: 'USD',
+        });
+      }
+      
+      // Track conversion in analytics
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'form_submission', {
+          event_category: 'engagement',
+          event_label: 'early_access_signup',
+        });
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Something went wrong. Please try again.');
     }
   };
 
@@ -100,7 +125,7 @@ export default function LandingPage() {
                 onClick={handleCtaClick}
                 className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
               >
-                Get Early Access
+                Join Waitlist
               </button>
             </nav>
 
@@ -109,34 +134,34 @@ export default function LandingPage() {
               onClick={handleCtaClick}
               className="md:hidden bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
             >
-              Get Access
+              Join Waitlist
             </button>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section id="hero" className="px-4 py-16 md:py-24 lg:py-32 relative overflow-hidden">
+      <section id="hero" className="py-16 md:py-24 lg:py-32 relative overflow-hidden bg-primary-800">
         {/* Subtle background pattern */}
-        <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 w-64 h-64 bg-primary-300 rounded-full blur-3xl"></div>
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary-200 rounded-full blur-3xl"></div>
         </div>
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900">
+        <div className="max-w-4xl mx-auto text-center relative z-10 px-4">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white">
             Your simple seed inventory &{' '}
-            <span className="text-primary-600">'use-first' list</span>, on your phone.
+            <span className="text-primary-200">'use-first' list</span>, on your phone.
           </h1>
-          <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-2xl mx-auto">
             No garden planning. No calendars. Just store your seed info and get it back when you need it.
           </p>
           <button
             onClick={handleCtaClick}
-            className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg"
+            className="bg-white hover:bg-gray-100 text-primary-800 font-semibold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg"
           >
-            Get Early Access for $12/year
+            Join the Waitlist
           </button>
-          <p className="mt-4 text-sm text-gray-500">No credit card required to join the list</p>
+          <p className="mt-4 text-sm text-gray-300">Free to join. We'll notify you when it's ready.</p>
         </div>
       </section>
 
@@ -184,93 +209,66 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Simplicity message */}
+      <section className="py-16 md:py-24 bg-primary-800">
+        <div className="max-w-4xl mx-auto px-4">
+          <p className="text-white text-xl md:text-2xl text-center">
+            <span className="font-bold">No garden planning.</span> No calendars. No design tools.
+            <br />
+            <span className="text-primary-200">Just your seed inventory, simple and fast.</span>
+          </p>
+        </div>
+      </section>
+
       {/* Solution Section */}
       <section id="solution" className="px-4 py-16 bg-gradient-to-b from-white to-gray-50 scroll-mt-20">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Simple Seed Organizer: Just your seeds, nothing else.
+              The simplest way to track your seed collection
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              The simplest way to track your seed collection. Store, search, and prioritize—all on your phone.
-            </p>
           </div>
           
-          {/* Features with Mockups - First and Last only */}
-          <div className="space-y-8 md:space-y-12 mb-12">
+          {/* Features List */}
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
             {/* Feature 1: Quick Inventory */}
-            <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
-              <div className="order-2 md:order-1">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-xl md:text-2xl mb-2">Quick Inventory</h3>
-                    <p className="text-gray-600">
-                      Add seeds in seconds. Just name, variety, and source. Add details later if you want.
-                    </p>
-                  </div>
-                </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
               </div>
-              <div className="order-1 md:order-2 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-4 md:p-6 flex items-center justify-center overflow-hidden shadow-sm aspect-square">
-                <div className="scale-75 md:scale-90 transform hover:scale-80 md:hover:scale-95 transition-transform opacity-90">
-                  <SeedListMockup />
-                </div>
-              </div>
+              <h3 className="font-semibold text-xl mb-2">Quick Inventory</h3>
+              <p className="text-gray-600 text-sm">
+                Add seeds in seconds. Just name, variety, and source. Add details later if you want.
+              </p>
             </div>
 
-            {/* Feature 2: Instant Search - No mockup */}
-            <div className="flex justify-center">
-              <div className="flex items-start gap-4 max-w-2xl">
-                <div className="flex-shrink-0 w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-xl md:text-2xl mb-2">Instant Search</h3>
-                  <p className="text-gray-600">
-                    Find any seed in under 10 seconds. Search by name, variety, or category.
-                  </p>
-                </div>
+            {/* Feature 2: Instant Search */}
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </div>
+              <h3 className="font-semibold text-xl mb-2">Instant Search</h3>
+              <p className="text-gray-600 text-sm">
+                Find any seed in under 10 seconds. Search by name, variety, or category.
+              </p>
             </div>
 
             {/* Feature 3: Use-First List */}
-            <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
-              <div className="order-2 md:order-1">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-xl md:text-2xl mb-2">Use-First List</h3>
-                    <p className="text-gray-600">
-                      See which seeds are expiring soon, so you use them before they go bad.
-                    </p>
-                  </div>
-                </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
               </div>
-              <div className="order-1 md:order-2 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-4 md:p-6 flex items-center justify-center overflow-hidden shadow-sm aspect-square">
-                <div className="scale-75 md:scale-90 transform hover:scale-80 md:hover:scale-95 transition-transform opacity-90">
-                  <UseFirstListMockup />
-                </div>
-              </div>
+              <h3 className="font-semibold text-xl mb-2">Use-First List</h3>
+              <p className="text-gray-600 text-sm">
+                See which seeds are expiring soon, so you use them before they go bad.
+              </p>
             </div>
-          </div>
-
-          {/* Simplicity message */}
-          <div className="bg-white border-2 border-primary-100 rounded-xl p-6 text-center">
-            <p className="text-gray-700 text-lg">
-              <span className="font-semibold">No garden planning.</span> No calendars. No design tools.
-              <br />
-              <span className="text-primary-600">Just your seed inventory, simple and fast.</span>
-            </p>
           </div>
         </div>
       </section>
@@ -279,8 +277,14 @@ export default function LandingPage() {
       <section id="pricing" className="px-4 py-16 bg-white scroll-mt-20">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Simple pricing. No surprises.</h2>
-          <div className="text-5xl font-bold text-primary-600 mb-2">$12/year</div>
-          <p className="text-lg text-gray-600 mb-12">Less than $1/month for a tool that saves you time and money.</p>
+          <div className="mb-8">
+            <div className="inline-flex items-baseline gap-3 mb-2">
+              <span className="text-5xl font-bold text-primary-600">$12/year</span>
+              <span className="text-lg text-gray-500 line-through">$15/year</span>
+            </div>
+            <p className="text-sm text-primary-600 font-medium mb-1">Early bird pricing</p>
+            <p className="text-lg text-gray-600">Full price will be $15/year after launch.</p>
+          </div>
           
           <div className="bg-gradient-to-br from-primary-50 to-white border border-primary-100 rounded-xl p-8 max-w-lg mx-auto mb-12">
             <div className="grid grid-cols-2 gap-4 text-left">
@@ -315,7 +319,7 @@ export default function LandingPage() {
             onClick={handleCtaClick}
             className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg"
           >
-            Get Early Access for $12/year
+            Join the Waitlist
           </button>
         </div>
       </section>
@@ -326,9 +330,9 @@ export default function LandingPage() {
           {!submitted ? (
             <>
               <div className="text-center mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">Get Early Access</h2>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">Join the Waitlist</h2>
                 <p className="text-lg text-gray-600">
-                  We're building Simple Seed Organizer now. Join the list to be notified when it's ready.
+                  We're building Simple Seed Organizer now. Join the waitlist to be notified when it's ready and get early bird pricing ($12/year).
                 </p>
               </div>
               

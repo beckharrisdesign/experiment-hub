@@ -198,8 +198,20 @@ Include:
 - Missing database initialization
 - Incorrect path aliases
 
-### Step 8: Implementation Guidance
-**⚠️ APPROVAL CHECKPOINT**: Before generating any files, present the complete proposed structure, key files to be created, dependencies, and assigned port to the user and **WAIT for explicit approval** before writing any code or configuration files.
+### Step 8: Design Review Integration
+**After generating prototype structure**, invoke `@design-advisor` to review the generated code for design compliance:
+
+- Call `@design-advisor` in Prototype Review mode
+- Provide generated code structure and key files for review
+- Design Advisor will:
+  - Review code against design guidelines
+  - Check component compliance
+  - Identify accessibility issues
+  - Provide specific code improvements
+- Incorporate design feedback into prototype code
+- Present updated prototype with design improvements to user
+
+**⚠️ APPROVAL CHECKPOINT**: After design review, present the complete proposed structure, key files to be created, dependencies, assigned port, and design improvements to the user and **WAIT for explicit approval** before writing any code or configuration files.
 
 Provide clear next steps:
 - What to implement first (MVP features)
@@ -328,7 +340,8 @@ prototype/
 - Test that `npm install` works
 
 ## Integration Points
-- Reference `design-guidelines.md` for UI/UX implementation
+- **Design Advisor**: Automatically invoke `@design-advisor` after generating prototype structure (before Step 8 approval checkpoint) to review code for design compliance and provide improvements
+- **Design Guidelines**: Reference `design-guidelines.md` for UI/UX implementation (Design Advisor will provide active review)
 - Follow component patterns from design system
 - Ensure prototype aligns with PRD requirements
 - Use commit message guidelines for initial commit

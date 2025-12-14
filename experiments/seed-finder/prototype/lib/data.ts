@@ -1,5 +1,19 @@
 import db from './db';
 
+export interface RecommendedVarietal {
+  id: number;
+  seed_id: string | null;
+  plant_symbol: string | null;
+  location: string;
+  variety_name: string;
+  heat_tolerance: string | null;
+  disease_resistance: string | null;
+  notes: string | null;
+  source: string | null;
+  is_primary: boolean;
+  created_at: string;
+}
+
 export interface Seed {
   id: string;
   english_name: string;
@@ -374,5 +388,108 @@ export function getAllUSDAFamilies(): string[] {
   `).all() as any[];
   
   return rows.map(row => row.family);
+}
+
+/**
+ * Get seeds by family (from seeds table)
+ */
+export function getSeedsByFamily(family: string): Seed[] {
+  const allSeeds = getAllSeeds();
+  return allSeeds.filter(seed => seed.family === family);
+}
+
+/**
+ * Get all seeds and USDA plants by family
+ */
+export function getPlantsByFamily(family: string): { seeds: Seed[]; usdaPlants: USDAPlant[] } {
+  const seeds = getSeedsByFamily(family);
+  const usdaPlants = getUSDAPlantsByFamily(family, 100);
+  
+  return { seeds, usdaPlants };
+}
+
+// ============================================================================
+// Recommended Varietals Functions
+// ============================================================================
+
+/**
+ * Get recommended varietals for a seed/plant in a specific location
+ */
+export function getRecommendedVarietals(
+  seedId?: string | null,
+  plantSymbol?: string | null,
+  location: string = 'Austin, TX'
+): RecommendedVarietal[] {
+  let query = 'SELECT * FROM recommended_varietals WHERE location = ?';
+  const params: any[] = [location];
+  
+  if (seedId) {
+    query += ' AND seed_id = ?';
+    params.push(seedId);
+  } else if (plantSymbol) {
+    query += ' AND plant_symbol = ?';
+    params.push(plantSymbol);
+  }
+  
+  query += ' ORDER BY is_primary DESC, variety_name';
+  
+  const rows = db.prepare(query).all(...params) as any[];
+  
+  return rows.map(row => ({
+    id: row.id,
+    seed_id: row.seed_id,
+    plant_symbol: row.plant_symbol,
+    location: row.location,
+    variety_name: row.variety_name,
+    heat_tolerance: row.heat_tolerance,
+    disease_resistance: row.disease_resistance,
+    notes: row.notes,
+    source: row.source,
+    is_primary: row.is_primary === 1,
+    created_at: row.created_at,
+  }));
+}
+
+/**
+ * Add a recommended varietal
+ */
+export function addRecommendedVarietal(
+  seedId: string | null,
+  plantSymbol: string | null,
+  location: string,
+  varietyName: string,
+  options?: {
+    heatTolerance?: string;
+    diseaseResistance?: string;
+    notes?: string;
+    source?: string;
+    isPrimary?: boolean;
+  }
+): void {
+  const insert = db.prepare(`
+    INSERT OR REPLACE INTO recommended_varietals (
+      seed_id, plant_symbol, location, variety_name,
+      heat_tolerance, disease_resistance, notes, source, is_primary
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  
+  insert.run(
+    seedId,
+    plantSymbol,
+    location,
+    varietyName,
+    options?.heatTolerance || null,
+    options?.diseaseResistance || null,
+    options?.notes || null,
+    options?.source || null,
+    options?.isPrimary ? 1 : 0
+  );
+}
+
+/**
+ * Get recommended varietals for a seed (by seed id or USDA symbol)
+ */
+export function getVarietalsForSeed(seed: Seed, location: string = 'Austin, TX'): RecommendedVarietal[] {
+  return getRecommendedVarietals(seed.id, seed.usda_symbol || null, location);
 }
 

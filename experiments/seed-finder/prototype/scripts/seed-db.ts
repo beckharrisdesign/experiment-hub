@@ -15,6 +15,8 @@ const sampleSeeds = [
     latin_name: 'Ocimum basilicum',
     category: 'herb',
     hardiness_zones: JSON.stringify([4, 5, 6, 7, 8, 9, 10])
+    // Note: Genovese Basil is a cultivar of Ocimum basilicum
+    // Other cultivars include: Thai Basil, Lemon Basil, Purple Basil, etc.
   },
   {
     id: '3',

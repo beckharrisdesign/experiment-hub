@@ -32,15 +32,23 @@ This directory contains agent instructions and guidelines for the Experiment Hub
 
 ### Quality & Guidelines Agents
 
-5. **commit-message.md** - Guidelines for well-formed commit messages
+5. **design-advisor.md** - Active design review and guidance
+   - **Role**: Design Lead / UX Director
+   - **Input**: PRD documents or prototype code
+   - **Output**: Design review reports, recommendations, compliance checks
+   - **Use**: `@design-advisor`
+   - **Integration**: Automatically invoked by PRD Writer and Prototype Builder
+   - Provides: Active design review, UI/UX feedback, accessibility audits, component suggestions
+
+6. **commit-message.md** - Guidelines for well-formed commit messages
    - **Role**: Senior Developer / Engineering Manager
    - Use: Before committing code
    - Provides: Format, examples, validation checklist
 
-6. **design-guidelines.md** - Design and UX principles
-   - **Role**: Design Lead / UX Director
-   - Use: During PRD creation and prototype development
-   - Provides: Design system, UX patterns, quality checklist
+7. **design-guidelines.md** - Design and UX principles reference
+   - **Role**: Design Lead / UX Director (reference document)
+   - Use: Reference document for design standards
+   - Provides: Design system, UX patterns, quality checklist (used by Design Advisor)
 
 ## Workflow
 
@@ -70,7 +78,10 @@ This directory contains agent instructions and guidelines for the Experiment Hub
 4. @prd-writer creates PRD (user must explicitly request)
    - Analyzes experiment (⚠️ requires approval)
    - Incorporates market research insights (if available)
-   - Generates structured PRD (⚠️ requires approval before saving)
+   - Generates structured PRD
+   - **Invokes @design-advisor** for UI/UX review (⚠️ requires approval)
+   - Incorporates design feedback
+   - Final PRD (⚠️ requires approval before saving)
    - Saves to docs/PRD.md
    ⚠️ Stops here - waits for explicit user request to proceed
    ↓
@@ -79,11 +90,14 @@ This directory contains agent instructions and guidelines for the Experiment Hub
    - Proposes structure and tech stack (⚠️ requires approval)
    - Creates code structure
    - Generates initial implementation
+   - **Invokes @design-advisor** for design compliance review (⚠️ requires approval)
+   - Incorporates design improvements
+   - Final prototype structure (⚠️ requires approval)
    ⚠️ Stops here - provides guidance but waits for user direction
    ↓
 6. Developer implements and iterates
    - Uses commit-message guidelines
-   - References design-guidelines
+   - References design-guidelines (or calls @design-advisor for reviews)
    - Builds prototype in experiment directory
 ```
 
@@ -104,8 +118,9 @@ Reference agents using `@` syntax:
 - `@market-research` - Conduct market research and TAM analysis
 - `@prd-writer` - Generate PRD for experiment
 - `@prototype-builder` - Build prototype from PRD
+- `@design-advisor` - Review PRD or prototype for design compliance (also auto-invoked by PRD Writer and Prototype Builder)
 - `@commit-message` - Get commit message guidance
-- `@design-guidelines` - Check design decisions
+- `@design-guidelines` - Reference design standards (reference document)
 
 ### Agent Instructions
 

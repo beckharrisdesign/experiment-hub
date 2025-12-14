@@ -231,9 +231,21 @@ As a solo entrepreneur, I want to see a list of all my experiments, so that I ca
 - [ ] Scope is well-defined
 - [ ] Document is readable and well-structured
 
-### Step 5: Save and Link
-**⚠️ APPROVAL CHECKPOINT**: Before saving, present the complete PRD to the user for review and **WAIT for explicit approval** before writing any files.
+### Step 5: Design Review Integration
+**Before final approval**, invoke `@design-advisor` to review the PRD for UI/UX completeness:
 
+- Call `@design-advisor` in PRD Review mode
+- Provide the PRD draft for review
+- Design Advisor will:
+  - Review UI/UX sections
+  - Identify missing design requirements
+  - Provide recommendations for design specifications
+- Incorporate design feedback into PRD
+- Present updated PRD with design recommendations to user
+
+**⚠️ APPROVAL CHECKPOINT**: After design review, present the complete PRD (including design enhancements) to the user for review and **WAIT for explicit approval** before writing any files.
+
+### Step 6: Save and Link
 - Save PRD to `experiments/{slug}/docs/PRD.md`
 - Update Documentation entry with:
   - Title: "[Experiment Name] PRD"
@@ -265,7 +277,8 @@ For experiment: "I'm attempting to implement WebAssembly-based image filters to 
 
 ## Integration Points
 - **Market Research**: If market research exists, incorporate TAM/SAM/SOM estimates and competitive insights into Target User and Goals sections
-- **Design Guidelines**: Reference `design-guidelines.md` when writing UI/UX sections
+- **Design Advisor**: Automatically invoke `@design-advisor` after completing PRD draft (before Step 5 approval checkpoint) to review UI/UX sections and ensure design requirements are properly specified
+- **Design Guidelines**: Reference `design-guidelines.md` when writing UI/UX sections (Design Advisor will provide active review)
 - Ensure PRD aligns with design principles
 - Include relevant design constraints in Technical Requirements
 

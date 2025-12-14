@@ -10,7 +10,8 @@
     "seed": "tsx scripts/seed-db.ts",
     "migrate": "tsx scripts/migrate-schema.ts",
     "import-usda": "tsx scripts/import-usda-plants.ts",
-    "add-zones": "tsx scripts/add-hardiness-zones.ts"
+    "add-zones": "tsx scripts/add-hardiness-zones.ts",
+    "add-varietals": "tsx scripts/add-austin-varietals.ts"
   },
   "dependencies": {
     "better-sqlite3": "^11.10.0",

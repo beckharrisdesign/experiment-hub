@@ -1,0 +1,16 @@
+# Replit configuration for Simple Seed Organizer Landing Page
+# This deploys the validation-landing subdirectory
+
+# Run command - changes to subdirectory and starts Next.js
+run = "cd experiments/simple-seed-organizer/prototype/validation-landing && npm install && npm run dev"
+
+# Port configuration - maps internal port 3008 to external port 80
+[[ports]]
+localPort = 3008
+externalPort = 80
+
+# Language configuration
+language = "nodejs"
+
+# Entry point (for Replit to understand the project structure)
+entrypoint = "experiments/simple-seed-organizer/prototype/validation-landing/package.json"

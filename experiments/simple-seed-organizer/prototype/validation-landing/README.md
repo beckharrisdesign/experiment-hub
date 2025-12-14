@@ -35,18 +35,53 @@ npm run dev
 
 ## Email Integration
 
-Currently, the form just logs to console. To collect emails, integrate with:
+The form is currently set up to save submissions to a Notion database.
+
+### Notion Integration (Current Setup)
+
+1. **Create a Notion Integration**:
+
+   - Go to https://www.notion.so/my-integrations
+   - Click "New integration"
+   - Give it a name (e.g., "Simple Seed Organizer Waitlist")
+   - Copy the "Internal Integration Token" (starts with `secret_`)
+
+2. **Create a Notion Database**:
+
+   - Create a new database in Notion
+   - Add the following properties:
+     - `Email` (type: Email) - required
+     - `Name` (type: Text) - optional
+     - `Seed Count` (type: Select) - optional
+     - `Challenges` (type: Multi-select) - optional
+     - `Signed Up` (type: Date) - auto-populated
+   - Click "..." menu → "Connections" → Add your integration
+
+3. **Get Database ID**:
+
+   - Open the database in Notion
+   - Copy the database ID from the URL: `https://www.notion.so/workspace/DATABASE_ID?v=...`
+   - The database ID is the 32-character string before the `?`
+
+4. **Set Environment Variables**:
+
+   - Create a `.env.local` file in the project root
+   - Add:
+     ```
+     NOTION_API_KEY=secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+     NEXT_PUBLIC_META_PIXEL_ID=your_pixel_id_here
+     ```
+
+5. **Test the Integration**:
+   - Submit the form on the landing page
+   - Check your Notion database for the new entry
+
+### Alternative Integrations
 
 - **Mailchimp**: Use Mailchimp API
 - **ConvertKit**: Use ConvertKit API
 - **Google Sheets**: Use Google Apps Script
-- **Simple API**: Create a simple API endpoint to store emails
-
-### Example: Google Sheets Integration
-
-1. Create a Google Sheet
-2. Use Google Apps Script to create an API endpoint
-3. Update form submission in `app/page.tsx` to POST to your endpoint
 
 ## Analytics Setup
 
@@ -69,26 +104,22 @@ Add to `app/layout.tsx`:
 </Script>
 ```
 
-### Facebook Pixel
+### Meta Pixel (Facebook Pixel)
 
-Add to `app/layout.tsx`:
+The Meta Pixel is already integrated and will track:
 
-```tsx
-<Script id="facebook-pixel" strategy="afterInteractive">
-  {`
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', 'YOUR_PIXEL_ID');
-    fbq('track', 'PageView');
-  `}
-</Script>
-```
+- **PageView**: Automatically tracked on page load
+- **CompleteRegistration**: Tracked when users submit the waitlist form (value: $0.25, currency: USD)
+
+**Setup**:
+
+1. Get your Pixel ID from [Meta Events Manager](https://business.facebook.com/events_manager)
+2. Add to `.env.local`:
+   ```
+   NEXT_PUBLIC_META_PIXEL_ID=your_pixel_id_here
+   ```
+
+The pixel is configured in `app/layout.tsx` and the CompleteRegistration event is tracked in the form submission handler.
 
 ## UTM Tracking
 
