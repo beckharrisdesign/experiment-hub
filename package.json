@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "setup:logging": "node scripts/setup-logging.js"
+    "setup:logging": "node scripts/setup-logging.js",
+    "dev:landing": "cd experiments/simple-seed-organizer/prototype/validation-landing && npm install && npm run dev"
   },
   "dependencies": {
     "@types/node": "^24.10.1",
