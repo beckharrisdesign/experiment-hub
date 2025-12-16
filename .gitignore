@@ -76,6 +76,23 @@ Thumbs.db
 # Note: experiments/ folder and its contents are tracked
 # Individual experiment node_modules and build artifacts are ignored below
 
+# Experiment prototype databases and data files
+**/experiments/**/data/*.sqlite
+**/experiments/**/data/*.sqlite-journal
+**/experiments/**/data/*.db
+**/experiments/**/data/*.txt
+
+# Experiment prototype uploads/exports (keep directory structure)
+**/experiments/**/public/uploads/*
+!**/experiments/**/public/uploads/.gitkeep
+**/experiments/**/public/exports/*
+!**/experiments/**/public/exports/.gitkeep
+
+# Playwright test artifacts
+**/playwright-report/
+**/test-results/
+**/playwright/.cache/
+
 # Temporary files
 *.tmp
 *.temp
