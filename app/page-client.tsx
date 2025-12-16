@@ -300,12 +300,13 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                   key={experiment.id}
                   className="border-b border-border transition-colors hover:bg-background-tertiary"
                 >
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="px-4 py-3">
                     <Link
                       href={`/experiments/${slugify(experiment.name)}`}
                       className="block hover:text-accent-primary"
                     >
                       <span className="font-medium text-text-primary">{experiment.name}</span>
+                      <span className="block text-xs text-text-muted mt-0.5 line-clamp-1">{experiment.statement}</span>
                     </Link>
                   </td>
                   {!experiment.hasMRFile ? (
