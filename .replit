@@ -4,16 +4,53 @@
 # Run command - changes to subdirectory and starts Next.js
 run = "cd experiments/simple-seed-organizer/prototype/validation-landing && npm install && npm run dev"
 
+<<<<<<< HEAD
 # On boot - install dependencies in the subdirectory
 onBoot = "cd experiments/simple-seed-organizer/prototype/validation-landing && npm install"
 
 # Port configuration - maps internal port 3008 to external port 80
+=======
+>>>>>>> 10e9bf0 (Update configuration to allow specific Replit development domains)
 [[ports]]
 localPort = 3008
 externalPort = 80
 
-# Language configuration
-language = "nodejs"
+[[ports]]
+localPort = 5000
+externalPort = 5000
 
-# Entry point (for Replit to understand the project structure)
-entrypoint = "experiments/simple-seed-organizer/prototype/validation-landing/package.json"
+[agent]
+expertMode = true
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install && npm run dev -- -p 5000 -H 0.0.0.0"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[nix]
+channel = "stable-25_05"
+packages = ["nodejs"]
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["npm", "run", "start"]
+build = ["npm", "run", "build"]
