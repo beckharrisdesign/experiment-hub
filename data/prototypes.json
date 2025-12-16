@@ -1,0 +1,38 @@
+[
+  {
+    "id": "proto-etsy-embroidery",
+    "title": "Etsy Embroidery Pattern Manager Prototype",
+    "description": "Manage embroidery patterns, generate listings, and organize product templates for Etsy sellers",
+    "linkPath": "/experiments/etsy-embroidery-pattern-manager/prototype",
+    "experimentId": "etsy-embroidery-pattern-manager",
+    "status": "Active",
+    "createdDate": "2024-11-01",
+    "lastModified": "2024-12-16",
+    "tags": ["etsy", "embroidery", "listings"],
+    "port": 3001
+  },
+  {
+    "id": "proto-seed-finder",
+    "title": "Seed Finder Prototype",
+    "description": "Find seeds and plants by hardiness zone, family, and category",
+    "linkPath": "/experiments/seed-finder/prototype",
+    "experimentId": "seed-finder",
+    "status": "Active",
+    "createdDate": "2024-11-01",
+    "lastModified": "2024-12-16",
+    "tags": ["gardening", "seeds", "usda"],
+    "port": 3002
+  },
+  {
+    "id": "proto-simple-seed-organizer",
+    "title": "Simple Seed Organizer Prototype",
+    "description": "A validation landing page for the Simple Seed Organizer concept",
+    "linkPath": "/experiments/simple-seed-organizer/prototype/validation-landing",
+    "experimentId": "simple-seed-organizer",
+    "status": "Active",
+    "createdDate": "2024-11-01",
+    "lastModified": "2024-12-16",
+    "tags": ["gardening", "seeds", "landing-page"],
+    "port": 3003
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "doc-etsy-embroidery",
+    "title": "Etsy Embroidery Pattern Manager Documentation",
+    "content": "Documentation for the Etsy Embroidery Pattern Manager experiment",
+    "experimentId": "etsy-embroidery-pattern-manager",
+    "createdDate": "2024-11-01",
+    "lastModified": "2024-12-16",
+    "tags": ["etsy", "documentation"]
+  },
+  {
+    "id": "doc-seed-finder",
+    "title": "Seed Finder Documentation",
+    "content": "Documentation for the Seed Finder experiment",
+    "experimentId": "seed-finder",
+    "createdDate": "2024-11-01",
+    "lastModified": "2024-12-16",
+    "tags": ["gardening", "documentation"]
+  }
+]
