@@ -119,9 +119,24 @@ function SortableHeader({
   );
 }
 
+type ViewTab = "active" | "archived";
+
 export default function HomePageClient({ initialExperiments }: HomePageClientProps) {
   const [sortColumn, setSortColumn] = useState<SortColumn>("total");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [activeTab, setActiveTab] = useState<ViewTab>("active");
+
+  const activeExperiments = useMemo(() => 
+    initialExperiments.filter(e => e.status !== "Abandoned"), 
+    [initialExperiments]
+  );
+  
+  const archivedExperiments = useMemo(() => 
+    initialExperiments.filter(e => e.status === "Abandoned"), 
+    [initialExperiments]
+  );
+
+  const displayedExperiments = activeTab === "active" ? activeExperiments : archivedExperiments;
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -134,7 +149,7 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
 
   const sortedExperiments = useMemo(() => {
     // Sort experiments
-    return [...initialExperiments].sort((a, b) => {
+    return [...displayedExperiments].sort((a, b) => {
       let aValue: any;
       let bValue: any;
 
@@ -180,18 +195,46 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
       if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
       return 0;
     });
-  }, [initialExperiments, sortColumn, sortDirection]);
+  }, [displayedExperiments, sortColumn, sortDirection]);
 
   return (
     <div className="min-h-screen">
       <Header />
       <div className="p-8">
+      {/* Tab Navigation */}
+      <div className="mb-6 flex gap-1 border-b border-border">
+        <button
+          onClick={() => setActiveTab("active")}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === "active"
+              ? "border-b-2 border-accent-primary text-accent-primary"
+              : "text-text-secondary hover:text-text-primary"
+          }`}
+        >
+          Active ({activeExperiments.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("archived")}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === "archived"
+              ? "border-b-2 border-accent-primary text-accent-primary"
+              : "text-text-secondary hover:text-text-primary"
+          }`}
+        >
+          Archived ({archivedExperiments.length})
+        </button>
+      </div>
+
       {sortedExperiments.length === 0 ? (
         <div className="rounded-lg border border-border bg-background-secondary p-8 text-center">
-          <p className="text-text-secondary">No experiments found.</p>
-          <p className="mt-2 text-sm text-text-muted">
-            Create your first experiment using @experiment-creator
+          <p className="text-text-secondary">
+            {activeTab === "active" ? "No active experiments found." : "No archived experiments."}
           </p>
+          {activeTab === "active" && (
+            <p className="mt-2 text-sm text-text-muted">
+              Create your first experiment using @experiment-creator
+            </p>
+          )}
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border bg-background-secondary">
