@@ -14,3 +14,9 @@
   }
 }
 
+/* Remove default positioning from nextjs-portal */
+nextjs-portal {
+  left: unset !important;
+  top: unset !important;
+}
+
