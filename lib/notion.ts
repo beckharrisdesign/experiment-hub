@@ -50,8 +50,7 @@ export async function getUncachableNotionClient() {
 }
 
 export interface LandingPageSubmission {
-  experimentId: string;
-  experimentName: string;
+  experiment: string;
   email: string;
   optedIn: boolean;
   optOutReason?: string;
@@ -70,7 +69,7 @@ export async function submitLandingPageResponse(
     properties: {
       'Experiment': {
         select: {
-          name: submission.experimentName,
+          name: submission.experiment,
         },
       },
       'Email': {
@@ -90,7 +89,7 @@ export async function submitLandingPageResponse(
       },
       'Source': {
         select: {
-          name: submission.source || 'Direct',
+          name: submission.source || 'landing-page',
         },
       },
       'Notes': {

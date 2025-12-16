@@ -5,11 +5,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const { experimentId, experimentName, email, optedIn, optOutReason, source, notes } = body;
+    const { experiment, email, name, optedIn, optOutReason, source, ...customFields } = body;
     
-    if (!experimentId || !experimentName || !email) {
+    if (!experiment || !email) {
       return NextResponse.json(
-        { error: 'Missing required fields: experimentId, experimentName, email' },
+        { error: 'Missing required fields: experiment, email' },
         { status: 400 }
       );
     }
@@ -23,14 +23,26 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Build notes from name and any custom fields
+    const notesArray: string[] = [];
+    if (name) {
+      notesArray.push(`Name: ${name}`);
+    }
+    // Add any custom fields to notes (seedCount, challenge, etc.)
+    Object.entries(customFields).forEach(([key, value]) => {
+      if (value && key !== 'experiment' && key !== 'email' && key !== 'source' && key !== 'optedIn') {
+        const formattedValue = Array.isArray(value) ? value.join(', ') : String(value);
+        notesArray.push(`${key}: ${formattedValue}`);
+      }
+    });
+    
     const submission: LandingPageSubmission = {
-      experimentId,
-      experimentName,
+      experiment,
       email,
       optedIn: optedIn ?? true,
       optOutReason,
-      source,
-      notes,
+      source: source || 'landing-page',
+      notes: notesArray.join('\n'),
     };
     
     const response = await submitLandingPageResponse(databaseId, submission);

@@ -44,3 +44,8 @@ packages = ["nodejs"]
 [agent]
 expertMode = true
 integrations = ["notion:1.0.0"]
+
+[userenv]
+
+[userenv.shared]
+NOTION_LANDING_DATABASE_ID = "4bdba5011c1d4c828715e86409436183"

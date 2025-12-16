@@ -1,5 +1,7 @@
-// Configuration - Update this URL when deploying the hub
-const HUB_API_URL = 'https://experiment-hub.replit.app';
+// Configuration - Update this URL when deploying
+// For development: Use the Replit dev URL (e.g., https://xxx.replit.dev)
+// For production: Use the deployed hub URL (e.g., https://experiment-hub.replit.app)
+const HUB_API_URL = '';  // Empty string = same origin (works when served from hub)
 
 // Form state
 let selectedSeedCount = '';
@@ -78,18 +80,23 @@ function setupFormSubmission() {
     submitBtn.textContent = 'Submitting...';
     submitBtn.disabled = true;
     
+    // API expects: experiment, email (required)
+    // Optional: name, source, optedIn, optOutReason
+    // Any extra fields go into notes automatically
     const formData = {
+      experiment: 'Simple Seed Organizer',
       email: document.getElementById('email').value,
       name: document.getElementById('name').value || '',
-      seedCount: selectedSeedCount,
-      challenge: selectedChallenges,
-      experiment: 'simple-seed-organizer',
       source: 'landing-page',
-      optedIn: true
+      optedIn: true,
+      // Custom fields - these get added to notes
+      seedCount: selectedSeedCount,
+      challenges: selectedChallenges,
     };
     
     try {
-      const response = await fetch(HUB_API_URL + '/api/landing-submission', {
+      const apiUrl = HUB_API_URL || '';
+      const response = await fetch(apiUrl + '/api/landing-submission', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +105,8 @@ function setupFormSubmission() {
       });
 
       if (!response.ok) {
-        throw new Error('Submission failed');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Submission failed');
       }
 
       // Show success message
