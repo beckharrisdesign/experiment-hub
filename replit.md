@@ -48,7 +48,30 @@ The application is configured for autoscale deployment:
 - Build: `npm run build`
 - Start: `npm run start`
 
+## Experiment Workflow
+
+The experiment workflow follows these stages:
+1. **Market Research** - TAM/SAM/SOM analysis and scoring across 5 dimensions
+2. **PRD** - Product Requirements Document with Validation Plan section
+3. **Landing Page** - Ad-validated landing pages to capture interest before prototype
+4. **Prototype** - Working prototype implementation
+
+## Notion Integration
+
+Landing page submissions are stored in a shared Notion database with these fields:
+- Experiment (select), Email, Opted In (checkbox), Opt-Out Reason, Source (select), Notes, Timestamp
+
+The NOTION_LANDING_DATABASE_ID environment variable must be set to the Notion database ID.
+
 ## Recent Changes
+
+- 2024-12-16: Added Landing Page validation workflow step
+  - New ValidationStatus and ValidationLandingPage types
+  - Landing Page column on dashboard with status indicators
+  - API endpoint for landing page submissions to Notion
+  - PRD writer agent updated with Validation Plan section
+  - Landing Page tab on experiment detail pages
+  - Fixed Notion client authentication with proper error handling
 
 - 2024-12-14: Initial Replit import and configuration
   - Configured Next.js to allow Replit dev origins
