@@ -6,6 +6,10 @@ run = "cd experiments/simple-seed-organizer/prototype/validation-landing && npm 
 modules = ["python-3.11", "nodejs-20"]
 
 [[ports]]
+localPort = 3001
+externalPort = 3001
+
+[[ports]]
 localPort = 3008
 externalPort = 80
 
@@ -25,6 +29,10 @@ author = "agent"
 task = "workflow.run"
 args = "Start application"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Simple Seed Organizer Landing"
+
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
@@ -36,6 +44,18 @@ waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow]]
+name = "Simple Seed Organizer Landing"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd experiments/simple-seed-organizer/landing && npm install && npm run dev"
+waitForPort = 3001
 
 [nix]
 channel = "stable-25_05"
