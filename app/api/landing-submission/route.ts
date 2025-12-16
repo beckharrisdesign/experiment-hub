@@ -52,10 +52,11 @@ export async function POST(request: NextRequest) {
     const response = await submitLandingPageResponse(databaseId, submission);
     
     return NextResponse.json({ success: true, pageId: response.id });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error submitting landing page response:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     return NextResponse.json(
-      { error: 'Failed to submit response' },
+      { error: 'Failed to submit response', details: error?.message || String(error) },
       { status: 500 }
     );
   }
