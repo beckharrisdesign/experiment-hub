@@ -188,21 +188,21 @@ export default function TabsContent({
               <div className="rounded-lg border border-border bg-background-tertiary p-6">
                 <div className="mb-2 text-sm font-medium text-text-secondary">TAM</div>
                 <div className="text-3xl font-bold text-accent-primary">
-                  ${mr.tam || "N/A"}
+                  {mr.tam || "N/A"}
                 </div>
                 <div className="mt-2 text-xs text-text-muted">Total Addressable Market</div>
               </div>
               <div className="rounded-lg border border-border bg-background-tertiary p-6">
                 <div className="mb-2 text-sm font-medium text-text-secondary">SAM</div>
                 <div className="text-3xl font-bold text-accent-primary">
-                  ${mr.sam || "N/A"}
+                  {mr.sam || "N/A"}
                 </div>
                 <div className="mt-2 text-xs text-text-muted">Serviceable Addressable Market</div>
               </div>
               <div className="rounded-lg border border-border bg-background-tertiary p-6">
                 <div className="mb-2 text-sm font-medium text-text-secondary">SOM (Year 3)</div>
                 <div className="text-3xl font-bold text-accent-primary">
-                  ${mr.som || "N/A"}
+                  {mr.som || "N/A"}
                 </div>
                 <div className="mt-2 text-xs text-text-muted">Serviceable Obtainable Market</div>
               </div>
