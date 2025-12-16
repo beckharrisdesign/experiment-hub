@@ -3,6 +3,7 @@
 import StatusBadge from "@/components/StatusBadge";
 import MarkdownContent from "@/components/MarkdownContent";
 import Tabs from "@/components/Tabs";
+import LandingPageLink from "@/components/LandingPageLink";
 import { Experiment, Prototype, Documentation } from "@/types";
 import type { parsePRD, parseMarketResearch } from "@/lib/data";
 
@@ -376,6 +377,9 @@ export default function TabsContent({
                         {experiment.validation.url}
                       </a>
                     </div>
+                  )}
+                  {experiment.validation?.devPort && (
+                    <LandingPageLink devPort={experiment.validation.devPort} />
                   )}
                 </div>
               </section>

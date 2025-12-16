@@ -12,7 +12,9 @@ export interface ExperimentScores {
 
 export interface ValidationLandingPage {
   status: ValidationStatus;
-  url?: string; // URL to the landing page
+  url?: string; // URL to the production landing page
+  landingDir?: string; // Directory containing the landing page code
+  devPort?: number; // Port for development server
   notionPageId?: string; // Link to Notion page with validation results
 }
 
