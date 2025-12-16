@@ -10,10 +10,6 @@ localPort = 3001
 externalPort = 3001
 
 [[ports]]
-localPort = 3008
-externalPort = 80
-
-[[ports]]
 localPort = 5000
 externalPort = 5000
 
@@ -54,7 +50,7 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd experiments/simple-seed-organizer/landing && npm install && npm run dev"
+args = "cd experiments/simple-seed-organizer/landing && python -m http.server 3001"
 waitForPort = 3001
 
 [nix]

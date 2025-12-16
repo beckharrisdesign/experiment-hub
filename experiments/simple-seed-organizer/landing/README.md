@@ -1,39 +1,49 @@
 # Simple Seed Organizer - Landing Page
 
-This is the validation landing page for the Simple Seed Organizer experiment. It's used to validate market demand through ad campaigns before building a full prototype.
+A static HTML landing page for validating interest in the Simple Seed Organizer app.
 
-## Running the Landing Page
+## Files
+
+- `index.html` - Main landing page
+- `script.js` - Form handling and interactions
+
+## Development
+
+To run locally, use any static file server:
 
 ```bash
-cd experiments/simple-seed-organizer/landing
-npm install
-npm run dev
+# Python
+python -m http.server 3001
+
+# Node.js (npx)
+npx serve -p 3001
+
+# PHP
+php -S localhost:3001
 ```
 
-The landing page runs on port 3008 by default.
+Then open http://localhost:3001
 
-## Environment Variables
+## Form Submission
 
-- `HUB_API_URL` - URL of the Experiment Hub API (defaults to `http://localhost:5000`)
-- `NEXT_PUBLIC_META_PIXEL_ID` - (Optional) Meta/Facebook Pixel ID for conversion tracking
+The form submits to the Experiment Hub's API endpoint:
+- Development: Update `HUB_API_URL` in `script.js` to point to your local hub
+- Production: Update `HUB_API_URL` to your deployed hub URL (e.g., `https://experiment-hub.replit.app`)
 
-All form submissions are sent to the hub's centralized `/api/landing-submission` endpoint, which handles Notion storage.
+## Deployment
 
-## Structure
+This is a static site - deploy to any static hosting:
+- Replit (Static deployment)
+- Netlify
+- Vercel
+- GitHub Pages
+- Cloudflare Pages
 
-```
-landing/
-├── app/
-│   ├── api/waitlist/    # API endpoint for form submissions
-│   ├── globals.css      # Tailwind styles
-│   ├── layout.tsx       # Root layout
-│   └── page.tsx         # Main landing page component
-├── components/
-│   └── Mockups.tsx      # App mockup components for the landing page
-├── package.json
-├── tailwind.config.ts
-└── tsconfig.json
-```
+For Replit static deployment:
+1. Create a new Replit or use a separate deployment
+2. Set deployment type to "Static"
+3. Set public directory to the landing folder
+4. Add your custom subdomain in deployment settings
 
 ## Form Data
 
@@ -47,8 +57,8 @@ All data is submitted to the shared Notion landing database with the experiment 
 
 ## Analytics
 
-The page includes tracking for:
-- Meta Pixel (CompleteRegistration event)
-- Google Analytics events (cta_click, form_submission)
+The page supports:
+- Meta Pixel (Facebook) - `CompleteRegistration` event on form submission
+- Google Analytics - `form_submission` event
 
-Update the tracking pixels in `app/layout.tsx` for your specific campaign.
+Add your tracking scripts to the `<head>` section of `index.html`.
