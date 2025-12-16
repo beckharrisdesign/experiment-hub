@@ -25,7 +25,7 @@ This is an "Experiment Hub" that allows you to:
 │   └── [experiment-name]/
 │       ├── docs/         # Experiment documentation
 │       ├── notes/        # Development notes
-│       ├── landing/      # Landing page for validation (standalone Next.js app)
+│       ├── landing/      # Static HTML landing page for validation
 │       └── prototype/    # Experiment prototype code
 ├── lib/                   # Utility functions and data helpers
 │   └── landing-page/     # Landing page types and template docs
@@ -67,11 +67,25 @@ The NOTION_LANDING_DATABASE_ID environment variable must be set to the Notion da
 
 ## Recent Changes
 
+- 2024-12-16: Converted landing pages to static HTML
+  - Landing pages are now static HTML/CSS/JS (no Node.js runtime needed)
+  - Uses Tailwind CSS via CDN for styling
+  - Forms submit to hub's /api/landing-submission endpoint
+  - Much cheaper to deploy (static hosting vs server)
+  - Can be deployed to any static host with custom subdomain
+
+- 2024-12-16: Added Active/Archived tabs to dashboard
+  - Experiments can be archived by setting status to "Abandoned"
+  - Dashboard shows Active (X) and Archived (Y) tabs
+  - Archived: Experience Principles Repository, Seed Finder, Garden Guide Generator
+
+- 2024-12-16: Renamed Etsy Embroidery Pattern Manager to Etsy Listing Manager
+
 - 2024-12-16: Restructured landing page architecture
   - Moved Simple Seed Organizer landing page from prototype/ to landing/
   - Landing pages now submit to centralized /api/landing-submission endpoint
   - Created lib/landing-page/ with types and template documentation
-  - Landing pages are standalone Next.js apps for independent deployment
+  - Landing pages are static HTML for cheap deployment
 
 - 2024-12-16: Added Landing Page validation workflow step
   - New ValidationStatus and ValidationLandingPage types

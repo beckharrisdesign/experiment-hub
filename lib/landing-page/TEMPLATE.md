@@ -4,20 +4,19 @@ This document describes how to create a validation landing page for any experime
 
 ## Architecture
 
-Landing pages are **standalone Next.js applications** that run independently from the main Experiment Hub. This is intentional:
+Landing pages are **static HTML/CSS/JS files** that can be deployed anywhere. This is intentional:
 
-- Landing pages are deployed to unique URLs for ad campaigns
-- They can run on different ports during development
-- They're self-contained for easy deployment
+- Landing pages are deployed to unique URLs/subdomains for ad campaigns
+- They can run on different ports during development (any static server)
+- They're self-contained for easy, cheap deployment
+- No server runtime needed - just static file hosting
 
 **Centralized Submissions**: All landing page form submissions are routed to the Experiment Hub's `/api/landing-submission` endpoint. This means:
 
 - Landing pages don't need the Notion SDK or authentication logic
 - All submissions go through one centralized API
 - The hub handles Notion integration and data storage
-- Landing pages only need to set `HUB_API_URL` environment variable
-
-The main hub's `lib/landing-page/` module defines shared types and helpers for the centralized submission endpoint.
+- Landing pages only need to set `HUB_API_URL` in their JavaScript
 
 ## Quick Start
 
@@ -26,23 +25,17 @@ The main hub's `lib/landing-page/` module defines shared types and helpers for t
    cp -r experiments/simple-seed-organizer/landing experiments/YOUR-EXPERIMENT/landing
    ```
 
-2. Update `package.json`:
-   - Change the name to `your-experiment-landing`
-   - Update the port if needed (use a unique port like 3009, 3010, etc.)
-
-3. Update `app/page.tsx`:
+2. Update `index.html`:
+   - Update the page title and meta description
    - Update the experiment name, headline, subheadline
    - Customize problem/solution sections
-   - Update form fields for your specific data collection needs
    - Update pricing if applicable
+   - Add analytics scripts (Meta Pixel, Google Analytics) to `<head>`
 
-4. Update `app/api/waitlist/route.ts`:
-   - Change the experiment name in the 'Experiment' select field
-   - Update the form data fields being collected
-
-5. Update `app/layout.tsx`:
-   - Add your Meta Pixel ID (NEXT_PUBLIC_META_PIXEL_ID)
-   - Add your Google Analytics ID if using
+3. Update `script.js`:
+   - Change `HUB_API_URL` to your deployed hub URL
+   - Update the `experiment` field in form data
+   - Modify form fields if needed
 
 ## Directory Structure
 
@@ -56,51 +49,76 @@ experiments/
     │   ├── PRD.md
     │   ├── landing-page-content.md  # Copy/messaging reference
     │   └── ad-campaign-content.md   # Ad variations
-    ├── landing/                      # Standalone Next.js landing page
-    │   ├── app/
-    │   │   ├── api/waitlist/
-    │   │   ├── globals.css
-    │   │   ├── layout.tsx
-    │   │   └── page.tsx
-    │   ├── components/
-    │   ├── package.json
-    │   └── tailwind.config.ts
+    ├── landing/                      # Static landing page
+    │   ├── index.html               # Main HTML page
+    │   ├── script.js                # Form handling
+    │   └── README.md                # Setup instructions
     ├── prototype/                    # Actual product prototype (separate)
     └── notes/
 ```
 
-## Environment Variables
+## Running Landing Pages Locally
 
-All landing pages share the same Notion database for submissions:
-
-- `NOTION_LANDING_DATABASE_ID` - Shared database ID for all landing page submissions
-
-The database has these columns:
-- Experiment (select) - Which experiment the signup is for
-- Email (email) - User's email
-- Opted In (checkbox) - Whether they opted in
-- Opt-Out Reason (text) - If they didn't opt in, why
-- Source (select) - Landing Page, Ad, etc.
-- Notes (text) - Additional form data
-- Timestamp (date) - Auto-populated
-
-## Running Landing Pages
-
-Each landing page is a standalone Next.js app that runs on its own port:
+Use any static file server:
 
 ```bash
 cd experiments/your-experiment/landing
-npm install
-npm run dev
+
+# Python
+python -m http.server 3001
+
+# Node.js
+npx serve -p 3001
+
+# PHP
+php -S localhost:3001
 ```
 
-## Key Components
+Then open http://localhost:3001
+
+## Form Submission
+
+Forms POST to the hub's `/api/landing-submission` endpoint with this structure:
+
+```javascript
+{
+  email: 'user@example.com',
+  name: 'User Name',
+  experiment: 'your-experiment-name',
+  source: 'landing-page',
+  optedIn: true,
+  // ... custom fields as notes
+}
+```
+
+Update `HUB_API_URL` in `script.js`:
+- Development: Your local hub (e.g., `http://localhost:5000`)
+- Production: Your deployed hub (e.g., `https://experiment-hub.replit.app`)
+
+## Deployment
+
+Since these are static files, deploy to any static hosting:
+
+### Replit Static Deployment
+1. Create a new Replit (or separate deployment)
+2. Set deployment type to "Static"
+3. Set public directory to the landing folder
+4. Add your custom subdomain in deployment settings
+
+### Other Options
+- Netlify (free tier available)
+- Vercel (free tier available)
+- GitHub Pages (free)
+- Cloudflare Pages (free tier available)
+- AWS S3 + CloudFront
+
+## Key Sections
 
 ### Hero Section
 - Clear headline communicating the main value proposition
 - Subheadline with supporting context
 - Primary CTA button
-- Optional hero image or mockup
+- Uses Tailwind CSS via CDN for styling
 
 ### Problem Section
 - 3-4 problem points your target audience experiences
@@ -125,20 +143,43 @@ npm run dev
 
 ## Analytics Events
 
-Track these events for campaign optimization:
+Add tracking scripts to `<head>` in index.html:
 
-1. `page_view` - Landing page loaded
-2. `cta_click` - Any CTA button clicked
-3. `form_start` - User focuses on email field
-4. `form_submission` - Form successfully submitted
+```html
+<!-- Meta Pixel -->
+<script>
+  !function(f,b,e,v,n,t,s) { ... }
+  fbq('init', 'YOUR_PIXEL_ID');
+  fbq('track', 'PageView');
+</script>
 
-For Meta Pixel, use `CompleteRegistration` event on form submission.
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GA_ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'GA_ID');
+</script>
+```
+
+The form submission in `script.js` automatically tracks:
+- `CompleteRegistration` (Meta Pixel)
+- `form_submission` event (Google Analytics)
 
 ## Best Practices
 
 1. **Mobile-first**: Most ad traffic is mobile
-2. **Fast loading**: Keep under 3 seconds
+2. **Fast loading**: Static files load fast, Tailwind CDN adds minimal overhead
 3. **Clear CTA**: One obvious action to take
 4. **Social proof**: Add testimonials when available
 5. **Trust indicators**: Privacy note, unsubscribe info
 6. **No navigation away**: Keep users on the page
+
+## Production Notes
+
+For production deployments, consider:
+- Replacing Tailwind CDN with a pre-built CSS file (use Tailwind CLI)
+- Minifying HTML and JavaScript
+- Adding proper caching headers
+- Setting up SSL certificate for custom domain
