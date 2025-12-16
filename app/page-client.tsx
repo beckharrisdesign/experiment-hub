@@ -199,7 +199,7 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
             <thead>
               {/* Group Headers Row */}
               <tr className="border-b border-border bg-background-tertiary">
-                <th className="px-4 py-2 text-left text-xs font-medium text-text-secondary">
+                <th className="px-4 py-2 text-left text-xs font-medium text-text-secondary w-1/2">
                   Experiment
                 </th>
                 <th colSpan={6} className="px-4 py-2 text-left text-xs font-medium text-text-secondary border-l-2 border-accent-primary/30">
@@ -215,7 +215,7 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
               {/* Column Headers Row */}
               <tr className="border-b border-border bg-background-tertiary">
                 <th 
-                  className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap cursor-pointer hover:bg-background-secondary transition-colors"
+                  className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap cursor-pointer hover:bg-background-secondary transition-colors w-1/2"
                   onClick={() => handleSort("name")}
                 >
                   <div className="flex items-center gap-1">
@@ -300,7 +300,7 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                   key={experiment.id}
                   className="border-b border-border transition-colors hover:bg-background-tertiary"
                 >
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 w-1/2">
                     <Link
                       href={`/experiments/${slugify(experiment.name)}`}
                       className="block hover:text-accent-primary"
