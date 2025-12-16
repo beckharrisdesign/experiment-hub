@@ -209,10 +209,10 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                   PRD
                 </th>
                 <th colSpan={1} className="px-2 py-2 text-left text-xs font-medium text-text-secondary border-l-2 border-accent-primary/30">
-                  Prototype
+                  Landing Page
                 </th>
                 <th colSpan={1} className="px-2 py-2 text-left text-xs font-medium text-text-secondary border-l-2 border-accent-primary/30">
-                  Landing Page
+                  Prototype
                 </th>
               </tr>
               {/* Column Headers Row */}
@@ -291,13 +291,13 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                   </Tooltip>
                 </th>
                 <th className="px-2 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap border-l-2 border-accent-primary/30">
-                  <Tooltip content="Prototype: View prototype (when running) or Start/Stop server" position="bottom">
-                    <span className="cursor-help">Prototype</span>
+                  <Tooltip content="Landing Page: Validation page for ad/channel testing" position="bottom">
+                    <span className="cursor-help">Landing</span>
                   </Tooltip>
                 </th>
                 <th className="px-2 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap border-l-2 border-accent-primary/30">
-                  <Tooltip content="Landing Page: Validation page for ad/channel testing" position="bottom">
-                    <span className="cursor-help">Landing</span>
+                  <Tooltip content="Prototype: View prototype (when running) or Start/Stop server" position="bottom">
+                    <span className="cursor-help">Prototype</span>
                   </Tooltip>
                 </th>
               </tr>
@@ -410,42 +410,6 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                       );
                     })()}
                   </td>
-                  <td className="px-2 py-3 text-left border-l-2 border-accent-primary/30">
-                    {(() => {
-                      // Prototype column logic
-                      // State 1: No Market Validation yet - blank (enforce workflow order)
-                      if (!experiment.hasMRFile) {
-                        return null;
-                      }
-                      // States 1 & 2: No PRD yet - blank
-                      if (!experiment.hasPRDFile) {
-                        return null;
-                      }
-                      // State 3: PRD complete, no prototype - show Create for Prototype
-                      if (!experiment.hasPrototypeDir) {
-                        return (
-                          <Button
-                            as="link"
-                            variant="secondary"
-                            href={`/experiments/${slugify(experiment.name)}`}
-                            title="Create Prototype"
-                          >
-                            Create
-                          </Button>
-                        );
-                      }
-                      // State 4: Prototype exists - show PrototypeStatus
-                      return (
-                        <PrototypeStatus
-                          port={experiment.prototype?.port}
-                          hasPrototype={experiment.hasPrototypeDir || false}
-                          prototypeUrl={getPrototypeUrl(experiment.prototype, slugify(experiment.name))}
-                          experimentSlug={slugify(experiment.name)}
-                          showActions={false}
-                        />
-                      );
-                    })()}
-                  </td>
                   <td className="px-2 py-3 text-center border-l-2 border-accent-primary/30">
                     {(() => {
                       // Landing Page column logic
@@ -485,6 +449,42 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                       }
                       return (
                         <span className="text-xs text-green-500 font-medium">Complete</span>
+                      );
+                    })()}
+                  </td>
+                  <td className="px-2 py-3 text-left border-l-2 border-accent-primary/30">
+                    {(() => {
+                      // Prototype column logic
+                      // State 1: No Market Validation yet - blank (enforce workflow order)
+                      if (!experiment.hasMRFile) {
+                        return null;
+                      }
+                      // States 1 & 2: No PRD yet - blank
+                      if (!experiment.hasPRDFile) {
+                        return null;
+                      }
+                      // State 3: PRD complete, no prototype - show Create for Prototype
+                      if (!experiment.hasPrototypeDir) {
+                        return (
+                          <Button
+                            as="link"
+                            variant="secondary"
+                            href={`/experiments/${slugify(experiment.name)}`}
+                            title="Create Prototype"
+                          >
+                            Create
+                          </Button>
+                        );
+                      }
+                      // State 4: Prototype exists - show PrototypeStatus
+                      return (
+                        <PrototypeStatus
+                          port={experiment.prototype?.port}
+                          hasPrototype={experiment.hasPrototypeDir || false}
+                          prototypeUrl={getPrototypeUrl(experiment.prototype, slugify(experiment.name))}
+                          experimentSlug={slugify(experiment.name)}
+                          showActions={false}
+                        />
                       );
                     })()}
                   </td>
