@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Seed Organizer - Track Your Seed Collection</title>
+  <meta name="description" content="Your simple seed inventory and use-first list, on your phone. No garden planning. No calendars. Just store your seed info and get it back when you need it.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              300: '#86efac',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .scroll-mt-20 { scroll-margin-top: 5rem; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-gray-50 to-white text-gray-900">
+  <!-- Persistent Header -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <!-- Logo -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <span class="font-semibold text-lg text-gray-900">Simple Seed Organizer</span>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="hidden md:flex items-center gap-6">
+          <a href="#problem" class="text-gray-600 hover:text-primary-600 transition-colors text-sm font-medium">Problem</a>
+          <a href="#solution" class="text-gray-600 hover:text-primary-600 transition-colors text-sm font-medium">Solution</a>
+          <a href="#pricing" class="text-gray-600 hover:text-primary-600 transition-colors text-sm font-medium">Pricing</a>
+          <a href="#interest-form" class="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors">Join Waitlist</a>
+        </nav>
+
+        <!-- Mobile menu button -->
+        <a href="#interest-form" class="md:hidden bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors">Join Waitlist</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section id="hero" class="py-16 md:py-24 lg:py-32 relative overflow-hidden bg-primary-800">
+    <!-- Subtle background pattern -->
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute top-20 left-10 w-64 h-64 bg-primary-300 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-20 right-10 w-96 h-96 bg-primary-200 rounded-full blur-3xl"></div>
+    </div>
+    <div class="max-w-4xl mx-auto text-center relative z-10 px-4">
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white">
+        Your simple seed inventory & <span class="text-primary-200">'use-first' list</span>, on your phone.
+      </h1>
+      <p class="text-xl md:text-2xl text-gray-200 mb-8 max-w-2xl mx-auto">
+        No garden planning. No calendars. Just store your seed info and get it back when you need it.
+      </p>
+      <a href="#interest-form" class="inline-block bg-white hover:bg-gray-100 text-primary-800 font-semibold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg">
+        Join the Waitlist
+      </a>
+      <p class="mt-4 text-sm text-gray-300">Free to join. We'll notify you when it's ready.</p>
+    </div>
+  </section>
+
+  <!-- Problem Section -->
+  <section id="problem" class="px-4 py-16 bg-white scroll-mt-20">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center">
+        Stop rebuying seeds you already have.
+      </h2>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="text-center">
+          <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Rebuying duplicates</h3>
+          <p class="text-gray-600 text-sm">
+            Can't remember what you own, so you buy the same seeds again.
+          </p>
+        </div>
+        <div class="text-center">
+          <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Lost seed info</h3>
+          <p class="text-gray-600 text-sm">
+            Can't find planting depth or spacing when you need it.
+          </p>
+        </div>
+        <div class="text-center">
+          <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Wasted seeds</h3>
+          <p class="text-gray-600 text-sm">
+            Don't know which are still viable, so old packets go unused.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Simplicity message -->
+  <section class="py-16 md:py-24 bg-primary-800">
+    <div class="max-w-4xl mx-auto px-4">
+      <p class="text-white text-xl md:text-2xl text-center">
+        <span class="font-bold">No garden planning.</span> No calendars. No design tools.
+        <br>
+        <span class="text-primary-200">Just your seed inventory, simple and fast.</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- Solution Section -->
+  <section id="solution" class="px-4 py-16 bg-gradient-to-b from-white to-gray-50 scroll-mt-20">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">
+          The simplest way to track your seed collection
+        </h2>
+      </div>
+      
+      <!-- Features List -->
+      <div class="grid md:grid-cols-3 gap-8 mb-12">
+        <!-- Feature 1: Quick Inventory -->
+        <div class="text-center">
+          <div class="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <h3 class="font-semibold text-xl mb-2">Quick Inventory</h3>
+          <p class="text-gray-600 text-sm">
+            Add seeds in seconds. Just name, variety, and source. Add details later if you want.
+          </p>
+        </div>
+
+        <!-- Feature 2: Instant Search -->
+        <div class="text-center">
+          <div class="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <h3 class="font-semibold text-xl mb-2">Instant Search</h3>
+          <p class="text-gray-600 text-sm">
+            Find any seed in under 10 seconds. Search by name, variety, or category.
+          </p>
+        </div>
+
+        <!-- Feature 3: Use-First List -->
+        <div class="text-center">
+          <div class="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+          </div>
+          <h3 class="font-semibold text-xl mb-2">Use-First List</h3>
+          <p class="text-gray-600 text-sm">
+            See which seeds are expiring soon, so you use them before they go bad.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" class="px-4 py-16 bg-white scroll-mt-20">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">Simple pricing. No surprises.</h2>
+      <div class="mb-8">
+        <div class="inline-flex items-baseline gap-3 mb-2">
+          <span class="text-5xl font-bold text-primary-600">$12/year</span>
+          <span class="text-lg text-gray-500 line-through">$15/year</span>
+        </div>
+        <p class="text-sm text-primary-600 font-medium mb-1">Early bird pricing</p>
+        <p class="text-lg text-gray-600">Full price will be $15/year after launch.</p>
+      </div>
+      
+      <div class="bg-gradient-to-br from-primary-50 to-white border border-primary-100 rounded-xl p-8 max-w-lg mx-auto mb-12">
+        <div class="grid grid-cols-2 gap-4 text-left">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-sm text-gray-700">Unlimited seeds</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-sm text-gray-700">Mobile & web</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-sm text-gray-700">No ads</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-sm text-gray-700">No upsells</span>
+          </div>
+        </div>
+      </div>
+
+      <a href="#interest-form" class="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg">
+        Join the Waitlist
+      </a>
+    </div>
+  </section>
+
+  <!-- Interest Form -->
+  <section id="interest-form" class="px-4 py-16 bg-gradient-to-b from-gray-50 to-white scroll-mt-20">
+    <div class="max-w-2xl mx-auto">
+      <div id="form-container">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl md:text-4xl font-bold mb-4">Join the Waitlist</h2>
+          <p class="text-lg text-gray-600">
+            We're building Simple Seed Organizer now. Join the waitlist to be notified when it's ready and get early bird pricing ($12/year).
+          </p>
+        </div>
+        
+        <form id="waitlist-form" class="bg-white border border-primary-100 p-8 rounded-xl shadow-sm">
+          <div class="mb-6">
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+              Email <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              placeholder="your@email.com"
+              class="w-full px-4 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 placeholder:text-gray-400"
+            />
+          </div>
+
+          <div class="mb-6">
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+              Name (optional)
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Your name"
+              class="w-full px-4 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 placeholder:text-gray-400"
+            />
+          </div>
+
+          <div class="mb-8">
+            <label class="block text-sm font-medium text-gray-700 mb-4">
+              How many seed packets do you own? (optional)
+            </label>
+            <div class="grid grid-cols-3 gap-3">
+              <button type="button" data-seed-count="less-than-20" class="seed-count-btn px-4 py-3 rounded-lg border-2 font-medium transition-all bg-white text-gray-700 border-gray-300 hover:border-primary-400 hover:bg-primary-50">
+                <span class="text-lg mr-1">🌱</span>
+                <span class="text-sm">Just a few</span>
+              </button>
+              <button type="button" data-seed-count="20-50" class="seed-count-btn px-4 py-3 rounded-lg border-2 font-medium transition-all bg-white text-gray-700 border-gray-300 hover:border-primary-400 hover:bg-primary-50">
+                <span class="text-lg mr-1">🌿</span>
+                <span class="text-sm">A respectable collection</span>
+              </button>
+              <button type="button" data-seed-count="50-plus" class="seed-count-btn px-4 py-3 rounded-lg border-2 font-medium transition-all bg-white text-gray-700 border-gray-300 hover:border-primary-400 hover:bg-primary-50">
+                <span class="text-lg mr-1">🌳</span>
+                <span class="text-sm">I have a problem</span>
+              </button>
+            </div>
+            <input type="hidden" id="seedCount" name="seedCount" value="">
+          </div>
+
+          <div class="mb-8">
+            <label class="block text-sm font-medium text-gray-700 mb-4">
+              What's your biggest seed organizing challenge? (optional)
+            </label>
+            <div class="grid grid-cols-3 gap-3">
+              <button type="button" data-challenge="Buying duplicates" class="challenge-btn px-3 py-3 rounded-lg border-2 font-medium transition-all text-xs bg-white text-gray-700 border-gray-300 hover:border-primary-400 hover:bg-primary-50">
+                <div class="flex flex-col items-center gap-1">
+                  <span class="text-lg">🛒</span>
+                  <span>Buying duplicates</span>
+                </div>
+              </button>
+              <button type="button" data-challenge="Lost the packet" class="challenge-btn px-3 py-3 rounded-lg border-2 font-medium transition-all text-xs bg-white text-gray-700 border-gray-300 hover:border-primary-400 hover:bg-primary-50">
+                <div class="flex flex-col items-center gap-1">
+                  <span class="text-lg">🔍</span>
+                  <span>Lost the packet</span>
+                </div>
+              </button>
+              <button type="button" data-challenge="Are these still good?" class="challenge-btn px-3 py-3 rounded-lg border-2 font-medium transition-all text-xs bg-white text-gray-700 border-gray-300 hover:border-primary-400 hover:bg-primary-50">
+                <div class="flex flex-col items-center gap-1">
+                  <span class="text-lg">❓</span>
+                  <span>Are these still good?</span>
+                </div>
+              </button>
+            </div>
+            <input type="hidden" id="challenge" name="challenge" value="">
+          </div>
+
+          <button
+            type="submit"
+            id="submit-btn"
+            class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+          >
+            Join the Early Access List
+          </button>
+
+          <p class="mt-4 text-sm text-gray-500 text-center">
+            We respect your privacy. We'll only email you about Simple Seed Organizer. Unsubscribe anytime.
+          </p>
+        </form>
+      </div>
+
+      <div id="success-container" class="hidden">
+        <div class="bg-gradient-to-br from-primary-50 to-white border-2 border-primary-200 p-12 rounded-xl text-center">
+          <div class="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 class="text-3xl font-bold mb-4 text-gray-900">Thanks! 🎉</h2>
+          <p class="text-lg mb-4 text-gray-700">
+            We'll email you when Simple Seed Organizer is ready.
+          </p>
+          <p class="text-gray-600">
+            In the meantime, what would make this tool most useful for you?
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="px-4 py-8 bg-gray-800 text-gray-400">
+    <div class="max-w-4xl mx-auto text-center">
+      <p class="mb-4">© 2025 Simple Seed Organizer. All rights reserved.</p>
+      <div class="flex justify-center space-x-6 text-sm">
+        <a href="#" class="hover:text-primary-400 transition-colors">Privacy Policy</a>
+        <a href="#" class="hover:text-primary-400 transition-colors">Terms of Service</a>
+        <a href="#" class="hover:text-primary-400 transition-colors">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

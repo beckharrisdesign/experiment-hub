@@ -8,6 +8,7 @@ interface ExperimentWithRelated extends Experiment {
   hasPRDFile?: boolean;
   hasPrototypeDir?: boolean;
   hasMRFile?: boolean;
+  hasLandingPage?: boolean;
   moa?: string | null;
   goNoGo?: string | null;
   somYear1?: string | null;
@@ -57,6 +58,7 @@ export default async function HomePage() {
             hasPRDFile: fileChecks.hasPRDFile,
             hasPrototypeDir: fileChecks.hasPrototypeDir,
             hasMRFile: fileChecks.hasMRFile,
+            hasLandingPage: fileChecks.hasLandingPage,
             moa,
             goNoGo,
             somYear1,
@@ -72,6 +74,7 @@ export default async function HomePage() {
             hasPRDFile: false,
             hasPrototypeDir: false,
             hasMRFile: false,
+            hasLandingPage: false,
             moa: null,
             goNoGo: null,
             somYear1: null,

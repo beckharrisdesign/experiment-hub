@@ -71,8 +71,10 @@ The NOTION_LANDING_DATABASE_ID environment variable must be set to the Notion da
   - Landing pages are now static HTML/CSS/JS (no Node.js runtime needed)
   - Uses Tailwind CSS via CDN for styling
   - Forms submit to hub's /api/landing-submission endpoint
-  - Much cheaper to deploy (static hosting vs server)
-  - Can be deployed to any static host with custom subdomain
+  - Landing pages are served from public/landing/[slug]/ on same port as hub
+  - Dashboard "View" button links directly to landing page if it exists
+  - Source files remain in experiments/[slug]/landing/ for version control
+  - Can still deploy to separate static hosts with custom subdomains if needed
 
 - 2024-12-16: Added Active/Archived tabs to dashboard
   - Experiments can be archived by setting status to "Abandoned"

@@ -19,6 +19,7 @@ interface ExperimentWithRelated extends Experiment {
   hasPRDFile?: boolean;
   hasPrototypeDir?: boolean;
   hasMRFile?: boolean;
+  hasLandingPage?: boolean;
   moa?: string | null;
   goNoGo?: string | null;
   somYear1?: string | null;
@@ -460,6 +461,22 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                       if (!experiment.hasPRDFile) {
                         return null;
                       }
+                      
+                      // If landing page exists in public folder, link directly to it
+                      if (experiment.hasLandingPage) {
+                        return (
+                          <Button
+                            as="a"
+                            variant="primary"
+                            href={`/landing/${slugify(experiment.name)}/index.html`}
+                            target="_blank"
+                            title="View Landing Page"
+                          >
+                            View
+                          </Button>
+                        );
+                      }
+                      
                       const validationStatus = experiment.validation?.status || 'not_started';
                       if (validationStatus === 'not_started') {
                         return (

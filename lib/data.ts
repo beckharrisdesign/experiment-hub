@@ -101,6 +101,18 @@ export async function hasPrototype(experimentDirectory: string): Promise<boolean
   }
 }
 
+export async function hasLandingPage(experimentDirectory: string): Promise<boolean> {
+  try {
+    // Check if public/landing/[slug]/index.html exists
+    const slug = experimentDirectory.replace('experiments/', '');
+    const landingPath = path.join(process.cwd(), 'public', 'landing', slug, 'index.html');
+    await fs.access(landingPath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function readPRD(experimentDirectory: string): Promise<string | null> {
   try {
     const prdPath = path.join(process.cwd(), experimentDirectory, "docs", "PRD.md");
@@ -129,12 +141,14 @@ export async function checkExperimentFiles(experimentDirectory: string): Promise
   hasPRDFile: boolean;
   hasPrototypeDir: boolean;
   hasMRFile: boolean;
+  hasLandingPage: boolean;
   mrContent: string | null;
 }> {
   // Run all file checks in parallel
-  const [hasPRDFile, hasPrototypeDir, mrContent] = await Promise.all([
+  const [hasPRDFile, hasPrototypeDir, hasLanding, mrContent] = await Promise.all([
     hasPRD(experimentDirectory),
     hasPrototype(experimentDirectory),
+    hasLandingPage(experimentDirectory),
     readMarketResearch(experimentDirectory).catch(() => null),
   ]);
 
@@ -145,6 +159,7 @@ export async function checkExperimentFiles(experimentDirectory: string): Promise
     hasPRDFile,
     hasPrototypeDir,
     hasMRFile,
+    hasLandingPage: hasLanding,
     mrContent,
   };
 }
