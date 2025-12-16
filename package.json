@@ -11,6 +11,7 @@
     "dev:landing": "cd experiments/simple-seed-organizer/prototype/validation-landing && npm install && npm run dev"
   },
   "dependencies": {
+    "@notionhq/client": "^5.6.0",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.4",
     "@types/react-dom": "^19.2.3",

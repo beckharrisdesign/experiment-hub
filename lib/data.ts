@@ -175,6 +175,7 @@ export function parsePRD(prdContent: string) {
     userStories: sections["User Stories"]?.join("\n") || "",
     technicalRequirements: sections["Technical Requirements"]?.join("\n") || "",
     successMetrics: sections["Success Metrics"]?.join("\n") || "",
+    validationPlan: sections["Validation Plan (Landing Page)"]?.join("\n") || "",
     fullContent: prdContent,
   };
 }

@@ -211,6 +211,9 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                 <th colSpan={1} className="px-2 py-2 text-left text-xs font-medium text-text-secondary border-l-2 border-accent-primary/30">
                   Prototype
                 </th>
+                <th colSpan={1} className="px-2 py-2 text-left text-xs font-medium text-text-secondary border-l-2 border-accent-primary/30">
+                  Landing Page
+                </th>
               </tr>
               {/* Column Headers Row */}
               <tr className="border-b border-border bg-background-tertiary">
@@ -290,6 +293,11 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                 <th className="px-2 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap border-l-2 border-accent-primary/30">
                   <Tooltip content="Prototype: View prototype (when running) or Start/Stop server" position="bottom">
                     <span className="cursor-help">Prototype</span>
+                  </Tooltip>
+                </th>
+                <th className="px-2 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap border-l-2 border-accent-primary/30">
+                  <Tooltip content="Landing Page: Validation page for ad/channel testing" position="bottom">
+                    <span className="cursor-help">Landing</span>
                   </Tooltip>
                 </th>
               </tr>
@@ -435,6 +443,48 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                           experimentSlug={slugify(experiment.name)}
                           showActions={false}
                         />
+                      );
+                    })()}
+                  </td>
+                  <td className="px-2 py-3 text-center border-l-2 border-accent-primary/30">
+                    {(() => {
+                      // Landing Page column logic
+                      // Can't create landing page without PRD (validation plan comes from PRD)
+                      if (!experiment.hasPRDFile) {
+                        return null;
+                      }
+                      const validationStatus = experiment.validation?.status || 'not_started';
+                      if (validationStatus === 'not_started') {
+                        return (
+                          <Button
+                            as="link"
+                            variant="secondary"
+                            href={`/experiments/${slugify(experiment.name)}#landing`}
+                            title="Plan Landing Page"
+                          >
+                            Plan
+                          </Button>
+                        );
+                      }
+                      if (validationStatus === 'planned') {
+                        return (
+                          <span className="text-xs text-yellow-500 font-medium">Planned</span>
+                        );
+                      }
+                      if (validationStatus === 'live') {
+                        return (
+                          <Button
+                            as="link"
+                            variant="primary"
+                            href={experiment.validation?.url || `/experiments/${slugify(experiment.name)}#landing`}
+                            title="View Landing Page"
+                          >
+                            Live
+                          </Button>
+                        );
+                      }
+                      return (
+                        <span className="text-xs text-green-500 font-medium">Complete</span>
                       );
                     })()}
                   </td>

@@ -35,6 +35,7 @@ This agent creates comprehensive Product Requirements Documents (PRDs) for exper
   - Technical Requirements
   - Success Metrics
   - Implementation Phases (if applicable)
+  - Validation Plan (Landing Page) - for ad/channel validation
   - Non-Requirements
   - Future Considerations
 
@@ -121,6 +122,30 @@ Follow this template structure:
 
 ## Implementation Approach
 [High-level approach or phases]
+
+## Validation Plan (Landing Page)
+### Hypothesis
+[What are we trying to validate with the landing page?]
+
+### Target Audience
+[Who are we trying to reach with ads/channels?]
+
+### Traffic Sources
+- [Source 1: e.g., Google Ads, Facebook, Reddit, etc.]
+- [Source 2]
+
+### Success Metrics
+- **Primary**: [e.g., Email signup conversion rate > 5%]
+- **Secondary**: [e.g., Time on page > 30 seconds]
+
+### Landing Page Requirements
+- [Key messaging/value proposition to test]
+- [Call-to-action (e.g., email signup, waitlist)]
+- [Data to capture: email, opt-in reason, etc.]
+
+### Budget & Timeline
+- **Budget**: [e.g., $100-500 for initial test]
+- **Duration**: [e.g., 2 weeks]
 
 ## Non-Requirements
 [What is explicitly out of scope]

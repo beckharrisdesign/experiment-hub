@@ -323,6 +323,118 @@ export default function TabsContent({
               </div>
             </div>
           )}
+          {prd.validationPlan && (
+            <div>
+              <h2 className="mb-4 text-3xl font-semibold text-text-primary">
+                Validation Plan (Landing Page)
+              </h2>
+              <div className="prose prose-sm max-w-none text-text-secondary">
+                <MarkdownContent content={prd.validationPlan} />
+              </div>
+            </div>
+          )}
+        </div>
+      ),
+    });
+  }
+
+  // Landing Page Tab (if PRD exists)
+  if (hasPRDFile) {
+    tabs.push({
+      id: "landing",
+      label: "Landing Page",
+      content: (
+        <div className="rounded-lg border border-border bg-background-secondary p-6 space-y-8">
+          <h1 className="text-2xl font-semibold text-text-primary mb-8">Landing Page Validation</h1>
+          
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="space-y-6">
+              <section className="rounded-lg border border-border bg-background-tertiary p-6">
+                <h2 className="mb-4 text-xl font-semibold text-text-primary">Status</h2>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-text-secondary">Current Status:</span>
+                    {experiment.validation?.status === 'complete' ? (
+                      <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm font-medium">Complete</span>
+                    ) : experiment.validation?.status === 'live' ? (
+                      <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm font-medium">Live</span>
+                    ) : experiment.validation?.status === 'planned' ? (
+                      <span className="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-sm font-medium">Planned</span>
+                    ) : (
+                      <span className="px-3 py-1 rounded-full bg-gray-500/20 text-gray-400 text-sm font-medium">Not Started</span>
+                    )}
+                  </div>
+                  {experiment.validation?.url && (
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-text-secondary">Landing URL:</span>
+                      <a 
+                        href={experiment.validation.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-accent-primary hover:underline text-sm"
+                      >
+                        {experiment.validation.url}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              <section className="rounded-lg border border-border bg-background-tertiary p-6">
+                <h2 className="mb-4 text-xl font-semibold text-text-primary">Next Steps</h2>
+                <div className="space-y-2 text-sm text-text-secondary">
+                  {!experiment.validation?.status || experiment.validation.status === 'not_started' ? (
+                    <>
+                      <p>1. Review the Validation Plan in your PRD</p>
+                      <p>2. Build a simple landing page for ad validation</p>
+                      <p>3. Connect to the shared Notion database for responses</p>
+                      <p>4. Update experiment status to &quot;planned&quot; or &quot;live&quot;</p>
+                    </>
+                  ) : experiment.validation.status === 'planned' ? (
+                    <>
+                      <p>1. Deploy your landing page</p>
+                      <p>2. Set up traffic sources (ads, social, etc.)</p>
+                      <p>3. Update status to &quot;live&quot; when ready</p>
+                    </>
+                  ) : experiment.validation.status === 'live' ? (
+                    <>
+                      <p>1. Monitor responses in Notion</p>
+                      <p>2. Analyze conversion rates</p>
+                      <p>3. Mark as &quot;complete&quot; when validation is done</p>
+                    </>
+                  ) : (
+                    <p>Validation complete! Review results in Notion.</p>
+                  )}
+                </div>
+              </section>
+            </div>
+
+            <div className="space-y-6">
+              <section className="rounded-lg border border-border bg-background-tertiary p-6">
+                <h2 className="mb-4 text-xl font-semibold text-text-primary">Notion Integration</h2>
+                <div className="space-y-3 text-sm text-text-secondary">
+                  <p>Responses are stored in a shared Notion database with these fields:</p>
+                  <ul className="list-disc list-inside space-y-1 ml-2">
+                    <li><strong>Experiment</strong> - Which experiment this belongs to</li>
+                    <li><strong>Email</strong> - Contact info from form</li>
+                    <li><strong>Opted In</strong> - Whether they signed up</li>
+                    <li><strong>Opt-Out Reason</strong> - Why they passed</li>
+                    <li><strong>Source</strong> - Traffic channel (ad, social, etc.)</li>
+                    <li><strong>Timestamp</strong> - When submitted</li>
+                  </ul>
+                </div>
+              </section>
+
+              {prd?.validationPlan && (
+                <section className="rounded-lg border border-border bg-background-tertiary p-6">
+                  <h2 className="mb-4 text-xl font-semibold text-text-primary">Validation Plan Summary</h2>
+                  <div className="prose prose-sm max-w-none text-text-secondary">
+                    <MarkdownContent content={prd.validationPlan} />
+                  </div>
+                </section>
+              )}
+            </div>
+          </div>
         </div>
       ),
     });
@@ -416,6 +528,18 @@ export default function TabsContent({
                 <span className="text-sm text-text-secondary">Prototype</span>
                 {hasPrototypeFiles ? (
                   <span className="text-accent-primary">✓ Complete</span>
+                ) : (
+                  <span className="text-text-muted">— Not started</span>
+                )}
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-text-secondary">Landing Page</span>
+                {experiment.validation?.status === 'complete' ? (
+                  <span className="text-accent-primary">✓ Complete</span>
+                ) : experiment.validation?.status === 'live' ? (
+                  <span className="text-green-500">● Live</span>
+                ) : experiment.validation?.status === 'planned' ? (
+                  <span className="text-yellow-500">○ Planned</span>
                 ) : (
                   <span className="text-text-muted">— Not started</span>
                 )}

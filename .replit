@@ -3,6 +3,7 @@
 
 # Run command - changes to subdirectory and starts Next.js
 run = "cd experiments/simple-seed-organizer/prototype/validation-landing && npm install && npm run dev"
+modules = ["python-3.11", "nodejs-20"]
 
 [[ports]]
 localPort = 3008
@@ -42,3 +43,4 @@ packages = ["nodejs"]
 
 [agent]
 expertMode = true
+integrations = ["notion:1.0.0"]
