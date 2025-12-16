@@ -80,7 +80,7 @@ export default function TabsContent({
                 </div>
                 {mr && (
                   <p className="text-sm text-text-secondary">
-                    Market opportunity with TAM of ${mr.tam || "N/A"} and SAM of ${mr.sam || "N/A"}.
+                    Market opportunity with TAM of {mr.tam || "N/A"} and SAM of {mr.sam || "N/A"}.
                     {mr.executiveSummary && (mr.executiveSummary.includes("niche") || mr.executiveSummary.includes("underserved"))
                       ? " Strong niche demand identified in market research."
                       : " Market research indicates viable opportunity."}
