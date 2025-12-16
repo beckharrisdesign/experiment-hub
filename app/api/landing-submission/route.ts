@@ -5,11 +5,22 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const { experiment, email, name, optedIn, optOutReason, source, ...customFields } = body;
+    const { 
+      experiment, 
+      email, 
+      name, 
+      seedCount,
+      challenges,
+      optOut,
+      optedIn, // Legacy field name - inverse of optOut
+      optOutReason, 
+      source,
+      notes,
+    } = body;
     
-    if (!experiment || !email) {
+    if (!email) {
       return NextResponse.json(
-        { error: 'Missing required fields: experiment, email' },
+        { error: 'Missing required field: email' },
         { status: 400 }
       );
     }
@@ -23,26 +34,19 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Build notes from name and any custom fields
-    const notesArray: string[] = [];
-    if (name) {
-      notesArray.push(`Name: ${name}`);
-    }
-    // Add any custom fields to notes (seedCount, challenge, etc.)
-    Object.entries(customFields).forEach(([key, value]) => {
-      if (value && key !== 'experiment' && key !== 'email' && key !== 'source' && key !== 'optedIn') {
-        const formattedValue = Array.isArray(value) ? value.join(', ') : String(value);
-        notesArray.push(`${key}: ${formattedValue}`);
-      }
-    });
+    // Handle legacy optedIn field (inverse of optOut)
+    const isOptOut = optOut ?? (optedIn === false);
     
     const submission: LandingPageSubmission = {
-      experiment,
+      experiment: experiment || 'Unknown',
       email,
-      optedIn: optedIn ?? true,
+      name,
+      seedCount,
+      challenges,
+      optOut: isOptOut,
       optOutReason,
       source: source || 'landing-page',
-      notes: notesArray.join('\n'),
+      notes,
     };
     
     const response = await submitLandingPageResponse(databaseId, submission);

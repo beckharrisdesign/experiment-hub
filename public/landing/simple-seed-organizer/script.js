@@ -1,7 +1,8 @@
 // Configuration - Update this URL when deploying
 // For development: Use the Replit dev URL (e.g., https://xxx.replit.dev)
 // For production: Use the deployed hub URL (e.g., https://experiment-hub.replit.app)
-const HUB_API_URL = '';  // Empty string = same origin (works when served from hub)
+// Empty string = same origin (works when served from hub)
+const HUB_API_URL = '';
 
 // Form state
 let selectedSeedCount = '';
@@ -80,18 +81,14 @@ function setupFormSubmission() {
     submitBtn.textContent = 'Submitting...';
     submitBtn.disabled = true;
     
-    // API expects: experiment, email (required)
-    // Optional: name, source, optedIn, optOutReason
-    // Any extra fields go into notes automatically
+    // API fields match Notion database columns
     const formData = {
       experiment: 'Simple Seed Organizer',
       email: document.getElementById('email').value,
       name: document.getElementById('name').value || '',
-      source: 'landing-page',
-      optedIn: true,
-      // Custom fields - these get added to notes
       seedCount: selectedSeedCount,
       challenges: selectedChallenges,
+      source: 'landing-page',
     };
     
     try {

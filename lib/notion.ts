@@ -52,7 +52,10 @@ export async function getUncachableNotionClient() {
 export interface LandingPageSubmission {
   experiment: string;
   email: string;
-  optedIn: boolean;
+  name?: string;
+  seedCount?: string;
+  challenges?: string | string[];
+  optOut?: boolean;
   optOutReason?: string;
   source?: string;
   notes?: string;
@@ -64,44 +67,74 @@ export async function submitLandingPageResponse(
 ) {
   const notion = await getUncachableNotionClient();
   
-  const response = await notion.pages.create({
-    parent: { database_id: databaseId },
-    properties: {
-      'Experiment': {
-        select: {
-          name: submission.experiment,
-        },
-      },
-      'Email': {
-        email: submission.email,
-      },
-      'Opted In': {
-        checkbox: submission.optedIn,
-      },
-      'Opt-Out Reason': {
-        rich_text: [
-          {
-            text: {
-              content: submission.optOutReason || '',
-            },
+  // Build properties object based on what's provided
+  const properties: Record<string, any> = {
+    // Source is the title field (required)
+    'Source': {
+      title: [
+        {
+          text: {
+            content: submission.source || 'landing-page',
           },
-        ],
-      },
-      'Source': {
-        select: {
-          name: submission.source || 'landing-page',
         },
-      },
-      'Notes': {
-        rich_text: [
-          {
-            text: {
-              content: submission.notes || '',
-            },
-          },
-        ],
+      ],
+    },
+    'Email': {
+      email: submission.email,
+    },
+    'SignupDate': {
+      date: {
+        start: new Date().toISOString(),
       },
     },
+    'OptOut': {
+      checkbox: submission.optOut ?? false,
+    },
+  };
+  
+  // Add optional text fields
+  if (submission.name) {
+    properties['Name'] = {
+      rich_text: [{ text: { content: submission.name } }],
+    };
+  }
+  
+  if (submission.optOutReason) {
+    properties['OptOutReason'] = {
+      rich_text: [{ text: { content: submission.optOutReason } }],
+    };
+  }
+  
+  // Build notes content - include challenges if column type is Select (can't hold multiple values)
+  const notesContent: string[] = [];
+  if (submission.notes) {
+    notesContent.push(submission.notes);
+  }
+  if (submission.challenges) {
+    const challengeValue = Array.isArray(submission.challenges) 
+      ? submission.challenges.join(', ') 
+      : submission.challenges;
+    notesContent.push(`Challenges: ${challengeValue}`);
+  }
+  if (notesContent.length > 0) {
+    properties['Notes'] = {
+      rich_text: [{ text: { content: notesContent.join('\n') } }],
+    };
+  }
+  
+  // Add select fields for experiment-specific data
+  if (submission.seedCount) {
+    properties['Seed Count'] = {
+      select: { name: submission.seedCount },
+    };
+  }
+  
+  // Note: Challenges stored in Notes field above since Notion Select doesn't support multiple values
+  // To use the Challenges column directly, change it to "Text" or "Multi-select" type in Notion
+  
+  const response = await notion.pages.create({
+    parent: { database_id: databaseId },
+    properties,
   });
   
   return response;
