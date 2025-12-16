@@ -18,6 +18,105 @@ Landing pages are **static HTML/CSS/JS files** that can be deployed anywhere. Th
 - The hub handles Notion integration and data storage
 - Landing pages only need to set `HUB_API_URL` in their JavaScript
 
+## Simplified vs Full Landing Pages
+
+Landing pages can range from minimal to comprehensive. Start simple and add complexity only if needed.
+
+### Minimal Landing Page (Recommended to Start)
+
+A minimal landing page has just:
+- **Headline**: One clear value proposition
+- **Subheadline**: 1-2 sentences of context
+- **Email capture form**: Just email field + submit button
+- **Simple styling**: Tailwind CDN, no custom assets
+
+This is ~50-100 lines of HTML. Use this to quickly validate if there's any interest before investing in design.
+
+**index.html:**
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Product - One Line Value Prop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+  <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Your Headline Here</h1>
+    <p class="text-gray-600 mb-6">Brief description of what you're building and who it's for.</p>
+    <form id="signup-form" class="space-y-4">
+      <input type="email" name="email" required placeholder="Enter your email"
+             class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500">
+      <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">
+        Get Early Access
+      </button>
+    </form>
+    <p class="text-xs text-gray-500 mt-4">We'll notify you when it's ready. No spam.</p>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
+```
+
+**script.js:**
+```javascript
+const HUB_API_URL = 'https://your-hub.replit.app';
+
+document.getElementById('signup-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = e.target.email.value;
+  const btn = e.target.querySelector('button');
+  
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+  
+  try {
+    await fetch(`${HUB_API_URL}/api/landing-submission`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        experiment: 'your-experiment-name',
+        source: 'landing-page',
+        optedIn: true
+      })
+    });
+    document.querySelector('.max-w-md').innerHTML = `
+      <h2 class="text-2xl font-bold text-green-600 mb-2">You're on the list!</h2>
+      <p class="text-gray-600">We'll email you when it's ready.</p>
+    `;
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Try Again';
+  }
+});
+```
+
+### Full Landing Page
+
+A full landing page adds:
+- Problem/pain points section
+- Solution/features section
+- Pricing information
+- Social proof/testimonials
+- Multiple CTAs
+- App mockups or screenshots
+- FAQ section
+
+Use the Simple Seed Organizer landing page as a reference for a full implementation.
+
+### When to Use Each
+
+| Scenario | Recommendation |
+|----------|----------------|
+| Testing a new idea quickly | Minimal |
+| Running first ad campaign | Minimal |
+| Idea validated, scaling ads | Full |
+| High-ticket product | Full |
+| B2B with complex value prop | Full |
+
 ## Quick Start
 
 1. Copy the template from `experiments/simple-seed-organizer/landing/` to your experiment:
