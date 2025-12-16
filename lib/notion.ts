@@ -49,6 +49,10 @@ export async function getUncachableNotionClient() {
   return new Client({ auth: accessToken });
 }
 
+// Valid options for multi-select fields (must match Notion database options)
+const VALID_SEED_COUNTS = ['less-than-20', '20-50', '50-plus'];
+const VALID_CHALLENGES = ['Buying duplicates', 'Lost the packet', 'Are these still good?'];
+
 export interface LandingPageSubmission {
   experiment: string;
   email: string;
@@ -105,32 +109,34 @@ export async function submitLandingPageResponse(
     };
   }
   
-  // Build notes content - include challenges if column type is Select (can't hold multiple values)
-  const notesContent: string[] = [];
   if (submission.notes) {
-    notesContent.push(submission.notes);
-  }
-  if (submission.challenges) {
-    const challengeValue = Array.isArray(submission.challenges) 
-      ? submission.challenges.join(', ') 
-      : submission.challenges;
-    notesContent.push(`Challenges: ${challengeValue}`);
-  }
-  if (notesContent.length > 0) {
     properties['Notes'] = {
-      rich_text: [{ text: { content: notesContent.join('\n') } }],
+      rich_text: [{ text: { content: submission.notes } }],
     };
   }
   
-  // Add select fields for experiment-specific data
-  if (submission.seedCount) {
+  // Add multi-select field for Seed Count (validate against allowed options)
+  if (submission.seedCount && VALID_SEED_COUNTS.includes(submission.seedCount)) {
     properties['Seed Count'] = {
-      select: { name: submission.seedCount },
+      multi_select: [{ name: submission.seedCount }],
     };
   }
   
-  // Note: Challenges stored in Notes field above since Notion Select doesn't support multiple values
-  // To use the Challenges column directly, change it to "Text" or "Multi-select" type in Notion
+  // Add multi-select field for Challenges (validate against allowed options)
+  if (submission.challenges) {
+    const challengesArray = Array.isArray(submission.challenges) 
+      ? submission.challenges 
+      : [submission.challenges];
+    
+    // Filter to only valid options
+    const validChallenges = challengesArray.filter(c => VALID_CHALLENGES.includes(c));
+    
+    if (validChallenges.length > 0) {
+      properties['Challenges'] = {
+        multi_select: validChallenges.map(c => ({ name: c })),
+      };
+    }
+  }
   
   const response = await notion.pages.create({
     parent: { database_id: databaseId },

@@ -61,9 +61,18 @@ The experiment workflow follows these stages:
 ## Notion Integration
 
 Landing page submissions are stored in a shared Notion database with these fields:
-- Experiment (select), Email, Opted In (checkbox), Opt-Out Reason, Source (select), Notes, Timestamp
+- Source (title) - e.g., "landing-page"
+- Email (email) - User's email
+- Name (text) - User's name
+- SignupDate (date) - Auto-populated timestamp
+- Seed Count (multi-select) - Valid options: less-than-20, 20-50, 50-plus
+- Challenges (multi-select) - Valid options: Buying duplicates, Lost the packet, Are these still good?
+- OptOut (checkbox) - Whether user opted out
+- OptOutReason (text) - If opted out, why
+- Notes (text) - Additional notes
 
 The NOTION_LANDING_DATABASE_ID environment variable must be set to the Notion database ID.
+Valid multi-select options are defined in lib/notion.ts and must match Notion database options.
 
 ## Recent Changes
 
