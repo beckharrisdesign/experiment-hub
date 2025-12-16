@@ -11,7 +11,7 @@ externalPort = 3001
 
 [[ports]]
 localPort = 5000
-externalPort = 5000
+externalPort = 80
 
 [workflows]
 runButton = "Project"
@@ -23,16 +23,16 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Start landing page"
+args = "Start application"
 
 [[workflows.workflow]]
-name = "Start landing page"
+name = "Start application"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd experiments/simple-seed-organizer/prototype/validation-landing && npm install && npm run dev -- -p 3008 -H 0.0.0.0"
-waitForPort = 3008
+args = "npm install && npm run dev -- -p 5000 -H 0.0.0.0"
+waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
@@ -52,13 +52,5 @@ NOTION_LANDING_DATABASE_ID = "4bdba5011c1d4c828715e86409436183"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = [
-  "sh",
-  "-c",
-  "cd experiments/simple-seed-organizer/prototype/validation-landing && npm install && npm run build && npm run start",
-]
-build = [
-  "sh",
-  "-c",
-  "cd experiments/simple-seed-organizer/prototype/validation-landing && npm install && npm run build",
-]
+run = ["npm", "run", "start"]
+build = ["npm", "run", "build"]
