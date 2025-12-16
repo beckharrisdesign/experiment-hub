@@ -174,24 +174,4 @@
       "platformCost": 3,
       "socialImpact": 4
     }
-  },
-  {
-    "id": "etsy-embroidery-pattern-manager-v2",
-    "name": "Embroidery Pattern Manager v2",
-    "statement": "Analysis and SEO tool for small needlework makers using Notion as backend database",
-    "directory": "experiments/etsy-embroidery-pattern-manager-v2",
-    "documentationId": "doc-etsy-embroidery-pattern-manager-v2",
-    "prototypeId": "",
-    "status": "Abandoned",
-    "createdDate": "2024-12-02",
-    "lastModified": "2024-12-16",
-    "tags": ["etsy", "embroidery", "pattern-design", "notion", "seo", "analytics", "e-commerce"],
-    "scores": {
-      "businessOpportunity": 4,
-      "personalImpact": 5,
-      "competitiveAdvantage": 4,
-      "platformCost": 3,
-      "socialImpact": 3
-    }
-  }
-]
+  }]
