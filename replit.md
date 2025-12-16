@@ -25,8 +25,10 @@ This is an "Experiment Hub" that allows you to:
 │   └── [experiment-name]/
 │       ├── docs/         # Experiment documentation
 │       ├── notes/        # Development notes
+│       ├── landing/      # Landing page for validation (standalone Next.js app)
 │       └── prototype/    # Experiment prototype code
 ├── lib/                   # Utility functions and data helpers
+│   └── landing-page/     # Landing page types and template docs
 ├── scripts/              # Setup and utility scripts
 └── types/                # TypeScript type definitions
 ```
@@ -64,6 +66,12 @@ Landing page submissions are stored in a shared Notion database with these field
 The NOTION_LANDING_DATABASE_ID environment variable must be set to the Notion database ID.
 
 ## Recent Changes
+
+- 2024-12-16: Restructured landing page architecture
+  - Moved Simple Seed Organizer landing page from prototype/ to landing/
+  - Landing pages now submit to centralized /api/landing-submission endpoint
+  - Created lib/landing-page/ with types and template documentation
+  - Landing pages are standalone Next.js apps for independent deployment
 
 - 2024-12-16: Added Landing Page validation workflow step
   - New ValidationStatus and ValidationLandingPage types
