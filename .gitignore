@@ -71,7 +71,6 @@ ehthumbs.db
 Thumbs.db
 
 # Experiment Hub specific
-/data/*.json
 !/data/.gitkeep
 # Note: experiments/ folder and its contents are tracked
 # Individual experiment node_modules and build artifacts are ignored below

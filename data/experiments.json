@@ -1,0 +1,197 @@
+[
+  {
+    "id": "etsy-listing-manager",
+    "name": "Etsy Listing Manager",
+    "statement": "Automate Etsy listings, SEO, and image generation for embroidery pattern sellers",
+    "directory": "experiments/etsy-listing-manager",
+    "documentationId": "doc-etsy-listing-manager",
+    "prototypeId": "proto-etsy-listing-manager",
+    "status": "Active",
+    "createdDate": "2024-11-01",
+    "lastModified": "2024-12-16",
+    "tags": ["etsy", "embroidery", "e-commerce", "pattern-management", "saas"],
+    "scores": {
+      "businessOpportunity": 4,
+      "personalImpact": 5,
+      "competitiveAdvantage": 4,
+      "platformCost": 4,
+      "socialImpact": 3
+    }
+  },
+  {
+    "id": "seed-finder",
+    "name": "Seed Finder",
+    "statement": "Searchable seed database for home gardeners with affiliate-driven recommendations",
+    "directory": "experiments/seed-finder",
+    "documentationId": "doc-seed-finder",
+    "prototypeId": "proto-seed-finder",
+    "status": "Abandoned",
+    "createdDate": "2024-11-01",
+    "lastModified": "2024-12-16",
+    "tags": ["gardening", "seeds", "plants", "hardiness-zones", "affiliate"],
+    "scores": {
+      "businessOpportunity": 4,
+      "personalImpact": 4,
+      "competitiveAdvantage": 3,
+      "platformCost": 4,
+      "socialImpact": 4
+    }
+  },
+  {
+    "id": "simple-seed-organizer",
+    "name": "Simple Seed Organizer",
+    "statement": "Track and organize your seed collection with inventory and viability management",
+    "directory": "experiments/simple-seed-organizer",
+    "documentationId": "doc-simple-seed-organizer",
+    "prototypeId": "",
+    "status": "Active",
+    "createdDate": "2024-11-01",
+    "lastModified": "2024-12-16",
+    "tags": ["gardening", "seeds", "organization", "mobile-app"],
+    "scores": {
+      "businessOpportunity": 3,
+      "personalImpact": 4,
+      "competitiveAdvantage": 4,
+      "platformCost": 5,
+      "socialImpact": 3
+    },
+    "validation": {
+      "status": "planned",
+      "landingDir": "landing",
+      "devPort": 3001
+    }
+  },
+  {
+    "id": "best-day-ever",
+    "name": "Best Day Ever",
+    "statement": "Printable day planners designed for ADHD minds with calendar integration",
+    "directory": "experiments/best-day-ever",
+    "documentationId": "doc-best-day-ever",
+    "prototypeId": "",
+    "status": "Active",
+    "createdDate": "2024-11-01",
+    "lastModified": "2024-12-16",
+    "tags": ["productivity", "adhd", "planner", "printable", "calendar"],
+    "scores": {
+      "businessOpportunity": 4,
+      "personalImpact": 5,
+      "competitiveAdvantage": 4,
+      "platformCost": 4,
+      "socialImpact": 5
+    }
+  },
+  {
+    "id": "experience-principles-repository",
+    "name": "Experience Principles Repository",
+    "statement": "SaaS knowledge base for design teams to curate and share experience principles",
+    "directory": "experiments/experience-principles-repository",
+    "documentationId": "doc-experience-principles",
+    "prototypeId": "",
+    "status": "Abandoned",
+    "createdDate": "2024-11-01",
+    "lastModified": "2024-12-16",
+    "tags": ["design", "ux", "principles", "saas", "llm"],
+    "scores": {
+      "businessOpportunity": 4,
+      "personalImpact": 4,
+      "competitiveAdvantage": 4,
+      "platformCost": 3,
+      "socialImpact": 3
+    }
+  },
+  {
+    "id": "garden-guide-generator",
+    "name": "Garden Guide Generator",
+    "statement": "Generate printable PDF guides showing native plants and seeds for any zip code",
+    "directory": "experiments/garden-guide-generator",
+    "documentationId": "doc-garden-guide",
+    "prototypeId": "",
+    "status": "Abandoned",
+    "createdDate": "2024-11-01",
+    "lastModified": "2024-12-16",
+    "tags": ["gardening", "guides", "personalization", "pdf", "affiliate"],
+    "scores": {
+      "businessOpportunity": 3,
+      "personalImpact": 4,
+      "competitiveAdvantage": 4,
+      "platformCost": 4,
+      "socialImpact": 4
+    }
+  },
+  {
+    "id": "photo-memories",
+    "name": "Photo Memories",
+    "statement": "Turn Google Photos into custom posters and books with print-on-demand",
+    "directory": "experiments/photo-memories",
+    "documentationId": "doc-photo-memories",
+    "prototypeId": "",
+    "status": "Active",
+    "createdDate": "2024-11-01",
+    "lastModified": "2024-12-16",
+    "tags": ["photos", "memories", "print-on-demand", "google-photos"],
+    "scores": {
+      "businessOpportunity": 4,
+      "personalImpact": 4,
+      "competitiveAdvantage": 3,
+      "platformCost": 3,
+      "socialImpact": 4
+    }
+  },
+  {
+    "id": "the-illuminator",
+    "name": "The Illuminator",
+    "statement": "AI-powered tool to transform photos into artistic embroidery patterns and guides",
+    "directory": "experiments/the-illuminator",
+    "documentationId": "doc-illuminator",
+    "prototypeId": "",
+    "status": "Active",
+    "createdDate": "2024-11-01",
+    "lastModified": "2024-12-16",
+    "tags": ["ai", "ml", "embroidery", "craft", "photo"],
+    "scores": {
+      "businessOpportunity": 4,
+      "personalImpact": 3,
+      "competitiveAdvantage": 4,
+      "platformCost": 3,
+      "socialImpact": 3
+    }
+  },
+  {
+    "id": "ai-event-landing-zone",
+    "name": "Landing Zone",
+    "statement": "Parse emails, PDFs, and newsletters into calendar events for busy parents",
+    "directory": "experiments/ai-event-landing-zone",
+    "documentationId": "doc-ai-event-landing-zone",
+    "prototypeId": "",
+    "status": "Archived",
+    "createdDate": "2025-11-16",
+    "lastModified": "2024-12-16",
+    "tags": ["ai-ml", "calendar-integration", "event-parsing", "unstructured-data", "working-parents", "productivity"],
+    "scores": {
+      "businessOpportunity": 4,
+      "personalImpact": 4,
+      "competitiveAdvantage": 3,
+      "platformCost": 3,
+      "socialImpact": 4
+    }
+  },
+  {
+    "id": "etsy-embroidery-pattern-manager-v2",
+    "name": "Embroidery Pattern Manager v2",
+    "statement": "Analysis and SEO tool for small needlework makers using Notion as backend database",
+    "directory": "experiments/etsy-embroidery-pattern-manager-v2",
+    "documentationId": "doc-etsy-embroidery-pattern-manager-v2",
+    "prototypeId": "",
+    "status": "Abandoned",
+    "createdDate": "2025-12-02",
+    "lastModified": "2024-12-16",
+    "tags": ["etsy", "embroidery", "pattern-design", "notion", "seo", "analytics", "e-commerce"],
+    "scores": {
+      "businessOpportunity": 4,
+      "personalImpact": 5,
+      "competitiveAdvantage": 4,
+      "platformCost": 3,
+      "socialImpact": 3
+    }
+  }
+]
