@@ -31,7 +31,22 @@ export function PlantingCalendar({ seed, climate, guidance, profile }: PlantingC
     climate.averageTemperatures.december,
   ];
 
-  const minTemp = Math.min(...temperatures);
+  const lowTemperatures = climate.averageLowTemperatures ? [
+    climate.averageLowTemperatures.january,
+    climate.averageLowTemperatures.february,
+    climate.averageLowTemperatures.march,
+    climate.averageLowTemperatures.april,
+    climate.averageLowTemperatures.may,
+    climate.averageLowTemperatures.june,
+    climate.averageLowTemperatures.july,
+    climate.averageLowTemperatures.august,
+    climate.averageLowTemperatures.september,
+    climate.averageLowTemperatures.october,
+    climate.averageLowTemperatures.november,
+    climate.averageLowTemperatures.december,
+  ] : null;
+
+  const minTemp = Math.min(...temperatures, ...(lowTemperatures || []));
   const maxTemp = Math.max(...temperatures);
   const tempRange = maxTemp - minTemp;
   const chartHeight = 200;
@@ -39,6 +54,7 @@ export function PlantingCalendar({ seed, climate, guidance, profile }: PlantingC
   const totalWidth = MONTHS.length * chartWidth;
   const barWidth = 60;
   const barSpacing = (chartWidth - barWidth) / 2;
+  const FREEZING_POINT = 32; // 32°F
 
   // Get month index for dates
   const getMonthIndex = (date: Date) => date.getMonth();
@@ -82,7 +98,33 @@ export function PlantingCalendar({ seed, climate, guidance, profile }: PlantingC
     });
   }
 
-  if (guidance.expectedHarvestDate) {
+  // Add all harvest date scenarios
+  if (guidance.harvestDates?.fromIndoorStart) {
+    annotations.push({
+      date: guidance.harvestDates.fromIndoorStart,
+      label: 'Harvest (Indoor Start)',
+      color: '#3b82f6',
+    });
+  }
+  
+  if (guidance.harvestDates?.fromTransplantedStart) {
+    annotations.push({
+      date: guidance.harvestDates.fromTransplantedStart,
+      label: 'Harvest (Nursery Start)',
+      color: '#10b981',
+    });
+  }
+  
+  if (guidance.harvestDates?.fromDirectSow) {
+    annotations.push({
+      date: guidance.harvestDates.fromDirectSow,
+      label: 'Harvest (Direct Sow)',
+      color: '#f59e0b',
+    });
+  }
+  
+  // Legacy support
+  if (guidance.expectedHarvestDate && !guidance.harvestDates) {
     annotations.push({
       date: guidance.expectedHarvestDate,
       label: 'Harvest',
@@ -159,7 +201,66 @@ export function PlantingCalendar({ seed, climate, guidance, profile }: PlantingC
             );
           })}
 
-          {/* Temperature bars */}
+          {/* Freezing point line (32°F) */}
+          {FREEZING_POINT >= minTemp && FREEZING_POINT <= maxTemp && (
+            <g>
+              <line
+                x1={0}
+                y1={chartHeight - ((FREEZING_POINT - minTemp) / tempRange) * chartHeight}
+                x2={totalWidth}
+                y2={chartHeight - ((FREEZING_POINT - minTemp) / tempRange) * chartHeight}
+                stroke="#3b82f6"
+                strokeWidth={2}
+                strokeDasharray="4,4"
+                opacity={0.7}
+              />
+              <text
+                x={totalWidth + 5}
+                y={chartHeight - ((FREEZING_POINT - minTemp) / tempRange) * chartHeight + 4}
+                textAnchor="start"
+                className="text-xs fill-[#3b82f6] font-semibold"
+                fontSize="10"
+              >
+                32°F
+              </text>
+            </g>
+          )}
+
+          {/* Average low temperature bars (dropping from 32°F) */}
+          {lowTemperatures && lowTemperatures.map((lowTemp, index) => {
+            if (lowTemp >= FREEZING_POINT) return null; // Only show bars for temps below freezing
+            
+            const freezingY = chartHeight - ((FREEZING_POINT - minTemp) / tempRange) * chartHeight;
+            const lowTempY = chartHeight - ((lowTemp - minTemp) / tempRange) * chartHeight;
+            const barHeight = freezingY - lowTempY;
+            const x = index * chartWidth + barSpacing;
+            const y = freezingY;
+            
+            return (
+              <g key={`low-${index}`}>
+                <rect
+                  x={x + 5}
+                  y={y}
+                  width={barWidth - 10}
+                  height={barHeight}
+                  fill="#60a5fa"
+                  rx={2}
+                  opacity={0.6}
+                />
+                <text
+                  x={x + barWidth / 2}
+                  y={y + barHeight + 12}
+                  textAnchor="middle"
+                  className="text-xs fill-[#3b82f6] font-medium"
+                  fontSize="9"
+                >
+                  {Math.round(lowTemp)}°
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Average temperature bars */}
           {temperatures.map((temp, index) => {
             const barHeight = ((temp - minTemp) / tempRange) * chartHeight;
             const x = index * chartWidth + barSpacing;
@@ -171,7 +272,7 @@ export function PlantingCalendar({ seed, climate, guidance, profile }: PlantingC
             if (temp >= 80) barColor = '#f97316'; // hot
             
             return (
-              <g key={index}>
+              <g key={`avg-${index}`}>
                 <rect
                   x={x}
                   y={y}
@@ -287,16 +388,28 @@ export function PlantingCalendar({ seed, climate, guidance, profile }: PlantingC
         <div className="flex flex-wrap gap-4 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded" style={{ backgroundColor: '#86efac' }}></div>
-            <span className="text-[#6a7282]">Cool (&lt;70°F)</span>
+            <span className="text-[#6a7282]">Avg Temp: Cool (&lt;70°F)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded" style={{ backgroundColor: '#fbbf24' }}></div>
-            <span className="text-[#6a7282]">Warm (70-80°F)</span>
+            <span className="text-[#6a7282]">Avg Temp: Warm (70-80°F)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded" style={{ backgroundColor: '#f97316' }}></div>
-            <span className="text-[#6a7282]">Hot (&gt;80°F)</span>
+            <span className="text-[#6a7282]">Avg Temp: Hot (&gt;80°F)</span>
           </div>
+          {lowTemperatures && (
+            <>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: '#60a5fa' }}></div>
+                <span className="text-[#6a7282]">Avg Low (below 32°F)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-0.5 border-t-2 border-dashed border-[#3b82f6]"></div>
+                <span className="text-[#6a7282]">32°F Freezing Point</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
