@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  --green-primary: #16a34a;
+  --green-dark: #166534;
+  --green-button: #00a63e;
+  --green-header: #166534;
+  --bg-light: #f9fafb;
+  --bg-white: #ffffff;
+  --text-heading: #101828;
+  --text-label: #4a5565;
+  --text-muted: #6a7282;
+  --text-subtle: #99a1af;
+  
+  /* Age indicator greens (light to dark = new to old) */
+  --age-new: #f0fdf4;
+  --age-1yr: #dcfce7;
+  --age-2yr: #bbf7d0;
+  --age-3yr: #86efac;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  background: var(--bg-light);
+  color: var(--text-heading);
+  min-height: 100dvh;
+}
+
+/* Mobile-first: max width for larger screens */
+@media (min-width: 480px) {
+  body {
+    display: flex;
+    justify-content: center;
+  }
+  
+  #app-container {
+    max-width: 430px;
+    width: 100%;
+    box-shadow: 0 0 40px rgba(0,0,0,0.1);
+    min-height: 100dvh;
+  }
+}
