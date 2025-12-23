@@ -1,0 +1,178 @@
+import { Seed } from '@/types/seed';
+import { ClimateData } from '@/types/climate';
+import { getProfile } from '@/lib/storage';
+import { getClimateData } from '@/data/climate';
+
+export interface PlantingGuidance {
+  hasData: boolean;
+  lastFrostDate?: Date;
+  firstFrostDate?: Date;
+  startSeedsIndoors?: Date;
+  transplantDate?: Date;
+  directSowDate?: Date;
+  expectedHarvestDate?: Date;
+  weeksBeforeLastFrost?: number;
+  recommendations: string[];
+}
+
+/**
+ * Get planting guidance for a seed based on user's location
+ */
+export function getPlantingGuidance(seed: Seed): PlantingGuidance {
+  const profile = getProfile();
+  if (!profile?.zipCode) {
+    return {
+      hasData: false,
+      recommendations: ['Add your zip code in Profile to get personalized planting dates'],
+    };
+  }
+
+  const climate = getClimateData(profile.zipCode);
+  if (!climate) {
+    return {
+      hasData: false,
+      recommendations: ['Climate data not available for your zip code'],
+    };
+  }
+
+  const currentYear = new Date().getFullYear();
+  const [lastFrostMonth, lastFrostDay] = climate.averageLastFrost.split('-').map(Number);
+  const [firstFrostMonth, firstFrostDay] = climate.averageFirstFrost.split('-').map(Number);
+  
+  const lastFrostDate = new Date(currentYear, lastFrostMonth - 1, lastFrostDay);
+  const firstFrostDate = new Date(currentYear, firstFrostMonth - 1, firstFrostDay);
+  
+  // If first frost is before last frost, it's next year
+  if (firstFrostDate < lastFrostDate) {
+    firstFrostDate.setFullYear(currentYear + 1);
+  }
+
+  const recommendations: string[] = [];
+  let startSeedsIndoors: Date | undefined;
+  let transplantDate: Date | undefined;
+  let directSowDate: Date | undefined;
+  let expectedHarvestDate: Date | undefined;
+  let weeksBeforeLastFrost: number | undefined;
+
+  // Determine seed starting strategy based on seed type and characteristics
+  const isWarmSeason = seed.type === 'vegetable' && ['tomato', 'pepper', 'eggplant', 'cucumber', 'squash'].some(v => 
+    seed.name.toLowerCase().includes(v) || seed.variety.toLowerCase().includes(v)
+  );
+  
+  const isCoolSeason = seed.type === 'vegetable' && ['lettuce', 'spinach', 'kale', 'broccoli', 'cabbage', 'carrot', 'beet', 'radish'].some(v =>
+    seed.name.toLowerCase().includes(v) || seed.variety.toLowerCase().includes(v)
+  );
+
+  const isHerb = seed.type === 'herb';
+  const isFlower = seed.type === 'flower';
+
+  // Parse days to germination
+  const daysToGermination = seed.daysToGermination 
+    ? parseInt(seed.daysToGermination.split('-')[0]) || parseInt(seed.daysToGermination) || 7
+    : 7;
+
+  // Parse days to maturity
+  const daysToMaturity = seed.daysToMaturity
+    ? parseInt(seed.daysToMaturity.split('-')[0]) || parseInt(seed.daysToMaturity) || 60
+    : 60;
+
+  if (isWarmSeason) {
+    // Warm season crops: Start indoors 6-8 weeks before last frost
+    // For tomatoes, typically 6-8 weeks
+    // For peppers, typically 8-10 weeks
+    const isTomato = seed.name.toLowerCase().includes('tomato') || seed.variety.toLowerCase().includes('tomato');
+    const weeksToStart = isTomato ? 6 : 8;
+    weeksBeforeLastFrost = weeksToStart;
+    
+    startSeedsIndoors = new Date(lastFrostDate);
+    startSeedsIndoors.setDate(startSeedsIndoors.getDate() - (weeksToStart * 7));
+    
+    transplantDate = new Date(lastFrostDate);
+    transplantDate.setDate(transplantDate.getDate() + 7); // 1 week after last frost for safety
+    
+    expectedHarvestDate = new Date(transplantDate);
+    expectedHarvestDate.setDate(expectedHarvestDate.getDate() + daysToMaturity);
+    
+    recommendations.push(`Start seeds indoors ${weeksToStart} weeks before last frost`);
+    recommendations.push(`Transplant outdoors 1 week after last frost (around ${formatDate(transplantDate)})`);
+    recommendations.push(`Expected harvest: ${formatDate(expectedHarvestDate)}`);
+  } else if (isCoolSeason) {
+    // Cool season crops: Can direct sow or start indoors
+    // Many can be planted 2-4 weeks before last frost
+    const weeksToStart = 4;
+    weeksBeforeLastFrost = weeksToStart;
+    
+    startSeedsIndoors = new Date(lastFrostDate);
+    startSeedsIndoors.setDate(startSeedsIndoors.getDate() - (weeksToStart * 7));
+    
+    directSowDate = new Date(lastFrostDate);
+    directSowDate.setDate(directSowDate.getDate() - (weeksToStart * 7));
+    
+    expectedHarvestDate = new Date(directSowDate);
+    expectedHarvestDate.setDate(expectedHarvestDate.getDate() + daysToMaturity);
+    
+    recommendations.push(`Can start indoors or direct sow ${weeksToStart} weeks before last frost`);
+    recommendations.push(`Direct sow date: ${formatDate(directSowDate)}`);
+    recommendations.push(`Expected harvest: ${formatDate(expectedHarvestDate)}`);
+  } else if (isHerb) {
+    // Herbs: Can start indoors 4-6 weeks before last frost or direct sow
+    const weeksToStart = 6;
+    weeksBeforeLastFrost = weeksToStart;
+    
+    startSeedsIndoors = new Date(lastFrostDate);
+    startSeedsIndoors.setDate(startSeedsIndoors.getDate() - (weeksToStart * 7));
+    
+    directSowDate = new Date(lastFrostDate);
+    directSowDate.setDate(directSowDate.getDate() - 2); // 2 weeks before last frost
+    
+    recommendations.push(`Start indoors ${weeksToStart} weeks before last frost, or direct sow 2 weeks before`);
+    recommendations.push(`Indoor start: ${formatDate(startSeedsIndoors)}`);
+    recommendations.push(`Direct sow: ${formatDate(directSowDate)}`);
+  } else if (isFlower) {
+    // Flowers: Varies, but many annuals start 6-8 weeks before last frost
+    const weeksToStart = 6;
+    weeksBeforeLastFrost = weeksToStart;
+    
+    startSeedsIndoors = new Date(lastFrostDate);
+    startSeedsIndoors.setDate(startSeedsIndoors.getDate() - (weeksToStart * 7));
+    
+    transplantDate = new Date(lastFrostDate);
+    transplantDate.setDate(transplantDate.getDate() + 7);
+    
+    recommendations.push(`Start seeds indoors ${weeksToStart} weeks before last frost`);
+    recommendations.push(`Transplant after last frost: ${formatDate(transplantDate)}`);
+  } else {
+    // Generic guidance
+    const weeksToStart = 6;
+    weeksBeforeLastFrost = weeksToStart;
+    
+    startSeedsIndoors = new Date(lastFrostDate);
+    startSeedsIndoors.setDate(startSeedsIndoors.getDate() - (weeksToStart * 7));
+    
+    recommendations.push(`Start seeds indoors ${weeksToStart} weeks before last frost`);
+  }
+
+  // Add planting month info if available
+  if (seed.plantingMonths && seed.plantingMonths.length > 0) {
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = seed.plantingMonths.map(m => monthNames[m - 1]).join(', ');
+    recommendations.push(`Planting months: ${months}`);
+  }
+
+  return {
+    hasData: true,
+    lastFrostDate,
+    firstFrostDate,
+    startSeedsIndoors,
+    transplantDate,
+    directSowDate,
+    expectedHarvestDate,
+    weeksBeforeLastFrost,
+    recommendations,
+  };
+}
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
