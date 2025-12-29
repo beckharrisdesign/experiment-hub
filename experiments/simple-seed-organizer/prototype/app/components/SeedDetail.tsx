@@ -79,12 +79,30 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
               )}
             </div>
 
-            {/* Planting Guidance Cards */}
-            {plantingGuidance && plantingGuidance.hasData && (
+            {/* Planting Guidance */}
+            {plantingGuidance && (
               <div className="mb-6">
-                <div className="space-y-3">
-                  {/* Sow Indoors → Last Frost → Direct Sow → First Frost Row */}
-                  <div className="flex gap-3 overflow-x-auto pb-2">
+                <div className="mb-3">
+                  <h3 className="text-sm font-semibold text-[#4a5565] mb-1">Planting Guidance</h3>
+                  {(() => {
+                    const profile = getProfile();
+                    if (profile?.zipCode || profile?.growingZone) {
+                      return (
+                        <p className="text-xs text-[#6a7282]">
+                          Personalized for your location
+                          {profile.zipCode && ` (${profile.zipCode}`}
+                          {profile.growingZone && ` • Zone ${profile.growingZone}`}
+                          {profile.zipCode && ')'}
+                        </p>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
+                {plantingGuidance.hasData ? (
+                  <div className="space-y-3">
+                    {/* Sow Indoors → Last Frost → Direct Sow → First Frost Row */}
+                    <div className="flex gap-3 overflow-x-auto pb-2">
                     {/* Sow Indoors Card */}
                     {plantingGuidance.startSeedsIndoors && (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex-1">
@@ -168,14 +186,21 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
                     )}
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-[#6a7282]">{plantingGuidance.recommendations[0]}</p>
+                </div>
+              )}
+            </div>
             )}
 
             {/* Notes */}
             {seed.notes && (
               <div className="mb-6">
-                <h3 className="text-sm font-semibold text-[#4a5565] mb-2">Notes</h3>
-                <p className="text-[#101828] bg-gray-50 rounded-lg p-4">{seed.notes}</p>
+                <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Notes</h3>
+                <div className="bg-gray-50 rounded-lg p-6 min-h-[200px]">
+                  <p className="text-[#101828] whitespace-pre-wrap leading-relaxed">{seed.notes}</p>
+                </div>
               </div>
             )}
           </div>
@@ -183,30 +208,6 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
           {/* Right Column - Metadata (25%) */}
           <div className="w-1/4 flex-shrink-0 min-w-[280px]">
             <div className="space-y-4 sticky top-4 flex flex-col h-[calc(100vh-120px)]">
-              {/* Planting Guidance Header */}
-              {plantingGuidance && (
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-[#4a5565] mb-2">Planting Guidance</h3>
-                  {(() => {
-                    const profile = getProfile();
-                    if (profile?.zipCode || profile?.growingZone) {
-                      return (
-                        <p className="text-xs text-[#6a7282] mb-3">
-                          Personalized for your location
-                          {profile.zipCode && ` (${profile.zipCode}`}
-                          {profile.growingZone && ` • Zone ${profile.growingZone}`}
-                          {profile.zipCode && ')'}
-                        </p>
-                      );
-                    }
-                    return null;
-                  })()}
-                  {!plantingGuidance.hasData && (
-                    <p className="text-sm text-[#6a7282]">{plantingGuidance.recommendations[0]}</p>
-                  )}
-                </div>
-              )}
-
               {/* Seed Metadata */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Seed Information</h3>
