@@ -120,100 +120,103 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
             </div>
             {plantingGuidance.hasData ? (
               <div className="space-y-3">
-                {/* Last Frost Card */}
-                {plantingGuidance.lastFrostDate && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                      <span className="text-xs font-medium text-blue-700">Last Frost</span>
+                {/* Main Planting Cards - Horizontal Row */}
+                <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  {/* Last Frost Card */}
+                  {plantingGuidance.lastFrostDate && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex-shrink-0 min-w-[140px]">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <span className="text-xs font-medium text-blue-700">Last Frost</span>
+                      </div>
+                      <p className="text-lg font-bold text-blue-900">{formatDate(plantingGuidance.lastFrostDate)}</p>
                     </div>
-                    <p className="text-lg font-bold text-blue-900">{formatDate(plantingGuidance.lastFrostDate)}</p>
-                  </div>
-                )}
+                  )}
 
-                {/* Start Seeds Indoors Card */}
-                {plantingGuidance.startSeedsIndoors && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span className="text-xs font-medium text-green-700">Start Seeds Indoors</span>
+                  {/* Start Seeds Indoors Card */}
+                  {plantingGuidance.startSeedsIndoors && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex-shrink-0 min-w-[140px]">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-xs font-medium text-green-700">Start Indoors</span>
+                      </div>
+                      <p className="text-lg font-bold text-green-900">{formatDate(plantingGuidance.startSeedsIndoors)}</p>
+                      {plantingGuidance.weeksBeforeLastFrost && (
+                        <p className="text-xs text-green-700 mt-1">
+                          {plantingGuidance.weeksBeforeLastFrost}w before
+                        </p>
+                      )}
                     </div>
-                    <p className="text-lg font-bold text-green-900">{formatDate(plantingGuidance.startSeedsIndoors)}</p>
-                    {plantingGuidance.weeksBeforeLastFrost && (
-                      <p className="text-xs text-green-700 mt-1">
-                        {plantingGuidance.weeksBeforeLastFrost} weeks before last frost
-                      </p>
-                    )}
-                  </div>
-                )}
+                  )}
 
-                {/* Transplant Card */}
-                {plantingGuidance.transplantDate && (
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                      </svg>
-                      <span className="text-xs font-medium text-emerald-700">Transplant Outdoors</span>
+                  {/* Transplant Card */}
+                  {plantingGuidance.transplantDate && (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex-shrink-0 min-w-[140px]">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        <span className="text-xs font-medium text-emerald-700">Transplant</span>
+                      </div>
+                      <p className="text-lg font-bold text-emerald-900">{formatDate(plantingGuidance.transplantDate)}</p>
+                      <p className="text-xs text-emerald-700 mt-1">1w after frost</p>
                     </div>
-                    <p className="text-lg font-bold text-emerald-900">{formatDate(plantingGuidance.transplantDate)}</p>
-                    <p className="text-xs text-emerald-700 mt-1">1 week after last frost</p>
-                  </div>
-                )}
+                  )}
 
-                {/* Direct Sow Card */}
-                {plantingGuidance.directSowDate && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      <span className="text-xs font-medium text-amber-700">Direct Sow</span>
+                  {/* Direct Sow Card */}
+                  {plantingGuidance.directSowDate && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex-shrink-0 min-w-[140px]">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        <span className="text-xs font-medium text-amber-700">Direct Sow</span>
+                      </div>
+                      <p className="text-lg font-bold text-amber-900">{formatDate(plantingGuidance.directSowDate)}</p>
                     </div>
-                    <p className="text-lg font-bold text-amber-900">{formatDate(plantingGuidance.directSowDate)}</p>
-                  </div>
-                )}
+                  )}
+                </div>
 
-                {/* Harvest Dates Cards */}
+                {/* Harvest Dates Cards - Horizontal Row */}
                 {(plantingGuidance.harvestDates?.fromIndoorStart || 
                   plantingGuidance.harvestDates?.fromTransplantedStart || 
                   plantingGuidance.harvestDates?.fromDirectSow) && (
                   <div className="pt-2 border-t border-gray-200">
                     <p className="text-xs font-semibold text-[#4a5565] mb-2">Expected Harvest</p>
-                    <div className="space-y-2">
+                    <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                       {plantingGuidance.harvestDates.fromIndoorStart && (
-                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex-shrink-0 min-w-[140px]">
                           <div className="flex items-center gap-2 mb-1">
                             <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                             </svg>
-                            <span className="text-xs font-medium text-purple-700">If Started Indoors</span>
+                            <span className="text-xs font-medium text-purple-700">Indoor Start</span>
                           </div>
                           <p className="text-lg font-bold text-purple-900">{formatDate(plantingGuidance.harvestDates.fromIndoorStart)}</p>
                         </div>
                       )}
                       {plantingGuidance.harvestDates.fromTransplantedStart && (
-                        <div className="bg-teal-50 border border-teal-200 rounded-lg p-3">
+                        <div className="bg-teal-50 border border-teal-200 rounded-lg p-3 flex-shrink-0 min-w-[140px]">
                           <div className="flex items-center gap-2 mb-1">
                             <svg className="w-4 h-4 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                             </svg>
-                            <span className="text-xs font-medium text-teal-700">If Transplanted Start</span>
+                            <span className="text-xs font-medium text-teal-700">Transplanted</span>
                           </div>
                           <p className="text-lg font-bold text-teal-900">{formatDate(plantingGuidance.harvestDates.fromTransplantedStart)}</p>
                         </div>
                       )}
                       {plantingGuidance.harvestDates.fromDirectSow && (
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 flex-shrink-0 min-w-[140px]">
                           <div className="flex items-center gap-2 mb-1">
                             <svg className="w-4 h-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
-                            <span className="text-xs font-medium text-orange-700">If Direct Sowed</span>
+                            <span className="text-xs font-medium text-orange-700">Direct Sow</span>
                           </div>
                           <p className="text-lg font-bold text-orange-900">{formatDate(plantingGuidance.harvestDates.fromDirectSow)}</p>
                         </div>
@@ -223,14 +226,19 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
                 )}
                 {/* Legacy support */}
                 {!plantingGuidance.harvestDates && plantingGuidance.expectedHarvestDate && (
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                      </svg>
-                      <span className="text-xs font-medium text-purple-700">Expected Harvest</span>
+                  <div className="pt-2 border-t border-gray-200">
+                    <p className="text-xs font-semibold text-[#4a5565] mb-2">Expected Harvest</p>
+                    <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex-shrink-0 min-w-[140px]">
+                        <div className="flex items-center gap-2 mb-1">
+                          <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                          </svg>
+                          <span className="text-xs font-medium text-purple-700">Expected Harvest</span>
+                        </div>
+                        <p className="text-lg font-bold text-purple-900">{formatDate(plantingGuidance.expectedHarvestDate)}</p>
+                      </div>
                     </div>
-                    <p className="text-lg font-bold text-purple-900">{formatDate(plantingGuidance.expectedHarvestDate)}</p>
                   </div>
                 )}
                 {plantingGuidance.recommendations.length > 0 && (
