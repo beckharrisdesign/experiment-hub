@@ -65,9 +65,9 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 pb-24">
-        <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto">
+        <div className="flex flex-row gap-6 max-w-7xl mx-auto">
           {/* Left Column - Main Content (75%) */}
-          <div className="flex-1 min-w-0 lg:w-3/4">
+          <div className="flex-1 min-w-0 w-3/4">
             {/* Title Section */}
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-[#101828] mb-1">{seed.name}</h2>
@@ -178,19 +178,11 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
                 <p className="text-[#101828] bg-gray-50 rounded-lg p-4">{seed.notes}</p>
               </div>
             )}
-
-            {/* Delete Button */}
-            <button
-              onClick={onDelete}
-              className="w-full py-3 text-red-600 font-medium border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-            >
-              Delete Seed
-            </button>
           </div>
 
           {/* Right Column - Metadata (25%) */}
-          <div className="w-full lg:w-1/4 flex-shrink-0 lg:min-w-[280px]">
-            <div className="space-y-4 lg:sticky lg:top-4">
+          <div className="w-1/4 flex-shrink-0 min-w-[280px]">
+            <div className="space-y-4 sticky top-4 flex flex-col h-[calc(100vh-120px)]">
               {/* Planting Guidance Header */}
               {plantingGuidance && (
                 <div className="bg-gray-50 rounded-lg p-4">
@@ -236,6 +228,16 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
                   label="Custom Expiration" 
                   value={seed.customExpirationDate ? formatDateString(seed.customExpirationDate) : undefined} 
                 />
+              </div>
+
+              {/* Delete Button - Always at bottom */}
+              <div className="mt-auto pt-4">
+                <button
+                  onClick={onDelete}
+                  className="w-full py-2 text-xs text-red-500 hover:text-red-600 transition-colors"
+                >
+                  Delete Seed
+                </button>
               </div>
             </div>
           </div>
