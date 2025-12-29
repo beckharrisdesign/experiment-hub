@@ -100,6 +100,10 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     transplantDate = new Date(lastFrostDate);
     transplantDate.setDate(transplantDate.getDate() + 7); // 1 week after last frost for safety
     
+    // Direct sow date: 1 week after last frost for safety
+    directSowDate = new Date(lastFrostDate);
+    directSowDate.setDate(directSowDate.getDate() + 7);
+    
     // Calculate harvest dates for all scenarios
     // 1. Started indoors: transplant date + days to maturity
     harvestDates.fromIndoorStart = new Date(transplantDate);
@@ -109,10 +113,8 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     harvestDates.fromTransplantedStart = new Date(transplantDate);
     harvestDates.fromTransplantedStart.setDate(harvestDates.fromTransplantedStart.getDate() + daysToMaturity);
     
-    // 3. Direct sow after last frost: last frost + 7 days (safety) + days to maturity
-    const directSowAfterFrost = new Date(lastFrostDate);
-    directSowAfterFrost.setDate(directSowAfterFrost.getDate() + 7);
-    harvestDates.fromDirectSow = new Date(directSowAfterFrost);
+    // 3. Direct sow: direct sow date + days to maturity
+    harvestDates.fromDirectSow = new Date(directSowDate);
     harvestDates.fromDirectSow.setDate(harvestDates.fromDirectSow.getDate() + daysToMaturity);
     
     expectedHarvestDate = harvestDates.fromIndoorStart; // Legacy support
@@ -188,6 +190,10 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     transplantDate = new Date(lastFrostDate);
     transplantDate.setDate(transplantDate.getDate() + 7);
     
+    // Direct sow date: 1 week after last frost
+    directSowDate = new Date(lastFrostDate);
+    directSowDate.setDate(directSowDate.getDate() + 7);
+    
     // Calculate harvest dates
     harvestDates.fromIndoorStart = new Date(transplantDate);
     harvestDates.fromIndoorStart.setDate(harvestDates.fromIndoorStart.getDate() + daysToMaturity);
@@ -195,9 +201,8 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     harvestDates.fromTransplantedStart = new Date(transplantDate);
     harvestDates.fromTransplantedStart.setDate(harvestDates.fromTransplantedStart.getDate() + daysToMaturity);
     
-    const flowerDirectSow = new Date(lastFrostDate);
-    flowerDirectSow.setDate(flowerDirectSow.getDate() + 7);
-    harvestDates.fromDirectSow = new Date(flowerDirectSow);
+    // Direct sow: direct sow date + days to maturity
+    harvestDates.fromDirectSow = new Date(directSowDate);
     harvestDates.fromDirectSow.setDate(harvestDates.fromDirectSow.getDate() + daysToMaturity);
     
     recommendations.push(`Start seeds indoors ${weeksToStart} weeks before last frost`);
