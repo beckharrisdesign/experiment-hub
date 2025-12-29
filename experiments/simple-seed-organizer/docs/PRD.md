@@ -1,5 +1,23 @@
 # Simple Seed Organizer - Product Requirements Document
 
+## Design
+
+**Figma Make Prototype**: [Seed Collection Tracker App](https://www.figma.com/make/3KLrBwkhXzE52TfcsyOdBZ/Seed-Collection-Tracker-App?node-id=0-1&t=9nRR5RQyd7y32aNE-1)
+
+**Figma Design File**: [Simple Seed Organizer](https://www.figma.com/design/3OcfOyLd4qDonrA44TcE46/Simple-Seed-Organizer?node-id=5-29)
+
+## Prototype
+
+**Location**: `experiments/simple-seed-organizer/prototype/app/`
+
+**Run locally**:
+
+```bash
+cd experiments/simple-seed-organizer/prototype/app
+npm run dev
+# Opens at http://localhost:3001
+```
+
 ## Overview
 
 Simple Seed Organizer is a super simple mobile/web app that lets home gardeners store seed information and retrieve it when needed—nothing more, nothing less. It eliminates the complexity of garden planning, calendars, and design features found in other gardening apps, focusing exclusively on seed inventory tracking. The product will be validated through a landing page and targeted ads before building the MVP to ensure there's genuine buying intent for this simplicity-focused approach.

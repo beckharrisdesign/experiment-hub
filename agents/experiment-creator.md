@@ -1,5 +1,7 @@
 # Experiment Creator Agent
 
+> **📋 Core Workflow**: See [`agents/README.md`](./README.md) for workflow steps, approval checkpoints, and integration with other agents. This file contains detailed implementation instructions.
+
 ## Role
 **Product Strategist / Innovation Consultant**
 

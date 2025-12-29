@@ -121,7 +121,7 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
             {plantingGuidance.hasData ? (
               <div className="space-y-3">
                 {/* Sow Indoors → Last Frost → Direct Sow → First Frost Row */}
-                <div className="flex gap-3">
+                <div className="flex gap-3 overflow-x-auto pb-2">
                   {/* Sow Indoors Card */}
                   {plantingGuidance.startSeedsIndoors && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex-1">
@@ -190,6 +190,32 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
                       )}
                     </div>
                   )}
+
+                  {/* Additional Direct Sow Cycles */}
+                  {plantingGuidance.additionalDirectSowCycles?.map((cycle, index) => (
+                    <div key={index} className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        <span className="text-xs font-medium text-amber-700">Direct Sow {index + 2}</span>
+                      </div>
+                      <p className="text-lg font-bold text-amber-900">{formatDate(cycle.sowDate)}</p>
+                      <div className="mt-2 pt-2 border-t border-amber-200 space-y-1">
+                        {seed.daysToGermination && (
+                          <p className="text-xs text-amber-600">
+                            {seed.daysToGermination} to germinate
+                          </p>
+                        )}
+                        {seed.daysToMaturity && (
+                          <p className="text-xs text-amber-600">
+                            {seed.daysToMaturity} to harvest
+                          </p>
+                        )}
+                        <p className="text-sm font-semibold text-amber-900">{formatDate(cycle.harvestDate)}</p>
+                      </div>
+                    </div>
+                  ))}
 
                   {/* First Frost Card */}
                   {plantingGuidance.firstFrostDate && (

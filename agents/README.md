@@ -141,10 +141,17 @@ These agents are designed to work with:
 - Automated workflows (future)
 - Manual reference during development
 
+## Agent Architecture
+
+For architectural decisions about creating new agents, extending existing agents, or understanding agent composition patterns, see [`AGENT_ARCHITECTURE.md`](../AGENT_ARCHITECTURE.md).
+
+**Important**: This README contains the **core workflow and usage instructions**. The architecture document provides supplementary guidance for extending the system.
+
 ## Maintenance
 
 - Update agents as workflow evolves
 - Add examples from real experiments
 - Refine guidelines based on experience
 - Document edge cases and solutions
+- Keep core decisions in this README
 

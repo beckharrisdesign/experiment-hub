@@ -10,6 +10,10 @@ export interface PlantingGuidance {
   startSeedsIndoors?: Date;
   transplantDate?: Date;
   directSowDate?: Date;
+  additionalDirectSowCycles?: Array<{
+    sowDate: Date;
+    harvestDate: Date;
+  }>;
   expectedHarvestDate?: Date; // Legacy - use harvestDates instead
   harvestDates?: {
     fromIndoorStart?: Date;
@@ -62,6 +66,7 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     fromTransplantedStart?: Date;
     fromDirectSow?: Date;
   } = {};
+  const additionalDirectSowCycles: Array<{ sowDate: Date; harvestDate: Date }> = [];
   let weeksBeforeLastFrost: number | undefined;
 
   // Determine seed starting strategy based on seed type and characteristics
@@ -121,6 +126,15 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     
     recommendations.push(`Start seeds indoors ${weeksToStart} weeks before last frost`);
     recommendations.push(`Transplant outdoors 1 week after last frost (around ${formatDate(transplantDate)})`);
+    
+    // Calculate additional direct sow cycles if there's time
+    calculateAdditionalDirectSowCycles(
+      harvestDates.fromDirectSow,
+      firstFrostDate,
+      daysToGermination,
+      daysToMaturity,
+      additionalDirectSowCycles
+    );
   } else if (isCoolSeason) {
     // Cool season crops: Can direct sow or start indoors
     // Many can be planted 2-4 weeks before last frost
@@ -152,6 +166,17 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     
     recommendations.push(`Can start indoors or direct sow ${weeksToStart} weeks before last frost`);
     recommendations.push(`Direct sow date: ${formatDate(directSowDate)}`);
+    
+    // Calculate additional direct sow cycles if there's time
+    if (harvestDates.fromDirectSow) {
+      calculateAdditionalDirectSowCycles(
+        harvestDates.fromDirectSow,
+        firstFrostDate,
+        daysToGermination,
+        daysToMaturity,
+        additionalDirectSowCycles
+      );
+    }
   } else if (isHerb) {
     // Herbs: Can start indoors 4-6 weeks before last frost or direct sow
     const weeksToStart = 6;
@@ -182,6 +207,17 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     recommendations.push(`Start indoors ${weeksToStart} weeks before last frost, or direct sow 2 weeks before`);
     recommendations.push(`Indoor start: ${formatDate(startSeedsIndoors)}`);
     recommendations.push(`Direct sow: ${formatDate(directSowDate)}`);
+    
+    // Calculate additional direct sow cycles if there's time
+    if (harvestDates.fromDirectSow) {
+      calculateAdditionalDirectSowCycles(
+        harvestDates.fromDirectSow,
+        firstFrostDate,
+        daysToGermination,
+        daysToMaturity,
+        additionalDirectSowCycles
+      );
+    }
   } else if (isFlower) {
     // Flowers: Varies, but many annuals start 6-8 weeks before last frost
     const weeksToStart = 6;
@@ -212,6 +248,17 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     
     recommendations.push(`Start seeds indoors ${weeksToStart} weeks before last frost`);
     recommendations.push(`Transplant after last frost: ${formatDate(transplantDate)}`);
+    
+    // Calculate additional direct sow cycles if there's time
+    if (harvestDates.fromDirectSow) {
+      calculateAdditionalDirectSowCycles(
+        harvestDates.fromDirectSow,
+        firstFrostDate,
+        daysToGermination,
+        daysToMaturity,
+        additionalDirectSowCycles
+      );
+    }
   } else {
     // Generic guidance
     const weeksToStart = 6;
@@ -237,11 +284,50 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     startSeedsIndoors,
     transplantDate,
     directSowDate,
+    additionalDirectSowCycles: additionalDirectSowCycles.length > 0 ? additionalDirectSowCycles : undefined,
     expectedHarvestDate, // Legacy support
     harvestDates: Object.keys(harvestDates).length > 0 ? harvestDates : undefined,
     weeksBeforeLastFrost,
     recommendations,
   };
+}
+
+/**
+ * Calculate additional direct sow cycles if there's enough time in the growing season
+ */
+function calculateAdditionalDirectSowCycles(
+  lastHarvestDate: Date,
+  firstFrostDate: Date,
+  daysToGermination: number,
+  daysToMaturity: number,
+  cycles: Array<{ sowDate: Date; harvestDate: Date }>
+): void {
+  // Minimum buffer between cycles (7 days)
+  const bufferDays = 7;
+  // Total cycle time needed
+  const cycleTime = daysToGermination + daysToMaturity + bufferDays;
+  
+  // Start from the last harvest date
+  let currentDate = new Date(lastHarvestDate);
+  currentDate.setDate(currentDate.getDate() + bufferDays);
+  
+  // Calculate cycles until we run out of time
+  while (true) {
+    const sowDate = new Date(currentDate);
+    const harvestDate = new Date(sowDate);
+    harvestDate.setDate(harvestDate.getDate() + daysToGermination + daysToMaturity);
+    
+    // Check if this cycle's harvest would be before first frost
+    if (harvestDate >= firstFrostDate) {
+      break; // No more cycles fit
+    }
+    
+    cycles.push({ sowDate, harvestDate });
+    
+    // Move to next cycle start (after this harvest + buffer)
+    currentDate = new Date(harvestDate);
+    currentDate.setDate(currentDate.getDate() + bufferDays);
+  }
 }
 
 function formatDate(date: Date): string {

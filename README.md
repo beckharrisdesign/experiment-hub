@@ -15,17 +15,19 @@ A locally-hosted application to manage product experiments from idea to prototyp
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -101,6 +103,24 @@ The application uses a dark theme with colors inspired by VS Code and GitHub:
 - **Accent**: Blue (#58a6ff)
 - **Status Colors**: Green (success), Yellow (warning), Red (error)
 
+## Documentation
+
+### Core Documentation
+- **PRD.md** - Full product requirements document and implementation phases
+- **agents/README.md** - Agent framework and workflow instructions
+- **AGENT_ARCHITECTURE.md** - Agent architecture patterns (supplementary)
+
+### Setup & Configuration
+- **docs/PROTOTYPE_PORTS.md** - Port assignments for running prototypes
+- **docs/SETUP_MCP_LOGGING.md** - MCP logging setup for Cursor IDE
+- **docs/replit.md** - Replit deployment configuration
+
+### Experiment Documentation
+Each experiment has its own documentation in `experiments/{slug}/docs/`:
+- `PRD.md` - Product Requirements Document
+- `market-research.md` - Market analysis and TAM/SAM/SOM
+- Additional analysis and review documents
+
 ## Roadmap
 
 See `PRD.md` for the full product requirements document and implementation phases.
@@ -108,4 +128,3 @@ See `PRD.md` for the full product requirements document and implementation phase
 ## License
 
 ISC
-
