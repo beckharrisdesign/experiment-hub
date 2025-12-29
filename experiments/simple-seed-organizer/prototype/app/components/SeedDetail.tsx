@@ -150,6 +150,12 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
                           {plantingGuidance.weeksBeforeLastFrost}w before
                         </p>
                       )}
+                      {plantingGuidance.harvestDates?.fromIndoorStart && (
+                        <div className="mt-2 pt-2 border-t border-green-200">
+                          <p className="text-xs text-green-600 mb-0.5">Harvest</p>
+                          <p className="text-sm font-semibold text-green-900">{formatDate(plantingGuidance.harvestDates.fromIndoorStart)}</p>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -164,6 +170,12 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
                       </div>
                       <p className="text-lg font-bold text-emerald-900">{formatDate(plantingGuidance.transplantDate)}</p>
                       <p className="text-xs text-emerald-700 mt-1">1w after frost</p>
+                      {plantingGuidance.harvestDates?.fromTransplantedStart && (
+                        <div className="mt-2 pt-2 border-t border-emerald-200">
+                          <p className="text-xs text-emerald-600 mb-0.5">Harvest</p>
+                          <p className="text-sm font-semibold text-emerald-900">{formatDate(plantingGuidance.harvestDates.fromTransplantedStart)}</p>
+                        </div>
+                      )}
                     </div>
                   )}
 
