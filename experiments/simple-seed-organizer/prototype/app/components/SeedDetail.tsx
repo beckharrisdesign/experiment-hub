@@ -120,9 +120,10 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
             </div>
             {plantingGuidance.hasData ? (
               <div className="space-y-3">
-                {/* Sow Indoors Row */}
-                {plantingGuidance.startSeedsIndoors && (
-                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                {/* Sow Indoors → Last Frost → Direct Sow Row */}
+                <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  {/* Sow Indoors Card */}
+                  {plantingGuidance.startSeedsIndoors && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex-shrink-0 min-w-[140px]">
                       <div className="flex items-center gap-2 mb-1">
                         <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -138,12 +139,23 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
                         </div>
                       )}
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Direct Sow Row */}
-                {plantingGuidance.directSowDate && (
-                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  {/* Last Frost Card */}
+                  {plantingGuidance.lastFrostDate && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex-shrink-0 min-w-[140px]">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <span className="text-xs font-medium text-blue-700">Last Frost</span>
+                      </div>
+                      <p className="text-lg font-bold text-blue-900">{formatDate(plantingGuidance.lastFrostDate)}</p>
+                    </div>
+                  )}
+
+                  {/* Direct Sow Card */}
+                  {plantingGuidance.directSowDate && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex-shrink-0 min-w-[140px]">
                       <div className="flex items-center gap-2 mb-1">
                         <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -159,8 +171,8 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
                         </div>
                       )}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
                 {plantingGuidance.recommendations.length > 0 && (
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                     <p className="text-xs font-medium text-[#4a5565] mb-2">Tips</p>
