@@ -65,38 +65,19 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 pb-24">
-        {/* Title Section */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-[#101828] mb-1">{seed.name}</h2>
-          <p className="text-[#6a7282]">{seed.variety}</p>
-          {ageLabel && (
-            <span className={`inline-block mt-2 px-3 py-1 rounded-full text-sm font-medium ${ageLabel.color}`}>
-              {ageLabel.text}
-            </span>
-          )}
-        </div>
-
-        {/* Info Section */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <InfoRow label="Type" value={seed.type?.charAt(0).toUpperCase() + seed.type?.slice(1)} />
-          <InfoRow label="Brand" value={seed.brand} />
-          <InfoRow label="Source" value={seed.source} />
-          <InfoRow label="Year" value={seed.year?.toString()} />
-          <InfoRow 
-            label="Purchase Date" 
-            value={seed.purchaseDate ? formatDateString(seed.purchaseDate) : undefined} 
-          />
-          <InfoRow label="Quantity" value={seed.quantity} />
-          <InfoRow label="Days to Germination" value={seed.daysToGermination} />
-          <InfoRow label="Days to Maturity" value={seed.daysToMaturity} />
-          <InfoRow label="Planting Depth" value={seed.plantingDepth} />
-          <InfoRow label="Spacing" value={seed.spacing} />
-          <InfoRow label="Sun Requirement" value={seed.sunRequirement?.replace('-', ' ')} />
-          <InfoRow 
-            label="Custom Expiration" 
-            value={seed.customExpirationDate ? formatDateString(seed.customExpirationDate) : undefined} 
-          />
-        </div>
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left Column - Main Content (75%) */}
+          <div className="flex-1 min-w-0 lg:w-3/4">
+            {/* Title Section */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-[#101828] mb-1">{seed.name}</h2>
+              <p className="text-[#6a7282]">{seed.variety}</p>
+              {ageLabel && (
+                <span className={`inline-block mt-2 px-3 py-1 rounded-full text-sm font-medium ${ageLabel.color}`}>
+                  {ageLabel.text}
+                </span>
+              )}
+            </div>
 
         {/* Planting Guidance */}
         {plantingGuidance && (
@@ -239,21 +220,47 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
           </div>
         )}
 
-        {/* Notes */}
-        {seed.notes && (
-          <div className="mb-6">
-            <h3 className="text-sm font-semibold text-[#4a5565] mb-2">Notes</h3>
-            <p className="text-[#101828] bg-gray-50 rounded-lg p-4">{seed.notes}</p>
-          </div>
-        )}
+            {/* Notes */}
+            {seed.notes && (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-[#4a5565] mb-2">Notes</h3>
+                <p className="text-[#101828] bg-gray-50 rounded-lg p-4">{seed.notes}</p>
+              </div>
+            )}
 
-        {/* Delete Button */}
-        <button
-          onClick={onDelete}
-          className="w-full py-3 text-red-600 font-medium border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-        >
-          Delete Seed
-        </button>
+            {/* Delete Button */}
+            <button
+              onClick={onDelete}
+              className="w-full py-3 text-red-600 font-medium border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+            >
+              Delete Seed
+            </button>
+          </div>
+
+          {/* Right Column - Metadata (25%) */}
+          <div className="w-full lg:w-1/4 flex-shrink-0">
+            <div className="bg-gray-50 rounded-lg p-4 lg:sticky lg:top-4">
+              <InfoRow label="Type" value={seed.type?.charAt(0).toUpperCase() + seed.type?.slice(1)} />
+              <InfoRow label="Brand" value={seed.brand} />
+              <InfoRow label="Source" value={seed.source} />
+              <InfoRow label="Year" value={seed.year?.toString()} />
+              <InfoRow 
+                label="Purchase Date" 
+                value={seed.purchaseDate ? formatDateString(seed.purchaseDate) : undefined} 
+              />
+              <InfoRow label="Quantity" value={seed.quantity} />
+              <InfoRow label="Days to Germination" value={seed.daysToGermination} />
+              <InfoRow label="Days to Maturity" value={seed.daysToMaturity} />
+              <InfoRow label="Planting Depth" value={seed.plantingDepth} />
+              <InfoRow label="Spacing" value={seed.spacing} />
+              <InfoRow label="Sun Requirement" value={seed.sunRequirement?.replace('-', ' ')} />
+              <InfoRow 
+                label="Custom Expiration" 
+                value={seed.customExpirationDate ? formatDateString(seed.customExpirationDate) : undefined} 
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
