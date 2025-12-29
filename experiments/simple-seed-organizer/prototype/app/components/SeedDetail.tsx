@@ -152,12 +152,12 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
 
                   {/* Last Frost Card */}
                   {plantingGuidance.lastFrostDate && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex-1">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex-shrink-0">
                       <div className="flex items-center gap-2 mb-1">
                         <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
-                        <span className="text-xs font-medium text-blue-700">Average Last</span>
+                        <span className="text-xs font-medium text-blue-700">Average Last Frost</span>
                       </div>
                       <p className="text-lg font-bold text-blue-900">{formatDate(plantingGuidance.lastFrostDate)}</p>
                     </div>
@@ -193,12 +193,12 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
 
                   {/* First Frost Card */}
                   {plantingGuidance.firstFrostDate && (
-                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex-1">
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex-shrink-0">
                       <div className="flex items-center gap-2 mb-1">
                         <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
-                        <span className="text-xs font-medium text-purple-700">Average First</span>
+                        <span className="text-xs font-medium text-purple-700">Average First Frost</span>
                       </div>
                       <p className="text-lg font-bold text-purple-900">{formatDate(plantingGuidance.firstFrostDate)}</p>
                     </div>
