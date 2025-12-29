@@ -135,7 +135,16 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
                       {plantingGuidance.harvestDates?.fromIndoorStart && (
                         <div className="mt-2 pt-2 border-t border-green-200">
                           <p className="text-xs text-green-600 mb-0.5">
-                            {seed.daysToMaturity ? `${seed.daysToMaturity} days to harvest` : 'Harvest'}
+                            {(() => {
+                              const germ = seed.daysToGermination || '';
+                              const maturity = seed.daysToMaturity || '';
+                              if (germ && maturity) {
+                                return `${germ} to germinate, ${maturity} to harvest`;
+                              } else if (maturity) {
+                                return `${maturity} days to harvest`;
+                              }
+                              return 'Harvest';
+                            })()}
                           </p>
                           <p className="text-sm font-semibold text-green-900">{formatDate(plantingGuidance.harvestDates.fromIndoorStart)}</p>
                         </div>
@@ -169,7 +178,16 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
                       {plantingGuidance.harvestDates?.fromDirectSow && (
                         <div className="mt-2 pt-2 border-t border-amber-200">
                           <p className="text-xs text-amber-600 mb-0.5">
-                            {seed.daysToMaturity ? `${seed.daysToMaturity} days to harvest` : 'Harvest'}
+                            {(() => {
+                              const germ = seed.daysToGermination || '';
+                              const maturity = seed.daysToMaturity || '';
+                              if (germ && maturity) {
+                                return `${germ} to germinate, ${maturity} to harvest`;
+                              } else if (maturity) {
+                                return `${maturity} days to harvest`;
+                              }
+                              return 'Harvest';
+                            })()}
                           </p>
                           <p className="text-sm font-semibold text-amber-900">{formatDate(plantingGuidance.harvestDates.fromDirectSow)}</p>
                         </div>

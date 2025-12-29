@@ -105,17 +105,17 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     directSowDate.setDate(directSowDate.getDate() + 7);
     
     // Calculate harvest dates for all scenarios
-    // 1. Started indoors: start indoors date + days to maturity (earliest harvest)
+    // 1. Started indoors: start indoors date + days to germination + days to maturity (earliest harvest)
     harvestDates.fromIndoorStart = new Date(startSeedsIndoors);
-    harvestDates.fromIndoorStart.setDate(harvestDates.fromIndoorStart.getDate() + daysToMaturity);
+    harvestDates.fromIndoorStart.setDate(harvestDates.fromIndoorStart.getDate() + daysToGermination + daysToMaturity);
     
     // 2. Transplanted start (bought from nursery): transplant date + days to maturity
     harvestDates.fromTransplantedStart = new Date(transplantDate);
     harvestDates.fromTransplantedStart.setDate(harvestDates.fromTransplantedStart.getDate() + daysToMaturity);
     
-    // 3. Direct sow: direct sow date + days to maturity (later harvest)
+    // 3. Direct sow: direct sow date + days to germination + days to maturity (later harvest)
     harvestDates.fromDirectSow = new Date(directSowDate);
-    harvestDates.fromDirectSow.setDate(harvestDates.fromDirectSow.getDate() + daysToMaturity);
+    harvestDates.fromDirectSow.setDate(harvestDates.fromDirectSow.getDate() + daysToGermination + daysToMaturity);
     
     expectedHarvestDate = harvestDates.fromIndoorStart; // Legacy support
     
@@ -134,9 +134,9 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     directSowDate.setDate(directSowDate.getDate() - (weeksToStart * 7));
     
     // Calculate harvest dates for all scenarios
-    // 1. Started indoors: start indoors date + days to maturity (earliest harvest)
+    // 1. Started indoors: start indoors date + days to germination + days to maturity (earliest harvest)
     harvestDates.fromIndoorStart = new Date(startSeedsIndoors);
-    harvestDates.fromIndoorStart.setDate(harvestDates.fromIndoorStart.getDate() + daysToMaturity);
+    harvestDates.fromIndoorStart.setDate(harvestDates.fromIndoorStart.getDate() + daysToGermination + daysToMaturity);
     
     // 2. Transplanted start: transplant date + days to maturity
     const coolTransplantDate = new Date(lastFrostDate);
@@ -144,9 +144,9 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     harvestDates.fromTransplantedStart = new Date(coolTransplantDate);
     harvestDates.fromTransplantedStart.setDate(harvestDates.fromTransplantedStart.getDate() + daysToMaturity);
     
-    // 3. Direct sow: direct sow date + days to maturity (later harvest)
+    // 3. Direct sow: direct sow date + days to germination + days to maturity (later harvest)
     harvestDates.fromDirectSow = new Date(directSowDate);
-    harvestDates.fromDirectSow.setDate(harvestDates.fromDirectSow.getDate() + daysToMaturity);
+    harvestDates.fromDirectSow.setDate(harvestDates.fromDirectSow.getDate() + daysToGermination + daysToMaturity);
     
     expectedHarvestDate = harvestDates.fromDirectSow; // Legacy support
     
@@ -167,17 +167,17 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     herbTransplantDate.setDate(herbTransplantDate.getDate() + 7);
     
     // Calculate harvest dates
-    // 1. Started indoors: start indoors date + days to maturity (earliest harvest)
+    // 1. Started indoors: start indoors date + days to germination + days to maturity (earliest harvest)
     harvestDates.fromIndoorStart = new Date(startSeedsIndoors);
-    harvestDates.fromIndoorStart.setDate(harvestDates.fromIndoorStart.getDate() + daysToMaturity);
+    harvestDates.fromIndoorStart.setDate(harvestDates.fromIndoorStart.getDate() + daysToGermination + daysToMaturity);
     
     // 2. Transplanted start: transplant date + days to maturity
     harvestDates.fromTransplantedStart = new Date(herbTransplantDate);
     harvestDates.fromTransplantedStart.setDate(harvestDates.fromTransplantedStart.getDate() + daysToMaturity);
     
-    // 3. Direct sow: direct sow date + days to maturity (later harvest)
+    // 3. Direct sow: direct sow date + days to germination + days to maturity (later harvest)
     harvestDates.fromDirectSow = new Date(directSowDate);
-    harvestDates.fromDirectSow.setDate(harvestDates.fromDirectSow.getDate() + daysToMaturity);
+    harvestDates.fromDirectSow.setDate(harvestDates.fromDirectSow.getDate() + daysToGermination + daysToMaturity);
     
     recommendations.push(`Start indoors ${weeksToStart} weeks before last frost, or direct sow 2 weeks before`);
     recommendations.push(`Indoor start: ${formatDate(startSeedsIndoors)}`);
@@ -198,17 +198,17 @@ export function getPlantingGuidance(seed: Seed): PlantingGuidance {
     directSowDate.setDate(directSowDate.getDate() + 7);
     
     // Calculate harvest dates
-    // 1. Started indoors: start indoors date + days to maturity (earliest harvest)
+    // 1. Started indoors: start indoors date + days to germination + days to maturity (earliest harvest)
     harvestDates.fromIndoorStart = new Date(startSeedsIndoors);
-    harvestDates.fromIndoorStart.setDate(harvestDates.fromIndoorStart.getDate() + daysToMaturity);
+    harvestDates.fromIndoorStart.setDate(harvestDates.fromIndoorStart.getDate() + daysToGermination + daysToMaturity);
     
     // 2. Transplanted start: transplant date + days to maturity
     harvestDates.fromTransplantedStart = new Date(transplantDate);
     harvestDates.fromTransplantedStart.setDate(harvestDates.fromTransplantedStart.getDate() + daysToMaturity);
     
-    // 3. Direct sow: direct sow date + days to maturity (later harvest)
+    // 3. Direct sow: direct sow date + days to germination + days to maturity (later harvest)
     harvestDates.fromDirectSow = new Date(directSowDate);
-    harvestDates.fromDirectSow.setDate(harvestDates.fromDirectSow.getDate() + daysToMaturity);
+    harvestDates.fromDirectSow.setDate(harvestDates.fromDirectSow.getDate() + daysToGermination + daysToMaturity);
     
     recommendations.push(`Start seeds indoors ${weeksToStart} weeks before last frost`);
     recommendations.push(`Transplant after last frost: ${formatDate(transplantDate)}`);
