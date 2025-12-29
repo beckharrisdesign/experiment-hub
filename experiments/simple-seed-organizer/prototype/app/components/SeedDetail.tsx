@@ -186,19 +186,6 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
                     </div>
                   )}
                 </div>
-                {plantingGuidance.recommendations.length > 0 && (
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                    <p className="text-xs font-medium text-[#4a5565] mb-2">Tips</p>
-                    <ul className="space-y-1">
-                      {plantingGuidance.recommendations.map((rec, idx) => (
-                        <li key={idx} className="text-xs text-[#6a7282] flex items-start gap-2">
-                          <span className="text-[#16a34a] mt-0.5">•</span>
-                          <span>{rec}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </div>
             ) : (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
