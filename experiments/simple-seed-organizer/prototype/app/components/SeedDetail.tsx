@@ -36,6 +36,11 @@ function formatDate(date: Date): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+function formatDateString(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps) {
   const age = getSeedAge(seed);
   const ageLabel = seed.year ? getAgeLabel(age) : null;
@@ -77,11 +82,22 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
           <InfoRow label="Type" value={seed.type?.charAt(0).toUpperCase() + seed.type?.slice(1)} />
           <InfoRow label="Brand" value={seed.brand} />
+          <InfoRow label="Source" value={seed.source} />
           <InfoRow label="Year" value={seed.year?.toString()} />
+          <InfoRow 
+            label="Purchase Date" 
+            value={seed.purchaseDate ? formatDateString(seed.purchaseDate) : undefined} 
+          />
           <InfoRow label="Quantity" value={seed.quantity} />
           <InfoRow label="Days to Germination" value={seed.daysToGermination} />
           <InfoRow label="Days to Maturity" value={seed.daysToMaturity} />
+          <InfoRow label="Planting Depth" value={seed.plantingDepth} />
+          <InfoRow label="Spacing" value={seed.spacing} />
           <InfoRow label="Sun Requirement" value={seed.sunRequirement?.replace('-', ' ')} />
+          <InfoRow 
+            label="Custom Expiration" 
+            value={seed.customExpirationDate ? formatDateString(seed.customExpirationDate) : undefined} 
+          />
         </div>
 
         {/* Planting Guidance */}

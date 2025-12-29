@@ -28,12 +28,21 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
   const [variety, setVariety] = useState(initialData?.variety || '');
   const [type, setType] = useState<SeedType>(initialData?.type || 'vegetable');
   const [brand, setBrand] = useState(initialData?.brand || '');
+  const [source, setSource] = useState(initialData?.source || '');
   const [year, setYear] = useState(initialData?.year?.toString() || '');
+  const [purchaseDate, setPurchaseDate] = useState(
+    initialData?.purchaseDate ? initialData.purchaseDate.split('T')[0] : ''
+  );
   const [quantity, setQuantity] = useState(initialData?.quantity || '');
   const [daysToGermination, setDaysToGermination] = useState(initialData?.daysToGermination || '');
   const [daysToMaturity, setDaysToMaturity] = useState(initialData?.daysToMaturity || '');
+  const [plantingDepth, setPlantingDepth] = useState(initialData?.plantingDepth || '');
+  const [spacing, setSpacing] = useState(initialData?.spacing || '');
   const [sunRequirement, setSunRequirement] = useState<SunRequirement | undefined>(initialData?.sunRequirement);
   const [notes, setNotes] = useState(initialData?.notes || '');
+  const [customExpirationDate, setCustomExpirationDate] = useState(
+    initialData?.customExpirationDate ? initialData.customExpirationDate.split('T')[0] : ''
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,12 +53,17 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
       variety: variety.trim(),
       type,
       brand: brand.trim() || undefined,
+      source: source.trim() || undefined,
       year: year ? parseInt(year) : undefined,
+      purchaseDate: purchaseDate || undefined,
       quantity: quantity.trim() || undefined,
       daysToGermination: daysToGermination.trim() || undefined,
       daysToMaturity: daysToMaturity.trim() || undefined,
+      plantingDepth: plantingDepth.trim() || undefined,
+      spacing: spacing.trim() || undefined,
       sunRequirement,
       notes: notes.trim() || undefined,
+      customExpirationDate: customExpirationDate || undefined,
     });
   };
 
@@ -149,6 +163,17 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
             </div>
           </div>
 
+          <div>
+            <label className="text-sm text-[#4a5565] mb-1 block">Source</label>
+            <input
+              type="text"
+              value={source}
+              onChange={(e) => setSource(e.target.value)}
+              placeholder="e.g., Home Depot, Baker Creek, etc."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-sm text-[#4a5565] mb-1 block">Year</label>
@@ -163,12 +188,33 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
               />
             </div>
             <div>
+              <label className="text-sm text-[#4a5565] mb-1 block">Purchase Date</label>
+              <input
+                type="date"
+                value={purchaseDate}
+                onChange={(e) => setPurchaseDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
               <label className="text-sm text-[#4a5565] mb-1 block">Quantity</label>
               <input
                 type="text"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="e.g., 25 seeds"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="text-sm text-[#4a5565] mb-1 block">Custom Expiration</label>
+              <input
+                type="date"
+                value={customExpirationDate}
+                onChange={(e) => setCustomExpirationDate(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
               />
             </div>
@@ -194,6 +240,29 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
               placeholder="e.g., 75-85 days"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm text-[#4a5565] mb-1 block">Planting Depth</label>
+              <input
+                type="text"
+                value={plantingDepth}
+                onChange={(e) => setPlantingDepth(e.target.value)}
+                placeholder="e.g., 1/4 inch"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="text-sm text-[#4a5565] mb-1 block">Spacing</label>
+              <input
+                type="text"
+                value={spacing}
+                onChange={(e) => setSpacing(e.target.value)}
+                placeholder="e.g., 12 inches"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
+              />
+            </div>
           </div>
 
           <div>
