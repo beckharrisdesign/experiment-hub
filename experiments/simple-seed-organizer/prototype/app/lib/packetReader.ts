@@ -74,6 +74,31 @@ function cleanOCRText(text: string): string {
 }
 
 /**
+ * Check if a line is likely noise (too many symbols, numbers, or special chars)
+ */
+function isNoiseLine(line: string): boolean {
+  const cleaned = cleanOCRText(line);
+  if (cleaned.length < 3) return true;
+  
+  // Count different character types
+  const letters = (cleaned.match(/[A-Za-z]/g) || []).length;
+  const numbers = (cleaned.match(/[0-9]/g) || []).length;
+  const symbols = (cleaned.match(/[^A-Za-z0-9\s]/g) || []).length;
+  const total = cleaned.length;
+  
+  // If more than 40% symbols, likely noise
+  if (symbols / total > 0.4) return true;
+  
+  // If very few letters (less than 30%), likely noise
+  if (letters / total < 0.3) return true;
+  
+  // If it's mostly numbers with few letters, likely noise
+  if (numbers > letters * 2 && letters < 5) return true;
+  
+  return false;
+}
+
+/**
  * Extract potential seed names and varieties from text
  */
 function extractSeedNameAndVariety(lines: string[]): { name?: string; variety?: string } {
@@ -88,27 +113,51 @@ function extractSeedNameAndVariety(lines: string[]): { name?: string; variety?: 
     'strawberry', 'watermelon', 'cantaloupe', 'pumpkin', 'corn', 'broccoli', 'cauliflower'
   ];
   
+  // Filter out noise lines first
+  const cleanLines = lines.filter(line => !isNoiseLine(line));
+  
   // Look for seed type names (usually the main name)
-  for (const line of lines) {
+  // Prioritize lines that contain seed type words
+  for (const line of cleanLines) {
     const cleaned = cleanOCRText(line).toLowerCase();
     for (const seedType of seedTypes) {
       if (cleaned.includes(seedType)) {
-        result.name = line.trim();
+        // Extract just the seed name, not the whole noisy line
+        const words = cleaned.split(/\s+/);
+        const seedWord = words.find(w => w.includes(seedType));
+        if (seedWord) {
+          // Capitalize first letter
+          result.name = seedWord.charAt(0).toUpperCase() + seedWord.slice(1);
+        } else {
+          result.name = seedType.charAt(0).toUpperCase() + seedType.slice(1);
+        }
         break;
       }
     }
     if (result.name) break;
   }
   
-  // Look for variety names (often in all caps, or after the main name)
-  // Or after words like "variety", "cultivar", or standalone capitalized words
-  for (const line of lines) {
+  // Look for variety names (often in all caps, standalone, 3-30 chars)
+  // Skip lines that are too long or have too many words
+  for (const line of cleanLines) {
     const cleaned = cleanOCRText(line);
-    // If line is mostly uppercase and 3-30 chars, likely a variety
-    if (cleaned.length >= 3 && cleaned.length <= 30) {
-      const upperRatio = (cleaned.match(/[A-Z]/g) || []).length / cleaned.length;
-      if (upperRatio > 0.5 && !result.variety) {
-        result.variety = cleaned;
+    const words = cleaned.split(/\s+/).filter(w => w.length > 0);
+    
+    // Good variety candidates:
+    // - 1-3 words
+    // - 3-40 characters total
+    // - Mostly letters
+    if (words.length >= 1 && words.length <= 3 && cleaned.length >= 3 && cleaned.length <= 40) {
+      const letterRatio = (cleaned.match(/[A-Za-z]/g) || []).length / cleaned.length;
+      if (letterRatio > 0.6) {
+        // If it's mostly uppercase, likely a variety name
+        const upperRatio = (cleaned.match(/[A-Z]/g) || []).length / (cleaned.match(/[A-Za-z]/g) || []).length;
+        if (upperRatio > 0.5 && !result.variety) {
+          result.variety = cleaned;
+        } else if (!result.name && letterRatio > 0.8) {
+          // If we don't have a name yet and this looks like a good name
+          result.name = cleaned;
+        }
       }
     }
   }
@@ -172,15 +221,26 @@ export function parsePacketText(text: string): ExtractedSeedData {
   // Try to extract brand (search in full text for better matching)
   const brandMatch = fullText.match(patterns.brand);
   if (brandMatch) {
+    // Normalize common OCR mistakes
+    let brandName = brandMatch[1];
+    if (brandName.toLowerCase().includes('pgake') || brandName.toLowerCase().includes('baker')) {
+      brandName = 'Baker Creek';
+    }
+    
     // Find the original case from the lines
     for (const line of lines) {
-      if (line.toLowerCase().includes(brandMatch[1].toLowerCase())) {
-        const lineBrandMatch = line.match(patterns.brand);
-        if (lineBrandMatch) {
-          data.brand = lineBrandMatch[1];
+      const lineLower = line.toLowerCase();
+      if (lineLower.includes('baker') || lineLower.includes('pgake') || lineLower.includes('creek')) {
+        if (lineLower.includes('baker') && lineLower.includes('creek')) {
+          data.brand = 'Baker Creek';
           break;
         }
       }
+    }
+    
+    // If we found a match but didn't set it from lines, use the normalized name
+    if (!data.brand && brandName) {
+      data.brand = brandName;
     }
   }
   
@@ -263,18 +323,21 @@ export function parsePacketText(text: string): ExtractedSeedData {
     }
   }
   
-  // If we still don't have name/variety, try to extract from prominent lines
+  // If we still don't have name/variety, try to extract from clean prominent lines
   if (!data.name && !data.variety) {
     // Look for lines that are mostly letters (not numbers/symbols)
-    for (const line of lines) {
+    // Filter out noise first
+    const cleanLines = lines.filter(line => !isNoiseLine(line));
+    
+    for (const line of cleanLines) {
       const cleaned = cleanOCRText(line);
       const letterRatio = (cleaned.match(/[A-Za-z]/g) || []).length / cleaned.length;
       if (letterRatio > 0.7 && cleaned.length >= 3 && cleaned.length <= 50) {
         // If it's all caps or mostly caps, likely a variety
-        const upperRatio = (cleaned.match(/[A-Z]/g) || []).length / cleaned.length;
+        const upperRatio = (cleaned.match(/[A-Z]/g) || []).length / (cleaned.match(/[A-Za-z]/g) || []).length;
         if (upperRatio > 0.5 && !data.variety) {
           data.variety = cleaned;
-        } else if (!data.name) {
+        } else if (!data.name && letterRatio > 0.8) {
           data.name = cleaned;
         }
         if (data.name && data.variety) break;
