@@ -95,12 +95,14 @@ export default function PacketTestPage() {
           body: formData,
         });
 
+        // Read response body once
+        const responseText = await response.text();
+        
         let result;
         try {
-          result = await response.json();
+          result = JSON.parse(responseText);
         } catch (e) {
-          const text = await response.text();
-          throw new Error(`Invalid response from server: ${text.substring(0, 200)}`);
+          throw new Error(`Invalid response from server: ${responseText.substring(0, 200)}`);
         }
 
         if (!response.ok) {

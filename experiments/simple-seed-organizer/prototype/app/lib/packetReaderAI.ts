@@ -123,25 +123,26 @@ Be thorough and extract all information you can see, even if the text is partial
       })
     });
 
+    // Read response body once
+    const responseText = await response.text();
+    
     if (!response.ok) {
       let errorMessage = 'Unknown error';
       try {
-        const error = await response.json();
+        const error = JSON.parse(responseText);
         errorMessage = error.error?.message || error.message || JSON.stringify(error);
       } catch (e) {
-        // If response is not JSON, try to get text
-        const errorText = await response.text();
-        errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`;
+        // If response is not JSON, use the text directly
+        errorMessage = responseText || `HTTP ${response.status}: ${response.statusText}`;
       }
       throw new Error(`OpenAI API error: ${errorMessage}`);
     }
 
     let data;
     try {
-      data = await response.json();
+      data = JSON.parse(responseText);
     } catch (e) {
-      const text = await response.text();
-      throw new Error(`Invalid JSON response from OpenAI: ${text.substring(0, 200)}`);
+      throw new Error(`Invalid JSON response from OpenAI: ${responseText.substring(0, 200)}`);
     }
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
