@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ExtractedSeedData } from '@/lib/packetReader';
+import { AIExtractedData } from '@/lib/packetReaderAI';
 
 export default function PacketTestPage() {
   const [frontImage, setFrontImage] = useState<string | null>(null);
@@ -9,8 +10,10 @@ export default function PacketTestPage() {
   const [loading, setLoading] = useState(false);
   const [extractedText, setExtractedText] = useState<{ front?: string; back?: string }>({});
   const [extractedData, setExtractedData] = useState<ExtractedSeedData | null>(null);
+  const [aiExtractedData, setAiExtractedData] = useState<AIExtractedData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<string>('');
+  const [useAI, setUseAI] = useState<boolean>(true);
 
   const loadSampleImage = async (side: 'front' | 'back') => {
     try {
@@ -60,9 +63,10 @@ export default function PacketTestPage() {
 
     setLoading(true);
     setError(null);
-    setProgress('Initializing OCR...');
+    setProgress('');
     setExtractedText({});
     setExtractedData(null);
+    setAiExtractedData(null);
 
     try {
       // Convert image URLs to File objects for processing
@@ -72,39 +76,64 @@ export default function PacketTestPage() {
 
       let backFile: File | undefined;
       if (backImage) {
-        setProgress('Loading back image...');
         const backResponse = await fetch(backImage);
         const backBlob = await backResponse.blob();
         backFile = new File([backBlob], 'packet-back.png', { type: 'image/png' });
       }
 
-      setProgress('Processing front image with OCR...');
-      const { extractTextFromImage, parsePacketText } = await import('@/lib/packetReader');
-      
-      const frontText = await extractTextFromImage(frontFile);
-      setExtractedText(prev => ({ ...prev, front: frontText.text }));
-      setProgress(`Front image processed. Confidence: ${(frontText.confidence * 100).toFixed(1)}%`);
+      if (useAI) {
+        // Use AI extraction
+        setProgress('Processing images with AI...');
+        const formData = new FormData();
+        formData.append('frontImage', frontFile);
+        if (backFile) {
+          formData.append('backImage', backFile);
+        }
 
-      let backText = null;
-      if (backFile) {
-        setProgress('Processing back image with OCR...');
-        backText = await extractTextFromImage(backFile);
-        setExtractedText(prev => ({ ...prev, back: backText!.text }));
-        setProgress(`Back image processed. Confidence: ${(backText.confidence * 100).toFixed(1)}%`);
+        const response = await fetch('/api/packet/read-ai', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to process images with AI');
+        }
+
+        setAiExtractedData(result.data);
+        setProgress('AI extraction complete!');
+      } else {
+        // Use OCR extraction
+        setProgress('Initializing OCR...');
+        const { extractTextFromImage, parsePacketText } = await import('@/lib/packetReader');
+        
+        setProgress('Processing front image with OCR...');
+        const frontText = await extractTextFromImage(frontFile);
+        setExtractedText(prev => ({ ...prev, front: frontText.text }));
+        setProgress(`Front image processed. Confidence: ${(frontText.confidence * 100).toFixed(1)}%`);
+
+        let backText = null;
+        if (backFile) {
+          setProgress('Processing back image with OCR...');
+          backText = await extractTextFromImage(backFile);
+          setExtractedText(prev => ({ ...prev, back: backText!.text }));
+          setProgress(`Back image processed. Confidence: ${(backText.confidence * 100).toFixed(1)}%`);
+        }
+
+        setProgress('Parsing extracted text...');
+        const combinedText = backText 
+          ? `${frontText.text}\n\n${backText.text}`
+          : frontText.text;
+        
+        const parsed = parsePacketText(combinedText);
+        parsed.confidence = backText 
+          ? (frontText.confidence + backText.confidence) / 2
+          : frontText.confidence;
+        
+        setExtractedData(parsed);
+        setProgress('Complete!');
       }
-
-      setProgress('Parsing extracted text...');
-      const combinedText = backText 
-        ? `${frontText.text}\n\n${backText.text}`
-        : frontText.text;
-      
-      const parsed = parsePacketText(combinedText);
-      parsed.confidence = backText 
-        ? (frontText.confidence + backText.confidence) / 2
-        : frontText.confidence;
-      
-      setExtractedData(parsed);
-      setProgress('Complete!');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during processing');
       setProgress('');
@@ -234,10 +263,113 @@ export default function PacketTestPage() {
           </div>
         )}
 
-        {/* Parsed Data Display */}
-        {extractedData && (
+        {/* AI Extracted Data Display */}
+        {aiExtractedData && (
+          <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-semibold text-[#4a5565] mb-4">AI Extracted Information</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                {aiExtractedData.name && (
+                  <div>
+                    <span className="text-sm font-medium text-[#6a7282]">Name:</span>
+                    <span className="ml-2 text-[#101828]">{aiExtractedData.name}</span>
+                  </div>
+                )}
+                {aiExtractedData.variety && (
+                  <div>
+                    <span className="text-sm font-medium text-[#6a7282]">Variety:</span>
+                    <span className="ml-2 text-[#101828]">{aiExtractedData.variety}</span>
+                  </div>
+                )}
+                {aiExtractedData.latinName && (
+                  <div>
+                    <span className="text-sm font-medium text-[#6a7282]">Latin Name:</span>
+                    <span className="ml-2 text-[#101828] italic">{aiExtractedData.latinName}</span>
+                  </div>
+                )}
+                {aiExtractedData.brand && (
+                  <div>
+                    <span className="text-sm font-medium text-[#6a7282]">Brand:</span>
+                    <span className="ml-2 text-[#101828]">{aiExtractedData.brand}</span>
+                  </div>
+                )}
+                {aiExtractedData.year && (
+                  <div>
+                    <span className="text-sm font-medium text-[#6a7282]">Year:</span>
+                    <span className="ml-2 text-[#101828]">{aiExtractedData.year}</span>
+                  </div>
+                )}
+                {aiExtractedData.quantity && (
+                  <div>
+                    <span className="text-sm font-medium text-[#6a7282]">Quantity:</span>
+                    <span className="ml-2 text-[#101828]">{aiExtractedData.quantity}</span>
+                  </div>
+                )}
+              </div>
+              <div className="space-y-2">
+                {aiExtractedData.daysToGermination && (
+                  <div>
+                    <span className="text-sm font-medium text-[#6a7282]">Days to Germination:</span>
+                    <span className="ml-2 text-[#101828]">{aiExtractedData.daysToGermination}</span>
+                  </div>
+                )}
+                {aiExtractedData.daysToMaturity && (
+                  <div>
+                    <span className="text-sm font-medium text-[#6a7282]">Days to Maturity:</span>
+                    <span className="ml-2 text-[#101828]">{aiExtractedData.daysToMaturity}</span>
+                  </div>
+                )}
+                {aiExtractedData.plantingDepth && (
+                  <div>
+                    <span className="text-sm font-medium text-[#6a7282]">Planting Depth:</span>
+                    <span className="ml-2 text-[#101828]">{aiExtractedData.plantingDepth}</span>
+                  </div>
+                )}
+                {aiExtractedData.spacing && (
+                  <div>
+                    <span className="text-sm font-medium text-[#6a7282]">Spacing:</span>
+                    <span className="ml-2 text-[#101828]">{aiExtractedData.spacing}</span>
+                  </div>
+                )}
+                {aiExtractedData.sunRequirement && (
+                  <div>
+                    <span className="text-sm font-medium text-[#6a7282]">Sun Requirement:</span>
+                    <span className="ml-2 text-[#101828]">{aiExtractedData.sunRequirement}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            {aiExtractedData.summary && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-[#4a5565] mb-2">Summary:</h3>
+                <p className="text-sm text-[#101828]">{aiExtractedData.summary}</p>
+              </div>
+            )}
+            {aiExtractedData.plantingInstructions && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-[#4a5565] mb-2">Planting Instructions:</h3>
+                <p className="text-sm text-[#101828] whitespace-pre-wrap">{aiExtractedData.plantingInstructions}</p>
+              </div>
+            )}
+            {aiExtractedData.additionalNotes && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-[#4a5565] mb-2">Additional Notes:</h3>
+                <p className="text-sm text-[#101828] whitespace-pre-wrap">{aiExtractedData.additionalNotes}</p>
+              </div>
+            )}
+            {aiExtractedData.confidence && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <span className="text-sm font-medium text-[#6a7282]">Confidence:</span>
+                <span className="ml-2 text-[#101828]">{(aiExtractedData.confidence * 100).toFixed(1)}%</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* OCR Parsed Data Display */}
+        {extractedData && !aiExtractedData && (
           <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-[#4a5565] mb-4">Parsed Seed Information</h2>
+            <h2 className="text-lg font-semibold text-[#4a5565] mb-4">OCR Parsed Seed Information</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 {extractedData.name && (
@@ -309,9 +441,6 @@ export default function PacketTestPage() {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
