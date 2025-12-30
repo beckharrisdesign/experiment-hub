@@ -19,18 +19,33 @@ export interface AIExtractedData extends ExtractedSeedData {
  */
 export async function extractWithAI(
   frontImage: File | string,
-  backImage?: File | string
+  backImage?: File | string,
+  apiKey?: string
 ): Promise<AIExtractedData> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY environment variable is not set');
+  // Get API key from parameter or environment variable
+  const key = apiKey || process.env.OPENAI_API_KEY;
+  if (!key) {
+    throw new Error('OPENAI_API_KEY must be provided as parameter or set as environment variable');
   }
 
   // Convert images to base64 if they're File objects
   const frontImageBase64 = await imageToBase64(frontImage);
   const backImageBase64 = backImage ? await imageToBase64(backImage) : undefined;
 
-  const messages: any[] = [
+  interface MessageContent {
+    type: string;
+    text?: string;
+    image_url?: {
+      url: string;
+    };
+  }
+
+  interface Message {
+    role: string;
+    content: MessageContent[];
+  }
+
+  const messages: Message[] = [
     {
       role: 'user',
       content: [
@@ -164,7 +179,7 @@ async function imageToBase64(image: File | string): Promise<string> {
 /**
  * Normalize AI-extracted data to match our interface
  */
-function normalizeAIData(data: any): AIExtractedData {
+function normalizeAIData(data: Record<string, unknown>): AIExtractedData {
   return {
     name: data.name || undefined,
     variety: data.variety || undefined,
