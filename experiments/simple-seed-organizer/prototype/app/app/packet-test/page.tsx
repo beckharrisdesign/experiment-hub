@@ -217,14 +217,30 @@ export default function PacketTestPage() {
           </div>
         </div>
 
-        {/* Process Button */}
+        {/* Process Options */}
         <div className="bg-white rounded-lg p-6 mb-6 shadow-sm">
+          <div className="mb-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={useAI}
+                onChange={(e) => setUseAI(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <span className="text-sm font-medium text-[#4a5565]">
+                Use AI (OpenAI Vision) for better extraction
+              </span>
+            </label>
+            <p className="text-xs text-[#6a7282] ml-6 mt-1">
+              AI extraction provides better accuracy and extracts more fields (planting instructions, latin name, summary)
+            </p>
+          </div>
           <button
             onClick={handleProcess}
             disabled={!frontImage || loading}
             className="w-full py-3 bg-[#16a34a] text-white rounded-lg font-medium hover:bg-[#15803d] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? 'Processing...' : 'Process Images with OCR'}
+            {loading ? 'Processing...' : useAI ? 'Process Images with AI' : 'Process Images with OCR'}
           </button>
           {progress && (
             <p className="mt-2 text-sm text-[#6a7282] text-center">{progress}</p>
