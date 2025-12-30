@@ -22,10 +22,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get API key from environment
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'OPENAI_API_KEY environment variable is not set' },
+        { status: 500 }
+      );
+    }
+
     // Process the images with AI
     const extractedData = await extractWithAI(
       frontImage,
-      backImage || undefined
+      backImage || undefined,
+      apiKey
     );
 
     return NextResponse.json({
