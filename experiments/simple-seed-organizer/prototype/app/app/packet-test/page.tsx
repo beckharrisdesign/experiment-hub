@@ -95,10 +95,20 @@ export default function PacketTestPage() {
           body: formData,
         });
 
-        const result = await response.json();
+        let result;
+        try {
+          result = await response.json();
+        } catch (e) {
+          const text = await response.text();
+          throw new Error(`Invalid response from server: ${text.substring(0, 200)}`);
+        }
 
         if (!response.ok) {
-          throw new Error(result.error || 'Failed to process images with AI');
+          throw new Error(result.error || result.message || 'Failed to process images with AI');
+        }
+
+        if (!result.data) {
+          throw new Error('No data returned from AI extraction');
         }
 
         setAiExtractedData(result.data);

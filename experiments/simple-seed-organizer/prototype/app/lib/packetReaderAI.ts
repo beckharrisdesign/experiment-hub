@@ -124,15 +124,43 @@ Be thorough and extract all information you can see, even if the text is partial
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`OpenAI API error: ${error.error?.message || 'Unknown error'}`);
+      let errorMessage = 'Unknown error';
+      try {
+        const error = await response.json();
+        errorMessage = error.error?.message || error.message || JSON.stringify(error);
+      } catch (e) {
+        // If response is not JSON, try to get text
+        const errorText = await response.text();
+        errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(`OpenAI API error: ${errorMessage}`);
     }
 
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (e) {
+      const text = await response.text();
+      throw new Error(`Invalid JSON response from OpenAI: ${text.substring(0, 200)}`);
+    }
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Unexpected response format from OpenAI API');
+    }
+
     const content = data.choices[0].message.content;
     
+    if (!content) {
+      throw new Error('No content in OpenAI response');
+    }
+    
     // Parse the JSON response
-    const extracted = JSON.parse(content);
+    let extracted: Record<string, unknown>;
+    try {
+      extracted = JSON.parse(content);
+    } catch (e) {
+      throw new Error(`Failed to parse JSON from AI response: ${content.substring(0, 200)}`);
+    }
     
     // Normalize the data
     return normalizeAIData(extracted);
