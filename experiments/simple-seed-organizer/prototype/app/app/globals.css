@@ -46,4 +46,12 @@ body {
     box-shadow: 0 0 40px rgba(0,0,0,0.1);
     min-height: 100dvh;
   }
+  
+  /* Override for test pages - allow full width */
+  #app-container.full-width,
+  body.full-width #app-container {
+    max-width: none !important;
+    width: 100% !important;
+    box-shadow: none !important;
+  }
 }

@@ -12,6 +12,8 @@ export interface AIExtractedData extends ExtractedSeedData {
   plantingInstructions?: string;
   summary?: string;
   additionalNotes?: string;
+  rawKeyValuePairs?: Array<{ key: string; value: string; source?: 'front' | 'back' }>;
+  fieldSources?: Record<string, 'front' | 'back'>;
 }
 
 /**
@@ -51,43 +53,56 @@ export async function extractWithAI(
       content: [
         {
           type: 'text',
-          text: `Analyze these seed packet images and extract all available information in a structured format. 
-          
-Please extract:
-1. **Seed Name** (common name, e.g., "Tomato", "Marigold")
-2. **Variety/Cultivar** (specific variety name, e.g., "Cherry Tomato", "Orange Hawaiian")
-3. **Latin/Scientific Name** (e.g., "Tagetes erecta", "Solanum lycopersicum")
-4. **Brand** (seed company name)
-5. **Year** (packed for year)
-6. **Quantity** (number of seeds)
-7. **Days to Germination** (e.g., "7-14 days")
-8. **Days to Maturity** (e.g., "70-80 days")
-9. **Planting Depth** (e.g., "1/4 inch", "0.5 cm")
-10. **Spacing** (e.g., "12-18 inches", "30 cm")
-11. **Sun Requirement** (full sun, partial shade, full shade)
-12. **Planting Instructions** (detailed instructions from the packet)
-13. **Summary/Description** (any summary or description text about the plant)
-14. **Additional Notes** (any other relevant information)
+          text: `Extract ALL key-value pairs and structured data from these seed packet images. Focus on accuracy - extract exactly what you see, do not summarize or interpret.
 
-Return the information as a JSON object with these exact field names:
+IMPORTANT: The first image is the FRONT of the packet, the second image (if provided) is the BACK of the packet.
+
+Your task is to identify and extract every piece of information visible on the packet as key-value pairs, and indicate which image (front or back) each piece of data came from.
+
+Extract these specific fields if present:
+- name (common plant name)
+- variety (cultivar/variety name)
+- latinName (scientific name)
+- brand (seed company name)
+- year (packed for year, as number)
+- quantity (number of seeds)
+- daysToGermination (e.g., "7-14 days")
+- daysToMaturity (e.g., "70-80 days")
+- plantingDepth (e.g., "1/4 inch")
+- spacing (e.g., "12-18 inches")
+- sunRequirement (one of: "full-sun", "partial-shade", "full-shade")
+- plantingInstructions (full text of planting instructions)
+
+Additionally, extract ALL other key-value pairs you find on the packet that are not covered above. Include them in a "rawKeyValuePairs" array with source information.
+
+Return as JSON:
 {
-  "name": "string or null",
-  "variety": "string or null",
-  "latinName": "string or null",
-  "brand": "string or null",
-  "year": "number or null",
-  "quantity": "string or null",
-  "daysToGermination": "string or null",
-  "daysToMaturity": "string or null",
-  "plantingDepth": "string or null",
-  "spacing": "string or null",
-  "sunRequirement": "string or null (one of: 'full-sun', 'partial-shade', 'full-shade')",
-  "plantingInstructions": "string or null",
-  "summary": "string or null",
-  "additionalNotes": "string or null"
+  "name": "exact text or null",
+  "variety": "exact text or null",
+  "latinName": "exact text or null",
+  "brand": "exact text or null",
+  "year": number or null,
+  "quantity": "exact text or null",
+  "daysToGermination": "exact text or null",
+  "daysToMaturity": "exact text or null",
+  "plantingDepth": "exact text or null",
+  "spacing": "exact text or null",
+  "sunRequirement": "full-sun" | "partial-shade" | "full-shade" | null,
+  "plantingInstructions": "exact text or null",
+  "fieldSources": {
+    "name": "front" | "back",
+    "variety": "front" | "back",
+    ... (include source for each field that has a value)
+  },
+  "rawKeyValuePairs": [{"key": "label text", "value": "value text", "source": "front" | "back"}, ...]
 }
 
-Be thorough and extract all information you can see, even if the text is partially obscured or unclear.`
+IMPORTANT: 
+- Extract text exactly as written, do not summarize
+- Include ALL visible information in rawKeyValuePairs
+- For each field and key-value pair, indicate "front" or "back" as the source
+- If a field is not visible, use null
+- Be precise and accurate - this is for data extraction, not summarization`
         },
         {
           type: 'image_url',
@@ -116,10 +131,11 @@ Be thorough and extract all information you can see, even if the text is partial
         'Authorization': `Bearer ${key}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o', // or 'gpt-4-vision-preview' if available
+        model: 'gpt-4o-mini', // Cost-effective model optimized for structured data extraction
         messages: messages,
         max_tokens: 2000,
-        response_format: { type: 'json_object' }
+        response_format: { type: 'json_object' },
+        temperature: 0.1 // Low temperature for more deterministic, accurate extraction
       })
     });
 
@@ -172,6 +188,7 @@ Be thorough and extract all information you can see, even if the text is partial
 
 /**
  * Convert image File or string to base64
+ * Works in both Node.js (server) and browser environments
  */
 async function imageToBase64(image: File | string): Promise<string> {
   if (typeof image === 'string') {
@@ -181,27 +198,14 @@ async function imageToBase64(image: File | string): Promise<string> {
     }
     // If it's a URL, fetch it
     const response = await fetch(image);
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = (reader.result as string).split(',')[1];
-        resolve(base64);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    return buffer.toString('base64');
   } else {
-    // It's a File object
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = (reader.result as string).split(',')[1];
-        resolve(base64);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(image);
-    });
+    // It's a File object - convert to Buffer in Node.js
+    const arrayBuffer = await image.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    return buffer.toString('base64');
   }
 }
 
@@ -209,12 +213,25 @@ async function imageToBase64(image: File | string): Promise<string> {
  * Normalize AI-extracted data to match our interface
  */
 function normalizeAIData(data: Record<string, unknown>): AIExtractedData {
+  // Parse rawKeyValuePairs if present
+  let rawPairs: Array<{ key: string; value: string; source?: 'front' | 'back' }> = [];
+  if (data.rawKeyValuePairs && Array.isArray(data.rawKeyValuePairs)) {
+    rawPairs = data.rawKeyValuePairs.map((pair: any) => ({
+      key: String(pair.key || ''),
+      value: String(pair.value || ''),
+      source: pair.source === 'front' || pair.source === 'back' ? pair.source : undefined
+    }));
+  }
+
+  // Parse fieldSources
+  const fieldSources = data.fieldSources as Record<string, 'front' | 'back'> | undefined;
+
   return {
     name: data.name || undefined,
     variety: data.variety || undefined,
     latinName: data.latinName || undefined,
     brand: data.brand || undefined,
-    year: data.year ? parseInt(data.year) : undefined,
+    year: typeof data.year === 'number' ? data.year : (data.year ? parseInt(String(data.year)) : undefined),
     quantity: data.quantity || undefined,
     daysToGermination: data.daysToGermination || undefined,
     daysToMaturity: data.daysToMaturity || undefined,
@@ -224,6 +241,8 @@ function normalizeAIData(data: Record<string, unknown>): AIExtractedData {
     plantingInstructions: data.plantingInstructions || undefined,
     summary: data.summary || undefined,
     additionalNotes: data.additionalNotes || undefined,
+    rawKeyValuePairs: rawPairs.length > 0 ? rawPairs : undefined,
+    fieldSources: fieldSources,
     confidence: 0.9, // AI extraction is generally high confidence
   };
 }
