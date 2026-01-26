@@ -4,21 +4,34 @@ import sharp from 'sharp';
 
 /**
  * Compress and resize image for OpenAI API
- * OpenAI Vision API works best with images under 20MB, but we'll optimize to ~1-2MB
+ * OpenAI Vision API works best with images under 20MB, but we'll optimize to ~200-500KB for faster processing
+ * 
+ * For text extraction, 1024px is usually sufficient and much faster than 2048px
  */
 async function optimizeImage(file: File): Promise<File> {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   
-  // Resize to max 2048px on longest side and compress to JPEG with quality 85
-  // This should reduce 50MB images to ~500KB-2MB
+  // Get original image metadata
+  const metadata = await sharp(buffer).metadata();
+  const originalSize = file.size;
+  const originalDimensions = `${metadata.width}x${metadata.height}`;
+  
+  // Resize to max 1024px on longest side and compress to JPEG with quality 80
+  // This should reduce large images to ~200-500KB while maintaining text readability
   const optimizedBuffer = await sharp(buffer)
-    .resize(2048, 2048, {
+    .resize(1024, 1024, {
       fit: 'inside',
       withoutEnlargement: true
     })
-    .jpeg({ quality: 85, mozjpeg: true })
+    .jpeg({ quality: 80, mozjpeg: true })
     .toBuffer();
+  
+  const optimizedSize = optimizedBuffer.length;
+  const optimizedMetadata = await sharp(optimizedBuffer).metadata();
+  const optimizedDimensions = `${optimizedMetadata.width}x${optimizedMetadata.height}`;
+  
+  console.log(`[Image Optimization] ${file.name}: ${originalDimensions} ${(originalSize / 1024).toFixed(0)}KB → ${optimizedDimensions} ${(optimizedSize / 1024).toFixed(0)}KB (${((1 - optimizedSize / originalSize) * 100).toFixed(1)}% reduction)`);
   
   // Create a new File with optimized data
   return new File([optimizedBuffer], file.name.replace(/\.png$/i, '.jpg'), {
@@ -57,10 +70,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Optimize images before processing (this will dramatically reduce processing time)
-    console.log(`[API] Optimizing images... Original sizes: front=${(frontImage.size / 1024 / 1024).toFixed(2)}MB, back=${backImage ? (backImage.size / 1024 / 1024).toFixed(2) + 'MB' : 'N/A'}`);
+    console.log(`[API] Received images - Front: ${(frontImage.size / 1024).toFixed(0)}KB, Back: ${backImage ? (backImage.size / 1024).toFixed(0) + 'KB' : 'N/A'}`);
     const optimizedFront = await optimizeImage(frontImage);
     const optimizedBack = backImage ? await optimizeImage(backImage) : undefined;
-    console.log(`[API] Optimized sizes: front=${(optimizedFront.size / 1024 / 1024).toFixed(2)}MB, back=${optimizedBack ? (optimizedBack.size / 1024 / 1024).toFixed(2) + 'MB' : 'N/A'}`);
+    console.log(`[API] Optimized - Front: ${(optimizedFront.size / 1024).toFixed(0)}KB, Back: ${optimizedBack ? (optimizedBack.size / 1024).toFixed(0) + 'KB' : 'N/A'}`);
 
     // Process the optimized images with AI
     const extractedData = await extractWithAI(

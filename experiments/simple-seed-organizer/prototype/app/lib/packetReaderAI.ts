@@ -53,25 +53,40 @@ export async function extractWithAI(
       content: [
         {
           type: 'text',
-          text: `Extract ALL key-value pairs and structured data from these seed packet images. Focus on accuracy - extract exactly what you see, do not summarize or interpret.
+          text: `You are a TEXT EXTRACTION TOOL. Your ONLY job is to copy text EXACTLY as it appears on the seed packet images. You are NOT allowed to modify, combine, paraphrase, summarize, or interpret ANY text.
 
-IMPORTANT: The first image is the FRONT of the packet, the second image (if provided) is the BACK of the packet.
+CRITICAL: The first image is the FRONT of the packet, the second image (if provided) is the BACK of the packet.
 
-Your task is to identify and extract every piece of information visible on the packet as key-value pairs, and indicate which image (front or back) each piece of data came from.
+IMPORTANT: Look for text in ALL orientations - horizontal, vertical, sideways, rotated, or at any angle. Text may appear along edges, in margins, or rotated 90/180 degrees. Extract ALL visible text regardless of orientation.
+
+SPECIFIC EXAMPLE OF THE ERROR TO AVOID:
+If you see on the packet:
+- "or direct-seed after last frost in ordinary garden soil."
+- And separately: "Sow in ordinary garden soil."
+
+WRONG (DO NOT DO THIS): "or direct-seed after last frost in ordinary garden soil. Sow in ordinary garden soil."
+CORRECT: Extract the text exactly as it appears. If "Sow in ordinary garden soil." appears as a separate sentence elsewhere, do NOT append it to the first sentence. Extract only what you see in the planting instructions section, exactly as written.
 
 Extract these specific fields if present:
 - name (common plant name)
 - variety (cultivar/variety name)
-- latinName (scientific name)
+- latinName (scientific name - extract EXACT text as written, e.g., "Tagetes erecta", "Lycopersicon esculentum", etc. Do NOT add parentheses, italics, or change capitalization)
 - brand (seed company name)
 - year (packed for year, as number)
 - quantity (number of seeds)
-- daysToGermination (e.g., "7-14 days")
+- daysToGermination (e.g., "7-14 days" - may appear as "Sprouts in" with a value)
 - daysToMaturity (e.g., "70-80 days")
-- plantingDepth (e.g., "1/4 inch")
+- plantingDepth (e.g., "1/4 inch" - may appear as "seed depth" with a value, possibly rotated/sideways)
 - spacing (e.g., "12-18 inches")
-- sunRequirement (one of: "full-sun", "partial-shade", "full-shade")
-- plantingInstructions (full text of planting instructions)
+- sunRequirement (extract EXACT text as written, e.g., "Min full sun", "Full sun", "Partial shade", "Full shade", etc. - do NOT normalize or change the wording)
+- description (intro text, major description, or marketing copy about the plant - usually appears prominently on the front of the packet. Extract EXACT text as written, word-for-word)
+- plantingInstructions (CRITICAL: Find the planting instructions section on the packet. Extract ONLY the text that appears in that specific section, word-for-word, character-for-character. Do NOT look for related text elsewhere on the packet and combine it. Extract ONLY what is in the planting instructions area.)
+
+Look for common sideways/rotated labels such as:
+- "Sprouts in" (may be rotated)
+- "Ideal temp" or "Ideal temperature" (may be rotated)
+- "seed depth" or "Seed depth" (may be rotated)
+- Any text along edges or margins that may be at an angle
 
 Additionally, extract ALL other key-value pairs you find on the packet that are not covered above. Include them in a "rawKeyValuePairs" array with source information.
 
@@ -87,7 +102,8 @@ Return as JSON:
   "daysToMaturity": "exact text or null",
   "plantingDepth": "exact text or null",
   "spacing": "exact text or null",
-  "sunRequirement": "full-sun" | "partial-shade" | "full-shade" | null,
+  "sunRequirement": "exact text as written on packet or null",
+  "description": "exact text or null",
   "plantingInstructions": "exact text or null",
   "fieldSources": {
     "name": "front" | "back",
@@ -97,12 +113,19 @@ Return as JSON:
   "rawKeyValuePairs": [{"key": "label text", "value": "value text", "source": "front" | "back"}, ...]
 }
 
-IMPORTANT: 
-- Extract text exactly as written, do not summarize
-- Include ALL visible information in rawKeyValuePairs
-- For each field and key-value pair, indicate "front" or "back" as the source
-- If a field is not visible, use null
-- Be precise and accurate - this is for data extraction, not summarization`
+ABSOLUTE RULES - NO EXCEPTIONS:
+1. Scan the ENTIRE image for text in ALL orientations - horizontal, vertical, sideways, rotated, or at any angle
+2. Look for text along edges, in margins, and in all areas of the packet, not just the main body
+3. For plantingInstructions: Locate the planting instructions section on the packet. Extract ONLY the text that appears within that specific section's boundaries. Do NOT search for related text elsewhere.
+4. Copy text CHARACTER-BY-CHARACTER exactly as it appears, regardless of orientation
+5. Do NOT combine separate sentences, even if they seem related
+6. Do NOT append text from one location to text from another location
+7. Do NOT paraphrase or reword anything - you are a copy machine, not a writer
+8. Do NOT add words that are not visible on the packet
+9. Preserve ALL punctuation, capitalization, spacing, and line breaks exactly as they appear
+10. If text appears in multiple locations, extract each occurrence separately in rawKeyValuePairs with its specific source
+11. If a field is not visible, use null
+12. You are OCR software - you copy what you see in any orientation, you do not interpret, improve, or combine text from different locations`
         },
         {
           type: 'image_url',
@@ -131,11 +154,11 @@ IMPORTANT:
         'Authorization': `Bearer ${key}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini', // Cost-effective model optimized for structured data extraction
+        model: 'gpt-4o', // Using gpt-4o for better instruction following on exact text extraction
         messages: messages,
         max_tokens: 2000,
         response_format: { type: 'json_object' },
-        temperature: 0.1 // Low temperature for more deterministic, accurate extraction
+        temperature: 0.0 // Zero temperature for maximum determinism and exact text extraction
       })
     });
 
@@ -237,7 +260,8 @@ function normalizeAIData(data: Record<string, unknown>): AIExtractedData {
     daysToMaturity: data.daysToMaturity || undefined,
     plantingDepth: data.plantingDepth || undefined,
     spacing: data.spacing || undefined,
-    sunRequirement: normalizeSunRequirement(data.sunRequirement),
+    sunRequirement: data.sunRequirement ? String(data.sunRequirement) : undefined,
+    description: data.description || undefined,
     plantingInstructions: data.plantingInstructions || undefined,
     summary: data.summary || undefined,
     additionalNotes: data.additionalNotes || undefined,
@@ -247,15 +271,5 @@ function normalizeAIData(data: Record<string, unknown>): AIExtractedData {
   };
 }
 
-/**
- * Normalize sun requirement to our enum values
- */
-function normalizeSunRequirement(sun?: string): 'full-sun' | 'partial-shade' | 'full-shade' | undefined {
-  if (!sun) return undefined;
-  const lower = sun.toLowerCase();
-  if (lower.includes('full sun') || lower === 'sun') return 'full-sun';
-  if (lower.includes('partial') || lower.includes('part shade')) return 'partial-shade';
-  if (lower.includes('full shade') || lower === 'shade') return 'full-shade';
-  return undefined;
-}
+// Removed normalizeSunRequirement - we now preserve exact text as written on the packet
 

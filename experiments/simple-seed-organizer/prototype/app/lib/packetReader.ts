@@ -15,7 +15,7 @@ export interface ExtractedSeedData {
   daysToMaturity?: string;
   plantingDepth?: string;
   spacing?: string;
-  sunRequirement?: 'full-sun' | 'partial-shade' | 'full-shade';
+  sunRequirement?: string; // Exact text as written on packet (e.g., "Min full sun", "Full sun", etc.)
   plantingMonths?: number[];
   notes?: string;
   confidence?: number; // Overall confidence score (0-1)

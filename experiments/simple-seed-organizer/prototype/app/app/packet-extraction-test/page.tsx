@@ -3,15 +3,33 @@
 import { useState, useEffect } from 'react';
 import { AIExtractedData } from '@/lib/packetReaderAI';
 
+interface QualityAnalysis {
+  actualValue: string | null;
+  issues: string[];
+  promptImprovements: string[];
+  visibility: 'clear' | 'unclear' | 'not-visible';
+  confidence: number;
+}
+
+interface FieldFeedback {
+  fieldName: string;
+  analysis: QualityAnalysis | null;
+  analyzing: boolean;
+}
+
 export default function PacketExtractionTestPage() {
   const [frontImage, setFrontImage] = useState<string | null>(null);
   const [backImage, setBackImage] = useState<string | null>(null);
+  const [frontImageBase64, setFrontImageBase64] = useState<string | null>(null);
+  const [backImageBase64, setBackImageBase64] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [aiExtractedData, setAiExtractedData] = useState<AIExtractedData | null>(null);
   const [rawResponse, setRawResponse] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string>('Loading images...');
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+  const [fieldFeedback, setFieldFeedback] = useState<Record<string, FieldFeedback>>({});
+  const [hoverZoom, setHoverZoom] = useState<{ image: string; x: number; y: number; rect: { left: number; top: number; width: number; height: number } } | null>(null);
 
   // Remove mobile width constraint on mount
   useEffect(() => {
@@ -87,16 +105,39 @@ export default function PacketExtractionTestPage() {
 
   const processWithAI = async (frontUrl: string, backUrl: string) => {
     try {
-      setStatus('Converting images to files...');
+      setStatus('Loading images...');
       
       // Convert image URLs to File objects for processing
       const frontResponse = await fetch(frontUrl);
       const frontBlob = await frontResponse.blob();
       const frontFile = new File([frontBlob], 'packet-front.png', { type: 'image/png' });
+      console.log(`[Client] Front image size: ${(frontFile.size / 1024).toFixed(0)}KB`);
 
       const backResponse = await fetch(backUrl);
       const backBlob = await backResponse.blob();
       const backFile = new File([backBlob], 'packet-back.png', { type: 'image/png' });
+      console.log(`[Client] Back image size: ${(backFile.size / 1024).toFixed(0)}KB`);
+
+      // Convert to base64 for quality analysis using FileReader (avoids stack overflow)
+      const blobToBase64 = (blob: Blob): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const result = reader.result as string;
+            // Remove data URL prefix if present
+            const base64 = result.includes(',') ? result.split(',')[1] : result;
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      };
+
+      const frontBase64 = await blobToBase64(frontBlob);
+      setFrontImageBase64(frontBase64);
+
+      const backBase64 = await blobToBase64(backBlob);
+      setBackImageBase64(backBase64);
 
       setStatus('Sending to OpenAI API...');
       
@@ -137,6 +178,217 @@ export default function PacketExtractionTestPage() {
     }
   };
 
+  const handleThumbsDown = async (fieldName: string, extractedValue: string, source: 'front' | 'back') => {
+    // Initialize feedback state
+    setFieldFeedback(prev => ({
+      ...prev,
+      [fieldName]: {
+        fieldName,
+        analysis: null,
+        analyzing: true
+      }
+    }));
+
+    try {
+      const response = await fetch('/api/packet/analyze-quality', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fieldName,
+          extractedValue,
+          sourceImage: source,
+          frontImageBase64: frontImageBase64,
+          backImageBase64: backImageBase64
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to analyze quality');
+      }
+
+      setFieldFeedback(prev => ({
+        ...prev,
+        [fieldName]: {
+          fieldName,
+          analysis: result.analysis,
+          analyzing: false
+        }
+      }));
+    } catch (err) {
+      setFieldFeedback(prev => ({
+        ...prev,
+        [fieldName]: {
+          fieldName,
+          analysis: null,
+          analyzing: false
+        }
+      }));
+      console.error('Error analyzing quality:', err);
+    }
+  };
+
+  const getAllKeyValuePairs = (data: AIExtractedData): Array<{ key: string; value: string; source?: 'front' | 'back'; italic?: boolean }> => {
+    const pairs: Array<{ key: string; value: string; source?: 'front' | 'back'; italic?: boolean }> = [];
+    const seenKeys = new Set<string>();
+
+    // Add structured fields
+    if (data.name) {
+      pairs.push({ key: 'Name', value: data.name, source: data.fieldSources?.name, italic: false });
+      seenKeys.add('name');
+    }
+    if (data.variety) {
+      pairs.push({ key: 'Variety', value: data.variety, source: data.fieldSources?.variety, italic: false });
+      seenKeys.add('variety');
+    }
+    if (data.latinName) {
+      pairs.push({ key: 'Latin Name', value: data.latinName, source: data.fieldSources?.latinName, italic: true });
+      seenKeys.add('latinName');
+    }
+    if (data.brand) {
+      pairs.push({ key: 'Brand', value: data.brand, source: data.fieldSources?.brand, italic: false });
+      seenKeys.add('brand');
+    }
+    if (data.year) {
+      pairs.push({ key: 'Year', value: String(data.year), source: data.fieldSources?.year, italic: false });
+      seenKeys.add('year');
+    }
+    if (data.quantity) {
+      pairs.push({ key: 'Quantity', value: data.quantity, source: data.fieldSources?.quantity, italic: false });
+      seenKeys.add('quantity');
+    }
+    if (data.daysToGermination) {
+      pairs.push({ key: 'Days to Germination', value: data.daysToGermination, source: data.fieldSources?.daysToGermination, italic: false });
+      seenKeys.add('daysToGermination');
+    }
+    if (data.daysToMaturity) {
+      pairs.push({ key: 'Days to Maturity', value: data.daysToMaturity, source: data.fieldSources?.daysToMaturity, italic: false });
+      seenKeys.add('daysToMaturity');
+    }
+    if (data.plantingDepth) {
+      pairs.push({ key: 'Planting Depth', value: data.plantingDepth, source: data.fieldSources?.plantingDepth, italic: false });
+      seenKeys.add('plantingDepth');
+    }
+    if (data.spacing) {
+      pairs.push({ key: 'Spacing', value: data.spacing, source: data.fieldSources?.spacing, italic: false });
+      seenKeys.add('spacing');
+    }
+    if (data.sunRequirement) {
+      pairs.push({ key: 'Sun Requirement', value: data.sunRequirement, source: data.fieldSources?.sunRequirement, italic: false });
+      seenKeys.add('sunRequirement');
+    }
+    if (data.description) {
+      pairs.push({ key: 'Description', value: data.description, source: data.fieldSources?.description, italic: false });
+      seenKeys.add('description');
+    }
+    if (data.plantingInstructions) {
+      pairs.push({ key: 'Planting Instructions', value: data.plantingInstructions, source: data.fieldSources?.plantingInstructions, italic: false });
+      seenKeys.add('plantingInstructions');
+    }
+
+    // Add raw key-value pairs that aren't already in structured fields
+    if (data.rawKeyValuePairs) {
+      data.rawKeyValuePairs.forEach((pair) => {
+        const normalizedKey = pair.key.toLowerCase().trim();
+        // Check if this key matches any structured field (case-insensitive)
+        const isDuplicate = Array.from(seenKeys).some(seenKey => {
+          const fieldLabels: Record<string, string> = {
+            name: 'name',
+            variety: 'variety',
+            latinName: 'latin name',
+            brand: 'brand',
+            year: 'year',
+            quantity: 'quantity',
+            daysToGermination: 'days to germination',
+            daysToMaturity: 'days to maturity',
+            plantingDepth: 'planting depth',
+            spacing: 'spacing',
+            sunRequirement: 'sun requirement',
+            description: 'description',
+            plantingInstructions: 'planting instructions'
+          };
+          return normalizedKey === fieldLabels[seenKey]?.toLowerCase();
+        });
+        
+        if (!isDuplicate) {
+          pairs.push({ key: pair.key, value: pair.value, source: pair.source, italic: false });
+        }
+      });
+    }
+
+    return pairs;
+  };
+
+  const toTitleCase = (text: string): string => {
+    return text
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  const getKeyValuePairsBySource = (data: AIExtractedData): { front: Array<{ key: string; value: string; source?: 'front' | 'back'; italic?: boolean }>; back: Array<{ key: string; value: string; source?: 'front' | 'back'; italic?: boolean }> } => {
+    const allPairs = getAllKeyValuePairs(data);
+    return {
+      front: allPairs.filter(pair => !pair.source || pair.source === 'front'),
+      back: allPairs.filter(pair => pair.source === 'back')
+    };
+  };
+
+  const renderFieldRow = (
+    fieldName: string,
+    label: string,
+    value: string | number | undefined,
+    source: 'front' | 'back' | undefined,
+    italic?: boolean
+  ) => {
+    if (!value) return null;
+
+    const feedback = fieldFeedback[fieldName];
+    const sourceColor = source === 'back' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700';
+    const sourceLabel = source === 'back' ? 'B' : 'F';
+
+    return (
+      <tr key={fieldName}>
+        <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">{label}</td>
+        <td className="py-1.5 text-[#101828]">
+          <div className="flex items-start gap-2 min-w-0">
+            <div className="flex-1 min-w-0">
+              <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${sourceColor}`}>
+                {sourceLabel}
+              </span>
+              <span className={italic ? 'italic' : ''}>{String(value)}</span>
+            </div>
+            <button
+              onClick={() => handleThumbsDown(fieldName, String(value), source || 'front')}
+              className="shrink-0 text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
+              disabled={feedback?.analyzing}
+            >
+              {feedback?.analyzing ? 'Analyzing...' : '👎'}
+            </button>
+          </div>
+          {feedback?.analysis && (
+            <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-[10px]">
+              <div className="font-medium text-yellow-800 mb-1">Quality Analysis:</div>
+              {feedback.analysis.actualValue && (
+                <div className="mb-1"><span className="font-medium">Actual:</span> {feedback.analysis.actualValue}</div>
+              )}
+              {feedback.analysis.issues.length > 0 && (
+                <div className="mb-1"><span className="font-medium">Issues:</span> {feedback.analysis.issues.join(', ')}</div>
+              )}
+              {feedback.analysis.promptImprovements.length > 0 && (
+                <div><span className="font-medium">Suggestions:</span> {feedback.analysis.promptImprovements.join('; ')}</div>
+              )}
+            </div>
+          )}
+        </td>
+      </tr>
+    );
+  };
+
   return (
       <div className="min-h-screen bg-[#f9fafb] p-4">
         <div className="w-full">
@@ -145,9 +397,25 @@ export default function PacketExtractionTestPage() {
             <div>
               <h1 className="text-lg font-semibold text-[#101828]">AI Extraction Test</h1>
             </div>
-            <div className="flex items-center gap-2 text-xs">
-              <div className={`w-2 h-2 rounded-full ${loading ? 'bg-yellow-400 animate-pulse' : error ? 'bg-red-400' : 'bg-green-400'}`}></div>
-              <span className="text-[#6a7282]">{status}</span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  if (frontImage && backImage) {
+                    setAiExtractedData(null);
+                    setRawResponse(null);
+                    setFieldFeedback({});
+                    processWithAI(frontImage, backImage);
+                  }
+                }}
+                disabled={loading || !frontImage || !backImage}
+                className="text-xs px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Re-extract
+              </button>
+              <div className="flex items-center gap-2 text-xs">
+                <div className={`w-2 h-2 rounded-full ${loading ? 'bg-yellow-400 animate-pulse' : error ? 'bg-red-400' : 'bg-green-400'}`}></div>
+                <span className="text-[#6a7282]">{status}</span>
+              </div>
             </div>
           </div>
 
@@ -158,32 +426,53 @@ export default function PacketExtractionTestPage() {
             </div>
           )}
 
-        {/* Main Content: Front Image 2/3, Data 1/3 */}
-        <div className="grid grid-cols-[2fr_1fr] gap-6 h-[calc(100vh-8rem)]">
-          {/* Left Side: Images - Independent Scroll */}
-          <div className="overflow-y-auto pr-2">
-            <div className="space-y-6">
+        {/* Main Content: Front Image + Data, Back Image + Data */}
+        <div className="space-y-6">
+          {/* Front Image and Data */}
+          <div className="grid grid-cols-[1fr_1fr] gap-6">
+            {/* Front Image */}
+            <div className="pr-2">
               <div className="bg-white rounded-lg p-4 shadow-sm">
                 <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Front Image</h3>
                 {frontImage ? (
-                  <div className="relative">
+                  <div 
+                    className="relative group"
+                    onMouseMove={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setHoverZoom({ 
+                        image: frontImage, 
+                        x: e.clientX, 
+                        y: e.clientY, 
+                        rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height }
+                      });
+                    }}
+                    onMouseLeave={() => setHoverZoom(null)}
+                  >
                     <img
                       src={frontImage}
                       alt="Front of packet"
-                      className="w-full rounded border border-gray-200 cursor-zoom-in hover:opacity-90 transition-opacity"
+                      className="w-full rounded border border-gray-200"
                       style={{ 
                         filter: 'brightness(1.1) contrast(1.1)',
                         maxHeight: '800px',
                         objectFit: 'contain'
                       }}
-                      onClick={() => setZoomedImage(frontImage)}
                     />
-                    <button
-                      onClick={() => setZoomedImage(frontImage)}
-                      className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
-                    >
-                      Zoom
-                    </button>
+                    {hoverZoom && hoverZoom.image === frontImage && (
+                      <div 
+                        className="fixed pointer-events-none z-50 border-2 border-blue-400 bg-white shadow-2xl rounded overflow-hidden"
+                        style={{
+                          width: '400px',
+                          height: '400px',
+                          left: `${hoverZoom.x + 20}px`,
+                          top: `${hoverZoom.y - 200}px`,
+                          backgroundImage: `url(${frontImage})`,
+                          backgroundSize: '200%',
+                          backgroundPosition: `${((hoverZoom.x - hoverZoom.rect.left) / hoverZoom.rect.width) * 100}% ${((hoverZoom.y - hoverZoom.rect.top) / hoverZoom.rect.height) * 100}%`,
+                          backgroundRepeat: 'no-repeat'
+                        }}
+                      />
+                    )}
                   </div>
                 ) : (
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-400">
@@ -191,267 +480,252 @@ export default function PacketExtractionTestPage() {
                   </div>
                 )}
               </div>
+            </div>
 
-              {backImage && (
+            {/* Front Data */}
+            <div className="pr-2">
+              {aiExtractedData ? (
                 <div className="bg-white rounded-lg p-4 shadow-sm">
-                  <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Back Image</h3>
-                  <div className="relative">
-                    <img
-                      src={backImage}
-                      alt="Back of packet"
-                      className="w-full rounded border border-gray-200 cursor-zoom-in hover:opacity-90 transition-opacity"
-                      style={{ 
-                        filter: 'brightness(1.1) contrast(1.1)',
-                        maxHeight: '800px',
-                        objectFit: 'contain'
-                      }}
-                      onClick={() => setZoomedImage(backImage)}
-                    />
-                    <button
-                      onClick={() => setZoomedImage(backImage)}
-                      className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
-                    >
-                      Zoom
-                    </button>
+                  <h2 className="text-lg font-semibold text-[#4a5565] mb-3">Front Image Data</h2>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <tbody className="divide-y divide-gray-200">
+                        {getKeyValuePairsBySource(aiExtractedData).front.map((pair, index) => {
+                          const keyToFieldName: Record<string, string> = {
+                            'Name': 'name',
+                            'Variety': 'variety',
+                            'Latin Name': 'latinName',
+                            'Brand': 'brand',
+                            'Year': 'year',
+                            'Quantity': 'quantity',
+                            'Days to Germination': 'daysToGermination',
+                            'Days to Maturity': 'daysToMaturity',
+                            'Planting Depth': 'plantingDepth',
+                            'Spacing': 'spacing',
+                            'Sun Requirement': 'sunRequirement',
+                            'Description': 'description',
+                            'Planting Instructions': 'plantingInstructions'
+                          };
+                          const fieldName = keyToFieldName[pair.key] || `raw_${pair.key}_${index}`;
+                          const feedback = fieldFeedback[fieldName];
+                          const sourceColor = 'bg-blue-100 text-blue-700';
+                          const sourceLabel = 'F';
+                          const isLongText = pair.key === 'Planting Instructions' || pair.key === 'Description';
+                          const isScientificName = pair.key === 'Latin Name';
+                          const displayValue = isLongText || isScientificName ? pair.value : toTitleCase(pair.value);
+                          
+                          return (
+                            <tr key={index}>
+                              <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">{pair.key}</td>
+                              <td className="py-1.5 text-[#101828]">
+                                <div className="flex items-start gap-2 min-w-0">
+                                  <div className="flex-1 min-w-0">
+                                    <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${sourceColor}`}>
+                                      {sourceLabel}
+                                    </span>
+                                    <span className={pair.italic ? 'italic' : isLongText ? 'whitespace-pre-wrap' : ''}>
+                                      {displayValue}
+                                    </span>
+                                  </div>
+                                  <button
+                                    onClick={() => handleThumbsDown(fieldName, pair.value, 'front')}
+                                    className="shrink-0 text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
+                                    disabled={feedback?.analyzing}
+                                  >
+                                    {feedback?.analyzing ? 'Analyzing...' : '👎'}
+                                  </button>
+                                </div>
+                                {feedback?.analysis && (
+                                  <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-[10px]">
+                                    <div className="font-medium text-yellow-800 mb-1">Quality Analysis:</div>
+                                    {feedback.analysis.actualValue && (
+                                      <div className="mb-1"><span className="font-medium">Actual:</span> {feedback.analysis.actualValue}</div>
+                                    )}
+                                    {feedback.analysis.issues.length > 0 && (
+                                      <div className="mb-1"><span className="font-medium">Issues:</span> {feedback.analysis.issues.join(', ')}</div>
+                                    )}
+                                    {feedback.analysis.promptImprovements.length > 0 && (
+                                      <div><span className="font-medium">Suggestions:</span> {feedback.analysis.promptImprovements.join('; ')}</div>
+                                    )}
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
+                </div>
+              ) : (
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <p className="text-sm text-gray-400">No data extracted yet</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Right Side: Extracted Data and Raw Response - Independent Scroll */}
-          <div className="overflow-y-auto pr-2">
-            {aiExtractedData ? (
-              <div className="space-y-4">
+          {/* Back Image and Data */}
+          {backImage && (
+            <div className="grid grid-cols-[1fr_1fr] gap-6">
+              {/* Back Image */}
+              <div className="pr-2">
                 <div className="bg-white rounded-lg p-4 shadow-sm">
-                <h2 className="text-lg font-semibold text-[#4a5565] mb-3">Extracted Data</h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs">
-                    <tbody className="divide-y divide-gray-200">
-                      {aiExtractedData.name && (
-                        <tr>
-                          <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">Name</td>
-                          <td className="py-1.5 text-[#101828]">
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${
-                              aiExtractedData.fieldSources?.name === 'back' 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {aiExtractedData.fieldSources?.name === 'back' ? 'B' : 'F'}
-                            </span>
-                            {aiExtractedData.name}
-                          </td>
-                        </tr>
-                      )}
-                      {aiExtractedData.variety && (
-                        <tr>
-                          <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">Variety</td>
-                          <td className="py-1.5 text-[#101828]">
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${
-                              aiExtractedData.fieldSources?.variety === 'back' 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {aiExtractedData.fieldSources?.variety === 'back' ? 'B' : 'F'}
-                            </span>
-                            {aiExtractedData.variety}
-                          </td>
-                        </tr>
-                      )}
-                      {aiExtractedData.latinName && (
-                        <tr>
-                          <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">Latin Name</td>
-                          <td className="py-1.5 text-[#101828] italic">
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${
-                              aiExtractedData.fieldSources?.latinName === 'back' 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {aiExtractedData.fieldSources?.latinName === 'back' ? 'B' : 'F'}
-                            </span>
-                            {aiExtractedData.latinName}
-                          </td>
-                        </tr>
-                      )}
-                      {aiExtractedData.brand && (
-                        <tr>
-                          <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">Brand</td>
-                          <td className="py-1.5 text-[#101828]">
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${
-                              aiExtractedData.fieldSources?.brand === 'back' 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {aiExtractedData.fieldSources?.brand === 'back' ? 'B' : 'F'}
-                            </span>
-                            {aiExtractedData.brand}
-                          </td>
-                        </tr>
-                      )}
-                      {aiExtractedData.year && (
-                        <tr>
-                          <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">Year</td>
-                          <td className="py-1.5 text-[#101828]">
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${
-                              aiExtractedData.fieldSources?.year === 'back' 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {aiExtractedData.fieldSources?.year === 'back' ? 'B' : 'F'}
-                            </span>
-                            {aiExtractedData.year}
-                          </td>
-                        </tr>
-                      )}
-                      {aiExtractedData.quantity && (
-                        <tr>
-                          <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">Quantity</td>
-                          <td className="py-1.5 text-[#101828]">
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${
-                              aiExtractedData.fieldSources?.quantity === 'back' 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {aiExtractedData.fieldSources?.quantity === 'back' ? 'B' : 'F'}
-                            </span>
-                            {aiExtractedData.quantity}
-                          </td>
-                        </tr>
-                      )}
-                      {aiExtractedData.daysToGermination && (
-                        <tr>
-                          <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">Days to Germination</td>
-                          <td className="py-1.5 text-[#101828]">
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${
-                              aiExtractedData.fieldSources?.daysToGermination === 'back' 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {aiExtractedData.fieldSources?.daysToGermination === 'back' ? 'B' : 'F'}
-                            </span>
-                            {aiExtractedData.daysToGermination}
-                          </td>
-                        </tr>
-                      )}
-                      {aiExtractedData.daysToMaturity && (
-                        <tr>
-                          <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">Days to Maturity</td>
-                          <td className="py-1.5 text-[#101828]">
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${
-                              aiExtractedData.fieldSources?.daysToMaturity === 'back' 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {aiExtractedData.fieldSources?.daysToMaturity === 'back' ? 'B' : 'F'}
-                            </span>
-                            {aiExtractedData.daysToMaturity}
-                          </td>
-                        </tr>
-                      )}
-                      {aiExtractedData.plantingDepth && (
-                        <tr>
-                          <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">Planting Depth</td>
-                          <td className="py-1.5 text-[#101828]">
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${
-                              aiExtractedData.fieldSources?.plantingDepth === 'back' 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {aiExtractedData.fieldSources?.plantingDepth === 'back' ? 'B' : 'F'}
-                            </span>
-                            {aiExtractedData.plantingDepth}
-                          </td>
-                        </tr>
-                      )}
-                      {aiExtractedData.spacing && (
-                        <tr>
-                          <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">Spacing</td>
-                          <td className="py-1.5 text-[#101828]">
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${
-                              aiExtractedData.fieldSources?.spacing === 'back' 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {aiExtractedData.fieldSources?.spacing === 'back' ? 'B' : 'F'}
-                            </span>
-                            {aiExtractedData.spacing}
-                          </td>
-                        </tr>
-                      )}
-                      {aiExtractedData.sunRequirement && (
-                        <tr>
-                          <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">Sun Requirement</td>
-                          <td className="py-1.5 text-[#101828]">
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${
-                              aiExtractedData.fieldSources?.sunRequirement === 'back' 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {aiExtractedData.fieldSources?.sunRequirement === 'back' ? 'B' : 'F'}
-                            </span>
-                            {aiExtractedData.sunRequirement}
-                          </td>
-                        </tr>
-                      )}
-                      {aiExtractedData.plantingInstructions && (
-                        <tr>
-                          <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">Planting Instructions</td>
-                          <td className="py-1.5 text-[#101828]">
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${
-                              aiExtractedData.fieldSources?.plantingInstructions === 'back' 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {aiExtractedData.fieldSources?.plantingInstructions === 'back' ? 'B' : 'F'}
-                            </span>
-                            <span className="whitespace-pre-wrap">{aiExtractedData.plantingInstructions}</span>
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                  <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Back Image</h3>
+                  <div 
+                    className="relative group"
+                    onMouseMove={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setHoverZoom({ 
+                        image: backImage, 
+                        x: e.clientX, 
+                        y: e.clientY, 
+                        rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height }
+                      });
+                    }}
+                    onMouseLeave={() => setHoverZoom(null)}
+                  >
+                    <img
+                      src={backImage}
+                      alt="Back of packet"
+                      className="w-full rounded border border-gray-200"
+                      style={{ 
+                        filter: 'brightness(1.1) contrast(1.1)',
+                        maxHeight: '800px',
+                        objectFit: 'contain'
+                      }}
+                    />
+                    {hoverZoom && hoverZoom.image === backImage && (
+                      <div 
+                        className="fixed pointer-events-none z-50 border-2 border-green-400 bg-white shadow-2xl rounded overflow-hidden"
+                        style={{
+                          width: '400px',
+                          height: '400px',
+                          left: `${hoverZoom.x + 20}px`,
+                          top: `${hoverZoom.y - 200}px`,
+                          backgroundImage: `url(${backImage})`,
+                          backgroundSize: '200%',
+                          backgroundPosition: `${((hoverZoom.x - hoverZoom.rect.left) / hoverZoom.rect.width) * 100}% ${((hoverZoom.y - hoverZoom.rect.top) / hoverZoom.rect.height) * 100}%`,
+                          backgroundRepeat: 'no-repeat'
+                        }}
+                      />
+                    )}
+                  </div>
                 </div>
-                </div>
+              </div>
 
-                {/* Raw Key-Value Pairs */}
-                {aiExtractedData.rawKeyValuePairs && aiExtractedData.rawKeyValuePairs.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="text-xs font-medium text-[#6a7282] mb-2">
-                      All Key-Value Pairs ({aiExtractedData.rawKeyValuePairs.length})
-                    </div>
-                    <div className="max-h-64 overflow-y-auto">
+              {/* Back Data */}
+              <div className="pr-2">
+                {aiExtractedData ? (
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <h2 className="text-lg font-semibold text-[#4a5565] mb-3">Back Image Data</h2>
+                    <div className="overflow-x-auto">
                       <table className="w-full text-xs">
-                        <tbody className="divide-y divide-gray-100">
-                          {aiExtractedData.rawKeyValuePairs.map((pair, index) => (
-                            <tr key={index}>
-                              <td className="py-1 pr-3 font-medium text-[#6a7282] align-top">{pair.key}</td>
-                              <td className="py-1 text-[#101828]">
-                                {pair.source && (
-                                  <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${
-                                    pair.source === 'back' 
-                                      ? 'bg-green-100 text-green-700' 
-                                      : 'bg-blue-100 text-blue-700'
-                                  }`}>
-                                    {pair.source === 'back' ? 'B' : 'F'}
-                                  </span>
-                                )}
-                                {pair.value}
-                              </td>
-                            </tr>
-                          ))}
+                        <tbody className="divide-y divide-gray-200">
+                          {getKeyValuePairsBySource(aiExtractedData).back.map((pair, index) => {
+                            const keyToFieldName: Record<string, string> = {
+                              'Name': 'name',
+                              'Variety': 'variety',
+                              'Latin Name': 'latinName',
+                              'Brand': 'brand',
+                              'Year': 'year',
+                              'Quantity': 'quantity',
+                              'Days to Germination': 'daysToGermination',
+                              'Days to Maturity': 'daysToMaturity',
+                              'Planting Depth': 'plantingDepth',
+                              'Spacing': 'spacing',
+                              'Sun Requirement': 'sunRequirement',
+                              'Description': 'description',
+                              'Planting Instructions': 'plantingInstructions'
+                            };
+                            const fieldName = keyToFieldName[pair.key] || `raw_${pair.key}_${index}`;
+                            const feedback = fieldFeedback[fieldName];
+                            const sourceColor = 'bg-green-100 text-green-700';
+                            const sourceLabel = 'B';
+                            const isLongText = pair.key === 'Planting Instructions' || pair.key === 'Description';
+                            const isScientificName = pair.key === 'Latin Name';
+                            const displayValue = isLongText || isScientificName ? pair.value : toTitleCase(pair.value);
+                            
+                            return (
+                              <tr key={index}>
+                                <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top">{pair.key}</td>
+                                <td className="py-1.5 text-[#101828]">
+                                  <div className="flex items-start gap-2 min-w-0">
+                                    <div className="flex-1 min-w-0">
+                                      <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 ${sourceColor}`}>
+                                        {sourceLabel}
+                                      </span>
+                                      <span className={pair.italic ? 'italic' : isLongText ? 'whitespace-pre-wrap' : ''}>
+                                        {displayValue}
+                                      </span>
+                                    </div>
+                                    <button
+                                      onClick={() => handleThumbsDown(fieldName, pair.value, 'back')}
+                                      className="shrink-0 text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
+                                      disabled={feedback?.analyzing}
+                                    >
+                                      {feedback?.analyzing ? 'Analyzing...' : '👎'}
+                                    </button>
+                                  </div>
+                                  {feedback?.analysis && (
+                                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-[10px]">
+                                      <div className="font-medium text-yellow-800 mb-1">Quality Analysis:</div>
+                                      {feedback.analysis.actualValue && (
+                                        <div className="mb-1"><span className="font-medium">Actual:</span> {feedback.analysis.actualValue}</div>
+                                      )}
+                                      {feedback.analysis.issues.length > 0 && (
+                                        <div className="mb-1"><span className="font-medium">Issues:</span> {feedback.analysis.issues.join(', ')}</div>
+                                      )}
+                                      {feedback.analysis.promptImprovements.length > 0 && (
+                                        <div><span className="font-medium">Suggestions:</span> {feedback.analysis.promptImprovements.join('; ')}</div>
+                                      )}
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
                   </div>
+                ) : (
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <p className="text-sm text-gray-400">No data extracted yet</p>
+                  </div>
                 )}
               </div>
-            ) : (
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <p className="text-sm text-gray-400 text-center">Waiting for extraction results...</p>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
+
+        {/* Prompt Refinement Suggestions */}
+        {Object.keys(fieldFeedback).length > 0 && Object.values(fieldFeedback).some(f => f.analysis) && (
+          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+            <h2 className="text-sm font-semibold text-[#4a5565] mb-3">Prompt Refinement Suggestions</h2>
+            <div className="space-y-2 text-xs">
+              {Object.values(fieldFeedback)
+                .filter(f => f.analysis && f.analysis.promptImprovements.length > 0)
+                .map((f, idx) => (
+                  <div key={idx} className="bg-white p-2 rounded border border-blue-100">
+                    <div className="font-medium text-[#4a5565] mb-1">{f.fieldName}:</div>
+                    <ul className="list-disc list-inside text-[#6a7282] space-y-1">
+                      {f.analysis!.promptImprovements.map((improvement, i) => (
+                        <li key={i}>{improvement}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+            </div>
+            <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-[10px]">
+              <div className="font-medium text-yellow-800 mb-1">Summary:</div>
+              <p className="text-yellow-700">
+                Based on {Object.values(fieldFeedback).filter(f => f.analysis).length} field(s) marked as inaccurate, 
+                consider incorporating the suggestions above into the extraction prompt to improve accuracy.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Raw API Response - Full Width Below */}
         {rawResponse && (
@@ -462,8 +736,7 @@ export default function PacketExtractionTestPage() {
             </pre>
           </div>
         )}
-
-      </div>
+        </div>
 
       {/* Zoom Modal */}
       {zoomedImage && (
