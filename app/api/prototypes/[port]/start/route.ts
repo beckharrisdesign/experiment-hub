@@ -65,7 +65,7 @@ export async function POST(
       cwd: prototypePath,
       detached: true,
       stdio: "ignore",
-      shell: true,
+      shell: false,
     });
 
     child.unref();
