@@ -35,7 +35,7 @@ This is an "Experiment Hub" that allows you to:
 
 ## Technology Stack
 
-- **Framework**: Next.js 16 with App Router
+- **Framework**: Next.js 15 with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **Runtime**: Node.js 22
@@ -75,6 +75,11 @@ The NOTION_LANDING_DATABASE_ID environment variable must be set to the Notion da
 Valid multi-select options are defined in lib/notion.ts and must match Notion database options.
 
 ## Recent Changes
+
+- 2026-02-15: Security update - downgraded Next.js from v16 to v15 (15.5.12)
+  - Addresses CVEs in next@16.0.2 and glob@10.4.5
+  - npm audit now shows 0 vulnerabilities
+  - eslint-config-next updated to match
 
 - 2024-12-16: Converted landing pages to static HTML
   - Landing pages are now static HTML/CSS/JS (no Node.js runtime needed)
