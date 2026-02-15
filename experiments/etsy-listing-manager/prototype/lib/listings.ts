@@ -300,7 +300,7 @@ export async function generateListing(productTemplateId: string, patternIds: str
   // Check if OpenAI is available
   let listingData: any;
   const hasOpenAI = !!process.env.OPENAI_API_KEY;
-  console.log('[generateListing] OpenAI available:', hasOpenAI);
+
   
   if (hasOpenAI) {
     try {
