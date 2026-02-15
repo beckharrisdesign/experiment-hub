@@ -79,6 +79,37 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
               )}
             </div>
 
+            {/* Seed Packet Images */}
+            {(seed.photoFront || seed.photoBack) && (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Packet Images</h3>
+                <div className="flex gap-4 flex-wrap">
+                  {seed.photoFront && (
+                    <div>
+                      <p className="text-xs text-[#6a7282] mb-1">Front</p>
+                      <img
+                        src={seed.photoFront}
+                        alt="Front of seed packet"
+                        loading="lazy"
+                        className="rounded-lg border border-gray-200 max-h-64 object-contain bg-white"
+                      />
+                    </div>
+                  )}
+                  {seed.photoBack && (
+                    <div>
+                      <p className="text-xs text-[#6a7282] mb-1">Back</p>
+                      <img
+                        src={seed.photoBack}
+                        alt="Back of seed packet"
+                        loading="lazy"
+                        className="rounded-lg border border-gray-200 max-h-64 object-contain bg-white"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Planting Guidance */}
             {plantingGuidance && (
               <div className="mb-6">

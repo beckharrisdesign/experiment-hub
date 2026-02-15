@@ -79,7 +79,7 @@ Extract these specific fields if present:
 - plantingDepth (e.g., "1/4 inch" - may appear as "seed depth" with a value, possibly rotated/sideways)
 - spacing (e.g., "12-18 inches")
 - sunRequirement (extract EXACT text as written, e.g., "Min full sun", "Full sun", "Partial shade", "Full shade", etc. - do NOT normalize or change the wording)
-- description (intro text, major description, or marketing copy about the plant - usually appears prominently on the front of the packet. Extract EXACT text as written, word-for-word)
+- description (intro text, major description, or marketing copy about the plant - may appear on the FRONT or BACK of the packet. Look for prominent descriptive paragraphs on BOTH sides. Extract EXACT text as written, word-for-word, from whichever side it appears on)
 - plantingInstructions (CRITICAL: Find the planting instructions section on the packet. Extract ONLY the text that appears in that specific section, word-for-word, character-for-character. Do NOT look for related text elsewhere on the packet and combine it. Extract ONLY what is in the planting instructions area.)
 
 Look for common sideways/rotated labels such as:
@@ -116,7 +116,8 @@ Return as JSON:
 ABSOLUTE RULES - NO EXCEPTIONS:
 1. Scan the ENTIRE image for text in ALL orientations - horizontal, vertical, sideways, rotated, or at any angle
 2. Look for text along edges, in margins, and in all areas of the packet, not just the main body
-3. For plantingInstructions: Locate the planting instructions section on the packet. Extract ONLY the text that appears within that specific section's boundaries. Do NOT search for related text elsewhere.
+3. For description: Check BOTH the front AND back images for intro text, major descriptions, or marketing copy. Extract from whichever side it appears on (or both if present on both sides - extract each separately).
+4. For plantingInstructions: Locate the planting instructions section on the packet. Extract ONLY the text that appears within that specific section's boundaries. Do NOT search for related text elsewhere.
 4. Copy text CHARACTER-BY-CHARACTER exactly as it appears, regardless of orientation
 5. Do NOT combine separate sentences, even if they seem related
 6. Do NOT append text from one location to text from another location

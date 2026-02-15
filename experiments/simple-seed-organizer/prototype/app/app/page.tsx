@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Seed, ViewMode } from '@/types/seed';
-import { getSeeds, saveSeed, updateSeed, deleteSeed, seedSampleData } from '@/lib/storage';
+import { getSeeds, getSeedsWithoutPhotos, getSeedPhotos, saveSeed, updateSeed, deleteSeed } from '@/lib/storage';
 import { Header } from '@/components/Header';
 import { SearchBar } from '@/components/SearchBar';
 import { FilterBar } from '@/components/FilterBar';
@@ -11,38 +11,84 @@ import { BottomNav } from '@/components/BottomNav';
 import { AddSeedForm } from '@/components/AddSeedForm';
 import { SeedDetail } from '@/components/SeedDetail';
 import { Profile } from '@/components/Profile';
+import { LoginForm } from '@/components/LoginForm';
+import { SignUpForm } from '@/components/SignUpForm';
 import { SeedType } from '@/types/seed';
 import { getSeedAge } from '@/lib/storage';
+import { useAuth } from '@/lib/auth-context';
 
 export default function Home() {
+  const { user, loading: authLoading } = useAuth();
+  const [authView, setAuthView] = useState<'login' | 'signup'>('login');
+
   const [seeds, setSeeds] = useState<Seed[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('type');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<SeedType | 'all' | 'use-first'>('all');
-  
-  // Reset filter when view mode changes (except when switching to photo view)
+
   useEffect(() => {
     if (viewMode !== 'photo') {
       setActiveFilter('all');
     }
   }, [viewMode]);
+
   const [showAddForm, setShowAddForm] = useState(false);
-  const [selectedSeed, setSelectedSeed] = useState<Seed | null>(null);
+  const [selectedSeedId, setSelectedSeedId] = useState<string | null>(null);
+  const selectedSeed = selectedSeedId ? (seeds.find(s => s.id === selectedSeedId) ?? null) : null;
   const [editingSeed, setEditingSeed] = useState<Seed | null>(null);
   const [showProfile, setShowProfile] = useState(false);
+  const [seedsLoading, setSeedsLoading] = useState(false);
 
-  // Load seeds from localStorage on mount
+  // Load seeds from Supabase when user is authenticated
+  // Two-phase load: metadata first (fast), then photos in background
   useEffect(() => {
-    // Seed sample data if storage is empty (development only)
-    seedSampleData();
-    setSeeds(getSeeds());
-  }, []);
+    if (!user) {
+      setSeeds([]);
+      setSeedsLoading(false);
+      return;
+    }
 
-  // Filter seeds by search query and active filter
+    let cancelled = false;
+
+    const loadSeeds = async () => {
+      setSeedsLoading(true);
+      try {
+        // Phase 1: Load metadata without photos (fast - no large base64 blobs)
+        const seedsWithoutPhotos = await getSeedsWithoutPhotos();
+        if (cancelled) return;
+        setSeeds(seedsWithoutPhotos);
+        setSeedsLoading(false);
+        console.log(`[Home] Loaded ${seedsWithoutPhotos.length} seeds (metadata only)`);
+
+        // Phase 2: Load photos in background and merge
+        const photos = await getSeedPhotos();
+        if (cancelled) return;
+        setSeeds(prev =>
+          prev.map(seed => {
+            const p = photos.get(seed.id);
+            if (!p) return seed;
+            return { ...seed, photoFront: p.photoFront ?? seed.photoFront, photoBack: p.photoBack ?? seed.photoBack };
+          })
+        );
+        console.log(`[Home] Merged photos for ${photos.size} seeds`);
+      } catch (error) {
+        if (cancelled) return;
+        console.error('[Home] Error loading seeds:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load seeds';
+        alert(`Failed to load seeds: ${errorMessage}\n\nPlease check your Supabase connection.`);
+        setSeeds([]);
+        setSeedsLoading(false);
+      }
+    };
+    loadSeeds();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
   const filteredSeeds = useMemo(() => {
     let filtered = seeds;
 
-    // Apply type filter
     if (activeFilter === 'use-first') {
       filtered = filtered.filter(seed => {
         const age = getSeedAge(seed);
@@ -52,7 +98,6 @@ export default function Home() {
       filtered = filtered.filter(seed => seed.type === activeFilter);
     }
 
-    // Apply search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -66,47 +111,100 @@ export default function Home() {
     return filtered;
   }, [seeds, searchQuery, activeFilter]);
 
-  const handleAddSeed = (seedData: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newSeed = saveSeed(seedData);
-    setSeeds(prev => [...prev, newSeed]);
-    setShowAddForm(false);
+  const handleAddSeed = async (seedData: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const newSeed = await saveSeed(seedData);
+      const updatedSeeds = await getSeeds();
+      setSeeds(updatedSeeds);
+      setShowAddForm(false);
+    } catch (error) {
+      console.error('[Home] Error saving seed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save seed to database';
+      alert(`Failed to save seed: ${errorMessage}\n\nPlease check your Supabase connection and try again.`);
+    }
   };
 
-  const handleUpdateSeed = (seedData: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleUpdateSeed = async (seedData: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!editingSeed) return;
-    const updated = updateSeed(editingSeed.id, seedData);
-    if (updated) {
-      setSeeds(prev => prev.map(s => (s.id === updated.id ? updated : s)));
-      setSelectedSeed(updated);
+    try {
+      const updated = await updateSeed(editingSeed.id, seedData);
+      if (updated) {
+        const updatedSeeds = await getSeeds();
+        setSeeds(updatedSeeds);
+        setSelectedSeedId(updated.id);
+      }
+      setEditingSeed(null);
+    } catch (error) {
+      console.error('[Home] Error updating seed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update seed in database';
+      alert(`Failed to update seed: ${errorMessage}\n\nPlease check your Supabase connection and try again.`);
     }
-    setEditingSeed(null);
   };
 
-  const handleDeleteSeed = (seed: Seed) => {
+  const handleDeleteSeed = async (seed: Seed) => {
     if (confirm(`Delete "${seed.name}"?`)) {
-      deleteSeed(seed.id);
-      setSeeds(prev => prev.filter(s => s.id !== seed.id));
-      setSelectedSeed(null);
+      try {
+        await deleteSeed(seed.id);
+        const updatedSeeds = await getSeeds();
+        setSeeds(updatedSeeds);
+        setSelectedSeedId(null);
+      } catch (error) {
+        console.error('[Home] Error deleting seed:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to delete seed from database';
+        alert(`Failed to delete seed: ${errorMessage}\n\nPlease check your Supabase connection and try again.`);
+      }
     }
   };
 
+  // Auth loading state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#16a34a]"></div>
+      </div>
+    );
+  }
+
+  // Not authenticated - show login or signup
+  if (!user) {
+    return authView === 'login' ? (
+      <LoginForm
+        onSuccess={() => {}}
+        onSwitchToSignUp={() => setAuthView('signup')}
+      />
+    ) : (
+      <SignUpForm
+        onSuccess={() => {}}
+        onSwitchToLogin={() => setAuthView('login')}
+      />
+    );
+  }
+
+  // Authenticated - show main app
   return (
     <div className="min-h-screen bg-[#f9fafb] flex flex-col">
-      <Header onProfileClick={() => setShowProfile(true)} />
+      <Header onProfileClick={() => setShowProfile(true)} userEmail={user.email} />
 
       <main className="flex-1 px-4 py-4 pt-24 pb-24">
         <SearchBar value={searchQuery} onChange={setSearchQuery} />
-        
+
         <div className="mt-3">
           <FilterBar activeType={activeFilter} onTypeChange={setActiveFilter} />
         </div>
 
         <div className="mt-4">
-          <SeedList
-            seeds={filteredSeeds}
-            viewMode={viewMode}
-            onSeedClick={setSelectedSeed}
-          />
+          {seedsLoading ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#16a34a] border-t-transparent mb-4" />
+              <p className="text-[#6a7282] text-sm">Loading your seeds...</p>
+            </div>
+          ) : (
+            <SeedList
+              seeds={filteredSeeds}
+              viewMode={viewMode}
+              onSeedClick={(seed) => setSelectedSeedId(seed.id)}
+            />
+          )}
         </div>
       </main>
 
@@ -116,7 +214,6 @@ export default function Home() {
         onAddClick={() => setShowAddForm(true)}
       />
 
-      {/* Add Seed Modal */}
       {showAddForm && (
         <AddSeedForm
           onSubmit={handleAddSeed}
@@ -124,7 +221,6 @@ export default function Home() {
         />
       )}
 
-      {/* Edit Seed Modal */}
       {editingSeed && (
         <AddSeedForm
           initialData={editingSeed}
@@ -133,17 +229,15 @@ export default function Home() {
         />
       )}
 
-      {/* Seed Detail Modal */}
       {selectedSeed && !editingSeed && (
         <SeedDetail
           seed={selectedSeed}
-          onClose={() => setSelectedSeed(null)}
-          onEdit={() => setEditingSeed(selectedSeed)}
-          onDelete={() => handleDeleteSeed(selectedSeed)}
+          onClose={() => setSelectedSeedId(null)}
+          onEdit={() => selectedSeed && setEditingSeed(selectedSeed)}
+          onDelete={() => selectedSeed && handleDeleteSeed(selectedSeed)}
         />
       )}
 
-      {/* Profile Modal */}
       {showProfile && (
         <Profile onClose={() => setShowProfile(false)} />
       )}

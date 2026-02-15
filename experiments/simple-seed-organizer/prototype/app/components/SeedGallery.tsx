@@ -30,10 +30,11 @@ export function SeedGallery({ seeds, onSeedClick }: SeedGalleryProps) {
           onClick={() => onSeedClick(seed)}
           className="relative aspect-square bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
         >
-          {seed.photoFront ? (
+          {(seed.photoFront || seed.photoBack) ? (
             <img
-              src={seed.photoFront}
+              src={seed.photoFront || seed.photoBack}
               alt={seed.variety || seed.name}
+              loading="lazy"
               className="w-full h-full object-cover"
             />
           ) : (

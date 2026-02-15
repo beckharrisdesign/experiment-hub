@@ -1,30 +1,220 @@
 import { Seed } from '@/types/seed';
 import { UserProfile } from '@/types/profile';
+import { supabase } from './supabase';
 
+// Fallback to localStorage if Supabase is not configured
 const STORAGE_KEY = 'simple-seed-organizer-seeds';
 const PROFILE_STORAGE_KEY = 'simple-seed-organizer-profile';
 
-export function getSeeds(): Seed[] {
+// Columns to exclude photos for fast initial load (photos are large base64 strings)
+const SEEDS_COLUMNS_WITHOUT_PHOTOS =
+  'id,name,variety,type,brand,source,year,purchase_date,quantity,days_to_germination,days_to_maturity,planting_depth,spacing,sun_requirement,planting_months,notes,use_first,custom_expiration_date,created_at,updated_at';
+
+/**
+ * Get seeds without photo data - fast initial load for list view.
+ * Photos can be loaded separately via getSeedPhotos() and merged.
+ */
+export async function getSeedsWithoutPhotos(): Promise<Seed[]> {
+  if (!supabase) {
+    console.warn('[Storage] Supabase not configured, returning empty array');
+    return [];
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('seeds')
+      .select(SEEDS_COLUMNS_WITHOUT_PHOTOS)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[Storage] Supabase error:', error);
+      throw new Error(`Failed to load seeds from database: ${error.message}`);
+    }
+
+    return (data || []).map(convertDbSeedToSeed);
+  } catch (err) {
+    console.error('[Storage] Error fetching from Supabase:', err);
+    if (err instanceof Error) {
+      throw err;
+    }
+    throw new Error('Failed to load seeds from database');
+  }
+}
+
+/**
+ * Get photo data for all seeds - use after getSeedsWithoutPhotos() for two-phase load.
+ * Returns a map of seedId -> { photoFront?, photoBack? }.
+ */
+export async function getSeedPhotos(): Promise<Map<string, { photoFront?: string; photoBack?: string }>> {
+  if (!supabase) return new Map();
+
+  try {
+    const { data, error } = await supabase
+      .from('seeds')
+      .select('id,photo_front,photo_back')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.warn('[Storage] Failed to load seed photos:', error);
+      return new Map();
+    }
+
+    const map = new Map<string, { photoFront?: string; photoBack?: string }>();
+    for (const row of data || []) {
+      map.set(row.id, {
+        photoFront: row.photo_front || undefined,
+        photoBack: row.photo_back || undefined,
+      });
+    }
+    return map;
+  } catch (err) {
+    console.warn('[Storage] Error fetching seed photos:', err);
+    return new Map();
+  }
+}
+
+/**
+ * Get all seeds from Supabase (REQUIRED - no fallback).
+ * Includes photos - use getSeedsWithoutPhotos + getSeedPhotos for faster perceived load.
+ */
+export async function getSeeds(): Promise<Seed[]> {
+  if (!supabase) {
+    console.warn('[Storage] Supabase not configured, returning empty array');
+    return [];
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('seeds')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[Storage] Supabase error:', error);
+      throw new Error(`Failed to load seeds from database: ${error.message}`);
+    }
+
+    // Convert database format to Seed format
+    return (data || []).map(convertDbSeedToSeed);
+  } catch (err) {
+    console.error('[Storage] Error fetching from Supabase:', err);
+    if (err instanceof Error) {
+      throw err;
+    }
+    throw new Error('Failed to load seeds from database');
+  }
+}
+
+/**
+ * Get seeds from localStorage (fallback)
+ */
+function getSeedsLocal(): Seed[] {
   if (typeof window === 'undefined') return [];
   const data = localStorage.getItem(STORAGE_KEY);
   return data ? JSON.parse(data) : [];
 }
 
-export function saveSeed(seed: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'>): Seed {
-  const seeds = getSeeds();
+/**
+ * Save a seed to Supabase (REQUIRED - no fallback)
+ */
+export async function saveSeed(seedData: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'>): Promise<Seed> {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Please check your environment variables.');
+  }
+
   const newSeed: Seed = {
-    ...seed,
+    ...seedData,
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
-  seeds.push(newSeed);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(seeds));
-  return newSeed;
+
+  try {
+    const dbSeed = convertSeedToDbSeed(newSeed);
+    console.log('[Storage] Attempting to save to Supabase:', { name: newSeed.name, variety: newSeed.variety });
+    
+    const { data, error } = await supabase
+      .from('seeds')
+      .insert([dbSeed])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[Storage] Supabase insert error:', error);
+      throw new Error(`Failed to save seed to database: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error('No data returned from Supabase after insert');
+    }
+
+    console.log('[Storage] Successfully saved to Supabase:', { id: data.id, name: data.name });
+    return convertDbSeedToSeed(data);
+  } catch (err) {
+    console.error('[Storage] Error saving to Supabase:', err);
+    if (err instanceof Error) {
+      throw err;
+    }
+    throw new Error('Failed to save seed to database');
+  }
 }
 
-export function updateSeed(id: string, updates: Partial<Seed>): Seed | null {
-  const seeds = getSeeds();
+/**
+ * Save seed to localStorage (fallback)
+ */
+function saveSeedLocal(seed: Seed): Seed {
+  const seeds = getSeedsLocal();
+  seeds.push(seed);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(seeds));
+  return seed;
+}
+
+/**
+ * Update a seed in Supabase (REQUIRED - no fallback)
+ */
+export async function updateSeed(id: string, updates: Partial<Seed>): Promise<Seed | null> {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Please check your environment variables.');
+  }
+
+  const updateData = {
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+
+  try {
+    const dbUpdates = convertSeedToDbSeed(updateData as Seed);
+    const { data, error } = await supabase
+      .from('seeds')
+      .update(dbUpdates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[Storage] Supabase update error:', error);
+      throw new Error(`Failed to update seed in database: ${error.message}`);
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    return convertDbSeedToSeed(data);
+  } catch (err) {
+    console.error('[Storage] Error updating in Supabase:', err);
+    if (err instanceof Error) {
+      throw err;
+    }
+    throw new Error('Failed to update seed in database');
+  }
+}
+
+/**
+ * Update seed in localStorage (fallback)
+ */
+function updateSeedLocal(id: string, updates: Partial<Seed>): Seed | null {
+  const seeds = getSeedsLocal();
   const index = seeds.findIndex(s => s.id === id);
   if (index === -1) return null;
   
@@ -37,208 +227,186 @@ export function updateSeed(id: string, updates: Partial<Seed>): Seed | null {
   return seeds[index];
 }
 
-export function deleteSeed(id: string): boolean {
-  const seeds = getSeeds();
+/**
+ * Delete a seed from Supabase (REQUIRED - no fallback)
+ */
+export async function deleteSeed(id: string): Promise<boolean> {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Please check your environment variables.');
+  }
+
+  try {
+    const { error } = await supabase
+      .from('seeds')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('[Storage] Supabase delete error:', error);
+      throw new Error(`Failed to delete seed from database: ${error.message}`);
+    }
+
+    return true;
+  } catch (err) {
+    console.error('[Storage] Error deleting from Supabase:', err);
+    if (err instanceof Error) {
+      throw err;
+    }
+    throw new Error('Failed to delete seed from database');
+  }
+}
+
+/**
+ * Delete seed from localStorage (fallback)
+ */
+function deleteSeedLocal(id: string): boolean {
+  const seeds = getSeedsLocal();
   const filtered = seeds.filter(s => s.id !== id);
   if (filtered.length === seeds.length) return false;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
   return true;
 }
 
-export function getSeedById(id: string): Seed | null {
-  const seeds = getSeeds();
+/**
+ * Clear all seeds from Supabase (REQUIRED - no fallback)
+ */
+export async function clearAllSeeds(): Promise<void> {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Please check your environment variables.');
+  }
+
+  try {
+    const { error } = await supabase
+      .from('seeds')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all (using a condition that matches all)
+
+    if (error) {
+      console.error('[Storage] Supabase clear error:', error);
+      throw new Error(`Failed to clear seeds from database: ${error.message}`);
+    }
+  } catch (err) {
+    console.error('[Storage] Error clearing Supabase:', err);
+    if (err instanceof Error) {
+      throw err;
+    }
+    throw new Error('Failed to clear seeds from database');
+  }
+}
+
+function clearAllSeedsLocal(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+/**
+ * Get a seed by ID from Supabase (REQUIRED - no fallback)
+ */
+export async function getSeedById(id: string): Promise<Seed | null> {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Please check your environment variables.');
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('seeds')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('[Storage] Supabase getById error:', error);
+      if (error.code === 'PGRST116') {
+        // No rows returned
+        return null;
+      }
+      throw new Error(`Failed to get seed from database: ${error.message}`);
+    }
+
+    return data ? convertDbSeedToSeed(data) : null;
+  } catch (err) {
+    console.error('[Storage] Error getting seed from Supabase:', err);
+    if (err instanceof Error) {
+      throw err;
+    }
+    throw new Error('Failed to get seed from database');
+  }
+}
+
+function getSeedByIdLocal(id: string): Seed | null {
+  const seeds = getSeedsLocal();
   return seeds.find(s => s.id === id) || null;
 }
 
-// Helper to calculate seed age in years
+/**
+ * Helper to calculate seed age in years
+ */
 export function getSeedAge(seed: Seed): number {
   if (!seed.year) return 0;
   return new Date().getFullYear() - seed.year;
 }
 
-// Development helper: Seed sample data if storage is empty
-export function seedSampleData(): void {
-  if (typeof window === 'undefined') return;
-  const existing = getSeeds();
-  if (existing.length > 0) return; // Don't overwrite existing data
-
-  const sampleSeeds: Seed[] = [
-    {
-      id: crypto.randomUUID(),
-      name: "Tomato",
-      variety: "Cherokee Purple",
-      type: "vegetable",
-      brand: "Baker Creek",
-      year: 2022,
-      quantity: "25 seeds",
-      daysToGermination: "7-14",
-      daysToMaturity: "80-90",
-      sunRequirement: "full-sun",
-      plantingMonths: [3, 4, 5],
-      notes: "Heirloom variety, great flavor",
-      useFirst: true,
-      createdAt: new Date('2022-03-15').toISOString(),
-      updatedAt: new Date('2022-03-15').toISOString()
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Basil",
-      variety: "Genovese",
-      type: "herb",
-      brand: "Burpee",
-      year: 2024,
-      quantity: "100 seeds",
-      daysToGermination: "5-10",
-      daysToMaturity: "60-75",
-      sunRequirement: "full-sun",
-      plantingMonths: [4, 5, 6, 7],
-      notes: "Great for pesto",
-      useFirst: false,
-      createdAt: new Date('2024-04-01').toISOString(),
-      updatedAt: new Date('2024-04-01').toISOString()
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Zinnia",
-      variety: "California Giant Mix",
-      type: "flower",
-      brand: "Johnny's Selected",
-      year: 2023,
-      quantity: "50 seeds",
-      daysToGermination: "7-10",
-      daysToMaturity: "75-90",
-      sunRequirement: "full-sun",
-      plantingMonths: [4, 5, 6],
-      notes: "Bright colors, attracts butterflies",
-      useFirst: false,
-      createdAt: new Date('2023-05-10').toISOString(),
-      updatedAt: new Date('2023-05-10').toISOString()
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Lettuce",
-      variety: "Buttercrunch",
-      type: "vegetable",
-      brand: "Ferry-Morse",
-      year: 2021,
-      quantity: "500 seeds",
-      daysToGermination: "7-14",
-      daysToMaturity: "55-65",
-      sunRequirement: "partial-shade",
-      plantingMonths: [3, 4, 9, 10],
-      notes: "Heat tolerant, good for spring and fall",
-      useFirst: true,
-      createdAt: new Date('2021-09-20').toISOString(),
-      updatedAt: new Date('2021-09-20').toISOString()
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Pepper",
-      variety: "Jalapeño",
-      type: "vegetable",
-      brand: "Burpee",
-      year: 2024,
-      quantity: "30 seeds",
-      daysToGermination: "10-20",
-      daysToMaturity: "70-80",
-      sunRequirement: "full-sun",
-      plantingMonths: [4, 5, 6],
-      notes: "Medium heat, great for salsas",
-      useFirst: false,
-      createdAt: new Date('2024-05-15').toISOString(),
-      updatedAt: new Date('2024-05-15').toISOString()
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Carrot",
-      variety: "Danvers 126",
-      type: "vegetable",
-      brand: "Baker Creek",
-      year: 2023,
-      quantity: "200 seeds",
-      daysToGermination: "14-21",
-      daysToMaturity: "75",
-      sunRequirement: "full-sun",
-      plantingMonths: [3, 4, 5, 7, 8],
-      notes: "Classic orange, stores well",
-      useFirst: false,
-      createdAt: new Date('2023-04-05').toISOString(),
-      updatedAt: new Date('2023-04-05').toISOString()
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Sunflower",
-      variety: "Mammoth",
-      type: "flower",
-      brand: "Johnny's Selected",
-      year: 2022,
-      quantity: "20 seeds",
-      daysToGermination: "7-14",
-      daysToMaturity: "80-100",
-      sunRequirement: "full-sun",
-      plantingMonths: [4, 5, 6],
-      notes: "Grows 8-12 feet tall, great for birds",
-      useFirst: true,
-      createdAt: new Date('2022-05-01').toISOString(),
-      updatedAt: new Date('2022-05-01').toISOString()
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Cilantro",
-      variety: "Slow Bolt",
-      type: "herb",
-      brand: "Burpee",
-      year: 2024,
-      quantity: "200 seeds",
-      daysToGermination: "7-14",
-      daysToMaturity: "45-55",
-      sunRequirement: "partial-shade",
-      plantingMonths: [3, 4, 9, 10],
-      notes: "Resists bolting in heat",
-      useFirst: false,
-      createdAt: new Date('2024-03-20').toISOString(),
-      updatedAt: new Date('2024-03-20').toISOString()
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Beans",
-      variety: "Blue Lake Bush",
-      type: "vegetable",
-      brand: "Ferry-Morse",
-      year: 2020,
-      quantity: "50 seeds",
-      daysToGermination: "7-14",
-      daysToMaturity: "50-60",
-      sunRequirement: "full-sun",
-      plantingMonths: [5, 6, 7],
-      notes: "Old packet, should use soon",
-      useFirst: true,
-      createdAt: new Date('2020-06-10').toISOString(),
-      updatedAt: new Date('2020-06-10').toISOString()
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Marigold",
-      variety: "French Dwarf",
-      type: "flower",
-      brand: "Baker Creek",
-      year: 2024,
-      quantity: "100 seeds",
-      daysToGermination: "5-10",
-      daysToMaturity: "50-60",
-      sunRequirement: "full-sun",
-      plantingMonths: [4, 5, 6],
-      notes: "Pest deterrent, companion plant",
-      useFirst: false,
-      createdAt: new Date('2024-04-15').toISOString(),
-      updatedAt: new Date('2024-04-15').toISOString()
-    }
-  ];
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(sampleSeeds));
+/**
+ * Convert Seed to database format (handles snake_case column names and array fields)
+ */
+function convertSeedToDbSeed(seed: Partial<Seed>): any {
+  return {
+    id: seed.id,
+    name: seed.name,
+    variety: seed.variety,
+    type: seed.type,
+    brand: seed.brand || null,
+    source: seed.source || null,
+    year: seed.year || null,
+    purchase_date: seed.purchaseDate || null,
+    quantity: seed.quantity || null,
+    days_to_germination: seed.daysToGermination || null,
+    days_to_maturity: seed.daysToMaturity || null,
+    planting_depth: seed.plantingDepth || null,
+    spacing: seed.spacing || null,
+    sun_requirement: seed.sunRequirement || null,
+    planting_months: seed.plantingMonths ? JSON.stringify(seed.plantingMonths) : null,
+    notes: seed.notes || null,
+    photo_front: seed.photoFront || null,
+    photo_back: seed.photoBack || null,
+    use_first: seed.useFirst || false,
+    custom_expiration_date: seed.customExpirationDate || null,
+    created_at: seed.createdAt,
+    updated_at: seed.updatedAt,
+  };
 }
 
-// Profile storage functions
+/**
+ * Convert database format to Seed (handles snake_case column names and array fields)
+ */
+function convertDbSeedToSeed(dbSeed: any): Seed {
+  return {
+    id: dbSeed.id,
+    name: dbSeed.name,
+    variety: dbSeed.variety,
+    type: dbSeed.type,
+    brand: dbSeed.brand || undefined,
+    source: dbSeed.source || undefined,
+    year: dbSeed.year || undefined,
+    purchaseDate: dbSeed.purchase_date || undefined,
+    quantity: dbSeed.quantity || undefined,
+    daysToGermination: dbSeed.days_to_germination || undefined,
+    daysToMaturity: dbSeed.days_to_maturity || undefined,
+    plantingDepth: dbSeed.planting_depth || undefined,
+    spacing: dbSeed.spacing || undefined,
+    sunRequirement: dbSeed.sun_requirement || undefined,
+    plantingMonths: dbSeed.planting_months ? JSON.parse(dbSeed.planting_months) : undefined,
+    notes: dbSeed.notes || undefined,
+    photoFront: dbSeed.photo_front || undefined,
+    photoBack: dbSeed.photo_back || undefined,
+    useFirst: dbSeed.use_first || undefined,
+    customExpirationDate: dbSeed.custom_expiration_date || undefined,
+    createdAt: dbSeed.created_at,
+    updatedAt: dbSeed.updated_at,
+  };
+}
+
+// Profile storage functions (keeping localStorage for now, can migrate later)
 export function getProfile(): UserProfile | null {
   if (typeof window === 'undefined') return null;
   const data = localStorage.getItem(PROFILE_STORAGE_KEY);

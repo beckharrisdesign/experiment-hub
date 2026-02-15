@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clear LocalStorage</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    button {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px 5px;
+    }
+    button:hover {
+      background: #dc2626;
+    }
+    button.success {
+      background: #10b981;
+    }
+    button.success:hover {
+      background: #059669;
+    }
+    .info {
+      background: #f3f4f6;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    .status.success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .status.error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+  </style>
+</head>
+<body>
+  <h1>Clear LocalStorage for Seed Organizer</h1>
+  
+  <div class="info">
+    <p><strong>What this does:</strong></p>
+    <ul>
+      <li>Clears all localStorage data for the seed organizer</li>
+      <li>This will remove any seeds stored locally (fallback storage)</li>
+      <li>Seeds in Supabase database will NOT be affected</li>
+    </ul>
+  </div>
+
+  <button onclick="clearStorage()">Clear LocalStorage</button>
+  <button onclick="checkStorage()" class="success">Check Storage</button>
+
+  <div id="status"></div>
+
+  <script>
+    const STORAGE_KEY = 'simple-seed-organizer-seeds';
+    const PROFILE_STORAGE_KEY = 'simple-seed-organizer-profile';
+
+    function showStatus(message, isSuccess) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.className = 'status ' + (isSuccess ? 'success' : 'error');
+      statusDiv.textContent = message;
+    }
+
+    function clearStorage() {
+      try {
+        // Clear seeds
+        localStorage.removeItem(STORAGE_KEY);
+        
+        // Optionally clear profile (uncomment if needed)
+        // localStorage.removeItem(PROFILE_STORAGE_KEY);
+
+        // Check what was cleared
+        const hadSeeds = localStorage.getItem(STORAGE_KEY) !== null;
+        
+        showStatus('✅ LocalStorage cleared successfully! Seeds data removed.', true);
+        
+        // Show what's left
+        setTimeout(() => {
+          checkStorage();
+        }, 500);
+      } catch (err) {
+        showStatus('❌ Error clearing localStorage: ' + err.message, false);
+      }
+    }
+
+    function checkStorage() {
+      const seedsData = localStorage.getItem(STORAGE_KEY);
+      const profileData = localStorage.getItem(PROFILE_STORAGE_KEY);
+      
+      let message = '📊 Storage Status:\n\n';
+      message += `Seeds: ${seedsData ? 'Found (' + (JSON.parse(seedsData).length || 0) + ' seeds)' : 'Empty'}\n`;
+      message += `Profile: ${profileData ? 'Found' : 'Empty'}\n\n`;
+      
+      if (!seedsData && !profileData) {
+        message += '✅ All clear! Ready for end-to-end testing.';
+        showStatus(message, true);
+      } else {
+        message += '⚠️ Some data still exists. Click "Clear LocalStorage" to remove it.';
+        showStatus(message, false);
+      }
+    }
+
+    // Check on load
+    checkStorage();
+  </script>
+</body>
+</html>
