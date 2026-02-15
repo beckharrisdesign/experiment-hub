@@ -1,5 +1,6 @@
 export interface Seed {
   id: string;
+  user_id?: string;
   name: string;
   variety: string;
   type: 'vegetable' | 'herb' | 'flower' | 'fruit' | 'other';
@@ -15,8 +16,10 @@ export interface Seed {
   sunRequirement?: 'full-sun' | 'partial-shade' | 'full-shade';
   plantingMonths?: number[]; // 1-12
   notes?: string;
-  photoFront?: string; // base64 or URL
+  photoFront?: string; // URL (from storage) or legacy base64 data URL
   photoBack?: string;
+  photoFrontPath?: string; // storage path (for save/update)
+  photoBackPath?: string;
   useFirst?: boolean;
   customExpirationDate?: string; // ISO date string (YYYY-MM-DD)
   createdAt: string;

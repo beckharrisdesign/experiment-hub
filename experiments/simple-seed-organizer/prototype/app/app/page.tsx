@@ -144,7 +144,7 @@ export default function Home() {
   const handleDeleteSeed = async (seed: Seed) => {
     if (confirm(`Delete "${seed.name}"?`)) {
       try {
-        await deleteSeed(seed.id);
+        await deleteSeed(seed.id, seed.user_id || user?.id);
         const updatedSeeds = await getSeeds();
         setSeeds(updatedSeeds);
         setSelectedSeedId(null);
@@ -216,6 +216,7 @@ export default function Home() {
 
       {showAddForm && (
         <AddSeedForm
+          userId={user.id}
           onSubmit={handleAddSeed}
           onClose={() => setShowAddForm(false)}
         />
@@ -223,6 +224,7 @@ export default function Home() {
 
       {editingSeed && (
         <AddSeedForm
+          userId={editingSeed.user_id || user.id}
           initialData={editingSeed}
           onSubmit={handleUpdateSeed}
           onClose={() => setEditingSeed(null)}

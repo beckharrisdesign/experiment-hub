@@ -274,3 +274,142 @@ function normalizeAIData(data: Record<string, unknown>): AIExtractedData {
 
 // Removed normalizeSunRequirement - we now preserve exact text as written on the packet
 
+/**
+ * Extract from a single image (front or back only). All extracted fields are tagged with the given source.
+ * Use this for parallel extraction - call once per image.
+ */
+export async function extractSingleImageWithAI(
+  image: File | string,
+  side: 'front' | 'back',
+  apiKey?: string
+): Promise<AIExtractedData> {
+  const key = apiKey || process.env.OPENAI_API_KEY;
+  if (!key) {
+    throw new Error('OPENAI_API_KEY must be provided as parameter or set as environment variable');
+  }
+
+  const imageBase64 = await imageToBase64(image);
+  const sideLabel = side === 'front' ? 'FRONT' : 'BACK';
+
+  const prompt = `You are a TEXT EXTRACTION TOOL. Your ONLY job is to copy text EXACTLY as it appears on the seed packet image. You are NOT allowed to modify, combine, paraphrase, summarize, or interpret ANY text.
+
+CRITICAL: This image is the ${sideLabel} of the packet ONLY. Tag ALL extracted fields with "source": "${side}" in fieldSources and rawKeyValuePairs.
+
+IMPORTANT: Look for text in ALL orientations - horizontal, vertical, sideways, rotated, or at any angle. Text may appear along edges, in margins, or rotated 90/180 degrees. Extract ALL visible text regardless of orientation.
+
+Extract these specific fields if present:
+- name (common plant name)
+- variety (cultivar/variety name)
+- latinName (scientific name - extract EXACT text as written)
+- brand (seed company name)
+- year (packed for year, as number)
+- quantity (number of seeds)
+- daysToGermination (e.g., "7-14 days")
+- daysToMaturity (e.g., "70-80 days")
+- plantingDepth (e.g., "1/4 inch")
+- spacing (e.g., "12-18 inches")
+- sunRequirement (extract EXACT text as written)
+- description (intro text, major description)
+- plantingInstructions (text in the planting instructions section only)
+
+Additionally, extract ALL other key-value pairs in "rawKeyValuePairs" with source: "${side}".
+
+Return as JSON:
+{
+  "name": "exact text or null",
+  "variety": "exact text or null",
+  "latinName": "exact text or null",
+  "brand": "exact text or null",
+  "year": number or null,
+  "quantity": "exact text or null",
+  "daysToGermination": "exact text or null",
+  "daysToMaturity": "exact text or null",
+  "plantingDepth": "exact text or null",
+  "spacing": "exact text or null",
+  "sunRequirement": "exact text or null",
+  "description": "exact text or null",
+  "plantingInstructions": "exact text or null",
+  "fieldSources": { "name": "${side}", "variety": "${side}", ... },
+  "rawKeyValuePairs": [{"key": "...", "value": "...", "source": "${side}"}, ...]
+}
+
+Copy text CHARACTER-BY-CHARACTER exactly as it appears. If a field is not visible, use null.`;
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${key}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            {
+              type: 'image_url',
+              image_url: { url: `data:image/png;base64,${imageBase64}` },
+            },
+          ],
+        },
+      ],
+      max_tokens: 2000,
+      response_format: { type: 'json_object' },
+      temperature: 0.0,
+    }),
+  });
+
+  const responseText = await response.text();
+  if (!response.ok) {
+    let errorMessage = 'Unknown error';
+    try {
+      const error = JSON.parse(responseText);
+      errorMessage = error.error?.message || error.message || JSON.stringify(error);
+    } catch {
+      errorMessage = responseText || `HTTP ${response.status}: ${response.statusText}`;
+    }
+    throw new Error(`OpenAI API error: ${errorMessage}`);
+  }
+
+  let data;
+  try {
+    data = JSON.parse(responseText);
+  } catch {
+    throw new Error(`Invalid JSON response from OpenAI: ${responseText.substring(0, 200)}`);
+  }
+
+  if (!data.choices?.[0]?.message?.content) {
+    throw new Error('No content in OpenAI response');
+  }
+
+  let extracted: Record<string, unknown>;
+  try {
+    extracted = JSON.parse(data.choices[0].message.content);
+  } catch {
+    throw new Error(`Failed to parse JSON from AI response: ${data.choices[0].message.content.substring(0, 200)}`);
+  }
+
+  // Ensure all fieldSources and rawKeyValuePairs use the correct side
+  const fieldSources: Record<string, 'front' | 'back'> = {};
+  for (const [k, v] of Object.entries(extracted)) {
+    if (k !== 'rawKeyValuePairs' && k !== 'fieldSources' && v != null && v !== '') {
+      fieldSources[k] = side;
+    }
+  }
+  if (extracted.fieldSources && typeof extracted.fieldSources === 'object') {
+    Object.assign(fieldSources, extracted.fieldSources);
+  }
+  extracted.fieldSources = fieldSources;
+
+  if (Array.isArray(extracted.rawKeyValuePairs)) {
+    extracted.rawKeyValuePairs = extracted.rawKeyValuePairs.map((p: any) => ({
+      ...p,
+      source: side,
+    }));
+  }
+
+  return normalizeAIData(extracted);
+}
+

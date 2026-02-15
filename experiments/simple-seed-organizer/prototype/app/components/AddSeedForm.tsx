@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Seed, SeedType, SunRequirement } from '@/types/seed';
 import { AIExtractedData } from '@/lib/packetReaderAI';
 import { processImageFile } from '@/lib/imageUtils';
+import { uploadSeedPhoto } from '@/lib/seed-photos';
 
 interface AddSeedFormProps {
-  onSubmit: (seed: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'>) => void | Promise<void>;
+  onSubmit: (seed: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) => void | Promise<void>;
   onClose: () => void;
   initialData?: Seed;
+  userId: string;
 }
 
 const SEED_TYPES: { value: SeedType; label: string }[] = [
@@ -52,16 +54,12 @@ function getKeyValuePairsBySource(data: AIExtractedData): { front: Array<{ key: 
   const pairs: Array<{ key: string; value: string; source?: 'front' | 'back'; italic?: boolean }> = [];
   const seenKeys = new Set<string>();
 
-  // Add structured fields
-  if (data.name) {
-    pairs.push({ key: 'Name', value: data.name, source: data.fieldSources?.name, italic: false });
-    seenKeys.add('name');
-  }
-  if (data.variety) {
-    pairs.push({ key: 'Variety', value: data.variety, source: data.fieldSources?.variety, italic: false });
-    seenKeys.add('variety');
-  }
-  if (data.latinName) {
+  // Always include Name and Variety first (required fields) - even when empty, so user can edit
+  pairs.push({ key: 'Name', value: data.name || '', source: data.fieldSources?.name, italic: false });
+  seenKeys.add('name');
+  pairs.push({ key: 'Variety', value: data.variety || data.latinName || '', source: data.fieldSources?.variety || data.fieldSources?.latinName, italic: false });
+  seenKeys.add('variety');
+  if (data.latinName && !seenKeys.has('latinName')) {
     pairs.push({ key: 'Latin Name', value: data.latinName, source: data.fieldSources?.latinName, italic: true });
     seenKeys.add('latinName');
   }
@@ -138,7 +136,7 @@ function getKeyValuePairsBySource(data: AIExtractedData): { front: Array<{ key: 
   };
 }
 
-export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps) {
+export function AddSeedForm({ onSubmit, onClose, initialData, userId }: AddSeedFormProps) {
   const [name, setName] = useState(initialData?.name || '');
   const [variety, setVariety] = useState(initialData?.variety || '');
   const [type, setType] = useState<SeedType>(initialData?.type || 'vegetable');
@@ -159,152 +157,117 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
     initialData?.customExpirationDate ? initialData.customExpirationDate.split('T')[0] : ''
   );
 
-  // Extraction state
+  // Extraction state - separate loading per image for parallel extraction
   const [frontImage, setFrontImage] = useState<string | null>(initialData?.photoFront || null);
   const [backImage, setBackImage] = useState<string | null>(initialData?.photoBack || null);
-  const [loading, setLoading] = useState(false);
+  const [loadingFront, setLoadingFront] = useState(false);
+  const [loadingBack, setLoadingBack] = useState(false);
   const [aiExtractedData, setAiExtractedData] = useState<AIExtractedData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<string>('');
   const frontFileInputRef = useRef<HTMLInputElement>(null);
   const backFileInputRef = useRef<HTMLInputElement>(null);
   const [hoverZoom, setHoverZoom] = useState<{ image: string; x: number; y: number; rect: { left: number; top: number; width: number; height: number } } | null>(null);
-  // When editing, skip AI extraction - data is already populated
-  const [hasProcessed, setHasProcessed] = useState(!!initialData);
   const [submitting, setSubmitting] = useState(false);
 
-  // Auto-process when both images are ready (only for add, not edit)
-  useEffect(() => {
-    if (initialData) return; // Never auto-run AI when editing
-    if (frontImage && backImage && !hasProcessed && !loading && !aiExtractedData) {
-      console.log('[AddSeedForm] Both images ready, triggering AI processing...');
-      setHasProcessed(true);
-      const process = async () => {
-        try {
-          await processWithAI(frontImage, backImage);
-        } catch (err) {
-          console.error('[AddSeedForm] Error in auto-processing:', err);
-          setHasProcessed(false); // Reset so user can retry
-        }
-      };
-      process();
+  // Merge extracted data from one side into existing data
+  const mergeExtractedData = (existing: AIExtractedData | null, incoming: AIExtractedData, side: 'front' | 'back'): AIExtractedData => {
+    const merged: AIExtractedData = {
+      ...(existing || {}),
+      fieldSources: { ...(existing?.fieldSources || {}), ...(incoming.fieldSources || {}) },
+      rawKeyValuePairs: [
+        ...(existing?.rawKeyValuePairs || []).filter((p) => p.source !== side),
+        ...(incoming.rawKeyValuePairs || []).filter((p) => p.source === side),
+      ],
+    };
+    // Overlay fields from incoming that belong to this side. Prefer front for name/variety when both exist.
+    const fields = ['name', 'variety', 'latinName', 'brand', 'year', 'quantity', 'daysToGermination', 'daysToMaturity', 'plantingDepth', 'spacing', 'sunRequirement', 'description', 'plantingInstructions'] as const;
+    for (const f of fields) {
+      const val = incoming[f];
+      if (val == null || val === '') continue;
+      if (incoming.fieldSources?.[f] !== side) continue;
+      // Prefer front for name/variety when existing has them from front
+      if ((f === 'name' || f === 'variety') && side === 'back' && existing?.fieldSources?.[f] === 'front') continue;
+      (merged as any)[f] = val;
     }
-  }, [initialData, frontImage, backImage, hasProcessed, loading, aiExtractedData]);
+    if (merged.rawKeyValuePairs?.length === 0) merged.rawKeyValuePairs = undefined;
+    return merged;
+  };
 
-  const processWithAI = async (frontUrl: string, backUrl: string) => {
+  const applyFormFieldsFromExtracted = (data: AIExtractedData) => {
+    if (data.name) setName(data.name);
+    if (data.variety) setVariety(data.variety);
+    else if (data.latinName) setVariety(data.latinName);
+    if (data.brand) setBrand(data.brand);
+    if (data.year) setYear(String(data.year));
+    if (data.quantity) setQuantity(data.quantity);
+    if (data.daysToGermination) setDaysToGermination(data.daysToGermination);
+    if (data.daysToMaturity) setDaysToMaturity(data.daysToMaturity);
+    if (data.plantingDepth) setPlantingDepth(data.plantingDepth);
+    if (data.spacing) setSpacing(data.spacing);
+    if (data.sunRequirement) {
+      const normalized = normalizeSunRequirement(data.sunRequirement);
+      if (normalized) setSunRequirement(normalized);
+    }
+    if (data.description || data.plantingInstructions) {
+      setNotes([data.description, data.plantingInstructions].filter(Boolean).join('\n\n'));
+    }
+  };
+
+  const extractSingleImage = async (imageUrl: string, side: 'front' | 'back') => {
+    if (side === 'front') setLoadingFront(true);
+    else setLoadingBack(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
-      setStatus('Sending to AI...');
-      
-      console.log('[AddSeedForm] processWithAI called with:', { frontUrl, backUrl });
-      
-      const frontResponse = await fetch(frontUrl);
-      if (!frontResponse.ok) {
-        throw new Error(`Failed to fetch front image: ${frontResponse.status}`);
-      }
-      const frontBlob = await frontResponse.blob();
-      const frontFile = new File([frontBlob], 'packet-front.png', { type: frontBlob.type || 'image/png' });
-      console.log('[AddSeedForm] Front file prepared:', { size: frontFile.size, type: frontFile.type });
+      const response = await fetch(imageUrl);
+      if (!response.ok) throw new Error(`Failed to fetch ${side} image: ${response.status}`);
+      const blob = await response.blob();
+      const file = new File([blob], `packet-${side}.png`, { type: blob.type || 'image/png' });
 
-      const backResponse = await fetch(backUrl);
-      if (!backResponse.ok) {
-        throw new Error(`Failed to fetch back image: ${backResponse.status}`);
-      }
-      const backBlob = await backResponse.blob();
-      const backFile = new File([backBlob], 'packet-back.png', { type: backBlob.type || 'image/png' });
-      console.log('[AddSeedForm] Back file prepared:', { size: backFile.size, type: backFile.type });
-
-      setStatus('Sending to AI...');
-      
       const formData = new FormData();
-      formData.append('frontImage', frontFile);
-      formData.append('backImage', backFile);
+      formData.append('image', file);
+      formData.append('side', side);
 
-      console.log('[AddSeedForm] Sending to /api/packet/read-ai...');
-      const response = await fetch('/api/packet/read-ai', {
-        method: 'POST',
-        body: formData,
-      });
-
-      console.log('[AddSeedForm] Response status:', response.status);
-      const responseText = await response.text();
-      console.log('[AddSeedForm] Response text (first 500 chars):', responseText.substring(0, 500));
-      
+      const res = await fetch('/api/packet/read-ai-single', { method: 'POST', body: formData });
+      const text = await res.text();
       let result;
       try {
-        result = JSON.parse(responseText);
-      } catch (e) {
-        throw new Error(`Invalid JSON response: ${responseText.substring(0, 200)}`);
+        result = JSON.parse(text);
+      } catch {
+        throw new Error(`Invalid JSON response: ${text.substring(0, 200)}`);
       }
+      if (!res.ok) throw new Error(result.error || result.message || 'Failed to extract');
+      if (!result.data) throw new Error('No data returned from AI extraction');
 
-      if (!response.ok) {
-        throw new Error(result.error || result.message || 'Failed to process images with AI');
-      }
-
-      if (!result.data) {
-        throw new Error('No data returned from AI extraction');
-      }
-
-      console.log('[AddSeedForm] AI extraction successful:', result.data);
-      setAiExtractedData(result.data);
-      
-      // Auto-populate form fields
-      if (result.data.name) setName(result.data.name);
-      if (result.data.variety) setVariety(result.data.variety);
-      if (result.data.brand) setBrand(result.data.brand);
-      if (result.data.year) setYear(String(result.data.year));
-      if (result.data.quantity) setQuantity(result.data.quantity);
-      if (result.data.daysToGermination) setDaysToGermination(result.data.daysToGermination);
-      if (result.data.daysToMaturity) setDaysToMaturity(result.data.daysToMaturity);
-      if (result.data.plantingDepth) setPlantingDepth(result.data.plantingDepth);
-      if (result.data.spacing) setSpacing(result.data.spacing);
-      if (result.data.sunRequirement) {
-        const normalized = normalizeSunRequirement(result.data.sunRequirement);
-        if (normalized) setSunRequirement(normalized);
-      }
-      if (result.data.description || result.data.plantingInstructions) {
-        setNotes([result.data.description, result.data.plantingInstructions].filter(Boolean).join('\n\n'));
-      }
-      
-      setStatus('Extraction complete!');
+      setAiExtractedData((prev) => {
+        const merged = mergeExtractedData(prev, result.data, side);
+        applyFormFieldsFromExtracted(merged);
+        return merged;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during processing');
-      setStatus('Error occurred');
     } finally {
-      setLoading(false);
+      if (side === 'front') setLoadingFront(false);
+      else setLoadingBack(false);
     }
   };
 
   const handleFileSelect = async (side: 'front' | 'back', file: File) => {
     try {
-      setStatus('Processing image...');
       setError(null);
-      
-      // Process image (convert HEIC if needed, resize)
       const processedFile = await processImageFile(file, 1024, 0.8);
       const url = URL.createObjectURL(processedFile);
-      
-      console.log(`[AddSeedForm] Processed ${side} image:`, { 
-        originalName: file.name, 
-        originalSize: file.size,
-        processedSize: processedFile.size,
-        url 
-      });
-      
-      // Update state - this will trigger useEffect if both images are now ready
+
       if (side === 'front') {
         setFrontImage(url);
+        if (!initialData) extractSingleImage(url, 'front');
       } else {
         setBackImage(url);
+        if (!initialData) extractSingleImage(url, 'back');
       }
-      
-      setStatus('');
-      
     } catch (err) {
       console.error('[AddSeedForm] Error processing image:', err);
       setError(err instanceof Error ? err.message : 'Failed to process image');
-      setStatus('');
     }
   };
 
@@ -314,29 +277,29 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
 
     setSubmitting(true);
     try {
-      // Convert blob URLs to base64 data URLs for persistence
-      const blobToDataUrl = async (url: string | null): Promise<string | undefined> => {
-        if (!url) return undefined;
-        if (url.startsWith('data:')) return url;
-        try {
-          const response = await fetch(url);
-          const blob = await response.blob();
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-        } catch (err) {
-          console.error('Error converting blob to data URL:', err);
-          return undefined;
-        }
-      };
+      const seedId = initialData?.id ?? crypto.randomUUID();
+      const frontIsNew = !initialData?.photoFront || frontImage !== initialData.photoFront;
+      const backIsNew = !initialData?.photoBack || backImage !== initialData.photoBack;
 
-      const photoFrontDataUrl = await blobToDataUrl(frontImage);
-      const photoBackDataUrl = await blobToDataUrl(backImage);
+      let photoFrontPath: string | undefined;
+      let photoBackPath: string | undefined;
 
-      const seedData = {
+      if (frontIsNew && frontImage) {
+        const blob = await (await fetch(frontImage)).blob();
+        photoFrontPath = await uploadSeedPhoto(userId, seedId, 'front', blob);
+      } else if (initialData?.photoFrontPath) {
+        photoFrontPath = initialData.photoFrontPath;
+      }
+
+      if (backIsNew && backImage) {
+        const blob = await (await fetch(backImage)).blob();
+        photoBackPath = await uploadSeedPhoto(userId, seedId, 'back', blob);
+      } else if (initialData?.photoBackPath) {
+        photoBackPath = initialData.photoBackPath;
+      }
+
+      const seedData: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'> & { id?: string } = {
+        ...(initialData ? {} : { id: seedId }),
         name: name.trim(),
         variety: variety.trim(),
         type,
@@ -352,11 +315,23 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
         sunRequirement,
         notes: notes.trim() || undefined,
         customExpirationDate: customExpirationDate || undefined,
-        photoFront: photoFrontDataUrl,
-        photoBack: photoBackDataUrl,
+        photoFrontPath,
+        photoBackPath,
       };
 
+      if (!photoFrontPath && !frontIsNew && initialData?.photoFront?.startsWith('data:')) {
+        (seedData as any).photoFront = initialData.photoFront;
+      }
+      if (!photoBackPath && !backIsNew && initialData?.photoBack?.startsWith('data:')) {
+        (seedData as any).photoBack = initialData.photoBack;
+      }
+
       await onSubmit(seedData);
+      setError(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      setError(message);
+      console.error('[AddSeedForm] Submit error:', err);
     } finally {
       setSubmitting(false);
     }
@@ -367,6 +342,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
     const keyMap: Record<string, (val: string) => void> = {
       'Name': setName,
       'Variety': setVariety,
+      'Latin Name': setVariety,
       'Brand': setBrand,
       'Year': setYear,
       'Quantity': setQuantity,
@@ -418,19 +394,37 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
         </button>
       </div>
 
-      {/* Loading/Status at Top */}
-      {loading && (
-        <div className="bg-blue-50 border-b border-blue-200 px-4 py-3">
-          <div className="flex items-center">
-            <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-[#16a34a] mr-2"></div>
-            <span className="text-sm text-[#6a7282]">{status}</span>
-          </div>
+      {/* Loading status when extracting */}
+      {(loadingFront || loadingBack) && (
+        <div className="bg-blue-50 border-b border-blue-200 px-4 py-2 flex items-center gap-4">
+          {loadingFront && (
+            <span className="text-sm text-[#6a7282] flex items-center gap-2">
+              <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-[#16a34a]" />
+              Extracting front...
+            </span>
+          )}
+          {loadingBack && (
+            <span className="text-sm text-[#6a7282] flex items-center gap-2">
+              <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-[#16a34a]" />
+              Extracting back...
+            </span>
+          )}
         </div>
       )}
 
       {error && (
-        <div className="bg-red-50 border-b border-red-200 px-4 py-3">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="bg-red-50 border-b border-red-200 px-4 py-3 flex items-start justify-between gap-2">
+          <p className="text-sm text-red-600 flex-1">{error}</p>
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="text-red-400 hover:text-red-600 shrink-0 p-1"
+            aria-label="Dismiss error"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
       )}
 
@@ -458,6 +452,14 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
                     }}
                     onMouseLeave={() => setHoverZoom(null)}
                   >
+                    {loadingFront && (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 rounded border border-gray-200">
+                        <div className="flex flex-col items-center gap-2">
+                          <span className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[#16a34a] border-t-transparent" />
+                          <span className="text-sm font-medium text-[#4a5565]">Extracting...</span>
+                        </div>
+                      </div>
+                    )}
                     <img
                       src={frontImage}
                       alt="Front of packet"
@@ -468,6 +470,15 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
                         objectFit: 'contain'
                       }}
                     />
+                    {!loadingFront && !initialData && (
+                      <button
+                        type="button"
+                        onClick={() => extractSingleImage(frontImage, 'front')}
+                        className="absolute bottom-2 right-2 z-10 px-2 py-1 text-xs font-medium bg-white/90 text-gray-600 rounded shadow hover:bg-white transition-colors"
+                      >
+                        Re-extract
+                      </button>
+                    )}
                     {hoverZoom && hoverZoom.image === frontImage && (
                       <div 
                         className="fixed pointer-events-none z-50 border-2 border-blue-400 bg-white shadow-2xl rounded overflow-hidden"
@@ -530,6 +541,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
                             const keyMap: Record<string, string> = {
                               'Name': name,
                               'Variety': variety,
+                              'Latin Name': variety,
                               'Brand': brand,
                               'Year': year,
                               'Quantity': quantity,
@@ -544,9 +556,14 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
                             return keyMap[pair.key] || pair.value;
                           };
                           
+                          const isRequired = pair.key === 'Name' || pair.key === 'Variety';
+                          const isEmpty = isRequired && !getCurrentValue().trim();
                           return (
                             <tr key={index}>
-                              <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">{pair.key}</td>
+                              <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
+                                {pair.key}
+                                {isRequired && <span className="text-red-500 ml-0.5">*</span>}
+                              </td>
                               <td className="py-1.5 text-[#101828]">
                                 <div className="flex items-start gap-2 min-w-0">
                                   <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 shrink-0 ${sourceColor}`}>
@@ -556,16 +573,17 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
                                     <textarea
                                       value={getCurrentValue()}
                                       onChange={(e) => updateFieldFromKey(pair.key, e.target.value)}
-                                      className="flex-1 min-w-0 text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] resize-none"
+                                      className={`flex-1 min-w-0 text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] resize-none ${isEmpty ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
                                       rows={3}
+                                      placeholder={pair.value || (isRequired ? 'Required' : undefined)}
                                     />
                                   ) : (
                                     <input
                                       type={pair.key === 'Year' ? 'number' : 'text'}
                                       value={getCurrentValue()}
                                       onChange={(e) => updateFieldFromKey(pair.key, e.target.value)}
-                                      className={`flex-1 min-w-0 text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] ${pair.italic ? 'italic' : ''}`}
-                                      placeholder={pair.value}
+                                      className={`flex-1 min-w-0 text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] ${pair.italic ? 'italic' : ''} ${isEmpty ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                                      placeholder={pair.value || (isRequired ? 'Required' : undefined)}
                                     />
                                   )}
                                 </div>
@@ -744,6 +762,14 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
                     }}
                     onMouseLeave={() => setHoverZoom(null)}
                   >
+                    {loadingBack && (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 rounded border border-gray-200">
+                        <div className="flex flex-col items-center gap-2">
+                          <span className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[#16a34a] border-t-transparent" />
+                          <span className="text-sm font-medium text-[#4a5565]">Extracting...</span>
+                        </div>
+                      </div>
+                    )}
                     <img
                       src={backImage}
                       alt="Back of packet"
@@ -754,6 +780,15 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
                         objectFit: 'contain'
                       }}
                     />
+                    {!loadingBack && !initialData && (
+                      <button
+                        type="button"
+                        onClick={() => extractSingleImage(backImage, 'back')}
+                        className="absolute bottom-2 right-2 z-10 px-2 py-1 text-xs font-medium bg-white/90 text-gray-600 rounded shadow hover:bg-white transition-colors"
+                      >
+                        Re-extract
+                      </button>
+                    )}
                     {hoverZoom && hoverZoom.image === backImage && (
                       <div 
                         className="fixed pointer-events-none z-50 border-2 border-green-400 bg-white shadow-2xl rounded overflow-hidden"
@@ -816,6 +851,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
                             const keyMap: Record<string, string> = {
                               'Name': name,
                               'Variety': variety,
+                              'Latin Name': variety,
                               'Brand': brand,
                               'Year': year,
                               'Quantity': quantity,
@@ -830,9 +866,14 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
                             return keyMap[pair.key] || pair.value;
                           };
                           
+                          const isRequired = pair.key === 'Name' || pair.key === 'Variety';
+                          const isEmpty = isRequired && !getCurrentValue().trim();
                           return (
                             <tr key={index}>
-                              <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">{pair.key}</td>
+                              <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
+                                {pair.key}
+                                {isRequired && <span className="text-red-500 ml-0.5">*</span>}
+                              </td>
                               <td className="py-1.5 text-[#101828]">
                                 <div className="flex items-start gap-2 min-w-0">
                                   <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 shrink-0 ${sourceColor}`}>
@@ -842,16 +883,17 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
                                     <textarea
                                       value={getCurrentValue()}
                                       onChange={(e) => updateFieldFromKey(pair.key, e.target.value)}
-                                      className="flex-1 min-w-0 text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] resize-none"
+                                      className={`flex-1 min-w-0 text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] resize-none ${isEmpty ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
                                       rows={3}
+                                      placeholder={pair.value || (isRequired ? 'Required' : undefined)}
                                     />
                                   ) : (
                                     <input
                                       type={pair.key === 'Year' ? 'number' : 'text'}
                                       value={getCurrentValue()}
                                       onChange={(e) => updateFieldFromKey(pair.key, e.target.value)}
-                                      className={`flex-1 min-w-0 text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] ${pair.italic ? 'italic' : ''}`}
-                                      placeholder={pair.value}
+                                      className={`flex-1 min-w-0 text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] ${pair.italic ? 'italic' : ''} ${isEmpty ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                                      placeholder={pair.value || (isRequired ? 'Required' : undefined)}
                                     />
                                   )}
                                 </div>
@@ -870,26 +912,19 @@ export function AddSeedForm({ onSubmit, onClose, initialData }: AddSeedFormProps
           </div>
         </div>
 
-        {/* Manual Extract Button */}
-        {frontImage && backImage && !loading && !aiExtractedData && (
-          <div className="mb-4">
-            <button
-              type="button"
-              onClick={() => {
-                setHasProcessed(false);
-                processWithAI(frontImage, backImage);
-              }}
-              className="w-full py-2 bg-[#16a34a] text-white font-semibold rounded-lg hover:bg-[#15803d] transition-colors"
-            >
-              Extract Data from Images
-            </button>
-          </div>
-        )}
-
       </form>
 
       {/* Submit Button */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
+        {(!name.trim() || !variety.trim()) && !submitting && (
+          <p className="text-sm text-amber-600 mb-2">
+            {!name.trim() && !variety.trim()
+              ? 'Name and Variety are required'
+              : !name.trim()
+                ? 'Name is required'
+                : 'Variety is required'}
+          </p>
+        )}
         <button
           type="submit"
           onClick={handleSubmit}

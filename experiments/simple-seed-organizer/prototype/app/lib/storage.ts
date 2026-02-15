@@ -1,14 +1,15 @@
 import { Seed } from '@/types/seed';
 import { UserProfile } from '@/types/profile';
 import { supabase } from './supabase';
+import { getPhotoUrl, deleteSeedPhotos } from './seed-photos';
 
 // Fallback to localStorage if Supabase is not configured
 const STORAGE_KEY = 'simple-seed-organizer-seeds';
 const PROFILE_STORAGE_KEY = 'simple-seed-organizer-profile';
 
-// Columns to exclude photos for fast initial load (photos are large base64 strings)
+// Columns to exclude photos for fast initial load
 const SEEDS_COLUMNS_WITHOUT_PHOTOS =
-  'id,name,variety,type,brand,source,year,purchase_date,quantity,days_to_germination,days_to_maturity,planting_depth,spacing,sun_requirement,planting_months,notes,use_first,custom_expiration_date,created_at,updated_at';
+  'id,user_id,name,variety,type,brand,source,year,purchase_date,quantity,days_to_germination,days_to_maturity,planting_depth,spacing,sun_requirement,planting_months,notes,use_first,custom_expiration_date,created_at,updated_at';
 
 /**
  * Get seeds without photo data - fast initial load for list view.
@@ -42,8 +43,8 @@ export async function getSeedsWithoutPhotos(): Promise<Seed[]> {
 }
 
 /**
- * Get photo data for all seeds - use after getSeedsWithoutPhotos() for two-phase load.
- * Returns a map of seedId -> { photoFront?, photoBack? }.
+ * Get photo URLs for all seeds - use after getSeedsWithoutPhotos() for two-phase load.
+ * Returns a map of seedId -> { photoFront?, photoBack? } (URLs for display).
  */
 export async function getSeedPhotos(): Promise<Map<string, { photoFront?: string; photoBack?: string }>> {
   if (!supabase) return new Map();
@@ -51,7 +52,7 @@ export async function getSeedPhotos(): Promise<Map<string, { photoFront?: string
   try {
     const { data, error } = await supabase
       .from('seeds')
-      .select('id,photo_front,photo_back')
+      .select('id,photo_front_path,photo_back_path,photo_front,photo_back')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -62,8 +63,8 @@ export async function getSeedPhotos(): Promise<Map<string, { photoFront?: string
     const map = new Map<string, { photoFront?: string; photoBack?: string }>();
     for (const row of data || []) {
       map.set(row.id, {
-        photoFront: row.photo_front || undefined,
-        photoBack: row.photo_back || undefined,
+        photoFront: getPhotoUrl(row.photo_front_path) || row.photo_front || undefined,
+        photoBack: getPhotoUrl(row.photo_back_path) || row.photo_back || undefined,
       });
     }
     return map;
@@ -117,14 +118,14 @@ function getSeedsLocal(): Seed[] {
 /**
  * Save a seed to Supabase (REQUIRED - no fallback)
  */
-export async function saveSeed(seedData: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'>): Promise<Seed> {
+export async function saveSeed(seedData: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Promise<Seed> {
   if (!supabase) {
     throw new Error('Supabase is not configured. Please check your environment variables.');
   }
 
   const newSeed: Seed = {
     ...seedData,
-    id: crypto.randomUUID(),
+    id: seedData.id ?? crypto.randomUUID(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -228,14 +229,19 @@ function updateSeedLocal(id: string, updates: Partial<Seed>): Seed | null {
 }
 
 /**
- * Delete a seed from Supabase (REQUIRED - no fallback)
+ * Delete a seed from Supabase (REQUIRED - no fallback).
+ * Also removes photos from storage when userId is provided.
  */
-export async function deleteSeed(id: string): Promise<boolean> {
+export async function deleteSeed(id: string, userId?: string): Promise<boolean> {
   if (!supabase) {
     throw new Error('Supabase is not configured. Please check your environment variables.');
   }
 
   try {
+    if (userId) {
+      await deleteSeedPhotos(userId, id);
+    }
+
     const { error } = await supabase
       .from('seeds')
       .delete()
@@ -367,8 +373,10 @@ function convertSeedToDbSeed(seed: Partial<Seed>): any {
     sun_requirement: seed.sunRequirement || null,
     planting_months: seed.plantingMonths ? JSON.stringify(seed.plantingMonths) : null,
     notes: seed.notes || null,
-    photo_front: seed.photoFront || null,
-    photo_back: seed.photoBack || null,
+    photo_front_path: seed.photoFrontPath || null,
+    photo_back_path: seed.photoBackPath || null,
+    photo_front: seed.photoFrontPath ? null : (seed.photoFront || null),
+    photo_back: seed.photoBackPath ? null : (seed.photoBack || null),
     use_first: seed.useFirst || false,
     custom_expiration_date: seed.customExpirationDate || null,
     created_at: seed.createdAt,
@@ -382,6 +390,7 @@ function convertSeedToDbSeed(seed: Partial<Seed>): any {
 function convertDbSeedToSeed(dbSeed: any): Seed {
   return {
     id: dbSeed.id,
+    user_id: dbSeed.user_id || undefined,
     name: dbSeed.name,
     variety: dbSeed.variety,
     type: dbSeed.type,
@@ -397,8 +406,10 @@ function convertDbSeedToSeed(dbSeed: any): Seed {
     sunRequirement: dbSeed.sun_requirement || undefined,
     plantingMonths: dbSeed.planting_months ? JSON.parse(dbSeed.planting_months) : undefined,
     notes: dbSeed.notes || undefined,
-    photoFront: dbSeed.photo_front || undefined,
-    photoBack: dbSeed.photo_back || undefined,
+    photoFront: getPhotoUrl(dbSeed.photo_front_path) || dbSeed.photo_front || undefined,
+    photoBack: getPhotoUrl(dbSeed.photo_back_path) || dbSeed.photo_back || undefined,
+    photoFrontPath: dbSeed.photo_front_path || undefined,
+    photoBackPath: dbSeed.photo_back_path || undefined,
     useFirst: dbSeed.use_first || undefined,
     customExpirationDate: dbSeed.custom_expiration_date || undefined,
     createdAt: dbSeed.created_at,
