@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Seed } from '@/types/seed';
 
 interface SeedGalleryProps {
@@ -8,6 +9,22 @@ interface SeedGalleryProps {
 }
 
 export function SeedGallery({ seeds, onSeedClick }: SeedGalleryProps) {
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    console.log('[SeedGallery] Render:', {
+      seedCount: seeds.length,
+      seeds: seeds.map((s) => ({
+        id: s.id,
+        name: s.name,
+        hasPhotoFront: !!s.photoFront,
+        hasPhotoBack: !!s.photoBack,
+        photoFrontType: s.photoFront?.substring(0, 30),
+        failedCount: failedImages.size,
+      })),
+    });
+  }, [seeds, failedImages]);
+
   if (seeds.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -27,15 +44,21 @@ export function SeedGallery({ seeds, onSeedClick }: SeedGalleryProps) {
       {seeds.map(seed => (
         <button
           key={seed.id}
+          type="button"
           onClick={() => onSeedClick(seed)}
-          className="relative aspect-square bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+          className="group block relative aspect-square w-full bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border-0 p-0 text-left appearance-none cursor-pointer"
         >
-          {(seed.photoFront || seed.photoBack) ? (
+          {(seed.photoFront || seed.photoBack) && !failedImages.has(seed.id) ? (
             <img
               src={seed.photoFront || seed.photoBack}
               alt={seed.variety || seed.name}
               loading="lazy"
-              className="w-full h-full object-cover"
+              className="block w-full h-full object-cover bg-gray-100"
+              onLoad={() => console.log('[SeedGallery] Image loaded:', seed.id, seed.variety || seed.name)}
+              onError={(e) => {
+                console.warn('[SeedGallery] Image failed to load:', seed.id, (e.target as HTMLImageElement)?.src?.substring(0, 80));
+                setFailedImages((prev) => new Set(prev).add(seed.id));
+              }}
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-[#dcfce7] to-[#86efac] flex flex-col items-center justify-center p-4">
@@ -47,9 +70,9 @@ export function SeedGallery({ seeds, onSeedClick }: SeedGalleryProps) {
               </p>
             </div>
           )}
-          {/* Overlay with variety name on hover */}
-          <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 transition-all duration-200 flex items-end">
-            <div className="w-full p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity">
+          {/* Overlay with variety name on hover - use bg-black/0 (Tailwind v4) not bg-opacity-0 (removed) */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-200 flex items-end pointer-events-none">
+            <div className="w-full p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
               <p className="text-white text-xs font-medium truncate">{seed.variety || seed.name}</p>
               {seed.year && (
                 <p className="text-white/80 text-xs">{seed.year}</p>

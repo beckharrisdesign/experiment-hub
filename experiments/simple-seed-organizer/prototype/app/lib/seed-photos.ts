@@ -32,14 +32,34 @@ export async function uploadSeedPhoto(
   return path;
 }
 
+/** Expiry for signed URLs (1 hour) */
+const SIGNED_URL_EXPIRY = 3600;
+
 /**
- * Get public URL for a photo path.
+ * Get public URL for a photo path. Use for public buckets without RLS.
  */
 export function getPhotoUrl(path: string | null | undefined): string | undefined {
   if (!path || !supabase) return undefined;
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
   return data.publicUrl;
 }
+
+/**
+ * Get signed URL for a photo path. Use for private buckets or when public URL fails.
+ * The signed URL works for anyone during its validity period.
+ */
+export async function getSignedPhotoUrl(path: string | null | undefined): Promise<string | undefined> {
+  if (!path || !supabase) return undefined;
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrl(path, SIGNED_URL_EXPIRY);
+  if (error) {
+    console.warn('[seed-photos] Failed to create signed URL:', error);
+    return undefined;
+  }
+  return data?.signedUrl;
+}
+
 
 /**
  * Delete photos for a seed from storage.

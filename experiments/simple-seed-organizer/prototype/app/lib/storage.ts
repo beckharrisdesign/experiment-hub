@@ -62,10 +62,23 @@ export async function getSeedPhotos(): Promise<Map<string, { photoFront?: string
 
     const map = new Map<string, { photoFront?: string; photoBack?: string }>();
     for (const row of data || []) {
-      map.set(row.id, {
-        photoFront: getPhotoUrl(row.photo_front_path) || row.photo_front || undefined,
-        photoBack: getPhotoUrl(row.photo_back_path) || row.photo_back || undefined,
-      });
+      // Prefer storage paths - use public URL for public buckets (RLS bypassed for downloads)
+      let photoFront: string | undefined;
+      let photoBack: string | undefined;
+      if (row.photo_front_path) {
+        photoFront = getPhotoUrl(row.photo_front_path) ?? undefined;
+      } else if (row.photo_front) {
+        photoFront = row.photo_front; // Legacy base64 fallback only when no path
+      }
+      if (row.photo_back_path) {
+        photoBack = getPhotoUrl(row.photo_back_path) ?? undefined;
+      } else if (row.photo_back) {
+        photoBack = row.photo_back; // Legacy base64 fallback only when no path
+      }
+      if (photoFront || photoBack) {
+        console.log('[getSeedPhotos]', row.id, { path: row.photo_front_path, url: photoFront?.substring(0, 60) });
+      }
+      map.set(row.id, { photoFront, photoBack });
     }
     return map;
   } catch (err) {
@@ -95,8 +108,23 @@ export async function getSeeds(): Promise<Seed[]> {
       throw new Error(`Failed to load seeds from database: ${error.message}`);
     }
 
-    // Convert database format to Seed format
-    return (data || []).map(convertDbSeedToSeed);
+    // Resolve photo URLs - use public URL for public buckets
+    const seeds = (data || []).map((row) => {
+      let photoFront: string | undefined;
+      let photoBack: string | undefined;
+      if (row.photo_front_path) {
+        photoFront = getPhotoUrl(row.photo_front_path) ?? undefined;
+      } else if (row.photo_front) {
+        photoFront = row.photo_front; // Legacy base64 only when no path
+      }
+      if (row.photo_back_path) {
+        photoBack = getPhotoUrl(row.photo_back_path) ?? undefined;
+      } else if (row.photo_back) {
+        photoBack = row.photo_back; // Legacy base64 only when no path
+      }
+      return convertDbSeedToSeedWithUrls(row, photoFront, photoBack);
+    });
+    return seeds;
   } catch (err) {
     console.error('[Storage] Error fetching from Supabase:', err);
     if (err instanceof Error) {
@@ -150,7 +178,7 @@ export async function saveSeed(seedData: Omit<Seed, 'id' | 'createdAt' | 'update
     }
 
     console.log('[Storage] Successfully saved to Supabase:', { id: data.id, name: data.name });
-    return convertDbSeedToSeed(data);
+    return convertDbRowToSeedWithUrls(data);
   } catch (err) {
     console.error('[Storage] Error saving to Supabase:', err);
     if (err instanceof Error) {
@@ -201,7 +229,7 @@ export async function updateSeed(id: string, updates: Partial<Seed>): Promise<Se
       return null;
     }
 
-    return convertDbSeedToSeed(data);
+    return convertDbRowToSeedWithUrls(data);
   } catch (err) {
     console.error('[Storage] Error updating in Supabase:', err);
     if (err instanceof Error) {
@@ -329,7 +357,21 @@ export async function getSeedById(id: string): Promise<Seed | null> {
       throw new Error(`Failed to get seed from database: ${error.message}`);
     }
 
-    return data ? convertDbSeedToSeed(data) : null;
+    if (!data) return null;
+
+    let photoFront: string | undefined;
+    let photoBack: string | undefined;
+    if (data.photo_front_path) {
+      photoFront = getPhotoUrl(data.photo_front_path) ?? undefined;
+    } else if (data.photo_front) {
+      photoFront = data.photo_front; // Legacy base64 only when no path
+    }
+    if (data.photo_back_path) {
+      photoBack = getPhotoUrl(data.photo_back_path) ?? undefined;
+    } else if (data.photo_back) {
+      photoBack = data.photo_back; // Legacy base64 only when no path
+    }
+    return convertDbSeedToSeedWithUrls(data, photoFront, photoBack);
   } catch (err) {
     console.error('[Storage] Error getting seed from Supabase:', err);
     if (err instanceof Error) {
@@ -408,6 +450,58 @@ function convertDbSeedToSeed(dbSeed: any): Seed {
     notes: dbSeed.notes || undefined,
     photoFront: getPhotoUrl(dbSeed.photo_front_path) || dbSeed.photo_front || undefined,
     photoBack: getPhotoUrl(dbSeed.photo_back_path) || dbSeed.photo_back || undefined,
+    photoFrontPath: dbSeed.photo_front_path || undefined,
+    photoBackPath: dbSeed.photo_back_path || undefined,
+    useFirst: dbSeed.use_first || undefined,
+    customExpirationDate: dbSeed.custom_expiration_date || undefined,
+    createdAt: dbSeed.created_at,
+    updatedAt: dbSeed.updated_at,
+  };
+}
+
+/**
+ * Convert a DB row to Seed with photo URLs (used by save/update)
+ */
+function convertDbRowToSeedWithUrls(row: any): Seed {
+  let photoFront: string | undefined;
+  let photoBack: string | undefined;
+  if (row.photo_front_path) {
+    photoFront = getPhotoUrl(row.photo_front_path) ?? undefined;
+  } else if (row.photo_front) {
+    photoFront = row.photo_front; // Legacy base64 only when no path
+  }
+  if (row.photo_back_path) {
+    photoBack = getPhotoUrl(row.photo_back_path) ?? undefined;
+  } else if (row.photo_back) {
+    photoBack = row.photo_back; // Legacy base64 only when no path
+  }
+  return convertDbSeedToSeedWithUrls(row, photoFront, photoBack);
+}
+
+/**
+ * Convert database format to Seed with pre-resolved photo URLs (for signed URLs)
+ */
+function convertDbSeedToSeedWithUrls(dbSeed: any, photoFront?: string, photoBack?: string): Seed {
+  return {
+    id: dbSeed.id,
+    user_id: dbSeed.user_id || undefined,
+    name: dbSeed.name,
+    variety: dbSeed.variety,
+    type: dbSeed.type,
+    brand: dbSeed.brand || undefined,
+    source: dbSeed.source || undefined,
+    year: dbSeed.year || undefined,
+    purchaseDate: dbSeed.purchase_date || undefined,
+    quantity: dbSeed.quantity || undefined,
+    daysToGermination: dbSeed.days_to_germination || undefined,
+    daysToMaturity: dbSeed.days_to_maturity || undefined,
+    plantingDepth: dbSeed.planting_depth || undefined,
+    spacing: dbSeed.spacing || undefined,
+    sunRequirement: dbSeed.sun_requirement || undefined,
+    plantingMonths: dbSeed.planting_months ? JSON.parse(dbSeed.planting_months) : undefined,
+    notes: dbSeed.notes || undefined,
+    photoFront: photoFront || undefined,
+    photoBack: photoBack || undefined,
     photoFrontPath: dbSeed.photo_front_path || undefined,
     photoBackPath: dbSeed.photo_back_path || undefined,
     useFirst: dbSeed.use_first || undefined,
