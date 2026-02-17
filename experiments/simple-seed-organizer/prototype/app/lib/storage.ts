@@ -12,6 +12,25 @@ const SEEDS_COLUMNS_WITHOUT_PHOTOS =
   'id,user_id,name,variety,type,brand,source,year,purchase_date,quantity,days_to_germination,days_to_maturity,planting_depth,spacing,sun_requirement,planting_months,notes,use_first,custom_expiration_date,created_at,updated_at';
 
 /**
+ * Get seed count for usage display (profile, limits).
+ */
+export async function getSeedCount(): Promise<number> {
+  if (!supabase) return 0;
+  try {
+    const { count, error } = await supabase
+      .from('seeds')
+      .select('*', { count: 'exact', head: true });
+    if (error) {
+      console.warn('[Storage] getSeedCount error:', error);
+      return 0;
+    }
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
  * Get seeds without photo data - fast initial load for list view.
  * Photos can be loaded separately via getSeedPhotos() and merged.
  */

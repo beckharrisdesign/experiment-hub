@@ -1,16 +1,18 @@
 /**
- * Supabase client for database operations
- * Uses publishable key (modern approach) or falls back to legacy anon key
+ * Supabase client for database operations (browser).
+ * Uses createBrowserClient from @supabase/ssr so the session is stored in cookies,
+ * allowing API routes to read auth via createServerSupabaseClient.
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 // Prefer publishable key (new format: sb_publishable_...)
 // Falls back to legacy anon key for backwards compatibility
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY 
-  || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY 
-  || '';
+const supabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  '';
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('[Supabase] Configuration missing!');
@@ -20,6 +22,7 @@ if (!supabaseUrl || !supabaseKey) {
   console.error('[Supabase] Make sure .env.local is in the app directory and restart the dev server.');
 }
 
-export const supabase = supabaseUrl && supabaseKey
-  ? createClient(supabaseUrl, supabaseKey)
-  : null;
+export const supabase =
+  supabaseUrl && supabaseKey
+    ? createBrowserClient(supabaseUrl, supabaseKey)
+    : null;

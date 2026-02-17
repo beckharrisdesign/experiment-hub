@@ -33,6 +33,7 @@ export default function Home() {
   const selectedSeed = selectedSeedId ? (seeds.find(s => s.id === selectedSeedId) ?? null) : null;
   const [editingSeed, setEditingSeed] = useState<Seed | null>(null);
   const [seedsLoading, setSeedsLoading] = useState(false);
+  const [userTier, setUserTier] = useState<string>('Seed Stash Starter');
 
   // Load seeds from Supabase when user is authenticated
   // Two-phase load: metadata first (fast), then photos in background
@@ -80,6 +81,23 @@ export default function Home() {
       cancelled = true;
     };
   }, [user]);
+
+  useEffect(() => {
+    if (!user?.email) {
+      setUserTier('Seed Stash Starter');
+      return;
+    }
+    fetch('/api/stripe/subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: user.email }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error && data.tier) setUserTier(data.tier);
+      })
+      .catch(() => setUserTier('Seed Stash Starter'));
+  }, [user?.email]);
 
   const filteredSeeds = useMemo(() => {
     let filtered = seeds;
@@ -204,6 +222,7 @@ export default function Home() {
       {showAddForm && (
         <AddSeedForm
           userId={user.id}
+          userTier={userTier}
           onSubmit={handleAddSeed}
           onClose={() => setShowAddForm(false)}
         />
@@ -212,6 +231,7 @@ export default function Home() {
       {editingSeed && (
         <AddSeedForm
           userId={editingSeed.user_id || user.id}
+          userTier={userTier}
           initialData={editingSeed}
           onSubmit={handleUpdateSeed}
           onClose={() => setEditingSeed(null)}

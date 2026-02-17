@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractSingleImageWithAI } from '@/lib/packetReaderAI';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { incrementAiUsage } from '@/lib/ai-usage';
 
 /**
  * API route to process a single seed packet image (front or back) using AI.
@@ -13,6 +15,12 @@ import { extractSingleImageWithAI } from '@/lib/packetReaderAI';
  */
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const image = formData.get('image') as File | null;
     const side = formData.get('side') as string | null;
@@ -44,6 +52,11 @@ export async function POST(request: NextRequest) {
       side as 'front' | 'back',
       apiKey
     );
+
+    // 1 completion per image
+    if (supabase) {
+      await incrementAiUsage(supabase, user.id, 1);
+    }
 
     return NextResponse.json({
       success: true,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Seed, SeedType, SunRequirement } from '@/types/seed';
 import { AIExtractedData } from '@/lib/packetReaderAI';
 import { processImageFile } from '@/lib/imageUtils';
@@ -11,6 +11,7 @@ interface AddSeedFormProps {
   onClose: () => void;
   initialData?: Seed;
   userId: string;
+  userTier?: string;
 }
 
 const SEED_TYPES: { value: SeedType; label: string }[] = [
@@ -136,7 +137,17 @@ function getKeyValuePairsBySource(data: AIExtractedData): { front: Array<{ key: 
   };
 }
 
-export function AddSeedForm({ onSubmit, onClose, initialData, userId }: AddSeedFormProps) {
+const EDIT_SECTIONS = [
+  { id: 'front', label: 'Front' },
+  { id: 'back', label: 'Back' },
+] as const;
+
+export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier = 'Seed Stash Starter' }: AddSeedFormProps) {
+  const hasAutoEntry = userTier === 'Serious Hobby';
+  const isEditMode = !!initialData;
+  const [activeSection, setActiveSection] = useState<string>('front');
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+
   const [name, setName] = useState(initialData?.name || '');
   const [variety, setVariety] = useState(initialData?.variety || '');
   const [type, setType] = useState<SeedType>(initialData?.type || 'vegetable');
@@ -168,6 +179,29 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId }: AddSeedF
   const backFileInputRef = useRef<HTMLInputElement>(null);
   const [hoverZoom, setHoverZoom] = useState<{ image: string; x: number; y: number; rect: { left: number; top: number; width: number; height: number } } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const scrollToSection = (id: string) => {
+    sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    if (!isEditMode) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: '-20% 0px -70% 0px', threshold: 0 }
+    );
+    EDIT_SECTIONS.forEach(({ id }) => {
+      const el = sectionRefs.current[id];
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [isEditMode]);
 
   // Merge extracted data from one side into existing data
   const mergeExtractedData = (existing: AIExtractedData | null, incoming: AIExtractedData, side: 'front' | 'back'): AIExtractedData => {
@@ -260,10 +294,8 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId }: AddSeedF
 
       if (side === 'front') {
         setFrontImage(url);
-        if (!initialData) extractSingleImage(url, 'front');
       } else {
         setBackImage(url);
-        if (!initialData) extractSingleImage(url, 'back');
       }
     } catch (err) {
       console.error('[AddSeedForm] Error processing image:', err);
@@ -381,18 +413,22 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId }: AddSeedF
   };
 
   return (
-    <div className="fixed inset-0 bg-white z-50 flex flex-col">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-[#101828]">
-          {initialData ? 'Edit Seed' : 'Add Seed'}
-        </h1>
-        <button onClick={onClose} className="p-2 -mr-2">
-          <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
+    <div
+      className={`fixed z-50 flex flex-col bg-white ${
+        isEditMode ? 'top-20 left-0 right-0 bottom-0' : 'inset-0'
+      }`}
+    >
+      {/* Header - only for add mode; edit mode uses app header + left nav */}
+      {!isEditMode && (
+        <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
+          <h1 className="text-lg font-semibold text-[#101828]">Add Seed</h1>
+          <button onClick={onClose} className="p-2 -mr-2">
+            <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {/* Loading status when extracting */}
       {(loadingFront || loadingBack) && (
@@ -429,11 +465,66 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId }: AddSeedF
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 pb-24">
-        {/* Images and Extracted Data - Split View (Always Visible) */}
-        <div className="space-y-6 mb-6">
-          {/* Front Image and Data */}
-          <div className="grid grid-cols-[1fr_1fr] gap-6">
+      <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+        <div className={`flex-1 flex min-h-0 ${isEditMode ? 'bg-[#f9fafb]' : ''}`}>
+          {isEditMode && (
+            <>
+            <nav className="hidden lg:flex flex-col w-48 shrink-0 pt-4 pl-6 pr-4 bg-[#f9fafb] border-r border-gray-200">
+              {EDIT_SECTIONS.map(({ id, label }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => scrollToSection(id)}
+                  className={`text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeSection === id ? 'bg-[#16a34a] text-white' : 'text-[#4a5565] hover:bg-gray-200'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-[#4a5565] hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </nav>
+            {/* Mobile nav - edit mode */}
+            <div className="lg:hidden fixed bottom-14 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 flex items-center gap-2 overflow-x-auto z-20">
+              {EDIT_SECTIONS.map(({ id, label }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => scrollToSection(id)}
+                  className={`shrink-0 px-3 py-2 rounded-lg text-sm font-medium ${
+                    activeSection === id ? 'bg-[#16a34a] text-white' : 'bg-gray-100 text-[#4a5565]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={onClose}
+                className="shrink-0 px-3 py-2 rounded-lg text-sm font-medium text-[#4a5565] bg-gray-100 ml-auto"
+              >
+                Cancel
+              </button>
+            </div>
+            </>
+          )}
+          <div className={`flex-1 overflow-y-auto min-w-0 ${isEditMode ? 'px-4 lg:pl-8 py-6 pb-32 lg:pb-24' : 'p-4 pb-24'}`}>
+            <div className={isEditMode ? 'max-w-4xl' : 'space-y-6 mb-6'}>
+              {/* Front Image and Data */}
+              <section
+                id="front"
+                ref={(el) => { sectionRefs.current.front = el; }}
+                className={isEditMode ? 'scroll-mt-24 mb-8' : 'mb-6'}
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6">
             {/* Front Image */}
             <div className="pr-2">
               <div className="bg-white rounded-lg p-4 shadow-sm">
@@ -470,13 +561,13 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId }: AddSeedF
                         objectFit: 'contain'
                       }}
                     />
-                    {!loadingFront && !initialData && (
+                    {hasAutoEntry && !loadingFront && (
                       <button
                         type="button"
                         onClick={() => extractSingleImage(frontImage, 'front')}
-                        className="absolute bottom-2 right-2 z-10 px-2 py-1 text-xs font-medium bg-white/90 text-gray-600 rounded shadow hover:bg-white transition-colors"
+                        className="absolute top-2 right-2 z-10 px-2 py-1 text-xs font-medium bg-white/90 text-gray-600 rounded shadow hover:bg-white transition-colors"
                       >
-                        Re-extract
+                        Auto Entry
                       </button>
                     )}
                     {hoverZoom && hoverZoom.image === frontImage && (
@@ -741,9 +832,15 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId }: AddSeedF
               </div>
             </div>
           </div>
+              </section>
 
-          {/* Back Image and Data */}
-          <div className="grid grid-cols-[1fr_1fr] gap-6">
+              {/* Back Image and Data */}
+              <section
+                id="back"
+                ref={(el) => { sectionRefs.current.back = el; }}
+                className={isEditMode ? 'scroll-mt-24' : ''}
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6">
             {/* Back Image */}
             <div className="pr-2">
               <div className="bg-white rounded-lg p-4 shadow-sm">
@@ -780,13 +877,13 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId }: AddSeedF
                         objectFit: 'contain'
                       }}
                     />
-                    {!loadingBack && !initialData && (
+                    {hasAutoEntry && !loadingBack && (
                       <button
                         type="button"
                         onClick={() => extractSingleImage(backImage, 'back')}
-                        className="absolute bottom-2 right-2 z-10 px-2 py-1 text-xs font-medium bg-white/90 text-gray-600 rounded shadow hover:bg-white transition-colors"
+                        className="absolute top-2 right-2 z-10 px-2 py-1 text-xs font-medium bg-white/90 text-gray-600 rounded shadow hover:bg-white transition-colors"
                       >
-                        Re-extract
+                        Auto Entry
                       </button>
                     )}
                     {hoverZoom && hoverZoom.image === backImage && (
@@ -910,8 +1007,10 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId }: AddSeedF
               </div>
             </div>
           </div>
+              </section>
+            </div>
+          </div>
         </div>
-
       </form>
 
       {/* Submit Button */}

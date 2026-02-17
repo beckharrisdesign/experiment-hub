@@ -48,7 +48,7 @@ export default function PacketTestPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f9fafb] p-6">
+    <div className="min-h-screen bg-[#f9fafb] pt-24 pb-6 px-6">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-[#101828] mb-2">OpenAI API Authentication Test</h1>
         <p className="text-sm text-[#6a7282] mb-6">Simple test to verify API key authentication</p>

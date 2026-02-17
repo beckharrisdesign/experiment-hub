@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractWithAI } from '@/lib/packetReaderAI';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { incrementAiUsage } from '@/lib/ai-usage';
 import sharp from 'sharp';
 
 /**
@@ -49,6 +51,12 @@ async function optimizeImage(file: File): Promise<File> {
  */
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const frontImage = formData.get('frontImage') as File | null;
     const backImage = formData.get('backImage') as File | null;
@@ -81,6 +89,12 @@ export async function POST(request: NextRequest) {
       optimizedBack,
       apiKey
     );
+
+    // Count completions: 1 per image (front=1, back=1)
+    const completionCount = backImage ? 2 : 1;
+    if (supabase) {
+      await incrementAiUsage(supabase, user.id, completionCount);
+    }
 
     return NextResponse.json({
       success: true,

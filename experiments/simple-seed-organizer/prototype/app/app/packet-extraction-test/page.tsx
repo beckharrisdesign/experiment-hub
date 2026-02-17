@@ -229,7 +229,7 @@ export default function PacketExtractionTestPage() {
   // Show loading/error state
   if (!showForm) {
     return (
-      <div className="min-h-screen bg-[#f9fafb] p-4">
+      <div className="min-h-screen bg-[#f9fafb] pt-24 pb-4 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h1 className="text-2xl font-semibold text-[#101828] mb-4">AI Seed Packet Extraction</h1>

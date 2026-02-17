@@ -85,13 +85,13 @@ For local testing, use the [Stripe CLI](https://stripe.com/docs/stripe-cli) to f
 stripe listen --forward-to localhost:3009/api/stripe/webhook
 ```
 
-## 7. Stripe Customer Portal (Optional)
+## 7. Stripe Customer Portal (for Profile "Manage billing")
 
-To let users manage their subscription (cancel, update payment method):
+The Profile page shows subscription tier and recent charges, with a "Manage billing" button that opens Stripe's Customer Portal. To enable it:
 
 1. **Settings** → **Billing** → **Customer portal**
-2. Configure branding and features
-3. The app can redirect users to `https://billing.stripe.com/p/login/xxx` or create a portal session via API
+2. Configure branding, and enable features (subscription management, invoice history, payment method updates)
+3. Save. The app creates portal sessions via `/api/stripe/portal` when users click "Manage billing"
 
 ---
 
