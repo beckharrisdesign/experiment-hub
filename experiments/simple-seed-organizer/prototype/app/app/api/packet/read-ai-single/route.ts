@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractSingleImageWithAI } from '@/lib/packetReaderAI';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { incrementAiUsage } from '@/lib/ai-usage';
+import { incrementAiUsage, getAiUsage } from '@/lib/ai-usage';
+import { canUseAICount } from '@/lib/limits';
+import { getTierForUser } from '@/lib/tier';
 
 /**
  * API route to process a single seed packet image (front or back) using AI.
@@ -16,7 +18,10 @@ import { incrementAiUsage } from '@/lib/ai-usage';
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+    if (!supabase) {
+      return NextResponse.json({ error: 'Not configured' }, { status: 500 });
+    }
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -47,15 +52,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Gate: check AI limit before calling OpenAI
+    const tier = await getTierForUser(user.email ?? undefined);
+    const aiCompletions = await getAiUsage(supabase, user.id);
+    if (!canUseAICount(aiCompletions, tier, 1)) {
+      return NextResponse.json(
+        { error: 'AI limit reached', message: 'Upgrade to use more AI extractions this month.' },
+        { status: 402 }
+      );
+    }
+
     const extractedData = await extractSingleImageWithAI(
       image,
       side as 'front' | 'back',
       apiKey
     );
 
-    // 1 completion per image
+    // 1 completion per image (non-fatal: extraction succeeds even if tracking fails)
     if (supabase) {
-      await incrementAiUsage(supabase, user.id, 1);
+      try {
+        await incrementAiUsage(supabase, user.id, 1);
+      } catch (e) {
+        console.warn('[read-ai-single] Usage increment failed:', e);
+      }
     }
 
     return NextResponse.json({

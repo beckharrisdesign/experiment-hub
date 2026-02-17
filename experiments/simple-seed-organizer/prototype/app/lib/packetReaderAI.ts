@@ -8,6 +8,7 @@
 import { ExtractedSeedData } from './packetReader';
 
 export interface AIExtractedData extends ExtractedSeedData {
+  description?: string;
   latinName?: string;
   plantingInstructions?: string;
   summary?: string;
@@ -250,22 +251,23 @@ function normalizeAIData(data: Record<string, unknown>): AIExtractedData {
   // Parse fieldSources
   const fieldSources = data.fieldSources as Record<string, 'front' | 'back'> | undefined;
 
+  const str = (v: unknown) => (typeof v === 'string' && v) || undefined;
   return {
-    name: data.name || undefined,
-    variety: data.variety || undefined,
-    latinName: data.latinName || undefined,
-    brand: data.brand || undefined,
+    name: str(data.name),
+    variety: str(data.variety),
+    latinName: str(data.latinName),
+    brand: str(data.brand),
     year: typeof data.year === 'number' ? data.year : (data.year ? parseInt(String(data.year)) : undefined),
-    quantity: data.quantity || undefined,
-    daysToGermination: data.daysToGermination || undefined,
-    daysToMaturity: data.daysToMaturity || undefined,
-    plantingDepth: data.plantingDepth || undefined,
-    spacing: data.spacing || undefined,
-    sunRequirement: data.sunRequirement ? String(data.sunRequirement) : undefined,
-    description: data.description || undefined,
-    plantingInstructions: data.plantingInstructions || undefined,
-    summary: data.summary || undefined,
-    additionalNotes: data.additionalNotes || undefined,
+    quantity: str(data.quantity),
+    daysToGermination: str(data.daysToGermination),
+    daysToMaturity: str(data.daysToMaturity),
+    plantingDepth: str(data.plantingDepth),
+    spacing: str(data.spacing),
+    sunRequirement: str(data.sunRequirement),
+    description: str(data.description),
+    plantingInstructions: str(data.plantingInstructions),
+    summary: str(data.summary),
+    additionalNotes: str(data.additionalNotes),
     rawKeyValuePairs: rawPairs.length > 0 ? rawPairs : undefined,
     fieldSources: fieldSources,
     confidence: 0.9, // AI extraction is generally high confidence

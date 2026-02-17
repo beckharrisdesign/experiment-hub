@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractWithAI } from '@/lib/packetReaderAI';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { incrementAiUsage } from '@/lib/ai-usage';
+import { incrementAiUsage, getAiUsage } from '@/lib/ai-usage';
+import { canUseAICount } from '@/lib/limits';
+import { getTierForUser } from '@/lib/tier';
 import sharp from 'sharp';
 
 /**
@@ -36,7 +38,8 @@ async function optimizeImage(file: File): Promise<File> {
   console.log(`[Image Optimization] ${file.name}: ${originalDimensions} ${(originalSize / 1024).toFixed(0)}KB → ${optimizedDimensions} ${(optimizedSize / 1024).toFixed(0)}KB (${((1 - optimizedSize / originalSize) * 100).toFixed(1)}% reduction)`);
   
   // Create a new File with optimized data
-  return new File([optimizedBuffer], file.name.replace(/\.png$/i, '.jpg'), {
+  // Uint8Array is required: Node Buffer is not assignable to BlobPart in TS 5.6+
+  return new File([new Uint8Array(optimizedBuffer)], file.name.replace(/\.png$/i, '.jpg'), {
     type: 'image/jpeg'
   });
 }
@@ -52,7 +55,10 @@ async function optimizeImage(file: File): Promise<File> {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+    if (!supabase) {
+      return NextResponse.json({ error: 'Not configured' }, { status: 500 });
+    }
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -77,6 +83,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Gate: check AI limit before calling OpenAI
+    const tier = await getTierForUser(user.email ?? undefined);
+    const aiCompletions = await getAiUsage(supabase, user.id);
+    const completionCount = backImage ? 2 : 1;
+    if (!canUseAICount(aiCompletions, tier, completionCount)) {
+      return NextResponse.json(
+        { error: 'AI limit reached', message: 'Upgrade to use more AI extractions this month.' },
+        { status: 402 }
+      );
+    }
+
     // Optimize images before processing (this will dramatically reduce processing time)
     console.log(`[API] Received images - Front: ${(frontImage.size / 1024).toFixed(0)}KB, Back: ${backImage ? (backImage.size / 1024).toFixed(0) + 'KB' : 'N/A'}`);
     const optimizedFront = await optimizeImage(frontImage);
@@ -90,10 +107,11 @@ export async function POST(request: NextRequest) {
       apiKey
     );
 
-    // Count completions: 1 per image (front=1, back=1)
-    const completionCount = backImage ? 2 : 1;
-    if (supabase) {
+    // Count completions: 1 per image (front=1, back=1) - non-fatal if tracking fails
+    try {
       await incrementAiUsage(supabase, user.id, completionCount);
+    } catch (e) {
+      console.warn('[read-ai] Usage increment failed:', e);
     }
 
     return NextResponse.json({

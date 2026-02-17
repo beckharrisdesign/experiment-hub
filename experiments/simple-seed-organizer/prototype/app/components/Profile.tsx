@@ -9,8 +9,7 @@ import { lookupZone, formatZoneTemperature } from '@/lib/zoneLookup';
 import { getGrowingSeasonLength } from '@/data/climate';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
-import { ProfileTierTable } from '@/components/ProfileTierTable';
-import { PLANS, getTierIndex } from '@/lib/plans';
+import { PLANS, getTierIndex, getUpgradeTiers } from '@/lib/plans';
 
 // Helper to format frost dates
 function formatFrostDate(dateStr: string): string {
@@ -123,8 +122,8 @@ interface SubscriptionData {
 const SECTIONS = [
   { id: 'gardening', label: 'About your garden' },
   { id: 'account', label: 'About you' },
-  { id: 'usage', label: 'Usage' },
   { id: 'security', label: 'Password' },
+  { id: 'usage', label: 'Usage' },
   { id: 'subscription', label: 'Subscription' },
 ] as const;
 
@@ -449,48 +448,6 @@ export function Profile() {
               </div>
             </section>
 
-            {/* Usage */}
-            <section
-              id="usage"
-              ref={(el) => { sectionRefs.current.usage = el; }}
-              className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
-            >
-              <h2 className="text-lg font-semibold text-[#4a5565] mb-4">Usage</h2>
-              <p className="text-sm text-[#99a1af] mb-4">
-                Your usage against your plan limits. AI completions reset monthly.
-              </p>
-              {seedCount === null && aiCompletions === null ? (
-                <p className="text-sm text-[#99a1af]">Loading…</p>
-              ) : (
-                <div className="space-y-3">
-                  {(() => {
-                    const tier = subscription?.tier ?? 'Seed Stash Starter';
-                    const plan = PLANS[getTierIndex(tier)];
-                    const seedLimit = plan.seeds === 'Unlimited' ? null : parseInt(plan.seeds, 10);
-                    const aiLimit = plan.ai === 'Unlimited' ? null : parseInt(plan.ai.replace('/month', ''), 10);
-                    return (
-                      <>
-                        <div>
-                          <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">Seed packets</p>
-                          <p className="text-[#101828] font-medium">
-                            {seedCount ?? 0}
-                            {seedLimit !== null && ` / ${seedLimit}`}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">AI completions this month</p>
-                          <p className="text-[#101828] font-medium">
-                            {aiCompletions ?? 0}
-                            {aiLimit !== null && ` / ${aiLimit}`}
-                          </p>
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-              )}
-            </section>
-
             {/* Security / Password */}
             <section
               id="security"
@@ -538,6 +495,90 @@ export function Profile() {
               </form>
             </section>
 
+            {/* Usage */}
+            <section
+              id="usage"
+              ref={(el) => { sectionRefs.current.usage = el; }}
+              className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
+            >
+              <h2 className="text-lg font-semibold text-[#4a5565] mb-4">Usage</h2>
+              <p className="text-sm text-[#99a1af] mb-4">
+                Your usage against your plan limits. AI completions reset on your billing cycle.
+              </p>
+              {seedCount === null && aiCompletions === null ? (
+                <p className="text-sm text-[#99a1af]">Loading…</p>
+              ) : (
+                <div className="space-y-4">
+                  {(() => {
+                    const tier = subscription?.tier ?? 'Seed Stash Starter';
+                    const plan = PLANS[getTierIndex(tier)];
+                    const seedLimit = plan.seeds === 'Unlimited' ? null : parseInt(plan.seeds, 10);
+                    const aiLimit = plan.ai === 'Unlimited' ? null : parseInt(plan.ai.replace('/month', ''), 10);
+                    const seeds = seedCount ?? 0;
+                    const ai = aiCompletions ?? 0;
+                    const seedPct = seedLimit !== null ? Math.min(100, (seeds / seedLimit) * 100) : 35;
+                    const aiPct = aiLimit !== null ? Math.min(100, (ai / aiLimit) * 100) : 35;
+                    const seedAtLimit = seedLimit !== null && seeds >= seedLimit;
+                    const aiAtLimit = aiLimit !== null && ai >= aiLimit;
+                    return (
+                      <>
+                        <div>
+                          <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">Seed packets</p>
+                          <p className="text-[#101828] font-medium">
+                            {seeds}
+                            {seedLimit !== null ? ` / ${seedLimit}` : ' / unlimited'}
+                          </p>
+                          <div className="mt-1.5 h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-[width] ${seedAtLimit ? 'bg-amber-500' : 'bg-[#16a34a]'}`}
+                              style={{ width: `${seedPct}%` }}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">AI completions this month</p>
+                          <p className="text-[#101828] font-medium">
+                            {ai}
+                            {aiLimit !== null ? ` / ${aiLimit}` : ' / unlimited'}
+                          </p>
+                          <div className="mt-1.5 h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-[width] ${aiAtLimit ? 'bg-amber-500' : 'bg-[#16a34a]'}`}
+                              style={{ width: `${aiPct}%` }}
+                            />
+                          </div>
+                          {subscription?.currentPeriodEnd ? (
+                            <p className="text-xs text-[#99a1af] mt-1">
+                              Resets {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </p>
+                          ) : aiLimit !== null && (
+                            <p className="text-xs text-[#99a1af] mt-1">
+                              Resets {new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </p>
+                          )}
+                        </div>
+                        {(() => {
+                          const upgradeTiers = getUpgradeTiers(tier);
+                          const nextTier = upgradeTiers[0];
+                          if (!nextTier) return null;
+                          return (
+                            <div className="flex justify-end pt-2">
+                              <Link
+                                href="/pricing"
+                                className="min-w-[120px] inline-block px-4 py-2 font-medium text-center bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d]"
+                              >
+                                Upgrade to {nextTier.id}
+                              </Link>
+                            </div>
+                          );
+                        })()}
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+            </section>
+
             {/* Subscription */}
             <section
               id="subscription"
@@ -549,37 +590,42 @@ export function Profile() {
                 <p className="text-sm text-[#99a1af]">Loading…</p>
               ) : (
                 <div className="space-y-4">
+                  <div>
+                    <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">Current plan</p>
+                    <p className="text-[#16a34a] font-medium">
+                      {subscription?.tier ?? 'Seed Stash Starter'}
+                    </p>
+                  </div>
                   {subscription && subscription.status !== 'free' && subscription.currentPeriodEnd && (
                     <p className="text-xs text-[#99a1af]">
                       {subscription.cancelAtPeriodEnd ? 'Cancels' : 'Renews'}{' '}
                       {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
                     </p>
                   )}
-                  <ProfileTierTable
-                    currentTier={subscription?.tier ?? 'Seed Stash Starter'}
-                    onManageBilling={
-                      subscription?.customerId ? handleManageBilling : undefined
-                    }
-                    manageBillingLoading={portalLoading}
-                  />
-                  <div className="flex justify-end">
+                  <div className="flex flex-wrap gap-2 justify-end">
                     {subscription?.customerId ? (
                       <button
                         type="button"
                         onClick={handleManageBilling}
                         disabled={portalLoading}
-                        className="min-w-[120px] px-4 py-2 font-medium bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d] disabled:opacity-70"
+                        className="min-w-[120px] px-4 py-2 font-medium border border-gray-300 text-[#4a5565] rounded-lg hover:bg-gray-50 disabled:opacity-70"
                       >
                         {portalLoading ? 'Opening…' : 'Manage subscription'}
                       </button>
                     ) : (
                       <Link
                         href="/pricing"
-                        className="min-w-[120px] inline-block px-4 py-2 font-medium text-center bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d]"
+                        className="min-w-[120px] inline-block px-4 py-2 font-medium text-center border border-gray-300 text-[#4a5565] rounded-lg hover:bg-gray-50"
                       >
                         Upgrade plan
                       </Link>
                     )}
+                    <Link
+                      href="/pricing"
+                      className="min-w-[120px] inline-block px-4 py-2 font-medium text-center border border-gray-300 text-[#4a5565] rounded-lg hover:bg-gray-50"
+                    >
+                      Explore plans
+                    </Link>
                   </div>
                   {subscription && subscription.invoices.length > 0 && (
                     <div className="pt-4 border-t border-gray-200">

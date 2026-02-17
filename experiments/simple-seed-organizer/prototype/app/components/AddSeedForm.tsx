@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { Seed, SeedType, SunRequirement } from '@/types/seed';
 import { AIExtractedData } from '@/lib/packetReaderAI';
 import { processImageFile } from '@/lib/imageUtils';
@@ -12,6 +13,12 @@ interface AddSeedFormProps {
   initialData?: Seed;
   userId: string;
   userTier?: string;
+  /** When false, Auto Entry button is hidden (user at AI limit) */
+  canUseAI?: boolean;
+  /** When AI counter resets (ISO date) - shown in limit message */
+  resetsAt?: string;
+  /** When true, renders as page content (no fixed overlay) for routed views */
+  asPage?: boolean;
 }
 
 const SEED_TYPES: { value: SeedType; label: string }[] = [
@@ -142,8 +149,9 @@ const EDIT_SECTIONS = [
   { id: 'back', label: 'Back' },
 ] as const;
 
-export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier = 'Seed Stash Starter' }: AddSeedFormProps) {
-  const hasAutoEntry = userTier === 'Serious Hobby';
+export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier = 'Seed Stash Starter', canUseAI = true, resetsAt, asPage }: AddSeedFormProps) {
+  // Auto Entry: only show when user has AI completions remaining (all tiers have AI, limits vary)
+  const hasAutoEntry = canUseAI;
   const isEditMode = !!initialData;
   const [activeSection, setActiveSection] = useState<string>('front');
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -412,12 +420,12 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
     }
   };
 
+  const wrapperClass = asPage
+    ? 'flex flex-col bg-white flex-1 min-h-0'
+    : `fixed z-50 flex flex-col bg-white ${isEditMode ? 'top-20 left-0 right-0 bottom-0' : 'inset-0'}`;
+
   return (
-    <div
-      className={`fixed z-50 flex flex-col bg-white ${
-        isEditMode ? 'top-20 left-0 right-0 bottom-0' : 'inset-0'
-      }`}
-    >
+    <div className={wrapperClass}>
       {/* Header - only for add mode; edit mode uses app header + left nav */}
       {!isEditMode && (
         <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
@@ -461,6 +469,27 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
+        </div>
+      )}
+
+      {!canUseAI && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p className="text-amber-800 font-medium">
+              You&apos;ve reached your AI extraction limit for this month. Upgrade for more.
+            </p>
+            {resetsAt && (
+              <p className="text-sm text-amber-700 mt-1">
+                Resets {new Date(resetsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </p>
+            )}
+          </div>
+          <Link
+            href="/pricing?reason=ai"
+            className="shrink-0 px-4 py-2 bg-[#16a34a] text-white font-semibold rounded-lg hover:bg-[#15803d] transition-colors text-center"
+          >
+            Upgrade now
+          </Link>
         </div>
       )}
 
@@ -569,6 +598,20 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
                       >
                         Auto Entry
                       </button>
+                    )}
+                    {!canUseAI && frontImage && !loadingFront && (
+                      <div className="absolute top-2 right-2 left-2 z-10 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
+                        <p className="font-medium mb-1">You&apos;ve reached your AI extraction limit for this month.</p>
+                        {resetsAt && (
+                          <p className="text-[10px] text-amber-700 mb-1">Resets {new Date(resetsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                        )}
+                        <Link
+                          href="/pricing?reason=ai"
+                          className="inline-block px-2 py-1 bg-[#16a34a] text-white font-semibold rounded hover:bg-[#15803d] transition-colors"
+                        >
+                          Upgrade now
+                        </Link>
+                      </div>
                     )}
                     {hoverZoom && hoverZoom.image === frontImage && (
                       <div 
@@ -885,6 +928,20 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
                       >
                         Auto Entry
                       </button>
+                    )}
+                    {!canUseAI && backImage && !loadingBack && (
+                      <div className="absolute top-2 right-2 left-2 z-10 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
+                        <p className="font-medium mb-1">You&apos;ve reached your AI extraction limit for this month.</p>
+                        {resetsAt && (
+                          <p className="text-[10px] text-amber-700 mb-1">Resets {new Date(resetsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                        )}
+                        <Link
+                          href="/pricing?reason=ai"
+                          className="inline-block px-2 py-1 bg-[#16a34a] text-white font-semibold rounded hover:bg-[#15803d] transition-colors"
+                        >
+                          Upgrade now
+                        </Link>
+                      </div>
                     )}
                     {hoverZoom && hoverZoom.image === backImage && (
                       <div 

@@ -11,6 +11,8 @@ interface SeedDetailProps {
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  /** When true, renders as page content (no fixed overlay) for routed views */
+  asPage?: boolean;
 }
 
 function getAgeLabel(age: number): { text: string; color: string } {
@@ -39,7 +41,7 @@ function formatDateString(dateString: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps) {
+export function SeedDetail({ seed, onClose, onEdit, onDelete, asPage }: SeedDetailProps) {
   const age = getSeedAge(seed);
   const ageLabel = seed.year ? getAgeLabel(age) : null;
   const [plantingGuidance, setPlantingGuidance] = useState<ReturnType<typeof getPlantingGuidance> | null>(null);
@@ -48,8 +50,12 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
     setPlantingGuidance(getPlantingGuidance(seed));
   }, [seed]);
 
+  const wrapperClass = asPage
+    ? 'min-h-screen w-full bg-white flex flex-col pt-20 pb-24'
+    : 'fixed top-[72px] left-0 right-0 bottom-0 bg-white z-40 flex flex-col';
+
   return (
-    <div className="fixed top-[72px] left-0 right-0 bottom-0 bg-white z-40 flex flex-col">
+    <div className={wrapperClass}>
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
         <button onClick={onClose} className="p-2 -ml-2">

@@ -37,7 +37,7 @@ export function lookupZone(zipCode: string): ZoneLookupResult | null {
     changed,
     location: lookup.location,
     state: lookup.state,
-    climate,
+    climate: climate ?? undefined,
   };
 }
 

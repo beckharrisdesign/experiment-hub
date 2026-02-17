@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { AddSeedForm } from '@/components/AddSeedForm';
 import { Seed } from '@/types/seed';
 import { AIExtractedData } from '@/lib/packetReaderAI';
+import { useAuth } from '@/lib/auth-context';
 
 /**
  * Helper function to normalize sun requirement text to Seed type
@@ -45,6 +46,7 @@ function mapAIDataToSeed(aiData: AIExtractedData, frontImageBase64?: string, bac
 }
 
 export default function PacketExtractionTestPage() {
+  const { user } = useAuth();
   const [frontImage, setFrontImage] = useState<string | null>(null);
   const [backImage, setBackImage] = useState<string | null>(null);
   const [frontImageBase64, setFrontImageBase64] = useState<string | null>(null);
@@ -319,6 +321,7 @@ export default function PacketExtractionTestPage() {
   // Show AddSeedForm with extracted data
   return (
     <AddSeedForm
+      userId={user?.id ?? 'test-user'}
       initialData={seedData as Seed}
       onSubmit={handleFormSubmit}
       onClose={handleFormClose}

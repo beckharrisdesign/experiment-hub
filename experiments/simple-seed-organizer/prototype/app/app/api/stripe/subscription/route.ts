@@ -54,12 +54,13 @@ export async function POST(request: NextRequest) {
     let cancelAtPeriodEnd = false;
 
     if (subscription) {
-      const priceId = subscription.items.data[0]?.price?.id;
+      const firstItem = subscription.items.data[0];
+      const priceId = firstItem?.price?.id;
       tier = PRICE_TO_TIER[priceId || ''] || 'Paid';
       status = subscription.status as 'active' | 'canceled' | 'past_due';
-      currentPeriodEnd = subscription.current_period_end
-        ? new Date(subscription.current_period_end * 1000).toISOString()
-        : null;
+      // current_period_end moved from Subscription to SubscriptionItem in Stripe SDK v20+
+      const periodEnd = firstItem?.current_period_end;
+      currentPeriodEnd = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
       cancelAtPeriodEnd = subscription.cancel_at_period_end;
     }
 

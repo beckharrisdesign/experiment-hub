@@ -1,26 +1,50 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Seed, ViewMode } from '@/types/seed';
-import { getSeeds, getSeedsWithoutPhotos, getSeedPhotos, saveSeed, updateSeed, deleteSeed } from '@/lib/storage';
+import { getSeedsWithoutPhotos, getSeedPhotos } from '@/lib/storage';
 import { SearchBar } from '@/components/SearchBar';
 import { FilterBar } from '@/components/FilterBar';
 import { SeedList } from '@/components/SeedList';
 import { BottomNav } from '@/components/BottomNav';
-import { AddSeedForm } from '@/components/AddSeedForm';
-import { SeedDetail } from '@/components/SeedDetail';
 import { LandingPage } from '@/components/LandingPage';
 import { SeedType } from '@/types/seed';
 import { getSeedAge } from '@/lib/storage';
 import { useAuth } from '@/lib/auth-context';
 
-export default function Home() {
+const VALID_VIEW_MODES: ViewMode[] = ['type', 'month', 'age', 'photo'];
+
+function HomeContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
 
   const [seeds, setSeeds] = useState<Seed[]>([]);
-  const [viewMode, setViewMode] = useState<ViewMode>('type');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<SeedType | 'all' | 'use-first'>('all');
+  const [seedsLoading, setSeedsLoading] = useState(false);
+  const [usage, setUsage] = useState<{
+    canAddSeed: boolean;
+    canUseAI: boolean;
+    seedCount?: number;
+    seedLimit?: number | null;
+    overSeedLimit?: boolean;
+    resetsAt?: string;
+  } | null>(null);
+
+  // Sync viewMode with URL ?view= param for deep linking
+  const viewParam = searchParams.get('view');
+  const viewMode: ViewMode = viewParam && VALID_VIEW_MODES.includes(viewParam as ViewMode)
+    ? (viewParam as ViewMode)
+    : 'type';
+
+  const setViewMode = (mode: ViewMode) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('view', mode);
+    router.replace(`/?${params.toString()}`, { scroll: false });
+  };
 
   useEffect(() => {
     if (viewMode !== 'photo') {
@@ -28,15 +52,28 @@ export default function Home() {
     }
   }, [viewMode]);
 
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [selectedSeedId, setSelectedSeedId] = useState<string | null>(null);
-  const selectedSeed = selectedSeedId ? (seeds.find(s => s.id === selectedSeedId) ?? null) : null;
-  const [editingSeed, setEditingSeed] = useState<Seed | null>(null);
-  const [seedsLoading, setSeedsLoading] = useState(false);
-  const [userTier, setUserTier] = useState<string>('Seed Stash Starter');
+  useEffect(() => {
+    if (!user) {
+      setUsage(null);
+      return;
+    }
+    fetch('/api/usage', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) =>
+        data &&
+        setUsage({
+          canAddSeed: data.canAddSeed,
+          canUseAI: data.canUseAI,
+          seedCount: data.seedCount,
+          seedLimit: data.seedLimit,
+          overSeedLimit: data.overSeedLimit,
+          resetsAt: data.resetsAt,
+        })
+      )
+      .catch(() => setUsage(null));
+  }, [user]);
 
   // Load seeds from Supabase when user is authenticated
-  // Two-phase load: metadata first (fast), then photos in background
   useEffect(() => {
     if (!user) {
       setSeeds([]);
@@ -49,14 +86,11 @@ export default function Home() {
     const loadSeeds = async () => {
       setSeedsLoading(true);
       try {
-        // Phase 1: Load metadata without photos (fast - no large base64 blobs)
         const seedsWithoutPhotos = await getSeedsWithoutPhotos();
         if (cancelled) return;
         setSeeds(seedsWithoutPhotos);
         setSeedsLoading(false);
-        console.log(`[Home] Loaded ${seedsWithoutPhotos.length} seeds (metadata only)`);
 
-        // Phase 2: Load photos in background and merge
         const photos = await getSeedPhotos();
         if (cancelled) return;
         setSeeds(prev =>
@@ -66,7 +100,6 @@ export default function Home() {
             return { ...seed, photoFront: p.photoFront ?? seed.photoFront, photoBack: p.photoBack ?? seed.photoBack };
           })
         );
-        console.log(`[Home] Merged photos for ${photos.size} seeds`);
       } catch (error) {
         if (cancelled) return;
         console.error('[Home] Error loading seeds:', error);
@@ -77,27 +110,8 @@ export default function Home() {
       }
     };
     loadSeeds();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [user]);
-
-  useEffect(() => {
-    if (!user?.email) {
-      setUserTier('Seed Stash Starter');
-      return;
-    }
-    fetch('/api/stripe/subscription', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: user.email }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data.error && data.tier) setUserTier(data.tier);
-      })
-      .catch(() => setUserTier('Seed Stash Starter'));
-  }, [user?.email]);
 
   const filteredSeeds = useMemo(() => {
     let filtered = seeds;
@@ -124,61 +138,14 @@ export default function Home() {
     return filtered;
   }, [seeds, searchQuery, activeFilter]);
 
-  const handleAddSeed = async (seedData: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'>) => {
-    try {
-      const newSeed = await saveSeed(seedData);
-      const updatedSeeds = await getSeeds();
-      setSeeds(updatedSeeds);
-      setShowAddForm(false);
-    } catch (error) {
-      console.error('[Home] Error saving seed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save seed to database';
-      alert(`Failed to save seed: ${errorMessage}\n\nPlease check your Supabase connection and try again.`);
-    }
-  };
-
-  const handleUpdateSeed = async (seedData: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'>) => {
-    if (!editingSeed) return;
-    try {
-      const updated = await updateSeed(editingSeed.id, seedData);
-      if (updated) {
-        const updatedSeeds = await getSeeds();
-        setSeeds(updatedSeeds);
-        setSelectedSeedId(updated.id);
-      }
-      setEditingSeed(null);
-    } catch (error) {
-      console.error('[Home] Error updating seed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update seed in database';
-      alert(`Failed to update seed: ${errorMessage}\n\nPlease check your Supabase connection and try again.`);
-    }
-  };
-
-  const handleDeleteSeed = async (seed: Seed) => {
-    if (confirm(`Delete "${seed.name}"?`)) {
-      try {
-        await deleteSeed(seed.id, seed.user_id || user?.id);
-        const updatedSeeds = await getSeeds();
-        setSeeds(updatedSeeds);
-        setSelectedSeedId(null);
-      } catch (error) {
-        console.error('[Home] Error deleting seed:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to delete seed from database';
-        alert(`Failed to delete seed: ${errorMessage}\n\nPlease check your Supabase connection and try again.`);
-      }
-    }
-  };
-
-  // Auth loading state
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center pt-[72px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#16a34a]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#16a34a]" />
       </div>
     );
   }
 
-  // Not authenticated - show landing page with OAuth sign-up (Header is in AppShell)
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -187,10 +154,24 @@ export default function Home() {
     );
   }
 
-  // Authenticated - show main app (Header is in AppShell)
   return (
     <div className="min-h-screen w-full bg-[#f9fafb] flex flex-col">
       <main className="flex-1 w-full px-4 py-4 pt-24 pb-24 max-w-[1600px] mx-auto md:px-6 lg:px-8">
+        {usage?.canAddSeed === false && (
+          <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <p className="text-amber-800 font-medium">
+              {usage.seedLimit != null && usage.seedCount != null
+                ? `You have ${usage.seedCount} seeds (limit ${usage.seedLimit}). Upgrade or remove some to add more.`
+                : "You've reached your seed limit. Upgrade to add more seed packets to your collection."}
+            </p>
+            <Link
+              href="/pricing?reason=seeds"
+              className="shrink-0 px-4 py-2 bg-[#16a34a] text-white font-semibold rounded-lg hover:bg-[#15803d] transition-colors text-center"
+            >
+              Upgrade now
+            </Link>
+          </div>
+        )}
         <SearchBar value={searchQuery} onChange={setSearchQuery} />
 
         <div className="mt-3">
@@ -207,7 +188,7 @@ export default function Home() {
             <SeedList
               seeds={filteredSeeds}
               viewMode={viewMode}
-              onSeedClick={(seed) => setSelectedSeedId(seed.id)}
+              onSeedClick={(seed) => router.push(`/seeds/${seed.id}`)}
             />
           )}
         </div>
@@ -216,36 +197,27 @@ export default function Home() {
       <BottomNav
         activeView={viewMode}
         onViewChange={setViewMode}
-        onAddClick={() => setShowAddForm(true)}
+        onAddClick={() => {
+          if (usage?.canAddSeed !== false) {
+            router.push('/add');
+          } else {
+            router.push('/pricing?reason=seeds');
+          }
+        }}
+        canAddSeed={usage?.canAddSeed ?? true}
       />
-
-      {showAddForm && (
-        <AddSeedForm
-          userId={user.id}
-          userTier={userTier}
-          onSubmit={handleAddSeed}
-          onClose={() => setShowAddForm(false)}
-        />
-      )}
-
-      {editingSeed && (
-        <AddSeedForm
-          userId={editingSeed.user_id || user.id}
-          userTier={userTier}
-          initialData={editingSeed}
-          onSubmit={handleUpdateSeed}
-          onClose={() => setEditingSeed(null)}
-        />
-      )}
-
-      {selectedSeed && !editingSeed && (
-        <SeedDetail
-          seed={selectedSeed}
-          onClose={() => setSelectedSeedId(null)}
-          onEdit={() => selectedSeed && setEditingSeed(selectedSeed)}
-          onDelete={() => selectedSeed && handleDeleteSeed(selectedSeed)}
-        />
-      )}
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center pt-[72px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#16a34a]" />
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

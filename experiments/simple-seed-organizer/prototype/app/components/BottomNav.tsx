@@ -6,9 +6,11 @@ interface BottomNavProps {
   activeView: ViewMode;
   onViewChange: (view: ViewMode) => void;
   onAddClick: () => void;
+  /** When false, Add button is disabled and shows upgrade state */
+  canAddSeed?: boolean;
 }
 
-export function BottomNav({ activeView, onViewChange, onAddClick }: BottomNavProps) {
+export function BottomNav({ activeView, onViewChange, onAddClick, canAddSeed = true }: BottomNavProps) {
   const allNavItems: { view: ViewMode; label: string; icon: React.ReactNode }[] = [
     {
       view: 'type',
@@ -66,10 +68,15 @@ export function BottomNav({ activeView, onViewChange, onAddClick }: BottomNavPro
           </button>
         )}
 
-        {/* Add Button */}
+        {/* Add Button - disabled at limit, click still triggers upgrade redirect */}
         <button
           onClick={onAddClick}
-          className="w-14 h-14 bg-[#16a34a] rounded-full flex items-center justify-center text-white shadow-lg -mt-7 relative z-10"
+          title={canAddSeed ? 'Add seed' : 'Upgrade to add more seeds'}
+          className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg -mt-7 relative z-10 transition-colors ${
+            canAddSeed
+              ? 'bg-[#16a34a] text-white hover:bg-[#15803d]'
+              : 'bg-gray-300 text-gray-500'
+          }`}
         >
           <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

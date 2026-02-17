@@ -1,6 +1,9 @@
 -- AI completion usage tracking (per user, per month)
 -- Each image read by the model counts as 1 completion.
 -- read-ai: front only = 1, front+back = 2. read-ai-single: 1 per call. Re-extraction counts again.
+--
+-- After running: if you get PGRST202 (function not found), refresh schema cache in Supabase SQL Editor:
+--   NOTIFY pgrst, 'reload schema';
 
 CREATE TABLE IF NOT EXISTS ai_usage (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
