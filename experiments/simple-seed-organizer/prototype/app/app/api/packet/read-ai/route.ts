@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { incrementAiUsage, getAiUsage } from '@/lib/ai-usage';
 import { canUseAICount } from '@/lib/limits';
 import { getTierForUser } from '@/lib/tier';
+import { rateLimit } from '@/lib/rate-limit';
 import sharp from 'sharp';
 
 /**
@@ -61,6 +62,14 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const rl = rateLimit(`ai:${user.id}`, { windowMs: 60_000, max: 30 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests', message: 'Please wait a moment before trying again.' },
+        { status: 429, headers: rl.retryAfter ? { 'Retry-After': String(rl.retryAfter) } : {} }
+      );
     }
 
     const formData = await request.formData();

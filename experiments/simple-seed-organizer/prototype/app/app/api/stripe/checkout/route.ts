@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rl = rateLimit(`checkout:${ip}`, { windowMs: 60_000, max: 10 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests', message: 'Please wait a moment before trying again.' },
+      { status: 429 }
+    );
+  }
+
   if (!stripe) {
     return NextResponse.json(
       { error: 'Stripe is not configured. Add STRIPE_SECRET_KEY to .env.local' },
