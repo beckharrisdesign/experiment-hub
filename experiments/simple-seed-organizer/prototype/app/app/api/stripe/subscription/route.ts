@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { rateLimit } from '@/lib/rate-limit';
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
@@ -20,14 +22,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const supabase = await createServerSupabaseClient();
+  if (!supabase) {
+    return NextResponse.json({ error: 'Not configured' }, { status: 500 });
+  }
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const rl = rateLimit(`stripe-subscription:${user.id}`, { windowMs: 60_000, max: 30 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests', message: 'Please wait a moment before trying again.' },
+      { status: 429, headers: rl.retryAfter ? { 'Retry-After': String(rl.retryAfter) } : {} }
+    );
+  }
+
   try {
-    const { email } = (await request.json()) as { email?: string };
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json(
-        { error: 'email is required' },
-        { status: 400 }
-      );
-    }
+    const email = user.email;
 
     const customers = await stripe.customers.list({ email, limit: 1 });
     const customer = customers.data[0];

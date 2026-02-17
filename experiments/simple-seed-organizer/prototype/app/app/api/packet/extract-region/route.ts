@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { rateLimit } from '@/lib/rate-limit';
 
 /**
  * API route to extract a region from an image where a field is located
@@ -13,6 +15,23 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createServerSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Not configured' }, { status: 500 });
+    }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const rl = rateLimit(`ai:${user.id}`, { windowMs: 60_000, max: 30 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests', message: 'Please wait a moment before trying again.' },
+        { status: 429, headers: rl.retryAfter ? { 'Retry-After': String(rl.retryAfter) } : {} }
+      );
+    }
+
     const body = await request.json();
     const { fieldName, fieldValue, sourceImage, imageBase64 } = body;
 

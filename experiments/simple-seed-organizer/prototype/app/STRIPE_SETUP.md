@@ -69,9 +69,14 @@ npm install stripe
 
 **Fallback:** If Stripe keys or price IDs are not set, the paid-tier buttons show "Get started" and link to the signup form instead.
 
-## 6. Webhooks (Optional, for production)
+## 6. Webhooks (Recommended for production)
 
-To sync subscription status (active, canceled, etc.) with your database:
+The app includes a webhook handler at `/api/stripe/webhook` that handles:
+- `checkout.session.completed` – new subscription created
+- `customer.subscription.updated` – plan changed, renewed, etc.
+- `customer.subscription.deleted` – subscription canceled
+
+To enable:
 
 1. **Developers** → **Webhooks** → **Add endpoint**
 2. Endpoint URL: `https://your-domain.com/api/stripe/webhook`
@@ -82,8 +87,10 @@ To sync subscription status (active, canceled, etc.) with your database:
 For local testing, use the [Stripe CLI](https://stripe.com/docs/stripe-cli) to forward webhooks:
 
 ```bash
-stripe listen --forward-to localhost:3009/api/stripe/webhook
+stripe listen --forward-to localhost:3001/api/stripe/webhook
 ```
+
+The handler logs events; you can extend it to sync subscription status to your database when you add a subscriptions table.
 
 ## 7. Stripe Customer Portal (for Profile "Manage billing")
 

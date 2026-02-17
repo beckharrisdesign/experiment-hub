@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   if (!rl.allowed) {
     return NextResponse.json(
       { error: 'Too many requests', message: 'Please wait a moment before trying again.' },
-      { status: 429 }
+      { status: 429, headers: rl.retryAfter ? { 'Retry-After': String(rl.retryAfter) } : {} }
     );
   }
 
