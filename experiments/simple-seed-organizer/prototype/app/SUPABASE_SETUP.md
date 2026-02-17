@@ -48,6 +48,12 @@ Replace `your-project-url-here` and `your-publishable-key-here` with the values 
 2. Try adding a seed - it should save to Supabase
 3. Check the Supabase dashboard → **Table Editor** → `seeds` to see your data
 
+## Auth: Single Form for New & Returning Users
+
+The app uses one form: enter email + password, click Continue. We try sign in first; if that fails, we try sign up. No magic links (avoids hitting the free-tier email cap).
+
+To avoid confirmation emails (and stay under the email cap), in Supabase go to **Authentication** → **Providers** → **Email** and disable "Confirm email". New users will be signed in immediately.
+
 ## Fallback Behavior
 
 If Supabase credentials are not configured, the app will automatically fall back to localStorage. This allows you to develop locally without Supabase if needed.

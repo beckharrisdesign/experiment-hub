@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { AppShell } from "@/components/AppShell";
 
 export const metadata: Metadata = {
   title: "Simple Seed Organizer",
@@ -30,7 +31,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          <div id="app-container">{children}</div>
+          <AppShell>
+            <div id="app-container">{children}</div>
+          </AppShell>
         </AuthProvider>
       </body>
     </html>

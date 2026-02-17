@@ -9,7 +9,7 @@ interface BottomNavProps {
 }
 
 export function BottomNav({ activeView, onViewChange, onAddClick }: BottomNavProps) {
-  const navItems: { view: ViewMode; label: string; icon: React.ReactNode }[] = [
+  const allNavItems: { view: ViewMode; label: string; icon: React.ReactNode }[] = [
     {
       view: 'type',
       label: 'Type',
@@ -48,32 +48,25 @@ export function BottomNav({ activeView, onViewChange, onAddClick }: BottomNavPro
     },
   ];
 
+  // Temporarily hide Month and Age tabs (zone/zip/planting guidance not in use)
+  const navItems = allNavItems.filter((item) => item.view !== 'month' && item.view !== 'age');
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 flex items-center justify-center z-50">
-      <div className="flex gap-6 items-center">
-        {/* Type */}
-        <button
-          onClick={() => onViewChange('type')}
-          className={`flex flex-col items-center gap-1 px-3 py-1 ${
-            activeView === 'type' ? 'text-[#16a34a]' : 'text-[#6a7282]'
-          }`}
-        >
-          {navItems[0].icon}
-          <span className="text-xs font-medium">{navItems[0].label}</span>
-        </button>
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 flex items-center justify-center z-50 md:px-6 lg:px-8">
+      <div className="flex gap-6 items-center w-full max-w-7xl justify-center">
+        {navItems[0] && (
+          <button
+            onClick={() => onViewChange(navItems[0].view)}
+            className={`flex flex-col items-center gap-1 px-3 py-1 ${
+              activeView === navItems[0].view ? 'text-[#16a34a]' : 'text-[#6a7282]'
+            }`}
+          >
+            {navItems[0].icon}
+            <span className="text-xs font-medium">{navItems[0].label}</span>
+          </button>
+        )}
 
-        {/* Month */}
-        <button
-          onClick={() => onViewChange('month')}
-          className={`flex flex-col items-center gap-1 px-3 py-1 ${
-            activeView === 'month' ? 'text-[#16a34a]' : 'text-[#6a7282]'
-          }`}
-        >
-          {navItems[1].icon}
-          <span className="text-xs font-medium">{navItems[1].label}</span>
-        </button>
-
-        {/* Add Button - 3rd position */}
+        {/* Add Button */}
         <button
           onClick={onAddClick}
           className="w-14 h-14 bg-[#16a34a] rounded-full flex items-center justify-center text-white shadow-lg -mt-7 relative z-10"
@@ -83,27 +76,17 @@ export function BottomNav({ activeView, onViewChange, onAddClick }: BottomNavPro
           </svg>
         </button>
 
-        {/* Age */}
-        <button
-          onClick={() => onViewChange('age')}
-          className={`flex flex-col items-center gap-1 px-3 py-1 ${
-            activeView === 'age' ? 'text-[#16a34a]' : 'text-[#6a7282]'
-          }`}
-        >
-          {navItems[2].icon}
-          <span className="text-xs font-medium">{navItems[2].label}</span>
-        </button>
-
-        {/* Photos */}
-        <button
-          onClick={() => onViewChange('photo')}
-          className={`flex flex-col items-center gap-1 px-3 py-1 ${
-            activeView === 'photo' ? 'text-[#16a34a]' : 'text-[#6a7282]'
-          }`}
-        >
-          {navItems[3].icon}
-          <span className="text-xs font-medium">{navItems[3].label}</span>
-        </button>
+        {navItems[1] && (
+          <button
+            onClick={() => onViewChange(navItems[1].view)}
+            className={`flex flex-col items-center gap-1 px-3 py-1 ${
+              activeView === navItems[1].view ? 'text-[#16a34a]' : 'text-[#6a7282]'
+            }`}
+          >
+            {navItems[1].icon}
+            <span className="text-xs font-medium">{navItems[1].label}</span>
+          </button>
+        )}
       </div>
     </nav>
   );

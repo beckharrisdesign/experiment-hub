@@ -1,26 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getProfile } from '@/lib/storage';
+import { useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 
 interface HeaderProps {
   onProfileClick?: () => void;
-  userEmail?: string | null;
 }
 
-export function Header({ onProfileClick, userEmail }: HeaderProps) {
-  const [hasProfile, setHasProfile] = useState(false);
+export function Header({ onProfileClick }: HeaderProps) {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const { signOut } = useAuth();
 
-  useEffect(() => {
-    const profile = getProfile();
-    setHasProfile(!!profile && (!!profile.zipCode || !!profile.growingZone));
-  }, []);
-
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#166534] text-white px-4 py-4 flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full min-w-0 bg-[#166534] text-white px-3 py-3 sm:px-4 sm:py-4 md:px-6 lg:px-8">
+      <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
           <svg className="w-6 h-6 text-[#86efac]" viewBox="0 0 24 24" fill="currentColor">
@@ -30,25 +23,41 @@ export function Header({ onProfileClick, userEmail }: HeaderProps) {
         <span className="text-lg font-semibold">Simple Seed Organizer</span>
       </div>
 
-      <div className="flex items-center gap-2 relative">
-        {userEmail && (
-          <span className="text-xs text-[#86efac] max-w-[120px] truncate hidden sm:inline">
-            {userEmail}
-          </span>
+      <div className="flex items-center gap-4 md:gap-6 relative">
+        {!onProfileClick && (
+          <>
+            <nav className="hidden sm:flex items-center gap-4 md:gap-6">
+              <a
+                href="#features"
+                className="text-sm font-medium text-white/90 hover:text-white transition-colors"
+              >
+                Features
+              </a>
+              <a
+                href="#pricing"
+                className="text-sm font-medium text-white/90 hover:text-white transition-colors"
+              >
+                Pricing
+              </a>
+            </nav>
+            <a
+              href="#signup"
+              className="text-sm font-medium text-white/90 hover:text-white transition-colors"
+            >
+              Login
+            </a>
+          </>
         )}
         {onProfileClick && (
           <>
             <button
               onClick={() => setShowAccountMenu(!showAccountMenu)}
-              className="p-2 rounded-lg bg-[#15803d] hover:bg-[#166534] transition-colors relative"
+              className="p-2 rounded-lg bg-[#15803d] hover:bg-[#166534] transition-colors"
               aria-label="Account"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              {hasProfile && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-[#86efac] rounded-full"></span>
-              )}
             </button>
             {showAccountMenu && (
               <>
@@ -81,6 +90,7 @@ export function Header({ onProfileClick, userEmail }: HeaderProps) {
             )}
           </>
         )}
+      </div>
       </div>
     </header>
   );

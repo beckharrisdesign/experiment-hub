@@ -2,14 +2,18 @@
 
 import { useState } from 'react';
 
-interface SignUpFormProps {
+interface AuthFormProps {
   onSuccess: () => void;
-  onSwitchToLogin: () => void;
   /** When true, renders without the full-screen wrapper (for embedding in landing) */
   embedded?: boolean;
 }
 
-export function SignUpForm({ onSuccess, onSwitchToLogin, embedded }: SignUpFormProps) {
+/**
+ * Unified auth form: one experience for new and returning users.
+ * Enter email + password → we try sign in first, then sign up if new.
+ * No magic links (avoids email cap). No sign up vs sign in choice.
+ */
+export function AuthForm({ onSuccess, embedded }: AuthFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,10 +30,26 @@ export function SignUpForm({ onSuccess, onSwitchToLogin, embedded }: SignUpFormP
       const { supabase } = await import('@/lib/supabase');
       if (!supabase) throw new Error('Supabase not configured. Please check your setup.');
 
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) throw error;
+      // Try sign in first (returning user)
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (!signInError) {
+        onSuccess();
+        return;
+      }
 
-      // Supabase may require email confirmation - check session
+      // Sign in failed - try sign up (new user)
+      const { error: signUpError } = await supabase.auth.signUp({ email, password });
+      if (signUpError) {
+        // "User already registered" = returning user with wrong password
+        if (signUpError.message.toLowerCase().includes('already registered')) {
+          setError('Invalid email or password');
+        } else {
+          setError(signUpError.message);
+        }
+        return;
+      }
+
+      // Sign up succeeded - check if we have a session (or need email confirmation)
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         onSuccess();
@@ -37,7 +57,7 @@ export function SignUpForm({ onSuccess, onSwitchToLogin, embedded }: SignUpFormP
         setMessage('Check your email to confirm your account, then sign in.');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign up failed');
+      setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -45,8 +65,10 @@ export function SignUpForm({ onSuccess, onSwitchToLogin, embedded }: SignUpFormP
 
   const formContent = (
     <>
-      <h1 className="text-xl font-semibold text-[#101828] mb-1">Create account</h1>
-      <p className="text-sm text-[#6a7282] mb-6">Start organizing your seed collection</p>
+      <h1 className="text-xl font-semibold text-[#101828] mb-1">Continue with email</h1>
+      <p className="text-sm text-[#6a7282] mb-6">
+        Enter your email and password. New users are added automatically.
+      </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -69,7 +91,7 @@ export function SignUpForm({ onSuccess, onSwitchToLogin, embedded }: SignUpFormP
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            autoComplete="new-password"
+            autoComplete="current-password"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
             placeholder="At least 6 characters"
           />
@@ -85,20 +107,9 @@ export function SignUpForm({ onSuccess, onSwitchToLogin, embedded }: SignUpFormP
           disabled={loading}
           className="w-full py-3 bg-[#16a34a] text-white font-semibold rounded-lg hover:bg-[#15803d] disabled:opacity-50 transition-colors"
         >
-          {loading ? 'Creating account...' : 'Sign up'}
+          {loading ? 'Continuing...' : 'Continue'}
         </button>
       </form>
-
-      <p className="mt-4 text-center text-sm text-[#6a7282]">
-        Already have an account?{' '}
-        <button
-          type="button"
-          onClick={onSwitchToLogin}
-          className="text-[#16a34a] font-medium hover:underline"
-        >
-          Sign in
-        </button>
-      </p>
     </>
   );
 

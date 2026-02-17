@@ -49,7 +49,7 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
   }, [seed]);
 
   return (
-    <div className="fixed inset-0 bg-white z-50 flex flex-col">
+    <div className="fixed top-[72px] left-0 right-0 bottom-0 bg-white z-40 flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
         <button onClick={onClose} className="p-2 -ml-2">
@@ -238,7 +238,7 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete }: SeedDetailProps)
 
           {/* Right Column - Metadata (25%) */}
           <div className="w-1/4 flex-shrink-0 min-w-[280px]">
-            <div className="space-y-4 sticky top-4 flex flex-col h-[calc(100vh-120px)]">
+            <div className="space-y-4 sticky top-4 flex flex-col h-[calc(100vh-180px)]">
               {/* Seed Metadata */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Seed Information</h3>

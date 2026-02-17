@@ -3,23 +3,19 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Seed, ViewMode } from '@/types/seed';
 import { getSeeds, getSeedsWithoutPhotos, getSeedPhotos, saveSeed, updateSeed, deleteSeed } from '@/lib/storage';
-import { Header } from '@/components/Header';
 import { SearchBar } from '@/components/SearchBar';
 import { FilterBar } from '@/components/FilterBar';
 import { SeedList } from '@/components/SeedList';
 import { BottomNav } from '@/components/BottomNav';
 import { AddSeedForm } from '@/components/AddSeedForm';
 import { SeedDetail } from '@/components/SeedDetail';
-import { Profile } from '@/components/Profile';
-import { LoginForm } from '@/components/LoginForm';
-import { SignUpForm } from '@/components/SignUpForm';
+import { LandingPage } from '@/components/LandingPage';
 import { SeedType } from '@/types/seed';
 import { getSeedAge } from '@/lib/storage';
 import { useAuth } from '@/lib/auth-context';
 
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
-  const [authView, setAuthView] = useState<'login' | 'signup'>('login');
 
   const [seeds, setSeeds] = useState<Seed[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('type');
@@ -36,7 +32,6 @@ export default function Home() {
   const [selectedSeedId, setSelectedSeedId] = useState<string | null>(null);
   const selectedSeed = selectedSeedId ? (seeds.find(s => s.id === selectedSeedId) ?? null) : null;
   const [editingSeed, setEditingSeed] = useState<Seed | null>(null);
-  const [showProfile, setShowProfile] = useState(false);
   const [seedsLoading, setSeedsLoading] = useState(false);
 
   // Load seeds from Supabase when user is authenticated
@@ -159,33 +154,25 @@ export default function Home() {
   // Auth loading state
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center">
+      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center pt-[72px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#16a34a]"></div>
       </div>
     );
   }
 
-  // Not authenticated - show login or signup
+  // Not authenticated - show landing page with OAuth sign-up (Header is in AppShell)
   if (!user) {
-    return authView === 'login' ? (
-      <LoginForm
-        onSuccess={() => {}}
-        onSwitchToSignUp={() => setAuthView('signup')}
-      />
-    ) : (
-      <SignUpForm
-        onSuccess={() => {}}
-        onSwitchToLogin={() => setAuthView('login')}
-      />
+    return (
+      <div className="min-h-screen flex flex-col">
+        <LandingPage />
+      </div>
     );
   }
 
-  // Authenticated - show main app
+  // Authenticated - show main app (Header is in AppShell)
   return (
-    <div className="min-h-screen bg-[#f9fafb] flex flex-col">
-      <Header onProfileClick={() => setShowProfile(true)} userEmail={user.email} />
-
-      <main className="flex-1 px-4 py-4 pt-24 pb-24">
+    <div className="min-h-screen w-full bg-[#f9fafb] flex flex-col">
+      <main className="flex-1 w-full px-4 py-4 pt-24 pb-24 max-w-[1600px] mx-auto md:px-6 lg:px-8">
         <SearchBar value={searchQuery} onChange={setSearchQuery} />
 
         <div className="mt-3">
@@ -238,10 +225,6 @@ export default function Home() {
           onEdit={() => selectedSeed && setEditingSeed(selectedSeed)}
           onDelete={() => selectedSeed && handleDeleteSeed(selectedSeed)}
         />
-      )}
-
-      {showProfile && (
-        <Profile onClose={() => setShowProfile(false)} />
       )}
     </div>
   );
