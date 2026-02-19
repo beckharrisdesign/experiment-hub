@@ -43,6 +43,7 @@ Add these in Vercel → Project → **Settings** → **Environment Variables**. 
 | `NEXT_PUBLIC_STRIPE_PRICE_SERIOUS_HOBBY_MONTHLY` | Yes | |
 | `NEXT_PUBLIC_STRIPE_PRICE_SERIOUS_HOBBY_YEARLY` | Yes | |
 | `STRIPE_WEBHOOK_SECRET` | Optional | Only if you configure a webhook for this env |
+| `NEXT_PUBLIC_GOOGLE_ANALYTICS_ID` | Optional | GA4 Measurement ID (e.g. `G-XXXXXXXXXX`) |
 
 **Tip:** Copy from `.env.local` but never commit secrets. Use Vercel’s “Bulk Edit” to paste multiple vars.
 
