@@ -56,7 +56,7 @@
       "socialImpact": 3
     },
     "validation": {
-      "status": "planned",
+      "status": "completed",
       "landingDir": "landing",
       "devPort": 3001
     }

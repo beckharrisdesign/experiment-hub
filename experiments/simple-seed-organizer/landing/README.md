@@ -2,6 +2,8 @@
 
 A static HTML landing page for validating interest in the Simple Seed Organizer app.
 
+**Status:** Launched and tested. Phase 1 validation completed before MVP build.
+
 ## Files
 
 - `index.html` - Main landing page

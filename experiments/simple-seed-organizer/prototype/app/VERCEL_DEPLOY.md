@@ -6,6 +6,8 @@ This guide walks through deploying the app to Vercel as a test or QA environment
 
 **Deployed to Vercel** — Test/QA environment live. Using Stripe sandbox (test mode) while iterating before soft launch.
 
+**Phase 1 validation completed** — Landing page (`landing/`) was launched and tested before building the MVP.
+
 ## Prerequisites
 
 - GitHub repo pushed (experiment-hub)
