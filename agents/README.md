@@ -33,12 +33,14 @@ This directory contains agent instructions and guidelines for the Experiment Hub
 ### Quality & Guidelines Agents
 
 5. **design-advisor.md** - Active design review and guidance
+   - **Testing**: Run `scripts/test-site.sh <URL>` first (accessible, resolves, <1s). Test-first: if tests fail, fix before proceeding.
    - **Role**: Design Lead / UX Director
-   - **Input**: PRD documents or prototype code
-   - **Output**: Design review reports, recommendations, compliance checks
+   - **Input**: PRD documents, prototype code, or live deployed URL
+   - **Output**: Design review reports, heuristic evaluations, recommendations, compliance checks
    - **Use**: `@design-advisor`
    - **Integration**: Automatically invoked by PRD Writer and Prototype Builder
-   - Provides: Active design review, UI/UX feedback, accessibility audits, component suggestions
+   - **Core strategy**: Both code review and live browser evaluation are essential—use both for a complete design strategy
+   - Provides: Code-level design review, live heuristic evaluation (via browser), UI/UX feedback, accessibility audits, component suggestions
 
 6. **commit-message.md** - Guidelines for well-formed commit messages
    - **Role**: Senior Developer / Engineering Manager
@@ -118,7 +120,7 @@ Reference agents using `@` syntax:
 - `@market-research` - Conduct market research and TAM analysis
 - `@prd-writer` - Generate PRD for experiment
 - `@prototype-builder` - Build prototype from PRD
-- `@design-advisor` - Review PRD or prototype for design compliance (also auto-invoked by PRD Writer and Prototype Builder)
+- `@design-advisor` - Review PRD, prototype code, or live site for design compliance (also auto-invoked by PRD Writer and Prototype Builder). Use browser to evaluate deployed URLs.
 - `@commit-message` - Get commit message guidance
 - `@design-guidelines` - Reference design standards (reference document)
 

@@ -1,4 +1,4 @@
-# Cursor Rules for Experiment Hub
+# Global rules for Cursor (paste into Settings → General → Rules for AI)
 
 Quick reference: UX/DX balance · Test first, code later · Reusable systems · Log capture · Figma flow · Solo/vibe coding
 
@@ -17,16 +17,8 @@ Quick reference: UX/DX balance · Test first, code later · Reusable systems · 
 
 ## Analysis and Recommendations
 - **Think in reusable systems and components** — Prefer chat, shared docs, or existing project structure over writing a ton of one-off markdown files for everything.
-- **Use chat or reusable docs** for:
-  - Quick comparisons (pros/cons, approach comparisons)
-  - Recommendations and decision-making
-  - Exploratory analysis
-  - One-off explanations
-- **Use documentation files** when:
-  - Information needs to be referenced later (setup guides, troubleshooting)
-  - Content is part of project documentation (architecture, design decisions)
-  - Multiple people need to access it
-  - It's a living document that will be updated over time
+- **Use chat or reusable docs** for quick comparisons, recommendations, exploratory analysis, one-off explanations.
+- **Use documentation files** when information must be referenced later, is project documentation, or is a living document.
 - **Avoid** creating new one-off .md files for every analysis; extend existing docs or use chat instead
 
 ## Figma (when using Figma MCP)

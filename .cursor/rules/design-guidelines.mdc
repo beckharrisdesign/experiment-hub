@@ -1,0 +1,63 @@
+---
+description: Apply when designing or implementing UI/UX, building prototypes, or reviewing design decisions.
+globs: components/**/*, app/**/*.tsx, app/**/*.css, **/*.tsx, **/globals.css
+---
+
+# Design & UX guidelines
+
+## Core principles
+
+1. **Simplicity first** — Minimal interface, clear hierarchy, no clutter, progressive disclosure.
+2. **Developer tool aesthetic** — Dark mode default, monospace for code/data, high contrast, functional over decorative.
+3. **Speed & performance** — Fast load (&lt; 2s), instant feedback, smooth interactions (60fps), efficient navigation.
+4. **Focus & clarity** — One primary action per screen, clear labels, consistent patterns, error prevention.
+5. **Design for scanning** — Single-line rows when possible, columnar data, consistent alignment and row height, balance density with scannability.
+6. **Design with real data** — Use real data early; avoid lorem ipsum and mocks that hide edge cases.
+7. **Navigation/content match** — Click label (e.g. "Market Research") must match loaded content; no surprise labels.
+
+## Visual system (dark theme default)
+
+**Colors**
+- Background: `#0d1117` (primary), `#161b22`, `#21262d`
+- Text: `#c9d1d9` (primary), `#8b949e` (secondary), `#6e7681` (muted)
+- Border: `#30363d`
+- Accent: `#58a6ff` / `#79c0ff`
+- Success `#3fb950`, Warning `#d29922`, Error `#f85149`
+- WCAG AA minimum contrast; accent for interactive elements only.
+
+**Typography**
+- Primary/code: system monospace (`'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace`)
+- UI text: system sans-serif
+- Scale: Tailwind xs (12px) → 2xl (24px) for labels through page titles; weights 400 body, 500–600 emphasis, 700 sparingly.
+
+**Spacing** — Tailwind scale (0.25rem base). Use consistent padding and section whitespace.
+
+## Components
+
+- **Buttons** — Primary (accent bg), secondary (accent border), ghost. **Primary CTAs in containers/cards must be buttons, not text links.** Use text links for secondary or inline navigation only.
+- **Inputs** — Dark bg, border, clear focus (accent), muted placeholder, error state with message.
+- **Cards** — Subtle bg difference, border, padding, hover when interactive.
+- **Navigation** — Fixed left sidebar, clear active state, hover feedback, keyboard (arrows, Enter).
+
+## UX patterns
+
+- **Lists** — Comfortable density, clear selection, empty states with helpful message.
+- **Forms** — Real-time validation, actionable errors, success confirmation; break long forms into steps.
+- **Loading** — Skeleton for structure, spinner for &lt; 1s, progress for longer; minimal animation.
+- **Errors** — Clear, actionable, contextual, recoverable (retry/cancel).
+- **Transitions** — 150–300ms, ease-in-out; use transform/opacity for performance.
+
+## Accessibility
+
+- Keyboard navigation for all features; visible focus states.
+- ARIA labels/roles for screen readers; semantic HTML.
+- WCAG AA contrast; alt text for images/icons; skip links where needed.
+
+## Quality checklist
+
+- [ ] Consistent color and typography hierarchy
+- [ ] Adequate spacing; clear visual hierarchy
+- [ ] Primary CTAs in containers/cards are buttons
+- [ ] Clear navigation and error messages; helpful empty states
+- [ ] Keyboard nav and focus indicators; sufficient contrast
+- [ ] Smooth animations; fast loads; no cryptic errors

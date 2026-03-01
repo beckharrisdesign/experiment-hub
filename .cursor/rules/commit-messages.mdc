@@ -1,0 +1,61 @@
+---
+description: Apply when writing or validating commit messages, or when suggesting commit messages for staged changes.
+globs:
+---
+
+# Commit message format
+
+Use this structure for commit messages:
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+## Components
+
+**Type (required)** — One of: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `build`, `ci`
+
+**Scope (optional)** — Area affected: component name, feature area (e.g. `experiments`, `prototypes`), or technical area (e.g. `api`, `ui`)
+
+**Subject (required)**
+- Imperative mood: "add" not "added" or "adds"
+- First letter lowercase (unless proper noun)
+- No period at end
+- Max 50 characters
+- Specific and descriptive
+
+**Body (optional)** — Explain what and why; wrap at 72 characters; blank line after subject.
+
+**Footer (optional)** — `Fixes #123`, `Closes #456`; breaking changes: `BREAKING CHANGE: <description>`
+
+## Examples
+
+Good:
+- `feat(experiments): add experiment creation form`
+- `fix(prototypes): resolve directory creation race condition`
+- `docs(agents): update PRD writer instructions`
+- `refactor(ui): extract sidebar into reusable component`
+
+Avoid:
+- "fixed bug", "update stuff", "WIP", "asdf"
+- Past tense in subject: "fixed the thing"
+- Subject over 50 chars or body that only describes "how" without "why"
+
+## Breaking changes
+
+Put in footer:
+```
+BREAKING CHANGE: Status values changed from lowercase to PascalCase.
+Migration: Replace "active" with "Active", etc.
+```
+
+## Checklist before committing
+
+- [ ] Type is standard
+- [ ] Subject imperative, &lt; 50 chars, lowercase start
+- [ ] Body explains what/why and wraps at 72 (if present)
+- [ ] Footer references issues if applicable; breaking changes documented
