@@ -1,18 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { getSubscriptionInfo } from '@/lib/tier';
 import { rateLimit } from '@/lib/rate-limit';
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
-
-const PRICE_TO_TIER: Record<string, string> = {
-  [process.env.NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_MONTHLY || '']: 'Home Garden',
-  [process.env.NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_YEARLY || '']: 'Home Garden',
-  [process.env.NEXT_PUBLIC_STRIPE_PRICE_SERIOUS_HOBBY_MONTHLY || '']: 'Serious Hobby',
-  [process.env.NEXT_PUBLIC_STRIPE_PRICE_SERIOUS_HOBBY_YEARLY || '']: 'Serious Hobby',
-};
 
 export async function POST(request: NextRequest) {
   if (!stripe) {
@@ -40,50 +34,29 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const email = user.email;
+    // Tier and billing state come from the DB (fast) or Stripe fallback (slow, first time only)
+    const { tier, status, currentPeriodEnd, cancelAtPeriodEnd, stripeCustomerId } =
+      await getSubscriptionInfo(user.id, supabase, user.email);
 
-    const customers = await stripe.customers.list({ email, limit: 1 });
-    const customer = customers.data[0];
-    if (!customer) {
+    if (!stripeCustomerId) {
       return NextResponse.json({
-        tier: 'Seed Stash Starter',
-        status: 'free',
+        tier,
+        status,
+        currentPeriodEnd: null,
+        cancelAtPeriodEnd: false,
         customerId: null,
         invoices: [],
       });
     }
 
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customer.id,
-      status: 'all',
-      limit: 1,
-      expand: ['data.items.data.price'],
-    });
-    const subscription = subscriptions.data[0];
-
-    let tier = 'Seed Stash Starter';
-    let status: 'free' | 'active' | 'canceled' | 'past_due' = 'free';
-    let currentPeriodEnd: string | null = null;
-    let cancelAtPeriodEnd = false;
-
-    if (subscription) {
-      const firstItem = subscription.items.data[0];
-      const priceId = firstItem?.price?.id;
-      tier = PRICE_TO_TIER[priceId || ''] || 'Paid';
-      status = subscription.status as 'active' | 'canceled' | 'past_due';
-      // current_period_end moved from Subscription to SubscriptionItem in Stripe SDK v20+
-      const periodEnd = firstItem?.current_period_end;
-      currentPeriodEnd = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
-      cancelAtPeriodEnd = subscription.cancel_at_period_end;
-    }
-
+    // Invoice history still needs a direct Stripe call
     const invoices = await stripe.invoices.list({
-      customer: customer.id,
+      customer: stripeCustomerId,
       limit: 10,
       status: 'paid',
     });
 
-    const invoiceList = invoices.data.map((inv) => ({
+    const invoiceList = invoices.data.map((inv: Stripe.Invoice) => ({
       id: inv.id,
       amountPaid: inv.amount_paid ? inv.amount_paid / 100 : 0,
       currency: inv.currency,
@@ -98,7 +71,7 @@ export async function POST(request: NextRequest) {
       status,
       currentPeriodEnd,
       cancelAtPeriodEnd,
-      customerId: customer.id,
+      customerId: stripeCustomerId,
       invoices: invoiceList,
     });
   } catch (err) {

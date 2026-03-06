@@ -66,3 +66,13 @@ export function getDowngradeTiers(currentTier: string): TierPlan[] {
   const idx = getTierIndex(currentTier);
   return PLANS.filter((_, i) => i < idx);
 }
+
+/** Build a map of Stripe price ID → tier name from env vars. */
+export function buildPriceToTierMap(): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const plan of PLANS) {
+    if (plan.priceIds.monthly) map[plan.priceIds.monthly] = plan.id;
+    if (plan.priceIds.yearly) map[plan.priceIds.yearly] = plan.id;
+  }
+  return map;
+}

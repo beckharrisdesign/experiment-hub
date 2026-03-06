@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
@@ -34,6 +35,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get the authenticated user's ID to attach as client_reference_id.
+    // The webhook uses this to link the Stripe subscription back to a Supabase user.
+    const supabase = await createServerSupabaseClient();
+    let userId: string | undefined;
+    if (supabase) {
+      const { data: { user } } = await supabase.auth.getUser();
+      userId = user?.id;
+    }
+
     const origin = request.headers.get('origin') || request.nextUrl.origin;
 
     const session = await stripe.checkout.sessions.create({
@@ -42,6 +52,7 @@ export async function POST(request: NextRequest) {
       success_url: `${origin}/?checkout=success`,
       cancel_url: `${origin}/#pricing`,
       ...(customerEmail && { customer_email: customerEmail }),
+      ...(userId && { client_reference_id: userId }),
     });
 
     return NextResponse.json({ url: session.url });

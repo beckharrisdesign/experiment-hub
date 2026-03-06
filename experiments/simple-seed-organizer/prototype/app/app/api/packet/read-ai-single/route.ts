@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Gate: check AI limit before calling OpenAI
-    const tier = await getTierForUser(user.email ?? undefined);
+    const tier = await getTierForUser(user.id, supabase, user.email ?? undefined);
     const aiCompletions = await getAiUsage(supabase, user.id);
     if (!canUseAICount(aiCompletions, tier, 1)) {
       return NextResponse.json(

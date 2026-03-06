@@ -1,40 +1,87 @@
 import Stripe from 'stripe';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { buildPriceToTierMap } from '@/lib/plans';
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
 
-const PRICE_TO_TIER: Record<string, string> = {
-  [process.env.NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_MONTHLY || '']: 'Home Garden',
-  [process.env.NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_YEARLY || '']: 'Home Garden',
-  [process.env.NEXT_PUBLIC_STRIPE_PRICE_SERIOUS_HOBBY_MONTHLY || '']: 'Serious Hobby',
-  [process.env.NEXT_PUBLIC_STRIPE_PRICE_SERIOUS_HOBBY_YEARLY || '']: 'Serious Hobby',
+export interface SubscriptionInfo {
+  tier: string;
+  status: string;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+  stripeCustomerId: string | null;
+}
+
+const FREE_INFO: SubscriptionInfo = {
+  tier: 'Seed Stash Starter',
+  status: 'free',
+  currentPeriodEnd: null,
+  cancelAtPeriodEnd: false,
+  stripeCustomerId: null,
 };
 
 /**
- * Get subscription tier for a user by email.
- * Returns 'Seed Stash Starter' if no Stripe customer or subscription.
+ * Get subscription tier for a user.
+ * DB-first: reads subscriptions table. Falls back to Stripe API if no row exists.
  */
-export async function getTierForUser(email: string | undefined): Promise<string> {
-  const result = await getSubscriptionInfo(email);
-  return result.tier;
+export async function getTierForUser(
+  userId: string,
+  supabase: SupabaseClient,
+  email?: string
+): Promise<string> {
+  const info = await getSubscriptionInfo(userId, supabase, email);
+  return info.tier;
 }
 
 /**
- * Get subscription tier and billing period end for a user.
- * Used for "Resets on [date]" indicator.
+ * Get full subscription info for a user.
+ * DB-first: reads subscriptions table. Falls back to Stripe API if no row exists.
+ *
+ * @param userId  Supabase auth user UUID
+ * @param supabase  Supabase client (user session or admin)
+ * @param email   User email — only used for the Stripe API fallback path
  */
-export async function getSubscriptionInfo(email: string | undefined): Promise<{
-  tier: string;
-  currentPeriodEnd: string | null;
-}> {
-  if (!email || !stripe) {
-    return { tier: 'Seed Stash Starter', currentPeriodEnd: null };
+export async function getSubscriptionInfo(
+  userId: string,
+  supabase: SupabaseClient,
+  email?: string
+): Promise<SubscriptionInfo> {
+  // Fast path: read from subscriptions table (written by webhook)
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select('tier, status, current_period_end, cancel_at_period_end, stripe_customer_id')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (!error && data) {
+    const isActive = data.status === 'active' || data.status === 'trialing';
+    return {
+      tier: isActive ? data.tier : 'Seed Stash Starter',
+      status: data.status,
+      currentPeriodEnd: data.current_period_end ?? null,
+      cancelAtPeriodEnd: data.cancel_at_period_end ?? false,
+      stripeCustomerId: data.stripe_customer_id ?? null,
+    };
   }
+
+  // Slow path: query Stripe directly (for users who subscribed before webhook was deployed)
+  if (!email || !stripe) return FREE_INFO;
+  return getSubscriptionInfoFromStripe(email);
+}
+
+/**
+ * Query Stripe directly for subscription info by customer email.
+ * Only used as fallback when no DB row exists.
+ */
+async function getSubscriptionInfoFromStripe(email: string): Promise<SubscriptionInfo> {
+  if (!stripe) return FREE_INFO;
   try {
     const customers = await stripe.customers.list({ email, limit: 1 });
     const customer = customers.data[0];
-    if (!customer) return { tier: 'Seed Stash Starter', currentPeriodEnd: null };
+    if (!customer) return FREE_INFO;
+
     const subs = await stripe.subscriptions.list({
       customer: customer.id,
       status: 'all',
@@ -42,19 +89,27 @@ export async function getSubscriptionInfo(email: string | undefined): Promise<{
       expand: ['data.items.data.price'],
     });
     const sub = subs.data[0];
-    if (!sub) return { tier: 'Seed Stash Starter', currentPeriodEnd: null };
+    if (!sub) return { ...FREE_INFO, stripeCustomerId: customer.id };
+
     const firstItem = sub.items.data[0];
     const priceId = firstItem?.price?.id;
-    const tier = PRICE_TO_TIER[priceId || ''] || 'Seed Stash Starter';
+    const priceToTier = buildPriceToTierMap();
+    const tier = priceToTier[priceId || ''] || 'Seed Stash Starter';
     const periodEnd = firstItem?.current_period_end;
-    const currentPeriodEnd = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
-    return { tier, currentPeriodEnd };
+
+    return {
+      tier,
+      status: sub.status,
+      currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+      cancelAtPeriodEnd: sub.cancel_at_period_end,
+      stripeCustomerId: customer.id,
+    };
   } catch {
-    return { tier: 'Seed Stash Starter', currentPeriodEnd: null };
+    return FREE_INFO;
   }
 }
 
-/** First day of next calendar month (for free tier AI reset). */
+/** First day of next calendar month (for free tier AI reset display). */
 export function getFirstOfNextMonth(): string {
   const now = new Date();
   const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
