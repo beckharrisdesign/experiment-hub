@@ -84,7 +84,12 @@ export function AuthForm({ onSuccess, embedded }: AuthFormProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#4a5565] mb-1">Password</label>
+          <div className="flex justify-between items-baseline mb-1">
+            <label className="block text-sm font-medium text-[#4a5565]">Password</label>
+            <a href="/forgot-password" className="text-xs text-[#16a34a] hover:underline">
+              Forgot password?
+            </a>
+          </div>
           <input
             type="password"
             value={password}
