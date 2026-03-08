@@ -10,6 +10,7 @@ import { FilterBar } from '@/components/FilterBar';
 import { SeedList } from '@/components/SeedList';
 import { BottomNav } from '@/components/BottomNav';
 import { LandingPage } from '@/components/LandingPage';
+import { PlantNowBanner } from '@/components/PlantNowBanner';
 import { SeedType } from '@/types/seed';
 import { getSeedAge } from '@/lib/storage';
 import { useAuth } from '@/lib/auth-context';
@@ -172,6 +173,7 @@ function HomeContent() {
             </Link>
           </div>
         )}
+        <PlantNowBanner seeds={seeds} />
         <SearchBar value={searchQuery} onChange={setSearchQuery} />
 
         <div className="mt-3">
