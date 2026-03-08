@@ -13,11 +13,13 @@ This agent conducts market research and provides analyst-level business opportun
 ## Workflow
 1. Analyze experiment/product concept
 2. Identify target market segments
-3. Research market size and trends
-4. Calculate TAM, SAM, and SOM estimates
-5. Analyze competitive landscape
-6. Assess market opportunity and risks
-7. Generate comprehensive market research report
+3. Gather observable market signals (at least 2 real-world data points)
+4. Calculate TAM (bottom-up first, top-down cross-check, competitor revenue anchor)
+5. Calculate SAM and SOM
+6. Analyze competitive landscape
+7. Assess market opportunity and risks
+8. Generate comprehensive market research report
+9. Run validator (`node scripts/validate-market-research.js`) and fix any errors
 
 ## Input
 - **Experiment ID**: Reference to existing experiment
@@ -55,22 +57,66 @@ Break down the market into addressable segments:
 - **Demographic Segments**: Age, income, company size, etc.
 - **Use Case Segments**: Different applications or scenarios
 
-### Step 3: Research Market Size
+### Step 3: Gather Observable Market Signals (REQUIRED before TAM)
+
+Before calculating any numbers, collect at least **two** real-world, verifiable data points. These anchor estimates to reality and prevent over-reliance on unverifiable industry reports.
+
+**Priority signals to look for:**
+
+| Signal | How to find it |
+|---|---|
+| Competitor public revenue / ARR | Company websites, press releases, Crunchbase, annual reports |
+| Etsy / App Store / Play Store listing/review counts | Direct search |
+| G2 or Capterra review counts for competitors | Direct search |
+| Subreddit / community member counts | Reddit, Facebook Groups |
+| LinkedIn job posting volume | LinkedIn search |
+| Government / Census statistics | census.gov, BLS, etc. |
+| Public company GMV or transaction volume | SEC filings, earnings reports |
+
+**Output**: List at least 2 observable signals with their source and what they tell you about market size or demand. These will be cited in your TAM section.
+
+### Step 4: Research Market Size
 
 #### TAM (Total Addressable Market)
-- **Definition**: Total revenue opportunity if 100% market share achieved
-- **Methodology**: 
-  - Top-down: Industry reports, market research firms (Gartner, Forrester, IBISWorld, Statista)
-  - Bottom-up: Unit economics × total potential customers
-  - Value theory: Total value created for all potential customers
-- **Sources to Use**:
-  - Industry reports and market research
-  - Government statistics (Census, BLS, etc.)
-  - Trade associations and industry publications
-  - Financial filings of public companies
-  - Academic research and studies
-- **Output**: Numerical estimate in USD with confidence range (e.g., "$X billion - $Y billion")
-- **Include**: Methodology, assumptions, data sources, confidence level
+
+**CRITICAL**: TAM must represent the market for **your specific solution**, not the entire industry. "Global embroidery market: $11B" is not your TAM if you are building a niche AI tool for hobbyists — that is the industry backdrop. Work from your target customer outward.
+
+**Required: Bottom-Up calculation (mandatory)**
+
+Always lead with bottom-up. It is more honest and harder to inflate than top-down.
+
+1. Define the exact customer profile who would pay for this
+2. Count how many of them exist (cite a real source or proxy)
+3. Set ARPU based on competitor pricing or willingness-to-pay research
+4. Multiply: `potential customers × ARPU = TAM`
+
+**Also include: Top-Down cross-check (to validate order of magnitude)**
+
+1. Find industry/market size from a research report or public data
+2. Apply specific filters down to your addressable segment
+3. Compare result against bottom-up — they should be within the same order of magnitude
+
+**Required: Competitor Revenue Sanity Check**
+
+If direct competitors exist and have public revenue data:
+- State their known or estimated ARR / revenue
+- Note their estimated market share
+- Use this to bound your TAM: if Competitor X has ~30% share at $50M ARR, the implied market is ~$167M
+
+**TAM Scope Rule**: The TAM headline you report must reflect your actual addressable segment, not the broad industry. If top-down produces a much larger number than bottom-up, use the bottom-up figure as the headline and note the top-down as context.
+
+- **Output**: Numerical estimate in USD with confidence range (e.g., "$X million - $Y million")
+- **Include**: Bottom-up calculation, top-down cross-check, competitor revenue anchor (if applicable), explicit assumptions, data sources, confidence level
+
+**Required: `**Assumptions**:` section**
+
+Document every assumption made in the calculation. This is required for the validator. Example:
+```
+**Assumptions**:
+- 15M active gardeners in US (USDA 2023 household survey)
+- 8% willing to pay for a digital tool (based on Seedtime pricing at $109/yr having ~100K users)
+- ARPU $15/year (below Seedtime, positioned as lower-cost alternative)
+```
 
 #### SAM (Serviceable Addressable Market)
 - **Definition**: Portion of TAM that can be served with current product/service
@@ -81,6 +127,7 @@ Break down the market into addressable segments:
   - Technical feasibility
   - Distribution channels
   - Pricing constraints
+- **IMPORTANT**: The SAM headline estimate must match the most-constrained sub-calculation, not an intermediate broad segment number. If you apply four filters and end up at $15M, report $15M — not the $780M figure before filters were applied.
 - **Output**: Numerical estimate with rationale
 
 #### SOM (Serviceable Obtainable Market)
@@ -240,32 +287,51 @@ After approval:
 
 ### TAM Calculation Methods
 
-#### Top-Down Approach
-1. Find industry/market size from research reports
-2. Identify relevant sub-segments
-3. Apply filters (geographic, demographic, etc.)
-4. Calculate addressable portion
+#### Bottom-Up Approach (PRIMARY — always required)
 
-**Example**: 
-- Global SaaS market: $200B
-- Project management software: $6B (3% of SaaS)
-- Small business segment: $1.2B (20% of project management)
-- **TAM: $1.2B**
+Lead with this. It forces you to be specific about who pays and how much.
 
-#### Bottom-Up Approach
-1. Identify target customer profile
-2. Estimate number of potential customers
-3. Calculate average revenue per customer (ARPU)
-4. Multiply: Customers × ARPU
+1. Define the exact buyer persona (not "small businesses" — be specific)
+2. Count how many of them exist using a real source or proxy
+3. Determine ARPU from competitor pricing, surveys, or comparable products
+4. Multiply: `Customers × ARPU = TAM`
+5. Document all assumptions explicitly using the `**Assumptions**:` heading
+
+**Example (strong)**:
+- Target: US Etsy sellers with 20+ active digital listings
+- Source: Etsy 2023 annual report — 7.5M active sellers, ~15% estimated digital-heavy = 1.1M
+- ARPU: $120/year (based on Marmalead pricing at $19/mo; positioning below competitor)
+- **TAM: 1.1M × $120 = $132M**
+- **Assumptions**: 15% digital-heavy estimate from Etsy category breakdown; ARPU below Marmalead to reflect lower-tier positioning
+
+**Anti-example (do not do this)**:
+- "Global SaaS market: $200B → project management: 3% → small business: 20% → TAM: $1.2B"
+  - The percentages (3%, 20%) are invented. This is not a calculation; it is a story.
+
+#### Top-Down Approach (SECONDARY — cross-check only)
+
+Use to sanity-check the bottom-up result, not as the headline.
+
+1. Find industry/market size from a public or research source
+2. Apply specific, documented filters (geographic, demographic, product-specific)
+3. Compare to bottom-up — if they diverge by more than 10×, investigate why
+4. Report the bottom-up as headline; reference top-down as "industry backdrop"
 
 **Example**:
-- Target: Small businesses (10-50 employees) in US
-- Market size: 5M businesses
-- Addressable: 1M businesses (20% fit criteria)
-- ARPU: $1,200/year
-- **TAM: $1.2B (1M × $1,200)**
+- Global project management software: $6B (IDC 2024)
+- Remote-team focus: ~30% = $1.8B
+- SMB segment: ~40% = $720M
+- Cross-check: bottom-up produced $600M → consistent, both in same range
+- **Report TAM as bottom-up figure ($600M); note top-down produces $720M**
 
-#### Value Theory Approach
+#### Competitor Revenue Sanity Check (required when competitors exist)
+
+Public or estimable competitor revenue bounds your TAM:
+- If known competitor has ~30% share at $50M ARR → market implied ≈ $167M
+- If your TAM estimate is $1B but the top 3 competitors combined earn $100M → question the TAM
+- If no competitors exist, note it as both opportunity and validation risk
+
+#### Value Theory Approach (optional, for platforms/marketplaces)
 1. Calculate total value created for all potential users
 2. Estimate capture rate (percentage of value that can be monetized)
 3. TAM = Total value × Capture rate
@@ -285,39 +351,79 @@ After approval:
 - Analyst reports (if accessible)
 - Public databases and repositories
 
+### Confidence Level Definitions
+
+Use these criteria strictly. Most estimates will be **Medium**.
+
+| Level | Criteria |
+|---|---|
+| **High** | Bottom-up verified with a real, citable customer count source (government data, public platform stats, SEC filing) **AND** at least one competitor revenue anchor |
+| **Medium** | Bottom-up with estimated customer count plus one verifiable signal (community size, app reviews, GMV data) OR top-down from a public company filing |
+| **Low** | Top-down only with unverified industry report sources, or single unverifiable source |
+
+**Do not assign HIGH confidence** based solely on industry research firm reports (Grand View Research, DataHorizzon, Mordor Intelligence, etc.). These are useful for order-of-magnitude context but are not independently verifiable.
+
 ### Validation
 - Cross-reference multiple sources
 - Check for recency (prefer data < 2 years old)
 - Note data quality and limitations
-- Provide confidence levels (High/Medium/Low)
+- Provide confidence levels using the criteria above (High/Medium/Low)
 - Include methodology transparency
+- Run the market research validator after generating the report: `node scripts/validate-market-research.js experiments/{slug}/docs/market-research.md`
 
 ## Example Output
 
 **Product**: B2B project management tool for remote teams (10-50 employees)
 
-**TAM Calculation**:
-- Global project management software market: $6B (2024)
-- Remote team segment: ~30% = $1.8B
-- Small business focus (10-50 employees): ~40% = $720M
-- **TAM: $720M**
+**Step 1 — Observable Signals**:
+- Asana (public): $637M ARR (FY2024 annual report) — dominant player, ~20% share implies ~$3.2B market
+- Basecamp: estimated $100M ARR (cited in press, private) — ~3% market share implies similar range
+- "remote team project management" gets ~6,600 monthly searches (SEMrush)
+- G2 has 11,000+ reviews for project management tools — large, validated category
+
+**Step 2 — Bottom-Up TAM (primary)**:
+- US companies with 10-50 employees: ~600K (Census Bureau 2022)
+- Remote-first / hybrid subset: ~35% = 210K companies
+- Willing to pay for a dedicated tool (vs. Slack/email): ~40% = 84K companies
+- ARPU: $1,200/year (Basecamp $99/mo = $1,188/yr; positioning at parity)
+- **TAM: 84K × $1,200 = $101M**
+
+**Assumptions**:
+- 35% remote/hybrid from BLS 2023 remote work survey
+- 40% willingness to pay from SaaS adoption benchmarks for productivity tools
+- ARPU = Basecamp pricing (parity positioning)
+
+**Step 3 — Top-Down Cross-Check**:
+- Global PM software: $6B (IDC 2024); US = 40% = $2.4B; SMB 10-50 = ~5% = $120M
+- Bottom-up ($101M) and top-down ($120M) are consistent — confidence: Medium-High
+
+**Step 4 — Competitor Revenue Sanity Check**:
+- Asana $637M ARR at est. 20% share → total market ~$3.2B (but this includes enterprise)
+- Basecamp $100M at est. 3% → $3.3B total; SMB slice ≈ $200-400M
+- Our TAM of $101M (US SMB only) is plausible within this range ✓
 
 **SAM Calculation**:
-- Geographic focus: US, Canada, UK, Australia = 60% of global
-- **SAM: $432M**
+- Geographic focus: US only (already constrained in bottom-up)
+- Exclude companies already locked into Asana/Monday enterprise plans: -20%
+- **SAM: $101M × 80% = ~$81M**
 
 **SOM Calculation**:
-- Year 1: 0.1% market share = $432K
-- Year 3: 1% market share = $4.32M
-- **SOM (Year 3): $4.32M**
+- Year 1: 0.05% of SAM = $40K (40 customers at $1,200 ARPU — achievable solo)
+- Year 3: 0.5% of SAM = $405K (338 customers)
+- **SOM (Year 3): ~$405K**
 
 ## Validation Rules
-- TAM estimate must include methodology
+- TAM must use bottom-up as the primary calculation method (top-down as cross-check only)
+- TAM headline must reflect the product-specific addressable segment, not the broad industry
+- At least 2 observable real-world signals must be cited before TAM calculation
+- Competitor revenue must be used as a sanity check when competitors exist
+- **Assumptions** section (using that exact heading) must be documented
 - All estimates must have numerical values (not ranges only)
 - Data sources must be cited
-- Confidence levels must be stated
-- Assumptions must be documented
+- Confidence levels must use the defined criteria (High/Medium/Low)
+- SAM headline must match the most-constrained filtered figure, not an intermediate number
 - Report must be comprehensive (all sections filled)
+- Run `node scripts/validate-market-research.js experiments/{slug}/docs/market-research.md` after generating the report and fix any errors before marking complete
 
 ## Error Handling
 - If market data is unavailable, clearly state limitations
