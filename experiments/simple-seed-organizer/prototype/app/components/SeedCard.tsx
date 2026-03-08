@@ -2,6 +2,8 @@
 
 import { Seed } from '@/types/seed';
 import { getSeedAge } from '@/lib/storage';
+import { ViabilityBadge } from '@/components/ViabilityBadge';
+import { getViabilityStatus } from '@/lib/viability';
 
 interface SeedCardProps {
   seed: Seed;
@@ -55,11 +57,11 @@ export function SeedCard({ seed, onClick }: SeedCardProps) {
         </div>
       </div>
 
-      {/* Year badge */}
+      {/* Viability badge — shows status for watch/use-first, falls back to plain year */}
       {seed.year && (
-        <div className="text-xs text-[#99a1af] bg-gray-100 px-2 py-1 rounded">
-          {seed.year}
-        </div>
+        getViabilityStatus(seed.year) !== 'good' && getViabilityStatus(seed.year) !== 'unknown'
+          ? <ViabilityBadge year={seed.year} />
+          : <div className="text-xs text-[#99a1af] bg-gray-100 px-2 py-1 rounded">{seed.year}</div>
       )}
 
       {/* Chevron */}
