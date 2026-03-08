@@ -415,3 +415,108 @@ Copy text CHARACTER-BY-CHARACTER exactly as it appears. If a field is not visibl
   return normalizeAIData(extracted);
 }
 
+/**
+ * Identify multiple seed packets in a single "pile" photo.
+ * Returns one AIExtractedData entry per recognizable packet.
+ * Counts as 1 AI completion regardless of how many packets are found.
+ */
+export async function extractMultipleFromImage(
+  image: File | string,
+  apiKey?: string
+): Promise<AIExtractedData[]> {
+  const key = apiKey || process.env.OPENAI_API_KEY;
+  if (!key) {
+    throw new Error('OPENAI_API_KEY must be provided as parameter or set as environment variable');
+  }
+
+  const imageBase64 = await imageToBase64(image);
+
+  const prompt = `You are a seed packet identifier. Look at this photo and identify ALL distinct seed packets you can see.
+
+For each packet, extract whatever is clearly legible:
+- name (common plant name, e.g. "Tomato", "Basil")
+- variety (cultivar name, e.g. "Black Krim", "Genovese")
+- brand (seed company name)
+- year (packed-for year, as a number)
+
+Return JSON in this exact format:
+{
+  "seeds": [
+    { "name": "...", "variety": "...", "brand": "...", "year": null },
+    { "name": "...", "variety": "...", "brand": "...", "year": 2024 }
+  ]
+}
+
+Rules:
+1. Include every distinct packet you can identify — even partially visible ones
+2. Use null for any field that is not clearly legible
+3. If only 1 packet is visible, return an array with 1 element
+4. If no packets are recognizable, return { "seeds": [] }
+5. Do not guess or invent values — only extract text you can actually read`;
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${key}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            {
+              type: 'image_url',
+              image_url: { url: `data:image/png;base64,${imageBase64}` },
+            },
+          ],
+        },
+      ],
+      max_tokens: 4000,
+      response_format: { type: 'json_object' },
+      temperature: 0.0,
+    }),
+  });
+
+  const responseText = await response.text();
+  if (!response.ok) {
+    let errorMessage = 'Unknown error';
+    try {
+      const error = JSON.parse(responseText);
+      errorMessage = error.error?.message || error.message || JSON.stringify(error);
+    } catch {
+      errorMessage = responseText || `HTTP ${response.status}: ${response.statusText}`;
+    }
+    throw new Error(`OpenAI API error: ${errorMessage}`);
+  }
+
+  let data;
+  try {
+    data = JSON.parse(responseText);
+  } catch {
+    throw new Error(`Invalid JSON response from OpenAI: ${responseText.substring(0, 200)}`);
+  }
+
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('No content in OpenAI response');
+
+  let parsed: { seeds?: unknown[] };
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    throw new Error(`Failed to parse JSON from AI response: ${content.substring(0, 200)}`);
+  }
+
+  if (!Array.isArray(parsed.seeds)) return [];
+
+  const str = (v: unknown) => (typeof v === 'string' && v.trim()) || undefined;
+  return parsed.seeds.map((raw: any): AIExtractedData => ({
+    name: str(raw.name),
+    variety: str(raw.variety),
+    brand: str(raw.brand),
+    year: typeof raw.year === 'number' ? raw.year : undefined,
+  }));
+}
+

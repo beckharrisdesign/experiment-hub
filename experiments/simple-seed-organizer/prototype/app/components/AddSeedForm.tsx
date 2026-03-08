@@ -635,6 +635,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
                       ref={frontFileInputRef}
                       type="file"
                       accept="image/*"
+                      capture="environment"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) handleFileSelect('front', file);
@@ -965,6 +966,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
                       ref={backFileInputRef}
                       type="file"
                       accept="image/*"
+                      capture="environment"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) handleFileSelect('back', file);
