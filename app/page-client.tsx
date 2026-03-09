@@ -10,6 +10,7 @@ import ScoreBadge from "@/components/ScoreBadge";
 import { PRDCell, LandingPageCell } from "@/components/WorkflowCells";
 import type { Experiment, Prototype, Documentation } from "@/types";
 import { slugify } from "@/lib/utils";
+import { calculateTotalScore, parseSOMValue } from "@/lib/scoring";
 import Link from "next/link";
 
 type SortColumn = "name" | "businessOpportunity" | "personalImpact" | "competitiveAdvantage" | "platformCost" | "socialImpact" | "total";
@@ -45,37 +46,6 @@ interface HomePageClientProps {
 }
 
 
-function calculateTotalScore(scores: ExperimentWithRelated["scores"]): number | null {
-  if (!scores) return null;
-  
-  const { businessOpportunity, personalImpact, competitiveAdvantage, platformCost, socialImpact } = scores;
-  
-  // Only calculate if all 5 scores are present
-  if (
-    businessOpportunity === undefined ||
-    personalImpact === undefined ||
-    competitiveAdvantage === undefined ||
-    platformCost === undefined ||
-    socialImpact === undefined
-  ) {
-    return null;
-  }
-  
-  return businessOpportunity + personalImpact + competitiveAdvantage + platformCost + socialImpact;
-}
-
-function parseSOMValue(value: string | null | undefined): number {
-  if (!value) return 0;
-  // Parse values like "$50K", "$1.5M", "$2B"
-  const match = value.match(/\$?([\d.]+)([KMkmBb])?/);
-  if (!match) return 0;
-  const num = parseFloat(match[1]);
-  const suffix = match[2]?.toUpperCase();
-  if (suffix === "K") return num * 1000;
-  if (suffix === "M") return num * 1000000;
-  if (suffix === "B") return num * 1000000000;
-  return num;
-}
 
 interface SortableHeaderProps {
   column: SortColumn;
