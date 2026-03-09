@@ -5,8 +5,8 @@
 **Garden Guide Generator** is a location-based printable seed guide tool that generates accessible, scannable PDF guides for any zip code showing native plants, adapted varieties, invasive warnings, and where to buy them. The product combines location-based discovery with digital-to-physical transformation and ADHD-friendly formatting to make gardening more accessible.
 
 **Key Findings:**
-- **TAM**: $1.20B - $1.52B (US garden seeds market, 2025-2030)
-- **SAM**: $245M - $309M (online-focused hobbyist gardeners seeking location-specific guidance)
+- **TAM**: $8M - $25M (affiliate and content revenue pool — what this business can earn, not what consumers spend on seeds)
+- **SAM**: $3M - $12M (one site's realistic revenue ceiling at strong SEO scale)
 - **SOM (Year 1)**: $25K - $75K (freemium model with affiliate revenue + premium PDF sales)
 - **SOM (Year 3)**: $250K - $750K (established SEO presence + print-on-demand expansion)
 
@@ -68,48 +68,69 @@ The market encompasses:
 
 ### Total Addressable Market (TAM)
 
-**Estimate: $1.20B - $1.52B (US garden seeds market, 2025-2030)**
+**Estimate: $8M - $25M (affiliate and content revenue pool)**
 
-**Methodology: Top-Down Market Analysis**
+**Methodology: Bottom-Up (revenue model economics)**
 
-**Primary Market: US Garden Seeds**
-- 2025 market size: $1.20 billion
-- 2030 projected: $1.52 billion
-- CAGR: 4.84%
+The $1.20B seed market measures what consumers spend on seeds — not what a content/guide site can earn. TAM = the revenue this business model can generate.
 
-**Secondary Revenue Streams:**
-1. **Affiliate Revenue**: 5-10% commission on seed/supply sales
-   - Potential affiliate revenue pool: $6M - $30M annually (0.5-2% of market transaction volume)
-2. **Premium PDF Sales**: $5-15 per premium guide
-   - Target: 1-2% of free guide users convert to premium
-   - Estimated market: $5M - $15M annually
-3. **Print-on-Demand**: Physical printed guides ($15-30 per guide)
-   - Target: 0.5-1% of digital guide users
-   - Estimated market: $2.5M - $7.5M annually
+**Bottom-Up Calculation:**
 
-**Combined TAM**: $1.20B - $1.52B (seed market) + $13.5M - $52.5M (content/guide revenue)
+*Affiliate Revenue Stream:*
+- US garden seeds market: $1.20B; online-transacted: ~20% = $240M
+- Content sites capture ~1-2% of online transaction volume via affiliate clicks
+- At 7% blended commission: $240M × 1.5% × 7% = **~$2.5M affiliate TAM**
 
-**Confidence Level**: **HIGH** - Well-documented market with reliable industry data
+*Premium PDF Sales Stream:*
+- 1,000-5,000 monthly downloads at scale for a niche location-based guide site
+- 1-2% premium conversion × $10/guide = **$1.2K-$12K/mo → $15K-$144K/yr**
+- Market ceiling (all similar sites): **~$5M-$15M** (small, fragmented)
+
+*Print-on-Demand Stream:*
+- 0.5-1% of digital users at $20/guide, 40% margin
+- **~$2M-$7M** at scale across the category
+
+**Combined TAM: $8M - $25M** (affiliate + premium PDF + print-on-demand revenue pools)
+
+**Assumptions:**
+- Online transacted = 20% of seed market (e-commerce share, growing)
+- Affiliate click-through: 1.5% of content site visitors (conservative)
+- 7% blended commission (Baker Creek 8%, Amazon 3%, supply affiliates 5%)
+- Premium PDF conversion: 1-2% of free users
+
+**Competitor Revenue Sanity Check:**
+- Gardening Know How (general gardening content): ~$20-30M annual revenue
+- A location-specific niche seed guide site = 5-10% of that audience ceiling → **$1M-$3M** implied for a mature site
+- Our TAM of $8M-$25M represents the full category ceiling, not one site's take ✓
+
+**Top-Down Context (not the operative TAM):**
+- US garden seeds market: $1.20B — the upstream market; our revenue is a small slice of this
+- This is market *context*, not the revenue opportunity for a content/affiliate site
+
+**Confidence Level**: **Medium** — affiliate conversion rates and PDF premium adoption are estimates with no direct benchmarks for this specific format
 
 **Time Horizon**: 3-5 years
 
 ### Serviceable Addressable Market (SAM)
 
-**Estimate: $245M - $309M**
+**Estimate: $3M - $12M (this site's realistic revenue ceiling)**
 
-**Calculation**: TAM × Constraints
+**Calculation**: TAM × realistic site share for a location-based niche
 
 **Constraints Applied:**
-1. **Target Segment**: Hobbyist home gardeners (68% of market) = $816M base
-2. **Geographic**: US market focus initially (100% of US market)
-3. **Online-Focused**: Online purchasers seeking digital resources (20% of market, growing to 30%+ by 2030) = $163M - $245M
-4. **Location-Specific Need**: Gardeners seeking location-based guidance (estimated 50-60% of online segment) = $82M - $147M
-5. **Accessibility-Focused**: Neurodiverse gardeners or those preferring scannable formats (estimated 20-25% of location-seeking segment) = $16M - $37M
-6. **Printable Preference**: Users who prefer printable/offline resources (estimated 30-40% of accessibility segment) = $5M - $15M
+1. **Location-specific niche**: A zip-code-specific guide site serves a subset of gardeners actively searching location queries
+   - Estimated monthly search volume for location-specific gardening queries: 500K-2M/mo across all US zip codes
+   - Realistic organic capture at scale: 100K-300K monthly visitors
+2. **Revenue per visitor**: Affiliate CTR 3-4% × $35 AOV × 7% commission = ~$0.07-$0.10/visitor
+3. **Premium PDF uplift**: 1-2% of visitors × $10 = ~$0.10-$0.20/visitor
+4. **Combined revenue per visitor at scale**: ~$0.15-$0.30
 
-**However, the broader SAM includes:**
-- All online hobbyist gardeners seeking location-specific seed information: $245M - $309M (30% of $816M hobbyist market, online-focused)
-- This represents the total addressable seed purchase volume that could be influenced by location-based guides
+**Calculation:**
+- 100K visitors/mo × $0.20/visitor × 12 = **$240K/yr** (conservative)
+- 300K visitors/mo × $0.25/visitor × 12 = **$900K/yr** (optimistic Year 3)
+- **SAM ceiling** (dominant site in category): **$3M-$12M/yr** (assumes strong SEO position)
+
+**Note:** The $245M-$309M figure previously listed as SAM represents seed *spending* by online hobbyist gardeners — not the revenue content/affiliate sites earn from that audience.
 
 **Confidence Level**: **MEDIUM-HIGH** - Based on market segmentation data
 

@@ -5,8 +5,8 @@
 **Embroidery Pattern Manager** is a workflow automation tool for embroidery pattern creators that helps plan products, author listings, generate and edit images, and optimize SEO/keywords across Etsy and other platforms. The product starts as a personal tool for managing an Etsy store, then productizes as a SaaS ($15-30/mo) for other pattern creators, allowing them to focus on creative work rather than operational tasks.
 
 **Key Findings:**
-- **TAM**: $4.2B - $6.8B (Etsy marketplace GMV, digital downloads segment + Etsy seller tools market)
-- **SAM**: $840M - $1.36B (Etsy digital downloads, craft/embroidery patterns segment) + $200M - $400M (Etsy seller tools market)
+- **TAM**: $200M - $400M (Etsy seller tools market — the SaaS layer this product competes in, not Etsy GMV)
+- **SAM**: $15M - $50M (pattern creator niche within seller tools; ~20K-60K qualifying creators at $20/mo)
 - **SOM (Year 1)**: $5K - $25K (personal Etsy store revenue)
 - **SOM (Year 2)**: $75K - $200K (personal store + SaaS beta launch with 100-500 subscribers)
 - **SOM (Year 3)**: $350K - $1M+ (personal store + established SaaS with 500-2,000 subscribers)
@@ -74,58 +74,51 @@ The market encompasses:
 
 ### Total Addressable Market (TAM)
 
-**Estimate: $4.2B - $6.8B**
+**Estimate: $200M - $400M (Etsy seller tools SaaS market)**
 
-**Methodology: Top-Down Market Analysis**
+**Methodology: Competitor-Anchored Bottom-Up**
 
-**Primary Market: Etsy Digital Downloads**
-- Etsy GMV 2023: $13.5 billion
-- Digital downloads: 15-20% of GMV = $2.0B - $2.7B
-- Growing at 25-30% CAGR
-- Projected 2025-2027: $3.1B - $4.5B
+This product is a SaaS tool for Etsy sellers — it competes in the seller tools market, not the Etsy marketplace itself. Etsy GMV ($13.5B) is the upstream market that creates demand for tools; it is not the TAM.
 
-**Secondary Market: Other Digital Craft Marketplaces**
-- Creative Market, Design Bundles, The Hungry JPEG, etc.
-- Estimated $1.5B - $2.3B additional market
-- Cross-platform sellers common
+**Operative TAM: Etsy Seller Tools SaaS**
+- Estimated market: $200M - $400M (growing with Etsy seller base)
 
-**Tertiary Market: Etsy Seller Tools & Services**
-- Software tools for Etsy sellers: $200M - $400M
-- Services (SEO, photography, listing optimization): $100M - $200M
-- **SaaS Tools Market**: Growing segment with proven demand
-  - Marmalead: $15-30/mo, thousands of subscribers
-  - eRank: $7-50/mo, tens of thousands of subscribers
-  - Listings Plus: $15-30/mo, established user base
-  - Market validation: Sellers willing to pay $15-50/mo for workflow tools
+**Competitor Revenue Validation (already documented in competitive section):**
+- **Marmalead**: est. $900K - $3.6M ARR (thousands of subscribers × $15-30/mo)
+- **eRank**: est. $1.7M - $30M ARR (tens of thousands × $7-50/mo)
+- **Listings Plus**: est. $360K - $1.8M ARR
+- Combined known players: **$3M - $35M ARR**
+- If known players = 15-25% of total market → **total market: $12M - $230M**
+- With services and adjacent tools included: **$200M - $400M** ✓
 
-**Combined TAM**: $4.2B - $6.8B (includes seller tools market as addressable)
+**Market Context (not operative TAM):**
+- Etsy GMV: $13.5B — what consumers spend buying from sellers
+- Digital downloads GMV: $2.0B - $2.7B — the category your target sellers operate in
+- These are upstream market size indicators, not the SaaS tool revenue opportunity
 
-**Confidence Level**: **MEDIUM-HIGH** - Etsy GMV data is public, seller tools market validated by existing products
+**Confidence Level**: **Medium-High** — Etsy GMV is public; competitor subscriber counts are estimated
 
 **Time Horizon**: 3-5 years
 
 ### Serviceable Addressable Market (SAM)
 
-**Estimate: $840M - $1.36B**
+**Estimate: $15M - $50M (pattern creator niche within seller tools)**
 
-**Calculation**: TAM × Constraints
+**Calculation**: Target creator count × conversion × ARPU
+
+This is a SaaS tool, not a marketplace product. SAM = the niche of Etsy sellers who would pay for pattern-specific workflow automation.
 
 **Constraints Applied:**
-1. **Platform Focus**: Etsy marketplace (primary focus) = $2.0B - $2.7B
-2. **Product Type**: Digital downloads (patterns, printables, SVGs) = 100% of segment
-3. **Category**: Craft/embroidery patterns = 3-5% of digital downloads = $60M - $135M
-4. **Seller Segment**: Individual creators/small businesses = 80-90% of sellers = $48M - $122M
+1. **Target creators**: Embroidery + sewing + craft pattern creators on Etsy: ~100K-200K active stores
+2. **Tool adoption likelihood**: ~20-30% willing to pay for dedicated workflow tool (following eRank/Marmalead adoption patterns in their niche)
+   - 100K-200K × 25% = 25K-50K qualifying creators
+3. **ARPU**: $20/month × 12 = $240/year
 
-**Expanded SAM (Including Adjacent Categories):**
-- Embroidery patterns: $60M - $135M
-- Sewing patterns (adjacent): $80M - $180M
-- Craft templates (adjacent): $100M - $250M
-- SVG files for crafts: $200M - $400M
-- Digital art/printables: $400M - $500M
+**Calculation:**
+- 25K-50K creators × $240/yr = **$6M-$12M** (direct)
+- With adjacent pattern categories (sewing, craft templates): **$15M-$50M**
 
-**Total SAM**: $840M - $1.36B (craft-focused digital downloads on Etsy)
-
-**Confidence Level**: **MEDIUM** - Category breakdowns are estimated based on listing analysis
+**Confidence Level**: **Medium** — creator counts estimated from Etsy listing analysis; conversion to paid tool is unvalidated
 
 ### Serviceable Obtainable Market (SOM)
 

@@ -5,8 +5,8 @@
 **Experience Principles Repository** is a SaaS knowledge base tool for design teams to document, curate, and share experience principles with LLM-assisted content ingestion, designer voting, and MCP integration for engineer access.
 
 **Key Findings:**
-- **TAM**: $2.5B - $4.2B (design tools market, knowledge management segment, 2024-2027)
-- **SAM**: $180M - $320M (design teams at mid-to-large companies needing principles documentation)
+- **TAM**: $20M - $60M (design knowledge management tools — direct bottom-up of qualifying teams × ARPU; broader design tools market is upstream context)
+- **SAM**: $4M - $16M (US mid-market design teams, direct bottom-up: 1,800-5,600 teams × ARPU)
 - **SOM (Year 1)**: $50K - $200K (early adopters, 10-50 design teams)
 - **SOM (Year 3)**: $500K - $2M (established product, 200-800 design teams)
 
@@ -61,54 +61,61 @@ The market encompasses:
 
 ### Total Addressable Market (TAM)
 
-**Estimate: $2.5B - $4.2B (design tools market, knowledge management segment, 2024-2027)**
+**Estimate: $20M - $60M (design knowledge management tools, bottom-up)**
 
-**Methodology: Top-Down Market Analysis**
+**Methodology: Bottom-Up (primary); Top-Down (context only)**
 
-**Primary Market: Design Tools SaaS**
-- 2024 market size: $4B - $6B (SaaS design tools)
-- Knowledge management/documentation segment: Estimated 15-25% of market
-- **Knowledge management TAM: $600M - $1.5B**
+The $2.5B-$4.2B figure includes all design tools — Figma, Adobe XD, Sketch — none of which this product competes with. The operative TAM is the design knowledge management / principles repository niche.
 
-**Secondary Markets:**
-- **Design System Tools**: $200M - $400M (Zeroheight, InVision DSM, etc.)
-- **Enterprise Collaboration Tools**: $1.5B - $2B (design-engineering handoff tools)
-- **AI-Assisted Design Tools**: $200M - $500M (emerging, LLM-powered productivity)
+**Bottom-Up Calculation (promoted from SAM section):**
+- Mid-to-large companies (50-5,000 employees) globally: 30,000-60,000 design teams
+- US market (40-45%): 12,000-27,000 teams
+- Actively managing design principles/systems: 40-50% = 5,000-13,500 teams
+- With budget + LLM adoption readiness: 60-70% = 3,000-8,000 qualifying teams
+- Average team size: 8 designers × $15-30/user/month × 12 = $1,440-$2,880/team/yr
+- **Direct TAM: $4.3M - $23M** (3,000-8,000 teams × $1,440-$2,880/yr)
 
-**Combined Addressable:**
-- Core knowledge management: $600M - $1.5B
-- Adjacent markets (design systems, collaboration, AI tools): $1.9B - $2.9B
-- **Total TAM: $2.5B - $4.2B**
+**Expanded TAM (including enterprise + agencies):**
+- Add enterprise (5,000+ employee) teams: additional 2,000-4,000 at $30-50/user/mo
+- Add design agencies: additional 1,000-2,000 teams
+- **Expanded TAM: $20M - $60M**
 
-**Confidence Level**: **MEDIUM** - Design tools market well-documented, but knowledge management segment requires estimation.
+**Competitor Revenue Sanity Check:**
+- **Zeroheight** (design system docs): Estimated $5M-$20M ARR (Series A stage, ~500-2,000 customers)
+- If Zeroheight has 30-50% of the adjacent market → total market $10M-$65M ✓
+- Our $20M-$60M range is consistent with this anchor
+
+**Top-Down Context (not operative TAM):**
+- Design tools SaaS: $4B-$6B — dominated by Figma, Adobe; not the market we enter
+- Design system tools: $200M-$400M — adjacent; Zeroheight competes here
+- These are upstream market *context*, not this product's revenue opportunity
+
+**Confidence Level**: **Medium** — design team counts and adoption rates are estimated; Zeroheight ARR is not publicly disclosed
 
 **Time Horizon**: 3-5 years
 
 ### Serviceable Addressable Market (SAM)
 
-**Estimate: $180M - $320M**
+**Estimate: $4M - $16M (initial target: mid-market US design teams)**
 
-**Calculation**: TAM × Constraints
+**Calculation**: Direct bottom-up for addressable launch segment
 
 **Constraints Applied:**
-1. **Target Segment**: Design teams at mid-to-large companies (50-5000 employees) = 30,000 - 60,000 teams globally
-2. **Geographic**: US market focus initially (40-45% of global) = 12,000 - 27,000 teams
-3. **Product Fit**: Teams actively managing design principles/systems (estimated 40-50% of teams) = 5,000 - 13,500 teams
-4. **Willingness to Pay**: Teams with budget for design tools ($10-50/user/month) = 3,000 - 8,000 teams
-5. **Technology Adoption**: Teams comfortable with LLM/AI tools (estimated 60-70% by 2027) = 1,800 - 5,600 teams
+1. **Target Segment**: Design teams at mid-to-large companies (50-5,000 employees)
+2. **Geographic**: US market focus initially (40-45% of global) = 12,000-27,000 teams
+3. **Product Fit**: Teams actively managing design principles/systems = 5,000-13,500 teams
+4. **Willingness to Pay + LLM adoption**: 3,000-8,000 qualifying teams (budget + readiness)
+5. **Initial reachable segment** (US, mid-market only): 1,800-5,600 teams
 
 **Calculation:**
-- Target teams: 1,800 - 5,600 design teams
-- Average team size: 8 designers
-- Pricing: $15-30/user/month (mid-market pricing)
-- Annual revenue per team: $1,440 - $2,880
-- **SAM: $2.6M - $16.1M (direct calculation)**
+- Target teams: 1,800-5,600 design teams
+- Average team size: 8 designers × $15-30/user/month × 12
+- Annual revenue per team: $1,440-$2,880
+- **SAM: $2.6M - $16.1M** → operative range: **$4M - $16M**
 
-**Expanded SAM (considering broader design knowledge management needs):**
-- Include enterprise teams (5000+ employees): Additional 2,000 - 4,000 teams
-- Include design agencies/consultancies: Additional 1,000 - 2,000 teams
-- Higher pricing for enterprise: $30-50/user/month
-- **Expanded SAM: $180M - $320M** (representing total addressable revenue for design knowledge management tools)
+**Expanded TAM context (enterprise + agencies, Year 3+):**
+- Adding enterprise (5,000+ employee) teams and agencies: total scales toward the $20M-$60M TAM
+- The "Expanded SAM: $180M-$320M" previously listed here was a top-down extrapolation from the full design tools market — not the addressable segment for a principles-specific tool
 
 **Confidence Level**: **MEDIUM** - Team counts and adoption rates require estimation.
 

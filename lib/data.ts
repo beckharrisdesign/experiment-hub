@@ -258,6 +258,11 @@ export function parseMarketResearch(mrContent: string) {
   const tamMatch = combinedSection.match(/TAM[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
   const samMatch = combinedSection.match(/SAM[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
   const somMatch = combinedSection.match(/SOM[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
+
+  // Extract methodology descriptions from exec summary bullet parentheticals
+  // Matches: - **TAM**: $15M - $40M (competitor-anchored description here)
+  const tamDescMatch = summarySection.match(/\*\*TAM\*\*[^:]*:\s*\$?[\d.]+[BMK]?(?:\s*-\s*\$?[\d.]+[BMK]?)?\s*\(([^)]+)\)/i);
+  const samDescMatch = summarySection.match(/\*\*SAM\*\*[^:]*:\s*\$?[\d.]+[BMK]?(?:\s*-\s*\$?[\d.]+[BMK]?)?\s*\(([^)]+)\)/i);
   
   // Extract Year 1 and Year 3 SOM
   const somYear1Match = combinedSection.match(/SOM\s*\(Year\s*1\)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
@@ -288,6 +293,8 @@ export function parseMarketResearch(mrContent: string) {
     tam: tamMatch ? (tamMatch[2] ? `$${tamMatch[1]} - $${tamMatch[2]}` : `$${tamMatch[1]}`) : null,
     sam: samMatch ? (samMatch[2] ? `$${samMatch[1]} - $${samMatch[2]}` : `$${samMatch[1]}`) : null,
     som: somMatch ? (somMatch[2] ? `$${somMatch[1]} - $${somMatch[2]}` : `$${somMatch[1]}`) : null,
+    tamDesc: tamDescMatch ? tamDescMatch[1] : null,
+    samDesc: samDescMatch ? samDescMatch[1] : null,
     somYear1: somYear1,
     somYear3: somYear3,
     moa: moa,

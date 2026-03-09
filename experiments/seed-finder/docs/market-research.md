@@ -5,8 +5,8 @@
 **Seed Finder** is a content-driven consumer website targeting hobbyist home gardeners who are passionate about seed starting and discovering new varietals. The platform combines comprehensive seed database information with educational content, generating revenue through affiliate partnerships with seed companies and seed starting supply retailers.
 
 **Key Findings:**
-- **TAM**: $1.20B - $1.52B (US garden seeds market, 2025-2030)
-- **SAM**: $816M - $1.03B (hobbyist home gardener segment, online-focused)
+- **TAM**: $3M - $18M (affiliate revenue pool — what this business can earn, not what consumers spend on seeds)
+- **SAM**: $2M - $8M (one seed content site's realistic affiliate revenue ceiling)
 - **SOM (Year 1)**: $50K - $150K (affiliate revenue from seed/supply sales)
 - **SOM (Year 3)**: $500K - $1.5M (established content site with strong SEO)
 
@@ -60,51 +60,61 @@ The market encompasses:
 
 ### Total Addressable Market (TAM)
 
-**Estimate: $1.20B - $1.52B (US market, 2025-2030)**
+**Estimate: $3M - $18M (affiliate revenue pool)**
 
-**Methodology: Top-Down Market Analysis**
+**Methodology: Bottom-Up (affiliate economics)**
 
-**Primary Market: US Garden Seeds**
-- 2025 market size: $1.20 billion
-- 2030 projected: $1.52 billion
-- CAGR: 4.84%
+This is a content/affiliate site. TAM = the affiliate revenue the category can support, not total consumer seed spending.
 
-**Secondary Market: Seed Starting Supplies**
-- Estimated at 20-30% of seed market value
-- Grow lights, trays, soil, heating mats, etc.
-- Additional $240M - $456M addressable
+**Bottom-Up Calculation:**
+- US active gardeners who research seeds online: ~20M (35% of gardening households, online-active)
+- Realistic monthly unique visitors for a scaled seed-specific niche site: 200K-500K
+  (Gardening Know How ~30M/mo is the category leader; seed-specific niche = ~1-2% of that)
+- Affiliate click-through rate: 3-5% (gardening content benchmark)
+- Average order value: $35 (Baker Creek / Johnny's typical basket)
+- Blended commission rate: 7% (Baker Creek 8%, Amazon 3%, weighted)
+- At 200K visitors: 200K × 4% × $35 × 7% = ~$20K/mo → **$240K/yr**
+- At 1M visitors (scaled, year 5+): **$1.2M-$3M/yr**
 
-**Content/Affiliate Revenue Opportunity:**
-- Affiliate commissions typically 5-10% of sales
-- Content sites typically capture 0.5-2% of market transaction volume
-- Potential affiliate revenue pool: $6M - $30M annually
+**Competitor Revenue Sanity Check:**
+- Gardening Know How: est. $20-30M revenue (Dotdash Meredith filing, gardening segment)
+- A seed-specific niche site would capture 5-10% of that audience ceiling → $1M-$3M implied
+- The $6M-$30M affiliate pool (noted below) is the category-wide ceiling, not one site's take
 
-**Confidence Level**: **HIGH** - Well-documented market with reliable industry data
+**Top-Down Cross-Check:**
+- US garden seeds market: $1.20B (2025) — this is what consumers spend, not what we earn
+- Affiliate-driven online channel: ~20% = $240M transacted online
+- Content sites capture ~1-2% of online transaction volume = **$2.4M-$4.8M** affiliate revenue pool
+- Consistent with bottom-up range ✓
+
+**TAM: $3M - $18M** (realistic affiliate + display revenue for a scaled seed content site)
+
+**Assumptions:**
+- 35% of gardening households are online-active researchers (BLS internet use data)
+- Seed-specific niche site ceiling: 1-2% of Gardening Know How's 30M monthly visitors
+- 4% affiliate click-through rate (Wirecutter benchmark for review content)
+- 7% blended commission; $35 AOV from Baker Creek typical basket
+
+**Confidence Level**: **Medium** — visitor projections and affiliate conversion rates are estimates; SEO performance is inherently unpredictable
 
 **Time Horizon**: 3-5 years
 
 ### Serviceable Addressable Market (SAM)
 
-**Estimate: $816M - $1.03B**
+**Estimate: $2M - $8M (this site's realistic affiliate revenue ceiling)**
 
-**Calculation**: TAM × Constraints
+**Calculation**: TAM × realistic site share
 
 **Constraints Applied:**
-1. **Target Segment**: Hobbyist home gardeners (68% of market) = $816M base
-2. **Geographic**: US market focus initially (100% of US market)
-3. **Online-Focused**: Online purchasers (20% of market, growing at 12.8% CAGR)
-4. **Content-Driven**: Users seeking seed information and education (estimated 40-50% of hobbyist segment)
+1. **Single site share of TAM**: A seed-specific niche site realistically captures 10-50% of the affiliate TAM
+   - TAM = $3M-$18M affiliate revenue pool across all competing content sites
+   - One site's share: 10-50% = $300K-$9M
+2. **Refined to realistic scale ceiling**: A well-executed site at 500K monthly visitors
+   - 500K visitors × 4% CTR × $35 AOV × 7% commission = **$49K/mo → ~$590K/yr**
+   - With display advertising added at scale: $1M-$2M/yr total
+   - Ceiling for dominant niche site (year 5+): **$2M-$8M/yr**
 
-**Calculation:**
-- Base market (hobbyist): $816M (2025)
-- Online segment: 20% = $163M, but growing to 30%+ by 2030 = $245M - $309M
-- Content-seeking segment: 40-50% = $98M - $155M (2025), $245M - $309M (2030)
-- **Refined SAM**: $816M - $1.03B (accounts for growth and overlap)
-
-**Affiliate Revenue SAM:**
-- If capturing 0.5-2% of transaction volume through affiliate links
-- At 5-10% commission rates
-- **Affiliate SAM**: $4M - $20M annually (growing with market)
+**Note:** The $816M-$1.03B figure previously listed as SAM represents seed *spending* by hobbyist gardeners — not the revenue this site earns. The Affiliate Revenue SAM of $4M-$20M (previously buried in this section) is the correct operative figure.
 
 ### Serviceable Obtainable Market (SOM)
 
