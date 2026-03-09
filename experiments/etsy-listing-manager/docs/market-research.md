@@ -12,8 +12,8 @@
 - **SOM (Year 3)**: $350K - $1M+ (personal store + established SaaS with 500-2,000 subscribers)
 
 **Market Opportunity Assessment**: **MEDIUM-HIGH**
-- Large Etsy marketplace with strong digital downloads segment ($4.2B-$6.8B TAM)
-- Etsy seller tools market: $200M-$400M (validated demand for workflow automation)
+- Large Etsy marketplace; digital downloads GMV on Etsy estimated ~$2B–$2.7B (15–20% of GMV). Product TAM is seller tools, not GMV.
+- Etsy seller tools market: $200M–$400M (validated demand for workflow automation)
 - Clear path to $1M+ revenue through SaaS productization
 - Workflow automation addresses real pain point for Etsy sellers
 - Proven market for Etsy seller tools (Marmalead, eRank, etc. show demand)
@@ -36,11 +36,11 @@ The market encompasses:
 ### Market Size and Growth
 
 **Etsy Marketplace:**
-- Gross Merchandise Volume (GMV) 2023: $13.5 billion
-- Active sellers: 7.5+ million
-- Active buyers: 96+ million
-- Digital downloads represent 15-20% of Etsy listings
-- Digital downloads GMV: Estimated $2-2.7 billion annually
+- Gross Merchandise Volume (GMS): 2023 ~$13B+ (consolidated); 2024 Etsy marketplace $12.59B (full year, down 4.4% YoY per Etsy IR).
+- Active sellers: 7.5M+ (Etsy marketplace); ~9M across consolidated marketplaces (2023).
+- Active buyers: 96M+ (2023); 89.6M (2024, down 2.6% YoY per Etsy IR).
+- Digital downloads represent an estimated 15–20% of Etsy listings (Etsy does not publish category GMV breakdown).
+- Digital downloads GMV: Estimated $2–$2.7B annually (based on listing share and typical AOV).
 
 **Etsy Digital Downloads Segment:**
 - Over 1 million digital product listings on Etsy
@@ -83,17 +83,15 @@ This product is a SaaS tool for Etsy sellers — it competes in the seller tools
 **Operative TAM: Etsy Seller Tools SaaS**
 - Estimated market: $200M - $400M (growing with Etsy seller base)
 
-**Competitor Revenue Validation (already documented in competitive section):**
-- **Marmalead**: est. $900K - $3.6M ARR (thousands of subscribers × $15-30/mo)
-- **eRank**: est. $1.7M - $30M ARR (tens of thousands × $7-50/mo)
-- **Listings Plus**: est. $360K - $1.8M ARR
-- Combined known players: **$3M - $35M ARR**
-- If known players = 15-25% of total market → **total market: $12M - $230M**
-- With services and adjacent tools included: **$200M - $400M** ✓
+**Competitor Revenue Validation (see Competitive Landscape for sources):**
+- **Marmalead**: 260K+ subscribers (per vendor); at $19/mo → ~$59M ARR if all paid; with trial/conversion, est. **$30M–$60M ARR**.
+- **eRank**: 2M+ sellers (free + paid); paid tier $10–30/mo; if 5–10% paid → est. **$18M–$72M ARR**.
+- **Listings Plus**: est. $360K–$1.8M ARR (fewer public metrics).
+- Combined known players: **~$50M–$135M+ ARR** (updated). If these represent 25–50% of seller-tools spend, **total seller tools TAM: $100M–$500M+**. Document TAM range **$200M–$400M** remains a reasonable midpoint; consider **$200M–$500M** if competitor scale holds.
 
 **Market Context (not operative TAM):**
-- Etsy GMV: $13.5B — what consumers spend buying from sellers
-- Digital downloads GMV: $2.0B - $2.7B — the category your target sellers operate in
+- Etsy GMS: ~$12.6B (2024 marketplace) — what consumers spend buying from sellers
+- Digital downloads GMV: ~$2B–$2.7B (estimated) — the category your target sellers operate in
 - These are upstream market size indicators, not the SaaS tool revenue opportunity
 
 **Confidence Level**: **Medium-High** — Etsy GMV is public; competitor subscriber counts are estimated
@@ -232,13 +230,13 @@ This is a SaaS tool, not a marketplace product. SAM = the niche of Etsy sellers 
 ### Indirect Competitors (Etsy Seller Tools)
 
 **Existing Tools:**
-1. **Marmalead** - Etsy SEO and keyword research tool ($15-30/mo)
-   - Estimated subscribers: 5,000-10,000+
-   - Annual revenue: $900K - $3.6M+
-   - Focus: SEO and keyword research only
-2. **eRank** - Etsy analytics and SEO tool ($7-50/mo)
-   - Estimated subscribers: 20,000-50,000+
-   - Annual revenue: $1.7M - $30M+
+1. **Marmalead** - Etsy SEO and keyword research tool ($19/mo, ~$16/mo annual)
+   - 260,000+ subscribers (per vendor marketing)
+   - Implied ARR: ~$30M–$60M (depending on trial/conversion)
+   - Focus: SEO, keyword research, Marma AI
+2. **eRank** - Etsy analytics and SEO tool ($0 free; $10–$30/mo paid)
+   - 2M+ sellers on platform (free + paid)
+   - Paid conversion unknown; implied ARR in tens of millions if 5–10% paid
    - Focus: Analytics and SEO
 3. **Listings Plus** - Bulk listing management ($15-30/mo)
    - Estimated subscribers: 2,000-5,000+
@@ -250,9 +248,9 @@ This is a SaaS tool, not a marketplace product. SAM = the niche of Etsy sellers 
    - Not Etsy-specific, social media focus
 
 **Market Validation:**
-- **Proven Demand**: Existing tools show sellers willing to pay $15-50/mo for workflow tools
-- **Market Size**: Combined subscriber base of 30,000-70,000+ Etsy sellers paying for tools
-- **Revenue Validation**: Combined annual revenue of $3M-$35M+ proves market viability
+- **Proven Demand**: Existing tools show sellers willing to pay $15–50/mo for workflow tools
+- **Market Size**: Marmalead 260K+ subscribers; eRank 2M+ users (free + paid). Combined paying base likely 100K–500K+.
+- **Revenue Validation**: Combined annual revenue of $50M–$135M+ (updated) proves a large seller-tools market; supports TAM $200M–$400M (or higher).
 
 **Gaps in Market:**
 - No comprehensive workflow tool combining all functions (planning + listing + images + SEO)
@@ -464,7 +462,7 @@ This is a SaaS tool, not a marketplace product. SAM = the niche of Etsy sellers 
 
 **Rationale:**
 1. **Personal Need**: Solves real workflow problem for Etsy store management
-2. **Validated Market**: Etsy digital downloads market is large ($4.2B-$6.8B TAM) and growing
+2. **Validated Market**: Etsy digital downloads GMV estimated ~$2B–$2.7B; seller tools TAM $200M–$400M (product competes in tools, not GMV)
 3. **SaaS Market Validation**: Existing tools (Marmalead, eRank) prove willingness to pay $15-50/mo
 4. **Clear Revenue Path**: Personal store ($25K-$100K) + SaaS ($300K-$900K) = $350K-$1M+ Year 3
 5. **Low Risk Approach**: Start personal, validate value, then productize
@@ -569,10 +567,10 @@ This is a SaaS tool, not a marketplace product. SAM = the niche of Etsy sellers 
 ### Limitations
 
 **Data Gaps:**
-- Etsy doesn't publish detailed category breakdowns
-- Digital downloads percentage is estimated
+- Etsy doesn't publish detailed category breakdowns (digital downloads % and GMV are estimated)
 - Individual seller revenue data is anecdotal
 - Embroidery pattern market size is estimated
+- Competitor subscriber/revenue figures are from vendor marketing and third-party comparisons (Marmalead 260K+, eRank 2M+ users as of 2025–2026 comparisons)
 
 **Uncertainties:**
 - Actual revenue depends heavily on execution
@@ -631,5 +629,6 @@ This is a SaaS tool, not a marketplace product. SAM = the niche of Etsy sellers 
 ---
 
 **Report Generated**: January 27, 2025  
+**Numbers Reviewed**: March 2026 — Etsy GMS (2024 $12.59B), active buyers (89.6M), competitor scale (Marmalead 260K+, eRank 2M+); digital downloads GMV and TAM wording aligned to body ($2–$2.7B context; product TAM = seller tools $200M–$400M).  
 **Next Review**: After MVP validation and initial Etsy store results
 

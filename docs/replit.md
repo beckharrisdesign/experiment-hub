@@ -96,6 +96,7 @@ Valid multi-select options are defined in lib/notion.ts and must match Notion da
   - Archived: Experience Principles Repository, Seed Finder, Garden Guide Generator
 
 - 2024-12-16: Renamed Etsy Embroidery Pattern Manager to Etsy Listing Manager
+- 2026-03: Renamed back to Etsy Embroidery Pattern Manager to clarify it’s the specialized embroidery experiment
 
 - 2024-12-16: Restructured landing page architecture
   - Moved Simple Seed Organizer landing page from prototype/ to landing/

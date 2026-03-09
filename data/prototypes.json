@@ -1,10 +1,10 @@
 [
   {
-    "id": "proto-etsy-embroidery",
-    "title": "Etsy Embroidery Pattern Manager Prototype",
+    "id": "proto-etsy-listing-manager",
+    "title": "Embroidery Pattern Manager Prototype",
     "description": "Manage embroidery patterns, generate listings, and organize product templates for Etsy sellers",
-    "linkPath": "/experiments/etsy-embroidery-pattern-manager/prototype",
-    "experimentId": "etsy-embroidery-pattern-manager",
+    "linkPath": "experiments/etsy-listing-manager/prototype",
+    "experimentId": "etsy-listing-manager",
     "status": "Active",
     "createdDate": "2024-11-01",
     "lastModified": "2024-12-16",

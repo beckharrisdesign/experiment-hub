@@ -20,7 +20,9 @@ npm run dev
 
 ## Overview
 
-Simple Seed Organizer is a super simple mobile/web app that lets home gardeners store seed information and retrieve it when needed—nothing more, nothing less. It eliminates the complexity of garden planning, calendars, and design features found in other gardening apps, focusing exclusively on seed inventory tracking. The product will be validated through a landing page and targeted ads before building the MVP to ensure there's genuine buying intent for this simplicity-focused approach.
+Simple Seed Organizer is a super simple mobile/web app that lets home gardeners store seed information and retrieve it when needed—nothing more, nothing less. It eliminates the complexity of garden planning, calendars, and design features found in other gardening apps, focusing exclusively on seed inventory tracking.
+
+**Build order (non-negotiable):** We build the **landing page and signup loop first** and run validation (landing page + targeted ads + metrics) before building anything else. No MVP features, no app, no backend—only the validation loop until we have a clear go/no-go. The product will be validated through this landing page and signup flow before any MVP work begins.
 
 ## Problem Statement
 
@@ -38,9 +40,9 @@ The market is underserved: most solutions are either too complex (garden plannin
 
 ### Primary Goals
 
-1. **Simplicity First**: Build the simplest possible seed organizing tool—no garden planning, no calendars, no design features
-2. **Mobile-First Access**: Users can quickly access their seed inventory on their phone when shopping or planning
-3. **Validate Demand**: Measure buying intent through landing page + ads before building MVP
+1. **Validate first**: Measure buying intent through a **landing page and signup loop** (plus targeted ads) before building any product. No app, no MVP features, no backend until validation metrics are met.
+2. **Simplicity First** (post-validation): Build the simplest possible seed organizing tool—no garden planning, no calendars, no design features
+3. **Mobile-First Access**: Users can quickly access their seed inventory on their phone when shopping or planning
 4. **Fast Information Retrieval**: Users can find seed info in < 10 seconds
 5. **Viability Tracking**: Help users know which seeds are still good to plant
 
@@ -313,28 +315,33 @@ The market is underserved: most solutions are either too complex (garden plannin
 
 ## Implementation Approach
 
-### Phase 1: Validation (Pre-MVP)
+**Validation-first rule:** Nothing in Phase 2 (MVP) is built until Phase 1 (landing page + signup loop) is shipped and validation metrics have been evaluated. No parallel work on app features.
 
-**Goal**: Measure buying intent before building the product.
+### Phase 1: Landing Page & Signup Loop (Validation) — Build This First
 
-**Deliverables**:
+**Goal**: Measure buying intent before building any product. This is the only thing we build and ship until we have a go/no-go.
+
+**Deliverables** (all required before any Phase 2 work):
 
 1. **Landing Page**: One-page site describing the problem and product promise
 
+   - Full copy, structure, and form fields: **[Landing Page Content](landing-page-content.md)**
    - Headline: "Your simple seed inventory & 'use-first' list, on your phone"
    - Problem statement: Stop rebuying seeds, know viability, find info quickly
    - Value proposition: No planning, no calendars, just store and retrieve
-   - Fake "Buy Now" or "Get Early Access for $X/year" CTA
-   - Email signup form (capture interest)
+   - Fake "Buy Now" or "Get Early Access for $X/year" CTA (to measure intent)
+   - **Email signup form** (capture interest — the core of the signup loop)
 
-2. **Ad Campaign**: 3-6 ad variants on Meta/Pinterest
+2. **Signup loop**: Visitor → landing page → CTA click and/or email signup → data captured (email + optional intent signal). No app, no accounts, no backend beyond capturing signups.
+
+3. **Ad Campaign**: 3-6 ad variants on Meta/Pinterest (only after landing + signup are live)
 
    - Angles: "Stop rebuying the same seeds", "Know which packets are still viable", "Turn your messy seed box into a searchable library"
    - Target: Gardening interests, seed-related keywords
    - Budget: Small ($100-500 to start)
    - Track: CTR, landing page visits, conversion to "buy" step, email signups
 
-3. **Analytics Setup**: Track key metrics
+4. **Analytics Setup**: Track key metrics
    - Landing page views
    - CTA clicks (fake buy button)
    - Email signups
@@ -346,11 +353,13 @@ The market is underserved: most solutions are either too complex (garden plannin
 - CTR from ads: > 2%
 - Conversion to "buy" step: > 10% of landing page visitors
 - Email signups: > 5% of landing page visitors
-- **Decision Threshold**: If metrics meet targets, proceed to Phase 2. If not, pivot or abandon.
+- **Decision Threshold**: If metrics meet targets, proceed to Phase 2. If not, pivot or abandon. Do not start Phase 2 until this decision is made.
 
-**Timeline**: 1-2 weeks (landing page build + ad setup + 1-2 weeks of data collection)
+**Timeline**: 1-2 weeks (landing page + signup build first, then ad setup + 1-2 weeks of data collection)
 
-### Phase 2: MVP (Minimum Viable Product)
+### Phase 2: MVP (Minimum Viable Product) — Only After Validation
+
+**Gate:** Do not start Phase 2 until Phase 1 (landing page + signup loop) is live and validation metrics have been reviewed with a go decision.
 
 **Goal**: Build the simplest version that delivers core value.
 

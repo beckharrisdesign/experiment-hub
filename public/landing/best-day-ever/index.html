@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Best Day Ever — Make every day your best day ever</title>
+  <meta name="description" content="Your calendar, on paper. Best Day Ever connects to Google Calendar and prints a day plan designed for ADHD brains. From calendar to paper in 60 seconds.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            pink: { 400: '#F472B6', 500: '#EC4899', 300: '#F9A8D4' },
+            orange: { 400: '#FB923C', 500: '#F97316' },
+            purple: { 300: '#D8B4FE', 400: '#C084FC' },
+            teal: { 300: '#5EEAD4', 400: '#2DD4BF' },
+            lime: { 300: '#BEF264', 400: '#A3E635' },
+            brown: { 200: '#E7E5E4', 300: '#D6D3D1' },
+          },
+          fontFamily: { sans: ['system-ui', '-apple-system', 'sans-serif'] },
+        }
+      }
+    }
+  </script>
+  <style>
+    .page-root {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+      max-width: 992px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      border-radius: 0;
+      min-height: 100vh;
+      position: relative;
+    }
+    .scroll-mt-20 { scroll-margin-top: 5rem; }
+    .shape { pointer-events: none; }
+  </style>
+</head>
+<body class="min-h-screen bg-white text-gray-800 antialiased">
+  <div class="page-root w-full overflow-hidden">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-gray-200">
+      <div class="max-w-[992px] w-full mx-auto px-6 py-4 flex items-center justify-between">
+        <span class="font-bold text-xl text-gray-900">Best Day Ever</span>
+        <nav class="hidden sm:flex items-center gap-6">
+          <a href="#gap" class="text-gray-600 hover:text-gray-900 text-sm font-medium">Why</a>
+          <a href="#how" class="text-gray-600 hover:text-gray-900 text-sm font-medium">How it works</a>
+          <a href="#templates" class="text-gray-600 hover:text-gray-900 text-sm font-medium">Templates</a>
+          <a href="#interest-form" class="bg-black hover:bg-gray-800 text-white font-semibold py-2 px-5 rounded-lg text-sm transition-colors">Get Started</a>
+        </nav>
+        <a href="#interest-form" class="sm:hidden bg-black text-white font-semibold py-2 px-4 rounded-lg text-sm">Get Started</a>
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <section id="hero" class="w-full px-6 py-16 md:py-24 bg-white relative">
+      <div class="absolute inset-0 overflow-hidden shape">
+        <div class="absolute top-20 right-10 w-24 h-24 text-orange-400 opacity-80"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15 9L22 10L17 15L18 22L12 19L6 22L7 15L2 10L9 9L12 2Z"/></svg></div>
+        <div class="absolute top-32 right-32 w-16 h-16 text-pink-400 opacity-70"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 12H19L12 5L5 12Z"/></svg></div>
+        <div class="absolute top-40 left-20 w-32 h-4 text-teal-300 opacity-60"><svg viewBox="0 0 100 10" fill="none" stroke="currentColor" stroke-width="2"><path d="M0 5 Q25 0 50 5 T100 5"/></svg></div>
+        <div class="absolute bottom-20 left-16 w-20 h-20 text-purple-300 opacity-70"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7L12 12L22 7L12 2Z"/></svg></div>
+      </div>
+      <div class="relative z-10 max-w-2xl">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-6">
+          Make every day your <span class="text-pink-500">best day ever</span>
+        </h1>
+        <p class="text-lg text-gray-600 mb-8">
+          Your calendar, on paper — in 60 seconds. Built for ADHD brains that do better with something to hold and write on.
+        </p>
+        <div class="flex flex-wrap items-center gap-4">
+          <a href="#interest-form" class="inline-block bg-black hover:bg-gray-800 text-white font-semibold py-3 px-8 rounded-lg transition-colors">Get Started</a>
+          <a href="#how" class="inline-block bg-white border-2 border-gray-900 text-gray-900 font-semibold py-3 px-8 rounded-lg hover:bg-gray-50 transition-colors">See how it works</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- The gap between knowing and doing -->
+    <section id="gap" class="w-full px-6 py-16 md:py-20 bg-gray-50 scroll-mt-20 relative">
+      <div class="absolute top-10 left-10 w-16 h-16 text-blue-100 shape"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7L12 12L22 7L12 2Z"/></svg></div>
+      <div class="absolute bottom-10 right-20 w-12 h-12 text-pink-200 shape"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7L12 12L22 7L12 2Z"/></svg></svg></div>
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-10 relative z-10">The gap between knowing and doing</h2>
+      <div class="grid sm:grid-cols-3 gap-8 max-w-3xl relative z-10">
+        <div>
+          <div class="w-10 h-10 rounded-lg bg-gray-200 mb-4 flex items-center justify-center text-gray-600">📱</div>
+          <h3 class="font-semibold text-gray-900 mb-2">Digital planning gets the job done</h3>
+          <p class="text-sm text-gray-600">But screens don't help you start. Calendars are flat and easy to ignore.</p>
+        </div>
+        <div>
+          <div class="w-10 h-10 rounded-lg bg-gray-200 mb-4 flex items-center justify-center text-gray-600">❓</div>
+          <h3 class="font-semibold text-gray-900 mb-2">No clear idea of what to do next</h3>
+          <p class="text-sm text-gray-600">You know it's on your calendar — but staring at a screen doesn't create momentum.</p>
+        </div>
+        <div>
+          <div class="w-10 h-10 rounded-lg bg-gray-200 mb-4 flex items-center justify-center text-gray-600">📓</div>
+          <h3 class="font-semibold text-gray-900 mb-2">Most planners aren't built for ADHD</h3>
+          <p class="text-sm text-gray-600">Beautiful planners still make you copy your calendar by hand every morning.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why physical planning works -->
+    <section class="w-full px-6 py-16 md:py-20 bg-white scroll-mt-20 relative">
+      <div class="absolute top-20 right-10 w-24 h-2 text-pink-300 opacity-60 shape"><svg viewBox="0 0 100 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M0 4 Q25 0 50 4 T100 4"/></svg></div>
+      <div class="absolute bottom-20 left-10 w-16 h-16 text-teal-300 opacity-60 shape"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7L12 12L22 7L12 2Z"/></svg></div>
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-10 relative z-10">Why physical planning works</h2>
+      <div class="grid sm:grid-cols-3 gap-8 max-w-3xl relative z-10">
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-full bg-pink-100 flex items-center justify-center mx-auto mb-4 text-pink-500 text-2xl">✏️</div>
+          <h3 class="font-semibold text-gray-900 mb-2">Less screen time</h3>
+          <p class="text-sm text-gray-600">Paper gives your eyes and brain a break. Write by hand and feel the difference.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-full bg-teal-100 flex items-center justify-center mx-auto mb-4 text-teal-400 text-2xl">📄</div>
+          <h3 class="font-semibold text-gray-900 mb-2">Reduces distractions</h3>
+          <p class="text-sm text-gray-600">A printed page doesn't send notifications or hide behind 47 tabs.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-full bg-lime-100 flex items-center justify-center mx-auto mb-4 text-lime-400 text-2xl">🎯</div>
+          <h3 class="font-semibold text-gray-900 mb-2">More focus</h3>
+          <p class="text-sm text-gray-600">Sensory anchors — pen, paper, checkmarks — help ADHD brains get started.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- From calendar to paper in 60 seconds -->
+    <section id="how" class="w-full px-6 py-16 md:py-20 bg-gray-50 scroll-mt-20 relative">
+      <div class="absolute top-16 right-20 w-20 h-20 text-lime-300 opacity-70 shape"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15 9L22 10L17 15L18 22L12 19L6 22L7 15L2 10L9 9L12 2Z"/></svg></div>
+      <div class="absolute bottom-24 left-24 w-20 h-3 text-brown-300 opacity-60 shape"><svg viewBox="0 0 80 6" fill="none" stroke="currentColor" stroke-width="2"><path d="M0 3 Q20 0 40 3 T80 3"/></svg></div>
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4 relative z-10">From calendar to paper in <span class="text-red-500">60 seconds</span></h2>
+      <p class="text-gray-600 mb-10 max-w-xl relative z-10">Connect once. Pick a template. Print. No copying by hand.</p>
+      <div class="grid sm:grid-cols-3 gap-8 max-w-3xl relative z-10">
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4 text-orange-500 text-2xl">⭐</div>
+          <h3 class="font-semibold text-gray-900 mb-2">Connect your tools</h3>
+          <p class="text-sm text-gray-600">Link Google Calendar. Read-only, one-time setup.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4 text-purple-400 text-2xl">📄</div>
+          <h3 class="font-semibold text-gray-900 mb-2">Choose your template</h3>
+          <p class="text-sm text-gray-600">Daily, weekly, or focus layout — pick what fits today.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-full bg-teal-100 flex items-center justify-center mx-auto mb-4 text-teal-400 text-2xl">⏱</div>
+          <h3 class="font-semibold text-gray-900 mb-2">Print in 60 seconds</h3>
+          <p class="text-sm text-gray-600">Hit print. Grab your pen. Your schedule is on the page.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Templates designed for ADHD -->
+    <section id="templates" class="w-full px-6 py-16 md:py-20 bg-white scroll-mt-20 relative">
+      <div class="absolute top-10 right-16 w-16 h-16 text-purple-300 opacity-60 shape"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15 9L22 10L17 15L18 22L12 19L6 22L7 15L2 10L9 9L12 2Z"/></svg></div>
+      <div class="absolute bottom-16 left-10 w-20 h-20 text-orange-300 opacity-50 shape"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15 9L22 10L17 15L18 22L12 19L6 22L7 15L2 10L9 9L12 2Z"/></svg></div>
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-10 relative z-10">Templates designed for ADHD</h2>
+      <div class="grid sm:grid-cols-3 gap-6 max-w-3xl relative z-10">
+        <div class="border border-gray-200 rounded-xl p-6 bg-gray-50">
+          <h3 class="font-semibold text-gray-900 mb-3">Daily Planner</h3>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li>• Hour-by-hour or Top 3 + schedule</li>
+            <li>• Your real events pre-filled</li>
+            <li>• Room to write and check off</li>
+          </ul>
+        </div>
+        <div class="border border-gray-200 rounded-xl p-6 bg-gray-50">
+          <h3 class="font-semibold text-gray-900 mb-3">Weekly Planner</h3>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li>• Week at a glance</li>
+            <li>• Seven columns, one page</li>
+            <li>• Space for notes per day</li>
+          </ul>
+        </div>
+        <div class="border border-gray-200 rounded-xl p-6 bg-gray-50">
+          <h3 class="font-semibold text-gray-900 mb-3">Focus layout</h3>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li>• Top 3 priorities + schedule</li>
+            <li>• Less clutter, more whitespace</li>
+            <li>• Prints clean in B&W</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- No other tool does this -->
+    <section class="w-full px-6 py-16 md:py-20 bg-gray-50 scroll-mt-20 relative">
+      <div class="absolute top-20 left-20 w-14 h-14 text-teal-300 opacity-60 shape"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7L12 12L22 7L12 2Z"/></svg></div>
+      <div class="absolute bottom-20 right-16 w-16 h-16 text-lime-300 opacity-60 shape"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7L12 12L22 7L12 2Z"/></svg></div>
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-10 relative z-10">No other tool does this</h2>
+      <div class="grid sm:grid-cols-2 gap-8 max-w-3xl relative z-10">
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-4">Other tools</h3>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li>• Event planning & team collaboration</li>
+            <li>• Goal setting & habit tracking</li>
+            <li>• Stay on screen — no printable day plan</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-4">Best Day Ever</h3>
+          <ul class="text-sm text-gray-700 space-y-2">
+            <li>• ADHD-friendly layouts</li>
+            <li>• Printable, your real calendar</li>
+            <li>• Integrated calendar → paper in 60 sec</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Everything you need to thrive -->
+    <section class="w-full px-6 py-16 md:py-20 bg-white scroll-mt-20 relative">
+      <div class="absolute top-12 right-10 w-20 h-20 text-pink-300 opacity-60 shape"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15 9L22 10L17 15L18 22L12 19L6 22L7 15L2 10L9 9L12 2Z"/></svg></div>
+      <div class="absolute bottom-24 left-12 w-14 h-14 text-orange-400 opacity-50 shape"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7L12 12L22 7L12 2Z"/></svg></div>
+      <div class="absolute bottom-10 right-24 w-16 h-16 text-lime-300 opacity-50 shape"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7L12 12L22 7L12 2Z"/></svg></div>
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-10 relative z-10">Everything you need to thrive</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 max-w-3xl relative z-10">
+        <div class="flex items-center gap-3"><span class="text-2xl">📅</span><span class="text-sm font-medium text-gray-700">Calendar integration</span></div>
+        <div class="flex items-center gap-3"><span class="text-2xl">📄</span><span class="text-sm font-medium text-gray-700">3 templates</span></div>
+        <div class="flex items-center gap-3"><span class="text-2xl">🖨</span><span class="text-sm font-medium text-gray-700">Printable</span></div>
+        <div class="flex items-center gap-3"><span class="text-2xl">⚡</span><span class="text-sm font-medium text-gray-700">60-second print</span></div>
+        <div class="flex items-center gap-3"><span class="text-2xl">✨</span><span class="text-sm font-medium text-gray-700">Focused design</span></div>
+        <div class="flex items-center gap-3"><span class="text-2xl">📝</span><span class="text-sm font-medium text-gray-700">Room to write</span></div>
+      </div>
+    </section>
+
+    <!-- Loved by thousands of users -->
+    <section class="w-full px-6 py-16 md:py-20 bg-gray-50 scroll-mt-20 relative">
+      <div class="absolute top-16 left-16 w-20 h-3 text-purple-300 opacity-60 shape"><svg viewBox="0 0 80 6" fill="none" stroke="currentColor" stroke-width="2"><path d="M0 3 Q20 0 40 3 T80 3"/></svg></div>
+      <div class="absolute bottom-16 right-10 w-14 h-14 text-blue-200 shape"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7L12 12L22 7L12 2Z"/></svg></div>
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-10 relative z-10">Loved by thousands of users</h2>
+      <div class="grid sm:grid-cols-3 gap-8 max-w-3xl relative z-10">
+        <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+          <p class="text-gray-700 text-sm italic mb-4">"I've tried every planner. This is the first one that actually has my schedule on it when I pick it up."</p>
+          <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">JD</div><span class="font-medium text-gray-900 text-sm">Jane D.</span></div>
+        </div>
+        <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+          <p class="text-gray-700 text-sm italic mb-4">"I print mine every morning. It takes 30 seconds and it's the only reason I start on time."</p>
+          <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">MK</div><span class="font-medium text-gray-900 text-sm">Mike K.</span></div>
+        </div>
+        <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+          <p class="text-gray-700 text-sm italic mb-4">"Finally — my calendar on paper without copying it by hand. Game changer for my ADHD."</p>
+          <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">AS</div><span class="font-medium text-gray-900 text-sm">Alex S.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom CTA -->
+    <section class="w-full px-6 py-16 md:py-20 bg-white scroll-mt-20 relative">
+      <div class="absolute top-20 right-20 w-24 h-24 text-pink-400 opacity-60 shape"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15 9L22 10L17 15L18 22L12 19L6 22L7 15L2 10L9 9L12 2Z"/></svg></div>
+      <div class="absolute bottom-24 left-20 w-20 h-2 text-brown-300 opacity-60 shape"><svg viewBox="0 0 80 6" fill="none" stroke="currentColor" stroke-width="2"><path d="M0 3 Q20 0 40 3 T80 3"/></svg></div>
+      <div class="absolute bottom-16 right-16 w-16 h-16 text-blue-100 shape"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7L12 12L22 7L12 2Z"/></svg></div>
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4 relative z-10">Ready to start your best day ever?</h2>
+      <p class="text-gray-600 mb-8 max-w-xl relative z-10">Join early access. We'll email you when Best Day Ever is ready.</p>
+      <div class="flex flex-wrap gap-4 relative z-10">
+        <a href="#interest-form" class="inline-block bg-black hover:bg-gray-800 text-white font-semibold py-3 px-8 rounded-lg transition-colors">Get Started</a>
+        <a href="#how" class="inline-block bg-white border-2 border-gray-900 text-gray-900 font-semibold py-3 px-8 rounded-lg hover:bg-gray-50 transition-colors">See how it works</a>
+      </div>
+    </section>
+
+    <!-- Interest Form -->
+    <section id="interest-form" class="w-full px-6 py-16 md:py-20 bg-gray-50 scroll-mt-20">
+      <div id="form-container">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Get Early Access</h2>
+        <p class="text-gray-600 mb-8 max-w-xl">Best Day Ever is in development. Join the list to be first in when it launches.</p>
+        <form id="waitlist-form" class="max-w-xl space-y-6">
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-900 mb-2">Email <span class="text-red-500">*</span></label>
+            <input type="email" id="email" name="email" required placeholder="your@email.com" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 placeholder:text-gray-400 text-gray-900">
+          </div>
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-900 mb-2">Name (optional)</label>
+            <input type="text" id="name" name="name" placeholder="Your name" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 placeholder:text-gray-400 text-gray-900">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-900 mb-3">What calendar do you use? (optional)</label>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="calendar" value="Google Calendar" class="text-gray-900"> Google Calendar</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="calendar" value="Apple Calendar" class="text-gray-900"> Apple Calendar</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="calendar" value="Outlook" class="text-gray-900"> Outlook</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="calendar" value="Other" class="text-gray-900"> Other</label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-900 mb-3">Do you currently use paper to plan your day? (optional)</label>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="paperUsage" value="Yes, every day" class="text-gray-900"> Yes, every day</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="paperUsage" value="Sometimes" class="text-gray-900"> Sometimes</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="paperUsage" value="I used to but stopped" class="text-gray-900"> I used to but stopped</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="paperUsage" value="No, but I want to" class="text-gray-900"> No, but I want to</label>
+            </div>
+          </div>
+          <div>
+            <label for="hardestPart" class="block text-sm font-medium text-gray-900 mb-2">What's the hardest part about planning your day? (optional)</label>
+            <textarea id="hardestPart" name="hardestPart" rows="3" placeholder="e.g., I can never get started even though I know what's on my calendar" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 placeholder:text-gray-400 text-gray-900 resize-none"></textarea>
+          </div>
+          <button type="submit" id="submit-btn" class="w-full bg-black hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-lg transition-colors">Join Early Access</button>
+          <p class="text-sm text-gray-600">We respect your privacy. We'll only email you about Best Day Ever. Unsubscribe anytime.</p>
+        </form>
+      </div>
+      <div id="success-container" class="hidden max-w-xl">
+        <div class="border-2 border-gray-200 bg-white p-10 rounded-xl">
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">You're on the list.</h2>
+          <p class="text-gray-700 mb-4">We'll email you when Best Day Ever is ready to print.</p>
+          <p class="text-sm text-gray-600">Reply to our welcome email and tell us one thing you'd want on your daily printout.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="w-full px-6 py-12 bg-gray-100 text-gray-600 text-sm">
+      <div class="flex flex-wrap justify-between gap-8 mb-8">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-gray-900">Best Day Ever</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-8">
+          <div>
+            <h4 class="font-semibold text-gray-900 mb-3">Product</h4>
+            <ul class="space-y-2"><li><a href="#how" class="hover:text-gray-900">Features</a></li><li><a href="#templates" class="hover:text-gray-900">Templates</a></li><li><a href="#" class="hover:text-gray-900">Pricing</a></li><li><a href="#" class="hover:text-gray-900">Blog</a></li></ul>
+          </div>
+          <div>
+            <h4 class="font-semibold text-gray-900 mb-3">Company</h4>
+            <ul class="space-y-2"><li><a href="#" class="hover:text-gray-900">About Us</a></li><li><a href="#" class="hover:text-gray-900">Careers</a></li><li><a href="#" class="hover:text-gray-900">Contact</a></li></ul>
+          </div>
+          <div>
+            <h4 class="font-semibold text-gray-900 mb-3">Legal</h4>
+            <ul class="space-y-2"><li><a href="#" class="hover:text-gray-900">Privacy</a></li><li><a href="#" class="hover:text-gray-900">Terms</a></li></ul>
+          </div>
+          <div>
+            <h4 class="font-semibold text-gray-900 mb-3">Social</h4>
+            <ul class="flex gap-4"><li><a href="#" class="hover:text-gray-900" aria-label="Twitter">𝕏</a></li><li><a href="#" class="hover:text-gray-900" aria-label="Instagram">IG</a></li></ul>
+          </div>
+        </div>
+      </div>
+      <p class="text-gray-500">© 2024 Best Day Ever. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

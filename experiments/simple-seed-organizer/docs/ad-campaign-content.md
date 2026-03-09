@@ -474,7 +474,7 @@ Save My Seeds
 
 ## Next Steps
 
-1. **Create landing page** with content from `landing-page-content.md`
+1. **Create landing page** with content from [Landing Page Content](landing-page-content.md)
 2. **Set up analytics** (Google Analytics, Facebook Pixel)
 3. **Create ad creative** (images/videos for each variant)
 4. **Set up ad campaigns** in Meta and Pinterest

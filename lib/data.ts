@@ -133,6 +133,26 @@ export async function readMarketResearch(experimentDirectory: string): Promise<s
   }
 }
 
+/** Allowed doc names for readExperimentDoc (no path traversal). */
+const ALLOWED_DOCS = ["landing-page-content"] as const;
+
+export async function readExperimentDoc(
+  experimentDirectory: string,
+  docSlug: string
+): Promise<string | null> {
+  if (!ALLOWED_DOCS.includes(docSlug as (typeof ALLOWED_DOCS)[number])) {
+    return null;
+  }
+  try {
+    const filename = `${docSlug}.md`;
+    const docPath = path.join(process.cwd(), experimentDirectory, "docs", filename);
+    const content = await fs.readFile(docPath, "utf8");
+    return content;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Batch check all experiment files in parallel for better performance
  * This avoids N+1 file system operations

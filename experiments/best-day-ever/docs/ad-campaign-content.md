@@ -452,7 +452,7 @@ Consider 2-3 landing page URL variants with different hero copy, matched to ad a
 
 ## Next Steps
 
-1. **Build landing page** from `landing-page-content.md`
+1. **Build landing page** from [Landing Page Content](landing-page-content.md)
 2. **Create template mockups** — printed pages with handwriting, photographed on real desks
 3. **Set up analytics** (GA4 + UTM tracking)
 4. **Record TikTok video** (15-30 second "how it works" screen recording with voiceover)

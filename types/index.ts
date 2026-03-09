@@ -10,6 +10,13 @@ export interface ExperimentScores {
   socialImpact: number; // 1-5: Fun, joy, and whether the world needs this (see agents/scoring-criteria.md)
 }
 
+/** Optional rationale for score dimensions (displayed on experiment Overview). */
+export interface ScoreRationale {
+  businessOpportunity?: string;
+  personalImpact?: string;
+  socialImpact?: string;
+}
+
 export interface ValidationLandingPage {
   status: ValidationStatus;
   url?: string; // URL to the production landing page
@@ -30,6 +37,7 @@ export interface Experiment {
   lastModified: string;
   tags: string[];
   scores?: ExperimentScores; // Optional scoring (1-5 for each dimension)
+  scoreRationale?: ScoreRationale; // Optional rationale for Business Opportunity, Personal Impact, Social Impact
   validation?: ValidationLandingPage; // Landing page validation status
 }
 

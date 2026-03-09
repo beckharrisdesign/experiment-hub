@@ -1,7 +1,7 @@
 [
   {
     "id": "etsy-listing-manager",
-    "name": "Etsy Listing Manager",
+    "name": "Embroidery Pattern Manager",
     "statement": "Automate Etsy listings, SEO, and image generation for embroidery pattern sellers",
     "directory": "experiments/etsy-listing-manager",
     "documentationId": "doc-etsy-listing-manager",

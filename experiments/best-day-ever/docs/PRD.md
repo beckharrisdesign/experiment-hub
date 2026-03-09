@@ -245,6 +245,7 @@ There is no tool that takes your real schedule and turns it into something you c
 
 1. **Landing Page**: Single page that explains the core value prop
 
+   - Full copy, structure, and form fields: **[Landing Page Content](landing-page-content.md)**
    - Headline: "Your calendar, on paper. Ready in 60 seconds."
    - Subhead: "Best Day Ever translates your digital schedule into a printable day plan designed for ADHD brains."
    - Problem framing: "You know what you need to do. It's on your calendar. But staring at a screen doesn't make you start. Paper does."

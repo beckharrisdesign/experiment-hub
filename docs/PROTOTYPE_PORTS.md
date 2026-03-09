@@ -7,9 +7,8 @@ This document tracks port assignments for running experiment prototypes. The Exp
 | Port | Experiment                                 | Prototype Directory                                              |
 | ---- | ------------------------------------------ | ---------------------------------------------------------------- |
 | 3000 | Experiment Hub                             | (main hub)                                                       |
-| 3001 | Embroidery Pattern Manager                 | `experiments/etsy-embroidery-pattern-manager/prototype`          |
+| 3001 | Embroidery Pattern Manager                 | `experiments/etsy-listing-manager/prototype`                     |
 | 3002 | Seed Finder                                | `experiments/seed-finder/prototype`                              |
-| 3003 | The Illuminator                            | `experiments/the-illuminator/prototype`                          |
 | 3004 | Photo Memories                             | `experiments/photo-memories/prototype`                           |
 | 3005 | Garden Guide Generator                     | `experiments/garden-guide-generator/prototype`                   |
 | 3006 | Experience Principles Repository           | `experiments/experience-principles-repository/prototype`         |

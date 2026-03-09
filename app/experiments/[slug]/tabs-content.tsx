@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
 import MarkdownContent from "@/components/MarkdownContent";
 import Tabs from "@/components/Tabs";
 import LandingPageLink from "@/components/LandingPageLink";
+import { slugify } from "@/lib/utils";
 import { Experiment, Prototype, Documentation } from "@/types";
 import type { parsePRD, parseMarketResearch } from "@/lib/data";
 
@@ -79,12 +81,17 @@ export default function TabsContent({
                     Business Opportunity
                   </h3>
                 </div>
-                {mr && (
+                {(experiment.scoreRationale?.businessOpportunity || mr) && (
                   <p className="text-sm text-text-secondary">
-                    Market opportunity with TAM of {mr.tam || "N/A"} and SAM of {mr.sam || "N/A"}.
-                    {mr.executiveSummary && (mr.executiveSummary.includes("niche") || mr.executiveSummary.includes("underserved"))
-                      ? " Strong niche demand identified in market research."
-                      : " Market research indicates viable opportunity."}
+                    {experiment.scoreRationale?.businessOpportunity ??
+                      (mr ? (
+                        <>
+                          Market opportunity with TAM of {mr.tam || "N/A"} and SAM of {mr.sam || "N/A"}.
+                          {mr.executiveSummary && (mr.executiveSummary.includes("niche") || mr.executiveSummary.includes("underserved"))
+                            ? " Strong niche demand identified in market research."
+                            : " Market research indicates viable opportunity."}
+                        </>
+                      ) : null)}
                   </p>
                 )}
               </div>
@@ -102,9 +109,10 @@ export default function TabsContent({
                   </h3>
                 </div>
                 <p className="text-sm text-text-secondary">
-                  {experiment.scores.personalImpact >= 4
-                    ? "High personal value - addresses specific needs identified in the experiment statement."
-                    : "Moderate personal value based on experiment goals."}
+                  {experiment.scoreRationale?.personalImpact ??
+                    (experiment.scores.personalImpact >= 4
+                      ? "High personal value - addresses specific needs identified in the experiment statement."
+                      : "Moderate personal value based on experiment goals.")}
                 </p>
               </div>
 
@@ -159,9 +167,10 @@ export default function TabsContent({
                   </h3>
                 </div>
                 <p className="text-sm text-text-secondary">
-                  {experiment.scores.socialImpact >= 4
-                    ? "High social value - addresses meaningful needs and serves underserved communities."
-                    : "Moderate social value based on target market and use cases."}
+                  {experiment.scoreRationale?.socialImpact ??
+                    (experiment.scores.socialImpact >= 4
+                      ? "High social value - addresses meaningful needs and serves underserved communities."
+                      : "Moderate social value based on target market and use cases.")}
                 </p>
               </div>
             </div>
@@ -409,6 +418,16 @@ export default function TabsContent({
               </section>
 
               <section className="rounded-lg border border-border bg-background-tertiary p-6">
+                <h2 className="mb-4 text-xl font-semibold text-text-primary">Reference</h2>
+                <p className="mb-4 text-sm text-text-secondary">
+                  Landing page copy, structure, and form fields:{" "}
+                  <Link
+                    href={`/experiments/${slugify(experiment.name)}/doc/landing-page-content`}
+                    className="text-accent-primary hover:underline"
+                  >
+                    Landing Page Content
+                  </Link>
+                </p>
                 <h2 className="mb-4 text-xl font-semibold text-text-primary">Next Steps</h2>
                 <div className="space-y-2 text-sm text-text-secondary">
                   {!experiment.validation?.status || experiment.validation.status === 'not_started' ? (
