@@ -78,6 +78,11 @@
       "competitiveAdvantage": 4,
       "platformCost": 4,
       "socialImpact": 5
+    },
+    "validation": {
+      "status": "live",
+      "landingDir": "landing",
+      "devPort": 3002
     }
   },
   {
@@ -144,7 +149,7 @@
     "directory": "experiments/the-illuminator",
     "documentationId": "doc-illuminator",
     "prototypeId": "",
-    "status": "Active",
+    "status": "Abandoned",
     "createdDate": "2024-11-01",
     "lastModified": "2024-12-16",
     "tags": ["ai", "ml", "embroidery", "craft", "photo"],
@@ -166,12 +171,17 @@
     "status": "Archived",
     "createdDate": "2024-11-16",
     "lastModified": "2024-12-16",
-    "tags": ["ai-ml", "calendar-integration", "event-parsing", "unstructured-data", "working-parents", "productivity"],
+    "tags": ["ai-ml", "calendar-integration", "event-parsing", "unstructured-data", "working-parents", "productivity", "sandwich-generation", "caregivers"],
     "scores": {
       "businessOpportunity": 4,
-      "personalImpact": 4,
+      "personalImpact": 5,
       "competitiveAdvantage": 3,
       "platformCost": 3,
-      "socialImpact": 4
+      "socialImpact": 5
+    },
+    "scoreRationale": {
+      "businessOpportunity": "Market includes working parents, sandwich generation (caring for kids and aging parents), and caregivers. I'm both; demand is broad and growing as baby boomers age.",
+      "personalImpact": "I struggle with this every day and will do so for another ten years until my kids are old enough to do it themselves.",
+      "socialImpact": "The experience of working parents right now is grim, and baby boomers are aging. Reducing calendar/email overload for parents and caregivers has high social value."
     }
   }]

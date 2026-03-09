@@ -1,0 +1,9 @@
+{
+  "name": "best-day-ever-landing",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Best Day Ever phase 1 landing (validation) — static site for Vercel",
+  "scripts": {
+    "build": "node scripts/build.js"
+  }
+}
