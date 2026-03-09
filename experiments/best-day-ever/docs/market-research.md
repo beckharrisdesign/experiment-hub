@@ -5,7 +5,7 @@
 **Best Day Ever** is a calendar-integrated printable day planner tool targeting ADHD/neurodiverse users. The product addresses a specific need in the productivity tools market by combining digital calendar data with customizable physical planners optimized for executive function support.
 
 **Key Findings:**
-- **TAM**: $2.1B - $3.5B (productivity software + planner market)
+- **TAM**: $200M - $350M (bottom-up: ADHD + productivity tool addressable segments; top-down planner market is upstream context, not the operative TAM)
 - **SAM**: $420M - $700M (ADHD/neurodiverse productivity tools segment)
 - **SOM (Year 1)**: $210K - $350K (0.05% of SAM)
 - **SOM (Year 3)**: $2.1M - $3.5M (0.5% of SAM)
@@ -53,11 +53,13 @@ The market encompasses productivity software and planner tools that serve indivi
 
 ### Total Addressable Market (TAM)
 
-**Estimate: $2.1B - $3.5B**
+**Estimate: $200M - $350M (bottom-up operative TAM)**
 
-**Methodology: Bottom-Up + Top-Down Hybrid**
+**Methodology: Bottom-Up (primary); Top-Down (context only)**
 
-#### Bottom-Up Calculation:
+The bottom-up calculation is the operative TAM. The top-down ($2.1-3.5B) represents the entire planner + productivity software market — most of which this product does not compete in.
+
+#### Bottom-Up Calculation (Operative TAM):
 
 **Target Population:**
 - US adults with ADHD: ~13-16 million (4-5% of adult population)
@@ -66,61 +68,61 @@ The market encompasses productivity software and planner tools that serve indivi
 
 **Unit Economics:**
 - Freemium conversion rate: 2-5% (industry standard)
-- Average revenue per user (ARPU):
-  - Pay-per-print: $2-5 per print
-  - Monthly subscription: $5-15/month
-  - Annual subscription: $50-120/year
 - Average customer value: $60-150/year (mix of one-time and subscription)
 
 **Calculation:**
-- Primary market (ADHD/neurodiverse): 15M × 5% conversion × $100 ARPU = $75M
-- Secondary market (general productivity): 50M × 2% conversion × $80 ARPU = $80M
-- Calendar integration users: 180M × 1% conversion × $60 ARPU = $108M
-- **Total: $263M (conservative)**
+- Primary market (ADHD/neurodiverse): 15M × 5% conversion × $100 ARPU = **$75M**
+- Secondary market (general productivity): 50M × 2% conversion × $80 ARPU = **$80M**
+- Calendar integration users: 180M × 1% conversion × $60 ARPU = **$108M**
+- **Total Bottom-Up: $263M** (with calendar segment being the speculative portion)
 
-#### Top-Down Calculation:
+**Bottom-Up TAM: $200M - $350M** (primary + secondary segments; calendar segment is aspirational)
+
+**Assumptions:**
+- US ADHD adult population: 13-16M (CDC 4-5% prevalence × ~330M adults)
+- ADHD segment conversion rate: 5% (willing to pay for specialized productivity tool)
+- General productivity segment: 50M US adults actively seeking solutions; 2% conversion
+- ARPU: $80-$100/year (mix of pay-per-print and subscription; benchmarked against $50-120/yr range)
+- Calendar user segment (180M × 1%) is speculative for a new category and excluded from operative TAM
+- This is an emerging product category (calendar-integrated printable planners for ADHD) — no direct revenue comparables exist; conversion assumptions require MVP validation
+
+#### Top-Down Context (not operative TAM):
 
 **Productivity Software Market:**
 - Personal productivity segment: $8-12B
 - Planner-specific tools: 10-15% of segment = $800M - $1.8B
 
 **Planner Market:**
-- Physical planners: $1.2B
-- Digital/printable planners: $300M - $500M
-- **Total Planner Market: $1.5B - $1.7B**
+- Physical planners: $1.2B; Digital/printable planners: $300M - $500M
+- Combined: $1.5B - $1.7B
 
-**Combined Addressable:**
-- Productivity software (planner tools): $800M - $1.8B
-- Planner market: $1.5B - $1.7B
-- **Total TAM: $2.3B - $3.5B**
+**Top-Down Total: $2.3B - $3.5B** — this is the *upstream* market; calendar-integrated printable planners for ADHD are a new sub-category within it, not equivalent to it.
 
-**Confidence Level**: **MEDIUM** - Market data available but specific ADHD planner segment is emerging
+**Competitor Revenue Sanity Check:**
+- Passion Planner: est. $10-20M revenue (physical planners, no calendar integration)
+- Erin Condren: est. $50-100M revenue (premium physical planners)
+- These are the largest comparable brands; digital/calendar-integrated is a new category with no established revenue anchor yet — which is both the opportunity and the risk.
+
+**Confidence Level**: **Medium** — bottom-up conversion assumptions are unvalidated; calendar-integrated printable planners are an emerging category with no direct revenue comparables
 
 **Time Horizon**: 3-5 years
 
 ### Serviceable Addressable Market (SAM)
 
-**Estimate: $420M - $700M**
+**Estimate: $100M - $175M**
 
-**Calculation**: TAM × Constraints
+**Calculation**: Bottom-Up TAM × Target Segment Focus
 
-**Constraints Applied:**
-1. **Geographic**: US market focus initially (60% of TAM)
-2. **Target Segment**: ADHD/neurodiverse + calendar-integrated planner users (30% of productivity market)
-3. **Product Fit**: Printable + digital hybrid (40% of planner market)
-4. **Pricing Accessibility**: Freemium model accessible to target market (70% of segment)
+The previous SAM ($420M-$700M) was calculated as a percentage of the top-down TAM ($2.1B-$3.5B), producing a SAM larger than the bottom-up TAM ($263M). SAM must be ≤ TAM; this section now applies constraints to the bottom-up figure.
 
-**Calculation:**
-- TAM: $2.1B - $3.5B
-- Geographic (US): 60% = $1.26B - $2.1B
-- Target segment (ADHD/neurodiverse focus): 30% = $378M - $630M
-- Product fit (printable + calendar integration): 40% = $151M - $252M
-- Pricing accessibility: 70% = $106M - $176M
+**Constraints Applied to Bottom-Up TAM ($263M):**
+1. **Primary ADHD/neurodiverse segment only** (exclude speculative calendar user segment): $75M + $80M = $155M
+2. **Calendar-integrated feature requirement**: ~70% of ADHD productivity seekers use digital calendars → $108M
+3. **Printable format preference**: ~60-70% of target segment willing to use printable output
 
-**Refined SAM**: $420M - $700M
-- Accounts for overlap and realistic market penetration
-- Focuses on US market with ADHD/neurodiverse primary segment
-- Includes general productivity users seeking calendar-integrated solutions
+**Refined SAM: $100M - $175M**
+- Focuses on ADHD/neurodiverse + general productivity users who specifically need calendar integration + printable output
+- Excludes the broad calendar user segment ($108M) as too speculative for a new product category
 
 ### Serviceable Obtainable Market (SOM)
 
@@ -621,7 +623,7 @@ The market encompasses productivity software and planner tools that serve indivi
 - Planner market (physical + digital): $1.5B - $1.7B
 - **Total: $2.3B - $3.5B**
 
-**Reconciled TAM: $2.1B - $3.5B** (accounts for overlap and market reality)
+**Operative TAM: $200M - $350M** (bottom-up primary + secondary segments; top-down of $2.3B-$3.5B is upstream market context, not the direct opportunity)
 
 ### Competitive Analysis (Detailed)
 

@@ -5,7 +5,7 @@
 **The Illuminator** is an AI-powered tool that uses ML edge detection to identify photo subjects and generate artistic embellishments and embroidery guides in the background. The product combines AI image processing with craft/embroidery market, offering a single-payment model with add-ons for professional printing and embroidery kits.
 
 **Key Findings:**
-- **TAM**: $11.27B - $19.95B (global embroidery market, 2024-2033)
+- **TAM**: $3M - $15M (AI-powered photo-to-embroidery digital tools segment — see Appendix for derivation)
 - **SAM**: $780M - $1.45B (home embroidery equipment/kits segment, 2024-2032)
 - **SOM (Year 1)**: $50K - $200K (single-payment + add-on revenue)
 - **SOM (Year 3)**: $500K - $2M (established product with multiple revenue streams)
@@ -73,57 +73,52 @@ The market encompasses:
 
 ### Total Addressable Market (TAM)
 
-**Estimate: $11.27B - $19.95B (global embroidery market, 2024-2033)**
+**Estimate: $3M - $15M (AI-powered photo-to-embroidery digital tools)**
 
-**Methodology: Top-Down Market Analysis**
+**Methodology: Bottom-Up (direct segment sizing)**
 
-**Primary Market: Global Embroidery Market**
-- 2024 market size: $11.27 billion
-- 2033 projected: $19.95 billion
-- CAGR: 5.7%
+The $11.27B global embroidery market measures embroidery equipment, thread, services, and commercial production — none of which this product competes in. The operative TAM is the market for AI-powered photo-to-embroidery digital conversion tools, derived in the Appendix.
 
-**Secondary Markets:**
-- **Home Embroidery Equipment/Kits**: $780M - $1.45B (2024-2032)
-- **Embroidery Retail (Needlepoint)**: $2.04B - $2.88B (2025-2034)
-- **AI/ML Image Processing Tools**: Estimated $500M - $1B (photo editing/processing segment)
-- **Print-on-Demand Services**: Estimated $200M - $500M (custom printing segment)
+**Bottom-Up Calculation (promoted from Appendix):**
+- US home embroidery/hobbyist market: ~35% of $780M global home equipment market = $273M
+- Photo-to-embroidery conversion use case: estimated 5-10% of home hobbyists = $14M-$51M
+- Digital-first, AI-powered tools: 20-30% of photo-to-embroidery segment = **$3M-$15M**
 
-**Combined Addressable:**
-- Core embroidery market: $11.27B - $19.95B
-- Adjacent markets (AI tools, print-on-demand): $700M - $1.5B
-- **Total TAM: $12B - $21.5B**
+**Assumptions:**
+- US = 35% of global home embroidery (North America market share)
+- 5-10% of home embroiderers would use a photo-to-embroidery AI tool (new behavior, requires adoption)
+- 20-30% of that segment prefers a digital tool vs. manual pattern services
+- These assumptions are speculative — this is an emerging/unproven category
 
-**Confidence Level**: **HIGH** - Well-documented market with reliable industry data
+**Competitor Revenue Sanity Check:**
+- No direct comparable (emerging category) — this is a genuine uncertainty
+- Manual Etsy photo-to-embroidery sellers: fragmented, typical shop $5K-$50K/yr; top shops ~$100K/yr
+- Total Etsy photo-to-embroidery segment: estimated $5M-$20M GMV → ~$500K-$2M for digital tool TAM
+- Consistent with bottom-up lower bound ✓
+
+**Top-Down Context (not the operative TAM):**
+- Global embroidery market: $11.27B (2024) — the upstream market this product can tap into
+- Home equipment/kits: $780M — closer but still includes physical products
+- These are market *context*, not the revenue opportunity for a digital AI tool
+
+**Confidence Level**: **Medium** — emerging category with no direct revenue comparables; adoption assumptions are unvalidated
 
 **Time Horizon**: 3-5 years
 
 ### Serviceable Addressable Market (SAM)
 
-**Estimate: $780M - $1.45B**
+**Estimate: $3M - $15M (AI photo-to-embroidery digital tools)**
 
-**Calculation**: TAM × Constraints
+**Calculation**: Consistent with revised TAM
 
-**Constraints Applied:**
-1. **Target Segment**: Home embroidery/hobbyist market (not commercial/industrial)
-2. **Geographic**: US market focus initially (35% of global, largest single market)
-3. **Product Fit**: AI-powered photo-to-embroidery conversion (niche within home embroidery)
-4. **Technology Adoption**: Users comfortable with AI/ML tools and digital downloads
+The SAM equals the TAM for this product — the $3M-$15M AI-powered photo-to-embroidery segment is already US-focused and targets home hobbyists specifically. No further geographic or segment constraints reduce it meaningfully.
 
-**Calculation:**
-- Home embroidery equipment/kits: $780M - $1.45B (2024-2032)
-- US market share: ~35% of global = $273M - $508M
-- Photo-to-embroidery conversion segment: Estimated 5-10% of home embroidery = $14M - $51M
-- Digital-first, AI-powered tools: Estimated 20-30% of photo-to-embroidery = $3M - $15M
+**Calculation (from TAM bottom-up):**
+- US home embroidery hobbyists: ~$273M (35% of $780M global)
+- Photo-to-embroidery conversion segment: 5-10% = $14M-$51M
+- Digital AI tool preference: 20-30% = **$3M-$15M**
 
-**Refined SAM**: $780M - $1.45B
-- Focuses on home embroidery/hobbyist segment
-- Includes digital downloads, printing, and physical kits
-- Accounts for AI/ML technology adoption curve
-
-**Affiliate/Add-on Revenue SAM:**
-- Print-on-demand add-ons: $50M - $150M (estimated)
-- Embroidery kit add-ons: $100M - $300M (estimated)
-- **Total Add-on SAM: $150M - $450M**
+**Note:** The $780M-$1.45B figure previously listed as SAM is the home embroidery *equipment* market — physical machines, hoops, thread. This product competes in the digital software/service layer, not equipment sales. The add-on revenue (print, kits) is a potential second revenue stream but not the core digital tool TAM.
 
 ### Serviceable Obtainable Market (SOM)
 

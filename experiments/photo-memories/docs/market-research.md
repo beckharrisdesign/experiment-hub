@@ -97,7 +97,7 @@ The market encompasses:
 
 **Total TAM**: $2.8B - $4.5B (photo books + personalized prints + digital photo tools)
 
-**Confidence Level**: **HIGH** - Well-documented markets with reliable industry data
+**Confidence Level**: **Medium-High** - Photo book market is well-documented (Shutterfly $1.2B validates scale); consumer behavior stats (68% want to print, etc.) are survey-based estimates without primary source links
 
 **Time Horizon**: 3-5 years
 

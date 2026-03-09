@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-The Simple Seed Organizer validation experiment targets a clear market opportunity: home gardeners who want simple seed inventory tracking without the complexity of garden planning features. The US home gardening market is $15.78B and growing at 5.92% CAGR, with 80% of households participating in gardening. Our TAM estimate is $162M-$243M, with a realistic Year 3 SOM of $1.6M-$2.4M at 1% market share. The competitive landscape shows most solutions focus on planning/design, leaving a clear niche for a simple inventory-only tool. **Recommendation: GO** - proceed with validation test to measure buying intent before building MVP.
+The Simple Seed Organizer validation experiment targets a clear market opportunity: home gardeners who want simple seed inventory tracking without the complexity of garden planning features. The US home gardening market is $15.78B and growing at 5.92% CAGR, with 80% of households participating in gardening. Our competitor-anchored TAM estimate is $15M-$40M (revised from an initial bottom-up of $162M-$243M, which overstated the actual paying market by ~10×), with a realistic Year 3 SOM of $500K-$1.5M. The competitive landscape shows most solutions focus on planning/design, leaving a clear niche for a simple inventory-only tool. **Recommendation: GO** - proceed with validation test to measure buying intent before building MVP.
 
 ## Market Overview
 
@@ -54,6 +54,18 @@ The Simple Seed Organizer targets the intersection of:
 - **TAM Conservative**: 10.8M × $15 = **$162M**
 - **TAM Optimistic**: 16.2M × $15 = **$243M**
 
+**Competitor Revenue Sanity Check (Revised TAM)**:
+
+The bottom-up figure implies 10.8M-16.2M paying users — 10-15% of all gardening households. Observable competitor data challenges this:
+
+- **SeedTime** (~$109/yr): App Store review count suggests ~200K-500K installs; at 5-10% paid conversion → 10K-50K paying users → **~$1M-$5.5M ARR**
+- **Planter** (~$12/yr): Similar review volume → **~$500K-$2M ARR**
+- If 2-3 main players together represent 30-50% of the paying market → **total market: $3M-$20M**
+
+**Revised TAM: $15M - $40M** (competitor-anchored; upper end assumes market grows 2-3× from current paying base with the right product)
+
+The 10-15% addressable assumption overstates the paying market by ~10×. This is the operative TAM for near-term planning.
+
 **Data Sources**:
 
 - US Census Bureau (household statistics)
@@ -68,38 +80,36 @@ The Simple Seed Organizer targets the intersection of:
 - Market includes both new and existing seed collectors
 - Mobile-first approach reaches smartphone-owning gardeners
 
-**Confidence Level**: Medium-High
+**Confidence Level**: **Medium**
 
-- Strong data on total market size
-- Reasonable assumptions about addressable segment
+- Competitor ARR is estimated from public signals (App Store reviews), not confirmed financials
+- The 10-15% addressable assumption is the key uncertainty; validation test directly addresses it
 - Pricing validated against competitors
 
 **Time Horizon**: 3-5 years
 
 ### Serviceable Addressable Market (SAM)
 
-**Estimate**: $162M - $243M
+**Estimate**: $8M - $20M
 
-**Calculation**: TAM × Geographic Constraints
+**Calculation**: TAM × Behavioral Constraints
 
-**Constraints**:
+**Constraints Applied**:
 
-- **Geographic**: US market focus initially (English-speaking, established payment infrastructure)
-- **Technical**: Mobile/web app accessible to smartphone users
-- **Regulatory**: No significant barriers for simple inventory app
-- **Distribution**: Direct-to-consumer via app stores and web
+- **Serious Seed Collectors**: Of all gardening households, only those with 20+ seed packets have enough inventory to justify a dedicated tracking tool. Estimated 20-25% of the TAM target segment.
+  - 10.8M × 22% = ~2.4M qualifying households
+- **Willing to Pay vs. Free Alternatives**: Free tools (Notes app, spreadsheets, SeedSync) adequately serve casual users. Estimated 40-50% of serious collectors would pay for a meaningfully better experience.
+  - 2.4M × 45% = ~1.1M households
+- **ARPU**: $15/year (unchanged)
 
-**Rationale**:
+**SAM**: ~1.1M × $15 = **~$16M** (range: $8M - $20M)
 
-- US represents 100% of initial market focus
-- No geographic limitations for digital product
-- Payment infrastructure well-established
-- SAM equals TAM for initial launch
+**Confidence Level**: **Medium** — the "serious collector" and "willing to pay" filters are assumptions; the fake door test directly measures the second one.
 
 ### Serviceable Obtainable Market (SOM)
 
-**Year 1 Estimate**: $162K - $243K (0.1% of SAM)
-**Year 3 Estimate**: $1.6M - $2.4M (1% of SAM)
+**Year 1 Estimate**: $50K - $150K (0.3-1.9% of SAM)
+**Year 3 Estimate**: $500K - $1.5M (2.5-19% of SAM)
 
 **Market Share Assumption**:
 
@@ -119,8 +129,8 @@ The Simple Seed Organizer targets the intersection of:
 
 **Growth Trajectory**:
 
-- Year 1: 10,800 - 16,200 users (0.1% of 10.8M-16.2M)
-- Year 3: 108,000 - 162,000 users (1% of 10.8M-16.2M)
+- Year 1: 3,300 - 10,000 users (0.3-1.9% of SAM)
+- Year 3: 33,000 - 100,000 users (3-12% of SAM)
 - Revenue: Users × $15/year ARPU
 
 ## Target Market Segments
@@ -335,15 +345,15 @@ The Simple Seed Organizer targets the intersection of:
 
 ## Recommendations
 
-### Market Opportunity Assessment: **HIGH**
+### Market Opportunity Assessment: **MEDIUM**
 
-The market opportunity is strong:
+The market opportunity is real but smaller than initial estimates:
 
-- Large addressable market ($162M-$243M TAM)
+- Focused addressable market ($15M-$40M TAM, competitor-anchored)
 - Clear underserved niche (simple inventory vs. complex planning)
 - Growing market with sustained interest
 - Low entry barriers
-- Realistic path to $1.6M-$2.4M in Year 3
+- Realistic path to $500K-$1.5M in Year 3
 
 ### Go/No-Go Recommendation: **GO**
 
@@ -419,15 +429,15 @@ The market opportunity is strong:
 
 **TAM Calculation**:
 
-- Bottom-up approach: Households × Gardening % × Addressable % × ARPU
-- Conservative assumptions (10% addressable, $15 ARPU)
-- Optimistic scenario (15% addressable, $15 ARPU)
+- Initial bottom-up: Households × Gardening % × Addressable % × ARPU = $162M-$243M
+- Revised using competitor revenue anchor: SeedTime + Planter estimated ARR implies $3M-$20M total current paying market; operative TAM = **$15M-$40M** (includes growth potential)
+- The 10-15% addressable assumption overstates paying market by ~10×
 
 **SAM Calculation**:
 
-- Geographic constraint: US market focus
-- No other significant constraints for digital product
-- SAM = TAM for initial launch
+- Filtered to serious seed collectors (20+ packets): ~22% of initial target
+- Further filtered to those willing to pay vs. use free alternatives: ~45%
+- SAM: ~$8M-$20M (subset of TAM)
 
 **SOM Calculation**:
 
@@ -453,7 +463,7 @@ The market opportunity is strong:
 
 **Confidence Levels**:
 
-- **TAM/SAM**: Medium-High (strong market data, reasonable assumptions)
+- **TAM/SAM**: Medium (competitor-anchored; initial bottom-up overstated by ~10×)
 - **SOM**: Medium (depends on execution, competitive response, market adoption)
 - **Competitive Analysis**: High (clear competitive landscape, well-documented)
 
@@ -461,27 +471,29 @@ The market opportunity is strong:
 
 ### Detailed Calculations
 
-**TAM Conservative**:
+**TAM Initial Bottom-Up** (overstates paying market):
 
 - 135M households × 80% garden = 108M gardening households
 - 108M × 10% addressable = 10.8M target households
-- 10.8M × $15/year = $162M TAM
+- 10.8M × $15/year = $162M (~10× too large vs. competitor data)
 
-**TAM Optimistic**:
+**TAM Competitor-Anchored (Operative)**:
 
-- 135M households × 80% garden = 108M gardening households
-- 108M × 15% addressable = 16.2M target households
-- 16.2M × $15/year = $243M TAM
+- SeedTime estimated ARR: $1M-$5.5M; Planter: $0.5M-$2M
+- Known players estimated at 30-50% of total paying market
+- **Revised TAM: $15M-$40M**
+
+**SAM**:
+
+- TAM × serious collectors (22%) × willing to pay (45%) = ~$16M (range $8M-$20M)
 
 **SOM Year 1**:
 
-- 10.8M × 0.1% = 10,800 users × $15 = $162K
-- 16.2M × 0.1% = 16,200 users × $15 = $243K
+- 3,300-10,000 users × $15 = $50K-$150K
 
 **SOM Year 3**:
 
-- 10.8M × 1% = 108,000 users × $15 = $1.62M
-- 16.2M × 1% = 162,000 users × $15 = $2.43M
+- 33,000-100,000 users × $15 = $500K-$1.5M
 
 ### Additional Market Data
 
