@@ -83,6 +83,7 @@ export default function SeedDetailPage() {
       onClose={() => router.push('/')}
       onEdit={() => router.push(`/seeds/${id}/edit`)}
       onDelete={handleDelete}
+      onUpdate={(updated) => setSeed(updated)}
       asPage
     />
   );

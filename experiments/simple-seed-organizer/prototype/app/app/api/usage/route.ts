@@ -29,7 +29,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { tier, currentPeriodEnd } = await getSubscriptionInfo(user.email ?? undefined);
+  const { tier, currentPeriodEnd } = await getSubscriptionInfo(user.id, supabase, user.email ?? undefined);
   const resetsAt = currentPeriodEnd ?? getFirstOfNextMonth();
 
   const [seedCount, aiCompletions] = await Promise.all([

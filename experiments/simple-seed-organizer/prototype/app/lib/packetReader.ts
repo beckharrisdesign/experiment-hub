@@ -67,7 +67,7 @@ export async function extractTextFromImage(imageFile: File | string): Promise<Pa
 function cleanOCRText(text: string): string {
   // Remove excessive whitespace and special characters that OCR often misreads
   return text
-    .replace(/[|\\\/]/g, ' ') // Replace common OCR mistakes
+    .replace(/[|\\]/g, ' ') // Replace common OCR mistakes (preserve / for fractions like 1/4)
     .replace(/[=+_~-]{2,}/g, ' ') // Replace multiple special chars
     .replace(/\s+/g, ' ') // Normalize whitespace
     .trim();
@@ -195,18 +195,18 @@ export function parsePacketText(text: string): ExtractedSeedData {
     // Also handle OCR mistakes like "SEEDS" with extra characters
     quantity: /\b(\d+)\s*(?:seeds?|pack|count|pcs?|seed)\b/i,
     
-    // Days to germination (patterns like "7-14 days", "10-20 days to germinate")
-    // Handle OCR mistakes with special chars
-    daysToGermination: /(\d+)\s*[-–~=]?\s*(\d+)?\s*(?:days?\s*)?(?:to\s*)?(?:germinat|germ)/i,
-    
-    // Days to maturity (patterns like "70-80 days", "60 days to maturity")
-    daysToMaturity: /(\d+)\s*[-–~=]?\s*(\d+)?\s*(?:days?\s*)?(?:to\s*)?(?:matur|harvest)/i,
+    // Days to germination — matches both "10-20 days to germinate" and "Days to Germination: 10-20"
+    daysToGermination: /(?:germinat\w*[^0-9]+(\d+)\s*[-–~=]\s*(\d+)|germinat\w*[^0-9]+(\d+)|(\d+)\s*[-–~=]?\s*(\d+)?\s*days?\s*(?:to\s*)?(?:germinat|germ))/i,
+
+    // Days to maturity — matches both "70-80 days to maturity" and "Days to Maturity: 70-80"
+    daysToMaturity: /(?:(?:matur|harvest)\w*[^0-9]+(\d+)\s*[-–~=]\s*(\d+)|(?:matur|harvest)\w*[^0-9]+(\d+)|(\d+)\s*[-–~=]?\s*(\d+)?\s*days?\s*(?:to\s*)?(?:matur|harvest))/i,
     
     // Planting depth (patterns like "1/4 inch", "0.5\"", "1/2\" deep")
     plantingDepth: /(\d+\/\d+|\d+\.?\d*)\s*(?:inch|in|"|cm|inches?)\s*(?:deep)?/i,
     
     // Spacing (patterns like "12 inches", "12-18 inches apart", "12\" spacing")
-    spacing: /(\d+)\s*[-–~=]?\s*(\d+)?\s*(?:inch|in|"|cm|inches?)\s*(?:apart|spacing)?/i,
+    // Negative lookbehind prevents matching the "4" in fractions like "1/4 inch"
+    spacing: /(?<!\/)(\d+)\s*[-–~=]?\s*(\d+)?\s*(?:inch|in|"|cm|inches?)\s*(?:apart|spacing)?/i,
     
     // Sun requirements - handle OCR variations
     sunRequirement: /\b(full\s*sun|partial\s*shade|full\s*shade|part\s*shade|sun|shade)\b/i,
@@ -270,15 +270,21 @@ export function parsePacketText(text: string): ExtractedSeedData {
   }
   
   // Try to extract days to germination
+  // Pattern groups: (1,2) label-first range | (3) label-first single | (4,5) value-first
   const germMatch = fullText.match(patterns.daysToGermination);
   if (germMatch) {
-    data.daysToGermination = germMatch[2] ? `${germMatch[1]}-${germMatch[2]}` : germMatch[1];
+    const n1 = germMatch[1] ?? germMatch[3] ?? germMatch[4];
+    const n2 = germMatch[2] ?? germMatch[5];
+    if (n1) data.daysToGermination = n2 ? `${n1}-${n2}` : n1;
   }
-  
+
   // Try to extract days to maturity
+  // Pattern groups: (1,2) label-first range | (3) label-first single | (4,5) value-first
   const maturityMatch = fullText.match(patterns.daysToMaturity);
   if (maturityMatch) {
-    data.daysToMaturity = maturityMatch[2] ? `${maturityMatch[1]}-${maturityMatch[2]}` : maturityMatch[1];
+    const n1 = maturityMatch[1] ?? maturityMatch[3] ?? maturityMatch[4];
+    const n2 = maturityMatch[2] ?? maturityMatch[5];
+    if (n1) data.daysToMaturity = n2 ? `${n1}-${n2}` : n1;
   }
   
   // Try to extract planting depth

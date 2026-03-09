@@ -477,6 +477,30 @@ The market is underserved: most solutions are either too complex (garden plannin
 - If retention < 40% → Analyze why, iterate on core features, or consider pivot
 - If revenue path unclear → Reassess pricing, positioning, or market fit
 
+## Launch Readiness Checklist
+
+Small/tiny items required before the app is production-ready. These are not product features — they are baseline requirements for any launched web product.
+
+| Item | Effort | Status | Notes |
+|---|---|---|---|
+| Password reset flow | Small | Done | `/forgot-password` + `/reset-password` via Supabase email link |
+| Legal placeholder pages | Tiny | Done | `/terms` and `/privacy` — placeholder content, update before launch |
+| SEO meta tags | Tiny | Done | `<title>`, `description`, Open Graph, Twitter card in `layout.tsx` |
+| Custom 404 page | Tiny | Done | `app/not-found.tsx` — on-brand error page |
+| `robots.txt` + `sitemap.xml` | Tiny | Done | Via Next.js `app/robots.ts` and `app/sitemap.ts` |
+
+### Legal Pages
+- `/terms` — Terms of Service placeholder. Must be updated with real legal content before charging users.
+- `/privacy` — Privacy Policy placeholder. Required for Stripe, Google Analytics, and App Store submissions. Must cover: data collected, Supabase storage, GA analytics, Stripe payments.
+
+### SEO
+- Title and description set per-page where relevant.
+- Open Graph tags enable link previews in social/messaging apps.
+- `robots.txt` disallows private app routes (`/profile`, `/seeds`, `/add`).
+- `sitemap.xml` includes public pages only: `/`, `/pricing`, `/terms`, `/privacy`.
+
+---
+
 ## Market Context
 
 **Market Opportunity** (from market research):

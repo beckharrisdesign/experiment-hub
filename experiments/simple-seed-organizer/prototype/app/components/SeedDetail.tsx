@@ -11,6 +11,8 @@ interface SeedDetailProps {
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  /** Called with the updated seed after AI enrichment succeeds */
+  onUpdate?: (seed: Seed) => void;
   /** When true, renders as page content (no fixed overlay) for routed views */
   asPage?: boolean;
 }
@@ -41,7 +43,14 @@ function formatDateString(dateString: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function SeedDetail({ seed, onClose, onEdit, onDelete, asPage }: SeedDetailProps) {
+export function SeedDetail({ seed: seedProp, onClose, onEdit, onDelete, onUpdate, asPage }: SeedDetailProps) {
+  // Local copy so AI enrichment updates the view immediately
+  const [seed, setSeed] = useState<Seed>(seedProp);
+  const [enriching, setEnriching] = useState(false);
+  const [enrichedFields, setEnrichedFields] = useState<string[]>([]);
+
+  useEffect(() => { setSeed(seedProp); }, [seedProp]);
+
   const age = getSeedAge(seed);
   const ageLabel = seed.year ? getAgeLabel(age) : null;
   const [plantingGuidance, setPlantingGuidance] = useState<ReturnType<typeof getPlantingGuidance> | null>(null);
@@ -49,6 +58,33 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete, asPage }: SeedDeta
   useEffect(() => {
     setPlantingGuidance(getPlantingGuidance(seed));
   }, [seed]);
+
+  const hasMissingGrowingData =
+    !seed.daysToGermination || !seed.daysToMaturity;
+
+  const handleEnrich = async () => {
+    setEnriching(true);
+    try {
+      const res = await fetch('/api/seeds/enrich', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ seedId: seed.id }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        alert(json.message || 'Enrichment failed');
+        return;
+      }
+      setSeed(json.seed);
+      setEnrichedFields(json.enriched ?? []);
+      onUpdate?.(json.seed);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Enrichment failed');
+    } finally {
+      setEnriching(false);
+    }
+  };
 
   const wrapperClass = asPage
     ? 'min-h-screen w-full bg-white flex flex-col pt-20 pb-24'
@@ -267,6 +303,34 @@ export function SeedDetail({ seed, onClose, onEdit, onDelete, asPage }: SeedDeta
                   value={seed.customExpirationDate ? formatDateString(seed.customExpirationDate) : undefined} 
                 />
               </div>
+
+              {/* AI enrichment */}
+              {hasMissingGrowingData && (
+                <div className="pt-3">
+                  {enrichedFields.length > 0 ? (
+                    <p className="text-xs text-[#16a34a] text-center">
+                      ✓ Growing data filled by AI
+                    </p>
+                  ) : (
+                    <button
+                      onClick={handleEnrich}
+                      disabled={enriching}
+                      className="w-full py-2 text-xs font-medium text-[#16a34a] border border-[#bbf7d0] rounded-lg hover:bg-[#f0fdf4] transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    >
+                      {enriching ? (
+                        <>
+                          <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          Enriching…
+                        </>
+                      ) : (
+                        'Fill gaps with AI'
+                      )}
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* Delete Button - Always at bottom */}
               <div className="mt-auto pt-4">

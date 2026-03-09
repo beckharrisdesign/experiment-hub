@@ -5,10 +5,31 @@ import { AuthProvider } from "@/lib/auth-context";
 import { AppShell } from "@/components/AppShell";
 
 const GA_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://simple-seed-organizer.vercel.app';
 
 export const metadata: Metadata = {
-  title: "Simple Seed Organizer",
-  description: "Track your seed collection simply",
+  title: {
+    default: "Simple Seed Organizer",
+    template: "%s | Simple Seed Organizer",
+  },
+  description:
+    "The simplest way to track your seed collection. Know what you own, what's still viable, and avoid rebuying seeds you already have.",
+  keywords: ["seed organizer", "seed inventory", "seed tracker", "home gardening", "seed collection"],
+  metadataBase: new URL(siteUrl),
+  openGraph: {
+    type: "website",
+    siteName: "Simple Seed Organizer",
+    title: "Simple Seed Organizer",
+    description:
+      "The simplest way to track your seed collection. Know what you own, what's still viable, and avoid rebuying seeds you already have.",
+    url: siteUrl,
+  },
+  twitter: {
+    card: "summary",
+    title: "Simple Seed Organizer",
+    description:
+      "The simplest way to track your seed collection. Know what you own, what's still viable, and avoid rebuying seeds you already have.",
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ViewMode } from '@/types/seed';
 
 interface BottomNavProps {
@@ -11,6 +13,7 @@ interface BottomNavProps {
 }
 
 export function BottomNav({ activeView, onViewChange, onAddClick, canAddSeed = true }: BottomNavProps) {
+  const pathname = usePathname();
   const allNavItems: { view: ViewMode; label: string; icon: React.ReactNode }[] = [
     {
       view: 'type',
@@ -94,6 +97,19 @@ export function BottomNav({ activeView, onViewChange, onAddClick, canAddSeed = t
             <span className="text-xs font-medium">{navItems[1].label}</span>
           </button>
         )}
+
+        {/* Import link */}
+        <Link
+          href="/import"
+          className={`flex flex-col items-center gap-1 px-3 py-1 ${
+            pathname === '/import' ? 'text-[#16a34a]' : 'text-[#6a7282]'
+          }`}
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <span className="text-xs font-medium">Import</span>
+        </Link>
       </div>
     </nav>
   );

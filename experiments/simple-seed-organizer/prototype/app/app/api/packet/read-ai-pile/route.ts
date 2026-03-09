@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { extractSingleImageWithAI } from '@/lib/packetReaderAI';
+import { extractMultipleFromImage } from '@/lib/packetReaderAI';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { incrementAiUsage, getAiUsage } from '@/lib/ai-usage';
 import { canUseAICount } from '@/lib/limits';
@@ -7,14 +7,15 @@ import { getTierForUser } from '@/lib/tier';
 import { rateLimit } from '@/lib/rate-limit';
 
 /**
- * API route to process a single seed packet image (front or back) using AI.
- * Used for parallel extraction - call separately for front and back.
+ * POST /api/packet/read-ai-pile
  *
- * POST /api/packet/read-ai-single
+ * Accepts a single photo of multiple seed packets and returns one
+ * AIExtractedData entry per recognizable packet.
+ *
+ * Counts as 1 AI completion regardless of how many packets are found.
  *
  * Body: FormData with:
  * - image: File (required)
- * - side: 'front' | 'back' (required)
  */
 export async function POST(request: NextRequest) {
   try {
@@ -37,20 +38,8 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const image = formData.get('image') as File | null;
-    const side = formData.get('side') as string | null;
-
-    if (!image || !side) {
-      return NextResponse.json(
-        { error: 'image and side are required' },
-        { status: 400 }
-      );
-    }
-
-    if (side !== 'front' && side !== 'back') {
-      return NextResponse.json(
-        { error: 'side must be "front" or "back"' },
-        { status: 400 }
-      );
+    if (!image) {
+      return NextResponse.json({ error: 'image is required' }, { status: 400 });
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
@@ -61,7 +50,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Gate: check AI limit before calling OpenAI
     const tier = await getTierForUser(user.id, supabase, user.email ?? undefined);
     const aiCompletions = await getAiUsage(supabase, user.id);
     if (!canUseAICount(aiCompletions, tier, 1)) {
@@ -71,27 +59,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const extractedData = await extractSingleImageWithAI(
-      image,
-      side as 'front' | 'back',
-      apiKey
-    );
+    const seeds = await extractMultipleFromImage(image, apiKey);
 
-    // 1 completion per image (non-fatal: extraction succeeds even if tracking fails)
-    if (supabase) {
-      try {
-        await incrementAiUsage(supabase, user.id, 1);
-      } catch (e) {
-        console.warn('[read-ai-single] Usage increment failed:', e);
-      }
+    try {
+      await incrementAiUsage(supabase, user.id, 1);
+    } catch (e) {
+      console.warn('[read-ai-pile] Usage increment failed:', e);
     }
 
     return NextResponse.json({
       success: true,
-      data: extractedData,
+      seeds,
+      count: seeds.length,
     });
   } catch (error) {
-    console.error('Error processing single packet image with AI:', error);
+    console.error('Error processing pile photo with AI:', error);
     return NextResponse.json(
       {
         error: 'Failed to process image',
