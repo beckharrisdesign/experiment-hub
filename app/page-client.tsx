@@ -7,6 +7,7 @@ import Tooltip from "@/components/Tooltip";
 import PrototypeStatus from "@/components/PrototypeStatus";
 import Button from "@/components/Button";
 import ScoreBadge from "@/components/ScoreBadge";
+import { PRDCell, LandingPageCell } from "@/components/WorkflowCells";
 import type { Experiment, Prototype, Documentation } from "@/types";
 import { slugify } from "@/lib/utils";
 import Link from "next/link";
@@ -456,96 +457,21 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                     </>
                   )}
                   <td className="px-2 py-3 text-center border-l-2 border-accent-primary/30">
-                    {(() => {
-                      // PRD column logic
-                      // States 1 & 2: No PRD yet - show Create or blank
-                      if (!experiment.hasMRFile) {
-                        // State 1: Can't create PRD without Market Validation
-                        return null;
-                      }
-                      if (!experiment.hasPRDFile) {
-                        // State 2: Market Validation complete - show Create for PRD
-                        return (
-                          <Button
-                            as="link"
-                            variant="secondary"
-                            href={`/experiments/${slugify(experiment.name)}#prd`}
-                            title="Create PRD"
-                          >
-                            Create
-                          </Button>
-                        );
-                      }
-                      // States 3 & 4: PRD complete - show View
-                      return (
-                        <Button
-                          as="link"
-                          variant="primary"
-                          href={`/experiments/${slugify(experiment.name)}#prd`}
-                          title="View PRD"
-                        >
-                          View
-                        </Button>
-                      );
-                    })()}
+                    <PRDCell
+                      hasMRFile={experiment.hasMRFile ?? false}
+                      hasPRDFile={experiment.hasPRDFile ?? false}
+                      href={`/experiments/${slugify(experiment.name)}#prd`}
+                    />
                   </td>
                   <td className="px-2 py-3 text-center border-l-2 border-accent-primary/30">
-                    {(() => {
-                      // Landing Page column logic
-                      // Can't create landing page without PRD (validation plan comes from PRD)
-                      if (!experiment.hasPRDFile) {
-                        return null;
-                      }
-                      
-                      // If landing page exists in public folder, link directly to it
-                      if (experiment.hasLandingPage) {
-                        return (
-                          <Button
-                            as="a"
-                            variant="primary"
-                            href={`/landing/${slugify(experiment.name)}/index.html`}
-                            target="_blank"
-                            title="View Landing Page"
-                          >
-                            View
-                          </Button>
-                        );
-                      }
-                      
-                      const validationStatus = experiment.validation?.status || 'not_started';
-                      if (validationStatus === 'not_started') {
-                        return (
-                          <Button
-                            as="link"
-                            variant="secondary"
-                            href={`/experiments/${slugify(experiment.name)}#landing`}
-                            title="Plan Landing Page"
-                          >
-                            Plan
-                          </Button>
-                        );
-                      }
-                      if (validationStatus === 'planned') {
-                        return (
-                          <span className="text-xs text-yellow-500 font-medium">Planned</span>
-                        );
-                      }
-                      if (validationStatus === 'live') {
-                        return (
-                          <Button
-                            as="link"
-                            variant="primary"
-                            href={experiment.validation?.url || `/experiments/${slugify(experiment.name)}#landing`}
-                            title="View Landing Page"
-                          >
-                            Live
-                          </Button>
-                        );
-                      }
-                      return (
-                        <span className="text-xs text-green-500 font-medium">Complete</span>
-                      );
-                    })()}
+                    <LandingPageCell
+                      hasPRDFile={experiment.hasPRDFile ?? false}
+                      hasLandingPage={experiment.hasLandingPage ?? false}
+                      validation={experiment.validation}
+                      planHref={`/experiments/${slugify(experiment.name)}#landing`}
+                      viewHref={`/landing/${slugify(experiment.name)}/index.html`}
+                      viewExternal={true}
+                    />
                   </td>
                   <td className="px-2 py-3 text-left border-l-2 border-accent-primary/30">
                     {(() => {

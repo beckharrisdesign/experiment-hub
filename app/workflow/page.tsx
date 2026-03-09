@@ -1,7 +1,7 @@
 import Header from "@/components/Header";
 import Button from "@/components/Button";
-import PrototypeStatus from "@/components/PrototypeStatus";
 import ScoreDisplay from "@/components/ScoreDisplay";
+import { PRDCell, LandingPageCell } from "@/components/WorkflowCells";
 
 export default function WorkflowPage() {
   const states = [
@@ -10,6 +10,7 @@ export default function WorkflowPage() {
       condition: "hasMRFile = false",
       hasMRFile: false,
       hasPRDFile: false,
+      hasLandingPage: false,
       hasPrototypeDir: false,
       description: "Experiment is brand new. Only Market Validation step is available.",
       scores: null,
@@ -19,6 +20,7 @@ export default function WorkflowPage() {
       condition: "hasMRFile = true, hasPRDFile = false",
       hasMRFile: true,
       hasPRDFile: false,
+      hasLandingPage: false,
       hasPrototypeDir: false,
       description: "Market Research & Scoring is complete. PRD creation is now available.",
       scores: {
@@ -31,11 +33,28 @@ export default function WorkflowPage() {
     },
     {
       state: "PRD",
-      condition: "hasPRDFile = true, hasPrototypeDir = false",
+      condition: "hasPRDFile = true, hasLandingPage = false",
       hasMRFile: true,
       hasPRDFile: true,
+      hasLandingPage: false,
       hasPrototypeDir: false,
-      description: "PRD exists. Can view PRD. Prototype creation is now available.",
+      description: "PRD exists. Landing page planning and prototype creation are now available.",
+      scores: {
+        businessOpportunity: 4,
+        personalImpact: 5,
+        competitiveAdvantage: 3,
+        platformCost: 4,
+        socialImpact: 5,
+      },
+    },
+    {
+      state: "Landing Page",
+      condition: "hasPRDFile = true, hasLandingPage = true, hasPrototypeDir = false",
+      hasMRFile: true,
+      hasPRDFile: true,
+      hasLandingPage: true,
+      hasPrototypeDir: false,
+      description: "Landing page built. Can view it and create a prototype.",
       scores: {
         businessOpportunity: 4,
         personalImpact: 5,
@@ -46,11 +65,12 @@ export default function WorkflowPage() {
     },
     {
       state: "Prototype",
-      condition: "hasPRDFile = true, hasPrototypeDir = true",
+      condition: "hasPRDFile = true, hasLandingPage = true, hasPrototypeDir = true",
       hasMRFile: true,
       hasPRDFile: true,
+      hasLandingPage: true,
       hasPrototypeDir: true,
-      description: "Prototype exists. Can view PRD and work with prototype (start/stop server, view prototype).",
+      description: "Prototype exists. Can view PRD, landing page, and work with the prototype (start/stop server).",
       scores: {
         businessOpportunity: 4,
         personalImpact: 5,
@@ -74,36 +94,7 @@ export default function WorkflowPage() {
         </Button>
       );
     }
-    // Show the five-part score display when Market Validation is complete
     return <ScoreDisplay scores={state.scores} />;
-  };
-
-  const renderPRDColumn = (state: typeof states[0]) => {
-    if (!state.hasMRFile) {
-      return null;
-    }
-    if (!state.hasPRDFile) {
-      return (
-        <Button
-          as="link"
-          variant="secondary"
-          href="#prd"
-          title="Create PRD"
-        >
-          Create
-        </Button>
-      );
-    }
-    return (
-      <Button
-        as="link"
-        variant="primary"
-        href="#prd"
-        title="View PRD"
-      >
-        View
-      </Button>
-    );
   };
 
   const renderPrototypeColumn = (state: typeof states[0]) => {
@@ -122,8 +113,6 @@ export default function WorkflowPage() {
         </Button>
       );
     }
-    // For State 4, show a mock PrototypeStatus - we'll need to handle this differently
-    // Since PrototypeStatus needs real data, we'll show a placeholder
     return (
       <div className="flex items-center gap-1.5">
         <Button
@@ -153,7 +142,7 @@ export default function WorkflowPage() {
         <div className="mx-auto max-w-6xl">
           <h1 className="text-3xl font-semibold text-text-primary mb-2">Workflow State Machine</h1>
           <p className="text-text-secondary mb-8">
-            Overview of the experiment workflow states and their criteria. The workflow follows a strict order: <strong>Market Validation → PRD → Prototype</strong>
+            Overview of the experiment workflow states and their criteria. The workflow follows a strict order: <strong>Market Validation → PRD → Landing Page → Prototype</strong>
           </p>
 
           <div className="rounded-lg border border-border bg-background-secondary overflow-hidden">
@@ -164,6 +153,7 @@ export default function WorkflowPage() {
                   <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap">Condition</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap">Market Validation</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap">PRD</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap">Landing Page</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap">Prototype</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap">Description</th>
                 </tr>
@@ -186,7 +176,16 @@ export default function WorkflowPage() {
                       {renderMarketValidationColumn(state) || <span className="text-text-muted">—</span>}
                     </td>
                     <td className="px-4 py-3">
-                      {renderPRDColumn(state) || <span className="text-text-muted">—</span>}
+                      {state.hasMRFile
+                        ? <PRDCell hasMRFile={state.hasMRFile} hasPRDFile={state.hasPRDFile} href="#prd" />
+                        : <span className="text-text-muted">—</span>
+                      }
+                    </td>
+                    <td className="px-4 py-3">
+                      {state.hasPRDFile
+                        ? <LandingPageCell hasPRDFile={state.hasPRDFile} hasLandingPage={state.hasLandingPage} planHref="#landing" viewHref="#landing" />
+                        : <span className="text-text-muted">—</span>
+                      }
                     </td>
                     <td className="px-4 py-3">
                       {renderPrototypeColumn(state) || <span className="text-text-muted">—</span>}
@@ -209,7 +208,7 @@ export default function WorkflowPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-accent-primary mt-0.5">•</span>
-                <span>Prototype actions only appear after PRD is complete</span>
+                <span>Landing Page and Prototype actions only appear after PRD is complete</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-accent-primary mt-0.5">•</span>
@@ -226,4 +225,3 @@ export default function WorkflowPage() {
     </div>
   );
 }
-
