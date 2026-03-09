@@ -201,7 +201,8 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
   return (
     <div className="min-h-screen">
       <Header />
-      <div className="p-8">
+      <div className="px-8 py-8">
+      <div className="mx-auto max-w-screen-xl">
       {/* BHD Labs Intro */}
       <div className="mb-10 max-w-2xl">
         <h1 className="text-3xl font-bold text-text-primary mb-1">BHD Labs</h1>
@@ -567,6 +568,7 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
           </table>
         </div>
       )}
+      </div>
       </div>
     </div>
   );
