@@ -191,6 +191,11 @@ export default function TabsContent({
                   {mr.tam || "N/A"}
                 </div>
                 <div className="mt-2 text-xs text-text-muted">Total Addressable Market</div>
+                {mr.tamDesc && (
+                  <div className="mt-2 text-xs text-text-secondary italic border-t border-border pt-2">
+                    {mr.tamDesc}
+                  </div>
+                )}
               </div>
               <div className="rounded-lg border border-border bg-background-tertiary p-6">
                 <div className="mb-2 text-sm font-medium text-text-secondary">SAM</div>
@@ -198,6 +203,11 @@ export default function TabsContent({
                   {mr.sam || "N/A"}
                 </div>
                 <div className="mt-2 text-xs text-text-muted">Serviceable Addressable Market</div>
+                {mr.samDesc && (
+                  <div className="mt-2 text-xs text-text-secondary italic border-t border-border pt-2">
+                    {mr.samDesc}
+                  </div>
+                )}
               </div>
               <div className="rounded-lg border border-border bg-background-tertiary p-6">
                 <div className="mb-2 text-sm font-medium text-text-secondary">SOM (Year 3)</div>

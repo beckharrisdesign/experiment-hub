@@ -6,9 +6,9 @@
 
 **Key Findings:**
 - **TAM**: $200M - $350M (bottom-up: ADHD + productivity tool addressable segments; top-down planner market is upstream context, not the operative TAM)
-- **SAM**: $420M - $700M (ADHD/neurodiverse productivity tools segment)
-- **SOM (Year 1)**: $210K - $350K (0.05% of SAM)
-- **SOM (Year 3)**: $2.1M - $3.5M (0.5% of SAM)
+- **SAM**: $100M - $175M (ADHD/productivity users seeking calendar-integrated printable output)
+- **SOM (Year 1)**: $210K - $350K (0.12-0.35% of SAM)
+- **SOM (Year 3)**: $2.1M - $3.5M (1.2-2% of SAM)
 
 **Market Opportunity Assessment**: **MEDIUM-HIGH**
 - Strong niche demand with underserved market

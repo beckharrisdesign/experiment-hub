@@ -6,7 +6,7 @@
 
 **Key Findings:**
 - **TAM**: $3M - $15M (AI-powered photo-to-embroidery digital tools segment — see Appendix for derivation)
-- **SAM**: $780M - $1.45B (home embroidery equipment/kits segment, 2024-2032)
+- **SAM**: $3M - $15M (equals TAM — already US-focused hobbyist digital tool niche)
 - **SOM (Year 1)**: $50K - $200K (single-payment + add-on revenue)
 - **SOM (Year 3)**: $500K - $2M (established product with multiple revenue streams)
 

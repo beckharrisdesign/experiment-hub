@@ -6,7 +6,7 @@
 
 **Key Findings:**
 - **TAM**: $3M - $18M (affiliate revenue pool — what this business can earn, not what consumers spend on seeds)
-- **SAM**: $816M - $1.03B (hobbyist home gardener segment, online-focused)
+- **SAM**: $2M - $8M (one seed content site's realistic affiliate revenue ceiling)
 - **SOM (Year 1)**: $50K - $150K (affiliate revenue from seed/supply sales)
 - **SOM (Year 3)**: $500K - $1.5M (established content site with strong SEO)
 

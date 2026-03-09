@@ -4,6 +4,12 @@
 
 The Simple Seed Organizer validation experiment targets a clear market opportunity: home gardeners who want simple seed inventory tracking without the complexity of garden planning features. The US home gardening market is $15.78B and growing at 5.92% CAGR, with 80% of households participating in gardening. Our competitor-anchored TAM estimate is $15M-$40M (revised from an initial bottom-up of $162M-$243M, which overstated the actual paying market by ~10×), with a realistic Year 3 SOM of $500K-$1.5M. The competitive landscape shows most solutions focus on planning/design, leaving a clear niche for a simple inventory-only tool. **Recommendation: GO** - proceed with validation test to measure buying intent before building MVP.
 
+**Key Findings:**
+- **TAM**: $15M - $40M (competitor-anchored; SeedTime/Planter ARR implies actual paying market ~10× smaller than initial bottom-up)
+- **SAM**: $8M - $20M (serious collectors with 20+ packets, willing to pay vs. free alternatives)
+- **SOM (Year 1)**: $50K - $150K (3,300-10,000 users at $15/yr)
+- **SOM (Year 3)**: $500K - $1.5M (33,000-100,000 users at $15/yr)
+
 ## Market Overview
 
 ### Market Definition

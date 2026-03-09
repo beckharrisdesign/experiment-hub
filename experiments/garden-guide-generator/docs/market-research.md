@@ -6,7 +6,7 @@
 
 **Key Findings:**
 - **TAM**: $8M - $25M (affiliate and content revenue pool — what this business can earn, not what consumers spend on seeds)
-- **SAM**: $245M - $309M (online-focused hobbyist gardeners seeking location-specific guidance)
+- **SAM**: $3M - $12M (one site's realistic revenue ceiling at strong SEO scale)
 - **SOM (Year 1)**: $25K - $75K (freemium model with affiliate revenue + premium PDF sales)
 - **SOM (Year 3)**: $250K - $750K (established SEO presence + print-on-demand expansion)
 

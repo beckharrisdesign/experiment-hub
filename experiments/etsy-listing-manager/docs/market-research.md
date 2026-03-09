@@ -6,7 +6,7 @@
 
 **Key Findings:**
 - **TAM**: $200M - $400M (Etsy seller tools market — the SaaS layer this product competes in, not Etsy GMV)
-- **SAM**: $840M - $1.36B (Etsy digital downloads, craft/embroidery patterns segment) + $200M - $400M (Etsy seller tools market)
+- **SAM**: $15M - $50M (pattern creator niche within seller tools; ~20K-60K qualifying creators at $20/mo)
 - **SOM (Year 1)**: $5K - $25K (personal Etsy store revenue)
 - **SOM (Year 2)**: $75K - $200K (personal store + SaaS beta launch with 100-500 subscribers)
 - **SOM (Year 3)**: $350K - $1M+ (personal store + established SaaS with 500-2,000 subscribers)
@@ -102,26 +102,23 @@ This product is a SaaS tool for Etsy sellers — it competes in the seller tools
 
 ### Serviceable Addressable Market (SAM)
 
-**Estimate: $840M - $1.36B**
+**Estimate: $15M - $50M (pattern creator niche within seller tools)**
 
-**Calculation**: TAM × Constraints
+**Calculation**: Target creator count × conversion × ARPU
+
+This is a SaaS tool, not a marketplace product. SAM = the niche of Etsy sellers who would pay for pattern-specific workflow automation.
 
 **Constraints Applied:**
-1. **Platform Focus**: Etsy marketplace (primary focus) = $2.0B - $2.7B
-2. **Product Type**: Digital downloads (patterns, printables, SVGs) = 100% of segment
-3. **Category**: Craft/embroidery patterns = 3-5% of digital downloads = $60M - $135M
-4. **Seller Segment**: Individual creators/small businesses = 80-90% of sellers = $48M - $122M
+1. **Target creators**: Embroidery + sewing + craft pattern creators on Etsy: ~100K-200K active stores
+2. **Tool adoption likelihood**: ~20-30% willing to pay for dedicated workflow tool (following eRank/Marmalead adoption patterns in their niche)
+   - 100K-200K × 25% = 25K-50K qualifying creators
+3. **ARPU**: $20/month × 12 = $240/year
 
-**Expanded SAM (Including Adjacent Categories):**
-- Embroidery patterns: $60M - $135M
-- Sewing patterns (adjacent): $80M - $180M
-- Craft templates (adjacent): $100M - $250M
-- SVG files for crafts: $200M - $400M
-- Digital art/printables: $400M - $500M
+**Calculation:**
+- 25K-50K creators × $240/yr = **$6M-$12M** (direct)
+- With adjacent pattern categories (sewing, craft templates): **$15M-$50M**
 
-**Total SAM**: $840M - $1.36B (craft-focused digital downloads on Etsy)
-
-**Confidence Level**: **MEDIUM** - Category breakdowns are estimated based on listing analysis
+**Confidence Level**: **Medium** — creator counts estimated from Etsy listing analysis; conversion to paid tool is unvalidated
 
 ### Serviceable Obtainable Market (SOM)
 

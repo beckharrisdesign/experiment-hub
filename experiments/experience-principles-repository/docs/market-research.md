@@ -6,7 +6,7 @@
 
 **Key Findings:**
 - **TAM**: $20M - $60M (design knowledge management tools — direct bottom-up of qualifying teams × ARPU; broader design tools market is upstream context)
-- **SAM**: $180M - $320M (design teams at mid-to-large companies needing principles documentation)
+- **SAM**: $4M - $16M (US mid-market design teams, direct bottom-up: 1,800-5,600 teams × ARPU)
 - **SOM (Year 1)**: $50K - $200K (early adopters, 10-50 design teams)
 - **SOM (Year 3)**: $500K - $2M (established product, 200-800 design teams)
 
