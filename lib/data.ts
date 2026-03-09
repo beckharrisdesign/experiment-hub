@@ -250,10 +250,13 @@ export function parseMarketResearch(mrContent: string) {
     }
   }
   
-  // Extract TAM/SAM/SOM from Executive Summary or Market Size Analysis section
+  // Extract TAM/SAM/SOM from Executive Summary, Market Size Analysis, or Growth Trajectory sections.
+  // Growth Trajectory is included so that the Year 2 fallback regex can match
+  // lines like "- Year 2: 0.2% market share = $840K - $1.4M".
   const summarySection = sections["Executive Summary"]?.join("\n") || "";
   const marketSizeSection = sections["Market Size Analysis"]?.join("\n") || "";
-  const combinedSection = summarySection + "\n" + marketSizeSection;
+  const growthSection = sections["Growth Trajectory"]?.join("\n") || "";
+  const combinedSection = summarySection + "\n" + marketSizeSection + "\n" + growthSection;
   
   const tamMatch = combinedSection.match(/TAM[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
   const samMatch = combinedSection.match(/SAM[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
