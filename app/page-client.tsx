@@ -202,6 +202,19 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
     <div className="min-h-screen">
       <Header />
       <div className="p-8">
+      {/* BHD Labs Intro */}
+      <div className="mb-10 max-w-2xl">
+        <h1 className="text-3xl font-bold text-text-primary mb-1">BHD Labs</h1>
+        <p className="text-text-secondary mb-6">My own personal build incubator of one.</p>
+        <p className="text-text-secondary leading-relaxed mb-10">
+          Every idea here has to demonstrate a strong need across all three dimensions: personal, market, and community. So far my experiments cluster around three themes I keep coming back to — empowering makers, supporting neurodiversity, and enabling environmental impact.
+        </p>
+        <h2 className="text-xl font-semibold text-text-primary mb-2">Experiment Hub</h2>
+        <p className="text-text-secondary leading-relaxed">
+          The Experiment Hub is a tool I built for myself. As someone who&apos;s neurodiverse, I needed something that could hold all the ideas filling my brain and help me evaluate them in a structured way — intuitive where it needs to be, structured where it needs to be.
+        </p>
+      </div>
+
       {/* Tab Navigation */}
       <div className="mb-6 flex gap-1 border-b border-border">
         <button

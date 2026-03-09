@@ -8,7 +8,7 @@ export default function Header() {
           href="/"
           className="text-2xl font-semibold text-text-primary hover:text-accent-primary transition-colors"
         >
-          Experiment Hub
+          BHD Labs
         </Link>
         <nav className="flex items-center gap-6">
           <Link
