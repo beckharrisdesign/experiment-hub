@@ -257,25 +257,38 @@ export function parseMarketResearch(mrContent: string) {
   
   const tamMatch = combinedSection.match(/TAM[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
   const samMatch = combinedSection.match(/SAM[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
-  const somMatch = combinedSection.match(/SOM[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
+  // Exclude year-specific SOM lines (Year 1/2/3) so the generic match isn't accidentally
+  // populated with a year-scoped figure and then mislabeled in the UI.
+  const somMatch = combinedSection.match(/SOM(?!\s*\(Year)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
 
   // Extract methodology descriptions from exec summary bullet parentheticals
   // Matches: - **TAM**: $15M - $40M (competitor-anchored description here)
   const tamDescMatch = summarySection.match(/\*\*TAM\*\*[^:]*:\s*\$?[\d.]+[BMK]?(?:\s*-\s*\$?[\d.]+[BMK]?)?\s*\(([^)]+)\)/i);
   const samDescMatch = summarySection.match(/\*\*SAM\*\*[^:]*:\s*\$?[\d.]+[BMK]?(?:\s*-\s*\$?[\d.]+[BMK]?)?\s*\(([^)]+)\)/i);
   
-  // Extract Year 1 and Year 3 SOM
+  // Extract Year 1, Year 2, and Year 3 SOM.
+  // Year 1 and Year 3 typically appear in the Executive Summary as "SOM (Year N): $X - $Y".
+  // Year 2 rarely appears in the exec summary, so also check the Growth Trajectory table
+  // which uses the format "- Year 2: 0.2% market share = $840K - $1.4M".
   const somYear1Match = combinedSection.match(/SOM\s*\(Year\s*1\)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
+  const somYear2Match =
+    combinedSection.match(/SOM\s*\(Year\s*2\)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i) ??
+    combinedSection.match(/[-*]\s*Year\s*2[^=\n]+=\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
   const somYear3Match = combinedSection.match(/SOM\s*\(Year\s*3\)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
   
   // Calculate midpoint for ranges, or use single value
-  const somYear1 = somYear1Match 
-    ? (somYear1Match[2] 
+  const somYear1 = somYear1Match
+    ? (somYear1Match[2]
         ? calculateMidpoint(somYear1Match[1], somYear1Match[2])
         : `$${somYear1Match[1]}`)
     : null;
-  const somYear3 = somYear3Match 
-    ? (somYear3Match[2] 
+  const somYear2 = somYear2Match
+    ? (somYear2Match[2]
+        ? calculateMidpoint(somYear2Match[1], somYear2Match[2])
+        : `$${somYear2Match[1]}`)
+    : null;
+  const somYear3 = somYear3Match
+    ? (somYear3Match[2]
         ? calculateMidpoint(somYear3Match[1], somYear3Match[2])
         : `$${somYear3Match[1]}`)
     : null;
@@ -296,6 +309,7 @@ export function parseMarketResearch(mrContent: string) {
     tamDesc: tamDescMatch ? tamDescMatch[1] : null,
     samDesc: samDescMatch ? samDescMatch[1] : null,
     somYear1: somYear1,
+    somYear2: somYear2,
     somYear3: somYear3,
     moa: moa,
     goNoGo: goNoGo,

@@ -184,7 +184,7 @@ export default function TabsContent({
             <h2 className="mb-4 text-3xl font-semibold text-text-primary">
               Market Size
             </h2>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
               <div className="rounded-lg border border-border bg-background-tertiary p-6">
                 <div className="mb-2 text-sm font-medium text-text-secondary">TAM</div>
                 <div className="text-3xl font-bold text-accent-primary">
@@ -210,9 +210,23 @@ export default function TabsContent({
                 )}
               </div>
               <div className="rounded-lg border border-border bg-background-tertiary p-6">
-                <div className="mb-2 text-sm font-medium text-text-secondary">SOM (Year 3)</div>
+                <div className="mb-2 text-sm font-medium text-text-secondary">SOM · Year 1</div>
                 <div className="text-3xl font-bold text-accent-primary">
-                  {mr.som || "N/A"}
+                  {mr.somYear1 || "N/A"}
+                </div>
+                <div className="mt-2 text-xs text-text-muted">Serviceable Obtainable Market</div>
+              </div>
+              <div className="rounded-lg border border-border bg-background-tertiary p-6">
+                <div className="mb-2 text-sm font-medium text-text-secondary">SOM · Year 2</div>
+                <div className="text-3xl font-bold text-accent-primary">
+                  {mr.somYear2 || "N/A"}
+                </div>
+                <div className="mt-2 text-xs text-text-muted">Serviceable Obtainable Market</div>
+              </div>
+              <div className="rounded-lg border border-border bg-background-tertiary p-6">
+                <div className="mb-2 text-sm font-medium text-text-secondary">SOM · Year 3</div>
+                <div className="text-3xl font-bold text-accent-primary">
+                  {mr.somYear3 || mr.som || "N/A"}
                 </div>
                 <div className="mt-2 text-xs text-text-muted">Serviceable Obtainable Market</div>
               </div>
