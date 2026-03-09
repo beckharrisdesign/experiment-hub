@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import Button from "@/components/Button";
 
 interface PrototypeStatusProps {
@@ -208,37 +207,30 @@ export default function PrototypeStatus({
     return null;
   }
 
-  // If prototype exists but no port, just show the link
+  // If prototype exists but no port, show a View link if we have a URL
   if (!port) {
     if (prototypeUrl) {
       if (prototypeUrl.startsWith('http://')) {
         return (
-          <a
+          <Button
+            as="a"
+            variant="primary"
             href={prototypeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-accent-primary hover:underline"
-            title={`Open prototype at ${prototypeUrl}`}
+            title={`View prototype at ${prototypeUrl}`}
           >
-            ✓
-          </a>
+            View
+          </Button>
         );
       }
       return (
-        <Link
-          href={prototypeUrl}
-          className="text-accent-primary hover:underline"
-          title="Prototype exists"
-        >
-          ✓
-        </Link>
+        <Button as="link" variant="primary" href={prototypeUrl} title="View prototype">
+          View
+        </Button>
       );
     }
-    return (
-      <span className="text-accent-primary" title="Prototype exists">
-        ✓
-      </span>
-    );
+    return null;
   }
 
   // If we have a port, show buttons

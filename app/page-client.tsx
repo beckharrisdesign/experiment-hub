@@ -30,13 +30,11 @@ interface ExperimentWithRelated extends Experiment {
 }
 
 function getPrototypeUrl(prototype: Prototype | null | undefined, experimentSlug: string): string | null {
-  if (!prototype) return null;
-  
   // If prototype has a port, link to localhost:port
-  if (prototype.port) {
+  if (prototype?.port) {
     return `http://localhost:${prototype.port}`;
   }
-  
+
   // Otherwise, link to the experiment detail page (where prototype info is shown)
   return `/experiments/${experimentSlug}`;
 }
@@ -427,32 +425,38 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
                     </>
                   )}
                   <td className="px-2 py-3 text-center border-l-2 border-accent-primary/30">
-                    <PRDCell
-                      hasMRFile={experiment.hasMRFile ?? false}
-                      hasPRDFile={experiment.hasPRDFile ?? false}
-                      href={`/experiments/${slugify(experiment.name)}#prd`}
-                    />
+                    {experiment.hasMRFile
+                      ? <PRDCell
+                          hasMRFile={true}
+                          hasPRDFile={experiment.hasPRDFile ?? false}
+                          href={`/experiments/${slugify(experiment.name)}#prd`}
+                        />
+                      : <span className="text-text-muted">—</span>
+                    }
                   </td>
                   <td className="px-2 py-3 text-center border-l-2 border-accent-primary/30">
-                    <LandingPageCell
-                      hasPRDFile={experiment.hasPRDFile ?? false}
-                      hasLandingPage={experiment.hasLandingPage ?? false}
-                      validation={experiment.validation}
-                      planHref={`/experiments/${slugify(experiment.name)}#landing`}
-                      viewHref={`/landing/${slugify(experiment.name)}/index.html`}
-                      viewExternal={true}
-                    />
+                    {experiment.hasPRDFile
+                      ? <LandingPageCell
+                          hasPRDFile={true}
+                          hasLandingPage={experiment.hasLandingPage ?? false}
+                          validation={experiment.validation}
+                          planHref={`/experiments/${slugify(experiment.name)}#landing`}
+                          viewHref={`/landing/${slugify(experiment.name)}/index.html`}
+                          viewExternal={true}
+                        />
+                      : <span className="text-text-muted">—</span>
+                    }
                   </td>
                   <td className="px-2 py-3 text-left border-l-2 border-accent-primary/30">
                     {(() => {
                       // Prototype column logic
-                      // State 1: No Market Validation yet - blank (enforce workflow order)
+                      // State 1: No Market Validation yet - locked
                       if (!experiment.hasMRFile) {
-                        return null;
+                        return <span className="text-text-muted">—</span>;
                       }
-                      // States 1 & 2: No PRD yet - blank
+                      // State 2: No PRD yet - locked
                       if (!experiment.hasPRDFile) {
-                        return null;
+                        return <span className="text-text-muted">—</span>;
                       }
                       // State 3: PRD complete, no prototype - show Create for Prototype
                       if (!experiment.hasPrototypeDir) {
