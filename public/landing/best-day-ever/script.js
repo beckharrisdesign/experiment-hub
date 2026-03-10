@@ -1,18 +1,41 @@
 // Best Day Ever landing — form submission to Experiment Hub
-// Development: use same origin when served from hub (e.g. proxy or same host)
-// Production: set to your deployed hub URL (e.g. https://your-hub.vercel.app)
-const HUB_API_URL = '';
+// Submits to: API_BASE + '/api/landing-submission' → hub creates a page in Notion (NOTION_LANDING_DATABASE_ID).
+var API_BASE = (typeof window !== 'undefined' && window.HUB_API_URL !== undefined) ? window.HUB_API_URL : '';
+
+var SUBMIT_URL = (API_BASE || '') + '/api/landing-submission';
 
 document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('waitlist-form');
   if (!form) return;
 
+  const formContainer = document.getElementById('form-container');
+  const successContainer = document.getElementById('success-container');
+  const formError = document.getElementById('form-error');
+  const formErrorTitle = document.getElementById('form-error-title');
+  const formErrorDetails = document.getElementById('form-error-details');
+  const successPageId = document.getElementById('success-page-id');
+
+  function hideError() {
+    if (formError) {
+      formError.classList.add('hidden');
+      if (formErrorDetails) formErrorDetails.textContent = '';
+    }
+  }
+
+  function showError(title, details) {
+    hideError();
+    if (formErrorTitle) formErrorTitle.textContent = title || 'Something went wrong';
+    if (formErrorDetails) formErrorDetails.textContent = details || '';
+    if (formError) formError.classList.remove('hidden');
+  }
+
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
+    hideError();
 
     const submitBtn = document.getElementById('submit-btn');
     const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Submitting...';
+    submitBtn.textContent = 'Adding to early access list…';
     submitBtn.disabled = true;
 
     const calendar = form.querySelector('input[name="calendar"]:checked');
@@ -34,19 +57,30 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     try {
-      const response = await fetch((HUB_API_URL || '') + '/api/landing-submission', {
+      var response = await fetch(SUBMIT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
+      var data = await response.json().catch(function () { return {}; });
+
       if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.error || 'Submission failed');
+        var details = data.details || data.error || ('Submission failed (' + response.status + ')');
+        showError(data.error || 'Submission failed', details);
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+        return;
       }
 
-      document.getElementById('form-container').classList.add('hidden');
-      document.getElementById('success-container').classList.remove('hidden');
+      // Success: show confirmation in place of the form
+      formContainer.classList.add('hidden');
+      successContainer.classList.remove('hidden');
+      if (successPageId && data.pageId) {
+        var msg = 'Saved to landing signup list. Notion page ID: ' + data.pageId;
+        if (data.target) msg += ' (target: ' + data.target + ')';
+        successPageId.textContent = msg;
+      }
 
       if (typeof gtag !== 'undefined') {
         gtag('event', 'form_submission', { event_category: 'engagement', event_label: 'early_access_signup' });
@@ -56,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     } catch (err) {
       console.error('Submit error:', err);
-      alert('Something went wrong. Please try again.');
+      showError('Something went wrong', err.message || 'Please try again.');
       submitBtn.textContent = originalText;
       submitBtn.disabled = false;
     }

@@ -53,7 +53,13 @@ Submissions go to the Experiment Hub `/api/landing-submission` with:
 - `email`, `name`, `source: 'landing-page'`
 - Custom fields (calendar, paper usage, hardest part) sent in `notes`
 
-Ensure the hub has `NOTION_LANDING_DATABASE_ID` set if you use Notion for responses.
+**Where to set the Notion database for this experiment (hub needs this for form → Notion):**
+
+- **Per-experiment env var (recommended):** `NOTION_LANDING_DATABASE_ID_BEST_DAY_EVER` = your Notion database ID (UUID from the database URL).
+- **Locally:** Copy the repo root `.env.example` to `.env.local` and set `NOTION_LANDING_DATABASE_ID_BEST_DAY_EVER`. Next.js loads `.env.local` when you run `npm run dev`.
+- **Vercel:** In the **hub** project, Settings → Environment Variables, add `NOTION_LANDING_DATABASE_ID_BEST_DAY_EVER` with the same database ID.
+- **Replit:** Set in `.replit` under `[userenv.shared]` (see `NOTION_LANDING_DATABASE_ID_BEST_DAY_EVER` there).
+- **Fallback:** If the per-experiment var is not set, the hub uses `NOTION_LANDING_DATABASE_ID` (single database for all landings).
 
 ## Layout
 

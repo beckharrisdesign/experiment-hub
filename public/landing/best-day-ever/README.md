@@ -22,7 +22,7 @@ Submissions go to the Experiment Hub `/api/landing-submission` with:
 - `email`, `name`, `source: 'landing-page'`
 - Custom fields (calendar, paper usage, hardest part) sent in `notes`
 
-Ensure the hub has `NOTION_LANDING_DATABASE_ID` set if you use Notion for responses.
+Set `NOTION_LANDING_DATABASE_ID_BEST_DAY_EVER` on the hub for this landing: locally in `.env.local` (see repo root `.env.example`); on Vercel in the hub project’s Environment Variables.
 
 ## Layout
 

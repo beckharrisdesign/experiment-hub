@@ -30,6 +30,7 @@ npm install -g @modelcontextprotocol/sdk
 3. The configuration includes:
    - **filesystem**: Standard filesystem MCP server for general file access
    - **experiment-logs**: Custom server that provides easy access to experiment logs
+   - **figma-developer-mcp**: Optional — for implementing designs from Figma links. See **[FIGMA_MCP_SETUP.md](./FIGMA_MCP_SETUP.md)** for token and setup.
 
 ### 3. Setup Logging for All Experiments
 
