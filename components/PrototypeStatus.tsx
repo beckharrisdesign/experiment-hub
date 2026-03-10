@@ -233,7 +233,7 @@ export default function PrototypeStatus({
     return null;
   }
 
-  // If we have a port, show buttons
+  // If we have a port, show status only (no Start/Stop for public visitors)
   if (isChecking) {
     return (
       <span className="text-sm text-text-muted" title="Checking server status...">
@@ -242,46 +242,30 @@ export default function PrototypeStatus({
     );
   }
 
-  // Show buttons: "View" and "Stop" when running, "Start" when stopped
-  if (isRunning) {
-    // When running, show both "View" and "Stop" buttons
-    return (
-      <div className="flex items-center gap-1.5">
-        {prototypeUrl && prototypeUrl.startsWith('http://') ? (
-          <Button
-            as="a"
-            variant="primary"
-            href={prototypeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={`View prototype at ${prototypeUrl}`}
-          >
-            View
-          </Button>
-        ) : (
-          <span className="px-2 py-1 text-xs text-text-muted">View</span>
-        )}
-        <Button
-          variant="destructive"
-          onClick={handleStop}
-          disabled={isLoading}
-          title="Stop server"
-        >
-          Stop
-        </Button>
-      </div>
-    );
-  } else {
+  // View link when running; muted "Offline" when not (no Start/Stop buttons)
+  if (isRunning && prototypeUrl && prototypeUrl.startsWith('http://')) {
     return (
       <Button
+        as="a"
         variant="primary"
-        onClick={handleStart}
-        disabled={isLoading}
-        title="Start server"
+        href={prototypeUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={`View prototype at ${prototypeUrl}`}
       >
-        Start
+        View
       </Button>
     );
   }
+  if (isRunning && prototypeUrl) {
+    return (
+      <Button as="link" variant="primary" href={prototypeUrl} title="View prototype">
+        View
+      </Button>
+    );
+  }
+  return (
+    <span className="text-sm text-text-muted">Offline</span>
+  );
 }
 

@@ -1,8 +1,8 @@
 [
   {
     "id": "etsy-listing-manager",
-    "name": "Embroidery Pattern Manager",
-    "statement": "Automate Etsy listings, SEO, and image generation for embroidery pattern sellers",
+    "name": "Etsy Patternator",
+    "statement": "One design, all the listing assets you need.",
     "directory": "experiments/etsy-listing-manager",
     "documentationId": "doc-etsy-listing-manager",
     "prototypeId": "proto-etsy-listing-manager",
@@ -21,7 +21,7 @@
   {
     "id": "seed-finder",
     "name": "Seed Finder",
-    "statement": "Searchable seed database for home gardeners with affiliate-driven recommendations",
+    "statement": "The seed search that knows your garden—and your hardiness zone.",
     "directory": "experiments/seed-finder",
     "documentationId": "doc-seed-finder",
     "prototypeId": "proto-seed-finder",
@@ -40,7 +40,7 @@
   {
     "id": "simple-seed-organizer",
     "name": "Simple Seed Organizer",
-    "statement": "Track and organize your seed collection with inventory and viability management",
+    "statement": "Super easy AI seed packet scanning.",
     "directory": "experiments/simple-seed-organizer",
     "documentationId": "doc-simple-seed-organizer",
     "prototypeId": "",
@@ -64,7 +64,7 @@
   {
     "id": "best-day-ever",
     "name": "Best Day Ever",
-    "statement": "Printable day planners designed for ADHD minds with calendar integration",
+    "statement": "Plan online. Work on paper.",
     "directory": "experiments/best-day-ever",
     "documentationId": "doc-best-day-ever",
     "prototypeId": "",
@@ -88,7 +88,7 @@
   {
     "id": "experience-principles-repository",
     "name": "Experience Principles Repository",
-    "statement": "SaaS knowledge base for design teams to curate and share experience principles",
+    "statement": "The knowledge base design teams use to stay aligned on what good looks like.",
     "directory": "experiments/experience-principles-repository",
     "documentationId": "doc-experience-principles",
     "prototypeId": "",
@@ -107,7 +107,7 @@
   {
     "id": "garden-guide-generator",
     "name": "Garden Guide Generator",
-    "statement": "Generate printable PDF guides showing native plants and seeds for any zip code",
+    "statement": "Native plants and seeds for where you live—personalized, printable, practical.",
     "directory": "experiments/garden-guide-generator",
     "documentationId": "doc-garden-guide",
     "prototypeId": "",
@@ -126,11 +126,11 @@
   {
     "id": "photo-memories",
     "name": "Photo Memories",
-    "statement": "Turn Google Photos into custom posters and books with print-on-demand",
+    "statement": "Enjoy your memories again.",
     "directory": "experiments/photo-memories",
     "documentationId": "doc-photo-memories",
     "prototypeId": "",
-    "status": "Active",
+    "status": "Abandoned",
     "createdDate": "2024-11-01",
     "lastModified": "2024-12-16",
     "tags": ["photos", "memories", "print-on-demand", "google-photos"],
@@ -145,7 +145,7 @@
   {
     "id": "the-illuminator",
     "name": "The Illuminator",
-    "statement": "AI-powered tool to transform photos into artistic embroidery patterns and guides",
+    "statement": "Turn any photo into an embroidery pattern—AI does the hard part, you stitch.",
     "directory": "experiments/the-illuminator",
     "documentationId": "doc-illuminator",
     "prototypeId": "",
@@ -164,7 +164,7 @@
   {
     "id": "ai-event-landing-zone",
     "name": "Landing Zone",
-    "statement": "Parse emails, PDFs, and newsletters into calendar events for busy parents",
+    "statement": "Drop everything — we'll handle the calendar.",
     "directory": "experiments/ai-event-landing-zone",
     "documentationId": "doc-ai-event-landing-zone",
     "prototypeId": "",

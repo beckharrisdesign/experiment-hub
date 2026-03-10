@@ -6,18 +6,10 @@ export default function Header() {
       <div className="mx-auto max-w-screen-xl px-8 py-4 flex items-center justify-between">
         <Link
           href="/"
-          className="text-2xl font-semibold text-text-primary hover:text-accent-primary transition-colors"
+          className="font-heading text-2xl font-semibold text-text-primary hover:text-accent-primary transition-colors"
         >
           BHD Labs
         </Link>
-        <nav className="flex items-center gap-6">
-          <Link
-            href="/workflow"
-            className="text-sm text-text-secondary hover:text-accent-primary transition-colors"
-          >
-            Workflow
-          </Link>
-        </nav>
       </div>
     </header>
   );

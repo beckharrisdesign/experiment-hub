@@ -9,6 +9,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-fraunces), Georgia, serif;
     @apply font-semibold tracking-tight;
   }
 }
@@ -16,6 +17,9 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .font-heading {
+    font-family: var(--font-fraunces), Georgia, serif;
   }
 }
 

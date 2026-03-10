@@ -31,6 +31,7 @@ const config: Config = {
       fontFamily: {
         mono: ["'SF Mono'", "'Monaco'", "'Inconsolata'", "'Fira Code'", "monospace"],
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        heading: ["var(--font-fraunces)", "Georgia", "serif"],
       },
     },
   },

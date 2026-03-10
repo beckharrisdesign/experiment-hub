@@ -3,6 +3,7 @@ import Link from "next/link";
 
 interface BaseButtonProps {
   variant?: "primary" | "secondary" | "destructive";
+  size?: "sm" | "md";
   children: ReactNode;
   className?: string;
 }
@@ -27,9 +28,10 @@ interface NextLinkButtonProps extends BaseButtonProps {
 type ButtonComponentProps = ButtonProps | LinkButtonProps | NextLinkButtonProps;
 
 export default function Button(props: ButtonComponentProps) {
-  const { variant = "primary", children, className = "", ...rest } = props;
+  const { variant = "primary", size = "sm", children, className = "", ...rest } = props;
 
-  const baseClasses = "inline-block px-2 py-1 text-xs rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
+  const sizeClasses = size === "md" ? "px-2.5 py-1.5 text-sm" : "px-2 py-1 text-xs";
+  const baseClasses = `inline-block rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${sizeClasses}`;
   
   const variantClasses = {
     primary: "border border-accent-primary/50 text-accent-primary hover:bg-accent-primary/10 hover:text-accent-primary",

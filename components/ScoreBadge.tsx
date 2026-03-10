@@ -6,7 +6,7 @@ interface ScoreBadgeProps {
 
 export default function ScoreBadge({ value, label, fullName }: ScoreBadgeProps) {
   if (value === undefined) {
-    return <span className="text-text-muted">—</span>;
+    return <span className="text-sm text-text-muted">—</span>;
   }
 
   // Color scale for numerals: 5 = green, 4 = lime, 3 = yellow, 2 = orange, 1 = red
@@ -18,10 +18,10 @@ export default function ScoreBadge({ value, label, fullName }: ScoreBadgeProps) 
     return "text-red-600";
   };
 
-  // Minimal gray badge with colored numeral
+  // Minimal gray badge with colored numeral (text-sm for table readability)
   return (
     <span
-      className={`inline-flex items-center justify-center h-5 w-5 rounded text-xs font-normal bg-background-tertiary ${getNumberColor(value)}`}
+      className={`inline-flex items-center justify-center h-6 w-6 rounded text-sm font-normal bg-background-tertiary ${getNumberColor(value)}`}
       title={`${fullName}: ${value}/5`}
     >
       {value}

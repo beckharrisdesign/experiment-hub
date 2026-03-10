@@ -34,6 +34,8 @@ npm run dev
 
 3. Open [http://localhost:3000](http://localhost:3000) in your browser
 
+**Optional — landing form → Notion:** Each experiment’s landing can post to its own Notion database. Set a per-experiment var: `NOTION_LANDING_DATABASE_ID_<SLUG>` (e.g. `NOTION_LANDING_DATABASE_ID_BEST_DAY_EVER` for Best Day Ever). Copy `.env.example` to `.env.local` and set the var(s); on Vercel, set them in the hub project’s Environment Variables.
+
 ## Project Structure
 
 ```
@@ -59,6 +61,16 @@ experiment-hub/
 ├── experiments/            # Experiment directories
 └── agents/                # Agent instructions
 ```
+
+## Hub home page
+
+The home page lists experiments in a table with Active / Archived tabs.
+
+- **Typography**: Headlines use Fraunces (serif); body uses Inter. Intro paragraph is larger (text-lg). See `/font-preview` to compare headline font options.
+- **Table columns**: Experiment (name + tagline), Score (✓ or score when market validation exists), PRD, Landing, Prototype. Completed steps show a checkmark (✓); Score column shows the numeric score when present (no checkmark). PRD / Landing / Prototype columns use fixed narrow width (w-24).
+- **No action buttons**: Table is read-only (no Create / View / Start in table). Prototype Start/Stop are disabled for public visitors in `PrototypeStatus` when `showActions` is false.
+- **Hidden from list**: Experiments in `HIDDEN_EXPERIMENT_IDS` in `app/page-client.tsx` are excluded from both tabs (e.g. Experience Principles Repository). Data remains in `data/experiments.json` and detail pages still work.
+- **Experiment copy**: Names and taglines live in `data/experiments.json` (`name`, `statement`). Status `Abandoned` = archived.
 
 ## Usage
 

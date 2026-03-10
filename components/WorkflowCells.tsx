@@ -13,13 +13,13 @@ export function PRDCell({ hasMRFile, hasPRDFile, href }: PRDCellProps) {
   if (!hasMRFile) return null;
   if (!hasPRDFile) {
     return (
-      <Button as="link" variant="secondary" href={href} title="Create PRD">
+      <Button as="link" variant="secondary" size="md" href={href} title="Create PRD">
         Create
       </Button>
     );
   }
   return (
-    <Button as="link" variant="primary" href={href} title="View PRD">
+    <Button as="link" variant="primary" size="md" href={href} title="View PRD">
       View
     </Button>
   );
@@ -30,6 +30,8 @@ export function PRDCell({ hasMRFile, hasPRDFile, href }: PRDCellProps) {
 interface LandingPageCellProps {
   hasPRDFile: boolean;
   hasLandingPage: boolean;
+  /** When true and no landing page, show — instead of Plan (PRD + prototype but no landing) */
+  hasPrototypeDir?: boolean;
   validation?: ValidationLandingPage;
   /** href used for Plan/Create action (and fallback for Live) */
   planHref: string;
@@ -42,6 +44,7 @@ interface LandingPageCellProps {
 export function LandingPageCell({
   hasPRDFile,
   hasLandingPage,
+  hasPrototypeDir = false,
   validation,
   planHref,
   viewHref,
@@ -52,13 +55,13 @@ export function LandingPageCell({
   if (hasLandingPage) {
     if (viewExternal) {
       return (
-        <Button as="a" variant="primary" href={viewHref} target="_blank" title="View Landing Page">
+        <Button as="a" variant="primary" size="md" href={viewHref} target="_blank" title="View Landing Page">
           View
         </Button>
       );
     }
     return (
-      <Button as="link" variant="primary" href={viewHref} title="View Landing Page">
+      <Button as="link" variant="primary" size="md" href={viewHref} title="View Landing Page">
         View
       </Button>
     );
@@ -67,18 +70,21 @@ export function LandingPageCell({
   const validationStatus = validation?.status ?? "not_started";
   switch (validationStatus) {
     case "planned":
-      return <span className="text-xs text-yellow-500 font-medium">Planned</span>;
+      return <span className="text-sm text-warning font-medium">Planned</span>;
     case "live":
       return (
-        <Button as="link" variant="primary" href={validation?.url || planHref} title="View Live Landing Page">
+        <Button as="link" variant="primary" size="md" href={validation?.url || planHref} title="View Live Landing Page">
           Live
         </Button>
       );
     case "complete":
-      return <span className="text-xs text-green-500 font-medium">Complete</span>;
+      return <span className="text-sm text-success font-medium">Complete</span>;
     default: // not_started
+      if (hasPrototypeDir) {
+        return <span className="text-sm text-text-muted">—</span>;
+      }
       return (
-        <Button as="link" variant="secondary" href={planHref} title="Plan Landing Page">
+        <Button as="link" variant="secondary" size="md" href={planHref} title="Plan Landing Page">
           Plan
         </Button>
       );
