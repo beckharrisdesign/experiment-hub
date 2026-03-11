@@ -158,7 +158,7 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
           How I evaluate
         </h3>
         <p className="text-base text-text-secondary leading-relaxed mb-4">
-          I evaluate every idea here across three dimensions: personal, market, and community. It's not enough to have a great idea, it needs to be something that I'm passionate about, something that has a market need, and something that makes a difference in the world.
+          I evaluate every idea here across three dimensions: personal, market, and community. It&apos;s not enough to have a great idea, it needs to be something that I&apos;m passionate about, something that has a market need, and something that makes a difference in the world.
           </p>
           
           <h3 className="text-lg font-semibold text-text-primary mb-2">
