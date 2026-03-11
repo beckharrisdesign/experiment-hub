@@ -78,6 +78,7 @@ export default function PrototypeStatus({
     return () => {
       stopPolling();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [port, hasPrototype]);
 
   const handleStart = async (e: React.MouseEvent) => {
