@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { submitLandingPageResponse, LandingPageSubmission } from '@/lib/notion';
 
-const CORS_ORIGIN = process.env.LANDING_CORS_ORIGIN || '*';
+const CORS_ORIGIN = process.env.LANDING_CORS_ORIGIN || 'null';
 
 /** Derive env key from experiment name: "Best Day Ever" → NOTION_LANDING_DATABASE_ID_BEST_DAY_EVER */
 function getDatabaseIdEnvKey(experiment: string): string {
