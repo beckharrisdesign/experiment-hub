@@ -18,6 +18,17 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: "BHD Labs",
   description: "Manage product experiments from idea to prototype",
+  openGraph: {
+    title: "BHD Labs",
+    description: "Manage product experiments from idea to prototype",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "BHD Labs",
+    description: "Manage product experiments from idea to prototype",
+  },
+  themeColor: "#0f172a",
 };
 
 export default function RootLayout({
