@@ -5,6 +5,9 @@ import StatusBadge from "@/components/StatusBadge";
 import MarkdownContent from "@/components/MarkdownContent";
 import Tabs from "@/components/Tabs";
 import LandingPageLink from "@/components/LandingPageLink";
+import ScoreCard from "@/components/ScoreCard";
+import MetricCard from "@/components/MetricCard";
+import ValidationStatusBadge from "@/components/ValidationStatusBadge";
 import { slugify } from "@/lib/utils";
 import { Experiment, Prototype, Documentation } from "@/types";
 import type { parsePRD, parseMarketResearch } from "@/lib/data";
@@ -15,14 +18,16 @@ function ScoreBadge({ value, label, fullName }: { value: number | undefined; lab
   }
 
   const getBadgeColor = (val: number) => {
-    if (val === 5) return "bg-green-600 border-green-500";
-    if (val === 4) return "bg-lime-500/30 border-lime-400/30";
-    return "bg-background-tertiary border-border";
+    if (val === 5) return "bg-score-5/20 border-score-5/40 text-score-5";
+    if (val === 4) return "bg-score-4/20 border-score-4/40 text-score-4";
+    if (val === 3) return "bg-score-3/20 border-score-3/40 text-score-3";
+    if (val === 2) return "bg-score-2/20 border-score-2/40 text-score-2";
+    return "bg-score-1/20 border-score-1/40 text-score-1";
   };
 
   return (
     <span
-      className={`inline-flex items-center justify-center h-6 w-6 rounded-md border text-xs font-medium text-white ${getBadgeColor(
+      className={`inline-flex items-center justify-center h-6 w-6 rounded-md border text-xs font-medium ${getBadgeColor(
         value
       )}`}
       title={`${fullName}: ${value}/5`}
@@ -69,110 +74,64 @@ export default function TabsContent({
               Experiment Scores
             </h2>
             <div className="grid grid-cols-5 gap-4">
-              {/* Business Opportunity */}
-              <div className="rounded-lg border border-border bg-background-tertiary p-5">
-                <div className="mb-3 flex flex-col items-center">
-                  <ScoreBadge 
-                    value={experiment.scores.businessOpportunity} 
-                    label="B" 
-                    fullName="Business Opportunity" 
-                  />
-                  <h3 className="mt-3 text-center text-sm font-semibold text-text-primary">
-                    Business Opportunity
-                  </h3>
-                </div>
-                {(experiment.scoreRationale?.businessOpportunity || mr) && (
-                  <p className="text-sm text-text-secondary">
-                    {experiment.scoreRationale?.businessOpportunity ??
-                      (mr ? (
-                        <>
-                          Market opportunity with TAM of {mr.tam || "N/A"} and SAM of {mr.sam || "N/A"}.
-                          {mr.executiveSummary && (mr.executiveSummary.includes("niche") || mr.executiveSummary.includes("underserved"))
-                            ? " Strong niche demand identified in market research."
-                            : " Market research indicates viable opportunity."}
-                        </>
-                      ) : null)}
-                  </p>
-                )}
-              </div>
-
-              {/* Personal Impact */}
-              <div className="rounded-lg border border-border bg-background-tertiary p-5">
-                <div className="mb-3 flex flex-col items-center">
-                  <ScoreBadge 
-                    value={experiment.scores.personalImpact} 
-                    label="P" 
-                    fullName="Personal Impact" 
-                  />
-                  <h3 className="mt-3 text-center text-sm font-semibold text-text-primary">
-                    Personal Impact
-                  </h3>
-                </div>
-                <p className="text-sm text-text-secondary">
-                  {experiment.scoreRationale?.personalImpact ??
-                    (experiment.scores.personalImpact >= 4
-                      ? "High personal value - addresses specific needs identified in the experiment statement."
-                      : "Moderate personal value based on experiment goals.")}
-                </p>
-              </div>
-
-              {/* Competitive Advantage */}
-              <div className="rounded-lg border border-border bg-background-tertiary p-5">
-                <div className="mb-3 flex flex-col items-center">
-                  <ScoreBadge 
-                    value={experiment.scores.competitiveAdvantage} 
-                    label="C" 
-                    fullName="Competitive Advantage" 
-                  />
-                  <h3 className="mt-3 text-center text-sm font-semibold text-text-primary">
-                    Competitive Advantage
-                  </h3>
-                </div>
-                <p className="text-sm text-text-secondary">
-                  {experiment.scores.competitiveAdvantage >= 4
+              <ScoreCard
+                value={experiment.scores.businessOpportunity}
+                label="B"
+                fullName="Business Opportunity"
+                rationale={
+                  experiment.scoreRationale?.businessOpportunity ??
+                  (mr ? (
+                    <>
+                      Market opportunity with TAM of {mr.tam || "N/A"} and SAM of {mr.sam || "N/A"}.
+                      {mr.executiveSummary && (mr.executiveSummary.includes("niche") || mr.executiveSummary.includes("underserved"))
+                        ? " Strong niche demand identified in market research."
+                        : " Market research indicates viable opportunity."}
+                    </>
+                  ) : null)
+                }
+              />
+              <ScoreCard
+                value={experiment.scores.personalImpact}
+                label="P"
+                fullName="Personal Impact"
+                rationale={
+                  experiment.scoreRationale?.personalImpact ??
+                  (experiment.scores.personalImpact >= 4
+                    ? "High personal value - addresses specific needs identified in the experiment statement."
+                    : "Moderate personal value based on experiment goals.")
+                }
+              />
+              <ScoreCard
+                value={experiment.scores.competitiveAdvantage}
+                label="C"
+                fullName="Competitive Advantage"
+                rationale={
+                  experiment.scores.competitiveAdvantage >= 4
                     ? "Unique positioning identified in market research with first-mover potential."
-                    : "Moderate competitive positioning in the market."}
-                </p>
-              </div>
-
-              {/* Platform Cost */}
-              <div className="rounded-lg border border-border bg-background-tertiary p-5">
-                <div className="mb-3 flex flex-col items-center">
-                  <ScoreBadge 
-                    value={experiment.scores.platformCost} 
-                    label="$" 
-                    fullName="Platform Cost" 
-                  />
-                  <h3 className="mt-3 text-center text-sm font-semibold text-text-primary">
-                    Platform Cost
-                  </h3>
-                </div>
-                <p className="text-sm text-text-secondary">
-                  {experiment.scores.platformCost >= 4
+                    : "Moderate competitive positioning in the market."
+                }
+              />
+              <ScoreCard
+                value={experiment.scores.platformCost}
+                label="$"
+                fullName="Platform Cost"
+                rationale={
+                  experiment.scores.platformCost >= 4
                     ? "Low complexity - straightforward implementation requirements."
-                    : "Moderate to high complexity - requires significant technical infrastructure."}
-                </p>
-              </div>
-
-              {/* Social Impact */}
-              <div className="rounded-lg border border-border bg-background-tertiary p-5">
-                <div className="mb-3 flex flex-col items-center">
-                  <ScoreBadge 
-                    value={experiment.scores.socialImpact} 
-                    label="S" 
-                    fullName="Social Impact" 
-                  />
-                  <h3 className="mt-3 text-center text-sm font-semibold text-text-primary">
-                    Social Impact
-                  </h3>
-                </div>
-                <p className="text-sm text-text-secondary">
-                  {experiment.scoreRationale?.socialImpact ??
-                    (experiment.scores.socialImpact >= 4
-                      ? "High social value - addresses meaningful needs and serves underserved communities."
-                      : "Moderate social value based on target market and use cases.")}
-                </p>
-              </div>
+                    : "Moderate to high complexity - requires significant technical infrastructure."
+                }
+              />
+              <ScoreCard
+                value={experiment.scores.socialImpact}
+                label="S"
+                fullName="Social Impact"
+                rationale={
+                  experiment.scoreRationale?.socialImpact ??
+                  (experiment.scores.socialImpact >= 4
+                    ? "High social value - addresses meaningful needs and serves underserved communities."
+                    : "Moderate social value based on target market and use cases.")
+                }
+              />
             </div>
           </div>
         )}
@@ -194,51 +153,11 @@ export default function TabsContent({
               Market Size
             </h2>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
-              <div className="rounded-lg border border-border bg-background-tertiary p-6">
-                <div className="mb-2 text-sm font-medium text-text-secondary">TAM</div>
-                <div className="text-3xl font-bold text-accent-primary">
-                  {mr.tam || "N/A"}
-                </div>
-                <div className="mt-2 text-xs text-text-muted">Total Addressable Market</div>
-                {mr.tamDesc && (
-                  <div className="mt-2 text-xs text-text-secondary italic border-t border-border pt-2">
-                    {mr.tamDesc}
-                  </div>
-                )}
-              </div>
-              <div className="rounded-lg border border-border bg-background-tertiary p-6">
-                <div className="mb-2 text-sm font-medium text-text-secondary">SAM</div>
-                <div className="text-3xl font-bold text-accent-primary">
-                  {mr.sam || "N/A"}
-                </div>
-                <div className="mt-2 text-xs text-text-muted">Serviceable Addressable Market</div>
-                {mr.samDesc && (
-                  <div className="mt-2 text-xs text-text-secondary italic border-t border-border pt-2">
-                    {mr.samDesc}
-                  </div>
-                )}
-              </div>
-              <div className="rounded-lg border border-border bg-background-tertiary p-6">
-                <div className="mb-2 text-sm font-medium text-text-secondary">SOM · Year 1</div>
-                <div className="text-3xl font-bold text-accent-primary">
-                  {mr.somYear1 || "N/A"}
-                </div>
-                <div className="mt-2 text-xs text-text-muted">Serviceable Obtainable Market</div>
-              </div>
-              <div className="rounded-lg border border-border bg-background-tertiary p-6">
-                <div className="mb-2 text-sm font-medium text-text-secondary">SOM · Year 2</div>
-                <div className="text-3xl font-bold text-accent-primary">
-                  {mr.somYear2 || "N/A"}
-                </div>
-                <div className="mt-2 text-xs text-text-muted">Serviceable Obtainable Market</div>
-              </div>
-              <div className="rounded-lg border border-border bg-background-tertiary p-6">
-                <div className="mb-2 text-sm font-medium text-text-secondary">SOM · Year 3</div>
-                <div className="text-3xl font-bold text-accent-primary">
-                  {mr.somYear3 || mr.som || "N/A"}
-                </div>
-                <div className="mt-2 text-xs text-text-muted">Serviceable Obtainable Market</div>
-              </div>
+              <MetricCard label="TAM" value={mr.tam || "N/A"} description="Total Addressable Market" note={mr.tamDesc} />
+              <MetricCard label="SAM" value={mr.sam || "N/A"} description="Serviceable Addressable Market" note={mr.samDesc} />
+              <MetricCard label="SOM · Year 1" value={mr.somYear1 || "N/A"} description="Serviceable Obtainable Market" />
+              <MetricCard label="SOM · Year 2" value={mr.somYear2 || "N/A"} description="Serviceable Obtainable Market" />
+              <MetricCard label="SOM · Year 3" value={mr.somYear3 || mr.som || "N/A"} description="Serviceable Obtainable Market" />
             </div>
           </div>
 
@@ -388,15 +307,7 @@ export default function TabsContent({
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <span className="text-sm text-text-secondary">Current Status:</span>
-                    {experiment.validation?.status === 'complete' ? (
-                      <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm font-medium">Complete</span>
-                    ) : experiment.validation?.status === 'live' ? (
-                      <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm font-medium">Live</span>
-                    ) : experiment.validation?.status === 'planned' ? (
-                      <span className="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-sm font-medium">Planned</span>
-                    ) : (
-                      <span className="px-3 py-1 rounded-full bg-gray-500/20 text-gray-400 text-sm font-medium">Not Started</span>
-                    )}
+                    <ValidationStatusBadge status={experiment.validation?.status} />
                   </div>
                   {experiment.validation?.url && (
                     <div className="flex items-center gap-3">

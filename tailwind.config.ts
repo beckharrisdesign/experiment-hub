@@ -27,6 +27,13 @@ const config: Config = {
         success: "#3ecf8e",
         warning: "#f0c060",
         error: "#f87171",
+        score: {
+          5: "#3ecf8e", // success green
+          4: "#a3e635", // lime
+          3: "#f0c060", // warning yellow
+          2: "#fb923c", // orange
+          1: "#f87171", // error red
+        },
       },
       fontFamily: {
         mono: ["'SF Mono'", "'Monaco'", "'Inconsolata'", "'Fira Code'", "monospace"],

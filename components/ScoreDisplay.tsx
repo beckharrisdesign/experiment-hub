@@ -35,10 +35,10 @@ export default function ScoreDisplay({ scores }: ScoreDisplayProps) {
   
   // Color scale for total score: 20-25 = green, 15-19 = yellow, 10-14 = orange, 5-9 = red
   const getTotalBadgeColor = (score: number) => {
-    if (score >= 20) return "bg-green-600 border-green-500 text-white";
-    if (score >= 15) return "bg-yellow-500/80 border-yellow-400/80 text-white";
-    if (score >= 10) return "bg-orange-500/80 border-orange-400/80 text-white";
-    return "bg-red-500/80 border-red-400/80 text-white";
+    if (score >= 20) return "bg-score-5/20 border-score-5/40 text-score-5";
+    if (score >= 15) return "bg-score-3/20 border-score-3/40 text-score-3";
+    if (score >= 10) return "bg-score-2/20 border-score-2/40 text-score-2";
+    return "bg-score-1/20 border-score-1/40 text-score-1";
   };
 
   return (
