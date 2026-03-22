@@ -11,11 +11,11 @@ export default function ScoreBadge({ value, label, fullName }: ScoreBadgeProps) 
 
   // Color scale for numerals: 5 = green, 4 = lime, 3 = yellow, 2 = orange, 1 = red
   const getNumberColor = (val: number) => {
-    if (val === 5) return "text-green-600";
-    if (val === 4) return "text-lime-600";
-    if (val === 3) return "text-yellow-600";
-    if (val === 2) return "text-orange-600";
-    return "text-red-600";
+    if (val === 5) return "text-score-5";
+    if (val === 4) return "text-score-4";
+    if (val === 3) return "text-score-3";
+    if (val === 2) return "text-score-2";
+    return "text-score-1";
   };
 
   // Minimal gray badge with colored numeral (text-sm for table readability)
