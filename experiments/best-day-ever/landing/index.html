@@ -39,7 +39,6 @@
     .option-btn:has(input:checked) { background: #000; color: #ffdf20; }
     .option-btn input { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
   </style>
-  <!-- Figma assets: images load from Figma Desktop asset server (localhost:3845) when the design file is open. -->
 </head>
 <body class="min-h-screen bg-white text-gray-900 antialiased">
   <div class="page-root w-full overflow-hidden">
@@ -60,12 +59,12 @@
     <!-- 1. Hero (Figma node 3:1052) -->
     <section id="hero" class="w-full min-h-[647px] px-6 md:px-[136px] py-16 md:py-24 bg-white relative overflow-hidden">
       <div class="absolute inset-0 shape overflow-hidden max-w-[992px] left-1/2 -translate-x-1/2">
-        <img alt="" class="absolute w-48 h-36 left-10 top-20 object-contain" src="http://localhost:3845/assets/1829320663d89e990ad2435bd0a7873632033274.svg" />
-        <img alt="" class="absolute w-64 h-64 left-[55%] top-40 object-contain" src="http://localhost:3845/assets/4c059b1337bc74c301545e8a4cf840c559d308d1.svg" />
-        <img alt="" class="absolute w-80 h-60 bottom-24 left-1/4 object-contain rotate-45" src="http://localhost:3845/assets/4b44e4886579d90ace1dc6629e8cedac3ab6de89.svg" />
-        <img alt="" class="absolute w-40 h-40 bottom-20 left-[45%] object-contain rotate-12" src="http://localhost:3845/assets/f30a3133a282c9756e9ed8883d6a1f2ac9fa5131.svg" />
-        <img alt="" class="absolute w-56 h-36 bottom-28 left-[48%] object-contain" src="http://localhost:3845/assets/4f83365114b379fa4f007c5d404f406b4ad5cb6c.svg" />
-        <img alt="" class="absolute w-32 h-32 right-20 top-10 object-contain" src="http://localhost:3845/assets/5661847839f5443cd2b2a0404ad89c2cd7a11ec5.svg" />
+        <img alt="" class="absolute w-48 h-36 left-10 top-20 object-contain" src="images/shape-hero-1.svg" />
+        <img alt="" class="absolute w-64 h-64 left-[55%] top-40 object-contain" src="images/shape-hero-2.svg" />
+        <img alt="" class="absolute w-80 h-60 bottom-24 left-1/4 object-contain rotate-45" src="images/shape-hero-3.svg" />
+        <img alt="" class="absolute w-40 h-40 bottom-20 left-[45%] object-contain rotate-12" src="images/shape-hero-4.svg" />
+        <img alt="" class="absolute w-56 h-36 bottom-28 left-[48%] object-contain" src="images/shape-hero-5.svg" />
+        <img alt="" class="absolute w-32 h-32 right-20 top-10 object-contain" src="images/shape-hero-6.svg" />
       </div>
       <div class="relative z-10 max-w-[720px] mx-auto text-center">
         <h1 class="text-4xl md:text-5xl lg:text-[60px] font-medium leading-tight mb-6 text-black">
@@ -84,9 +83,9 @@
     <!-- 2. How it works — From calendar to paper in 60 seconds (Figma HowItWorks 3:1147) -->
     <section id="how" class="w-full px-6 md:px-[136px] py-16 md:py-20 bg-bde-purple scroll-mt-20 relative overflow-hidden min-h-[620px]">
       <div class="absolute inset-0 shape pointer-events-none max-w-[992px] left-1/2 -translate-x-1/2">
-        <img alt="" class="absolute w-64 h-48 right-0 top-20 object-contain" src="http://localhost:3845/assets/9b322cdcb94d786f4fda600c4be66d0ed2a02b2c.svg" />
-        <img alt="" class="absolute w-72 h-72 -left-20 top-1/2 object-contain" src="http://localhost:3845/assets/673eb1d8aa8e0bc6f692f45582777d930868f7f9.svg" />
-        <img alt="" class="absolute w-40 h-40 left-1/3 top-1/2 object-contain" src="http://localhost:3845/assets/bc58ce938844b918bdb2a462c2d06fb2b05566f4.svg" />
+        <img alt="" class="absolute w-64 h-48 right-0 top-20 object-contain" src="images/shape-how-1.svg" />
+        <img alt="" class="absolute w-72 h-72 -left-20 top-1/2 object-contain" src="images/shape-how-2.svg" />
+        <img alt="" class="absolute w-40 h-40 left-1/3 top-1/2 object-contain" src="images/shape-how-3.svg" />
       </div>
       <div class="relative z-10 max-w-[720px] mx-auto">
         <h2 class="text-3xl md:text-4xl lg:text-5xl font-medium text-black text-center mb-4">From calendar to paper in 60 seconds</h2>
@@ -95,17 +94,17 @@
         </p>
         <div class="grid sm:grid-cols-3 gap-12">
           <div class="text-center">
-            <div class="w-16 h-16 rounded-full bg-white/80 flex items-center justify-center mx-auto mb-4"><img alt="" class="w-8 h-8" src="http://localhost:3845/assets/fe1231129fb8470d98390cbd1dc2b09570817f44.svg" /></div>
+            <div class="w-16 h-16 rounded-full bg-white/80 flex items-center justify-center mx-auto mb-4"><img alt="" class="w-8 h-8" src="images/icon-calendar.svg" /></div>
             <h3 class="font-medium text-xl text-black mb-2">Connect your calendar</h3>
             <p class="text-bde-gray text-base">One-time setup with Google Calendar. We pull your events, never write to them.</p>
           </div>
           <div class="text-center">
-            <div class="w-16 h-16 rounded-full bg-white/80 flex items-center justify-center mx-auto mb-4"><img alt="" class="w-8 h-8" src="http://localhost:3845/assets/25d4c978dfc8748561f222391738835c5be38bf7.svg" /></div>
+            <div class="w-16 h-16 rounded-full bg-white/80 flex items-center justify-center mx-auto mb-4"><img alt="" class="w-8 h-8" src="images/icon-template.svg" /></div>
             <h3 class="font-medium text-xl text-black mb-2">Choose your template</h3>
             <p class="text-bde-gray text-base">Pick from layouts designed for ADHD brains. Time blocks, top priorities, or weekly views.</p>
           </div>
           <div class="text-center">
-            <div class="w-16 h-16 rounded-full bg-white/80 flex items-center justify-center mx-auto mb-4"><img alt="" class="w-8 h-8" src="http://localhost:3845/assets/9f401068fb27f9f3497a3d5f405e19e906f63b01.svg" /></div>
+            <div class="w-16 h-16 rounded-full bg-white/80 flex items-center justify-center mx-auto mb-4"><img alt="" class="w-8 h-8" src="images/icon-print.svg" /></div>
             <h3 class="font-medium text-xl text-black mb-2">Print and get to work</h3>
             <p class="text-bde-gray text-base">Your plan is ready in under 60 seconds. Write on it, check it off, make it yours.</p>
           </div>
@@ -116,9 +115,9 @@
     <!-- 3. Why physical planning works (Figma TactileSection 3:1108) -->
     <section id="physical" class="w-full px-6 md:px-[136px] py-16 md:py-20 bg-[#f9fafb] scroll-mt-20 relative overflow-hidden min-h-[564px]">
       <div class="absolute inset-0 shape pointer-events-none max-w-[992px] left-1/2 -translate-x-1/2">
-        <img alt="" class="absolute w-56 h-42 left-10 top-20 object-contain" src="http://localhost:3845/assets/d0d020dedaf282788604ec2721c01925dbbf9d7f.svg" />
-        <img alt="" class="absolute w-72 h-72 right-10 top-1/2 object-contain" src="http://localhost:3845/assets/be429a3cb38fb6f90e3011c8a0f7a3ed1bb213fd.svg" />
-        <img alt="" class="absolute w-48 h-48 right-1/4 top-1/2 object-contain" src="http://localhost:3845/assets/80d9479bf5497565b62c9dcf772ca03382e8c0fb.svg" />
+        <img alt="" class="absolute w-56 h-42 left-10 top-20 object-contain" src="images/shape-physical-1.svg" />
+        <img alt="" class="absolute w-72 h-72 right-10 top-1/2 object-contain" src="images/shape-physical-2.svg" />
+        <img alt="" class="absolute w-48 h-48 right-1/4 top-1/2 object-contain" src="images/shape-physical-3.svg" />
       </div>
       <div class="relative z-10 max-w-[720px] mx-auto">
         <h2 class="text-3xl md:text-4xl lg:text-5xl font-medium text-black text-center mb-4">Why physical planning works</h2>
@@ -127,17 +126,17 @@
         </p>
         <div class="grid sm:grid-cols-3 gap-10">
           <div>
-            <img alt="" class="w-10 h-10 mb-4" src="http://localhost:3845/assets/ca652609afbe4d6d9259d277a310edb9dca14d91.svg" />
+            <img alt="" class="w-10 h-10 mb-4" src="images/icon-hand-write.svg" />
             <h3 class="font-medium text-xl text-black mb-2">Write by hand</h3>
             <p class="text-bde-gray text-base">The physical act of writing engages motor memory and strengthens commitment.</p>
           </div>
           <div>
-            <img alt="" class="w-10 h-10 mb-4" src="http://localhost:3845/assets/b91d0877f697baa0c38314d45b1af4c0bea1c3cb.svg" />
+            <img alt="" class="w-10 h-10 mb-4" src="images/icon-ritual.svg" />
             <h3 class="font-medium text-xl text-black mb-2">Feel the ritual</h3>
             <p class="text-bde-gray text-base">Paper, pens, markers create sensory anchors that help you transition into work mode.</p>
           </div>
           <div>
-            <img alt="" class="w-10 h-10 mb-4" src="http://localhost:3845/assets/3fb923683be31ae84f59dd207f25f15ae8cad145.svg" />
+            <img alt="" class="w-10 h-10 mb-4" src="images/icon-artifact.svg" />
             <h3 class="font-medium text-xl text-black mb-2">Physical artifact</h3>
             <p class="text-bde-gray text-base">A printed plan on your desk is harder to ignore than a browser tab.</p>
           </div>
@@ -148,9 +147,9 @@
     <!-- 4. Templates designed for ADHD (Figma TemplatesSection 3:1197) -->
     <section id="templates" class="w-full px-6 md:px-[136px] py-16 md:py-20 bg-bde-purple scroll-mt-20 relative overflow-hidden min-h-[664px]">
       <div class="absolute inset-0 shape pointer-events-none max-w-[992px] left-1/2 -translate-x-1/2">
-        <img alt="" class="absolute w-72 h-54 right-0 top-10 object-contain" src="http://localhost:3845/assets/95a1dc0202254ad38f2ae6aac4749bae403b7d38.svg" />
-        <img alt="" class="absolute w-64 h-64 left-20 top-1/2 object-contain" src="http://localhost:3845/assets/02e7422205ee9fbc2327ebabe149d379d66da00c.svg" />
-        <img alt="" class="absolute w-72 h-72 left-20 top-12 object-contain rotate-180" src="http://localhost:3845/assets/dce578ddd876028551fb9ccb4dde7bc18e970f1e.svg" />
+        <img alt="" class="absolute w-72 h-54 right-0 top-10 object-contain" src="images/shape-templates-1.svg" />
+        <img alt="" class="absolute w-64 h-64 left-20 top-1/2 object-contain" src="images/shape-templates-2.svg" />
+        <img alt="" class="absolute w-72 h-72 left-20 top-12 object-contain rotate-180" src="images/shape-templates-3.svg" />
       </div>
       <div class="relative z-10 max-w-[720px] mx-auto">
         <h2 class="text-3xl md:text-4xl lg:text-5xl font-medium text-black text-center mb-4">Templates designed for ADHD</h2>
@@ -159,17 +158,17 @@
         </p>
         <div class="grid sm:grid-cols-3 gap-6">
           <div class="bg-[#f9fafb] rounded-[10px] p-8 border border-gray-100">
-            <div class="w-12 h-12 bg-white rounded-[10px] flex items-center justify-center mb-4"><img alt="" class="w-6 h-6" src="http://localhost:3845/assets/63ebf1e71539733c99de72f9a238edf9d9ec1750.svg" /></div>
+            <div class="w-12 h-12 bg-white rounded-[10px] flex items-center justify-center mb-4"><img alt="" class="w-6 h-6" src="images/icon-time-block.svg" /></div>
             <h3 class="font-medium text-xl text-black mb-3">Time Block</h3>
             <p class="text-bde-gray text-base">Hour-by-hour layout with your calendar events pre-filled. Space between blocks for handwritten tasks.</p>
           </div>
           <div class="bg-[#f9fafb] rounded-[10px] p-8 border border-gray-100">
-            <div class="w-12 h-12 bg-white rounded-[10px] flex items-center justify-center mb-4"><img alt="" class="w-6 h-6" src="http://localhost:3845/assets/8b43e969bb24f5f0815e98f3337b4d0e30a1ee7c.svg" /></div>
+            <div class="w-12 h-12 bg-white rounded-[10px] flex items-center justify-center mb-4"><img alt="" class="w-6 h-6" src="images/icon-top3.svg" /></div>
             <h3 class="font-medium text-xl text-black mb-3">Top 3 + Schedule</h3>
             <p class="text-bde-gray text-base">Three big boxes for your most important things (handwritten). Your calendar events below.</p>
           </div>
           <div class="bg-[#f9fafb] rounded-[10px] p-8 border border-gray-100">
-            <div class="w-12 h-12 bg-white rounded-[10px] flex items-center justify-center mb-4"><img alt="" class="w-6 h-6" src="http://localhost:3845/assets/1bdd19e34ebb0086507531e8bf60061c6d514115.svg" /></div>
+            <div class="w-12 h-12 bg-white rounded-[10px] flex items-center justify-center mb-4"><img alt="" class="w-6 h-6" src="images/icon-week.svg" /></div>
             <h3 class="font-medium text-xl text-black mb-3">Week at a Glance</h3>
             <p class="text-bde-gray text-base">Seven columns, one per day. For Sunday planning sessions with markers and highlighters.</p>
           </div>
@@ -180,10 +179,10 @@
     <!-- 5. CTA + interest form (validation phase: no trial/demo, just early access list) -->
     <section id="interest-form" class="w-full px-6 md:px-[136px] py-16 md:py-20 bg-white scroll-mt-20 relative overflow-hidden">
       <div class="absolute inset-0 shape pointer-events-none max-w-[992px] left-1/2 -translate-x-1/2">
-        <img alt="" class="absolute w-80 h-80 -left-40 -top-40 object-contain" src="http://localhost:3845/assets/a51e690054c2e668fa807df47b3f83271a4e3caf.svg" />
-        <img alt="" class="absolute w-72 h-96 right-0 bottom-0 object-contain" src="http://localhost:3845/assets/46606ad9bf79f84375c219a5a8ec6e352a3ae1ba.svg" />
-        <img alt="" class="absolute w-56 h-56 left-1/3 top-1/2 object-contain" src="http://localhost:3845/assets/559b79fafc883e966cf42d93dafba4eca5dd47df.svg" />
-        <img alt="" class="absolute w-64 h-64 left-1/2 top-20 object-contain" src="http://localhost:3845/assets/fadf3af6e70702cb713713c4e3c0ccc50b162605.svg" />
+        <img alt="" class="absolute w-80 h-80 -left-40 -top-40 object-contain" src="images/shape-cta-1.svg" />
+        <img alt="" class="absolute w-72 h-96 right-0 bottom-0 object-contain" src="images/shape-cta-2.svg" />
+        <img alt="" class="absolute w-56 h-56 left-1/3 top-1/2 object-contain" src="images/shape-cta-3.svg" />
+        <img alt="" class="absolute w-64 h-64 left-1/2 top-20 object-contain" src="images/shape-cta-4.svg" />
       </div>
       <div class="relative z-10 max-w-[720px] mx-auto text-center">
         <h2 class="text-3xl md:text-4xl lg:text-5xl font-medium text-black mb-4">Ready to start your best day ever?</h2>
@@ -246,7 +245,7 @@
       <div class="max-w-[992px] mx-auto">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
           <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-bde-yellow border-2 border-black flex items-center justify-center shrink-0"><img alt="" class="w-5 h-5" src="http://localhost:3845/assets/8ea08c3cb85fd97f7a011821b34f0772e5ce41e6.svg" /></div>
+            <div class="w-8 h-8 bg-bde-yellow border-2 border-black flex items-center justify-center shrink-0"><img alt="" class="w-5 h-5" src="images/icon-logo.svg" /></div>
             <span class="font-normal text-lg text-black">Best Day Ever</span>
           </div>
           <div>
