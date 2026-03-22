@@ -153,8 +153,8 @@ export default function TabsContent({
               Market Size
             </h2>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
-              <MetricCard label="TAM" value={mr.tam || "N/A"} description="Total Addressable Market" note={mr.tamDesc} />
-              <MetricCard label="SAM" value={mr.sam || "N/A"} description="Serviceable Addressable Market" note={mr.samDesc} />
+              <MetricCard label="TAM" value={mr.tam || "N/A"} description="Total Addressable Market" note={mr.tamDesc ?? undefined} />
+              <MetricCard label="SAM" value={mr.sam || "N/A"} description="Serviceable Addressable Market" note={mr.samDesc ?? undefined} />
               <MetricCard label="SOM · Year 1" value={mr.somYear1 || "N/A"} description="Serviceable Obtainable Market" />
               <MetricCard label="SOM · Year 2" value={mr.somYear2 || "N/A"} description="Serviceable Obtainable Market" />
               <MetricCard label="SOM · Year 3" value={mr.somYear3 || mr.som || "N/A"} description="Serviceable Obtainable Market" />
