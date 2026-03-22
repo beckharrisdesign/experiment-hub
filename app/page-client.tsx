@@ -141,7 +141,7 @@ export default function HomePageClient({ initialExperiments }: HomePageClientPro
   return (
     <div className="min-h-screen">
       <Header />
-      <div className="flex flex-col items-center w-full px-8 py-8">
+      <div className="flex flex-col items-center w-full px-8 py-8 lg:px-16">
       <div className="mx-auto w-full max-w-screen-xl">
       {/* BHD Labs Intro */}
       <div className="mx-auto mb-10 max-w-4xl">

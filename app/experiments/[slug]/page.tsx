@@ -86,7 +86,7 @@ export default async function ExperimentDetailPage({
   return (
     <div className="min-h-screen">
       <Header />
-      <main className="flex flex-col items-center w-full p-8">
+      <main className="flex flex-col items-center w-full px-8 py-8 lg:px-16">
         <div className="mx-auto w-full max-w-7xl">
           {/* Breadcrumbs */}
           <nav className="mb-6 text-sm">
