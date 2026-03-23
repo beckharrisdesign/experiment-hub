@@ -16,7 +16,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const { supabase } = await import('@/lib/supabase');
-      if (!supabase) throw new Error('Supabase not configured.');
+      if (!supabase) throw new Error("I'm having trouble connecting right now. Try reloading the page.");
 
       const { error: resetError } = await requestPasswordReset(email, supabase);
       if (resetError) {

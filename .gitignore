@@ -100,3 +100,4 @@ Thumbs.db
 logs/
 *.log
 
+.claude/worktrees/

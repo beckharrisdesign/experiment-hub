@@ -185,7 +185,7 @@ function HomeContent() {
           {seedsLoading ? (
             <div className="flex flex-col items-center justify-center py-16">
               <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#16a34a] border-t-transparent mb-4" />
-              <p className="text-[#6a7282] text-sm">Loading your seeds...</p>
+              <p className="text-[#6a7282] text-sm">Fetching your seeds…</p>
             </div>
           ) : (
             <SeedList

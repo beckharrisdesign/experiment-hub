@@ -66,8 +66,8 @@ export default function AddSeedPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-[#4a5565] mb-1">{label} saved</h2>
-          <p className="text-sm text-[#99a1af] mb-8">Added to your collection</p>
+          <h2 className="text-lg font-semibold text-[#4a5565] mb-1">You added {label}</h2>
+          <p className="text-sm text-[#99a1af] mb-8">It's in your collection now</p>
           <div className="flex flex-col gap-3">
             <button
               onClick={() => setSavedSeed(null)}

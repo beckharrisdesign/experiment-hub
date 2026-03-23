@@ -28,7 +28,7 @@ export function AuthForm({ onSuccess, embedded }: AuthFormProps) {
 
     try {
       const { supabase } = await import('@/lib/supabase');
-      if (!supabase) throw new Error('Supabase not configured. Please check your setup.');
+      if (!supabase) throw new Error("I'm having trouble connecting right now. Try reloading the page.");
 
       // Try sign in first (returning user)
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
@@ -44,7 +44,7 @@ export function AuthForm({ onSuccess, embedded }: AuthFormProps) {
         if (signUpError.message.toLowerCase().includes('already registered')) {
           setError('Invalid email or password');
         } else {
-          setError(signUpError.message);
+          setError("I couldn't create your account. Check your details and try again.");
         }
         return;
       }
@@ -98,7 +98,7 @@ export function AuthForm({ onSuccess, embedded }: AuthFormProps) {
             minLength={6}
             autoComplete="current-password"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
-            placeholder="At least 6 characters"
+            placeholder="e.g. 8+ characters, mix of letters and numbers"
           />
         </div>
         {error && (

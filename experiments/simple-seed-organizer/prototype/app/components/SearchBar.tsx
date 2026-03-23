@@ -6,7 +6,7 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-export function SearchBar({ value, onChange, placeholder = 'Search seeds...' }: SearchBarProps) {
+export function SearchBar({ value, onChange, placeholder = 'e.g. Cherokee Purple Tomato' }: SearchBarProps) {
   return (
     <div className="relative">
       <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">

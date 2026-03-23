@@ -322,6 +322,96 @@ When writing PRD UI/UX sections:
 - ❌ Slow, janky animations
 - ❌ Cryptic error messages
 
+## Voice & Tone
+
+UX writing standards for all product copy — errors, labels, empty states, loading, confirmations, and success messages.
+
+---
+
+### 1. Never surface technical internals
+No raw error codes, HTTP status numbers, stack traces, or internal IDs. Every message tells the user what to do next, not what broke internally.
+> *"Something went wrong. Try again, or contact support if it keeps happening."* — not *"Error 500: Internal Server Error"*
+
+---
+
+### 2. Sentence case everywhere
+"Add new payment method" not "Add New Payment Method." Capitalize only the first word and proper nouns.
+
+---
+
+### 3. Verb-first, specific button labels
+Buttons name the action. Destructive buttons name what they destroy.
+> *"Save changes" not "Submit." "Delete photo" not "Delete."*
+
+---
+
+### 4. Errors: what happened + what to do
+Error messages are two parts: what went wrong and what the user can do about it.
+> *"We couldn't save your changes. Check your connection and try again."*
+
+---
+
+### 5. Errors own the fault — first person
+The product takes responsibility. Use "I" or "we" in error messages. Never blame the user or hide behind passive voice.
+> *"I couldn't save your changes." not "Your changes weren't saved."*
+> *"I don't recognize that email." not "You entered an invalid email."*
+> *"I lost your session. Please sign in again." not "Session expired."*
+
+---
+
+### 6. Successes belong to the user
+Frame confirmations and success states in the user's voice. They did this — celebrate it.
+> *"Your photo was added." not "Upload complete."*
+> *"You're all set." not "Account created."*
+> *"Your changes are saved." not "Save successful."*
+
+---
+
+### 7. Empty states are helpful
+Tell the user why the space is empty and what to do next. Never just "No results."
+> *"No photos yet. Add one to get started."*
+
+---
+
+### 8. Loading copy is reassuring
+Name what's happening. Don't overpromise timing.
+> *"Saving…" or "Fetching your photos…"* — not bare *"Loading..."*
+
+---
+
+### 9. Placeholders show examples, not labels
+Placeholder text disappears on focus — it can't carry essential information. Show an example value instead.
+> `you@example.com` not `Email address`
+
+---
+
+### 10. Calm punctuation
+No exclamation marks on errors. No ALL CAPS. Ellipsis only for in-progress states. Periods in multi-sentence messages; none on single labels.
+
+---
+
+### 11. Confirmation dialogs are unambiguous
+Title states what's happening. Body explains consequences. Buttons match the action — no "Yes / No."
+> Title: *"Delete photo?"* Body: *"This can't be undone."* Buttons: *"Delete photo" / "Keep it"*
+
+---
+
+### 12. Human, direct tone
+Short sentences. Plain words. No "utilize," "seamlessly," or "Please be advised." Match emotional weight — don't be chipper in serious moments.
+
+---
+
+### Sources Reviewed
+- Monzo — [monzo.com/tone-of-voice](https://monzo.com/tone-of-voice)
+- Mailchimp — [styleguide.mailchimp.com](https://styleguide.mailchimp.com)
+- Google Material Design — [developers.google.com/style/ui-elements](https://developers.google.com/style/ui-elements)
+- Apple Human Interface Guidelines — [developer.apple.com/design/human-interface-guidelines/foundations/writing](https://developer.apple.com/design/human-interface-guidelines/foundations/writing)
+- Stripe — [docs.stripe.com/stripe-apps/components/button](https://docs.stripe.com/stripe-apps/components/button)
+- Slack — [eesel.ai/blog/slack-ai-loading-states-ux](https://www.eesel.ai/blog/slack-ai-loading-states-ux)
+- Duolingo — UX pattern of celebrating user achievement over system completion
+
+---
+
 ## Tools & Resources
 
 ### Design Tools

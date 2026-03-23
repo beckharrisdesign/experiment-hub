@@ -17,14 +17,14 @@ export default function ResetPasswordPage() {
     setError(null);
 
     if (password !== confirm) {
-      setError('Passwords do not match.');
+      setError("Those passwords don't match. Try again.");
       return;
     }
 
     setLoading(true);
     try {
       const { supabase } = await import('@/lib/supabase');
-      if (!supabase) throw new Error('Supabase not configured.');
+      if (!supabase) throw new Error("I'm having trouble connecting right now. Try reloading the page.");
 
       const { error: updateError } = await updatePassword(password, supabase);
       if (updateError) {

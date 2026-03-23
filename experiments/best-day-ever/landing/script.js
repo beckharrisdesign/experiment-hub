@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function showError(title, details) {
     hideError();
-    if (formErrorTitle) formErrorTitle.textContent = title || 'Something went wrong';
+    if (formErrorTitle) formErrorTitle.textContent = title || "I couldn't add you to the list.";
     if (formErrorDetails) formErrorDetails.textContent = details || '';
     if (formError) formError.classList.remove('hidden');
   }
@@ -66,8 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var data = await response.json().catch(function () { return {}; });
 
       if (!response.ok) {
-        var details = data.details || data.error || ('Submission failed (' + response.status + ')');
-        showError(data.error || 'Submission failed', details);
+        showError("I couldn't add you to the list.", "Check your connection and try again. If the problem continues, email us directly.");
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
         return;
@@ -77,9 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
       formContainer.classList.add('hidden');
       successContainer.classList.remove('hidden');
       if (successPageId && data.pageId) {
-        var msg = 'Saved to landing signup list. Notion page ID: ' + data.pageId;
-        if (data.target) msg += ' (target: ' + data.target + ')';
-        successPageId.textContent = msg;
+        successPageId.textContent = 'Confirmation ID: ' + data.pageId;
       }
 
       if (typeof gtag !== 'undefined') {
@@ -90,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     } catch (err) {
       console.error('Submit error:', err);
-      showError('Something went wrong', err.message || 'Please try again.');
+      showError("I couldn't add you to the list.", 'Check your connection and try again.');
       submitBtn.textContent = originalText;
       submitBtn.disabled = false;
     }

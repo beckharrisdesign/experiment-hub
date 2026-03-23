@@ -262,7 +262,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
 
     try {
       const response = await fetch(imageUrl);
-      if (!response.ok) throw new Error(`Failed to fetch ${side} image: ${response.status}`);
+      if (!response.ok) throw new Error("I couldn't load that image. Try uploading it again.");
       const blob = await response.blob();
       const file = new File([blob], `packet-${side}.png`, { type: blob.type || 'image/png' });
 
@@ -276,10 +276,10 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
       try {
         result = JSON.parse(text);
       } catch {
-        throw new Error(`Invalid JSON response: ${text.substring(0, 200)}`);
+        throw new Error("I couldn't read the server response. Try again in a moment.");
       }
-      if (!res.ok) throw new Error(result.error || result.message || 'Failed to extract');
-      if (!result.data) throw new Error('No data returned from AI extraction');
+      if (!res.ok) throw new Error(result.error || result.message || "I couldn't scan that image. Try again or enter the details manually.");
+      if (!result.data) throw new Error("I couldn't extract any data from that image. Try a clearer photo.");
 
       setAiExtractedData((prev) => {
         const merged = mergeExtractedData(prev, result.data, side);
@@ -287,7 +287,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
         return merged;
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during processing');
+      setError(err instanceof Error ? err.message : "I couldn't scan that image. Try again or enter the details manually.");
     } finally {
       if (side === 'front') setLoadingFront(false);
       else setLoadingBack(false);
@@ -307,7 +307,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
       }
     } catch (err) {
       console.error('[AddSeedForm] Error processing image:', err);
-      setError(err instanceof Error ? err.message : 'Failed to process image');
+      setError(err instanceof Error ? err.message : "I couldn't load that image. Try selecting it again.");
     }
   };
 
@@ -429,7 +429,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
       {/* Header - only for add mode; edit mode uses app header + left nav */}
       {!isEditMode && (
         <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-[#101828]">Add Seed</h1>
+          <h1 className="text-lg font-semibold text-[#101828]">Add seed</h1>
           <button onClick={onClose} className="p-2 -mr-2">
             <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -557,7 +557,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
             {/* Front Image */}
             <div className="pr-2">
               <div className="bg-white rounded-lg p-4 shadow-sm">
-                <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Front Image</h3>
+                <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Front image</h3>
                 {frontImage ? (
                   <div 
                     className="relative group"
@@ -576,7 +576,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
                       <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 rounded border border-gray-200">
                         <div className="flex flex-col items-center gap-2">
                           <span className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[#16a34a] border-t-transparent" />
-                          <span className="text-sm font-medium text-[#4a5565]">Extracting...</span>
+                          <span className="text-sm font-medium text-[#4a5565]">Reading image…</span>
                         </div>
                       </div>
                     )}
@@ -660,7 +660,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
             {/* Front Data - Editable */}
             <div className="pr-2">
               <div className="bg-white rounded-lg p-4 shadow-sm">
-                <h2 className="text-lg font-semibold text-[#4a5565] mb-3">Front Image Data</h2>
+                <h2 className="text-lg font-semibold text-[#4a5565] mb-3">Front image data</h2>
                 {aiExtractedData ? (
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
@@ -863,7 +863,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
                             <textarea
                               value={notes}
                               onChange={(e) => setNotes(e.target.value)}
-                              placeholder="Any additional notes..."
+                              placeholder="e.g. Heirloom, open pollinated, or any growing notes"
                               rows={3}
                               className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] resize-none"
                             />
@@ -888,7 +888,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
             {/* Back Image */}
             <div className="pr-2">
               <div className="bg-white rounded-lg p-4 shadow-sm">
-                <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Back Image</h3>
+                <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Back image</h3>
                 {backImage ? (
                   <div 
                     className="relative group"
@@ -907,7 +907,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
                       <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 rounded border border-gray-200">
                         <div className="flex flex-col items-center gap-2">
                           <span className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[#16a34a] border-t-transparent" />
-                          <span className="text-sm font-medium text-[#4a5565]">Extracting...</span>
+                          <span className="text-sm font-medium text-[#4a5565]">Reading image…</span>
                         </div>
                       </div>
                     )}
@@ -991,7 +991,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
             {/* Back Data - Editable */}
             <div className="pr-2">
               <div className="bg-white rounded-lg p-4 shadow-sm">
-                <h2 className="text-lg font-semibold text-[#4a5565] mb-3">Back Image Data</h2>
+                <h2 className="text-lg font-semibold text-[#4a5565] mb-3">Back image data</h2>
                 {aiExtractedData && getKeyValuePairsBySource(aiExtractedData).back.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
@@ -1095,7 +1095,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
               {initialData ? 'Saving...' : 'Adding...'}
             </>
           ) : (
-            initialData ? 'Save Changes' : 'Add to Collection'
+            initialData ? 'Save changes' : 'Add to collection'
           )}
         </button>
       </div>
