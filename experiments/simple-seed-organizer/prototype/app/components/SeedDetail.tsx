@@ -253,7 +253,7 @@ export function SeedDetail({ seed: seedProp, onClose, onEdit, onDelete, onUpdate
                           <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                           </svg>
-                          <span className="text-xs font-medium text-purple-700">Average First Frost</span>
+                          <span className="text-xs font-medium text-purple-700">Average first frost</span>
                         </div>
                         <p className="text-lg font-bold text-purple-900">{formatDate(plantingGuidance.firstFrostDate)}</p>
                       </div>
@@ -284,7 +284,7 @@ export function SeedDetail({ seed: seedProp, onClose, onEdit, onDelete, onUpdate
             <div className="space-y-4 sticky top-4 flex flex-col h-[calc(100vh-180px)]">
               {/* Seed Metadata */}
               <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Seed Information</h3>
+                <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Seed information</h3>
                 <InfoRow label="Type" value={seed.type?.charAt(0).toUpperCase() + seed.type?.slice(1)} />
                 <InfoRow label="Brand" value={seed.brand} />
                 <InfoRow label="Source" value={seed.source} />
@@ -339,7 +339,7 @@ export function SeedDetail({ seed: seedProp, onClose, onEdit, onDelete, onUpdate
                   onClick={onDelete}
                   className="w-full py-2 text-xs text-red-500 hover:text-red-600 transition-colors"
                 >
-                  Delete Seed
+                  Delete seed
                 </button>
               </div>
             </div>
