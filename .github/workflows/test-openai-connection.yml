@@ -1,0 +1,33 @@
+name: Test OpenAI Connection
+
+on:
+  push:
+    branches:
+      - claude/test-openai-connection-fv3OL
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: OpenAI API connection test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: experiments/simple-seed-organizer/prototype/app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: experiments/simple-seed-organizer/prototype/app
+        run: npm ci
+
+      - name: Run OpenAI connection test
+        working-directory: experiments/simple-seed-organizer/prototype/app
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: npx vitest run lib/openai-connection.test.ts
