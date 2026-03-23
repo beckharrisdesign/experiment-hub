@@ -39,7 +39,7 @@ export function PacketReader({ onDataExtracted, onClose }: PacketReaderProps) {
 
   const handleProcess = async () => {
     if (!frontImage) {
-      setError('Please select at least a front image');
+      setError('Add a front image to continue.');
       return;
     }
 
@@ -61,13 +61,13 @@ export function PacketReader({ onDataExtracted, onClose }: PacketReaderProps) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to process images');
+        throw new Error(result.error || "I couldn't read those images. Try again or enter the details manually.");
       }
 
       setExtractedData(result.data);
       onDataExtracted(result.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "I couldn't read those images. Try again or enter the details manually.");
     } finally {
       setLoading(false);
     }
@@ -75,14 +75,14 @@ export function PacketReader({ onDataExtracted, onClose }: PacketReaderProps) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-[#101828]">Scan Seed Packet</h2>
+      <h2 className="text-lg font-semibold text-[#101828]">Scan seed packet</h2>
       
       {/* Image Upload Sections */}
       <div className="grid grid-cols-2 gap-4">
         {/* Front Image */}
         <div>
           <label className="block text-sm font-medium text-[#4a5565] mb-2">
-            Front of Packet
+            Front of packet
           </label>
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
             {frontPreview ? (
@@ -137,7 +137,7 @@ export function PacketReader({ onDataExtracted, onClose }: PacketReaderProps) {
         {/* Back Image */}
         <div>
           <label className="block text-sm font-medium text-[#4a5565] mb-2">
-            Back of Packet (Optional)
+            Back of packet (optional)
           </label>
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
             {backPreview ? (
@@ -196,7 +196,7 @@ export function PacketReader({ onDataExtracted, onClose }: PacketReaderProps) {
         disabled={!frontImage || loading}
         className="w-full py-3 bg-[#16a34a] text-white rounded-lg font-medium hover:bg-[#15803d] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
       >
-        {loading ? 'Processing...' : 'Extract Information'}
+        {loading ? 'Reading packet…' : 'Extract information'}
       </button>
 
       {/* Error Display */}
@@ -209,7 +209,7 @@ export function PacketReader({ onDataExtracted, onClose }: PacketReaderProps) {
       {/* Extracted Data Display */}
       {extractedData && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-2">
-          <h3 className="font-semibold text-green-900">Extracted Information:</h3>
+          <h3 className="font-semibold text-green-900">Extracted information</h3>
           <div className="text-sm text-green-800 space-y-1">
             {extractedData.name && <p><strong>Name:</strong> {extractedData.name}</p>}
             {extractedData.variety && <p><strong>Variety:</strong> {extractedData.variety}</p>}

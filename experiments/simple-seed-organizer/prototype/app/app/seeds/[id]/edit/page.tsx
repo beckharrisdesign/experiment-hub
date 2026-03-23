@@ -41,12 +41,12 @@ export default function EditSeedPage() {
       .then((s) => {
         if (!cancelled) {
           setSeed(s);
-          setError(s ? null : 'Seed not found');
+          setError(s ? null : "We couldn't find that seed. It may have been deleted.");
         }
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load seed');
+          setError(err instanceof Error ? err.message : "I couldn't load that seed. Try reloading the page.");
           setSeed(null);
         }
       })
@@ -72,7 +72,7 @@ export default function EditSeedPage() {
   if (error || !seed) {
     return (
       <div className="min-h-screen bg-[#f9fafb] flex flex-col items-center justify-center pt-[72px] px-4">
-        <p className="text-[#6a7282] mb-4">{error || 'Seed not found'}</p>
+        <p className="text-[#6a7282] mb-4">{error || "We couldn't find that seed. It may have been deleted."}</p>
         <button
           onClick={() => router.push('/')}
           className="text-[#16a34a] font-medium hover:underline"

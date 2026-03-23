@@ -263,26 +263,26 @@ export function Profile() {
     e.preventDefault();
     setPasswordMessage(null);
     if (newPassword !== confirmPassword) {
-      setPasswordMessage({ type: 'error', text: 'Passwords do not match' });
+      setPasswordMessage({ type: 'error', text: "Those passwords don't match. Try again." });
       return;
     }
     if (newPassword.length < 6) {
-      setPasswordMessage({ type: 'error', text: 'Password must be at least 6 characters' });
+      setPasswordMessage({ type: 'error', text: 'Use at least 6 characters for your password.' });
       return;
     }
     if (!supabase) {
-      setPasswordMessage({ type: 'error', text: 'Not configured' });
+      setPasswordMessage({ type: 'error', text: "I couldn't update your password. Try reloading the page." });
       return;
     }
     setPasswordLoading(true);
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
-      setPasswordMessage({ type: 'success', text: 'Password updated' });
+      setPasswordMessage({ type: 'success', text: 'Your password has been updated.' });
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
-      setPasswordMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to update password' });
+      setPasswordMessage({ type: 'error', text: err instanceof Error ? err.message : "I couldn't update your password. Check your connection and try again." });
     } finally {
       setPasswordLoading(false);
     }

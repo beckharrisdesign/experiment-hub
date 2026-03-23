@@ -26,12 +26,12 @@ export default function SeedDetailPage() {
       .then((s) => {
         if (!cancelled) {
           setSeed(s);
-          setError(s ? null : 'Seed not found');
+          setError(s ? null : "We couldn't find that seed. It may have been deleted.");
         }
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load seed');
+          setError(err instanceof Error ? err.message : "I couldn't load that seed. Try reloading the page.");
           setSeed(null);
         }
       })
@@ -57,7 +57,7 @@ export default function SeedDetailPage() {
   if (error || !seed) {
     return (
       <div className="min-h-screen bg-[#f9fafb] flex flex-col items-center justify-center pt-[72px] px-4">
-        <p className="text-[#6a7282] mb-4">{error || 'Seed not found'}</p>
+        <p className="text-[#6a7282] mb-4">{error || "We couldn't find that seed. It may have been deleted."}</p>
         <button
           onClick={() => router.push('/')}
           className="text-[#16a34a] font-medium hover:underline"
@@ -112,14 +112,14 @@ export default function SeedDetailPage() {
                 disabled={deleting}
                 className="flex-1 py-2.5 rounded-xl border border-[#e5e7eb] text-sm font-medium text-[#4a5565] hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
-                Cancel
+                Keep it
               </button>
               <button
                 onClick={confirmDelete}
                 disabled={deleting}
                 className="flex-1 py-2.5 rounded-xl bg-red-600 text-sm font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-50"
               >
-                {deleting ? 'Deleting…' : 'Delete'}
+                {deleting ? 'Deleting…' : 'Delete seed'}
               </button>
             </div>
           </div>

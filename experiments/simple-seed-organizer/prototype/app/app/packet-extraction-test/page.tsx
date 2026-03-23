@@ -94,7 +94,7 @@ export default function PacketExtractionTestPage() {
         const frontPath = '/data/packet-front.png';
         const frontResponse = await fetch(frontPath);
         if (!frontResponse.ok) {
-          throw new Error(`Failed to load front image: ${frontResponse.status}`);
+          throw new Error("I couldn't load the front image. Check that the test file exists and try again.");
         }
         const frontBlob = await frontResponse.blob();
         const frontUrl = URL.createObjectURL(frontBlob);
@@ -104,7 +104,7 @@ export default function PacketExtractionTestPage() {
         const backPath = '/data/packet-back.png';
         const backResponse = await fetch(backPath);
         if (!backResponse.ok) {
-          throw new Error(`Failed to load back image: ${backResponse.status}`);
+          throw new Error("I couldn't load the back image. Check that the test file exists and try again.");
         }
         const backBlob = await backResponse.blob();
         const backUrl = URL.createObjectURL(backBlob);
@@ -115,7 +115,7 @@ export default function PacketExtractionTestPage() {
         // Auto-process after images are loaded
         await processWithAI(frontUrl, backUrl);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load images');
+        setError(err instanceof Error ? err.message : "I couldn't load the test images. Check that both files exist and try again.");
         setLoading(false);
       }
     };
@@ -176,15 +176,15 @@ export default function PacketExtractionTestPage() {
       try {
         result = JSON.parse(responseText);
       } catch (e) {
-        throw new Error(`Invalid response from server: ${responseText.substring(0, 200)}`);
+        throw new Error("I couldn't read the server response. Try again in a moment.");
       }
 
       if (!response.ok) {
-        throw new Error(result.error || result.message || 'Failed to process images with AI');
+        throw new Error(result.error || result.message || "I couldn't process those images. Try again or check your connection.");
       }
 
       if (!result.data) {
-        throw new Error('No data returned from AI extraction');
+        throw new Error("I couldn't extract any data from those images. Try a clearer photo.");
       }
 
       setAiExtractedData(result.data);
@@ -195,7 +195,7 @@ export default function PacketExtractionTestPage() {
       setShowForm(true);
       setStatus('Complete!');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during processing');
+      setError(err instanceof Error ? err.message : "I couldn't process those images. Try again or check your connection.");
       setStatus('Error occurred');
     } finally {
       setLoading(false);

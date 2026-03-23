@@ -863,7 +863,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
                             <textarea
                               value={notes}
                               onChange={(e) => setNotes(e.target.value)}
-                              placeholder="Any additional notes..."
+                              placeholder="e.g. Heirloom, open pollinated, or any growing notes"
                               rows={3}
                               className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] resize-none"
                             />
