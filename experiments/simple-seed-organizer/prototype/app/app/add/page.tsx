@@ -50,7 +50,7 @@ export default function AddSeedPage() {
     } catch (error) {
       console.error('[AddSeedPage] Error saving seed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to save seed to database';
-      toast.error("Seed didn't save — your info is still here, please try again.");
+      toast.error("I'm having trouble saving your seed right now. Your info is still here — try again in a moment.");
     }
   };
 
