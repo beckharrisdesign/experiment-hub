@@ -235,9 +235,10 @@ async function imageToBase64(image: File | string): Promise<string> {
 }
 
 /**
- * Normalize AI-extracted data to match our interface
+ * Normalize AI-extracted data to match our interface.
+ * Exported for testing.
  */
-function normalizeAIData(data: Record<string, unknown>): AIExtractedData {
+export function normalizeAIData(data: Record<string, unknown>): AIExtractedData {
   // Parse rawKeyValuePairs if present
   let rawPairs: Array<{ key: string; value: string; source?: 'front' | 'back' }> = [];
   if (data.rawKeyValuePairs && Array.isArray(data.rawKeyValuePairs)) {
@@ -257,7 +258,8 @@ function normalizeAIData(data: Record<string, unknown>): AIExtractedData {
     variety: str(data.variety),
     latinName: str(data.latinName),
     brand: str(data.brand),
-    year: typeof data.year === 'number' ? data.year : (data.year ? parseInt(String(data.year)) : undefined),
+    // Use != null so empty strings reach parseInt and produce NaN (distinguishable from "not provided")
+    year: typeof data.year === 'number' ? data.year : (data.year != null ? parseInt(String(data.year)) : undefined),
     quantity: str(data.quantity),
     daysToGermination: str(data.daysToGermination),
     daysToMaturity: str(data.daysToMaturity),
@@ -519,4 +521,3 @@ Rules:
     year: typeof raw.year === 'number' ? raw.year : undefined,
   }));
 }
-
