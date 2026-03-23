@@ -146,7 +146,7 @@ export function BatchImport({ userId, userTier = 'Seed Stash Starter', canUseAI 
       });
       const json = await res.json();
       if (!res.ok) {
-        toast.error(json.message || "I'm having trouble reading that photo. Try again or use a clearer shot.");
+        toast.error("I'm having trouble reading that photo. Try again or use a clearer shot.");
         return;
       }
       const seeds: AIExtractedData[] = json.seeds ?? [];
