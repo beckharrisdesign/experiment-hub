@@ -258,7 +258,8 @@ export function normalizeAIData(data: Record<string, unknown>): AIExtractedData 
     variety: str(data.variety),
     latinName: str(data.latinName),
     brand: str(data.brand),
-    year: typeof data.year === 'number' ? data.year : (data.year ? parseInt(String(data.year)) : undefined),
+    // Use != null so empty strings reach parseInt and produce NaN (distinguishable from "not provided")
+    year: typeof data.year === 'number' ? data.year : (data.year != null ? parseInt(String(data.year)) : undefined),
     quantity: str(data.quantity),
     daysToGermination: str(data.daysToGermination),
     daysToMaturity: str(data.daysToMaturity),
