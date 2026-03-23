@@ -19,7 +19,7 @@ describe('OpenAI API connection', () => {
   it('can reach the OpenAI API and get a response', async () => {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      throw new Error('Skipping: OPENAI_API_KEY not set');
+      throw new Error('OPENAI_API_KEY not set — add it as a GitHub repository secret');
     }
 
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
