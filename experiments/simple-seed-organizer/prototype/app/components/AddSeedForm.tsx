@@ -262,7 +262,7 @@ export function AddSeedForm({ onSubmit, onClose, initialData, userId, userTier =
 
     try {
       const response = await fetch(imageUrl);
-      if (!response.ok) throw new Error(`Failed to fetch ${side} image: ${response.status}`);
+      if (!response.ok) throw new Error("I couldn't load that image. Try uploading it again.");
       const blob = await response.blob();
       const file = new File([blob], `packet-${side}.png`, { type: blob.type || 'image/png' });
 

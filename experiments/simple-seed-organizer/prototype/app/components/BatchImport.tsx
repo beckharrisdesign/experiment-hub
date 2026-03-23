@@ -91,8 +91,8 @@ export function BatchImport({ userId, userTier = 'Seed Stash Starter', canUseAI 
           ...i,
           status: 'error',
           errorMessage: res.status === 402
-            ? 'AI limit reached. Upgrade to continue.'
-            : (json.message || 'Extraction failed'),
+            ? "You've used all your AI scans for this month. Upgrade to keep going."
+            : (json.message || "I couldn't read that packet. Try again or enter the details manually."),
         } : i));
       } else {
         setItems(prev => prev.map(i => i.id === item.id ? {
@@ -102,7 +102,7 @@ export function BatchImport({ userId, userTier = 'Seed Stash Starter', canUseAI 
     } catch (e) {
       setItems(prev => prev.map(i => i.id === item.id ? {
         ...i, status: 'error',
-        errorMessage: e instanceof Error ? e.message : 'Network error',
+        errorMessage: "I couldn't reach the server. Check your connection and try again.",
       } : i));
     } finally {
       activeRef.current--;
@@ -203,7 +203,7 @@ export function BatchImport({ userId, userTier = 'Seed Stash Starter', canUseAI 
     } catch (e) {
       updateItem(item.id, {
         status: 'error',
-        errorMessage: e instanceof Error ? e.message : 'Save failed',
+        errorMessage: "I couldn't save that seed. Try again in a moment.",
       });
     }
   }, [userId, updateItem]);
@@ -225,7 +225,7 @@ export function BatchImport({ userId, userTier = 'Seed Stash Starter', canUseAI 
     } catch (e) {
       updateItem(id, {
         status: 'error',
-        errorMessage: e instanceof Error ? e.message : 'Save failed',
+        errorMessage: "I couldn't save that seed. Try again in a moment.",
       });
     }
   }, [editingItemId, updateItem]);
@@ -276,7 +276,7 @@ export function BatchImport({ userId, userTier = 'Seed Stash Starter', canUseAI 
     <div className="min-h-screen w-full bg-[#f9fafb] flex flex-col">
       <main className="flex-1 w-full px-4 py-4 pt-24 pb-24 max-w-[1600px] mx-auto md:px-6 lg:px-8">
         <div className="mb-4">
-          <h1 className="text-xl font-semibold text-[#4a5565]">Import Seeds</h1>
+          <h1 className="text-xl font-semibold text-[#4a5565]">Import seeds</h1>
           <p className="text-sm text-[#99a1af] mt-1">
             Upload packet photos and we'll extract the details automatically.
           </p>
@@ -533,7 +533,7 @@ function StatusLabel({ item }: { item: QueueItem }) {
     return <span className="text-xs text-[#99a1af]">Saved to collection</span>;
   }
   if (item.status === 'error') {
-    return <span className="text-xs text-red-500 truncate max-w-[180px]">{item.errorMessage || 'Failed'}</span>;
+    return <span className="text-xs text-red-500 truncate max-w-[180px]">{item.errorMessage || "I couldn't process this one. Try again."}</span>;
   }
   return null;
 }
