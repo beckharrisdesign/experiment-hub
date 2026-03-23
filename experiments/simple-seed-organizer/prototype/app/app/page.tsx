@@ -14,6 +14,7 @@ import { PlantNowBanner } from '@/components/PlantNowBanner';
 import { SeedType } from '@/types/seed';
 import { getSeedAge } from '@/lib/storage';
 import { useAuth } from '@/lib/auth-context';
+import toast from 'react-hot-toast';
 
 const VALID_VIEW_MODES: ViewMode[] = ['type', 'month', 'age', 'photo'];
 
@@ -105,7 +106,7 @@ function HomeContent() {
         if (cancelled) return;
         console.error('[Home] Error loading seeds:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to load seeds';
-        alert(`Failed to load seeds: ${errorMessage}\n\nPlease check your Supabase connection.`);
+        toast.error("I'm having trouble loading your seeds right now. Try reloading the page or waiting a few minutes.");
         setSeeds([]);
         setSeedsLoading(false);
       }

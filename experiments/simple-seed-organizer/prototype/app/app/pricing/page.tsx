@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { getTierIndex } from '@/lib/plans';
+import toast from 'react-hot-toast';
 const PRICE_IDS = {
   homeGarden: {
     monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_MONTHLY,
@@ -195,7 +196,7 @@ function PricingContent() {
       if (data.error) throw new Error(data.error);
       if (data.url) window.location.href = data.url;
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to open billing');
+      toast.error("I'm having trouble reaching billing right now. Try reloading the page or waiting a few minutes.");
     } finally {
       setPortalLoading(false);
     }
@@ -217,7 +218,7 @@ function PricingContent() {
       if (data.error) throw new Error(data.error);
       if (data.url) window.location.href = data.url;
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Something went wrong');
+      toast.error("I'm having trouble starting checkout right now. Try reloading the page or waiting a few minutes.");
     } finally {
       setLoadingPriceId(null);
     }

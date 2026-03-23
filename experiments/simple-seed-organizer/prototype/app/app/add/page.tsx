@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { saveSeed } from '@/lib/storage';
 import { Seed } from '@/types/seed';
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 export default function AddSeedPage() {
   const router = useRouter();
@@ -49,7 +50,7 @@ export default function AddSeedPage() {
     } catch (error) {
       console.error('[AddSeedPage] Error saving seed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to save seed to database';
-      alert(`Failed to save seed: ${errorMessage}\n\nPlease check your Supabase connection and try again.`);
+      toast.error("I'm having trouble saving your seed right now. Your info is still here — try again in a moment.");
     }
   };
 

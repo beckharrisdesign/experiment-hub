@@ -5,6 +5,7 @@ import { Seed } from '@/types/seed';
 import { getSeedAge } from '@/lib/storage';
 import { getPlantingGuidance } from '@/lib/plantingGuidance';
 import { getProfile } from '@/lib/storage';
+import toast from 'react-hot-toast';
 
 interface SeedDetailProps {
   seed: Seed;
@@ -73,14 +74,14 @@ export function SeedDetail({ seed: seedProp, onClose, onEdit, onDelete, onUpdate
       });
       const json = await res.json();
       if (!res.ok) {
-        alert(json.message || 'Enrichment failed');
+        toast.error("I'm having trouble fetching growing info right now. Try again in a few minutes.");
         return;
       }
       setSeed(json.seed);
       setEnrichedFields(json.enriched ?? []);
       onUpdate?.(json.seed);
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Enrichment failed');
+      toast.error("I'm having trouble fetching growing info right now. Try again in a few minutes.");
     } finally {
       setEnriching(false);
     }

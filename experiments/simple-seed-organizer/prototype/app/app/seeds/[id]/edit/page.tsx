@@ -6,6 +6,7 @@ import { Seed } from '@/types/seed';
 import { getSeedById, updateSeed } from '@/lib/storage';
 import { AddSeedForm } from '@/components/AddSeedForm';
 import { useAuth } from '@/lib/auth-context';
+import toast from 'react-hot-toast';
 
 export default function EditSeedPage() {
   const router = useRouter();
@@ -91,7 +92,7 @@ export default function EditSeedPage() {
     } catch (err) {
       console.error('[EditSeedPage] Error updating seed:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to update seed in database';
-      alert(`Failed to update seed: ${errorMessage}\n\nPlease check your Supabase connection and try again.`);
+      toast.error("I'm having trouble saving your changes right now. Please try again in a moment.");
     }
   };
 
