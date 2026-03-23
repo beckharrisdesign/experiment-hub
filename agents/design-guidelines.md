@@ -322,6 +322,97 @@ When writing PRD UI/UX sections:
 - ❌ Slow, janky animations
 - ❌ Cryptic error messages
 
+## Voice & Tone
+
+UX writing standards for all product copy — errors, labels, empty states, loading, confirmations, and success messages. References noted per standard.
+
+---
+
+### 1. Never surface technical internals
+No raw error codes, HTTP status numbers, stack traces, or internal IDs. Every message tells the user what to do next, not what broke internally.
+> *"Something went wrong. Try again, or contact support if it keeps happening."* — not *"Error 500: Internal Server Error"*
+- *Reference: Mailchimp Content Style Guide ("plainspoken — strip away jargon"); Stripe design patterns (non-technical messaging)*
+
+---
+
+### 2. Sentence case everywhere
+"Add new payment method" not "Add New Payment Method." Capitalize only the first word and proper nouns.
+> *Reference: Google Material Design — Google's first UX writer Sue Factor championed sentence case because title case creates ambiguity about what counts as a "title" in UI. Material Design uses sentence case for all UI text.*
+
+---
+
+### 3. Verb-first, specific button labels
+Buttons name the action. Destructive buttons name what they destroy.
+> *"Save changes" not "Submit." "Delete photo" not "Delete."*
+- *Reference: Apple Human Interface Guidelines ("use a verb — prioritize clarity"); Google Material Design ("start with an action word"); Stripe ("name the action or destination within the label")*
+
+---
+
+### 4. Errors: what happened + what to do
+Error messages are two parts: what went wrong and what the user can do about it.
+> *"We couldn't save your changes. Check your connection and try again."*
+- *Reference: Mailchimp Content Style Guide (actionable, clear copy); Monzo Tone of Voice (active voice, state the cause and the path forward)*
+
+---
+
+### 5. Errors own the fault — first person
+The product takes responsibility. Use "I" or "we" in error messages. Never blame the user or hide behind passive voice.
+> *"I couldn't save your changes." not "Your changes weren't saved."*
+> *"I don't recognize that email." not "You entered an invalid email."*
+> *"I lost your session. Please sign in again." not "Session expired."*
+- *Reference: Monzo Tone of Voice — their guide explicitly warns against passive voice because it "looks like you're avoiding responsibility" and "hasn't said who made the decision." They teach: "We'll give you a refund" not "A refund will be given." They also note: never say "We'd like to apologise" — say "We're sorry."*
+
+---
+
+### 6. Successes belong to the user
+Frame confirmations and success states in the user's voice. They did this — celebrate it.
+> *"Your photo was added." not "Upload complete."*
+> *"You're all set." not "Account created."*
+> *"Your changes are saved." not "Save successful."*
+- *Reference: Stripe writing guidelines ("when referring to the user, always use second-person pronouns — 'Post your status'"); Duolingo (UX pattern of celebrating user achievement over system completion)*
+
+---
+
+### 7. Empty states are helpful
+Tell the user why the space is empty and what to do next. Never just "No results."
+> *"No photos yet. Add one to get started."*
+- *Reference: Slack — their onboarding empty state redesign ("say hi to yourself") is a cited example of turning blank moments into invitations to act*
+
+---
+
+### 8. Loading copy is reassuring
+Name what's happening. Don't overpromise timing.
+> *"Saving…" or "Fetching your photos…"* — not bare *"Loading..."*
+- *Reference: Slack AI loading states ("is thinking…", shimmer + typing indicators); Slack's `assistant.threads.setStatus` patterns*
+
+---
+
+### 9. Placeholders show examples, not labels
+Placeholder text disappears on focus — it can't carry essential information. Show an example value instead.
+> `you@example.com` not `Email address`
+- *Reference: Google Material Design ("avoid placeholder wording that simply repeats the field title — use example values like John, Doe")*
+
+---
+
+### 10. Calm punctuation
+No exclamation marks on errors. No ALL CAPS. Ellipsis only for in-progress states. Periods in multi-sentence messages; none on single labels.
+- *Reference: Mailchimp Content Style Guide (tone calibrated to emotional context — errors shouldn't sound chipper; humor reserved for appropriate moments)*
+
+---
+
+### 11. Confirmation dialogs are unambiguous
+Title states what's happening. Body explains consequences. Buttons match the action — no "Yes / No."
+> Title: *"Delete photo?"* Body: *"This can't be undone."* Buttons: *"Delete photo" / "Keep it"*
+- *Reference: Apple Human Interface Guidelines (alert and dialog writing guidelines)*
+
+---
+
+### 12. Human, direct tone
+Short sentences. Plain words. No "utilize," "seamlessly," or "Please be advised." Match emotional weight — don't be chipper in serious moments.
+- *Reference: Monzo Tone of Voice ("straightforward kindness — go out of your way to make complex things simple"); Mailchimp Content Style Guide ("friendly, human, never robotic — write like a human and don't be afraid to break rules if it makes writing more relatable")*
+
+---
+
 ## Tools & Resources
 
 ### Design Tools
