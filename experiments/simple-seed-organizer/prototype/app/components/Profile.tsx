@@ -253,7 +253,7 @@ export function Profile() {
       if (data.error) throw new Error(data.error);
       if (data.url) window.location.href = data.url;
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to open billing');
+      toast.error("Couldn't reach billing right now — please try again.");
     } finally {
       setPortalLoading(false);
     }

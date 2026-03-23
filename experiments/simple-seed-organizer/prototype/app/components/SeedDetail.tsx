@@ -74,14 +74,14 @@ export function SeedDetail({ seed: seedProp, onClose, onEdit, onDelete, onUpdate
       });
       const json = await res.json();
       if (!res.ok) {
-        toast.error(json.message || 'Enrichment failed');
+        toast.error(json.message || "Couldn't fetch growing info right now — try again shortly.");
         return;
       }
       setSeed(json.seed);
       setEnrichedFields(json.enriched ?? []);
       onUpdate?.(json.seed);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Enrichment failed');
+      toast.error("Couldn't fetch growing info right now — try again shortly.");
     } finally {
       setEnriching(false);
     }

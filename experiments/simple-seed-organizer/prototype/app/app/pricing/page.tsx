@@ -196,7 +196,7 @@ function PricingContent() {
       if (data.error) throw new Error(data.error);
       if (data.url) window.location.href = data.url;
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to open billing');
+      toast.error("Couldn't reach billing right now — please try again.");
     } finally {
       setPortalLoading(false);
     }
@@ -218,7 +218,7 @@ function PricingContent() {
       if (data.error) throw new Error(data.error);
       if (data.url) window.location.href = data.url;
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Something went wrong');
+      toast.error("Couldn't start checkout — please try again.");
     } finally {
       setLoadingPriceId(null);
     }

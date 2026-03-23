@@ -106,7 +106,7 @@ function HomeContent() {
         if (cancelled) return;
         console.error('[Home] Error loading seeds:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to load seeds';
-        toast.error(errorMessage);
+        toast.error("Couldn't load your seeds — try refreshing the page.");
         setSeeds([]);
         setSeedsLoading(false);
       }

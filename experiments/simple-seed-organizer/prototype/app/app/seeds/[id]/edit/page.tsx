@@ -92,7 +92,7 @@ export default function EditSeedPage() {
     } catch (err) {
       console.error('[EditSeedPage] Error updating seed:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to update seed in database';
-      toast.error(`Failed to update seed: ${errorMessage}`);
+      toast.error("Changes didn't save — please try again.");
     }
   };
 

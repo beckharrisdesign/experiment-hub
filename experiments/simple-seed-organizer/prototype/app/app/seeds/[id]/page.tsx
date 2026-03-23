@@ -81,7 +81,7 @@ export default function SeedDetailPage() {
     } catch (err) {
       console.error('[SeedDetailPage] Delete error:', err);
       const msg = err instanceof Error ? err.message : 'Failed to delete seed';
-      toast.error(`Failed to delete seed: ${msg}`);
+      toast.error("Couldn't delete that seed — please try again.");
       setShowDeleteConfirm(false);
     } finally {
       setDeleting(false);
