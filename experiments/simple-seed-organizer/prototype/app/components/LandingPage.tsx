@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { AuthForm } from './AuthForm';
 import { useAuth } from '@/lib/auth-context';
+import toast from 'react-hot-toast';
 
 function PricingCard({
   title,
@@ -133,7 +134,7 @@ export function LandingPage() {
       if (data.error) throw new Error(data.error);
       if (data.url) window.location.href = data.url;
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Something went wrong');
+      toast.error(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setLoadingPriceId(null);
     }

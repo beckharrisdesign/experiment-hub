@@ -7,6 +7,7 @@ import { saveSeed } from '@/lib/storage';
 import { uploadSeedPhoto } from '@/lib/seed-photos';
 import { processImageFile } from '@/lib/imageUtils';
 import { AddSeedForm } from '@/components/AddSeedForm';
+import toast from 'react-hot-toast';
 
 type QueueStatus = 'pending' | 'extracting' | 'ready' | 'saving' | 'saved' | 'error';
 
@@ -145,12 +146,12 @@ export function BatchImport({ userId, userTier = 'Seed Stash Starter', canUseAI 
       });
       const json = await res.json();
       if (!res.ok) {
-        alert(json.message || 'Failed to process pile photo');
+        toast.error(json.message || 'Failed to process pile photo');
         return;
       }
       const seeds: AIExtractedData[] = json.seeds ?? [];
       if (seeds.length === 0) {
-        alert('No seed packets detected in that photo. Try a closer or clearer shot.');
+        toast.error('No seed packets detected in that photo. Try a closer or clearer shot.');
         return;
       }
       const objectUrl = URL.createObjectURL(file);
@@ -163,7 +164,7 @@ export function BatchImport({ userId, userTier = 'Seed Stash Starter', canUseAI 
       }));
       setItems(prev => [...prev, ...newItems]);
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Failed to process pile photo');
+      toast.error(e instanceof Error ? e.message : 'Failed to process pile photo');
     } finally {
       setPileLoading(false);
     }

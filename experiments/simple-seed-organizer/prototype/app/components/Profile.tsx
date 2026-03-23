@@ -8,6 +8,7 @@ import { getProfile, saveProfile, getSeedCount } from '@/lib/storage';
 import { lookupZone, formatZoneTemperature } from '@/lib/zoneLookup';
 import { getGrowingSeasonLength } from '@/data/climate';
 import { useAuth } from '@/lib/auth-context';
+import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { PLANS, getTierIndex, getUpgradeTiers } from '@/lib/plans';
 
@@ -252,7 +253,7 @@ export function Profile() {
       if (data.error) throw new Error(data.error);
       if (data.url) window.location.href = data.url;
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to open billing');
+      toast.error(err instanceof Error ? err.message : 'Failed to open billing');
     } finally {
       setPortalLoading(false);
     }

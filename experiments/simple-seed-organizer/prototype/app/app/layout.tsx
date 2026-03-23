@@ -3,6 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { AppShell } from "@/components/AppShell";
+import { AppToaster } from "@/components/AppToaster";
 
 const GA_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://simple-seed-organizer.vercel.app';
@@ -74,6 +75,7 @@ export default function RootLayout({
           <AppShell>
             <div id="app-container">{children}</div>
           </AppShell>
+          <AppToaster />
         </AuthProvider>
       </body>
     </html>
