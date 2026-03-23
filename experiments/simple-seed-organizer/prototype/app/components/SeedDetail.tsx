@@ -100,7 +100,7 @@ export function SeedDetail({ seed: seedProp, onClose, onEdit, onDelete, onUpdate
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h1 className="text-lg font-semibold text-[#101828]">Seed Details</h1>
+        <h1 className="text-lg font-semibold text-[#101828]">Seed details</h1>
         <button onClick={onEdit} className="p-2 -mr-2 text-[#16a34a]">
           Edit
         </button>
@@ -125,7 +125,7 @@ export function SeedDetail({ seed: seedProp, onClose, onEdit, onDelete, onUpdate
             {/* Seed Packet Images */}
             {(seed.photoFront || seed.photoBack) && (
               <div className="mb-6">
-                <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Packet Images</h3>
+                <h3 className="text-sm font-semibold text-[#4a5565] mb-3">Packet images</h3>
                 <div className="flex gap-4 flex-wrap">
                   {seed.photoFront && (
                     <div>
@@ -157,7 +157,7 @@ export function SeedDetail({ seed: seedProp, onClose, onEdit, onDelete, onUpdate
             {plantingGuidance && (
               <div className="mb-6">
                 <div className="mb-3">
-                  <h3 className="text-sm font-semibold text-[#4a5565] mb-1">Planting Guidance</h3>
+                  <h3 className="text-sm font-semibold text-[#4a5565] mb-1">Planting guidance</h3>
                   {(() => {
                     const profile = getProfile();
                     if (profile?.zipCode || profile?.growingZone) {
@@ -184,7 +184,7 @@ export function SeedDetail({ seed: seedProp, onClose, onEdit, onDelete, onUpdate
                           <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          <span className="text-xs font-medium text-green-700">Sow Indoors</span>
+                          <span className="text-xs font-medium text-green-700">Sow indoors</span>
                         </div>
                         <p className="text-lg font-bold text-green-900">{formatDate(plantingGuidance.startSeedsIndoors)}</p>
                         {plantingGuidance.harvestDates?.fromIndoorStart && (
@@ -212,7 +212,7 @@ export function SeedDetail({ seed: seedProp, onClose, onEdit, onDelete, onUpdate
                           <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                           </svg>
-                          <span className="text-xs font-medium text-blue-700">Average Last Frost</span>
+                          <span className="text-xs font-medium text-blue-700">Average last frost</span>
                         </div>
                         <p className="text-lg font-bold text-blue-900">{formatDate(plantingGuidance.lastFrostDate)}</p>
                       </div>
@@ -225,7 +225,7 @@ export function SeedDetail({ seed: seedProp, onClose, onEdit, onDelete, onUpdate
                           <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                           </svg>
-                          <span className="text-xs font-medium text-amber-700">Direct Sow</span>
+                          <span className="text-xs font-medium text-amber-700">Direct sow</span>
                         </div>
                         <p className="text-lg font-bold text-amber-900">{formatDate(plantingGuidance.directSowDate)}</p>
                         {plantingGuidance.harvestDates?.fromDirectSow && (
