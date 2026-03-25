@@ -64,7 +64,7 @@ export default function TabsContent({
         {mr?.executiveSummary && (
           <Section title="Summary">
             <div className="prose prose-sm max-w-none text-text-dark-secondary">
-              <MarkdownContent content={mr.executiveSummary} />
+              <MarkdownContent content={mr.executiveSummary} variant="light" />
             </div>
           </Section>
         )}
@@ -149,7 +149,7 @@ export default function TabsContent({
         {mr?.goNoGo && (
           <Section title="Recommendation">
             <div className="prose prose-sm max-w-none text-text-dark-secondary">
-              <MarkdownContent content={mr.goNoGo} />
+              <MarkdownContent content={mr.goNoGo} variant="light" />
             </div>
           </Section>
         )}
@@ -192,13 +192,13 @@ export default function TabsContent({
         <div className="space-y-4">
           {prd.overview && (
             <div className="prose prose-sm max-w-none text-text-dark-secondary px-1">
-              <MarkdownContent content={prd.overview} />
+              <MarkdownContent content={prd.overview} variant="light" />
             </div>
           )}
           {prdSections.map((s) => (
             <Section key={s.title} title={s.title}>
               <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                <MarkdownContent content={s.content!} />
+                <MarkdownContent content={s.content!} variant="light" />
               </div>
             </Section>
           ))}
