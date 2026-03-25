@@ -257,19 +257,40 @@ export default function TabsContent({
                   </p>
                   <p>2. Build a simple landing page for ad validation</p>
                   <p>3. Connect to the shared Notion database for responses</p>
-                  <p>4. Update experiment status to "planned" or "live"</p>
+                  <p>
+                    4. Update experiment status to{" "}
+                    <code className="bg-background-mint px-1 rounded text-xs">
+                      planned
+                    </code>{" "}
+                    or{" "}
+                    <code className="bg-background-mint px-1 rounded text-xs">
+                      live
+                    </code>
+                  </p>
                 </>
               ) : experiment.validation.status === "planned" ? (
                 <>
                   <p>1. Deploy your landing page</p>
                   <p>2. Set up traffic sources (ads, social, etc.)</p>
-                  <p>3. Update status to "live" when ready</p>
+                  <p>
+                    3. Update status to{" "}
+                    <code className="bg-background-mint px-1 rounded text-xs">
+                      live
+                    </code>{" "}
+                    when ready
+                  </p>
                 </>
               ) : experiment.validation.status === "live" ? (
                 <>
                   <p>1. Monitor responses in Notion</p>
                   <p>2. Analyse conversion rates</p>
-                  <p>3. Mark as "complete" when validation is done</p>
+                  <p>
+                    3. Mark as{" "}
+                    <code className="bg-background-mint px-1 rounded text-xs">
+                      complete
+                    </code>{" "}
+                    when validation is done
+                  </p>
                 </>
               ) : (
                 <p>Validation complete — review results in Notion.</p>
