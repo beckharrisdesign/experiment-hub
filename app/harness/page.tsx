@@ -3,23 +3,6 @@
 import Header from "@/components/Header";
 import MermaidDiagram from "@/components/MermaidDiagram";
 
-const workflowDiagram = `
-flowchart LR
-  idea(["💡 Idea"])
-  EC["experiment-creator"]
-  MR["market-research"]
-  PRD["prd-writer"]
-  PB["prototype-builder"]
-  DA(["design-advisor"])
-
-  idea --> EC --> MR --> PRD --> PB
-  PRD -.->|"invokes"| DA
-  PB -.->|"invokes"| DA
-
-  style idea fill:#14ae5c,stroke:#14ae5c,color:#113723
-  style DA fill:#1e5c3a,stroke:#14ae5c,color:#cff7d3,stroke-dasharray:4
-`;
-
 const architectureDiagram = `
 flowchart TB
   subgraph central["/agents/ — hub-level"]
@@ -109,21 +92,6 @@ export default function HarnessPage() {
 
       <section className="bg-background-light px-16 py-12 flex-1">
         <div className="max-w-4xl mx-auto space-y-10">
-          {/* Workflow */}
-          <div>
-            <h2 className="font-heading text-lg font-semibold text-text-dark mb-1">
-              Workflow
-            </h2>
-            <p className="text-sm text-text-dark-secondary mb-4">
-              Each step requires explicit user approval before the next begins.
-              Design advisor is automatically invoked at the PRD and prototype
-              stages.
-            </p>
-            <div className="rounded-lg border border-border-dark bg-white p-6 overflow-x-auto">
-              <MermaidDiagram chart={workflowDiagram} />
-            </div>
-          </div>
-
           {/* Architecture */}
           <div>
             <h2 className="font-heading text-lg font-semibold text-text-dark mb-1">
