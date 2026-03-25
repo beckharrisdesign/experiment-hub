@@ -119,7 +119,7 @@ export default function HarnessPage() {
               Design advisor is automatically invoked at the PRD and prototype
               stages.
             </p>
-            <div className="rounded-lg border border-border-dark bg-background-secondary p-6 overflow-x-auto">
+            <div className="rounded-lg border border-border-dark bg-white p-6 overflow-x-auto">
               <MermaidDiagram chart={workflowDiagram} />
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function HarnessPage() {
               Two layers: hub-level agents shared across all experiments, and
               experiment-specific agents for domain intelligence.
             </p>
-            <div className="rounded-lg border border-border-dark bg-background-secondary p-6 overflow-x-auto">
+            <div className="rounded-lg border border-border-dark bg-white p-6 overflow-x-auto">
               <MermaidDiagram chart={architectureDiagram} />
             </div>
           </div>
