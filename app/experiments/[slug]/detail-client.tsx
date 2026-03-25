@@ -39,7 +39,6 @@ export default function ExperimentDetailClient({
   // Build available tabs based on what data exists
   const tabs: Tab[] = [
     { id: "overview", label: "Overview" },
-    ...(mr ? [{ id: "market-research", label: "Market Research" }] : []),
     ...(prd ? [{ id: "prd", label: "PRD" }] : []),
     ...(hasPRDFile ? [{ id: "landing", label: "Landing Page" }] : []),
     { id: "details", label: "Details" },
@@ -83,7 +82,7 @@ export default function ExperimentDetailClient({
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center h-[51px] px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.id
-                  ? "bg-[rgba(20,174,92,0.1)] border-b-2 border-accent-primary text-text-primary"
+                  ? "bg-background-active border-b-[3px] border-accent-primary text-text-primary"
                   : "text-text-primary hover:bg-background-tertiary"
               }`}
             >
