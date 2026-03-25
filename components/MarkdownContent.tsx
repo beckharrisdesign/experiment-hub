@@ -41,7 +41,7 @@ function renderMarkdownLine(
     const bulletContent = line.replace("- ", "");
     const parts = bulletContent.split(/(\*\*[^*]+\*\*)/g);
     return (
-      <div key={idx} className={`ml-4 my-1 ${t.body}`}>
+      <div key={idx} className={`ml-4 mb-1.5 ${t.body}`}>
         •{" "}
         {parts.map((part, i) =>
           part.startsWith("**") && part.endsWith("**") ? (
@@ -59,7 +59,7 @@ function renderMarkdownLine(
   if (line.trim()) {
     const parts = line.split(/(\*\*[^*]+\*\*)/g);
     return (
-      <p key={idx} className={`my-1 ${t.body}`}>
+      <p key={idx} className={`mb-3 ${t.body}`}>
         {parts.map((part, i) =>
           part.startsWith("**") && part.endsWith("**") ? (
             <strong key={i} className={t.bold}>
