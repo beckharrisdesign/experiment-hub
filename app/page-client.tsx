@@ -106,7 +106,7 @@ export default function HomePageClient({
         <div className="flex gap-4 items-start max-w-screen-xl mx-auto">
           {/* Large heading */}
           <div className="w-[411px] pr-5 shrink-0">
-            <h1 className="font-heading text-[60px] font-semibold text-text-primary leading-tight">
+            <h1 className="font-heading text-[60px] font-semibold text-[rgba(247,255,248,0.8)] leading-tight">
               Welcome
               <br />
               to BHD Labs

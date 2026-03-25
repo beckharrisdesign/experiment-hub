@@ -15,6 +15,8 @@ const config: Config = {
           tertiary: "#1e5c3a", // hover states on dark bg
           light: "#f7fff8", // near-white (experiment list section)
           mint: "#cff7d3", // mint (recent activity band)
+          active: "rgba(20,174,92,0.1)", // active nav item bg
+          overlay: "rgba(255,255,255,0.2)", // subtle white overlay on dark sections
         },
         text: {
           primary: "#cff7d3", // light mint on dark bg
@@ -22,6 +24,7 @@ const config: Config = {
           muted: "#4d9a60", // muted on dark bg
           dark: "#194b31", // dark text for light sections
           "dark-secondary": "#2d6b47", // secondary text on light sections
+          logo: "#f5f5f5", // logo/wordmark text
         },
         border: "rgba(20,174,92,0.2)",
         "border-dark": "#194b31", // border on light sections

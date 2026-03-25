@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 const navLinks = [
   { label: "Experiments", href: "/" },
   { label: "Workflow", href: "/workflow" },
+  { label: "Scoring", href: "/scoring" },
+  { label: "Harness", href: "/harness" },
 ];
 
 export default function Header() {
@@ -16,7 +18,7 @@ export default function Header() {
       <div className="flex items-center gap-8 px-16 h-[51px]">
         <Link
           href="/"
-          className="font-heading text-xl font-semibold text-text-primary whitespace-nowrap"
+          className="font-heading text-xl font-semibold text-text-logo whitespace-nowrap"
         >
           BHD Labs
         </Link>
@@ -30,7 +32,7 @@ export default function Header() {
                 href={href}
                 className={`flex items-center h-full px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
                   isActive
-                    ? "bg-[rgba(20,174,92,0.1)] border-b-2 border-accent-primary text-text-primary"
+                    ? "bg-background-active border-b-[3px] border-accent-primary text-text-primary"
                     : "text-text-primary hover:bg-background-tertiary"
                 }`}
               >
