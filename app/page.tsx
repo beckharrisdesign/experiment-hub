@@ -23,9 +23,11 @@ interface ExperimentWithRelated extends Experiment {
 }
 
 export default async function HomePage() {
+  const showPrototypes = process.env.SHOW_PROTOTYPES === "true";
+
   try {
     const experiments = await getExperiments();
-    const prototypes = await getPrototypes();
+    const prototypes = showPrototypes ? await getPrototypes() : [];
     const docs = await getDocumentation();
 
     // Create Maps for O(1) lookups instead of O(n) array.find() operations
@@ -60,10 +62,12 @@ export default async function HomePage() {
 
           return {
             ...exp,
-            prototype: prototypeMap.get(exp.id) || null,
+            prototype: showPrototypes ? prototypeMap.get(exp.id) || null : null,
             documentation: docsMap.get(exp.id) || null,
             hasPRDFile: fileChecks.hasPRDFile,
-            hasPrototypeDir: fileChecks.hasPrototypeDir,
+            hasPrototypeDir: showPrototypes
+              ? fileChecks.hasPrototypeDir
+              : false,
             hasMRFile: fileChecks.hasMRFile,
             hasLandingPage: fileChecks.hasLandingPage,
             moa,

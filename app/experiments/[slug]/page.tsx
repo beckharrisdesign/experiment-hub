@@ -47,9 +47,13 @@ export default async function ExperimentDetailPage({
     notFound();
   }
 
+  const showPrototypes = process.env.SHOW_PROTOTYPES === "true";
+
   // Parallelize all data fetching operations
   const [prototype, documentation, fileChecks] = await Promise.all([
-    getPrototypeByExperimentId(experiment.id).catch(() => null),
+    showPrototypes
+      ? getPrototypeByExperimentId(experiment.id).catch(() => null)
+      : Promise.resolve(null),
     getDocumentationByExperimentId(experiment.id).catch(() => null),
     checkExperimentFiles(experiment.directory).catch(() => ({
       hasPRDFile: false,
