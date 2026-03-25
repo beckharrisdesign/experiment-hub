@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import StatusBadge from "@/components/StatusBadge";
 import Header from "@/components/Header";
 import {
   getExperimentBySlug,
@@ -10,8 +9,8 @@ import {
   parsePRD,
   parseMarketResearch,
 } from "@/lib/data";
-import Link from "next/link";
-import TabsContent from "./tabs-content";
+import { getRecentCommits } from "@/lib/git";
+import ExperimentDetailClient from "./detail-client";
 
 // Mark this route as dynamic to ensure it's always rendered on-demand
 export const dynamic = "force-dynamic";
@@ -24,20 +23,24 @@ export default async function ExperimentDetailPage({
 }) {
   let slug: string;
   let experiment;
-  
+
   try {
     const resolvedParams = await params;
     slug = resolvedParams.slug;
   } catch (error: any) {
     console.error("[ExperimentDetailPage] Error resolving params:", error);
-    throw new Error(`Failed to resolve params: ${error?.message || String(error)}`);
+    throw new Error(
+      `Failed to resolve params: ${error?.message || String(error)}`,
+    );
   }
-  
+
   try {
     experiment = await getExperimentBySlug(slug);
   } catch (error: any) {
     console.error("[ExperimentDetailPage] Error fetching experiment:", error);
-    throw new Error(`Failed to fetch experiment: ${error?.message || String(error)}`);
+    throw new Error(
+      `Failed to fetch experiment: ${error?.message || String(error)}`,
+    );
   }
 
   if (!experiment) {
@@ -56,7 +59,12 @@ export default async function ExperimentDetailPage({
     })),
   ]);
 
-  const { hasPRDFile, hasPrototypeDir: hasPrototypeFiles, hasMRFile, mrContent } = fileChecks;
+  const {
+    hasPRDFile,
+    hasPrototypeDir: hasPrototypeFiles,
+    hasMRFile,
+    mrContent,
+  } = fileChecks;
 
   // Read and parse documents in parallel
   const [prd, mr] = await Promise.all([
@@ -68,7 +76,10 @@ export default async function ExperimentDetailPage({
           return parsePRD(prdContent);
         }
       } catch (error) {
-        console.error("[ExperimentDetailPage] Error reading/parsing PRD:", error);
+        console.error(
+          "[ExperimentDetailPage] Error reading/parsing PRD:",
+          error,
+        );
       }
       return null;
     })(),
@@ -77,51 +88,31 @@ export default async function ExperimentDetailPage({
       try {
         return parseMarketResearch(mrContent);
       } catch (error) {
-        console.error("[ExperimentDetailPage] Error parsing Market Research:", error);
+        console.error(
+          "[ExperimentDetailPage] Error parsing Market Research:",
+          error,
+        );
       }
       return null;
     })(),
   ]);
 
+  const recentCommits = getRecentCommits(3);
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex flex-col items-center w-full px-8 py-8 lg:px-16">
-        <div className="mx-auto w-full max-w-7xl">
-          {/* Breadcrumbs */}
-          <nav className="mb-6 text-sm">
-            <ol className="flex items-center gap-2 text-text-secondary">
-              <li>
-                <Link href="/" className="hover:text-accent-primary">
-                  Experiments
-                </Link>
-              </li>
-              <li>/</li>
-              <li className="text-text-primary">{experiment.name}</li>
-            </ol>
-          </nav>
-
-          {/* Header Section */}
-          <div className="mb-8 flex items-start justify-between">
-            <div className="flex-1">
-              <h1 className="text-4xl font-semibold text-text-primary">{experiment.name}</h1>
-              <p className="mt-2 text-lg text-text-secondary">{experiment.statement}</p>
-            </div>
-          </div>
-
-          {/* Main Content - Tabs */}
-          <TabsContent
-            experiment={experiment}
-            prd={prd}
-            mr={mr}
-            prototype={prototype}
-            documentation={documentation}
-            hasPRDFile={hasPRDFile}
-            hasMRFile={hasMRFile}
-            hasPrototypeFiles={hasPrototypeFiles}
-          />
-        </div>
-      </main>
+      <ExperimentDetailClient
+        experiment={experiment}
+        prd={prd}
+        mr={mr}
+        prototype={prototype}
+        documentation={documentation}
+        hasPRDFile={hasPRDFile}
+        hasMRFile={hasMRFile}
+        hasPrototypeFiles={hasPrototypeFiles}
+        recentCommits={recentCommits}
+      />
     </div>
   );
 }

@@ -1,4 +1,11 @@
-import { getExperiments, getPrototypes, getDocumentation, checkExperimentFiles, parseMarketResearch } from "@/lib/data";
+import {
+  getExperiments,
+  getPrototypes,
+  getDocumentation,
+  checkExperimentFiles,
+  parseMarketResearch,
+} from "@/lib/data";
+import { getRecentCommits } from "@/lib/git";
 import HomePageClient from "./page-client";
 import type { Experiment, Prototype, Documentation } from "@/types";
 
@@ -32,13 +39,13 @@ export default async function HomePage() {
         try {
           // Batch all file system operations in parallel for this experiment
           const fileChecks = await checkExperimentFiles(exp.directory);
-          
+
           // Parse market research if available
           let moa: string | null = null;
           let goNoGo: string | null = null;
           let somYear1: string | null = null;
           let somYear3: string | null = null;
-          
+
           if (fileChecks.mrContent) {
             try {
               const mr = parseMarketResearch(fileChecks.mrContent);
@@ -65,7 +72,10 @@ export default async function HomePage() {
             somYear3,
           };
         } catch (error) {
-          console.error(`[HomePage] Error processing experiment ${exp.id}:`, error);
+          console.error(
+            `[HomePage] Error processing experiment ${exp.id}:`,
+            error,
+          );
           // Return experiment with minimal data if processing fails
           return {
             ...exp,
@@ -81,10 +91,17 @@ export default async function HomePage() {
             somYear3: null,
           };
         }
-      })
+      }),
     );
 
-    return <HomePageClient initialExperiments={experimentsWithRelated} />;
+    const recentCommits = getRecentCommits(3);
+
+    return (
+      <HomePageClient
+        initialExperiments={experimentsWithRelated}
+        recentCommits={recentCommits}
+      />
+    );
   } catch (error) {
     console.error("[HomePage] Fatal error:", error);
     throw error;

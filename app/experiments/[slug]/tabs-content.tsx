@@ -3,7 +3,6 @@
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
 import MarkdownContent from "@/components/MarkdownContent";
-import Tabs from "@/components/Tabs";
 import LandingPageLink from "@/components/LandingPageLink";
 import ScoreCard from "@/components/ScoreCard";
 import MetricCard from "@/components/MetricCard";
@@ -12,7 +11,15 @@ import { slugify } from "@/lib/utils";
 import { Experiment, Prototype, Documentation } from "@/types";
 import type { parsePRD, parseMarketResearch } from "@/lib/data";
 
-function ScoreBadge({ value, label, fullName }: { value: number | undefined; label: string; fullName: string }) {
+function ScoreBadge({
+  value,
+  label,
+  fullName,
+}: {
+  value: number | undefined;
+  label: string;
+  fullName: string;
+}) {
   if (value === undefined) {
     return <span className="text-text-muted">—</span>;
   }
@@ -28,7 +35,7 @@ function ScoreBadge({ value, label, fullName }: { value: number | undefined; lab
   return (
     <span
       className={`inline-flex items-center justify-center h-6 w-6 rounded-md border text-xs font-medium ${getBadgeColor(
-        value
+        value,
       )}`}
       title={`${fullName}: ${value}/5`}
     >
@@ -46,6 +53,7 @@ interface TabsContentProps {
   hasPRDFile: boolean;
   hasMRFile: boolean;
   hasPrototypeFiles: boolean;
+  activeTab: string;
 }
 
 export default function TabsContent({
@@ -57,6 +65,7 @@ export default function TabsContent({
   hasPRDFile,
   hasMRFile,
   hasPrototypeFiles,
+  activeTab,
 }: TabsContentProps) {
   const tabs = [];
 
@@ -66,7 +75,9 @@ export default function TabsContent({
     label: "Overview",
     content: (
       <div className="rounded-lg border border-border bg-background-secondary p-6 space-y-8">
-        <h1 className="text-2xl font-semibold text-text-primary mb-8">Overview</h1>
+        <h1 className="text-2xl font-semibold text-text-primary mb-8">
+          Overview
+        </h1>
         {/* Scores Section */}
         {experiment.scores && (
           <div>
@@ -82,8 +93,11 @@ export default function TabsContent({
                   experiment.scoreRationale?.businessOpportunity ??
                   (mr ? (
                     <>
-                      Market opportunity with TAM of {mr.tam || "N/A"} and SAM of {mr.sam || "N/A"}.
-                      {mr.executiveSummary && (mr.executiveSummary.includes("niche") || mr.executiveSummary.includes("underserved"))
+                      Market opportunity with TAM of {mr.tam || "N/A"} and SAM
+                      of {mr.sam || "N/A"}.
+                      {mr.executiveSummary &&
+                      (mr.executiveSummary.includes("niche") ||
+                        mr.executiveSummary.includes("underserved"))
                         ? " Strong niche demand identified in market research."
                         : " Market research indicates viable opportunity."}
                     </>
@@ -146,18 +160,42 @@ export default function TabsContent({
       label: "Market Research",
       content: (
         <div className="rounded-lg border border-border bg-background-secondary p-6 space-y-8">
-          <h1 className="text-2xl font-semibold text-text-primary mb-8">Market Research</h1>
+          <h1 className="text-2xl font-semibold text-text-primary mb-8">
+            Market Research
+          </h1>
           {/* Market Size Metrics */}
           <div>
             <h2 className="mb-4 text-3xl font-semibold text-text-primary">
               Market Size
             </h2>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
-              <MetricCard label="TAM" value={mr.tam || "N/A"} description="Total Addressable Market" note={mr.tamDesc ?? undefined} />
-              <MetricCard label="SAM" value={mr.sam || "N/A"} description="Serviceable Addressable Market" note={mr.samDesc ?? undefined} />
-              <MetricCard label="SOM · Year 1" value={mr.somYear1 || "N/A"} description="Serviceable Obtainable Market" />
-              <MetricCard label="SOM · Year 2" value={mr.somYear2 || "N/A"} description="Serviceable Obtainable Market" />
-              <MetricCard label="SOM · Year 3" value={mr.somYear3 || mr.som || "N/A"} description="Serviceable Obtainable Market" />
+              <MetricCard
+                label="TAM"
+                value={mr.tam || "N/A"}
+                description="Total Addressable Market"
+                note={mr.tamDesc ?? undefined}
+              />
+              <MetricCard
+                label="SAM"
+                value={mr.sam || "N/A"}
+                description="Serviceable Addressable Market"
+                note={mr.samDesc ?? undefined}
+              />
+              <MetricCard
+                label="SOM · Year 1"
+                value={mr.somYear1 || "N/A"}
+                description="Serviceable Obtainable Market"
+              />
+              <MetricCard
+                label="SOM · Year 2"
+                value={mr.somYear2 || "N/A"}
+                description="Serviceable Obtainable Market"
+              />
+              <MetricCard
+                label="SOM · Year 3"
+                value={mr.somYear3 || mr.som || "N/A"}
+                description="Serviceable Obtainable Market"
+              />
             </div>
           </div>
 
@@ -206,7 +244,9 @@ export default function TabsContent({
           <h1 className="text-2xl font-semibold text-text-primary mb-8">PRD</h1>
           {prd.overview && (
             <div>
-              <h2 className="mb-4 text-3xl font-semibold text-text-primary">Overview</h2>
+              <h2 className="mb-4 text-3xl font-semibold text-text-primary">
+                Overview
+              </h2>
               <div className="prose prose-sm max-w-none text-text-secondary">
                 <MarkdownContent content={prd.overview} />
               </div>
@@ -234,7 +274,9 @@ export default function TabsContent({
           )}
           {prd.targetUser && (
             <div>
-              <h2 className="mb-4 text-3xl font-semibold text-text-primary">Target User</h2>
+              <h2 className="mb-4 text-3xl font-semibold text-text-primary">
+                Target User
+              </h2>
               <div className="prose prose-sm max-w-none text-text-secondary">
                 <MarkdownContent content={prd.targetUser} />
               </div>
@@ -242,7 +284,9 @@ export default function TabsContent({
           )}
           {prd.coreFeatures && (
             <div>
-              <h2 className="mb-4 text-3xl font-semibold text-text-primary">Core Features</h2>
+              <h2 className="mb-4 text-3xl font-semibold text-text-primary">
+                Core Features
+              </h2>
               <div className="prose prose-sm max-w-none text-text-secondary">
                 <MarkdownContent content={prd.coreFeatures} />
               </div>
@@ -250,7 +294,9 @@ export default function TabsContent({
           )}
           {prd.userStories && (
             <div>
-              <h2 className="mb-4 text-3xl font-semibold text-text-primary">User Stories</h2>
+              <h2 className="mb-4 text-3xl font-semibold text-text-primary">
+                User Stories
+              </h2>
               <div className="prose prose-sm max-w-none text-text-secondary">
                 <MarkdownContent content={prd.userStories} />
               </div>
@@ -298,23 +344,33 @@ export default function TabsContent({
       label: "Landing Page",
       content: (
         <div className="rounded-lg border border-border bg-background-secondary p-6 space-y-8">
-          <h1 className="text-2xl font-semibold text-text-primary mb-8">Landing Page Validation</h1>
-          
+          <h1 className="text-2xl font-semibold text-text-primary mb-8">
+            Landing Page Validation
+          </h1>
+
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="space-y-6">
               <section className="rounded-lg border border-border bg-background-tertiary p-6">
-                <h2 className="mb-4 text-xl font-semibold text-text-primary">Status</h2>
+                <h2 className="mb-4 text-xl font-semibold text-text-primary">
+                  Status
+                </h2>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-text-secondary">Current Status:</span>
-                    <ValidationStatusBadge status={experiment.validation?.status} />
+                    <span className="text-sm text-text-secondary">
+                      Current Status:
+                    </span>
+                    <ValidationStatusBadge
+                      status={experiment.validation?.status}
+                    />
                   </div>
                   {experiment.validation?.url && (
                     <div className="flex items-center gap-3">
-                      <span className="text-sm text-text-secondary">Landing URL:</span>
-                      <a 
-                        href={experiment.validation.url} 
-                        target="_blank" 
+                      <span className="text-sm text-text-secondary">
+                        Landing URL:
+                      </span>
+                      <a
+                        href={experiment.validation.url}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-accent-primary hover:underline text-sm"
                       >
@@ -329,7 +385,9 @@ export default function TabsContent({
               </section>
 
               <section className="rounded-lg border border-border bg-background-tertiary p-6">
-                <h2 className="mb-4 text-xl font-semibold text-text-primary">Reference</h2>
+                <h2 className="mb-4 text-xl font-semibold text-text-primary">
+                  Reference
+                </h2>
                 <p className="mb-4 text-sm text-text-secondary">
                   Landing page copy, structure, and form fields:{" "}
                   <Link
@@ -339,26 +397,36 @@ export default function TabsContent({
                     Landing Page Content
                   </Link>
                 </p>
-                <h2 className="mb-4 text-xl font-semibold text-text-primary">Next Steps</h2>
+                <h2 className="mb-4 text-xl font-semibold text-text-primary">
+                  Next Steps
+                </h2>
                 <div className="space-y-2 text-sm text-text-secondary">
-                  {!experiment.validation?.status || experiment.validation.status === 'not_started' ? (
+                  {!experiment.validation?.status ||
+                  experiment.validation.status === "not_started" ? (
                     <>
                       <p>1. Review the Validation Plan in your PRD</p>
                       <p>2. Build a simple landing page for ad validation</p>
-                      <p>3. Connect to the shared Notion database for responses</p>
-                      <p>4. Update experiment status to &quot;planned&quot; or &quot;live&quot;</p>
+                      <p>
+                        3. Connect to the shared Notion database for responses
+                      </p>
+                      <p>
+                        4. Update experiment status to &quot;planned&quot; or
+                        &quot;live&quot;
+                      </p>
                     </>
-                  ) : experiment.validation.status === 'planned' ? (
+                  ) : experiment.validation.status === "planned" ? (
                     <>
                       <p>1. Deploy your landing page</p>
                       <p>2. Set up traffic sources (ads, social, etc.)</p>
                       <p>3. Update status to &quot;live&quot; when ready</p>
                     </>
-                  ) : experiment.validation.status === 'live' ? (
+                  ) : experiment.validation.status === "live" ? (
                     <>
                       <p>1. Monitor responses in Notion</p>
                       <p>2. Analyze conversion rates</p>
-                      <p>3. Mark as &quot;complete&quot; when validation is done</p>
+                      <p>
+                        3. Mark as &quot;complete&quot; when validation is done
+                      </p>
                     </>
                   ) : (
                     <p>Validation complete! Review results in Notion.</p>
@@ -369,23 +437,44 @@ export default function TabsContent({
 
             <div className="space-y-6">
               <section className="rounded-lg border border-border bg-background-tertiary p-6">
-                <h2 className="mb-4 text-xl font-semibold text-text-primary">Notion Integration</h2>
+                <h2 className="mb-4 text-xl font-semibold text-text-primary">
+                  Notion Integration
+                </h2>
                 <div className="space-y-3 text-sm text-text-secondary">
-                  <p>Responses are stored in a shared Notion database with these fields:</p>
+                  <p>
+                    Responses are stored in a shared Notion database with these
+                    fields:
+                  </p>
                   <ul className="list-disc list-inside space-y-1 ml-2">
-                    <li><strong>Experiment</strong> - Which experiment this belongs to</li>
-                    <li><strong>Email</strong> - Contact info from form</li>
-                    <li><strong>Opted In</strong> - Whether they signed up</li>
-                    <li><strong>Opt-Out Reason</strong> - Why they passed</li>
-                    <li><strong>Source</strong> - Traffic channel (ad, social, etc.)</li>
-                    <li><strong>Timestamp</strong> - When submitted</li>
+                    <li>
+                      <strong>Experiment</strong> - Which experiment this
+                      belongs to
+                    </li>
+                    <li>
+                      <strong>Email</strong> - Contact info from form
+                    </li>
+                    <li>
+                      <strong>Opted In</strong> - Whether they signed up
+                    </li>
+                    <li>
+                      <strong>Opt-Out Reason</strong> - Why they passed
+                    </li>
+                    <li>
+                      <strong>Source</strong> - Traffic channel (ad, social,
+                      etc.)
+                    </li>
+                    <li>
+                      <strong>Timestamp</strong> - When submitted
+                    </li>
                   </ul>
                 </div>
               </section>
 
               {prd?.validationPlan && (
                 <section className="rounded-lg border border-border bg-background-tertiary p-6">
-                  <h2 className="mb-4 text-xl font-semibold text-text-primary">Validation Plan Summary</h2>
+                  <h2 className="mb-4 text-xl font-semibold text-text-primary">
+                    Validation Plan Summary
+                  </h2>
                   <div className="prose prose-sm max-w-none text-text-secondary">
                     <MarkdownContent content={prd.validationPlan} />
                   </div>
@@ -404,7 +493,9 @@ export default function TabsContent({
     label: "Details",
     content: (
       <div className="rounded-lg border border-border bg-background-secondary p-6 space-y-8">
-        <h1 className="text-2xl font-semibold text-text-primary mb-8">Details</h1>
+        <h1 className="text-2xl font-semibold text-text-primary mb-8">
+          Details
+        </h1>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Left Column */}
           <div className="space-y-6">
@@ -413,176 +504,229 @@ export default function TabsContent({
               <h2 className="mb-4 text-3xl font-semibold text-text-primary">
                 Experiment Details
               </h2>
-            <dl className="space-y-3">
-              <div>
-                <dt className="text-sm font-medium text-text-secondary">Status</dt>
-                <dd className="mt-1">
-                  <StatusBadge status={experiment.status} />
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-text-secondary">Created</dt>
-                <dd className="mt-1 text-sm text-text-primary">
-                  {new Date(experiment.createdDate).toLocaleDateString()}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-text-secondary">Modified</dt>
-                <dd className="mt-1 text-sm text-text-primary">
-                  {new Date(experiment.lastModified).toLocaleDateString()}
-                </dd>
-              </div>
-              {experiment.tags.length > 0 && (
+              <dl className="space-y-3">
                 <div>
-                  <dt className="text-sm font-medium text-text-secondary">Tags</dt>
-                  <dd className="mt-2">
-                    <div className="flex flex-wrap gap-2">
-                      {experiment.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-md bg-background-tertiary px-3 py-1 text-sm text-text-secondary"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                  <dt className="text-sm font-medium text-text-secondary">
+                    Status
+                  </dt>
+                  <dd className="mt-1">
+                    <StatusBadge status={experiment.status} />
                   </dd>
                 </div>
-              )}
-              <div>
-                <dt className="text-sm font-medium text-text-secondary">Directory</dt>
-                <dd className="mt-1 font-mono text-sm text-text-primary">
-                  {experiment.directory}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-text-secondary">Experiment ID</dt>
-                <dd className="mt-1 font-mono text-sm text-text-primary">{experiment.id}</dd>
-              </div>
-            </dl>
-          </section>
+                <div>
+                  <dt className="text-sm font-medium text-text-secondary">
+                    Created
+                  </dt>
+                  <dd className="mt-1 text-sm text-text-primary">
+                    {new Date(experiment.createdDate).toLocaleDateString()}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-text-secondary">
+                    Modified
+                  </dt>
+                  <dd className="mt-1 text-sm text-text-primary">
+                    {new Date(experiment.lastModified).toLocaleDateString()}
+                  </dd>
+                </div>
+                {experiment.tags.length > 0 && (
+                  <div>
+                    <dt className="text-sm font-medium text-text-secondary">
+                      Tags
+                    </dt>
+                    <dd className="mt-2">
+                      <div className="flex flex-wrap gap-2">
+                        {experiment.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-md bg-background-tertiary px-3 py-1 text-sm text-text-secondary"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </dd>
+                  </div>
+                )}
+                <div>
+                  <dt className="text-sm font-medium text-text-secondary">
+                    Directory
+                  </dt>
+                  <dd className="mt-1 font-mono text-sm text-text-primary">
+                    {experiment.directory}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-text-secondary">
+                    Experiment ID
+                  </dt>
+                  <dd className="mt-1 font-mono text-sm text-text-primary">
+                    {experiment.id}
+                  </dd>
+                </div>
+              </dl>
+            </section>
 
             {/* Workflow Status */}
             <section className="rounded-lg border border-border bg-background-secondary p-6">
-              <h2 className="mb-4 text-3xl font-semibold text-text-primary">Workflow Status</h2>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-text-secondary">Market Research</span>
-                {hasMRFile ? (
-                  <span className="text-accent-primary">✓ Complete</span>
-                ) : (
-                  <span className="text-text-muted">— Not started</span>
-                )}
+              <h2 className="mb-4 text-3xl font-semibold text-text-primary">
+                Workflow Status
+              </h2>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-text-secondary">
+                    Market Research
+                  </span>
+                  {hasMRFile ? (
+                    <span className="text-accent-primary">✓ Complete</span>
+                  ) : (
+                    <span className="text-text-muted">— Not started</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-text-secondary">PRD</span>
+                  {hasPRDFile ? (
+                    <span className="text-accent-primary">✓ Complete</span>
+                  ) : (
+                    <span className="text-text-muted">— Not started</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-text-secondary">Prototype</span>
+                  {hasPrototypeFiles ? (
+                    <span className="text-accent-primary">✓ Complete</span>
+                  ) : (
+                    <span className="text-text-muted">— Not started</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-text-secondary">
+                    Landing Page
+                  </span>
+                  {experiment.validation?.status === "complete" ? (
+                    <span className="text-accent-primary">✓ Complete</span>
+                  ) : experiment.validation?.status === "live" ? (
+                    <span className="text-green-500">● Live</span>
+                  ) : experiment.validation?.status === "planned" ? (
+                    <span className="text-yellow-500">○ Planned</span>
+                  ) : (
+                    <span className="text-text-muted">— Not started</span>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-text-secondary">PRD</span>
-                {hasPRDFile ? (
-                  <span className="text-accent-primary">✓ Complete</span>
-                ) : (
-                  <span className="text-text-muted">— Not started</span>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-text-secondary">Prototype</span>
-                {hasPrototypeFiles ? (
-                  <span className="text-accent-primary">✓ Complete</span>
-                ) : (
-                  <span className="text-text-muted">— Not started</span>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-text-secondary">Landing Page</span>
-                {experiment.validation?.status === 'complete' ? (
-                  <span className="text-accent-primary">✓ Complete</span>
-                ) : experiment.validation?.status === 'live' ? (
-                  <span className="text-green-500">● Live</span>
-                ) : experiment.validation?.status === 'planned' ? (
-                  <span className="text-yellow-500">○ Planned</span>
-                ) : (
-                  <span className="text-text-muted">— Not started</span>
-                )}
-              </div>
-            </div>
-          </section>
+            </section>
 
             {/* Documentation Metadata */}
             {documentation && (
               <section className="rounded-lg border border-border bg-background-secondary p-6">
-                <h2 className="mb-4 text-3xl font-semibold text-text-primary">Documentation</h2>
-              <div className="space-y-2">
-                <h3 className="font-medium text-text-primary">{documentation.title}</h3>
-                <div className="text-sm text-text-secondary">
-                  Last modified: {new Date(documentation.lastModified).toLocaleDateString()}
+                <h2 className="mb-4 text-3xl font-semibold text-text-primary">
+                  Documentation
+                </h2>
+                <div className="space-y-2">
+                  <h3 className="font-medium text-text-primary">
+                    {documentation.title}
+                  </h3>
+                  <div className="text-sm text-text-secondary">
+                    Last modified:{" "}
+                    {new Date(documentation.lastModified).toLocaleDateString()}
+                  </div>
+                  {documentation.content && (
+                    <p className="mt-2 text-sm text-text-secondary">
+                      {documentation.content}
+                    </p>
+                  )}
                 </div>
-                {documentation.content && (
-                  <p className="mt-2 text-sm text-text-secondary">{documentation.content}</p>
-                )}
-              </div>
-            </section>
-          )}
-        </div>
+              </section>
+            )}
+          </div>
 
           {/* Right Column */}
           <div className="space-y-6">
             {/* Prototype */}
             {prototype && (
               <section className="rounded-lg border border-border bg-background-secondary p-6">
-                <h2 className="mb-4 text-3xl font-semibold text-text-primary">Prototype</h2>
-              <div className="space-y-3">
-                <div>
-                  <h3 className="font-medium text-text-primary">{prototype.title}</h3>
-                  <p className="mt-1 text-sm text-text-secondary">{prototype.description}</p>
-                </div>
-                <div>
-                  <StatusBadge status={prototype.status} />
-                </div>
-                <div className="font-mono text-xs text-text-muted">
-                  Path: {prototype.linkPath}
-                </div>
-                {hasPrototypeFiles && (
-                  <div className="mt-3 text-sm text-accent-primary">
-                    ✓ Prototype files exist
-                  </div>
-                )}
-                {prototype.port && (
-                  <div className="mt-3">
-                    <a
-                      href={`http://localhost:${prototype.port}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition text-sm font-medium"
-                    >
-                      Open Prototype →
-                      <span className="font-mono text-xs opacity-75">:${prototype.port}</span>
-                    </a>
-                    <p className="mt-2 text-xs text-text-muted">
-                      Make sure the prototype is running: <code className="bg-background-tertiary px-1.5 py-0.5 rounded">npm run dev</code> in the prototype directory
+                <h2 className="mb-4 text-3xl font-semibold text-text-primary">
+                  Prototype
+                </h2>
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-medium text-text-primary">
+                      {prototype.title}
+                    </h3>
+                    <p className="mt-1 text-sm text-text-secondary">
+                      {prototype.description}
                     </p>
                   </div>
-                )}
-              </div>
-            </section>
-          )}
+                  <div>
+                    <StatusBadge status={prototype.status} />
+                  </div>
+                  <div className="font-mono text-xs text-text-muted">
+                    Path: {prototype.linkPath}
+                  </div>
+                  {hasPrototypeFiles && (
+                    <div className="mt-3 text-sm text-accent-primary">
+                      ✓ Prototype files exist
+                    </div>
+                  )}
+                  {prototype.port && (
+                    <div className="mt-3">
+                      <a
+                        href={`http://localhost:${prototype.port}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition text-sm font-medium"
+                      >
+                        Open Prototype →
+                        <span className="font-mono text-xs opacity-75">
+                          :${prototype.port}
+                        </span>
+                      </a>
+                      <p className="mt-2 text-xs text-text-muted">
+                        Make sure the prototype is running:{" "}
+                        <code className="bg-background-tertiary px-1.5 py-0.5 rounded">
+                          npm run dev
+                        </code>{" "}
+                        in the prototype directory
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
 
             {/* Quick Actions */}
             <section className="rounded-lg border border-border bg-background-secondary p-6">
-              <h2 className="mb-4 text-3xl font-semibold text-text-primary">Quick Actions</h2>
-            <div className="space-y-2 text-sm">
-              {!hasMRFile && (
-                <div className="text-text-secondary">
-                  Use <code className="rounded bg-background-tertiary px-1.5 py-0.5 text-xs">@market-research</code> to conduct market analysis
-                </div>
-              )}
-              {!hasPRDFile && (
-                <div className="text-text-secondary">
-                  Use <code className="rounded bg-background-tertiary px-1.5 py-0.5 text-xs">@prd-writer</code> to create PRD
-                </div>
-              )}
-              {!hasPrototypeFiles && (
-                <div className="text-text-secondary">
-                  Use <code className="rounded bg-background-tertiary px-1.5 py-0.5 text-xs">@prototype-builder</code> to build prototype
-                </div>
-              )}
+              <h2 className="mb-4 text-3xl font-semibold text-text-primary">
+                Quick Actions
+              </h2>
+              <div className="space-y-2 text-sm">
+                {!hasMRFile && (
+                  <div className="text-text-secondary">
+                    Use{" "}
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 text-xs">
+                      @market-research
+                    </code>{" "}
+                    to conduct market analysis
+                  </div>
+                )}
+                {!hasPRDFile && (
+                  <div className="text-text-secondary">
+                    Use{" "}
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 text-xs">
+                      @prd-writer
+                    </code>{" "}
+                    to create PRD
+                  </div>
+                )}
+                {!hasPrototypeFiles && (
+                  <div className="text-text-secondary">
+                    Use{" "}
+                    <code className="rounded bg-background-tertiary px-1.5 py-0.5 text-xs">
+                      @prototype-builder
+                    </code>{" "}
+                    to build prototype
+                  </div>
+                )}
               </div>
             </section>
           </div>
@@ -591,6 +735,7 @@ export default function TabsContent({
     ),
   });
 
-  return <Tabs tabs={tabs} defaultTab="overview" />;
+  const activeContent =
+    tabs.find((t) => t.id === activeTab)?.content ?? tabs[0]?.content;
+  return <>{activeContent}</>;
 }
-

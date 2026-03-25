@@ -10,19 +10,24 @@ const config: Config = {
     extend: {
       colors: {
         background: {
-          primary: "#0d2b2e",
-          secondary: "#112f33",
-          tertiary: "#163538",
+          primary: "#194b31", // dark green (main bg, hero)
+          secondary: "#113723", // darker green (header, footer)
+          tertiary: "#1e5c3a", // hover states on dark bg
+          light: "#f7fff8", // near-white (experiment list section)
+          mint: "#cff7d3", // mint (recent activity band)
         },
         text: {
-          primary: "#c8dde0",
-          secondary: "#7ab8be",
-          muted: "#4d8a90",
+          primary: "#cff7d3", // light mint on dark bg
+          secondary: "#78ffb7", // brighter mint, secondary on dark
+          muted: "#4d9a60", // muted on dark bg
+          dark: "#194b31", // dark text for light sections
+          "dark-secondary": "#2d6b47", // secondary text on light sections
         },
-        border: "#1e3f43",
+        border: "rgba(20,174,92,0.2)",
+        "border-dark": "#194b31", // border on light sections
         accent: {
-          primary: "#4ecdc4",
-          secondary: "#3bb8af",
+          primary: "#14ae5c", // green
+          secondary: "#0e8a49",
         },
         success: "#3ecf8e",
         warning: "#f0c060",
@@ -36,7 +41,13 @@ const config: Config = {
         },
       },
       fontFamily: {
-        mono: ["'SF Mono'", "'Monaco'", "'Inconsolata'", "'Fira Code'", "monospace"],
+        mono: [
+          "'SF Mono'",
+          "'Monaco'",
+          "'Inconsolata'",
+          "'Fira Code'",
+          "monospace",
+        ],
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
         heading: ["var(--font-fraunces)", "Georgia", "serif"],
       },
@@ -47,4 +58,3 @@ const config: Config = {
 };
 
 export default config;
-
