@@ -1,153 +1,110 @@
 import Header from "@/components/Header";
-import Button from "@/components/Button";
-import ScoreDisplay from "@/components/ScoreDisplay";
-import { PRDCell, LandingPageCell } from "@/components/WorkflowCells";
-import { WORKFLOW_STATES } from "@/lib/workflow-states";
+
+const steps = [
+  {
+    number: "01",
+    name: "Market Validation",
+    unlocks: "PRD",
+    description:
+      "Run market research to size the opportunity and generate scores across B, P, C, $, S. This is the only step available on a brand-new experiment.",
+  },
+  {
+    number: "02",
+    name: "PRD",
+    unlocks: "Landing Page + Prototype",
+    description:
+      "Write a Product Requirements Document from the experiment statement and market research. Unlocks both downstream steps simultaneously.",
+  },
+  {
+    number: "03",
+    name: "Landing Page",
+    unlocks: "View + iterate",
+    description:
+      "Build a validation landing page to test demand before writing production code. Can run in parallel with the prototype.",
+  },
+  {
+    number: "04",
+    name: "Prototype",
+    unlocks: "Start / stop dev server",
+    description:
+      "Scaffold and build the working prototype. Requires a PRD. Landing page is optional but recommended first.",
+  },
+];
+
+const rules = [
+  "Steps must complete in order — you can't skip to PRD without market validation.",
+  "Only the next available step is offered as an action.",
+  "Landing Page and Prototype can be built in parallel once the PRD exists.",
+  "Market Validation includes both market research and scoring (B, P, C, $, S).",
+];
 
 export default function WorkflowPage() {
-  const states = WORKFLOW_STATES;
-
-  const renderMarketValidationColumn = (state: typeof states[0]) => {
-    if (!state.hasMRFile) {
-      return (
-        <Button
-          as="link"
-          variant="secondary"
-          href="#market-research"
-          title="Create Market Validation"
-        >
-          Create
-        </Button>
-      );
-    }
-    return <ScoreDisplay scores={state.scores} />;
-  };
-
-  const renderPrototypeColumn = (state: typeof states[0]) => {
-    if (!state.hasPRDFile) {
-      return null;
-    }
-    if (!state.hasPrototypeDir) {
-      return (
-        <Button
-          as="link"
-          variant="secondary"
-          href="#"
-          title="Create Prototype"
-        >
-          Create
-        </Button>
-      );
-    }
-    return (
-      <div className="flex items-center gap-1.5">
-        <Button
-          as="a"
-          variant="primary"
-          href="http://localhost:3001"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="View prototype"
-        >
-          View
-        </Button>
-        <Button
-          variant="destructive"
-          title="Stop server"
-        >
-          Stop
-        </Button>
-      </div>
-    );
-  };
-
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="p-8">
-        <div className="mx-auto max-w-6xl">
-          <h1 className="text-3xl font-semibold text-text-primary mb-2">Workflow State Machine</h1>
-          <p className="text-text-secondary mb-8">
-            Overview of the experiment workflow states and their criteria. The workflow follows a strict order: <strong>Market Validation → PRD → Landing Page → Prototype</strong>
-          </p>
 
-          <div className="rounded-lg border border-border bg-background-secondary overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-background-tertiary">
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap">State</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap">Condition</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap">Market Validation</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap">PRD</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap">Landing Page</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap">Prototype</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary whitespace-nowrap">Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                {states.map((state, index) => (
-                  <tr
-                    key={index}
-                    className="border-b border-border transition-colors hover:bg-background-tertiary"
-                  >
-                    <td className="px-4 py-3">
-                      <span className="font-medium text-text-primary">{state.state}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <code className="text-xs bg-background-tertiary px-2 py-1 rounded text-text-secondary">
-                        {state.condition}
-                      </code>
-                    </td>
-                    <td className="px-4 py-3">
-                      {renderMarketValidationColumn(state) || <span className="text-text-muted">—</span>}
-                    </td>
-                    <td className="px-4 py-3">
-                      {state.hasMRFile
-                        ? <PRDCell hasMRFile={state.hasMRFile} hasPRDFile={state.hasPRDFile} href="#prd" />
-                        : <span className="text-text-muted">—</span>
-                      }
-                    </td>
-                    <td className="px-4 py-3">
-                      {state.hasPRDFile
-                        ? <LandingPageCell hasPRDFile={state.hasPRDFile} hasLandingPage={state.hasLandingPage} planHref="#landing" viewHref="#landing" />
-                        : <span className="text-text-muted">—</span>
-                      }
-                    </td>
-                    <td className="px-4 py-3">
-                      {renderPrototypeColumn(state) || <span className="text-text-muted">—</span>}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-text-secondary">
-                      {state.description}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* Hero */}
+      <section className="bg-background-primary px-16 py-14">
+        <h1 className="font-heading text-[48px] font-semibold text-[rgba(247,255,248,0.8)] leading-tight mb-4">
+          Workflow
+        </h1>
+        <p className="text-sm font-light text-text-secondary max-w-xl leading-6">
+          Every experiment moves through four stages in strict order. Each step
+          gates the next — so the work stays grounded before code gets written.
+        </p>
+      </section>
+
+      {/* Steps */}
+      <section className="bg-background-light px-16 py-12 flex-1">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="rounded-lg border border-border-dark bg-white overflow-hidden divide-y divide-border-dark">
+            {steps.map((step) => (
+              <div
+                key={step.number}
+                className="flex items-start gap-6 px-6 py-5"
+              >
+                <span className="font-mono text-xs font-bold text-accent-primary shrink-0 w-6 pt-0.5">
+                  {step.number}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-3 mb-1">
+                    <h2 className="font-heading text-base font-semibold text-text-dark">
+                      {step.name}
+                    </h2>
+                    <span className="text-xs text-text-dark-secondary">
+                      unlocks:{" "}
+                      <span className="text-accent-primary">
+                        {step.unlocks}
+                      </span>
+                    </span>
+                  </div>
+                  <p className="text-sm text-text-dark-secondary leading-5">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="mt-8 rounded-lg border border-border bg-background-secondary p-6">
-            <h2 className="text-xl font-semibold text-text-primary mb-4">Workflow Rules</h2>
-            <ul className="space-y-2 text-sm text-text-secondary">
-              <li className="flex items-start gap-2">
-                <span className="text-accent-primary mt-0.5">•</span>
-                <span>Only the <strong>next step</strong> in the workflow is available</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent-primary mt-0.5">•</span>
-                <span>Landing Page and Prototype actions only appear after PRD is complete</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent-primary mt-0.5">•</span>
-                <span>Steps cannot be skipped - must complete in order</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent-primary mt-0.5">•</span>
-                <span>Market Validation includes both Market Research and Scoring (B, P, C, $, S)</span>
-              </li>
+          {/* Rules */}
+          <div className="rounded-lg border border-border-dark bg-white px-6 py-5">
+            <h2 className="font-heading text-base font-semibold text-text-dark mb-3">
+              Rules
+            </h2>
+            <ul className="space-y-2">
+              {rules.map((rule) => (
+                <li
+                  key={rule}
+                  className="flex items-start gap-2 text-sm text-text-dark-secondary"
+                >
+                  <span className="text-accent-primary shrink-0 mt-0.5">·</span>
+                  {rule}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
-      </main>
+      </section>
     </div>
   );
 }

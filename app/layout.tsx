@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     title: "BHD Labs",
     description: "Manage product experiments from idea to prototype",
   },
-  themeColor: "#0f172a",
+  themeColor: "#113723",
 };
 
 export default function RootLayout({
@@ -38,9 +38,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`dark ${inter.variable} ${fraunces.variable}`}>
-      <body className="antialiased">
-        {children}
-      </body>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

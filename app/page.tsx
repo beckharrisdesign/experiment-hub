@@ -1,4 +1,11 @@
-import { getExperiments, getPrototypes, getDocumentation, checkExperimentFiles, parseMarketResearch } from "@/lib/data";
+import {
+  getExperiments,
+  getPrototypes,
+  getDocumentation,
+  checkExperimentFiles,
+  parseMarketResearch,
+} from "@/lib/data";
+import { getRecentCommits } from "@/lib/git";
 import HomePageClient from "./page-client";
 import type { Experiment, Prototype, Documentation } from "@/types";
 
@@ -16,9 +23,11 @@ interface ExperimentWithRelated extends Experiment {
 }
 
 export default async function HomePage() {
+  const showPrototypes = process.env.SHOW_PROTOTYPES === "true";
+
   try {
     const experiments = await getExperiments();
-    const prototypes = await getPrototypes();
+    const prototypes = showPrototypes ? await getPrototypes() : [];
     const docs = await getDocumentation();
 
     // Create Maps for O(1) lookups instead of O(n) array.find() operations
@@ -32,13 +41,13 @@ export default async function HomePage() {
         try {
           // Batch all file system operations in parallel for this experiment
           const fileChecks = await checkExperimentFiles(exp.directory);
-          
+
           // Parse market research if available
           let moa: string | null = null;
           let goNoGo: string | null = null;
           let somYear1: string | null = null;
           let somYear3: string | null = null;
-          
+
           if (fileChecks.mrContent) {
             try {
               const mr = parseMarketResearch(fileChecks.mrContent);
@@ -53,10 +62,12 @@ export default async function HomePage() {
 
           return {
             ...exp,
-            prototype: prototypeMap.get(exp.id) || null,
+            prototype: showPrototypes ? prototypeMap.get(exp.id) || null : null,
             documentation: docsMap.get(exp.id) || null,
             hasPRDFile: fileChecks.hasPRDFile,
-            hasPrototypeDir: fileChecks.hasPrototypeDir,
+            hasPrototypeDir: showPrototypes
+              ? fileChecks.hasPrototypeDir
+              : false,
             hasMRFile: fileChecks.hasMRFile,
             hasLandingPage: fileChecks.hasLandingPage,
             moa,
@@ -65,7 +76,10 @@ export default async function HomePage() {
             somYear3,
           };
         } catch (error) {
-          console.error(`[HomePage] Error processing experiment ${exp.id}:`, error);
+          console.error(
+            `[HomePage] Error processing experiment ${exp.id}:`,
+            error,
+          );
           // Return experiment with minimal data if processing fails
           return {
             ...exp,
@@ -81,10 +95,17 @@ export default async function HomePage() {
             somYear3: null,
           };
         }
-      })
+      }),
     );
 
-    return <HomePageClient initialExperiments={experimentsWithRelated} />;
+    const recentCommits = getRecentCommits(3);
+
+    return (
+      <HomePageClient
+        initialExperiments={experimentsWithRelated}
+        recentCommits={recentCommits}
+      />
+    );
   } catch (error) {
     console.error("[HomePage] Fatal error:", error);
     throw error;
