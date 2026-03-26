@@ -33,7 +33,7 @@ export default function Header() {
                 className={`flex items-center h-full px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
                   isActive
                     ? "bg-background-active border-b-[3px] border-accent-primary text-text-primary"
-                    : "text-text-primary hover:bg-background-tertiary"
+                    : "text-text-primary hover:bg-background-secondary"
                 }`}
               >
                 {label}

@@ -106,7 +106,7 @@ export default function HomePageClient({
         <div className="flex gap-4 items-start max-w-screen-xl mx-auto">
           {/* Large heading */}
           <div className="w-[411px] pr-5 shrink-0">
-            <h1 className="font-heading text-[60px] font-semibold text-[rgba(247,255,248,0.8)] leading-tight">
+            <h1 className="font-heading text-[60px] font-semibold text-text-primary leading-tight">
               Welcome
               <br />
               to BHD Labs
@@ -114,10 +114,10 @@ export default function HomePageClient({
           </div>
           {/* About column */}
           <div className="w-[204px] pr-4 shrink-0">
-            <p className="text-sm font-bold text-text-secondary leading-5 mb-2">
+            <p className="text-sm font-bold text-white leading-5 mb-2">
               About BHD Labs
             </p>
-            <p className="text-sm font-light text-text-secondary leading-5">
+            <p className="text-sm font-light text-white leading-5">
               This space helps me evaluate and build out my ideas in a
               structured way — intuitive where it needs to be and structured
               where it needs to be.
@@ -125,10 +125,10 @@ export default function HomePageClient({
           </div>
           {/* How I evaluate column */}
           <div className="w-[204px] pr-4 shrink-0">
-            <p className="text-sm font-bold text-text-secondary leading-5 mb-2">
+            <p className="text-sm font-bold text-white leading-5 mb-2">
               How I evaluate
             </p>
-            <p className="text-sm font-light text-text-secondary leading-5">
+            <p className="text-sm font-light text-white leading-5">
               It&apos;s not a great idea unless it is something that I&apos;m
               passionate about, something that has a market need, and something
               that makes a difference in the world.
@@ -136,13 +136,13 @@ export default function HomePageClient({
           </div>
           {/* Core themes column */}
           <div className="w-[204px] pr-4 shrink-0">
-            <p className="text-sm font-bold text-text-secondary leading-5 mb-2">
+            <p className="text-sm font-bold text-white leading-5 mb-2">
               My core themes
             </p>
             <p className="text-sm font-light text-text-secondary leading-5 mb-2">
               The core themes in my experiments are:
             </p>
-            <ul className="text-sm font-light text-text-secondary leading-5 list-disc list-inside space-y-0.5">
+            <ul className="text-sm font-light text-white leading-5 list-disc list-inside space-y-0.5">
               <li>empowering makers</li>
               <li>supporting neurodiversity</li>
               <li>facilitating environmental impact</li>
@@ -194,7 +194,7 @@ export default function HomePageClient({
               onClick={() => setActiveTab("active")}
               className={`flex items-center h-[51px] px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
                 activeTab === "active"
-                  ? "bg-[rgba(20,174,92,0.1)] border-b-2 border-accent-primary text-text-dark"
+                  ? "bg-[rgba(20,174,92,0.1)] border-b-[3px] border-accent-primary text-text-dark"
                   : "text-text-dark hover:bg-[rgba(20,174,92,0.05)]"
               }`}
             >
@@ -204,7 +204,7 @@ export default function HomePageClient({
               onClick={() => setActiveTab("inactive")}
               className={`flex items-center h-[51px] px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
                 activeTab === "inactive"
-                  ? "bg-[rgba(20,174,92,0.1)] border-b-2 border-accent-primary text-text-dark"
+                  ? "bg-[rgba(20,174,92,0.1)] border-b-[3px] border-accent-primary text-text-dark"
                   : "text-text-dark hover:bg-[rgba(20,174,92,0.05)]"
               }`}
             >
@@ -227,7 +227,7 @@ export default function HomePageClient({
                 <thead>
                   <tr className="bg-[#194b31]">
                     <th
-                      className="px-4 py-4 text-left text-base font-medium text-text-primary w-1/2 cursor-pointer hover:bg-[#1e5c3a] transition-colors"
+                      className="px-4 py-4 text-left text-base font-medium text-text-primary w-1/2 cursor-pointer hover:bg-background-secondary transition-colors"
                       onClick={() => handleSort("name")}
                     >
                       <div className="flex items-center gap-1">
@@ -240,7 +240,7 @@ export default function HomePageClient({
                       </div>
                     </th>
                     <th
-                      className="px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)] cursor-pointer hover:bg-[#1e5c3a] transition-colors"
+                      className="px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)] cursor-pointer hover:bg-background-secondary transition-colors"
                       onClick={() => handleSort("total")}
                     >
                       <Tooltip
@@ -284,7 +284,7 @@ export default function HomePageClient({
                   {sortedExperiments.map((experiment) => (
                     <tr
                       key={experiment.id}
-                      className="border-t border-[rgba(20,174,92,0.2)] bg-[rgba(255,255,255,0.5)] hover:bg-[rgba(20,174,92,0.04)] transition-colors"
+                      className="border-t border-[rgba(20,174,92,0.2)] bg-[rgba(255,255,255,0.2)] hover:bg-[rgba(20,174,92,0.04)] transition-colors"
                     >
                       <td className="px-4 py-3 w-1/2">
                         <Link

@@ -18,7 +18,8 @@ const scoreDescriptions = {
   businessOpportunity: "Market potential and revenue opportunity",
   personalImpact: "Would I personally use/benefit from this?",
   competitiveAdvantage: "Market competition and differentiation",
-  platformCost: "Solo buildability with AI tools (Cursor) + infrastructure complexity",
+  platformCost:
+    "Solo buildability with AI tools (Cursor) + infrastructure complexity",
   socialImpact: "Fun, joy, and whether the world needs this",
 };
 
@@ -27,7 +28,10 @@ export default function ExperimentScoresDisplay({
   showLabels = true,
   compact = false,
 }: ExperimentScoresProps) {
-  const scoreEntries = Object.entries(scores) as [keyof ExperimentScores, number][];
+  const scoreEntries = Object.entries(scores) as [
+    keyof ExperimentScores,
+    number,
+  ][];
 
   if (compact) {
     return (
@@ -35,10 +39,12 @@ export default function ExperimentScoresDisplay({
         {scoreEntries.map(([key, value]) => (
           <div
             key={key}
-            className="flex items-center gap-1 rounded-md bg-background-tertiary px-2 py-1 text-xs"
+            className="flex items-center gap-1 rounded-md bg-background-secondary px-2 py-1 text-xs"
             title={`${scoreLabels[key]}: ${value}/5 - ${scoreDescriptions[key]}`}
           >
-            <span className="text-text-muted">{scoreLabels[key].split(" ")[0]}:</span>
+            <span className="text-text-muted">
+              {scoreLabels[key].split(" ")[0]}:
+            </span>
             <span className="font-medium text-text-primary">{value}/5</span>
           </div>
         ))}
@@ -55,7 +61,9 @@ export default function ExperimentScoresDisplay({
               <span className="text-sm font-medium text-text-primary">
                 {scoreLabels[key]}
               </span>
-              <span className="text-xs text-text-muted">({scoreDescriptions[key]})</span>
+              <span className="text-xs text-text-muted">
+                ({scoreDescriptions[key]})
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -66,7 +74,7 @@ export default function ExperimentScoresDisplay({
                   className={`h-3 w-3 rounded ${
                     num <= value
                       ? "bg-accent-primary"
-                      : "bg-background-tertiary border border-border"
+                      : "bg-background-secondary border border-border"
                   }`}
                 />
               ))}
@@ -80,4 +88,3 @@ export default function ExperimentScoresDisplay({
     </div>
   );
 }
-

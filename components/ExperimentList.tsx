@@ -11,7 +11,9 @@ interface ExperimentListProps {
 function calculateAverageScore(scores?: Experiment["scores"]): number | null {
   if (!scores) return null;
   const values = Object.values(scores);
-  return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10;
+  return (
+    Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10
+  );
 }
 
 export default function ExperimentList({ experiments }: ExperimentListProps) {
@@ -34,13 +36,17 @@ export default function ExperimentList({ experiments }: ExperimentListProps) {
           <Link
             key={experiment.id}
             href={`/experiments/${slugify(experiment.name)}`}
-            className="block rounded-lg border border-border bg-background-secondary p-4 transition-colors hover:border-accent-primary/50 hover:bg-background-tertiary"
+            className="block rounded-lg border border-border bg-background-secondary p-4 transition-colors hover:border-accent-primary/50 hover:bg-background-secondary"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <h3 className="font-medium text-text-primary">{experiment.statement}</h3>
+                <h3 className="font-medium text-text-primary">
+                  {experiment.statement}
+                </h3>
                 <div className="mt-2 flex items-center gap-4 text-sm text-text-secondary">
-                  <span>{new Date(experiment.createdDate).toLocaleDateString()}</span>
+                  <span>
+                    {new Date(experiment.createdDate).toLocaleDateString()}
+                  </span>
                   {experiment.tags.length > 0 && (
                     <span className="text-text-muted">
                       {experiment.tags.slice(0, 3).join(", ")}
@@ -50,7 +56,10 @@ export default function ExperimentList({ experiments }: ExperimentListProps) {
                 </div>
                 {experiment.scores && (
                   <div className="mt-3">
-                    <ExperimentScoresDisplay scores={experiment.scores} compact={true} />
+                    <ExperimentScoresDisplay
+                      scores={experiment.scores}
+                      compact={true}
+                    />
                   </div>
                 )}
               </div>
@@ -59,7 +68,9 @@ export default function ExperimentList({ experiments }: ExperimentListProps) {
                 {avgScore !== null && (
                   <div className="text-xs">
                     <span className="text-text-muted">Avg: </span>
-                    <span className="font-medium text-text-primary">{avgScore}/5</span>
+                    <span className="font-medium text-text-primary">
+                      {avgScore}/5
+                    </span>
                   </div>
                 )}
               </div>
@@ -70,4 +81,3 @@ export default function ExperimentList({ experiments }: ExperimentListProps) {
     </div>
   );
 }
-

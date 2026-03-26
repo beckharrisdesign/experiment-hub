@@ -11,8 +11,7 @@ const config: Config = {
       colors: {
         background: {
           primary: "#194b31", // dark green (main bg, hero)
-          secondary: "#113723", // darker green (header, footer)
-          tertiary: "#1e5c3a", // hover states on dark bg
+          secondary: "#113723", // darker green (header, footer, hover states)
           light: "#f7fff8", // near-white (experiment list section)
           mint: "#cff7d3", // mint (recent activity band)
           active: "rgba(20,174,92,0.1)", // active nav item bg

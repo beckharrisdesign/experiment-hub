@@ -4,7 +4,11 @@ interface ScoreBadgeProps {
   fullName: string;
 }
 
-export default function ScoreBadge({ value, label, fullName }: ScoreBadgeProps) {
+export default function ScoreBadge({
+  value,
+  label,
+  fullName,
+}: ScoreBadgeProps) {
   if (value === undefined) {
     return <span className="text-sm text-text-muted">—</span>;
   }
@@ -21,11 +25,10 @@ export default function ScoreBadge({ value, label, fullName }: ScoreBadgeProps) 
   // Minimal gray badge with colored numeral (text-sm for table readability)
   return (
     <span
-      className={`inline-flex items-center justify-center h-6 w-6 rounded text-sm font-normal bg-background-tertiary ${getNumberColor(value)}`}
+      className={`inline-flex items-center justify-center h-6 w-6 rounded text-sm font-normal bg-background-secondary ${getNumberColor(value)}`}
       title={`${fullName}: ${value}/5`}
     >
       {value}
     </span>
   );
 }
-
