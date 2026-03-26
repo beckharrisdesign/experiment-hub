@@ -83,7 +83,7 @@ export default function ExperimentDetailClient({
               className={`flex items-center h-[51px] px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.id
                   ? "bg-background-active border-b-[3px] border-accent-primary text-text-primary"
-                  : "text-text-primary hover:bg-background-tertiary"
+                  : "text-text-primary hover:bg-background-secondary"
               }`}
             >
               {tab.label}

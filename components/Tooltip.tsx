@@ -9,7 +9,12 @@ interface TooltipProps {
   position?: "top" | "bottom" | "left" | "right";
 }
 
-export default function Tooltip({ content, children, className = "", position = "top" }: TooltipProps) {
+export default function Tooltip({
+  content,
+  children,
+  className = "",
+  position = "top",
+}: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   const positionClasses = {
@@ -28,19 +33,19 @@ export default function Tooltip({ content, children, className = "", position = 
       {children}
       {isVisible && (
         <div
-          className={`absolute z-50 px-3 py-2 text-xs text-text-primary bg-background-tertiary border border-border rounded-md shadow-lg max-w-xs pointer-events-none whitespace-normal ${positionClasses[position]}`}
+          className={`absolute z-50 px-3 py-2 text-xs text-text-primary bg-background-secondary border border-border rounded-md shadow-lg max-w-xs pointer-events-none whitespace-normal ${positionClasses[position]}`}
         >
           {content}
           {/* Arrow */}
           <div
-            className={`absolute w-2 h-2 bg-background-tertiary border-border ${
+            className={`absolute w-2 h-2 bg-background-secondary border-border ${
               position === "top"
                 ? "top-full left-1/2 -translate-x-1/2 border-r border-b"
                 : position === "bottom"
-                ? "bottom-full left-1/2 -translate-x-1/2 border-l border-t"
-                : position === "left"
-                ? "left-full top-1/2 -translate-y-1/2 border-r border-t"
-                : "right-full top-1/2 -translate-y-1/2 border-l border-b"
+                  ? "bottom-full left-1/2 -translate-x-1/2 border-l border-t"
+                  : position === "left"
+                    ? "left-full top-1/2 -translate-y-1/2 border-r border-t"
+                    : "right-full top-1/2 -translate-y-1/2 border-l border-b"
             } rotate-45`}
           />
         </div>
@@ -48,4 +53,3 @@ export default function Tooltip({ content, children, className = "", position = 
     </div>
   );
 }
-

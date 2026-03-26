@@ -16,18 +16,21 @@ export default function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 border-r border-border bg-background-secondary">
       <nav className="p-4">
-        <h1 className="mb-6 text-xl font-semibold text-accent-primary tracking-tight">BHD Labs</h1>
+        <h1 className="mb-6 text-xl font-semibold text-accent-primary tracking-tight">
+          BHD Labs
+        </h1>
         <ul className="space-y-2">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href === "/" && pathname === "/");
+            const isActive =
+              pathname === item.href || (item.href === "/" && pathname === "/");
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   className={`block rounded-md px-3 py-2 text-sm transition-colors ${
                     isActive
-                      ? "bg-background-tertiary text-accent-primary"
-                      : "text-text-secondary hover:bg-background-tertiary hover:text-text-primary"
+                      ? "bg-background-secondary text-accent-primary"
+                      : "text-text-secondary hover:bg-background-secondary hover:text-text-primary"
                   }`}
                 >
                   {item.label}
@@ -40,4 +43,3 @@ export default function Sidebar() {
     </aside>
   );
 }
-
