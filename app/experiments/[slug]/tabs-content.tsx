@@ -31,13 +31,11 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-border-dark bg-white overflow-hidden">
-      <div className="px-6 py-3 border-b border-border-dark">
-        <h2 className="font-heading text-base font-semibold text-text-dark">
-          {title}
-        </h2>
-      </div>
-      <div className="px-6 py-5">{children}</div>
+    <div className="py-2">
+      <h2 className="font-heading text-base font-semibold text-text-dark mb-3">
+        {title}
+      </h2>
+      <div>{children}</div>
     </div>
   );
 }
