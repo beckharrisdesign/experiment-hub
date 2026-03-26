@@ -122,6 +122,27 @@ Write like a helpful person, not a legal document or a hype machine.
 
 ---
 
+### 11. Never drop the user into an error state they didn't cause
+
+Validation errors and requirement messages must only appear **after the user has attempted to take action** — not on mount or on open.
+
+A blank form is not an error state. Showing "Name and Variety are required" the moment a form opens tells the user they've already done something wrong before they've had a chance to do anything at all.
+
+**Pattern to enforce:**
+- Track a `submitAttempted` (or `touched`) flag — default `false`
+- Set it to `true` on the first submit attempt (or on blur for field-level validation)
+- Gate all validation messages on that flag
+
+**Before:** Validation message visible immediately on form open  
+**After:** Validation message only appears after the user taps "Add to collection" with empty required fields
+
+**What to scan for:**
+- `{(!field.trim()) && (` — missing a `submitted &&` or `touched &&` guard
+- Inline required-field messages rendered without a submit/touch gate
+- `useEffect` that sets error state on mount
+
+---
+
 ## How to report findings
 
 For each issue found, note:
