@@ -103,12 +103,55 @@ export default function MarkdownContent({
   const displayLines = maxLines ? lines.slice(0, maxLines) : lines;
   const hasMore = maxLines && lines.length > maxLines;
 
+  // Group consecutive bullet lines into <ul> blocks so we can add
+  // bottom margin after the whole list, not just each item.
+  const grouped: React.ReactNode[] = [];
+  let i = 0;
+  while (i < displayLines.length) {
+    const line = displayLines[i];
+    if (line.trim().startsWith("- ")) {
+      const bulletLines: string[] = [];
+      while (
+        i < displayLines.length &&
+        displayLines[i].trim().startsWith("- ")
+      ) {
+        bulletLines.push(displayLines[i]);
+        i++;
+      }
+      grouped.push(
+        <ul key={`ul-${i}`} className={`mb-4 ${t.body}`}>
+          {bulletLines.map((bl, bi) => {
+            const bulletContent = bl.replace(/^\s*-\s/, "");
+            const parts = bulletContent.split(/(\*\*[^*]+\*\*)/g);
+            return (
+              <li key={bi} className="ml-4 mb-1 list-none">
+                •{" "}
+                {parts.map((part, pi) =>
+                  part.startsWith("**") && part.endsWith("**") ? (
+                    <strong key={pi} className={t.bold}>
+                      {part.replace(/\*\*/g, "")}
+                    </strong>
+                  ) : (
+                    <span key={pi}>{part}</span>
+                  ),
+                )}
+              </li>
+            );
+          })}
+        </ul>,
+      );
+    } else {
+      grouped.push(renderMarkdownLine(line, i, t));
+      i++;
+    }
+  }
+
   return (
     <div
       className={`prose ${variant === "light" ? "" : "prose-invert"} max-w-none ${className}`}
     >
       <div className={`text-sm whitespace-pre-wrap ${t.body}`}>
-        {displayLines.map((line, idx) => renderMarkdownLine(line, idx, t))}
+        {grouped}
         {hasMore && (
           <p className={`mt-2 text-xs italic ${t.muted}`}>
             ... ({lines.length - maxLines!} more lines)
