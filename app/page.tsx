@@ -5,7 +5,6 @@ import {
   checkExperimentFiles,
   parseMarketResearch,
 } from "@/lib/data";
-import { getRecentCommits } from "@/lib/git";
 import HomePageClient from "./page-client";
 import type { Experiment, Prototype, Documentation } from "@/types";
 
@@ -98,14 +97,7 @@ export default async function HomePage() {
       }),
     );
 
-    const recentCommits = getRecentCommits(3);
-
-    return (
-      <HomePageClient
-        initialExperiments={experimentsWithRelated}
-        recentCommits={recentCommits}
-      />
-    );
+    return <HomePageClient initialExperiments={experimentsWithRelated} />;
   } catch (error) {
     console.error("[HomePage] Fatal error:", error);
     throw error;

@@ -5,7 +5,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Tooltip from "@/components/Tooltip";
 import type { Experiment, Prototype, Documentation } from "@/types";
-import type { GitCommit } from "@/lib/git";
 import { slugify } from "@/lib/utils";
 import { calculateTotalScore } from "@/lib/scoring";
 import Link from "next/link";
@@ -28,7 +27,6 @@ interface ExperimentWithRelated extends Experiment {
 
 interface HomePageClientProps {
   initialExperiments: ExperimentWithRelated[];
-  recentCommits: GitCommit[];
 }
 
 type ViewTab = "active" | "inactive";
@@ -44,7 +42,6 @@ function getTotalBadgeColor(score: number) {
 
 export default function HomePageClient({
   initialExperiments,
-  recentCommits,
 }: HomePageClientProps) {
   const [sortColumn, setSortColumn] = useState<SortColumn>("total");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -139,7 +136,7 @@ export default function HomePageClient({
             <p className="text-sm font-bold text-white leading-5 mb-2">
               My core themes
             </p>
-            <p className="text-sm font-light text-text-secondary leading-5 mb-2">
+            <p className="text-sm font-light text-white leading-5 mb-2">
               The core themes in my experiments are:
             </p>
             <ul className="text-sm font-light text-white leading-5 list-disc list-inside space-y-0.5">
@@ -147,36 +144,6 @@ export default function HomePageClient({
               <li>supporting neurodiversity</li>
               <li>facilitating environmental impact</li>
             </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* Recent Activity Section */}
-      <section className="bg-background-mint px-16 py-[46px]">
-        <div className="max-w-screen-xl mx-auto">
-          <h2 className="font-heading text-base font-semibold text-text-dark mb-4">
-            Recent activity
-          </h2>
-          <div className="flex gap-[26px]">
-            {recentCommits.length === 0 ? (
-              <p className="text-sm text-text-dark-secondary">
-                No recent commits found.
-              </p>
-            ) : (
-              recentCommits.map((commit) => (
-                <div
-                  key={commit.hash}
-                  className="flex-1 bg-background-primary rounded p-4 min-h-[91px] flex flex-col justify-between"
-                >
-                  <p className="text-sm text-text-primary leading-snug line-clamp-2">
-                    {commit.message}
-                  </p>
-                  <p className="text-xs text-text-muted font-mono mt-2">
-                    {commit.hash} · {commit.date}
-                  </p>
-                </div>
-              ))
-            )}
           </div>
         </div>
       </section>
@@ -189,7 +156,7 @@ export default function HomePageClient({
           </h2>
 
           {/* Tabs */}
-          <div className="flex mb-2">
+          <div className="flex">
             <button
               onClick={() => setActiveTab("active")}
               className={`flex items-center h-[51px] px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
