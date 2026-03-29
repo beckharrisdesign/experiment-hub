@@ -1,57 +1,79 @@
-import { Client } from '@notionhq/client';
+import { Client } from "@notionhq/client";
 
 let connectionSettings: any;
 
 async function getAccessToken() {
-  if (connectionSettings?.settings?.expires_at && new Date(connectionSettings.settings.expires_at).getTime() > Date.now()) {
+  if (
+    connectionSettings?.settings?.expires_at &&
+    new Date(connectionSettings.settings.expires_at).getTime() > Date.now()
+  ) {
     return connectionSettings.settings.access_token;
   }
-  
-  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME
-  const xReplitToken = process.env.REPL_IDENTITY 
-    ? 'repl ' + process.env.REPL_IDENTITY 
-    : process.env.WEB_REPL_RENEWAL 
-    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
-    : null;
+
+  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
+  const xReplitToken = process.env.REPL_IDENTITY
+    ? "repl " + process.env.REPL_IDENTITY
+    : process.env.WEB_REPL_RENEWAL
+      ? "depl " + process.env.WEB_REPL_RENEWAL
+      : null;
 
   if (!xReplitToken) {
-    throw new Error('X_REPLIT_TOKEN not found for repl/depl');
+    throw new Error("X_REPLIT_TOKEN not found for repl/depl");
   }
 
   if (!hostname) {
-    throw new Error('REPLIT_CONNECTORS_HOSTNAME not configured');
+    throw new Error("REPLIT_CONNECTORS_HOSTNAME not configured");
   }
 
   connectionSettings = await fetch(
-    'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=notion',
+    "https://" +
+      hostname +
+      "/api/v2/connection?include_secrets=true&connector_names=notion",
     {
       headers: {
-        'Accept': 'application/json',
-        'X_REPLIT_TOKEN': xReplitToken
-      }
-    }
-  ).then(res => res.json()).then(data => data.items?.[0]);
+        Accept: "application/json",
+        X_REPLIT_TOKEN: xReplitToken,
+      },
+    },
+  )
+    .then((res) => res.json())
+    .then((data) => data.items?.[0]);
 
   if (!connectionSettings) {
-    throw new Error('Notion not connected. Please set up the Notion integration first.');
+    throw new Error(
+      "Notion not connected. Please set up the Notion integration first.",
+    );
   }
 
-  const accessToken = connectionSettings?.settings?.access_token || connectionSettings?.settings?.oauth?.credentials?.access_token;
+  const accessToken =
+    connectionSettings?.settings?.access_token ||
+    connectionSettings?.settings?.oauth?.credentials?.access_token;
 
   if (!accessToken) {
-    throw new Error('Notion access token not found. Please reconnect the Notion integration.');
+    throw new Error(
+      "Notion access token not found. Please reconnect the Notion integration.",
+    );
   }
   return accessToken;
 }
 
 export async function getUncachableNotionClient() {
+  // On Vercel (or any non-Replit host), set NOTION_TOKEN directly in env vars.
+  // The Replit connector is used as a fallback when NOTION_TOKEN is absent.
+  if (process.env.NOTION_TOKEN) {
+    return new Client({ auth: process.env.NOTION_TOKEN });
+  }
   const accessToken = await getAccessToken();
   return new Client({ auth: accessToken });
 }
 
 // Valid options for multi-select fields (must match Notion database options)
-const VALID_SEED_COUNTS = ['less-than-20', '20-50', '50-plus'];
-const VALID_CHALLENGES = ['Buying duplicates', 'Lost the packet', 'Are these still good?'];
+const VALID_SEED_COUNTS = ["less-than-20", "20-50", "50-plus"];
+const VALID_CHALLENGES = [
+  "Buying duplicates",
+  "Lost the packet",
+  "Are these still good?",
+];
 
 export interface LandingPageSubmission {
   experiment: string;
@@ -67,81 +89,86 @@ export interface LandingPageSubmission {
 
 export async function submitLandingPageResponse(
   databaseId: string,
-  submission: LandingPageSubmission
+  submission: LandingPageSubmission,
 ) {
   const notion = await getUncachableNotionClient();
-  
+
   // Build properties object based on what's provided
   const properties: Record<string, any> = {
     // Source is the title field (required)
-    'Source': {
+    Source: {
       title: [
         {
           text: {
-            content: submission.source || 'landing-page',
+            content: submission.source || "landing-page",
           },
         },
       ],
     },
-    'Email': {
+    Email: {
       email: submission.email,
     },
-    'SignupDate': {
+    SignupDate: {
       date: {
         start: new Date().toISOString(),
       },
     },
-    'OptOut': {
+    OptOut: {
       checkbox: submission.optOut ?? false,
     },
   };
-  
+
   // Add optional text fields
   if (submission.name) {
-    properties['Name'] = {
+    properties["Name"] = {
       rich_text: [{ text: { content: submission.name } }],
     };
   }
-  
+
   if (submission.optOutReason) {
-    properties['OptOutReason'] = {
+    properties["OptOutReason"] = {
       rich_text: [{ text: { content: submission.optOutReason } }],
     };
   }
-  
+
   if (submission.notes) {
-    properties['Notes'] = {
+    properties["Notes"] = {
       rich_text: [{ text: { content: submission.notes } }],
     };
   }
-  
+
   // Add multi-select field for Seed Count (validate against allowed options)
-  if (submission.seedCount && VALID_SEED_COUNTS.includes(submission.seedCount)) {
-    properties['Seed Count'] = {
+  if (
+    submission.seedCount &&
+    VALID_SEED_COUNTS.includes(submission.seedCount)
+  ) {
+    properties["Seed Count"] = {
       multi_select: [{ name: submission.seedCount }],
     };
   }
-  
+
   // Add multi-select field for Challenges (validate against allowed options)
   if (submission.challenges) {
-    const challengesArray = Array.isArray(submission.challenges) 
-      ? submission.challenges 
+    const challengesArray = Array.isArray(submission.challenges)
+      ? submission.challenges
       : [submission.challenges];
-    
+
     // Filter to only valid options
-    const validChallenges = challengesArray.filter(c => VALID_CHALLENGES.includes(c));
-    
+    const validChallenges = challengesArray.filter((c) =>
+      VALID_CHALLENGES.includes(c),
+    );
+
     if (validChallenges.length > 0) {
-      properties['Challenges'] = {
-        multi_select: validChallenges.map(c => ({ name: c })),
+      properties["Challenges"] = {
+        multi_select: validChallenges.map((c) => ({ name: c })),
       };
     }
   }
-  
+
   const response = await notion.pages.create({
     parent: { database_id: databaseId },
     properties,
   });
-  
+
   return response;
 }
