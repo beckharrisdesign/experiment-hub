@@ -9,7 +9,7 @@ import { JSDOM } from "jsdom";
 
 const LANDING_HTML_PATH = path.join(
   process.cwd(),
-  "experiments/best-day-ever/landing/index.html"
+  "experiments/best-day-ever/landing/index.html",
 );
 
 function loadLandingDOM(): Document {
@@ -32,7 +32,12 @@ describe("Best Day Ever landing page (Figma ready for development)", () => {
     });
 
     it("has hero tagline from Figma", () => {
-      expect(hasText(doc, "Transform your daily routine into extraordinary experiences. Start living your best life today")).toBe(true);
+      expect(
+        hasText(
+          doc,
+          "Transform your daily routine into extraordinary experiences. Start living your best life today",
+        ),
+      ).toBe(true);
     });
 
     it("has primary CTA: Get early access", () => {
@@ -44,9 +49,13 @@ describe("Best Day Ever landing page (Figma ready for development)", () => {
     });
 
     it("highlights 'best day ever' (pink accent from Figma)", () => {
-      const span = doc.querySelector('h1 span[class*="pink"], h1 span.bg-bde-pink');
+      const span = doc.querySelector(
+        'h1 span[class*="pink"], h1 span.bg-bde-pink',
+      );
       expect(span).toBeTruthy();
-      expect((span?.textContent || "").toLowerCase()).toContain("best day ever");
+      expect((span?.textContent || "").toLowerCase()).toContain(
+        "best day ever",
+      );
     });
 
     it("has decorative shapes", () => {
@@ -60,7 +69,12 @@ describe("Best Day Ever landing page (Figma ready for development)", () => {
     });
 
     it("has subhead from Figma", () => {
-      expect(hasText(doc, "No manual copying. No tedious setup. Just your schedule, ready to hold")).toBe(true);
+      expect(
+        hasText(
+          doc,
+          "No manual copying. No tedious setup. Just your schedule, ready to hold",
+        ),
+      ).toBe(true);
     });
 
     it("has Connect your calendar, Choose your template, Print and get to work", () => {
@@ -70,15 +84,27 @@ describe("Best Day Ever landing page (Figma ready for development)", () => {
     });
 
     it("has Connect your calendar description", () => {
-      expect(hasText(doc, "One-time setup with Google Calendar. We pull your events, never write to them")).toBe(true);
+      expect(
+        hasText(
+          doc,
+          "One-time setup with Google Calendar. We pull your events, never write to them",
+        ),
+      ).toBe(true);
     });
 
     it("has Choose your template description", () => {
-      expect(hasText(doc, "Pick from layouts designed for ADHD brains")).toBe(true);
+      expect(hasText(doc, "Pick from layouts designed for ADHD brains")).toBe(
+        true,
+      );
     });
 
     it("has Print and get to work description", () => {
-      expect(hasText(doc, "Your plan is ready in under 60 seconds. Write on it, check it off, make it yours")).toBe(true);
+      expect(
+        hasText(
+          doc,
+          "Your plan is ready in under 60 seconds. Write on it, check it off, make it yours",
+        ),
+      ).toBe(true);
     });
   });
 
@@ -88,7 +114,12 @@ describe("Best Day Ever landing page (Figma ready for development)", () => {
     });
 
     it("has subhead from Figma", () => {
-      expect(hasText(doc, "Many ADHD brains respond better to tactile, physical objects.")).toBe(true);
+      expect(
+        hasText(
+          doc,
+          "Many ADHD brains respond better to tactile, physical objects.",
+        ),
+      ).toBe(true);
     });
 
     it("has Write by hand, Feel the ritual, Physical artifact", () => {
@@ -98,15 +129,30 @@ describe("Best Day Ever landing page (Figma ready for development)", () => {
     });
 
     it("has Write by hand description", () => {
-      expect(hasText(doc, "The physical act of writing engages motor memory and strengthens commitment")).toBe(true);
+      expect(
+        hasText(
+          doc,
+          "The physical act of writing engages motor memory and strengthens commitment",
+        ),
+      ).toBe(true);
     });
 
     it("has Feel the ritual description", () => {
-      expect(hasText(doc, "Paper, pens, markers create sensory anchors that help you transition into work mode")).toBe(true);
+      expect(
+        hasText(
+          doc,
+          "Paper, pens, markers create sensory anchors that help you transition into work mode",
+        ),
+      ).toBe(true);
     });
 
     it("has Physical artifact description", () => {
-      expect(hasText(doc, "A printed plan on your desk is harder to ignore than a browser tab")).toBe(true);
+      expect(
+        hasText(
+          doc,
+          "A printed plan on your desk is harder to ignore than a browser tab",
+        ),
+      ).toBe(true);
     });
   });
 
@@ -116,7 +162,12 @@ describe("Best Day Ever landing page (Figma ready for development)", () => {
     });
 
     it("has subhead from Figma", () => {
-      expect(hasText(doc, "High contrast. Generous whitespace. Room to write, doodle, and check things off")).toBe(true);
+      expect(
+        hasText(
+          doc,
+          "High contrast. Generous whitespace. Room to write, doodle, and check things off",
+        ),
+      ).toBe(true);
     });
 
     it("has Time Block, Top 3 + Schedule, Week at a Glance", () => {
@@ -126,15 +177,30 @@ describe("Best Day Ever landing page (Figma ready for development)", () => {
     });
 
     it("has Time Block description", () => {
-      expect(hasText(doc, "Hour-by-hour layout with your calendar events pre-filled")).toBe(true);
+      expect(
+        hasText(
+          doc,
+          "Hour-by-hour layout with your calendar events pre-filled",
+        ),
+      ).toBe(true);
     });
 
     it("has Top 3 + Schedule description", () => {
-      expect(hasText(doc, "Three big boxes for your most important things (handwritten). Your calendar events below")).toBe(true);
+      expect(
+        hasText(
+          doc,
+          "Three big boxes for your most important things (handwritten). Your calendar events below",
+        ),
+      ).toBe(true);
     });
 
     it("has Week at a Glance description", () => {
-      expect(hasText(doc, "Seven columns, one per day. For Sunday planning sessions with markers and highlighters")).toBe(true);
+      expect(
+        hasText(
+          doc,
+          "Seven columns, one per day. For Sunday planning sessions with markers and highlighters",
+        ),
+      ).toBe(true);
     });
   });
 
@@ -181,7 +247,7 @@ describe("Best Day Ever landing page (Figma ready for development)", () => {
     it("has max-width 992 layout", () => {
       expect(
         doc.documentElement.outerHTML.includes("992") ||
-        doc.querySelector("[class*='max-w']") !== null
+          doc.querySelector("[class*='max-w']") !== null,
       ).toBe(true);
     });
 
@@ -203,9 +269,13 @@ describe("Best Day Ever landing page (Figma ready for development)", () => {
       expect(footerMarker).toBeGreaterThan(formSectionPos);
     });
 
-    it("uses Figma asset URLs for shapes and icons", () => {
-      const imgs = doc.querySelectorAll('img[src*="localhost:3845/assets/"]');
-      expect(imgs.length).toBeGreaterThan(0);
+    it("uses inline SVGs for shapes and icons (no localhost image dependencies)", () => {
+      // All decorative shapes and functional icons are inline SVGs — no external URLs
+      const svgs = doc.querySelectorAll("svg");
+      expect(svgs.length).toBeGreaterThan(0);
+      // Confirm no localhost:3845 image references leaked in (Figma Desktop MCP guard)
+      const localhostImgs = doc.querySelectorAll('img[src*="localhost:"]');
+      expect(localhostImgs.length).toBe(0);
     });
 
     it("has interest form for early access", () => {
