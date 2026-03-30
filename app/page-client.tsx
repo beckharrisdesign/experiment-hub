@@ -180,7 +180,7 @@ export default function HomePageClient({
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold text-white leading-5 mb-1">
-                Heuristic reviews
+                Heuristics
               </p>
               <p className="text-sm font-light text-text-primary leading-5 mb-2">
                 Design and product decisions are captured in writing as I build.
@@ -196,7 +196,7 @@ export default function HomePageClient({
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold text-white leading-5 mb-1">
-                Pipeline visibility
+                Pipeline
               </p>
               <p className="text-sm font-light text-text-primary leading-5 mb-2">
                 The workflow columns below show exactly where each experiment
