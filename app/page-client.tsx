@@ -163,7 +163,7 @@ export default function HomePageClient({
           <div className="flex gap-8">
             <div className="flex-1">
               <p className="text-sm font-semibold text-white leading-5 mb-1">
-                Pipeline
+                Workflow
               </p>
               <p className="text-sm font-light text-text-primary leading-5 mb-2">
                 The workflow columns below show exactly where each experiment
@@ -174,7 +174,7 @@ export default function HomePageClient({
                 href="/workflow"
                 className="text-xs font-medium text-accent-primary hover:underline"
               >
-                View pipeline →
+                View workflow →
               </Link>
             </div>
             <div className="flex-1">
