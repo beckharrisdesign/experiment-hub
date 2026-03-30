@@ -6,18 +6,16 @@ import MermaidDiagram from "@/components/MermaidDiagram";
 const architectureDiagram = `
 flowchart TB
   subgraph central["/agents/ — hub-level"]
-    direction TB
-    WF["Workflow agents\nexperiment-creator · market-research\nprd-writer · prototype-builder"]
-    QA["Quality agents\ndesign-advisor · design-guidelines\ncommit-message · scoring-criteria"]
+    direction LR
+    WF["Workflow\nexperiment-creator\nmarket-research\nprd-writer\nprototype-builder"]
+    QA["Quality\ndesign-advisor\ndesign-guidelines\ncommit-message\nscoring-criteria"]
   end
 
   subgraph exp["/experiments/{slug}/agents/ — experiment-level"]
-    direction TB
-    EA["Domain-specific agents\nlisting-generator · retail-advisor\ntest-generator · …"]
+    EA["Domain-specific\nlisting-generator\nretail-advisor\ntest-generator\n…"]
   end
 
   central -->|"referenced by"| exp
-  exp -->|"extends / composes"| central
 `;
 
 const centralAgents = [
