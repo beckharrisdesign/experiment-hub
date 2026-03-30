@@ -3,19 +3,20 @@ import { spawn } from "child_process";
 import path from "path";
 import { promises as fs } from "fs";
 import { getPrototypes } from "@/lib/data";
+import { checkAdminAuth } from "@/lib/admin-auth";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ port: string }> }
+  { params }: { params: Promise<{ port: string }> },
 ) {
+  const authError = checkAdminAuth(request);
+  if (authError) return authError;
+
   const { port } = await params;
   const portNumber = parseInt(port, 10);
 
   if (isNaN(portNumber) || portNumber < 1 || portNumber > 65535) {
-    return NextResponse.json(
-      { error: "Invalid port number" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid port number" }, { status: 400 });
   }
 
   // Find prototype by port
@@ -25,7 +26,7 @@ export async function POST(
   if (!prototype) {
     return NextResponse.json(
       { error: "Prototype not found for this port" },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -38,13 +39,13 @@ export async function POST(
     if (!stats.isDirectory()) {
       return NextResponse.json(
         { error: "Prototype directory not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
   } catch {
     return NextResponse.json(
       { error: "Prototype directory not found" },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -55,7 +56,7 @@ export async function POST(
   } catch {
     return NextResponse.json(
       { error: "package.json not found in prototype directory" },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -81,8 +82,7 @@ export async function POST(
   } catch (error: any) {
     return NextResponse.json(
       { error: `Failed to start server: ${error.message}` },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-
