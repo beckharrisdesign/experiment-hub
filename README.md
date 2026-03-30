@@ -1,142 +1,127 @@
-# Experiment Hub
+# BHD Labs — Experiment Hub
 
-A locally-hosted application to manage product experiments from idea to prototype. Each experiment follows a workflow: refine the idea, create a PRD, then build a prototype. Experiments can evolve into launched products (consumer or B2B).
+A personal product lab where I build and validate ideas end-to-end: from raw concept through market research, PRD, landing page, and working prototype. The hub itself is also a product — a Next.js application deployed on Vercel that I've built alongside the experiments it tracks.
 
-## Features
+## Why I built this
 
-- **Three Content Types**: Experiments, Prototypes, and Documentation with one-to-one relationships
-- **Agent-Assisted Workflow**: Use `@experiment-creator`, `@prd-writer`, and `@prototype-builder` agents
-- **Dark Mode Interface**: Developer tool aesthetic with VS Code/GitHub inspired design
-- **Fast Search**: Real-time search across experiments, tags, and metadata
-- **Read-Only Web Interface**: View and browse experiments, prototypes, and documentation
-- **Local-First**: All data stored locally in JSON files, no external dependencies
+I'm a neurodiverse founder. My best ideas come fast and from everywhere, but without structure they scatter. I needed a system that was intuitive where it needs to be and disciplined where it needs to be — something that would help me figure out *which* ideas are worth building before I spend months on them.
 
-## Getting Started
+The experiments I choose to pursue share three themes:
+- **Empowering makers** — tools for people who create things with their hands
+- **Supporting neurodiversity** — products designed for how divergent minds actually work
+- **Facilitating environmental impact** — helping people make more sustainable choices
 
-### Prerequisites
+An idea only makes the cut if it sits at the intersection of something I'm personally passionate about, something with a real market need, and something that makes a difference in the world.
 
-- Node.js 18+
-- npm or yarn
+## What's inside
 
-### Installation
+### Active experiments
 
-1. Install dependencies:
+| Experiment | What it does |
+|---|---|
+| **Best Day Ever** | Translates your digital calendar into a printable daily plan — for the people who think better on paper |
+| **Simple Seed Organizer** | Scan your seed packets with AI and get an organized garden plan |
+| **Etsy Patternator** | One design file, all the Etsy listing assets — built for embroidery sellers |
+
+### The infrastructure
+
+The hub itself is what makes the experiments possible at scale. Running a new experiment means creating a Next.js page — the form submissions, analytics, and tracking are already wired up. No manual setup per experiment.
+
+## How it works
+
+### Experiment workflow
+
+Each experiment moves through a structured pipeline, driven by AI agents in Cursor:
+
+```
+Raw idea
+  → @experiment-creator   — refines concept, creates directory + metadata
+  → @market-research      — TAM/SAM/SOM analysis, bottom-up methodology, scoring
+  → @prd-writer           — product requirements with design review built in
+  → @prototype-builder    — generates code structure and initial implementation
+  → Landing page in hub   — validates demand before full build
+```
+
+Every agent includes explicit approval checkpoints — nothing gets committed without review. The agents enforce a bottom-up market sizing methodology: competitor revenue anchors, real-world signals, explicit assumptions.
+
+### Form submission infrastructure
+
+Landing pages live directly in the Next.js app. Form submissions post to a single Supabase table (`experiment_submissions`) with an `experiment` field tagging each row. Adding a new landing page means adding a Next.js page — no new databases, no infrastructure changes, no manual steps.
+
+### Testing
+
+```bash
+npm test          # 173 unit tests — mocked, no secrets, runs on every PR
+npm run test:live # Live Supabase integration — runs on push to main only
+```
+
+Two vitest configs keep them cleanly separated. Unit tests run in CI on every pull request (via branch protection). Live integration tests run post-merge on main using GitHub Actions secrets.
+
+## Tech stack
+
+| | |
+|---|---|
+| **Framework** | Next.js 15 (App Router) |
+| **Language** | TypeScript |
+| **Styling** | Tailwind CSS with custom design tokens |
+| **Database** | Supabase (form submissions) |
+| **Testing** | Vitest + React Testing Library |
+| **CI/CD** | GitHub Actions + Vercel |
+| **Fonts** | Fraunces (headings) · Inter (body) |
+
+### Design system
+
+Dark green palette (`#194b31`, `#113723`) with mint accents (`#cff7d3`, `#78ffb7`). The visual language is builder-focused — inspired by VS Code and Linear — because this is a tool I use every day, not a marketing site.
+
+## Getting started
 
 ```bash
 npm install
+npm run dev       # http://localhost:3000
 ```
 
-2. Start the development server:
+**Optional — Supabase form submissions:** Copy `.env.example` to `.env.local` and set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Run the SQL in `.env.example` to create the `experiment_submissions` table. On Vercel, add the same vars to the project's environment variables.
 
-```bash
-npm run dev
-```
-
-3. Open [http://localhost:3000](http://localhost:3000) in your browser
-
-**Optional — landing form → Notion:** Each experiment’s landing can post to its own Notion database. Set a per-experiment var: `NOTION_LANDING_DATABASE_ID_<SLUG>` (e.g. `NOTION_LANDING_DATABASE_ID_BEST_DAY_EVER` for Best Day Ever). Copy `.env.example` to `.env.local` and set the var(s); on Vercel, set them in the hub project’s Environment Variables.
-
-## Project Structure
+## Project structure
 
 ```
 experiment-hub/
-├── app/                    # Next.js app directory
-│   ├── page.tsx            # Home page (Experiments list)
-│   ├── prototypes/         # Prototypes page
-│   ├── documentation/      # Documentation page
-│   └── experiments/[id]/   # Experiment detail page
-├── components/             # Reusable React components
-│   ├── Sidebar.tsx
-│   ├── ExperimentList.tsx
-│   ├── SearchBar.tsx
-│   └── StatusBadge.tsx
-├── lib/                    # Utility functions
-│   └── data.ts            # File system data access
-├── types/                  # TypeScript type definitions
-│   └── index.ts
-├── data/                   # JSON metadata storage
-│   ├── experiments.json
-│   ├── prototypes.json
-│   └── documentation.json
-├── experiments/            # Experiment directories
-└── agents/                # Agent instructions
+├── app/                        # Next.js pages and API routes
+│   ├── page.tsx                # Home (experiment list)
+│   ├── experiments/[slug]/     # Experiment detail pages
+│   ├── api/landing-submission/ # Form submission endpoint → Supabase
+│   └── landing/                # Experiment landing pages (one per experiment)
+├── agents/                     # AI agent instructions for the experiment workflow
+├── components/                 # Shared UI components
+├── data/                       # experiments.json, prototypes.json
+├── experiments/{slug}/         # Per-experiment docs, prototypes, notes
+│   ├── docs/PRD.md
+│   ├── docs/market-research.md
+│   └── prototype/
+├── lib/
+│   ├── data.ts                 # File system data access
+│   └── supabase.ts             # Lazy-initialized Supabase client
+├── tests/
+│   ├── api/                    # Unit + live integration tests
+│   └── landing/                # Landing page tests
+└── .github/workflows/ci.yml    # Unit tests on PR, live tests on main
 ```
 
-## Hub home page
+## Scoring methodology
 
-The home page lists experiments in a table with Active / Archived tabs.
+Each experiment is scored across five dimensions after market research:
 
-- **Typography**: Headlines use Fraunces (serif); body uses Inter. Intro paragraph is larger (text-lg). See `/font-preview` to compare headline font options.
-- **Table columns**: Experiment (name + tagline), Score (✓ or score when market validation exists), PRD, Landing, Prototype. Completed steps show a checkmark (✓); Score column shows the numeric score when present (no checkmark). PRD / Landing / Prototype columns use fixed narrow width (w-24).
-- **No action buttons**: Table is read-only (no Create / View / Start in table). Prototype Start/Stop are disabled for public visitors in `PrototypeStatus` when `showActions` is false.
-- **Hidden from list**: Experiments in `HIDDEN_EXPERIMENT_IDS` in `app/page-client.tsx` are excluded from both tabs (e.g. Experience Principles Repository). Data remains in `data/experiments.json` and detail pages still work.
-- **Experiment copy**: Names and taglines live in `data/experiments.json` (`name`, `statement`). Status `Abandoned` = archived.
+- **Business opportunity** — TAM/SAM/SOM, competitive landscape, monetization path
+- **Personal impact** — alignment with my skills and domain knowledge
+- **Competitive advantage** — what makes this defensible
+- **Platform cost** — infrastructure complexity and cost to operate
+- **Social impact** — alignment with my three core themes
 
-## Usage
-
-### Creating Experiments
-
-Experiments are created using the agent framework, not through the web UI:
-
-1. Use `@experiment-creator` to create a new experiment
-2. Use `@prd-writer` to generate a PRD
-3. Use `@prototype-builder` to set up prototype structure
-4. View everything in the web interface
-
-### Data Storage
-
-- **Metadata**: Stored in `data/*.json` files
-- **Experiments**: Stored in `experiments/{slug}/` directories
-- **PRDs**: Stored in `experiments/{slug}/docs/PRD.md`
-- **Prototypes**: Stored in `experiments/{slug}/prototype/`
-
-## Development
-
-### Tech Stack
-
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Architecture**: Server Components + Client Components
-
-### Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-
-## Design System
-
-The application uses a dark theme with colors inspired by VS Code and GitHub:
-
-- **Background**: Dark grays (#0d1117, #161b22, #21262d)
-- **Text**: Light grays (#c9d1d9, #8b949e, #6e7681)
-- **Accent**: Blue (#58a6ff)
-- **Status Colors**: Green (success), Yellow (warning), Red (error)
+Scores are generated by the `@market-research` agent using bottom-up methodology — not gut feel, not top-down industry reports.
 
 ## Documentation
 
-### Core Documentation
-- **PRD.md** - Full product requirements document and implementation phases
-- **agents/README.md** - Agent framework and workflow instructions
-- **AGENT_ARCHITECTURE.md** - Agent architecture patterns (supplementary)
-
-### Setup & Configuration
-- **docs/PROTOTYPE_PORTS.md** - Port assignments for running prototypes
-- **docs/SETUP_MCP_LOGGING.md** - MCP logging setup for Cursor IDE
-- **docs/replit.md** - Replit deployment configuration
-
-### Experiment Documentation
-Each experiment has its own documentation in `experiments/{slug}/docs/`:
-- `PRD.md` - Product Requirements Document
-- `market-research.md` - Market analysis and TAM/SAM/SOM
-- Additional analysis and review documents
-
-## Roadmap
-
-See `PRD.md` for the full product requirements document and implementation phases.
-
-## License
-
-ISC
+- `PRD.md` — Product requirements for the hub itself
+- `agents/README.md` — Full agent workflow with approval gates
+- `AGENT_ARCHITECTURE.md` — Patterns for extending the agent system
+- `.env.example` — Environment variable reference with Supabase table SQL
