@@ -2,10 +2,16 @@ import { createClient } from "@supabase/supabase-js";
 
 // Server-side only — uses the service role key to bypass RLS.
 // Never expose SUPABASE_SERVICE_ROLE_KEY to the browser.
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-);
+// Lazy-initialized so the module can be imported safely without env vars
+// (e.g. in test files that skip when secrets are absent).
+function getClient() {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set");
+  }
+  return createClient(url, key);
+}
 
 export interface ExperimentSubmission {
   experiment: string;
@@ -35,7 +41,7 @@ export interface ExperimentSubmission {
 export async function insertSubmission(
   submission: ExperimentSubmission,
 ): Promise<{ id: string }> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from("experiment_submissions")
     .insert({
       experiment: submission.experiment,
