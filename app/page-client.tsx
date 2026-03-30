@@ -163,6 +163,22 @@ export default function HomePageClient({
           <div className="flex gap-8">
             <div className="flex-1">
               <p className="text-sm font-semibold text-white leading-5 mb-1">
+                Pipeline
+              </p>
+              <p className="text-sm font-light text-text-primary leading-5 mb-2">
+                The workflow columns below show exactly where each experiment
+                stands. A clear picture of what&apos;s in progress makes it easy
+                to dive back in with confidence.
+              </p>
+              <Link
+                href="/workflow"
+                className="text-xs font-medium text-accent-primary hover:underline"
+              >
+                View pipeline →
+              </Link>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white leading-5 mb-1">
                 Scoring
               </p>
               <p className="text-sm font-light text-text-primary leading-5 mb-2">
@@ -192,22 +208,6 @@ export default function HomePageClient({
                 className="text-xs font-medium text-accent-primary hover:underline"
               >
                 View heuristics →
-              </Link>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-white leading-5 mb-1">
-                Pipeline
-              </p>
-              <p className="text-sm font-light text-text-primary leading-5 mb-2">
-                The workflow columns below show exactly where each experiment
-                stands. A clear picture of what&apos;s in progress makes it easy
-                to dive back in with confidence.
-              </p>
-              <Link
-                href="/workflow"
-                className="text-xs font-medium text-accent-primary hover:underline"
-              >
-                View workflow →
               </Link>
             </div>
             <div className="flex-1">
