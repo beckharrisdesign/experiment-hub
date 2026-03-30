@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import net from "net";
+import { checkAdminAuth } from "@/lib/admin-auth";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ port: string }> }
+  { params }: { params: Promise<{ port: string }> },
 ) {
+  const authError = checkAdminAuth(request);
+  if (authError) return authError;
+
   const { port } = await params;
   const portNumber = parseInt(port, 10);
 
   if (isNaN(portNumber) || portNumber < 1 || portNumber > 65535) {
-    return NextResponse.json(
-      { error: "Invalid port number" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid port number" }, { status: 400 });
   }
 
   const isRunning = await checkPort(portNumber);
@@ -57,4 +58,3 @@ function checkPort(port: number): Promise<boolean> {
     socket.connect(port, "127.0.0.1");
   });
 }
-

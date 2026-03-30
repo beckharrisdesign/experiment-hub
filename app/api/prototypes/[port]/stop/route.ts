@@ -1,21 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { exec } from "child_process";
 import { promisify } from "util";
+import { checkAdminAuth } from "@/lib/admin-auth";
 
 const execAsync = promisify(exec);
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ port: string }> }
+  { params }: { params: Promise<{ port: string }> },
 ) {
+  const authError = checkAdminAuth(request);
+  if (authError) return authError;
+
   const { port } = await params;
   const portNumber = parseInt(port, 10);
 
   if (isNaN(portNumber) || portNumber < 1 || portNumber > 65535) {
-    return NextResponse.json(
-      { error: "Invalid port number" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid port number" }, { status: 400 });
   }
 
   try {
@@ -28,7 +29,7 @@ export async function POST(
       // Windows: use netstat to find PID, then taskkill
       try {
         const { stdout } = await execAsync(
-          `netstat -ano | findstr :${portNumber}`
+          `netstat -ano | findstr :${portNumber}`,
         );
         const lines = stdout.trim().split("\n");
         if (lines.length > 0) {
@@ -76,8 +77,7 @@ export async function POST(
   } catch (error: any) {
     return NextResponse.json(
       { error: `Failed to stop server: ${error.message}` },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-
