@@ -165,32 +165,66 @@ export default function HomePageClient({
               <p className="text-sm font-semibold text-white leading-5 mb-1">
                 Scoring
               </p>
-              <p className="text-sm font-light text-text-primary leading-5">
+              <p className="text-sm font-light text-text-primary leading-5 mb-2">
                 Every experiment is scored across five dimensions after market
                 research. Comparing ideas side-by-side makes prioritization
                 intentional — I choose what to build next based on evidence, not
                 just momentum.
               </p>
+              <Link
+                href="/scoring"
+                className="text-xs font-medium text-accent-primary hover:underline"
+              >
+                View scoring →
+              </Link>
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold text-white leading-5 mb-1">
                 Heuristic reviews
               </p>
-              <p className="text-sm font-light text-text-primary leading-5">
+              <p className="text-sm font-light text-text-primary leading-5 mb-2">
                 Design and product decisions are captured in writing as I build.
                 Returning to an experiment weeks later, I can immediately pick
                 up the thread — with all my thinking intact.
               </p>
+              <Link
+                href="/heuristics"
+                className="text-xs font-medium text-accent-primary hover:underline"
+              >
+                View heuristics →
+              </Link>
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold text-white leading-5 mb-1">
                 Pipeline visibility
               </p>
-              <p className="text-sm font-light text-text-primary leading-5">
+              <p className="text-sm font-light text-text-primary leading-5 mb-2">
                 The workflow columns below show exactly where each experiment
                 stands. A clear picture of what&apos;s in progress makes it easy
                 to dive back in with confidence.
               </p>
+              <Link
+                href="/workflow"
+                className="text-xs font-medium text-accent-primary hover:underline"
+              >
+                View workflow →
+              </Link>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white leading-5 mb-1">
+                Harness
+              </p>
+              <p className="text-sm font-light text-text-primary leading-5 mb-2">
+                The AI agents and structures that power the whole system — from
+                experiment creation through market research, PRD, design review,
+                and prototype.
+              </p>
+              <Link
+                href="/harness"
+                className="text-xs font-medium text-accent-primary hover:underline"
+              >
+                View harness →
+              </Link>
             </div>
           </div>
         </div>
