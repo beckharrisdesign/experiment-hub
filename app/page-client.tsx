@@ -115,20 +115,20 @@ export default function HomePageClient({
               About BHD Labs
             </p>
             <p className="text-sm font-light text-white leading-5">
-              This space helps me evaluate and build out my ideas in a
-              structured way — intuitive where it needs to be and structured
-              where it needs to be.
+              I&apos;m a neurodiverse founder. My best ideas come fast and from
+              everywhere. This platform is how I develop them with rigor and
+              pursue the strongest ones with focus.
             </p>
           </div>
-          {/* How I evaluate column */}
+          {/* What drives me column */}
           <div className="w-[204px] pr-4 shrink-0">
             <p className="text-sm font-bold text-white leading-5 mb-2">
-              How I evaluate
+              What drives me
             </p>
             <p className="text-sm font-light text-white leading-5">
-              It&apos;s not a great idea unless it is something that I&apos;m
-              passionate about, something that has a market need, and something
-              that makes a difference in the world.
+              I build things I care deeply about, that serve a real market need,
+              and that make a difference in the world. All three have to be
+              true.
             </p>
           </div>
           {/* Core themes column */}
@@ -136,14 +136,96 @@ export default function HomePageClient({
             <p className="text-sm font-bold text-white leading-5 mb-2">
               My core themes
             </p>
-            <p className="text-sm font-light text-white leading-5 mb-2">
-              The core themes in my experiments are:
-            </p>
-            <ul className="text-sm font-light text-white leading-5 list-disc list-inside space-y-0.5">
-              <li>empowering makers</li>
-              <li>supporting neurodiversity</li>
-              <li>facilitating environmental impact</li>
+            <ul className="text-sm font-light text-white leading-5 space-y-1.5">
+              <li>
+                <span className="font-medium">Empowering makers</span> — tools
+                for people who create things with their hands
+              </li>
+              <li>
+                <span className="font-medium">Supporting neurodiversity</span> —
+                products designed for how divergent minds actually work
+              </li>
+              <li>
+                <span className="font-medium">Environmental impact</span> —
+                helping people make more sustainable choices
+              </li>
             </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Scaffolding Section */}
+      <section className="bg-background-secondary px-16 py-8 border-t border-b border-[rgba(20,174,92,0.2)]">
+        <div className="max-w-screen-xl mx-auto">
+          <p className="text-xs font-bold text-text-primary uppercase tracking-widest mb-5">
+            The scaffolding
+          </p>
+          <div className="flex gap-8">
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white leading-5 mb-1">
+                Workflow
+              </p>
+              <p className="text-sm font-light text-text-primary leading-5 mb-2">
+                The workflow columns below show exactly where each experiment
+                stands. A clear picture of what&apos;s in progress makes it easy
+                to dive back in with confidence.
+              </p>
+              <Link
+                href="/workflow"
+                className="text-xs font-medium text-accent-primary hover:underline"
+              >
+                View workflow →
+              </Link>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white leading-5 mb-1">
+                Scoring
+              </p>
+              <p className="text-sm font-light text-text-primary leading-5 mb-2">
+                Every experiment is scored across five dimensions after market
+                research. Comparing ideas side-by-side makes prioritization
+                intentional — I choose what to build next based on evidence, not
+                just momentum.
+              </p>
+              <Link
+                href="/scoring"
+                className="text-xs font-medium text-accent-primary hover:underline"
+              >
+                View scoring →
+              </Link>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white leading-5 mb-1">
+                Heuristics
+              </p>
+              <p className="text-sm font-light text-text-primary leading-5 mb-2">
+                Design and product decisions are captured in writing as I build.
+                Returning to an experiment weeks later, I can immediately pick
+                up the thread — with all my thinking intact.
+              </p>
+              <Link
+                href="/heuristics"
+                className="text-xs font-medium text-accent-primary hover:underline"
+              >
+                View heuristics →
+              </Link>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white leading-5 mb-1">
+                Harness
+              </p>
+              <p className="text-sm font-light text-text-primary leading-5 mb-2">
+                The AI agents and structures that power the whole system — from
+                experiment creation through market research, PRD, design review,
+                and prototype.
+              </p>
+              <Link
+                href="/harness"
+                className="text-xs font-medium text-accent-primary hover:underline"
+              >
+                View harness →
+              </Link>
+            </div>
           </div>
         </div>
       </section>

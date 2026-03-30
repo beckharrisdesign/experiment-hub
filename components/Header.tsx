@@ -7,6 +7,7 @@ const navLinks = [
   { label: "Experiments", href: "/" },
   { label: "Workflow", href: "/workflow" },
   { label: "Scoring", href: "/scoring" },
+  { label: "Heuristics", href: "/heuristics" },
   { label: "Harness", href: "/harness" },
 ];
 
