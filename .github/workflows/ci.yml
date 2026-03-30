@@ -10,7 +10,7 @@ jobs:
   # Runs on every push and every PR. No secrets needed — all external calls
   # are mocked. Fast (~10s). Gate before merge.
   unit-tests:
-    name: Unit tests
+    name: Feature tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
