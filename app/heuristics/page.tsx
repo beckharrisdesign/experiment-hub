@@ -1,42 +1,5 @@
 import Header from "@/components/Header";
-
-const reviewTypes = [
-  {
-    number: "01",
-    name: "Design review",
-    agent: "@design-advisor",
-    description:
-      "Evaluates prototype code and live deployed URLs against design heuristics — layout, spacing, typography, color, and interaction patterns. Invoked automatically by the PRD writer and prototype builder, or on demand for any deployed URL.",
-  },
-  {
-    number: "02",
-    name: "PRD review",
-    agent: "@prd-writer",
-    description:
-      "Reviews the product requirements document for completeness, clarity, and scope. Checks that user stories are grounded in the market research and that edge cases are accounted for before prototype work begins.",
-  },
-  {
-    number: "03",
-    name: "Market review",
-    agent: "@market-research",
-    description:
-      "Validates the TAM/SAM/SOM analysis using bottom-up methodology — competitor revenue anchors, real-world signals, and explicit assumptions. Generates the experiment score that drives prioritization.",
-  },
-  {
-    number: "04",
-    name: "Code review",
-    agent: "@commit-message",
-    description:
-      "Applies conventional commit formatting and reviews changes for scope creep, security issues, and unnecessary complexity before committing. Keeps the Git history readable and the codebase focused.",
-  },
-];
-
-const principles = [
-  "Every significant decision gets written down — not just what was done, but why.",
-  "Reviews happen at natural checkpoints, not as interruptions to flow.",
-  "The goal is to be able to pick up any experiment cold and understand its current state in under five minutes.",
-  "Design reviews use both code-level analysis and live browser evaluation — neither alone is sufficient.",
-];
+import { agentRubrics } from "@/lib/agent-rubrics";
 
 export default function HeuristicsPage() {
   return (
@@ -49,58 +12,49 @@ export default function HeuristicsPage() {
           Heuristics
         </h1>
         <p className="text-sm font-light text-text-secondary max-w-xl leading-6">
-          Structured reviews at each stage of the experiment workflow. Design
-          and product decisions are captured in writing as work happens — so any
-          experiment can be picked back up with full context intact.
+          Each agent in the workflow is a specialist reviewer with a defined
+          rubric. These are the criteria they apply — and the contract that
+          keeps the whole system consistent.
         </p>
       </section>
 
-      {/* Review types */}
+      {/* Agent rubric cards */}
       <section className="bg-background-light px-16 py-12 flex-1">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="rounded-lg border border-border-dark bg-white overflow-hidden divide-y divide-border-dark">
-            {reviewTypes.map((review) => (
-              <div
-                key={review.number}
-                className="flex items-start gap-6 px-6 py-5"
-              >
-                <span className="font-mono text-xs font-bold text-accent-primary shrink-0 w-6 pt-0.5">
-                  {review.number}
+        <div className="max-w-4xl mx-auto space-y-4">
+          {agentRubrics.map((agent) => (
+            <div
+              key={agent.handle}
+              className="rounded-lg border border-border-dark bg-white overflow-hidden"
+            >
+              {/* Card header */}
+              <div className="flex items-baseline gap-4 px-6 py-4 border-b border-border-dark bg-[rgba(20,174,92,0.03)]">
+                <span className="font-mono text-sm font-bold text-accent-primary">
+                  @{agent.handle}
                 </span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-3 mb-1">
-                    <h2 className="font-heading text-base font-semibold text-text-dark">
-                      {review.name}
-                    </h2>
-                    <span className="font-mono text-xs text-text-dark-secondary">
-                      {review.agent}
-                    </span>
-                  </div>
-                  <p className="text-sm text-text-dark-secondary leading-5">
-                    {review.description}
-                  </p>
-                </div>
+                <span className="text-xs text-text-dark-secondary">
+                  {agent.role}
+                </span>
+                <span className="ml-auto text-xs text-text-dark-secondary">
+                  {agent.input} → {agent.output}
+                </span>
               </div>
-            ))}
-          </div>
 
-          {/* Principles */}
-          <div className="rounded-lg border border-border-dark bg-white px-6 py-5">
-            <h2 className="font-heading text-base font-semibold text-text-dark mb-3">
-              Principles
-            </h2>
-            <ul className="space-y-2">
-              {principles.map((principle) => (
-                <li
-                  key={principle}
-                  className="flex items-start gap-2 text-sm text-text-dark-secondary"
-                >
-                  <span className="text-accent-primary shrink-0 mt-0.5">·</span>
-                  {principle}
-                </li>
-              ))}
-            </ul>
-          </div>
+              {/* Rubric checklist */}
+              <ul className="px-6 py-4 space-y-2">
+                {agent.rubric.map((criterion) => (
+                  <li
+                    key={criterion}
+                    className="flex items-start gap-3 text-sm text-text-dark-secondary leading-5"
+                  >
+                    <span className="text-accent-primary shrink-0 mt-0.5 font-bold">
+                      ✓
+                    </span>
+                    {criterion}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </section>
     </div>
