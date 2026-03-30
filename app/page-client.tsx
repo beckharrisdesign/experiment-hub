@@ -115,9 +115,9 @@ export default function HomePageClient({
               About BHD Labs
             </p>
             <p className="text-sm font-light text-white leading-5">
-              This space helps me evaluate and build out my ideas in a
-              structured way — intuitive where it needs to be and structured
-              where it needs to be.
+              I&apos;m a neurodiverse founder. My best ideas come fast and from
+              everywhere, but without structure they scatter. This is the system
+              that keeps them honest.
             </p>
           </div>
           {/* How I evaluate column */}
@@ -126,9 +126,10 @@ export default function HomePageClient({
               How I evaluate
             </p>
             <p className="text-sm font-light text-white leading-5">
-              It&apos;s not a great idea unless it is something that I&apos;m
-              passionate about, something that has a market need, and something
-              that makes a difference in the world.
+              An idea only makes the cut if it sits at the intersection of
+              something I&apos;m personally passionate about, something with a
+              real market need, and something that makes a difference in the
+              world.
             </p>
           </div>
           {/* Core themes column */}
@@ -136,14 +137,62 @@ export default function HomePageClient({
             <p className="text-sm font-bold text-white leading-5 mb-2">
               My core themes
             </p>
-            <p className="text-sm font-light text-white leading-5 mb-2">
-              The core themes in my experiments are:
-            </p>
-            <ul className="text-sm font-light text-white leading-5 list-disc list-inside space-y-0.5">
-              <li>empowering makers</li>
-              <li>supporting neurodiversity</li>
-              <li>facilitating environmental impact</li>
+            <ul className="text-sm font-light text-white leading-5 space-y-1.5">
+              <li>
+                <span className="font-medium">Empowering makers</span> — tools
+                for people who create things with their hands
+              </li>
+              <li>
+                <span className="font-medium">Supporting neurodiversity</span> —
+                products designed for how divergent minds actually work
+              </li>
+              <li>
+                <span className="font-medium">Environmental impact</span> —
+                helping people make more sustainable choices
+              </li>
             </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Guardrails Section */}
+      <section className="bg-background-secondary px-16 py-8 border-t border-b border-[rgba(20,174,92,0.2)]">
+        <div className="max-w-screen-xl mx-auto">
+          <p className="text-xs font-bold text-text-primary uppercase tracking-widest mb-5">
+            How the platform keeps me honest
+          </p>
+          <div className="flex gap-8">
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white leading-5 mb-1">
+                Scoring
+              </p>
+              <p className="text-sm font-light text-text-primary leading-5">
+                Every experiment is scored across five dimensions after market
+                research. If a new idea scores lower than something already in
+                progress, that&apos;s data, not just a feeling.
+              </p>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white leading-5 mb-1">
+                Heuristic reviews
+              </p>
+              <p className="text-sm font-light text-text-primary leading-5">
+                Design and product decisions are captured in writing as I build.
+                I can pick up an experiment weeks later and immediately
+                understand where I left off and why.
+              </p>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white leading-5 mb-1">
+                Pipeline visibility
+              </p>
+              <p className="text-sm font-light text-text-primary leading-5">
+                The workflow columns below make abandonment visible. An
+                experiment with a PRD but no landing page isn&apos;t
+                &ldquo;paused&rdquo; — it&apos;s a clear signal of where
+                momentum stalled.
+              </p>
+            </div>
           </div>
         </div>
       </section>
