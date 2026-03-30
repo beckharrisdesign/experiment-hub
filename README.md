@@ -13,6 +13,16 @@ The experiments I choose to pursue share three themes:
 
 An idea only makes the cut if it sits at the intersection of something I'm personally passionate about, something with a real market need, and something that makes a difference in the world.
 
+### The guardrails
+
+One of the most useful things this platform does is keep me honest with myself. The pull toward a new idea is real — and it's easy to abandon something mid-build the moment a shinier concept appears. The hub works against that pattern in a few concrete ways:
+
+- **Scoring** surfaces where each experiment actually stands. If a new idea scores lower than something already in progress, that's data, not just a feeling.
+- **Heuristic reviews** capture design and product decisions in writing, so I can pick up an experiment weeks later and immediately understand where I left off and why.
+- **The workflow pipeline** makes abandonment visible. An experiment with a PRD but no landing page isn't "paused" — it's a clear signal of where momentum stalled.
+
+The platform doesn't stop me from exploring new ideas. It just makes sure I'm doing it with open eyes.
+
 ## What's inside
 
 ### Active experiments
