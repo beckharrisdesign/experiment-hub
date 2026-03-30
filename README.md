@@ -4,24 +4,22 @@ A personal product lab where I build and validate ideas end-to-end: from raw con
 
 ## Why I built this
 
-I'm a neurodiverse founder. My best ideas come fast and from everywhere, but without structure they scatter. I needed a system that was intuitive where it needs to be and disciplined where it needs to be — something that would help me figure out *which* ideas are worth building before I spend months on them.
+I'm a neurodiverse founder. My best ideas come fast and from everywhere. This platform is how I develop them with rigor and pursue the strongest ones with focus.
 
 The experiments I choose to pursue share three themes:
 - **Empowering makers** — tools for people who create things with their hands
 - **Supporting neurodiversity** — products designed for how divergent minds actually work
 - **Facilitating environmental impact** — helping people make more sustainable choices
 
-An idea only makes the cut if it sits at the intersection of something I'm personally passionate about, something with a real market need, and something that makes a difference in the world.
+I build things I care deeply about, that serve a real market need, and that make a difference in the world. All three have to be true.
 
-### The guardrails
+### The scaffolding
 
-One of the most useful things this platform does is keep me honest with myself. The pull toward a new idea is real — and it's easy to abandon something mid-build the moment a shinier concept appears. The hub works against that pattern in a few concrete ways:
+The platform is built to keep me focused, motivated, and creatively energized — not to slow me down.
 
-- **Scoring** surfaces where each experiment actually stands. If a new idea scores lower than something already in progress, that's data, not just a feeling.
-- **Heuristic reviews** capture design and product decisions in writing, so I can pick up an experiment weeks later and immediately understand where I left off and why.
-- **The workflow pipeline** makes abandonment visible. An experiment with a PRD but no landing page isn't "paused" — it's a clear signal of where momentum stalled.
-
-The platform doesn't stop me from exploring new ideas. It just makes sure I'm doing it with open eyes.
+- **Scoring** makes prioritization intentional. Comparing ideas side-by-side means I choose what to build next based on evidence, not just momentum.
+- **Heuristic reviews** capture design and product decisions in writing as I build. Returning to an experiment weeks later, I can immediately pick up the thread with all my thinking intact.
+- **Pipeline visibility** shows exactly where each experiment stands. A clear picture of what's in progress makes it easy to dive back in with confidence.
 
 ## What's inside
 

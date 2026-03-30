@@ -116,20 +116,19 @@ export default function HomePageClient({
             </p>
             <p className="text-sm font-light text-white leading-5">
               I&apos;m a neurodiverse founder. My best ideas come fast and from
-              everywhere, but without structure they scatter. This is the system
-              that keeps them honest.
+              everywhere. This platform is how I develop them with rigor and
+              pursue the strongest ones with focus.
             </p>
           </div>
-          {/* How I evaluate column */}
+          {/* What drives me column */}
           <div className="w-[204px] pr-4 shrink-0">
             <p className="text-sm font-bold text-white leading-5 mb-2">
-              How I evaluate
+              What drives me
             </p>
             <p className="text-sm font-light text-white leading-5">
-              An idea only makes the cut if it sits at the intersection of
-              something I&apos;m personally passionate about, something with a
-              real market need, and something that makes a difference in the
-              world.
+              I build things I care deeply about, that serve a real market need,
+              and that make a difference in the world. All three have to be
+              true.
             </p>
           </div>
           {/* Core themes column */}
@@ -155,11 +154,11 @@ export default function HomePageClient({
         </div>
       </section>
 
-      {/* Guardrails Section */}
+      {/* Scaffolding Section */}
       <section className="bg-background-secondary px-16 py-8 border-t border-b border-[rgba(20,174,92,0.2)]">
         <div className="max-w-screen-xl mx-auto">
           <p className="text-xs font-bold text-text-primary uppercase tracking-widest mb-5">
-            How the platform keeps me honest
+            The scaffolding
           </p>
           <div className="flex gap-8">
             <div className="flex-1">
@@ -168,8 +167,9 @@ export default function HomePageClient({
               </p>
               <p className="text-sm font-light text-text-primary leading-5">
                 Every experiment is scored across five dimensions after market
-                research. If a new idea scores lower than something already in
-                progress, that&apos;s data, not just a feeling.
+                research. Comparing ideas side-by-side makes prioritization
+                intentional — I choose what to build next based on evidence, not
+                just momentum.
               </p>
             </div>
             <div className="flex-1">
@@ -178,8 +178,8 @@ export default function HomePageClient({
               </p>
               <p className="text-sm font-light text-text-primary leading-5">
                 Design and product decisions are captured in writing as I build.
-                I can pick up an experiment weeks later and immediately
-                understand where I left off and why.
+                Returning to an experiment weeks later, I can immediately pick
+                up the thread — with all my thinking intact.
               </p>
             </div>
             <div className="flex-1">
@@ -187,10 +187,9 @@ export default function HomePageClient({
                 Pipeline visibility
               </p>
               <p className="text-sm font-light text-text-primary leading-5">
-                The workflow columns below make abandonment visible. An
-                experiment with a PRD but no landing page isn&apos;t
-                &ldquo;paused&rdquo; — it&apos;s a clear signal of where
-                momentum stalled.
+                The workflow columns below show exactly where each experiment
+                stands. A clear picture of what&apos;s in progress makes it easy
+                to dive back in with confidence.
               </p>
             </div>
           </div>
