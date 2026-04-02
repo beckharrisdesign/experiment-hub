@@ -1,0 +1,14 @@
+{
+  "name": "bhd-labs-sitemap-builder",
+  "version": "1.0.0",
+  "description": "Figma plugin: build a screenshot sitemap of the BHD Labs hub",
+  "private": true,
+  "scripts": {
+    "build": "tsc --noEmit false --outDir . --module commonjs --target es6 --esModuleInterop true --strict false --skipLibCheck true code.ts && node -e \"const fs=require('fs');const src=fs.readFileSync('code.js','utf8');fs.writeFileSync('code.js',src.replace(/^\\\"use strict\\\";\\n/,''));\"",
+    "build:watch": "tsc --watch --noEmit false --outDir . --module commonjs --target es6 --esModuleInterop true --strict false --skipLibCheck true code.ts"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.108.0",
+    "typescript": "^5.0.0"
+  }
+}

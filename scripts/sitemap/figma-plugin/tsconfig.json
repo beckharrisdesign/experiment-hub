@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "lib": ["es6", "dom"],
+    "module": "commonjs",
+    "strict": false,
+    "noImplicitAny": false,
+    "typeRoots": ["./node_modules/@figma/plugin-typings", "./node_modules/@types"],
+    "types": [],
+    "outDir": ".",
+    "skipLibCheck": true
+  },
+  "files": [
+    "node_modules/@figma/plugin-typings/index.d.ts",
+    "code.ts"
+  ]
+}

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>BHD Labs Sitemap Builder</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      background: #1e1e1e;
+      color: #cccccc;
+      padding: 16px;
+      width: 360px;
+    }
+    h2 { font-size: 15px; font-weight: 600; margin-bottom: 4px; color: #ffffff; }
+    p { color: #999; margin-bottom: 12px; line-height: 1.5; }
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #ccc;
+    }
+    .drop-zone {
+      border: 1px dashed #444;
+      border-radius: 6px;
+      padding: 20px 16px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: border-color 0.15s;
+      color: #777;
+      font-size: 12px;
+    }
+    .drop-zone:hover, .drop-zone.active { border-color: #58a6ff; color: #58a6ff; }
+    .drop-zone input[type="file"] { display: none; }
+    .file-count {
+      font-size: 11px;
+      color: #58a6ff;
+      margin-top: 4px;
+      min-height: 14px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    #buildBtn {
+      background: #58a6ff;
+      color: #0d1117;
+      margin-bottom: 8px;
+    }
+    #buildBtn:hover:not(:disabled) { background: #79c0ff; }
+    #status {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #999;
+      min-height: 18px;
+    }
+    #status.error { color: #f85149; }
+    #status.success { color: #3fb950; }
+    .section { margin-bottom: 16px; }
+    .tip {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 11px;
+      color: #8b949e;
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+    .tip code {
+      background: #0d1117;
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-family: 'SF Mono', monospace;
+      color: #79c0ff;
+      font-size: 10px;
+    }
+    .progress-bar-wrap {
+      background: #30363d;
+      border-radius: 4px;
+      height: 6px;
+      margin-top: 8px;
+      overflow: hidden;
+      display: none;
+    }
+    .progress-bar {
+      height: 100%;
+      background: #58a6ff;
+      width: 0%;
+      transition: width 0.2s;
+    }
+  </style>
+</head>
+<body>
+  <h2>BHD Labs Sitemap Builder</h2>
+  <p>Builds a screenshot-thumbnail sitemap in Figma from locally captured page screenshots.</p>
+
+  <div class="tip">
+    Run <code>node scripts/sitemap/screenshot-pages.js</code> from the repo root first.<br>
+    Then load the <code>docs/sitemap/manifest.json</code> and <code>docs/sitemap/screenshots/*.png</code> files below.
+  </div>
+
+  <div class="section">
+    <label>1. Select manifest.json</label>
+    <div class="drop-zone" id="manifestZone" onclick="document.getElementById('manifestFile').click()">
+      Click to select <strong>manifest.json</strong>
+      <input type="file" id="manifestFile" accept=".json" />
+    </div>
+    <div class="file-count" id="manifestCount"></div>
+  </div>
+
+  <div class="section">
+    <label>2. Select all screenshot PNGs</label>
+    <div class="drop-zone" id="screenshotZone" onclick="document.getElementById('screenshotFiles').click()">
+      Click to select <strong>*.png</strong> files (select all at once)
+      <input type="file" id="screenshotFiles" accept=".png" multiple />
+    </div>
+    <div class="file-count" id="screenshotCount"></div>
+  </div>
+
+  <button id="buildBtn" disabled>Build Sitemap in Figma</button>
+  <div class="progress-bar-wrap" id="progressWrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div id="status"></div>
+
+  <script>
+    let manifestData = null;
+    let screenshotMap = {}; // filename → ArrayBuffer
+
+    const buildBtn = document.getElementById('buildBtn');
+    const statusEl = document.getElementById('status');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressBar = document.getElementById('progressBar');
+
+    function setStatus(msg, type = '') {
+      statusEl.textContent = msg;
+      statusEl.className = type;
+    }
+
+    function checkReady() {
+      const hasMani = manifestData !== null;
+      const hasScreenshots = Object.keys(screenshotMap).length > 0;
+      buildBtn.disabled = !(hasMani && hasScreenshots);
+      if (hasMani && hasScreenshots) {
+        setStatus(`Ready — ${Object.keys(screenshotMap).length} screenshots loaded.`);
+      }
+    }
+
+    // Manifest file
+    document.getElementById('manifestFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        manifestData = JSON.parse(text);
+        document.getElementById('manifestCount').textContent =
+          `✓ Loaded manifest with ${manifestData.pages.length} pages`;
+        checkReady();
+      } catch (err) {
+        setStatus('Failed to parse manifest.json: ' + err.message, 'error');
+      }
+    });
+
+    // Screenshot files
+    document.getElementById('screenshotFiles').addEventListener('change', async (e) => {
+      screenshotMap = {};
+      const files = Array.from(e.target.files);
+      for (const file of files) {
+        const buf = await file.arrayBuffer();
+        screenshotMap[file.name] = buf;
+      }
+      document.getElementById('screenshotCount').textContent =
+        `✓ ${files.length} PNG${files.length !== 1 ? 's' : ''} loaded`;
+      checkReady();
+    });
+
+    // Build button
+    buildBtn.addEventListener('click', () => {
+      if (!manifestData) return;
+
+      const pages = manifestData.pages.filter(p => p.status === 'ok');
+      const missing = pages.filter(p => !screenshotMap[p.filename]);
+
+      if (missing.length > 0) {
+        setStatus(`Missing screenshots: ${missing.map(p => p.filename).join(', ')}`, 'error');
+        return;
+      }
+
+      buildBtn.disabled = true;
+      setStatus('Sending data to Figma…');
+      progressWrap.style.display = 'block';
+      progressBar.style.width = '5%';
+
+      // Convert ArrayBuffers to Uint8Array for postMessage
+      const screenshots = {};
+      for (const [filename, buf] of Object.entries(screenshotMap)) {
+        screenshots[filename] = new Uint8Array(buf);
+      }
+
+      parent.postMessage({
+        pluginMessage: {
+          type: 'BUILD_SITEMAP',
+          manifest: manifestData,
+          screenshots,
+        }
+      }, '*');
+    });
+
+    // Listen for progress updates from plugin code
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+
+      if (msg.type === 'PROGRESS') {
+        const pct = Math.round((msg.current / msg.total) * 100);
+        progressBar.style.width = pct + '%';
+        setStatus(`Building… ${msg.current}/${msg.total} — ${msg.label}`);
+      } else if (msg.type === 'DONE') {
+        progressBar.style.width = '100%';
+        setStatus('Sitemap built successfully!', 'success');
+        buildBtn.disabled = false;
+      } else if (msg.type === 'ERROR') {
+        setStatus('Error: ' + msg.message, 'error');
+        buildBtn.disabled = false;
+        progressWrap.style.display = 'none';
+      }
+    };
+  </script>
+</body>
+</html>
