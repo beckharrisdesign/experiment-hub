@@ -18,3 +18,13 @@ Rules live in `.cursor/rules/` and apply to both Cursor and Claude Code sessions
 Skills live in `.claude/skills/` and are invocable via `/skill-name`.
 
 - `user-communication.md` — audit and fix user-facing copy against content design standards
+
+## Figma (when using Figma MCP)
+
+Install the Figma plugin globally (`claude plugin install figma@claude-plugins-official`) for the MCP server and workflow skills. See `docs/FIGMA_SETUP.md` for full setup across all tools.
+
+These rules are project-specific:
+
+- **Map to our system** — Treat Figma MCP output as design reference, not final code. Use this project's design tokens (`tailwind.config.ts`), components (`components/`), and typography (Fraunces headings, Inter body). Validate for 1:1 visual parity with the Figma screenshot.
+- **Reuse, don't duplicate** — Use existing design-system components. Do not add new icon packages if assets come from Figma. No hardcoded colors or spacing; use tokens from `tailwind.config.ts`.
+- **Asset handling** — If the Figma MCP server returns a `localhost` source for an image or SVG, use that source directly. Do not create placeholders.
