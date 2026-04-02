@@ -1,0 +1,139 @@
+# Screenshot sitemap workflow (Figma-ready)
+
+Use this workflow to capture a screenshot thumbnail for every page on your
+main deployment, then import the dataset into Figma to build a visual sitemap.
+
+## What this generates
+
+Running the capture script outputs:
+
+- `artifacts/site-map/<run>/screenshots/*.png` - one thumbnail per page URL
+- `artifacts/site-map/<run>/site-map.json` - full graph data
+- `artifacts/site-map/<run>/site-map-figma.csv` - Figma-friendly rows
+- `artifacts/site-map/<run>/site-map.mmd` - Mermaid graph
+- `artifacts/site-map/<run>/index.html` - local visual index
+
+## 1) Install dependencies
+
+```bash
+npm install
+```
+
+If Playwright browser downloads are blocked in your environment, use system
+Chrome with `--browser-channel chrome` (default) or pass an explicit path via
+`--executable-path`.
+
+## 2) Run a rate-limited capture
+
+Recommended safe run for production:
+
+```bash
+npm run sitemap:capture -- \
+  --base-url https://YOUR_MAIN_DEPLOYMENT_URL \
+  --max-pages 1000 \
+  --crawl-delay-ms 1500 \
+  --timeout-ms 30000 \
+  --retries 2 \
+  --include-sitemap-seeds true \
+  --browser-channel chrome \
+  --output-dir artifacts/site-map/main-$(date +%Y%m%d-%H%M%S)
+```
+
+Notes:
+
+- `--crawl-delay-ms 1500` is conservative to respect rate limits.
+- `--include-sitemap-seeds true` pulls additional pages from `robots.txt` /
+  `sitemap.xml` in addition to link crawling.
+- If you prefer auto-detection of your hub production deployment URL, omit
+  `--base-url` and the script will try GitHub deployment metadata.
+
+## 3) Include pages that are not discoverable by links
+
+For pages not linked in nav/sitemap (for example deep states), create a seed
+file with one URL per line:
+
+```txt
+# scripts/seed-urls.txt
+https://YOUR_MAIN_DEPLOYMENT_URL/experiments/example
+https://YOUR_MAIN_DEPLOYMENT_URL/experiments/example/doc/prd
+```
+
+Then run:
+
+```bash
+npm run sitemap:capture -- \
+  --base-url https://YOUR_MAIN_DEPLOYMENT_URL \
+  --seed-file scripts/seed-urls.txt \
+  --crawl-delay-ms 1500
+```
+
+## 4) Bring into Figma
+
+1. Open `site-map-figma.csv` and review node labels/paths.
+2. In Figma, create a frame for the sitemap.
+3. Place screenshot images from `screenshots/` as node thumbnails.
+4. Use `parentUrl` and `depth` from CSV to position nodes and connectors.
+5. Keep this sitemap as your source-of-truth board for selecting pages to
+   convert into reusable components later via Figma MCP.
+
+## Run it from the web (GitHub Actions)
+
+If you do not want to run locally, use the manual GitHub workflow:
+
+1. Go to **GitHub → Actions → "Sitemap Screenshot Capture"**.
+2. Click **Run workflow**.
+3. Fill `base_url` with your main deployment URL.
+4. Keep conservative defaults (`crawl_delay_ms=1500`, `retries=2`) unless you
+   intentionally want a faster run.
+5. Start the run.
+6. When complete, open the run and download the artifact
+   `sitemap-screenshots-<run_id>`.
+
+The artifact zip contains the same outputs (`site-map-figma.csv`, screenshots,
+JSON, HTML index).
+
+## Run it directly from Figma?
+
+Figma itself is not a crawling/screenshot runtime, so this should run in GitHub
+Actions (or another server runtime), then you import the outputs into Figma.
+For your flow:
+
+1. Run the GitHub workflow above.
+2. Download and unzip artifact outputs.
+3. In Figma, build the sitemap with screenshot nodes from `screenshots/`.
+4. Use `site-map-figma.csv` (`parentUrl`, `depth`, `url`) to arrange structure.
+
+## Figma MCP + skills handoff (recommended)
+
+Each capture run now includes two files specifically for your Figma MCP flow:
+
+- `figma-mcp-manifest.json` - node positions, edges, screenshot paths, and frame metadata
+- `figma-mcp-prompt.txt` - a ready-to-paste instruction block for your MCP skills
+
+### After downloading the GitHub Actions artifact
+
+1. Unzip the artifact locally.
+2. Open `figma-mcp-prompt.txt`.
+3. In your MCP-enabled tool session (with your new Figma skills), paste the full
+   prompt and run it.
+4. The skill should read `figma-mcp-manifest.json` and place one screenshot card
+   per URL, with connectors from `layout.edges`.
+
+This is the intended path when you want artifact -> MCP -> Figma without manual
+layout work.
+
+## Useful flags
+
+- `--include-path-regex '^/(experiments|workflow|heuristics)'`
+- `--exclude-path-regex '^/(api|admin)'`
+- `--keep-query-params true` (captures URL variants distinctly)
+- `--max-pages 2000`
+- `--user-agent 'BHDLabs-SitemapBot/1.0'`
+
+## Troubleshooting
+
+- `ERR_CONNECTION_CLOSED` or `fetch failed` often means network egress policy,
+  not script logic. Re-run from an environment that can reach your deployment.
+- 401/redirect loops on protected pages: use a `--seed-file` with public pages
+  first, then authenticated pages in a separate run after setting auth in the
+  browser context (script extension point).
