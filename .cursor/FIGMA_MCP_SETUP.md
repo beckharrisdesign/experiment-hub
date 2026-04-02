@@ -1,81 +1,63 @@
-# Figma MCP Setup
+# Figma in Cursor — setup
 
-This guide adds the **Figma MCP server** to Cursor so the agent can read design context and screenshots from Figma files and implement designs (e.g. Best Day Ever landing) from links.
+Figma integration in this project uses a two-layer architecture:
 
-## 1. Get a Figma API token
+- **Layer 1 (global):** The Figma plugin — installs the MCP server and skills for how to use Figma tools correctly. Same in every repo.
+- **Layer 2 (project):** Rules in `.cursorrules` — tells the agent how to translate Figma output into *this* project's design tokens, components, and conventions. Different per repo.
 
-1. Log in at [figma.com](https://www.figma.com).
-2. Click your **profile/avatar** (top-left or account menu) → **Settings**.
-3. Open the **Security** tab.
-4. Click **Generate new token**.
-5. Name it (e.g. "Cursor MCP"), use **read-only** access, then **Generate token**.
-6. **Copy the token** and store it somewhere safe. Figma shows it only once.
+## Install the Figma plugin (one-time, global)
 
-## 2. Add the Figma MCP server in Cursor
+In Cursor's agent chat, type:
 
-Cursor reads MCP config from **user settings**, not from the repo. You can use either method below.
-
-### Option A: Cursor Settings UI
-
-1. Open **Cursor Settings**: `Cmd+,` (Mac) or `Ctrl+,` (Windows/Linux), or **Cursor → Settings**.
-2. Search for **"MCP"** or go to **Tools and MCP** / **Models** (name may vary by version).
-3. Click **Add new MCP server** or **Edit mcp.json**.
-4. Add the Figma server. If you already have other servers, add the `figma-developer-mcp` block inside `mcpServers`:
-
-```json
-"figma-developer-mcp": {
-  "command": "npx",
-  "args": ["-y", "figma-developer-mcp", "--stdio"],
-  "env": {
-    "FIGMA_API_KEY": "paste-your-figma-token-here"
-  }
-}
+```
+/add-plugin figma
 ```
 
-5. Replace `paste-your-figma-token-here` with your actual token. Save.
+This installs the official [Figma MCP server guide](https://github.com/figma/mcp-server-guide) plugin, which provides:
 
-### Option B: Edit mcp.json directly
+- **MCP server** — connects to `https://mcp.figma.com/mcp` (streamable HTTP, OAuth-based auth)
+- **Skills** — structured workflows for implementing designs, connecting components via Code Connect, creating design system rules, and more
 
-1. Open your Cursor MCP config file:
-   - **Mac/Linux**: `~/.cursor/mcp.json`
-   - **Windows**: `%USERPROFILE%\.cursor\mcp.json`
-2. If the file doesn’t exist, create it with `{ "mcpServers": {} }`.
-3. Add the `figma-developer-mcp` entry under `mcpServers` (see block above), using your real `FIGMA_API_KEY`.
-4. If you have other servers (e.g. filesystem, experiment-logs), keep them and add the Figma one alongside. Example full structure:
+The plugin is global — it applies to every repo you open in Cursor. You authenticate with Figma directly through the MCP server (OAuth flow), so there are no API tokens to manage manually.
 
-```json
-{
-  "mcpServers": {
-    "filesystem": { ... },
-    "experiment-logs": { ... },
-    "figma-developer-mcp": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--stdio"],
-      "env": {
-        "FIGMA_API_KEY": "your-token"
-      }
-    }
-  }
-}
+### Verify
+
+1. Open **Cursor Settings → Tools and MCP** and confirm **figma** is listed and enabled.
+2. In a chat, type `#get_design_context` to confirm the Figma MCP tools are available.
+3. Paste a Figma design link and ask to implement it. The agent should call `get_design_context` and `get_screenshot` before writing code.
+
+## Project-specific rules (Layer 2)
+
+The Figma section in `.cursorrules` tells the agent how to adapt Figma output for this repo:
+
+```
+## Figma (when using Figma MCP)
+- Flow first — run get_design_context then get_screenshot before writing code
+- Map to our system — use this project's design tokens, components, and typography
+- Reuse, don't duplicate — use existing design-system components, no hardcoded colors
 ```
 
-5. Save the file.
+This is what makes Figma integration different per repo. In another project with a different design system, this section would reference different tokens, components, and conventions — but the global Figma plugin (Layer 1) stays the same.
 
-## 3. Restart Cursor
+Design tokens for this project are defined in `tailwind.config.ts` and documented in `.cursor/rules/design-guidelines.mdc`.
 
-Restart Cursor (or reload the window) so it picks up the new MCP server.
+## Troubleshooting
 
-## 4. Verify
+### Plugin not showing up
 
-1. In Cursor, open **Settings → Tools and MCP** (or similar) and confirm **figma-developer-mcp** is listed and enabled.
-2. In a chat, paste a Figma design link (e.g. a frame URL) and ask to implement the design. The agent should be able to call Figma MCP tools (e.g. get design context, screenshot) if the server is working.
+Restart Cursor after running `/add-plugin figma`. Check **Settings → Tools and MCP** to confirm it's listed.
 
-## Security
+### OAuth flow not completing
 
-- **Do not** commit your Figma token or put it in repo files. Keep it only in Cursor’s user config (`mcp.json` or Settings).
-- The token has read-only access; revoke it in Figma Settings → Security if you stop using the MCP.
+The Figma MCP server uses OAuth. If the auth flow doesn't complete, check that your browser can reach `mcp.figma.com`. You need a Figma account with a Dev or Full seat on a paid plan for full access (Starter/View/Collab seats are limited to 6 tool calls per month).
+
+### Assets not loading
+
+The MCP server serves assets at `localhost` URLs. Use these directly — do not replace them with placeholders or import icon packages.
 
 ## Reference
 
-- Package: [figma-developer-mcp](https://www.npmjs.com/package/figma-developer-mcp) (runs via `npx`).
-- Project example config (no token): `.cursor/mcp-config.json.example`.
+- Plugin source: [figma/mcp-server-guide](https://github.com/figma/mcp-server-guide)
+- Figma MCP docs: [developers.figma.com/docs/figma-mcp-server](https://developers.figma.com/docs/figma-mcp-server/)
+- Project design tokens: `tailwind.config.ts`
+- Project design rules: `.cursor/rules/design-guidelines.mdc`

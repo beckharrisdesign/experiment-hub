@@ -22,9 +22,10 @@ Quick reference: UX/DX balance · Test first, code later · Reusable systems · 
 - **Avoid** creating new one-off .md files for every analysis; extend existing docs or use chat instead
 
 ## Figma (when using Figma MCP)
-- **Flow first** — When implementing from Figma: run `get_design_context` then `get_screenshot` before writing code. Do not skip to implementation.
+The Figma plugin provides the general workflow skills (install globally via `/add-plugin figma`). These rules are project-specific:
 - **Map to our system** — Treat Figma MCP output as design reference, not final code. Use this project's design tokens, components, and typography. Validate for 1:1 visual parity with the Figma screenshot.
 - **Reuse, don't duplicate** — Use existing design-system components. Do not add new icon packages if assets come from Figma. No hardcoded colors or spacing; use tokens.
+- **Asset handling** — If the Figma MCP server returns a `localhost` source for an image or SVG, use that source directly. Do not create placeholders.
 
 ## Solo founder / vibe coding
 - **Protect critical areas** — Do not modify pricing logic, auth flows, API contracts, or legal/core copy without explicit review. Call out protected areas in rules or docs.
