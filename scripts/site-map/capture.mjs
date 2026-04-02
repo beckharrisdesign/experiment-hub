@@ -422,9 +422,7 @@ async function main() {
   const options = parseArgs(process.argv.slice(2));
   const routesModule = await importRoutesModule();
 
-  const experiments = routesModule.loadExperiments(ROOT_DIR);
-  let routes = routesModule.buildSiteMapRoutes({
-    experiments,
+  let routes = routesModule.getExperimentHubSiteMapRoutes({
     rootDir: ROOT_DIR,
   });
   if (!options.includeInactive) {
@@ -528,7 +526,11 @@ async function main() {
     "utf8",
   );
 
-  const failures = results.filter((route) => route.captureStatus !== "captured");
+  const failures = results.filter((route) =>
+    options.dryRun
+      ? false
+      : route.captureStatus !== "captured",
+  );
   process.stdout.write(
     `Finished ${results.length} routes with ${failures.length} non-captured entries.\n`,
   );
