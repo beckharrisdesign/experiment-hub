@@ -1,64 +1,64 @@
 # Sitemap to Figma
 
-Capture real browser screenshots of every route in the site and render them as a visual sitemap tree inside the "BHD Labs — Site Map" frame in Figma.
-
-Figma file key: `9VJTxmBWKgeCDTyJLsYM7I`
-Sitemap frame node: `116:209`
-
----
-
-## When to use
-
-Invoke with `/sitemap` any time you want to refresh the Figma sitemap with current screenshots, or when asked to "update the sitemap", "take screenshots of the site", or "build the sitemap in Figma".
+Build a visual site map of the Experiment Hub in Figma with real screenshot thumbnails. Each deployed page becomes a card with its actual screenshot as the thumbnail. Cards are arranged in a tree layout by depth, with connector lines linking each page to its parent.
 
 ---
 
 ## Prerequisites
 
-- **Figma Desktop** must be running (the plugin needs to reach `localhost`; Figma Web cannot).
-- Chrome must be available at `google-chrome` or the capture step will fail (see GitHub Actions fallback below).
-- The live site must be reachable at `https://labs.beckharrisdesign.com`.
+- **Figma Desktop** (not Web) — the plugin code fetches screenshots from `localhost`
+- Figma MCP server connected (`claude mcp add --transport http figma https://mcp.figma.com/mcp`)
+- `google-chrome` available locally, OR screenshots already captured from a previous run
 
 ---
 
-## Execution steps
+## Figma file
 
-### Step 1 — Check for fresh screenshots
+- **File key:** `9VJTxmBWKgeCDTyJLsYM7I`
+- **Target page:** "Landing Page" canvas
+- **Frame name:** "BHD Labs — Site Map"
 
-Run:
+---
+
+## Step 1 — Capture screenshots (skip if fresh)
+
+Check whether a recent manifest already exists (captured within the last 24 hours):
+
 ```bash
-find .site-map/experiment-hub/screenshots -name "*.png" -mmin -1440 2>/dev/null | wc -l
+find .site-map/experiment-hub -name manifest.json -mmin -1440 2>/dev/null | head -1
 ```
 
-If the count equals or exceeds the total number of routes (check `scripts/site-map/routes.js` with `node -e "const r=require('./scripts/site-map/routes.js');console.log(r.getExperimentHubSiteMapRoutes().length)"`), screenshots are fresh — skip to Step 3.
+If that returns a path, skip to Step 2.
 
-### Step 2 — Capture screenshots
-
-Run the capture script with viewport height so cards are proportional:
+Otherwise, capture fresh screenshots:
 
 ```bash
 node --experimental-strip-types scripts/site-map/capture.mjs \
   --base-url=https://labs.beckharrisdesign.com \
   --height=900 \
   --delay-ms=2500 \
+  --budget-ms=6000 \
   --clean
 ```
 
-This writes PNGs to `.site-map/experiment-hub/screenshots/` and a manifest to `.site-map/experiment-hub/manifest.json`.
+This writes:
+- `.site-map/experiment-hub/manifest.json` — inventory with `routes[].thumbnailName` and `routes[].captureStatus`
+- `.site-map/experiment-hub/screenshots/*.png` — one screenshot per route
 
-**If `google-chrome` is not found:** tell the user to either install Chrome or trigger the `sitemap-capture` GitHub Actions workflow (`.github/workflows/sitemap-capture.yml`), download the artifact, and unzip it into `.site-map/experiment-hub/`. Then resume from Step 3.
-
-### Step 3 — Read the manifest
+If `google-chrome` is unavailable locally, trigger the GitHub Actions workflow instead:
 
 ```bash
-cat .site-map/experiment-hub/manifest.json
+gh workflow run sitemap-capture.yml
+gh run watch
 ```
 
-Note the array of routes — each has `id`, `title`, `group`, `depth`, `parentId`, `thumbnailName`, `captureStatus`.
+Then pull the artifacts before continuing.
 
-Only include routes where `captureStatus === "captured"`.
+---
 
-### Step 4 — Start a localhost file server
+## Step 2 — Start a localhost server
+
+Figma Desktop plugins can reach `localhost`. Serve the screenshot directory:
 
 ```bash
 python3 -m http.server 8765 --directory .site-map/experiment-hub &
@@ -66,211 +66,244 @@ SERVER_PID=$!
 echo "Server PID: $SERVER_PID"
 ```
 
-Note the PID — you will kill it in Step 6.
+Verify it's up:
 
-### Step 5 — Write the sitemap to Figma via use_figma
-
-Call the `use_figma` Figma MCP tool with `fileKey: "9VJTxmBWKgeCDTyJLsYM7I"` and the plugin code below.
-
-Substitute `ROUTES_JSON` with the JSON array of captured routes from Step 3 (filter to `captureStatus === "captured"` only, keep fields: `id`, `title`, `depth`, `parentId`, `thumbnailName`).
-
-```javascript
-(async () => {
-  // ─── config ───────────────────────────────────────────────────────
-  const CARD_W       = 360;
-  const CARD_H       = 230;
-  const H_GAP        = 120;  // horizontal gap between depth columns
-  const V_GAP        = 40;   // vertical gap between cards in same column
-  const FRAME_PAD    = 80;
-  const LABEL_H      = 32;
-  const SERVER       = 'http://localhost:8765';
-  const FRAME_NAME   = 'BHD Labs — Site Map';
-
-  const routes = ROUTES_JSON; // injected — array of {id, title, depth, parentId, thumbnailName}
-
-  // ─── find or create the sitemap frame ─────────────────────────────
-  const page = figma.currentPage;
-  let frame = page.findOne(n => n.type === 'FRAME' && n.name === FRAME_NAME);
-  if (frame) {
-    // remove all children to rebuild
-    for (const child of [...frame.children]) child.remove();
-  } else {
-    frame = figma.createFrame();
-    frame.name = FRAME_NAME;
-    page.appendChild(frame);
-  }
-  frame.fills = [{ type: 'SOLID', color: { r: 0.07, g: 0.07, b: 0.09 } }];
-  frame.clipsContent = false;
-
-  // ─── load fonts ───────────────────────────────────────────────────
-  await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
-  await figma.loadFontAsync({ family: 'Inter', style: 'Medium' });
-
-  // ─── group routes by depth, preserve order ────────────────────────
-  const byDepth = {};
-  for (const r of routes) {
-    if (!byDepth[r.depth]) byDepth[r.depth] = [];
-    byDepth[r.depth].push(r);
-  }
-  const depths = Object.keys(byDepth).map(Number).sort((a, b) => a - b);
-
-  // ─── assign positions ─────────────────────────────────────────────
-  const posMap = {}; // id → {x, y}
-  const colWidth = CARD_W + H_GAP;
-
-  for (const depth of depths) {
-    const col = byDepth[depth];
-    const x = FRAME_PAD + depth * colWidth;
-    for (let i = 0; i < col.length; i++) {
-      const y = FRAME_PAD + i * (CARD_H + V_GAP);
-      posMap[col[i].id] = { x, y };
-    }
-  }
-
-  // ─── helper: fetch PNG bytes from localhost ────────────────────────
-  async function fetchImage(thumbnailName) {
-    try {
-      const res = await fetch(`${SERVER}/screenshots/${thumbnailName}`);
-      if (!res.ok) return null;
-      const buf = await res.arrayBuffer();
-      return new Uint8Array(buf);
-    } catch {
-      return null;
-    }
-  }
-
-  // ─── build cards ──────────────────────────────────────────────────
-  const cardMap = {}; // id → frame node
-
-  for (const route of routes) {
-    const pos = posMap[route.id];
-
-    // outer card frame
-    const card = figma.createFrame();
-    card.name = route.title;
-    card.resize(CARD_W, CARD_H);
-    card.x = pos.x;
-    card.y = pos.y;
-    card.cornerRadius = 6;
-    card.clipsContent = true;
-    card.fills = [{ type: 'SOLID', color: { r: 0.12, g: 0.12, b: 0.15 } }];
-
-    // screenshot fill (top portion)
-    const imgBytes = await fetchImage(route.thumbnailName);
-    if (imgBytes) {
-      const imgHash = figma.createImage(imgBytes).hash;
-      const screenshotH = CARD_H - LABEL_H;
-      const imgRect = figma.createRectangle();
-      imgRect.resize(CARD_W, screenshotH);
-      imgRect.x = 0;
-      imgRect.y = 0;
-      imgRect.fills = [{
-        type: 'IMAGE',
-        scaleMode: 'FILL',
-        imageHash: imgHash,
-      }];
-      card.appendChild(imgRect);
-    } else {
-      // fallback: grey placeholder
-      const placeholder = figma.createRectangle();
-      placeholder.resize(CARD_W, CARD_H - LABEL_H);
-      placeholder.fills = [{ type: 'SOLID', color: { r: 0.2, g: 0.2, b: 0.25 } }];
-      card.appendChild(placeholder);
-    }
-
-    // label bar
-    const labelBar = figma.createFrame();
-    labelBar.resize(CARD_W, LABEL_H);
-    labelBar.x = 0;
-    labelBar.y = CARD_H - LABEL_H;
-    labelBar.fills = [{ type: 'SOLID', color: { r: 0.15, g: 0.15, b: 0.2 } }];
-
-    const label = figma.createText();
-    label.characters = route.title;
-    label.fontSize = 12;
-    label.fontName = { family: 'Inter', style: 'Medium' };
-    label.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.9, b: 0.95 } }];
-    label.x = 10;
-    label.y = (LABEL_H - 14) / 2;
-    labelBar.appendChild(label);
-    card.appendChild(labelBar);
-
-    frame.appendChild(card);
-    cardMap[route.id] = card;
-  }
-
-  // ─── draw connectors (parent right-edge → child left-edge) ─────────
-  for (const route of routes) {
-    if (!route.parentId || !cardMap[route.parentId] || !cardMap[route.id]) continue;
-
-    const parent = cardMap[route.parentId];
-    const child  = cardMap[route.id];
-
-    const x1 = parent.x + CARD_W;
-    const y1 = parent.y + CARD_H / 2;
-    const x2 = child.x;
-    const y2 = child.y + CARD_H / 2;
-    const mx = (x1 + x2) / 2;
-
-    const line = figma.createVector();
-    line.vectorNetwork = {
-      vertices: [
-        { x: x1, y: y1 },
-        { x: mx, y: y1 },
-        { x: mx, y: y2 },
-        { x: x2, y: y2 },
-      ],
-      segments: [
-        { start: 0, end: 1 },
-        { start: 1, end: 2 },
-        { start: 2, end: 3 },
-      ],
-    };
-    line.strokes = [{ type: 'SOLID', color: { r: 0.4, g: 0.4, b: 0.5 }, opacity: 0.6 }];
-    line.strokeWeight = 1.5;
-    line.fills = [];
-    frame.appendChild(line);
-  }
-
-  // ─── resize frame to content ───────────────────────────────────────
-  const maxDepth = Math.max(...depths);
-  const maxColLen = Math.max(...depths.map(d => byDepth[d].length));
-  frame.resize(
-    FRAME_PAD * 2 + (maxDepth + 1) * colWidth - H_GAP,
-    FRAME_PAD * 2 + maxColLen * (CARD_H + V_GAP) - V_GAP
-  );
-
-  figma.viewport.scrollAndZoomIntoView([frame]);
-  return `Built sitemap: ${routes.length} routes across ${depths.length} depth levels`;
-})();
+```bash
+curl -s -o /dev/null -w "%{http_code}" http://localhost:8765/manifest.json
 ```
 
-### Step 6 — Stop the file server
+Should return `200`.
+
+---
+
+## Step 3 — Read the manifest
+
+```bash
+cat .site-map/experiment-hub/manifest.json
+```
+
+Note the full `routes` array. Each entry has:
+- `id`, `path`, `title`, `group`, `pageType`
+- `parentId` — matches another route's `id` (or `null` for root)
+- `depth` — 0 = root, 1 = top-level, 2 = nested
+- `thumbnailName` — filename like `home.png` or `experiments--best-day-ever.png`
+- `captureStatus` — only include routes where this is `"captured"`
+
+---
+
+## Step 4 — Write to Figma
+
+Call `use_figma` on file key `9VJTxmBWKgeCDTyJLsYM7I` with the plugin code below.
+
+**Replace `ROUTES_JSON` with the actual JSON array from the manifest** (only routes where `captureStatus === "captured"`).
+
+```javascript
+// ── config ────────────────────────────────────────────────────────────────
+const BASE_URL      = "http://localhost:8765";
+const FRAME_NAME    = "BHD Labs — Site Map";
+const CARD_W        = 360;
+const CARD_H        = 230;
+const LABEL_H       = 44;
+const COL_GAP       = 480;   // horizontal gap between depth columns
+const ROW_GAP       = 300;   // vertical gap between cards in same column
+const FRAME_PAD     = 120;
+const CONNECTOR_CLR = { r: 0.4, g: 0.5, b: 0.6, a: 1 };
+
+// ── route data ────────────────────────────────────────────────────────────
+// Paste the captured routes array here (captureStatus === "captured" only)
+const ROUTES = ROUTES_JSON;
+
+// ── helpers ───────────────────────────────────────────────────────────────
+async function fetchImageHash(url) {
+  const res = await fetch(url);
+  const buf = await res.arrayBuffer();
+  const img = figma.createImage(new Uint8Array(buf));
+  return img.hash;
+}
+
+function loadFont(family, style) {
+  return figma.loadFontAsync({ family, style });
+}
+
+// ── main ──────────────────────────────────────────────────────────────────
+await Promise.all([
+  loadFont("Inter", "Regular"),
+  loadFont("Inter", "Semi Bold"),
+]);
+
+// Remove existing frame if present
+const page = figma.currentPage;
+const existing = page.findOne(n => n.name === FRAME_NAME && n.type === "FRAME");
+if (existing) existing.remove();
+
+// Group routes by depth, sort each bucket by path
+const byDepth = new Map();
+for (const route of ROUTES) {
+  const d = route.depth ?? 0;
+  if (!byDepth.has(d)) byDepth.set(d, []);
+  byDepth.get(d).push(route);
+}
+for (const bucket of byDepth.values()) {
+  bucket.sort((a, b) => (a.path || "").localeCompare(b.path || ""));
+}
+
+// Assign positions
+const depths = [...byDepth.keys()].sort((a, b) => a - b);
+const positioned = new Map(); // id → { route, x, y, node }
+
+for (const depth of depths) {
+  const bucket = byDepth.get(depth);
+  bucket.forEach((route, i) => {
+    positioned.set(route.id, {
+      route,
+      x: FRAME_PAD + depth * (CARD_W + COL_GAP),
+      y: FRAME_PAD + i * (CARD_H + ROW_GAP),
+    });
+  });
+}
+
+// Calculate frame size
+let maxX = 0, maxY = 0;
+for (const { x, y } of positioned.values()) {
+  maxX = Math.max(maxX, x + CARD_W);
+  maxY = Math.max(maxY, y + CARD_H);
+}
+
+const frame = figma.createFrame();
+frame.name = FRAME_NAME;
+frame.resize(maxX + FRAME_PAD, maxY + FRAME_PAD);
+frame.fills = [{ type: "SOLID", color: { r: 0.05, g: 0.07, b: 0.1 } }];
+page.appendChild(frame);
+
+// Build cards
+for (const [id, entry] of positioned) {
+  const { route, x, y } = entry;
+
+  // Card frame
+  const card = figma.createFrame();
+  card.name = route.title;
+  card.resize(CARD_W, CARD_H);
+  card.x = x;
+  card.y = y;
+  card.cornerRadius = 10;
+  card.clipsContent = true;
+  card.fills = [{ type: "SOLID", color: { r: 0.09, g: 0.1, b: 0.13 } }];
+  frame.appendChild(card);
+
+  // Screenshot fill
+  const imgRect = figma.createRectangle();
+  imgRect.resize(CARD_W, CARD_H - LABEL_H);
+  imgRect.x = 0;
+  imgRect.y = 0;
+  try {
+    const hash = await fetchImageHash(`${BASE_URL}/screenshots/${route.thumbnailName}`);
+    imgRect.fills = [{ type: "IMAGE", scaleMode: "FILL", imageHash: hash }];
+  } catch {
+    imgRect.fills = [{ type: "SOLID", color: { r: 0.15, g: 0.17, b: 0.21 } }];
+  }
+  card.appendChild(imgRect);
+
+  // Label bar
+  const bar = figma.createFrame();
+  bar.resize(CARD_W, LABEL_H);
+  bar.x = 0;
+  bar.y = CARD_H - LABEL_H;
+  bar.fills = [{ type: "SOLID", color: { r: 0.09, g: 0.1, b: 0.13 } }];
+  card.appendChild(bar);
+
+  const label = figma.createText();
+  label.characters = route.title;
+  label.fontSize = 13;
+  label.fontName = { family: "Inter", style: "Semi Bold" };
+  label.fills = [{ type: "SOLID", color: { r: 0.8, g: 0.85, b: 0.9 } }];
+  label.x = 12;
+  label.y = 8;
+  label.textAutoResize = "WIDTH_AND_HEIGHT";
+  bar.appendChild(label);
+
+  const sublabel = figma.createText();
+  sublabel.characters = route.path;
+  sublabel.fontSize = 11;
+  sublabel.fontName = { family: "Inter", style: "Regular" };
+  sublabel.fills = [{ type: "SOLID", color: { r: 0.45, g: 0.52, b: 0.6 } }];
+  sublabel.x = 12;
+  sublabel.y = 26;
+  sublabel.textAutoResize = "WIDTH_AND_HEIGHT";
+  bar.appendChild(sublabel);
+
+  entry.node = card;
+}
+
+// Draw connectors (parent right-edge → child left-edge)
+for (const [id, entry] of positioned) {
+  const { route, x, y } = entry;
+  if (!route.parentId || !positioned.has(route.parentId)) continue;
+
+  const parent = positioned.get(route.parentId);
+
+  const fromX = parent.x + CARD_W;
+  const fromY = parent.y + CARD_H / 2;
+  const toX   = x;
+  const toY   = y + CARD_H / 2;
+  const midX  = (fromX + toX) / 2;
+
+  const line = figma.createVector();
+  line.vectorNetwork = {
+    vertices: [
+      { x: fromX, y: fromY },
+      { x: midX,  y: fromY },
+      { x: midX,  y: toY   },
+      { x: toX,   y: toY   },
+    ],
+    segments: [
+      { start: 0, end: 1 },
+      { start: 1, end: 2 },
+      { start: 2, end: 3 },
+    ],
+  };
+  line.strokes = [{ type: "SOLID", color: CONNECTOR_CLR }];
+  line.strokeWeight = 1.5;
+  line.fills = [];
+  frame.appendChild(line);
+}
+
+figma.viewport.scrollAndZoomIntoView([frame]);
+figma.notify(`Site map built — ${positioned.size} pages`);
+```
+
+---
+
+## Step 5 — Stop the server
 
 ```bash
 kill $SERVER_PID
 ```
 
-Or if the PID was lost: `lsof -ti:8765 | xargs kill -9 2>/dev/null || true`
+---
+
+## Layout reference
+
+| Depth | Column | Content |
+|-------|--------|---------|
+| 0 | leftmost | Home (root) |
+| 1 | +480px | Top-level hub pages + experiment pages |
+| 2 | +960px | Experiment docs + landing pages |
+
+Card size: 360 × 230px (186px image area + 44px label bar).  
+Column gap: 480px. Row gap: 300px within each depth column.
 
 ---
 
-## GitHub Actions fallback (no local Chrome)
+## Troubleshooting
 
-If Step 2 fails because `google-chrome` is not installed:
+**Screenshots not loading in Figma**
+The Figma Web app cannot reach `localhost`. Use Figma Desktop. Confirm `curl http://localhost:8765/screenshots/home.png` succeeds before running Step 4.
 
-1. Tell the user to go to the repo → Actions → **Sitemap Capture** → **Run workflow**.
-2. Once the run completes, download the `sitemap-screenshots` artifact.
-3. Unzip into `.site-map/experiment-hub/` so that `screenshots/` and `manifest.json` are present.
-4. Resume from Step 3 above.
+**`google-chrome` not found**
+Use the GitHub Actions fallback in Step 1 (requires the `sitemap-capture.yml` workflow).
 
----
+**Connector lines appear at wrong coordinates**
+The plugin code places vectors in the frame's local coordinate space — `x`/`y` values are already relative to the frame's origin, so no offset adjustment is needed.
 
-## What good output looks like
-
-- The "BHD Labs — Site Map" frame on the **Landing Page** canvas is rebuilt from scratch.
-- Every captured route has a card showing its real viewport screenshot (1440×900).
-- Cards are arranged in columns by depth: depth-0 leftmost, deeper routes to the right.
-- Orthogonal connector lines link each card to its parent.
-- The frame auto-sizes to fit all content with 80px padding.
-- Figma viewport pans and zooms to show the completed frame.
+**Rate limits**
+This workflow uses a single `use_figma` call regardless of page count. All screenshot fetching happens inside the plugin, not as separate MCP tool calls.
