@@ -31,7 +31,7 @@ npm install -g @modelcontextprotocol/sdk
    - **filesystem**: Standard filesystem MCP server for general file access
    - **experiment-logs**: Custom server that provides easy access to experiment logs
 
-   **Figma** is handled separately via the Figma plugin (`/add-plugin figma` in agent chat). See **[FIGMA_MCP_SETUP.md](./FIGMA_MCP_SETUP.md)** for details.
+   **Figma** is handled separately via the Figma plugin (`/add-plugin figma` in agent chat). See **[docs/FIGMA_SETUP.md](../docs/FIGMA_SETUP.md)** for details.
 
 ### 3. Setup Logging for All Experiments
 
