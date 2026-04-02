@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "lint": "next lint",
     "setup:logging": "node scripts/setup-logging.js",
+    "sitemap:capture": "node scripts/capture-site-map.js",
     "dev:landing": "cd experiments/simple-seed-organizer/prototype/validation-landing && npm install && npm run dev"
   },
   "dependencies": {
@@ -26,6 +27,7 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/jsdom": "^28.0.1",

@@ -65,6 +65,18 @@ npm run test:live # Live Supabase integration — runs on push to main only
 
 Two vitest configs keep them cleanly separated. Unit tests run in CI on every pull request (via branch protection). Live integration tests run post-merge on main using GitHub Actions secrets.
 
+### Screenshot sitemap (Figma prep)
+
+Generate a screenshot thumbnail sitemap of the deployed hub:
+
+```bash
+npm run sitemap:capture -- --base-url https://YOUR_MAIN_DEPLOYMENT_URL
+```
+
+Outputs go to `artifacts/site-map/latest/` by default (`site-map.json`,
+`site-map-figma.csv`, screenshots, and an HTML index). Full workflow and
+rate-limit-friendly options are in `docs/SITEMAP_SCREENSHOT_WORKFLOW.md`.
+
 ## Tech stack
 
 | | |
