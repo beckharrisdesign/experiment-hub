@@ -1,0 +1,190 @@
+{
+  "generatedAt": "2026-04-02T17:53:19.343Z",
+  "baseUrl": "https://labs.beckharrisdesign.com",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "pages": [
+    {
+      "id": "home",
+      "path": "/",
+      "label": "Home",
+      "group": "Hub",
+      "parent": null,
+      "filename": "home.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/"
+    },
+    {
+      "id": "scoring",
+      "path": "/scoring",
+      "label": "Scoring",
+      "group": "Hub",
+      "parent": "/",
+      "filename": "scoring.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/scoring"
+    },
+    {
+      "id": "heuristics",
+      "path": "/heuristics",
+      "label": "Heuristics",
+      "group": "Hub",
+      "parent": "/",
+      "filename": "heuristics.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/heuristics"
+    },
+    {
+      "id": "workflow",
+      "path": "/workflow",
+      "label": "Workflow",
+      "group": "Hub",
+      "parent": "/",
+      "filename": "workflow.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/workflow"
+    },
+    {
+      "id": "harness",
+      "path": "/harness",
+      "label": "Harness",
+      "group": "Hub",
+      "parent": "/",
+      "filename": "harness.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/harness"
+    },
+    {
+      "id": "documentation",
+      "path": "/documentation",
+      "label": "Documentation",
+      "group": "Hub",
+      "parent": "/",
+      "filename": "documentation.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/documentation"
+    },
+    {
+      "id": "font-preview",
+      "path": "/font-preview",
+      "label": "Font Preview",
+      "group": "Hub",
+      "parent": "/",
+      "filename": "font-preview.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/font-preview"
+    },
+    {
+      "id": "exp-seed-finder",
+      "path": "/experiments/seed-finder",
+      "label": "Seed Finder",
+      "group": "Experiments",
+      "parent": "/",
+      "filename": "exp-seed-finder.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/experiments/seed-finder"
+    },
+    {
+      "id": "exp-simple-seed",
+      "path": "/experiments/simple-seed-organizer",
+      "label": "Simple Seed Organizer",
+      "group": "Experiments",
+      "parent": "/",
+      "filename": "exp-simple-seed.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/experiments/simple-seed-organizer"
+    },
+    {
+      "id": "exp-best-day-ever",
+      "path": "/experiments/best-day-ever",
+      "label": "Best Day Ever",
+      "group": "Experiments",
+      "parent": "/",
+      "filename": "exp-best-day-ever.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/experiments/best-day-ever"
+    },
+    {
+      "id": "exp-xp-repo",
+      "path": "/experiments/experience-principles-repository",
+      "label": "XP Repository",
+      "group": "Experiments",
+      "parent": "/",
+      "filename": "exp-xp-repo.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/experiments/experience-principles-repository"
+    },
+    {
+      "id": "exp-garden-guide",
+      "path": "/experiments/garden-guide-generator",
+      "label": "Garden Guide Generator",
+      "group": "Experiments",
+      "parent": "/",
+      "filename": "exp-garden-guide.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/experiments/garden-guide-generator"
+    },
+    {
+      "id": "exp-photo-memories",
+      "path": "/experiments/photo-memories",
+      "label": "Photo Memories",
+      "group": "Experiments",
+      "parent": "/",
+      "filename": "exp-photo-memories.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/experiments/photo-memories"
+    },
+    {
+      "id": "exp-illuminator",
+      "path": "/experiments/the-illuminator",
+      "label": "The Illuminator",
+      "group": "Experiments",
+      "parent": "/",
+      "filename": "exp-illuminator.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/experiments/the-illuminator"
+    },
+    {
+      "id": "doc-best-day-ever",
+      "path": "/experiments/best-day-ever/doc/landing-page-content",
+      "label": "Best Day Ever — Landing Page Content",
+      "group": "Experiment Docs",
+      "parent": "/experiments/best-day-ever",
+      "filename": "doc-best-day-ever.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/experiments/best-day-ever/doc/landing-page-content"
+    },
+    {
+      "id": "doc-simple-seed",
+      "path": "/experiments/simple-seed-organizer/doc/landing-page-content",
+      "label": "Simple Seed Organizer — Landing Page Content",
+      "group": "Experiment Docs",
+      "parent": "/experiments/simple-seed-organizer",
+      "filename": "doc-simple-seed.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/experiments/simple-seed-organizer/doc/landing-page-content"
+    },
+    {
+      "id": "landing-simple-seed",
+      "path": "/landing/simple-seed-organizer/",
+      "label": "Simple Seed Organizer Landing",
+      "group": "Static Landings",
+      "parent": "/experiments/simple-seed-organizer",
+      "filename": "landing-simple-seed.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/landing/simple-seed-organizer/"
+    },
+    {
+      "id": "landing-best-day",
+      "path": "/landing/best-day-ever/",
+      "label": "Best Day Ever Landing",
+      "group": "Static Landings",
+      "parent": "/experiments/best-day-ever",
+      "filename": "landing-best-day.png",
+      "status": "ok",
+      "url": "https://labs.beckharrisdesign.com/landing/best-day-ever/"
+    }
+  ]
+}
