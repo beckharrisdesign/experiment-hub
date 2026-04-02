@@ -95,6 +95,7 @@ Thumbs.db
 *.tmp
 *.temp
 .cache/
+.site-map/
 artifacts/site-map/
 
 # Logs
