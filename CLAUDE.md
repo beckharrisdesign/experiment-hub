@@ -18,6 +18,7 @@ Rules live in `.cursor/rules/` and apply to both Cursor and Claude Code sessions
 Skills live in `.claude/skills/` and are invocable via `/skill-name`.
 
 - `user-communication.md` — audit and fix user-facing copy against content design standards
+- `sitemap.md` — capture real browser screenshots of every route and render them as a visual sitemap tree in Figma
 
 ## Figma (when using Figma MCP)
 
