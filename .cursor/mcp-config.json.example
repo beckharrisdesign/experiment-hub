@@ -5,23 +5,16 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "/Users/katybharris/Documents/code/experiment-hub"
+        "/path/to/experiment-hub"
       ]
     },
     "experiment-logs": {
       "command": "node",
       "args": [
-        "/Users/katybharris/Documents/code/experiment-hub/scripts/mcp-log-server.js"
+        "/path/to/experiment-hub/scripts/mcp-log-server.js"
       ],
       "env": {
-        "EXPERIMENTS_DIR": "/Users/katybharris/Documents/code/experiment-hub/experiments"
-      }
-    },
-    "figma-developer-mcp": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--stdio"],
-      "env": {
-        "FIGMA_API_KEY": "YOUR_FIGMA_ACCESS_TOKEN"
+        "EXPERIMENTS_DIR": "/path/to/experiment-hub/experiments"
       }
     }
   }

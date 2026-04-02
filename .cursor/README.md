@@ -24,13 +24,14 @@ npm install -g @modelcontextprotocol/sdk
    Copy the contents of `mcp-config.json.example` to your Cursor settings file.
    
    **Important**: Update the paths in the configuration to match your system:
-   - Replace `/Users/katybharris/Documents/code/experiment-hub` with your actual project path
+   - Replace `/path/to/experiment-hub` with your actual project path
    - Update the `EXPERIMENTS_DIR` environment variable if your experiments are in a different location
 
 3. The configuration includes:
    - **filesystem**: Standard filesystem MCP server for general file access
    - **experiment-logs**: Custom server that provides easy access to experiment logs
-   - **figma-developer-mcp**: Optional — for implementing designs from Figma links. See **[FIGMA_MCP_SETUP.md](./FIGMA_MCP_SETUP.md)** for token and setup.
+
+   **Figma** is handled separately via the Figma plugin (`/add-plugin figma` in agent chat). See **[FIGMA_MCP_SETUP.md](./FIGMA_MCP_SETUP.md)** for details.
 
 ### 3. Setup Logging for All Experiments
 
