@@ -77,6 +77,9 @@ Outputs go to `artifacts/site-map/latest/` by default (`site-map.json`,
 `site-map-figma.csv`, screenshots, and an HTML index). Full workflow and
 rate-limit-friendly options are in `docs/SITEMAP_SCREENSHOT_WORKFLOW.md`.
 
+Prefer web-based execution? Use the manual GitHub Actions workflow
+**Sitemap Screenshot Capture** (Actions tab) and download the generated artifact.
+
 ## Tech stack
 
 | | |

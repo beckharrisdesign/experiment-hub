@@ -76,6 +76,33 @@ npm run sitemap:capture -- \
 5. Keep this sitemap as your source-of-truth board for selecting pages to
    convert into reusable components later via Figma MCP.
 
+## Run it from the web (GitHub Actions)
+
+If you do not want to run locally, use the manual GitHub workflow:
+
+1. Go to **GitHub → Actions → "Sitemap Screenshot Capture"**.
+2. Click **Run workflow**.
+3. Fill `base_url` with your main deployment URL.
+4. Keep conservative defaults (`crawl_delay_ms=1500`, `retries=2`) unless you
+   intentionally want a faster run.
+5. Start the run.
+6. When complete, open the run and download the artifact
+   `sitemap-screenshots-<run_id>`.
+
+The artifact zip contains the same outputs (`site-map-figma.csv`, screenshots,
+JSON, HTML index).
+
+## Run it directly from Figma?
+
+Figma itself is not a crawling/screenshot runtime, so this should run in GitHub
+Actions (or another server runtime), then you import the outputs into Figma.
+For your flow:
+
+1. Run the GitHub workflow above.
+2. Download and unzip artifact outputs.
+3. In Figma, build the sitemap with screenshot nodes from `screenshots/`.
+4. Use `site-map-figma.csv` (`parentUrl`, `depth`, `url`) to arrange structure.
+
 ## Useful flags
 
 - `--include-path-regex '^/(experiments|workflow|heuristics)'`

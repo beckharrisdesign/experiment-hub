@@ -1,0 +1,108 @@
+name: Sitemap Screenshot Capture
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Deployment URL to crawl (required)"
+        required: true
+        type: string
+      max_pages:
+        description: "Maximum pages to crawl"
+        required: false
+        default: "1000"
+        type: string
+      crawl_delay_ms:
+        description: "Delay between pages in milliseconds"
+        required: false
+        default: "1500"
+        type: string
+      timeout_ms:
+        description: "Page timeout in milliseconds"
+        required: false
+        default: "30000"
+        type: string
+      retries:
+        description: "Retries per page"
+        required: false
+        default: "2"
+        type: string
+      include_sitemap_seeds:
+        description: "Seed from robots.txt/sitemap.xml"
+        required: false
+        default: true
+        type: boolean
+      include_path_regex:
+        description: "Optional include regex for paths"
+        required: false
+        default: ""
+        type: string
+      exclude_path_regex:
+        description: "Optional exclude regex for paths"
+        required: false
+        default: ""
+        type: string
+      keep_query_params:
+        description: "Capture query variants as distinct pages"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  capture:
+    name: Capture sitemap screenshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Capture sitemap screenshots
+        shell: bash
+        run: |
+          timestamp="$(date +%Y%m%d-%H%M%S)"
+          output_dir="artifacts/site-map/run-${timestamp}"
+          cmd=(
+            npm run sitemap:capture --
+            --base-url "${{ inputs.base_url }}"
+            --max-pages "${{ inputs.max_pages }}"
+            --crawl-delay-ms "${{ inputs.crawl_delay_ms }}"
+            --timeout-ms "${{ inputs.timeout_ms }}"
+            --retries "${{ inputs.retries }}"
+            --include-sitemap-seeds "${{ inputs.include_sitemap_seeds }}"
+            --keep-query-params "${{ inputs.keep_query_params }}"
+            --browser-channel none
+            --output-dir "${output_dir}"
+          )
+
+          if [[ -n "${{ inputs.include_path_regex }}" ]]; then
+            cmd+=(--include-path-regex "${{ inputs.include_path_regex }}")
+          fi
+
+          if [[ -n "${{ inputs.exclude_path_regex }}" ]]; then
+            cmd+=(--exclude-path-regex "${{ inputs.exclude_path_regex }}")
+          fi
+
+          printf 'Running command: %q ' "${cmd[@]}"
+          printf '\n'
+          "${cmd[@]}"
+          echo "OUTPUT_DIR=${output_dir}" >> "$GITHUB_ENV"
+
+      - name: Upload sitemap artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sitemap-screenshots-${{ github.run_id }}
+          path: ${{ env.OUTPUT_DIR }}
+          if-no-files-found: error
