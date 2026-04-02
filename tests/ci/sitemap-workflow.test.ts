@@ -17,5 +17,6 @@ describe("sitemap capture workflow", () => {
     expect(yaml).toContain("workflow_dispatch:");
     expect(yaml).toContain("actions/upload-artifact");
     expect(yaml).toContain("npm run sitemap:capture --");
+    expect(yaml).toContain("figma-mcp-prompt.txt");
   });
 });

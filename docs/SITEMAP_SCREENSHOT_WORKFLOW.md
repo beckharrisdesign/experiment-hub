@@ -103,6 +103,25 @@ For your flow:
 3. In Figma, build the sitemap with screenshot nodes from `screenshots/`.
 4. Use `site-map-figma.csv` (`parentUrl`, `depth`, `url`) to arrange structure.
 
+## Figma MCP + skills handoff (recommended)
+
+Each capture run now includes two files specifically for your Figma MCP flow:
+
+- `figma-mcp-manifest.json` - node positions, edges, screenshot paths, and frame metadata
+- `figma-mcp-prompt.txt` - a ready-to-paste instruction block for your MCP skills
+
+### After downloading the GitHub Actions artifact
+
+1. Unzip the artifact locally.
+2. Open `figma-mcp-prompt.txt`.
+3. In your MCP-enabled tool session (with your new Figma skills), paste the full
+   prompt and run it.
+4. The skill should read `figma-mcp-manifest.json` and place one screenshot card
+   per URL, with connectors from `layout.edges`.
+
+This is the intended path when you want artifact -> MCP -> Figma without manual
+layout work.
+
 ## Useful flags
 
 - `--include-path-regex '^/(experiments|workflow|heuristics)'`

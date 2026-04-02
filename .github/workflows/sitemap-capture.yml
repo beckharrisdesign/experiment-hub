@@ -47,6 +47,11 @@ on:
         required: false
         default: false
         type: boolean
+      frame_name:
+        description: "Target Figma frame name for sitemap import"
+        required: false
+        default: "Experiment Hub Sitemap"
+        type: string
 
 jobs:
   capture:
@@ -83,6 +88,7 @@ jobs:
             --retries "${{ inputs.retries }}"
             --include-sitemap-seeds "${{ inputs.include_sitemap_seeds }}"
             --keep-query-params "${{ inputs.keep_query_params }}"
+            --frame-name "${{ inputs.frame_name }}"
             --browser-channel none
             --output-dir "${output_dir}"
           )
@@ -106,3 +112,9 @@ jobs:
           name: sitemap-screenshots-${{ github.run_id }}
           path: ${{ env.OUTPUT_DIR }}
           if-no-files-found: error
+
+      - name: Publish MCP prompt file path
+        shell: bash
+        run: |
+          echo "Use this prompt file with your Figma MCP skills:"
+          echo "${OUTPUT_DIR}/figma-mcp-prompt.txt"

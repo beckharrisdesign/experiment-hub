@@ -10,6 +10,7 @@ const {
   toScreenshotFileName,
   toNodeLabel,
 } = require("./site-map-utils");
+const { buildFigmaLayout, buildFigmaMcpPrompt } = require("./site-map-figma-handoff");
 
 function parseArgs(argv) {
   const args = {};
@@ -230,6 +231,54 @@ function writeHtmlIndex(filePath, nodes, title) {
   fs.writeFileSync(filePath, html, "utf8");
 }
 
+function writeFigmaArtifacts({
+  outputDir,
+  baseUrl,
+  nodeList,
+  edgeList,
+  frameName,
+  screenshotDirectory,
+}) {
+  const layout = buildFigmaLayout({
+    nodes: nodeList,
+    framePadding: 120,
+    horizontalGap: 420,
+    verticalGap: 250,
+    cardWidth: 320,
+    cardHeight: 210,
+  });
+
+  const manifest = {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    source: {
+      baseUrl,
+      outputDir,
+    },
+    frameName,
+    screenshotDirectory,
+    layout,
+    edges: edgeList,
+    instructions: {
+      includeEveryUniqueUrl: true,
+      cardContents: ["thumbnail", "label", "url"],
+    },
+  };
+
+  const manifestPath = path.join(outputDir, "figma-mcp-manifest.json");
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+
+  const promptPath = path.join(outputDir, "figma-mcp-prompt.txt");
+  const promptText = buildFigmaMcpPrompt({
+    frameName,
+    manifestPath,
+    screenshotDirectory,
+  });
+  fs.writeFileSync(promptPath, `${promptText}\n`, "utf8");
+
+  return { manifestPath, promptPath };
+}
+
 async function fetchText(url, timeoutMs) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -338,6 +387,7 @@ async function captureSiteMap(options) {
     executablePath,
     userAgent,
     seedUrls,
+    frameName,
   } = options;
 
   ensureDir(outputDir);
@@ -606,6 +656,14 @@ async function captureSiteMap(options) {
     nodeList,
     `Site map screenshots (${new URL(baseUrl).host})`
   );
+  const figmaArtifacts = writeFigmaArtifacts({
+    outputDir,
+    baseUrl,
+    nodeList,
+    edgeList,
+    frameName,
+    screenshotDirectory: screenshotsDir,
+  });
 
   return {
     jsonPath,
@@ -613,6 +671,8 @@ async function captureSiteMap(options) {
     mermaidPath,
     htmlPath,
     screenshotsDir,
+    figmaManifestPath: figmaArtifacts.manifestPath,
+    figmaPromptPath: figmaArtifacts.promptPath,
     totals: outputJson.totals,
   };
 }
@@ -658,6 +718,7 @@ async function main() {
     executablePath: args["executable-path"] || "",
     userAgent: args["user-agent"] || "",
     seedUrls: [],
+    frameName: args["frame-name"] || "Experiment Hub Sitemap",
   };
 
   if (args["seed-file"]) {
@@ -683,6 +744,8 @@ async function main() {
   console.log(`Mermaid: ${result.mermaidPath}`);
   console.log(`HTML preview: ${result.htmlPath}`);
   console.log(`Screenshots: ${result.screenshotsDir}`);
+  console.log(`Figma manifest: ${result.figmaManifestPath}`);
+  console.log(`Figma MCP prompt: ${result.figmaPromptPath}`);
 }
 
 main().catch((error) => {
