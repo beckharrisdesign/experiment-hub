@@ -299,7 +299,7 @@ function getExperimentHubSiteMapRoutes(options = {}) {
   return buildSiteMapRoutes({
     rootDir,
     experiments,
-    includeOptionalRoutes: options.includeOptionalRoutes !== false,
+    includeOptionalRoutes: options.includeOptionalRoutes === true,
   });
 }
 

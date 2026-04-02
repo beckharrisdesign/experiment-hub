@@ -117,7 +117,6 @@ The repo includes a route manifest builder and a live screenshot tool in:
 
 - `scripts/site-map/routes.js`
 - `scripts/site-map/capture.mjs`
-- `scripts/site-map/render-html.mjs`
 
 The route builder covers:
 
@@ -129,6 +128,9 @@ The route builder covers:
 It intentionally does **not** hit prototype apps by default, since many
 of those are separate local dev apps rather than stable public routes on
 the main deployment.
+
+It also skips optional hub routes that are disabled in production, such
+as `/prototypes` when `SHOW_PROTOTYPES` is not enabled.
 
 ### Generate the sitemap artifacts
 
