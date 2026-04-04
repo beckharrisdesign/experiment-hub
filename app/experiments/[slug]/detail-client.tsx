@@ -49,7 +49,7 @@ export default function ExperimentDetailClient({
   return (
     <div className="flex flex-col flex-1">
       {/* Hero Section */}
-      <section className="bg-background-primary px-16 pt-8 pb-0">
+      <section className="bg-background-primary px-4 md:px-8 lg:px-16 pt-8 pb-0">
         {/* Breadcrumb */}
         <nav className="mb-4 text-sm">
           <ol className="flex items-center gap-2 text-text-secondary">
@@ -67,7 +67,7 @@ export default function ExperimentDetailClient({
         </nav>
 
         {/* Title + subtitle */}
-        <h1 className="font-heading text-[60px] font-semibold text-text-primary leading-tight">
+        <h1 className="font-heading text-4xl md:text-5xl lg:text-[60px] font-semibold text-text-primary leading-tight">
           {experiment.name}
         </h1>
         <p className="mt-2 text-sm text-text-secondary">
@@ -95,7 +95,7 @@ export default function ExperimentDetailClient({
       {/* Body: two columns */}
       <div className="flex flex-1">
         {/* Main content */}
-        <main className="flex-1 bg-background-light px-16 py-12 min-w-0">
+        <main className="flex-1 bg-background-light px-4 md:px-8 lg:px-16 py-12 min-w-0">
           <TabsContent
             experiment={experiment}
             prd={prd}
@@ -110,7 +110,7 @@ export default function ExperimentDetailClient({
         </main>
 
         {/* Recent Activity sidebar */}
-        <aside className="w-[415px] shrink-0 bg-[#f5f5f5] px-12 py-12">
+        <aside className="hidden lg:block w-[415px] shrink-0 bg-[#f5f5f5] px-12 py-12">
           <h2 className="font-heading text-base font-semibold text-text-dark mb-4">
             Recent activity
           </h2>

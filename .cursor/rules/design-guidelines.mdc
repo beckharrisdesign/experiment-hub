@@ -32,6 +32,26 @@ globs: components/**/*, app/**/*.tsx, app/**/*.css, **/*.tsx, **/globals.css
 
 **Spacing** — Tailwind scale (0.25rem base). Use consistent padding and section whitespace.
 
+## Breakpoints
+
+The hub uses Tailwind's default `md` and `lg` breakpoints as the canonical mobile/tablet/desktop targets. No custom breakpoints are needed in `tailwind.config.ts`.
+
+| Name | Tailwind prefix | Min width | Layout intent |
+|------|----------------|-----------|---------------|
+| Mobile | (base) | 0px | Single column, stacked nav, compact type scale |
+| Tablet | `md:` | 768px | Two-column grids, reduced padding, inline nav |
+| Desktop | `lg:` | 1024px | Full layout — `px-16`, multi-column grids, sidebar visible |
+
+**Scope rules:**
+- **Hub shell** (Header, page layouts, home page, experiment detail) — define breakpoints at the hub level. These are shared concerns.
+- **Experiment prototypes** (`/experiments/*/prototype/`) — each prototype owns its internal responsive behavior but should follow the same `md`/`lg` vocabulary for consistency.
+
+**Padding convention:** Use `px-4 md:px-8 lg:px-16` for all major page sections. Never hardcode `px-16` without mobile fallbacks.
+
+**Type scale convention:** Hero headings use `text-4xl md:text-5xl lg:text-[60px]`. Never hardcode a large fixed size without smaller-screen fallbacks.
+
+**Navigation:** The hub Header shows a full inline nav on `lg:` and above; a hamburger-triggered dropdown on smaller screens. Experiment prototypes may use their own nav pattern but should follow the same principle.
+
 ## Components
 
 - **Buttons** — Primary (accent bg), secondary (accent border), ghost. **Primary CTAs in containers/cards must be buttons, not text links.** Use text links for secondary or inline navigation only.
