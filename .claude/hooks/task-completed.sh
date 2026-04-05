@@ -17,11 +17,13 @@ set -euo pipefail
 
 cd "${CLAUDE_PROJECT_DIR:-.}"
 
-# Stub: run TypeScript type-check if tsc is available and a tsconfig exists
+# Run a TypeScript type-check when this project is configured for TypeScript.
 if command -v npx &>/dev/null && [ -f "tsconfig.json" ]; then
-  if ! npx tsc --noEmit --pretty false 2>/dev/null; then
-    echo "TypeScript errors found. Fix type errors before marking this task complete." >&2
-    exit 2
+  if npx --no-install tsc --version >/dev/null 2>&1; then
+    if ! npx --no-install tsc --noEmit --pretty false; then
+      echo "TypeScript errors found. Fix type errors before marking this task complete." >&2
+      exit 2
+    fi
   fi
 fi
 
