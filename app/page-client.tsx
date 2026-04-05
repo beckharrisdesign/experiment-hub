@@ -275,11 +275,11 @@ export default function HomePageClient({
             </div>
           ) : (
             <div className="overflow-x-auto border border-[#194b31]">
-              <table className="w-full table-fixed">
+              <table className="w-full">
                 <thead>
                   <tr className="bg-[#194b31]">
                     <th
-                      className="px-4 py-4 text-left text-base font-medium text-text-primary w-1/2 cursor-pointer hover:bg-background-secondary transition-colors"
+                      className="px-4 py-4 text-left text-base font-medium text-text-primary cursor-pointer hover:bg-background-secondary transition-colors"
                       onClick={() => handleSort("name")}
                     >
                       <div className="flex items-center gap-1">
@@ -292,7 +292,7 @@ export default function HomePageClient({
                       </div>
                     </th>
                     <th
-                      className="px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)] cursor-pointer hover:bg-background-secondary transition-colors"
+                      className="w-px whitespace-nowrap px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)] cursor-pointer hover:bg-background-secondary transition-colors"
                       onClick={() => handleSort("total")}
                     >
                       <Tooltip
@@ -309,7 +309,7 @@ export default function HomePageClient({
                         </div>
                       </Tooltip>
                     </th>
-                    <th className="w-24 px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
+                    <th className="w-px whitespace-nowrap px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
                       <Tooltip
                         content="Product Requirements Document"
                         position="bottom"
@@ -317,7 +317,7 @@ export default function HomePageClient({
                         <span className="cursor-help">PRD</span>
                       </Tooltip>
                     </th>
-                    <th className="w-24 px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
+                    <th className="w-px whitespace-nowrap px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
                       <Tooltip
                         content="Landing page for validation"
                         position="bottom"
@@ -325,7 +325,7 @@ export default function HomePageClient({
                         <span className="cursor-help">Landing</span>
                       </Tooltip>
                     </th>
-                    <th className="w-24 px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
+                    <th className="w-px whitespace-nowrap px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
                       <Tooltip content="Prototype built" position="bottom">
                         <span className="cursor-help">Prototype</span>
                       </Tooltip>
@@ -338,7 +338,7 @@ export default function HomePageClient({
                       key={experiment.id}
                       className="border-t border-[rgba(20,174,92,0.2)] bg-[rgba(255,255,255,0.2)] hover:bg-[rgba(20,174,92,0.04)] transition-colors"
                     >
-                      <td className="px-4 py-3 w-1/2">
+                      <td className="px-4 py-3">
                         <Link
                           href={`/experiments/${slugify(experiment.name)}`}
                           className="block hover:text-accent-primary"
@@ -351,7 +351,7 @@ export default function HomePageClient({
                           </span>
                         </Link>
                       </td>
-                      <td className="px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
+                      <td className="w-px whitespace-nowrap px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
                         {!experiment.hasMRFile ? (
                           <span className="text-sm text-text-dark-secondary">
                             —
@@ -383,7 +383,7 @@ export default function HomePageClient({
                           })()
                         )}
                       </td>
-                      <td className="w-24 px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
+                      <td className="w-px whitespace-nowrap px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
                         {experiment.hasPRDFile ? (
                           <span className="text-accent-primary">✓</span>
                         ) : (
@@ -392,7 +392,7 @@ export default function HomePageClient({
                           </span>
                         )}
                       </td>
-                      <td className="w-24 px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
+                      <td className="w-px whitespace-nowrap px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
                         {experiment.hasLandingPage ? (
                           <span className="text-accent-primary">✓</span>
                         ) : (
@@ -401,7 +401,7 @@ export default function HomePageClient({
                           </span>
                         )}
                       </td>
-                      <td className="w-24 px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
+                      <td className="w-px whitespace-nowrap px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
                         {experiment.hasPrototypeDir ? (
                           <span className="text-accent-primary">✓</span>
                         ) : (
