@@ -51,7 +51,41 @@ export default function TabsContent({
     id: "overview",
     content: (
       <div className="space-y-4">
-        {/* Scores */}
+        {/* Problem, Goals, Target user — product definition first */}
+        {prd?.problemStatement && (
+          <Section title="Problem">
+            <div className="prose prose-sm max-w-none text-text-dark-secondary">
+              <MarkdownContent content={prd.problemStatement} variant="light" />
+            </div>
+          </Section>
+        )}
+
+        {prd?.goals && (
+          <Section title="Goals">
+            <div className="prose prose-sm max-w-none text-text-dark-secondary">
+              <MarkdownContent content={prd.goals} variant="light" />
+            </div>
+          </Section>
+        )}
+
+        {prd?.targetUser && (
+          <Section title="Target user">
+            <div className="prose prose-sm max-w-none text-text-dark-secondary">
+              <MarkdownContent content={prd.targetUser} variant="light" />
+            </div>
+          </Section>
+        )}
+
+        {/* Core features — MVP scope */}
+        {prd?.coreFeatures && (
+          <Section title="Core features">
+            <div className="prose prose-sm max-w-none text-text-dark-secondary">
+              <MarkdownContent content={prd.coreFeatures} variant="light" />
+            </div>
+          </Section>
+        )}
+
+        {/* Scores + market analysis — below MVP scope */}
         {experiment.scores && (
           <Section title="Scores">
             <div className="grid grid-cols-5 gap-4">
@@ -92,7 +126,6 @@ export default function TabsContent({
           </Section>
         )}
 
-        {/* Market size */}
         {mr && (
           <Section title="Market size">
             <div className="grid grid-cols-5 gap-3">
@@ -127,7 +160,6 @@ export default function TabsContent({
           </Section>
         )}
 
-        {/* Market opportunity prose — new slim format */}
         {mr?.marketOpportunity && (
           <Section title="Market opportunity">
             <div className="prose prose-sm max-w-none text-text-dark-secondary">
@@ -136,7 +168,6 @@ export default function TabsContent({
           </Section>
         )}
 
-        {/* Competitive landscape — new slim format */}
         {mr?.competitiveLandscape && (
           <Section title="Competitive landscape">
             <div className="prose prose-sm max-w-none text-text-dark-secondary">
@@ -148,44 +179,10 @@ export default function TabsContent({
           </Section>
         )}
 
-        {/* Recommendation — new slim format; falls back to old Go/No-Go sections */}
         {mr?.recommendation && (
           <Section title="Recommendation">
             <div className="prose prose-sm max-w-none text-text-dark-secondary">
               <MarkdownContent content={mr.recommendation} variant="light" />
-            </div>
-          </Section>
-        )}
-
-        {/* PRD sections — folded into overview */}
-        {prd?.problemStatement && (
-          <Section title="Problem">
-            <div className="prose prose-sm max-w-none text-text-dark-secondary">
-              <MarkdownContent content={prd.problemStatement} variant="light" />
-            </div>
-          </Section>
-        )}
-
-        {prd?.goals && (
-          <Section title="Goals">
-            <div className="prose prose-sm max-w-none text-text-dark-secondary">
-              <MarkdownContent content={prd.goals} variant="light" />
-            </div>
-          </Section>
-        )}
-
-        {prd?.targetUser && (
-          <Section title="Target user">
-            <div className="prose prose-sm max-w-none text-text-dark-secondary">
-              <MarkdownContent content={prd.targetUser} variant="light" />
-            </div>
-          </Section>
-        )}
-
-        {prd?.coreFeatures && (
-          <Section title="Core features">
-            <div className="prose prose-sm max-w-none text-text-dark-secondary">
-              <MarkdownContent content={prd.coreFeatures} variant="light" />
             </div>
           </Section>
         )}
