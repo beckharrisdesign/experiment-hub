@@ -167,11 +167,23 @@ export function useImportQueue({ userId }: UseImportQueueOptions) {
   }, [items, saveQueueItem]);
 
   const enqueueCapturedImages = useCallback((images: CapturedSeedImage[], options: EnqueueOptions) => {
-    const queueItems = buildQueueItemsFromFiles(images, options.source);
-    if (queueItems.length === 0) return;
+    const queueImageItems = buildQueueItemsFromFiles(images, options.source);
+    if (queueImageItems.length === 0) return;
+
+    const queueItems: QueueItem[] = queueImageItems.map((item) => ({
+      id: item.id,
+      file: item.file,
+      objectUrl: item.objectUrl,
+      source: item.source,
+      capturedAt: item.capturedAt,
+      status: 'pending',
+      errorMessage: undefined,
+    }));
+
     if (options.autoSaveOnReady) {
       queueItems.forEach((item) => autoSaveIdsRef.current.add(item.id));
     }
+
     setItems((prev) => [...prev, ...queueItems]);
   }, []);
 
