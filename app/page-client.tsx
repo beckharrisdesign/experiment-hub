@@ -99,68 +99,71 @@ export default function HomePageClient({
       <Header />
 
       {/* Hero Section */}
-      <section className="bg-background-primary px-16 py-[70px]">
-        <div className="flex gap-4 items-start max-w-screen-xl mx-auto">
+      <section className="bg-background-primary px-4 md:px-8 lg:px-16 py-12 lg:py-[70px]">
+        <div className="flex flex-col lg:flex-row gap-4 lg:items-start max-w-screen-xl mx-auto">
           {/* Large heading */}
-          <div className="w-[411px] pr-5 shrink-0">
-            <h1 className="font-heading text-[60px] font-semibold text-text-primary leading-tight">
+          <div className="lg:w-[411px] lg:pr-5 lg:shrink-0">
+            <h1 className="font-heading text-4xl md:text-5xl lg:text-[60px] font-semibold text-text-primary leading-tight">
               Welcome
               <br />
               to BHD Labs
             </h1>
           </div>
-          {/* About column */}
-          <div className="w-[204px] pr-4 shrink-0">
-            <p className="text-sm font-bold text-white leading-5 mb-2">
-              About BHD Labs
-            </p>
-            <p className="text-sm font-light text-white leading-5">
-              I&apos;m a neurodiverse founder. My best ideas come fast and from
-              everywhere. This platform is how I develop them with rigor and
-              pursue the strongest ones with focus.
-            </p>
-          </div>
-          {/* What drives me column */}
-          <div className="w-[204px] pr-4 shrink-0">
-            <p className="text-sm font-bold text-white leading-5 mb-2">
-              What drives me
-            </p>
-            <p className="text-sm font-light text-white leading-5">
-              I build things I care deeply about, that serve a real market need,
-              and that make a difference in the world. All three have to be
-              true.
-            </p>
-          </div>
-          {/* Core themes column */}
-          <div className="w-[204px] pr-4 shrink-0">
-            <p className="text-sm font-bold text-white leading-5 mb-2">
-              My core themes
-            </p>
-            <ul className="text-sm font-light text-white leading-5 space-y-1.5">
-              <li>
-                <span className="font-medium">Empowering makers</span> — tools
-                for people who create things with their hands
-              </li>
-              <li>
-                <span className="font-medium">Supporting neurodiversity</span> —
-                products designed for how divergent minds actually work
-              </li>
-              <li>
-                <span className="font-medium">Environmental impact</span> —
-                helping people make more sustainable choices
-              </li>
-            </ul>
+          {/* Info columns */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:contents">
+            {/* About column */}
+            <div className="lg:w-[204px] lg:pr-4 lg:shrink-0">
+              <p className="text-sm font-bold text-white leading-5 mb-2">
+                About BHD Labs
+              </p>
+              <p className="text-sm font-light text-white leading-5">
+                I&apos;m a neurodiverse founder. My best ideas come fast and
+                from everywhere. This platform is how I develop them with rigor
+                and pursue the strongest ones with focus.
+              </p>
+            </div>
+            {/* What drives me column */}
+            <div className="lg:w-[204px] lg:pr-4 lg:shrink-0">
+              <p className="text-sm font-bold text-white leading-5 mb-2">
+                What drives me
+              </p>
+              <p className="text-sm font-light text-white leading-5">
+                I build things I care deeply about, that serve a real market
+                need, and that make a difference in the world. All three have to
+                be true.
+              </p>
+            </div>
+            {/* Core themes column */}
+            <div className="lg:w-[204px] lg:pr-4 lg:shrink-0">
+              <p className="text-sm font-bold text-white leading-5 mb-2">
+                My core themes
+              </p>
+              <ul className="text-sm font-light text-white leading-5 space-y-1.5">
+                <li>
+                  <span className="font-medium">Empowering makers</span> — tools
+                  for people who create things with their hands
+                </li>
+                <li>
+                  <span className="font-medium">Supporting neurodiversity</span>{" "}
+                  — products designed for how divergent minds actually work
+                </li>
+                <li>
+                  <span className="font-medium">Environmental impact</span> —
+                  helping people make more sustainable choices
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Scaffolding Section */}
-      <section className="bg-background-secondary px-16 py-8 border-t border-b border-[rgba(20,174,92,0.2)]">
+      <section className="bg-background-secondary px-4 md:px-8 lg:px-16 py-8 border-t border-b border-[rgba(20,174,92,0.2)]">
         <div className="max-w-screen-xl mx-auto">
           <p className="text-xs font-bold text-text-primary uppercase tracking-widest mb-5">
             The scaffolding
           </p>
-          <div className="flex gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="flex-1">
               <p className="text-sm font-semibold text-white leading-5 mb-1">
                 Workflow
@@ -231,7 +234,7 @@ export default function HomePageClient({
       </section>
 
       {/* Experiment List Section */}
-      <section className="bg-background-light px-16 py-[46px] flex-1">
+      <section className="bg-background-light px-4 md:px-8 lg:px-16 py-[46px] flex-1">
         <div className="max-w-screen-xl mx-auto">
           <h2 className="font-heading text-base font-semibold text-text-dark mb-4">
             All experiments
@@ -272,11 +275,11 @@ export default function HomePageClient({
             </div>
           ) : (
             <div className="overflow-x-auto border border-[#194b31]">
-              <table className="w-full table-fixed">
+              <table className="w-full">
                 <thead>
                   <tr className="bg-[#194b31]">
                     <th
-                      className="px-4 py-4 text-left text-base font-medium text-text-primary w-1/2 cursor-pointer hover:bg-background-secondary transition-colors"
+                      className="px-4 py-4 text-left text-base font-medium text-text-primary cursor-pointer hover:bg-background-secondary transition-colors"
                       onClick={() => handleSort("name")}
                     >
                       <div className="flex items-center gap-1">
@@ -289,7 +292,7 @@ export default function HomePageClient({
                       </div>
                     </th>
                     <th
-                      className="px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)] cursor-pointer hover:bg-background-secondary transition-colors"
+                      className="w-px whitespace-nowrap px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)] cursor-pointer hover:bg-background-secondary transition-colors"
                       onClick={() => handleSort("total")}
                     >
                       <Tooltip
@@ -306,7 +309,7 @@ export default function HomePageClient({
                         </div>
                       </Tooltip>
                     </th>
-                    <th className="w-24 px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
+                    <th className="w-px whitespace-nowrap px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
                       <Tooltip
                         content="Product Requirements Document"
                         position="bottom"
@@ -314,7 +317,7 @@ export default function HomePageClient({
                         <span className="cursor-help">PRD</span>
                       </Tooltip>
                     </th>
-                    <th className="w-24 px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
+                    <th className="w-px whitespace-nowrap px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
                       <Tooltip
                         content="Landing page for validation"
                         position="bottom"
@@ -322,7 +325,7 @@ export default function HomePageClient({
                         <span className="cursor-help">Landing</span>
                       </Tooltip>
                     </th>
-                    <th className="w-24 px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
+                    <th className="w-px whitespace-nowrap px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
                       <Tooltip content="Prototype built" position="bottom">
                         <span className="cursor-help">Prototype</span>
                       </Tooltip>
@@ -335,7 +338,7 @@ export default function HomePageClient({
                       key={experiment.id}
                       className="border-t border-[rgba(20,174,92,0.2)] bg-[rgba(255,255,255,0.2)] hover:bg-[rgba(20,174,92,0.04)] transition-colors"
                     >
-                      <td className="px-4 py-3 w-1/2">
+                      <td className="px-4 py-3">
                         <Link
                           href={`/experiments/${slugify(experiment.name)}`}
                           className="block hover:text-accent-primary"
@@ -348,7 +351,7 @@ export default function HomePageClient({
                           </span>
                         </Link>
                       </td>
-                      <td className="px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
+                      <td className="w-px whitespace-nowrap px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
                         {!experiment.hasMRFile ? (
                           <span className="text-sm text-text-dark-secondary">
                             —
@@ -380,7 +383,7 @@ export default function HomePageClient({
                           })()
                         )}
                       </td>
-                      <td className="w-24 px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
+                      <td className="w-px whitespace-nowrap px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
                         {experiment.hasPRDFile ? (
                           <span className="text-accent-primary">✓</span>
                         ) : (
@@ -389,7 +392,7 @@ export default function HomePageClient({
                           </span>
                         )}
                       </td>
-                      <td className="w-24 px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
+                      <td className="w-px whitespace-nowrap px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
                         {experiment.hasLandingPage ? (
                           <span className="text-accent-primary">✓</span>
                         ) : (
@@ -398,7 +401,7 @@ export default function HomePageClient({
                           </span>
                         )}
                       </td>
-                      <td className="w-24 px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
+                      <td className="w-px whitespace-nowrap px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
                         {experiment.hasPrototypeDir ? (
                           <span className="text-accent-primary">✓</span>
                         ) : (
