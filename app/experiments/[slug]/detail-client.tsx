@@ -22,6 +22,7 @@ interface ExperimentDetailClientProps {
   hasPRDFile: boolean;
   hasMRFile: boolean;
   hasPrototypeFiles: boolean;
+  learningsContent: string | null;
   recentCommits: GitCommit[];
 }
 
@@ -34,6 +35,7 @@ export default function ExperimentDetailClient({
   hasPRDFile,
   hasMRFile,
   hasPrototypeFiles,
+  learningsContent,
   recentCommits,
 }: ExperimentDetailClientProps) {
   // Build available tabs based on what data exists
@@ -105,6 +107,7 @@ export default function ExperimentDetailClient({
             hasPRDFile={hasPRDFile}
             hasMRFile={hasMRFile}
             hasPrototypeFiles={hasPrototypeFiles}
+            learningsContent={learningsContent}
             activeTab={activeTab}
           />
         </main>

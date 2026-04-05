@@ -59,7 +59,9 @@ export default async function ExperimentDetailPage({
       hasPRDFile: false,
       hasPrototypeDir: false,
       hasMRFile: false,
+      hasLandingPage: false,
       mrContent: null,
+      learningsContent: null,
     })),
   ]);
 
@@ -68,6 +70,7 @@ export default async function ExperimentDetailPage({
     hasPrototypeDir: hasPrototypeFiles,
     hasMRFile,
     mrContent,
+    learningsContent,
   } = fileChecks;
 
   // Read and parse documents in parallel
@@ -115,6 +118,7 @@ export default async function ExperimentDetailPage({
         hasPRDFile={hasPRDFile}
         hasMRFile={hasMRFile}
         hasPrototypeFiles={hasPrototypeFiles}
+        learningsContent={learningsContent}
         recentCommits={recentCommits}
       />
     </div>
