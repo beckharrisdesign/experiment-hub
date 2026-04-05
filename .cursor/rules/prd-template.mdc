@@ -1,0 +1,97 @@
+---
+description: Use when generating or updating a PRD.md file for an experiment.
+globs: experiments/*/docs/PRD.md
+---
+
+# PRD template
+
+Keep PRDs lean and decision-focused. This is a working document for a solo builder, not a spec for a team. Write what's needed to start building and validating — nothing more.
+
+**Target length**: 100–150 lines. If you're going longer, cut.
+
+**Sections to include** (in this order, no others):
+
+1. Overview
+2. Problem Statement
+3. Goals & Objectives
+4. Target User
+5. Core Features
+6. Success Metrics
+7. Validation Plan (Landing Page)
+
+**Sections to exclude** — do not generate these:
+- User Stories (implicit in Core Features)
+- Technical Requirements (too speculative pre-build)
+- Data Model (too speculative pre-build)
+- Non-Requirements / Out of Scope (keep a single note in Core Features if needed)
+- Future Considerations (not needed until post-validation)
+- Market Context (already in market-research.md — don't repeat it)
+- Implementation Approach / Phase breakdown (belongs in the validation plan, briefly)
+
+---
+
+## Template
+
+```markdown
+# {Experiment Name} - PRD
+
+## Overview
+
+[2–3 sentences: what is this, who is it for, what core job does it do. This is the elevator pitch for the build.]
+
+---
+
+## Problem Statement
+
+[The specific problem being solved. What does the user struggle with today? What do existing solutions miss? Keep to 3–5 bullet points or 2 short paragraphs.]
+
+---
+
+## Goals & Objectives
+
+1. [Primary goal — the one thing this must do well]
+2. [Secondary goal]
+3. [Tertiary goal, if genuinely distinct]
+
+---
+
+## Target User
+
+**Primary**: [One sentence description — who they are, what context they're in, what they need]
+
+**Secondary** (optional): [One sentence if there's a meaningfully different second audience]
+
+**Not for**: [One sentence on who this is explicitly not for — helps keep scope honest]
+
+---
+
+## Core Features
+
+### MVP scope
+
+- **[Feature 1]**: [What it does and why it matters — 1–2 sentences]
+- **[Feature 2]**: [What it does and why it matters]
+- **[Feature 3]**: [What it does and why it matters]
+- **[Feature 4]** (if needed): [What it does and why it matters]
+
+**Out of scope for MVP**: [comma-separated list of the most tempting things to exclude]
+
+---
+
+## Success Metrics
+
+**Validation phase:**
+- [Metric]: [target, e.g. "Landing page email signup rate: > 5%"]
+- [Metric]: [target]
+- **Go/no-go threshold**: [what result triggers a build decision]
+
+**MVP phase:**
+- [Metric]: [target, e.g. "Time to first print: < 60 seconds"]
+- [Metric]: [target]
+
+---
+
+## Validation Plan (Landing Page)
+
+[2–4 sentences: what the landing page tests, what traffic source, what the buy/signup CTA is, and how long to run it before deciding.]
+```

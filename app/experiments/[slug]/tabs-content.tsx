@@ -20,6 +20,7 @@ interface TabsContentProps {
   hasPRDFile: boolean;
   hasMRFile: boolean;
   hasPrototypeFiles: boolean;
+  learningsContent: string | null;
   activeTab: string;
 }
 
@@ -49,6 +50,7 @@ export default function TabsContent({
   hasPRDFile,
   hasMRFile,
   hasPrototypeFiles,
+  learningsContent,
   activeTab,
 }: TabsContentProps) {
   const tabs = [];
@@ -149,6 +151,29 @@ export default function TabsContent({
             <div className="prose prose-sm max-w-none text-text-dark-secondary">
               <MarkdownContent content={mr.goNoGo} variant="light" />
             </div>
+          </Section>
+        )}
+
+        {/* Learnings */}
+        {learningsContent ? (
+          <Section title="Learnings">
+            <div className="prose prose-sm max-w-none text-text-dark-secondary">
+              <MarkdownContent content={learningsContent} variant="light" />
+            </div>
+          </Section>
+        ) : (
+          <Section title="Learnings">
+            <p className="text-sm text-text-dark-secondary italic">
+              No learnings yet.{" "}
+              <span className="not-italic">
+                Add a{" "}
+                <code className="bg-background-mint px-1.5 py-0.5 rounded text-xs not-italic">
+                  docs/learnings.md
+                </code>{" "}
+                file to capture what you discover through prototyping and
+                testing.
+              </span>
+            </p>
           </Section>
         )}
 

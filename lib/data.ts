@@ -31,27 +31,31 @@ export async function getDocumentation(): Promise<Documentation[]> {
   return readJsonFile<Documentation>("documentation.json");
 }
 
-export async function getExperimentById(id: string): Promise<Experiment | null> {
+export async function getExperimentById(
+  id: string,
+): Promise<Experiment | null> {
   const experiments = await getExperiments();
   return experiments.find((exp) => exp.id === id) || null;
 }
 
-export async function getExperimentBySlug(slug: string): Promise<Experiment | null> {
+export async function getExperimentBySlug(
+  slug: string,
+): Promise<Experiment | null> {
   const experiments = await getExperiments();
-  return (
-    experiments.find((exp) => slugify(exp.name) === slug) || null
-  );
+  return experiments.find((exp) => slugify(exp.name) === slug) || null;
 }
 
 export async function getPrototypeByExperimentId(
-  experimentId: string
+  experimentId: string,
 ): Promise<Prototype | null> {
   const prototypes = await getPrototypes();
-  return prototypes.find((proto) => proto.experimentId === experimentId) || null;
+  return (
+    prototypes.find((proto) => proto.experimentId === experimentId) || null
+  );
 }
 
 export async function getDocumentationByExperimentId(
-  experimentId: string
+  experimentId: string,
 ): Promise<Documentation | null> {
   const docs = await getDocumentation();
   return docs.find((doc) => doc.experimentId === experimentId) || null;
@@ -60,7 +64,12 @@ export async function getDocumentationByExperimentId(
 export async function hasPRD(experimentDirectory: string): Promise<boolean> {
   try {
     // experimentDirectory already includes "experiments/" prefix
-    const prdPath = path.join(process.cwd(), experimentDirectory, "docs", "PRD.md");
+    const prdPath = path.join(
+      process.cwd(),
+      experimentDirectory,
+      "docs",
+      "PRD.md",
+    );
     await fs.access(prdPath);
     return true;
   } catch {
@@ -68,9 +77,16 @@ export async function hasPRD(experimentDirectory: string): Promise<boolean> {
   }
 }
 
-export async function hasMarketResearch(experimentDirectory: string): Promise<boolean> {
+export async function hasMarketResearch(
+  experimentDirectory: string,
+): Promise<boolean> {
   try {
-    const mrPath = path.join(process.cwd(), experimentDirectory, "docs", "market-research.md");
+    const mrPath = path.join(
+      process.cwd(),
+      experimentDirectory,
+      "docs",
+      "market-research.md",
+    );
     await fs.access(mrPath);
     return true;
   } catch {
@@ -78,22 +94,28 @@ export async function hasMarketResearch(experimentDirectory: string): Promise<bo
   }
 }
 
-export async function hasPrototype(experimentDirectory: string): Promise<boolean> {
+export async function hasPrototype(
+  experimentDirectory: string,
+): Promise<boolean> {
   try {
     // experimentDirectory already includes "experiments/" prefix
-    const prototypePath = path.join(process.cwd(), experimentDirectory, "prototype");
+    const prototypePath = path.join(
+      process.cwd(),
+      experimentDirectory,
+      "prototype",
+    );
     const stats = await fs.stat(prototypePath);
-    
+
     if (!stats.isDirectory()) {
       return false;
     }
-    
+
     // Check if there are actual files (not just .gitkeep or empty directory)
     const files = await fs.readdir(prototypePath);
     const actualFiles = files.filter(
-      (file) => file !== ".gitkeep" && !file.startsWith(".")
+      (file) => file !== ".gitkeep" && !file.startsWith("."),
     );
-    
+
     // Return true only if there are actual files in the prototype directory
     return actualFiles.length > 0;
   } catch {
@@ -101,11 +123,19 @@ export async function hasPrototype(experimentDirectory: string): Promise<boolean
   }
 }
 
-export async function hasLandingPage(experimentDirectory: string): Promise<boolean> {
+export async function hasLandingPage(
+  experimentDirectory: string,
+): Promise<boolean> {
   try {
     // Check if public/landing/[slug]/index.html exists
-    const slug = experimentDirectory.replace('experiments/', '');
-    const landingPath = path.join(process.cwd(), 'public', 'landing', slug, 'index.html');
+    const slug = experimentDirectory.replace("experiments/", "");
+    const landingPath = path.join(
+      process.cwd(),
+      "public",
+      "landing",
+      slug,
+      "index.html",
+    );
     await fs.access(landingPath);
     return true;
   } catch {
@@ -113,9 +143,16 @@ export async function hasLandingPage(experimentDirectory: string): Promise<boole
   }
 }
 
-export async function readPRD(experimentDirectory: string): Promise<string | null> {
+export async function readPRD(
+  experimentDirectory: string,
+): Promise<string | null> {
   try {
-    const prdPath = path.join(process.cwd(), experimentDirectory, "docs", "PRD.md");
+    const prdPath = path.join(
+      process.cwd(),
+      experimentDirectory,
+      "docs",
+      "PRD.md",
+    );
     const content = await fs.readFile(prdPath, "utf8");
     return content;
   } catch {
@@ -123,9 +160,16 @@ export async function readPRD(experimentDirectory: string): Promise<string | nul
   }
 }
 
-export async function readMarketResearch(experimentDirectory: string): Promise<string | null> {
+export async function readMarketResearch(
+  experimentDirectory: string,
+): Promise<string | null> {
   try {
-    const mrPath = path.join(process.cwd(), experimentDirectory, "docs", "market-research.md");
+    const mrPath = path.join(
+      process.cwd(),
+      experimentDirectory,
+      "docs",
+      "market-research.md",
+    );
     const content = await fs.readFile(mrPath, "utf8");
     return content;
   } catch {
@@ -136,16 +180,38 @@ export async function readMarketResearch(experimentDirectory: string): Promise<s
 /** Allowed doc names for readExperimentDoc (no path traversal). */
 const ALLOWED_DOCS = ["landing-page-content"] as const;
 
+export async function readLearnings(
+  experimentDirectory: string,
+): Promise<string | null> {
+  try {
+    const learningsPath = path.join(
+      process.cwd(),
+      experimentDirectory,
+      "docs",
+      "learnings.md",
+    );
+    const content = await fs.readFile(learningsPath, "utf8");
+    return content;
+  } catch {
+    return null;
+  }
+}
+
 export async function readExperimentDoc(
   experimentDirectory: string,
-  docSlug: string
+  docSlug: string,
 ): Promise<string | null> {
   if (!ALLOWED_DOCS.includes(docSlug as (typeof ALLOWED_DOCS)[number])) {
     return null;
   }
   try {
     const filename = `${docSlug}.md`;
-    const docPath = path.join(process.cwd(), experimentDirectory, "docs", filename);
+    const docPath = path.join(
+      process.cwd(),
+      experimentDirectory,
+      "docs",
+      filename,
+    );
     const content = await fs.readFile(docPath, "utf8");
     return content;
   } catch {
@@ -157,20 +223,25 @@ export async function readExperimentDoc(
  * Batch check all experiment files in parallel for better performance
  * This avoids N+1 file system operations
  */
-export async function checkExperimentFiles(experimentDirectory: string): Promise<{
+export async function checkExperimentFiles(
+  experimentDirectory: string,
+): Promise<{
   hasPRDFile: boolean;
   hasPrototypeDir: boolean;
   hasMRFile: boolean;
   hasLandingPage: boolean;
   mrContent: string | null;
+  learningsContent: string | null;
 }> {
   // Run all file checks in parallel
-  const [hasPRDFile, hasPrototypeDir, hasLanding, mrContent] = await Promise.all([
-    hasPRD(experimentDirectory),
-    hasPrototype(experimentDirectory),
-    hasLandingPage(experimentDirectory),
-    readMarketResearch(experimentDirectory).catch(() => null),
-  ]);
+  const [hasPRDFile, hasPrototypeDir, hasLanding, mrContent, learningsContent] =
+    await Promise.all([
+      hasPRD(experimentDirectory),
+      hasPrototype(experimentDirectory),
+      hasLandingPage(experimentDirectory),
+      readMarketResearch(experimentDirectory).catch(() => null),
+      readLearnings(experimentDirectory).catch(() => null),
+    ]);
 
   // hasMRFile is true if we successfully read the content
   const hasMRFile = mrContent !== null;
@@ -181,6 +252,7 @@ export async function checkExperimentFiles(experimentDirectory: string): Promise
     hasMRFile,
     hasLandingPage: hasLanding,
     mrContent,
+    learningsContent,
   };
 }
 
@@ -191,7 +263,7 @@ export function parsePRD(prdContent: string) {
   const lines = prdContent.split("\n");
   const sections: Record<string, string[]> = {};
   let currentSection = "";
-  
+
   for (const line of lines) {
     if (line.startsWith("## ")) {
       currentSection = line.replace("## ", "").trim();
@@ -200,7 +272,7 @@ export function parsePRD(prdContent: string) {
       sections[currentSection].push(line);
     }
   }
-  
+
   return {
     overview: sections["Overview"]?.join("\n") || "",
     problemStatement: sections["Problem Statement"]?.join("\n") || "",
@@ -210,7 +282,8 @@ export function parsePRD(prdContent: string) {
     userStories: sections["User Stories"]?.join("\n") || "",
     technicalRequirements: sections["Technical Requirements"]?.join("\n") || "",
     successMetrics: sections["Success Metrics"]?.join("\n") || "",
-    validationPlan: sections["Validation Plan (Landing Page)"]?.join("\n") || "",
+    validationPlan:
+      sections["Validation Plan (Landing Page)"]?.join("\n") || "",
     fullContent: prdContent,
   };
 }
@@ -260,7 +333,7 @@ export function parseMarketResearch(mrContent: string) {
   const lines = mrContent.split("\n");
   const sections: Record<string, string[]> = {};
   let currentSection = "";
-  
+
   for (const line of lines) {
     if (line.startsWith("## ")) {
       currentSection = line.replace("## ", "").trim();
@@ -269,66 +342,101 @@ export function parseMarketResearch(mrContent: string) {
       sections[currentSection].push(line);
     }
   }
-  
+
   // Extract TAM/SAM/SOM from Executive Summary, Market Size Analysis, or Growth Trajectory sections.
   // Growth Trajectory is included so that the Year 2 fallback regex can match
   // lines like "- Year 2: 0.2% market share = $840K - $1.4M".
   const summarySection = sections["Executive Summary"]?.join("\n") || "";
   const marketSizeSection = sections["Market Size Analysis"]?.join("\n") || "";
   const growthSection = sections["Growth Trajectory"]?.join("\n") || "";
-  const combinedSection = summarySection + "\n" + marketSizeSection + "\n" + growthSection;
-  
-  const tamMatch = combinedSection.match(/TAM[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
-  const samMatch = combinedSection.match(/SAM[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
+  const combinedSection =
+    summarySection + "\n" + marketSizeSection + "\n" + growthSection;
+
+  const tamMatch = combinedSection.match(
+    /TAM[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i,
+  );
+  const samMatch = combinedSection.match(
+    /SAM[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i,
+  );
   // Exclude year-specific SOM lines (Year 1/2/3) so the generic match isn't accidentally
   // populated with a year-scoped figure and then mislabeled in the UI.
-  const somMatch = combinedSection.match(/SOM(?!\s*\(Year)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
+  const somMatch = combinedSection.match(
+    /SOM(?!\s*\(Year)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i,
+  );
 
   // Extract methodology descriptions from exec summary bullet parentheticals
   // Matches: - **TAM**: $15M - $40M (competitor-anchored description here)
-  const tamDescMatch = summarySection.match(/\*\*TAM\*\*[^:]*:\s*\$?[\d.]+[BMK]?(?:\s*-\s*\$?[\d.]+[BMK]?)?\s*\(([^)]+)\)/i);
-  const samDescMatch = summarySection.match(/\*\*SAM\*\*[^:]*:\s*\$?[\d.]+[BMK]?(?:\s*-\s*\$?[\d.]+[BMK]?)?\s*\(([^)]+)\)/i);
-  
+  const tamDescMatch = summarySection.match(
+    /\*\*TAM\*\*[^:]*:\s*\$?[\d.]+[BMK]?(?:\s*-\s*\$?[\d.]+[BMK]?)?\s*\(([^)]+)\)/i,
+  );
+  const samDescMatch = summarySection.match(
+    /\*\*SAM\*\*[^:]*:\s*\$?[\d.]+[BMK]?(?:\s*-\s*\$?[\d.]+[BMK]?)?\s*\(([^)]+)\)/i,
+  );
+
   // Extract Year 1, Year 2, and Year 3 SOM.
   // Year 1 and Year 3 typically appear in the Executive Summary as "SOM (Year N): $X - $Y".
   // Year 2 rarely appears in the exec summary, so also check the Growth Trajectory table
   // which uses the format "- Year 2: 0.2% market share = $840K - $1.4M".
-  const somYear1Match = combinedSection.match(/SOM\s*\(Year\s*1\)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
+  const somYear1Match = combinedSection.match(
+    /SOM\s*\(Year\s*1\)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i,
+  );
   const somYear2Match =
-    combinedSection.match(/SOM\s*\(Year\s*2\)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i) ??
-    combinedSection.match(/[-*]\s*Year\s*2[^=\n]+=\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
-  const somYear3Match = combinedSection.match(/SOM\s*\(Year\s*3\)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i);
-  
+    combinedSection.match(
+      /SOM\s*\(Year\s*2\)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i,
+    ) ??
+    combinedSection.match(
+      /[-*]\s*Year\s*2[^=\n]+=\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i,
+    );
+  const somYear3Match = combinedSection.match(
+    /SOM\s*\(Year\s*3\)[^:]*:\s*\$?([\d.]+[BMK]?)\s*-?\s*\$?([\d.]+[BMK]?)?/i,
+  );
+
   // Calculate midpoint for ranges, or use single value
   const somYear1 = somYear1Match
-    ? (somYear1Match[2]
-        ? calculateMidpoint(somYear1Match[1], somYear1Match[2])
-        : `$${somYear1Match[1]}`)
+    ? somYear1Match[2]
+      ? calculateMidpoint(somYear1Match[1], somYear1Match[2])
+      : `$${somYear1Match[1]}`
     : null;
   const somYear2 = somYear2Match
-    ? (somYear2Match[2]
-        ? calculateMidpoint(somYear2Match[1], somYear2Match[2])
-        : `$${somYear2Match[1]}`)
+    ? somYear2Match[2]
+      ? calculateMidpoint(somYear2Match[1], somYear2Match[2])
+      : `$${somYear2Match[1]}`
     : null;
   const somYear3 = somYear3Match
-    ? (somYear3Match[2]
-        ? calculateMidpoint(somYear3Match[1], somYear3Match[2])
-        : `$${somYear3Match[1]}`)
+    ? somYear3Match[2]
+      ? calculateMidpoint(somYear3Match[1], somYear3Match[2])
+      : `$${somYear3Match[1]}`
     : null;
-  
+
   // Extract Market Opportunity Assessment (MOA)
-  const moaMatch = combinedSection.match(/Market Opportunity Assessment[^:]*:\s*\*\*([^*]+)\*\*/i);
+  const moaMatch = combinedSection.match(
+    /Market Opportunity Assessment[^:]*:\s*\*\*([^*]+)\*\*/i,
+  );
   const moa = moaMatch ? moaMatch[1].trim() : null;
-  
+
   // Extract Go/No-Go Recommendation
-  const goNoGoMatch = combinedSection.match(/Go\/No-Go Recommendation[^:]*:\s*\*\*([^*]+)\*\*/i);
+  const goNoGoMatch = combinedSection.match(
+    /Go\/No-Go Recommendation[^:]*:\s*\*\*([^*]+)\*\*/i,
+  );
   const goNoGo = goNoGoMatch ? goNoGoMatch[1].trim() : null;
-  
+
   return {
     executiveSummary: sections["Executive Summary"]?.join("\n") || "",
-    tam: tamMatch ? (tamMatch[2] ? `$${tamMatch[1]} - $${tamMatch[2]}` : `$${tamMatch[1]}`) : null,
-    sam: samMatch ? (samMatch[2] ? `$${samMatch[1]} - $${samMatch[2]}` : `$${samMatch[1]}`) : null,
-    som: somMatch ? (somMatch[2] ? `$${somMatch[1]} - $${somMatch[2]}` : `$${somMatch[1]}`) : null,
+    tam: tamMatch
+      ? tamMatch[2]
+        ? `$${tamMatch[1]} - $${tamMatch[2]}`
+        : `$${tamMatch[1]}`
+      : null,
+    sam: samMatch
+      ? samMatch[2]
+        ? `$${samMatch[1]} - $${samMatch[2]}`
+        : `$${samMatch[1]}`
+      : null,
+    som: somMatch
+      ? somMatch[2]
+        ? `$${somMatch[1]} - $${somMatch[2]}`
+        : `$${somMatch[1]}`
+      : null,
     tamDesc: tamDescMatch ? tamDescMatch[1] : null,
     samDesc: samDescMatch ? samDescMatch[1] : null,
     somYear1: somYear1,
@@ -336,7 +444,10 @@ export function parseMarketResearch(mrContent: string) {
     somYear3: somYear3,
     moa: moa,
     goNoGo: goNoGo,
-    goNoGoFull: sections["Go/No-Go Recommendation"]?.join("\n") || sections["Recommendations"]?.join("\n") || "",
+    goNoGoFull:
+      sections["Go/No-Go Recommendation"]?.join("\n") ||
+      sections["Recommendations"]?.join("\n") ||
+      "",
     fullContent: mrContent,
   };
 }

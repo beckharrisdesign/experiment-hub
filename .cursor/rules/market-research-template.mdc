@@ -1,0 +1,88 @@
+---
+description: Use when generating or updating a market-research.md file for an experiment.
+globs: experiments/*/docs/market-research.md
+---
+
+# Market research template
+
+Keep market research short and decision-focused. The goal is a document you can skim in two minutes and refine as you learn — not a comprehensive academic report.
+
+**Target length**: 80–120 lines. If you're going longer, cut.
+
+**Sections to include** (in this order, no others):
+
+1. Executive Summary
+2. Market Opportunity
+3. Competitive Landscape
+4. Recommendation
+
+**Sections to exclude** — do not generate these:
+- Market Size Analysis (detailed methodology)
+- Market Overview / Market Definition
+- Target Market Segments (detailed personas)
+- Market Trends & Dynamics
+- Risk Assessment
+- Data Sources & Methodology
+- Appendix
+- Growth Trajectory tables
+
+---
+
+## Template
+
+```markdown
+# {Experiment Name} - Market Research
+
+## Executive Summary
+
+**{Experiment Name}** is [one sentence description of what it does and who it's for].
+
+**Key Findings:**
+- **TAM**: $X - $Y ([brief methodology note, e.g. "bottom-up: ADHD + productivity segments"])
+- **SAM**: $X - $Y ([primary constraint, e.g. "users needing calendar integration + printable output"])
+- **SOM (Year 1)**: $X - $Y
+- **SOM (Year 3)**: $X - $Y
+
+**Market Opportunity Assessment**: **{HIGH/MEDIUM-HIGH/MEDIUM/LOW}**
+[1–2 sentences on the core opportunity or concern.]
+
+**Go/No-Go Recommendation**: **{GO/NO-GO}** — [one sentence rationale]
+
+---
+
+## Market Opportunity
+
+[2–3 paragraphs max. Cover: who is underserved and why, what's driving demand, and why this experiment is timely. Skip generic market-size context that doesn't affect the decision.]
+
+---
+
+## Competitive Landscape
+
+- **[Competitor 1]** — [what they do] · weakness: [key gap]
+- **[Competitor 2]** — [what they do] · weakness: [key gap]
+- **[Competitor 3]** — [what they do] · weakness: [key gap]
+- **[Competitor 4]** (optional) — [what they do] · weakness: [key gap]
+
+**Gap**: [One sentence on what none of them do that this experiment addresses.]
+
+---
+
+## Recommendation
+
+**[GO/NO-GO]** — [2–3 sentences: the core rationale, the biggest risk to watch, and the suggested first validation step.]
+```
+
+---
+
+## Parsing compatibility
+
+The UI parses specific patterns from the **Executive Summary** section to populate metric cards. Use these exact formats:
+
+- TAM line: `- **TAM**: $X - $Y (optional desc in parens)`
+- SAM line: `- **SAM**: $X - $Y (optional desc in parens)`
+- SOM Year 1: `- **SOM (Year 1)**: $X - $Y`
+- SOM Year 3: `- **SOM (Year 3)**: $X - $Y`
+- MOA line: `**Market Opportunity Assessment**: **HIGH**` (bold value)
+- Go/No-Go line: `**Go/No-Go Recommendation**: **GO**` (bold value)
+
+Do not rename these labels. The parser matches them by regex.
