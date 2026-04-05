@@ -1,25 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Seed } from '@/types/seed';
 import { AIExtractedData } from '@/lib/packetReaderAI';
 import { saveSeed } from '@/lib/storage';
-import { uploadSeedPhoto } from '@/lib/seed-photos';
 import { processImageFile } from '@/lib/imageUtils';
 import { AddSeedForm } from '@/components/AddSeedForm';
+import { BulkCameraCapture } from '@/components/BulkCameraCapture';
+import { useImportQueue, QueueItem } from '@/hooks/useImportQueue';
+import { buildPileQueueItems } from '@/lib/import/capturePipeline';
 import toast from 'react-hot-toast';
-
-type QueueStatus = 'pending' | 'extracting' | 'ready' | 'saving' | 'saved' | 'error';
-
-interface QueueItem {
-  id: string;
-  file: File;
-  objectUrl: string;
-  status: QueueStatus;
-  extracted?: AIExtractedData;
-  savedSeed?: Seed;
-  errorMessage?: string;
-}
 
 interface BatchImportProps {
   userId: string;
@@ -57,81 +47,25 @@ function extractedToInitialSeed(extracted: AIExtractedData, objectUrl: string): 
   };
 }
 
-const CONCURRENCY = 3;
-
 export function BatchImport({ userId, userTier = 'Seed Stash Starter', canUseAI = true }: BatchImportProps) {
-  const [items, setItems] = useState<QueueItem[]>([]);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [pileLoading, setPileLoading] = useState(false);
-  const activeRef = useRef(0);
+  const [isBulkCameraOpen, setIsBulkCameraOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pileInputRef = useRef<HTMLInputElement>(null);
-
-  const updateItem = useCallback((id: string, patch: Partial<QueueItem>) => {
-    setItems(prev => prev.map(i => i.id === id ? { ...i, ...patch } : i));
-  }, []);
-
-  const extractItem = useCallback(async (item: QueueItem) => {
-    activeRef.current++;
-    setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'extracting' } : i));
-    try {
-      const processed = await processImageFile(item.file);
-      const formData = new FormData();
-      formData.append('image', processed);
-      formData.append('side', 'front');
-      const res = await fetch('/api/packet/read-ai-single', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        setItems(prev => prev.map(i => i.id === item.id ? {
-          ...i,
-          status: 'error',
-          errorMessage: res.status === 402
-            ? "You've used all your AI scans for this month. Upgrade to keep going."
-            : (json.message || "I couldn't read that packet. Try again or enter the details manually."),
-        } : i));
-      } else {
-        setItems(prev => prev.map(i => i.id === item.id ? {
-          ...i, status: 'ready', extracted: json.data,
-        } : i));
-      }
-    } catch (e) {
-      setItems(prev => prev.map(i => i.id === item.id ? {
-        ...i, status: 'error',
-        errorMessage: "I couldn't reach the server. Check your connection and try again.",
-      } : i));
-    } finally {
-      activeRef.current--;
-      setItems(prev => [...prev]); // nudge effect to check for more pending
-    }
-  }, []);
-
-  // Concurrency manager: auto-start up to CONCURRENCY extractions at once
-  useEffect(() => {
-    const pending = items.filter(i => i.status === 'pending');
-    const toStart = Math.min(CONCURRENCY - activeRef.current, pending.length);
-    if (toStart > 0) {
-      pending.slice(0, toStart).forEach(extractItem);
-    }
-  }, [items, extractItem]);
-
-  const addFiles = useCallback((files: FileList | File[]) => {
-    const newItems: QueueItem[] = Array.from(files)
-      .filter(f => f.type.startsWith('image/'))
-      .map(f => ({
-        id: crypto.randomUUID(),
-        file: f,
-        objectUrl: URL.createObjectURL(f),
-        status: 'pending' as const,
-      }));
-    if (newItems.length > 0) {
-      setItems(prev => [...prev, ...newItems]);
-    }
-  }, []);
+  const {
+    items,
+    enqueueFiles,
+    enqueueCapturedImages,
+    enqueuePileItems,
+    removeItem,
+    retryItem,
+    saveItem,
+    saveAllReady,
+    updateAfterManualSave,
+    counts,
+  } = useImportQueue({ userId });
 
   const handlePilePhoto = useCallback(async (file: File) => {
     setPileLoading(true);
@@ -154,96 +88,41 @@ export function BatchImport({ userId, userTier = 'Seed Stash Starter', canUseAI 
         toast.error("I couldn't spot any packets in that photo. Try a closer shot with good lighting.");
         return;
       }
-      const objectUrl = URL.createObjectURL(file);
-      const newItems: QueueItem[] = seeds.map(extracted => ({
-        id: crypto.randomUUID(),
-        file,
-        objectUrl,
-        status: 'ready' as const,
-        extracted,
-      }));
-      setItems(prev => [...prev, ...newItems]);
-    } catch (e) {
+      const preparedItems = buildPileQueueItems(file, seeds);
+      enqueuePileItems(preparedItems, { autoSaveOnReady: false });
+    } catch (error) {
       toast.error("I'm having trouble reading that photo. Try again or use a clearer shot.");
     } finally {
       setPileLoading(false);
     }
-  }, []);
-
-  const handleConfirm = useCallback(async (item: QueueItem) => {
-    if (!item.extracted) return;
-    updateItem(item.id, { status: 'saving' });
-    try {
-      const seedId = crypto.randomUUID();
-      const processed = await processImageFile(item.file);
-      const photoFrontPath = await uploadSeedPhoto(userId, seedId, 'front', processed);
-
-      const name = item.extracted.name?.trim() || 'Unknown';
-      const variety = (
-        item.extracted.variety ||
-        item.extracted.latinName ||
-        item.extracted.name ||
-        'Unknown'
-      ).trim();
-
-      const saved = await saveSeed({
-        id: seedId,
-        name,
-        variety,
-        type: 'other',
-        brand: item.extracted.brand,
-        year: item.extracted.year,
-        quantity: item.extracted.quantity,
-        notes: [item.extracted.description, item.extracted.plantingInstructions]
-          .filter(Boolean).join('\n\n') || undefined,
-        photoFrontPath,
-      } as Omit<Seed, 'createdAt' | 'updatedAt'>);
-
-      updateItem(item.id, { status: 'saved', savedSeed: saved });
-    } catch (e) {
-      updateItem(item.id, {
-        status: 'error',
-        errorMessage: "I couldn't save that seed. Try again in a moment.",
-      });
-    }
-  }, [userId, updateItem]);
-
-  const handleSaveAllReady = useCallback(() => {
-    items.filter(i => i.status === 'ready').forEach(handleConfirm);
-  }, [items, handleConfirm]);
+  }, [enqueuePileItems]);
 
   const handleEditSave = useCallback(async (
     seedData: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }
   ) => {
-    const id = editingItemId;
+    const itemId = editingItemId;
     setEditingItemId(null);
-    if (!id) return;
-    updateItem(id, { status: 'saving' });
+    if (!itemId) return;
     try {
       const saved = await saveSeed(seedData);
-      updateItem(id, { status: 'saved', savedSeed: saved });
-    } catch (e) {
-      updateItem(id, {
-        status: 'error',
-        errorMessage: "I couldn't save that seed. Try again in a moment.",
-      });
+      updateAfterManualSave(itemId, saved);
+    } catch (error) {
+      toast.error("I couldn't save that seed. Try again in a moment.");
+      retryItem(itemId, { autoSaveOnReady: false });
     }
-  }, [editingItemId, updateItem]);
+  }, [editingItemId, retryItem, updateAfterManualSave]);
 
-  const editingItem = items.find(i => i.id === editingItemId);
-  const savedCount = items.filter(i => i.status === 'saved').length;
-  const readyCount = items.filter(i => i.status === 'ready').length;
-  const hasItems = items.length > 0;
+  const editingItem = items.find((item) => item.id === editingItemId);
+  const hasItems = counts.totalCount > 0;
 
-  const onDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
+  const onDragOver = (event: React.DragEvent) => { event.preventDefault(); setIsDragging(true); };
   const onDragLeave = () => setIsDragging(false);
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault();
+  const onDrop = (event: React.DragEvent) => {
+    event.preventDefault();
     setIsDragging(false);
-    addFiles(e.dataTransfer.files);
+    enqueueFiles(event.dataTransfer.files, { source: 'manual-upload', autoSaveOnReady: false });
   };
 
-  // Edit overlay — full-screen AddSeedForm
   if (editingItem) {
     const initialData = editingItem.extracted
       ? extractedToInitialSeed(editingItem.extracted, editingItem.objectUrl)
@@ -274,15 +153,75 @@ export function BatchImport({ userId, userTier = 'Seed Stash Starter', canUseAI 
 
   return (
     <div className="min-h-screen w-full bg-[#f9fafb] flex flex-col">
+      {isBulkCameraOpen && (
+        <BulkCameraCapture
+          onCapture={(file) => {
+            enqueueCapturedImages([{ file }], { source: 'bulk-camera', autoSaveOnReady: true });
+          }}
+          onDone={() => setIsBulkCameraOpen(false)}
+        />
+      )}
       <main className="flex-1 w-full px-4 py-4 pt-24 pb-24 max-w-[1600px] mx-auto md:px-6 lg:px-8">
         <div className="mb-4">
           <h1 className="text-xl font-semibold text-[#4a5565]">Import seeds</h1>
           <p className="text-sm text-[#99a1af] mt-1">
-            Upload packet photos and we'll extract the details automatically.
+            Upload packet photos and we&apos;ll extract the details automatically.
           </p>
         </div>
 
-        {/* Drop zone / stats bar */}
+        <div className="grid gap-2 mb-4">
+          <button
+            onClick={() => setIsBulkCameraOpen(true)}
+            className="w-full py-3 px-4 rounded-xl bg-[#16a34a] text-white font-semibold hover:bg-[#15803d] transition-colors"
+          >
+            Start bulk photographing
+          </button>
+          <button
+            onClick={() => pileInputRef.current?.click()}
+            disabled={pileLoading}
+            className="w-full py-3 px-4 flex items-center justify-center gap-2 border border-gray-300 rounded-xl text-sm font-medium text-[#4a5565] bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {pileLoading ? (
+              <>
+                <svg className="w-4 h-4 animate-spin text-[#16a34a]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Scanning pile...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Photograph a pile — scan many at once
+              </>
+            )}
+          </button>
+          <input
+            ref={pileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) {
+                void handlePilePhoto(file);
+              }
+              event.target.value = '';
+            }}
+            className="hidden"
+          />
+        </div>
+
+        {hasItems && (
+          <div className="bg-white border border-gray-200 rounded-xl p-3 mb-3">
+            <div className="text-sm text-[#4a5565]">
+              Processing {counts.processingCount} • Saved {counts.savedCount} • Needs review {counts.needsReviewCount}
+            </div>
+          </div>
+        )}
+
         <div
           onDragOver={onDragOver}
           onDragLeave={onDragLeave}
@@ -301,19 +240,11 @@ export function BatchImport({ userId, userTier = 'Seed Stash Starter', canUseAI 
             type="file"
             accept="image/*"
             multiple
-            onChange={e => { if (e.target.files) addFiles(e.target.files); e.target.value = ''; }}
-            className="hidden"
-          />
-          {/* Hidden pile input */}
-          <input
-            ref={pileInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={e => {
-              const f = e.target.files?.[0];
-              if (f) handlePilePhoto(f);
-              e.target.value = '';
+            onChange={(event) => {
+              if (event.target.files) {
+                enqueueFiles(event.target.files, { source: 'manual-upload', autoSaveOnReady: false });
+              }
+              event.target.value = '';
             }}
             className="hidden"
           />
@@ -321,19 +252,19 @@ export function BatchImport({ userId, userTier = 'Seed Stash Starter', canUseAI 
           {hasItems ? (
             <div className="flex items-center justify-between flex-wrap gap-2">
               <span className="text-sm text-[#6a7282]">
-                {savedCount} of {items.length} saved
+                {counts.savedCount} of {counts.totalCount} saved
               </span>
               <div className="flex gap-2 flex-wrap">
-                {readyCount > 0 && (
+                {counts.readyCount > 0 && (
                   <button
-                    onClick={e => { e.stopPropagation(); handleSaveAllReady(); }}
+                    onClick={(event) => { event.stopPropagation(); void saveAllReady(); }}
                     className="px-3 py-1.5 bg-[#16a34a] text-white text-sm font-medium rounded-lg hover:bg-[#15803d] transition-colors"
                   >
-                    Save {readyCount} ready
+                    Save {counts.readyCount} ready
                   </button>
                 )}
                 <button
-                  onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                  onClick={(event) => { event.stopPropagation(); fileInputRef.current?.click(); }}
                   className="px-3 py-1.5 text-sm text-[#6a7282] border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Add more
@@ -351,45 +282,16 @@ export function BatchImport({ userId, userTier = 'Seed Stash Starter', canUseAI 
           )}
         </div>
 
-        {/* Scatter shot button */}
-        <button
-          onClick={() => pileInputRef.current?.click()}
-          disabled={pileLoading}
-          className="w-full mb-4 py-3 px-4 flex items-center justify-center gap-2 border border-gray-300 rounded-xl text-sm font-medium text-[#4a5565] bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {pileLoading ? (
-            <>
-              <svg className="w-4 h-4 animate-spin text-[#16a34a]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              Scanning pile...
-            </>
-          ) : (
-            <>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              Photograph a pile — scan many at once
-            </>
-          )}
-        </button>
-
-        {/* Queue list */}
         {hasItems && (
           <div className="space-y-2">
-            {items.map(item => (
+            {items.map((item) => (
               <QueueCard
                 key={item.id}
                 item={item}
-                onConfirm={() => handleConfirm(item)}
+                onConfirm={() => void saveItem(item.id)}
                 onEdit={() => setEditingItemId(item.id)}
-                onSkip={() => setItems(prev => prev.filter(i => i.id !== item.id))}
-                onRetry={() => updateItem(item.id, {
-                  status: 'pending',
-                  errorMessage: undefined,
-                  extracted: undefined,
-                })}
+                onSkip={() => removeItem(item.id)}
+                onRetry={() => retryItem(item.id, { autoSaveOnReady: item.source === 'bulk-camera' })}
               />
             ))}
           </div>
@@ -416,7 +318,6 @@ function QueueCard({ item, onConfirm, onEdit, onSkip, onRetry }: QueueCardProps)
 
   return (
     <div className="bg-white rounded-lg p-3 flex items-center gap-3 shadow-sm">
-      {/* Thumbnail */}
       <div className="w-12 h-12 rounded-lg shrink-0 overflow-hidden bg-gray-100">
         <img
           src={item.objectUrl}
@@ -425,14 +326,10 @@ function QueueCard({ item, onConfirm, onEdit, onSkip, onRetry }: QueueCardProps)
           className="w-full h-full object-cover object-center"
         />
       </div>
-
-      {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="font-medium text-[#4a5565] truncate text-sm">{label}</div>
         <StatusLabel item={item} />
       </div>
-
-      {/* Actions */}
       <div className="flex items-center gap-1.5 shrink-0">
         {item.status === 'ready' && (
           <>
@@ -459,7 +356,7 @@ function QueueCard({ item, onConfirm, onEdit, onSkip, onRetry }: QueueCardProps)
             </button>
           </>
         )}
-        {item.status === 'error' && (
+        {item.status === 'needs_review' && (
           <>
             <button
               onClick={onRetry}
@@ -498,9 +395,7 @@ function QueueCard({ item, onConfirm, onEdit, onSkip, onRetry }: QueueCardProps)
 }
 
 function StatusLabel({ item }: { item: QueueItem }) {
-  if (item.status === 'pending') {
-    return <span className="text-xs text-[#99a1af]">Queued</span>;
-  }
+  if (item.status === 'pending') return <span className="text-xs text-[#99a1af]">Queued</span>;
   if (item.status === 'extracting') {
     return (
       <span className="text-xs text-[#16a34a] flex items-center gap-1">
@@ -529,10 +424,8 @@ function StatusLabel({ item }: { item: QueueItem }) {
       </span>
     );
   }
-  if (item.status === 'saved') {
-    return <span className="text-xs text-[#99a1af]">Saved to collection</span>;
-  }
-  if (item.status === 'error') {
+  if (item.status === 'saved') return <span className="text-xs text-[#99a1af]">Saved to collection</span>;
+  if (item.status === 'needs_review') {
     return <span className="text-xs text-red-500 truncate max-w-[180px]">{item.errorMessage || "I couldn't process this one. Try again."}</span>;
   }
   return null;
