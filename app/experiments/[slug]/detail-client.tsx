@@ -17,7 +17,6 @@ interface ExperimentDetailClientProps {
   experiment: Experiment;
   prd: ReturnType<typeof parsePRD> | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
-  hasPRDFile: boolean;
   learningsContent: string | null;
 }
 
@@ -25,13 +24,9 @@ export default function ExperimentDetailClient({
   experiment,
   prd,
   mr,
-  hasPRDFile,
   learningsContent,
 }: ExperimentDetailClientProps) {
-  const tabs: Tab[] = [
-    { id: "overview", label: "Overview" },
-    ...(hasPRDFile ? [{ id: "landing", label: "Landing Page" }] : []),
-  ];
+  const tabs: Tab[] = [{ id: "overview", label: "Overview" }];
 
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -86,7 +81,6 @@ export default function ExperimentDetailClient({
             experiment={experiment}
             prd={prd}
             mr={mr}
-            hasPRDFile={hasPRDFile}
             learningsContent={learningsContent}
             activeTab={activeTab}
           />
