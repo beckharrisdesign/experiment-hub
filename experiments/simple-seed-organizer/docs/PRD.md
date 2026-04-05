@@ -61,16 +61,8 @@ Existing tools either require full garden planning setup (SeedTime, Planter) or 
 
 ## Success Metrics
 
-**Validation phase:**
-- Ad CTR: > 2%
-- Fake-buy conversion: > 10% of landing page visitors
-- Email signups: > 5% of landing page visitors
-- **Go/no-go**: All three met → build MVP. Any miss → adjust messaging or stop.
-
-**MVP phase:**
-- Time to add a seed: < 30 seconds
-- Time to find seed info: < 10 seconds
-- Retention: > 40% active after 30 days
+- **CTA click rate: > 10%** of sessions — GA4 click event on the fake buy button
+- **Email signup rate: > 5%** of sessions — GA4 form submission event
 
 ---
 

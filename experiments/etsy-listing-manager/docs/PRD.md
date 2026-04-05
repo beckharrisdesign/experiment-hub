@@ -57,16 +57,8 @@ This takes 30–60 minutes per listing and 5–10 hours/week total. The goal is 
 
 ## Success Metrics
 
-**Personal tool phase (Year 1):**
-- Per-listing time: < 15 minutes (down from 30–60)
-- Weekly operational time: < 3 hours (down from 5–10)
-- Image generation success rate: > 80% of patterns get usable listing images
-- Sustained usage: tool used for 10+ real Etsy listings over 3+ months
-
-**SaaS phase (Year 2, only after personal validation):**
-- Beta subscribers: 100–500
-- Monthly retention: > 80%
-- Revenue: $75K–$200K Year 2
+- **Time per listing: < 15 minutes** — self-timed; down from 30–60 min
+- **Sustained use: 10+ listings over 3 months** — the signal that it's worth productizing
 
 ---
 

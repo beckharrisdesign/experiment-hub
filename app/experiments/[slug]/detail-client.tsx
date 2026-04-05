@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import MarkdownContent from "@/components/MarkdownContent";
 import TabsContent from "./tabs-content";
 import type { Experiment } from "@/types";
 import type { parsePRD, parseMarketResearch } from "@/lib/data";
-import type { GitCommit } from "@/lib/git";
 
 interface Tab {
   id: string;
@@ -19,7 +19,6 @@ interface ExperimentDetailClientProps {
   mr: ReturnType<typeof parseMarketResearch> | null;
   hasPRDFile: boolean;
   learningsContent: string | null;
-  recentCommits: GitCommit[];
 }
 
 export default function ExperimentDetailClient({
@@ -28,9 +27,7 @@ export default function ExperimentDetailClient({
   mr,
   hasPRDFile,
   learningsContent,
-  recentCommits,
 }: ExperimentDetailClientProps) {
-  // Overview is always present; Landing Page tab only appears when a PRD file exists
   const tabs: Tab[] = [
     { id: "overview", label: "Overview" },
     ...(hasPRDFile ? [{ id: "landing", label: "Landing Page" }] : []),
@@ -42,7 +39,6 @@ export default function ExperimentDetailClient({
     <div className="flex flex-col flex-1">
       {/* Hero Section */}
       <section className="bg-background-primary px-4 md:px-8 lg:px-16 pt-8 pb-0">
-        {/* Breadcrumb */}
         <nav className="mb-4 text-sm">
           <ol className="flex items-center gap-2 text-text-secondary">
             <li>
@@ -58,7 +54,6 @@ export default function ExperimentDetailClient({
           </ol>
         </nav>
 
-        {/* Title + subtitle */}
         <h1 className="font-heading text-4xl md:text-5xl lg:text-[60px] font-semibold text-text-primary leading-tight">
           {experiment.name}
         </h1>
@@ -66,7 +61,6 @@ export default function ExperimentDetailClient({
           {experiment.statement}
         </p>
 
-        {/* Tab nav */}
         <div className="flex mt-6">
           {tabs.map((tab) => (
             <button
@@ -98,32 +92,27 @@ export default function ExperimentDetailClient({
           />
         </main>
 
-        {/* Recent Activity sidebar */}
+        {/* Learnings sidebar */}
         <aside className="hidden lg:block w-[415px] shrink-0 bg-[#f5f5f5] px-12 py-12">
           <h2 className="font-heading text-base font-semibold text-text-dark mb-4">
-            Recent activity
+            Learnings
           </h2>
-          <div className="flex flex-col gap-4">
-            {recentCommits.length === 0 ? (
-              <p className="text-sm text-text-dark-secondary">
-                No recent commits found.
-              </p>
-            ) : (
-              recentCommits.map((commit) => (
-                <div
-                  key={commit.hash}
-                  className="bg-background-primary rounded p-4 min-h-[91px] flex flex-col justify-between"
-                >
-                  <p className="text-sm text-text-primary leading-snug line-clamp-3">
-                    {commit.message}
-                  </p>
-                  <p className="text-xs text-text-muted font-mono mt-2">
-                    {commit.hash} · {commit.date}
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
+          {learningsContent ? (
+            <div className="prose prose-sm max-w-none text-text-dark-secondary">
+              <MarkdownContent content={learningsContent} variant="light" />
+            </div>
+          ) : (
+            <p className="text-sm text-text-dark-secondary italic">
+              No learnings yet.{" "}
+              <span className="not-italic">
+                Add a{" "}
+                <code className="bg-background-mint px-1.5 py-0.5 rounded text-xs not-italic">
+                  docs/learnings.md
+                </code>{" "}
+                to capture what you discover through prototyping and testing.
+              </span>
+            </p>
+          )}
         </aside>
       </div>
 

@@ -203,29 +203,6 @@ export default function TabsContent({
           </Section>
         )}
 
-        {/* Learnings */}
-        {learningsContent ? (
-          <Section title="Learnings">
-            <div className="prose prose-sm max-w-none text-text-dark-secondary">
-              <MarkdownContent content={learningsContent} variant="light" />
-            </div>
-          </Section>
-        ) : (
-          <Section title="Learnings">
-            <p className="text-sm text-text-dark-secondary italic">
-              No learnings yet.{" "}
-              <span className="not-italic">
-                Add a{" "}
-                <code className="bg-background-mint px-1.5 py-0.5 rounded text-xs not-italic">
-                  docs/learnings.md
-                </code>{" "}
-                file to capture what you discover through prototyping and
-                testing.
-              </span>
-            </p>
-          </Section>
-        )}
-
         {/* Empty state */}
         {!mr && !experiment.scores && !prd && (
           <div className="rounded-lg border border-border-dark bg-white px-6 py-10 text-center">

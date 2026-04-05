@@ -7,7 +7,6 @@ import {
   parsePRD,
   parseMarketResearch,
 } from "@/lib/data";
-import { getRecentCommits } from "@/lib/git";
 import ExperimentDetailClient from "./detail-client";
 
 // Mark this route as dynamic to ensure it's always rendered on-demand
@@ -89,8 +88,6 @@ export default async function ExperimentDetailPage({
     })(),
   ]);
 
-  const recentCommits = getRecentCommits(3);
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -100,7 +97,6 @@ export default async function ExperimentDetailPage({
         mr={mr}
         hasPRDFile={hasPRDFile}
         learningsContent={learningsContent}
-        recentCommits={recentCommits}
       />
     </div>
   );

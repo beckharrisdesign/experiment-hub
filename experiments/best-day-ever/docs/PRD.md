@@ -55,17 +55,8 @@ There is no tool that takes your real schedule and turns it into something you c
 
 ## Success Metrics
 
-**Validation phase:**
-- Ad CTR: > 2%
-- Fake-buy conversion: > 10% of landing page visitors
-- Email signups: > 5% of landing page visitors
-- **Go/no-go**: All three met → build MVP. Otherwise adjust messaging or stop.
-
-**MVP phase:**
-- Time from open to printed PDF: < 60 seconds for returning users
-- Print completion rate: > 60% of generated plans get printed
-- Retention: > 35% active after 30 days
-- User satisfaction: > 4.0/5.0
+- **CTA click rate: > 10%** of sessions — GA4 click event on the "Get early access" button
+- **Email signup rate: > 5%** of sessions — GA4 form submission event
 
 ---
 
