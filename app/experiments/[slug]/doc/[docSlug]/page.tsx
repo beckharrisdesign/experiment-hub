@@ -37,7 +37,7 @@ export default async function ExperimentDocPage({
       <main className="mx-auto max-w-3xl px-4 py-8">
         <div className="mb-6 flex items-center gap-3 text-sm text-text-secondary">
           <Link
-            href={`/experiments/${slug}#landing`}
+            href={`/experiments/${slug}`}
             className="text-accent-primary hover:underline"
           >
             ← {experiment.name}

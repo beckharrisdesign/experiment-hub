@@ -95,7 +95,6 @@ export default async function ExperimentDetailPage({
         experiment={experiment}
         prd={prd}
         mr={mr}
-        hasPRDFile={hasPRDFile}
         learningsContent={learningsContent}
       />
     </div>

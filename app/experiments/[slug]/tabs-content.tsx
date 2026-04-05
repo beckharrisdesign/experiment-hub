@@ -1,12 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import MarkdownContent from "@/components/MarkdownContent";
-import LandingPageLink from "@/components/LandingPageLink";
 import ScoreCard from "@/components/ScoreCard";
 import MetricCard from "@/components/MetricCard";
-import ValidationStatusBadge from "@/components/ValidationStatusBadge";
-import { slugify } from "@/lib/utils";
 import { Experiment } from "@/types";
 import type { parsePRD, parseMarketResearch } from "@/lib/data";
 
@@ -14,7 +10,6 @@ interface TabsContentProps {
   experiment: Experiment;
   prd: ReturnType<typeof parsePRD> | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
-  hasPRDFile: boolean;
   learningsContent: string | null;
   activeTab: string;
 }
@@ -40,7 +35,6 @@ export default function TabsContent({
   experiment,
   prd,
   mr,
-  hasPRDFile,
   learningsContent,
   activeTab,
 }: TabsContentProps) {
@@ -221,124 +215,6 @@ export default function TabsContent({
       </div>
     ),
   });
-
-  // Landing Page tab — validation workflow
-  if (hasPRDFile) {
-    tabs.push({
-      id: "landing",
-      content: (
-        <div className="space-y-4">
-          <Section title="Status">
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-text-dark-secondary">
-                  Current status
-                </span>
-                <ValidationStatusBadge status={experiment.validation?.status} />
-              </div>
-              {experiment.validation?.url && (
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-text-dark-secondary">URL</span>
-                  <a
-                    href={experiment.validation.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-accent-primary hover:underline text-sm"
-                  >
-                    {experiment.validation.url}
-                  </a>
-                </div>
-              )}
-              {experiment.validation?.devPort && (
-                <LandingPageLink devPort={experiment.validation.devPort} />
-              )}
-            </div>
-          </Section>
-
-          <Section title="Next steps">
-            <div className="space-y-1.5 text-sm text-text-dark-secondary">
-              {!experiment.validation?.status ||
-              experiment.validation.status === "not_started" ? (
-                <>
-                  <p>
-                    1. Review the{" "}
-                    <Link
-                      href={`/experiments/${slugify(experiment.name)}/doc/landing-page-content`}
-                      className="text-accent-primary hover:underline"
-                    >
-                      Landing Page Content
-                    </Link>{" "}
-                    doc
-                  </p>
-                  <p>2. Build a simple landing page for ad validation</p>
-                  <p>3. Connect to the shared Notion database for responses</p>
-                  <p>
-                    4. Update experiment status to{" "}
-                    <code className="bg-background-mint px-1 rounded text-xs">
-                      planned
-                    </code>{" "}
-                    or{" "}
-                    <code className="bg-background-mint px-1 rounded text-xs">
-                      live
-                    </code>
-                  </p>
-                </>
-              ) : experiment.validation.status === "planned" ? (
-                <>
-                  <p>1. Deploy your landing page</p>
-                  <p>2. Set up traffic sources (ads, social, etc.)</p>
-                  <p>
-                    3. Update status to{" "}
-                    <code className="bg-background-mint px-1 rounded text-xs">
-                      live
-                    </code>{" "}
-                    when ready
-                  </p>
-                </>
-              ) : experiment.validation.status === "live" ? (
-                <>
-                  <p>1. Monitor responses in Notion</p>
-                  <p>2. Analyse conversion rates</p>
-                  <p>
-                    3. Mark as{" "}
-                    <code className="bg-background-mint px-1 rounded text-xs">
-                      complete
-                    </code>{" "}
-                    when validation is done
-                  </p>
-                </>
-              ) : (
-                <p>Validation complete — review results in Notion.</p>
-              )}
-            </div>
-          </Section>
-
-          <Section title="Notion responses">
-            <ul className="space-y-1 text-sm text-text-dark-secondary list-disc list-inside">
-              <li>
-                <strong>Experiment</strong> — which experiment this belongs to
-              </li>
-              <li>
-                <strong>Email</strong> — contact info from form
-              </li>
-              <li>
-                <strong>Opted In</strong> — whether they signed up
-              </li>
-              <li>
-                <strong>Opt-Out Reason</strong> — why they passed
-              </li>
-              <li>
-                <strong>Source</strong> — traffic channel (ad, social, etc.)
-              </li>
-              <li>
-                <strong>Timestamp</strong> — when submitted
-              </li>
-            </ul>
-          </Section>
-        </div>
-      ),
-    });
-  }
 
   const activeContent =
     tabs.find((t) => t.id === activeTab)?.content ?? tabs[0]?.content;
