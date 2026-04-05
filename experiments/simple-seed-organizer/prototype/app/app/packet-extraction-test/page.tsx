@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { AddSeedForm } from '@/components/AddSeedForm';
 import { Seed } from '@/types/seed';
 import { AIExtractedData } from '@/lib/packetReaderAI';
 import { useAuth } from '@/lib/auth-context';
+import { saveSeed } from '@/lib/storage';
 
 /**
  * Helper function to normalize sun requirement text to Seed type
@@ -47,6 +49,7 @@ function mapAIDataToSeed(aiData: AIExtractedData, frontImageBase64?: string, bac
 
 export default function PacketExtractionTestPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [frontImage, setFrontImage] = useState<string | null>(null);
   const [backImage, setBackImage] = useState<string | null>(null);
   const [frontImageBase64, setFrontImageBase64] = useState<string | null>(null);
@@ -57,6 +60,7 @@ export default function PacketExtractionTestPage() {
   const [status, setStatus] = useState<string>('Loading images...');
   const [seedData, setSeedData] = useState<Partial<Seed> | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [isSavingSeed, setIsSavingSeed] = useState(false);
   const frontFileInputRef = useRef<HTMLInputElement>(null);
   const backFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -218,10 +222,23 @@ export default function PacketExtractionTestPage() {
     }
   };
 
-  const handleFormSubmit = (seed: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'>) => {
-    console.log('Seed submitted:', seed);
-    // TODO: Save to storage or navigate away
-    alert('Seed saved! (This is a test page - implement save logic)');
+  const handleFormSubmit = async (seed: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (isSavingSeed) return;
+
+    setIsSavingSeed(true);
+    setError(null);
+
+    try {
+      await saveSeed(seed);
+      setShowForm(false);
+      setStatus('Seed saved! Redirecting to your collection...');
+      router.push('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "I couldn't save this seed right now. Try again in a moment.");
+      setStatus('Save failed');
+    } finally {
+      setIsSavingSeed(false);
+    }
   };
 
   const handleFormClose = () => {
