@@ -422,6 +422,15 @@ export function parseMarketResearch(mrContent: string) {
 
   return {
     executiveSummary: sections["Executive Summary"]?.join("\n") || "",
+    marketOpportunity: sections["Market Opportunity"]?.join("\n") || "",
+    competitiveLandscape: sections["Competitive Landscape"]?.join("\n") || "",
+    // Recommendation: new slim format uses "## Recommendation"; old format uses
+    // "## Go/No-Go Recommendation" or "## Recommendations". Fall through all three.
+    recommendation:
+      sections["Recommendation"]?.join("\n") ||
+      sections["Go/No-Go Recommendation"]?.join("\n") ||
+      sections["Recommendations"]?.join("\n") ||
+      "",
     tam: tamMatch
       ? tamMatch[2]
         ? `$${tamMatch[1]} - $${tamMatch[2]}`
@@ -444,10 +453,6 @@ export function parseMarketResearch(mrContent: string) {
     somYear3: somYear3,
     moa: moa,
     goNoGo: goNoGo,
-    goNoGoFull:
-      sections["Go/No-Go Recommendation"]?.join("\n") ||
-      sections["Recommendations"]?.join("\n") ||
-      "",
     fullContent: mrContent,
   };
 }

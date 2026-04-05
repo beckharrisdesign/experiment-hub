@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import {
   getExperimentBySlug,
-  getPrototypeByExperimentId,
-  getDocumentationByExperimentId,
   checkExperimentFiles,
   readPRD,
   parsePRD,
@@ -47,31 +45,18 @@ export default async function ExperimentDetailPage({
     notFound();
   }
 
-  const showPrototypes = process.env.SHOW_PROTOTYPES === "true";
-
-  // Parallelize all data fetching operations
-  const [prototype, documentation, fileChecks] = await Promise.all([
-    showPrototypes
-      ? getPrototypeByExperimentId(experiment.id).catch(() => null)
-      : Promise.resolve(null),
-    getDocumentationByExperimentId(experiment.id).catch(() => null),
-    checkExperimentFiles(experiment.directory).catch(() => ({
+  const fileChecks = await checkExperimentFiles(experiment.directory).catch(
+    () => ({
       hasPRDFile: false,
       hasPrototypeDir: false,
       hasMRFile: false,
       hasLandingPage: false,
       mrContent: null,
       learningsContent: null,
-    })),
-  ]);
+    }),
+  );
 
-  const {
-    hasPRDFile,
-    hasPrototypeDir: hasPrototypeFiles,
-    hasMRFile,
-    mrContent,
-    learningsContent,
-  } = fileChecks;
+  const { hasPRDFile, mrContent, learningsContent } = fileChecks;
 
   // Read and parse documents in parallel
   const [prd, mr] = await Promise.all([
@@ -113,11 +98,7 @@ export default async function ExperimentDetailPage({
         experiment={experiment}
         prd={prd}
         mr={mr}
-        prototype={prototype}
-        documentation={documentation}
         hasPRDFile={hasPRDFile}
-        hasMRFile={hasMRFile}
-        hasPrototypeFiles={hasPrototypeFiles}
         learningsContent={learningsContent}
         recentCommits={recentCommits}
       />

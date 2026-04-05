@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import TabsContent from "./tabs-content";
-import type { Experiment, Prototype, Documentation } from "@/types";
+import type { Experiment } from "@/types";
 import type { parsePRD, parseMarketResearch } from "@/lib/data";
 import type { GitCommit } from "@/lib/git";
 
@@ -17,11 +17,7 @@ interface ExperimentDetailClientProps {
   experiment: Experiment;
   prd: ReturnType<typeof parsePRD> | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
-  prototype: Prototype | null;
-  documentation: Documentation | null;
   hasPRDFile: boolean;
-  hasMRFile: boolean;
-  hasPrototypeFiles: boolean;
   learningsContent: string | null;
   recentCommits: GitCommit[];
 }
@@ -30,20 +26,14 @@ export default function ExperimentDetailClient({
   experiment,
   prd,
   mr,
-  prototype,
-  documentation,
   hasPRDFile,
-  hasMRFile,
-  hasPrototypeFiles,
   learningsContent,
   recentCommits,
 }: ExperimentDetailClientProps) {
-  // Build available tabs based on what data exists
+  // Overview is always present; Landing Page tab only appears when a PRD file exists
   const tabs: Tab[] = [
     { id: "overview", label: "Overview" },
-    ...(prd ? [{ id: "prd", label: "PRD" }] : []),
     ...(hasPRDFile ? [{ id: "landing", label: "Landing Page" }] : []),
-    { id: "details", label: "Details" },
   ];
 
   const [activeTab, setActiveTab] = useState("overview");
@@ -102,11 +92,7 @@ export default function ExperimentDetailClient({
             experiment={experiment}
             prd={prd}
             mr={mr}
-            prototype={prototype}
-            documentation={documentation}
             hasPRDFile={hasPRDFile}
-            hasMRFile={hasMRFile}
-            hasPrototypeFiles={hasPrototypeFiles}
             learningsContent={learningsContent}
             activeTab={activeTab}
           />
