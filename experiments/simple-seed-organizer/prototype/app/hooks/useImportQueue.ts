@@ -21,6 +21,7 @@ export type QueueStatus =
   | "ready"
   | "saving"
   | "saved"
+  | "queued_seed_image"
   | "needs_review";
 
 export interface QueueItem {
@@ -186,14 +187,21 @@ export function useImportQueue({ userId }: UseImportQueueOptions) {
         }
 
         if (!res.ok) {
-          updateItem(item.id, {
-            status: "needs_review",
-            errorMessage:
-              res.status === 402
-                ? "You've used all your AI scans for this month. Upgrade to keep going."
-                : json.message ||
-                  "I couldn't read that packet. Try again or enter details manually.",
-          });
+          if (res.status === 402) {
+            // Token limit reached — keep the image in queue so it can be
+            // retried when the limit resets, rather than losing it entirely.
+            updateItem(item.id, {
+              status: "queued_seed_image",
+              errorMessage: undefined,
+            });
+          } else {
+            updateItem(item.id, {
+              status: "needs_review",
+              errorMessage:
+                json.message ||
+                "I couldn't read that packet. Try again or enter details manually.",
+            });
+          }
           autoSaveIdsRef.current.delete(item.id);
           return;
         }
@@ -364,6 +372,9 @@ export function useImportQueue({ userId }: UseImportQueueOptions) {
   const needsReviewCount = items.filter(
     (item) => item.status === "needs_review",
   ).length;
+  const queuedSeedImageCount = items.filter(
+    (item) => item.status === "queued_seed_image",
+  ).length;
 
   return {
     items,
@@ -381,6 +392,7 @@ export function useImportQueue({ userId }: UseImportQueueOptions) {
       readyCount,
       savedCount,
       needsReviewCount,
+      queuedSeedImageCount,
       totalCount: items.length,
     },
   };

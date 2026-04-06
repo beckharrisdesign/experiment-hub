@@ -281,6 +281,15 @@ export function BatchImport({
             <div className="text-sm text-[#4a5565]">
               Processing {counts.processingCount} • Saved {counts.savedCount} •
               Needs review {counts.needsReviewCount}
+              {counts.queuedSeedImageCount > 0 && (
+                <>
+                  {" "}
+                  •{" "}
+                  <span className="text-amber-600">
+                    {counts.queuedSeedImageCount} queued (AI limit)
+                  </span>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -464,6 +473,41 @@ function QueueCard({
             </button>
           </>
         )}
+        {item.status === "queued_seed_image" && (
+          <>
+            <button
+              onClick={onRetry}
+              className="px-2.5 py-1.5 text-xs font-medium text-amber-600 border border-amber-300 rounded-lg hover:bg-amber-50 transition-colors"
+            >
+              Retry
+            </button>
+            <button
+              onClick={onEdit}
+              className="px-2.5 py-1.5 text-xs font-medium text-[#4a5565] border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Edit
+            </button>
+            <button
+              onClick={onSkip}
+              className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+              title="Skip"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </>
+        )}
         {item.status === "needs_review" && (
           <>
             <button
@@ -578,9 +622,16 @@ function StatusLabel({ item }: { item: QueueItem }) {
   }
   if (item.status === "saved")
     return <span className="text-xs text-[#99a1af]">Saved to collection</span>;
+  if (item.status === "queued_seed_image") {
+    return (
+      <span className="text-xs text-amber-600 break-words">
+        Queued seed image — retry when your AI limit resets
+      </span>
+    );
+  }
   if (item.status === "needs_review") {
     return (
-      <span className="text-xs text-red-500 truncate max-w-[180px]">
+      <span className="text-xs text-red-500 break-words">
         {item.errorMessage || "I couldn't process this one. Try again."}
       </span>
     );
