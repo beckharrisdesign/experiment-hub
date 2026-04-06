@@ -1,0 +1,10 @@
+{
+  "name": "web-to-figma-grabber",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Chrome extension MVP for DOM-to-Figma capture",
+  "scripts": {
+    "dev": "node -e \"console.log('Load unpacked extension from experiments/web-to-figma-grabber/prototype in chrome://extensions')\"",
+    "test": "echo \"No package-local tests; run root npm test\""
+  }
+}

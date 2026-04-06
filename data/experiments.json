@@ -184,4 +184,23 @@
       "personalImpact": "I struggle with this every day and will do so for another ten years until my kids are old enough to do it themselves.",
       "socialImpact": "The experience of working parents right now is grim, and baby boomers are aging. Reducing calendar/email overload for parents and caregivers has high social value."
     }
+  },
+  {
+    "id": "web-to-figma-grabber",
+    "name": "Web-to-Figma Grabber",
+    "statement": "Select live UI in browser, send clean payloads to Figma.",
+    "directory": "experiments/web-to-figma-grabber",
+    "documentationId": "doc-web-to-figma-grabber",
+    "prototypeId": "proto-web-to-figma-grabber",
+    "status": "Active",
+    "createdDate": "2026-04-05",
+    "lastModified": "2026-04-05",
+    "tags": ["figma", "chrome-extension", "design-tools", "dom-capture", "workflow"],
+    "scores": {
+      "businessOpportunity": 4,
+      "personalImpact": 5,
+      "competitiveAdvantage": 4,
+      "platformCost": 4,
+      "socialImpact": 3
+    }
   }]

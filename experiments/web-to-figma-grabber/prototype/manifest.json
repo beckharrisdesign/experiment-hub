@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Web to Figma Grabber",
+  "version": "0.1.0",
+  "description": "Pick a DOM element and build screenshot/layout payloads for Figma handoff.",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "downloads"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "src/content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Web to Figma Grabber",
+    "default_popup": "src/popup.html"
+  }
+}
