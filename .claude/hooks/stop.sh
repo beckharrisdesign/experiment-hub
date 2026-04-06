@@ -6,12 +6,6 @@
 #
 # Exit 0 = allow Claude to stop
 # Exit 2 = block stop + return message to Claude via stderr (Claude will continue)
-#
-# Common extensions:
-#   - Block stop if there are failing tests
-#   - Block stop if there are uncommitted changes (see example below)
-#   - Send a Slack/email notification on task completion
-#   - Log session summary to a file
 
 set -euo pipefail
 
@@ -36,32 +30,13 @@ if [ "$ahead_count" -gt 0 ]; then
 fi
 
 # Require an open PR for any non-main branch that has commits beyond main.
+# Claude has a GitHub MCP connector — instruct it to check and create the PR.
 branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 if [ "$branch" != "main" ] && [ "$branch" != "master" ] && [ "$branch" != "HEAD" ]; then
-  # Only check if this branch has commits not in main (i.e. real work was done).
   commits_ahead=$(git rev-list --count "origin/main..HEAD" 2>/dev/null || echo "0")
   if [ "$commits_ahead" -gt 0 ]; then
-    # Check for an open PR using the GitHub API.
-    repo="beckharrisdesign/experiment-hub"
-    pr_found=false
-
-    if [ -n "${GITHUB_TOKEN:-}" ]; then
-      response=$(curl -sf \
-        -H "Authorization: Bearer $GITHUB_TOKEN" \
-        -H "Accept: application/vnd.github+json" \
-        "https://api.github.com/repos/${repo}/pulls?state=open&head=beckharrisdesign:${branch}" \
-        2>/dev/null || echo "[]")
-      if [ "$response" != "[]" ] && [ "$response" != "" ] && echo "$response" | grep -q '"number"'; then
-        pr_found=true
-      fi
-
-      if [ "$pr_found" = false ]; then
-        echo "Branch '$branch' has $commits_ahead commit(s) ahead of main but no open pull request. Please create a PR for this branch before finishing." >&2
-        exit 2
-      fi
-    fi
-    # If GITHUB_TOKEN is not set, skip the API check — the push requirement above
-    # is still enforced. Set GITHUB_TOKEN to enable full PR verification.
+    echo "Branch '$branch' has $commits_ahead commit(s) ahead of main. Use your GitHub MCP tools to check whether an open pull request exists for this branch in beckharrisdesign/experiment-hub. If no open PR exists, create one now following the PR guidelines in CLAUDE.md. Do not stop until the PR exists." >&2
+    exit 2
   fi
 fi
 
