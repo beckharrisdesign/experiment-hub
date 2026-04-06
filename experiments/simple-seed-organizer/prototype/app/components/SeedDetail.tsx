@@ -26,17 +26,56 @@ function getAgeLabel(age: number): { text: string; color: string } {
   if (age === 2)
     return { text: "2 years old", color: "text-yellow-600 bg-yellow-50" };
   return {
-    text: `${age} years old - Use first!`,
-    color: "text-orange-600 bg-orange-50",
+    text: `${age} years old`,
+    color: "text-[#f54900] bg-[#fff7ed]",
   };
+}
+
+function InfoCategory({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="text-[16px] font-semibold text-[#4a5565] leading-5">
+        {label}
+      </p>
+      {children}
+    </div>
+  );
 }
 
 function InfoRow({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
   return (
-    <div className="flex justify-between py-2 border-b border-gray-100">
-      <span className="text-[#6a7282]">{label}</span>
-      <span className="text-[#101828] font-medium">{value}</span>
+    <div className="flex items-center gap-2 text-[14px] text-[#6a7282]">
+      <span className="flex-1 font-medium leading-6">{label}</span>
+      <span className="font-normal leading-6 text-right">{value}</span>
+    </div>
+  );
+}
+
+function PlantingCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-[#faf5ff] border border-[#e9d4ff] rounded-lg p-[13px] flex flex-col gap-1 flex-shrink-0">
+      <p className="text-[12px] font-medium text-[#8200db] leading-4 whitespace-nowrap">
+        {label}
+      </p>
+      <p className="text-[18px] font-bold text-[#59168b] leading-7">{value}</p>
+    </div>
+  );
+}
+
+function GrowthStatCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-[#eff6ff] border border-[#bedbff] rounded-lg p-[13px] flex flex-col gap-1 flex-shrink-0">
+      <p className="text-[12px] font-medium text-[#1447e6] leading-4 whitespace-nowrap">
+        {label}
+      </p>
+      <p className="text-[18px] font-bold text-[#1c398e] leading-7">{value}</p>
     </div>
   );
 }
@@ -99,8 +138,6 @@ export function SeedDetail({
         );
         return;
       }
-      // Merge only the enriched fields — don't replace the whole seed,
-      // as the API response doesn't carry resolved photo URLs.
       const enriched: string[] = json.enriched ?? [];
       const patch: Partial<Seed> = {};
       for (const field of enriched) {
@@ -111,8 +148,6 @@ export function SeedDetail({
       }
       setSeed((prev) => ({ ...prev, ...patch }));
       setEnrichedFields(enriched);
-      // Pass the current seed (with resolved photo URLs) + enriched fields to
-      // the parent — not the raw API response which lacks photo URLs.
       onUpdate?.({ ...seed, ...patch });
     } catch (e) {
       toast.error(
@@ -124,14 +159,14 @@ export function SeedDetail({
   };
 
   const wrapperClass = asPage
-    ? "min-h-screen w-full bg-white flex flex-col pt-20 pb-24"
-    : "fixed top-[72px] left-0 right-0 bottom-0 bg-white z-40 flex flex-col";
+    ? "min-h-screen w-full bg-[#f3f4f6] flex flex-col pt-20 pb-24"
+    : "fixed top-[72px] left-0 right-0 bottom-0 bg-[#f3f4f6] z-40 flex flex-col";
 
   return (
     <div className={wrapperClass}>
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
-        <button onClick={onClose} className="p-2 -ml-2">
+      {/* Subheader */}
+      <div className="bg-white border-b border-gray-200 px-2 flex items-center justify-between h-[73px]">
+        <button onClick={onClose} className="p-2">
           <svg
             className="w-6 h-6 text-gray-500"
             fill="none"
@@ -146,357 +181,311 @@ export function SeedDetail({
             />
           </svg>
         </button>
-        <h1 className="text-lg font-semibold text-[#101828]">Seed details</h1>
-        <button onClick={onEdit} className="p-2 -mr-2 text-[#16a34a]">
+        <h1 className="text-[18px] font-semibold text-[#101828]">
+          Seed details
+        </h1>
+        <button
+          onClick={onEdit}
+          className="px-2 py-2 text-[16px] text-[#16a34a]"
+        >
           Edit
         </button>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 pb-24">
-        <div className="flex flex-row gap-6 max-w-7xl mx-auto">
-          {/* Left Column - Main Content (75%) */}
-          <div className="flex-1 min-w-0 w-3/4">
-            {/* Title Section */}
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-[#101828] mb-1">
-                {seed.name}
-              </h2>
-              <p className="text-[#6a7282]">{seed.variety}</p>
-              {ageLabel && (
-                <span
-                  className={`inline-block mt-2 px-3 py-1 rounded-full text-sm font-medium ${ageLabel.color}`}
-                >
-                  {ageLabel.text}
-                </span>
-              )}
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="bg-white mx-auto max-w-[1061px] my-0">
+          <div className="flex flex-col gap-4 items-center py-8 px-4">
+            {/* Packet Title Lockup */}
+            <div className="w-full max-w-[978px] pb-2">
+              <div className="flex gap-4 items-start w-full">
+                {/* Left: name + variety */}
+                <div className="flex-1 min-w-0 flex flex-col gap-4">
+                  <div>
+                    <h2 className="text-[34px] font-bold text-[#101828] leading-8">
+                      {seed.name}
+                    </h2>
+                  </div>
+                  {seed.variety && (
+                    <p className="text-[16px] text-[#6a7282] leading-6">
+                      {seed.variety}
+                    </p>
+                  )}
+                </div>
+                {/* Right: badges */}
+                <div className="flex-shrink-0 w-[201px] flex flex-wrap gap-2 justify-end">
+                  {ageLabel && (
+                    <span
+                      className={`px-[9px] py-[4px] rounded-full text-[14px] font-medium ${ageLabel.color}`}
+                    >
+                      {ageLabel.text}
+                    </span>
+                  )}
+                  {age >= 3 && (
+                    <span className="px-[9px] py-[4px] rounded-full text-[14px] font-medium text-[#f54900] bg-[#fff7ed]">
+                      Use first
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
 
-            {/* Seed Packet Images */}
-            {(seed.photoFront || seed.photoBack) && (
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-[#4a5565] mb-3">
-                  Packet images
-                </h3>
-                <div className="flex gap-4 flex-wrap">
-                  {seed.photoFront && (
-                    <div>
-                      <p className="text-xs text-[#6a7282] mb-1">Front</p>
+            {/* Packet Images */}
+            <div className="w-full max-w-[978px]">
+              <div className="flex gap-4 items-center overflow-x-auto pr-2 py-2">
+                {/* Front photo */}
+                <div className="relative flex-shrink-0 w-[192.5px] h-[256px]">
+                  {seed.photoFront ? (
+                    <>
                       <img
                         src={seed.photoFront}
                         alt="Front of seed packet"
                         loading="lazy"
-                        className="rounded-lg border border-gray-200 max-h-64 object-contain bg-white"
+                        className="w-full h-full object-contain rounded-lg border border-gray-200 bg-white"
                       />
+                      <p className="absolute bottom-[15px] left-0 right-0 text-center text-[12px] text-white font-normal leading-4">
+                        Front
+                      </p>
+                    </>
+                  ) : (
+                    <div className="w-full h-full bg-[#d4d4d4] rounded-lg flex items-center justify-center">
+                      <span className="text-white text-[48px] font-normal leading-4">
+                        +
+                      </span>
                     </div>
                   )}
-                  {seed.photoBack && (
-                    <div>
-                      <p className="text-xs text-[#6a7282] mb-1">Back</p>
+                </div>
+
+                {/* Back photo */}
+                <div className="relative flex-shrink-0 w-[192.5px] h-[256px]">
+                  {seed.photoBack ? (
+                    <>
                       <img
                         src={seed.photoBack}
                         alt="Back of seed packet"
                         loading="lazy"
-                        className="rounded-lg border border-gray-200 max-h-64 object-contain bg-white"
+                        className="w-full h-full object-contain rounded-lg border border-gray-200 bg-white"
                       />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Planting Guidance */}
-            {plantingGuidance && (
-              <div className="mb-6">
-                <div className="mb-3">
-                  <h3 className="text-sm font-semibold text-[#4a5565] mb-1">
-                    Planting guidance
-                  </h3>
-                  {(() => {
-                    const profile = getProfile();
-                    if (profile?.zipCode || profile?.growingZone) {
-                      return (
-                        <p className="text-xs text-[#6a7282]">
-                          Personalized for your location
-                          {profile.zipCode && ` (${profile.zipCode}`}
-                          {profile.growingZone &&
-                            ` • Zone ${profile.growingZone}`}
-                          {profile.zipCode && ")"}
-                        </p>
-                      );
-                    }
-                    return null;
-                  })()}
-                </div>
-                {plantingGuidance.hasData ? (
-                  <div className="space-y-3">
-                    {/* Sow Indoors → Last Frost → Direct Sow → First Frost Row */}
-                    <div className="flex gap-3 overflow-x-auto pb-2">
-                      {/* Sow Indoors Card */}
-                      {plantingGuidance.startSeedsIndoors && (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <svg
-                              className="w-4 h-4 text-green-600"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                            <span className="text-xs font-medium text-green-700">
-                              Sow indoors
-                            </span>
-                          </div>
-                          <p className="text-lg font-bold text-green-900">
-                            {formatDate(plantingGuidance.startSeedsIndoors)}
-                          </p>
-                          {plantingGuidance.harvestDates?.fromIndoorStart && (
-                            <div className="mt-2 pt-2 border-t border-green-200 space-y-1">
-                              {seed.daysToGermination && (
-                                <p className="text-xs text-green-600">
-                                  {seed.daysToGermination} to germinate
-                                </p>
-                              )}
-                              {seed.daysToMaturity && (
-                                <p className="text-xs text-green-600">
-                                  {seed.daysToMaturity} to harvest
-                                </p>
-                              )}
-                              <p className="text-sm font-semibold text-green-900">
-                                {formatDate(
-                                  plantingGuidance.harvestDates.fromIndoorStart,
-                                )}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Last Frost Card */}
-                      {plantingGuidance.lastFrostDate && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex-shrink-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <svg
-                              className="w-4 h-4 text-blue-600"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                              />
-                            </svg>
-                            <span className="text-xs font-medium text-blue-700">
-                              Average last frost
-                            </span>
-                          </div>
-                          <p className="text-lg font-bold text-blue-900">
-                            {formatDate(plantingGuidance.lastFrostDate)}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Direct Sow Card */}
-                      {plantingGuidance.directSowDate && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <svg
-                              className="w-4 h-4 text-amber-600"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                              />
-                            </svg>
-                            <span className="text-xs font-medium text-amber-700">
-                              Direct sow
-                            </span>
-                          </div>
-                          <p className="text-lg font-bold text-amber-900">
-                            {formatDate(plantingGuidance.directSowDate)}
-                          </p>
-                          {plantingGuidance.harvestDates?.fromDirectSow && (
-                            <div className="mt-2 pt-2 border-t border-amber-200 space-y-1">
-                              {seed.daysToGermination && (
-                                <p className="text-xs text-amber-600">
-                                  {seed.daysToGermination} to germinate
-                                </p>
-                              )}
-                              {seed.daysToMaturity && (
-                                <p className="text-xs text-amber-600">
-                                  {seed.daysToMaturity} to harvest
-                                </p>
-                              )}
-                              <p className="text-sm font-semibold text-amber-900">
-                                {formatDate(
-                                  plantingGuidance.harvestDates.fromDirectSow,
-                                )}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* First Frost Card */}
-                      {plantingGuidance.firstFrostDate && (
-                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex-shrink-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <svg
-                              className="w-4 h-4 text-purple-600"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                              />
-                            </svg>
-                            <span className="text-xs font-medium text-purple-700">
-                              Average first frost
-                            </span>
-                          </div>
-                          <p className="text-lg font-bold text-purple-900">
-                            {formatDate(plantingGuidance.firstFrostDate)}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <p className="text-sm text-[#6a7282]">
-                      {plantingGuidance.recommendations[0]}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Notes */}
-            {seed.notes && (
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-[#4a5565] mb-3">
-                  Notes
-                </h3>
-                <div className="bg-gray-50 rounded-lg p-6 min-h-[200px]">
-                  <p className="text-[#101828] whitespace-pre-wrap leading-relaxed">
-                    {seed.notes}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Right Column - Metadata (25%) */}
-          <div className="w-1/4 flex-shrink-0 min-w-[280px]">
-            <div className="space-y-4 sticky top-4 flex flex-col h-[calc(100vh-180px)]">
-              {/* Seed Metadata */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-sm font-semibold text-[#4a5565] mb-3">
-                  Seed information
-                </h3>
-                <InfoRow
-                  label="Type"
-                  value={
-                    seed.type?.charAt(0).toUpperCase() + seed.type?.slice(1)
-                  }
-                />
-                <InfoRow label="Brand" value={seed.brand} />
-                <InfoRow label="Source" value={seed.source} />
-                <InfoRow label="Year" value={seed.year?.toString()} />
-                <InfoRow
-                  label="Purchase Date"
-                  value={
-                    seed.purchaseDate
-                      ? formatDateString(seed.purchaseDate)
-                      : undefined
-                  }
-                />
-                <InfoRow label="Quantity" value={seed.quantity} />
-                <InfoRow
-                  label="Days to Germination"
-                  value={seed.daysToGermination}
-                />
-                <InfoRow label="Days to Maturity" value={seed.daysToMaturity} />
-                <InfoRow label="Planting Depth" value={seed.plantingDepth} />
-                <InfoRow label="Spacing" value={seed.spacing} />
-                <InfoRow
-                  label="Sun Requirement"
-                  value={seed.sunRequirement?.replace("-", " ")}
-                />
-                <InfoRow
-                  label="Custom Expiration"
-                  value={
-                    seed.customExpirationDate
-                      ? formatDateString(seed.customExpirationDate)
-                      : undefined
-                  }
-                />
-              </div>
-
-              {/* AI enrichment */}
-              {hasMissingGrowingData && (
-                <div className="pt-3">
-                  {enrichedFields.length > 0 ? (
-                    <p className="text-xs text-[#16a34a] text-center">
-                      ✓ Growing data filled by AI
-                    </p>
+                      <p className="absolute bottom-[15px] left-0 right-0 text-center text-[12px] text-white font-normal leading-4">
+                        Back
+                      </p>
+                    </>
                   ) : (
-                    <button
-                      onClick={handleEnrich}
-                      disabled={enriching}
-                      className="w-full py-2 text-xs font-medium text-[#16a34a] border border-[#bbf7d0] rounded-lg hover:bg-[#f0fdf4] transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
-                    >
-                      {enriching ? (
-                        <>
-                          <svg
-                            className="w-3 h-3 animate-spin"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                            />
-                          </svg>
-                          Enriching…
-                        </>
-                      ) : (
-                        "Fill gaps with AI"
-                      )}
-                    </button>
+                    <div className="w-full h-full bg-[#d4d4d4] rounded-lg flex items-center justify-center">
+                      <span className="text-white text-[48px] font-normal leading-4">
+                        +
+                      </span>
+                    </div>
                   )}
                 </div>
-              )}
 
-              {/* Delete Button - Always at bottom */}
-              <div className="mt-auto pt-4">
-                <button
-                  onClick={onDelete}
-                  className="w-full py-2 text-xs text-red-500 hover:text-red-600 transition-colors"
-                >
-                  Delete seed
-                </button>
+                {/* Additional empty slots */}
+                {[3, 4, 5].map((i) => (
+                  <div
+                    key={i}
+                    className="relative flex-shrink-0 w-[192.5px] h-[256px] bg-[#d4d4d4] rounded-lg flex items-center justify-center"
+                  >
+                    <span className="text-white text-[48px] font-normal leading-4">
+                      +
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 2-Col Section: Planting + Metadata */}
+            <div className="w-full max-w-[978px] p-4">
+              {/* Section heading */}
+              <h3 className="text-[20px] font-semibold text-[#4a5565] leading-5 mb-0">
+                Planting in your region
+              </h3>
+
+              <div className="flex gap-4 items-start pt-4">
+                {/* Col 1: Planting cards + Notes */}
+                <div className="flex-1 min-w-0 flex flex-col gap-3">
+                  {/* Planting date cards */}
+                  {plantingGuidance?.hasData ? (
+                    <div className="flex gap-[10px] items-start flex-wrap">
+                      {plantingGuidance.startSeedsIndoors && (
+                        <PlantingCard
+                          label="Sow indoors"
+                          value={formatDate(plantingGuidance.startSeedsIndoors)}
+                        />
+                      )}
+                      {plantingGuidance.firstFrostDate && (
+                        <PlantingCard
+                          label="First Frost"
+                          value={formatDate(plantingGuidance.firstFrostDate)}
+                        />
+                      )}
+                      {plantingGuidance.transplantDate && (
+                        <PlantingCard
+                          label="Transplant"
+                          value={formatDate(plantingGuidance.transplantDate)}
+                        />
+                      )}
+                      {plantingGuidance.directSowDate && (
+                        <PlantingCard
+                          label="Sow outdoors"
+                          value={formatDate(plantingGuidance.directSowDate)}
+                        />
+                      )}
+                      {plantingGuidance.lastFrostDate && (
+                        <PlantingCard
+                          label="Last Frost"
+                          value={formatDate(plantingGuidance.lastFrostDate)}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    plantingGuidance && (
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <p className="text-[14px] text-[#6a7282]">
+                          {plantingGuidance.recommendations[0]}
+                        </p>
+                      </div>
+                    )
+                  )}
+
+                  {/* Notes */}
+                  {seed.notes && (
+                    <div className="flex flex-col gap-2 pt-4 pr-4">
+                      <p className="text-[16px] font-semibold text-[#4a5565] leading-5">
+                        Notes
+                      </p>
+                      <p className="text-[16px] text-[#101828] leading-[26px] whitespace-pre-wrap">
+                        {seed.notes}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Col 2: Metadata sidebar (305px) */}
+                <div className="flex-shrink-0 w-[305px] flex flex-col gap-4">
+                  {/* Growth stat cards */}
+                  {(seed.daysToGermination || seed.daysToMaturity) && (
+                    <div className="flex flex-wrap gap-2">
+                      {seed.daysToGermination && (
+                        <GrowthStatCard
+                          label="Days to germination"
+                          value={seed.daysToGermination}
+                        />
+                      )}
+                      {seed.daysToMaturity && (
+                        <GrowthStatCard
+                          label="Days to maturity"
+                          value={seed.daysToMaturity}
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Packet info category */}
+                  {(seed.type ||
+                    seed.brand ||
+                    seed.source ||
+                    seed.year ||
+                    seed.purchaseDate ||
+                    seed.quantity) && (
+                    <InfoCategory label="Packet info">
+                      <InfoRow
+                        label="Type"
+                        value={
+                          seed.type
+                            ? seed.type.charAt(0).toUpperCase() +
+                              seed.type.slice(1)
+                            : undefined
+                        }
+                      />
+                      <InfoRow label="Brand" value={seed.brand} />
+                      <InfoRow label="Source" value={seed.source} />
+                      <InfoRow label="Year" value={seed.year?.toString()} />
+                      <InfoRow
+                        label="Purchase date"
+                        value={
+                          seed.purchaseDate
+                            ? formatDateString(seed.purchaseDate)
+                            : undefined
+                        }
+                      />
+                      <InfoRow label="Quantity" value={seed.quantity} />
+                    </InfoCategory>
+                  )}
+
+                  {/* Growing info category */}
+                  {(seed.plantingDepth ||
+                    seed.spacing ||
+                    seed.sunRequirement ||
+                    seed.customExpirationDate) && (
+                    <InfoCategory label="Growing info">
+                      <InfoRow
+                        label="Planting depth"
+                        value={seed.plantingDepth}
+                      />
+                      <InfoRow label="Spacing" value={seed.spacing} />
+                      <InfoRow
+                        label="Sun requirement"
+                        value={seed.sunRequirement?.replace("-", " ")}
+                      />
+                      <InfoRow
+                        label="Custom expiration"
+                        value={
+                          seed.customExpirationDate
+                            ? formatDateString(seed.customExpirationDate)
+                            : undefined
+                        }
+                      />
+                    </InfoCategory>
+                  )}
+
+                  {/* AI enrichment */}
+                  {hasMissingGrowingData && (
+                    <div>
+                      {enrichedFields.length > 0 ? (
+                        <p className="text-xs text-[#16a34a] text-center">
+                          ✓ Growing data filled by AI
+                        </p>
+                      ) : (
+                        <button
+                          onClick={handleEnrich}
+                          disabled={enriching}
+                          className="w-full py-2 text-xs font-medium text-[#16a34a] border border-[#bbf7d0] rounded-lg hover:bg-[#f0fdf4] transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                        >
+                          {enriching ? (
+                            <>
+                              <svg
+                                className="w-3 h-3 animate-spin"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                                />
+                              </svg>
+                              Enriching…
+                            </>
+                          ) : (
+                            "Fill gaps with AI"
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Delete */}
+                  <div className="pt-2">
+                    <button
+                      onClick={onDelete}
+                      className="w-full py-2 text-xs text-red-500 hover:text-red-600 transition-colors"
+                    >
+                      Delete seed
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
