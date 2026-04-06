@@ -35,4 +35,32 @@ if [ "$ahead_count" -gt 0 ]; then
   exit 2
 fi
 
+# Require an open PR for any non-main branch that has commits beyond main.
+branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+if [ "$branch" != "main" ] && [ "$branch" != "master" ] && [ "$branch" != "HEAD" ]; then
+  # Only check if this branch has commits not in main (i.e. real work was done).
+  commits_ahead=$(git rev-list --count "origin/main..HEAD" 2>/dev/null || echo "0")
+  if [ "$commits_ahead" -gt 0 ]; then
+    # Check for an open PR using the GitHub API.
+    repo="beckharrisdesign/experiment-hub"
+    pr_found=false
+
+    if [ -n "${GITHUB_TOKEN:-}" ]; then
+      response=$(curl -sf \
+        -H "Authorization: Bearer $GITHUB_TOKEN" \
+        -H "Accept: application/vnd.github+json" \
+        "https://api.github.com/repos/${repo}/pulls?state=open&head=beckharrisdesign:${branch}" \
+        2>/dev/null || echo "[]")
+      if [ "$response" != "[]" ] && [ "$response" != "" ] && echo "$response" | grep -q '"number"'; then
+        pr_found=true
+      fi
+    fi
+
+    if [ "$pr_found" = false ]; then
+      echo "Branch '$branch' has $commits_ahead commit(s) ahead of main but no open pull request. Please create a PR for this branch before finishing." >&2
+      exit 2
+    fi
+  fi
+fi
+
 exit 0
