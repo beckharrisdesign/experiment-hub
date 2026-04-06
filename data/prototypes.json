@@ -34,5 +34,17 @@
     "lastModified": "2024-12-16",
     "tags": ["gardening", "seeds", "landing-page"],
     "port": 3003
+  },
+  {
+    "id": "proto-web-to-figma-grabber",
+    "title": "Web to Figma Grabber Prototype",
+    "description": "Chrome extension MVP for capturing selected DOM to Figma-ready payloads",
+    "linkPath": "experiments/web-to-figma-grabber/prototype",
+    "experimentId": "web-to-figma-grabber",
+    "status": "Active",
+    "createdDate": "2026-04-05",
+    "lastModified": "2026-04-05",
+    "tags": ["figma", "chrome-extension", "capture", "design-tools"],
+    "port": 3009
   }
 ]

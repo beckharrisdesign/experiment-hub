@@ -1,5 +1,14 @@
 [
   {
+    "id": "doc-web-to-figma-grabber",
+    "title": "Web to Figma Grabber Documentation",
+    "content": "Documentation for the Web to Figma Grabber experiment",
+    "experimentId": "web-to-figma-grabber",
+    "createdDate": "2026-04-05",
+    "lastModified": "2026-04-05",
+    "tags": ["figma", "chrome-extension", "design-tools", "automation"]
+  },
+  {
     "id": "doc-etsy-embroidery",
     "title": "Etsy Embroidery Pattern Manager Documentation",
     "content": "Documentation for the Etsy Embroidery Pattern Manager experiment",

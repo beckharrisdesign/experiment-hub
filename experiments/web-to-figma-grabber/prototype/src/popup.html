@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web to Figma Grabber</title>
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <main class="panel">
+      <h1>Web to Figma Grabber</h1>
+      <p class="subtitle">Capture selected DOM into screenshot or layout payloads.</p>
+
+      <div class="row">
+        <label>Mode</label>
+        <select id="mode">
+          <option value="screenshot">Screenshot mode</option>
+          <option value="layout">Layout mode</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label for="fileKey">Figma file key (optional)</label>
+        <input id="fileKey" type="text" placeholder="S8YJQugvMmn5jaRqwFM5XO" />
+      </div>
+
+      <div class="row">
+        <label for="pageName">Figma page name</label>
+        <input id="pageName" type="text" placeholder="Web Captures" value="Web Captures" />
+      </div>
+
+      <button id="pickElement" class="primary">Pick element on page</button>
+
+      <div class="actions">
+        <button id="captureButton" class="secondary">Capture</button>
+        <button id="copyJson" class="secondary">Copy capture JSON</button>
+        <button id="clearButton" class="secondary">Clear</button>
+      </div>
+
+      <pre id="status">Select an element to begin.</pre>
+      <pre id="payloadPreview">No capture yet.</pre>
+      <p class="hint">
+        For screenshot mode, this captures the visible tab and includes the selected
+        bounds in the payload.
+      </p>
+    </main>
+    <script src="./popup.js" type="module"></script>
+  </body>
+  </html>
