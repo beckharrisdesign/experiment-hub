@@ -54,12 +54,14 @@ if [ "$branch" != "main" ] && [ "$branch" != "master" ] && [ "$branch" != "HEAD"
       if [ "$response" != "[]" ] && [ "$response" != "" ] && echo "$response" | grep -q '"number"'; then
         pr_found=true
       fi
-    fi
 
-    if [ "$pr_found" = false ]; then
-      echo "Branch '$branch' has $commits_ahead commit(s) ahead of main but no open pull request. Please create a PR for this branch before finishing." >&2
-      exit 2
+      if [ "$pr_found" = false ]; then
+        echo "Branch '$branch' has $commits_ahead commit(s) ahead of main but no open pull request. Please create a PR for this branch before finishing." >&2
+        exit 2
+      fi
     fi
+    # If GITHUB_TOKEN is not set, skip the API check — the push requirement above
+    # is still enforced. Set GITHUB_TOKEN to enable full PR verification.
   fi
 fi
 
