@@ -1,15 +1,17 @@
-import { AIExtractedData } from '@/lib/packetReaderAI';
+import { AIExtractedData } from "@/lib/packetReaderAI";
 
-export type QueueItemSource = 'manual-upload' | 'bulk-camera' | 'pile-scan';
+export type QueueItemSource = "manual-upload" | "bulk-camera" | "pile-scan";
 
 export interface CapturedSeedImage {
   file: File;
+  backFile?: File;
   capturedAt?: string;
 }
 
 export interface QueueImageItem {
   id: string;
   file: File;
+  backFile?: File;
   objectUrl: string;
   source: QueueItemSource;
   capturedAt: string;
@@ -21,13 +23,14 @@ export interface QueuePileItem extends QueueImageItem {
 
 export function createQueueItemsFromCapturedImages(
   images: CapturedSeedImage[],
-  source: QueueItemSource
+  source: QueueItemSource,
 ): QueueImageItem[] {
   return images
-    .filter((image) => image.file.type.startsWith('image/'))
+    .filter((image) => image.file.type.startsWith("image/"))
     .map((image) => ({
       id: crypto.randomUUID(),
       file: image.file,
+      backFile: image.backFile,
       objectUrl: URL.createObjectURL(image.file),
       source,
       capturedAt: image.capturedAt ?? new Date().toISOString(),
@@ -36,18 +39,21 @@ export function createQueueItemsFromCapturedImages(
 
 export function buildQueueItemsFromFiles(
   images: CapturedSeedImage[],
-  source: QueueItemSource
+  source: QueueItemSource,
 ): QueueImageItem[] {
   return createQueueItemsFromCapturedImages(images, source);
 }
 
-export function buildPileQueueItems(file: File, seeds: AIExtractedData[]): QueuePileItem[] {
+export function buildPileQueueItems(
+  file: File,
+  seeds: AIExtractedData[],
+): QueuePileItem[] {
   const objectUrl = URL.createObjectURL(file);
   return seeds.map((extracted) => ({
     id: crypto.randomUUID(),
     file,
     objectUrl,
-    source: 'pile-scan',
+    source: "pile-scan",
     capturedAt: new Date().toISOString(),
     extracted,
   }));
