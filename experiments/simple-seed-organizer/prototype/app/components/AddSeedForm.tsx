@@ -23,6 +23,41 @@ interface AddSeedFormProps {
   asPage?: boolean;
 }
 
+/** Textarea that grows to fit its content — no scrollbar ever shown. */
+function AutoTextarea({
+  value,
+  onChange,
+  placeholder,
+  className,
+}: {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  placeholder?: string;
+  className?: string;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  // Resize on every value change (covers programmatic updates)
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
+
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      rows={1}
+      style={{ overflow: "hidden", resize: "none" }}
+      className={className}
+    />
+  );
+}
+
 const SEED_TYPES: { value: SeedType; label: string }[] = [
   { value: "vegetable", label: "Vegetable" },
   { value: "herb", label: "Herb" },
@@ -1005,7 +1040,7 @@ export function AddSeedForm({
                                           {sourceLabel}
                                         </span>
                                         {isLongText ? (
-                                          <textarea
+                                          <AutoTextarea
                                             value={getCurrentValue()}
                                             onChange={(e) =>
                                               updateFieldFromKey(
@@ -1013,8 +1048,7 @@ export function AddSeedForm({
                                                 e.target.value,
                                               )
                                             }
-                                            className={`flex-1 min-w-0 text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] resize-none ${isEmpty ? "border-red-400 bg-red-50" : "border-gray-300"}`}
-                                            rows={3}
+                                            className={`flex-1 min-w-0 text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] ${isEmpty ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                                             placeholder={
                                               pair.value ||
                                               (isRequired
@@ -1219,12 +1253,11 @@ export function AddSeedForm({
                                   Notes
                                 </td>
                                 <td className="py-1.5 text-[#101828]">
-                                  <textarea
+                                  <AutoTextarea
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
                                     placeholder="e.g. Heirloom, open pollinated, or any growing notes"
-                                    rows={3}
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] resize-none"
+                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
                                   />
                                 </td>
                               </tr>
@@ -1456,7 +1489,7 @@ export function AddSeedForm({
                                           {sourceLabel}
                                         </span>
                                         {isLongText ? (
-                                          <textarea
+                                          <AutoTextarea
                                             value={getCurrentValue()}
                                             onChange={(e) =>
                                               updateFieldFromKey(
@@ -1464,8 +1497,7 @@ export function AddSeedForm({
                                                 e.target.value,
                                               )
                                             }
-                                            className={`flex-1 min-w-0 text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] resize-none ${isEmpty ? "border-red-400 bg-red-50" : "border-gray-300"}`}
-                                            rows={3}
+                                            className={`flex-1 min-w-0 text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] ${isEmpty ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                                             placeholder={
                                               pair.value ||
                                               (isRequired
