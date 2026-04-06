@@ -44,7 +44,6 @@
     "status": "Active",
     "createdDate": "2026-04-05",
     "lastModified": "2026-04-05",
-    "tags": ["figma", "chrome-extension", "capture", "design-tools"],
-    "port": 3009
+    "tags": ["figma", "chrome-extension", "capture", "design-tools"]
   }
 ]

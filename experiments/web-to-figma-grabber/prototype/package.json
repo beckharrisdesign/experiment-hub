@@ -4,7 +4,7 @@
   "private": true,
   "description": "Chrome extension MVP for DOM-to-Figma capture",
   "scripts": {
-    "dev": "node scripts/dev-note.mjs",
+    "dev": "node -e \"console.log('Load unpacked extension from experiments/web-to-figma-grabber/prototype in chrome://extensions')\"",
     "test": "echo \"No package-local tests; run root npm test\""
   }
 }
