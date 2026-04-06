@@ -102,18 +102,18 @@ export function SeedDetail({
       // Merge only the enriched fields — don't replace the whole seed,
       // as the API response doesn't carry resolved photo URLs.
       const enriched: string[] = json.enriched ?? [];
-      setSeed((prev) => {
-        const patch: Partial<Seed> = {};
-        for (const field of enriched) {
-          const key = field as keyof Seed;
-          if (json.seed[key] !== undefined) {
-            (patch as Record<string, unknown>)[key] = json.seed[key];
-          }
+      const patch: Partial<Seed> = {};
+      for (const field of enriched) {
+        const key = field as keyof Seed;
+        if (json.seed[key] !== undefined) {
+          (patch as Record<string, unknown>)[key] = json.seed[key];
         }
-        return { ...prev, ...patch };
-      });
+      }
+      setSeed((prev) => ({ ...prev, ...patch }));
       setEnrichedFields(enriched);
-      onUpdate?.({ ...json.seed });
+      // Pass the current seed (with resolved photo URLs) + enriched fields to
+      // the parent — not the raw API response which lacks photo URLs.
+      onUpdate?.({ ...seed, ...patch });
     } catch (e) {
       toast.error(
         "I'm having trouble fetching growing info right now. Try again in a few minutes.",
