@@ -30,13 +30,17 @@ if [ "$ahead_count" -gt 0 ]; then
 fi
 
 # Require an open PR for any non-main branch that has commits beyond main.
-# Claude has a GitHub MCP connector — instruct it to check and create the PR.
+# Uses a .git/claude-pr-verified-<branch> marker file (not tracked by git)
+# so the check only blocks once per branch until Claude confirms a PR exists.
 branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 if [ "$branch" != "main" ] && [ "$branch" != "master" ] && [ "$branch" != "HEAD" ]; then
   commits_ahead=$(git rev-list --count "origin/main..HEAD" 2>/dev/null || echo "0")
   if [ "$commits_ahead" -gt 0 ]; then
-    echo "Branch '$branch' has $commits_ahead commit(s) ahead of main. Use your GitHub MCP tools to check whether an open pull request exists for this branch in beckharrisdesign/experiment-hub. If no open PR exists, create one now following the PR guidelines in CLAUDE.md. Do not stop until the PR exists." >&2
-    exit 2
+    marker=".git/claude-pr-verified-${branch//\//-}"
+    if [ ! -f "$marker" ]; then
+      echo "Branch '$branch' has $commits_ahead commit(s) ahead of main. Use your GitHub MCP tools to check whether an open pull request exists for this branch in beckharrisdesign/experiment-hub. If no open PR exists, create one following the PR guidelines in CLAUDE.md. Once confirmed, run: touch ${CLAUDE_PROJECT_DIR}/${marker}" >&2
+      exit 2
+    fi
   fi
 fi
 
