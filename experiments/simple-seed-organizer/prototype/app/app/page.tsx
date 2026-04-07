@@ -188,7 +188,7 @@ function HomeContent() {
           </div>
         )}
         <PlantNowBanner seeds={seeds} />
-        <div className="bg-white rounded-xl shadow-[0px_0px_54px_0px_rgba(0,0,0,0.08)] p-8 max-w-[1061px] mx-auto">
+        <div className="bg-white rounded-xl shadow-[0px_0px_54px_0px_rgba(0,0,0,0.08)] p-8 max-w-[1200px] mx-auto">
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
 
           <div className="mt-3">

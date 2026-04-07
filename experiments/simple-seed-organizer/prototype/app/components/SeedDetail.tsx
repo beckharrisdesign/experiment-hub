@@ -194,7 +194,7 @@ export function SeedDetail({
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="bg-white mx-auto max-w-[1061px] my-0">
+        <div className="bg-white mx-auto max-w-[1200px] my-0">
           <div className="flex flex-col gap-4 items-center py-8 px-4">
             {/* Packet Title Lockup */}
             <div className="w-full max-w-[978px] pb-2">
@@ -361,7 +361,7 @@ export function SeedDetail({
                 </div>
 
                 {/* Col 2: Metadata sidebar (305px) */}
-                <div className="flex-shrink-0 w-[305px] flex flex-col gap-4">
+                <div className="flex-shrink-0 w-[343px] flex flex-col gap-4">
                   {/* Growth stat cards */}
                   {(seed.daysToGermination || seed.daysToMaturity) && (
                     <div className="flex flex-wrap gap-2">
