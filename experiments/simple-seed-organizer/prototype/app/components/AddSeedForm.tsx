@@ -434,21 +434,28 @@ export function AddSeedForm({
   };
 
   const applyFormFieldsFromExtracted = (data: AIExtractedData) => {
-    if (data.name) setName(data.name);
-    if (data.variety) setVariety(data.variety);
-    else if (data.latinName) setVariety(data.latinName);
-    if (data.brand) setBrand(data.brand);
-    if (data.year) setYear(String(data.year));
-    if (data.quantity) setQuantity(data.quantity);
-    if (data.daysToGermination) setDaysToGermination(data.daysToGermination);
-    if (data.daysToMaturity) setDaysToMaturity(data.daysToMaturity);
-    if (data.plantingDepth) setPlantingDepth(data.plantingDepth);
-    if (data.spacing) setSpacing(data.spacing);
-    if (data.sunRequirement) {
+    // Only fill fields that are currently empty — prevents a second Auto Entry
+    // run (e.g. on the back image) from overwriting data already set by the first.
+    if (data.name && !name) setName(data.name);
+    if (!variety) {
+      if (data.variety) setVariety(data.variety);
+      else if (data.latinName) setVariety(data.latinName);
+    }
+    if (data.brand && !brand) setBrand(data.brand);
+    if (data.year && !year) setYear(String(data.year));
+    if (data.quantity && !quantity) setQuantity(data.quantity);
+    if (data.daysToGermination && !daysToGermination)
+      setDaysToGermination(data.daysToGermination);
+    if (data.daysToMaturity && !daysToMaturity)
+      setDaysToMaturity(data.daysToMaturity);
+    if (data.plantingDepth && !plantingDepth)
+      setPlantingDepth(data.plantingDepth);
+    if (data.spacing && !spacing) setSpacing(data.spacing);
+    if (data.sunRequirement && !sunRequirement) {
       const normalized = normalizeSunRequirement(data.sunRequirement);
       if (normalized) setSunRequirement(normalized);
     }
-    if (data.description || data.plantingInstructions) {
+    if ((data.description || data.plantingInstructions) && !notes) {
       setNotes(
         [data.description, data.plantingInstructions]
           .filter(Boolean)
@@ -502,11 +509,9 @@ export function AddSeedForm({
           "I couldn't extract any data from that image. Try a clearer photo.",
         );
 
-      setAiExtractedData((prev) => {
-        const merged = mergeExtractedData(prev, result.data, side);
-        applyFormFieldsFromExtracted(merged);
-        return merged;
-      });
+      const merged = mergeExtractedData(aiExtractedData, result.data, side);
+      setAiExtractedData(merged);
+      applyFormFieldsFromExtracted(merged);
     } catch (err) {
       setError(
         err instanceof Error
