@@ -162,7 +162,7 @@ export function LandingPage() {
           <div className="absolute top-20 left-10 w-64 h-64 bg-[#86efac] rounded-full blur-3xl" />
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#bbf7d0] rounded-full blur-3xl" />
         </div>
-        <div className="max-w-4xl mx-auto text-center relative z-10 px-4">
+        <div className="max-w-[1200px] mx-auto text-center relative z-10 px-4">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white">
             Super simple seed inventory.
           </h1>
@@ -183,7 +183,7 @@ export function LandingPage() {
 
       {/* Features Section */}
       <section id="features" className="px-4 py-16 bg-[#f3f4f6] scroll-mt-20">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               The simplest way to track your seed collection
@@ -263,7 +263,7 @@ export function LandingPage() {
 
       {/* Pricing Section */}
       <section id="pricing" className="px-4 py-16 bg-white scroll-mt-20">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Simple plans for real‑life gardeners
@@ -338,7 +338,7 @@ export function LandingPage() {
 
       {/* Problem Section */}
       <section id="problem" className="px-4 py-16 bg-white scroll-mt-20">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-[1200px] mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center text-[#101828]">
             Stop struggling with your seed collection.
           </h2>
@@ -438,7 +438,7 @@ export function LandingPage() {
 
       {/* Footer */}
       <footer className="px-4 py-8 bg-gray-800 text-gray-400">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-[1200px] mx-auto text-center">
           <p className="mb-4">
             © 2025 Simple Seed Organizer. All rights reserved.
           </p>
