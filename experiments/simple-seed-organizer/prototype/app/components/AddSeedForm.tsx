@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Seed, SeedType, SunRequirement } from "@/types/seed";
 import { AIExtractedData } from "@/lib/packetReaderAI";
+import { mergeExtractedData, fieldAfterAutoEntry } from "@/lib/autoEntry";
 import { processImageFile } from "@/lib/imageUtils";
 import { uploadSeedPhoto } from "@/lib/seed-photos";
 
@@ -382,85 +383,44 @@ export function AddSeedForm({
     return () => observer.disconnect();
   }, [isEditMode]);
 
-  // Merge extracted data from one side into existing data
-  const mergeExtractedData = (
-    existing: AIExtractedData | null,
-    incoming: AIExtractedData,
-    side: "front" | "back",
-  ): AIExtractedData => {
-    const merged: AIExtractedData = {
-      ...(existing || {}),
-      fieldSources: {
-        ...(existing?.fieldSources || {}),
-        ...(incoming.fieldSources || {}),
-      },
-      rawKeyValuePairs: [
-        ...(existing?.rawKeyValuePairs || []).filter((p) => p.source !== side),
-        ...(incoming.rawKeyValuePairs || []).filter((p) => p.source === side),
-      ],
-    };
-    // Overlay fields from incoming that belong to this side. Prefer front for name/variety when both exist.
-    const fields = [
-      "name",
-      "variety",
-      "latinName",
-      "brand",
-      "year",
-      "quantity",
-      "daysToGermination",
-      "daysToMaturity",
-      "plantingDepth",
-      "spacing",
-      "sunRequirement",
-      "description",
-      "plantingInstructions",
-    ] as const;
-    for (const f of fields) {
-      const val = incoming[f];
-      if (val == null || val === "") continue;
-      if (incoming.fieldSources?.[f] !== side) continue;
-      // Prefer front for name/variety when existing has them from front
-      if (
-        (f === "name" || f === "variety") &&
-        side === "back" &&
-        existing?.fieldSources?.[f] === "front"
-      )
-        continue;
-      (merged as any)[f] = val;
-    }
-    if (merged.rawKeyValuePairs?.length === 0)
-      merged.rawKeyValuePairs = undefined;
-    return merged;
-  };
-
-  const applyFormFieldsFromExtracted = (data: AIExtractedData) => {
-    // Only fill fields that are currently empty — prevents a second Auto Entry
-    // run (e.g. on the back image) from overwriting data already set by the first.
-    if (data.name && !name) setName(data.name);
-    if (!variety) {
-      if (data.variety) setVariety(data.variety);
-      else if (data.latinName) setVariety(data.latinName);
-    }
-    if (data.brand && !brand) setBrand(data.brand);
-    if (data.year && !year) setYear(String(data.year));
-    if (data.quantity && !quantity) setQuantity(data.quantity);
-    if (data.daysToGermination && !daysToGermination)
-      setDaysToGermination(data.daysToGermination);
-    if (data.daysToMaturity && !daysToMaturity)
-      setDaysToMaturity(data.daysToMaturity);
-    if (data.plantingDepth && !plantingDepth)
-      setPlantingDepth(data.plantingDepth);
-    if (data.spacing && !spacing) setSpacing(data.spacing);
-    if (data.sunRequirement && !sunRequirement) {
-      const normalized = normalizeSunRequirement(data.sunRequirement);
-      if (normalized) setSunRequirement(normalized);
-    }
-    if ((data.description || data.plantingInstructions) && !notes) {
-      setNotes(
-        [data.description, data.plantingInstructions]
-          .filter(Boolean)
-          .join("\n\n"),
+  const applyExtractedToForm = (data: AIExtractedData) => {
+    // Use functional state updaters so each setter reads the *current* state
+    // at the time it runs — not the stale closure value captured at click time.
+    // This prevents user edits made while the AI request was in-flight from
+    // being overwritten when the response arrives (Bug B fix).
+    if (data.name) setName((prev) => fieldAfterAutoEntry(prev, data.name));
+    if (data.variety || data.latinName)
+      setVariety((prev) =>
+        fieldAfterAutoEntry(prev, data.variety ?? data.latinName),
       );
+    if (data.brand) setBrand((prev) => fieldAfterAutoEntry(prev, data.brand));
+    if (data.year)
+      setYear((prev) => fieldAfterAutoEntry(prev, String(data.year)));
+    if (data.quantity)
+      setQuantity((prev) => fieldAfterAutoEntry(prev, data.quantity));
+    if (data.daysToGermination)
+      setDaysToGermination((prev) =>
+        fieldAfterAutoEntry(prev, data.daysToGermination),
+      );
+    if (data.daysToMaturity)
+      setDaysToMaturity((prev) =>
+        fieldAfterAutoEntry(prev, data.daysToMaturity),
+      );
+    if (data.plantingDepth)
+      setPlantingDepth((prev) => fieldAfterAutoEntry(prev, data.plantingDepth));
+    if (data.spacing)
+      setSpacing((prev) => fieldAfterAutoEntry(prev, data.spacing));
+    if (data.sunRequirement) {
+      setSunRequirement((prev) => {
+        if (prev) return prev;
+        return normalizeSunRequirement(data.sunRequirement) ?? prev;
+      });
+    }
+    if (data.description || data.plantingInstructions) {
+      const combined = [data.description, data.plantingInstructions]
+        .filter(Boolean)
+        .join("\n\n");
+      setNotes((prev) => fieldAfterAutoEntry(prev, combined));
     }
   };
 
@@ -509,9 +469,14 @@ export function AddSeedForm({
           "I couldn't extract any data from that image. Try a clearer photo.",
         );
 
-      const merged = mergeExtractedData(aiExtractedData, result.data, side);
-      setAiExtractedData(merged);
-      applyFormFieldsFromExtracted(merged);
+      // Bug A fix: functional updater reads the *current* aiExtractedData,
+      // not the stale closure value — safe when front and back are scanned
+      // concurrently or in quick succession.
+      setAiExtractedData((prev) => mergeExtractedData(prev, result.data, side));
+      // Bug B fix: each form-field setter uses a functional updater via
+      // applyExtractedToForm, so user edits made while the request was
+      // in-flight are never overwritten by a stale empty-string check.
+      applyExtractedToForm(result.data);
     } catch (err) {
       setError(
         err instanceof Error
