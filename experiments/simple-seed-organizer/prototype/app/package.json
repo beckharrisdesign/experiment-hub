@@ -7,9 +7,9 @@
     "build": "next build",
     "start": "next start -p 3009",
     "lint": "eslint",
-    "test": "vitest run lib",
+    "test": "vitest run lib components",
     "test:live": "vitest run tests",
-    "test:watch": "vitest lib"
+    "test:watch": "vitest lib components"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",

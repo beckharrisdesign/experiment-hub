@@ -1,70 +1,85 @@
-'use client';
+"use client";
 
-import { SeedType } from '@/types/seed';
-import { FilterChip } from '@/components/FilterChip';
+import { ReactNode } from "react";
+import { SeedType } from "@/types/seed";
+import { SeedPill } from "@/components/SeedPill";
+
+type FilterType = SeedType | "all" | "use-first";
 
 interface FilterBarProps {
-  activeType?: SeedType | 'all' | 'use-first';
-  onTypeChange: (type: SeedType | 'all' | 'use-first') => void;
+  activeType?: FilterType;
+  onTypeChange: (type: FilterType) => void;
+  disabledTypes?: FilterType[];
+  iconOverrides?: Partial<Record<FilterType, ReactNode>>;
 }
 
-// SVG icons kept co-located so they are swappable without touching the chip
-const IconAll = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-  </svg>
-);
+function AllSeedsIcon() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 6h16M4 10h16M4 14h16M4 18h16"
+      />
+    </svg>
+  );
+}
 
-const IconClock = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
+function UseFirstIcon() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+    </svg>
+  );
+}
 
-type FilterItem = {
-  id: SeedType | 'all' | 'use-first';
-  label: string;
-  icon?: React.ReactNode;
-};
-
-const FILTERS: FilterItem[] = [
-  { id: 'all',        label: 'All',        icon: <IconAll /> },
-  { id: 'use-first',  label: 'Use First',  icon: <IconClock /> },
-  { id: 'vegetable',  label: 'Vegetables' },
-  { id: 'herb',       label: 'Herbs' },
-  { id: 'flower',     label: 'Flowers' },
-  { id: 'fruit',      label: 'Fruits' },
+const filters: { id: FilterType; label: string; icon?: ReactNode }[] = [
+  { id: "all", label: "All", icon: <AllSeedsIcon /> },
+  { id: "use-first", label: "Use First", icon: <UseFirstIcon /> },
+  { id: "vegetable", label: "Vegetables" },
+  { id: "herb", label: "Herbs" },
+  { id: "flower", label: "Flowers" },
+  { id: "fruit", label: "Fruits" },
 ];
 
-export function FilterBar({ activeType = 'all', onTypeChange }: FilterBarProps) {
+export function FilterBar({
+  activeType = "all",
+  onTypeChange,
+  disabledTypes = [],
+  iconOverrides,
+}: FilterBarProps) {
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-      {FILTERS.map((filter) => {
-        const isActive = activeType === filter.id;
-        const hasIcon = filter.icon != null;
-
-        // Determine which Figma variant maps to each state:
-        //   active + icon  → selected   (green filled, white text + icon)
-        //   inactive + icon → plain-icon (white, gray, icon)
-        //   inactive, no icon → plain   (white, gray, no icon)
-        const variant = isActive
-          ? 'selected'
-          : hasIcon
-          ? 'plain-icon'
-          : 'plain';
+      {filters.map((filter) => {
+        const isSelected = activeType === filter.id;
+        const isDisabled = disabledTypes.includes(filter.id);
+        const inactiveVariant = filter.icon
+          ? "filter-badge-icon"
+          : "filter-plain";
+        const icon =
+          iconOverrides &&
+          Object.prototype.hasOwnProperty.call(iconOverrides, filter.id)
+            ? iconOverrides[filter.id]
+            : filter.icon;
 
         return (
-          <FilterChip
+          <SeedPill
             key={filter.id}
-            variant={variant}
-            label={filter.label}
-            icon={filter.icon}
+            variant={isSelected ? "filter-selected" : inactiveVariant}
+            icon={icon}
+            disabled={isDisabled}
             onClick={() => onTypeChange(filter.id)}
-            aria-label={filter.label}
-          />
+          >
+            {filter.label}
+          </SeedPill>
         );
       })}
     </div>
   );
 }
-

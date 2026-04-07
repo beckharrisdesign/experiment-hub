@@ -1,4 +1,5 @@
 import { getViabilityStatus } from '@/lib/viability';
+import { SeedPill } from '@/components/SeedPill';
 
 interface ViabilityBadgeProps {
   year: number | undefined;
@@ -16,17 +17,17 @@ export function ViabilityBadge({ year }: ViabilityBadgeProps) {
 
   if (status === 'use-first') {
     return (
-      <span className="text-xs font-medium text-red-600 bg-red-50 border border-red-200 px-2 py-1 rounded whitespace-nowrap">
+      <SeedPill as="span" variant="badge" tone="attention" size="sm">
         Use first
-      </span>
+      </SeedPill>
     );
   }
 
   if (status === 'watch') {
     return (
-      <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 px-2 py-1 rounded whitespace-nowrap">
+      <SeedPill as="span" variant="badge" tone="warning" size="sm">
         2 yrs
-      </span>
+      </SeedPill>
     );
   }
 
