@@ -38,12 +38,14 @@ describe("buildLauncherBookmarklet", () => {
 });
 
 describe("createOneClickClipboardSnippet", () => {
-  it("creates one-line snippet for quick clipboard capture", () => {
+  it("creates one-line snippet for picker-overlay clipboard capture", () => {
     const snippet = createOneClickClipboardSnippet(
       "https://labs.beckharrisdesign.com/scripts/web-to-figma-grabber-loader.js",
     );
     expect(snippet).toContain("window.__FIGMA_CAPTURE_CONFIG");
-    expect(snippet).toContain('{mode:"clipboard",selector:"*"}');
+    expect(snippet).toContain('mode:"clipboard"');
+    expect(snippet).toContain("usePickerOverlay:true");
+    expect(snippet.includes("selector")).toBe(false);
     expect(snippet).toContain(
       's.src="https://labs.beckharrisdesign.com/scripts/web-to-figma-grabber-loader.js"',
     );

@@ -74,7 +74,10 @@ The loader injects:
 
 and then starts:
 
-- `window.figma.captureForDesign({ selector: "*", verbose: true })`
+- `window.figma.captureForDesign({ mode: "clipboard", verbose: true })`
+
+When `selector` is omitted, `capture.js` opens its interactive page picker overlay
+so you can click the exact element to capture.
 
 No captureId or endpoint prompts are required in this default flow.
 

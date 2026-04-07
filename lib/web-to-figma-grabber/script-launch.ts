@@ -35,11 +35,11 @@ export function buildLauncherBookmarklet(
 }
 
 /**
- * Build a one-line console snippet for fast clipboard capture.
+ * Build a one-line console snippet for visible picker-overlay capture.
  */
 export function createOneClickClipboardSnippet(
   launcherUrl: string,
 ): string {
   const escapedLauncherUrl = launcherUrl.replace(/"/g, '\\"');
-  return `(function(){window.__FIGMA_CAPTURE_CONFIG={mode:"clipboard",selector:"*"};var s=document.createElement("script");s.src="${escapedLauncherUrl}";s.async=true;document.head.appendChild(s);})();`;
+  return `(function(){window.__FIGMA_CAPTURE_CONFIG={mode:"clipboard",usePickerOverlay:true,verbose:true};var s=document.createElement("script");s.src="${escapedLauncherUrl}";s.async=true;document.head.appendChild(s);})();`;
 }

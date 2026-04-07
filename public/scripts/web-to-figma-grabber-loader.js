@@ -81,25 +81,45 @@
       throw new Error("captureForDesign is unavailable after loading capture script.");
     }
 
-    // Fast path: local clipboard capture with interactive selection overlay.
-    // No capture ID, endpoint, or tool switching required.
+    // Default to interactive picker overlay for visible feedback.
+    // If selector is explicitly provided in config, use direct capture instead.
     const config = window.__FIGMA_CAPTURE_CONFIG || {};
-    const selector = typeof config.selector === "string" ? config.selector : "*";
+    const selector =
+      typeof config.selector === "string" && config.selector.trim().length > 0
+        ? config.selector
+        : null;
     const delayMs = Number.isFinite(config.delayMs) ? Math.max(0, config.delayMs) : 0;
     const verbose = typeof config.verbose === "boolean" ? config.verbose : true;
+    const mode = typeof config.mode === "string" ? config.mode : "clipboard";
+    const usePickerOverlay =
+      typeof config.usePickerOverlay === "boolean" ? config.usePickerOverlay : !selector;
     debugState.config = {
       selector,
       delayMs,
       verbose,
+      mode,
+      usePickerOverlay,
       hasWindowConfig: Boolean(window.__FIGMA_CAPTURE_CONFIG),
     };
 
-    log("starting clipboard capture flow", debugState.config);
-    return window.figma.captureForDesign({
-      selector,
+    const captureRequest = {
       delayMs,
       verbose,
-    });
+      mode,
+    };
+
+    if (selector) {
+      captureRequest.selector = selector;
+      log("starting direct capture flow", debugState.config);
+    } else {
+      log("starting picker-overlay capture flow", debugState.config);
+      if (usePickerOverlay) {
+        // The capture.js script opens its built-in page picker when selector is omitted.
+        alert("Web-to-Figma picker active: click an element to capture to clipboard.");
+      }
+    }
+
+    return window.figma.captureForDesign(captureRequest);
   }
 
   ensureCaptureScriptLoaded()
