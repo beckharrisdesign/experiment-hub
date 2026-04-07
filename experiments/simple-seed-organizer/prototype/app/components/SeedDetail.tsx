@@ -223,9 +223,23 @@ export function SeedDetail({
                       {ageLabel.text}
                     </span>
                   )}
-                  {age >= 3 && (
+                  {(age >= 3 || seed.useFirst) && (
                     <span className="px-[9px] py-[4px] rounded-full text-[14px] font-medium text-[#f54900] bg-[#fff7ed]">
                       Use first
+                    </span>
+                  )}
+                  {seed.type && seed.type !== "other" && (
+                    <span className="px-[9px] py-[4px] rounded-full text-[14px] font-medium text-[#f54900] bg-[#fff7ed] capitalize">
+                      {seed.type}
+                    </span>
+                  )}
+                  {seed.sunRequirement && (
+                    <span className="px-[9px] py-[4px] rounded-full text-[14px] font-medium text-[#f54900] bg-[#fff7ed]">
+                      {seed.sunRequirement === "full-sun"
+                        ? "Full sun"
+                        : seed.sunRequirement === "partial-shade"
+                          ? "Part shade"
+                          : "Full shade"}
                     </span>
                   )}
                 </div>
