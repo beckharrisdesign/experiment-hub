@@ -1,19 +1,26 @@
 import { buildCaptureEnvelope } from "./shared/capture-utils.js";
 
 const statusEl = document.getElementById("status");
+const payloadPreviewEl = document.getElementById("payloadPreview");
 const modeSelect = document.getElementById("mode");
 const fileKeyInput = document.getElementById("fileKey");
 const pageNameInput = document.getElementById("pageName");
 const pickElementButton = document.getElementById("pickElement");
-const copyJsonButton = document.getElementById("copyJson");
 const downloadJsonButton = document.getElementById("downloadJson");
+const copyJsonButton = document.getElementById("copyJson");
 
 let selectedMode = modeSelect.value;
 let lastCaptureEnvelope = null;
 
-function setStatus(message, kind = "ok") {
+function setStatus(message, tone = "info") {
   statusEl.textContent = message;
-  statusEl.className = kind === "err" ? "err" : "ok";
+  statusEl.dataset.tone = tone;
+}
+
+function renderPreview() {
+  payloadPreviewEl.textContent = lastCaptureEnvelope
+    ? JSON.stringify(lastCaptureEnvelope, null, 2)
+    : "No capture yet.";
 }
 
 function downloadJson(filename, value) {
@@ -95,6 +102,31 @@ async function captureModePayload(tab, mode, pageMetadata, target) {
   return requestLayoutCapture(tab.id);
 }
 
+async function waitForSelectionMessage() {
+  return new Promise((resolve, reject) => {
+    const listener = (message) => {
+      if (message?.type === "W2F_SELECTION_READY") {
+        clearTimeout(timeoutId);
+        chrome.runtime.onMessage.removeListener(listener);
+        resolve(message);
+        return;
+      }
+      if (message?.type === "W2F_SELECTION_CANCELLED") {
+        clearTimeout(timeoutId);
+        chrome.runtime.onMessage.removeListener(listener);
+        reject(new Error("Selection cancelled."));
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      chrome.runtime.onMessage.removeListener(listener);
+      reject(new Error("Timed out waiting for selected element."));
+    }, 120000);
+
+    chrome.runtime.onMessage.addListener(listener);
+  });
+}
+
 async function onPickElement() {
   try {
     setStatus("Pick mode active. Click an element in the page.");
@@ -105,41 +137,12 @@ async function onPickElement() {
       pageName: pageNameInput.value.trim() || "Web Captures",
     };
     await requestSelectionFromTab(tab.id, target);
-    setStatus("Element selected. Building capture...");
-
-    const pageMetadata = await new Promise((resolve, reject) => {
-      const timeout = setTimeout(
-        () => reject(new Error("Timed out waiting for selected element.")),
-        120000,
-      );
-
-      const listener = (message) => {
-        if (message?.type === "W2F_SELECTION_READY") {
-          clearTimeout(timeout);
-          chrome.runtime.onMessage.removeListener(listener);
-          resolve(message);
-          return;
-        }
-        if (message?.type === "W2F_SELECTION_CANCELLED") {
-          clearTimeout(timeout);
-          chrome.runtime.onMessage.removeListener(listener);
-          reject(new Error("Selection cancelled."));
-          return;
-        }
-        if (message?.type === "W2F_ERROR") {
-          clearTimeout(timeout);
-          chrome.runtime.onMessage.removeListener(listener);
-          reject(new Error(message.message || "Capture error."));
-        }
-      };
-
-      chrome.runtime.onMessage.addListener(listener);
-    });
+    const selectedMetadata = await waitForSelectionMessage();
 
     const captureResult = await captureModePayload(
       tab,
       selectedMode,
-      pageMetadata,
+      selectedMetadata,
       target,
     );
     if (!captureResult?.ok) {
@@ -150,49 +153,49 @@ async function onPickElement() {
       selectedMode === "layout"
         ? captureResult.capture
         : {
-            selectedRect: pageMetadata.selectedRect,
-            domPath: pageMetadata.domPath,
+            selectedRect: selectedMetadata.selectedRect,
+            domPath: selectedMetadata.domPath,
             imageDataUrl: captureResult.capture?.imageDataUrl,
           };
 
     lastCaptureEnvelope = buildCaptureEnvelope({
       mode: selectedMode,
       source: {
-        pageUrl: pageMetadata.pageUrl,
-        pageTitle: pageMetadata.pageTitle,
-        viewport: pageMetadata.viewport,
+        pageUrl: selectedMetadata.pageUrl,
+        pageTitle: selectedMetadata.pageTitle,
+        viewport: selectedMetadata.viewport,
       },
       target,
       payload: capturePayload,
     });
-
+    renderPreview();
     await chrome.storage.local.set({ lastCaptureEnvelope });
-    setStatus("Capture complete. Copy or download JSON.");
+    setStatus("Capture complete. Copy or download JSON.", "success");
   } catch (error) {
-    setStatus(error.message, "err");
+    setStatus(error.message, "error");
   }
 }
 
 async function onCopyJson() {
   if (!lastCaptureEnvelope) {
-    setStatus("Capture first to copy payload.", "err");
+    setStatus("Capture first to copy payload.", "error");
     return;
   }
   await navigator.clipboard.writeText(
     JSON.stringify(lastCaptureEnvelope, null, 2),
   );
-  setStatus("Payload copied to clipboard.");
+  setStatus("Payload copied to clipboard.", "success");
 }
 
 function onDownloadJson() {
   if (!lastCaptureEnvelope) {
-    setStatus("Capture first to download payload.", "err");
+    setStatus("Capture first to download payload.", "error");
     return;
   }
   const timestamp = new Date().toISOString().replaceAll(":", "-");
   const filename = `web-to-figma-grabber-${selectedMode}-${timestamp}.json`;
   downloadJson(filename, JSON.stringify(lastCaptureEnvelope, null, 2));
-  setStatus("Payload downloaded.");
+  setStatus("Payload downloaded.", "success");
 }
 
 function bindEvents() {
@@ -212,12 +215,15 @@ function bindEvents() {
 
 async function bootstrap() {
   bindEvents();
-  const storage = await chrome.storage.local.get("lastCaptureEnvelope");
+  const storage = await chrome.storage.local.get(["lastCaptureEnvelope"]);
   if (storage.lastCaptureEnvelope) {
     lastCaptureEnvelope = storage.lastCaptureEnvelope;
-    setStatus("Loaded previous capture.");
-  } else {
+  }
+  renderPreview();
+  if (!lastCaptureEnvelope) {
     setStatus("Ready.");
+  } else {
+    setStatus("Loaded previous capture.");
   }
 }
 

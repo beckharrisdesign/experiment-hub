@@ -2,7 +2,7 @@
 
 ## Overview
 
-Web-to-Figma Grabber is a Chrome extension experiment that lets designers and builders pick an element on any page and send it to Figma in either screenshot mode or layout mode. It is built for fast design iteration when recreating UI manually is too slow. The core job is to capture the selected UI into a Figma-ready payload in under 30 seconds.
+Web-to-Figma Grabber is a browser capture experiment that lets designers and builders pick an element on any page and send it to Figma in either screenshot mode or layout mode. It is built for fast design iteration when recreating UI manually is too slow. The default usage is now script-first (bookmarklet/console), with an extension path as fallback.
 
 ---
 
