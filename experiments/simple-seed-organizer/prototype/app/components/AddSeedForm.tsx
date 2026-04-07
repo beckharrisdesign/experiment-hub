@@ -4,7 +4,12 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Seed, SeedType, SunRequirement } from "@/types/seed";
 import { AIExtractedData } from "@/lib/packetReaderAI";
-import { mergeExtractedData, fieldAfterAutoEntry } from "@/lib/autoEntry";
+import {
+  mergeExtractedData,
+  fieldAfterAutoEntry,
+  buildNotesFromDescriptionEdit,
+  buildNotesFromPlantingEdit,
+} from "@/lib/autoEntry";
 import { processImageFile } from "@/lib/imageUtils";
 import { uploadSeedPhoto } from "@/lib/seed-photos";
 
@@ -609,22 +614,14 @@ export function AddSeedForm({
         else setSunRequirement(val as any); // Allow verbatim text
       },
       Description: (val: string) => {
-        // Append to notes if planting instructions also exists
-        const currentNotes = notes;
-        if (aiExtractedData?.plantingInstructions) {
-          setNotes(val + "\n\n" + aiExtractedData.plantingInstructions);
-        } else {
-          setNotes(val);
-        }
+        // Functional updater reads the LIVE notes — never a stale closure.
+        // Preserves the planting-instructions half that's already in notes
+        // instead of pulling from a stale aiExtractedData reference (Bug C fix).
+        setNotes((prev) => buildNotesFromDescriptionEdit(prev, val));
       },
       "Planting Instructions": (val: string) => {
-        // Append to notes if description also exists
-        const currentNotes = notes;
-        if (aiExtractedData?.description) {
-          setNotes(aiExtractedData.description + "\n\n" + val);
-        } else {
-          setNotes(val);
-        }
+        // Same as above: preserves the description half from live notes.
+        setNotes((prev) => buildNotesFromPlantingEdit(prev, val));
       },
     };
     const setter = keyMap[key];
