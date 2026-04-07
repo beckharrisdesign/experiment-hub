@@ -33,6 +33,41 @@ Use this as the bookmark URL:
 javascript:(()=>{const s=document.createElement('script');s.src='https://labs.beckharrisdesign.com/scripts/web-to-figma-grabber-bookmarklet.js';s.async=true;document.head.appendChild(s);})();
 ```
 
+### Debugging when "nothing happens"
+
+If the bookmarklet appears to do nothing, open DevTools Console and inspect:
+
+```js
+window.__WEB_TO_FIGMA_DEBUG__
+```
+
+This object includes:
+
+- `status` (`bookmarklet-started`, `loader-loading-capture`, `loader-launch-called`,
+  `loader-capture-dispatched`, `loader-launch-error`, etc.)
+- `errors[]` with timestamped failures
+- `events[]` with timestamped trace steps
+- resolved script URLs used by the loader
+
+Quick checks:
+
+1. Confirm bookmarklet script can load:
+   - visit `https://labs.beckharrisdesign.com/scripts/web-to-figma-grabber-bookmarklet.js`
+2. Confirm loader script can load:
+   - visit `https://labs.beckharrisdesign.com/scripts/web-to-figma-grabber-loader.js`
+3. Confirm capture script can load:
+   - visit `https://labs.beckharrisdesign.com/lib/capture.js`
+4. Run this in Console and check `window.__WEB_TO_FIGMA_DEBUG__`:
+
+```js
+(() => {
+  const s = document.createElement("script");
+  s.src = "https://labs.beckharrisdesign.com/scripts/web-to-figma-grabber-loader.js?debug=1";
+  s.async = true;
+  document.head.appendChild(s);
+})();
+```
+
 The loader injects:
 
 - `https://labs.beckharrisdesign.com/lib/capture.js`
