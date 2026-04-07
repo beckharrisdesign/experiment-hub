@@ -400,7 +400,13 @@ export function SeedDetail({
                     seed.source ||
                     seed.year ||
                     seed.purchaseDate ||
-                    seed.quantity) && (
+                    seed.quantity ||
+                    seed.daysToGermination ||
+                    seed.daysToMaturity ||
+                    seed.plantingDepth ||
+                    seed.spacing ||
+                    seed.sunRequirement ||
+                    seed.customExpirationDate) && (
                     <InfoCategory label="Packet info">
                       <InfoRow
                         label="Type"
@@ -423,15 +429,14 @@ export function SeedDetail({
                         }
                       />
                       <InfoRow label="Quantity" value={seed.quantity} />
-                    </InfoCategory>
-                  )}
-
-                  {/* Growing info category */}
-                  {(seed.plantingDepth ||
-                    seed.spacing ||
-                    seed.sunRequirement ||
-                    seed.customExpirationDate) && (
-                    <InfoCategory label="Growing info">
+                      <InfoRow
+                        label="Days to germination"
+                        value={seed.daysToGermination}
+                      />
+                      <InfoRow
+                        label="Days to maturity"
+                        value={seed.daysToMaturity}
+                      />
                       <InfoRow
                         label="Planting depth"
                         value={seed.plantingDepth}
