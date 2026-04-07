@@ -41,6 +41,17 @@ If the bookmarklet appears to do nothing, open DevTools Console and inspect:
 window.__WEB_TO_FIGMA_DEBUG__
 ```
 
+If you see an error loading `https://<current-site>/lib/capture.js`, your
+loader is stale. The current loader resolves `capture.js` from the loader host
+(`labs.beckharrisdesign.com`) and supports an explicit override via:
+
+```js
+window.__FIGMA_CAPTURE_CONFIG = {
+  ...(window.__FIGMA_CAPTURE_CONFIG || {}),
+  assetOrigin: "https://labs.beckharrisdesign.com"
+};
+```
+
 This object includes:
 
 - `status` (`bookmarklet-started`, `loader-loading-capture`, `loader-launch-called`,
