@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import { Seed } from "@/types/seed";
 import { getSeedAge } from "@/lib/storage";
 import { getPlantingGuidance } from "@/lib/plantingGuidance";
-import { getProfile } from "@/lib/storage";
-import { SeedPill, SeedPillTone } from "@/components/SeedPill";
+import { SeedPill, type SeedPillTone } from "@/components/SeedPill";
 import toast from "react-hot-toast";
 
 interface SeedDetailProps {
@@ -147,7 +146,7 @@ export function SeedDetail({
       setSeed((prev) => ({ ...prev, ...patch }));
       setEnrichedFields(enriched);
       onUpdate?.({ ...seed, ...patch });
-    } catch (e) {
+    } catch {
       toast.error(
         "I'm having trouble fetching growing info right now. Try again in a few minutes.",
       );
