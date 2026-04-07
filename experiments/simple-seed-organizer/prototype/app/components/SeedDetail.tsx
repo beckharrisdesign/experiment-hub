@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Seed } from "@/types/seed";
 import { getSeedAge } from "@/lib/storage";
 import { getPlantingGuidance } from "@/lib/plantingGuidance";
-import { getProfile } from "@/lib/storage";
+import { SeedPill, type SeedPillTone } from "@/components/SeedPill";
 import toast from "react-hot-toast";
 
 interface SeedDetailProps {
@@ -18,16 +18,13 @@ interface SeedDetailProps {
   asPage?: boolean;
 }
 
-function getAgeLabel(age: number): { text: string; color: string } {
-  if (age <= 0)
-    return { text: "New this year", color: "text-[#16a34a] bg-[#f0fdf4]" };
-  if (age === 1)
-    return { text: "1 year old", color: "text-[#ca8a04] bg-[#fefce8]" };
-  if (age === 2)
-    return { text: "2 years old", color: "text-[#d97706] bg-[#fff7ed]" };
+function getAgeLabel(age: number): { text: string; tone: SeedPillTone } {
+  if (age <= 0) return { text: "New this year", tone: "success" };
+  if (age === 1) return { text: "1 year old", tone: "warning" };
+  if (age === 2) return { text: "2 years old", tone: "warning" };
   return {
     text: `${age} years old`,
-    color: "text-[#f54900] bg-[#fff7ed]",
+    tone: "attention",
   };
 }
 
@@ -149,7 +146,7 @@ export function SeedDetail({
       setSeed((prev) => ({ ...prev, ...patch }));
       setEnrichedFields(enriched);
       onUpdate?.({ ...seed, ...patch });
-    } catch (e) {
+    } catch {
       toast.error(
         "I'm having trouble fetching growing info right now. Try again in a few minutes.",
       );
@@ -215,30 +212,33 @@ export function SeedDetail({
                 {/* Right: badges */}
                 <div className="flex-shrink-0 w-[201px] flex flex-wrap gap-2 justify-end">
                   {ageLabel && (
-                    <span
-                      className={`px-[9px] py-[4px] rounded-full text-[14px] font-medium ${ageLabel.color}`}
-                    >
+                    <SeedPill as="span" variant="badge" tone={ageLabel.tone}>
                       {ageLabel.text}
-                    </span>
+                    </SeedPill>
                   )}
                   {(age >= 3 || seed.useFirst) && (
-                    <span className="px-[9px] py-[4px] rounded-full text-[14px] font-medium text-[#f54900] bg-[#fff7ed]">
+                    <SeedPill as="span" variant="badge" tone="attention">
                       Use first
-                    </span>
+                    </SeedPill>
                   )}
                   {seed.type && seed.type !== "other" && (
-                    <span className="px-[9px] py-[4px] rounded-full text-[14px] font-medium text-[#f54900] bg-[#fff7ed] capitalize">
+                    <SeedPill
+                      as="span"
+                      variant="badge"
+                      tone="attention"
+                      className="capitalize"
+                    >
                       {seed.type}
-                    </span>
+                    </SeedPill>
                   )}
                   {seed.sunRequirement && (
-                    <span className="px-[9px] py-[4px] rounded-full text-[14px] font-medium text-[#f54900] bg-[#fff7ed]">
+                    <SeedPill as="span" variant="badge" tone="neutral">
                       {seed.sunRequirement === "full-sun"
                         ? "Full sun"
                         : seed.sunRequirement === "partial-shade"
                           ? "Part shade"
                           : "Full shade"}
-                    </span>
+                    </SeedPill>
                   )}
                 </div>
               </div>
