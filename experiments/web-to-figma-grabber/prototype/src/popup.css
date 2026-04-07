@@ -30,12 +30,11 @@ h1 {
   font-size: 12px;
 }
 
-.field {
-  display: block;
+.row {
   margin-bottom: 10px;
 }
 
-.field > span {
+label {
   display: block;
   margin-bottom: 4px;
   color: #8b949e;
@@ -86,7 +85,12 @@ button.primary:hover {
   gap: 8px;
 }
 
-.status {
+pre {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+#status {
   margin-top: 10px;
   background: #161b22;
   border: 1px solid #30363d;
@@ -96,10 +100,28 @@ button.primary:hover {
   white-space: pre-wrap;
 }
 
-.status[data-tone="success"] {
+#status[data-tone="success"] {
   border-color: #3fb950;
 }
 
-.status[data-tone="error"] {
+#status[data-tone="error"] {
   border-color: #f85149;
+}
+
+#payloadPreview {
+  margin-top: 10px;
+  max-height: 180px;
+  overflow: auto;
+  background: #0f141b;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 11px;
+  white-space: pre-wrap;
+}
+
+.hint {
+  color: #8b949e;
+  font-size: 11px;
+  margin: 8px 0 0;
 }

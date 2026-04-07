@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="./popup.css" />
   </head>
   <body>
-    <main class="panel">
+    <main class="container">
       <h1>Web to Figma Grabber</h1>
       <p class="subtitle">Capture selected DOM into screenshot or layout payloads.</p>
 
@@ -37,7 +37,7 @@
         <button id="clearButton" class="secondary">Clear</button>
       </div>
 
-      <pre id="status">Select an element to begin.</pre>
+      <pre id="status" class="status" data-tone="info">Select an element to begin.</pre>
       <pre id="payloadPreview">No capture yet.</pre>
       <p class="hint">
         For screenshot mode, this captures the visible tab and includes the selected

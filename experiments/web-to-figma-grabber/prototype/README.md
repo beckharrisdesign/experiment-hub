@@ -1,5 +1,53 @@
 # Web to Figma Grabber - Prototype
 
+Script-first DOM-to-Figma capture utilities, plus a Chrome extension fallback.
+
+You can run this without installing a browser extension by loading the hosted
+capture script directly from your site.
+
+## Script-first (recommended)
+
+### Console snippet
+
+```js
+(() => {
+  const s = document.createElement("script");
+  s.src = "https://labs.beckharrisdesign.com/scripts/web-to-figma-grabber-loader.js";
+  s.async = true;
+  document.head.appendChild(s);
+})();
+```
+
+### Bookmarklet
+
+Use this as the bookmark URL:
+
+```text
+javascript:(()=>{const s=document.createElement('script');s.src='https://labs.beckharrisdesign.com/scripts/web-to-figma-grabber-bookmarklet.js';s.async=true;document.head.appendChild(s);})();
+```
+
+The loader injects:
+
+- `https://labs.beckharrisdesign.com/lib/capture.js`
+
+and then starts:
+
+- `window.figma.captureForDesign({ selector: "body", verbose: true })`
+
+You can run your own call afterwards, for example:
+
+```js
+window.figma.captureForDesign({
+  selector: "body",
+  verbose: true,
+  // optional:
+  // captureId: "<capture-id>",
+  // endpoint: "https://mcp.figma.com/mcp/html-to-design/capture/<capture-id>/submit"
+});
+```
+
+---
+
 Chrome extension MVP for selecting a DOM element and sending a structured
 capture payload for Figma ingestion in two modes:
 

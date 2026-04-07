@@ -6,6 +6,9 @@ Ship a local, installable Chrome extension MVP that captures a selected DOM
 element in either screenshot mode or lightweight layout mode, then produces a
 Figma-ready payload for manual MCP handoff.
 
+Additionally, provide a script-first path (no extension install) that can be
+injected from browser console/bookmarklet.
+
 ## Non-goals (v1)
 
 - No direct OAuth integration to Figma APIs
@@ -98,7 +101,9 @@ Schema version: `1.0.0`
 ## User Flow
 
 1. Open website
-2. Open extension popup
+2. Launch capture tooling:
+   - Script-first: inject loader from `labs.beckharrisdesign.com`
+   - Extension fallback: open extension popup
 3. Choose mode and optional Figma target values
 4. Click **Pick element**
 5. Hover + click target element
@@ -120,6 +125,17 @@ experiments/web-to-figma-grabber/prototype/
     ├── icon.svg
     └── shared/
         └── capture-utils.js
+```
+
+Hosted script-first artifacts:
+
+```text
+public/
+├── lib/
+│   └── capture.js
+└── scripts/
+    ├── web-to-figma-grabber-loader.js
+    └── web-to-figma-grabber-bookmarklet.js
 ```
 
 ## Error Handling
