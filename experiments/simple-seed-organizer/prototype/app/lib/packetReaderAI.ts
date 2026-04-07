@@ -1,11 +1,11 @@
 /**
  * AI-Powered Seed Packet Reader using OpenAI Vision API
- * 
+ *
  * This module uses OpenAI's vision capabilities to extract structured
  * information from seed packet images with better accuracy than OCR alone.
  */
 
-import { ExtractedSeedData } from './packetReader';
+import { ExtractedSeedData } from "./packetReader";
 
 export interface AIExtractedData extends ExtractedSeedData {
   description?: string;
@@ -13,8 +13,12 @@ export interface AIExtractedData extends ExtractedSeedData {
   plantingInstructions?: string;
   summary?: string;
   additionalNotes?: string;
-  rawKeyValuePairs?: Array<{ key: string; value: string; source?: 'front' | 'back' }>;
-  fieldSources?: Record<string, 'front' | 'back'>;
+  rawKeyValuePairs?: Array<{
+    key: string;
+    value: string;
+    source?: "front" | "back";
+  }>;
+  fieldSources?: Record<string, "front" | "back">;
 }
 
 /**
@@ -23,17 +27,21 @@ export interface AIExtractedData extends ExtractedSeedData {
 export async function extractWithAI(
   frontImage: File | string,
   backImage?: File | string,
-  apiKey?: string
+  apiKey?: string,
 ): Promise<AIExtractedData> {
   // Get API key from parameter or environment variable
   const key = apiKey || process.env.OPENAI_API_KEY;
   if (!key) {
-    throw new Error('OPENAI_API_KEY must be provided as parameter or set as environment variable');
+    throw new Error(
+      "OPENAI_API_KEY must be provided as parameter or set as environment variable",
+    );
   }
 
   // Convert images to base64 if they're File objects
   const frontImageBase64 = await imageToBase64(frontImage);
-  const backImageBase64 = backImage ? await imageToBase64(backImage) : undefined;
+  const backImageBase64 = backImage
+    ? await imageToBase64(backImage)
+    : undefined;
 
   interface MessageContent {
     type: string;
@@ -50,10 +58,10 @@ export async function extractWithAI(
 
   const messages: Message[] = [
     {
-      role: 'user',
+      role: "user",
       content: [
         {
-          type: 'text',
+          type: "text",
           text: `You are a TEXT EXTRACTION TOOL. Your ONLY job is to copy text EXACTLY as it appears on the seed packet images. You are NOT allowed to modify, combine, paraphrase, summarize, or interpret ANY text.
 
 CRITICAL: The first image is the FRONT of the packet, the second image (if provided) is the BACK of the packet.
@@ -91,27 +99,26 @@ Look for common sideways/rotated labels such as:
 
 Additionally, extract ALL other key-value pairs you find on the packet that are not covered above. Include them in a "rawKeyValuePairs" array with source information.
 
-Return as JSON:
+Return as JSON. For each field: use the actual extracted string from the packet, or null if not present. Do NOT output placeholder text — only real values or null.
 {
-  "name": "exact text or null",
-  "variety": "exact text or null",
-  "latinName": "exact text or null",
-  "brand": "exact text or null",
-  "year": number or null,
-  "quantity": "exact text or null",
-  "daysToGermination": "exact text or null",
-  "daysToMaturity": "exact text or null",
-  "plantingDepth": "exact text or null",
-  "spacing": "exact text or null",
-  "sunRequirement": "exact text as written on packet or null",
-  "description": "exact text or null",
-  "plantingInstructions": "exact text or null",
+  "name": null,
+  "variety": null,
+  "latinName": null,
+  "brand": null,
+  "year": null,
+  "quantity": null,
+  "daysToGermination": null,
+  "daysToMaturity": null,
+  "plantingDepth": null,
+  "spacing": null,
+  "sunRequirement": null,
+  "description": null,
+  "plantingInstructions": null,
   "fieldSources": {
-    "name": "front" | "back",
-    "variety": "front" | "back",
-    ... (include source for each field that has a value)
+    "name": "front",
+    "variety": "front"
   },
-  "rawKeyValuePairs": [{"key": "label text", "value": "value text", "source": "front" | "back"}, ...]
+  "rawKeyValuePairs": [{"key": "Days to maturity", "value": "70", "source": "back"}]
 }
 
 ABSOLUTE RULES - NO EXCEPTIONS:
@@ -127,54 +134,56 @@ ABSOLUTE RULES - NO EXCEPTIONS:
 9. Preserve ALL punctuation, capitalization, spacing, and line breaks exactly as they appear
 10. If text appears in multiple locations, extract each occurrence separately in rawKeyValuePairs with its specific source
 11. If a field is not visible, use null
-12. You are OCR software - you copy what you see in any orientation, you do not interpret, improve, or combine text from different locations`
+12. You are OCR software - you copy what you see in any orientation, you do not interpret, improve, or combine text from different locations`,
         },
         {
-          type: 'image_url',
+          type: "image_url",
           image_url: {
-            url: `data:image/png;base64,${frontImageBase64}`
-          }
-        }
-      ]
-    }
+            url: `data:image/png;base64,${frontImageBase64}`,
+          },
+        },
+      ],
+    },
   ];
 
   if (backImageBase64) {
     messages[0].content.push({
-      type: 'image_url',
+      type: "image_url",
       image_url: {
-        url: `data:image/png;base64,${backImageBase64}`
-      }
+        url: `data:image/png;base64,${backImageBase64}`,
+      },
     });
   }
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${key}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o', // Using gpt-4o for better instruction following on exact text extraction
+        model: "gpt-4o", // Using gpt-4o for better instruction following on exact text extraction
         messages: messages,
         max_tokens: 2000,
-        response_format: { type: 'json_object' },
-        temperature: 0.0 // Zero temperature for maximum determinism and exact text extraction
-      })
+        response_format: { type: "json_object" },
+        temperature: 0.0, // Zero temperature for maximum determinism and exact text extraction
+      }),
     });
 
     // Read response body once
     const responseText = await response.text();
-    
+
     if (!response.ok) {
-      let errorMessage = 'Unknown error';
+      let errorMessage = "Unknown error";
       try {
         const error = JSON.parse(responseText);
-        errorMessage = error.error?.message || error.message || JSON.stringify(error);
+        errorMessage =
+          error.error?.message || error.message || JSON.stringify(error);
       } catch (e) {
         // If response is not JSON, use the text directly
-        errorMessage = responseText || `HTTP ${response.status}: ${response.statusText}`;
+        errorMessage =
+          responseText || `HTTP ${response.status}: ${response.statusText}`;
       }
       throw new Error(`OpenAI API error: ${errorMessage}`);
     }
@@ -183,31 +192,37 @@ ABSOLUTE RULES - NO EXCEPTIONS:
     try {
       data = JSON.parse(responseText);
     } catch (e) {
-      throw new Error(`Invalid JSON response from OpenAI: ${responseText.substring(0, 200)}`);
+      throw new Error(
+        `Invalid JSON response from OpenAI: ${responseText.substring(0, 200)}`,
+      );
     }
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Unexpected response format from OpenAI API');
+      throw new Error("Unexpected response format from OpenAI API");
     }
 
     const content = data.choices[0].message.content;
-    
+
     if (!content) {
-      throw new Error('No content in OpenAI response');
+      throw new Error("No content in OpenAI response");
     }
-    
+
     // Parse the JSON response
     let extracted: Record<string, unknown>;
     try {
       extracted = JSON.parse(content);
     } catch (e) {
-      throw new Error(`Failed to parse JSON from AI response: ${content.substring(0, 200)}`);
+      throw new Error(
+        `Failed to parse JSON from AI response: ${content.substring(0, 200)}`,
+      );
     }
-    
+
     // Normalize the data
     return normalizeAIData(extracted);
   } catch (error) {
-    throw new Error(`AI extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `AI extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 }
 
@@ -216,21 +231,21 @@ ABSOLUTE RULES - NO EXCEPTIONS:
  * Works in both Node.js (server) and browser environments
  */
 async function imageToBase64(image: File | string): Promise<string> {
-  if (typeof image === 'string') {
+  if (typeof image === "string") {
     // If it's already a data URL, extract the base64 part
-    if (image.startsWith('data:')) {
-      return image.split(',')[1];
+    if (image.startsWith("data:")) {
+      return image.split(",")[1];
     }
     // If it's a URL, fetch it
     const response = await fetch(image);
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    return buffer.toString('base64');
+    return buffer.toString("base64");
   } else {
     // It's a File object - convert to Buffer in Node.js
     const arrayBuffer = await image.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    return buffer.toString('base64');
+    return buffer.toString("base64");
   }
 }
 
@@ -238,28 +253,44 @@ async function imageToBase64(image: File | string): Promise<string> {
  * Normalize AI-extracted data to match our interface.
  * Exported for testing.
  */
-export function normalizeAIData(data: Record<string, unknown>): AIExtractedData {
+export function normalizeAIData(
+  data: Record<string, unknown>,
+): AIExtractedData {
   // Parse rawKeyValuePairs if present
-  let rawPairs: Array<{ key: string; value: string; source?: 'front' | 'back' }> = [];
+  let rawPairs: Array<{
+    key: string;
+    value: string;
+    source?: "front" | "back";
+  }> = [];
   if (data.rawKeyValuePairs && Array.isArray(data.rawKeyValuePairs)) {
     rawPairs = data.rawKeyValuePairs.map((pair: any) => ({
-      key: String(pair.key || ''),
-      value: String(pair.value || ''),
-      source: pair.source === 'front' || pair.source === 'back' ? pair.source : undefined
+      key: String(pair.key || ""),
+      value: String(pair.value || ""),
+      source:
+        pair.source === "front" || pair.source === "back"
+          ? pair.source
+          : undefined,
     }));
   }
 
   // Parse fieldSources
-  const fieldSources = data.fieldSources as Record<string, 'front' | 'back'> | undefined;
+  const fieldSources = data.fieldSources as
+    | Record<string, "front" | "back">
+    | undefined;
 
-  const str = (v: unknown) => (typeof v === 'string' && v) || undefined;
+  const str = (v: unknown) => (typeof v === "string" && v) || undefined;
   return {
     name: str(data.name),
     variety: str(data.variety),
     latinName: str(data.latinName),
     brand: str(data.brand),
     // Use != null so empty strings reach parseInt and produce NaN (distinguishable from "not provided")
-    year: typeof data.year === 'number' ? data.year : (data.year != null ? parseInt(String(data.year)) : undefined),
+    year:
+      typeof data.year === "number"
+        ? data.year
+        : data.year != null
+          ? parseInt(String(data.year))
+          : undefined,
     quantity: str(data.quantity),
     daysToGermination: str(data.daysToGermination),
     daysToMaturity: str(data.daysToMaturity),
@@ -284,16 +315,18 @@ export function normalizeAIData(data: Record<string, unknown>): AIExtractedData 
  */
 export async function extractSingleImageWithAI(
   image: File | string,
-  side: 'front' | 'back',
-  apiKey?: string
+  side: "front" | "back",
+  apiKey?: string,
 ): Promise<AIExtractedData> {
   const key = apiKey || process.env.OPENAI_API_KEY;
   if (!key) {
-    throw new Error('OPENAI_API_KEY must be provided as parameter or set as environment variable');
+    throw new Error(
+      "OPENAI_API_KEY must be provided as parameter or set as environment variable",
+    );
   }
 
   const imageBase64 = await imageToBase64(image);
-  const sideLabel = side === 'front' ? 'FRONT' : 'BACK';
+  const sideLabel = side === "front" ? "FRONT" : "BACK";
 
   const prompt = `You are a TEXT EXTRACTION TOOL. Your ONLY job is to copy text EXACTLY as it appears on the seed packet image. You are NOT allowed to modify, combine, paraphrase, summarize, or interpret ANY text.
 
@@ -318,61 +351,63 @@ Extract these specific fields if present:
 
 Additionally, extract ALL other key-value pairs in "rawKeyValuePairs" with source: "${side}".
 
-Return as JSON:
+Return as JSON. For each field: use the actual extracted string from the packet, or null if not present. Do NOT output placeholder text — only real values or null.
 {
-  "name": "exact text or null",
-  "variety": "exact text or null",
-  "latinName": "exact text or null",
-  "brand": "exact text or null",
-  "year": number or null,
-  "quantity": "exact text or null",
-  "daysToGermination": "exact text or null",
-  "daysToMaturity": "exact text or null",
-  "plantingDepth": "exact text or null",
-  "spacing": "exact text or null",
-  "sunRequirement": "exact text or null",
-  "description": "exact text or null",
-  "plantingInstructions": "exact text or null",
-  "fieldSources": { "name": "${side}", "variety": "${side}", ... },
-  "rawKeyValuePairs": [{"key": "...", "value": "...", "source": "${side}"}, ...]
+  "name": null,
+  "variety": null,
+  "latinName": null,
+  "brand": null,
+  "year": null,
+  "quantity": null,
+  "daysToGermination": null,
+  "daysToMaturity": null,
+  "plantingDepth": null,
+  "spacing": null,
+  "sunRequirement": null,
+  "description": null,
+  "plantingInstructions": null,
+  "fieldSources": { "name": "${side}", "variety": "${side}" },
+  "rawKeyValuePairs": [{"key": "Days to maturity", "value": "70", "source": "${side}"}]
 }
 
 Copy text CHARACTER-BY-CHARACTER exactly as it appears. If a field is not visible, use null.`;
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${key}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({
-      model: 'gpt-4o',
+      model: "gpt-4o",
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: [
-            { type: 'text', text: prompt },
+            { type: "text", text: prompt },
             {
-              type: 'image_url',
+              type: "image_url",
               image_url: { url: `data:image/png;base64,${imageBase64}` },
             },
           ],
         },
       ],
       max_tokens: 2000,
-      response_format: { type: 'json_object' },
+      response_format: { type: "json_object" },
       temperature: 0.0,
     }),
   });
 
   const responseText = await response.text();
   if (!response.ok) {
-    let errorMessage = 'Unknown error';
+    let errorMessage = "Unknown error";
     try {
       const error = JSON.parse(responseText);
-      errorMessage = error.error?.message || error.message || JSON.stringify(error);
+      errorMessage =
+        error.error?.message || error.message || JSON.stringify(error);
     } catch {
-      errorMessage = responseText || `HTTP ${response.status}: ${response.statusText}`;
+      errorMessage =
+        responseText || `HTTP ${response.status}: ${response.statusText}`;
     }
     throw new Error(`OpenAI API error: ${errorMessage}`);
   }
@@ -381,28 +416,37 @@ Copy text CHARACTER-BY-CHARACTER exactly as it appears. If a field is not visibl
   try {
     data = JSON.parse(responseText);
   } catch {
-    throw new Error(`Invalid JSON response from OpenAI: ${responseText.substring(0, 200)}`);
+    throw new Error(
+      `Invalid JSON response from OpenAI: ${responseText.substring(0, 200)}`,
+    );
   }
 
   if (!data.choices?.[0]?.message?.content) {
-    throw new Error('No content in OpenAI response');
+    throw new Error("No content in OpenAI response");
   }
 
   let extracted: Record<string, unknown>;
   try {
     extracted = JSON.parse(data.choices[0].message.content);
   } catch {
-    throw new Error(`Failed to parse JSON from AI response: ${data.choices[0].message.content.substring(0, 200)}`);
+    throw new Error(
+      `Failed to parse JSON from AI response: ${data.choices[0].message.content.substring(0, 200)}`,
+    );
   }
 
   // Ensure all fieldSources and rawKeyValuePairs use the correct side
-  const fieldSources: Record<string, 'front' | 'back'> = {};
+  const fieldSources: Record<string, "front" | "back"> = {};
   for (const [k, v] of Object.entries(extracted)) {
-    if (k !== 'rawKeyValuePairs' && k !== 'fieldSources' && v != null && v !== '') {
+    if (
+      k !== "rawKeyValuePairs" &&
+      k !== "fieldSources" &&
+      v != null &&
+      v !== ""
+    ) {
       fieldSources[k] = side;
     }
   }
-  if (extracted.fieldSources && typeof extracted.fieldSources === 'object') {
+  if (extracted.fieldSources && typeof extracted.fieldSources === "object") {
     Object.assign(fieldSources, extracted.fieldSources);
   }
   extracted.fieldSources = fieldSources;
@@ -424,11 +468,13 @@ Copy text CHARACTER-BY-CHARACTER exactly as it appears. If a field is not visibl
  */
 export async function extractMultipleFromImage(
   image: File | string,
-  apiKey?: string
+  apiKey?: string,
 ): Promise<AIExtractedData[]> {
   const key = apiKey || process.env.OPENAI_API_KEY;
   if (!key) {
-    throw new Error('OPENAI_API_KEY must be provided as parameter or set as environment variable');
+    throw new Error(
+      "OPENAI_API_KEY must be provided as parameter or set as environment variable",
+    );
   }
 
   const imageBase64 = await imageToBase64(image);
@@ -456,40 +502,42 @@ Rules:
 4. If no packets are recognizable, return { "seeds": [] }
 5. Do not guess or invent values — only extract text you can actually read`;
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${key}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({
-      model: 'gpt-4o',
+      model: "gpt-4o",
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: [
-            { type: 'text', text: prompt },
+            { type: "text", text: prompt },
             {
-              type: 'image_url',
+              type: "image_url",
               image_url: { url: `data:image/png;base64,${imageBase64}` },
             },
           ],
         },
       ],
       max_tokens: 4000,
-      response_format: { type: 'json_object' },
+      response_format: { type: "json_object" },
       temperature: 0.0,
     }),
   });
 
   const responseText = await response.text();
   if (!response.ok) {
-    let errorMessage = 'Unknown error';
+    let errorMessage = "Unknown error";
     try {
       const error = JSON.parse(responseText);
-      errorMessage = error.error?.message || error.message || JSON.stringify(error);
+      errorMessage =
+        error.error?.message || error.message || JSON.stringify(error);
     } catch {
-      errorMessage = responseText || `HTTP ${response.status}: ${response.statusText}`;
+      errorMessage =
+        responseText || `HTTP ${response.status}: ${response.statusText}`;
     }
     throw new Error(`OpenAI API error: ${errorMessage}`);
   }
@@ -498,26 +546,32 @@ Rules:
   try {
     data = JSON.parse(responseText);
   } catch {
-    throw new Error(`Invalid JSON response from OpenAI: ${responseText.substring(0, 200)}`);
+    throw new Error(
+      `Invalid JSON response from OpenAI: ${responseText.substring(0, 200)}`,
+    );
   }
 
   const content = data.choices?.[0]?.message?.content;
-  if (!content) throw new Error('No content in OpenAI response');
+  if (!content) throw new Error("No content in OpenAI response");
 
   let parsed: { seeds?: unknown[] };
   try {
     parsed = JSON.parse(content);
   } catch {
-    throw new Error(`Failed to parse JSON from AI response: ${content.substring(0, 200)}`);
+    throw new Error(
+      `Failed to parse JSON from AI response: ${content.substring(0, 200)}`,
+    );
   }
 
   if (!Array.isArray(parsed.seeds)) return [];
 
-  const str = (v: unknown) => (typeof v === 'string' && v.trim()) || undefined;
-  return parsed.seeds.map((raw: any): AIExtractedData => ({
-    name: str(raw.name),
-    variety: str(raw.variety),
-    brand: str(raw.brand),
-    year: typeof raw.year === 'number' ? raw.year : undefined,
-  }));
+  const str = (v: unknown) => (typeof v === "string" && v.trim()) || undefined;
+  return parsed.seeds.map(
+    (raw: any): AIExtractedData => ({
+      name: str(raw.name),
+      variety: str(raw.variety),
+      brand: str(raw.brand),
+      year: typeof raw.year === "number" ? raw.year : undefined,
+    }),
+  );
 }
