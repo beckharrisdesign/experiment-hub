@@ -171,7 +171,7 @@ function HomeContent() {
 
   return (
     <div className="min-h-screen w-full bg-[#f3f4f6] flex flex-col">
-      <main className="flex-1 w-full px-4 py-4 pt-24 pb-24 max-w-[1600px] mx-auto md:px-6 lg:px-8">
+      <main className="flex-1 w-full px-4 py-4 pt-24 pb-24 max-w-[1200px] mx-auto">
         {usage?.canAddSeed === false && (
           <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <p className="text-amber-800 font-medium">
@@ -188,7 +188,7 @@ function HomeContent() {
           </div>
         )}
         <PlantNowBanner seeds={seeds} />
-        <div className="bg-white rounded-xl shadow-[0px_0px_54px_0px_rgba(0,0,0,0.08)] p-8 max-w-[1200px] mx-auto">
+        <div className="bg-white rounded-xl shadow-[0px_0px_54px_0px_rgba(0,0,0,0.08)] p-8">
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
 
           <div className="mt-3">

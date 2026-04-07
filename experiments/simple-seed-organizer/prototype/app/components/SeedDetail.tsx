@@ -197,7 +197,7 @@ export function SeedDetail({
         <div className="bg-white mx-auto max-w-[1200px] my-0">
           <div className="flex flex-col gap-4 items-center py-8 px-4">
             {/* Packet Title Lockup */}
-            <div className="w-full max-w-[978px] pb-2">
+            <div className="w-full pb-2">
               <div className="flex gap-4 items-start w-full">
                 {/* Left: name + variety */}
                 <div className="flex-1 min-w-0 flex flex-col gap-4">
@@ -231,7 +231,7 @@ export function SeedDetail({
             </div>
 
             {/* Packet Images */}
-            <div className="w-full max-w-[978px]">
+            <div className="w-full">
               <div className="flex gap-4 items-center overflow-x-auto pr-2 py-2">
                 {/* Front photo */}
                 <div className="relative flex-shrink-0 w-[192.5px] h-[256px]">
@@ -294,7 +294,7 @@ export function SeedDetail({
             </div>
 
             {/* 2-Col Section: Planting + Metadata */}
-            <div className="w-full max-w-[978px] p-4">
+            <div className="w-full p-4">
               {/* Section heading */}
               <h3 className="text-[20px] font-semibold text-[#4a5565] leading-5 mb-0">
                 Planting in your region
