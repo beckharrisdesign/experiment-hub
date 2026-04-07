@@ -164,13 +164,13 @@ export function LandingPage() {
         </div>
         <div className="max-w-4xl mx-auto text-center relative z-10 px-4">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white">
-            Your simple seed inventory &{" "}
-            <span className="text-[#bbf7d0]">&apos;use-first&apos; list</span>,
-            on your phone.
+            Super simple seed inventory.
           </h1>
-          <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-2xl mx-auto">
-            No garden planning. No calendars. Just store your seed info and get
-            it back when you need it.
+          <p className="text-xl md:text-2xl text-white mb-2 max-w-2xl mx-auto">
+            <strong>No garden planning.</strong> No calendars. No design tools.
+          </p>
+          <p className="text-xl md:text-2xl text-[#bbf7d0] mb-8 max-w-2xl mx-auto">
+            Just your seed inventory, simple and fast.
           </p>
           <a
             href="#signup"
@@ -178,9 +178,6 @@ export function LandingPage() {
           >
             Get started
           </a>
-          <p className="mt-4 text-sm text-gray-300">
-            Free to use. Enter your email and password to get started.
-          </p>
         </div>
       </section>
 
@@ -283,8 +280,8 @@ export function LandingPage() {
               <h3 className="text-xl font-bold text-[#101828] mb-1">
                 Stash Starter
               </h3>
-              <p className="text-sm text-[#16a34a] font-semibold mb-4">
-                Free, forever
+              <p className="text-sm text-[#4a5565] mb-4">
+                Seed organizing + photos
               </p>
               <ul className="space-y-2 text-sm text-gray-700 mb-6 flex-1">
                 <li className="flex gap-2">
