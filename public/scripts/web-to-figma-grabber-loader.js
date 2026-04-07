@@ -1,6 +1,10 @@
 (function () {
+  if (window.__WEB_TO_FIGMA_GRABBER_LOADER_ACTIVE__) {
+    return;
+  }
+  window.__WEB_TO_FIGMA_GRABBER_LOADER_ACTIVE__ = true;
+
   const CAPTURE_SCRIPT_PATH = "/lib/capture.js";
-  const FIGMA_ENDPOINT = "https://mcp.figma.com/mcp";
 
   function getBaseUrl() {
     if (window.location.hostname === "labs.beckharrisdesign.com") {
@@ -37,61 +41,24 @@
     });
   }
 
-  function parseCurrentCaptureParams() {
-    const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-    return {
-      captureId: params.get("figmacapture"),
-      endpoint: params.get("figmaendpoint"),
-    };
-  }
-
-  function setHashCaptureParams({ captureId, endpoint, selector, verbose }) {
-    const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-    params.set("figmacapture", captureId);
-    params.set("figmaendpoint", endpoint || FIGMA_ENDPOINT);
-    if (selector) {
-      params.set("figmaselector", selector);
-    } else {
-      params.delete("figmaselector");
-    }
-    params.set("figmalogverbose", verbose ? "true" : "false");
-    window.location.hash = params.toString();
-  }
-
   function launch() {
-    const existing = parseCurrentCaptureParams();
-    if (existing.captureId && existing.endpoint) {
-      console.info(
-        "[web-to-figma-grabber] Existing figma capture params found in hash. Triggering capture flow.",
-      );
-      return Promise.resolve();
+    if (!window.figma || typeof window.figma.captureForDesign !== "function") {
+      throw new Error("captureForDesign is unavailable after loading capture script.");
     }
 
-    const captureId = window.prompt(
-      "Enter figma captureId (from generate_figma_design response):",
-      "",
-    );
+    // Fast path: local clipboard capture with interactive selection overlay.
+    // No capture ID, endpoint, or tool switching required.
+    const config = window.__FIGMA_CAPTURE_CONFIG || {};
+    const selector = typeof config.selector === "string" ? config.selector : "*";
+    const delayMs = Number.isFinite(config.delayMs) ? Math.max(0, config.delayMs) : 0;
+    const verbose = typeof config.verbose === "boolean" ? config.verbose : true;
 
-    if (!captureId) {
-      throw new Error("Capture cancelled: captureId is required.");
-    }
-
-    const endpointInput = window.prompt(
-      "Figma endpoint (press Enter for default):",
-      FIGMA_ENDPOINT,
-    );
-
-    const endpoint = endpointInput && endpointInput.trim() ? endpointInput.trim() : FIGMA_ENDPOINT;
-    setHashCaptureParams({
-      captureId,
-      endpoint,
-      selector: "*",
-      verbose: true,
+    console.info("[web-to-figma-grabber] Starting clipboard capture flow...");
+    return window.figma.captureForDesign({
+      selector,
+      delayMs,
+      verbose,
     });
-    console.info("[web-to-figma-grabber] Capture params added to location hash.");
-    console.info(
-      "[web-to-figma-grabber] Click once on page if prompted by selector mode, then let the toolbar drive captures.",
-    );
   }
 
   ensureCaptureScriptLoaded()
@@ -101,5 +68,8 @@
       alert(
         `Web-to-Figma loader failed: ${error && error.message ? error.message : String(error)}`,
       );
+    })
+    .finally(() => {
+      window.__WEB_TO_FIGMA_GRABBER_LOADER_ACTIVE__ = false;
     });
 })();

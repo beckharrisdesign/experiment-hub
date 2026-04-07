@@ -5,6 +5,13 @@ Script-first DOM-to-Figma capture utilities, plus a Chrome extension fallback.
 You can run this without installing a browser extension by loading the hosted
 capture script directly from your site.
 
+This flow is now optimized for clipboard speed:
+
+- click bookmarklet or run console snippet
+- get overlay
+- click your element
+- payload is copied to clipboard
+
 ## Script-first (recommended)
 
 ### Console snippet
@@ -32,9 +39,11 @@ The loader injects:
 
 and then starts:
 
-- `window.figma.captureForDesign({ selector: "body", verbose: true })`
+- `window.figma.captureForDesign({ selector: "*", verbose: true })`
 
-You can run your own call afterwards, for example:
+No captureId or endpoint prompts are required in this default flow.
+
+You can still run your own call afterwards, for example:
 
 ```js
 window.figma.captureForDesign({
