@@ -20,11 +20,11 @@ interface SeedDetailProps {
 
 function getAgeLabel(age: number): { text: string; color: string } {
   if (age <= 0)
-    return { text: "New this year", color: "text-green-600 bg-green-50" };
+    return { text: "New this year", color: "text-[#16a34a] bg-[#f0fdf4]" };
   if (age === 1)
-    return { text: "1 year old", color: "text-green-600 bg-green-100" };
+    return { text: "1 year old", color: "text-[#ca8a04] bg-[#fefce8]" };
   if (age === 2)
-    return { text: "2 years old", color: "text-yellow-600 bg-yellow-50" };
+    return { text: "2 years old", color: "text-[#d97706] bg-[#fff7ed]" };
   return {
     text: `${age} years old`,
     color: "text-[#f54900] bg-[#fff7ed]",
@@ -280,7 +280,7 @@ export function SeedDetail({
                 </div>
 
                 {/* Additional empty slots */}
-                {[3, 4, 5].map((i) => (
+                {[3, 4, 5, 6, 7].map((i) => (
                   <div
                     key={i}
                     className="relative flex-shrink-0 w-[192.5px] h-[256px] bg-[#d4d4d4] rounded-lg flex items-center justify-center"
