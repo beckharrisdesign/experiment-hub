@@ -25,12 +25,43 @@
   window.__WEB_TO_FIGMA_GRABBER_LOADER_ACTIVE__ = true;
 
   const CAPTURE_SCRIPT_PATH = "/lib/capture.js";
+  const DEFAULT_HOSTED_ORIGIN = "https://labs.beckharrisdesign.com";
 
-  function getBaseUrl() {
-    if (window.location.hostname === "labs.beckharrisdesign.com") {
-      return "https://labs.beckharrisdesign.com";
+  function getLoaderScriptOrigin() {
+    const currentScript = document.currentScript;
+    if (currentScript && currentScript.src) {
+      try {
+        return new URL(currentScript.src).origin;
+      } catch (_error) {
+        return null;
+      }
     }
-    return `${window.location.protocol}//${window.location.host}`;
+    const scripts = Array.from(document.querySelectorAll("script[src]"));
+    for (let i = scripts.length - 1; i >= 0; i -= 1) {
+      const src = scripts[i].getAttribute("src") || "";
+      if (src.indexOf("/scripts/web-to-figma-grabber-loader.js") !== -1) {
+        try {
+          return new URL(src, window.location.href).origin;
+        } catch (_error) {
+          return null;
+        }
+      }
+    }
+    return null;
+  }
+
+  function getAssetOrigin() {
+    const config = window.__FIGMA_CAPTURE_CONFIG || {};
+    if (
+      typeof window.__FIGMA_CAPTURE_ASSET_BASE_URL === "string" &&
+      window.__FIGMA_CAPTURE_ASSET_BASE_URL.trim().length > 0
+    ) {
+      return window.__FIGMA_CAPTURE_ASSET_BASE_URL.replace(/\/$/, "");
+    }
+    if (typeof config.assetOrigin === "string" && config.assetOrigin.trim().length > 0) {
+      return config.assetOrigin.replace(/\/$/, "");
+    }
+    return getLoaderScriptOrigin() || DEFAULT_HOSTED_ORIGIN;
   }
 
   function ensureCaptureScriptLoaded() {
@@ -56,11 +87,13 @@
       }
 
       const script = document.createElement("script");
-      script.src = `${getBaseUrl()}${CAPTURE_SCRIPT_PATH}`;
+      const assetOrigin = getAssetOrigin();
+      script.src = `${assetOrigin}${CAPTURE_SCRIPT_PATH}`;
       script.async = true;
       script.dataset.webToFigmaLoader = "capture";
       script.setAttribute("data-web-to-figma-loader", "capture");
       debugState.captureScriptUrl = script.src;
+      debugState.assetOrigin = assetOrigin;
       log("injecting capture script", script.src);
       script.onload = () => {
         debugState.captureScriptStatus = "loaded";
