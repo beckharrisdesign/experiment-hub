@@ -203,12 +203,10 @@ export function SeedDetail({
               <div className="flex gap-4 items-start w-full">
                 {/* Left: name + variety */}
                 <div className="flex-1 min-w-0 flex flex-col gap-4">
-                  <div>
-                    <h2 className="text-[34px] font-bold text-[#101828] leading-8">
-                      {seed.name}
-                    </h2>
-                  </div>
-                  {seed.variety && (
+                  <h2 className="text-[34px] font-bold text-[#101828] leading-tight">
+                    {seed.name || seed.variety}
+                  </h2>
+                  {seed.variety && seed.name && (
                     <p className="text-[16px] text-[#6a7282] leading-6">
                       {seed.variety}
                     </p>
