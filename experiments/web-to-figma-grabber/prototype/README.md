@@ -41,6 +41,16 @@ If the bookmarklet appears to do nothing, open DevTools Console and inspect:
 window.__WEB_TO_FIGMA_DEBUG__
 ```
 
+Also inspect:
+
+```js
+window.__WEB_TO_FIGMA_GRABBER_DEBUG__
+```
+
+If you see `loader already active; exiting`, hard-refresh so you fetch the latest
+bookmarklet script. A prior version reused the loader-active flag and could
+short-circuit launch.
+
 If you see an error loading `https://<current-site>/lib/capture.js`, your
 loader is stale. The current loader resolves `capture.js` from the loader host
 (`labs.beckharrisdesign.com`) and supports an explicit override via:
