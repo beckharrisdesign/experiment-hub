@@ -11,13 +11,13 @@
     console.info(NS,"start",window.location.href);
   } catch(_) {}
 
-  if(window.__WEB_TO_FIGMA_GRABBER_LOADER_ACTIVE__){
-    console.warn(NS,"loader already active");
-    window.alert("Web-to-Figma Grabber loader already active.");
+  if(window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__){
+    console.warn(NS,"bookmarklet already active");
+    window.alert("Web-to-Figma Grabber bookmarklet already active.");
     return;
   }
 
-  window.__WEB_TO_FIGMA_GRABBER_LOADER_ACTIVE__=true;
+  window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__=true;
   var url="https://labs.beckharrisdesign.com/scripts/web-to-figma-grabber-loader.js?v="+Date.now();
   var s=document.createElement("script");
   s.src=url;
@@ -31,7 +31,7 @@
       });
       console.info(NS,"loader script loaded",url);
     } catch(_) {}
-    window.__WEB_TO_FIGMA_GRABBER_LOADER_ACTIVE__=false;
+    window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__=false;
   };
   s.onerror=function(ev){
     try {
@@ -43,7 +43,7 @@
       });
       console.error(NS,"loader failed to load",url,ev);
     } catch(_) {}
-    window.__WEB_TO_FIGMA_GRABBER_LOADER_ACTIVE__=false;
+    window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__=false;
     window.alert("Web-to-Figma loader failed to load. Check console for [web-to-figma-grabber].");
   };
   document.head.appendChild(s);
