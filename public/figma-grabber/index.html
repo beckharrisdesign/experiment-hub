@@ -5,246 +5,268 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Figma Grabber — BHD Labs</title>
   <meta name="description" content="A bookmarklet that captures any element on any page and copies a Figma-ready JSON payload to your clipboard.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          colors: {
-            bg: '#0d1117',
-            'bg-secondary': '#161b22',
-            'bg-tertiary': '#21262d',
-            border: '#30363d',
-            'text-primary': '#c9d1d9',
-            'text-secondary': '#8b949e',
-            'text-muted': '#6e7681',
-            accent: '#58a6ff',
-            'accent-light': '#79c0ff',
-            success: '#3fb950',
-          },
           fontFamily: {
-            mono: ["'SF Mono'", 'Monaco', 'Inconsolata', 'Fira Code', 'monospace'],
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Fraunces', 'Georgia', 'serif'],
+          },
+          colors: {
+            green: {
+              dark: '#15472d',
+              footer: '#1c4525',
+            },
+            purple: {
+              btn: '#a383c5',
+              'btn-border': '#634890',
+            },
           },
         },
       },
     }
   </script>
   <style>
-    body { background-color: #0d1117; color: #c9d1d9; }
+    body { font-family: 'Inter', system-ui, sans-serif; }
 
-    .bookmarklet-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 24px;
-      background: #161b22;
-      border: 1px solid #58a6ff;
-      border-radius: 8px;
-      color: #58a6ff;
-      font-family: 'SF Mono', Monaco, Inconsolata, 'Fira Code', monospace;
-      font-size: 15px;
+    .hero-gradient {
+      background: linear-gradient(46.85deg, #d4bded 4.4%, #ffffff 93.6%);
+    }
+
+    .bookmarklet-btn {
+      font-family: 'Fraunces', Georgia, serif;
       font-weight: 600;
-      text-decoration: none;
+      font-size: 32px;
+      line-height: 1;
+      color: white;
+      background: #a383c5;
+      border: 1px solid #634890;
+      border-radius: 8px;
+      padding: 16px 32px;
       cursor: grab;
       user-select: none;
-      transition: background 150ms ease, box-shadow 150ms ease;
-    }
-    .bookmarklet-link:hover {
-      background: #1c2128;
-      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
-    }
-    .bookmarklet-link:active { cursor: grabbing; }
-
-    .step-number {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: #21262d;
-      border: 1px solid #30363d;
-      color: #58a6ff;
-      font-family: 'SF Mono', Monaco, Inconsolata, 'Fira Code', monospace;
-      font-size: 13px;
-      font-weight: 600;
-      flex-shrink: 0;
-    }
-
-    kbd {
+      text-decoration: none;
       display: inline-block;
-      padding: 1px 6px;
-      background: #21262d;
-      border: 1px solid #30363d;
-      border-radius: 4px;
-      font-family: 'SF Mono', Monaco, Inconsolata, 'Fira Code', monospace;
-      font-size: 12px;
-      color: #c9d1d9;
+      transition: opacity 150ms ease, box-shadow 150ms ease;
+      white-space: nowrap;
+    }
+    .bookmarklet-btn:hover {
+      opacity: 0.92;
+      box-shadow: 0 4px 16px rgba(100, 72, 144, 0.35);
+    }
+    .bookmarklet-btn:active { cursor: grabbing; }
+
+    .secondary-btn {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      color: #1e1e1e;
+      background: #e3e3e3;
+      border: 1px solid #767676;
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: inline-block;
+      cursor: pointer;
+      white-space: nowrap;
     }
   </style>
 </head>
-<body class="min-h-screen">
+<body class="bg-white">
 
-  <!-- Header -->
-  <header class="border-b border-border px-4 md:px-8 lg:px-16 py-4">
-    <div class="max-w-3xl mx-auto flex items-center justify-between">
-      <a href="/" class="text-text-muted hover:text-text-primary text-sm transition-colors">
-        ← BHD Labs
-      </a>
-      <span class="font-mono text-xs text-text-muted">experiment</span>
+  <!-- Green top bar -->
+  <div style="background:#15472d; height:8px; width:100%;"></div>
+
+  <!-- Hero -->
+  <section class="hero-gradient relative overflow-hidden" style="min-height:431px;">
+    <!-- Decorative arrow image (upper right) -->
+    <div class="absolute top-0 right-[8%] h-full pointer-events-none select-none hidden md:block" style="width:112px;">
+      <img
+        src="https://www.figma.com/api/mcp/asset/686aa930-adfc-4a02-bf9d-ccb5969236c8"
+        alt=""
+        style="position:absolute; top:-10%; left:-99%; width:333%; max-width:none; height:110%;"
+      >
     </div>
-  </header>
 
-  <main class="px-4 md:px-8 lg:px-16 py-16">
-    <div class="max-w-3xl mx-auto">
-
-      <!-- Hero -->
-      <div class="mb-12">
-        <p class="font-mono text-xs text-accent mb-3 tracking-wider uppercase">Figma Grabber</p>
-        <h1 class="text-3xl md:text-4xl font-semibold text-text-primary mb-4 leading-tight">
-          Capture any element.<br>Paste it into Figma.
+    <!-- Centered content -->
+    <div class="relative z-10 flex flex-col items-center justify-center gap-16 px-6 py-16 text-center" style="min-height:431px;">
+      <!-- Title + subtitle -->
+      <div class="flex flex-col items-center gap-2" style="color:#15472d;">
+        <h1 style="font-family:'Inter',sans-serif; font-weight:700; font-size:clamp(36px,5vw,48px); letter-spacing:-0.96px; line-height:1.2;">
+          Figma Grabber
         </h1>
-        <p class="text-text-secondary text-lg leading-relaxed">
-          A one-click bookmarklet that captures the layout or screenshot of any element on any page and copies a Figma-ready JSON payload to your clipboard. No login. No extension. Nothing leaves your browser.
+        <p style="font-family:'Inter',sans-serif; font-weight:600; font-size:clamp(18px,2.5vw,24px); letter-spacing:-0.48px; line-height:1.2;">
+          Drag to your bookmarks bar.
         </p>
       </div>
 
-      <!-- Bookmarklet drag target -->
-      <div class="bg-bg-secondary border border-border rounded-xl p-8 mb-12">
-        <p class="text-text-secondary text-sm mb-2">Drag this to your bookmarks bar:</p>
-        <p class="text-text-muted text-xs mb-6 font-mono">
-          (or right-click → Bookmark this link)
-        </p>
+      <!-- Button group -->
+      <div class="flex flex-wrap gap-4 items-center justify-center">
+        <a
+          class="secondary-btn"
+          href="#how-to-install"
+          onclick="this.blur();"
+        >
+          How to install ↓
+        </a>
+        <a
+          class="bookmarklet-btn"
+          href="javascript:(function()%7B%20var%20NS%3D%22%5Bweb-to-figma-grabber%3Abookmarklet%5D%22%3B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__%20%3D%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__%20%7C%7C%20%7B%20events%3A%20%5B%5D%20%7D%3B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-start%22%2C%20href%3Awindow.location.href%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.info(NS%2C%22start%22%2Cwindow.location.href)%3B%20%7D%20catch(_)%20%7B%7D%20if(window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__)%7B%20console.warn(NS%2C%22bookmarklet%20already%20active%22)%3B%20window.alert(%22Web-to-Figma%20Grabber%20bookmarklet%20already%20active.%22)%3B%20return%3B%20%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dtrue%3B%20var%20url%3D%22https%3A%2F%2Flabs.beckharrisdesign.com%2Fscripts%2Fweb-to-figma-grabber-loader.js%3Fv%3D%22%2BDate.now()%3B%20var%20s%3Ddocument.createElement(%22script%22)%3B%20s.src%3Durl%3B%20s.async%3Dtrue%3B%20s.onload%3Dfunction()%7B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-loader-loaded%22%2C%20src%3Aurl%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.info(NS%2C%22loader%20script%20loaded%22%2Curl)%3B%20%7D%20catch(_)%20%7B%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dfalse%3B%20%7D%3B%20s.onerror%3Dfunction(ev)%7B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-loader-error%22%2C%20src%3Aurl%2C%20eventType%3Aev%26%26ev.type%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.error(NS%2C%22loader%20failed%20to%20load%22%2Curl%2Cev)%3B%20%7D%20catch(_)%20%7B%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dfalse%3B%20window.alert(%22Web-to-Figma%20loader%20failed%20to%20load.%20Check%20console%20for%20%5Bweb-to-figma-grabber%5D.%22)%3B%20%7D%3B%20document.head.appendChild(s)%3B%20%7D)()%3B"
+          title="Figma Grabber — drag this to your bookmarks bar"
+          draggable="true"
+          onclick="return false;"
+        >
+          Figma Grabber
+        </a>
+      </div>
+    </div>
+  </section>
 
-        <div class="flex justify-center mb-6">
-          <a
-            class="bookmarklet-link"
-            href="javascript:(function()%7B%20var%20NS%3D%22%5Bweb-to-figma-grabber%3Abookmarklet%5D%22%3B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__%20%3D%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__%20%7C%7C%20%7B%20events%3A%20%5B%5D%20%7D%3B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-start%22%2C%20href%3Awindow.location.href%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.info(NS%2C%22start%22%2Cwindow.location.href)%3B%20%7D%20catch(_)%20%7B%7D%20if(window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__)%7B%20console.warn(NS%2C%22bookmarklet%20already%20active%22)%3B%20window.alert(%22Web-to-Figma%20Grabber%20bookmarklet%20already%20active.%22)%3B%20return%3B%20%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dtrue%3B%20var%20url%3D%22https%3A%2F%2Flabs.beckharrisdesign.com%2Fscripts%2Fweb-to-figma-grabber-loader.js%3Fv%3D%22%2BDate.now()%3B%20var%20s%3Ddocument.createElement(%22script%22)%3B%20s.src%3Durl%3B%20s.async%3Dtrue%3B%20s.onload%3Dfunction()%7B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-loader-loaded%22%2C%20src%3Aurl%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.info(NS%2C%22loader%20script%20loaded%22%2Curl)%3B%20%7D%20catch(_)%20%7B%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dfalse%3B%20%7D%3B%20s.onerror%3Dfunction(ev)%7B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-loader-error%22%2C%20src%3Aurl%2C%20eventType%3Aev%26%26ev.type%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.error(NS%2C%22loader%20failed%20to%20load%22%2Curl%2Cev)%3B%20%7D%20catch(_)%20%7B%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dfalse%3B%20window.alert(%22Web-to-Figma%20loader%20failed%20to%20load.%20Check%20console%20for%20%5Bweb-to-figma-grabber%5D.%22)%3B%20%7D%3B%20document.head.appendChild(s)%3B%20%7D)()%3B"
-            title="Figma Grab — drag to bookmarks bar"
-            draggable="true"
-            onclick="return false;"
-          >
-            <!-- Figma-style grid icon -->
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <rect x="2" y="2" width="9" height="9" rx="2" fill="#58a6ff" opacity="0.9"/>
-              <rect x="13" y="2" width="9" height="9" rx="2" fill="#58a6ff" opacity="0.6"/>
-              <rect x="2" y="13" width="9" height="9" rx="2" fill="#58a6ff" opacity="0.6"/>
-              <circle cx="17.5" cy="17.5" r="4.5" fill="#58a6ff" opacity="0.9"/>
-            </svg>
-            Figma Grab
-          </a>
+  <!-- How to install -->
+  <section id="how-to-install" style="background:white; padding:64px; display:flex; flex-direction:column; gap:48px;">
+    <!-- Section heading -->
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <h2 style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
+        How to install
+      </h2>
+      <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:20px; line-height:1.2; color:#757575;">
+        Three steps. Under a minute.
+      </p>
+    </div>
+
+    <!-- Cards -->
+    <div style="display:flex; flex-wrap:wrap; gap:64px; align-items:flex-start; width:100%;">
+
+      <!-- Card 1 -->
+      <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; min-width:240px; flex:1;">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+          <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
+          <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
+        </svg>
+        <div style="display:flex; flex-direction:column; gap:8px; flex:1; min-width:160px;">
+          <p style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
+            Show your bookmarks bar
+          </p>
+          <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:16px; line-height:1.4; color:#757575;">
+            In Chrome, press <kbd style="background:#f0f0f0;border:1px solid #ccc;border-radius:3px;padding:1px 5px;font-size:13px;">⌘ Shift B</kbd> (Mac) or <kbd style="background:#f0f0f0;border:1px solid #ccc;border-radius:3px;padding:1px 5px;font-size:13px;">Ctrl Shift B</kbd> (Windows) to reveal it.
+          </p>
         </div>
-
-        <p class="text-center text-text-muted text-xs">
-          If dragging doesn't work, right-click the button → <em>Bookmark this link</em>
-        </p>
       </div>
 
-      <!-- Install steps -->
-      <section class="mb-12">
-        <h2 class="text-text-primary font-semibold text-lg mb-6">How to install</h2>
-        <ol class="space-y-5">
-          <li class="flex gap-4">
-            <span class="step-number">1</span>
-            <div>
-              <p class="text-text-primary font-medium">Show your bookmarks bar</p>
-              <p class="text-text-secondary text-sm mt-1">
-                In Chrome: <kbd>⌘</kbd> <kbd>Shift</kbd> <kbd>B</kbd> on Mac, or <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>B</kbd> on Windows/Linux.
-              </p>
-            </div>
-          </li>
-          <li class="flex gap-4">
-            <span class="step-number">2</span>
-            <div>
-              <p class="text-text-primary font-medium">Drag the button to your bookmarks bar</p>
-              <p class="text-text-secondary text-sm mt-1">
-                Click and hold <span class="font-mono text-accent text-xs">Figma Grab</span> above, then drag it up to the bookmarks bar. Release when you see the insertion point.
-              </p>
-            </div>
-          </li>
-          <li class="flex gap-4">
-            <span class="step-number">3</span>
-            <div>
-              <p class="text-text-primary font-medium">You're done</p>
-              <p class="text-text-secondary text-sm mt-1">
-                The bookmarklet is saved. You won't need to come back here.
-              </p>
-            </div>
-          </li>
-        </ol>
-      </section>
+      <!-- Card 2 -->
+      <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; min-width:240px; flex:1;">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+          <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
+          <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
+        </svg>
+        <div style="display:flex; flex-direction:column; gap:8px; flex:1; min-width:160px;">
+          <p style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
+            Drag the button to your bookmarks bar
+          </p>
+          <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:16px; line-height:1.4; color:#757575;">
+            Click and hold the purple <em>Figma Grabber</em> button above, drag it up to your bookmarks bar, and release. Or right-click it and choose <em>Bookmark this link</em>.
+          </p>
+        </div>
+      </div>
 
-      <!-- Usage steps -->
-      <section class="mb-12">
-        <h2 class="text-text-primary font-semibold text-lg mb-6">How to use it</h2>
-        <ol class="space-y-5">
-          <li class="flex gap-4">
-            <span class="step-number">1</span>
-            <div>
-              <p class="text-text-primary font-medium">Navigate to any page</p>
-              <p class="text-text-secondary text-sm mt-1">Open the site or UI you want to capture.</p>
-            </div>
-          </li>
-          <li class="flex gap-4">
-            <span class="step-number">2</span>
-            <div>
-              <p class="text-text-primary font-medium">Click <span class="font-mono text-accent text-xs">Figma Grab</span> in your bookmarks bar</p>
-              <p class="text-text-secondary text-sm mt-1">
-                A toolbar appears at the bottom of the page with three options: <em>Copy to clipboard</em>, <em>Entire screen</em>, and <em>Select element</em>.
-              </p>
-            </div>
-          </li>
-          <li class="flex gap-4">
-            <span class="step-number">3</span>
-            <div>
-              <p class="text-text-primary font-medium">Pick what to capture</p>
-              <p class="text-text-secondary text-sm mt-1">
-                Click <em>Select element</em> to hover and click a specific component, or <em>Entire screen</em> for the full viewport, or <em>Copy to clipboard</em> to grab the whole page immediately.
-              </p>
-            </div>
-          </li>
-          <li class="flex gap-4">
-            <span class="step-number">4</span>
-            <div>
-              <p class="text-text-primary font-medium">Paste the payload into your Figma MCP workflow</p>
-              <p class="text-text-secondary text-sm mt-1">
-                A JSON payload is now on your clipboard. Paste it wherever your Figma MCP session expects design input.
-              </p>
-            </div>
-          </li>
-        </ol>
-      </section>
-
-      <!-- Privacy note -->
-      <section class="bg-bg-secondary border border-border rounded-xl p-6">
-        <h2 class="text-text-primary font-semibold text-sm mb-3 font-mono uppercase tracking-wider">Privacy</h2>
-        <ul class="space-y-2 text-text-secondary text-sm">
-          <li class="flex gap-2">
-            <span class="text-success mt-0.5">✓</span>
-            <span>No Figma API calls. The bookmarklet never authenticates with Figma or touches any Figma endpoint.</span>
-          </li>
-          <li class="flex gap-2">
-            <span class="text-success mt-0.5">✓</span>
-            <span>Your clipboard is local. The JSON payload is written to your OS clipboard — nothing is stored server-side.</span>
-          </li>
-          <li class="flex gap-2">
-            <span class="text-success mt-0.5">✓</span>
-            <span>Works with your own credentials. Anyone with Figma edit access can use this — it requires no shared login.</span>
-          </li>
-          <li class="flex gap-2">
-            <span class="text-success mt-0.5">✓</span>
-            <span>The only network call is fetching the loader script from <span class="font-mono text-xs">labs.beckharrisdesign.com</span> — the same origin as this page.</span>
-          </li>
-        </ul>
-      </section>
+      <!-- Card 3 -->
+      <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; min-width:240px; flex:1;">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+          <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
+          <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
+        </svg>
+        <div style="display:flex; flex-direction:column; gap:8px; flex:1; min-width:160px;">
+          <p style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
+            You're done
+          </p>
+          <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:16px; line-height:1.4; color:#757575;">
+            The bookmarklet is saved. You won't need to come back here — it's yours now, tied to no account or login.
+          </p>
+        </div>
+      </div>
 
     </div>
-  </main>
+  </section>
 
-  <footer class="border-t border-border px-4 md:px-8 lg:px-16 py-6 mt-16">
-    <div class="max-w-3xl mx-auto text-text-muted text-xs font-mono">
-      BHD Labs · <a href="/" class="hover:text-text-primary transition-colors">experiment-hub</a>
+  <!-- How to use -->
+  <section style="background:white; padding:64px; display:flex; flex-direction:column; gap:48px;">
+    <!-- Section heading -->
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <h2 style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
+        How to use
+      </h2>
+      <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:20px; line-height:1.2; color:#757575;">
+        One click from any page.
+      </p>
     </div>
+
+    <!-- Cards -->
+    <div style="display:flex; flex-wrap:wrap; gap:64px; align-items:flex-start; width:100%;">
+
+      <!-- Card 1 -->
+      <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; min-width:240px; flex:1;">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+          <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
+          <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
+        </svg>
+        <div style="display:flex; flex-direction:column; gap:8px; flex:1; min-width:160px;">
+          <p style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
+            Navigate to any page
+          </p>
+          <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:16px; line-height:1.4; color:#757575;">
+            Open the site or UI you want to bring into Figma. Works on any page you can view in Chrome.
+          </p>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; min-width:240px; flex:1;">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+          <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
+          <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
+        </svg>
+        <div style="display:flex; flex-direction:column; gap:8px; flex:1; min-width:160px;">
+          <p style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
+            Click Figma Grabber
+          </p>
+          <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:16px; line-height:1.4; color:#757575;">
+            A toolbar appears at the bottom of the page. Choose <em>Select element</em> to pick a specific component, <em>Entire screen</em> for the full viewport, or <em>Copy to clipboard</em> for the whole page immediately.
+          </p>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; min-width:240px; flex:1;">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+          <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
+          <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
+        </svg>
+        <div style="display:flex; flex-direction:column; gap:8px; flex:1; min-width:160px;">
+          <p style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
+            Paste into Figma
+          </p>
+          <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:16px; line-height:1.4; color:#757575;">
+            Your clipboard now holds a Figma-ready JSON payload. Paste it into your Figma MCP workflow. Nothing leaves your machine — no API calls, no server, just your clipboard.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="background:#1c4525; padding:32px 32px 160px; border-top:1px solid #d9d9d9;">
   </footer>
 
 </body>
