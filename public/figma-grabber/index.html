@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Figma Grabber — BHD Labs</title>
+  <meta name="description" content="A bookmarklet that captures any element on any page and copies a Figma-ready JSON payload to your clipboard.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#0d1117',
+            'bg-secondary': '#161b22',
+            'bg-tertiary': '#21262d',
+            border: '#30363d',
+            'text-primary': '#c9d1d9',
+            'text-secondary': '#8b949e',
+            'text-muted': '#6e7681',
+            accent: '#58a6ff',
+            'accent-light': '#79c0ff',
+            success: '#3fb950',
+          },
+          fontFamily: {
+            mono: ["'SF Mono'", 'Monaco', 'Inconsolata', 'Fira Code', 'monospace'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { background-color: #0d1117; color: #c9d1d9; }
+
+    .bookmarklet-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 24px;
+      background: #161b22;
+      border: 1px solid #58a6ff;
+      border-radius: 8px;
+      color: #58a6ff;
+      font-family: 'SF Mono', Monaco, Inconsolata, 'Fira Code', monospace;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: grab;
+      user-select: none;
+      transition: background 150ms ease, box-shadow 150ms ease;
+    }
+    .bookmarklet-link:hover {
+      background: #1c2128;
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+    }
+    .bookmarklet-link:active { cursor: grabbing; }
+
+    .step-number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #58a6ff;
+      font-family: 'SF Mono', Monaco, Inconsolata, 'Fira Code', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    kbd {
+      display: inline-block;
+      padding: 1px 6px;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      font-family: 'SF Mono', Monaco, Inconsolata, 'Fira Code', monospace;
+      font-size: 12px;
+      color: #c9d1d9;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Header -->
+  <header class="border-b border-border px-4 md:px-8 lg:px-16 py-4">
+    <div class="max-w-3xl mx-auto flex items-center justify-between">
+      <a href="/" class="text-text-muted hover:text-text-primary text-sm transition-colors">
+        ← BHD Labs
+      </a>
+      <span class="font-mono text-xs text-text-muted">experiment</span>
+    </div>
+  </header>
+
+  <main class="px-4 md:px-8 lg:px-16 py-16">
+    <div class="max-w-3xl mx-auto">
+
+      <!-- Hero -->
+      <div class="mb-12">
+        <p class="font-mono text-xs text-accent mb-3 tracking-wider uppercase">Figma Grabber</p>
+        <h1 class="text-3xl md:text-4xl font-semibold text-text-primary mb-4 leading-tight">
+          Capture any element.<br>Paste it into Figma.
+        </h1>
+        <p class="text-text-secondary text-lg leading-relaxed">
+          A one-click bookmarklet that captures the layout or screenshot of any element on any page and copies a Figma-ready JSON payload to your clipboard. No login. No extension. Nothing leaves your browser.
+        </p>
+      </div>
+
+      <!-- Bookmarklet drag target -->
+      <div class="bg-bg-secondary border border-border rounded-xl p-8 mb-12">
+        <p class="text-text-secondary text-sm mb-2">Drag this to your bookmarks bar:</p>
+        <p class="text-text-muted text-xs mb-6 font-mono">
+          (or right-click → Bookmark this link)
+        </p>
+
+        <div class="flex justify-center mb-6">
+          <a
+            class="bookmarklet-link"
+            href="javascript:(function()%7B%20var%20NS%3D%22%5Bweb-to-figma-grabber%3Abookmarklet%5D%22%3B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__%20%3D%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__%20%7C%7C%20%7B%20events%3A%20%5B%5D%20%7D%3B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-start%22%2C%20href%3Awindow.location.href%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.info(NS%2C%22start%22%2Cwindow.location.href)%3B%20%7D%20catch(_)%20%7B%7D%20if(window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__)%7B%20console.warn(NS%2C%22bookmarklet%20already%20active%22)%3B%20window.alert(%22Web-to-Figma%20Grabber%20bookmarklet%20already%20active.%22)%3B%20return%3B%20%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dtrue%3B%20var%20url%3D%22https%3A%2F%2Flabs.beckharrisdesign.com%2Fscripts%2Fweb-to-figma-grabber-loader.js%3Fv%3D%22%2BDate.now()%3B%20var%20s%3Ddocument.createElement(%22script%22)%3B%20s.src%3Durl%3B%20s.async%3Dtrue%3B%20s.onload%3Dfunction()%7B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-loader-loaded%22%2C%20src%3Aurl%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.info(NS%2C%22loader%20script%20loaded%22%2Curl)%3B%20%7D%20catch(_)%20%7B%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dfalse%3B%20%7D%3B%20s.onerror%3Dfunction(ev)%7B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-loader-error%22%2C%20src%3Aurl%2C%20eventType%3Aev%26%26ev.type%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.error(NS%2C%22loader%20failed%20to%20load%22%2Curl%2Cev)%3B%20%7D%20catch(_)%20%7B%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dfalse%3B%20window.alert(%22Web-to-Figma%20loader%20failed%20to%20load.%20Check%20console%20for%20%5Bweb-to-figma-grabber%5D.%22)%3B%20%7D%3B%20document.head.appendChild(s)%3B%20%7D)()%3B"
+            title="Figma Grab — drag to bookmarks bar"
+            draggable="true"
+            onclick="return false;"
+          >
+            <!-- Figma-style grid icon -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="2" y="2" width="9" height="9" rx="2" fill="#58a6ff" opacity="0.9"/>
+              <rect x="13" y="2" width="9" height="9" rx="2" fill="#58a6ff" opacity="0.6"/>
+              <rect x="2" y="13" width="9" height="9" rx="2" fill="#58a6ff" opacity="0.6"/>
+              <circle cx="17.5" cy="17.5" r="4.5" fill="#58a6ff" opacity="0.9"/>
+            </svg>
+            Figma Grab
+          </a>
+        </div>
+
+        <p class="text-center text-text-muted text-xs">
+          If dragging doesn't work, right-click the button → <em>Bookmark this link</em>
+        </p>
+      </div>
+
+      <!-- Install steps -->
+      <section class="mb-12">
+        <h2 class="text-text-primary font-semibold text-lg mb-6">How to install</h2>
+        <ol class="space-y-5">
+          <li class="flex gap-4">
+            <span class="step-number">1</span>
+            <div>
+              <p class="text-text-primary font-medium">Show your bookmarks bar</p>
+              <p class="text-text-secondary text-sm mt-1">
+                In Chrome: <kbd>⌘</kbd> <kbd>Shift</kbd> <kbd>B</kbd> on Mac, or <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>B</kbd> on Windows/Linux.
+              </p>
+            </div>
+          </li>
+          <li class="flex gap-4">
+            <span class="step-number">2</span>
+            <div>
+              <p class="text-text-primary font-medium">Drag the button to your bookmarks bar</p>
+              <p class="text-text-secondary text-sm mt-1">
+                Click and hold <span class="font-mono text-accent text-xs">Figma Grab</span> above, then drag it up to the bookmarks bar. Release when you see the insertion point.
+              </p>
+            </div>
+          </li>
+          <li class="flex gap-4">
+            <span class="step-number">3</span>
+            <div>
+              <p class="text-text-primary font-medium">You're done</p>
+              <p class="text-text-secondary text-sm mt-1">
+                The bookmarklet is saved. You won't need to come back here.
+              </p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <!-- Usage steps -->
+      <section class="mb-12">
+        <h2 class="text-text-primary font-semibold text-lg mb-6">How to use it</h2>
+        <ol class="space-y-5">
+          <li class="flex gap-4">
+            <span class="step-number">1</span>
+            <div>
+              <p class="text-text-primary font-medium">Navigate to any page</p>
+              <p class="text-text-secondary text-sm mt-1">Open the site or UI you want to capture.</p>
+            </div>
+          </li>
+          <li class="flex gap-4">
+            <span class="step-number">2</span>
+            <div>
+              <p class="text-text-primary font-medium">Click <span class="font-mono text-accent text-xs">Figma Grab</span> in your bookmarks bar</p>
+              <p class="text-text-secondary text-sm mt-1">
+                A toolbar appears at the bottom of the page with three options: <em>Copy to clipboard</em>, <em>Entire screen</em>, and <em>Select element</em>.
+              </p>
+            </div>
+          </li>
+          <li class="flex gap-4">
+            <span class="step-number">3</span>
+            <div>
+              <p class="text-text-primary font-medium">Pick what to capture</p>
+              <p class="text-text-secondary text-sm mt-1">
+                Click <em>Select element</em> to hover and click a specific component, or <em>Entire screen</em> for the full viewport, or <em>Copy to clipboard</em> to grab the whole page immediately.
+              </p>
+            </div>
+          </li>
+          <li class="flex gap-4">
+            <span class="step-number">4</span>
+            <div>
+              <p class="text-text-primary font-medium">Paste the payload into your Figma MCP workflow</p>
+              <p class="text-text-secondary text-sm mt-1">
+                A JSON payload is now on your clipboard. Paste it wherever your Figma MCP session expects design input.
+              </p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <!-- Privacy note -->
+      <section class="bg-bg-secondary border border-border rounded-xl p-6">
+        <h2 class="text-text-primary font-semibold text-sm mb-3 font-mono uppercase tracking-wider">Privacy</h2>
+        <ul class="space-y-2 text-text-secondary text-sm">
+          <li class="flex gap-2">
+            <span class="text-success mt-0.5">✓</span>
+            <span>No Figma API calls. The bookmarklet never authenticates with Figma or touches any Figma endpoint.</span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-success mt-0.5">✓</span>
+            <span>Your clipboard is local. The JSON payload is written to your OS clipboard — nothing is stored server-side.</span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-success mt-0.5">✓</span>
+            <span>Works with your own credentials. Anyone with Figma edit access can use this — it requires no shared login.</span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-success mt-0.5">✓</span>
+            <span>The only network call is fetching the loader script from <span class="font-mono text-xs">labs.beckharrisdesign.com</span> — the same origin as this page.</span>
+          </li>
+        </ul>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="border-t border-border px-4 md:px-8 lg:px-16 py-6 mt-16">
+    <div class="max-w-3xl mx-auto text-text-muted text-xs font-mono">
+      BHD Labs · <a href="/" class="hover:text-text-primary transition-colors">experiment-hub</a>
+    </div>
+  </footer>
+
+</body>
+</html>
