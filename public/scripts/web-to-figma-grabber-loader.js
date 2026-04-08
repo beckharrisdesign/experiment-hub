@@ -58,7 +58,10 @@
     ) {
       return window.__FIGMA_CAPTURE_ASSET_BASE_URL.replace(/\/$/, "");
     }
-    if (typeof config.assetOrigin === "string" && config.assetOrigin.trim().length > 0) {
+    if (
+      typeof config.assetOrigin === "string" &&
+      config.assetOrigin.trim().length > 0
+    ) {
       return config.assetOrigin.replace(/\/$/, "");
     }
     return getLoaderScriptOrigin() || DEFAULT_HOSTED_ORIGIN;
@@ -73,7 +76,9 @@
     }
 
     return new Promise((resolve, reject) => {
-      const existing = document.querySelector('script[data-web-to-figma-loader="capture"]');
+      const existing = document.querySelector(
+        'script[data-web-to-figma-loader="capture"]',
+      );
       if (existing) {
         debugState.captureScriptStatus = "existing-tag";
         log("found existing capture script tag, waiting for load event");
@@ -111,7 +116,9 @@
   function launch() {
     debugState.stage = "launch";
     if (!window.figma || typeof window.figma.captureForDesign !== "function") {
-      throw new Error("captureForDesign is unavailable after loading capture script.");
+      throw new Error(
+        "captureForDesign is unavailable after loading capture script.",
+      );
     }
 
     // Default to interactive picker overlay for visible feedback.
@@ -121,11 +128,15 @@
       typeof config.selector === "string" && config.selector.trim().length > 0
         ? config.selector
         : null;
-    const delayMs = Number.isFinite(config.delayMs) ? Math.max(0, config.delayMs) : 0;
+    const delayMs = Number.isFinite(config.delayMs)
+      ? Math.max(0, config.delayMs)
+      : 0;
     const verbose = typeof config.verbose === "boolean" ? config.verbose : true;
     const mode = typeof config.mode === "string" ? config.mode : "clipboard";
     const usePickerOverlay =
-      typeof config.usePickerOverlay === "boolean" ? config.usePickerOverlay : !selector;
+      typeof config.usePickerOverlay === "boolean"
+        ? config.usePickerOverlay
+        : !selector;
     debugState.config = {
       selector,
       delayMs,
@@ -146,10 +157,6 @@
       log("starting direct capture flow", debugState.config);
     } else {
       log("starting picker-overlay capture flow", debugState.config);
-      if (usePickerOverlay) {
-        // The capture.js script opens its built-in page picker when selector is omitted.
-        alert("Web-to-Figma picker active: click an element to capture to clipboard.");
-      }
     }
 
     return window.figma.captureForDesign(captureRequest);
