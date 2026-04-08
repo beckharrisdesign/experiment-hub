@@ -23,12 +23,16 @@
     .hero {
       background: linear-gradient(46.85deg, #d4bded 4.4%, #ffffff 93.6%);
       min-height: 431px;
+      position: relative;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 64px 24px;
     }
     .hero-content {
+      position: relative;
+      z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -38,6 +42,17 @@
       width: 100%;
       max-width: 1200px;
     }
+    .hero-arrow {
+      position: absolute;
+      right: 8%;
+      top: 0;
+      height: 100%;
+      pointer-events: none;
+      user-select: none;
+      display: flex;
+      align-items: flex-start;
+    }
+    @media (max-width: 768px) { .hero-arrow { display: none; } }
     .hero-titles {
       display: flex;
       flex-direction: column;
@@ -199,6 +214,14 @@
 
   <!-- Hero -->
   <section class="hero">
+    <div class="hero-arrow" aria-hidden="true">
+      <svg viewBox="0 0 90 370" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:90px; height:370px;">
+        <path d="M 68 360 C 74 318 84 268 77 218 C 70 166 50 124 37 82 C 29 54 25 30 18 8"
+              stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M 18 8 L 4 26 M 18 8 L 35 22"
+              stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
     <div class="hero-content">
       <div class="hero-titles">
         <h1 class="hero-title">Figma Grabber</h1>
