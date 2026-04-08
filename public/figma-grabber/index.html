@@ -8,36 +8,66 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-            display: ['Fraunces', 'Georgia', 'serif'],
-          },
-          colors: {
-            green: {
-              dark: '#15472d',
-              footer: '#1c4525',
-            },
-            purple: {
-              btn: '#a383c5',
-              'btn-border': '#634890',
-            },
-          },
-        },
-      },
-    }
-  </script>
   <style>
-    body { font-family: 'Inter', system-ui, sans-serif; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: white; color: #1e1e1e; }
 
-    .hero-gradient {
-      background: linear-gradient(46.85deg, #d4bded 4.4%, #ffffff 93.6%);
+    /* Top bar */
+    .top-bar {
+      background: #15472d;
+      height: 8px;
+      width: 100%;
     }
 
+    /* Hero */
+    .hero {
+      background: linear-gradient(46.85deg, #d4bded 4.4%, #ffffff 93.6%);
+      min-height: 431px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 64px 24px;
+    }
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 64px;
+      text-align: center;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .hero-titles {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: #15472d;
+    }
+    .hero-title {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: clamp(36px, 5vw, 48px);
+      letter-spacing: -0.96px;
+      line-height: 1.2;
+    }
+    .hero-subtitle {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: clamp(18px, 2.5vw, 24px);
+      letter-spacing: -0.48px;
+      line-height: 1.2;
+    }
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Buttons */
     .bookmarklet-btn {
       font-family: 'Fraunces', Georgia, serif;
       font-weight: 600;
@@ -75,45 +105,107 @@
       cursor: pointer;
       white-space: nowrap;
     }
+    .secondary-btn:hover { background: #d6d6d6; }
+
+    /* Card grid sections */
+    .card-section {
+      background: white;
+      padding: 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+    .section-heading { display: flex; flex-direction: column; gap: 8px; }
+    .section-title {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 24px;
+      letter-spacing: -0.48px;
+      line-height: 1.2;
+      color: #1e1e1e;
+    }
+    .section-subtitle {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 20px;
+      line-height: 1.2;
+      color: #757575;
+    }
+
+    /* Cards */
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 64px;
+      align-items: flex-start;
+      width: 100%;
+    }
+    .card {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      align-items: flex-start;
+      min-width: 240px;
+      flex: 1;
+    }
+    .card-icon { flex-shrink: 0; }
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      min-width: 160px;
+    }
+    .card-title {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 24px;
+      letter-spacing: -0.48px;
+      line-height: 1.2;
+      color: #1e1e1e;
+    }
+    .card-text {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 1.4;
+      color: #757575;
+    }
+    kbd {
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    /* Footer */
+    .footer {
+      background: #1c4525;
+      padding: 32px 32px 160px;
+      border-top: 1px solid #d9d9d9;
+    }
+
+    @media (max-width: 640px) {
+      .card-section { padding: 40px 24px; }
+      .cards { gap: 40px; }
+    }
   </style>
 </head>
-<body class="bg-white">
+<body>
 
-  <!-- Green top bar -->
-  <div style="background:#15472d; height:8px; width:100%;"></div>
+  <div class="top-bar"></div>
 
   <!-- Hero -->
-  <section class="hero-gradient relative overflow-hidden" style="min-height:431px;">
-    <!-- Decorative arrow image (upper right) -->
-    <div class="absolute top-0 right-[8%] h-full pointer-events-none select-none hidden md:block" style="width:112px;">
-      <img
-        src="https://www.figma.com/api/mcp/asset/686aa930-adfc-4a02-bf9d-ccb5969236c8"
-        alt=""
-        style="position:absolute; top:-10%; left:-99%; width:333%; max-width:none; height:110%;"
-      >
-    </div>
-
-    <!-- Centered content -->
-    <div class="relative z-10 flex flex-col items-center justify-center gap-16 px-6 py-16 text-center" style="min-height:431px;">
-      <!-- Title + subtitle -->
-      <div class="flex flex-col items-center gap-2" style="color:#15472d;">
-        <h1 style="font-family:'Inter',sans-serif; font-weight:700; font-size:clamp(36px,5vw,48px); letter-spacing:-0.96px; line-height:1.2;">
-          Figma Grabber
-        </h1>
-        <p style="font-family:'Inter',sans-serif; font-weight:600; font-size:clamp(18px,2.5vw,24px); letter-spacing:-0.48px; line-height:1.2;">
-          Drag to your bookmarks bar.
-        </p>
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-titles">
+        <h1 class="hero-title">Figma Grabber</h1>
+        <p class="hero-subtitle">Drag to your bookmarks bar.</p>
       </div>
-
-      <!-- Button group -->
-      <div class="flex flex-wrap gap-4 items-center justify-center">
-        <a
-          class="secondary-btn"
-          href="#how-to-install"
-          onclick="this.blur();"
-        >
-          How to install ↓
-        </a>
+      <div class="hero-buttons">
+        <a class="secondary-btn" href="#how-to-install">How to install ↓</a>
         <a
           class="bookmarklet-btn"
           href="javascript:(function()%7B%20var%20NS%3D%22%5Bweb-to-figma-grabber%3Abookmarklet%5D%22%3B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__%20%3D%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__%20%7C%7C%20%7B%20events%3A%20%5B%5D%20%7D%3B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-start%22%2C%20href%3Awindow.location.href%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.info(NS%2C%22start%22%2Cwindow.location.href)%3B%20%7D%20catch(_)%20%7B%7D%20if(window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__)%7B%20console.warn(NS%2C%22bookmarklet%20already%20active%22)%3B%20window.alert(%22Web-to-Figma%20Grabber%20bookmarklet%20already%20active.%22)%3B%20return%3B%20%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dtrue%3B%20var%20url%3D%22https%3A%2F%2Flabs.beckharrisdesign.com%2Fscripts%2Fweb-to-figma-grabber-loader.js%3Fv%3D%22%2BDate.now()%3B%20var%20s%3Ddocument.createElement(%22script%22)%3B%20s.src%3Durl%3B%20s.async%3Dtrue%3B%20s.onload%3Dfunction()%7B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-loader-loaded%22%2C%20src%3Aurl%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.info(NS%2C%22loader%20script%20loaded%22%2Curl)%3B%20%7D%20catch(_)%20%7B%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dfalse%3B%20%7D%3B%20s.onerror%3Dfunction(ev)%7B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-loader-error%22%2C%20src%3Aurl%2C%20eventType%3Aev%26%26ev.type%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.error(NS%2C%22loader%20failed%20to%20load%22%2Curl%2Cev)%3B%20%7D%20catch(_)%20%7B%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dfalse%3B%20window.alert(%22Web-to-Figma%20loader%20failed%20to%20load.%20Check%20console%20for%20%5Bweb-to-figma-grabber%5D.%22)%3B%20%7D%3B%20document.head.appendChild(s)%3B%20%7D)()%3B"
@@ -128,146 +220,92 @@
   </section>
 
   <!-- How to install -->
-  <section id="how-to-install" style="background:white; padding:64px; display:flex; flex-direction:column; gap:48px;">
-    <!-- Section heading -->
-    <div style="display:flex; flex-direction:column; gap:8px;">
-      <h2 style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
-        How to install
-      </h2>
-      <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:20px; line-height:1.2; color:#757575;">
-        Three steps. Under a minute.
-      </p>
+  <section id="how-to-install" class="card-section">
+    <div class="section-heading">
+      <h2 class="section-title">How to install</h2>
+      <p class="section-subtitle">Three steps. Under a minute.</p>
     </div>
-
-    <!-- Cards -->
-    <div style="display:flex; flex-wrap:wrap; gap:64px; align-items:flex-start; width:100%;">
-
-      <!-- Card 1 -->
-      <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; min-width:240px; flex:1;">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+    <div class="cards">
+      <div class="card">
+        <svg class="card-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
           <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
           <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
         </svg>
-        <div style="display:flex; flex-direction:column; gap:8px; flex:1; min-width:160px;">
-          <p style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
-            Show your bookmarks bar
-          </p>
-          <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:16px; line-height:1.4; color:#757575;">
-            In Chrome, press <kbd style="background:#f0f0f0;border:1px solid #ccc;border-radius:3px;padding:1px 5px;font-size:13px;">⌘ Shift B</kbd> (Mac) or <kbd style="background:#f0f0f0;border:1px solid #ccc;border-radius:3px;padding:1px 5px;font-size:13px;">Ctrl Shift B</kbd> (Windows) to reveal it.
-          </p>
+        <div class="card-body">
+          <p class="card-title">Show your bookmarks bar</p>
+          <p class="card-text">In Chrome, press <kbd>⌘ Shift B</kbd> (Mac) or <kbd>Ctrl Shift B</kbd> (Windows) to reveal it.</p>
         </div>
       </div>
-
-      <!-- Card 2 -->
-      <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; min-width:240px; flex:1;">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+      <div class="card">
+        <svg class="card-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
           <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
           <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
         </svg>
-        <div style="display:flex; flex-direction:column; gap:8px; flex:1; min-width:160px;">
-          <p style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
-            Drag the button to your bookmarks bar
-          </p>
-          <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:16px; line-height:1.4; color:#757575;">
-            Click and hold the purple <em>Figma Grabber</em> button above, drag it up to your bookmarks bar, and release. Or right-click it and choose <em>Bookmark this link</em>.
-          </p>
+        <div class="card-body">
+          <p class="card-title">Drag the button to your bookmarks bar</p>
+          <p class="card-text">Click and hold the purple <em>Figma Grabber</em> button above, drag it up to your bookmarks bar, and release. Or right-click it and choose <em>Bookmark this link</em>.</p>
         </div>
       </div>
-
-      <!-- Card 3 -->
-      <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; min-width:240px; flex:1;">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+      <div class="card">
+        <svg class="card-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
           <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
           <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
         </svg>
-        <div style="display:flex; flex-direction:column; gap:8px; flex:1; min-width:160px;">
-          <p style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
-            You're done
-          </p>
-          <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:16px; line-height:1.4; color:#757575;">
-            The bookmarklet is saved. You won't need to come back here — it's yours now, tied to no account or login.
-          </p>
+        <div class="card-body">
+          <p class="card-title">You're done</p>
+          <p class="card-text">The bookmarklet is saved. You won't need to come back here — it's yours now, tied to no account or login.</p>
         </div>
       </div>
-
     </div>
   </section>
 
   <!-- How to use -->
-  <section style="background:white; padding:64px; display:flex; flex-direction:column; gap:48px;">
-    <!-- Section heading -->
-    <div style="display:flex; flex-direction:column; gap:8px;">
-      <h2 style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
-        How to use
-      </h2>
-      <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:20px; line-height:1.2; color:#757575;">
-        One click from any page.
-      </p>
+  <section class="card-section">
+    <div class="section-heading">
+      <h2 class="section-title">How to use</h2>
+      <p class="section-subtitle">One click from any page.</p>
     </div>
-
-    <!-- Cards -->
-    <div style="display:flex; flex-wrap:wrap; gap:64px; align-items:flex-start; width:100%;">
-
-      <!-- Card 1 -->
-      <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; min-width:240px; flex:1;">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+    <div class="cards">
+      <div class="card">
+        <svg class="card-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
           <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
           <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
         </svg>
-        <div style="display:flex; flex-direction:column; gap:8px; flex:1; min-width:160px;">
-          <p style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
-            Navigate to any page
-          </p>
-          <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:16px; line-height:1.4; color:#757575;">
-            Open the site or UI you want to bring into Figma. Works on any page you can view in Chrome.
-          </p>
+        <div class="card-body">
+          <p class="card-title">Navigate to any page</p>
+          <p class="card-text">Open the site or UI you want to bring into Figma. Works on any page you can view in Chrome.</p>
         </div>
       </div>
-
-      <!-- Card 2 -->
-      <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; min-width:240px; flex:1;">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+      <div class="card">
+        <svg class="card-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
           <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
           <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
         </svg>
-        <div style="display:flex; flex-direction:column; gap:8px; flex:1; min-width:160px;">
-          <p style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
-            Click Figma Grabber
-          </p>
-          <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:16px; line-height:1.4; color:#757575;">
-            A toolbar appears at the bottom of the page. Choose <em>Select element</em> to pick a specific component, <em>Entire screen</em> for the full viewport, or <em>Copy to clipboard</em> for the whole page immediately.
-          </p>
+        <div class="card-body">
+          <p class="card-title">Click Figma Grabber</p>
+          <p class="card-text">A toolbar appears at the bottom of the page. Choose <em>Select element</em> to pick a specific component, <em>Entire screen</em> for the full viewport, or <em>Copy to clipboard</em> for the whole page immediately.</p>
         </div>
       </div>
-
-      <!-- Card 3 -->
-      <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; min-width:240px; flex:1;">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+      <div class="card">
+        <svg class="card-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
           <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
           <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
         </svg>
-        <div style="display:flex; flex-direction:column; gap:8px; flex:1; min-width:160px;">
-          <p style="font-family:'Inter',sans-serif; font-weight:600; font-size:24px; letter-spacing:-0.48px; line-height:1.2; color:#1e1e1e;">
-            Paste into Figma
-          </p>
-          <p style="font-family:'Inter',sans-serif; font-weight:400; font-size:16px; line-height:1.4; color:#757575;">
-            Your clipboard now holds a Figma-ready JSON payload. Paste it into your Figma MCP workflow. Nothing leaves your machine — no API calls, no server, just your clipboard.
-          </p>
+        <div class="card-body">
+          <p class="card-title">Paste into Figma</p>
+          <p class="card-text">Your clipboard now holds a Figma-ready JSON payload. Paste it into your Figma MCP workflow. Nothing leaves your machine — no API calls, no server, just your clipboard.</p>
         </div>
       </div>
-
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer style="background:#1c4525; padding:32px 32px 160px; border-top:1px solid #d9d9d9;">
-  </footer>
+  <footer class="footer"></footer>
 
 </body>
 </html>
