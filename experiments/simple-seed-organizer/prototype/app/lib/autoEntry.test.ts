@@ -15,7 +15,12 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { mergeExtractedData, fieldAfterAutoEntry } from "./autoEntry";
+import {
+  mergeExtractedData,
+  fieldAfterAutoEntry,
+  buildNotesFromDescriptionEdit,
+  buildNotesFromPlantingEdit,
+} from "./autoEntry";
 import { AIExtractedData } from "./packetReaderAI";
 
 // ---------------------------------------------------------------------------
@@ -319,6 +324,134 @@ describe("fieldAfterAutoEntry", () => {
 
     it("fills when current is exactly empty string", () => {
       expect(fieldAfterAutoEntry("", "Baker Creek")).toBe("Baker Creek");
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildNotesFromDescriptionEdit — fixes Bug C
+//
+// Bug C: when the user edits "Description" in the AI panel, the old handler
+// pulled aiExtractedData.plantingInstructions (a stale closure value,
+// possibly from a different scan) and appended it to the user's edited
+// description, overwriting whatever was in the planting-instructions half of
+// the notes field. The currentNotes variable was assigned but never used.
+// ---------------------------------------------------------------------------
+
+describe("buildNotesFromDescriptionEdit", () => {
+  describe("Bug C — stale aiExtractedData injected into notes on description edit", () => {
+    it("preserves the planting-instructions half already in notes", () => {
+      // notes = "AI description\n\nAI planting instructions"
+      // user edits description to something new → planting instructions part must survive
+      const result = buildNotesFromDescriptionEdit(
+        "AI description\n\nAI planting instructions",
+        "User-edited description",
+      );
+      expect(result).toBe(
+        "User-edited description\n\nAI planting instructions",
+      );
+    });
+
+    it("does NOT pull in data from a stale aiExtractedData (cross-scan contamination)", () => {
+      // Simulates: front scan set notes = "Front description\n\nFront planting"
+      // User then scans back image → aiExtractedData.plantingInstructions
+      // is now "Back planting" (different scan).
+      // Editing front description in the panel must NOT inject "Back planting".
+      // The helper only reads currentNotes — it has no access to aiExtractedData.
+      const result = buildNotesFromDescriptionEdit(
+        "Front description\n\nFront planting",
+        "Edited front description",
+      );
+      // Result must use "Front planting" from notes, not any stale AI value
+      expect(result).toBe("Edited front description\n\nFront planting");
+      expect(result).not.toContain("Back planting");
+    });
+
+    it("replaces the full notes when there is no separator (no planting instructions)", () => {
+      const result = buildNotesFromDescriptionEdit(
+        "User personal note",
+        "New description",
+      );
+      expect(result).toBe("New description");
+    });
+
+    it("handles empty current notes", () => {
+      const result = buildNotesFromDescriptionEdit("", "New description");
+      expect(result).toBe("New description");
+    });
+
+    it("handles empty new description", () => {
+      const result = buildNotesFromDescriptionEdit(
+        "Description\n\nPlanting",
+        "",
+      );
+      expect(result).toBe("\n\nPlanting");
+    });
+
+    it("uses only the first \\n\\n as the separator", () => {
+      // Multi-paragraph planting instructions must not be split further
+      const result = buildNotesFromDescriptionEdit(
+        "Desc\n\nParagraph 1\n\nParagraph 2",
+        "New desc",
+      );
+      expect(result).toBe("New desc\n\nParagraph 1\n\nParagraph 2");
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildNotesFromPlantingEdit — fixes Bug C (planting-instructions side)
+// ---------------------------------------------------------------------------
+
+describe("buildNotesFromPlantingEdit", () => {
+  describe("Bug C — stale aiExtractedData.description injected into notes on planting edit", () => {
+    it("preserves the description half already in notes", () => {
+      const result = buildNotesFromPlantingEdit(
+        "AI description\n\nAI planting instructions",
+        "User-edited planting instructions",
+      );
+      expect(result).toBe(
+        "AI description\n\nUser-edited planting instructions",
+      );
+    });
+
+    it("does NOT pull in data from stale aiExtractedData (cross-scan contamination)", () => {
+      // Back scan set notes = "Back desc\n\nBack planting"
+      // Front scan has already run and aiExtractedData.description = "Front desc" (stale).
+      // Editing planting instructions must NOT inject "Front desc".
+      const result = buildNotesFromPlantingEdit(
+        "Back desc\n\nBack planting",
+        "Edited planting",
+      );
+      expect(result).toBe("Back desc\n\nEdited planting");
+      expect(result).not.toContain("Front desc");
+    });
+
+    it("sets just the planting instructions when notes has no separator", () => {
+      // notes = personal note with no \n\n → user is explicitly setting plantingInstructions
+      const result = buildNotesFromPlantingEdit(
+        "User personal note",
+        "New planting instructions",
+      );
+      expect(result).toBe("New planting instructions");
+    });
+
+    it("handles empty current notes", () => {
+      const result = buildNotesFromPlantingEdit("", "New planting");
+      expect(result).toBe("New planting");
+    });
+
+    it("handles empty new planting instructions", () => {
+      const result = buildNotesFromPlantingEdit("Description\n\nPlanting", "");
+      expect(result).toBe("Description\n\n");
+    });
+
+    it("uses only the first \\n\\n as the separator", () => {
+      const result = buildNotesFromPlantingEdit(
+        "Desc\n\nOld paragraph 1\n\nOld paragraph 2",
+        "New planting",
+      );
+      expect(result).toBe("Desc\n\nNew planting");
     });
   });
 });

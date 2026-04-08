@@ -72,6 +72,50 @@ export function mergeExtractedData(
 }
 
 /**
+ * Build the new notes value when the user edits the "Description" field in the
+ * AI panel.
+ *
+ * Notes stores description and planting-instructions separated by "\n\n".
+ * When only the description part is edited we must preserve whatever is in
+ * the planting-instructions half — reading it from the LIVE notes value
+ * (the `currentNotes` parameter), NOT from a stale `aiExtractedData` closure.
+ *
+ * Call inside a functional state updater:
+ *   setNotes(prev => buildNotesFromDescriptionEdit(prev, newDescription));
+ */
+export function buildNotesFromDescriptionEdit(
+  currentNotes: string,
+  newDescription: string,
+): string {
+  const sep = currentNotes.indexOf("\n\n");
+  if (sep !== -1) {
+    return newDescription + "\n\n" + currentNotes.slice(sep + 2);
+  }
+  return newDescription;
+}
+
+/**
+ * Build the new notes value when the user edits the "Planting Instructions"
+ * field in the AI panel.
+ *
+ * Mirrors buildNotesFromDescriptionEdit: preserves the description half from
+ * the LIVE notes value rather than pulling from a stale closure.
+ *
+ * Call inside a functional state updater:
+ *   setNotes(prev => buildNotesFromPlantingEdit(prev, newInstructions));
+ */
+export function buildNotesFromPlantingEdit(
+  currentNotes: string,
+  newInstructions: string,
+): string {
+  const sep = currentNotes.indexOf("\n\n");
+  if (sep !== -1) {
+    return currentNotes.slice(0, sep + 2) + newInstructions;
+  }
+  return newInstructions;
+}
+
+/**
  * Return the value that a form field should take after an Auto Entry response.
  *
  * The rule is simple: **never overwrite a field the user has already filled**.
