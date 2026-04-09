@@ -32,11 +32,18 @@ export default function ExperimentList({ experiments }: ExperimentListProps) {
     <div className="space-y-2">
       {experiments.map((experiment) => {
         const avgScore = calculateAverageScore(experiment.scores);
+        const experimentSlug = slugify(experiment.name);
         return (
           <Link
             key={experiment.id}
-            href={`/experiments/${slugify(experiment.name)}`}
+            href={`/experiments/${experimentSlug}`}
             className="block rounded-lg border border-border bg-background-secondary p-4 transition-colors hover:border-accent-primary/50 hover:bg-background-secondary"
+            data-analytics-event="experiment_card_click"
+            data-analytics-experiment-id={experiment.id}
+            data-analytics-experiment-slug={experimentSlug}
+            data-analytics-surface-type="hub"
+            data-analytics-surface-name="experiment-list"
+            data-analytics-link-type="experiment-card"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">

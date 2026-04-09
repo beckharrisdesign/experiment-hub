@@ -55,6 +55,11 @@ export default async function PrototypesPage() {
                             href={`http://localhost:${prototype.port}`}
                             target="_blank"
                             rel="noopener noreferrer"
+                            data-analytics-event="prototype_link_click"
+                            data-analytics-surface="hub"
+                            data-analytics-label="open-prototype"
+                            data-analytics-experiment={prototype.experimentName ?? prototype.id}
+                            data-analytics-destination={`http://localhost:${prototype.port}`}
                             className="inline-flex items-center gap-2 px-3 py-1.5 bg-accent-primary text-white rounded hover:opacity-90 transition text-sm font-medium"
                           >
                             Open Prototype →
@@ -66,6 +71,10 @@ export default async function PrototypesPage() {
                         {prototype.experimentName && (
                           <Link
                             href={`/experiments/${slugify(prototype.experimentName)}`}
+                            data-analytics-event="experiment_card_click"
+                            data-analytics-surface="hub"
+                            data-analytics-label="prototype-list-experiment-link"
+                            data-analytics-experiment={prototype.experimentName}
                             className="text-sm text-text-muted hover:text-accent-primary"
                           >
                             View Experiment →

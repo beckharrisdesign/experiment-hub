@@ -175,6 +175,9 @@ export default function HomePageClient({
               </p>
               <Link
                 href="/workflow"
+                data-analytics-event="scaffolding_link_click"
+                data-analytics-surface="hub-home"
+                data-analytics-label="workflow"
                 className="text-xs font-medium text-accent-primary hover:underline"
               >
                 View workflow →
@@ -192,6 +195,9 @@ export default function HomePageClient({
               </p>
               <Link
                 href="/scoring"
+                data-analytics-event="scaffolding_link_click"
+                data-analytics-surface="hub-home"
+                data-analytics-label="scoring"
                 className="text-xs font-medium text-accent-primary hover:underline"
               >
                 View scoring →
@@ -208,6 +214,9 @@ export default function HomePageClient({
               </p>
               <Link
                 href="/heuristics"
+                data-analytics-event="scaffolding_link_click"
+                data-analytics-surface="hub-home"
+                data-analytics-label="heuristics"
                 className="text-xs font-medium text-accent-primary hover:underline"
               >
                 View heuristics →
@@ -224,6 +233,9 @@ export default function HomePageClient({
               </p>
               <Link
                 href="/harness"
+                data-analytics-event="scaffolding_link_click"
+                data-analytics-surface="hub-home"
+                data-analytics-label="harness"
                 className="text-xs font-medium text-accent-primary hover:underline"
               >
                 View harness →
@@ -244,6 +256,9 @@ export default function HomePageClient({
           <div className="flex">
             <button
               onClick={() => setActiveTab("active")}
+              data-analytics-event="hub_filter_toggle"
+              data-analytics-surface="hub-home"
+              data-analytics-label="active"
               className={`flex items-center h-[51px] px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
                 activeTab === "active"
                   ? "bg-[rgba(20,174,92,0.1)] border-b-[3px] border-accent-primary text-text-dark"
@@ -254,6 +269,9 @@ export default function HomePageClient({
             </button>
             <button
               onClick={() => setActiveTab("inactive")}
+              data-analytics-event="hub_filter_toggle"
+              data-analytics-surface="hub-home"
+              data-analytics-label="inactive"
               className={`flex items-center h-[51px] px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
                 activeTab === "inactive"
                   ? "bg-[rgba(20,174,92,0.1)] border-b-[3px] border-accent-primary text-text-dark"
@@ -370,6 +388,10 @@ export default function HomePageClient({
                                 >
                                   <Link
                                     href={`/experiments/${experimentSlug}#overview`}
+                                    data-analytics-event="experiment_score_click"
+                                    data-analytics-surface="hub-home"
+                                    data-analytics-experiment={experimentSlug}
+                                    data-analytics-label={String(total)}
                                     className={`inline-flex items-center justify-center h-7 min-w-[2rem] rounded-md border text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity ${getTotalBadgeColor(total)}`}
                                   >
                                     {total}
