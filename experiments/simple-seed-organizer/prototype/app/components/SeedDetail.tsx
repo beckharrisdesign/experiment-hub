@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Seed } from "@/types/seed";
 import { getSeedAge } from "@/lib/storage";
+import { isUseFirst } from "@/lib/viability";
 import { getPlantingGuidance } from "@/lib/plantingGuidance";
 import { SeedPill, type SeedPillTone } from "@/components/SeedPill";
 import toast from "react-hot-toast";
@@ -102,9 +103,11 @@ export function SeedDetail({
   const [seed, setSeed] = useState<Seed>(seedProp);
   const [enriching, setEnriching] = useState(false);
   const [enrichedFields, setEnrichedFields] = useState<string[]>([]);
+  const [imgErrors, setImgErrors] = useState({ front: false, back: false });
 
   useEffect(() => {
     setSeed(seedProp);
+    setImgErrors({ front: false, back: false });
   }, [seedProp]);
 
   const age = getSeedAge(seed);
@@ -216,7 +219,8 @@ export function SeedDetail({
                       {ageLabel.text}
                     </SeedPill>
                   )}
-                  {(age >= 3 || seed.useFirst) && (
+                  {(isUseFirst(seed.year, undefined, seed.name) ||
+                    seed.useFirst) && (
                     <SeedPill as="span" variant="badge" tone="attention">
                       Use first
                     </SeedPill>
@@ -249,13 +253,16 @@ export function SeedDetail({
               <div className="flex gap-4 items-center overflow-x-auto pr-2 py-2">
                 {/* Front photo */}
                 <div className="relative flex-shrink-0 w-[192.5px] h-[256px]">
-                  {seed.photoFront ? (
+                  {seed.photoFront && !imgErrors.front ? (
                     <>
                       <img
                         src={seed.photoFront}
                         alt="Front of seed packet"
                         loading="lazy"
                         className="w-full h-full object-contain rounded-lg border border-gray-200 bg-white"
+                        onError={() =>
+                          setImgErrors((prev) => ({ ...prev, front: true }))
+                        }
                       />
                       <p className="absolute bottom-[15px] left-0 right-0 text-center text-[12px] text-white font-normal leading-4">
                         Front
@@ -272,13 +279,16 @@ export function SeedDetail({
 
                 {/* Back photo */}
                 <div className="relative flex-shrink-0 w-[192.5px] h-[256px]">
-                  {seed.photoBack ? (
+                  {seed.photoBack && !imgErrors.back ? (
                     <>
                       <img
                         src={seed.photoBack}
                         alt="Back of seed packet"
                         loading="lazy"
                         className="w-full h-full object-contain rounded-lg border border-gray-200 bg-white"
+                        onError={() =>
+                          setImgErrors((prev) => ({ ...prev, back: true }))
+                        }
                       />
                       <p className="absolute bottom-[15px] left-0 right-0 text-center text-[12px] text-white font-normal leading-4">
                         Back

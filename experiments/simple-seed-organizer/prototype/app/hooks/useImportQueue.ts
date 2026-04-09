@@ -12,6 +12,7 @@ import {
   QueuePileItem,
   QueueItemSource,
 } from "@/lib/import/capturePipeline";
+import { normalizeSunRequirement } from "@/lib/seedUtils";
 
 const CONCURRENCY = 3;
 
@@ -44,20 +45,6 @@ interface UseImportQueueOptions {
 interface EnqueueOptions {
   source: QueueItemSource;
   autoSaveOnReady?: boolean;
-}
-
-function normalizeSunRequirement(
-  text?: string,
-): "full-sun" | "partial-shade" | "full-shade" | undefined {
-  if (!text) return undefined;
-  const lower = text.toLowerCase();
-  if (lower.includes("full sun") || lower.includes("full-sun"))
-    return "full-sun";
-  if (lower.includes("partial") || lower.includes("part shade"))
-    return "partial-shade";
-  if (lower.includes("full shade") || lower.includes("full-shade"))
-    return "full-shade";
-  return undefined;
 }
 
 function toSeedPayload(
