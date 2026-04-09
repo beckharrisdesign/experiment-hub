@@ -10,7 +10,7 @@ interface MarkdownContentProps {
 function renderMarkdownLine(
   line: string,
   idx: number,
-  t: { heading: string; body: string; bold: string; muted: string },
+  t: { heading: string; body: string; bold: string; muted: string; hr: string },
 ) {
   if (line.startsWith("# ")) {
     return (
@@ -23,7 +23,7 @@ function renderMarkdownLine(
     return (
       <h2
         key={idx}
-        className={`text-base font-semibold mt-3 mb-2 ${t.heading}`}
+        className={`text-sm font-semibold mt-4 mb-2 tracking-[0.01em] ${t.heading}`}
       >
         {line.replace("## ", "")}
       </h2>
@@ -31,17 +31,24 @@ function renderMarkdownLine(
   }
   if (line.startsWith("### ")) {
     return (
-      <h3 key={idx} className={`text-sm font-semibold mt-2 mb-1 ${t.heading}`}>
+      <h3
+        key={idx}
+        className={`text-sm font-semibold mt-3 mb-1 tracking-[0.01em] ${t.heading}`}
+      >
         {line.replace("### ", "")}
       </h3>
     );
+  }
+
+  if (line.trim() === "---") {
+    return <hr key={idx} className={`my-4 ${t.hr}`} />;
   }
 
   if (line.trim().startsWith("- ")) {
     const bulletContent = line.replace("- ", "");
     const parts = bulletContent.split(/(\*\*[^*]+\*\*)/g);
     return (
-      <div key={idx} className={`ml-4 mb-1.5 ${t.body}`}>
+      <div key={idx} className={`ml-4 mb-2 leading-5 ${t.body}`}>
         •{" "}
         {parts.map((part, i) =>
           part.startsWith("**") && part.endsWith("**") ? (
@@ -59,7 +66,7 @@ function renderMarkdownLine(
   if (line.trim()) {
     const parts = line.split(/(\*\*[^*]+\*\*)/g);
     return (
-      <p key={idx} className={`mb-3 ${t.body}`}>
+      <p key={idx} className={`mb-3 leading-5 ${t.body}`}>
         {parts.map((part, i) =>
           part.startsWith("**") && part.endsWith("**") ? (
             <strong key={i} className={t.bold}>
@@ -91,12 +98,14 @@ export default function MarkdownContent({
           body: "text-text-dark-secondary",
           bold: "text-text-dark",
           muted: "text-text-dark-secondary",
+          hr: "border-border-dark/40",
         }
       : {
           heading: "text-text-primary",
           body: "text-text-secondary",
           bold: "text-text-primary",
           muted: "text-text-muted",
+          hr: "border-border",
         };
 
   const lines = content.split("\n");
@@ -124,7 +133,7 @@ export default function MarkdownContent({
             const bulletContent = bl.replace(/^\s*-\s/, "");
             const parts = bulletContent.split(/(\*\*[^*]+\*\*)/g);
             return (
-              <li key={bi} className="ml-4 mb-1 list-none">
+              <li key={bi} className="ml-4 mb-2 leading-5 list-none">
                 •{" "}
                 {parts.map((part, pi) =>
                   part.startsWith("**") && part.endsWith("**") ? (
@@ -150,7 +159,7 @@ export default function MarkdownContent({
     <div
       className={`prose ${variant === "light" ? "" : "prose-invert"} max-w-none ${className}`}
     >
-      <div className={`text-sm whitespace-pre-wrap ${t.body}`}>
+      <div className={`text-sm leading-5 whitespace-pre-wrap ${t.body}`}>
         {grouped}
         {hasMore && (
           <p className={`mt-2 text-xs italic ${t.muted}`}>

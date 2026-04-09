@@ -22,8 +22,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="py-2">
-      <h2 className="font-heading text-base font-semibold text-text-dark mb-3">
+    <div className="pt-4 pb-4 border-b border-border-dark last:border-b-0">
+      <h2 className="text-sm font-semibold tracking-[0.01em] text-text-dark mb-3">
         {title}
       </h2>
       <div>{children}</div>
