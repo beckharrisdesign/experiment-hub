@@ -39,6 +39,9 @@ export default function ExperimentDetailClient({
             <li>
               <Link
                 href="/"
+                data-analytics-event="navigation_click"
+                data-analytics-surface="hub"
+                data-analytics-label="breadcrumb_experiments"
                 className="hover:text-text-primary transition-colors"
               >
                 Experiments

@@ -21,6 +21,10 @@ export default function Header() {
       <div className="flex items-center justify-between px-4 md:px-8 lg:px-16 h-[51px]">
         <Link
           href="/"
+          data-analytics-event="navigation_click"
+          data-analytics-surface-type="hub"
+          data-analytics-surface-name="header"
+          data-analytics-link-label="bhd_labs_logo"
           className="font-heading text-xl font-semibold text-text-logo whitespace-nowrap"
         >
           BHD Labs
@@ -35,6 +39,10 @@ export default function Header() {
               <Link
                 key={href}
                 href={href}
+                data-analytics-event="navigation_click"
+                data-analytics-surface-type="hub"
+                data-analytics-surface-name="header"
+                data-analytics-link-label={label.toLowerCase()}
                 className={`flex items-center h-full px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
                   isActive
                     ? "bg-background-active border-b-[3px] border-accent-primary text-text-primary"
@@ -80,6 +88,10 @@ export default function Header() {
                 key={href}
                 href={href}
                 onClick={() => setMenuOpen(false)}
+                data-analytics-event="navigation_click"
+                data-analytics-surface-type="hub"
+                data-analytics-surface-name="header-mobile"
+                data-analytics-link-label={label.toLowerCase()}
                 className={`flex items-center px-4 py-3 text-[15px] font-medium transition-colors border-b border-[rgba(20,174,92,0.1)] ${
                   isActive
                     ? "text-accent-primary bg-background-active"

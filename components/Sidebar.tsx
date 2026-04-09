@@ -27,6 +27,10 @@ export default function Sidebar() {
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  data-analytics-event="navigation_click"
+                  data-analytics-surface="sidebar"
+                  data-analytics-target={item.href}
+                  data-analytics-label={item.label}
                   className={`block rounded-md px-3 py-2 text-sm transition-colors ${
                     isActive
                       ? "bg-background-secondary text-accent-primary"
