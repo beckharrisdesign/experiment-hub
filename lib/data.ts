@@ -268,7 +268,7 @@ export function parsePRD(prdContent: string) {
     if (line.startsWith("## ")) {
       currentSection = line.replace("## ", "").trim();
       sections[currentSection] = [];
-    } else if (currentSection && line.trim()) {
+    } else if (currentSection && line.trim() && line.trim() !== "---") {
       sections[currentSection].push(line);
     }
   }
@@ -338,7 +338,7 @@ export function parseMarketResearch(mrContent: string) {
     if (line.startsWith("## ")) {
       currentSection = line.replace("## ", "").trim();
       sections[currentSection] = [];
-    } else if (currentSection && line.trim()) {
+    } else if (currentSection && line.trim() && line.trim() !== "---") {
       sections[currentSection].push(line);
     }
   }
