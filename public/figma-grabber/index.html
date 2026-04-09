@@ -7,228 +7,129 @@
   <meta name="description" content="A bookmarklet that captures any element on any page and copies a Figma-ready JSON payload to your clipboard.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', system-ui, sans-serif; background: white; color: #1e1e1e; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: white; }
 
-    /* Top bar */
-    .top-bar {
-      background: #15472d;
-      height: 8px;
-      width: 100%;
-    }
-
-    /* Hero */
+    /* Hero — full height, two-tone gradient */
     .hero {
-      background: linear-gradient(46.85deg, #d4bded 4.4%, #ffffff 93.6%);
-      min-height: 431px;
       position: relative;
-      overflow: hidden;
+      min-height: 934px;
       display: flex;
       align-items: center;
       justify-content: center;
+      /* Green radial (top-right) + lavender linear (bottom-left) over white */
+      background:
+        linear-gradient(41.96deg, rgba(212, 189, 236, 0.75) 2.83%, rgba(255,255,255,0) 66%),
+        radial-gradient(ellipse 70% 55% at 90% 5%, rgba(208, 251, 216, 1) 0%, rgba(255,255,255,0) 65%),
+        white;
       padding: 64px 24px;
     }
+
+    /* Centred content stack */
     .hero-content {
-      position: relative;
-      z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 64px;
-      text-align: center;
       width: 100%;
       max-width: 1200px;
     }
-    .hero-arrow {
-      position: absolute;
-      right: 8%;
-      top: 0;
-      height: 100%;
-      pointer-events: none;
-      user-select: none;
-      display: flex;
-      align-items: flex-start;
+
+    /* Title */
+    .hero-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 600;
+      font-size: clamp(36px, 5vw, 48px);
+      line-height: 1;
+      color: #191919;
+      font-variation-settings: 'SOFT' 0, 'WONK' 1;
+      text-align: center;
+      width: 100%;
     }
-    @media (max-width: 768px) { .hero-arrow { display: none; } }
-    .hero-titles {
+
+    /* Two-column instructions */
+    .instructions {
+      display: flex;
+      gap: 14px;
+      padding: 50px clamp(24px, 30%, 360px);
+      width: 100%;
+      text-align: center;
+    }
+    .instruction-col {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      color: #15472d;
+      justify-content: center;
     }
-    .hero-title {
-      font-family: 'Inter', sans-serif;
-      font-weight: 700;
-      font-size: clamp(36px, 5vw, 48px);
-      letter-spacing: -0.96px;
-      line-height: 1.2;
-    }
-    .hero-subtitle {
-      font-family: 'Inter', sans-serif;
+    .instruction-heading {
+      font-family: 'Fraunces', Georgia, serif;
       font-weight: 600;
-      font-size: clamp(18px, 2.5vw, 24px);
-      letter-spacing: -0.48px;
-      line-height: 1.2;
+      font-size: 16px;
+      line-height: 20px;
+      color: #191919;
+      font-variation-settings: 'SOFT' 0, 'WONK' 1;
+      margin-bottom: 8px;
     }
-    .hero-buttons {
+    .instruction-body {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 20px;
+      color: #191919;
+    }
+
+    /* Button group */
+    .buttons {
       display: flex;
-      flex-wrap: wrap;
       gap: 16px;
       align-items: center;
       justify-content: center;
     }
 
-    /* Buttons */
+    /* Primary dark bookmarklet button */
     .bookmarklet-btn {
       font-family: 'Fraunces', Georgia, serif;
       font-weight: 600;
-      font-size: 32px;
+      font-size: 24px;
       line-height: 1;
       color: white;
-      background: #a383c5;
-      border: 1px solid #634890;
+      font-variation-settings: 'SOFT' 0, 'WONK' 1;
+      background: #191919;
+      border: 1px solid #585858;
       border-radius: 8px;
       padding: 16px 32px;
+      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
       cursor: grab;
       user-select: none;
       text-decoration: none;
       display: inline-block;
-      transition: opacity 150ms ease, box-shadow 150ms ease;
+      transition: opacity 150ms ease;
       white-space: nowrap;
     }
-    .bookmarklet-btn:hover {
-      opacity: 0.92;
-      box-shadow: 0 4px 16px rgba(100, 72, 144, 0.35);
-    }
+    .bookmarklet-btn:hover { opacity: 0.85; }
     .bookmarklet-btn:active { cursor: grabbing; }
-
-    .secondary-btn {
-      font-family: 'Inter', sans-serif;
-      font-weight: 400;
-      font-size: 16px;
-      color: #1e1e1e;
-      background: #e3e3e3;
-      border: 1px solid #767676;
-      border-radius: 8px;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: inline-block;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .secondary-btn:hover { background: #d6d6d6; }
-
-    /* Card grid sections */
-    .card-section {
-      background: white;
-      padding: 64px;
-      display: flex;
-      flex-direction: column;
-      gap: 48px;
-    }
-    .section-heading { display: flex; flex-direction: column; gap: 8px; }
-    .section-title {
-      font-family: 'Inter', sans-serif;
-      font-weight: 600;
-      font-size: 24px;
-      letter-spacing: -0.48px;
-      line-height: 1.2;
-      color: #1e1e1e;
-    }
-    .section-subtitle {
-      font-family: 'Inter', sans-serif;
-      font-weight: 400;
-      font-size: 20px;
-      line-height: 1.2;
-      color: #757575;
-    }
-
-    /* Cards */
-    .cards {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 64px;
-      align-items: flex-start;
-      width: 100%;
-    }
-    .card {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 24px;
-      align-items: flex-start;
-      min-width: 240px;
-      flex: 1;
-    }
-    .card-icon { flex-shrink: 0; }
-    .card-body {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      flex: 1;
-      min-width: 160px;
-    }
-    .card-title {
-      font-family: 'Inter', sans-serif;
-      font-weight: 600;
-      font-size: 24px;
-      letter-spacing: -0.48px;
-      line-height: 1.2;
-      color: #1e1e1e;
-    }
-    .card-text {
-      font-family: 'Inter', sans-serif;
-      font-weight: 400;
-      font-size: 16px;
-      line-height: 1.4;
-      color: #757575;
-    }
-    kbd {
-      background: #f0f0f0;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-      padding: 1px 5px;
-      font-size: 13px;
-      font-family: inherit;
-    }
-
-    /* Footer */
-    .footer {
-      background: #1c4525;
-      padding: 32px 32px 160px;
-      border-top: 1px solid #d9d9d9;
-    }
-
-    @media (max-width: 640px) {
-      .card-section { padding: 40px 24px; }
-      .cards { gap: 40px; }
-    }
   </style>
 </head>
 <body>
 
-  <div class="top-bar"></div>
-
-  <!-- Hero -->
   <section class="hero">
-    <div class="hero-arrow" aria-hidden="true">
-      <svg viewBox="0 0 90 370" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:90px; height:370px;">
-        <path d="M 68 360 C 74 318 84 268 77 218 C 70 166 50 124 37 82 C 29 54 25 30 18 8"
-              stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
-        <path d="M 18 8 L 4 26 M 18 8 L 35 22"
-              stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
-      </svg>
-    </div>
     <div class="hero-content">
-      <div class="hero-titles">
-        <h1 class="hero-title">Figma Grabber</h1>
-        <p class="hero-subtitle">Drag to your bookmarks bar.</p>
+
+      <h1 class="hero-title">Figma Grabber</h1>
+
+      <div class="instructions">
+        <div class="instruction-col">
+          <p class="instruction-heading">To install</p>
+          <p class="instruction-body">Drag this button to your<br>bookmark bar or alt<br>click to create a new one.</p>
+        </div>
+        <div class="instruction-col">
+          <p class="instruction-heading">To use</p>
+          <p class="instruction-body">Click the bookmark to copy your browser contents and then paste into Figma.</p>
+        </div>
       </div>
-      <div class="hero-buttons">
-        <a class="secondary-btn" href="#how-to-install">How to install ↓</a>
+
+      <div class="buttons">
         <a
           class="bookmarklet-btn"
           href="javascript:(function()%7B%20var%20NS%3D%22%5Bweb-to-figma-grabber%3Abookmarklet%5D%22%3B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__%20%3D%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__%20%7C%7C%20%7B%20events%3A%20%5B%5D%20%7D%3B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-start%22%2C%20href%3Awindow.location.href%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.info(NS%2C%22start%22%2Cwindow.location.href)%3B%20%7D%20catch(_)%20%7B%7D%20if(window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__)%7B%20console.warn(NS%2C%22bookmarklet%20already%20active%22)%3B%20window.alert(%22Web-to-Figma%20Grabber%20bookmarklet%20already%20active.%22)%3B%20return%3B%20%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dtrue%3B%20var%20url%3D%22https%3A%2F%2Flabs.beckharrisdesign.com%2Fscripts%2Fweb-to-figma-grabber-loader.js%3Fv%3D%22%2BDate.now()%3B%20var%20s%3Ddocument.createElement(%22script%22)%3B%20s.src%3Durl%3B%20s.async%3Dtrue%3B%20s.onload%3Dfunction()%7B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-loader-loaded%22%2C%20src%3Aurl%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.info(NS%2C%22loader%20script%20loaded%22%2Curl)%3B%20%7D%20catch(_)%20%7B%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dfalse%3B%20%7D%3B%20s.onerror%3Dfunction(ev)%7B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-loader-error%22%2C%20src%3Aurl%2C%20eventType%3Aev%26%26ev.type%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.error(NS%2C%22loader%20failed%20to%20load%22%2Curl%2Cev)%3B%20%7D%20catch(_)%20%7B%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dfalse%3B%20window.alert(%22Web-to-Figma%20loader%20failed%20to%20load.%20Check%20console%20for%20%5Bweb-to-figma-grabber%5D.%22)%3B%20%7D%3B%20document.head.appendChild(s)%3B%20%7D)()%3B"
@@ -239,96 +140,9 @@
           Figma Grabber
         </a>
       </div>
+
     </div>
   </section>
-
-  <!-- How to install -->
-  <section id="how-to-install" class="card-section">
-    <div class="section-heading">
-      <h2 class="section-title">How to install</h2>
-      <p class="section-subtitle">Three steps. Under a minute.</p>
-    </div>
-    <div class="cards">
-      <div class="card">
-        <svg class="card-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
-          <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
-        </svg>
-        <div class="card-body">
-          <p class="card-title">Show your bookmarks bar</p>
-          <p class="card-text">In Chrome, press <kbd>⌘ Shift B</kbd> (Mac) or <kbd>Ctrl Shift B</kbd> (Windows) to reveal it.</p>
-        </div>
-      </div>
-      <div class="card">
-        <svg class="card-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
-          <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
-        </svg>
-        <div class="card-body">
-          <p class="card-title">Drag the button to your bookmarks bar</p>
-          <p class="card-text">Click and hold the purple <em>Figma Grabber</em> button above, drag it up to your bookmarks bar, and release. Or right-click it and choose <em>Bookmark this link</em>.</p>
-        </div>
-      </div>
-      <div class="card">
-        <svg class="card-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
-          <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
-        </svg>
-        <div class="card-body">
-          <p class="card-title">You're done</p>
-          <p class="card-text">The bookmarklet is saved. You won't need to come back here — it's yours now, tied to no account or login.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- How to use -->
-  <section class="card-section">
-    <div class="section-heading">
-      <h2 class="section-title">How to use</h2>
-      <p class="section-subtitle">One click from any page.</p>
-    </div>
-    <div class="cards">
-      <div class="card">
-        <svg class="card-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
-          <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
-        </svg>
-        <div class="card-body">
-          <p class="card-title">Navigate to any page</p>
-          <p class="card-text">Open the site or UI you want to bring into Figma. Works on any page you can view in Chrome.</p>
-        </div>
-      </div>
-      <div class="card">
-        <svg class="card-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
-          <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
-        </svg>
-        <div class="card-body">
-          <p class="card-title">Click Figma Grabber</p>
-          <p class="card-text">A toolbar appears at the bottom of the page. Choose <em>Select element</em> to pick a specific component, <em>Entire screen</em> for the full viewport, or <em>Copy to clipboard</em> for the whole page immediately.</p>
-        </div>
-      </div>
-      <div class="card">
-        <svg class="card-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="14.25" stroke="#1e1e1e" stroke-width="1.5"/>
-          <path d="M16 14v8" stroke="#1e1e1e" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="16" cy="11" r="1" fill="#1e1e1e"/>
-        </svg>
-        <div class="card-body">
-          <p class="card-title">Paste into Figma</p>
-          <p class="card-text">Your clipboard now holds a Figma-ready JSON payload. Paste it into your Figma MCP workflow. Nothing leaves your machine — no API calls, no server, just your clipboard.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <footer class="footer"></footer>
 
 </body>
 </html>
