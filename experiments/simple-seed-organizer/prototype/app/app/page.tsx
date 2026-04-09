@@ -209,6 +209,7 @@ function HomeContent() {
                 seeds={filteredSeeds}
                 viewMode={viewMode}
                 onSeedClick={(seed) => router.push(`/seeds/${seed.id}`)}
+                totalSeedCount={seeds.length}
               />
             )}
           </div>

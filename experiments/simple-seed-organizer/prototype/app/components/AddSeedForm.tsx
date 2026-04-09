@@ -12,6 +12,7 @@ import {
 } from "@/lib/autoEntry";
 import { processImageFile } from "@/lib/imageUtils";
 import { uploadSeedPhoto } from "@/lib/seed-photos";
+import { normalizeSunRequirement } from "@/lib/seedUtils";
 
 interface AddSeedFormProps {
   onSubmit: (
@@ -77,35 +78,6 @@ const SUN_OPTIONS: { value: SunRequirement; label: string }[] = [
   { value: "partial-shade", label: "Partial shade" },
   { value: "full-shade", label: "Full shade" },
 ];
-
-function normalizeSunRequirement(
-  sunText?: string,
-): "full-sun" | "partial-shade" | "full-shade" | undefined {
-  if (!sunText) return undefined;
-  const lower = sunText.toLowerCase();
-  if (
-    lower.includes("full sun") ||
-    lower.includes("full-sun") ||
-    lower === "sun"
-  ) {
-    return "full-sun";
-  }
-  if (
-    lower.includes("partial") ||
-    lower.includes("part shade") ||
-    lower.includes("part-shade")
-  ) {
-    return "partial-shade";
-  }
-  if (
-    lower.includes("full shade") ||
-    lower.includes("full-shade") ||
-    lower === "shade"
-  ) {
-    return "full-shade";
-  }
-  return undefined;
-}
 
 function toTitleCase(text: string): string {
   return text
@@ -1069,8 +1041,17 @@ export function AddSeedForm({
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="e.g., Beefsteak"
                                     required
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                    className={`w-full text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] ${
+                                      submitAttempted && !name.trim()
+                                        ? "border-red-400"
+                                        : "border-gray-300"
+                                    }`}
                                   />
+                                  {submitAttempted && !name.trim() && (
+                                    <p className="text-xs text-red-500 mt-0.5">
+                                      Required
+                                    </p>
+                                  )}
                                 </td>
                               </tr>
                               <tr>
@@ -1084,8 +1065,17 @@ export function AddSeedForm({
                                     onChange={(e) => setVariety(e.target.value)}
                                     placeholder="e.g., Tomato"
                                     required
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                    className={`w-full text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] ${
+                                      submitAttempted && !variety.trim()
+                                        ? "border-red-400"
+                                        : "border-gray-300"
+                                    }`}
                                   />
+                                  {submitAttempted && !variety.trim() && (
+                                    <p className="text-xs text-red-500 mt-0.5">
+                                      Required
+                                    </p>
+                                  )}
                                 </td>
                               </tr>
                               <tr>

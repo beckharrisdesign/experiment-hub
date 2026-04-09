@@ -10,25 +10,12 @@ import { BulkCameraCapture } from "@/components/BulkCameraCapture";
 import { useImportQueue, QueueItem } from "@/hooks/useImportQueue";
 import { buildPileQueueItems } from "@/lib/import/capturePipeline";
 import toast from "react-hot-toast";
+import { normalizeSunRequirement } from "@/lib/seedUtils";
 
 interface BatchImportProps {
   userId: string;
   userTier?: string;
   canUseAI?: boolean;
-}
-
-function normalizeSunRequirement(
-  text?: string,
-): "full-sun" | "partial-shade" | "full-shade" | undefined {
-  if (!text) return undefined;
-  const lower = text.toLowerCase();
-  if (lower.includes("full sun") || lower.includes("full-sun"))
-    return "full-sun";
-  if (lower.includes("partial") || lower.includes("part shade"))
-    return "partial-shade";
-  if (lower.includes("full shade") || lower.includes("full-shade"))
-    return "full-shade";
-  return undefined;
 }
 
 function extractedToInitialSeed(

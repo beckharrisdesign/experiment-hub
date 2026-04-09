@@ -1,21 +1,24 @@
-import { getViabilityStatus } from '@/lib/viability';
-import { SeedPill } from '@/components/SeedPill';
+import { getSeedAgeYears, getViabilityStatus } from "@/lib/viability";
+import { SeedPill } from "@/components/SeedPill";
 
 interface ViabilityBadgeProps {
   year: number | undefined;
+  /** Crop name used for crop-specific viability thresholds (e.g. seed.name) */
+  cropName?: string;
 }
 
 /**
  * Compact badge for seed list cards.
  * Shows nothing for good/unknown — only surfaces seeds that need attention.
  *
- *   watch     (2 yrs)  → amber  "2 yrs"
- *   use-first (3+ yrs) → red    "Use first"
+ *   watch     → amber  "{age} yr(s)"
+ *   use-first → red    "Use first"
  */
-export function ViabilityBadge({ year }: ViabilityBadgeProps) {
-  const status = getViabilityStatus(year);
+export function ViabilityBadge({ year, cropName }: ViabilityBadgeProps) {
+  const status = getViabilityStatus(year, undefined, cropName);
+  const age = getSeedAgeYears(year);
 
-  if (status === 'use-first') {
+  if (status === "use-first") {
     return (
       <SeedPill as="span" variant="badge" tone="attention" size="sm">
         Use first
@@ -23,10 +26,10 @@ export function ViabilityBadge({ year }: ViabilityBadgeProps) {
     );
   }
 
-  if (status === 'watch') {
+  if (status === "watch") {
     return (
       <SeedPill as="span" variant="badge" tone="warning" size="sm">
-        2 yrs
+        {age} {age === 1 ? "yr" : "yrs"}
       </SeedPill>
     );
   }
