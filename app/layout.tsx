@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Fraunces } from "next/font/google";
+import { Suspense } from "react";
 import Script from "next/script";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { getHubGaMeasurementId } from "@/lib/analytics/ga";
@@ -58,7 +59,9 @@ export default function RootLayout({
                 gtag('config', '${GA_ID}', { send_page_view: false });
               `}
             </Script>
-            <AnalyticsTracker />
+            <Suspense fallback={null}>
+              <AnalyticsTracker />
+            </Suspense>
           </>
         ) : null}
         {children}
