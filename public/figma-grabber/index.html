@@ -10,12 +10,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', system-ui, sans-serif; background: white; }
+    html, body { height: 100%; }
+    body { font-family: 'Inter', system-ui, sans-serif; display: flex; flex-direction: column; }
 
-    /* Hero — full height, two-tone gradient */
+    /* Hero — fills full viewport, two-tone gradient */
     .hero {
-      position: relative;
-      min-height: 934px;
+      flex: 1;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -48,19 +49,26 @@
       width: 100%;
     }
 
-    /* Two-column instructions */
+    /* Two-column instructions — stacks on mobile, side-by-side at 600px+ */
     .instructions {
       display: flex;
-      gap: 14px;
-      padding: 50px clamp(24px, 30%, 360px);
+      flex-direction: column;
+      gap: 32px;
+      padding: 40px 0;
       width: 100%;
       text-align: center;
+    }
+    @media (min-width: 600px) {
+      .instructions {
+        flex-direction: row;
+        gap: 14px;
+        padding: 50px clamp(24px, 30%, 360px);
+      }
     }
     .instruction-col {
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: center;
     }
     .instruction-heading {
       font-family: 'Fraunces', Georgia, serif;
@@ -109,22 +117,27 @@
     }
     .bookmarklet-btn:hover { opacity: 0.85; }
     .bookmarklet-btn:active { cursor: grabbing; }
+    .bookmarklet-btn:focus-visible {
+      outline: 3px solid #4a90e2;
+      outline-offset: 3px;
+    }
   </style>
 </head>
 <body>
 
-  <section class="hero">
+  <main>
+  <section class="hero" aria-labelledby="hero-title">
     <div class="hero-content">
 
-      <h1 class="hero-title">Figma Grabber</h1>
+      <h1 class="hero-title" id="hero-title">Figma Grabber</h1>
 
       <div class="instructions">
         <div class="instruction-col">
-          <p class="instruction-heading">To install</p>
-          <p class="instruction-body">Drag this button to your<br>bookmark bar or alt<br>click to create a new one.</p>
+          <h2 class="instruction-heading">To install</h2>
+          <p class="instruction-body">Drag this button to your bookmark bar or alt click to create a new one.</p>
         </div>
         <div class="instruction-col">
-          <p class="instruction-heading">To use</p>
+          <h2 class="instruction-heading">To use</h2>
           <p class="instruction-body">Click the bookmark to copy your browser contents and then paste into Figma.</p>
         </div>
       </div>
@@ -132,6 +145,7 @@
       <div class="buttons">
         <a
           class="bookmarklet-btn"
+          aria-label="Figma Grabber bookmarklet — drag to your bookmarks bar to install"
           href="javascript:(function()%7B%20var%20NS%3D%22%5Bweb-to-figma-grabber%3Abookmarklet%5D%22%3B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__%20%3D%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__%20%7C%7C%20%7B%20events%3A%20%5B%5D%20%7D%3B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-start%22%2C%20href%3Awindow.location.href%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.info(NS%2C%22start%22%2Cwindow.location.href)%3B%20%7D%20catch(_)%20%7B%7D%20if(window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__)%7B%20console.warn(NS%2C%22bookmarklet%20already%20active%22)%3B%20window.alert(%22Web-to-Figma%20Grabber%20bookmarklet%20already%20active.%22)%3B%20return%3B%20%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dtrue%3B%20var%20url%3D%22https%3A%2F%2Flabs.beckharrisdesign.com%2Fscripts%2Fweb-to-figma-grabber-loader.js%3Fv%3D%22%2BDate.now()%3B%20var%20s%3Ddocument.createElement(%22script%22)%3B%20s.src%3Durl%3B%20s.async%3Dtrue%3B%20s.onload%3Dfunction()%7B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-loader-loaded%22%2C%20src%3Aurl%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.info(NS%2C%22loader%20script%20loaded%22%2Curl)%3B%20%7D%20catch(_)%20%7B%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dfalse%3B%20%7D%3B%20s.onerror%3Dfunction(ev)%7B%20try%20%7B%20window.__WEB_TO_FIGMA_GRABBER_DEBUG__.events.push(%7B%20stage%3A%22bookmarklet-loader-error%22%2C%20src%3Aurl%2C%20eventType%3Aev%26%26ev.type%2C%20ts%3Anew%20Date().toISOString()%20%7D)%3B%20console.error(NS%2C%22loader%20failed%20to%20load%22%2Curl%2Cev)%3B%20%7D%20catch(_)%20%7B%7D%20window.__WEB_TO_FIGMA_GRABBER_BOOKMARKLET_ACTIVE__%3Dfalse%3B%20window.alert(%22Web-to-Figma%20loader%20failed%20to%20load.%20Check%20console%20for%20%5Bweb-to-figma-grabber%5D.%22)%3B%20%7D%3B%20document.head.appendChild(s)%3B%20%7D)()%3B"
           title="Figma Grabber — drag this to your bookmarks bar"
           draggable="true"
@@ -143,6 +157,7 @@
 
     </div>
   </section>
+  </main>
 
 </body>
 </html>
