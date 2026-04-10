@@ -193,74 +193,86 @@ export function BatchImport({
           </p>
         </div>
 
-        <div className="grid gap-2 mb-4">
-          <button
-            onClick={() => setIsBulkCameraOpen(true)}
-            className="w-full py-3 px-4 rounded-xl bg-[#16a34a] text-white font-semibold hover:bg-[#15803d] transition-colors"
-          >
-            Start bulk photographing
-          </button>
-          <button
-            onClick={() => pileInputRef.current?.click()}
-            disabled={pileLoading}
-            className="w-full py-3 px-4 flex items-center justify-center gap-2 border border-gray-300 rounded-xl text-sm font-medium text-[#4a5565] bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {pileLoading ? (
-              <>
-                <svg
-                  className="w-4 h-4 animate-spin text-[#16a34a]"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
-                Scanning pile...
-              </>
-            ) : (
-              <>
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                Photograph a pile — scan many at once
-              </>
-            )}
-          </button>
-          <input
-            ref={pileInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) {
-                void handlePilePhoto(file);
-              }
-              event.target.value = "";
-            }}
-            className="hidden"
-          />
+        <div className="grid gap-3 mb-4">
+          <div>
+            <button
+              onClick={() => setIsBulkCameraOpen(true)}
+              className="w-full py-3 px-4 rounded-xl bg-[#16a34a] text-white font-semibold hover:bg-[#15803d] transition-colors"
+            >
+              Start bulk photographing
+            </button>
+            <p className="text-xs text-[#99a1af] mt-1.5 px-1">
+              Photograph each packet front and back — most accurate, best for
+              going through a pile one by one.
+            </p>
+          </div>
+          <div>
+            <button
+              onClick={() => pileInputRef.current?.click()}
+              disabled={pileLoading}
+              className="w-full py-3 px-4 flex items-center justify-center gap-2 border border-gray-300 rounded-xl text-sm font-medium text-[#4a5565] bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {pileLoading ? (
+                <>
+                  <svg
+                    className="w-4 h-4 animate-spin text-[#16a34a]"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                  Scanning pile...
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  Photograph a pile — scan many at once
+                </>
+              )}
+            </button>
+            <input
+              ref={pileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) {
+                  void handlePilePhoto(file);
+                }
+                event.target.value = "";
+              }}
+              className="hidden"
+            />
+            <p className="text-xs text-[#99a1af] mt-1.5 px-1">
+              Lay packets flat and shoot them all in one go — great for a quick
+              first pass on a big collection.
+            </p>
+          </div>
         </div>
 
         {hasItems && (
@@ -358,7 +370,8 @@ export function BatchImport({
                 Drop photos here or click to select
               </p>
               <p className="text-sm text-[#99a1af] mt-1">
-                Select multiple images at once
+                Already have photos? Drop them here or click to browse your
+                library.
               </p>
             </div>
           )}
