@@ -193,168 +193,129 @@ export function BatchImport({
           </p>
         </div>
 
-        <div className="grid gap-3 mb-4">
-          <div>
+        {/* Hidden inputs — always in DOM so they can be triggered from any layout */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={(event) => {
+            if (event.target.files) {
+              enqueueFiles(event.target.files, {
+                source: "manual-upload",
+                autoSaveOnReady: false,
+              });
+            }
+            event.target.value = "";
+          }}
+          className="hidden"
+        />
+        <input
+          ref={pileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) {
+              void handlePilePhoto(file);
+            }
+            event.target.value = "";
+          }}
+          className="hidden"
+        />
+
+        {!hasItems ? (
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            {/* Bulk camera */}
             <button
               onClick={() => setIsBulkCameraOpen(true)}
-              className="w-full py-3 px-4 rounded-xl bg-[#16a34a] text-white font-semibold hover:bg-[#15803d] transition-colors"
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-[#16a34a] text-white hover:bg-[#15803d] transition-colors text-center"
             >
-              Start bulk photographing
+              <svg
+                className="w-7 h-7"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <span className="font-semibold text-sm leading-tight">
+                Bulk photo
+              </span>
+              <span className="text-xs opacity-75 leading-tight">
+                Front + back, one by one
+              </span>
             </button>
-            <p className="text-xs text-[#99a1af] mt-1.5 px-1">
-              Photograph each packet front and back — most accurate, best for
-              going through a pile one by one.
-            </p>
-          </div>
-          <div>
+
+            {/* Pile scan */}
             <button
               onClick={() => pileInputRef.current?.click()}
               disabled={pileLoading}
-              className="w-full py-3 px-4 flex items-center justify-center gap-2 border border-gray-300 rounded-xl text-sm font-medium text-[#4a5565] bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-center"
             >
               {pileLoading ? (
-                <>
-                  <svg
-                    className="w-4 h-4 animate-spin text-[#16a34a]"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
-                  </svg>
-                  Scanning pile...
-                </>
-              ) : (
-                <>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  Photograph a pile — scan many at once
-                </>
-              )}
-            </button>
-            <input
-              ref={pileInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) {
-                  void handlePilePhoto(file);
-                }
-                event.target.value = "";
-              }}
-              className="hidden"
-            />
-            <p className="text-xs text-[#99a1af] mt-1.5 px-1">
-              Lay packets flat and shoot them all in one go — great for a quick
-              first pass on a big collection.
-            </p>
-          </div>
-        </div>
-
-        {hasItems && (
-          <div className="bg-white border border-gray-200 rounded-xl p-3 mb-3">
-            <div className="text-sm text-[#4a5565]">
-              Processing {counts.processingCount} • Saved {counts.savedCount} •
-              Needs review {counts.needsReviewCount}
-              {counts.queuedSeedImageCount > 0 && (
-                <>
-                  {" "}
-                  •{" "}
-                  <span className="text-amber-600">
-                    {counts.queuedSeedImageCount} queued (AI limit)
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-        )}
-
-        <div
-          onDragOver={onDragOver}
-          onDragLeave={onDragLeave}
-          onDrop={onDrop}
-          onClick={() => !hasItems && fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-xl p-5 text-center transition-colors mb-3 ${
-            isDragging
-              ? "border-[#16a34a] bg-[#f0fdf4] cursor-copy"
-              : hasItems
-                ? "border-gray-200 bg-white cursor-default"
-                : "border-gray-300 hover:border-[#16a34a] hover:bg-[#f0fdf4] cursor-pointer"
-          }`}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={(event) => {
-              if (event.target.files) {
-                enqueueFiles(event.target.files, {
-                  source: "manual-upload",
-                  autoSaveOnReady: false,
-                });
-              }
-              event.target.value = "";
-            }}
-            className="hidden"
-          />
-
-          {hasItems ? (
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <span className="text-sm text-[#6a7282]">
-                {counts.savedCount} of {counts.totalCount} saved
-              </span>
-              <div className="flex gap-2 flex-wrap">
-                {counts.readyCount > 0 && (
-                  <button
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      void saveAllReady();
-                    }}
-                    className="px-3 py-1.5 bg-[#16a34a] text-white text-sm font-medium rounded-lg hover:bg-[#15803d] transition-colors"
-                  >
-                    Save {counts.readyCount} ready
-                  </button>
-                )}
-                <button
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    fileInputRef.current?.click();
-                  }}
-                  className="px-3 py-1.5 text-sm text-[#6a7282] border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                <svg
+                  className="w-7 h-7 animate-spin text-[#16a34a]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
                 >
-                  Add more
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="w-7 h-7 text-[#4a5565]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+              )}
+              <span className="font-semibold text-sm text-[#4a5565] leading-tight">
+                {pileLoading ? "Scanning…" : "Pile scan"}
+              </span>
+              <span className="text-xs text-[#99a1af] leading-tight">
+                Many at once
+              </span>
+            </button>
+
+            {/* Upload */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onDrop={onDrop}
+              className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed transition-colors text-center ${
+                isDragging
+                  ? "border-[#16a34a] bg-[#f0fdf4]"
+                  : "border-gray-200 bg-white hover:border-[#16a34a] hover:bg-[#f0fdf4]"
+              }`}
+            >
               <svg
-                className="w-10 h-10 text-gray-300 mx-auto mb-2"
+                className="w-7 h-7 text-gray-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -366,16 +327,49 @@ export function BatchImport({
                   d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                 />
               </svg>
-              <p className="text-[#4a5565] font-medium">
-                Drop photos here or click to select
-              </p>
-              <p className="text-sm text-[#99a1af] mt-1">
-                Already have photos? Drop them here or click to browse your
-                library.
-              </p>
+              <span className="font-semibold text-sm text-[#4a5565] leading-tight">
+                Upload
+              </span>
+              <span className="text-xs text-[#99a1af] leading-tight">
+                Photos from device
+              </span>
+            </button>
+          </div>
+        ) : (
+          <div className="bg-white border border-gray-200 rounded-xl p-3 mb-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="text-sm text-[#4a5565]">
+                Processing {counts.processingCount} • Saved {counts.savedCount}{" "}
+                • Needs review {counts.needsReviewCount}
+                {counts.queuedSeedImageCount > 0 && (
+                  <>
+                    {" "}
+                    •{" "}
+                    <span className="text-amber-600">
+                      {counts.queuedSeedImageCount} queued (AI limit)
+                    </span>
+                  </>
+                )}
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {counts.readyCount > 0 && (
+                  <button
+                    onClick={() => void saveAllReady()}
+                    className="px-3 py-1.5 bg-[#16a34a] text-white text-sm font-medium rounded-lg hover:bg-[#15803d] transition-colors"
+                  >
+                    Save {counts.readyCount} ready
+                  </button>
+                )}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3 py-1.5 text-sm text-[#6a7282] border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Add more
+                </button>
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {hasItems && (
           <div className="space-y-2">

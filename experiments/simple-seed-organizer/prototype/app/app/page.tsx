@@ -220,11 +220,7 @@ function HomeContent() {
         activeView={viewMode}
         onViewChange={setViewMode}
         onAddClick={() => {
-          if (usage?.canAddSeed !== false) {
-            router.push("/add");
-          } else {
-            router.push("/pricing?reason=seeds");
-          }
+          router.push("/pricing?reason=seeds");
         }}
         canAddSeed={usage?.canAddSeed ?? true}
       />
