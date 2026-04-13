@@ -1,0 +1,141 @@
+---
+description: Apply when writing, reviewing, or modifying Vitest test files (*.test.ts, *.test.tsx).
+globs: tests/**/*.test.ts, tests/**/*.test.tsx, **/*.test.ts, **/*.test.tsx
+---
+
+# Vitest conventions
+
+## Imports
+
+Always use named imports from `vitest`. Never use `import * as vitest` or globals.
+
+```ts
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+```
+
+For component tests, import from `@testing-library/react`:
+
+```ts
+import { render, screen } from "@testing-library/react";
+```
+
+## File structure
+
+Group tests with `describe` blocks. Use section separator comments to delineate
+groups within a file:
+
+```ts
+// ---------------------------------------------------------------------------
+// Group name
+// ---------------------------------------------------------------------------
+```
+
+## Mocking
+
+**Module mocks** — declare with `vi.mock()` at the top level, outside any
+`describe` or `it`:
+
+```ts
+vi.mock("@/lib/data", () => ({
+  getPrototypes: mockGetPrototypes,
+}));
+```
+
+**Hoisted handles** — when a mock variable must be referenced inside a
+`vi.mock()` factory, declare it with `vi.hoisted()`:
+
+```ts
+const { mockFn } = vi.hoisted(() => ({
+  mockFn: vi.fn(),
+}));
+```
+
+**Node built-ins** — use `importOriginal` to preserve non-mocked exports and
+include an explicit `default` key alongside named exports:
+
+```ts
+vi.mock("net", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("net")>();
+  return { ...actual, default: { ...actual, Socket: MockSocket } };
+});
+```
+
+**Reset mocks** — call `vi.clearAllMocks()` in `beforeEach`, not `afterEach`.
+
+**Fake timers** — enable in `beforeEach`, restore in `afterEach`:
+
+```ts
+beforeEach(() => { vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); });
+```
+
+## API route tests
+
+Import route handlers dynamically inside `beforeEach` (after mocks are set up):
+
+```ts
+beforeEach(async () => {
+  vi.clearAllMocks();
+  ({ POST } = await import("@/app/api/my-route/route"));
+});
+```
+
+Instantiate `NextRequest` directly; do not use `fetch` or `supertest`:
+
+```ts
+new NextRequest("http://localhost/api/path", { method: "POST", headers: { ... } });
+```
+
+## Component tests
+
+Prefer semantic queries over implementation queries:
+
+```ts
+// Prefer
+screen.getByRole("heading", { level: 1 })
+screen.getByRole("button", { name: /submit/i })
+
+// Avoid
+container.querySelector("h1")
+screen.getByTestId("submit-btn")
+```
+
+Use `.closest()` when you need the containing element rather than the text node:
+
+```ts
+const p = screen.getByText("Hello").closest("p");
+```
+
+Do not use snapshot tests.
+
+## Test factory helpers
+
+Extract repeated setup into small named factory functions co-located in the
+test file rather than using `beforeEach` for complex object construction:
+
+```ts
+function makeRequest(method: "GET" | "POST", port: string) {
+  return new NextRequest(`http://localhost/api/prototypes/${port}`, {
+    method,
+    headers: { authorization: "Bearer test-secret" },
+  });
+}
+```
+
+## Assertions
+
+Use semantic matchers over boolean checks:
+
+```ts
+// Prefer
+expect(el).toHaveTextContent("Title")
+expect(el).toBeInTheDocument()
+expect(els).toHaveLength(2)
+
+// Avoid
+expect(el.textContent).toBe("Title")
+expect(!!el).toBe(true)
+expect(els.length).toBe(2)
+```
+
+Use `toBeNull()` to assert absence, not `toBeFalsy()`.
