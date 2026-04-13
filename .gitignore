@@ -103,3 +103,6 @@ logs/
 *.log
 
 .claude/worktrees/
+
+# Obsidian — local vault for this repo (notes/settings are not part of the app on GitHub)
+BHD Labs/
