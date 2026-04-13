@@ -1,0 +1,111 @@
+---
+description: Apply when writing or modifying Next.js App Router API route handlers (app/api/**/route.ts).
+globs: app/api/**/route.ts
+---
+
+# Next.js App Router API route conventions
+
+## Function signature
+
+Export named async functions matching the HTTP method. For dynamic routes,
+`params` is a `Promise` (Next.js 15):
+
+```ts
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ port: string }> },
+) { ... }
+```
+
+## Auth guard
+
+Call `checkAdminAuth` first. Early-return the error response immediately —
+do not nest the rest of the handler inside an `if`:
+
+```ts
+const authError = checkAdminAuth(request);
+if (authError) return authError;
+```
+
+## Params
+
+Always `await params` before accessing properties:
+
+```ts
+const { port } = await params;
+```
+
+## Input validation
+
+Validate and reject before doing any real work. Use `parseInt(n, 10)` for
+numeric path params; check `isNaN` and range in a single condition:
+
+```ts
+const portNumber = parseInt(port, 10);
+if (isNaN(portNumber) || portNumber < 1 || portNumber > 65535) {
+  return NextResponse.json({ error: "Invalid port number" }, { status: 400 });
+}
+```
+
+## Response shape
+
+**Errors** — always `{ error: string }`:
+
+```ts
+return NextResponse.json({ error: "Prototype not found" }, { status: 404 });
+```
+
+**Success** — always include `success: true` plus relevant fields:
+
+```ts
+return NextResponse.json({ success: true, port: portNumber });
+```
+
+## Status codes
+
+| Situation | Status |
+|-----------|--------|
+| Validation failure | 400 |
+| Auth failure | 401 |
+| Resource not found | 404 |
+| Server error | 500 |
+| Service misconfigured (e.g. missing env var) | 503 |
+
+## Error handling
+
+Catch errors per operation, not with a single wrapper around the whole handler.
+Type the caught value as `any` and access `.message`:
+
+```ts
+} catch (error: any) {
+  return NextResponse.json(
+    { error: `Failed to start server: ${error.message}` },
+    { status: 500 },
+  );
+}
+```
+
+## CORS (public endpoints only)
+
+Use a `withCors()` wrapper function; never set headers inline. Export an
+`OPTIONS` handler alongside `POST`:
+
+```ts
+function withCors(res: NextResponse) {
+  res.headers.set("Access-Control-Allow-Origin", CORS_ORIGIN);
+  res.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  return res;
+}
+
+export async function OPTIONS() {
+  return withCors(new NextResponse(null, { status: 204 }));
+}
+```
+
+Admin-only routes (protected by `checkAdminAuth`) do not need CORS headers.
+
+## Helper functions
+
+Define helpers (e.g. `checkPort`, `withCors`) outside the exported handler as
+named functions, not inline closures.
