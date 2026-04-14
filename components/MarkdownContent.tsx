@@ -1,5 +1,6 @@
 "use client";
 
+/** @figma 9VJTxmBWKgeCDTyJLsYM7I:27:3311 */
 interface MarkdownContentProps {
   content: string;
   maxLines?: number;
