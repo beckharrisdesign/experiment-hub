@@ -1,0 +1,161 @@
+---
+description: Apply when writing or modifying React components in components/ or app/**/*.tsx.
+globs: components/**/*.tsx, app/**/*.tsx
+---
+
+# Component conventions
+
+## "use client" directive
+
+Add `"use client"` only when the component uses browser APIs, React state, or
+event handlers. Omit it for purely presentational components — they are Server
+Components by default.
+
+```tsx
+// needs "use client" — uses useState, usePathname
+"use client";
+import { useState } from "react";
+
+// no directive — no hooks, no events
+export default function MetricCard({ label, value }: MetricCardProps) { ... }
+```
+
+## Props interface
+
+Always define a named `interface` (not `type`) above the component, named
+`<ComponentName>Props`:
+
+```tsx
+interface StatusBadgeProps {
+  status: Status;
+}
+
+export default function StatusBadge({ status }: StatusBadgeProps) { ... }
+```
+
+For polymorphic components (e.g. Button), define a `Base<Name>Props` interface
+and extend it per variant. Combine into a union type for the component:
+
+```tsx
+interface BaseButtonProps { ... }
+interface ButtonProps extends BaseButtonProps, Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> { as?: "button"; }
+interface LinkButtonProps extends BaseButtonProps { as: "a"; href: string; }
+type ButtonComponentProps = ButtonProps | LinkButtonProps;
+```
+
+## Exports
+
+Always use `export default function ComponentName`. No named exports for
+components. No `const Component = () =>` style.
+
+## Prop destructuring
+
+Destructure props in the function signature, not inside the body:
+
+```tsx
+// Correct
+export default function Tooltip({ content, children, className = "", position = "top" }: TooltipProps) {
+
+// Avoid
+export default function Tooltip(props: TooltipProps) {
+  const { content, children } = props;
+```
+
+## Optional props
+
+Set defaults in the destructure. Common defaults:
+
+- `className?: string` → default `""`
+- `variant?: "primary" | "secondary"` → default `"primary"`
+- `position?: "top" | "bottom" | "left" | "right"` → default `"top"`
+
+## children
+
+Type as `React.ReactNode` (or import `ReactNode` from `"react"`).
+Never type as `JSX.Element` or `string`.
+
+## Multi-variant class lookups
+
+Use a `Record<>` lookup object rather than chained ternaries when mapping a
+prop to a Tailwind class string:
+
+```tsx
+// Correct
+const variantClasses: Record<Variant, string> = {
+  primary: "border border-accent-primary/50 text-accent-primary ...",
+  secondary: "text-text-muted hover:text-text-primary ...",
+};
+const classes = `${baseClasses} ${variantClasses[variant]}`;
+
+// Avoid
+const classes = variant === "primary" ? "border ..." : variant === "secondary" ? "text-..." : "...";
+```
+
+## Static data outside the component
+
+Define static arrays, maps, and lookup objects outside the component function
+so they are not recreated on every render:
+
+```tsx
+// Correct — defined once at module level
+const navLinks = [
+  { label: "Experiments", href: "/" },
+  ...
+];
+
+export default function Header() { ... }
+```
+
+## Guard clauses for undefined
+
+Return a fallback element early rather than wrapping the whole return in a
+conditional:
+
+```tsx
+if (value === undefined) {
+  return <span className="text-sm text-text-muted">—</span>;
+}
+```
+
+## Icons and SVGs
+
+Use inline SVGs directly. Do not add icon packages (Heroicons, Lucide, etc.).
+If an icon comes from a Figma MCP source, use it as-is per the Figma rules in
+`design-guidelines.mdc`.
+
+## Analytics attributes
+
+Add `data-analytics-*` attributes to all interactive navigational elements
+(`<Link>`, `<button>` used for navigation, `<a>`):
+
+```tsx
+data-analytics-event="navigation_click"
+data-analytics-surface-type="hub"
+data-analytics-surface-name="header"
+data-analytics-link-label="experiments"
+```
+
+Non-navigational interactive elements (toggle buttons, form inputs) do not
+need analytics attributes unless they represent a meaningful user action.
+
+## Figma source reference
+
+The hub design file key is: `9VJTxmBWKgeCDTyJLsYM7I`
+
+Add a `@figma` JSDoc comment directly above the component's props interface
+when the component has a confirmed Figma counterpart in the hub design file.
+Use the format `@figma FILE_KEY:NODE_ID`:
+
+```tsx
+/** @figma 9VJTxmBWKgeCDTyJLsYM7I:223:1337 */
+interface HeaderProps { ... }
+```
+
+**Scope:** This applies to `components/` only. Prototype-specific components
+live in their own Figma files with their own file keys — do not use the hub
+file key for those. If a prototype component has a Figma source, add its own
+`@figma` comment with the correct file key at the top of that file.
+
+When working on a component that has a `@figma` comment, call
+`get_design_context` with the node ID before making visual changes, to verify
+against the source design.
