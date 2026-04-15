@@ -434,7 +434,13 @@ Copy text CHARACTER-BY-CHARACTER exactly as it appears. If a field is not visibl
     );
   }
 
-  // Ensure all fieldSources and rawKeyValuePairs use the correct side
+  // Enforce the correct side for all extracted fields. Since we sent only one
+  // image with a specific side label, every non-null field MUST belong to that
+  // side. We deliberately do NOT use the AI's fieldSources here because the
+  // model often tags fields like brand/plantingInstructions as "back" even when
+  // scanning the front image (it confuses physical-packet convention with the
+  // image side we're actually scanning), which was causing front-image data to
+  // appear in the "Back image data" panel.
   const fieldSources: Record<string, "front" | "back"> = {};
   for (const [k, v] of Object.entries(extracted)) {
     if (
@@ -445,9 +451,6 @@ Copy text CHARACTER-BY-CHARACTER exactly as it appears. If a field is not visibl
     ) {
       fieldSources[k] = side;
     }
-  }
-  if (extracted.fieldSources && typeof extracted.fieldSources === "object") {
-    Object.assign(fieldSources, extracted.fieldSources);
   }
   extracted.fieldSources = fieldSources;
 
