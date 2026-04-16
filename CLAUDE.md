@@ -24,8 +24,13 @@
 Invocable via `/skill-name`. Source files live in `skills/` (centralized) and `.claude/skills/` (hub-specific). The session-start hook copies `skills/**/*.md` into `.claude/skills/` automatically.
 
 **Centralized (`skills/`)** — shared across projects, add new skills here:
+- `/experiment-creator` — refine idea, create experiment directory + metadata
+- `/market-research` — TAM/SAM/SOM analysis, scoring, go/no-go recommendation
+- `/prd-writer` — generate PRD, invoke design-advisor for review
+- `/prototype-builder` — propose stack, generate code, invoke design-advisor
+- `/design-advisor` — design review of PRD, code, or live URL
 - `/user-communication` — audit user-facing copy against content design standards
-- `figma/` — Figma workflow skills (add here as they're built)
+- `/sitemap` — screenshot every route and render a visual sitemap tree in Figma
 
 **Fetched from `github.com/figma/mcp-server-guide`** — run `npm run skills:sync` to pull, then commit. Vendored in `skills/figma/`:
 - `/figma-use` — execute Figma Plugin API (required before all write operations)
@@ -35,9 +40,6 @@ Invocable via `/skill-name`. Source files live in `skills/` (centralized) and `.
 - `/figma-code-connect` — map Figma components to code (Org/Enterprise only)
 - `/figma-create-design-system-rules` — generate project-level Figma rules for Claude/Cursor
 - `/figma-create-new-file` — create a new Figma design or FigJam file
-
-**Hub-specific (`.claude/skills/`)** — committed directly, not shared:
-- `/sitemap` — screenshot every route and render a visual sitemap tree in Figma
 
 ## Hooks (Claude Code only)
 

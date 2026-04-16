@@ -19,8 +19,16 @@
 - `prd-template.mdc` — experiment PRD format
 - `market-research-template.mdc` — market research format
 
+## Skills and agents
+
+Invocable skills and agents live in `skills/` — reference with `@skills/<name>.md` in Cursor:
+- `experiment-creator`, `market-research`, `prd-writer`, `prototype-builder`, `design-advisor`
+- `user-communication`, `sitemap`
+- `figma/figma-use`, `figma/figma-implement-design`, `figma/figma-generate-design`, and more
+
+See `agents/README.md` for the experiment workflow and approval checkpoints.
+
 ## Cursor-specific
 
 - **Figma plugin:** `/add-plugin figma` in agent chat
 - **MCP config:** See `.cursor/mcp-config.json.example` for filesystem + experiment-logs setup
-- **Skills:** Invocable workflows live in `.claude/skills/` — run them via Claude Code
