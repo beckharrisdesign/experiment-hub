@@ -1,44 +1,26 @@
-# Cursor Rules for Experiment Hub
+# Cursor rules for Experiment Hub
 
-Quick reference: UX/DX balance · Test first, code later · Reusable systems · Log capture · Figma flow · Solo/vibe coding
+> Substantive rules live in `.cursor/rules/` — Cursor loads them automatically by file pattern.
+> **Edit rules there.** This file is an index only. Do not duplicate rule content here.
 
-## UX and DX: Balance, Don't Choose
-- **Rule**: User experience and developer experience are not competitors. Always balance both needs instead of picking one over the other.
-- **How**: Prefer simple, efficient, empathetic, modular patterns on the frontend and the backend. Good patterns serve users and maintainers.
+## Rules
 
-## Testing: Test First, Code Later
-- **Rule**: Test first, code later. Run the test first. If it fails, then write code to make it pass. Never write code first and hope it works.
-- **Strong bias toward tests that agents can run** — Prefer tests that an agent can execute (scripts, curl, fetch, browser actions) over manual-only checks
-- **Agent-runnable** — When adding tests, ask: can an agent run this and interpret the result? If not, make it so
+**Always-applied (no file trigger):**
+- `principles.mdc` — UX/DX balance, test-first, log capture, solo founder practices
+- `github-workflow.mdc` — branching, PR process
+- `figma.mdc` — Figma MCP setup and project-specific design rules
 
-## Log Capture
-- All Next.js dev servers should output logs to `.next/turbopack.log` or a project-specific log file
-- Logs should be accessible via MCP filesystem resources
+**File-triggered (auto-apply by glob pattern):**
+- `commit-messages.mdc` — conventional commit format
+- `design-guidelines.mdc` — dark theme, spacing, component patterns
+- `component-conventions.mdc` — React component conventions
+- `nextjs-api-routes.mdc` — API route conventions
+- `vitest-conventions.mdc` — test conventions
+- `prd-template.mdc` — experiment PRD format
+- `market-research-template.mdc` — market research format
 
-## Analysis and Recommendations
-- **Think in reusable systems and components** — Prefer chat, shared docs, or existing project structure over writing a ton of one-off markdown files for everything.
-- **Use chat or reusable docs** for:
-  - Quick comparisons (pros/cons, approach comparisons)
-  - Recommendations and decision-making
-  - Exploratory analysis
-  - One-off explanations
-- **Use documentation files** when:
-  - Information needs to be referenced later (setup guides, troubleshooting)
-  - Content is part of project documentation (architecture, design decisions)
-  - Multiple people need to access it
-  - It's a living document that will be updated over time
-- **Avoid** creating new one-off .md files for every analysis; extend existing docs or use chat instead
+## Cursor-specific
 
-## Figma (when using Figma MCP)
-The Figma plugin provides the general workflow skills (install globally via `/add-plugin figma`). These rules are project-specific:
-- **Map to our system** — Treat Figma MCP output as design reference, not final code. Use this project's design tokens (`tailwind.config.ts`), components (`components/`), and typography (Fraunces headings, Inter body). Validate for 1:1 visual parity with the Figma screenshot.
-- **Reuse, don't duplicate** — Use existing design-system components. Do not add new icon packages if assets come from Figma. No hardcoded colors or spacing; use tokens from `tailwind.config.ts`.
-- **Asset handling** — If the Figma MCP server returns a `localhost` source for an image or SVG, use that source directly. Do not create placeholders.
-
-## Solo founder / vibe coding
-- **Protect critical areas** — Do not modify pricing logic, auth flows, API contracts, or legal/core copy without explicit review. Call out protected areas in rules or docs.
-- **Small, testable steps** — Break work into milestones you can run and verify. Plan before coding; cut scope so context stays manageable.
-- **Small loops** — Prefer many small prompt → run → refine cycles over one large prompt. Start fresh chats for new features to avoid context bloat.
-- **Review AI output** — If you wouldn't merge it from a junior dev without reading it, don't accept it from the LLM. Run tests and basic security checks on generated code.
-- **Security is on you** — Never commit secrets; review auth and user-input handling; run security scans on generated code when it matters.
-- **Go manual when it matters** — Use vibe coding for prototyping and boilerplate; use normal review and rigor for security-critical or performance-critical code.
+- **Figma plugin:** `/add-plugin figma` in agent chat
+- **MCP config:** See `.cursor/mcp-config.json.example` for filesystem + experiment-logs setup
+- **Skills:** Invocable workflows live in `.claude/skills/` — run them via Claude Code
