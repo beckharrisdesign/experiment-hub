@@ -17,16 +17,32 @@ const path = require("path");
 const SOURCES = [
   {
     name: "figma/mcp-server-guide",
+    // Each skill lives at skills/{name}/SKILL.md — saved locally as {name}.md
     base: "https://raw.githubusercontent.com/figma/mcp-server-guide/main/skills",
     dest: "skills/figma",
     files: [
-      "figma-use.md",
-      "figma-implement-design.md",
-      "figma-generate-design.md",
-      "figma-code-connect.md",
-      "figma-create-design-system-rules.md",
-      "figma-create-new-file.md",
-      "figma-generate-library.md",
+      { remote: "figma-use/SKILL.md", local: "figma-use.md" },
+      {
+        remote: "figma-implement-design/SKILL.md",
+        local: "figma-implement-design.md",
+      },
+      {
+        remote: "figma-generate-design/SKILL.md",
+        local: "figma-generate-design.md",
+      },
+      { remote: "figma-code-connect/SKILL.md", local: "figma-code-connect.md" },
+      {
+        remote: "figma-create-design-system-rules/SKILL.md",
+        local: "figma-create-design-system-rules.md",
+      },
+      {
+        remote: "figma-create-new-file/SKILL.md",
+        local: "figma-create-new-file.md",
+      },
+      {
+        remote: "figma-generate-library/SKILL.md",
+        local: "figma-generate-library.md",
+      },
     ],
   },
 ];
@@ -57,16 +73,16 @@ async function sync() {
     console.log(`\n${source.name}`);
     fs.mkdirSync(path.join(process.cwd(), source.dest), { recursive: true });
 
-    for (const file of source.files) {
-      const url = `${source.base}/${file}`;
-      const dest = path.join(process.cwd(), source.dest, file);
+    for (const { remote, local } of source.files) {
+      const url = `${source.base}/${remote}`;
+      const dest = path.join(process.cwd(), source.dest, local);
       try {
         const content = await get(url);
         fs.writeFileSync(dest, content);
-        console.log(`  + ${file}`);
+        console.log(`  + ${local}`);
         synced++;
       } catch (err) {
-        console.error(`  ✗ ${file}: ${err.message}`);
+        console.error(`  ✗ ${local}: ${err.message}`);
         failed++;
       }
     }
