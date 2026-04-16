@@ -40,15 +40,15 @@ Product experiments are scattered across files, notebooks, and browser tabs, mak
 
 ### 1. Content Types
 
-The application manages three types of content with one-to-one-to-one relationships:
+The application manages three types of content. Experiments have a one-to-one relationship with Documentation and a one-to-many relationship with Prototypes:
 
 #### Experiments
 - **Statement**: What you're attempting this time around (short sentence)
 - **Directory**: Path to experiment directory (created automatically)
 - **PRD**: Product Requirements Document for the experiment (stored in linked Documentation)
-- **Prototype**: Links to or embedded prototype iterations (stored in linked Prototype)
+- **Prototypes**: One or more prototype iterations linked to this experiment
 - **Documentation ID**: Reference to associated Documentation (one-to-one)
-- **Prototype ID**: Reference to associated Prototype (one-to-one)
+- **Prototype IDs**: References to associated Prototypes (one-to-many)
 - **Status**: Active, Completed, Abandoned, On Hold
 - **Created Date**: Auto-generated timestamp
 - **Last Modified**: Auto-updated timestamp
@@ -58,7 +58,7 @@ The application manages three types of content with one-to-one-to-one relationsh
 - **Title**: Short descriptive name
 - **Description**: What the prototype demonstrates
 - **Link/Path**: Reference to prototype location
-- **Experiment ID**: Reference to associated Experiment (one-to-one)
+- **Experiment ID**: Reference to associated Experiment (many-to-one)
 - **Status**: Active, Completed, Abandoned
 - **Created Date**: Auto-generated timestamp
 - **Last Modified**: Auto-updated timestamp
@@ -72,7 +72,7 @@ The application manages three types of content with one-to-one-to-one relationsh
 - **Last Modified**: Auto-updated timestamp
 - **Tags**: Multiple tags for categorization
 
-**Relationship Model**: Each Experiment has exactly one Documentation and one Prototype. When an Experiment is created, its associated Documentation and Prototype can be created and linked automatically. Deleting an Experiment should also delete its linked Documentation and Prototype.
+**Relationship Model**: Each Experiment has exactly one Documentation and one or more Prototypes. When an Experiment is created, its Documentation and an initial Prototype can be created and linked automatically. Additional Prototypes can be added to an Experiment over time. Deleting an Experiment should also delete its linked Documentation and all linked Prototypes.
 
 ### 2. Navigation & Interface
 - **Left Menu**: Fixed sidebar with three items - Experiments, Prototypes, Documentation
@@ -110,11 +110,11 @@ The application manages three types of content with one-to-one-to-one relationsh
 - System creates subdirectories: `docs/`, `prototype/`, `notes/`
 
 #### 1.2 Experiment metadata generation
-- System generates unique IDs for Experiment, Documentation, and Prototype
+- System generates unique IDs for Experiment, Documentation, and initial Prototype
 - System sets default status to "Active"
 - System auto-generates created date timestamp
 - System suggests relevant tags based on experiment content
-- System links all three entities in one-to-one relationships
+- System links Documentation one-to-one and Prototype as the first entry in a one-to-many list
 
 #### 1.3 Validation and error handling
 - System validates experiment statement is not empty
@@ -316,7 +316,7 @@ The application manages three types of content with one-to-one-to-one relationsh
 
 ### Phase 1: MVP
 - Left menu (Experiments, Prototypes, Documentation)
-- One-to-one-to-one relationship model with cascade delete
+- One-to-one (Experiment ↔ Documentation) and one-to-many (Experiment → Prototypes) relationship model with cascade delete
 - List views for each content type
 - Basic search
 - Dark mode UI
