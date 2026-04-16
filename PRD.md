@@ -335,6 +335,57 @@ The application manages three types of content with one-to-one-to-one relationsh
 - Experiment templates
 - Product launch readiness tracking
 
+## Optional Features
+
+These features are implemented and live in the codebase but are not required for core functionality. They can be enabled or disabled without affecting the primary experiment management workflow.
+
+### Experiment Scoring
+
+A 5-point scoring system across five dimensions, giving each experiment a maximum composite score of 25:
+
+- **Business Opportunity** — Market size and revenue potential
+- **Personal Impact** — Alignment with personal goals and motivation
+- **Competitive Advantage** — Differentiation from existing solutions
+- **Platform Cost** — Estimated build and maintenance effort (inverted — lower cost scores higher)
+- **Social Impact** — Positive effect on users or broader community
+
+Each dimension supports an optional rationale field for notes on the score. Scores are displayed as badges and score cards in the experiment detail view and on a dedicated `/scoring` page.
+
+### Market Research Integration
+
+Structured market research data parsed from a `market-research.md` file in each experiment's `docs/` directory. Displayed fields include:
+
+- **MOA** (Market Opportunity Assessment) — Narrative summary of the opportunity
+- **Go/No-Go decision** — Binary assessment with reasoning
+- **SOM Year 1** — Serviceable Obtainable Market projection for year one
+- **SOM Year 3** — Three-year market projection
+
+Market research is authored by the `@market-research` agent using a bottom-up TAM/SAM/SOM methodology.
+
+### Validation Landing Pages
+
+Each experiment can have an associated validation landing page — a standalone Next.js app in `experiments/{slug}/landing/` that runs on its own port (3001+). The hub tracks:
+
+- **Validation status** — Planned, Live, or Completed
+- **Landing page URL** — Link to the running validation app
+- **Form submission count** — Number of signups or submissions collected
+
+Submission data is stored optionally in Supabase (see below).
+
+### Supabase Integration (Optional)
+
+When a `SUPABASE_URL` and `SUPABASE_ANON_KEY` are configured, the hub can read form submission counts from a `experiment_submissions` table in Supabase. This enables tracking how many users signed up or submitted interest via a validation landing page.
+
+No Supabase configuration is required for core functionality. The app degrades gracefully when credentials are absent.
+
+### Notion Integration (Optional)
+
+When a `NOTION_API_KEY` is configured, the hub can pull validation results or notes from a linked Notion database. Used as an alternative or complement to Supabase for teams already using Notion as a data store.
+
+No Notion configuration is required for core functionality.
+
+---
+
 ## Non-Requirements
 
 The following are explicitly **not** in scope:
@@ -342,7 +393,6 @@ The following are explicitly **not** in scope:
 - Cloud sync or remote storage
 - Real-time collaboration
 - Complex data visualization
-- Integration with external services
 - Mobile app version (desktop-first)
 
 ## Constraints
@@ -369,7 +419,7 @@ VS Code (dark theme), Linear (clean, minimal, fast), GitHub (developer tool aest
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: Initial creation  
+**Document Version**: 1.1  
+**Last Updated**: 2026-04-16  
 **Status**: Draft
 
