@@ -21,9 +21,14 @@
 
 ## Skills (Claude Code only)
 
-Invocable via `/skill-name` — live in `.claude/skills/`:
-- `/sitemap` — screenshot every route and render a visual sitemap tree in Figma
+Invocable via `/skill-name`. Source files live in `skills/` (centralized) and `.claude/skills/` (hub-specific). The session-start hook copies `skills/**/*.md` into `.claude/skills/` automatically.
+
+**Centralized (`skills/`)** — shared across projects, add new skills here:
 - `/user-communication` — audit user-facing copy against content design standards
+- `figma/` — Figma workflow skills (add here as they're built)
+
+**Hub-specific (`.claude/skills/`)** — committed directly, not shared:
+- `/sitemap` — screenshot every route and render a visual sitemap tree in Figma
 
 ## Hooks (Claude Code only)
 

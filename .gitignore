@@ -104,5 +104,9 @@ logs/
 
 .claude/worktrees/
 
+# Skills installed from skills/ into .claude/skills/ by session-start hook (do not commit)
+.claude/skills/*.md
+!.claude/skills/sitemap.md
+
 # Obsidian — local vault for this repo (notes/settings are not part of the app on GitHub)
 BHD Labs/
