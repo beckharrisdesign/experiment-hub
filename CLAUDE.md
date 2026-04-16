@@ -27,6 +27,15 @@ Invocable via `/skill-name`. Source files live in `skills/` (centralized) and `.
 - `/user-communication` — audit user-facing copy against content design standards
 - `figma/` — Figma workflow skills (add here as they're built)
 
+**Fetched from `github.com/figma/mcp-server-guide`** — run `npm run skills:sync` to pull, then commit. Vendored in `skills/figma/`:
+- `/figma-use` — execute Figma Plugin API (required before all write operations)
+- `/figma-implement-design` — Figma URL → code using project tokens and components
+- `/figma-generate-design` — build full screens in Figma using the design system
+- `/figma-generate-library` — generate a complete design system in Figma from the codebase
+- `/figma-code-connect` — map Figma components to code (Org/Enterprise only)
+- `/figma-create-design-system-rules` — generate project-level Figma rules for Claude/Cursor
+- `/figma-create-new-file` — create a new Figma design or FigJam file
+
 **Hub-specific (`.claude/skills/`)** — committed directly, not shared:
 - `/sitemap` — screenshot every route and render a visual sitemap tree in Figma
 
