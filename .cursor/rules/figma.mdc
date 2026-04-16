@@ -23,4 +23,14 @@ See `component-conventions.mdc` for the `@figma` JSDoc comment format used to li
 
 ## Skills
 
-The `/sitemap` skill (Claude Code) and the sitemap workflow script both use Figma to render visual sitemaps. See `.claude/skills/sitemap.md`.
+Seven Figma workflow skills are fetched from `github.com/figma/mcp-server-guide` at session start and available via `/skill-name`:
+
+- `/figma-use` — execute JavaScript via the Figma Plugin API (required before all write operations)
+- `/figma-implement-design` — translate a Figma URL into code using project tokens and components
+- `/figma-generate-design` — build full screens in Figma using the design system
+- `/figma-generate-library` — generate a complete design system in Figma from the codebase
+- `/figma-code-connect` — map Figma components to code implementations (Org/Enterprise only)
+- `/figma-create-design-system-rules` — generate project-level Figma rules for Claude/Cursor
+- `/figma-create-new-file` — create a new Figma design or FigJam file
+
+The `/sitemap` skill renders a visual sitemap into Figma. See `.claude/skills/sitemap.md`.
