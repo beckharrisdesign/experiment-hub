@@ -1,0 +1,10 @@
+# Composite auto-score: higher is better after normalization (see scoring.py)
+weights:
+  tiny_region_penalty: 0.30
+  subject_clarity_proxy: 0.25
+  paintability_proxy: 0.20
+  fidelity_proxy: 0.15
+  background_simplicity_proxy: 0.10
+
+# Human scores (1-5 each) combine with auto when provided
+human_blend: 0.35

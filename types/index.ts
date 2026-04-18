@@ -1,4 +1,6 @@
 export type ExperimentStatus = "Active" | "Completed" | "Abandoned" | "On Hold";
+/** Product vs workflow tool vs personal R&D (defaults to commercial when omitted). */
+export type ExperimentKind = "commercial" | "tool" | "personal";
 export type PrototypeStatus = "Active" | "Completed" | "Abandoned";
 export type ValidationStatus = "not_started" | "planned" | "live" | "complete";
 
@@ -29,6 +31,7 @@ export interface Experiment {
   id: string;
   name: string; // Short name/title of the experiment
   statement: string; // Full experiment statement
+  type?: ExperimentKind;
   directory: string;
   documentationId: string;
   prototypeId: string;

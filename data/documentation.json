@@ -1,5 +1,14 @@
 [
   {
+    "id": "doc-pbn-research",
+    "title": "PBN Research Lab Documentation",
+    "content": "Notebook-first evaluation for paint-by-number pipeline research.",
+    "experimentId": "pbn-research",
+    "createdDate": "2026-04-18",
+    "lastModified": "2026-04-18",
+    "tags": ["pbn", "research", "notebook", "personal"]
+  },
+  {
     "id": "doc-web-to-figma-grabber",
     "title": "Web to Figma Grabber Documentation",
     "content": "Documentation for the Web to Figma Grabber experiment",

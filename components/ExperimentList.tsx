@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Experiment } from "@/types";
 import { slugify } from "@/lib/utils";
 import StatusBadge from "./StatusBadge";
+import ExperimentTypeBadge from "./ExperimentTypeBadge";
 import ExperimentScoresDisplay from "./ExperimentScores";
 
 interface ExperimentListProps {
@@ -71,7 +72,10 @@ export default function ExperimentList({ experiments }: ExperimentListProps) {
                 )}
               </div>
               <div className="flex flex-col items-end gap-2">
-                <StatusBadge status={experiment.status} />
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  <ExperimentTypeBadge type={experiment.type} />
+                  <StatusBadge status={experiment.status} />
+                </div>
                 {avgScore !== null && (
                   <div className="text-xs">
                     <span className="text-text-muted">Avg: </span>
