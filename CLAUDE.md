@@ -1,31 +1,47 @@
 # Claude Code — project instructions
 
-## GitHub workflow
+> Substantive rules live in `.cursor/rules/` — both Cursor and Claude Code load them automatically.
+> **Edit rules there.** This file is an index only. Do not duplicate rule content here.
 
-- **Always create a PR** when a feature, fix, or test task is complete — never push directly to `main`.
-- **Never merge the PR.** Open it and stop. Katy reviews CI checks and the Vercel preview before merging.
-- **Branch naming:** `claude/<short-descriptor>` using kebab-case. The descriptor must reflect the actual work done in the session, not the conversation topic that kicked it off (e.g. `claude/bde-form-tests` not `claude/review-ad-campaign-abc123`).
-- **One PR per logical unit of work.** Don't bundle unrelated changes.
-- **PR description** must include: what changed, why, and a test plan (how to verify it works).
+## Rules
 
-## Rules and skills
+**Always-applied (no file trigger):**
+- `principles.mdc` — UX/DX balance, test-first, log capture, solo founder practices
+- `github-workflow.mdc` — branching, PR process, never-merge rule
+- `figma.mdc` — Figma MCP setup and project-specific design rules
 
-Rules live in `.cursor/rules/` and apply to both Cursor and Claude Code sessions.
+**File-triggered (auto-apply by glob pattern):**
+- `commit-messages.mdc` — conventional commit format
+- `design-guidelines.mdc` — dark theme, spacing, component patterns
+- `component-conventions.mdc` — React component conventions (`components/`, `app/**/*.tsx`)
+- `nextjs-api-routes.mdc` — API route conventions (`app/api/**/route.ts`)
+- `vitest-conventions.mdc` — test conventions (`*.test.ts`, `*.test.tsx`)
+- `prd-template.mdc` — experiment PRD format (`experiments/*/docs/PRD.md`)
+- `market-research-template.mdc` — market research format (`experiments/*/docs/market-research.md`)
 
-- `commit-messages.mdc` — conventional commit format, imperative mood, 50-char subject
-- `design-guidelines.mdc` — dark theme, spacing, component patterns for the hub UI
+## Skills (Claude Code only)
 
-Skills live in `.claude/skills/` and are invocable via `/skill-name`.
+Invocable via `/skill-name`. Source files live in `skills/` (centralized) and `.claude/skills/` (hub-specific). The session-start hook copies `skills/**/*.md` into `.claude/skills/` automatically.
 
-- `user-communication.md` — audit and fix user-facing copy against content design standards
-- `sitemap.md` — capture real browser screenshots of every route and render them as a visual sitemap tree in Figma
+**Centralized (`skills/`)** — shared across projects, add new skills here:
+- `/experiment-creator` — refine idea, create experiment directory + metadata
+- `/market-research` — TAM/SAM/SOM analysis, scoring, go/no-go recommendation
+- `/prd-writer` — generate PRD, invoke design-advisor for review
+- `/prototype-builder` — propose stack, generate code, invoke design-advisor
+- `/design-advisor` — design review of PRD, code, or live URL
+- `/user-communication` — audit user-facing copy against content design standards
+- `/sitemap` — screenshot every route and render a visual sitemap tree in Figma
 
-## Figma (when using Figma MCP)
+**Fetched from `github.com/figma/mcp-server-guide`** — run `npm run skills:sync` to pull, then commit. Vendored in `skills/figma/`:
+- `/figma-use` — execute Figma Plugin API (required before all write operations)
+- `/figma-implement-design` — Figma URL → code using project tokens and components
+- `/figma-generate-design` — build full screens in Figma using the design system
+- `/figma-generate-library` — generate a complete design system in Figma from the codebase
+- `/figma-code-connect` — map Figma components to code (Org/Enterprise only)
+- `/figma-create-design-system-rules` — generate project-level Figma rules for Claude/Cursor
+- `/figma-create-new-file` — create a new Figma design or FigJam file
 
-Install the Figma plugin globally (`claude plugin install figma@claude-plugins-official`) for the MCP server and workflow skills. See `docs/FIGMA_SETUP.md` for full setup across all tools.
+## Hooks (Claude Code only)
 
-These rules are project-specific:
-
-- **Map to our system** — Treat Figma MCP output as design reference, not final code. Use this project's design tokens (`tailwind.config.ts`), components (`components/`), and typography (Fraunces headings, Inter body). Validate for 1:1 visual parity with the Figma screenshot.
-- **Reuse, don't duplicate** — Use existing design-system components. Do not add new icon packages if assets come from Figma. No hardcoded colors or spacing; use tokens from `tailwind.config.ts`.
-- **Asset handling** — If the Figma MCP server returns a `localhost` source for an image or SVG, use that source directly. Do not create placeholders.
+Hooks run automatically via `.claude/hooks/` — config in `.claude/settings.json`:
+`SessionStart`, `PreToolUse`, `PostToolUse`, `Stop`, `PostCompact`, `TaskCompleted`

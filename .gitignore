@@ -104,5 +104,10 @@ logs/
 
 .claude/worktrees/
 
+# Skills copied into .claude/skills/ by session-start hook — ephemeral, do not commit.
+# Edit source files in skills/ instead. Run `npm run skills:sync` to pull external skills.
+.claude/skills/*.md
+!.claude/skills/sitemap.md
+
 # Obsidian — local vault for this repo (notes/settings are not part of the app on GitHub)
 BHD Labs/

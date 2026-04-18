@@ -36,7 +36,7 @@ export const agentRubrics: AgentRubric[] = [
   {
     handle: "experiment-creator",
     role: "Product Strategist",
-    file: "agents/experiment-creator.md",
+    file: "skills/experiment-creator.md",
     input: "Raw idea",
     output: "Structured experiment with directory and metadata",
     rubric: [
@@ -53,7 +53,7 @@ export const agentRubrics: AgentRubric[] = [
   {
     handle: "market-research",
     role: "Entrepreneurship Mentor",
-    file: "agents/market-research.md",
+    file: "skills/market-research.md",
     input: "Experiment statement and target market",
     output: "Market research report with TAM/SAM/SOM and experiment scores",
     rubric: [
@@ -79,7 +79,7 @@ export const agentRubrics: AgentRubric[] = [
   {
     handle: "prd-writer",
     role: "Product Management Lead",
-    file: "agents/prd-writer.md",
+    file: "skills/prd-writer.md",
     input: "Experiment statement and market research (if available)",
     output: "Product Requirements Document saved to docs/PRD.md",
     rubric: [
@@ -94,7 +94,7 @@ export const agentRubrics: AgentRubric[] = [
   {
     handle: "prototype-builder",
     role: "Senior Engineering Lead",
-    file: "agents/prototype-builder.md",
+    file: "skills/prototype-builder.md",
     input: "PRD (required)",
     output: "Working prototype with zero-manual-step startup",
     rubric: [
@@ -115,7 +115,7 @@ export const agentRubrics: AgentRubric[] = [
   {
     handle: "design-advisor",
     role: "Design Lead / UX Director",
-    file: "agents/design-advisor.md",
+    file: "skills/design-advisor.md",
     input: "PRD, prototype code, or live deployed URL",
     output: "Design review report with heuristic findings and recommendations",
     rubric: [

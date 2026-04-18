@@ -1,0 +1,36 @@
+---
+description: Figma MCP setup and project-specific design rules. Apply always — no file trigger.
+globs:
+---
+
+# Figma
+
+## MCP setup
+
+**Claude Code:** The Figma MCP server is connected at session start via the MCP config. See `docs/FIGMA_SETUP.md` for full setup.
+
+**Cursor:** Use `/add-plugin figma` in agent chat to connect the Figma MCP server.
+
+## Project-specific rules
+
+- **Map to our system** — Treat Figma MCP output as design reference, not final code. Use this project's design tokens (`tailwind.config.ts`), components (`components/`), and typography (Fraunces headings, Inter body). Validate for 1:1 visual parity with the Figma screenshot.
+- **Reuse, don't duplicate** — Use existing design-system components. Do not add new icon packages if assets come from Figma. No hardcoded colors or spacing; use tokens from `tailwind.config.ts`.
+- **Asset handling** — If the Figma MCP server returns a `localhost` source for an image or SVG, use that source directly. Do not create placeholders.
+
+## Component annotation
+
+See `component-conventions.mdc` for the `@figma` JSDoc comment format used to link React components to their Figma counterparts, and for the hub design file key.
+
+## Skills
+
+Seven Figma workflow skills are fetched from `github.com/figma/mcp-server-guide` at session start and available via `/skill-name`:
+
+- `/figma-use` — execute JavaScript via the Figma Plugin API (required before all write operations)
+- `/figma-implement-design` — translate a Figma URL into code using project tokens and components
+- `/figma-generate-design` — build full screens in Figma using the design system
+- `/figma-generate-library` — generate a complete design system in Figma from the codebase
+- `/figma-code-connect` — map Figma components to code implementations (Org/Enterprise only)
+- `/figma-create-design-system-rules` — generate project-level Figma rules for Claude/Cursor
+- `/figma-create-new-file` — create a new Figma design or FigJam file
+
+The `/sitemap` skill renders a visual sitemap into Figma. See `.claude/skills/sitemap.md`.

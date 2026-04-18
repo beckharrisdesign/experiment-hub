@@ -1,0 +1,50 @@
+---
+description: Apply when scoring experiments or conducting market research.
+globs: experiments/*/docs/market-research.md, data/experiments.json
+---
+
+# Experiment scoring criteria
+
+Experiments are scored 1–5 across five dimensions. Maximum composite score: 25.
+
+## Business Opportunity (B)
+Market potential and revenue opportunity.
+- **5** — $1B+ TAM, clear path to $10M+ revenue, validated demand
+- **4** — $500M+ TAM, clear path to $1M+ revenue, strong growth signals
+- **3** — $100M+ TAM, path to $100K+ revenue, moderate indicators
+- **2** — $10M+ TAM, uncertain revenue path, weak indicators
+- **1** — <$10M TAM, unclear revenue path, minimal opportunity
+
+## Personal Impact (P)
+Would I personally use or benefit from this?
+- **5** — Solves a daily problem, strong emotional connection, core personal need
+- **4** — Solves a regular problem, would use frequently
+- **3** — Solves an occasional problem, moderate connection
+- **2** — Solves a rare problem, weak connection
+- **1** — No personal use case, wouldn't use it myself
+
+## Competitive Advantage (C)
+Market competition and differentiation.
+- **5** — First-mover, unique approach, defensible moat, minimal competition
+- **4** — Clear differentiation, underserved niche, limited competition
+- **3** — Some differentiation, competitive but viable
+- **2** — Limited differentiation, highly competitive
+- **1** — No differentiation, saturated market, dominant incumbents
+
+## Platform Cost ($)
+Solo buildability with AI-assisted tools (Cursor, Claude Code, etc.).
+- **5** — Build solo in <1 month, minimal infra, <$50/mo ongoing
+- **4** — Build solo in 1–3 months, managed services, $50–200/mo
+- **3** — Build solo in 3–6 months, moderate infra, $200–500/mo
+- **2** — 6–12 months even with AI, complex infra, $500–2000/mo
+- **1** — 12+ months or team required, $2000+/mo, requires expertise I don't have
+
+AI-assisted tools can significantly reduce build time — if a project would be a 2 without AI but becomes feasible solo with it, score it higher.
+
+## Social Impact (S)
+Fun, joy, and whether the world needs this.
+- **5** — Addresses critical need, serves underserved communities, meaningful contribution
+- **4** — Addresses important need, good positive impact
+- **3** — Addresses moderate need, some value
+- **2** — Addresses minor need, minimal value
+- **1** — No meaningful impact, purely self-serving

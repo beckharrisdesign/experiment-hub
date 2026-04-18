@@ -40,15 +40,15 @@ Product experiments are scattered across files, notebooks, and browser tabs, mak
 
 ### 1. Content Types
 
-The application manages three types of content with one-to-one-to-one relationships:
+The application manages three types of content. Experiments have a one-to-one relationship with Documentation and a one-to-many relationship with Prototypes:
 
 #### Experiments
 - **Statement**: What you're attempting this time around (short sentence)
 - **Directory**: Path to experiment directory (created automatically)
 - **PRD**: Product Requirements Document for the experiment (stored in linked Documentation)
-- **Prototype**: Links to or embedded prototype iterations (stored in linked Prototype)
+- **Prototypes**: One or more prototype iterations linked to this experiment
 - **Documentation ID**: Reference to associated Documentation (one-to-one)
-- **Prototype ID**: Reference to associated Prototype (one-to-one)
+- **Prototype IDs**: References to associated Prototypes (one-to-many)
 - **Status**: Active, Completed, Abandoned, On Hold
 - **Created Date**: Auto-generated timestamp
 - **Last Modified**: Auto-updated timestamp
@@ -58,7 +58,7 @@ The application manages three types of content with one-to-one-to-one relationsh
 - **Title**: Short descriptive name
 - **Description**: What the prototype demonstrates
 - **Link/Path**: Reference to prototype location
-- **Experiment ID**: Reference to associated Experiment (one-to-one)
+- **Experiment ID**: Reference to associated Experiment (many-to-one)
 - **Status**: Active, Completed, Abandoned
 - **Created Date**: Auto-generated timestamp
 - **Last Modified**: Auto-updated timestamp
@@ -72,7 +72,7 @@ The application manages three types of content with one-to-one-to-one relationsh
 - **Last Modified**: Auto-updated timestamp
 - **Tags**: Multiple tags for categorization
 
-**Relationship Model**: Each Experiment has exactly one Documentation and one Prototype. When an Experiment is created, its associated Documentation and Prototype can be created and linked automatically. Deleting an Experiment should also delete its linked Documentation and Prototype.
+**Relationship Model**: Each Experiment has exactly one Documentation and one or more Prototypes. When an Experiment is created, its Documentation and an initial Prototype can be created and linked automatically. Additional Prototypes can be added to an Experiment over time. Deleting an Experiment should also delete its linked Documentation and all linked Prototypes.
 
 ### 2. Navigation & Interface
 - **Left Menu**: Fixed sidebar with three items - Experiments, Prototypes, Documentation
@@ -110,11 +110,11 @@ The application manages three types of content with one-to-one-to-one relationsh
 - System creates subdirectories: `docs/`, `prototype/`, `notes/`
 
 #### 1.2 Experiment metadata generation
-- System generates unique IDs for Experiment, Documentation, and Prototype
+- System generates unique IDs for Experiment, Documentation, and initial Prototype
 - System sets default status to "Active"
 - System auto-generates created date timestamp
 - System suggests relevant tags based on experiment content
-- System links all three entities in one-to-one relationships
+- System links Documentation one-to-one and Prototype as the first entry in a one-to-many list
 
 #### 1.3 Validation and error handling
 - System validates experiment statement is not empty
@@ -316,7 +316,7 @@ The application manages three types of content with one-to-one-to-one relationsh
 
 ### Phase 1: MVP
 - Left menu (Experiments, Prototypes, Documentation)
-- One-to-one-to-one relationship model with cascade delete
+- One-to-one (Experiment ↔ Documentation) and one-to-many (Experiment → Prototypes) relationship model with cascade delete
 - List views for each content type
 - Basic search
 - Dark mode UI
@@ -335,6 +335,57 @@ The application manages three types of content with one-to-one-to-one relationsh
 - Experiment templates
 - Product launch readiness tracking
 
+## Optional Features
+
+These features are implemented and live in the codebase but are not required for core functionality. They can be enabled or disabled without affecting the primary experiment management workflow.
+
+### Experiment Scoring
+
+A 5-point scoring system across five dimensions, giving each experiment a maximum composite score of 25:
+
+- **Business Opportunity** — Market size and revenue potential
+- **Personal Impact** — Alignment with personal goals and motivation
+- **Competitive Advantage** — Differentiation from existing solutions
+- **Platform Cost** — Estimated build and maintenance effort (inverted — lower cost scores higher)
+- **Social Impact** — Positive effect on users or broader community
+
+Each dimension supports an optional rationale field for notes on the score. Scores are displayed as badges and score cards in the experiment detail view and on a dedicated `/scoring` page.
+
+### Market Research Integration
+
+Structured market research data parsed from a `market-research.md` file in each experiment's `docs/` directory. Displayed fields include:
+
+- **MOA** (Market Opportunity Assessment) — Narrative summary of the opportunity
+- **Go/No-Go decision** — Binary assessment with reasoning
+- **SOM Year 1** — Serviceable Obtainable Market projection for year one
+- **SOM Year 3** — Three-year market projection
+
+Market research is authored by the `@market-research` agent using a bottom-up TAM/SAM/SOM methodology.
+
+### Validation Landing Pages
+
+Each experiment can have an associated validation landing page — a standalone Next.js app in `experiments/{slug}/landing/` that runs on its own port (3001+). The hub tracks:
+
+- **Validation status** — Planned, Live, or Completed
+- **Landing page URL** — Link to the running validation app
+- **Form submission count** — Number of signups or submissions collected
+
+Submission data is stored optionally in Supabase (see below).
+
+### Supabase Integration (Optional)
+
+When a `SUPABASE_URL` and `SUPABASE_ANON_KEY` are configured, the hub can read form submission counts from a `experiment_submissions` table in Supabase. This enables tracking how many users signed up or submitted interest via a validation landing page.
+
+No Supabase configuration is required for core functionality. The app degrades gracefully when credentials are absent.
+
+### Notion Integration (Optional)
+
+When a `NOTION_API_KEY` is configured, the hub can pull validation results or notes from a linked Notion database. Used as an alternative or complement to Supabase for teams already using Notion as a data store.
+
+No Notion configuration is required for core functionality.
+
+---
+
 ## Non-Requirements
 
 The following are explicitly **not** in scope:
@@ -342,7 +393,6 @@ The following are explicitly **not** in scope:
 - Cloud sync or remote storage
 - Real-time collaboration
 - Complex data visualization
-- Integration with external services
 - Mobile app version (desktop-first)
 
 ## Constraints
@@ -369,7 +419,7 @@ VS Code (dark theme), Linear (clean, minimal, fast), GitHub (developer tool aest
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: Initial creation  
+**Document Version**: 1.1  
+**Last Updated**: 2026-04-16  
 **Status**: Draft
 

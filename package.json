@@ -12,7 +12,8 @@
     "lint": "next lint",
     "setup:logging": "node scripts/setup-logging.js",
     "sitemap:capture": "node scripts/capture-site-map.js",
-    "dev:landing": "cd experiments/simple-seed-organizer/prototype/validation-landing && npm install && npm run dev"
+    "dev:landing": "cd experiments/simple-seed-organizer/prototype/validation-landing && npm install && npm run dev",
+    "skills:sync": "node scripts/sync-skills.js"
   },
   "dependencies": {
     "@notionhq/client": "^5.6.0",
