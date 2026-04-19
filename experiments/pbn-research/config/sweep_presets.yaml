@@ -1,0 +1,17 @@
+# Preset: fast_tight | deep_dive | overnight — logged on every sweep manifest
+presets:
+  fast_tight:
+    max_runs: 20
+    max_minutes: 30
+    max_budget_usd: 0
+    max_api_calls: 0
+  deep_dive:
+    max_runs: 80
+    max_minutes: 180
+    max_budget_usd: 0
+    max_api_calls: 0
+  overnight:
+    max_runs: 400
+    max_minutes: 600
+    max_budget_usd: 0
+    max_api_calls: 0

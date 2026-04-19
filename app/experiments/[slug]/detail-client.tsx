@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import ExperimentTypeBadge from "@/components/ExperimentTypeBadge";
 import MarkdownContent from "@/components/MarkdownContent";
 import TabsContent from "./tabs-content";
 import type { Experiment } from "@/types";
@@ -52,9 +53,12 @@ export default function ExperimentDetailClient({
           </ol>
         </nav>
 
-        <h1 className="font-heading text-4xl md:text-5xl lg:text-[60px] font-semibold text-text-primary leading-tight">
-          {experiment.name}
-        </h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-heading text-4xl md:text-5xl lg:text-[60px] font-semibold text-text-primary leading-tight">
+            {experiment.name}
+          </h1>
+          <ExperimentTypeBadge type={experiment.type} />
+        </div>
         <p className="mt-2 text-sm text-text-secondary">
           {experiment.statement}
         </p>

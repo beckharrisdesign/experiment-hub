@@ -213,4 +213,36 @@
       "platformCost": 4,
       "socialImpact": 3
     }
+  },
+  {
+    "id": "pbn-research",
+    "name": "PBN Research Lab",
+    "statement": "Notebook-first paint-by-number R&D: compare pipelines, score outputs, iterate locally with checkpointed runs.",
+    "type": "personal",
+    "directory": "experiments/pbn-research",
+    "documentationId": "doc-pbn-research",
+    "prototypeId": "",
+    "status": "Active",
+    "createdDate": "2026-04-18",
+    "lastModified": "2026-04-18",
+    "tags": [
+      "pbn",
+      "paint-by-number",
+      "ml",
+      "research",
+      "notebook",
+      "personal",
+      "image-processing"
+    ],
+    "scores": {
+      "businessOpportunity": 2,
+      "personalImpact": 5,
+      "competitiveAdvantage": 3,
+      "platformCost": 4,
+      "socialImpact": 3
+    },
+    "scoreRationale": {
+      "personalImpact": "Personal research tooling; quality iteration before any product surface.",
+      "businessOpportunity": "Exploratory / craft-tool R&D, not a near-term commercial bet."
+    }
   }]
