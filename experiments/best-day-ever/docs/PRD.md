@@ -2,7 +2,7 @@
 
 ## Overview
 
-Best Day Ever translates real digital calendars into printable physical day plans, designed for people with ADHD. The core insight: ADHD brains often respond better to tactile, physical objects. Best Day Ever bridges the gap between where your schedule lives (digital calendars) and the format that actually helps you execute (paper in your hands).
+Best Day Ever closes the loop between digital and physical planning — pulling your real calendar into a print-ready, ADHD-optimized daily plan you can hold, write on, and work from. No tool today takes your actual schedule and turns it into something worth printing; physical planners require manual transcription and digital apps stay on screen. The biggest unknown isn't demand — it's whether ADHD adults recognize this as a distinct problem from "I need a better productivity app," which means messaging has to create the category before the product fills it.
 
 **Rule**: Build the landing page and fake door test first. No calendar integration, no PDF generation, no app code until validation metrics are met.
 
