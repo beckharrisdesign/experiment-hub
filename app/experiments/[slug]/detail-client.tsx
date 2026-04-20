@@ -19,6 +19,8 @@ interface ExperimentDetailClientProps {
   prd: ReturnType<typeof parsePRD> | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
   learningsContent: string | null;
+  businessCaseContent: string | null;
+  isEditor: boolean;
 }
 
 export default function ExperimentDetailClient({
@@ -26,10 +28,15 @@ export default function ExperimentDetailClient({
   prd,
   mr,
   learningsContent,
+  businessCaseContent,
+  isEditor,
 }: ExperimentDetailClientProps) {
-  const tabs: Tab[] = [{ id: "overview", label: "Overview" }];
+  const tabs: Tab[] = [
+    { id: "business-case", label: "Business Case" },
+    { id: "prd", label: "PRD" },
+  ];
 
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("business-case");
 
   return (
     <div className="flex flex-col flex-1">
@@ -89,7 +96,10 @@ export default function ExperimentDetailClient({
             prd={prd}
             mr={mr}
             learningsContent={learningsContent}
+            businessCaseContent={businessCaseContent}
+            isEditor={isEditor}
             activeTab={activeTab}
+            slug={experiment.id}
           />
         </main>
 

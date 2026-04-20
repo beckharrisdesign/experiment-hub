@@ -38,6 +38,43 @@ export interface ExperimentSubmission {
  *     created_at  timestamptz default now()
  *   );
  */
+export async function getContent(
+  experimentId: string,
+  contentType: "prd" | "business_case",
+): Promise<string | null> {
+  try {
+    const { data, error } = await getClient()
+      .from("experiment_content")
+      .select("content")
+      .eq("experiment_id", experimentId)
+      .eq("content_type", contentType)
+      .single();
+    if (error || !data) return null;
+    return data.content;
+  } catch {
+    return null;
+  }
+}
+
+export async function upsertContent(
+  experimentId: string,
+  contentType: "prd" | "business_case",
+  content: string,
+): Promise<void> {
+  const { error } = await getClient()
+    .from("experiment_content")
+    .upsert(
+      {
+        experiment_id: experimentId,
+        content_type: contentType,
+        content,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "experiment_id,content_type" },
+    );
+  if (error) throw error;
+}
+
 export async function insertSubmission(
   submission: ExperimentSubmission,
 ): Promise<{ id: string }> {
