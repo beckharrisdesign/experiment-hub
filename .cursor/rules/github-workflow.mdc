@@ -12,8 +12,8 @@ globs:
 
 ## Pull requests
 
-- **Always create a PR** when a feature, fix, or test task is complete.
-- **Never merge the PR.** Open it and stop. Katy reviews CI checks and the Vercel preview before merging.
+- **Draft a PR, never submit it.** When a feature, fix, or test task is complete, write the PR title, summary, and test plan and present it to Katy for review. Do not call `create_pull_request` or any equivalent — Katy submits the PR herself.
+- **Never merge the PR.** Katy reviews CI checks and the Vercel preview before merging.
 - **One PR per logical unit of work.** Don't bundle unrelated changes.
 - **PR description** must include: what changed, why, and a test plan (how to verify it works).
 
