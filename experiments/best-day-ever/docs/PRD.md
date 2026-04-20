@@ -32,7 +32,7 @@ There is no tool that takes your real schedule and turns it into something you c
 
 ## Target User
 
-**Primary**: Adult with ADHD (diagnosed or self-identified) who uses a digital calendar, has experienced the benefit of writing things down, and has access to a printer. Willing to pay $8/mo or $60/yr for something that actually helps them start their day.
+**Primary**: Adult with ADHD (diagnosed or self-identified) who uses a digital calendar, has experienced the benefit of writing things down, and has access to a printer.
 
 **Secondary**: Anyone who prefers working from paper but keeps their schedule digitally — parents managing family calendars, freelancers juggling clients, students with class and work schedules.
 
@@ -94,4 +94,4 @@ Two earlier repos explored this problem and have reusable code:
 
 ## Validation Plan (Landing Page)
 
-Landing page tests whether ADHD adults will pay ~$8/mo for a tool that prints their daily plan from their calendar. Traffic from Meta and Reddit ads targeting ADHD communities and planner interests. CTA is a fake "Get early access for $8/mo" button that captures email. Run for 2 weeks with a $200–500 ad budget before deciding. Full copy: [landing-page-content.md](landing-page-content.md).
+Landing page tests whether there is real unmet demand among ADHD adults for a tool that prints their daily plan from their calendar. Traffic from Meta and Reddit ads targeting ADHD communities and planner interests. CTA is a "Get early access" button that captures email — the goal is demand signal, not pricing validation. Run for 2 weeks with a $200–500 ad budget before deciding. Full copy: [landing-page-content.md](landing-page-content.md).
