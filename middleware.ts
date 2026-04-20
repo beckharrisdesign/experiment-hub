@@ -4,7 +4,7 @@ export function middleware(request: NextRequest) {
   const editSecret = request.nextUrl.searchParams.get("edit");
 
   if (editSecret) {
-    if (editSecret === process.env.EDIT_SECRET) {
+    if (editSecret === process.env.ADMIN_SECRET) {
       const url = request.nextUrl.clone();
       url.searchParams.delete("edit");
       const response = NextResponse.redirect(url);

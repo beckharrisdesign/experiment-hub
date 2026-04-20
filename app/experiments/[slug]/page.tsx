@@ -49,7 +49,7 @@ export default async function ExperimentDetailPage({
 
   const cookieStore = await cookies();
   const editCookie = cookieStore.get("hub-edit");
-  const isEditor = !!editCookie && editCookie.value === process.env.EDIT_SECRET;
+  const isEditor = !!editCookie && editCookie.value === process.env.ADMIN_SECRET;
 
   const fileChecks = await checkExperimentFiles(experiment.directory).catch(
     () => ({

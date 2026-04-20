@@ -9,7 +9,7 @@ export async function POST(
   const cookieStore = await cookies();
   const editCookie = cookieStore.get("hub-edit");
 
-  if (!editCookie || editCookie.value !== process.env.EDIT_SECRET) {
+  if (!editCookie || editCookie.value !== process.env.ADMIN_SECRET) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
