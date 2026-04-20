@@ -2,7 +2,7 @@
 
 ## Overview
 
-Best Day Ever translates real digital calendars into printable physical day plans, designed for people with ADHD. The core insight: ADHD brains often respond better to tactile, physical objects. Best Day Ever bridges the gap between where your schedule lives (digital calendars) and the format that actually helps you execute (paper in your hands).
+Best Day Ever closes the loop between digital and physical planning — pulling your real calendar into a print-ready, ADHD-optimized daily plan you can hold, write on, and work from. No tool today takes your actual schedule and turns it into something worth printing; physical planners require manual transcription and digital apps stay on screen. The biggest unknown isn't demand — it's whether ADHD adults recognize this as a distinct problem from "I need a better productivity app," which means messaging has to create the category before the product fills it.
 
 **Rule**: Build the landing page and fake door test first. No calendar integration, no PDF generation, no app code until validation metrics are met.
 
@@ -32,7 +32,7 @@ There is no tool that takes your real schedule and turns it into something you c
 
 ## Target User
 
-**Primary**: Adult with ADHD (diagnosed or self-identified) who uses a digital calendar, has experienced the benefit of writing things down, and has access to a printer. Willing to pay $8/mo or $60/yr for something that actually helps them start their day.
+**Primary**: Adult with ADHD (diagnosed or self-identified) who uses a digital calendar, has experienced the benefit of writing things down, and has access to a printer.
 
 **Secondary**: Anyone who prefers working from paper but keeps their schedule digitally — parents managing family calendars, freelancers juggling clients, students with class and work schedules.
 
@@ -94,4 +94,4 @@ Two earlier repos explored this problem and have reusable code:
 
 ## Validation Plan (Landing Page)
 
-Landing page tests whether ADHD adults will pay ~$8/mo for a tool that prints their daily plan from their calendar. Traffic from Meta and Reddit ads targeting ADHD communities and planner interests. CTA is a fake "Get early access for $8/mo" button that captures email. Run for 2 weeks with a $200–500 ad budget before deciding. Full copy: [landing-page-content.md](landing-page-content.md).
+Landing page tests whether there is real unmet demand among ADHD adults for a tool that prints their daily plan from their calendar. Traffic from Meta and Reddit ads targeting ADHD communities and planner interests. CTA is a "Get early access" button that captures email — the goal is demand signal, not pricing validation. Run for 2 weeks with a $200–500 ad budget before deciding. Full copy: [landing-page-content.md](landing-page-content.md).
