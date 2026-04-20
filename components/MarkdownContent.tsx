@@ -113,13 +113,93 @@ export default function MarkdownContent({
   const displayLines = maxLines ? lines.slice(0, maxLines) : lines;
   const hasMore = maxLines && lines.length > maxLines;
 
+  function parseInline(text: string, key: string) {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, i) =>
+      part.startsWith("**") && part.endsWith("**") ? (
+        <strong key={`${key}-${i}`} className={t.bold}>
+          {part.replace(/\*\*/g, "")}
+        </strong>
+      ) : (
+        <span key={`${key}-${i}`}>{part}</span>
+      ),
+    );
+  }
+
+  function parseTableRow(row: string): string[] {
+    return row
+      .split("|")
+      .slice(1, -1)
+      .map((cell) => cell.trim());
+  }
+
+  function isSeparatorRow(row: string): boolean {
+    return /^\|[\s\-:|]+\|/.test(row.trim());
+  }
+
   // Group consecutive bullet lines into <ul> blocks so we can add
   // bottom margin after the whole list, not just each item.
   const grouped: React.ReactNode[] = [];
   let i = 0;
   while (i < displayLines.length) {
     const line = displayLines[i];
-    if (line.trim().startsWith("- ")) {
+    if (line.trim().startsWith("|")) {
+      const tableLines: string[] = [];
+      while (
+        i < displayLines.length &&
+        displayLines[i].trim().startsWith("|")
+      ) {
+        tableLines.push(displayLines[i]);
+        i++;
+      }
+      const headers = parseTableRow(tableLines[0]);
+      const dataRows = tableLines
+        .slice(1)
+        .filter((row) => !isSeparatorRow(row))
+        .map(parseTableRow);
+      grouped.push(
+        <div
+          key={`table-${i}`}
+          className="w-full overflow-x-auto mb-4 whitespace-normal"
+        >
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr>
+                {headers.map((h, hi) => (
+                  <th
+                    key={hi}
+                    className={`text-left px-3 py-2 font-semibold border-b ${variant === "light" ? "border-border-dark/30 text-text-dark" : "border-border text-text-primary"}`}
+                  >
+                    {parseInline(h, `th-${i}-${hi}`)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {dataRows.map((row, ri) => (
+                <tr
+                  key={ri}
+                  className={
+                    variant === "light"
+                      ? "border-b border-border-dark/20 last:border-0"
+                      : "border-b border-border/30 last:border-0"
+                  }
+                >
+                  {row.map((cell, ci) => (
+                    <td
+                      key={ci}
+                      className={`px-3 py-2 align-top ${variant === "light" ? "text-text-dark-secondary" : "text-text-secondary"}`}
+                    >
+                      {parseInline(cell, `td-${i}-${ri}-${ci}`)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>,
+      );
+    } else if (line.trim().startsWith("- ")) {
       const bulletLines: string[] = [];
       while (
         i < displayLines.length &&
