@@ -1,12 +1,15 @@
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import Header from "@/components/Header";
 import {
   getExperimentBySlug,
   checkExperimentFiles,
   readPRD,
+  readBusinessCase,
   parsePRD,
   parseMarketResearch,
 } from "@/lib/data";
+import { getContent } from "@/lib/supabase";
 import ExperimentDetailClient from "./detail-client";
 
 // Mark this route as dynamic to ensure it's always rendered on-demand
@@ -44,6 +47,10 @@ export default async function ExperimentDetailPage({
     notFound();
   }
 
+  const cookieStore = await cookies();
+  const editCookie = cookieStore.get("hub-edit");
+  const isEditor = !!editCookie && editCookie.value === process.env.EDIT_SECRET;
+
   const fileChecks = await checkExperimentFiles(experiment.directory).catch(
     () => ({
       hasPRDFile: false,
@@ -57,12 +64,13 @@ export default async function ExperimentDetailPage({
 
   const { hasPRDFile, mrContent, learningsContent } = fileChecks;
 
-  // Read and parse documents in parallel
-  const [prd, mr] = await Promise.all([
+  // Read all content in parallel — Supabase overrides file for editable content
+  const [prd, mr, businessCaseContent] = await Promise.all([
     (async () => {
       if (!hasPRDFile) return null;
       try {
-        const prdContent = await readPRD(experiment.directory);
+        const saved = await getContent(slug, "prd").catch(() => null);
+        const prdContent = saved ?? (await readPRD(experiment.directory));
         if (prdContent && prdContent.trim().length > 0) {
           return parsePRD(prdContent);
         }
@@ -86,6 +94,14 @@ export default async function ExperimentDetailPage({
       }
       return null;
     })(),
+    (async () => {
+      try {
+        const saved = await getContent(slug, "business_case").catch(() => null);
+        return saved ?? (await readBusinessCase(experiment.directory));
+      } catch {
+        return null;
+      }
+    })(),
   ]);
 
   return (
@@ -96,6 +112,8 @@ export default async function ExperimentDetailPage({
         prd={prd}
         mr={mr}
         learningsContent={learningsContent}
+        businessCaseContent={businessCaseContent}
+        isEditor={isEditor}
       />
     </div>
   );

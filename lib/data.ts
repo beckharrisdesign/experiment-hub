@@ -160,6 +160,23 @@ export async function readPRD(
   }
 }
 
+export async function readBusinessCase(
+  experimentDirectory: string,
+): Promise<string | null> {
+  try {
+    const bcPath = path.join(
+      process.cwd(),
+      experimentDirectory,
+      "docs",
+      "business-case.md",
+    );
+    const content = await fs.readFile(bcPath, "utf8");
+    return content;
+  } catch {
+    return null;
+  }
+}
+
 export async function readMarketResearch(
   experimentDirectory: string,
 ): Promise<string | null> {
