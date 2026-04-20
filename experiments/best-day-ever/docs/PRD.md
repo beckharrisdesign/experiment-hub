@@ -40,16 +40,48 @@ There is no tool that takes your real schedule and turns it into something you c
 
 ---
 
+## Tech Stack
+
+Consistent with all prototypes in this hub:
+
+- **Framework**: Next.js + TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Auth**: Passport.js + Google OAuth 2.0 (calendar read-only scope)
+- **Database**: Supabase (user persistence, calendar preferences)
+- **PDF generation**: pdf-lib (server-side, no headless browser dependency)
+- **Date handling**: date-fns
+- **Testing**: Vitest
+- **Deployment**: Vercel
+
+---
+
+## Prior Prototype Work
+
+Two earlier repos explored this problem and have reusable code:
+
+- **`calendar-to-planner`** — Plain Node/Express prototype. The `googleCalendar.js` OAuth + event fetch pattern is useful as a reference; the rest is throwaway.
+- **`calendar-printer`** — Next.js 14 + TypeScript prototype. Two directly reusable pieces:
+  - `server.js` — Full Google OAuth flow with Passport, session management, and Supabase user upsert. Auth is production-quality.
+  - `components/print-view.tsx` — Working Time Block layout: 30-min slots, event overlap handling, color-coded events, print-optimized Tailwind. Needs real calendar data wired in (currently accepts a `calendarData` prop but ships with mock todos hardcoded).
+
+**What to leave behind from `calendar-printer`**: Notion API dependency, hardcoded mock todo checkboxes, the Tolkien placeholder in `app/page.tsx`.
+
+---
+
 ## Core Features
 
 ### MVP scope
 
 - **Calendar connection**: Google Calendar OAuth (read-only). Pull today's events, times, titles. One-time setup, then it just works.
-- **Template selection**: 3 layouts — Time Block (hour-by-hour with calendar events pre-filled, space for handwritten tasks), Top 3 + Schedule (write your top priorities by hand, see the day's events below), Week at a Glance (Sunday planning session, 7 columns).
-- **PDF generation**: Print-optimized output for US Letter and A4, ready in < 5 seconds, designed for black-and-white printing with generous whitespace and checkboxes.
+- **Template selection**: 4 layouts —
+  - **Time Block**: Hour-by-hour grid with calendar events pre-filled, blank space between events for handwritten tasks. Based on `print-view.tsx` from prior prototype.
+  - **Top 3 + Schedule**: Three large blank lines at top to write your priorities by hand, then the day's calendar events listed below.
+  - **Week at a Glance**: Sunday planning session view, 7 columns, events summarized per day.
+  - **Hybrid Day**: Split layout — left side is the time block schedule from your calendar, right side has two hand-writable sections (personal and work) for freeform notes or tasks. Not baked into other templates.
+- **PDF generation**: Server-side output via pdf-lib, US Letter and A4, ready in < 5 seconds, designed for black-and-white printing with generous whitespace and checkboxes.
 - **Light personalization**: Default template, paper size, day start/end time, which calendars to include.
 
-**Out of scope for MVP**: Apple Calendar / Outlook integration, custom template design, mobile app, task management, habit tracking, journaling, social features, writing to the calendar (read-only always).
+**Out of scope for MVP**: Apple Calendar / Outlook integration, custom template design, mobile app, task management, habit tracking, journaling, social features, writing to the calendar (read-only always), Notion integration.
 
 ---
 
