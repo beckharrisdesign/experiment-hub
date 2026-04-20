@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useRouter, useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { Seed } from '@/types/seed';
-import { getSeedById, updateSeed } from '@/lib/storage';
-import { AddSeedForm } from '@/components/AddSeedForm';
-import { useAuth } from '@/lib/auth-context';
-import toast from 'react-hot-toast';
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Seed } from "@/types/seed";
+import { getSeedById, updateSeed } from "@/lib/storage";
+import { AddSeedForm } from "@/components/AddSeedForm";
+import { useAuth } from "@/lib/auth-context";
+import toast from "react-hot-toast";
 
 export default function EditSeedPage() {
   const router = useRouter();
@@ -14,7 +14,7 @@ export default function EditSeedPage() {
   const id = params.id as string;
   const { user, loading: authLoading } = useAuth();
   const [seed, setSeed] = useState<Seed | null>(null);
-  const [userTier, setUserTier] = useState<string>('Seed Stash Starter');
+  const [userTier, setUserTier] = useState<string>("Seed Stash Starter");
   const [canUseAI, setCanUseAI] = useState(true);
   const [resetsAt, setResetsAt] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
@@ -22,7 +22,7 @@ export default function EditSeedPage() {
 
   useEffect(() => {
     if (!user) return;
-    fetch('/api/usage', { credentials: 'include' })
+    fetch("/api/usage", { credentials: "include" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data) {
@@ -31,7 +31,7 @@ export default function EditSeedPage() {
           setResetsAt(data.resetsAt);
         }
       })
-      .catch(() => {});
+      .catch((err) => console.error("Failed to fetch usage:", err));
   }, [user]);
 
   useEffect(() => {
@@ -41,19 +41,27 @@ export default function EditSeedPage() {
       .then((s) => {
         if (!cancelled) {
           setSeed(s);
-          setError(s ? null : "We couldn't find that seed. It may have been deleted.");
+          setError(
+            s ? null : "We couldn't find that seed. It may have been deleted.",
+          );
         }
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "I couldn't load that seed. Try reloading the page.");
+          setError(
+            err instanceof Error
+              ? err.message
+              : "I couldn't load that seed. Try reloading the page.",
+          );
           setSeed(null);
         }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id, user]);
 
   if (authLoading || loading) {
@@ -65,16 +73,18 @@ export default function EditSeedPage() {
   }
 
   if (!user) {
-    router.replace('/login');
+    router.replace("/login");
     return null;
   }
 
   if (error || !seed) {
     return (
       <div className="min-h-screen bg-[#f9fafb] flex flex-col items-center justify-center pt-[72px] px-4">
-        <p className="text-[#6a7282] mb-4">{error || "We couldn't find that seed. It may have been deleted."}</p>
+        <p className="text-[#6a7282] mb-4">
+          {error || "We couldn't find that seed. It may have been deleted."}
+        </p>
         <button
-          onClick={() => router.push('/')}
+          onClick={() => router.push("/")}
           className="text-[#16a34a] font-medium hover:underline"
         >
           Back to seeds
@@ -83,16 +93,23 @@ export default function EditSeedPage() {
     );
   }
 
-  const handleSubmit = async (seedData: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) => {
+  const handleSubmit = async (
+    seedData: Omit<Seed, "id" | "createdAt" | "updatedAt"> & { id?: string },
+  ) => {
     try {
       const updated = await updateSeed(seed.id, seedData);
       if (updated) {
         router.push(`/seeds/${updated.id}`);
       }
     } catch (err) {
-      console.error('[EditSeedPage] Error updating seed:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update seed in database';
-      toast.error("I'm having trouble saving your changes right now. Please try again in a moment.");
+      console.error("[EditSeedPage] Error updating seed:", err);
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to update seed in database";
+      toast.error(
+        "I'm having trouble saving your changes right now. Please try again in a moment.",
+      );
     }
   };
 

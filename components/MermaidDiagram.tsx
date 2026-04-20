@@ -45,8 +45,8 @@ export default function MermaidDiagram({
       try {
         const { svg: rendered } = await mermaid.render(id, chart);
         if (!cancelled) setSvg(rendered);
-      } catch {
-        // ignore render errors
+      } catch (err) {
+        console.error("MermaidDiagram render error:", err);
       }
     }
 

@@ -1,27 +1,27 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
-import { BatchImport } from '@/components/BatchImport';
-import { useState, useEffect } from 'react';
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
+import { BatchImport } from "@/components/BatchImport";
+import { useState, useEffect } from "react";
 
 export default function ImportPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const [userTier, setUserTier] = useState<string>('Seed Stash Starter');
+  const [userTier, setUserTier] = useState<string>("Seed Stash Starter");
   const [canUseAI, setCanUseAI] = useState(true);
 
   useEffect(() => {
     if (!user) return;
-    fetch('/api/usage', { credentials: 'include' })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
+    fetch("/api/usage", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
         if (data) {
           setUserTier(data.tier);
           setCanUseAI(data.canUseAI);
         }
       })
-      .catch(() => {});
+      .catch((err) => console.error("Failed to fetch usage:", err));
   }, [user]);
 
   if (authLoading) {
@@ -33,15 +33,11 @@ export default function ImportPage() {
   }
 
   if (!user) {
-    router.replace('/login');
+    router.replace("/login");
     return null;
   }
 
   return (
-    <BatchImport
-      userId={user.id}
-      userTier={userTier}
-      canUseAI={canUseAI}
-    />
+    <BatchImport userId={user.id} userTier={userTier} canUseAI={canUseAI} />
   );
 }
