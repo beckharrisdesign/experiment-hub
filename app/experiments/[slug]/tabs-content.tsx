@@ -45,6 +45,14 @@ export default function TabsContent({
     id: "overview",
     content: (
       <div className="space-y-4">
+        {prd?.overview && (
+          <Section title="Overview">
+            <div className="prose prose-sm max-w-none text-text-dark-secondary">
+              <MarkdownContent content={prd.overview} variant="light" />
+            </div>
+          </Section>
+        )}
+
         {/* Problem, Goals, Target user — product definition first */}
         {prd?.problemStatement && (
           <Section title="Problem">
