@@ -23,9 +23,9 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"],
+      "@experiment-hub/ai-utils": ["./packages/ai-utils/src/index.ts"],
+      "@experiment-hub/ui": ["./packages/ui/index.ts"]
     }
   },
   "include": [
