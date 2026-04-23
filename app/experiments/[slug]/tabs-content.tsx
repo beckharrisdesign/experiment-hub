@@ -10,6 +10,7 @@ import type { parsePRD, parseMarketResearch } from "@/lib/data";
 interface TabsContentProps {
   experiment: Experiment;
   prd: ReturnType<typeof parsePRD> | null;
+  prdRawContent: string | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
   learningsContent: string | null;
   businessCaseContent: string | null;
@@ -123,6 +124,7 @@ function EditableTab({
 export default function TabsContent({
   experiment,
   prd,
+  prdRawContent,
   mr,
   businessCaseContent,
   isEditor,
@@ -159,7 +161,7 @@ export default function TabsContent({
       <EditableTab
         contentType="prd"
         slug={slug}
-        initialContent={prd?.fullContent ?? ""}
+        initialContent={prdRawContent ?? ""}
         isEditor={isEditor}
       >
         <div className="space-y-4">
