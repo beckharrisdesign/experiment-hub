@@ -2,17 +2,19 @@
   "name": "experiment-hub",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "turbo run build",
     "start": "next start",
     "test": "vitest run",
+    "test:all": "turbo run test",
     "test:live": "vitest run --config vitest.live.config.ts",
     "test:watch": "vitest",
-    "lint": "next lint",
+    "lint": "turbo run lint",
     "setup:logging": "node scripts/setup-logging.js",
     "sitemap:capture": "node scripts/capture-site-map.js",
-    "dev:landing": "cd experiments/simple-seed-organizer/prototype/validation-landing && npm install && npm run dev",
+    "dev:landing": "cd experiments/simple-seed-organizer/prototype/validation-landing && pnpm install && pnpm dev",
     "skills:sync": "node scripts/sync-skills.js"
   },
   "dependencies": {
@@ -29,6 +31,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
+    "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/jsdom": "^28.0.1",
@@ -39,6 +42,7 @@
     "jsdom": "^28.1.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18",
+    "turbo": "^2.5.4",
     "vitest": "^4.0.18"
   }
 }
