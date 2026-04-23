@@ -120,6 +120,7 @@ export default async function ExperimentDetailPage({
       <Header />
       <ExperimentDetailClient
         experiment={experiment}
+        slug={slug}
         prd={prd}
         prdRawContent={prdRawContent}
         mr={mr}
