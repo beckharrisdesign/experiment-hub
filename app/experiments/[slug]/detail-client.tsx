@@ -17,6 +17,7 @@ interface Tab {
 interface ExperimentDetailClientProps {
   experiment: Experiment;
   prd: ReturnType<typeof parsePRD> | null;
+  prdRawContent: string | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
   learningsContent: string | null;
   businessCaseContent: string | null;
@@ -26,6 +27,7 @@ interface ExperimentDetailClientProps {
 export default function ExperimentDetailClient({
   experiment,
   prd,
+  prdRawContent,
   mr,
   learningsContent,
   businessCaseContent,
@@ -94,6 +96,7 @@ export default function ExperimentDetailClient({
           <TabsContent
             experiment={experiment}
             prd={prd}
+            prdRawContent={prdRawContent}
             mr={mr}
             learningsContent={learningsContent}
             businessCaseContent={businessCaseContent}

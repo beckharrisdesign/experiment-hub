@@ -49,7 +49,8 @@ export default async function ExperimentDetailPage({
 
   const cookieStore = await cookies();
   const editCookie = cookieStore.get("hub-edit");
-  const isEditor = !!editCookie && editCookie.value === process.env.ADMIN_SECRET;
+  const isEditor =
+    !!editCookie && editCookie.value === process.env.ADMIN_SECRET;
 
   const fileChecks = await checkExperimentFiles(experiment.directory).catch(
     () => ({
@@ -65,7 +66,7 @@ export default async function ExperimentDetailPage({
   const { hasPRDFile, mrContent, learningsContent } = fileChecks;
 
   // Read all content in parallel — Supabase overrides file for editable content
-  const [prd, mr, businessCaseContent] = await Promise.all([
+  const [prd, prdRawContent, mr, businessCaseContent] = await Promise.all([
     (async () => {
       if (!hasPRDFile) return null;
       try {
@@ -81,6 +82,16 @@ export default async function ExperimentDetailPage({
         );
       }
       return null;
+    })(),
+    (async () => {
+      try {
+        const saved = await getContent(slug, "prd").catch(() => null);
+        return (
+          saved ?? (hasPRDFile ? await readPRD(experiment.directory) : null)
+        );
+      } catch {
+        return null;
+      }
     })(),
     (async () => {
       if (!mrContent) return null;
@@ -110,6 +121,7 @@ export default async function ExperimentDetailPage({
       <ExperimentDetailClient
         experiment={experiment}
         prd={prd}
+        prdRawContent={prdRawContent}
         mr={mr}
         learningsContent={learningsContent}
         businessCaseContent={businessCaseContent}
