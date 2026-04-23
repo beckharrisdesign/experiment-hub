@@ -16,6 +16,7 @@ interface Tab {
 
 interface ExperimentDetailClientProps {
   experiment: Experiment;
+  slug: string;
   prd: ReturnType<typeof parsePRD> | null;
   prdRawContent: string | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
@@ -26,6 +27,7 @@ interface ExperimentDetailClientProps {
 
 export default function ExperimentDetailClient({
   experiment,
+  slug,
   prd,
   prdRawContent,
   mr,
@@ -102,7 +104,7 @@ export default function ExperimentDetailClient({
             businessCaseContent={businessCaseContent}
             isEditor={isEditor}
             activeTab={activeTab}
-            slug={experiment.id}
+            slug={slug}
           />
         </main>
 
