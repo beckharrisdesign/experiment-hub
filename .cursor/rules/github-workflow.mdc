@@ -15,6 +15,7 @@ globs:
 - **Always open a PR** when a feature, fix, or test task is complete. Create it via GitHub MCP tools.
 - **Never merge the PR.** Katy reviews CI checks and the Vercel preview before merging.
 - **One PR per logical unit of work.** Don't bundle unrelated changes.
+- **Never have two PRs open for the same work item.** If a PR exists for the current task, push additional fixes to that branch rather than opening a new PR. Keep iterating on the existing PR until all checks pass.
 - **PR description** must include: what changed, why, and a test plan (how to verify it works).
 
 ## Commits
