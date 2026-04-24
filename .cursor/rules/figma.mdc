@@ -33,4 +33,4 @@ Seven Figma workflow skills are fetched from `github.com/figma/mcp-server-guide`
 - `/figma-create-design-system-rules` — generate project-level Figma rules for Claude/Cursor
 - `/figma-create-new-file` — create a new Figma design or FigJam file
 
-The `/sitemap` skill renders a visual sitemap into Figma. See `.claude/skills/sitemap.md`.
+The `/sitemap` skill is **rare**: full hub screenshot capture + Figma sitemap board build. **Do not** invoke it unless the user asked or hub IA/routes need the board refreshed; see `skills/sitemap.md` (`.claude/skills/sitemap.md` after hook copy).

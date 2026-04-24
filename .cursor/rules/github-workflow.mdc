@@ -8,7 +8,7 @@ globs:
 ## Branches
 
 - **Always create a branch** for any feature, fix, or test task. Never commit directly to `main`.
-- **Naming:** `claude/<short-descriptor>` using kebab-case. The descriptor must reflect the actual work done, not the conversation topic (e.g. `claude/bde-form-tests` not `claude/review-ad-campaign-abc123`).
+- **Naming:** `<tool-or-harness>/<short-descriptor>` using kebab-case. **Tool or harness** is the primary system assisting with the branch (use a short, consistent lowercase slug): e.g. `cursor/…` (Cursor), `claude/…` (Claude Code), `codex/…`, or another you standardize for this repo. The **descriptor** must reflect the actual work, not the chat title (e.g. `cursor/bde-form-tests`, not `cursor/review-ad-campaign-abc123`). For work with no agent assist, `manual/…` is fine.
 
 ## Pull requests
 

@@ -6,11 +6,13 @@
 ## Rules
 
 **Always-applied (no file trigger):**
+
 - `principles.mdc` — UX/DX balance, test-first, log capture, solo founder practices
-- `github-workflow.mdc` — branching, PR process
+- `github-workflow.mdc` — branching (tool/harness prefix + descriptor), PR process
 - `figma.mdc` — Figma MCP setup and project-specific design rules
 
 **File-triggered (auto-apply by glob pattern):**
+
 - `commit-messages.mdc` — conventional commit format
 - `design-guidelines.mdc` — dark theme, spacing, component patterns
 - `component-conventions.mdc` — React component conventions
@@ -22,8 +24,9 @@
 ## Skills and agents
 
 Invocable skills and agents live in `skills/` — reference with `@skills/<name>.md` in Cursor:
-- `experiment-creator`, `market-research`, `prd-writer`, `prototype-builder`, `design-advisor`
-- `user-communication`, `sitemap`
+
+- `experiment-creator`, `market-research`, `business-case-writer`, `prd-writer`, `prototype-builder`, `design-advisor`
+- `user-communication`, `sitemap` (sitemap: rare; explicit request or Figma sitemap board refresh when IA/routes change)
 - `figma/figma-use`, `figma/figma-implement-design`, `figma/figma-generate-design`, and more
 
 See `agents/README.md` for the experiment workflow and approval checkpoints.
