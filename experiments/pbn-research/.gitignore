@@ -1,5 +1,8 @@
-artifacts/
 .ipynb_checkpoints/
+*.egg-info/
+# Generated eval outputs (README under assets/output/ stays tracked)
+assets/output/*
+!assets/output/README.md
 __pycache__/
 *.pyc
 .pytest_cache/

@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Any
 
 import numpy as np
-from skimage import color, segmentation
+from skimage import color, segmentation, transform
 from skimage.color import deltaE_ciede2000
 
 from pbn_eval.saliency import pseudo_saliency_rgb, region_mean_saliency, touches_border_mask
@@ -28,6 +28,8 @@ class PipelineParams:
     saliency_delta: float = 0.18
     saliency_protect_high: float = 0.55
     border_merge_delta_e_bonus: float = 4.0
+    # If max(h,w) exceeds this, downscale (keep aspect) before SLIC — avoids hangs on phone/camera raws.
+    max_long_edge: int = 1600
 
 
 @dataclass
@@ -42,33 +44,36 @@ class PipelineResult:
 
 
 def _build_adjacency(labels: np.ndarray) -> set[tuple[int, int]]:
-    h, w = labels.shape
-    edges: set[tuple[int, int]] = set()
-    a = labels
-    for dy, dx in ((0, 1), (1, 0)):
-        b = np.roll(a, -dy, axis=0) if dy else a
-        b = np.roll(b, -dx, axis=1) if dx else b
-        if dy:
-            b[-dy:, :] = a[-dy:, :]
-        if dx:
-            b[:, -dx:] = a[:, -dx:]
-        m = a != b
-        ys, xs = np.where(m)
-        for y, x in zip(ys, xs):
-            u, v = int(a[y, x]), int(b[y, x])
-            if u == v:
-                continue
-            if u > v:
-                u, v = v, u
-            edges.add((u, v))
-    return edges
+    """Neighbor region pairs (undirected). Fully vectorized — avoid Python per-pixel loops."""
+    a_h = labels[:, :-1].ravel()
+    b_h = labels[:, 1:].ravel()
+    a_v = labels[:-1, :].ravel()
+    b_v = labels[1:, :].ravel()
+    a = np.concatenate([a_h, a_v])
+    b = np.concatenate([b_h, b_v])
+    m = a != b
+    if not np.any(m):
+        return set()
+    lo = np.minimum(a[m], b[m]).astype(np.int64, copy=False)
+    hi = np.maximum(a[m], b[m]).astype(np.int64, copy=False)
+    pairs = np.column_stack((lo, hi))
+    pairs = np.unique(pairs, axis=0)
+    return {(int(p[0]), int(p[1])) for p in pairs}
 
 
 def _region_mean_lab(labels: np.ndarray, lab_full: np.ndarray) -> dict[int, np.ndarray]:
+    """Per-region mean Lab via bincount — O(H*W), not O(n_regions * H*W)."""
+    flat = labels.ravel()
+    nbin = int(flat.max()) + 1
+    lab_flat = lab_full.reshape(-1, 3)
+    counts = np.bincount(flat, minlength=nbin).astype(np.float64)
+    counts = np.maximum(counts, 1.0)
+    sums = [np.bincount(flat, weights=lab_flat[:, c], minlength=nbin) for c in range(3)]
+    mean_stack = np.stack(sums, axis=1) / counts[:, np.newaxis]
     out: dict[int, np.ndarray] = {}
-    for rid in np.unique(labels):
-        mask = labels == rid
-        out[int(rid)] = lab_full[mask].mean(axis=0)
+    for rid in np.unique(flat):
+        rid = int(rid)
+        out[rid] = mean_stack[rid].astype(np.float64)
     return out
 
 
@@ -151,7 +156,11 @@ def _quantize(
         lab_list.append(mean_lab)
         rgb_out.reshape(-1, 3)[mask] = mean_rgb
     lab_palette_arr = np.stack(lab_list, axis=0)
-    remapped = np.vectorize(id_map.get)(labels)
+    mx = int(labels.max())
+    lut = np.zeros(mx + 1, dtype=np.int32)
+    for old_id, new_id in id_map.items():
+        lut[old_id] = new_id
+    remapped = lut[labels]
     return np.clip(rgb_out, 0, 1), lab_palette_arr, remapped.astype(np.int32)
 
 
@@ -166,6 +175,15 @@ def run_pipeline(
         rgb_u8 = (np.clip(rgb, 0, 1) * 255).astype(np.uint8)
     else:
         rgb_u8 = rgb
+
+    scale = 1.0
+    if params.max_long_edge and max(rgb_u8.shape[0], rgb_u8.shape[1]) > int(
+        params.max_long_edge
+    ):
+        scale = float(params.max_long_edge) / max(rgb_u8.shape[0], rgb_u8.shape[1])
+        nh = max(1, int(round(rgb_u8.shape[0] * scale)))
+        nw = max(1, int(round(rgb_u8.shape[1] * scale)))
+        rgb_u8 = transform.resize(rgb_u8, (nh, nw), preserve_range=True).astype(np.uint8)
 
     raw_labels = segmentation.slic(
         rgb_u8,
@@ -200,6 +218,8 @@ def run_pipeline(
             "compactness": params.compactness,
             "merge_delta_e": params.merge_delta_e,
             "variant": variant.value,
+            "max_long_edge": params.max_long_edge,
+            "internal_scale": scale,
         },
         labels=remapped,
         quantized_rgb=quantized,

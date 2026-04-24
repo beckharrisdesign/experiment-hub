@@ -8,24 +8,31 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+# Human-facing layout: samples in assets/input/, generated files in assets/output/
+OUTPUT_SUBDIR = Path("assets") / "output"
 
-def ensure_artifacts(root: Path) -> Path:
-    d = root / "artifacts"
+
+def eval_output_dir(root: Path) -> Path:
+    return (root / OUTPUT_SUBDIR).resolve()
+
+
+def ensure_eval_output(root: Path) -> Path:
+    d = eval_output_dir(root)
     d.mkdir(parents=True, exist_ok=True)
     return d
 
 
 def append_jsonl(root: Path, record: dict[str, Any]) -> None:
-    ensure_artifacts(root)
-    path = root / "artifacts" / "runs.jsonl"
+    ensure_eval_output(root)
+    path = eval_output_dir(root) / "runs.jsonl"
     line = json.dumps(record, default=str) + "\n"
     with open(path, "a", encoding="utf-8") as f:
         f.write(line)
 
 
 def write_manifest(root: Path, run_id: str, payload: dict[str, Any]) -> Path:
-    ensure_artifacts(root)
-    p = root / "artifacts" / "manifests" / f"{run_id}.json"
+    ensure_eval_output(root)
+    p = eval_output_dir(root) / "manifests" / f"{run_id}.json"
     p.parent.mkdir(parents=True, exist_ok=True)
     with open(p, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2, default=str)
