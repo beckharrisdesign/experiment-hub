@@ -1,6 +1,29 @@
+---
+name: sitemap
+description: >-
+  RARE specialty workflow. Full screenshot pass on the live hub + building/updating
+  the "BHD Labs — Site Map" board in Figma. Do not invoke for routine work, to
+  "explore" the app, on every deploy, or when the user did not ask for it. Use
+  only when the user explicitly requests it, or when hub IA/routes change and
+  that Figma board must match production. For route lists without capture, read
+  scripts/site-map/routes.js or docs/FIGMA_SETUP.md. Requires Figma Desktop, MCP,
+  and Chrome or CI. Default agent behavior: do not run this skill unless
+  something above applies.
+---
+
 # Sitemap to Figma
 
 Build a visual site map of the Experiment Hub in Figma with real screenshot thumbnails. Each deployed page becomes a card with its actual screenshot as the thumbnail. Cards are arranged in a tree layout by depth, with connector lines linking each page to its parent.
+
+## When to use (and when not to)
+
+**Run this skill only when** the user explicitly asks for a Figma sitemap refresh / this workflow, **or** hub information architecture or public routes have meaningfully changed (e.g. new top-level pages, nav restructure, material updates to `scripts/site-map/routes.js`) and the Figma sitemap board should be brought back in sync with production.
+
+**Do not run** for: everyday development, “show me what’s in the hub,” design review, listing URLs (read `scripts/site-map/routes.js` instead), or because a generic task mentions “sitemap” in the SEO/XML sense. **Do not** treat this as a default follow-up after unrelated changes.
+
+This flow is **heavy** (browser capture, optional `localhost` server, Figma plugin code, MCP). Prefer reusing a **manifest from the last 24 hours** when Step 1 allows it, instead of recapturing.
+
+If routes, branding, or the target Figma file change, re-run the steps in this document and update the **Figma file** section below. **Last reviewed:** 2026-04-24.
 
 ---
 
@@ -42,6 +65,7 @@ node --experimental-strip-types scripts/site-map/capture.mjs \
 ```
 
 This writes:
+
 - `.site-map/experiment-hub/manifest.json` — inventory with `routes[].thumbnailName` and `routes[].captureStatus`
 - `.site-map/experiment-hub/screenshots/*.png` — one screenshot per route
 
@@ -83,6 +107,7 @@ cat .site-map/experiment-hub/manifest.json
 ```
 
 Note the full `routes` array. Each entry has:
+
 - `id`, `path`, `title`, `group`, `pageType`
 - `parentId` — matches another route's `id` (or `null` for root)
 - `depth` — 0 = root, 1 = top-level, 2 = nested
@@ -99,14 +124,14 @@ Call `use_figma` on file key `9VJTxmBWKgeCDTyJLsYM7I` with the plugin code below
 
 ```javascript
 // ── config ────────────────────────────────────────────────────────────────
-const BASE_URL      = "http://localhost:8765";
-const FRAME_NAME    = "BHD Labs — Site Map";
-const CARD_W        = 360;
-const CARD_H        = 230;
-const LABEL_H       = 44;
-const COL_GAP       = 480;   // horizontal gap between depth columns
-const ROW_GAP       = 300;   // vertical gap between cards in same column
-const FRAME_PAD     = 120;
+const BASE_URL = "http://localhost:8765";
+const FRAME_NAME = "BHD Labs — Site Map";
+const CARD_W = 360;
+const CARD_H = 230;
+const LABEL_H = 44;
+const COL_GAP = 480; // horizontal gap between depth columns
+const ROW_GAP = 300; // vertical gap between cards in same column
+const FRAME_PAD = 120;
 const CONNECTOR_CLR = { r: 0.4, g: 0.5, b: 0.6, a: 1 };
 
 // ── route data ────────────────────────────────────────────────────────────
@@ -133,7 +158,9 @@ await Promise.all([
 
 // Remove existing frame if present
 const page = figma.currentPage;
-const existing = page.findOne(n => n.name === FRAME_NAME && n.type === "FRAME");
+const existing = page.findOne(
+  (n) => n.name === FRAME_NAME && n.type === "FRAME",
+);
 if (existing) existing.remove();
 
 // Group routes by depth, sort each bucket by path
@@ -163,7 +190,8 @@ for (const depth of depths) {
 }
 
 // Calculate frame size
-let maxX = 0, maxY = 0;
+let maxX = 0,
+  maxY = 0;
 for (const { x, y } of positioned.values()) {
   maxX = Math.max(maxX, x + CARD_W);
   maxY = Math.max(maxY, y + CARD_H);
@@ -196,7 +224,9 @@ for (const [id, entry] of positioned) {
   imgRect.x = 0;
   imgRect.y = 0;
   try {
-    const hash = await fetchImageHash(`${BASE_URL}/screenshots/${route.thumbnailName}`);
+    const hash = await fetchImageHash(
+      `${BASE_URL}/screenshots/${route.thumbnailName}`,
+    );
     imgRect.fills = [{ type: "IMAGE", scaleMode: "FILL", imageHash: hash }];
   } catch {
     imgRect.fills = [{ type: "SOLID", color: { r: 0.15, g: 0.17, b: 0.21 } }];
@@ -243,17 +273,17 @@ for (const [id, entry] of positioned) {
 
   const fromX = parent.x + CARD_W;
   const fromY = parent.y + CARD_H / 2;
-  const toX   = x;
-  const toY   = y + CARD_H / 2;
-  const midX  = (fromX + toX) / 2;
+  const toX = x;
+  const toY = y + CARD_H / 2;
+  const midX = (fromX + toX) / 2;
 
   const line = figma.createVector();
   line.vectorNetwork = {
     vertices: [
       { x: fromX, y: fromY },
-      { x: midX,  y: fromY },
-      { x: midX,  y: toY   },
-      { x: toX,   y: toY   },
+      { x: midX, y: fromY },
+      { x: midX, y: toY },
+      { x: toX, y: toY },
     ],
     segments: [
       { start: 0, end: 1 },
@@ -283,11 +313,11 @@ kill $SERVER_PID
 
 ## Layout reference
 
-| Depth | Column | Content |
-|-------|--------|---------|
-| 0 | leftmost | Home (root) |
-| 1 | +480px | Top-level hub pages + experiment pages |
-| 2 | +960px | Experiment docs + landing pages |
+| Depth | Column   | Content                                |
+| ----- | -------- | -------------------------------------- |
+| 0     | leftmost | Home (root)                            |
+| 1     | +480px   | Top-level hub pages + experiment pages |
+| 2     | +960px   | Experiment docs + landing pages        |
 
 Card size: 360 × 230px (186px image area + 44px label bar).  
 Column gap: 480px. Row gap: 300px within each depth column.
