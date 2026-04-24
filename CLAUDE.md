@@ -8,7 +8,7 @@
 **Always-applied (no file trigger):**
 
 - `principles.mdc` — UX/DX balance, test-first, log capture, solo founder practices
-- `github-workflow.mdc` — branching, PR process, never-merge rule
+- `github-workflow.mdc` — branching (tool/harness prefix + descriptor), PR process, never-merge rule
 - `figma.mdc` — Figma MCP setup and project-specific design rules
 
 **File-triggered (auto-apply by glob pattern):**
