@@ -1,5 +1,5 @@
 export type ExperimentStatus = "Active" | "Completed" | "Abandoned" | "On Hold";
-/** Product vs workflow tool vs personal R&D (defaults to commercial when omitted). */
+/** Product vs workflow tool (no market table or hub score / no `scores` in JSON) vs personal R&D. Defaults to commercial when omitted. */
 export type ExperimentKind = "commercial" | "tool" | "personal";
 export type PrototypeStatus = "Active" | "Completed" | "Abandoned";
 export type ValidationStatus = "not_started" | "planned" | "live" | "complete";

@@ -7,6 +7,7 @@ A personal product lab where I build and validate ideas end-to-end: from raw con
 I'm a neurodiverse founder. My best ideas come fast and from everywhere. This platform is how I develop them with rigor and pursue the strongest ones with focus.
 
 The experiments I choose to pursue share three themes:
+
 - **Empowering makers** — tools for people who create things with their hands
 - **Supporting neurodiversity** — products designed for how divergent minds actually work
 - **Facilitating environmental impact** — helping people make more sustainable choices
@@ -25,11 +26,11 @@ The platform is built to keep me focused, motivated, and creatively energized �
 
 ### Active experiments
 
-| Experiment | What it does |
-|---|---|
-| **Best Day Ever** | Translates your digital calendar into a printable daily plan — for the people who think better on paper |
-| **Simple Seed Organizer** | Scan your seed packets with AI and get an organized garden plan |
-| **Etsy Patternator** | One design file, all the Etsy listing assets — built for embroidery sellers |
+| Experiment                | What it does                                                                                            |
+| ------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Best Day Ever**         | Translates your digital calendar into a printable daily plan — for the people who think better on paper |
+| **Simple Seed Organizer** | Scan your seed packets with AI and get an organized garden plan                                         |
+| **Etsy Patternator**      | One design file, all the Etsy listing assets — built for embroidery sellers                             |
 
 ### The infrastructure
 
@@ -45,7 +46,7 @@ Each experiment moves through a structured pipeline, driven by AI agents in Curs
 Raw idea
   → @experiment-creator   — refines concept, creates directory + metadata
   → @market-research      — TAM/SAM/SOM analysis, bottom-up methodology, scoring
-  → @prd-writer           — product requirements with design review built in
+  → @prd-writer           — lean PRD (outcomes + failing tests); design review when UI-heavy
   → @prototype-builder    — generates code structure and initial implementation
   → Landing page in hub   — validates demand before full build
 ```
@@ -82,15 +83,15 @@ Prefer web-based execution? Use the manual GitHub Actions workflow
 
 ## Tech stack
 
-| | |
-|---|---|
-| **Framework** | Next.js 15 (App Router) |
-| **Language** | TypeScript |
-| **Styling** | Tailwind CSS with custom design tokens |
-| **Database** | Supabase (form submissions) |
-| **Testing** | Vitest + React Testing Library |
-| **CI/CD** | GitHub Actions + Vercel |
-| **Fonts** | Fraunces (headings) · Inter (body) |
+|               |                                        |
+| ------------- | -------------------------------------- |
+| **Framework** | Next.js 15 (App Router)                |
+| **Language**  | TypeScript                             |
+| **Styling**   | Tailwind CSS with custom design tokens |
+| **Database**  | Supabase (form submissions)            |
+| **Testing**   | Vitest + React Testing Library         |
+| **CI/CD**     | GitHub Actions + Vercel                |
+| **Fonts**     | Fraunces (headings) · Inter (body)     |
 
 ### Design system
 

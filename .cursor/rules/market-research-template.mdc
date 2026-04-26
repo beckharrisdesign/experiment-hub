@@ -17,6 +17,7 @@ Keep market research short and decision-focused. The goal is a document you can 
 4. Recommendation
 
 **Sections to exclude** — do not generate these:
+
 - Market Size Analysis (detailed methodology)
 - Market Overview / Market Definition
 - Target Market Segments (detailed personas)
@@ -38,6 +39,7 @@ Keep market research short and decision-focused. The goal is a document you can 
 **{Experiment Name}** is [one sentence description of what it does and who it's for].
 
 **Key Findings:**
+
 - **TAM**: $X - $Y ([brief methodology note, e.g. "bottom-up: ADHD + productivity segments"])
 - **SAM**: $X - $Y ([primary constraint, e.g. "users needing calendar integration + printable output"])
 - **SOM (Year 1)**: $X - $Y
@@ -86,3 +88,5 @@ The UI parses specific patterns from the **Executive Summary** section to popula
 - Go/No-Go line: `**Go/No-Go Recommendation**: **GO**` (bold value)
 
 Do not rename these labels. The parser matches them by regex.
+
+**Acronyms (style):** On first use in the document, spell out the full term followed by the abbreviation in parentheses (e.g. _total addressable market (TAM)_). Parser bullets must still use the `**TAM**:` / `**SAM**:` / `**SOM (Year N)**:` labels — place the definitions line **immediately above** `**Key Findings:**` in the Executive Summary, then use TAM, SAM, and SOM alone in prose below.

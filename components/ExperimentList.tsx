@@ -32,7 +32,11 @@ export default function ExperimentList({ experiments }: ExperimentListProps) {
   return (
     <div className="space-y-2">
       {experiments.map((experiment) => {
-        const avgScore = calculateAverageScore(experiment.scores);
+        const isTool = experiment.type === "tool";
+        const avgScore =
+          !isTool && experiment.scores
+            ? calculateAverageScore(experiment.scores)
+            : null;
         const experimentSlug = slugify(experiment.name);
         return (
           <Link
@@ -62,7 +66,7 @@ export default function ExperimentList({ experiments }: ExperimentListProps) {
                     </span>
                   )}
                 </div>
-                {experiment.scores && (
+                {experiment.scores && !isTool && (
                   <div className="mt-3">
                     <ExperimentScoresDisplay
                       scores={experiment.scores}

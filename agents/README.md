@@ -7,7 +7,7 @@ The main workflow skills live in `skills/` and are invocable from any tool:
 | `experiment-creator`   | Refines idea → creates directory + metadata                            | `/experiment-creator` or `@skills/experiment-creator.md`     |
 | `market-research`      | TAM/SAM/SOM analysis, scoring, go/no-go                                | `/market-research` or `@skills/market-research.md`           |
 | `business-case-writer` | Honest business case, interview + live rubric, `docs/business-case.md` | `/business-case-writer` or `@skills/business-case-writer.md` |
-| `prd-writer`           | Generates PRD, invokes design-advisor                                  | `/prd-writer` or `@skills/prd-writer.md`                     |
+| `prd-writer`           | Lean PRD (outcomes + failing tests), design-advisor if UI              | `/prd-writer` or `@skills/prd-writer.md`                     |
 | `prototype-builder`    | Proposes stack → generates code, invokes design-advisor                | `/prototype-builder` or `@skills/prototype-builder.md`       |
 | `design-advisor`       | Design review of PRD, code, or live URL                                | `/design-advisor` or `@skills/design-advisor.md`             |
 

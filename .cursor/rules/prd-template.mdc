@@ -20,6 +20,7 @@ Keep PRDs lean and decision-focused. This is a working document for a solo build
 7. Validation Plan (Landing Page)
 
 **Sections to exclude** — do not generate these:
+
 - User Stories (implicit in Core Features)
 - Technical Requirements (too speculative pre-build)
 - Data Model (too speculative pre-build)
@@ -80,12 +81,24 @@ Keep PRDs lean and decision-focused. This is a working document for a solo build
 
 ## Success Metrics
 
-**Validation phase:**
+**Outcomes (plain language — what “good” means):**
+
+- [Outcome 1 — tie to primary goal]
+- [Outcome 2]
+
+**Failing tests (write these first; each stays false until the outcome is true — human script, analytics check, or automated test):**
+
+- Fails until: [observable check]
+- Fails until: [observable check]
+
+**Validation phase**
+
 - [Metric]: [target, e.g. "Landing page email signup rate: > 5%"]
 - [Metric]: [target]
 - **Go/no-go threshold**: [what result triggers a build decision]
 
-**MVP phase:**
+**MVP phase**
+
 - [Metric]: [target, e.g. "Time to first print: < 60 seconds"]
 - [Metric]: [target]
 

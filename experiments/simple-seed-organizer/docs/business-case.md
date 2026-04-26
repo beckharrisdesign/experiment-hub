@@ -1,92 +1,68 @@
-# Simple Seed Organizer — Business Case
+# Simple Seed Organizer
 
 ## Hypothesis
 
-I don't need help figuring out how to plant or where to plant -- I just want to organize what I've got. The way we ingest and manage our seeds can get SO much better.
+Home gardeners with large seed collections need a fast, inventory-first way to see what they own and what to use first—not another full garden planner.
 
 ---
 
 ## Why This Matters to Me
 
-As an avid home gardener I struggle to organize my seeds. I start them, propagate throughout the year, and then also collect seeds for the next season, which means I am dealing with store bought genetics right alongside my own generations. I don't need help figuring out how to plant or where to plant -- I just want to organize what I've got.
+I juggle store-bought packets and saved seed through the season and still dig through a box or notes app when I should already know what I have.
 
 ---
 
 ## Who It's For
 
-**Primary:** Home gardeners with 20+ seed packets who are frustrated with complex gardening apps and want a fast, searchable list of what they own and what to use first. **Not for:** Full garden planning, plot design, or care calendars—that’s a different product category.
+Twenty-plus-packet gardeners who want search and use-first hints without a heavyweight planner; not for plot design, calendars, or coaching as the main value.
 
 ---
 
 ## What It Does
 
-- **Seed inventory** with minimal required fields (name) and optional metadata
-- **Bulk and auto scan** from existing photos or from your camera
-- **Lazy AI transcription** of seed packet details in the background
-- **Search** for instant lookup at the store or in the shed
-- **Use-first list** surfacing older or questionable viability
+- Minimal inventory (name required; optional metadata)
+- Bulk and camera capture with lazy AI transcription
+- Fast search for shed and store runs
+- Use-first view for older or questionable viability
 
----
-
-## Market
-
-| Segment           | Size        | Basis                                                         |
-| ----------------- | ----------- | ------------------------------------------------------------- |
-| Total market      | $15M–$40M   | Competitor-anchored paid niche (not mass consumer seed spend) |
-| Reachable segment | $8M–$20M    | Serious collectors willing to pay vs. free alternatives       |
-| Year 1 target     | $50K–$150K  | ~3.3K–10K users at ~$15/yr                                    |
-| Year 3 target     | $500K–$1.5M | If retention and acquisition hold                             |
-
-Real market is a **niche**; the thesis is that low competition in “inventory only” can still support a solo business if validation metrics hit.
+Not in minimum viable product (MVP): plot planning, care calendars, social feeds, coaching content.
 
 ---
 
 ## Existing Options
 
-| Product              | Price   | Strength           | Limitation                         |
-| -------------------- | ------- | ------------------ | ---------------------------------- |
-| SeedTime             | $109/yr | Planting schedules | Expensive, not inventory-first     |
-| Planter              | $12/yr  | Plot planning      | Inventory is secondary             |
-| SeedSync             | Free    | Community features | Heavier than a list-first workflow |
-| Spreadsheets / Notes | Free    | Familiar           | Poor mobile UX, no viability logic |
+| Product      | Price        | User Base        | Strength          | Limitation                |
+| ------------ | ------------ | ---------------- | ----------------- | ------------------------- |
+| Seedtime     | ~$84–$168/yr | unknown          | Schedules         | Planner-first             |
+| Planter      | ~$25/yr      | ~2.2K US ratings | Layout + seed box | Planning-first            |
+| SeedSync     | Free         | unknown          | Community         | Heavy workflow            |
+| Spreadsheets | Free         | unknown          | Control           | Weak mobile, no viability |
 
-**Gap:** No dominant inventory-only, mobile-first product under ~$20/yr.
-
----
-
-## Biggest Unknown
-
-Whether the **paying** market is large enough: even a winning niche might cap out below what you want to sustain a solo product long term.
+No strong inventory-only, mobile-first option under ~$20/yr.
 
 ---
 
-## Validation Plan
+## Market
 
-|                | Detail                                                                      |
-| -------------- | --------------------------------------------------------------------------- |
-| Method         | Fake door on the landing page (CTA to paid intent, email capture)           |
-| Traffic        | Meta and Pinterest, gardening interest targeting                            |
-| Budget         | $100–$300 over ~2 weeks                                                     |
-| Success        | Per PRD: **>10%** CTA click rate; **>5%** email signup rate (session-based) |
-| Decision point | Hit thresholds before writing app code                                      |
+| Segment                                     | Size           | Basis                                                                                                         |
+| ------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------- |
+| Total Addressable Market (TAM)              | $5M–$20M / yr  | Annual category pool; soft ceiling from adjacent app public pricing; true total **unknown**                   |
+| Serviceable Addressable Market (SAM)        | $1M–$5M / yr   | Annual reachable pool; illustrative band for paying interest here; qualified buyer count **unknown**          |
+| Serviceable Obtainable Market (SOM), Year 1 | $2K–$35K ARR   | Product **annual recurring revenue (ARR)**; solo first year; not modeled with customer acquisition cost (CAC) |
+| Serviceable Obtainable Market (SOM), Year 2 | $15K–$120K ARR | Product **ARR**; directional midpoint between year 1 and year 3; not separately modeled                       |
+| Serviceable Obtainable Market (SOM), Year 3 | $40K–$250K ARR | Product **ARR**; solo scenario; excludes team sales, retail, or venture-style growth                          |
 
-**Hub validation status:** completed (landing / test path defined in PRD).
+Paid demand at volume is unproven; free notes and planners stay the default.
 
 ---
 
 ## Scorecard
 
-| Dimension                 | Score     | Criterion met                                              |
-| ------------------------- | --------- | ---------------------------------------------------------- |
-| B — Business opportunity  | 3/5       | Niche TAM; ceiling lower than first-pass bottom-up implied |
-| P — Personal impact       | 4/5       | Recurring, relatable problem for gardeners                 |
-| C — Competitive advantage | 4/5       | Clear “inventory only” positioning vs. planners            |
-| $ — Platform cost         | 5/5       | Small MVP; solo-friendly stack                             |
-| S — Social impact         | 3/5       | Quality-of-life for gardeners; moderate broader impact     |
-| **Total**                 | **19/25** | **Validate before build**                                  |
-
----
-
-## Recommendation
-
-**GO** on the cheap validation path already specified: run the fake door, read CTR and signup rates honestly, then decide whether the app is worth building. The business case lives or dies on those two metrics and on accepting a modest revenue ceiling if the niche is the prize.
+| Dimension                 | Score     | Criterion met                                                                                    |
+| ------------------------- | --------- | ------------------------------------------------------------------------------------------------ |
+| B — Business Opportunity  | 2/5       | $10M+ TAM, weak market indicators, limited potential (upper band to $20M; lower bound uncertain) |
+| P — Personal Impact       | 4/5       | Solves a regular problem, would use frequently                                                   |
+| C — Competitive Advantage | 4/5       | Clear differentiation, underserved niche, limited competition                                    |
+| $ — Platform Cost         | 5/5       | Build solo with AI in <1 month, simple infra, <$50/mo                                            |
+| S — Social Impact         | 3/5       | Addresses moderate need, some value, neutral contribution                                        |
+| **Total**                 | **18/25** | **Promising**                                                                                    |

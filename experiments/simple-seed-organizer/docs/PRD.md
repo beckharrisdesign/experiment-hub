@@ -1,85 +1,119 @@
-# Simple Seed Organizer - PRD
-
-## Design & Prototype
-
-**Figma Design**: [Simple Seed Organizer](https://www.figma.com/design/3OcfOyLd4qDonrA44TcE46/Simple-Seed-Organizer?node-id=5-29)
-**Figma Make Prototype**: [Seed Collection Tracker App](https://www.figma.com/make/3KLrBwkhXzE52TfcsyOdBZ/Seed-Collection-Tracker-App?node-id=0-1&t=9nRR5RQyd7y32aNE-1)
-**Local prototype**: `experiments/simple-seed-organizer/prototype/app/` → `npm run dev` → localhost:3001
-
----
+# Simple Seed Organizer — PRD
 
 ## Overview
 
-Simple Seed Organizer is a mobile/web app for home gardeners to track their seed inventory. It does one thing: store seed info and let you retrieve it fast. No planning, no calendars, no complexity.
-
-**Rule**: Build the landing page and fake door test first. Do not start the app until validation metrics are met.
+Simple Seed Organizer is a mobile-friendly web app for gardeners with larger seed collections, focusing on minimal inventory, capture + AI-assisted packet reads, search for store and shed, and a clear lane next to planner-heavy tools.
 
 ---
 
 ## Problem Statement
 
-Gardeners who collect seeds hit three recurring problems:
+Collectors still run into:
 
-- They rebuy seeds they already have because they can't check their inventory at the store
-- They don't know which packets are still viable before planting season
-- Finding planting info (depth, spacing, days to maturity) means digging through a physical box
+- Homemade spreadsheets or planner apps built around layout and schedules instead of a light inventory + use-first loop
 
-Existing tools either require full garden planning setup (SeedTime, Planter) or rely on free apps that are still too feature-heavy for someone who just wants a searchable seed list.
+Gap: a mobile-first, inventory-only path with use-first as the hero. Market and pricing context (including what others charge) sit in the business case, not in this doc.
 
 ---
 
 ## Goals & Objectives
 
-1. Validate demand with a fake door test before writing any product code
-2. Deliver a seed inventory app that's faster and more useful than a notes app or spreadsheet
-3. Make the use-first list (viability tracking) the standout feature that justifies $15/yr
+1. Beat notes and spreadsheets for the core loop: add or import → find a seed fast → see what to use first without opening a planner app.
+2. Make use-first and viability legible: thresholds, status, and a filter that people actually use—not only a line in marketing copy.
+3. Make capture + AI intake real: import paths (pile, camera, file) with review before save, not a promise that only manual entry works in practice.
+4. Keep the experience reliable: sign-in, save, load, and import fail rarely enough to trust the app during a real season.
 
 ---
 
 ## Target User
 
-**Primary**: Home gardener with 20+ seed packets who is frustrated with complex gardening apps and wants a fast, simple way to know what seeds they own and which to use first. Willing to pay $12–15/yr for something that actually fits their workflow.
+Primary — Home gardener with 20+ packets; wants search and use-first without a heavyweight planner; uses the app at the store and in the shed.
 
-**Secondary**: Seed swappers and savers who need a trackable inventory for trading and year-over-year replanting.
+Secondary — Swappers and savers who need a clean inventory for trades and over-wintering.
 
-**Not for**: Gardeners who want planting schedules, plot design, or care reminders — that's SeedTime or Planter.
+Not for — Whole-garden scheduling as the main job; not “coach in a box” or long-range care calendars as the product center.
 
 ---
 
 ## Core Features
 
-### MVP scope
+### MVP (current product + prototype)
 
-- **Seed inventory**: Add a seed with name + optional fields (variety, source, purchase date, notes). Edit and delete. Only required field is name.
-- **Search**: Instant search by name/variety. Results in < 1 second.
-- **Use-first list**: Seeds older than 2 years (or user-set threshold) surface automatically. Visual age indicator: green/yellow/red.
-- **Offline-first**: Full functionality without internet. Data stored locally; sync is a future feature.
+The current build is the product until you decide otherwise.
 
-**Out of scope for MVP**: photo uploads, cloud sync, barcode scanning, social/sharing features, garden planning (permanently excluded — not a phase 3 feature, just not this product)
+#### Inventory
+
+- Required: name. Optional: variety, type, source, year, purchase date, quantity, planting fields, notes, front/back packet photos (storage).
+- Routes: add, import, list and detail on home and seed detail (plus edit) — as implemented in the app.
+
+#### Search and filters
+
+- Search: name, variety, brand. Filters: type, Use First.
+
+#### Use-first and viability
+
+- Crop-aware thresholds from pack year; manual use-first flag; status (e.g. good / watch / use-first).
+- Use First filter: flagged items plus default age rule (e.g. 3+ years from pack year in current home logic—not a flat 2-year rule for everything).
+
+#### Import and AI
+
+- Import flow: pile photo, bulk camera, file upload; server routes for AI-assisted reads; usage limits for AI and bulk adds as configured. Queue and edit before save, not silent bulk insert.
+
+#### Views and nav
+
+- Active: type and photo list modes. Month and age views exist in code but are off the bottom nav until zone/month UX is ready.
+- Plant now banner and zone helpers: small timing hints when a zone is set—not a second planner product.
+
+#### Account and limits
+
+- Auth and DB; seeds and images in storage. Per-account caps on seeds and AI where the product enforces them.
+
+#### Release hygiene
+
+- Password reset, terms/privacy, meta/OG, 404, robots, sitemap.
+
+#### Out of scope
+
+- Full plot planning, care calendars and coaching as the core, social/community as the center. Barcode not in the current case.
+
+#### Docs note
+
+- Draft marketing or landing copy may sit next to the product. Keep it aligned with the live UI; this PRD does not own acquisition or commercial validation.
 
 ---
 
 ## Success Metrics
 
-- **CTA click rate: > 10%** of sessions — GA4 click event on the fake buy button
-- **Email signup rate: > 5%** of sessions — GA4 form submission event
+Outcomes (experience)
+
+- The core loop is usable in real life: add or import, then find a known seed quickly, then see what to deprioritize or use first—without a second “system” in your head.
+- Use-first and import are part of how people use the app, not rare experiments.
+- The app is stable enough for seasonal use: saves, loads, and imports do not feel flaky.
+
+Failing tests (pass = outcome is plausible)
+
+- Fails until: On a 50+ seed list, cold search finds a known packet in under 10s without scanning the whole list.
+- Fails until: 30-day usage shows nontrivial use of the Use First filter (or equivalent path)—not zero forever after onboarding.
+- Fails until: 30-day stats show a meaningful share of new seeds created via import vs manual add only—if import stays ~0, the capture path is not carrying weight.
+- Fails until: Save, load, and import failures are rare enough (tracked, logged, or spot-checked) that you would hand the app to someone for a full growing season.
+- Fails until: After basic analytics or logging exists, you can name baseline repeat use (e.g. return sessions) and see whether people come back to the list when it matters—not just a one-time signup.
+
+Validation phase (product learning)
+
+- Task-style checks: time-to-find, filter usage, import vs manual mix, error counts.
+- Qualitative: short debriefs or support themes (“couldn’t find X,” “import failed”) that trend down, not up.
+
+Go / no-go (product, not commercial)
+
+- Enough confidence in the loop and the two differentiated paths (use-first, import) before building large new surfaces (e.g. re-enabling month/age in nav). Commercial go/no-go belongs outside this PRD.
+
+MVP phase
+
+- Find seed on a mid list: under ~10s.
+- Friction: save/load/import error rate low enough that support is not the main use of the app.
 
 ---
 
-## Validation Plan (Landing Page)
+## What this PRD does not cover
 
-Landing page tests whether gardeners will pay ~$15/yr for a simple seed inventory app. Traffic from Meta/Pinterest ads targeting gardening interests. CTA is a fake "Buy for $15/year" button that captures email and shows a "you'll be first to know" confirmation. Run for 2 weeks with a $100–300 budget before deciding. Full copy: [landing-page-content.md](landing-page-content.md).
-
----
-
-## Launch Readiness
-
-Items required before the app goes live (not the landing page):
-
-| Item | Status | Notes |
-|---|---|---|
-| Password reset flow | Done | `/forgot-password` + `/reset-password` via Supabase email link |
-| Legal pages | Done | `/terms` and `/privacy` — update with real content before charging users |
-| SEO meta tags | Done | Title, description, OG, Twitter card in `layout.tsx` |
-| Custom 404 | Done | `app/not-found.tsx` |
-| `robots.txt` + `sitemap.xml` | Done | Via `app/robots.ts` and `app/sitemap.ts` |
+Acquisition, paid conversion, pricing tests, and demand validation live with the business case, finance, and growth workstreams. This document is for product behavior and experience.
