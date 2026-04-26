@@ -4,11 +4,14 @@
 
 **Best Day Ever** is a calendar-integrated printable day planner for people with ADHD — pull today's events from Google Calendar and generate a print-ready daily layout designed for physical use.
 
+Total addressable market (TAM), serviceable addressable market (SAM), and serviceable obtainable market (SOM) are used below; first figures spell out the pool, SOM lines are product **annual recurring revenue (ARR)**.
+
 **Key Findings:**
-- **TAM**: $200M - $350M (bottom-up: ADHD + productivity tool addressable segments)
-- **SAM**: $100M - $175M (ADHD/productivity users seeking calendar-integrated printable output)
-- **SOM (Year 1)**: $210K - $350K (500–1,000 paying customers at $8/mo or $60/yr)
-- **SOM (Year 3)**: $2.1M - $3.5M (5,000–8,000 paying customers)
+
+- **TAM**: $200M–$350M / yr (bottom-up: ADHD + productivity-adjacent spend; **illustrative** band)
+- **SAM**: $100M–$175M / yr (calendar-using, print-capable slice; payer count **unknown**)
+- **SOM (Year 1)**: $210K–$350K **ARR** (~2.2K–3.7K paying users at ~$8/mo effective)
+- **SOM (Year 3)**: $2.1M–$3.5M **ARR** (directional; implies higher ARPU or distribution than solo $8/mo base)
 
 **Market Opportunity Assessment**: **MEDIUM-HIGH**
 Strong niche demand from an underserved and growing segment. Competitive but fragmented market with no direct equivalent product.
@@ -38,4 +41,4 @@ The market is growing on two axes: ADHD awareness and diagnosis rates are rising
 
 ## Recommendation
 
-**GO** — the niche is real and differentiated. The biggest risk is market education: users may not realize this is what they've been missing, which means ad creative and landing page messaging matter a lot. Run the validation test targeting ADHD communities on Meta and Reddit. Success threshold: >2% CTR and >10% fake-buy conversion on the landing page.
+**GO** — the niche is real and differentiated. The biggest risk is market education: users may not realize this is what they have been missing, so ad creative and landing page messaging matter a lot. Continue structured demand checks (landing + paid tests to ADHD and planner audiences) with pre-set CTR and signup thresholds before committing build beyond the OAuth + PDF path.

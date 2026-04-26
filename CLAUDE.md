@@ -30,7 +30,7 @@ Invocable via `/skill-name`. Source files live in `skills/` (centralized) and `.
 - `/experiment-creator` — refine idea, create experiment directory + metadata
 - `/market-research` — TAM/SAM/SOM analysis, scoring, go/no-go recommendation
 - `/business-case-writer` — focused business case (GO/NO-GO), interview workflow, `docs/business-case.md`
-- `/prd-writer` — generate PRD, invoke design-advisor for review
+- `/prd-writer` — lean PRD from business case: outcomes + failing tests first; design-advisor when UI-heavy
 - `/prototype-builder` — propose stack, generate code, invoke design-advisor
 - `/design-advisor` — design review of PRD, code, or live URL
 - `/user-communication` — audit user-facing copy against content design standards

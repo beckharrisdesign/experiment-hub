@@ -203,7 +203,7 @@ export default function TabsContent({
               </div>
             </Section>
           )}
-          {experiment.scores && (
+          {experiment.scores && experiment.type !== "tool" && (
             <Section title="Scores">
               <div className="grid grid-cols-5 gap-4">
                 <ScoreCard

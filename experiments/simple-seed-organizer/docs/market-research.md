@@ -4,40 +4,43 @@
 
 **Simple Seed Organizer** is a mobile/web app for home gardeners to track their seed inventory — no garden planning, just store, search, and know what you have.
 
+Market sizing uses **total addressable market (TAM)**, **serviceable addressable market (SAM)**, and **serviceable obtainable market (SOM)**. **TAM** and **SAM** figures are **annual** category revenue pools ($/year). **SOM (Year N)** lines are **annual recurring revenue (ARR)** for this product in that calendar year (recurring sales, not one-time or lifetime cumulative).
+
 **Key Findings:**
-- **TAM**: $15M - $40M (competitor-anchored; initial bottom-up of $162M–$243M overstated the paying market by ~10×)
-- **SAM**: $8M - $20M (serious collectors with 20+ packets, willing to pay vs. free alternatives)
-- **SOM (Year 1)**: $50K - $150K (3,300–10,000 users at $15/yr)
-- **SOM (Year 3)**: $500K - $1.5M (33,000–100,000 users at $15/yr)
+
+- **TAM**: $5M - $20M (annual market pool; soft ceiling from adjacent paid apps; category revenue **not** independently measured — see Market Opportunity)
+- **SAM**: $1M - $5M (annual market pool; illustrative bracket for “gardeners who might pay for software in this problem space”; qualified buyer count **unknown**)
+- **SOM (Year 1)**: $2K - $35K (ARR; solo-founder framing: a handful to low hundreds of payers at modest average revenue per user (ARPU); **not** from a validated customer acquisition cost (CAC) and lifetime value (LTV) model)
+- **SOM (Year 3)**: $40K - $250K (ARR; solo scale if retention and light acquisition work; **excludes** team sales, retail, or venture-style growth)
 
 **Market Opportunity Assessment**: **MEDIUM**
-Real but small market. Clear underserved niche — most tools do garden planning, not inventory. Realistic path to $500K–$1.5M by Year 3 if demand validates.
+The problem is real and crowded planners leave a positioning gap, but paid demand at meaningful volume is **unproven**. Numbers above favor **what one founder can plausibly touch** over category upside.
 
-**Go/No-Go Recommendation**: **GO** — proceed with fake door test before building any product.
+**Go/No-Go Recommendation**: **GO** — keep shipping toward clarity on repeat use and willingness to pay; treat headline TAM and SOM as directional, not targets.
 
 ---
 
 ## Market Opportunity
 
-80% of US households garden. Of those who collect seeds seriously (20+ packets), most hit the same three problems: rebuying seeds they already own, not knowing which packets are still viable, and hunting through a physical box to find planting info. No tool solves this cleanly.
+**Where the numbers come from.** The executive TAM figure is not from syndicated market reports. It is a **rough ceiling** inferred from (a) public consumer pricing for adjacent apps (Seedtime annual tiers on seedtime.us; Planter Premium on planter.garden / App Store, 2025–2026), and (b) the observation that only a thin slice of “people who garden” pay for digital tools in this niche. **True category TAM in dollars: unknown** — we do not have audited revenue for the whole segment. SAM is **not** survey-sized; we do not know how many households have **20+ packets and willingness to pay** for inventory-only software (**unknown** count). The SAM dollar band is an **illustrative** slice of that uncertain pool for hub UI parsing, not a measured SAM.
 
-The competitive landscape is dominated by garden planning apps that include seed tracking as a secondary feature buried in complexity. Free alternatives exist but are still more complex than someone who just wants a searchable seed list actually needs.
+SOM uses **solo-founder realism**: Year 1 assumes modest traction (no large ad spend, no app-store hero placement). Year 3 assumes compounding use and word-of-mouth or light paid acquisition — **not** modeled here; treat the band as **scenario**, not forecast. An earlier internal bottom-up (~$162M–$243M) was discarded as **not credible** for who actually pays for this shape of product.
 
-The TAM is smaller than a bottom-up estimate suggests. Competitor revenue signals (SeedTime + Planter estimated combined ARR: ~$1.5M–$7.5M) imply the actual paying market is $15M–$40M — not the $162M the bottom-up produced. This is a niche, not a mass market. A niche with unmet demand and low competition is still a good place for a solo product, but the ceiling is lower than it first appeared.
+The competitive story is unchanged: most tools optimize for planning and calendars; free notes/spreadsheets remain the default. Gap = inventory-first, low-friction list — **differentiation is clear; market size is not**.
 
 ---
 
 ## Competitive Landscape
 
-- **SeedTime** ($109/yr) — planting schedules and garden planning · weakness: expensive, complex, not inventory-focused
-- **Planter** ($12/yr) — garden plot planning and plant selection · weakness: planning-focused, inventory tracking is secondary
-- **SeedSync** (free) — seed collection with community database and calendar features · weakness: still more complex than needed; free model limits polish
-- **Spreadsheets / Notes apps** (free) — the default today for most collectors · weakness: no structure, not mobile-friendly, no viability tracking
+- **Seedtime** (~$84–$168/yr paid annual tiers on seedtime.us, 2025) — planning and schedules · weakness: planner-first, not inventory-only; **company revenue unknown**
+- **Planter** (~$24.99/yr Premium per planter.garden / US App Store, Feb 2026) — layout + seed box · weakness: planning-first; **~2.2K US App Store ratings** (not revenue, not monthly active users (MAU))
+- **SeedSync** (free) — community/collection angle · weakness: heavier workflow than list-only; **usage and revenue unknown**
+- **Spreadsheets / Notes** (free) — default for many collectors · weakness: weak mobile structure, no viability logic · **share of seed organizers: unknown**
 
-**Gap**: No tool is inventory-only, mobile-first, and priced under $20/yr. That's the opening.
+**Gap**: No dominant inventory-only, mobile-first product under ~$20/yr.
 
 ---
 
 ## Recommendation
 
-**GO** — the niche is real and the fake door test costs little to run. The biggest risk is that the paying market is too small to sustain a solo business ($15M–$40M TAM with realistic 1% penetration = ~$150K–$400K Year 3 ceiling). Worth validating before building. Run the landing page + ads test with a clear go/no-go threshold: >2% ad CTR and >10% fake-buy conversion on the landing page.
+**GO** — the niche thesis is strong enough to keep building, but **do not** treat executive TAM and SOM as commitments. Revisit sizing when you have **repeat usage**, **conversion**, and optionally **one channel** with stable unit economics. Until then, prefer **unknown** over precision.

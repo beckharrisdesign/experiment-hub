@@ -25,7 +25,7 @@
 
 Invocable skills and agents live in `skills/` — reference with `@skills/<name>.md` in Cursor:
 
-- `experiment-creator`, `market-research`, `business-case-writer`, `prd-writer`, `prototype-builder`, `design-advisor`
+- `experiment-creator`, `market-research`, `business-case-writer`, `prd-writer` (outcomes + failing tests), `prototype-builder`, `design-advisor`
 - `user-communication`, `sitemap` (sitemap: rare; explicit request or Figma sitemap board refresh when IA/routes change)
 - `figma/figma-use`, `figma/figma-implement-design`, `figma/figma-generate-design`, and more
 
