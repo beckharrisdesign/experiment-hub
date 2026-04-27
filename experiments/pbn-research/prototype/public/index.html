@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PBN comparison</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <h1>Paint-by-number comparison</h1>
+  <p class="hint">
+    Pick a sample from <code>assets/input/</code> or upload a file, then <strong>Run comparison</strong>.
+    One click runs <strong>three</strong> full pipelines (A, B, C): SLIC segmentation plus region merges (defaults cap the long edge at
+    <strong>1600px</strong> before processing).
+  </p>
+  <p class="hint hint-strong">
+    <strong>How long?</strong> Tiny images can finish in a few seconds. A typical phone photo after that downscale often lands around
+    <strong>30 seconds to a few minutes</strong> on a laptop — it varies with CPU and image complexity.
+  </p>
+  <p class="hint">
+    <strong>Hanging vs slow:</strong> While the blue banner’s <strong>Elapsed</strong> time keeps ticking, your browser is still waiting on the
+    server for that one HTTP request (that is normal, not a frozen tab). It does <em>not</em> prove Python is making progress inside each
+    variant. On macOS, open <strong>Activity Monitor</strong> → search <strong>Python</strong> → if CPU stays <strong>high</strong> for most of the wait, work is usually
+    happening. If <strong>Elapsed</strong> passes ~10 minutes and Python’s CPU is <strong>~0%</strong> the whole time, assume something is stuck and stop
+    the request (close the tab or refresh).
+  </p>
+  <div id="pbn-status" class="pbn-status pbn-status-hidden" role="status" aria-live="polite"></div>
+
+  <form id="pbn-form-run">
+    <label>Sample
+      <select id="pbn-sample" name="sample"><option value="">— upload instead —</option></select>
+    </label>
+    <label>Upload <input id="pbn-file" type="file" name="file" accept="image/*" /></label>
+    <button type="submit" id="pbn-run-btn">Run comparison</button>
+  </form>
+
+  <div id="pbn-results"></div>
+
+  <form id="pbn-form-log" class="score pbn-hidden">
+    <h3>Human rubric (1–5)</h3>
+    <label>Subject clarity <input name="subject_clarity" type="number" min="1" max="5" value="3" /></label>
+    <label>Paintability <input name="paintability" type="number" min="1" max="5" value="3" /></label>
+    <label>Background simplicity <input name="background_simplicity" type="number" min="1" max="5" value="3" /></label>
+    <button type="submit" id="pbn-log-btn">Log run with human scores</button>
+  </form>
+
+  <script src="/app.js"></script>
+</body>
+</html>

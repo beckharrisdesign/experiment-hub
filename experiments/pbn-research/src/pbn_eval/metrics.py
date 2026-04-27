@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
-from skimage import color
+from skimage import color, transform
 from skimage.color import deltaE_ciede2000
 from skimage.segmentation import find_boundaries
 
@@ -87,8 +87,21 @@ def compute_metrics(
 
 
 def lab_mse_fidelity(rgb_source_u8: np.ndarray, result: PipelineResult) -> float:
-    """Lower is better — used as inverse fidelity proxy."""
-    a = rgb_source_u8.astype(np.float64) / 255.0
+    """Lower is better — used as inverse fidelity proxy.
+
+    ``run_pipeline`` may downscale before SLIC (``max_long_edge``); ``quantized_rgb`` matches
+    that working resolution. Resize the source to the same H×W before Lab MSE so shapes align.
+    """
+    target_hw = result.quantized_rgb.shape[:2]
+    if rgb_source_u8.shape[:2] != target_hw:
+        src = transform.resize(
+            rgb_source_u8,
+            target_hw,
+            preserve_range=True,
+        ).astype(np.uint8)
+    else:
+        src = rgb_source_u8
+    a = src.astype(np.float64) / 255.0
     b = result.quantized_rgb.astype(np.float64)
     if b.max() > 1.01:
         b = b / 255.0

@@ -32,15 +32,17 @@ def pseudo_saliency_rgb(rgb: np.ndarray) -> np.ndarray:
 
 
 def region_mean_saliency(labels: np.ndarray, saliency: np.ndarray) -> dict[int, float]:
-    """Mean saliency per region id (0 = background unused)."""
-    n = int(labels.max()) + 1
-    sums = np.bincount(labels.ravel(), weights=saliency.ravel(), minlength=n)
-    counts = np.bincount(labels.ravel(), minlength=n).astype(np.float64)
-    counts = np.maximum(counts, 1)
+    """Mean saliency per region id (only labels that appear)."""
+    flat = labels.ravel()
+    w = saliency.ravel()
+    nbin = int(flat.max()) + 1
+    sums = np.bincount(flat, weights=w, minlength=nbin)
+    counts = np.bincount(flat, minlength=nbin).astype(np.float64)
+    counts = np.maximum(counts, 1.0)
     out: dict[int, float] = {}
-    for i in range(n):
-        if counts[i] > 0:
-            out[i] = float(sums[i] / counts[i])
+    for rid in np.unique(flat):
+        rid = int(rid)
+        out[rid] = float(sums[rid] / counts[rid])
     return out
 
 

@@ -1,4 +1,4 @@
-"""Local-first paint-by-number evaluation pipelines (notebook + scripts)."""
+"""Local-first paint-by-number evaluation pipelines (CLI + importable library)."""
 
 from pbn_eval.pipeline import PipelineVariant, run_pipeline
 from pbn_eval.metrics import compute_metrics

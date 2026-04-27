@@ -36,6 +36,18 @@
     "port": 3003
   },
   {
+    "id": "proto-pbn-research",
+    "title": "PBN Research Lab Prototype",
+    "description": "Compare PBN pipeline variants A/B/C, score in-browser, log runs locally",
+    "linkPath": "experiments/pbn-research/prototype",
+    "experimentId": "pbn-research",
+    "status": "Active",
+    "createdDate": "2026-04-18",
+    "lastModified": "2026-04-18",
+    "tags": ["paint-by-number", "cv", "research"],
+    "port": 3010
+  },
+  {
     "id": "proto-web-to-figma-grabber",
     "title": "Web to Figma Grabber Prototype",
     "description": "Chrome extension MVP for capturing selected DOM to Figma-ready payloads",

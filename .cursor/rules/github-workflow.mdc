@@ -18,6 +18,13 @@ globs:
 - **Never have two PRs open for the same work item.** If a PR exists for the current task, push additional fixes to that branch rather than opening a new PR. Keep iterating on the existing PR until all checks pass.
 - **PR description** must include: what changed, why, and a test plan (how to verify it works).
 
+### Single draft PR until merge (default)
+
+- Prefer **one active branch + one PR** per ongoing effort. Keep **adding commits to that branch** and **updating the same PR** until Katy approves and merges. Avoid opening many parallel branches/PRs for follow-ups in the same workstream.
+- Open the PR as a **draft** while iterating; mark **ready for review** when Katy should look.
+- Start a **new** branch + PR only after the previous one is merged, or when the work is **clearly unrelated** (different experiment, different product surface).
+- If using GitHub CLI: `gh pr create --draft` for new PRs; push additional commits to the same branch to refresh the existing PR.
+
 ## Commits
 
 See `commit-messages.mdc` for commit message format (conventional commits, imperative mood, 50-char subject).
