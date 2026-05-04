@@ -63,7 +63,7 @@ export default async function ExperimentDetailPage({
     }),
   );
 
-  const { hasPRDFile, mrContent, learningsContent } = fileChecks;
+  const { hasPRDFile, mrContent } = fileChecks;
 
   // Read all content in parallel — Supabase overrides file for editable content
   const [prd, prdRawContent, mr, businessCaseContent] = await Promise.all([
@@ -124,7 +124,6 @@ export default async function ExperimentDetailPage({
         prd={prd}
         prdRawContent={prdRawContent}
         mr={mr}
-        learningsContent={learningsContent}
         businessCaseContent={businessCaseContent}
         isEditor={isEditor}
       />
