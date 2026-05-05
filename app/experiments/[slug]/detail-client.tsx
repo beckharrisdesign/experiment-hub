@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import ExperimentTypeBadge from "@/components/ExperimentTypeBadge";
-import MarkdownContent from "@/components/MarkdownContent";
 import TabsContent from "./tabs-content";
 import type { Experiment } from "@/types";
 import type { parsePRD, parseMarketResearch } from "@/lib/data";
@@ -20,7 +19,6 @@ interface ExperimentDetailClientProps {
   prd: ReturnType<typeof parsePRD> | null;
   prdRawContent: string | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
-  learningsContent: string | null;
   businessCaseContent: string | null;
   isEditor: boolean;
 }
@@ -31,7 +29,6 @@ export default function ExperimentDetailClient({
   prd,
   prdRawContent,
   mr,
-  learningsContent,
   businessCaseContent,
   isEditor,
 }: ExperimentDetailClientProps) {
@@ -100,36 +97,12 @@ export default function ExperimentDetailClient({
             prd={prd}
             prdRawContent={prdRawContent}
             mr={mr}
-            learningsContent={learningsContent}
             businessCaseContent={businessCaseContent}
             isEditor={isEditor}
             activeTab={activeTab}
             slug={slug}
           />
         </main>
-
-        {/* Learnings sidebar */}
-        <aside className="hidden lg:block w-[415px] shrink-0 bg-[#f5f5f5] px-12 py-12">
-          <h2 className="font-heading text-base font-semibold text-text-dark mb-4">
-            Learnings
-          </h2>
-          {learningsContent ? (
-            <div className="prose prose-sm max-w-none text-text-dark-secondary">
-              <MarkdownContent content={learningsContent} variant="light" />
-            </div>
-          ) : (
-            <p className="text-sm text-text-dark-secondary italic">
-              No learnings yet.{" "}
-              <span className="not-italic">
-                Add a{" "}
-                <code className="bg-background-mint px-1.5 py-0.5 rounded text-xs not-italic">
-                  docs/learnings.md
-                </code>{" "}
-                to capture what you discover through prototyping and testing.
-              </span>
-            </p>
-          )}
-        </aside>
       </div>
 
       <Footer />

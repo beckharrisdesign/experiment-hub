@@ -12,7 +12,6 @@ interface TabsContentProps {
   prd: ReturnType<typeof parsePRD> | null;
   prdRawContent: string | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
-  learningsContent: string | null;
   businessCaseContent: string | null;
   isEditor: boolean;
   activeTab: string;
