@@ -289,7 +289,7 @@ export function LandingPage() {
                   50 seed packets
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-[#16a34a] shrink-0">✓</span>5 AI
+                  <span className="text-[#16a34a] shrink-0">✓</span>50 AI
                   packets/month
                 </li>
               </ul>
