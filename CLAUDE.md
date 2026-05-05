@@ -35,6 +35,7 @@ Invocable via `/skill-name`. Source files live in `skills/` (centralized) and `.
 - `/design-advisor` — design review of PRD, code, or live URL
 - `/user-communication` — audit user-facing copy against content design standards
 - `/sitemap` — **rare**; full screenshot pass + Figma sitemap board (only when the user requests or IA/routes require refreshing that board; not for routine work)
+- `/quick-log` — capture a loose thought (feedback, idea, bug, feature) as a labelled GitHub issue; one sentence is enough
 
 **Fetched from `github.com/figma/mcp-server-guide`** — run `npm run skills:sync` to pull, then commit. Vendored in `skills/figma/`:
 
