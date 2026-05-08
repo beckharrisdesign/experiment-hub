@@ -20,6 +20,7 @@
 - `vitest-conventions.mdc` — test conventions
 - `prd-template.mdc` — experiment PRD format
 - `market-research-template.mdc` — market research format
+- `openspec-workflow.mdc` — OpenSpec vs experiment PRDs, `openspec/` layout, archiving
 
 ## Skills and agents
 
@@ -30,6 +31,8 @@ Invocable skills and agents live in `skills/` — reference with `@skills/<name>
 - `figma/figma-use`, `figma/figma-implement-design`, `figma/figma-generate-design`, and more
 
 See `agents/README.md` for the experiment workflow and approval checkpoints.
+
+- **OpenSpec:** slash commands `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`; skills under `.cursor/skills/openspec-*` and `skills/openspec-*.md` (Claude hook sync).
 
 ## Cursor-specific
 

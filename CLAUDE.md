@@ -20,6 +20,7 @@
 - `vitest-conventions.mdc` — test conventions (`*.test.ts`, `*.test.tsx`)
 - `prd-template.mdc` — experiment PRD format (`experiments/*/docs/PRD.md`)
 - `market-research-template.mdc` — market research format (`experiments/*/docs/market-research.md`)
+- `openspec-workflow.mdc` — OpenSpec vs experiment PRDs, `openspec/` layout, archiving
 
 ## Skills (Claude Code only)
 
@@ -33,6 +34,7 @@ Invocable via `/skill-name`. Source files live in `skills/` (centralized) and `.
 - `/prd-writer` — lean PRD from business case: outcomes + failing tests first; design-advisor when UI-heavy
 - `/prototype-builder` — propose stack, generate code, invoke design-advisor
 - `/design-advisor` — design review of PRD, code, or live URL
+- `/openspec-propose`, `/openspec-apply-change`, `/openspec-archive-change`, `/openspec-explore` — OpenSpec change lifecycle (see `openspec/README.md`; CLI: `npx @fission-ai/openspec`)
 - `/user-communication` — audit user-facing copy against content design standards
 - `/sitemap` — **rare**; full screenshot pass + Figma sitemap board (only when the user requests or IA/routes require refreshing that board; not for routine work)
 - `/quick-log` — capture a loose thought (feedback, idea, bug, feature) as a labelled GitHub issue; one sentence is enough

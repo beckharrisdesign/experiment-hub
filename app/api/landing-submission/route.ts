@@ -15,8 +15,19 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: NextRequest) {
+  let body: Record<string, unknown>;
   try {
-    const body = await request.json();
+    body = await request.json();
+  } catch {
+    return withCors(
+      NextResponse.json(
+        { error: "Invalid JSON body" },
+        { status: 400 },
+      ),
+    );
+  }
+
+  try {
     const { experiment, email, name, source, notes, ...rest } = body;
 
     if (!email) {

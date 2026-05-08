@@ -1,0 +1,24 @@
+---
+description: OpenSpec spec-driven changes, openspec/specs capabilities, and when to use them vs experiment PRDs. Apply when editing openspec/, using /opsx commands, or planning hub platform work.
+globs: openspec/**/*
+---
+
+# OpenSpec workflow (Experiment Hub)
+
+## When to use what
+
+- **PRD only** (`experiments/*/docs/PRD.md`): New or small experiments, landing validation, narrative scope. Follow `@skills/prd-writer.md` and [prd-template.mdc](prd-template.mdc).
+- **OpenSpec** (`openspec/`): Changes to **shared hub behavior** (API routes, catalog data, cross-experiment flows) where you want **requirement deltas**, `proposal.md` / `design.md` / `tasks.md`, and agents to re-load `openspec/specs/**` across sessions.
+- **Both**: Link `openspec/changes/<id>/proposal.md` to the relevant `PRD.md` when an experiment drives a platform change.
+
+## Git discipline
+
+Match [github-workflow.mdc](github-workflow.mdc): one branch per logical unit (e.g. `cursor/<descriptor>`), one PR, agent does not merge. Align an active change folder name with that branch when practical.
+
+## Figma and `design.md`
+
+UI-impacting changes MUST document design context in `design.md` (see [figma.mdc](figma.mdc) § OpenSpec).
+
+## Archiving
+
+When a change is merged, move `openspec/changes/<name>/` to `openspec/changes/archive/YYYY-MM-DD-<name>/` (or use `/opsx:archive`). Canonical specs under `openspec/specs/` should already reflect the merged behavior.

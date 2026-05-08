@@ -24,6 +24,16 @@ Use **`business-case-writer`** when you want a full narrative business case (GO/
 
 Each step requires explicit user approval before proceeding. Agents present proposals and wait — they don't auto-chain.
 
+## OpenSpec (hub platform specs)
+
+Use [OpenSpec](https://openspec.dev/) for **shared hub** work when you want living requirements beside code (`openspec/specs/<capability>/spec.md`), reviewable deltas, and change packages (`proposal.md`, `design.md`, `tasks.md`). Keep experiment **PRDs** as the narrative source for validation; add OpenSpec when the change alters **cross-experiment** APIs, data, or UI patterns.
+
+- **Cursor:** `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore` (see `.cursor/commands/`; restart IDE after first install if commands are missing).
+- **Claude Code:** matching commands under `.claude/commands/opsx/`.
+- **Details:** `openspec/README.md`, `.cursor/rules/openspec-workflow.mdc`, and Figma linkage rules in `.cursor/rules/figma.mdc` (OpenSpec `design.md` section).
+
+Branch and PR expectations follow [`.cursor/rules/github-workflow.mdc`](../.cursor/rules/github-workflow.mdc) (e.g. `cursor/<short-descriptor>`, one PR per unit, no agent merge).
+
 ## Experiment-specific agents
 
 Individual experiments may have their own agents in `experiments/{slug}/agents/`. These are scoped to that experiment only.

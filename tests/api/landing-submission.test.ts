@@ -140,6 +140,21 @@ describe("POST /api/landing-submission", () => {
     expect(mockInsert).not.toHaveBeenCalled();
   });
 
+  it("returns 400 when JSON body is not valid JSON", async () => {
+    const res = await POST(
+      new NextRequest("http://localhost/api/landing-submission", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{not-json",
+      }),
+    );
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toMatch(/invalid json/i);
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
   // ---------------------------------------------------------------------------
   // Error handling
   // ---------------------------------------------------------------------------
