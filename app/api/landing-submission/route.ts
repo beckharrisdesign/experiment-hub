@@ -10,6 +10,12 @@ function withCors(res: NextResponse) {
   return res;
 }
 
+function asOptionalTrimmedString(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const t = value.trim();
+  return t.length > 0 ? t : undefined;
+}
+
 export async function OPTIONS() {
   return withCors(new NextResponse(null, { status: 204 }));
 }
@@ -30,7 +36,8 @@ export async function POST(request: NextRequest) {
   try {
     const { experiment, email, name, source, notes, ...rest } = body;
 
-    if (!email) {
+    const emailStr = asOptionalTrimmedString(email);
+    if (!emailStr) {
       return withCors(
         NextResponse.json(
           { error: "Missing required field: email" },
@@ -42,12 +49,17 @@ export async function POST(request: NextRequest) {
     // Any experiment-specific fields (e.g. seedCount, challenges) go into metadata
     const metadata = Object.keys(rest).length > 0 ? rest : undefined;
 
+    const experimentStr =
+      asOptionalTrimmedString(experiment) ?? "unknown";
+    const sourceStr =
+      asOptionalTrimmedString(source) ?? "landing-page";
+
     const row = await insertSubmission({
-      experiment: experiment || "unknown",
-      email,
-      name,
-      source: source || "landing-page",
-      notes,
+      experiment: experimentStr,
+      email: emailStr,
+      name: asOptionalTrimmedString(name),
+      source: sourceStr,
+      notes: asOptionalTrimmedString(notes),
       metadata,
     });
 
