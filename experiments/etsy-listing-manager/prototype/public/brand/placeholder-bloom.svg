@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Sample shop mark">
+  <defs>
+    <radialGradient id="bb" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#f9a8d4"/>
+      <stop offset="100%" style="stop-color:#c084fc"/>
+    </radialGradient>
+  </defs>
+  <circle cx="32" cy="32" r="28" fill="url(#bb)" opacity="0.25"/>
+  <g fill="none" stroke="#e879f9" stroke-width="1.8" stroke-linecap="round">
+    <path d="M32 12v8M32 44v8M12 32h8M44 32h8"/>
+    <path d="M20 20c4 4 8 0 8-4s-4-8-8-4-4 8 0 8z" opacity="0.9"/>
+    <path d="M44 20c-4 4-8 0-8-4s4-8 8-4 4 8 0 8z" opacity="0.9"/>
+    <path d="M20 44c4-4 8 0 8 4s-4 8-8 4-4-8 0-8z" opacity="0.9"/>
+    <path d="M44 44c-4-4-8 0-8-4s4-8-8-4-4 8 0 8z" opacity="0.9"/>
+  </g>
+  <circle cx="32" cy="32" r="4" fill="#a855f7"/>
+</svg>

@@ -348,6 +348,13 @@ export default function PatternDetailPage() {
         setShowPatternSelectionModal(false);
       } else {
         const error = await response.json();
+        if (error?.code === 'BRAND_IDENTITY_REQUIRED') {
+          showToast('Set up Brand Identity first. Redirecting...', 'info');
+          setTimeout(() => {
+            router.push('/brand-identity');
+          }, 400);
+          return;
+        }
         showToast(error.error || 'Failed to generate listing', 'error');
       }
     } catch (error) {

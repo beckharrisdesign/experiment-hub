@@ -16,6 +16,7 @@ export function getBrandIdentity(): BrandIdentity | null {
       colorPalette: JSON.parse(row.color_palette),
       typography: row.typography || undefined,
     },
+    logoUrl: row.logo_url || undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -25,11 +26,33 @@ export function createBrandIdentity(data: {
   storeName: string;
   brandTone: BrandIdentity['brandTone'];
   creativeDirection: BrandIdentity['creativeDirection'];
+  logoUrl?: string;
 }): BrandIdentity {
   const id = randomUUID();
   const now = new Date().toISOString();
 
-  db.prepare(`
+  const hasLogo = db
+    .prepare("PRAGMA table_info(brand_identity)")
+    .all()
+    .some((c: { name: string }) => c.name === 'logo_url');
+
+  if (hasLogo) {
+    db.prepare(`
+    INSERT INTO brand_identity (id, store_name, brand_tone, visual_style, color_palette, typography, logo_url, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id,
+    data.storeName,
+    data.brandTone,
+    data.creativeDirection.visualStyle,
+    JSON.stringify(data.creativeDirection.colorPalette),
+    data.creativeDirection.typography || null,
+    data.logoUrl || null,
+    now,
+    now
+  );
+  } else {
+    db.prepare(`
     INSERT INTO brand_identity (id, store_name, brand_tone, visual_style, color_palette, typography, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
@@ -42,10 +65,14 @@ export function createBrandIdentity(data: {
     now,
     now
   );
+  }
 
   return {
     id,
-    ...data,
+    storeName: data.storeName,
+    brandTone: data.brandTone,
+    creativeDirection: data.creativeDirection,
+    logoUrl: data.logoUrl,
     createdAt: now,
     updatedAt: now,
   };
@@ -55,6 +82,7 @@ export function updateBrandIdentity(id: string, data: Partial<{
   storeName: string;
   brandTone: BrandIdentity['brandTone'];
   creativeDirection: BrandIdentity['creativeDirection'];
+  logoUrl: string;
 }>): BrandIdentity | null {
   const existing = db.prepare('SELECT * FROM brand_identity WHERE id = ?').get(id) as any;
   if (!existing) return null;
@@ -81,6 +109,10 @@ export function updateBrandIdentity(id: string, data: Partial<{
   if (data.creativeDirection?.typography !== undefined) {
     updates.push('typography = ?');
     values.push(data.creativeDirection.typography || null);
+  }
+  if (data.logoUrl !== undefined) {
+    updates.push('logo_url = ?');
+    values.push(data.logoUrl || null);
   }
 
   if (updates.length === 0) {

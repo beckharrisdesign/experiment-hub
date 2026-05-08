@@ -156,12 +156,14 @@ export default function NewListingPage() {
       } else {
         // Better error handling - try to parse JSON, fallback to text
         let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        let errorCode = '';
         try {
           const errorText = await response.text();
           console.error('[Listing Creation] Error response text:', errorText);
           try {
             const errorJson = JSON.parse(errorText);
             errorMessage = errorJson.error || errorJson.details || errorMessage;
+            errorCode = errorJson.code || '';
             console.error('[Listing Creation] Parsed error JSON:', errorJson);
           } catch (e) {
             // Not JSON, use text if available
@@ -173,7 +175,14 @@ export default function NewListingPage() {
           console.error('[Listing Creation] Error parsing error response:', parseError);
         }
         console.error('[Listing Creation] Final error message:', errorMessage);
-        showToast(errorMessage, 'error');
+        if (errorCode === 'BRAND_IDENTITY_REQUIRED') {
+          showToast('Set up Brand Identity first. Redirecting...', 'info');
+          setTimeout(() => {
+            router.push('/brand-identity');
+          }, 400);
+        } else {
+          showToast(errorMessage, 'error');
+        }
       }
     } catch (error) {
       console.error('[Listing Creation] Exception during listing generation:', error);

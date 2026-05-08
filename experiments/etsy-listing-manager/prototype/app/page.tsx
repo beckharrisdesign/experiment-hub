@@ -39,7 +39,7 @@ export default function HomePage() {
     try {
       const [patternsResponse, templatesResponse, listingsResponse] = await Promise.all([
         fetch('/api/patterns'),
-        fetch('/api/templates'),
+        fetch('/api/product-templates'),
         fetch('/api/listings'),
       ]);
 
@@ -163,7 +163,7 @@ export default function HomePage() {
                 <h2 className="text-lg font-semibold">Templates</h2>
                 <div className="flex items-center gap-3">
                   <Link
-                    href="/templates/new"
+                    href="/product-templates/new"
                     className="px-2.5 py-1.5 text-sm bg-background-tertiary border border-border rounded hover:bg-background-primary transition"
                   >
                     +
@@ -198,7 +198,7 @@ export default function HomePage() {
                       >
                         <td className="px-6 py-4">
                           <Link
-                            href={`/templates/${template.id}`}
+                            href={`/product-templates/${template.id}`}
                             className="text-sm font-medium text-text-primary hover:text-accent-primary transition block"
                           >
                             {template.name}

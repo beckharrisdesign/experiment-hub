@@ -2,39 +2,51 @@ import db from './db';
 import { Template, TemplateType } from '@/types';
 import { randomUUID } from 'crypto';
 
+function parseTypesFromRow(row: any): TemplateType[] {
+  if (!row.type) return [];
+  try {
+    const parsed = JSON.parse(row.type);
+    if (Array.isArray(parsed)) return parsed;
+    return [row.type as TemplateType];
+  } catch {
+    return [row.type as TemplateType];
+  }
+}
+
+function parseDefaultTags(row: any): string[] | undefined {
+  if (!row.tags) return undefined;
+  try {
+    const parsed = JSON.parse(row.tags);
+    return Array.isArray(parsed) ? parsed : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function mapRowToTemplate(row: any, patternIds: string[]): Template {
+  return {
+    id: row.id,
+    patternIds,
+    name: row.name,
+    types: parseTypesFromRow(row),
+    numberOfItems: (row.number_of_items || 'single') as 'single' | 'three' | 'five',
+    title: row.title || undefined,
+    commonInstructions: row.description || undefined,
+    category: row.category || undefined,
+    defaultTags: parseDefaultTags(row),
+    seoScore: row.seo_score || undefined,
+    imageUrl: row.image_url || undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 export function getAllProductTemplates(): Template[] {
   const rows = db.prepare('SELECT * FROM product_templates ORDER BY created_at DESC').all() as any[];
   return rows.map((row) => {
-    // Get pattern IDs from junction table
     const patternRows = db.prepare('SELECT pattern_id FROM product_template_patterns WHERE product_template_id = ?').all(row.id) as any[];
     const patternIds = patternRows.map((pr: any) => pr.pattern_id);
-    
-    // Handle types: can be JSON array or single string (for backward compatibility)
-    let types: TemplateType[] = [];
-    if (row.type) {
-      try {
-        types = JSON.parse(row.type);
-        if (!Array.isArray(types)) {
-          types = [row.type as TemplateType];
-        }
-      } catch {
-        types = [row.type as TemplateType];
-      }
-    }
-    
-    return {
-      id: row.id,
-      patternIds,
-      name: row.name,
-      types,
-      numberOfItems: (row.number_of_items || 'single') as 'single' | 'three' | 'five',
-      title: row.title || undefined,
-      commonInstructions: row.description || undefined, // Map DB description to commonInstructions
-      seoScore: row.seo_score || undefined,
-      imageUrl: row.image_url || undefined,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return mapRowToTemplate(row, patternIds);
   });
 }
 
@@ -46,32 +58,7 @@ export function getProductTemplate(id: string): Template | null {
   const patternRows = db.prepare('SELECT pattern_id FROM product_template_patterns WHERE product_template_id = ?').all(id) as any[];
   const patternIds = patternRows.map((pr: any) => pr.pattern_id);
 
-  // Handle types: can be JSON array or single string (for backward compatibility)
-  let types: TemplateType[] = [];
-  if (row.type) {
-    try {
-      types = JSON.parse(row.type);
-      if (!Array.isArray(types)) {
-        types = [row.type as TemplateType];
-      }
-    } catch {
-      types = [row.type as TemplateType];
-    }
-  }
-
-  return {
-    id: row.id,
-    patternIds,
-    name: row.name,
-    types,
-    numberOfItems: (row.number_of_items || 'single') as 'single' | 'three' | 'five',
-    title: row.title || undefined,
-    commonInstructions: row.description || undefined, // Map DB description to commonInstructions
-    seoScore: row.seo_score || undefined,
-    imageUrl: row.image_url || undefined,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
+  return mapRowToTemplate(row, patternIds);
 }
 
 export function getProductTemplatesByPattern(patternId: string): Template[] {
@@ -84,36 +71,9 @@ export function getProductTemplatesByPattern(patternId: string): Template[] {
   `).all(patternId) as any[];
   
   return productTemplateRows.map((row) => {
-    // Get all pattern IDs for this product template
     const patternRows = db.prepare('SELECT pattern_id FROM product_template_patterns WHERE product_template_id = ?').all(row.id) as any[];
     const patternIds = patternRows.map((pr: any) => pr.pattern_id);
-    
-    // Handle types: can be JSON array or single string (for backward compatibility)
-    let types: TemplateType[] = [];
-    if (row.type) {
-      try {
-        types = JSON.parse(row.type);
-        if (!Array.isArray(types)) {
-          types = [row.type as TemplateType];
-        }
-      } catch {
-        types = [row.type as TemplateType];
-      }
-    }
-    
-    return {
-      id: row.id,
-      patternIds,
-      name: row.name,
-      types,
-      numberOfItems: (row.number_of_items || 'single') as 'single' | 'three' | 'five',
-      title: row.title || undefined,
-      commonInstructions: row.description || undefined, // Map DB description to commonInstructions
-      seoScore: row.seo_score || undefined,
-      imageUrl: row.image_url || undefined,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return mapRowToTemplate(row, patternIds);
   });
 }
 

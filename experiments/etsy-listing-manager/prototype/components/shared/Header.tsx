@@ -14,21 +14,37 @@ interface NavItem {
 export default function Header() {
   const pathname = usePathname();
   const [hasBrandIdentity, setHasBrandIdentity] = useState(false);
+  const [brand, setBrand] = useState<{
+    storeName: string;
+    logoUrl?: string;
+  } | null>(null);
 
   useEffect(() => {
-    // Check if brand identity exists
+    // Check if brand identity exists; show name + optional logo
     fetch('/api/brand-identity')
       .then((res) => res.json())
       .then((data) => {
-        setHasBrandIdentity(!!data);
+        const ok = data && data.storeName;
+        setHasBrandIdentity(!!ok);
+        if (ok) {
+          setBrand({
+            storeName: data.storeName as string,
+            logoUrl: data.logoUrl as string | undefined,
+          });
+        } else {
+          setBrand(null);
+        }
       })
-      .catch(() => setHasBrandIdentity(false));
+      .catch(() => {
+        setHasBrandIdentity(false);
+        setBrand(null);
+      });
   }, []);
 
   const navItems: NavItem[] = [
     { href: '/', label: 'Dashboard' },
     { href: '/patterns', label: 'Patterns' },
-    { href: '/templates', label: 'Templates' },
+    { href: '/product-templates', label: 'Templates' },
     { href: '/listings', label: 'Listings' },
     { href: '/store', label: 'Store' },
     { href: '/debug', label: 'Debug' },
@@ -55,8 +71,19 @@ export default function Header() {
       <div className="px-4">
         <div className="flex items-center gap-6 h-14">
           {/* Logo/Title */}
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition flex-shrink-0">
-            <h1 className="text-lg font-bold text-text-primary">Shop Manager</h1>
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition flex-shrink-0 min-w-0">
+            {brand?.logoUrl && (
+              <img
+                src={brand.logoUrl}
+                alt=""
+                width={32}
+                height={32}
+                className="w-8 h-8 rounded-lg border border-border object-cover flex-shrink-0"
+              />
+            )}
+            <h1 className="text-lg font-bold text-text-primary truncate max-w-[14rem] sm:max-w-xs">
+              {brand?.storeName ?? 'Shop Manager'}
+            </h1>
           </Link>
 
           {/* Navigation */}

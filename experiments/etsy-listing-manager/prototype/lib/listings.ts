@@ -128,7 +128,10 @@ ${pattern.notes ? `- Notes: ${pattern.notes}` : ''}`;
   const templateContext = `Template: "${productTemplate.name}"
 - Types: ${productTemplate.types.join(', ')}
 - Number of Items: ${productTemplate.numberOfItems}
-${productTemplate.commonInstructions ? `- Common Instructions: ${productTemplate.commonInstructions}` : ''}`;
+${productTemplate.title ? `- Title formula / SEO guidance: ${productTemplate.title}` : ''}
+${productTemplate.category ? `- Suggested category path: ${productTemplate.category}` : ''}
+${productTemplate.defaultTags?.length ? `- Example tags to adapt (replace with pattern-specific variants; must output exactly 13 unique tags): ${productTemplate.defaultTags.join(', ')}` : ''}
+${productTemplate.commonInstructions ? `- Listing & SEO instructions: ${productTemplate.commonInstructions}` : ''}`;
 
   const brandContext = `Store: "${brandIdentity.storeName}"
 - Brand Tone: ${brandIdentity.brandTone}

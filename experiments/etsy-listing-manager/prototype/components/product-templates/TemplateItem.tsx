@@ -31,7 +31,7 @@ export default function TemplateItem({
     <div className={`flex items-start gap-4 ${className}`}>
       {/* Thumbnail Image */}
       <Link
-        href={`/templates/${template.id}`}
+        href={`/product-templates/${template.id}`}
         className="flex-shrink-0"
       >
         <div className="w-20 h-20 bg-background-tertiary border border-border rounded flex items-center justify-center overflow-hidden">
@@ -53,7 +53,7 @@ export default function TemplateItem({
       <div className="flex-1 min-w-0 flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <Link
-            href={`/templates/${template.id}`}
+            href={`/product-templates/${template.id}`}
             className="block hover:text-accent-primary transition"
           >
             <h3 className="text-lg font-semibold text-text-primary mb-2">

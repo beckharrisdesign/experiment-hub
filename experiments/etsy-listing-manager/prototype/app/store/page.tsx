@@ -14,11 +14,35 @@ interface ToastState {
   isVisible: boolean;
 }
 
+function buildShopIntroBoilerplate(brandIdentity: BrandIdentity | null): string {
+  if (!brandIdentity) {
+    return 'Set up Brand Identity to generate your shop intro boilerplate.';
+  }
+
+  const name = brandIdentity.storeName?.trim() || 'My Shop';
+  const tone = brandIdentity.brandTone || 'friendly';
+  const style = brandIdentity.creativeDirection?.visualStyle || 'modern';
+  const palette = brandIdentity.creativeDirection?.colorPalette?.filter(Boolean) || [];
+  const paletteText = palette.length > 0 ? palette.slice(0, 3).join(', ') : 'bold color';
+
+  if (tone === 'professional') {
+    return `${name} creates ${style} embroidery patterns with clear instructions and polished digital files. Each listing is designed to be practical, easy to follow, and enjoyable to stitch. Expect clean layouts, thoughtful details, and reliable instant-download access.`;
+  }
+  if (tone === 'minimalist') {
+    return `${name} is a ${style} embroidery shop focused on clean patterns, clear instructions, and instant digital downloads. No fluff, no guesswork, just approachable designs you can start stitching right away.`;
+  }
+  if (tone === 'whimsical') {
+    return `Welcome to ${name} — bright, ${style} embroidery patterns with a playful streak. I design digital downloads that are easy to follow and fun to make, with color-forward details (${paletteText}) and clear, no-drama instructions.`;
+  }
+  return `Welcome to ${name}. This shop makes ${style} embroidery patterns with clear instructions, practical file formats, and instant digital delivery. Every listing is built to be approachable for real makers, whether you're stitching for fun, gifts, or your own little creative reset.`;
+}
+
 export default function StorePage() {
   const router = useRouter();
   const [brandIdentity, setBrandIdentity] = useState<BrandIdentity | null>(null);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', isVisible: false });
+  const boilerplateIntro = buildShopIntroBoilerplate(brandIdentity);
 
   useEffect(() => {
     fetchBrandIdentity();
@@ -166,6 +190,35 @@ export default function StorePage() {
                   </div>
                 </div>
               )}
+
+              <div className="pt-4 mt-2 border-t border-border">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold text-text-primary">Shop intro boilerplate</h3>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(boilerplateIntro);
+                        showToast('Shop intro copied', 'success');
+                      } catch {
+                        showToast('Could not copy text', 'error');
+                      }
+                    }}
+                    className="px-3 py-1 text-xs bg-background-tertiary border border-border rounded hover:border-accent-primary transition"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <p className="text-xs text-text-muted mb-2">
+                  Shop-level profile text based on your current brand settings.
+                </p>
+                <textarea
+                  value={boilerplateIntro}
+                  readOnly
+                  rows={4}
+                  className="w-full px-3 py-2 bg-background-tertiary border border-border rounded text-sm text-text-secondary"
+                />
+              </div>
             </div>
           </div>
 

@@ -43,7 +43,7 @@ export default function NewTemplatePage() {
 
     setSaving(true);
     try {
-      const response = await fetch('/api/templates', {
+      const response = await fetch('/api/product-templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -57,7 +57,7 @@ export default function NewTemplatePage() {
       if (response.ok) {
         const newTemplate = await response.json();
         showToast('Template created successfully', 'success');
-        router.push(`/templates/${newTemplate.id}`);
+        router.push(`/product-templates/${newTemplate.id}`);
       } else {
         const error = await response.json();
         showToast(error.error || 'Failed to create template', 'error');
