@@ -20,6 +20,6 @@ Waitlist landings send JSON to a single public hub endpoint (`POST /api/landing-
 
 ## Impact
 
-- Code: [`app/api/landing-submission/route.ts`](../../../app/api/landing-submission/route.ts).
-- Tests: [`tests/api/landing-submission.test.ts`](../../../tests/api/landing-submission.test.ts).
+- Code: [`app/api/landing-submission/route.ts`](../../../../app/api/landing-submission/route.ts).
+- Tests: [`tests/api/landing-submission.test.ts`](../../../../tests/api/landing-submission.test.ts).
 - Spec delta: merged into canonical spec at archive time alongside this branch.

@@ -24,4 +24,4 @@ This change is **API-only**.
 | **Screens / nodes in scope** | *(none)* |
 | **Code Connect** | No component mapping updates required. |
 
-When a change **does** affect UI: add the file URL (`figma.com/design/...`), list published DS libraries relied on (e.g. hub local library or community kits), scoped components/frames, and note how tokens map — see [**`docs/FIGMA_SETUP.md`**](../../../docs/FIGMA_SETUP.md) and [`.cursor/rules/figma.mdc`](../../../.cursor/rules/figma.mdc). Prefer normalizing third-party kit output into **`tailwind.config.ts`** tokens rather than literals.
+When a change **does** affect UI: add the file URL (`figma.com/design/...`), list published DS libraries relied on (e.g. hub local library or community kits), scoped components/frames, and note how tokens map — see [**`docs/FIGMA_SETUP.md`**](../../../../docs/FIGMA_SETUP.md) and [`.cursor/rules/figma.mdc`](../../../../.cursor/rules/figma.mdc). Prefer normalizing third-party kit output into **`tailwind.config.ts`** tokens rather than literals.
