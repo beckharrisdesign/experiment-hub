@@ -78,7 +78,13 @@ export default function PatternsPage() {
             }
             
             try {
-              const metadataResponse = await fetch(`/api/patterns/${pattern.id}/metadata`);
+              const metadataResponse = await fetch(`/api/patterns/${pattern.id}/metadata`, {
+                // Avoid an unbounded hang if the metadata route or disk read stalls
+                signal:
+                  typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal
+                    ? AbortSignal.timeout(12_000)
+                    : undefined,
+              });
               if (metadataResponse.ok) {
                 const metadata = await metadataResponse.json();
                 console.log(`[Patterns] Metadata for ${pattern.id}:`, metadata);
@@ -92,7 +98,11 @@ export default function PatternsPage() {
                 });
               }
             } catch (error) {
-              console.error(`[Patterns] Error fetching metadata for pattern ${pattern.id}:`, error);
+              if (error instanceof Error && error.name === 'AbortError') {
+                console.warn(`[Patterns] Metadata request timed out for pattern ${pattern.id}`);
+              } else {
+                console.error(`[Patterns] Error fetching metadata for pattern ${pattern.id}:`, error);
+              }
             }
             
             return { ...pattern, imageMetadata: null };

@@ -1,21 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateListing } from '@/lib/listings';
 import { getProductTemplate } from '@/lib/product-templates';
-import { getPattern } from '@/lib/patterns';
+import { getBrandIdentity } from '@/lib/brand-identity';
 
 export async function POST(request: NextRequest) {
   console.log('[API /listings/generate] Request received');
   try {
     const body = await request.json();
     console.log('[API /listings/generate] Request body:', body);
-    const { templateId, patternIds } = body;
+    // Accept both keys during the product->template naming migration.
+    const templateId = body.templateId || body.productTemplateId;
+    const { patternIds } = body;
 
     console.log('[API /listings/generate] Product template ID:', templateId);
     console.log('[API /listings/generate] Pattern IDs:', patternIds);
 
     if (!templateId) {
-      console.log('[API /listings/generate] Error: Product template ID is required');
-      return NextResponse.json({ error: 'Product template ID is required' }, { status: 400 });
+      console.log('[API /listings/generate] Error: template ID is required');
+      return NextResponse.json({ error: 'Template ID is required' }, { status: 400 });
     }
 
     const productTemplate = getProductTemplate(templateId);
@@ -51,6 +53,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ 
         error: `Template requires ${expectedCount} pattern(s), but ${patternIds.length} were selected` 
       }, { status: 400 });
+    }
+
+    // Surface this as a user-fixable 400 instead of a generic 500.
+    const brandIdentity = getBrandIdentity();
+    if (!brandIdentity) {
+      return NextResponse.json(
+        {
+          error: 'Brand identity required',
+          details: 'Set up brand identity before generating listings',
+          code: 'BRAND_IDENTITY_REQUIRED',
+        },
+        { status: 400 }
+      );
     }
 
     const selectedPatternIds = patternIds;

@@ -50,7 +50,7 @@ export default function TemplateEditPage() {
     }
     
     try {
-      const response = await fetch(`/api/templates/${templateId}`);
+      const response = await fetch(`/api/product-templates/${templateId}`);
       if (response.ok) {
         const data = await response.json();
         setTemplate(data);
@@ -63,7 +63,7 @@ export default function TemplateEditPage() {
         
       } else {
         showToast('Template not found', 'error');
-        router.push('/templates');
+        router.push('/product-templates');
       }
     } catch (error) {
       console.error('Error fetching template:', error);
@@ -90,7 +90,7 @@ export default function TemplateEditPage() {
 
     setSaving(true);
     try {
-      const response = await fetch(`/api/templates/${templateId}`, {
+      const response = await fetch(`/api/product-templates/${templateId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

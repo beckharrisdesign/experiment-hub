@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
         storeName: body.storeName,
         brandTone: body.brandTone,
         creativeDirection: body.creativeDirection,
+        logoUrl: body.logoUrl,
       }) || existing;
     } else {
       // Create new brand identity
@@ -31,6 +32,7 @@ export async function POST(request: NextRequest) {
         storeName: body.storeName,
         brandTone: body.brandTone,
         creativeDirection: body.creativeDirection,
+        logoUrl: body.logoUrl,
       });
     }
     

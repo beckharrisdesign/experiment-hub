@@ -5,8 +5,14 @@ export default function Spinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) 
     lg: 'w-8 h-8',
   };
 
+  // Explicit CSS vars + shrink-0 so the ring stays visible in flex layouts
+  // (token classes like border-text-* can be dropped if Tailwind omits them from the build)
   return (
-    <div className={`${sizes[size]} border-2 border-text-muted border-t-accent-primary rounded-full animate-spin`} />
+    <div
+      role="status"
+      aria-label="Loading"
+      className={`${sizes[size]} shrink-0 box-border border-2 border-solid rounded-full animate-spin border-[color:var(--text-muted)] border-t-[color:var(--accent-primary)]`}
+    />
   );
 }
 

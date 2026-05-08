@@ -8,6 +8,8 @@ export interface BrandIdentity {
     colorPalette: string[];
     typography?: string;
   };
+  /** Public URL (e.g. /brand/stub-shop-logo.svg) */
+  logoUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -49,8 +51,12 @@ export interface Template {
   types: TemplateType[]; // Can have multiple types
   numberOfItems: 'single' | 'three' | 'five'; // Number of items in the bundle
   patternIds: string[]; // Can be 0, 1, or many patterns
-  title?: string; // Reserved for future use
+  title?: string; // SEO title formula or line for generators
   commonInstructions?: string; // Common instructions that apply to all listings using this template
+  /** Suggested Etsy taxonomy path (optional) */
+  category?: string;
+  /** Suggested tags from DB (optional) */
+  defaultTags?: string[];
   seoScore?: number;
   imageUrl?: string;
   createdAt: string;

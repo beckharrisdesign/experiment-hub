@@ -40,7 +40,7 @@ export default function TemplatesPage() {
   const fetchData = async () => {
     try {
       const [templatesResponse, patternsResponse] = await Promise.all([
-        fetch('/api/templates'),
+        fetch('/api/product-templates'),
         fetch('/api/patterns'),
       ]);
 
@@ -89,7 +89,7 @@ export default function TemplatesPage() {
           description="Manage templates that can be applied to your patterns"
           action={
             <button
-              onClick={() => router.push('/templates/new')}
+              onClick={() => router.push('/product-templates/new')}
               className="px-4 py-2 bg-accent-primary text-white rounded hover:opacity-90 transition"
             >
               + New Template
@@ -130,7 +130,7 @@ export default function TemplatesPage() {
                       <tr
                         key={template.id}
                         className="border-b border-border hover:bg-background-tertiary transition cursor-pointer"
-                        onClick={() => router.push(`/templates/${template.id}`)}
+                        onClick={() => router.push(`/product-templates/${template.id}`)}
                       >
                         <td className="px-6 py-4">
                           <div className="w-16 h-16 bg-background-tertiary border border-border rounded flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -149,7 +149,7 @@ export default function TemplatesPage() {
                         </td>
                         <td className="px-6 py-4">
                           <Link
-                            href={`/templates/${template.id}`}
+                            href={`/product-templates/${template.id}`}
                             className="font-medium text-text-primary hover:text-accent-primary transition block"
                             onClick={(e) => e.stopPropagation()}
                           >

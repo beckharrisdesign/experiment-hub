@@ -5,11 +5,38 @@ import { useRouter } from 'next/navigation';
 import { BrandIdentity } from '@/types';
 import PageHeader from '@/components/shared/PageHeader';
 
+/** Built-in samples (served from /public/brand) */
+const SAMPLE_LOGO_NEON = '/brand/stub-shop-logo.svg';
+const SAMPLE_LOGO_BLOOM = '/brand/placeholder-bloom.svg';
+
+function buildShopIntroBoilerplate(formData: Partial<BrandIdentity>): string {
+  const name = formData.storeName?.trim() || 'My Shop';
+  const tone = formData.brandTone || 'friendly';
+  const style = formData.creativeDirection?.visualStyle || 'modern';
+  const palette = formData.creativeDirection?.colorPalette?.filter(Boolean) || [];
+  const paletteText = palette.length > 0 ? palette.slice(0, 3).join(', ') : 'bold color';
+
+  if (tone === 'professional') {
+    return `${name} creates ${style} embroidery patterns with clear instructions and polished digital files. Each listing is designed to be practical, easy to follow, and enjoyable to stitch. Expect clean layouts, thoughtful details, and reliable instant-download access.`;
+  }
+
+  if (tone === 'minimalist') {
+    return `${name} is a ${style} embroidery shop focused on clean patterns, clear instructions, and instant digital downloads. No fluff, no guesswork, just approachable designs you can start stitching right away.`;
+  }
+
+  if (tone === 'whimsical') {
+    return `Welcome to ${name} — bright, ${style} embroidery patterns with a playful streak. I design digital downloads that are easy to follow and fun to make, with color-forward details (${paletteText}) and clear, no-drama instructions.`;
+  }
+
+  return `Welcome to ${name}. This shop makes ${style} embroidery patterns with clear instructions, practical file formats, and instant digital delivery. Every listing is built to be approachable for real makers, whether you're stitching for fun, gifts, or your own little creative reset.`;
+}
+
 export default function BrandIdentityPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<Partial<BrandIdentity>>({
     storeName: '',
+    logoUrl: '',
     brandTone: undefined,
     creativeDirection: {
       visualStyle: undefined as any,
@@ -20,6 +47,7 @@ export default function BrandIdentityPage() {
   const [loading, setLoading] = useState(false);
   const [suggestedNames, setSuggestedNames] = useState<string[]>([]);
   const [existingData, setExistingData] = useState<BrandIdentity | null>(null);
+  const boilerplateIntro = buildShopIntroBoilerplate(formData);
 
   // Load existing brand identity on mount
   useEffect(() => {
@@ -32,6 +60,7 @@ export default function BrandIdentityPage() {
             setExistingData(data);
             setFormData({
               storeName: data.storeName || '',
+              logoUrl: data.logoUrl || '',
               brandTone: data.brandTone,
               creativeDirection: {
                 visualStyle: data.creativeDirection?.visualStyle,
@@ -74,7 +103,10 @@ export default function BrandIdentityPage() {
       const response = await fetch('/api/brand-identity', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          logoUrl: formData.logoUrl?.trim() || null,
+        }),
       });
 
       if (response.ok) {
@@ -121,7 +153,7 @@ export default function BrandIdentityPage() {
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">Brand Identity Setup</h1>
-              <p className="text-text-secondary">Define your store's brand to ensure consistent content</p>
+              <p className="text-text-secondary">Define your store brand to keep content consistent</p>
             </div>
             {!existingData && (
               <button
@@ -129,6 +161,7 @@ export default function BrandIdentityPage() {
                 onClick={async () => {
                   const testData: Partial<BrandIdentity> = {
                     storeName: 'Test Embroidery Shop',
+                    logoUrl: SAMPLE_LOGO_BLOOM,
                     brandTone: 'friendly' as BrandIdentity['brandTone'],
                     creativeDirection: {
                       visualStyle: 'botanical' as BrandIdentity['creativeDirection']['visualStyle'],
@@ -166,10 +199,30 @@ export default function BrandIdentityPage() {
             )}
           </div>
           {existingData && (
-            <div className="mt-4 p-4 bg-background-secondary border border-border rounded-lg">
-              <p className="text-sm text-text-secondary">
-                <strong>Current:</strong> {existingData.storeName} • {existingData.brandTone} • {existingData.creativeDirection?.visualStyle}
-              </p>
+            <div className="mt-4 p-4 bg-background-secondary border border-border rounded-lg space-y-3">
+              <div className="flex items-center gap-4">
+                {existingData.logoUrl && (
+                  <img
+                    src={existingData.logoUrl}
+                    alt=""
+                    width={48}
+                    height={48}
+                    className="w-12 h-12 rounded-lg border border-border object-cover flex-shrink-0"
+                  />
+                )}
+                <p className="text-sm text-text-secondary">
+                  <strong>Current:</strong> {existingData.storeName} • {existingData.brandTone} • {existingData.creativeDirection?.visualStyle}
+                  {existingData.logoUrl && (
+                    <span className="block mt-1 text-xs font-mono text-text-muted truncate max-w-md">
+                      {existingData.logoUrl}
+                    </span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-text-muted mb-1">Shop intro boilerplate</p>
+                <p className="text-sm text-text-secondary">{boilerplateIntro}</p>
+              </div>
             </div>
           )}
         </PageHeader>
@@ -216,6 +269,81 @@ export default function BrandIdentityPage() {
                     </div>
                   </div>
                 )}
+
+                <div className="pt-6 border-t border-border">
+                  <h3 className="text-lg font-semibold mb-2">Shop logo</h3>
+                  <p className="text-sm text-text-secondary mb-4">
+                    Use a public image URL, or a path under <code className="text-xs text-text-primary">/public</code> (e.g.{' '}
+                    <code className="text-xs">{SAMPLE_LOGO_NEON}</code>).
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 items-start">
+                    <div
+                      className="w-20 h-20 rounded-xl border-2 border-dashed border-border bg-background-tertiary flex items-center justify-center overflow-hidden flex-shrink-0"
+                      aria-hidden
+                    >
+                      {formData.logoUrl ? (
+                        <img
+                          src={formData.logoUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <span className="text-xs text-text-muted text-center px-1">No preview</span>
+                      )}
+                    </div>
+                    <div className="flex-1 w-full space-y-3 min-w-0">
+                      <label className="block text-sm font-medium">Logo URL</label>
+                      <input
+                        type="text"
+                        inputMode="url"
+                        value={formData.logoUrl || ''}
+                        onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
+                        className="w-full px-4 py-2 bg-background-tertiary border border-border rounded text-text-primary font-mono text-sm"
+                        placeholder={`${SAMPLE_LOGO_NEON}`}
+                        autoComplete="off"
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, logoUrl: SAMPLE_LOGO_NEON })}
+                          className="px-3 py-1.5 text-xs bg-background-tertiary border border-border rounded hover:border-accent-primary transition"
+                        >
+                          Use Neon Purl mark
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, logoUrl: SAMPLE_LOGO_BLOOM })}
+                          className="px-3 py-1.5 text-xs bg-background-tertiary border border-border rounded hover:border-accent-primary transition"
+                        >
+                          Use Bloom sample
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, logoUrl: '' })}
+                          className="px-3 py-1.5 text-xs text-text-secondary border border-border rounded hover:bg-background-tertiary transition"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-6 border-t border-border">
+                  <h3 className="text-lg font-semibold mb-2">Shop intro boilerplate</h3>
+                  <p className="text-sm text-text-secondary mb-3">
+                    Drafted from your current profile settings. Edit as needed so it sounds like you.
+                  </p>
+                  <textarea
+                    value={boilerplateIntro}
+                    readOnly
+                    rows={5}
+                    className="w-full px-4 py-3 bg-background-tertiary border border-border rounded text-text-primary"
+                  />
+                </div>
               </div>
             </div>
           )}

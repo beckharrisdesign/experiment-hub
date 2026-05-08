@@ -2,6 +2,8 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { randomUUID } from 'crypto';
+import { seedDefaultProductTemplateIfEmpty } from './seed-default-product-template';
+import { seedStubBrandIdentityIfEmpty } from './seed-stub-brand-identity';
 
 const dbPath = process.env.DATABASE_PATH || path.join(process.cwd(), 'data', 'db.sqlite');
 const dbDir = path.dirname(dbPath);
@@ -31,6 +33,16 @@ export function initDatabase() {
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  // Optional logo URL (stub + future uploads)
+  try {
+    const biCols = db.prepare("PRAGMA table_info(brand_identity)").all() as { name: string }[];
+    if (!biCols.some((c) => c.name === 'logo_url')) {
+      db.exec('ALTER TABLE brand_identity ADD COLUMN logo_url TEXT');
+    }
+  } catch (e) {
+    console.warn('[Migration] brand_identity logo_url column:', e);
+  }
 
   // Patterns table
   db.exec(`
@@ -145,6 +157,9 @@ export function initDatabase() {
       FOREIGN KEY (pattern_id) REFERENCES patterns(id)
     )
   `);
+
+  seedStubBrandIdentityIfEmpty(db);
+  seedDefaultProductTemplateIfEmpty(db);
 }
 
 // Migrate from legacy schema (products -> product_templates, etc.)
