@@ -14,6 +14,7 @@ import { processImageFile } from "@/lib/imageUtils";
 import { uploadSeedPhoto } from "@/lib/seed-photos";
 import { normalizeSunRequirement } from "@/lib/seedUtils";
 
+/** @figma S8YJQugvMmn5jaRqwFM5XO:21:3028 */
 interface AddSeedFormProps {
   onSubmit: (
     seed: Omit<Seed, "id" | "createdAt" | "updatedAt"> & { id?: string },

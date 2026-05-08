@@ -1,61 +1,78 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 
+/** Exported from Figma MCP for node 13:128 — replace from file if assets expire (~7 days). */
+const LOGO_MARK =
+  "https://www.figma.com/api/mcp/asset/1c08b8a5-131e-42a2-bc27-91a18df674f0";
+const PROFILE_ICON =
+  "https://www.figma.com/api/mcp/asset/298f3485-0bf2-43a1-80e1-ba79eb6127d3";
+
+/** @figma S8YJQugvMmn5jaRqwFM5XO:13:128 */
 interface HeaderProps {
   showProfileLink?: boolean;
 }
 
 export function Header({ showProfileLink }: HeaderProps) {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full min-w-0 bg-[#166534] text-white px-3 py-3 sm:px-4 sm:py-4 md:px-6 lg:px-8">
-      <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
-      <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-          <svg className="w-6 h-6 text-[#86efac]" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-          </svg>
-        </div>
-        <span className="text-lg font-semibold">Simple Seed Organizer</span>
-      </Link>
+    <header
+      className="fixed top-0 left-0 right-0 z-50 w-full min-w-0 px-8 py-4 text-white"
+      style={{ backgroundColor: "var(--brand-primary)" }}
+    >
+      <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between">
+        <Link
+          href="/"
+          className="flex h-10 shrink-0 items-center gap-3 transition-opacity hover:opacity-90"
+        >
+          <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
+            <img alt="" src={LOGO_MARK} width={24} height={24} className="size-6" />
+          </div>
+          <span className="whitespace-nowrap text-[18px] font-semibold leading-7">
+            Simple Seed Organizer
+          </span>
+        </Link>
 
-      <div className="flex items-center gap-4 md:gap-6 relative">
-        {!showProfileLink && (
-          <>
-            <nav className="hidden sm:flex items-center gap-4 md:gap-6">
-              <a
-                href="#features"
-                className="text-sm font-medium text-white/90 hover:text-white transition-colors"
+        <div className="relative flex shrink-0 items-center gap-4 md:gap-6">
+          {!showProfileLink && (
+            <>
+              <nav className="hidden items-center gap-4 sm:flex md:gap-6">
+                <a
+                  href="#features"
+                  className="text-sm font-medium text-white/90 transition-colors hover:text-white"
+                >
+                  Features
+                </a>
+                <a
+                  href="#pricing"
+                  className="text-sm font-medium text-white/90 transition-colors hover:text-white"
+                >
+                  Pricing
+                </a>
+              </nav>
+              <Link
+                href="/login"
+                className="text-sm font-medium text-white/90 transition-colors hover:text-white"
               >
-                Features
-              </a>
-              <a
-                href="#pricing"
-                className="text-sm font-medium text-white/90 hover:text-white transition-colors"
-              >
-                Pricing
-              </a>
-            </nav>
+                Login
+              </Link>
+            </>
+          )}
+          {showProfileLink && (
             <Link
-              href="/login"
-              className="text-sm font-medium text-white/90 hover:text-white transition-colors"
+              href="/profile"
+              className="flex size-9 items-center justify-center rounded-lg bg-[#15803d] p-2 transition-colors hover:bg-[#166534]"
+              aria-label="Profile"
             >
-              Login
+              <img
+                alt=""
+                src={PROFILE_ICON}
+                width={20}
+                height={20}
+                className="block size-5 max-w-none"
+              />
             </Link>
-          </>
-        )}
-        {showProfileLink && (
-          <Link
-            href="/profile"
-            className="p-2 rounded-lg bg-[#15803d] hover:bg-[#166534] transition-colors"
-            aria-label="Profile"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </Link>
-        )}
-      </div>
+          )}
+        </div>
       </div>
     </header>
   );

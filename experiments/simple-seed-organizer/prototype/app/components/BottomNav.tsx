@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { ViewMode } from "@/types/seed";
 
+/** @figma S8YJQugvMmn5jaRqwFM5XO:21:2114 */
 interface BottomNavProps {
   activeView: ViewMode;
   onViewChange: (view: ViewMode) => void;

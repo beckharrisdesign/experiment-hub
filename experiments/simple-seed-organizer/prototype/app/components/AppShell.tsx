@@ -1,9 +1,14 @@
-'use client';
+"use client";
 
-import { Header } from '@/components/Header';
-import { useAuth } from '@/lib/auth-context';
+import { Header } from "@/components/Header";
+import { useAuth } from "@/lib/auth-context";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+/** @figma S8YJQugvMmn5jaRqwFM5XO:21:4993 */
+interface AppShellProps {
+  children: React.ReactNode;
+}
+
+export function AppShell({ children }: AppShellProps) {
   const { user } = useAuth();
 
   return (
