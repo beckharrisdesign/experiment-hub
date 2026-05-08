@@ -19,6 +19,10 @@ This experiment’s UI is specified in a **dedicated Figma file**, not the BHD L
 
 **Landing parity inventory:** [landing-figma-inventory.md](./landing-figma-inventory.md) — Figma vs code rows for the marketing landing (`18:2709`), Code Connect deferrals, and follow-ups.
 
+## Design-system anchor (`13:128`)
+
+For **simple-seed-organizer** reciprocal Figma ↔ prototype work, use **[node `13:128`](https://www.figma.com/design/S8YJQugvMmn5jaRqwFM5XO/Simple-Seed-Organizer?node-id=13-128)** as the documented **design-system entry** (Header block returned by MCP `get_design_context`; pair with **[landing parity inventory](./landing-figma-inventory.md)** for section-level nodes).
+
 ## Component → Figma nodes (Blocks / symbols)
 
 Prioritized prototype files include `/** @figma S8YJQugvMmn5jaRqwFM5XO:<node> */` above their props interface. Initial mappings:
@@ -26,9 +30,10 @@ Prioritized prototype files include `/** @figma S8YJQugvMmn5jaRqwFM5XO:<node> */
 | React component | Figma node | Notes                                                                                                 |
 | --------------- | ---------- | ----------------------------------------------------------------------------------------------------- |
 | `AppShell`      | `21:4993`  | Page wrapper — Body Slot                                                                              |
-| `Header`        | `13:128`   | Header block symbol                                                                                   |
+| `Header`        | `13:128`   | Header block symbol (canonical **DS anchor** for MCP / inventory)                                     |
 | `BottomNav`     | `21:2114`  | Bottom Navigation symbol                                                                              |
 | `LandingPage`   | `18:2709`  | Landing Page Content symbol (see [landing inventory](./landing-figma-inventory.md) for section nodes) |
+| `LandingFooter` | `80:1268`  | Landing footer chrome — **`Sections`** frame (`13:820`), production parity                            |
 | `SeedList`      | `17:799`   | Seed List symbol                                                                                      |
 | `SeedCard`      | `17:1164`  | Seed Card Wide variant                                                                                |
 | `AddSeedForm`   | `21:3028`  | Packet Editing View (full form context)                                                               |

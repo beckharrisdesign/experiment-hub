@@ -35,7 +35,7 @@ export function LandingPricingSection({
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-          {/* Stash Starter — Figma `7:93`; Stash copy vs product: see landing-inventory */}
+          {/* Stash Starter — Figma `7:93`. Copy SSOT: shipped prototype (“50 AI packets/month”); Figma text `7:111` aligned pass 3. */}
           <div className="rounded-xl border-2 border-gray-200 bg-white p-6 flex flex-col">
             <h3 className="text-xl font-bold text-[#101828] mb-1">
               Stash Starter

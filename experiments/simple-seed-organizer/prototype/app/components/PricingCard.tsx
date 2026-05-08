@@ -20,6 +20,7 @@ export interface PricingCardProps {
  * Paid-tier pricing card (featured reference: Home Garden).
  *
  * @figma S8YJQugvMmn5jaRqwFM5XO:7:119
+ * @figma S8YJQugvMmn5jaRqwFM5XO:80:1274 — “Most popular” badge frame (pricing parity pass 3)
  */
 export function PricingCard({
   title,
