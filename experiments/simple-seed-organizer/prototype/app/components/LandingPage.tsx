@@ -8,6 +8,7 @@ import { LandingHero } from "./LandingHero";
 import { LandingPricingSection } from "./LandingPricingSection";
 import { LandingProblemSection } from "./LandingProblemSection";
 import { LandingSignupSection } from "./LandingSignupSection";
+import { LandingFooter } from "./LandingFooter";
 
 /** @figma S8YJQugvMmn5jaRqwFM5XO:18:2709 */
 export function LandingPage() {
@@ -49,24 +50,7 @@ export function LandingPage() {
       <LandingProblemSection />
       <LandingSignupSection />
 
-      <footer className="px-4 py-8 bg-gray-800 text-gray-400">
-        <div className="max-w-[1200px] mx-auto text-center">
-          <p className="mb-4">
-            © 2026 Simple Seed Organizer. All rights reserved.
-          </p>
-          <div className="flex justify-center gap-6 text-sm">
-            <a href="#" className="hover:text-[#86efac] transition-colors">
-              Privacy Policy
-            </a>
-            <a href="#" className="hover:text-[#86efac] transition-colors">
-              Terms of Service
-            </a>
-            <a href="#" className="hover:text-[#86efac] transition-colors">
-              Contact
-            </a>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter />
     </div>
   );
 }
