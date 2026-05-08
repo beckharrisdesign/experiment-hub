@@ -12,6 +12,10 @@ interface AuthFormProps {
  * Unified auth form: one experience for new and returning users.
  * Enter email + password → we try sign in first, then sign up if new.
  * No magic links (avoids email cap). No sign up vs sign in choice.
+ *
+ * Embedded card context on marketing landing: Figma signup form container `7:202`.
+ *
+ * @figma S8YJQugvMmn5jaRqwFM5XO:7:202
  */
 export function AuthForm({ onSuccess, embedded }: AuthFormProps) {
   const [email, setEmail] = useState('');

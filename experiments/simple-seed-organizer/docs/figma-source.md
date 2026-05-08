@@ -17,19 +17,21 @@ This experiment’s UI is specified in a **dedicated Figma file**, not the BHD L
 
 **CSS bridge:** `globals.css` defines `--brand-primary` (currently **`#15472d`**, aligned with Figma `brand/primary` on Header node **13:128**). Update that variable when the Figma token changes.
 
+**Landing parity inventory:** [landing-figma-inventory.md](./landing-figma-inventory.md) — Figma vs code rows for the marketing landing (`18:2709`), Code Connect deferrals, and follow-ups.
+
 ## Component → Figma nodes (Blocks / symbols)
 
 Prioritized prototype files include `/** @figma S8YJQugvMmn5jaRqwFM5XO:<node> */` above their props interface. Initial mappings:
 
-| React component | Figma node | Notes                                   |
-| --------------- | ---------- | --------------------------------------- |
-| `AppShell`      | `21:4993`  | Page wrapper — Body Slot                |
-| `Header`        | `13:128`   | Header block symbol                     |
-| `BottomNav`     | `21:2114`  | Bottom Navigation symbol                |
-| `LandingPage`   | `18:2709`  | Landing Page Content symbol             |
-| `SeedList`      | `17:799`   | Seed List symbol                        |
-| `SeedCard`      | `17:1164`  | Seed Card Wide variant                  |
-| `AddSeedForm`   | `21:3028`  | Packet Editing View (full form context) |
+| React component | Figma node | Notes                                                                                                 |
+| --------------- | ---------- | ----------------------------------------------------------------------------------------------------- |
+| `AppShell`      | `21:4993`  | Page wrapper — Body Slot                                                                              |
+| `Header`        | `13:128`   | Header block symbol                                                                                   |
+| `BottomNav`     | `21:2114`  | Bottom Navigation symbol                                                                              |
+| `LandingPage`   | `18:2709`  | Landing Page Content symbol (see [landing inventory](./landing-figma-inventory.md) for section nodes) |
+| `SeedList`      | `17:799`   | Seed List symbol                                                                                      |
+| `SeedCard`      | `17:1164`  | Seed Card Wide variant                                                                                |
+| `AddSeedForm`   | `21:3028`  | Packet Editing View (full form context)                                                               |
 
 Update this table if frames move in Figma; keep JSDoc in sync.
 
