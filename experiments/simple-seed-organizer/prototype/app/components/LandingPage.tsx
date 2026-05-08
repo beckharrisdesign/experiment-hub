@@ -124,6 +124,7 @@ const PRICE_IDS = {
   },
 };
 
+/** @figma S8YJQugvMmn5jaRqwFM5XO:18:2709 */
 export function LandingPage() {
   const { user } = useAuth();
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
@@ -156,7 +157,7 @@ export function LandingPage() {
       {/* Hero Section */}
       <section
         id="hero"
-        className="py-16 md:py-24 lg:py-32 relative overflow-hidden bg-[#166534]"
+        className="relative overflow-hidden bg-[color:var(--brand-primary)] py-16 md:py-24 lg:py-32"
       >
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 w-64 h-64 bg-[#86efac] rounded-full blur-3xl" />

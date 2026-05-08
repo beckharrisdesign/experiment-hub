@@ -6,6 +6,7 @@ import { SeedGallery } from "./SeedGallery";
 import { getSeedAge } from "@/lib/storage";
 import { isUseFirst } from "@/lib/viability";
 
+/** @figma S8YJQugvMmn5jaRqwFM5XO:17:799 */
 interface SeedListProps {
   seeds: Seed[];
   viewMode: ViewMode;

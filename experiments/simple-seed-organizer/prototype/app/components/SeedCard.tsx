@@ -5,6 +5,7 @@ import { getSeedAge } from "@/lib/storage";
 import { ViabilityBadge } from "@/components/ViabilityBadge";
 import { getViabilityStatus } from "@/lib/viability";
 
+/** @figma S8YJQugvMmn5jaRqwFM5XO:17:1164 */
 interface SeedCardProps {
   seed: Seed;
   onClick: () => void;
