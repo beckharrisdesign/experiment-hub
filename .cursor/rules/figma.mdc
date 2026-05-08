@@ -17,6 +17,17 @@ globs:
 - **Reuse, don't duplicate** — Use existing design-system components. Do not add new icon packages if assets come from Figma. No hardcoded colors or spacing; use tokens from `tailwind.config.ts`.
 - **Asset handling** — If the Figma MCP server returns a `localhost` source for an image or SVG, use that source directly. Do not create placeholders.
 
+## OpenSpec `design.md`
+
+For changes under `openspec/changes/<id>/`, every **`design.md` MUST include a “Visual design / Figma” subsection** (use “N/A” table rows for API-only work). For UI work, specify:
+
+- Primary **Figma file URL** (`figma.com/design/...` or board URL)
+- **Published libraries** used (team kit, community DS, or hub library)
+- **Frames/components in scope**
+- Whether **Code Connect** mappings need updates (`figma-code-connect` skill)
+
+Map kit variables to **`tailwind.config.ts`** tokens; treat MCP-exported layout as reference, not literals (see Project-specific rules above).
+
 ## Component annotation
 
 See `component-conventions.mdc` for the `@figma` JSDoc comment format used to link React components to their Figma counterparts, and for the hub design file key.
