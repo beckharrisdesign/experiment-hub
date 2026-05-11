@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run lib components",
     "test:live": "vitest run tests",
-    "test:watch": "vitest lib components"
+    "test:watch": "vitest lib components",
+    "test:packet-accuracy": "vitest run lib/packetExtractionAccuracy.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",

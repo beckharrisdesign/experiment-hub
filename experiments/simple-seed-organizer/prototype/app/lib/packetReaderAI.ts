@@ -6,6 +6,7 @@
  */
 
 import { ExtractedSeedData } from "./packetReader";
+import type { CanonicalExtractionResult } from "./packetExtraction";
 
 export interface AIExtractedData extends ExtractedSeedData {
   description?: string;
@@ -18,6 +19,8 @@ export interface AIExtractedData extends ExtractedSeedData {
     value: string;
     source?: "front" | "back";
   }>;
+  canonicalExtraction?: CanonicalExtractionResult;
+  /** @deprecated Use canonicalExtraction field evidence instead. */
   fieldSources?: Record<string, "front" | "back">;
 }
 

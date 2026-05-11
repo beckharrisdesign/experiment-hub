@@ -65,6 +65,8 @@ The first implementation can keep persistence compatible by mapping the canonica
 
 Alternative considered: add columns for every AI-only field and raw pair now. That would store more information but risks schema churn before the extraction contract is stable.
 
+Implementation decision for this slice: do not add Supabase persistence for extraction attempts yet. Return diagnostics in API responses and keep them in form/import state so the extraction contract can stabilize before schema changes.
+
 ### Manual entry and review use the same canonical fields
 
 Manual form entry should be the baseline path. Scanning fills candidates into the same fields the user can type, and auto-entry must not overwrite user-entered values. Token-limit and extraction errors should leave the item in a reviewable/manual state with any captured images still available.
@@ -108,6 +110,5 @@ Rollback is straightforward while saved seed schema remains compatible: route th
 ## Open Questions
 
 - Which known-good seed packets and expected fields should be the starter fixture set?
-- Should extraction attempts be persisted in Supabase immediately, kept as local/debug-only artifacts first, or stored only for queued items that need review?
 - What field-level accuracy threshold should block a technique from becoming the default?
 - Should AI usage reports distinguish extraction, retranscription, pile identification, and future prompt variants as separate techniques?

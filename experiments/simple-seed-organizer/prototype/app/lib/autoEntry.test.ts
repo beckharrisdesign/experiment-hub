@@ -22,6 +22,10 @@ import {
   buildNotesFromPlantingEdit,
 } from "./autoEntry";
 import { AIExtractedData } from "./packetReaderAI";
+import {
+  OPENAI_VISION_SINGLE_TECHNIQUE,
+  buildCanonicalExtractionFromSeedData,
+} from "./packetExtraction";
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -262,6 +266,66 @@ describe("mergeExtractedData", () => {
       };
       const result = mergeExtractedData(null, correct, "back");
       expect(result.daysToMaturity).toBe("80 days");
+    });
+  });
+
+  describe("canonical extraction merge", () => {
+    it("does not need fieldSources to merge canonical fields", () => {
+      const canonicalBack: AIExtractedData = {
+        daysToMaturity: "80 days",
+        plantingInstructions: "Start indoors 6-8 weeks before last frost.",
+        canonicalExtraction: buildCanonicalExtractionFromSeedData(
+          {
+            daysToMaturity: "80 days",
+            plantingInstructions: "Start indoors 6-8 weeks before last frost.",
+          },
+          {
+            attemptId: "openai-single-back",
+            technique: OPENAI_VISION_SINGLE_TECHNIQUE,
+            imageLabels: ["back"],
+          },
+        ),
+      };
+
+      const result = mergeExtractedData(null, canonicalBack, "back");
+
+      expect(result.daysToMaturity).toBe("80 days");
+      expect(result.plantingInstructions).toBe(
+        "Start indoors 6-8 weeks before last frost.",
+      );
+      expect(result.fieldSources).toBeUndefined();
+    });
+
+    it("preserves existing canonical field values while retaining new attempts", () => {
+      const existing: AIExtractedData = {
+        name: "Tomato",
+        canonicalExtraction: buildCanonicalExtractionFromSeedData(
+          { name: "Tomato" },
+          {
+            attemptId: "openai-single-front",
+            technique: OPENAI_VISION_SINGLE_TECHNIQUE,
+            imageLabels: ["front"],
+          },
+        ),
+      };
+      const incoming: AIExtractedData = {
+        name: "TOMATO",
+        daysToMaturity: "80 days",
+        canonicalExtraction: buildCanonicalExtractionFromSeedData(
+          { name: "TOMATO", daysToMaturity: "80 days" },
+          {
+            attemptId: "openai-single-back",
+            technique: OPENAI_VISION_SINGLE_TECHNIQUE,
+            imageLabels: ["back"],
+          },
+        ),
+      };
+
+      const result = mergeExtractedData(existing, incoming, "back");
+
+      expect(result.name).toBe("Tomato");
+      expect(result.daysToMaturity).toBe("80 days");
+      expect(result.canonicalExtraction?.attempts).toHaveLength(2);
     });
   });
 

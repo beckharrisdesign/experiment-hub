@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractMultipleFromImage } from '@/lib/packetReaderAI';
+import { attachCanonicalExtraction } from '@/lib/packetExtractionTechniques';
+import { OPENAI_PILE_IDENTIFICATION_TECHNIQUE } from '@/lib/packetExtraction';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { incrementAiUsage, getAiUsage } from '@/lib/ai-usage';
 import { canUseAICount } from '@/lib/limits';
@@ -59,7 +61,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const seeds = await extractMultipleFromImage(image, apiKey);
+    const seeds = (await extractMultipleFromImage(image, apiKey)).map((seed, index) =>
+      attachCanonicalExtraction(seed, {
+        attemptId: `openai-pile-${index + 1}`,
+        technique: OPENAI_PILE_IDENTIFICATION_TECHNIQUE,
+        imageLabels: ['front'],
+        rawOutput: seed,
+      })
+    );
 
     try {
       await incrementAiUsage(supabase, user.id, 1);
