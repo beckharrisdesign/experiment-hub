@@ -42,7 +42,7 @@
 
 ## 7. Verification
 
-- [ ] 7.1 Run the targeted packet extraction, auto-entry, import queue, and storage tests.
-- [ ] 7.2 Run the deterministic fixture accuracy suite and confirm failures identify exact fields and techniques.
-- [ ] 7.3 Run lint/type checks for the Simple Seed Organizer prototype app.
+- [x] 7.1 Run the targeted packet extraction, auto-entry, import queue, and storage tests.
+- [x] 7.2 Run the deterministic fixture accuracy suite and confirm failures identify exact fields and techniques.
+- [x] 7.3 Run lint/type checks for the Simple Seed Organizer prototype app.
 - [ ] 7.4 Manually verify add-seed flows for scan-assisted entry, skipped-AI manual entry, token-limit fallback, and extraction failure fallback.

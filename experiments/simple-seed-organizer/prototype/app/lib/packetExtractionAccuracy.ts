@@ -47,7 +47,9 @@ export interface FixtureAccuracyReport {
   fields: FieldAccuracyResult[];
 }
 
-export function isLiveExtractionEvaluationEnabled(env = process.env): boolean {
+export function isLiveExtractionEvaluationEnabled(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
   return env.SEED_PACKET_LIVE_EVAL === "1";
 }
 

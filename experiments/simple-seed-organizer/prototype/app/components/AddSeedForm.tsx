@@ -551,14 +551,14 @@ export function AddSeedForm({
         !frontIsNew &&
         initialData?.photoFront?.startsWith("data:")
       ) {
-        (seedData as any).photoFront = initialData.photoFront;
+        seedData.photoFront = initialData.photoFront;
       }
       if (
         !photoBackPath &&
         !backIsNew &&
         initialData?.photoBack?.startsWith("data:")
       ) {
-        (seedData as any).photoBack = initialData.photoBack;
+        seedData.photoBack = initialData.photoBack;
       }
 
       await onSubmit(seedData);
@@ -589,7 +589,7 @@ export function AddSeedForm({
       "Sun Requirement": (val: string) => {
         const normalized = normalizeSunRequirement(val);
         if (normalized) setSunRequirement(normalized);
-        else setSunRequirement(val as any); // Allow verbatim text
+        else setSunRequirement(undefined);
       },
       Description: (val: string) => {
         // Functional updater reads the LIVE notes — never a stale closure.
