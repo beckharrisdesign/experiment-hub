@@ -56,6 +56,33 @@ function InfoRow({ label, value }: { label: string; value?: string }) {
   );
 }
 
+function AnnotationRow({
+  label,
+  value,
+  annotation,
+}: {
+  label: string;
+  value?: string;
+  annotation?: string;
+}) {
+  if (!value && !annotation) return null;
+  return (
+    <div className="flex flex-col gap-1 text-[14px] text-[#6a7282]">
+      {value && (
+        <div className="flex items-center gap-2">
+          <span className="flex-1 font-medium leading-6">{label}</span>
+          <span className="font-normal leading-6 text-right">{value}</span>
+        </div>
+      )}
+      {annotation && (
+        <div className="rounded-md border border-[#bbf7d0] bg-[#f0fdf4] px-3 py-2 text-[#166534]">
+          <span className="font-medium">My note:</span> {annotation}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PlantingCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-[#faf5ff] border border-[#e9d4ff] rounded-lg p-[13px] flex flex-col gap-1 flex-shrink-0">
@@ -121,6 +148,12 @@ export function SeedDetail({
   }, [seed]);
 
   const hasMissingGrowingData = !seed.daysToGermination || !seed.daysToMaturity;
+  const annotationsByField = new Map(
+    (seed.instructionAnnotations ?? []).map((annotation) => [
+      annotation.fieldKey,
+      annotation.note,
+    ]),
+  );
 
   const handleEnrich = async () => {
     setEnriching(true);
@@ -382,6 +415,26 @@ export function SeedDetail({
                       </p>
                     </div>
                   )}
+                  {(seed.description || seed.plantingInstructions) && (
+                    <div className="flex flex-col gap-2 pt-4 pr-4">
+                      <p className="text-[16px] font-semibold text-[#4a5565] leading-5">
+                        Printed packet text
+                      </p>
+                      {seed.description && (
+                        <p className="text-[14px] text-[#101828] leading-[22px] whitespace-pre-wrap">
+                          {seed.description}
+                        </p>
+                      )}
+                      {seed.plantingInstructions && (
+                        <p className="text-[14px] text-[#101828] leading-[22px] whitespace-pre-wrap">
+                          <span className="font-semibold">
+                            Instructions:
+                          </span>{" "}
+                          {seed.plantingInstructions}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Col 2: Metadata sidebar (305px) */}
@@ -416,6 +469,8 @@ export function SeedDetail({
                     seed.plantingDepth ||
                     seed.spacing ||
                     seed.sunRequirement ||
+                    seed.customFields?.length ||
+                    seed.instructionAnnotations?.length ||
                     seed.customExpirationDate) && (
                     <InfoCategory label="Packet info">
                       <InfoRow
@@ -447,11 +502,16 @@ export function SeedDetail({
                         label="Days to maturity"
                         value={seed.daysToMaturity}
                       />
-                      <InfoRow
+                      <AnnotationRow
                         label="Planting depth"
                         value={seed.plantingDepth}
+                        annotation={annotationsByField.get("plantingDepth")}
                       />
-                      <InfoRow label="Spacing" value={seed.spacing} />
+                      <AnnotationRow
+                        label="Spacing"
+                        value={seed.spacing}
+                        annotation={annotationsByField.get("spacing")}
+                      />
                       <InfoRow
                         label="Sun requirement"
                         value={seed.sunRequirement?.replace("-", " ")}
@@ -464,6 +524,15 @@ export function SeedDetail({
                             : undefined
                         }
                       />
+                      {seed.customFields
+                        ?.filter((field) => !field.hidden)
+                        .map((field) => (
+                          <InfoRow
+                            key={field.id || field.label}
+                            label={field.label}
+                            value={String(field.value)}
+                          />
+                        ))}
                     </InfoCategory>
                   )}
 

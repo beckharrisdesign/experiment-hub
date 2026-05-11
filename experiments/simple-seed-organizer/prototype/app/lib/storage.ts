@@ -2,14 +2,15 @@ import { Seed } from '@/types/seed';
 import { UserProfile } from '@/types/profile';
 import { supabase } from './supabase';
 import { getPhotoUrl, deleteSeedPhotos } from './seed-photos';
+import {
+  convertDbSeedToSeed,
+  convertSeedToDbSeed,
+  SEEDS_COLUMNS_WITHOUT_PHOTOS,
+} from './seedConverters';
 
 // Fallback to localStorage if Supabase is not configured
 const STORAGE_KEY = 'simple-seed-organizer-seeds';
 const PROFILE_STORAGE_KEY = 'simple-seed-organizer-profile';
-
-// Columns to exclude photos for fast initial load
-const SEEDS_COLUMNS_WITHOUT_PHOTOS =
-  'id,user_id,name,variety,type,brand,source,year,purchase_date,quantity,days_to_germination,days_to_maturity,planting_depth,spacing,sun_requirement,planting_months,notes,use_first,custom_expiration_date,created_at,updated_at';
 
 /**
  * Get seed count for usage display (profile, limits).
@@ -141,7 +142,7 @@ export async function getSeeds(): Promise<Seed[]> {
       } else if (row.photo_back) {
         photoBack = row.photo_back; // Legacy base64 only when no path
       }
-      return convertDbSeedToSeedWithUrls(row, photoFront, photoBack);
+      return convertDbSeedToSeed(row, photoFront, photoBack);
     });
     return seeds;
   } catch (err) {
@@ -178,7 +179,7 @@ export async function saveSeed(seedData: Omit<Seed, 'id' | 'createdAt' | 'update
   };
 
   try {
-    const dbSeed = convertSeedToDbSeed(newSeed);
+    const dbSeed = convertSeedToDbSeed(newSeed, { mode: 'insert' });
     console.log('[Storage] Attempting to save to Supabase:', { name: newSeed.name, variety: newSeed.variety });
     
     const { data, error } = await supabase
@@ -231,7 +232,7 @@ export async function updateSeed(id: string, updates: Partial<Seed>): Promise<Se
   };
 
   try {
-    const dbUpdates = convertSeedToDbSeed(updateData as Seed);
+    const dbUpdates = convertSeedToDbSeed(updateData as Seed, { mode: 'update' });
     const { data, error } = await supabase
       .from('seeds')
       .update(dbUpdates)
@@ -390,7 +391,7 @@ export async function getSeedById(id: string): Promise<Seed | null> {
     } else if (data.photo_back) {
       photoBack = data.photo_back; // Legacy base64 only when no path
     }
-    return convertDbSeedToSeedWithUrls(data, photoFront, photoBack);
+    return convertDbSeedToSeed(data, photoFront, photoBack);
   } catch (err) {
     console.error('[Storage] Error getting seed from Supabase:', err);
     if (err instanceof Error) {
@@ -414,71 +415,6 @@ export function getSeedAge(seed: Seed): number {
 }
 
 /**
- * Convert Seed to database format (handles snake_case column names and array fields)
- */
-function convertSeedToDbSeed(seed: Partial<Seed>): any {
-  return {
-    id: seed.id,
-    name: seed.name,
-    variety: seed.variety,
-    type: seed.type,
-    brand: seed.brand || null,
-    source: seed.source || null,
-    year: seed.year || null,
-    purchase_date: seed.purchaseDate || null,
-    quantity: seed.quantity || null,
-    days_to_germination: seed.daysToGermination || null,
-    days_to_maturity: seed.daysToMaturity || null,
-    planting_depth: seed.plantingDepth || null,
-    spacing: seed.spacing || null,
-    sun_requirement: seed.sunRequirement || null,
-    planting_months: seed.plantingMonths ? JSON.stringify(seed.plantingMonths) : null,
-    notes: seed.notes || null,
-    photo_front_path: seed.photoFrontPath || null,
-    photo_back_path: seed.photoBackPath || null,
-    photo_front: seed.photoFrontPath ? null : (seed.photoFront || null),
-    photo_back: seed.photoBackPath ? null : (seed.photoBack || null),
-    use_first: seed.useFirst || false,
-    custom_expiration_date: seed.customExpirationDate || null,
-    created_at: seed.createdAt,
-    updated_at: seed.updatedAt,
-  };
-}
-
-/**
- * Convert database format to Seed (handles snake_case column names and array fields)
- */
-function convertDbSeedToSeed(dbSeed: any): Seed {
-  return {
-    id: dbSeed.id,
-    user_id: dbSeed.user_id || undefined,
-    name: dbSeed.name,
-    variety: dbSeed.variety,
-    type: dbSeed.type,
-    brand: dbSeed.brand || undefined,
-    source: dbSeed.source || undefined,
-    year: dbSeed.year || undefined,
-    purchaseDate: dbSeed.purchase_date || undefined,
-    quantity: dbSeed.quantity || undefined,
-    daysToGermination: dbSeed.days_to_germination || undefined,
-    daysToMaturity: dbSeed.days_to_maturity || undefined,
-    plantingDepth: dbSeed.planting_depth || undefined,
-    spacing: dbSeed.spacing || undefined,
-    sunRequirement: dbSeed.sun_requirement || undefined,
-    plantingMonths: dbSeed.planting_months ? JSON.parse(dbSeed.planting_months) : undefined,
-    notes: dbSeed.notes || undefined,
-    photoFront: getPhotoUrl(dbSeed.photo_front_path) || dbSeed.photo_front || undefined,
-    photoBack: getPhotoUrl(dbSeed.photo_back_path) || dbSeed.photo_back || undefined,
-    photoFrontPath: dbSeed.photo_front_path || undefined,
-    photoBackPath: dbSeed.photo_back_path || undefined,
-    useFirst: dbSeed.use_first || undefined,
-    customExpirationDate: dbSeed.custom_expiration_date || undefined,
-    createdAt: dbSeed.created_at,
-    updatedAt: dbSeed.updated_at,
-  };
-}
-
-/**
  * Convert a DB row to Seed with photo URLs (used by save/update)
  */
 function convertDbRowToSeedWithUrls(row: any): Seed {
@@ -494,40 +430,7 @@ function convertDbRowToSeedWithUrls(row: any): Seed {
   } else if (row.photo_back) {
     photoBack = row.photo_back; // Legacy base64 only when no path
   }
-  return convertDbSeedToSeedWithUrls(row, photoFront, photoBack);
-}
-
-/**
- * Convert database format to Seed with pre-resolved photo URLs (for signed URLs)
- */
-function convertDbSeedToSeedWithUrls(dbSeed: any, photoFront?: string, photoBack?: string): Seed {
-  return {
-    id: dbSeed.id,
-    user_id: dbSeed.user_id || undefined,
-    name: dbSeed.name,
-    variety: dbSeed.variety,
-    type: dbSeed.type,
-    brand: dbSeed.brand || undefined,
-    source: dbSeed.source || undefined,
-    year: dbSeed.year || undefined,
-    purchaseDate: dbSeed.purchase_date || undefined,
-    quantity: dbSeed.quantity || undefined,
-    daysToGermination: dbSeed.days_to_germination || undefined,
-    daysToMaturity: dbSeed.days_to_maturity || undefined,
-    plantingDepth: dbSeed.planting_depth || undefined,
-    spacing: dbSeed.spacing || undefined,
-    sunRequirement: dbSeed.sun_requirement || undefined,
-    plantingMonths: dbSeed.planting_months ? JSON.parse(dbSeed.planting_months) : undefined,
-    notes: dbSeed.notes || undefined,
-    photoFront: photoFront || undefined,
-    photoBack: photoBack || undefined,
-    photoFrontPath: dbSeed.photo_front_path || undefined,
-    photoBackPath: dbSeed.photo_back_path || undefined,
-    useFirst: dbSeed.use_first || undefined,
-    customExpirationDate: dbSeed.custom_expiration_date || undefined,
-    createdAt: dbSeed.created_at,
-    updatedAt: dbSeed.updated_at,
-  };
+  return convertDbSeedToSeed(row, photoFront, photoBack);
 }
 
 // Profile storage functions (keeping localStorage for now, can migrate later)

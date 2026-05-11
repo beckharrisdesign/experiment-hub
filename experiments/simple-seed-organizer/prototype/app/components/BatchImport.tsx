@@ -10,7 +10,7 @@ import { BulkCameraCapture } from "@/components/BulkCameraCapture";
 import { useImportQueue, QueueItem } from "@/hooks/useImportQueue";
 import { buildPileQueueItems } from "@/lib/import/capturePipeline";
 import toast from "react-hot-toast";
-import { normalizeSunRequirement } from "@/lib/seedUtils";
+import { buildSeedPayloadFromExtracted } from "@/lib/import/seedPayload";
 
 interface BatchImportProps {
   userId: string;
@@ -23,25 +23,13 @@ function extractedToInitialSeed(
   objectUrl: string,
 ): Seed {
   return {
-    id: crypto.randomUUID(),
+    ...buildSeedPayloadFromExtracted({
+      seedId: crypto.randomUUID(),
+      extracted,
+      photoFront: objectUrl,
+    }),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    name: extracted.name || "",
-    variety: extracted.variety || extracted.latinName || "",
-    type: "other",
-    brand: extracted.brand,
-    year: extracted.year,
-    quantity: extracted.quantity,
-    daysToGermination: extracted.daysToGermination,
-    daysToMaturity: extracted.daysToMaturity,
-    plantingDepth: extracted.plantingDepth,
-    spacing: extracted.spacing,
-    sunRequirement: normalizeSunRequirement(extracted.sunRequirement),
-    notes:
-      [extracted.description, extracted.plantingInstructions]
-        .filter(Boolean)
-        .join("\n\n") || undefined,
-    photoFront: objectUrl,
   };
 }
 
