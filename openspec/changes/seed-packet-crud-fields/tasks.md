@@ -1,6 +1,6 @@
 ## 1. Baseline and tests
 
-- [ ] 1.1 Audit current seed field usage across `types/seed.ts`, `lib/storage.ts`, add/edit forms, detail/list views, import queue, and packet reader mapping.
+- [x] 1.1 Audit current seed field usage across `types/seed.ts`, `lib/storage.ts`, add/edit forms, detail/list views, import queue, and packet reader mapping.
 - [ ] 1.2 Add failing unit tests for canonical field registry metadata, including key, label, type, group, source category, display order, searchability, and retired status.
 - [ ] 1.3 Add failing storage tests for round-tripping existing canonical seed fields plus custom field values and instruction annotations.
 - [ ] 1.4 Add failing import/AI merge tests that verify extracted packet facts do not overwrite user notes or annotations without explicit acceptance.
