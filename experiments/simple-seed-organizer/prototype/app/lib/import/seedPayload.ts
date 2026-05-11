@@ -98,7 +98,7 @@ export function mergePacketFactsIntoSeed(
     if (incoming == null || incoming === "") continue;
     const current = next[key];
     if (!current || options.replaceExistingPacketFacts) {
-      (next as Record<string, unknown>)[key] = incoming;
+      (next as unknown as Record<string, unknown>)[key] = incoming;
     }
   }
 
