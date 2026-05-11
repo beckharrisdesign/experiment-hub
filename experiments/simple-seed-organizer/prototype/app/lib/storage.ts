@@ -52,7 +52,7 @@ export async function getSeedsWithoutPhotos(): Promise<Seed[]> {
       throw new Error(`Failed to load seeds from database: ${error.message}`);
     }
 
-    return (data || []).map(convertDbSeedToSeed);
+    return (data || []).map((row) => convertDbSeedToSeed(row));
   } catch (err) {
     console.error('[Storage] Error fetching from Supabase:', err);
     if (err instanceof Error) {
