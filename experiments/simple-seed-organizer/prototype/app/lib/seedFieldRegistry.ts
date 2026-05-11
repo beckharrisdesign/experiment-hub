@@ -396,7 +396,7 @@ export function getSeedFieldValue(
   seed: Seed,
   key: SeedFieldKey | string,
 ): unknown {
-  return (seed as Record<string, unknown>)[key];
+  return (seed as unknown as Record<string, unknown>)[key];
 }
 
 export function getAnnotationForField(
