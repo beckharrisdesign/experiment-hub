@@ -619,7 +619,8 @@ function StatusLabel({ item }: { item: QueueItem }) {
   if (item.status === "queued_seed_image") {
     return (
       <span className="text-xs text-amber-600 break-words">
-        Queued seed image — retry when your AI limit resets
+        {item.errorMessage ||
+          "AI limit reached — enter manually now or retry later"}
       </span>
     );
   }

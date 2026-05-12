@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processPacketImages } from '@/lib/packetReader';
+import { attachCanonicalExtraction } from '@/lib/packetExtractionTechniques';
+import { TESSERACT_PARSE_TECHNIQUE } from '@/lib/packetExtraction';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { rateLimit } from '@/lib/rate-limit';
 
@@ -46,10 +48,16 @@ export async function POST(request: NextRequest) {
       frontImage,
       backImage || undefined
     );
+    const canonicalData = attachCanonicalExtraction(extractedData, {
+      attemptId: 'tesseract-parse',
+      technique: TESSERACT_PARSE_TECHNIQUE,
+      imageLabels: backImage ? ['front', 'back'] : ['front'],
+      rawOutput: extractedData,
+    });
 
     return NextResponse.json({
       success: true,
-      data: extractedData,
+      data: canonicalData,
     });
   } catch (error) {
     console.error('Error processing packet images:', error);

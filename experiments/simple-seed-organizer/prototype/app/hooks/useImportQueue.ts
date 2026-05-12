@@ -176,10 +176,11 @@ export function useImportQueue({ userId }: UseImportQueueOptions) {
         if (!res.ok) {
           if (res.status === 402) {
             // Token limit reached — keep the image in queue so it can be
-            // retried when the limit resets, rather than losing it entirely.
+            // edited manually now or retried when the limit resets.
             updateItem(item.id, {
               status: "queued_seed_image",
-              errorMessage: undefined,
+              errorMessage:
+                "AI limit reached. You can enter details manually now or retry when your limit resets.",
             });
           } else {
             updateItem(item.id, {

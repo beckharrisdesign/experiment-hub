@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractWithAI } from '@/lib/packetReaderAI';
+import { attachCanonicalExtraction } from '@/lib/packetExtractionTechniques';
+import { OPENAI_VISION_TWO_IMAGE_TECHNIQUE } from '@/lib/packetExtraction';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { incrementAiUsage, getAiUsage } from '@/lib/ai-usage';
 import { canUseAICount } from '@/lib/limits';
@@ -115,6 +117,12 @@ export async function POST(request: NextRequest) {
       optimizedBack,
       apiKey
     );
+    const canonicalData = attachCanonicalExtraction(extractedData, {
+      attemptId: 'openai-two-image',
+      technique: OPENAI_VISION_TWO_IMAGE_TECHNIQUE,
+      imageLabels: optimizedBack ? ['front', 'back'] : ['front'],
+      rawOutput: extractedData,
+    });
 
     // Count completions: 1 per image (front=1, back=1) - non-fatal if tracking fails
     try {
@@ -125,7 +133,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: extractedData,
+      data: canonicalData,
     });
   } catch (error) {
     console.error('Error processing packet images with AI:', error);
