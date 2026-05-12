@@ -1,16 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { AppShell } from "@/components/AppShell";
 import { AppToaster } from "@/components/AppToaster";
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
 
 const GA_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://simple-seed-organizer.vercel.app';
@@ -61,7 +54,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body>
         {GA_ID && (
           <>
             <Script

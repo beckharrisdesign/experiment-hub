@@ -7,26 +7,13 @@
  */
 
 import { AIExtractedData } from "./packetReaderAI";
+import { AI_EXTRACTABLE_PACKET_FIELD_KEYS } from "./seedFieldRegistry";
 import {
   canonicalExtractionToSeedData,
   resolveExtractionAttempts,
 } from "./packetExtraction";
 
-const MERGED_FIELDS = [
-  "name",
-  "variety",
-  "latinName",
-  "brand",
-  "year",
-  "quantity",
-  "daysToGermination",
-  "daysToMaturity",
-  "plantingDepth",
-  "spacing",
-  "sunRequirement",
-  "description",
-  "plantingInstructions",
-] as const;
+const MERGED_FIELDS = AI_EXTRACTABLE_PACKET_FIELD_KEYS;
 
 /**
  * Merge AI-extracted data from one image side into the existing accumulated
