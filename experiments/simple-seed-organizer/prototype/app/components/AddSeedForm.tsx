@@ -2,13 +2,17 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Seed, SeedType, SunRequirement } from "@/types/seed";
+import {
+  Seed,
+  SeedCustomFieldValue,
+  SeedInstructionAnnotation,
+  SeedType,
+  SunRequirement,
+} from "@/types/seed";
 import { AIExtractedData } from "@/lib/packetReaderAI";
 import {
   mergeExtractedData,
   fieldAfterAutoEntry,
-  buildNotesFromDescriptionEdit,
-  buildNotesFromPlantingEdit,
 } from "@/lib/autoEntry";
 import { processImageFile } from "@/lib/imageUtils";
 import { uploadSeedPhoto } from "@/lib/seed-photos";
@@ -313,7 +317,19 @@ export function AddSeedForm({
   const [sunRequirement, setSunRequirement] = useState<
     SunRequirement | undefined
   >(initialData?.sunRequirement);
+  const [description, setDescription] = useState(
+    initialData?.description || "",
+  );
+  const [plantingInstructions, setPlantingInstructions] = useState(
+    initialData?.plantingInstructions || "",
+  );
   const [notes, setNotes] = useState(initialData?.notes || "");
+  const [customFields, setCustomFields] = useState<SeedCustomFieldValue[]>(
+    initialData?.customFields || [],
+  );
+  const [instructionAnnotations, setInstructionAnnotations] = useState<
+    SeedInstructionAnnotation[]
+  >(initialData?.instructionAnnotations || []);
   const [customExpirationDate, setCustomExpirationDate] = useState(
     initialData?.customExpirationDate
       ? initialData.customExpirationDate.split("T")[0]
@@ -399,12 +415,12 @@ export function AddSeedForm({
         return normalizeSunRequirement(data.sunRequirement) ?? prev;
       });
     }
-    if (data.description || data.plantingInstructions) {
-      const combined = [data.description, data.plantingInstructions]
-        .filter(Boolean)
-        .join("\n\n");
-      setNotes((prev) => fieldAfterAutoEntry(prev, combined));
-    }
+    if (data.description)
+      setDescription((prev) => fieldAfterAutoEntry(prev, data.description));
+    if (data.plantingInstructions)
+      setPlantingInstructions((prev) =>
+        fieldAfterAutoEntry(prev, data.plantingInstructions),
+      );
   };
 
   const extractSingleImage = async (
@@ -493,6 +509,64 @@ export function AddSeedForm({
     }
   };
 
+  const updateInstructionAnnotation = (fieldKey: string, note: string) => {
+    setInstructionAnnotations((prev) => {
+      const trimmed = note.trim();
+      const existing = prev.find((annotation) => annotation.fieldKey === fieldKey);
+      if (!trimmed) {
+        return prev.filter((annotation) => annotation.fieldKey !== fieldKey);
+      }
+      if (existing) {
+        return prev.map((annotation) =>
+          annotation.fieldKey === fieldKey
+            ? { ...annotation, note, updatedAt: new Date().toISOString() }
+            : annotation,
+        );
+      }
+      return [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          fieldKey,
+          label: fieldKey === "spacing" ? "Spacing" : "Planting depth",
+          note,
+          displayOrder: prev.length,
+          updatedAt: new Date().toISOString(),
+        },
+      ];
+    });
+  };
+
+  const getInstructionAnnotation = (fieldKey: string) =>
+    instructionAnnotations.find((annotation) => annotation.fieldKey === fieldKey)
+      ?.note || "";
+
+  const addCustomField = () => {
+    setCustomFields((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        label: "",
+        valueType: "short_text",
+        value: "",
+        displayOrder: prev.length,
+      },
+    ]);
+  };
+
+  const updateCustomField = (
+    id: string | undefined,
+    patch: Partial<SeedCustomFieldValue>,
+  ) => {
+    setCustomFields((prev) =>
+      prev.map((field) => (field.id === id ? { ...field, ...patch } : field)),
+    );
+  };
+
+  const removeCustomField = (id: string | undefined) => {
+    setCustomFields((prev) => prev.filter((field) => field.id !== id));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitAttempted(true);
@@ -540,7 +614,27 @@ export function AddSeedForm({
         plantingDepth: plantingDepth.trim() || undefined,
         spacing: spacing.trim() || undefined,
         sunRequirement,
+        description: description.trim() || undefined,
+        plantingInstructions: plantingInstructions.trim() || undefined,
         notes: notes.trim() || undefined,
+        customFields: customFields
+          .map((field, index) => ({
+            ...field,
+            label: field.label.trim(),
+            value:
+              typeof field.value === "string" ? field.value.trim() : field.value,
+            displayOrder: index,
+          }))
+          .filter((field) => field.label && field.value !== ""),
+        instructionAnnotations: instructionAnnotations
+          .map((annotation, index) => ({
+            ...annotation,
+            note: annotation.note.trim(),
+            displayOrder: index,
+            updatedAt: annotation.updatedAt || new Date().toISOString(),
+          }))
+          .filter((annotation) => annotation.note),
+        rawPacketText: aiExtractedData?.rawKeyValuePairs ?? initialData?.rawPacketText,
         customExpirationDate: customExpirationDate || undefined,
         photoFrontPath,
         photoBackPath,
@@ -591,16 +685,8 @@ export function AddSeedForm({
         if (normalized) setSunRequirement(normalized);
         else setSunRequirement(undefined);
       },
-      Description: (val: string) => {
-        // Functional updater reads the LIVE notes — never a stale closure.
-        // Preserves the planting-instructions half that's already in notes
-        // instead of pulling from a stale aiExtractedData reference (Bug C fix).
-        setNotes((prev) => buildNotesFromDescriptionEdit(prev, val));
-      },
-      "Planting Instructions": (val: string) => {
-        // Same as above: preserves the description half from live notes.
-        setNotes((prev) => buildNotesFromPlantingEdit(prev, val));
-      },
+      Description: setDescription,
+      "Planting Instructions": setPlantingInstructions,
     };
     const setter = keyMap[key];
     if (setter) {
@@ -986,9 +1072,9 @@ export function AddSeedForm({
                                     "Planting Depth": plantingDepth,
                                     Spacing: spacing,
                                     "Sun Requirement": sunRequirement || "",
-                                    Description: notes.split("\n\n")[0] || "",
+                                    Description: description,
                                     "Planting Instructions":
-                                      notes.split("\n\n")[1] || notes,
+                                      plantingInstructions,
                                   };
                                   return keyMap[pair.key] || pair.value;
                                 };
@@ -1245,6 +1331,74 @@ export function AddSeedForm({
                               </tr>
                               <tr>
                                 <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
+                                  Packet description
+                                </td>
+                                <td className="py-1.5 text-[#101828]">
+                                  <AutoTextarea
+                                    value={description}
+                                    onChange={(e) =>
+                                      setDescription(e.target.value)
+                                    }
+                                    placeholder="Printed description from the packet"
+                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                  />
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
+                                  Printed instructions
+                                </td>
+                                <td className="py-1.5 text-[#101828]">
+                                  <AutoTextarea
+                                    value={plantingInstructions}
+                                    onChange={(e) =>
+                                      setPlantingInstructions(e.target.value)
+                                    }
+                                    placeholder="Instructions printed on the packet"
+                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                  />
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
+                                  Spacing annotation
+                                </td>
+                                <td className="py-1.5 text-[#101828]">
+                                  <AutoTextarea
+                                    value={getInstructionAnnotation("spacing")}
+                                    onChange={(e) =>
+                                      updateInstructionAnnotation(
+                                        "spacing",
+                                        e.target.value,
+                                      )
+                                    }
+                                    placeholder="e.g., plant closer together in raised beds"
+                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                  />
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
+                                  Depth annotation
+                                </td>
+                                <td className="py-1.5 text-[#101828]">
+                                  <AutoTextarea
+                                    value={getInstructionAnnotation(
+                                      "plantingDepth",
+                                    )}
+                                    onChange={(e) =>
+                                      updateInstructionAnnotation(
+                                        "plantingDepth",
+                                        e.target.value,
+                                      )
+                                    }
+                                    placeholder="e.g., barely cover in seed trays"
+                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                  />
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
                                   Notes
                                 </td>
                                 <td className="py-1.5 text-[#101828]">
@@ -1254,6 +1408,60 @@ export function AddSeedForm({
                                     placeholder="e.g. Heirloom, open pollinated, or any growing notes"
                                     className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
                                   />
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
+                                  Custom fields
+                                </td>
+                                <td className="py-1.5 text-[#101828]">
+                                  <div className="flex flex-col gap-2">
+                                    {customFields.map((field) => (
+                                      <div
+                                        key={field.id}
+                                        className="grid grid-cols-[1fr_1fr_auto] gap-2"
+                                      >
+                                        <input
+                                          type="text"
+                                          value={field.label}
+                                          onChange={(e) =>
+                                            updateCustomField(field.id, {
+                                              label: e.target.value,
+                                            })
+                                          }
+                                          placeholder="Label"
+                                          className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                        />
+                                        <input
+                                          type="text"
+                                          value={String(field.value ?? "")}
+                                          onChange={(e) =>
+                                            updateCustomField(field.id, {
+                                              value: e.target.value,
+                                            })
+                                          }
+                                          placeholder="Value"
+                                          className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            removeCustomField(field.id)
+                                          }
+                                          className="px-2 py-1 text-xs text-red-500"
+                                        >
+                                          Remove
+                                        </button>
+                                      </div>
+                                    ))}
+                                    <button
+                                      type="button"
+                                      onClick={addCustomField}
+                                      className="self-start px-3 py-1.5 text-xs font-medium text-[#16a34a] border border-[#16a34a]/40 rounded hover:bg-[#f0fdf4]"
+                                    >
+                                      Add custom field
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             </tbody>
@@ -1456,9 +1664,9 @@ export function AddSeedForm({
                                     "Planting Depth": plantingDepth,
                                     Spacing: spacing,
                                     "Sun Requirement": sunRequirement || "",
-                                    Description: notes.split("\n\n")[0] || "",
+                                    Description: description,
                                     "Planting Instructions":
-                                      notes.split("\n\n")[1] || notes,
+                                      plantingInstructions,
                                   };
                                   return keyMap[pair.key] || pair.value;
                                 };

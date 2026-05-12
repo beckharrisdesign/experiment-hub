@@ -12,7 +12,7 @@ import {
   QueuePileItem,
   QueueItemSource,
 } from "@/lib/import/capturePipeline";
-import { normalizeSunRequirement } from "@/lib/seedUtils";
+import { buildSeedPayloadFromExtracted } from "@/lib/import/seedPayload";
 
 const CONCURRENCY = 3;
 
@@ -45,42 +45,6 @@ interface UseImportQueueOptions {
 interface EnqueueOptions {
   source: QueueItemSource;
   autoSaveOnReady?: boolean;
-}
-
-function toSeedPayload(
-  seedId: string,
-  extracted: AIExtractedData,
-  photoFrontPath: string,
-  photoBackPath?: string,
-): Omit<Seed, "createdAt" | "updatedAt"> {
-  const name = extracted.name?.trim() || "Unknown";
-  const variety = (
-    extracted.variety ||
-    extracted.latinName ||
-    extracted.name ||
-    "Unknown"
-  ).trim();
-
-  return {
-    id: seedId,
-    name,
-    variety,
-    type: "other",
-    brand: extracted.brand,
-    year: extracted.year,
-    quantity: extracted.quantity,
-    daysToGermination: extracted.daysToGermination,
-    daysToMaturity: extracted.daysToMaturity,
-    plantingDepth: extracted.plantingDepth,
-    spacing: extracted.spacing,
-    sunRequirement: normalizeSunRequirement(extracted.sunRequirement),
-    notes:
-      [extracted.description, extracted.plantingInstructions]
-        .filter(Boolean)
-        .join("\n\n") || undefined,
-    photoFrontPath,
-    photoBackPath,
-  };
 }
 
 export function useImportQueue({ userId }: UseImportQueueOptions) {
@@ -118,7 +82,12 @@ export function useImportQueue({ userId }: UseImportQueueOptions) {
           );
         }
         const saved = await saveSeed(
-          toSeedPayload(seedId, item.extracted, photoFrontPath, photoBackPath),
+          buildSeedPayloadFromExtracted({
+            seedId,
+            extracted: item.extracted,
+            photoFrontPath,
+            photoBackPath,
+          }),
         );
         updateItem(item.id, {
           status: "saved",

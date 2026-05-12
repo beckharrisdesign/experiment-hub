@@ -14,6 +14,7 @@ import { PlantNowBanner } from "@/components/PlantNowBanner";
 import { SeedType } from "@/types/seed";
 import { getSeedAge } from "@/lib/storage";
 import { useAuth } from "@/lib/auth-context";
+import { seedMatchesSearch } from "@/lib/seedFieldRegistry";
 import toast from "react-hot-toast";
 
 const VALID_VIEW_MODES: ViewMode[] = ["type", "month", "age", "photo"];
@@ -141,13 +142,7 @@ function HomeContent() {
     }
 
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (seed) =>
-          seed.name.toLowerCase().includes(query) ||
-          seed.variety.toLowerCase().includes(query) ||
-          seed.brand?.toLowerCase().includes(query),
-      );
+      filtered = filtered.filter((seed) => seedMatchesSearch(seed, searchQuery));
     }
 
     return filtered;
