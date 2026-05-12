@@ -149,7 +149,7 @@ export function convertDbSeedToSeed(
     plantingDepth: dbSeed.planting_depth || undefined,
     spacing: dbSeed.spacing || undefined,
     sunRequirement: dbSeed.sun_requirement || undefined,
-    plantingMonths: parseJsonArray<number>(dbSeed.planting_months),
+    plantingMonths: parsePlantingMonths(dbSeed.planting_months),
     description: dbSeed.description || undefined,
     plantingInstructions: dbSeed.planting_instructions || undefined,
     notes: dbSeed.notes || undefined,
@@ -194,4 +194,42 @@ function parseJsonArray<T>(value: unknown): T[] | undefined {
   } catch {
     return undefined;
   }
+}
+
+function parsePlantingMonths(value: unknown): number[] | undefined {
+  if (value == null || value === "") return undefined;
+
+  if (Array.isArray(value)) {
+    const months = value.filter(isPlantingMonth);
+    return months.length > 0 ? months : undefined;
+  }
+
+  if (typeof value !== "string") return undefined;
+
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) {
+      const months = parsed.filter(isPlantingMonth);
+      return months.length > 0 ? months : undefined;
+    }
+  } catch {
+    const months = value
+      .split(",")
+      .map((month) => Number(month.trim()))
+      .filter(isPlantingMonth);
+    if (months.length > 0) return months;
+
+    console.warn("[Storage] Ignoring invalid planting_months value:", value);
+  }
+
+  return undefined;
+}
+
+function isPlantingMonth(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isInteger(value) &&
+    value >= 1 &&
+    value <= 12
+  );
 }

@@ -12,6 +12,12 @@ import {
 const STORAGE_KEY = 'simple-seed-organizer-seeds';
 const PROFILE_STORAGE_KEY = 'simple-seed-organizer-profile';
 
+const SEEDS_COLUMNS_WITHOUT_USER_ID = SEEDS_COLUMNS_WITHOUT_PHOTOS.split(',')
+  .filter((column) => column !== 'user_id')
+  .join(',');
+const LEGACY_SEEDS_COLUMNS_WITHOUT_PHOTOS =
+  'id,name,variety,type,brand,year,planting_months,notes,created_at,updated_at';
+
 /**
  * Get seed count for usage display (profile, limits).
  */
@@ -42,10 +48,7 @@ export async function getSeedsWithoutPhotos(): Promise<Seed[]> {
   }
 
   try {
-    const { data, error } = await supabase
-      .from('seeds')
-      .select(SEEDS_COLUMNS_WITHOUT_PHOTOS)
-      .order('created_at', { ascending: false });
+    const { data, error } = await selectSeedsWithoutPhotos();
 
     if (error) {
       console.error('[Storage] Supabase error:', error);
@@ -60,6 +63,48 @@ export async function getSeedsWithoutPhotos(): Promise<Seed[]> {
     }
     throw new Error('Failed to load seeds from database');
   }
+}
+
+async function selectSeedsWithoutPhotos() {
+  const columnSets = [
+    SEEDS_COLUMNS_WITHOUT_PHOTOS,
+    SEEDS_COLUMNS_WITHOUT_USER_ID,
+    LEGACY_SEEDS_COLUMNS_WITHOUT_PHOTOS,
+  ];
+
+  let lastError: any = null;
+  for (const columns of columnSets) {
+    const { data, error } = await supabase!
+      .from('seeds')
+      .select(columns)
+      .order('created_at', { ascending: false });
+
+    if (!error) {
+      return { data, error: null };
+    }
+
+    lastError = error;
+    if (!isMissingColumnError(error)) {
+      return { data: null, error };
+    }
+
+    console.warn(
+      '[Storage] Seed list query hit a missing column; retrying with a compatible column set:',
+      error.message,
+    );
+  }
+
+  return { data: null, error: lastError };
+}
+
+function isMissingColumnError(error: any): boolean {
+  const message = String(error?.message ?? '').toLowerCase();
+  return (
+    error?.code === '42703' ||
+    error?.code === 'PGRST204' ||
+    (message.includes('column') && message.includes('does not exist')) ||
+    (message.includes('could not find') && message.includes('schema cache'))
+  );
 }
 
 /**
