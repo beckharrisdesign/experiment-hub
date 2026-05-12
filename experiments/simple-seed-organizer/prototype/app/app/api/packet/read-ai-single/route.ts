@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractSingleImageWithAI } from '@/lib/packetReaderAI';
+import {
+  attachCanonicalExtraction,
+} from '@/lib/packetExtractionTechniques';
+import { OPENAI_VISION_SINGLE_TECHNIQUE } from '@/lib/packetExtraction';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { incrementAiUsage, getAiUsage } from '@/lib/ai-usage';
 import { canUseAICount } from '@/lib/limits';
@@ -76,6 +80,12 @@ export async function POST(request: NextRequest) {
       side as 'front' | 'back',
       apiKey
     );
+    const canonicalData = attachCanonicalExtraction(extractedData, {
+      attemptId: `openai-single-${side}`,
+      technique: OPENAI_VISION_SINGLE_TECHNIQUE,
+      imageLabels: [side],
+      rawOutput: extractedData,
+    });
 
     // 1 completion per image (non-fatal: extraction succeeds even if tracking fails)
     if (supabase) {
@@ -88,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: extractedData,
+      data: canonicalData,
     });
   } catch (error) {
     console.error('Error processing single packet image with AI:', error);

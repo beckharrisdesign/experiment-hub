@@ -8,6 +8,10 @@
 
 import { AIExtractedData } from "./packetReaderAI";
 import { AI_EXTRACTABLE_PACKET_FIELD_KEYS } from "./seedFieldRegistry";
+import {
+  canonicalExtractionToSeedData,
+  resolveExtractionAttempts,
+} from "./packetExtraction";
 
 const MERGED_FIELDS = AI_EXTRACTABLE_PACKET_FIELD_KEYS;
 
@@ -26,6 +30,10 @@ export function mergeExtractedData(
   incoming: AIExtractedData,
   side: "front" | "back",
 ): AIExtractedData {
+  if (incoming.canonicalExtraction) {
+    return mergeCanonicalExtractedData(existing, incoming);
+  }
+
   const merged: AIExtractedData = {
     ...(existing ?? {}),
     fieldSources: {
@@ -50,6 +58,42 @@ export function mergeExtractedData(
       existing?.fieldSources?.[f] === "front"
     )
       continue;
+    (merged as Record<string, unknown>)[f] = val;
+  }
+
+  if (merged.rawKeyValuePairs?.length === 0)
+    merged.rawKeyValuePairs = undefined;
+  return merged;
+}
+
+function mergeCanonicalExtractedData(
+  existing: AIExtractedData | null,
+  incoming: AIExtractedData,
+): AIExtractedData {
+  const resolved =
+    existing?.canonicalExtraction && incoming.canonicalExtraction
+      ? resolveExtractionAttempts([
+          ...existing.canonicalExtraction.attempts,
+          ...incoming.canonicalExtraction.attempts,
+        ])
+      : incoming.canonicalExtraction;
+  const canonicalData = resolved
+    ? canonicalExtractionToSeedData(resolved)
+    : incoming;
+
+  const merged: AIExtractedData = {
+    ...(existing ?? {}),
+    rawKeyValuePairs: [
+      ...(existing?.rawKeyValuePairs ?? []),
+      ...(incoming.rawKeyValuePairs ?? []),
+    ],
+    canonicalExtraction: resolved,
+  };
+
+  for (const f of MERGED_FIELDS) {
+    const val = canonicalData[f];
+    if (val == null || val === "") continue;
+    if (existing?.[f] != null && existing[f] !== "") continue;
     (merged as Record<string, unknown>)[f] = val;
   }
 

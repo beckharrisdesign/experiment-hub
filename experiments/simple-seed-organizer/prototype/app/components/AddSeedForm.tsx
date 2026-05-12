@@ -113,19 +113,22 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
     italic?: boolean;
   }> = [];
   const seenKeys = new Set<string>();
+  const canonicalFields = data.canonicalExtraction?.fields;
 
   // Always include Name and Variety first (required fields) - even when empty, so user can edit
   pairs.push({
     key: "Name",
     value: data.name || "",
-    source: data.fieldSources?.name,
+    source: canonicalFields ? undefined : data.fieldSources?.name,
     italic: false,
   });
   seenKeys.add("name");
   pairs.push({
     key: "Variety",
     value: data.variety || data.latinName || "",
-    source: data.fieldSources?.variety || data.fieldSources?.latinName,
+    source: canonicalFields
+      ? undefined
+      : data.fieldSources?.variety || data.fieldSources?.latinName,
     italic: false,
   });
   seenKeys.add("variety");
@@ -133,7 +136,7 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
     pairs.push({
       key: "Latin Name",
       value: data.latinName,
-      source: data.fieldSources?.latinName,
+      source: canonicalFields ? undefined : data.fieldSources?.latinName,
       italic: true,
     });
     seenKeys.add("latinName");
@@ -142,7 +145,7 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
     pairs.push({
       key: "Brand",
       value: data.brand,
-      source: data.fieldSources?.brand,
+      source: canonicalFields ? undefined : data.fieldSources?.brand,
       italic: false,
     });
     seenKeys.add("brand");
@@ -151,7 +154,7 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
     pairs.push({
       key: "Year",
       value: String(data.year),
-      source: data.fieldSources?.year,
+      source: canonicalFields ? undefined : data.fieldSources?.year,
       italic: false,
     });
     seenKeys.add("year");
@@ -160,7 +163,7 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
     pairs.push({
       key: "Quantity",
       value: data.quantity,
-      source: data.fieldSources?.quantity,
+      source: canonicalFields ? undefined : data.fieldSources?.quantity,
       italic: false,
     });
     seenKeys.add("quantity");
@@ -169,7 +172,7 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
     pairs.push({
       key: "Days to Germination",
       value: data.daysToGermination,
-      source: data.fieldSources?.daysToGermination,
+      source: canonicalFields ? undefined : data.fieldSources?.daysToGermination,
       italic: false,
     });
     seenKeys.add("daysToGermination");
@@ -178,7 +181,7 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
     pairs.push({
       key: "Days to Maturity",
       value: data.daysToMaturity,
-      source: data.fieldSources?.daysToMaturity,
+      source: canonicalFields ? undefined : data.fieldSources?.daysToMaturity,
       italic: false,
     });
     seenKeys.add("daysToMaturity");
@@ -187,7 +190,7 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
     pairs.push({
       key: "Planting Depth",
       value: data.plantingDepth,
-      source: data.fieldSources?.plantingDepth,
+      source: canonicalFields ? undefined : data.fieldSources?.plantingDepth,
       italic: false,
     });
     seenKeys.add("plantingDepth");
@@ -196,7 +199,7 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
     pairs.push({
       key: "Spacing",
       value: data.spacing,
-      source: data.fieldSources?.spacing,
+      source: canonicalFields ? undefined : data.fieldSources?.spacing,
       italic: false,
     });
     seenKeys.add("spacing");
@@ -205,7 +208,7 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
     pairs.push({
       key: "Sun Requirement",
       value: data.sunRequirement,
-      source: data.fieldSources?.sunRequirement,
+      source: canonicalFields ? undefined : data.fieldSources?.sunRequirement,
       italic: false,
     });
     seenKeys.add("sunRequirement");
@@ -214,7 +217,7 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
     pairs.push({
       key: "Description",
       value: data.description,
-      source: data.fieldSources?.description,
+      source: canonicalFields ? undefined : data.fieldSources?.description,
       italic: false,
     });
     seenKeys.add("description");
@@ -223,7 +226,9 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
     pairs.push({
       key: "Planting Instructions",
       value: data.plantingInstructions,
-      source: data.fieldSources?.plantingInstructions,
+      source: canonicalFields
+        ? undefined
+        : data.fieldSources?.plantingInstructions,
       italic: false,
     });
     seenKeys.add("plantingInstructions");
@@ -255,7 +260,7 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
         pairs.push({
           key: pair.key,
           value: pair.value,
-          source: pair.source,
+          source: canonicalFields ? undefined : pair.source,
           italic: false,
         });
       }
@@ -640,14 +645,14 @@ export function AddSeedForm({
         !frontIsNew &&
         initialData?.photoFront?.startsWith("data:")
       ) {
-        (seedData as any).photoFront = initialData.photoFront;
+        seedData.photoFront = initialData.photoFront;
       }
       if (
         !photoBackPath &&
         !backIsNew &&
         initialData?.photoBack?.startsWith("data:")
       ) {
-        (seedData as any).photoBack = initialData.photoBack;
+        seedData.photoBack = initialData.photoBack;
       }
 
       await onSubmit(seedData);
@@ -678,7 +683,7 @@ export function AddSeedForm({
       "Sun Requirement": (val: string) => {
         const normalized = normalizeSunRequirement(val);
         if (normalized) setSunRequirement(normalized);
-        else setSunRequirement(val as any); // Allow verbatim text
+        else setSunRequirement(undefined);
       },
       Description: setDescription,
       "Planting Instructions": setPlantingInstructions,
@@ -1002,12 +1007,38 @@ export function AddSeedForm({
                     </div>
                   </div>
 
-                  {/* Front Data - Editable */}
+                  {/* Extracted Data - Editable */}
                   <div className="pr-2">
                     <div className="bg-white rounded-lg p-4 shadow-sm">
                       <h2 className="text-lg font-semibold text-[#4a5565] mb-3">
-                        Front image data
+                        Extracted seed data
                       </h2>
+                      {aiExtractedData?.canonicalExtraction && (
+                        <p className="text-xs text-[#6a7282] mb-3">
+                          Canonical fields combine all packet images. Front/back
+                          labels are retained only as scan evidence.
+                        </p>
+                      )}
+                      {aiExtractedData?.canonicalExtraction?.confidence !=
+                        null && (
+                        <p className="text-xs text-[#6a7282] mb-3">
+                          Confidence{" "}
+                          {Math.round(
+                            aiExtractedData.canonicalExtraction.confidence *
+                              100,
+                          )}
+                          %
+                          {aiExtractedData.canonicalExtraction.diagnostics
+                            .length > 0
+                            ? ` · ${aiExtractedData.canonicalExtraction.diagnostics.length} review note${
+                                aiExtractedData.canonicalExtraction.diagnostics
+                                  .length === 1
+                                  ? ""
+                                  : "s"
+                              }`
+                            : ""}
+                        </p>
+                      )}
                       {aiExtractedData ? (
                         <div className="overflow-x-auto">
                           <table className="w-full text-xs">
@@ -1020,8 +1051,12 @@ export function AddSeedForm({
                                   pair.key === "Description";
                                 const isScientificName =
                                   pair.key === "Latin Name";
-                                const sourceColor = "bg-blue-100 text-blue-700";
-                                const sourceLabel = "F";
+                                const sourceColor =
+                                  pair.source === "back"
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-blue-100 text-blue-700";
+                                const sourceLabel =
+                                  pair.source === "back" ? "B" : "F";
 
                                 // Get current value from form state
                                 const getCurrentValue = () => {
@@ -1060,11 +1095,13 @@ export function AddSeedForm({
                                     </td>
                                     <td className="py-1.5 text-[#101828]">
                                       <div className="flex items-start gap-2 min-w-0">
-                                        <span
-                                          className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 shrink-0 ${sourceColor}`}
-                                        >
-                                          {sourceLabel}
-                                        </span>
+                                        {pair.source && (
+                                          <span
+                                            className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 shrink-0 ${sourceColor}`}
+                                          >
+                                            {sourceLabel}
+                                          </span>
+                                        )}
                                         {isLongText ? (
                                           <AutoTextarea
                                             value={getCurrentValue()}
@@ -1588,13 +1625,14 @@ export function AddSeedForm({
                     </div>
                   </div>
 
-                  {/* Back Data - Editable */}
+                  {/* Legacy Back Data - Editable */}
                   <div className="pr-2">
                     <div className="bg-white rounded-lg p-4 shadow-sm">
                       <h2 className="text-lg font-semibold text-[#4a5565] mb-3">
-                        Back image data
+                        Back image evidence
                       </h2>
-                      {aiExtractedData &&
+                      {!aiExtractedData?.canonicalExtraction &&
+                      aiExtractedData &&
                       getKeyValuePairsBySource(aiExtractedData).back.length >
                         0 ? (
                         <div className="overflow-x-auto">
@@ -1704,7 +1742,8 @@ export function AddSeedForm({
                         </div>
                       ) : (
                         <p className="text-sm text-gray-400">
-                          Upload back image to extract data
+                          Back image evidence is folded into the canonical data
+                          above.
                         </p>
                       )}
                     </div>

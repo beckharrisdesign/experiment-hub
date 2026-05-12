@@ -6,6 +6,7 @@
  */
 
 import { ExtractedSeedData } from "./packetReader";
+import type { CanonicalExtractionResult } from "./packetExtraction";
 
 export interface AIExtractedData extends ExtractedSeedData {
   description?: string;
@@ -18,7 +19,13 @@ export interface AIExtractedData extends ExtractedSeedData {
     value: string;
     source?: "front" | "back";
   }>;
+  canonicalExtraction?: CanonicalExtractionResult;
+  /** @deprecated Use canonicalExtraction field evidence instead. */
   fieldSources?: Record<string, "front" | "back">;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
 /**
@@ -263,14 +270,17 @@ export function normalizeAIData(
     source?: "front" | "back";
   }> = [];
   if (data.rawKeyValuePairs && Array.isArray(data.rawKeyValuePairs)) {
-    rawPairs = data.rawKeyValuePairs.map((pair: any) => ({
-      key: String(pair.key || ""),
-      value: String(pair.value || ""),
-      source:
-        pair.source === "front" || pair.source === "back"
-          ? pair.source
-          : undefined,
-    }));
+    rawPairs = data.rawKeyValuePairs.map((pair) => {
+      const record = isRecord(pair) ? pair : {};
+      return {
+        key: String(record.key || ""),
+        value: String(record.value || ""),
+        source:
+          record.source === "front" || record.source === "back"
+            ? record.source
+            : undefined,
+      };
+    });
   }
 
   // Parse fieldSources
@@ -455,8 +465,8 @@ Copy text CHARACTER-BY-CHARACTER exactly as it appears. If a field is not visibl
   extracted.fieldSources = fieldSources;
 
   if (Array.isArray(extracted.rawKeyValuePairs)) {
-    extracted.rawKeyValuePairs = extracted.rawKeyValuePairs.map((p: any) => ({
-      ...p,
+    extracted.rawKeyValuePairs = extracted.rawKeyValuePairs.map((pair) => ({
+      ...(isRecord(pair) ? pair : {}),
       source: side,
     }));
   }
@@ -570,11 +580,12 @@ Rules:
 
   const str = (v: unknown) => (typeof v === "string" && v.trim()) || undefined;
   return parsed.seeds.map(
-    (raw: any): AIExtractedData => ({
-      name: str(raw.name),
-      variety: str(raw.variety),
-      brand: str(raw.brand),
-      year: typeof raw.year === "number" ? raw.year : undefined,
+    (raw): AIExtractedData => ({
+      name: str(isRecord(raw) ? raw.name : undefined),
+      variety: str(isRecord(raw) ? raw.variety : undefined),
+      brand: str(isRecord(raw) ? raw.brand : undefined),
+      year:
+        isRecord(raw) && typeof raw.year === "number" ? raw.year : undefined,
     }),
   );
 }
