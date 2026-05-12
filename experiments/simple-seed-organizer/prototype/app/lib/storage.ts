@@ -10,6 +10,10 @@ const PROFILE_STORAGE_KEY = 'simple-seed-organizer-profile';
 // Columns to exclude photos for fast initial load
 const SEEDS_COLUMNS_WITHOUT_PHOTOS =
   'id,user_id,name,variety,type,brand,source,year,purchase_date,quantity,days_to_germination,days_to_maturity,planting_depth,spacing,sun_requirement,planting_months,notes,use_first,custom_expiration_date,created_at,updated_at';
+const SEEDS_COLUMNS_WITHOUT_USER_ID =
+  'id,name,variety,type,brand,source,year,purchase_date,quantity,days_to_germination,days_to_maturity,planting_depth,spacing,sun_requirement,planting_months,notes,use_first,custom_expiration_date,created_at,updated_at';
+const LEGACY_SEEDS_COLUMNS_WITHOUT_PHOTOS =
+  'id,name,variety,type,brand,year,planting_months,notes,created_at,updated_at';
 
 /**
  * Get seed count for usage display (profile, limits).
@@ -41,10 +45,7 @@ export async function getSeedsWithoutPhotos(): Promise<Seed[]> {
   }
 
   try {
-    const { data, error } = await supabase
-      .from('seeds')
-      .select(SEEDS_COLUMNS_WITHOUT_PHOTOS)
-      .order('created_at', { ascending: false });
+    const { data, error } = await selectSeedsWithoutPhotos();
 
     if (error) {
       console.error('[Storage] Supabase error:', error);
@@ -59,6 +60,48 @@ export async function getSeedsWithoutPhotos(): Promise<Seed[]> {
     }
     throw new Error('Failed to load seeds from database');
   }
+}
+
+async function selectSeedsWithoutPhotos() {
+  const columnSets = [
+    SEEDS_COLUMNS_WITHOUT_PHOTOS,
+    SEEDS_COLUMNS_WITHOUT_USER_ID,
+    LEGACY_SEEDS_COLUMNS_WITHOUT_PHOTOS,
+  ];
+
+  let lastError: any = null;
+  for (const columns of columnSets) {
+    const { data, error } = await supabase!
+      .from('seeds')
+      .select(columns)
+      .order('created_at', { ascending: false });
+
+    if (!error) {
+      return { data, error: null };
+    }
+
+    lastError = error;
+    if (!isMissingColumnError(error)) {
+      return { data: null, error };
+    }
+
+    console.warn(
+      '[Storage] Seed list query hit a missing column; retrying with a compatible column set:',
+      error.message,
+    );
+  }
+
+  return { data: null, error: lastError };
+}
+
+function isMissingColumnError(error: any): boolean {
+  const message = String(error?.message ?? '').toLowerCase();
+  return (
+    error?.code === '42703' ||
+    error?.code === 'PGRST204' ||
+    (message.includes('column') && message.includes('does not exist')) ||
+    (message.includes('could not find') && message.includes('schema cache'))
+  );
 }
 
 /**
@@ -465,7 +508,7 @@ function convertDbSeedToSeed(dbSeed: any): Seed {
     plantingDepth: dbSeed.planting_depth || undefined,
     spacing: dbSeed.spacing || undefined,
     sunRequirement: dbSeed.sun_requirement || undefined,
-    plantingMonths: dbSeed.planting_months ? JSON.parse(dbSeed.planting_months) : undefined,
+    plantingMonths: parsePlantingMonths(dbSeed.planting_months),
     notes: dbSeed.notes || undefined,
     photoFront: getPhotoUrl(dbSeed.photo_front_path) || dbSeed.photo_front || undefined,
     photoBack: getPhotoUrl(dbSeed.photo_back_path) || dbSeed.photo_back || undefined,
@@ -517,7 +560,7 @@ function convertDbSeedToSeedWithUrls(dbSeed: any, photoFront?: string, photoBack
     plantingDepth: dbSeed.planting_depth || undefined,
     spacing: dbSeed.spacing || undefined,
     sunRequirement: dbSeed.sun_requirement || undefined,
-    plantingMonths: dbSeed.planting_months ? JSON.parse(dbSeed.planting_months) : undefined,
+    plantingMonths: parsePlantingMonths(dbSeed.planting_months),
     notes: dbSeed.notes || undefined,
     photoFront: photoFront || undefined,
     photoBack: photoBack || undefined,
@@ -528,6 +571,39 @@ function convertDbSeedToSeedWithUrls(dbSeed: any, photoFront?: string, photoBack
     createdAt: dbSeed.created_at,
     updatedAt: dbSeed.updated_at,
   };
+}
+
+function parsePlantingMonths(value: unknown): number[] | undefined {
+  if (value == null || value === '') return undefined;
+
+  if (Array.isArray(value)) {
+    const months = value.filter(isPlantingMonth);
+    return months.length > 0 ? months : undefined;
+  }
+
+  if (typeof value !== 'string') return undefined;
+
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) {
+      const months = parsed.filter(isPlantingMonth);
+      return months.length > 0 ? months : undefined;
+    }
+  } catch {
+    const months = value
+      .split(',')
+      .map((month) => Number(month.trim()))
+      .filter(isPlantingMonth);
+    if (months.length > 0) return months;
+
+    console.warn('[Storage] Ignoring invalid planting_months value:', value);
+  }
+
+  return undefined;
+}
+
+function isPlantingMonth(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 12;
 }
 
 // Profile storage functions (keeping localStorage for now, can migrate later)
