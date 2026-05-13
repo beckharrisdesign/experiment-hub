@@ -92,4 +92,25 @@ describe("seed converters", () => {
     expect(dbUpdate.variety).toBeUndefined();
     expect(dbUpdate.spacing).toBeUndefined();
   });
+
+  it("round-trips a manual-only seed entry without packet extraction data", () => {
+    const manualSeed: Seed = {
+      id: "seed-manual",
+      name: "Beans",
+      variety: "Provider",
+      type: "vegetable",
+      notes: "Direct sow after danger of frost.",
+      createdAt: "2026-05-13T00:00:00Z",
+      updatedAt: "2026-05-13T00:00:00Z",
+    };
+
+    const dbSeed = convertSeedToDbSeed(manualSeed, { mode: "insert" });
+    const roundTripped = convertDbSeedToSeed(dbSeed);
+
+    expect(roundTripped.name).toBe("Beans");
+    expect(roundTripped.variety).toBe("Provider");
+    expect(roundTripped.notes).toBe("Direct sow after danger of frost.");
+    expect(roundTripped.rawPacketText).toBeUndefined();
+    expect(roundTripped.instructionAnnotations).toBeUndefined();
+  });
 });
