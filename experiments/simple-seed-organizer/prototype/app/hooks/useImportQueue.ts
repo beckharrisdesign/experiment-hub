@@ -25,6 +25,30 @@ export type QueueStatus =
   | "queued_seed_image"
   | "needs_review";
 
+interface QueueExtractionFailurePatch {
+  status: QueueStatus;
+  errorMessage: string;
+}
+
+export function buildQueueExtractionFailurePatch(
+  statusCode: number,
+  message?: string,
+): QueueExtractionFailurePatch {
+  if (statusCode === 402) {
+    return {
+      status: "queued_seed_image",
+      errorMessage:
+        "AI limit reached. You can enter details manually now or retry when your limit resets.",
+    };
+  }
+
+  return {
+    status: "needs_review",
+    errorMessage:
+      message || "I couldn't read that packet. Try again or enter details manually.",
+  };
+}
+
 export interface QueueItem {
   id: string;
   file: File;
@@ -143,22 +167,11 @@ export function useImportQueue({ userId }: UseImportQueueOptions) {
         }
 
         if (!res.ok) {
-          if (res.status === 402) {
-            // Token limit reached — keep the image in queue so it can be
-            // edited manually now or retried when the limit resets.
-            updateItem(item.id, {
-              status: "queued_seed_image",
-              errorMessage:
-                "AI limit reached. You can enter details manually now or retry when your limit resets.",
-            });
-          } else {
-            updateItem(item.id, {
-              status: "needs_review",
-              errorMessage:
-                json.message ||
-                "I couldn't read that packet. Try again or enter details manually.",
-            });
-          }
+          // Keep captured images in queue and steer users into manual fallback.
+          updateItem(
+            item.id,
+            buildQueueExtractionFailurePatch(res.status, json.message),
+          );
           autoSaveIdsRef.current.delete(item.id);
           return;
         }

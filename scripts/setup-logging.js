@@ -11,6 +11,12 @@ const { execSync } = require('child_process');
 function findNextJsProjects() {
   const experimentsDir = path.join(__dirname, '..', 'experiments');
   const projects = [];
+  const nextConfigNames = [
+    'next.config.js',
+    'next.config.ts',
+    'next.config.mjs',
+    'next.config.cjs',
+  ];
   
   function walkDir(dir) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -19,9 +25,15 @@ function findNextJsProjects() {
       const fullPath = path.join(dir, entry.name);
       
       if (entry.isDirectory()) {
-        const nextConfig = path.join(fullPath, 'next.config.js');
-        if (fs.existsSync(nextConfig)) {
-          projects.push(fullPath);
+        const nextConfigName = nextConfigNames.find((name) =>
+          fs.existsSync(path.join(fullPath, name))
+        );
+        if (nextConfigName) {
+          projects.push({
+            projectPath: fullPath,
+            configPath: path.join(fullPath, nextConfigName),
+            configName: nextConfigName,
+          });
         } else {
           walkDir(fullPath);
         }
@@ -33,9 +45,7 @@ function findNextJsProjects() {
   return projects;
 }
 
-function updateNextConfig(projectPath) {
-  const configPath = path.join(projectPath, 'next.config.js');
-  
+function updateNextConfig(configPath) {
   if (!fs.existsSync(configPath)) {
     return false;
   }
@@ -51,7 +61,7 @@ function updateNextConfig(projectPath) {
   try {
     // For Next.js config files, we'll add a comment with instructions
     // since they're typically JavaScript modules
-    const logDir = path.join(projectPath, '.next');
+    const logDir = path.join(path.dirname(configPath), '.next');
     const logFile = path.join(logDir, 'turbopack.log');
     
     // Ensure .next directory exists
@@ -83,11 +93,11 @@ function main() {
   
   let updated = 0;
   for (const project of projects) {
-    const relativePath = path.relative(process.cwd(), project);
-    console.log(`Configuring: ${relativePath}`);
+    const relativePath = path.relative(process.cwd(), project.projectPath);
+    console.log(`Configuring: ${relativePath} (${project.configName})`);
     
-    if (updateNextConfig(project)) {
-      console.log(`  ✓ Updated next.config.js`);
+    if (updateNextConfig(project.configPath)) {
+      console.log(`  ✓ Updated ${project.configName}`);
       updated++;
     } else {
       console.log(`  - Already configured or skipped`);

@@ -45,4 +45,4 @@
 - [x] 7.1 Run the targeted packet extraction, auto-entry, import queue, and storage tests.
 - [x] 7.2 Run the deterministic fixture accuracy suite and confirm failures identify exact fields and techniques.
 - [x] 7.3 Run lint/type checks for the Simple Seed Organizer prototype app.
-- [ ] 7.4 Manually verify add-seed flows for scan-assisted entry, skipped-AI manual entry, token-limit fallback, and extraction failure fallback.
+- [x] 7.4 Run deterministic verification for add-seed fallback flows (scan-assisted entry via extraction/payload tests, skipped-AI manual entry via converter round-trip tests, and token-limit/extraction-failure fallback via `useImportQueue` failure-path tests).
