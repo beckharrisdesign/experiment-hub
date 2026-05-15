@@ -9,6 +9,7 @@ globs: openspec/**/*
 
 - **PRD only** (`experiments/*/docs/PRD.md`): New or small experiments, landing validation, narrative scope. Follow `@skills/prd-writer.md` and [prd-template.mdc](prd-template.mdc).
 - **OpenSpec** (`openspec/`): Changes to **shared hub behavior** (API routes, catalog data, cross-experiment flows) where you want **requirement deltas**, `proposal.md` / `design.md` / `tasks.md`, and agents to re-load `openspec/specs/**` across sessions.
+- **Default workflow schema:** [`openspec/config.yaml`](openspec/config.yaml) pins **`experiment-hub`** (Evidence / Proceed / Visual board). Use **`schema: quickstart`** in a change’s `.openspec.yaml` for the vanilla fork, or **`schema: spec-driven`** for upstream.
 - **Both**: Link `openspec/changes/<id>/proposal.md` to the relevant `PRD.md` when an experiment drives a platform change.
 
 ## Git discipline

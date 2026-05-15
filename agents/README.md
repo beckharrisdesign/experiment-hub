@@ -28,6 +28,8 @@ Each step requires explicit user approval before proceeding. Agents present prop
 
 Use [OpenSpec](https://openspec.dev/) for **shared hub** work when you want living requirements beside code (`openspec/specs/<capability>/spec.md`), reviewable deltas, and change packages (`proposal.md`, `design.md`, `tasks.md`). Keep experiment **PRDs** as the narrative source for validation; add OpenSpec when the change alters **cross-experiment** APIs, data, or UI patterns.
 
+- **Default workflow schema:** [`openspec/config.yaml`](openspec/config.yaml) uses **`experiment-hub`** (hub ladder sections in templates). Opt out per change with `schema: quickstart` (vanilla fork) or `schema: spec-driven` in `.openspec.yaml`.
+
 - **Cursor:** `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore` (see `.cursor/commands/`; restart IDE after first install if commands are missing).
 - **Claude Code:** matching commands under `.claude/commands/opsx/`.
 - **Details:** `openspec/README.md`, `.cursor/rules/openspec-workflow.mdc`, and Figma linkage rules in `.cursor/rules/figma.mdc` (OpenSpec `design.md` section).
