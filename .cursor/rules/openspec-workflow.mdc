@@ -7,10 +7,11 @@ globs: openspec/**/*
 
 ## When to use what
 
-- **PRD only** (`experiments/*/docs/PRD.md`): New or small experiments, landing validation, narrative scope. Follow `@skills/prd-writer.md` and [prd-template.mdc](prd-template.mdc).
-- **OpenSpec** (`openspec/`): Changes to **shared hub behavior** (API routes, catalog data, cross-experiment flows) where you want **requirement deltas**, `proposal.md` / `design.md` / `tasks.md`, and agents to re-load `openspec/specs/**` across sessions.
-- **Both**: Link `openspec/changes/<id>/proposal.md` to the relevant `PRD.md` when an experiment drives a platform change.
-
+- **OpenSpec lite** (default): **`experiment-hub-lite`** in [`openspec/config.yaml`](openspec/config.yaml) is the spike package — Human anchor, Outcomes, specs (≤5 requirements), design (Figma/breakpoints for UI), tasks §1 = user scenarios. `/opsx:propose` creates **one artifact per approval** when using lite. Strategist conversation → anchor in `proposal.md` → opsx for the rest.
+- **PRD track** (optional): `@skills/prd-writer.md` can still produce `experiments/*/docs/PRD.md` for commercial narrative; lite proposal links it instead of duplicating TAM or business case.
+- **OpenSpec full** (`schema: experiment-hub` in `.openspec.yaml`): Sponsor Evidence / Proceed, Visual board in proposal, multi-capability hub platform work.
+- **OpenSpec vanilla**: `schema: quickstart` or upstream `spec-driven`.
+- **Shared hub behavior**: Use `openspec/` for APIs, catalog, cross-experiment flows; link `proposal.md` to `PRD.md` when an experiment drives platform work.
 ## Git discipline
 
 Match [github-workflow.mdc](github-workflow.mdc): one branch per logical unit (e.g. `cursor/<descriptor>`), one PR, agent does not merge. Align an active change folder name with that branch when practical.

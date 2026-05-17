@@ -36,6 +36,18 @@
     "port": 3003
   },
   {
+    "id": "proto-photo-filters-banner",
+    "title": "Photo Filters Banner Studio",
+    "description": "Client-only photo ingest, filter presets, banner overlays, and PNG download",
+    "linkPath": "experiments/photo-filters-banner/prototype",
+    "experimentId": "photo-filters-banner",
+    "status": "Active",
+    "createdDate": "2026-05-16",
+    "lastModified": "2026-05-16",
+    "tags": ["photo", "canvas", "filters", "download"],
+    "port": 3009
+  },
+  {
     "id": "proto-pbn-research",
     "title": "PBN Research Lab Prototype",
     "description": "Compare PBN pipeline variants A/B/C, score in-browser, log runs locally",

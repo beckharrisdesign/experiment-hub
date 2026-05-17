@@ -17,6 +17,7 @@
     "setup:logging": "node scripts/setup-logging.js",
     "sitemap:capture": "node scripts/capture-site-map.js",
     "dev:landing": "cd experiments/simple-seed-organizer/prototype/validation-landing && pnpm install && pnpm dev",
+    "dev:photo-filters-banner": "cd experiments/photo-filters-banner/prototype && npm install && npm run dev",
     "skills:sync": "node scripts/sync-skills.js"
   },
   "dependencies": {

@@ -34,6 +34,7 @@ This agent helps refine experiment ideas and creates structured experiment entri
 
 ## Output
 
+- **Human anchor** (for OpenSpec lite): 1–3 sentences of founder prose verbatim — paste into `/opsx:propose` proposal or save as `experiments/<slug>/docs/intent.md`
 - **Experiment Statement**: Clear, concise statement of what is being attempted
 - **Directory Structure**: Created experiment directory in `experiments/` folder
 - **Metadata**: JSON entry in `data/experiments.json` with:

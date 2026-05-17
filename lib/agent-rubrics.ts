@@ -38,8 +38,9 @@ export const agentRubrics: AgentRubric[] = [
     role: "Product Strategist",
     file: "skills/experiment-creator.md",
     input: "Raw idea",
-    output: "Structured experiment with directory and metadata",
+    output: "Structured experiment with directory and metadata; Human anchor prose for OpenSpec lite proposal",
     rubric: [
+      "Captures founder words verbatim (1–3 sentences) as Human anchor for `/opsx:propose` (experiment-hub-lite)",
       "Refines the concept before creating any files",
       "Generates a one-line statement that must pass the passion + market need + social impact test",
       "Proposes tags from the established experiment taxonomy",
