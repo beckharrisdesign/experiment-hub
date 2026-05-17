@@ -256,5 +256,6 @@ apply:
     - tasks
   tracks: tasks.md
   instruction: |
-    Read context files, work through pending tasks, mark complete as you go.
-    Pause if you hit blockers or need clarification.
+    Read `skills/openspec-apply-change.md` and `skills/prototype-builder.md`. Read context files, work through pending tasks, mark complete as you go. Pause if you hit blockers or need clarification.
+
+    **When apply finishes** (tasks done, paused with progress, or blocked after coding): follow `skills/openspec-apply-change.md` step 8 — commit (conventional message per `.cursor/rules/commit-messages.mdc`; brief but substantive body; branch `cursor/<change-name>` when applicable), push, open or update a **draft** PR via `gh` so CI/CD runs. Skip only if the session changed no files. Never merge or approve the PR.

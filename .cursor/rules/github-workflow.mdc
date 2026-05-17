@@ -12,8 +12,9 @@ globs:
 
 ## Pull requests
 
-- **Always open a PR** when a feature, fix, or test task is complete. Create it via GitHub MCP tools.
-- **Never merge the PR.** Katy reviews CI checks and the Vercel preview before merging.
+- **Always open a PR** when a feature, fix, or test task is complete. Use the **GitHub CLI** (`gh`) — e.g. `gh pr create --draft`.
+- **OpenSpec `/opsx:apply`:** Commit/push/PR timing lives in the active schema’s `apply.instruction` (see `openspec/schemas/*/schema.yaml`) and `skills/openspec-apply-change.md` step 8 — not duplicated here.
+- **Never merge or approve the PR.** Katy reviews CI checks and the Vercel preview, then merges herself. Agents must not run `gh pr merge`, approve reviews, or mark ready for review unless she explicitly asks.
 - **One PR per logical unit of work.** Don't bundle unrelated changes.
 - **Never have two PRs open for the same work item.** If a PR exists for the current task, push additional fixes to that branch rather than opening a new PR. Keep iterating on the existing PR until all checks pass.
 - **PR description** must include: what changed, why, and a test plan (how to verify it works).
