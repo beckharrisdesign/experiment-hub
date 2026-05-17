@@ -1,5 +1,5 @@
 ---
-name: /opsx-explore
+name: /opsx:explore
 id: opsx-explore
 category: Workflow
 description: Explore ideas before or during an OpenSpec change

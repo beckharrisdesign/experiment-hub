@@ -1,5 +1,5 @@
 ---
-name: /opsx-propose
+name: /opsx:propose
 id: opsx-propose
 category: Workflow
 description: Propose a new OpenSpec change (artifacts per schema)

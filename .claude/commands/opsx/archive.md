@@ -1,5 +1,5 @@
 ---
-name: /opsx-archive
+name: /opsx:archive
 id: opsx-archive
 category: Workflow
 description: Archive a completed OpenSpec change
