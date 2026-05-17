@@ -12,6 +12,7 @@ globs: openspec/**/*
 - **OpenSpec full** (`schema: experiment-hub` in `.openspec.yaml`): Sponsor Evidence / Proceed, Visual board in proposal, multi-capability hub platform work.
 - **OpenSpec vanilla**: `schema: quickstart` or upstream `spec-driven`.
 - **Shared hub behavior**: Use `openspec/` for APIs, catalog, cross-experiment flows; link `proposal.md` to `PRD.md` when an experiment drives platform work.
+
 ## Git discipline
 
 Match [github-workflow.mdc](github-workflow.mdc): one branch per logical unit (e.g. `cursor/<descriptor>`), one PR, agent does not merge. Align an active change folder name with that branch when practical.
@@ -19,6 +20,23 @@ Match [github-workflow.mdc](github-workflow.mdc): one branch per logical unit (e
 ## Figma and `design.md`
 
 UI-impacting changes MUST document design context in `design.md` (see [figma.mdc](figma.mdc) § OpenSpec).
+
+## Single source of truth (opsx workflow)
+
+Edit OpenSpec agent workflow **only** under [`skills/`](../../skills/):
+
+| Slash command   | Skill file                                                                     |
+| --------------- | ------------------------------------------------------------------------------ |
+| `/opsx:propose` | [`skills/openspec-propose.md`](../../skills/openspec-propose.md)               |
+| `/opsx:apply`   | [`skills/openspec-apply-change.md`](../../skills/openspec-apply-change.md)     |
+| `/opsx:archive` | [`skills/openspec-archive-change.md`](../../skills/openspec-archive-change.md) |
+| `/opsx:explore` | [`skills/openspec-explore.md`](../../skills/openspec-explore.md)               |
+
+`.cursor/commands/opsx-*.md` and `.claude/commands/opsx/*.md` are stubs that point here — do not duplicate steps in command files. Claude Code copies `skills/*.md` → `.claude/skills/` on session start (gitignored).
+
+## Artifacts output (all opsx commands)
+
+Agents MUST end responses with `## Artifacts` when they create, update, or move files under `openspec/changes/`. Build links from OpenSpec CLI JSON (`changeDir`, `outputPath`, globs, `contextFiles`, `openspec status --json`) so the rule works for every schema. Full rules: [`skills/openspec-artifacts-output.md`](../../skills/openspec-artifacts-output.md).
 
 ## Archiving
 

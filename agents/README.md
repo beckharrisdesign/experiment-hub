@@ -40,8 +40,7 @@ Use [OpenSpec](https://openspec.dev/) for living requirements beside code (`open
 
 - **Default workflow schema:** [`openspec/config.yaml`](openspec/config.yaml) uses **`experiment-hub-lite`** (intent-first spikes). Override per change: `schema: experiment-hub` (sponsor ladder), `schema: quickstart` (vanilla).
 
-- **Cursor:** `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore` (see `.cursor/commands/`; restart IDE after first install if commands are missing).
-- **Claude Code:** matching commands under `.claude/commands/opsx/`.
+- **Cursor / Claude Code:** `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore` — stubs in `.cursor/commands/` and `.claude/commands/opsx/`; **edit workflow only in** `skills/openspec-*.md` (see `.cursor/rules/openspec-workflow.mdc`).
 - **Details:** `openspec/README.md`, `.cursor/rules/openspec-workflow.mdc`, and Figma linkage rules in `.cursor/rules/figma.mdc` (OpenSpec `design.md` section).
 
 Branch and PR expectations follow [`.cursor/rules/github-workflow.mdc`](../.cursor/rules/github-workflow.mdc) (e.g. `cursor/<short-descriptor>`, one PR per unit, no agent merge).

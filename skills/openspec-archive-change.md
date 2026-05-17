@@ -1,6 +1,6 @@
 ---
 name: openspec-archive-change
-description: Archive a completed change in the experimental workflow. Use when the user wants to finalize and archive a change after implementation is complete.
+description: Archive a completed change in the experimental workflow. Use for /opsx:archive or when the user wants to finalize and archive a change after implementation is complete.
 license: MIT
 compatibility: Requires openspec CLI.
 metadata:
@@ -68,6 +68,7 @@ Archive a completed change in the experimental workflow.
 5. **Perform the archive**
 
    Create the archive directory if it doesn't exist:
+
    ```bash
    mkdir -p openspec/changes/archive
    ```
@@ -91,6 +92,8 @@ Archive a completed change in the experimental workflow.
    - Whether specs were synced (if applicable)
    - Note about any warnings (incomplete artifacts/tasks)
 
+**Artifacts output (required):** Follow [`skills/openspec-artifacts-output.md`](openspec-artifacts-output.md). End the success message with `## Artifacts` linking `openspec/changes/archive/YYYY-MM-DD-<name>/` (and any spec files updated during sync).
+
 **Output On Success**
 
 ```
@@ -105,6 +108,7 @@ All artifacts complete. All tasks complete.
 ```
 
 **Guardrails**
+
 - Always prompt for change selection if not provided
 - Use artifact graph (openspec status --json) for completion checking
 - Don't block archive on warnings - just inform and confirm

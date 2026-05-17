@@ -1,6 +1,6 @@
 ---
 name: openspec-apply-change
-description: Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks.
+description: Implement tasks from an OpenSpec change. Use for /opsx:apply or when the user wants to start implementing, continue implementation, or work through tasks.
 license: MIT
 compatibility: Requires openspec CLI.
 metadata:
@@ -25,9 +25,11 @@ Implement tasks from an OpenSpec change.
    Always announce: "Using change: <name>" and how to override (e.g., `/opsx:apply <other>`).
 
 2. **Check status to understand the schema**
+
    ```bash
    openspec status --change "<name>" --json
    ```
+
    Parse the JSON to understand:
    - `schemaName`: The workflow being used (e.g., "spec-driven")
    - Which artifact contains the tasks (typically "tasks" for spec-driven, check status for others)
@@ -87,6 +89,8 @@ Implement tasks from an OpenSpec change.
    - If all done: suggest archive
    - If paused: explain why and wait for guidance
 
+**Artifacts output (required):** Follow [`skills/openspec-artifacts-output.md`](openspec-artifacts-output.md). After reading `contextFiles`, include `## Artifacts` with repo-relative links to every context path (and any `tasks.md` or change file edited this session). On session end or when all tasks are `[x]`, list all artifact files for the change via status JSON.
+
 **Output During Implementation**
 
 ```
@@ -139,6 +143,7 @@ What would you like to do?
 ```
 
 **Guardrails**
+
 - Keep going through tasks until done or blocked
 - Always read context files before starting (from the apply instructions output)
 - If task is ambiguous, pause and ask before implementing

@@ -32,7 +32,7 @@ Invocable skills and agents live in `skills/` — reference with `@skills/<name>
 
 See `agents/README.md` for the experiment workflow and approval checkpoints.
 
-- **OpenSpec:** slash commands `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`; skills under `.cursor/skills/openspec-*` and `skills/openspec-*.md` (Claude hook sync).
+- **OpenSpec:** `/opsx:*` slash commands (stubs in `.cursor/commands/`) → full workflow in `skills/openspec-*.md` only; see `.cursor/rules/openspec-workflow.mdc`.
 
 ## Cursor-specific
 
