@@ -14,7 +14,6 @@ Keep market research short and decision-focused. The goal is a document you can 
 1. Executive Summary
 2. Market Opportunity
 3. Competitive Landscape
-4. Recommendation
 
 **Sections to exclude** — do not generate these:
 
@@ -48,8 +47,6 @@ Keep market research short and decision-focused. The goal is a document you can 
 **Market Opportunity Assessment**: **{HIGH/MEDIUM-HIGH/MEDIUM/LOW}**
 [1–2 sentences on the core opportunity or concern.]
 
-**Go/No-Go Recommendation**: **{GO/NO-GO}** — [one sentence rationale]
-
 ---
 
 ## Market Opportunity
@@ -69,13 +66,6 @@ Keep market research short and decision-focused. The goal is a document you can 
 
 ---
 
-## Recommendation
-
-**[GO/NO-GO]** — [2–3 sentences: the core rationale, the biggest risk to watch, and the suggested first validation step.]
-```
-
----
-
 ## Parsing compatibility
 
 The UI parses specific patterns from the **Executive Summary** section to populate metric cards. Use these exact formats:
@@ -90,3 +80,4 @@ The UI parses specific patterns from the **Executive Summary** section to popula
 Do not rename these labels. The parser matches them by regex.
 
 **Acronyms (style):** On first use in the document, spell out the full term followed by the abbreviation in parentheses (e.g. _total addressable market (TAM)_). Parser bullets must still use the `**TAM**:` / `**SAM**:` / `**SOM (Year N)**:` labels — place the definitions line **immediately above** `**Key Findings:**` in the Executive Summary, then use TAM, SAM, and SOM alone in prose below.
+```
