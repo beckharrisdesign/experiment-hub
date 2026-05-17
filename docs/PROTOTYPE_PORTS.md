@@ -14,6 +14,7 @@ This document tracks port assignments for running experiment prototypes. The Exp
 | 3006 | Experience Principles Repository           | `experiments/experience-principles-repository/prototype`         |
 | 3007 | Best Day Ever                              | `experiments/best-day-ever/prototype`                            |
 | 3008 | Simple Seed Organizer (Validation Landing) | `experiments/simple-seed-organizer/prototype/validation-landing` |
+| 3009 | Photo Filters Banner Studio                | `experiments/photo-filters-banner/prototype`                     |
 | 3010 | PBN Research Lab                           | `experiments/pbn-research/prototype`                             |
 
 ## Running Prototypes
