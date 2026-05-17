@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-cd "$CLAUDE_PROJECT_DIR"
+cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
 # Always sync project skills so `/skill-name` works in local Claude Code, not only on web.
 # Source of truth: skills/ — .claude/skills/*.md is gitignored (see .gitignore).

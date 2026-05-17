@@ -19,7 +19,7 @@ input=$(cat)
 tool=$(echo "$input" | jq -r '.tool_name // ""')
 command=$(echo "$input" | jq -r '.tool_input.command // ""')
 
-if [ "$tool" = "Bash" ]; then
+if [ "$tool" = "Bash" ] || [ "$tool" = "Shell" ]; then
   # Block force push to main or master
   if echo "$command" | grep -qE 'git push.*(--force|-f).*(main|master)'; then
     echo "Blocked: force push to main/master is not allowed." >&2
