@@ -83,3 +83,5 @@ apply:
     **Package manager:** Match README and root `package.json` scripts (this repo often uses `npm`).
 
     **Completion:** User runs manual §1 checks before `/opsx:archive`. Do not archive until outcomes checkboxes are satisfied or explicitly waived.
+
+    **When apply finishes** (tasks done, paused with progress, or blocked after coding): follow `skills/openspec-apply-change.md` step 8 — commit (conventional message per `.cursor/rules/commit-messages.mdc`; brief but substantive body; branch `cursor/<change-name>` when applicable), push, open or update a **draft** PR via `gh` so CI/CD runs. Skip only if the session changed no files. Never merge or approve the PR.

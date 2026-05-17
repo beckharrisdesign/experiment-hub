@@ -89,6 +89,37 @@ Implement tasks from an OpenSpec change.
    - If all done: suggest archive
    - If paused: explain why and wait for guidance
 
+8. **When apply finishes: commit, push, refresh PR**
+
+   Run this **once per `/opsx:apply` session**, after step 6 ends (all tasks done, paused with progress, or blocked after coding). Invoking apply is Katy’s signal to land work on GitHub so **CI/CD and tests run**—do not wait for a separate “please commit.”
+
+   **Skip only** if the session changed no files (e.g. blocked before step 6) or git is unavailable—say so explicitly.
+
+   a. **Branch** — [github-workflow.mdc](../.cursor/rules/github-workflow.mdc): never on `main`. Use `cursor/<descriptor>` in kebab-case; **descriptor = OpenSpec change name** when one exists (e.g. change `openspec-artifact-links` → branch `cursor/openspec-artifact-links`). Create and check out the branch before committing if needed.
+
+   b. **Commit** — Stage only files touched this apply session (implementation + `tasks.md` checkboxes). [commit-messages.mdc](../.cursor/rules/commit-messages.mdc):
+   - **Subject:** `<type>(<scope>): <imperative>` — max 50 chars, lowercase start, no period. Scope = area or change slug (e.g. `openspec`, `sso`, `experiments`).
+   - **Body:** **Brief but substantive** — 1–3 sentences: what shipped this session and why it matters (not a file list, not “WIP”). Wrap at 72 chars.
+   - **Type:** `feat` for new behavior, `fix` for bugs, `docs` for workflow/docs-only, `test` for tests-only.
+   - Use a HEREDOC for the message.
+
+   Example:
+
+   ```
+   feat(openspec): wire artifact links into apply skill
+
+   End /opsx:apply with commit and draft PR so CI runs. Step 8
+   documents branch naming and conventional commit format.
+   ```
+
+   c. **Push** — `git push -u origin HEAD` (or push to the existing feature branch).
+
+   d. **PR** — If no open PR for this branch: `gh pr create --draft` with summary, why, and test plan (brief but substantive, same bar as the commit). If a PR exists: push only; CI re-runs.
+
+   e. **Report** — In the completion or pause summary, include commit subject, PR URL, and that checks are running.
+
+   **Never:** `gh pr merge`, approve/review the PR, or mark ready for review unless Katy explicitly asks.
+
 **Artifacts output (required):** Follow [`skills/openspec-artifacts-output.md`](openspec-artifacts-output.md). After reading `contextFiles`, include `## Artifacts` with repo-relative links to every context path (and any `tasks.md` or change file edited this session). On session end or when all tasks are `[x]`, list all artifact files for the change via status JSON.
 
 **Output During Implementation**
@@ -120,6 +151,8 @@ Working on task 4/7: <task description>
 ...
 
 All tasks complete! Ready to archive this change.
+
+**PR:** https://github.com/beckharrisdesign/experiment-hub/pull/NNN (draft — CI running)
 ```
 
 **Output On Pause (Issue Encountered)**
@@ -139,11 +172,14 @@ All tasks complete! Ready to archive this change.
 2. <option 2>
 3. Other approach
 
+**PR:** https://github.com/beckharrisdesign/experiment-hub/pull/NNN (draft — CI running; partial apply committed)
+
 What would you like to do?
 ```
 
 **Guardrails**
 
+- **`/opsx:apply` finishes with git:** when the session ends, commit (brief substantive message + naming conventions) + push + PR refresh if any files changed; overrides global “commit only when asked” for this repo
 - Keep going through tasks until done or blocked
 - Always read context files before starting (from the apply instructions output)
 - If task is ambiguous, pause and ask before implementing
