@@ -24,11 +24,21 @@ Use **`business-case-writer`** when you want a full narrative business case (GO/
 
 Each step requires explicit user approval before proceeding. Agents present proposals and wait — they don't auto-chain.
 
+### Unified spike path (skills + OpenSpec lite)
+
+You do not choose “agents first” vs “opsx first” for spikes:
+
+1. **`experiment-creator`** (or founder paste) → Human anchor prose (also `experiments/<slug>/docs/intent.md` if you want).
+2. **`/opsx:propose`** with default schema **`experiment-hub-lite`** → proposal → specs → design → tasks (one artifact per approval).
+3. **`/opsx:apply`** → prototype under `experiments/<slug>/prototype/` (prototype-builder voice via schema apply instructions).
+
+Optional: run **`prd-writer`** before opsx if you want a full `docs/PRD.md`; lite proposal links it under Optional links.
+
 ## OpenSpec (hub platform specs)
 
-Use [OpenSpec](https://openspec.dev/) for **shared hub** work when you want living requirements beside code (`openspec/specs/<capability>/spec.md`), reviewable deltas, and change packages (`proposal.md`, `design.md`, `tasks.md`). Keep experiment **PRDs** as the narrative source for validation; add OpenSpec when the change alters **cross-experiment** APIs, data, or UI patterns.
+Use [OpenSpec](https://openspec.dev/) for living requirements beside code (`openspec/specs/<capability>/spec.md`), reviewable deltas, and change packages (`proposal.md`, `design.md`, `tasks.md`).
 
-- **Default workflow schema:** [`openspec/config.yaml`](openspec/config.yaml) uses **`experiment-hub`** (hub ladder sections in templates). Opt out per change with `schema: quickstart` (vanilla fork) or `schema: spec-driven` in `.openspec.yaml`.
+- **Default workflow schema:** [`openspec/config.yaml`](openspec/config.yaml) uses **`experiment-hub-lite`** (intent-first spikes). Override per change: `schema: experiment-hub` (sponsor ladder), `schema: quickstart` (vanilla).
 
 - **Cursor:** `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore` (see `.cursor/commands/`; restart IDE after first install if commands are missing).
 - **Claude Code:** matching commands under `.claude/commands/opsx/`.

@@ -1,20 +1,14 @@
 # Project OpenSpec defaults (see `@fission-ai/openspec` project-config).
 # New changes use `schema` unless overridden in openspec/changes/<name>/.openspec.yaml.
-schema: experiment-hub
+schema: experiment-hub-lite
 
 context: |
-  Experiment Hub workflow (experiment-hub schema):
+  Experiment Hub workflow (experiment-hub-lite schema — default for spikes):
 
-  Ladder — human-authored anchor → flexible discovery → Proceed on rubric → OpenSpec proposal/spec/tasks.
+  **Human anchor** — founder prose quoted in proposal.md (or experiments/<slug>/docs/intent.md) before specs/design/tasks.
 
-  **Human anchor** — cite founder prose in-repo (README, charter, PRD stub, pasted note) before wide autonomous discovery
-  unless founder waived. Research-first / contract-first allowed.
+  **Outcomes-first** — Who / Job / Done when drive specs (max 5 requirements) and tasks §1 (user-visible checkboxes).
 
-  **Discovery** — flexible: experiments/<slug>/docs/market-research.md, business-case.md, deeper PRD.
+  **Skills per artifact** — experiment-creator (proposal), prd-writer (specs/tasks §1), design-advisor (design), prototype-builder (apply). See openspec/schemas/experiment-hub-lite/schema.yaml instructions.
 
-  **Proceed gate (sponsor-backed hub)** — align to labs.beckharrisdesign.com/scoring (fallback .cursor/rules/scoring-criteria.mdc).
-  proposal.md Evidence → Proceed attestation. Non-sponsored hub maintenance: document N/A plainly if you use that carve-out.
-
-  **Visual board** — mirror proposal to FigJam/light Figma after draft; link proposal Visual board + design.md. See .cursor/rules/figma.mdc.
-
-  **Opt out** — per change: schema: quickstart (vanilla) or schema: spec-driven (upstream).
+  **Lite vs full** — This schema omits Evidence / Proceed / Visual board in proposal. Use `schema: experiment-hub` in .openspec.yaml for sponsor ladder; `schema: quickstart` for vanilla upstream.

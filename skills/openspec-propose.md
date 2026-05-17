@@ -9,13 +9,11 @@ metadata:
   generatedBy: "1.3.1"
 ---
 
-Propose a new change - create the change and generate all artifacts in one step.
+Propose a new change — create the change and generate artifacts (mode depends on schema).
 
-I'll create a change with artifacts:
+**`experiment-hub-lite` (default):** one artifact per approval turn — proposal → specs → design → tasks. Human anchor required before proposal.
 
-- proposal.md (what & why)
-- design.md (how)
-- tasks.md (implementation steps)
+**Other schemas:** may batch all artifacts in one step unless instructions say otherwise.
 
 When ready to implement, run /opsx:apply
 
@@ -41,7 +39,7 @@ When ready to implement, run /opsx:apply
    openspec new change "<name>"
    ```
 
-   This creates a scaffolded change at `openspec/changes/<name>/` with `.openspec.yaml` using the **default schema** from `openspec/config.yaml` (currently **`experiment-hub`**). For the vanilla fork: `openspec new change "<name>" --schema quickstart` or set `schema: spec-driven` in `.openspec.yaml`.
+   This creates a scaffolded change at `openspec/changes/<name>/` with `.openspec.yaml` using the **default schema** from `openspec/config.yaml` (currently **`experiment-hub-lite`**). Override: `--schema experiment-hub` (sponsor ladder), `--schema quickstart` (vanilla), or `schema: spec-driven` in `.openspec.yaml`.
 
 3. **Get the artifact build order**
 
@@ -53,9 +51,17 @@ When ready to implement, run /opsx:apply
    - `applyRequires`: array of artifact IDs needed before implementation (e.g., `["tasks"]`)
    - `artifacts`: list of all artifacts with their status and dependencies
 
-4. **Create artifacts in sequence until apply-ready**
+4. **Lite schema gate (when `schemaName` is `experiment-hub-lite`)**
+
+   Before creating `proposal`:
+   - Require **Human anchor** — founder quote verbatim (paste or `experiments/<slug>/docs/intent.md`). If missing, use **AskUserQuestion** to collect it; do not invent anchor-only prose.
+   - **One artifact per user turn:** create only the next `ready` artifact, show it, **stop and wait for approval** before the next (do not batch proposal + specs + design + tasks in one response).
+
+5. **Create artifacts in sequence until apply-ready**
 
    Use the **TodoWrite tool** to track progress through the artifacts.
+
+   **Lite:** stop after each artifact (step 4). **Other schemas:** loop until all `applyRequires` artifacts are done.
 
    Loop through artifacts in dependency order (artifacts with no pending dependencies first):
 
@@ -85,7 +91,7 @@ When ready to implement, run /opsx:apply
    - Use **AskUserQuestion tool** to clarify
    - Then continue with creation
 
-5. **Show final status**
+6. **Show final status**
    ```bash
    openspec status --change "<name>"
    ```
@@ -111,6 +117,7 @@ After completing all artifacts, summarize:
 
 **Guardrails**
 
+- **experiment-hub-lite:** Human anchor non-empty; max 2 capabilities in proposal; max 5 requirements in specs; one artifact per approval; load `skills/<skill>.md` per schema `instruction` in `openspec instructions` JSON
 - Create ALL artifacts needed for implementation (as defined by schema's `apply.requires`)
 - Always read dependency artifacts before creating a new one
 - If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
