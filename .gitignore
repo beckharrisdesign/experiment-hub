@@ -103,6 +103,7 @@ logs/
 *.log
 
 .claude/worktrees/
+.claude/settings.local.json
 
 # Skills copied into .claude/skills/ by session-start hook — ephemeral, do not commit.
 # Edit source files in skills/ instead. Run `npm run skills:sync` to pull external skills.
