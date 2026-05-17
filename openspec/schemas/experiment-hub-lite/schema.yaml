@@ -74,7 +74,7 @@ apply:
   requires:
     - tasks
   instruction: |
-    Read `skills/openspec-apply-change.md` (or `.claude/skills/openspec-apply-change/SKILL.md`) and `skills/prototype-builder.md`.
+    Read `skills/openspec-apply-change.md` and `skills/prototype-builder.md`.
 
     Before coding: read proposal Outcomes and tasks.md §1; confirm Human anchor still matches what you are building.
 

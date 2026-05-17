@@ -1,6 +1,6 @@
 ---
 name: openspec-propose
-description: Propose a new change with all artifacts generated in one step. Use when the user wants to quickly describe what they want to build and get a complete proposal with design, specs, and tasks ready for implementation.
+description: Propose a new change with all artifacts generated in one step. Use for /opsx:propose or when the user wants to quickly describe what they want to build and get a complete proposal with design, specs, and tasks ready for implementation.
 license: MIT
 compatibility: Requires openspec CLI.
 metadata:
@@ -104,6 +104,8 @@ After completing all artifacts, summarize:
 - List of artifacts created with brief descriptions
 - What's ready: "All artifacts created! Ready for implementation."
 - Prompt: "Run `/opsx:apply` or ask me to implement to start working on the tasks."
+
+**Artifacts output (required):** Follow [`skills/openspec-artifacts-output.md`](openspec-artifacts-output.md). After **each** artifact write (lite: every approval turn), end the message with `## Artifacts` linking files touched that turn. When all `applyRequires` artifacts are `done`, list every artifact file for the change (from `openspec status --change "<name>" --json`).
 
 **Artifact Creation Guidelines**
 
