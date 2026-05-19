@@ -56,4 +56,4 @@
 - [x] 8.2 Run the Simple Seed Organizer build from `experiments/simple-seed-organizer/prototype/app`.
 - [x] 8.3 Smoke test add, detail, edit, delete, import review, custom field, note, and annotation flows.
 - [x] 8.4 Update experiment docs or PRD notes if the final canonical field list or CRUD surface changes user-facing scope.
-- [ ] 8.5 Archive this OpenSpec change after implementation and update `openspec/specs/seed-packet-management/spec.md`.
+- [x] 8.5 Archive this OpenSpec change after implementation and update `openspec/specs/seed-packet-management/spec.md`.
