@@ -575,22 +575,26 @@ export function AddSeedForm({
     setSubmitting(true);
     try {
       const seedId = initialData?.id ?? crypto.randomUUID();
-      const frontIsNew =
-        !initialData?.photoFront || frontImage !== initialData.photoFront;
-      const backIsNew =
-        !initialData?.photoBack || backImage !== initialData.photoBack;
+      // Only re-upload local/blob or data URLs. Do not fetch(http…) — CORS or
+      // private buckets break fetch even when <img> can display the URL.
+      const frontNeedsUpload =
+        !!frontImage &&
+        (frontImage.startsWith("blob:") || frontImage.startsWith("data:"));
+      const backNeedsUpload =
+        !!backImage &&
+        (backImage.startsWith("blob:") || backImage.startsWith("data:"));
 
       let photoFrontPath: string | undefined;
       let photoBackPath: string | undefined;
 
-      if (frontIsNew && frontImage) {
+      if (frontNeedsUpload) {
         const blob = await (await fetch(frontImage)).blob();
         photoFrontPath = await uploadSeedPhoto(userId, seedId, "front", blob);
       } else if (initialData?.photoFrontPath) {
         photoFrontPath = initialData.photoFrontPath;
       }
 
-      if (backIsNew && backImage) {
+      if (backNeedsUpload) {
         const blob = await (await fetch(backImage)).blob();
         photoBackPath = await uploadSeedPhoto(userId, seedId, "back", blob);
       } else if (initialData?.photoBackPath) {
@@ -606,7 +610,12 @@ export function AddSeedForm({
         type,
         brand: brand.trim() || undefined,
         source: source.trim() || undefined,
-        year: year ? parseInt(year) : undefined,
+        year: (() => {
+          const t = year.trim();
+          if (!t) return undefined;
+          const n = parseInt(t, 10);
+          return Number.isFinite(n) ? n : undefined;
+        })(),
         purchaseDate: purchaseDate || undefined,
         quantity: quantity.trim() || undefined,
         daysToGermination: daysToGermination.trim() || undefined,
@@ -642,14 +651,14 @@ export function AddSeedForm({
 
       if (
         !photoFrontPath &&
-        !frontIsNew &&
+        !frontNeedsUpload &&
         initialData?.photoFront?.startsWith("data:")
       ) {
         seedData.photoFront = initialData.photoFront;
       }
       if (
         !photoBackPath &&
-        !backIsNew &&
+        !backNeedsUpload &&
         initialData?.photoBack?.startsWith("data:")
       ) {
         seedData.photoBack = initialData.photoBack;
