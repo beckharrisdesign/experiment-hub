@@ -50,6 +50,13 @@ const JSON_FIELD_KEYS = new Set<keyof Seed>([
   "rawPacketText",
 ]);
 
+/** DB columns are JSONB NOT NULL DEFAULT '[]' — never send SQL null for these. */
+const NOT_NULL_JSON_ARRAY_KEYS = new Set<keyof Seed>([
+  "customFields",
+  "instructionAnnotations",
+  "rawPacketText",
+]);
+
 export const SEEDS_COLUMNS_WITHOUT_PHOTOS = [
   "id",
   "user_id",
@@ -101,7 +108,7 @@ export function convertSeedToDbSeed(
 
     if (!Object.prototype.hasOwnProperty.call(seed, seedKey)) {
       if (options.mode === "insert" && nullableInsertColumn(seedKey)) {
-        dbSeed[dbKey] = null;
+        dbSeed[dbKey] = NOT_NULL_JSON_ARRAY_KEYS.has(seedKey) ? [] : null;
       }
       continue;
     }
@@ -109,7 +116,7 @@ export function convertSeedToDbSeed(
     const value = seed[seedKey];
     if (value === undefined || value === "") {
       if (options.mode === "insert" || value === "") {
-        dbSeed[dbKey] = null;
+        dbSeed[dbKey] = NOT_NULL_JSON_ARRAY_KEYS.has(seedKey) ? [] : null;
       }
       continue;
     }
@@ -176,14 +183,15 @@ function nullableInsertColumn(seedKey: keyof Seed): boolean {
 }
 
 function serializeJsonValue(value: unknown): unknown {
-  if (value == null) return null;
-  if (Array.isArray(value) && value.length === 0) return null;
+  if (value == null) return [];
+  if (Array.isArray(value) && value.length === 0) return [];
   return value;
 }
 
 function parseJsonArray<T>(value: unknown): T[] | undefined {
   if (value == null || value === "") return undefined;
-  if (Array.isArray(value)) return value as T[];
+  if (Array.isArray(value))
+    return value.length > 0 ? (value as T[]) : undefined;
   if (typeof value !== "string") return undefined;
 
   try {

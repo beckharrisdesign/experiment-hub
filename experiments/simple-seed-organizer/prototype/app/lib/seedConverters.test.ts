@@ -93,6 +93,21 @@ describe("seed converters", () => {
     expect(dbUpdate.spacing).toBeUndefined();
   });
 
+  it("uses empty JSON array for NOT NULL JSONB columns on update (not SQL null)", () => {
+    const dbUpdate = convertSeedToDbSeed(
+      {
+        customFields: [],
+        instructionAnnotations: [],
+        rawPacketText: [],
+      },
+      { mode: "update" },
+    );
+
+    expect(dbUpdate.custom_fields).toEqual([]);
+    expect(dbUpdate.instruction_annotations).toEqual([]);
+    expect(dbUpdate.raw_packet_text).toEqual([]);
+  });
+
   it("round-trips a manual-only seed entry without packet extraction data", () => {
     const manualSeed: Seed = {
       id: "seed-manual",
