@@ -89,7 +89,7 @@ Implement tasks from an OpenSpec change.
    - If all done: suggest archive
    - If paused: explain why and wait for guidance
 
-8. **When apply finishes: commit, push, refresh PR**
+8. **When apply finishes: commit, push, draft PR**
 
    Run this **once per `/opsx:apply` session**, after step 6 ends (all tasks done, paused with progress, or blocked after coding). Invoking apply is Katy’s signal to land work on GitHub so **CI/CD and tests run**—do not wait for a separate “please commit.”
 
@@ -114,9 +114,9 @@ Implement tasks from an OpenSpec change.
 
    c. **Push** — `git push -u origin HEAD` (or push to the existing feature branch).
 
-   d. **PR** — If no open PR for this branch: `gh pr create --draft` with summary, why, and test plan (brief but substantive, same bar as the commit). If a PR exists: push only; CI re-runs.
+   d. **Draft PR (required at apply end)** — Treat this as the closing deliverable of `/opsx:apply` whenever repo files changed in the session. **Request** a **draft** pull request on GitHub: if no PR exists for this branch, run `gh pr create --draft` with summary, why, and test plan (brief but substantive, same bar as the commit). If a PR already exists for the branch, the push in (c) refreshes it; confirm the PR is still **draft** unless Katy asked otherwise. If `gh` is unavailable or fails after retry, say so and ask Katy to open a draft PR manually with the same branch.
 
-   e. **Report** — In the completion or pause summary, include commit subject, PR URL, and that checks are running.
+   e. **Report** — In the completion or pause summary, include commit subject, PR URL (or explicit note if draft PR was skipped/blocked), and that checks are running or would run on the PR.
 
    **Never:** `gh pr merge`, approve/review the PR, or mark ready for review unless Katy explicitly asks.
 
@@ -179,7 +179,7 @@ What would you like to do?
 
 **Guardrails**
 
-- **`/opsx:apply` finishes with git:** when the session ends, commit (brief substantive message + naming conventions) + push + PR refresh if any files changed; overrides global “commit only when asked” for this repo
+- **`/opsx:apply` finishes with git:** when the session ends, commit (brief substantive message + naming conventions) + push + **request a draft PR** if any files changed; overrides global “commit only when asked” for this repo
 - Keep going through tasks until done or blocked
 - Always read context files before starting (from the apply instructions output)
 - If task is ambiguous, pause and ask before implementing

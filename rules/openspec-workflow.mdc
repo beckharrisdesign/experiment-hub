@@ -17,7 +17,7 @@ globs: openspec/**/*
 
 Match [github-workflow.mdc](github-workflow.mdc): one branch per logical unit (e.g. `cursor/<descriptor>`), one PR, agent does not merge or approve. Align an active change folder name with that branch when practical.
 
-**`/opsx:apply`:** Implement tasks; when apply **finishes**, commit + push + draft PR per the active schema’s **`apply.instruction`** (returned by `openspec instructions apply --json`) and [`skills/openspec-apply-change.md`](../../skills/openspec-apply-change.md) step 8. **`/opsx:propose`** does not commit; artifacts stay local until apply.
+**`/opsx:apply`:** Implement tasks; when apply **finishes**, commit + push + **request a draft PR** per the active schema’s **`apply.instruction`** (returned by `openspec instructions apply --json`) and [`skills/openspec-apply-change.md`](../../skills/openspec-apply-change.md) step 8. **`/opsx:propose`** does not commit; artifacts stay local until apply.
 
 ## Figma and `design.md`
 

@@ -12,3 +12,5 @@ context: |
   **Skills per artifact** — experiment-creator (proposal), prd-writer (specs/tasks §1), design-advisor (design), prototype-builder (apply). See openspec/schemas/experiment-hub-lite/schema.yaml instructions.
 
   **Lite vs full** — This schema omits Evidence / Proceed / Visual board in proposal. Use `schema: experiment-hub` in .openspec.yaml for sponsor ladder; `schema: quickstart` for vanilla upstream.
+
+  **Apply end** — Every schema’s `apply.instruction` ends with commit + push + **request a draft PR** (`gh pr create --draft` when needed) so CI runs; see `skills/openspec-apply-change.md` step 8.

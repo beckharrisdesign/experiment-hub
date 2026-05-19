@@ -84,4 +84,6 @@ apply:
 
     **Completion:** User runs manual §1 checks before `/opsx:archive`. Do not archive until outcomes checkboxes are satisfied or explicitly waived.
 
-    **When apply finishes** (tasks done, paused with progress, or blocked after coding): follow `skills/openspec-apply-change.md` step 8 — commit (conventional message per `.cursor/rules/commit-messages.mdc`; brief but substantive body; branch `cursor/<change-name>` when applicable), push, open or update a **draft** PR via `gh` so CI/CD runs. Skip only if the session changed no files. Never merge or approve the PR.
+    **When apply finishes** (tasks done, paused with progress, or blocked after coding): follow `skills/openspec-apply-change.md` step 8 — commit (conventional message per `.cursor/rules/commit-messages.mdc`; brief but substantive body; branch `cursor/<change-name>` when applicable), push, and **open or update a draft PR** via `gh` so CI/CD runs.
+
+    **Draft PR (required at apply end):** Whenever the session changed repo files, **request** a **draft** pull request as the closing step — use `gh pr create --draft` when no PR exists for the branch, otherwise push so the existing draft PR updates. Skip only if nothing changed or git/`gh` is unavailable; say so explicitly in the session summary. Never merge, approve, or mark ready for review unless Katy explicitly asks.
