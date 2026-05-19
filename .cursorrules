@@ -1,40 +1,24 @@
 # Cursor rules for Experiment Hub
 
-> Substantive rules live in `.cursor/rules/` — Cursor loads them automatically by file pattern.
-> **Edit rules there.** This file is an index only. Do not duplicate rule content here.
+> Substantive rules live in `rules/` (loaded via `.cursor/rules/` symlink).
+> Skills live in `skills/` (reference `@skills/<name>.md`).
+> **Edit `rules/` and `skills/` only.** This file is an index.
+
+After clone: `bash scripts/link-agent-dirs.sh`
 
 ## Rules
 
-**Always-applied (no file trigger):**
+**Always-applied:** `rules/principles.mdc`, `rules/github-workflow.mdc`, `rules/figma.mdc`
 
-- `principles.mdc` — UX/DX balance, test-first, log capture, solo founder practices
-- `github-workflow.mdc` — branching (tool/harness prefix + descriptor), PR process
-- `figma.mdc` — Figma MCP setup and project-specific design rules
+**File-triggered:** `rules/commit-messages.mdc`, `rules/design-guidelines.mdc`, `rules/component-conventions.mdc`, `rules/nextjs-api-routes.mdc`, `rules/vitest-conventions.mdc`, `rules/prd-template.mdc`, `rules/market-research-template.mdc`, `rules/openspec-workflow.mdc`
 
-**File-triggered (auto-apply by glob pattern):**
+## Skills
 
-- `commit-messages.mdc` — conventional commit format
-- `design-guidelines.mdc` — dark theme, spacing, component patterns
-- `component-conventions.mdc` — React component conventions
-- `nextjs-api-routes.mdc` — API route conventions
-- `vitest-conventions.mdc` — test conventions
-- `prd-template.mdc` — experiment PRD format
-- `market-research-template.mdc` — market research format
-- `openspec-workflow.mdc` — OpenSpec vs experiment PRDs, `openspec/` layout, archiving
+`@skills/<name>.md` — openspec-_, figma/_ (see `rules/figma.mdc`)
 
-## Skills and agents
-
-Invocable skills and agents live in `skills/` — reference with `@skills/<name>.md` in Cursor:
-
-- `experiment-creator`, `market-research`, `business-case-writer`, `prd-writer` (outcomes + failing tests), `prototype-builder`, `design-advisor`
-- `user-communication`, `sitemap` (sitemap: rare; explicit request or Figma sitemap board refresh when IA/routes change)
-- `figma/figma-use`, `figma/figma-implement-design`, `figma/figma-generate-design`, and more
-
-See `agents/README.md` for the experiment workflow and approval checkpoints.
-
-- **OpenSpec:** `/opsx:*` slash commands (stubs in `.cursor/commands/`) → full workflow in `skills/openspec-*.md` only; see `.cursor/rules/openspec-workflow.mdc`.
+**OpenSpec:** `/opsx:*` stubs in `.cursor/commands/` → workflow in `skills/openspec-*.md` only (`rules/openspec-workflow.mdc`)
 
 ## Cursor-specific
 
 - **Figma plugin:** `/add-plugin figma` in agent chat
-- **MCP config:** See `.cursor/mcp-config.json.example` for filesystem + experiment-logs setup
+- **MCP config:** `.cursor/mcp-config.json.example`
