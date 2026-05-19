@@ -19,6 +19,12 @@ import { uploadSeedPhoto } from "@/lib/seed-photos";
 import { needsLocalPhotoUpload } from "@/lib/seedPhotoSavePolicy";
 import { parseSeedYearFromInput } from "@/lib/seedFormYear";
 import { normalizeSunRequirement } from "@/lib/seedUtils";
+import {
+  hideableFieldLabel,
+  HIDEABLE_SEED_FIELD_KEYS,
+  isHideableSeedFieldKey,
+  type HideableSeedFieldKey,
+} from "@/lib/seedPacketHideableFields";
 
 /** @figma S8YJQugvMmn5jaRqwFM5XO:21:3028 */
 interface AddSeedFormProps {
@@ -332,6 +338,10 @@ export function AddSeedForm({
   const [instructionAnnotations, setInstructionAnnotations] = useState<
     SeedInstructionAnnotation[]
   >(initialData?.instructionAnnotations || []);
+  const [hiddenFields, setHiddenFields] = useState<string[]>(
+    initialData?.hiddenFields ?? [],
+  );
+  const [myNotes, setMyNotes] = useState(initialData?.myNotes || "");
   const [customExpirationDate, setCustomExpirationDate] = useState(
     initialData?.customExpirationDate
       ? initialData.customExpirationDate.split("T")[0]
@@ -385,10 +395,10 @@ export function AddSeedForm({
   }, [isEditMode]);
 
   const applyExtractedToForm = (data: AIExtractedData) => {
-    // Use functional state updaters so each setter reads the *current* state
-    // at the time it runs — not the stale closure value captured at click time.
-    // This prevents user edits made while the AI request was in-flight from
-    // being overwritten when the response arrives (Bug B fix).
+    // Fills packet fields only — never hiddenFields or instructionAnnotations
+    // (user-controlled; AI must not infer visibility or wipe notes).
+    // Uses functional state updaters so each setter reads current state at run
+    // time (Bug B: avoids overwriting in-flight user edits when the response arrives).
     if (data.name) setName((prev) => fieldAfterAutoEntry(prev, data.name));
     if (data.variety || data.latinName)
       setVariety((prev) =>
@@ -530,7 +540,9 @@ export function AddSeedForm({
         {
           id: crypto.randomUUID(),
           fieldKey,
-          label: fieldKey === "spacing" ? "Spacing" : "Planting depth",
+          label: isHideableSeedFieldKey(fieldKey)
+            ? hideableFieldLabel(fieldKey)
+            : fieldKey,
           note,
           displayOrder: prev.length,
           updatedAt: new Date().toISOString(),
@@ -542,6 +554,29 @@ export function AddSeedForm({
   const getInstructionAnnotation = (fieldKey: string) =>
     instructionAnnotations.find((annotation) => annotation.fieldKey === fieldKey)
       ?.note || "";
+
+  /** Per-field instruction note — same UI on create and edit (Auto Entry never clears this state). */
+  const instructionNoteForField = (fieldKey: HideableSeedFieldKey) => (
+    <div className="mt-2">
+      <AutoTextarea
+        value={getInstructionAnnotation(fieldKey)}
+        onChange={(e) => updateInstructionAnnotation(fieldKey, e.target.value)}
+        placeholder={`Optional note on ${hideableFieldLabel(fieldKey).toLowerCase()}`}
+        className="w-full text-xs px-2 py-1 border border-gray-200 rounded bg-gray-50/40 text-[#374151] focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+      />
+    </div>
+  );
+
+  const fieldIsHidden = (key: HideableSeedFieldKey) =>
+    hiddenFields.includes(key);
+
+  const hideCanonicalField = (key: HideableSeedFieldKey) => {
+    setHiddenFields((prev) => (prev.includes(key) ? prev : [...prev, key]));
+  };
+
+  const restoreCanonicalField = (key: string) => {
+    setHiddenFields((prev) => prev.filter((k) => k !== key));
+  };
 
   const addCustomField = () => {
     setCustomFields((prev) => [
@@ -617,6 +652,8 @@ export function AddSeedForm({
         description: description.trim() || undefined,
         plantingInstructions: plantingInstructions.trim() || undefined,
         notes: notes.trim() || undefined,
+        myNotes: myNotes.trim() || undefined,
+        hiddenFields,
         customFields: customFields
           .map((field, index) => ({
             ...field,
@@ -1202,25 +1239,42 @@ export function AddSeedForm({
                                   )}
                                 </td>
                               </tr>
+                              {!fieldIsHidden("brand") && (
                               <tr>
                                 <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
                                   Brand
                                 </td>
                                 <td className="py-1.5 text-[#101828]">
+                                  <div className="flex items-start gap-2">
                                   <input
                                     type="text"
                                     value={brand}
                                     onChange={(e) => setBrand(e.target.value)}
                                     placeholder="e.g., Burpee"
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                    className="w-full min-w-0 flex-1 text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
                                   />
+                                  {isEditMode && (
+                                    <button
+                                      type="button"
+                                      title="Hide this field for this packet"
+                                      onClick={() => hideCanonicalField("brand")}
+                                      className="shrink-0 text-xs font-medium text-[#6a7282] hover:text-[#101828] px-1.5 py-0.5 rounded border border-transparent hover:border-gray-200"
+                                    >
+                                      Hide
+                                    </button>
+                                  )}
+                                  </div>
+                                  {instructionNoteForField("brand")}
                                 </td>
                               </tr>
+                              )}
+                              {!fieldIsHidden("year") && (
                               <tr>
                                 <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
                                   Year
                                 </td>
                                 <td className="py-1.5 text-[#101828]">
+                                  <div className="flex items-start gap-2">
                                   <input
                                     type="number"
                                     value={year}
@@ -1228,15 +1282,30 @@ export function AddSeedForm({
                                     placeholder="e.g., 2024"
                                     min="1900"
                                     max="2100"
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                    className="w-full min-w-0 flex-1 text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
                                   />
+                                  {isEditMode && (
+                                    <button
+                                      type="button"
+                                      title="Hide this field for this packet"
+                                      onClick={() => hideCanonicalField("year")}
+                                      className="shrink-0 text-xs font-medium text-[#6a7282] hover:text-[#101828] px-1.5 py-0.5 rounded border border-transparent hover:border-gray-200"
+                                    >
+                                      Hide
+                                    </button>
+                                  )}
+                                  </div>
+                                  {instructionNoteForField("year")}
                                 </td>
                               </tr>
+                              )}
+                              {!fieldIsHidden("quantity") && (
                               <tr>
                                 <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
                                   Quantity
                                 </td>
                                 <td className="py-1.5 text-[#101828]">
+                                  <div className="flex items-start gap-2">
                                   <input
                                     type="text"
                                     value={quantity}
@@ -1244,15 +1313,30 @@ export function AddSeedForm({
                                       setQuantity(e.target.value)
                                     }
                                     placeholder="e.g., 25 seeds"
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                    className="w-full min-w-0 flex-1 text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
                                   />
+                                  {isEditMode && (
+                                    <button
+                                      type="button"
+                                      title="Hide this field for this packet"
+                                      onClick={() => hideCanonicalField("quantity")}
+                                      className="shrink-0 text-xs font-medium text-[#6a7282] hover:text-[#101828] px-1.5 py-0.5 rounded border border-transparent hover:border-gray-200"
+                                    >
+                                      Hide
+                                    </button>
+                                  )}
+                                  </div>
+                                  {instructionNoteForField("quantity")}
                                 </td>
                               </tr>
+                              )}
+                              {!fieldIsHidden("daysToGermination") && (
                               <tr>
                                 <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
                                   Days to Germination
                                 </td>
                                 <td className="py-1.5 text-[#101828]">
+                                  <div className="flex items-start gap-2">
                                   <input
                                     type="text"
                                     value={daysToGermination}
@@ -1260,15 +1344,32 @@ export function AddSeedForm({
                                       setDaysToGermination(e.target.value)
                                     }
                                     placeholder="e.g., 7-14 days"
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                    className="w-full min-w-0 flex-1 text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
                                   />
+                                  {isEditMode && (
+                                    <button
+                                      type="button"
+                                      title="Hide this field for this packet"
+                                      onClick={() =>
+                                        hideCanonicalField("daysToGermination")
+                                      }
+                                      className="shrink-0 text-xs font-medium text-[#6a7282] hover:text-[#101828] px-1.5 py-0.5 rounded border border-transparent hover:border-gray-200"
+                                    >
+                                      Hide
+                                    </button>
+                                  )}
+                                  </div>
+                                  {instructionNoteForField("daysToGermination")}
                                 </td>
                               </tr>
+                              )}
+                              {!fieldIsHidden("daysToMaturity") && (
                               <tr>
                                 <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
                                   Days to Maturity
                                 </td>
                                 <td className="py-1.5 text-[#101828]">
+                                  <div className="flex items-start gap-2">
                                   <input
                                     type="text"
                                     value={daysToMaturity}
@@ -1276,15 +1377,32 @@ export function AddSeedForm({
                                       setDaysToMaturity(e.target.value)
                                     }
                                     placeholder="e.g., 75-85 days"
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                    className="w-full min-w-0 flex-1 text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
                                   />
+                                  {isEditMode && (
+                                    <button
+                                      type="button"
+                                      title="Hide this field for this packet"
+                                      onClick={() =>
+                                        hideCanonicalField("daysToMaturity")
+                                      }
+                                      className="shrink-0 text-xs font-medium text-[#6a7282] hover:text-[#101828] px-1.5 py-0.5 rounded border border-transparent hover:border-gray-200"
+                                    >
+                                      Hide
+                                    </button>
+                                  )}
+                                  </div>
+                                  {instructionNoteForField("daysToMaturity")}
                                 </td>
                               </tr>
+                              )}
+                              {!fieldIsHidden("plantingDepth") && (
                               <tr>
                                 <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
                                   Planting Depth
                                 </td>
                                 <td className="py-1.5 text-[#101828]">
+                                  <div className="flex items-start gap-2">
                                   <input
                                     type="text"
                                     value={plantingDepth}
@@ -1292,29 +1410,61 @@ export function AddSeedForm({
                                       setPlantingDepth(e.target.value)
                                     }
                                     placeholder="e.g., 1/4 inch"
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                    className="w-full min-w-0 flex-1 text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
                                   />
+                                  {isEditMode && (
+                                    <button
+                                      type="button"
+                                      title="Hide this field for this packet"
+                                      onClick={() =>
+                                        hideCanonicalField("plantingDepth")
+                                      }
+                                      className="shrink-0 text-xs font-medium text-[#6a7282] hover:text-[#101828] px-1.5 py-0.5 rounded border border-transparent hover:border-gray-200"
+                                    >
+                                      Hide
+                                    </button>
+                                  )}
+                                  </div>
+                                  {instructionNoteForField("plantingDepth")}
                                 </td>
                               </tr>
+                              )}
+                              {!fieldIsHidden("spacing") && (
                               <tr>
                                 <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
                                   Spacing
                                 </td>
                                 <td className="py-1.5 text-[#101828]">
+                                  <div className="flex items-start gap-2">
                                   <input
                                     type="text"
                                     value={spacing}
                                     onChange={(e) => setSpacing(e.target.value)}
                                     placeholder="e.g., 12 inches"
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                    className="w-full min-w-0 flex-1 text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
                                   />
+                                  {isEditMode && (
+                                    <button
+                                      type="button"
+                                      title="Hide this field for this packet"
+                                      onClick={() => hideCanonicalField("spacing")}
+                                      className="shrink-0 text-xs font-medium text-[#6a7282] hover:text-[#101828] px-1.5 py-0.5 rounded border border-transparent hover:border-gray-200"
+                                    >
+                                      Hide
+                                    </button>
+                                  )}
+                                  </div>
+                                  {instructionNoteForField("spacing")}
                                 </td>
                               </tr>
+                              )}
+                              {!fieldIsHidden("sunRequirement") && (
                               <tr>
                                 <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
                                   Sun Requirement
                                 </td>
                                 <td className="py-1.5 text-[#101828]">
+                                  <div className="flex items-start gap-2">
                                   <input
                                     type="text"
                                     value={sunRequirement || ""}
@@ -1325,81 +1475,139 @@ export function AddSeedForm({
                                       )
                                     }
                                     placeholder="e.g., Full sun"
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                    className="w-full min-w-0 flex-1 text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
                                   />
+                                  {isEditMode && (
+                                    <button
+                                      type="button"
+                                      title="Hide this field for this packet"
+                                      onClick={() =>
+                                        hideCanonicalField("sunRequirement")
+                                      }
+                                      className="shrink-0 text-xs font-medium text-[#6a7282] hover:text-[#101828] px-1.5 py-0.5 rounded border border-transparent hover:border-gray-200"
+                                    >
+                                      Hide
+                                    </button>
+                                  )}
+                                  </div>
+                                  {instructionNoteForField("sunRequirement")}
                                 </td>
                               </tr>
+                              )}
+                              {!fieldIsHidden("description") && (
                               <tr>
                                 <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
                                   Packet description
                                 </td>
                                 <td className="py-1.5 text-[#101828]">
+                                  <div className="flex items-start gap-2">
                                   <AutoTextarea
                                     value={description}
                                     onChange={(e) =>
                                       setDescription(e.target.value)
                                     }
                                     placeholder="Printed description from the packet"
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                    className="w-full min-w-0 flex-1 text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
                                   />
+                                  {isEditMode && (
+                                    <button
+                                      type="button"
+                                      title="Hide this field for this packet"
+                                      onClick={() =>
+                                        hideCanonicalField("description")
+                                      }
+                                      className="shrink-0 text-xs font-medium text-[#6a7282] hover:text-[#101828] px-1.5 py-0.5 rounded border border-transparent hover:border-gray-200 self-start"
+                                    >
+                                      Hide
+                                    </button>
+                                  )}
+                                  </div>
+                                  {instructionNoteForField("description")}
                                 </td>
                               </tr>
+                              )}
+                              {!fieldIsHidden("plantingInstructions") && (
                               <tr>
                                 <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
                                   Printed instructions
                                 </td>
                                 <td className="py-1.5 text-[#101828]">
+                                  <div className="flex items-start gap-2">
                                   <AutoTextarea
                                     value={plantingInstructions}
                                     onChange={(e) =>
                                       setPlantingInstructions(e.target.value)
                                     }
                                     placeholder="Instructions printed on the packet"
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                    className="w-full min-w-0 flex-1 text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
                                   />
+                                  {isEditMode && (
+                                    <button
+                                      type="button"
+                                      title="Hide this field for this packet"
+                                      onClick={() =>
+                                        hideCanonicalField(
+                                          "plantingInstructions",
+                                        )
+                                      }
+                                      className="shrink-0 text-xs font-medium text-[#6a7282] hover:text-[#101828] px-1.5 py-0.5 rounded border border-transparent hover:border-gray-200 self-start"
+                                    >
+                                      Hide
+                                    </button>
+                                  )}
+                                  </div>
+                                  {instructionNoteForField("plantingInstructions")}
                                 </td>
                               </tr>
+                              )}
+                              {isEditMode && hiddenFields.length > 0 && (
+                                <tr>
+                                  <td
+                                    colSpan={2}
+                                    className="py-2 border-t border-gray-100"
+                                  >
+                                    <div className="flex flex-wrap gap-2 items-center">
+                                      <span className="text-xs font-medium text-[#6a7282]">
+                                        Add field back:
+                                      </span>
+                                      {HIDEABLE_SEED_FIELD_KEYS.filter((k) =>
+                                        hiddenFields.includes(k),
+                                      ).map((key) => (
+                                        <button
+                                          key={key}
+                                          type="button"
+                                          onClick={() =>
+                                            restoreCanonicalField(key)
+                                          }
+                                          className="text-xs px-2 py-1 rounded-full border border-gray-300 text-[#374151] hover:bg-gray-50"
+                                        >
+                                          + {hideableFieldLabel(key)}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                              {isEditMode && (
+                                <tr>
+                                  <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
+                                    My notes
+                                  </td>
+                                  <td className="py-1.5 text-[#101828]">
+                                    <AutoTextarea
+                                      value={myNotes}
+                                      onChange={(e) =>
+                                        setMyNotes(e.target.value)
+                                      }
+                                      placeholder="Your observations, variations you tried, what worked…"
+                                      className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                    />
+                                  </td>
+                                </tr>
+                              )}
                               <tr>
                                 <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
-                                  Spacing annotation
-                                </td>
-                                <td className="py-1.5 text-[#101828]">
-                                  <AutoTextarea
-                                    value={getInstructionAnnotation("spacing")}
-                                    onChange={(e) =>
-                                      updateInstructionAnnotation(
-                                        "spacing",
-                                        e.target.value,
-                                      )
-                                    }
-                                    placeholder="e.g., plant closer together in raised beds"
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
-                                  />
-                                </td>
-                              </tr>
-                              <tr>
-                                <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
-                                  Depth annotation
-                                </td>
-                                <td className="py-1.5 text-[#101828]">
-                                  <AutoTextarea
-                                    value={getInstructionAnnotation(
-                                      "plantingDepth",
-                                    )}
-                                    onChange={(e) =>
-                                      updateInstructionAnnotation(
-                                        "plantingDepth",
-                                        e.target.value,
-                                      )
-                                    }
-                                    placeholder="e.g., barely cover in seed trays"
-                                    className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
-                                  />
-                                </td>
-                              </tr>
-                              <tr>
-                                <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
-                                  Notes
+                                  Packet notes
                                 </td>
                                 <td className="py-1.5 text-[#101828]">
                                   <AutoTextarea

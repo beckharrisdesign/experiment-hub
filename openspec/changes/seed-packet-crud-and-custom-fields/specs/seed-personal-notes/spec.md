@@ -47,10 +47,9 @@ In the read-only detail view (`SeedDetail`), if `my_notes` is non-empty it SHALL
 - **WHEN** the detail view renders a seed with NULL or empty `my_notes`
 - **THEN** no "My notes" section SHALL appear
 
-### Requirement: Type system includes myNotes
+### Requirement: Seed TypeScript interface SHALL include optional myNotes
 
-- **WHEN** the `Seed` TypeScript interface is used in the codebase
-- **THEN** it SHALL include `myNotes?: string` as an optional property
+The `Seed` TypeScript interface MUST include `myNotes?: string` as an optional property for user-authored personal notes, distinct from packet-sourced `notes`.
 
 #### Scenario: myNotes round-trips through storage
 
