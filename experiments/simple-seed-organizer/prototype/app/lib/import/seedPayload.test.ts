@@ -85,6 +85,35 @@ describe("seed import payloads", () => {
     );
   });
 
+  it("preserves hiddenFields and myNotes when merging packet facts", () => {
+    const seed: Seed = {
+      ...EXISTING_SEED,
+      hiddenFields: ["brand"],
+      myNotes: "Try in spring.",
+    };
+    const merged = mergePacketFactsIntoSeed(seed, EXTRACTED, {
+      replaceExistingPacketFacts: true,
+    });
+    expect(merged.hiddenFields).toEqual(["brand"]);
+    expect(merged.myNotes).toBe("Try in spring.");
+    expect(merged.instructionAnnotations).toEqual(
+      EXISTING_SEED.instructionAnnotations,
+    );
+  });
+
+  it("does not add hiddenFields when merge only touches packet columns", () => {
+    const seed: Seed = { ...EXISTING_SEED, hiddenFields: [] };
+    const sparse: AIExtractedData = {
+      name: "Tomato",
+      variety: "Black Krim",
+      fieldSources: { name: "front", variety: "front" },
+    };
+    const merged = mergePacketFactsIntoSeed(seed, sparse, {
+      replaceExistingPacketFacts: true,
+    });
+    expect(merged.hiddenFields).toEqual([]);
+  });
+
   it("requires explicit replacement before changing existing packet facts", () => {
     const merged = mergePacketFactsIntoSeed(EXISTING_SEED, EXTRACTED, {
       replaceExistingPacketFacts: false,

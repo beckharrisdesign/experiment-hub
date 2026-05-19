@@ -77,6 +77,8 @@ function makeInsertedRow(overrides: Record<string, unknown> = {}) {
     description: null,
     planting_instructions: null,
     notes: null,
+    my_notes: null,
+    hidden_fields: [],
     custom_fields: [],
     instruction_annotations: [],
     raw_packet_text: [],

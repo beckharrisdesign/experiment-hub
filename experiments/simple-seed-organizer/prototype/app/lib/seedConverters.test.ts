@@ -145,6 +145,21 @@ describe("seed converters", () => {
     expect(dbSeed.custom_fields).toEqual([]);
     expect(dbSeed.instruction_annotations).toEqual([]);
     expect(dbSeed.raw_packet_text).toEqual([]);
+    expect(dbSeed.hidden_fields).toEqual([]);
+  });
+
+  it("round-trips hidden_fields and my_notes", () => {
+    const s: Seed = {
+      ...SEED,
+      hiddenFields: ["spacing", "brand"],
+      myNotes: "Try again next season in zone 7.",
+    };
+    const db = convertSeedToDbSeed(s, { mode: "insert" });
+    expect(db.hidden_fields).toEqual(["spacing", "brand"]);
+    expect(db.my_notes).toBe("Try again next season in zone 7.");
+    const back = convertDbSeedToSeed(db);
+    expect(back.hiddenFields).toEqual(["spacing", "brand"]);
+    expect(back.myNotes).toBe("Try again next season in zone 7.");
   });
 
   it("update never sets year to NaN", () => {

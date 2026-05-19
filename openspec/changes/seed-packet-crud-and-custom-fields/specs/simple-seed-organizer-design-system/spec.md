@@ -33,9 +33,9 @@ Controls for hiding fields (remove-field icon) and restoring them ("Add field" a
 - **WHEN** the edit form has at least one hidden field
 - **THEN** an "Add field" chip or link SHALL appear below the last visible field, listing hidden field labels
 
-### Requirement: Annotation affordance is per-row and inline
+### Requirement: Annotation affordance is per-row and inline in add and edit flows
 
-The annotation affordance in the edit form SHALL be co-located with its field row (not in a separate panel), and its expand/collapse behavior SHALL not cause layout shift in adjacent rows.
+The annotation affordance in `AddSeedForm` (create and edit) SHALL be co-located with its field row (not in a separate panel), and its expand/collapse behavior SHALL not cause layout shift in adjacent rows.
 
 #### Scenario: Annotation textarea expands inline
 

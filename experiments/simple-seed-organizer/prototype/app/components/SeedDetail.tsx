@@ -75,9 +75,10 @@ function AnnotationRow({
         </div>
       )}
       {annotation && (
-        <div className="rounded-md border border-[#bbf7d0] bg-[#f0fdf4] px-3 py-2 text-[#166534]">
-          <span className="font-medium">My note:</span> {annotation}
-        </div>
+        <p className="mt-0.5 text-[13px] italic text-[#6a7282] leading-5 pl-0.5">
+          <span className="font-medium not-italic">My note:</span>{" "}
+          {annotation}
+        </p>
       )}
     </div>
   );
@@ -154,6 +155,8 @@ export function SeedDetail({
       annotation.note,
     ]),
   );
+
+  const fieldHidden = (key: string) => seed.hiddenFields?.includes(key) ?? false;
 
   const handleEnrich = async () => {
     setEnriching(true);
@@ -408,29 +411,65 @@ export function SeedDetail({
                   {seed.notes && (
                     <div className="flex flex-col gap-2 pt-4 pr-4">
                       <p className="text-[16px] font-semibold text-[#4a5565] leading-5">
-                        Notes
+                        Packet notes
                       </p>
                       <p className="text-[16px] text-[#101828] leading-[26px] whitespace-pre-wrap">
                         {seed.notes}
                       </p>
                     </div>
                   )}
-                  {(seed.description || seed.plantingInstructions) && (
+                  {seed.myNotes && (
+                    <div className="flex flex-col gap-2 pt-4 pr-4">
+                      <p className="text-[16px] font-semibold text-[#4a5565] leading-5">
+                        My notes
+                      </p>
+                      <p className="text-[16px] text-[#101828] leading-[26px] whitespace-pre-wrap">
+                        {seed.myNotes}
+                      </p>
+                    </div>
+                  )}
+                  {((!fieldHidden("description") &&
+                    (seed.description ||
+                      annotationsByField.get("description"))) ||
+                    (!fieldHidden("plantingInstructions") &&
+                      (seed.plantingInstructions ||
+                        annotationsByField.get(
+                          "plantingInstructions",
+                        )))) && (
                     <div className="flex flex-col gap-2 pt-4 pr-4">
                       <p className="text-[16px] font-semibold text-[#4a5565] leading-5">
                         Printed packet text
                       </p>
-                      {seed.description && (
+                      {!fieldHidden("description") && seed.description && (
                         <p className="text-[14px] text-[#101828] leading-[22px] whitespace-pre-wrap">
                           {seed.description}
                         </p>
                       )}
-                      {seed.plantingInstructions && (
+                      {!fieldHidden("description") &&
+                        annotationsByField.get("description") && (
+                        <p className="text-[13px] italic text-[#6a7282] leading-5">
+                          <span className="font-medium not-italic">
+                            My note:
+                          </span>{" "}
+                          {annotationsByField.get("description")}
+                        </p>
+                      )}
+                      {!fieldHidden("plantingInstructions") &&
+                        seed.plantingInstructions && (
                         <p className="text-[14px] text-[#101828] leading-[22px] whitespace-pre-wrap">
                           <span className="font-semibold">
                             Instructions:
                           </span>{" "}
                           {seed.plantingInstructions}
+                        </p>
+                      )}
+                      {!fieldHidden("plantingInstructions") &&
+                        annotationsByField.get("plantingInstructions") && (
+                        <p className="text-[13px] italic text-[#6a7282] leading-5">
+                          <span className="font-medium not-italic">
+                            My note:
+                          </span>{" "}
+                          {annotationsByField.get("plantingInstructions")}
                         </p>
                       )}
                     </div>
@@ -482,9 +521,21 @@ export function SeedDetail({
                             : undefined
                         }
                       />
-                      <InfoRow label="Brand" value={seed.brand} />
+                      {!fieldHidden("brand") && (
+                        <AnnotationRow
+                          label="Brand"
+                          value={seed.brand}
+                          annotation={annotationsByField.get("brand")}
+                        />
+                      )}
                       <InfoRow label="Source" value={seed.source} />
-                      <InfoRow label="Year" value={seed.year?.toString()} />
+                      {!fieldHidden("year") && (
+                        <AnnotationRow
+                          label="Year"
+                          value={seed.year?.toString()}
+                          annotation={annotationsByField.get("year")}
+                        />
+                      )}
                       <InfoRow
                         label="Purchase date"
                         value={
@@ -493,29 +544,50 @@ export function SeedDetail({
                             : undefined
                         }
                       />
-                      <InfoRow label="Quantity" value={seed.quantity} />
-                      <InfoRow
-                        label="Days to germination"
-                        value={seed.daysToGermination}
-                      />
-                      <InfoRow
-                        label="Days to maturity"
-                        value={seed.daysToMaturity}
-                      />
-                      <AnnotationRow
-                        label="Planting depth"
-                        value={seed.plantingDepth}
-                        annotation={annotationsByField.get("plantingDepth")}
-                      />
-                      <AnnotationRow
-                        label="Spacing"
-                        value={seed.spacing}
-                        annotation={annotationsByField.get("spacing")}
-                      />
-                      <InfoRow
-                        label="Sun requirement"
-                        value={seed.sunRequirement?.replace("-", " ")}
-                      />
+                      {!fieldHidden("quantity") && (
+                        <AnnotationRow
+                          label="Quantity"
+                          value={seed.quantity}
+                          annotation={annotationsByField.get("quantity")}
+                        />
+                      )}
+                      {!fieldHidden("daysToGermination") && (
+                        <AnnotationRow
+                          label="Days to germination"
+                          value={seed.daysToGermination}
+                          annotation={annotationsByField.get(
+                            "daysToGermination",
+                          )}
+                        />
+                      )}
+                      {!fieldHidden("daysToMaturity") && (
+                        <AnnotationRow
+                          label="Days to maturity"
+                          value={seed.daysToMaturity}
+                          annotation={annotationsByField.get("daysToMaturity")}
+                        />
+                      )}
+                      {!fieldHidden("plantingDepth") && (
+                        <AnnotationRow
+                          label="Planting depth"
+                          value={seed.plantingDepth}
+                          annotation={annotationsByField.get("plantingDepth")}
+                        />
+                      )}
+                      {!fieldHidden("spacing") && (
+                        <AnnotationRow
+                          label="Spacing"
+                          value={seed.spacing}
+                          annotation={annotationsByField.get("spacing")}
+                        />
+                      )}
+                      {!fieldHidden("sunRequirement") && (
+                        <AnnotationRow
+                          label="Sun requirement"
+                          value={seed.sunRequirement?.replace("-", " ")}
+                          annotation={annotationsByField.get("sunRequirement")}
+                        />
+                      )}
                       <InfoRow
                         label="Custom expiration"
                         value={

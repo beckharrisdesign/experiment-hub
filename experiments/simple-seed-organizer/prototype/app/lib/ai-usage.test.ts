@@ -33,7 +33,8 @@ describe('getCurrentPeriod', () => {
   it('zero-pads single-digit months', () => {
     vi.useFakeTimers();
     try {
-      vi.setSystemTime(new Date('2026-07-01T00:00:00Z'));
+      // Mid-month UTC so local getMonth() is July in common timezones (Jul 1 00:00Z is still June in Americas).
+      vi.setSystemTime(new Date(Date.UTC(2026, 6, 15, 12, 0, 0)));
       expect(getCurrentPeriod()).toBe('2026-07');
     } finally {
       vi.useRealTimers();

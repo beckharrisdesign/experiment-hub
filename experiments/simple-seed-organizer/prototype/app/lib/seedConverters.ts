@@ -30,6 +30,8 @@ const FIELD_TO_COLUMN: Array<[keyof Seed, string]> = [
   ["description", "description"],
   ["plantingInstructions", "planting_instructions"],
   ["notes", "notes"],
+  ["myNotes", "my_notes"],
+  ["hiddenFields", "hidden_fields"],
   ["customFields", "custom_fields"],
   ["instructionAnnotations", "instruction_annotations"],
   ["rawPacketText", "raw_packet_text"],
@@ -57,6 +59,12 @@ const NOT_NULL_JSON_ARRAY_KEYS = new Set<keyof Seed>([
   "rawPacketText",
 ]);
 
+/** DB columns that are NOT NULL with empty array / empty text array default on insert when omitted. */
+const NOT_NULL_INSERT_ARRAY_KEYS = new Set<keyof Seed>([
+  ...NOT_NULL_JSON_ARRAY_KEYS,
+  "hiddenFields",
+]);
+
 export const SEEDS_COLUMNS_WITHOUT_PHOTOS = [
   "id",
   "user_id",
@@ -77,6 +85,8 @@ export const SEEDS_COLUMNS_WITHOUT_PHOTOS = [
   "description",
   "planting_instructions",
   "notes",
+  "my_notes",
+  "hidden_fields",
   "custom_fields",
   "instruction_annotations",
   "raw_packet_text",
@@ -108,7 +118,7 @@ export function convertSeedToDbSeed(
 
     if (!Object.prototype.hasOwnProperty.call(seed, seedKey)) {
       if (options.mode === "insert" && nullableInsertColumn(seedKey)) {
-        dbSeed[dbKey] = NOT_NULL_JSON_ARRAY_KEYS.has(seedKey) ? [] : null;
+        dbSeed[dbKey] = NOT_NULL_INSERT_ARRAY_KEYS.has(seedKey) ? [] : null;
       }
       continue;
     }
@@ -116,12 +126,14 @@ export function convertSeedToDbSeed(
     const value = seed[seedKey];
     if (value === undefined || value === "") {
       if (options.mode === "insert" || value === "") {
-        dbSeed[dbKey] = NOT_NULL_JSON_ARRAY_KEYS.has(seedKey) ? [] : null;
+        dbSeed[dbKey] = NOT_NULL_INSERT_ARRAY_KEYS.has(seedKey) ? [] : null;
       }
       continue;
     }
 
-    if (seedKey === "useFirst") {
+    if (seedKey === "hiddenFields") {
+      dbSeed[dbKey] = Array.isArray(value) && value.length > 0 ? value : [];
+    } else if (seedKey === "useFirst") {
       dbSeed[dbKey] = Boolean(value);
     } else if (seedKey === "plantingMonths") {
       dbSeed[dbKey] = Array.isArray(value) && value.length > 0 ? JSON.stringify(value) : null;
@@ -160,6 +172,8 @@ export function convertDbSeedToSeed(
     description: dbSeed.description || undefined,
     plantingInstructions: dbSeed.planting_instructions || undefined,
     notes: dbSeed.notes || undefined,
+    myNotes: dbSeed.my_notes || undefined,
+    hiddenFields: parseTextArray(dbSeed.hidden_fields),
     customFields: parseJsonArray<SeedCustomFieldValue>(dbSeed.custom_fields),
     instructionAnnotations: parseJsonArray<SeedInstructionAnnotation>(
       dbSeed.instruction_annotations,
@@ -186,6 +200,15 @@ function serializeJsonValue(value: unknown): unknown {
   if (value == null) return [];
   if (Array.isArray(value) && value.length === 0) return [];
   return value;
+}
+
+function parseTextArray(value: unknown): string[] | undefined {
+  if (value == null) return undefined;
+  if (Array.isArray(value)) {
+    const strings = value.filter((v): v is string => typeof v === "string");
+    return strings.length > 0 ? strings : undefined;
+  }
+  return undefined;
 }
 
 function parseJsonArray<T>(value: unknown): T[] | undefined {

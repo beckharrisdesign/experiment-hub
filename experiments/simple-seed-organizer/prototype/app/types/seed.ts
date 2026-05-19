@@ -18,6 +18,10 @@ export interface Seed {
   description?: string; // Printed packet description/marketing copy
   plantingInstructions?: string; // Printed packet planting instruction text
   notes?: string;
+  /** User-authored; distinct from packet-sourced `notes`. */
+  myNotes?: string;
+  /** Canonical field keys hidden for this seed in list/detail/edit. */
+  hiddenFields?: string[];
   customFields?: SeedCustomFieldValue[];
   instructionAnnotations?: SeedInstructionAnnotation[];
   rawPacketText?: SeedRawPacketText[];
