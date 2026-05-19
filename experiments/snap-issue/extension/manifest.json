@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Snap Issue",
+  "version": "0.1.0",
+  "description": "Select a viewport rectangle, capture it, and file a lightweight GitHub issue.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "downloads",
+    "tabs",
+    "contextMenus"
+  ],
+  "host_permissions": ["https://api.github.com/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Snap Issue — capture region"
+  },
+  "commands": {
+    "snap-issue-capture": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Period",
+        "mac": "Command+Shift+Period"
+      },
+      "description": "Start region capture on the current tab"
+    }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}

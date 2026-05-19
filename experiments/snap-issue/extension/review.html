@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Snap Issue — Review</title>
+    <link rel="stylesheet" href="extension-ui.css" />
+  </head>
+  <body>
+    <div class="si-wrap">
+      <div class="si-card">
+        <h1 class="si-title">Review capture</h1>
+        <p class="si-muted" id="meta"></p>
+        <img id="preview" class="si-preview" alt="Cropped capture preview" hidden />
+        <p id="loadError" class="si-error" hidden></p>
+
+        <div class="si-seg" role="radiogroup" aria-label="Issue type">
+          <label>
+            <input type="radio" name="issueType" value="bug" checked />
+            <span>Bug</span>
+          </label>
+          <label>
+            <input type="radio" name="issueType" value="feedback" />
+            <span>Feedback</span>
+          </label>
+        </div>
+
+        <div class="si-row">
+          <label for="note">Optional note</label>
+          <textarea id="note" placeholder="Short context (optional)"></textarea>
+        </div>
+
+        <div class="si-actions">
+          <button type="button" class="si-btn si-btn-primary" id="submit">
+            Create GitHub issue
+          </button>
+          <button type="button" class="si-btn si-btn-ghost" id="openOptions">
+            Options
+          </button>
+        </div>
+        <p id="formError" class="si-error" hidden></p>
+        <p id="formSuccess" class="si-success" hidden></p>
+      </div>
+    </div>
+    <script src="review.js"></script>
+  </body>
+</html>

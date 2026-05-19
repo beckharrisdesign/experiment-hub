@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Snap Issue — Options</title>
+    <link rel="stylesheet" href="extension-ui.css" />
+  </head>
+  <body>
+    <div class="si-wrap">
+      <div class="si-card">
+        <h1 class="si-title">Snap Issue</h1>
+        <p class="si-muted">
+          GitHub settings use <code>chrome.storage.sync</code>. Use a
+          <strong>fine-grained</strong> or classic PAT with <code>repo</code> scope
+          for private repos, or <code>public_repo</code> for public-only.
+        </p>
+        <form id="form">
+          <div class="si-row">
+            <label for="githubOwner">GitHub owner (user or org)</label>
+            <input id="githubOwner" name="githubOwner" autocomplete="off" />
+          </div>
+          <div class="si-row">
+            <label for="githubRepo">Repository name</label>
+            <input id="githubRepo" name="githubRepo" autocomplete="off" />
+          </div>
+          <div class="si-row">
+            <label for="githubToken">Personal access token</label>
+            <input
+              id="githubToken"
+              name="githubToken"
+              type="password"
+              autocomplete="new-password"
+            />
+          </div>
+          <div class="si-row">
+            <label for="labelsBug">Default labels (Bug), comma-separated</label>
+            <input id="labelsBug" name="labelsBug" placeholder="bug" />
+          </div>
+          <div class="si-row">
+            <label for="labelsFeedback"
+              >Default labels (Feedback), comma-separated</label
+            >
+            <input id="labelsFeedback" name="labelsFeedback" placeholder="feedback" />
+          </div>
+          <div class="si-row">
+            <label for="assignee">Optional assignee login</label>
+            <input id="assignee" name="assignee" autocomplete="off" />
+          </div>
+          <div class="si-actions">
+            <button type="submit" class="si-btn si-btn-primary">Save</button>
+            <button type="button" class="si-btn si-btn-ghost" id="openPanel">
+              Open quick panel
+            </button>
+          </div>
+          <p id="status" class="si-muted" style="margin-top: 14px; margin-bottom: 0"></p>
+        </form>
+        <p class="si-muted" style="margin-top: 20px; margin-bottom: 0">
+          Keyboard shortcut: set or change at
+          <a href="chrome://extensions/shortcuts">chrome://extensions/shortcuts</a>
+          (Chrome may not apply suggested keys until you confirm).
+        </p>
+      </div>
+    </div>
+    <script src="options.js"></script>
+  </body>
+</html>

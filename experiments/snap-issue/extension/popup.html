@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Snap Issue</title>
+    <link rel="stylesheet" href="extension-ui.css" />
+    <style>
+      body .si-wrap {
+        max-width: 360px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="si-wrap">
+      <div class="si-card">
+        <h1 class="si-title">Snap Issue</h1>
+        <p class="si-muted" id="status">Ready.</p>
+        <div class="si-actions">
+          <button type="button" class="si-btn si-btn-primary" id="capture">
+            Capture this tab
+          </button>
+        </div>
+        <p style="margin: 14px 0 0">
+          <a href="#" id="openOptions">Options</a>
+          <span class="si-muted"> · </span>
+          <a href="#" id="lastIssue" style="display: none">Last issue</a>
+        </p>
+        <p class="si-muted" style="margin-top: 12px; font-size: 12px; margin-bottom: 0">
+          The toolbar icon starts capture on the active tab. Use
+          <strong>Options → Open quick panel</strong> for this window, last issue
+          link, and a Capture button.
+        </p>
+      </div>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>

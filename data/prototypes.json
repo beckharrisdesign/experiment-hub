@@ -69,5 +69,16 @@
     "createdDate": "2026-04-05",
     "lastModified": "2026-04-05",
     "tags": ["figma", "chrome-extension", "capture", "design-tools"]
+  },
+  {
+    "id": "proto-snap-issue",
+    "title": "Snap Issue",
+    "description": "MV3 extension: viewport rectangle → cropped capture → GitHub issue + local PNG",
+    "linkPath": "experiments/snap-issue/extension",
+    "experimentId": "snap-issue",
+    "status": "Active",
+    "createdDate": "2026-05-19",
+    "lastModified": "2026-05-19",
+    "tags": ["chrome-extension", "github", "screenshot", "internal-tools"]
   }
 ]
