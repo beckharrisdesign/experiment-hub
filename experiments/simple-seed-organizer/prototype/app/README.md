@@ -1,5 +1,21 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Testing (seed persistence)
+
+Persistence-focused Vitest files use a **10s** `testTimeout` (see `lib/storage.save.test.ts`, `lib/seedPhotoSavePolicy.test.ts`, `lib/seedFormYear.test.ts`) so a stuck Supabase or `fetch` mock cannot hang CI indefinitely.
+
+Run only those suites from this directory:
+
+```bash
+npm run test -- lib/storage.save.test.ts lib/seedPhotoSavePolicy.test.ts lib/seedFormYear.test.ts
+```
+
+To include converter contracts for JSONB/year:
+
+```bash
+npm run test -- lib/storage.save.test.ts lib/seedPhotoSavePolicy.test.ts lib/seedFormYear.test.ts lib/seedConverters.test.ts
+```
+
 ## Getting Started
 
 First, run the development server:

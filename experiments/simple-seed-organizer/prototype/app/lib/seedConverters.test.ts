@@ -128,4 +128,30 @@ describe("seed converters", () => {
     expect(roundTripped.rawPacketText).toBeUndefined();
     expect(roundTripped.instructionAnnotations).toBeUndefined();
   });
+
+  it("insert supplies empty JSON arrays for required JSONB columns when omitted", () => {
+    const manualSeed: Seed = {
+      id: "seed-manual",
+      name: "Beans",
+      variety: "Provider",
+      type: "vegetable",
+      notes: "Direct sow after danger of frost.",
+      createdAt: "2026-05-13T00:00:00Z",
+      updatedAt: "2026-05-13T00:00:00Z",
+    };
+
+    const dbSeed = convertSeedToDbSeed(manualSeed, { mode: "insert" });
+
+    expect(dbSeed.custom_fields).toEqual([]);
+    expect(dbSeed.instruction_annotations).toEqual([]);
+    expect(dbSeed.raw_packet_text).toEqual([]);
+  });
+
+  it("update never sets year to NaN", () => {
+    const dbUpdate = convertSeedToDbSeed(
+      { year: undefined },
+      { mode: "update" },
+    );
+    expect(dbUpdate.year).toBeUndefined();
+  });
 });
