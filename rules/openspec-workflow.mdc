@@ -25,20 +25,20 @@ UI-impacting changes MUST document design context in `design.md` (see [figma.mdc
 
 ## Single source of truth (opsx workflow)
 
-Edit OpenSpec agent workflow **only** under [`skills/`](../../skills/):
+Edit OpenSpec agent workflow **only** under [`skills/`](../skills/):
 
-| Slash command   | Skill file                                                                     |
-| --------------- | ------------------------------------------------------------------------------ |
-| `/opsx:propose` | [`skills/openspec-propose.md`](../../skills/openspec-propose.md)               |
-| `/opsx:apply`   | [`skills/openspec-apply-change.md`](../../skills/openspec-apply-change.md)     |
-| `/opsx:archive` | [`skills/openspec-archive-change.md`](../../skills/openspec-archive-change.md) |
-| `/opsx:explore` | [`skills/openspec-explore.md`](../../skills/openspec-explore.md)               |
+| Slash command   | Skill file                                                                  |
+| --------------- | --------------------------------------------------------------------------- |
+| `/opsx:propose` | [`skills/openspec-propose.md`](../skills/openspec-propose.md)               |
+| `/opsx:apply`   | [`skills/openspec-apply-change.md`](../skills/openspec-apply-change.md)     |
+| `/opsx:archive` | [`skills/openspec-archive-change.md`](../skills/openspec-archive-change.md) |
+| `/opsx:explore` | [`skills/openspec-explore.md`](../skills/openspec-explore.md)               |
 
-`.cursor/commands/opsx-*.md` and `.claude/commands/opsx/*.md` are stubs that point here — do not duplicate steps in command files. Claude Code copies `skills/*.md` → `.claude/skills/` on session start (gitignored).
+`.cursor/commands/opsx-*.md` are stubs that point here — do not duplicate steps. After clone: `bash scripts/link-agent-dirs.sh` (symlinks `.cursor/skills` and `.claude/skills` → `skills/`).
 
 ## Artifacts output (all opsx commands)
 
-Agents MUST end responses with `## Artifacts` when they create, update, or move files under `openspec/changes/`. Build links from OpenSpec CLI JSON (`changeDir`, `outputPath`, globs, `contextFiles`, `openspec status --json`) so the rule works for every schema. Full rules: [`skills/openspec-artifacts-output.md`](../../skills/openspec-artifacts-output.md).
+Agents MUST end responses with `## Artifacts` when they create, update, or move files under `openspec/changes/`. Build links from OpenSpec CLI JSON (`changeDir`, `outputPath`, globs, `contextFiles`, `openspec status --json`) so the rule works for every schema. Full rules: [`skills/openspec-artifacts-output.md`](../skills/openspec-artifacts-output.md).
 
 ## Archiving
 

@@ -8,7 +8,7 @@ globs: components/**/*, app/**/*.tsx, app/**/*.css, **/*.tsx, **/globals.css
 ## Core principles
 
 1. **Simplicity first** — Minimal interface, clear hierarchy, no clutter, progressive disclosure.
-2. **Developer tool aesthetic** — Dark mode default, monospace for code/data, high contrast, functional over decorative.
+2. **Aesthetically agnostic** — Use
 3. **Speed & performance** — Fast load (&lt; 2s), instant feedback, smooth interactions (60fps), efficient navigation.
 4. **Focus & clarity** — One primary action per screen, clear labels, consistent patterns, error prevention.
 5. **Design for scanning** — Single-line rows when possible, columnar data, consistent alignment and row height, balance density with scannability.
@@ -18,17 +18,12 @@ globs: components/**/*, app/**/*.tsx, app/**/*.css, **/*.tsx, **/globals.css
 ## Visual system (dark theme default)
 
 **Colors**
-- Background: `#0d1117` (primary), `#161b22`, `#21262d`
-- Text: `#c9d1d9` (primary), `#8b949e` (secondary), `#6e7681` (muted)
-- Border: `#30363d`
-- Accent: `#58a6ff` / `#79c0ff`
-- Success `#3fb950`, Warning `#d29922`, Error `#f85149`
+
 - WCAG AA minimum contrast; accent for interactive elements only.
 
 **Typography**
-- Primary/code: system monospace (`'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace`)
+
 - UI text: system sans-serif
-- Scale: Tailwind xs (12px) → 2xl (24px) for labels through page titles; weights 400 body, 500–600 emphasis, 700 sparingly.
 
 **Spacing** — Tailwind scale (0.25rem base). Use consistent padding and section whitespace.
 
@@ -36,13 +31,14 @@ globs: components/**/*, app/**/*.tsx, app/**/*.css, **/*.tsx, **/globals.css
 
 The hub uses Tailwind's default `md` and `lg` breakpoints as the canonical mobile/tablet/desktop targets. No custom breakpoints are needed in `tailwind.config.ts`.
 
-| Name | Tailwind prefix | Min width | Layout intent |
-|------|----------------|-----------|---------------|
-| Mobile | (base) | 0px | Single column, stacked nav, compact type scale |
-| Tablet | `md:` | 768px | Two-column grids, reduced padding, inline nav |
-| Desktop | `lg:` | 1024px | Full layout — `px-16`, multi-column grids, sidebar visible |
+| Name    | Tailwind prefix | Min width | Layout intent                                              |
+| ------- | --------------- | --------- | ---------------------------------------------------------- |
+| Mobile  | (base)          | 0px       | Single column, stacked nav, compact type scale             |
+| Tablet  | `md:`           | 768px     | Two-column grids, reduced padding, inline nav              |
+| Desktop | `lg:`           | 1024px    | Full layout — `px-16`, multi-column grids, sidebar visible |
 
 **Scope rules:**
+
 - **Hub shell** (Header, page layouts, home page, experiment detail) — define breakpoints at the hub level. These are shared concerns.
 - **Experiment prototypes** (`/experiments/*/prototype/`) — each prototype owns its internal responsive behavior but should follow the same `md`/`lg` vocabulary for consistency.
 

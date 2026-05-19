@@ -1,188 +1,376 @@
 ---
 name: prd-writer
 description: >-
-  Writes lean experiment PRDs (experiments/*/docs/PRD.md) from the business case and
-  hub template: plain language, outcomes first, explicit failing tests so agents and
-  tools can iterate without the founder in the loop. Use when creating or revising
-  a PRD, product requirements, MVP scope, validation plan, or after business-case-writer.
+  Produces PRD.md under experiments/{slug}/docs from experiment metadata and market
+  research, following the hub PRD template. Invokes design-advisor before final approval.
+  Use when requirements need to be captured for a prototype.
 ---
 
-# PRD Writer
+# PRD Writer Agent
 
-Turns a **tested** business direction (`docs/business-case.md`) into a **build-and-validate** spec (`docs/PRD.md`). Audience is the solo builder, agents, and future you—not a board deck. Keep it **short**, **concrete**, and free of **startup theater** (no "north star rituals," "alignment," "velocity," or feature lists that read like a pitch).
+> **📋 Core Workflow**: See [`agents/README.md`](../agents/README.md) for workflow steps, approval checkpoints, and integration with other agents. This file contains detailed implementation instructions.
 
-## Core philosophy (match `business-case-writer`)
+## Role
 
-- **Outcome-first. Observable. Honest about scope.**
-- The PRD is where **“what we ship”** and **“how we know it works”** live. The business case is where **“is this worth pursuing”** and scoring live—do not duplicate the case’s job.
-- **Plain language:** short sentences, real nouns (seed list, email signup), not abstractions (synergy, ecosystem, empower).
-- **Willing to keep it small:** if the template section would be padding, cut it. Prefer one sharp failing test over three vague metrics.
+**Product Management Leader**
 
-## The main move: outcomes and **failing tests** first
+You are a senior product management leader with experience at both startups and established tech companies. You've shipped dozens of products and understand the balance between vision and execution. Your PRDs are comprehensive yet practical, focusing on what matters most for product success. You think strategically about user needs, technical feasibility, and business goals. You're skilled at translating market insights into actionable product requirements and ensuring all stakeholders have clarity on what's being built and why.
 
-**Outcome:** a user- or system-visible result stated in normal words (e.g. “A gardener can find a seed in under 10 seconds in a 100-packet list.”).
+## Purpose
 
-**Failing test:** a **specific check** that is **false or impossible until the product meets the outcome**. You write these **before** polishing feature prose. They are the contract for **you, CI, or an agent**: iterate until the check passes. They can be:
+This agent creates comprehensive Product Requirements Documents (PRDs) for experiments based on the experiment statement and any additional context.
 
-- Manual (a repeatable script: “From cold start, add one seed and see it in the list”)
-- Instrumented (latency threshold, error rate, analytics event present)
-- Automated where it already exists in the repo
+## Hub rubric (read by tests)
 
-**Naming:** Use **“Fails until:”** so it’s obvious the default state is failure—same spirit as test-first in code, applied to product behavior.
-
-**Not:** implementation details (“use Postgres,” “add a React context”) or slogans (“delightful experience”). **Not** twenty micro-metrics—pick a few that **falsify** the hypothesis if they fail.
-
-**Per goal, at least one failing test.** Per MVP feature, optional one-liner if it clarifies scope.
-
-## Separation of concerns (don’t merge documents)
-
-| Document                  | Job                                                                                                                                 |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `docs/business-case.md`   | Why this might matter, who it’s for, options, market/score (if not `type: tool`), **honest verdict via scorecard** when applicable. |
-| `docs/market-research.md` | Sizing, competition, research trail. **PRD does not restate TAM/SAM/SOM**—link or one sentence of positioning at most.              |
-| `docs/PRD.md`             | Problem, goals, user, **MVP features**, **success metrics = outcomes + failing tests**, validation.                                 |
-| Prototype / code          | Ground truth. If the PRD and app disagree, **update the PRD** to match the intended product, or flag the drift.                     |
-
-**If `data/experiments.json` has `"type": "tool"`:**
-
-- There is no commercial **market** story in the business case; the PRD still has goals and failing tests, but **validation** may be “internal / dogfood only” or a single “ship page” if applicable. Do not invent a fake TAM in the PRD.
+When a `business-case.md` exists for the experiment, align the PRD narrative to it; do **not** paste TAM/SAM/SOM tables from market research into the PRD. Success metrics must state measurable **Outcomes** and include explicit **Fails until** lines tied to **failing test** descriptions (ship with failing tests first, then implement).
 
 ## Workflow
 
-### Step 1: Load context (before writing)
+1. Read experiment statement and metadata
+2. Analyze the experiment goal and scope
+3. Generate structured PRD following standard format
+4. Save PRD to experiment's documentation directory
+5. Update Documentation entry with PRD content
 
-1. Read `experiments/{slug}/docs/business-case.md` (if present).
-2. Read `data/experiments.json` for this experiment: `type`, `statement`, `name`.
-3. Skim `docs/market-research.md` only for **wording** you must not contradict—not to copy tables into the PRD.
-4. If `docs/PRD.md` or a prototype exists, read it and **prefer minimal diff**: preserve the founder’s voice and explicit decisions unless they ask to replace wholesale.
-5. If a prototype exists, skim routes and README so **Core Features** and **Failing tests** match reality or deliberately document gap.
+## Input
 
-**Do not** paste the business case or market research into the PRD. **Point** to them when the reader needs depth.
+- **Experiment ID**: Reference to existing experiment
+- **Additional Context**: Optional user-provided details, constraints, or requirements
+- **Experiment Statement**: From the experiment metadata
+- **Related Documentation**: Any existing notes or context
+- **Market Research**: If available, reference to market research report (TAM/SAM/SOM estimates, competitive analysis)
 
-### Step 2: Draft using the document template (below)
+## Output
 
-- Write **Failing tests** in **Success Metrics** **first** (stub list), then **Goals** and **Core Features** so they don’t float free of the checks.
-- Keep **MVP** to what’s needed to pass the first batch of failing tests; push nice-to-haves to **Out of scope** in one line.
+- **PRD File**: Markdown file saved to `experiments/{slug}/docs/PRD.md`
+- **Updated Documentation Entry**: Documentation JSON updated with PRD content reference
+- **Structured PRD** containing:
+  - Overview
+  - Problem Statement
+  - Goals & Objectives
+  - Target User/Use Case
+  - Core Features
+  - User Stories (hierarchical with numbered stories and substories)
+  - Technical Requirements
+  - Success Metrics
+  - Implementation Phases (if applicable)
+  - Validation Plan (Landing Page) - for ad/channel validation
+  - Non-Requirements
+  - Future Considerations
 
-**Optional checkpoint:** If scope is unclear, ask one focused question, then continue—do not block on perfection.
+## Agent Instructions
 
-### Step 3: Design review (UI-heavy experiments)
+### Step 1: Analyze Experiment
 
-If the PRD specifies UI, **invoke `@design-advisor`** in PRD review mode before treating the doc as final. Fold in only feedback that **changes user-visible requirements**; skip stylistic noise.
+- Understand the core hypothesis or goal
+- Identify the problem being solved
+- Determine the scope and boundaries
+- Note any technical constraints or requirements
+- **Check for market research**: If `experiments/{slug}/docs/market-research.md` exists, read and incorporate:
+  - TAM/SAM/SOM estimates
+  - Target market segments
+  - Competitive positioning insights
+  - Market trends and opportunities
 
-**Optional user checkpoint:** If the user wants to approve before save, present the draft; otherwise save and offer edits.
+**⚠️ APPROVAL CHECKPOINT**: After analyzing the experiment (and market research if available), present your understanding of the experiment scope, key requirements, and any market insights to the user and **WAIT for explicit approval** before proceeding to generate the PRD.
 
-### Step 4: Save
+### Step 2: Structure the PRD
 
-- **Path (Experiment Hub):** `experiments/{slug}/docs/PRD.md` — `slug` = experiment `id` from `data/experiments.json`.
-- **After save:** Print the full path. Remind: **prototype-builder** is a separate, explicit request unless the user asked to build in the same turn.
-
----
-
-## Document template
-
-Follow **section order and exclusions** in `.cursor/rules/prd-template.mdc` (hub source of truth). The template’s **Success Metrics** block must include **Outcomes** and **Failing tests (write first)** as there.
-
-**Section order (no others):** Overview → Problem Statement → Goals & Objectives → Target User → Core Features → Success Metrics → Validation Plan (Landing Page).
-
-**Target length for `PRD.md`:** 100–150 lines; if longer, cut fluff.
-
-**Use this skeleton** (replace placeholders; remove horizontal rules in paste if you prefer single breaks—match the style of the latest PRD in the repo).
+Follow this template structure:
 
 ```markdown
-# {Name} — PRD
+# [Experiment Name] - Product Requirements Document
 
 ## Overview
 
-[2–3 sentences: who it’s for, what job the product does, and how you’ll know you’re not building the wrong thing.]
-
----
+[2-3 sentence summary of what this experiment is about]
 
 ## Problem Statement
 
-[3–5 bullets or 2 short paragraphs: concrete pains, not “the space.”]
-
----
+[Clear description of the problem being addressed]
 
 ## Goals & Objectives
 
-1. [Primary — phrased as an **outcome**, not a task]
-2. [Secondary]
-3. [Tertiary if needed — if not, stop at 2]
+### Primary Goals
 
----
+- [Goal 1]
+- [Goal 2]
+- [Goal 3]
 
-## Target User
+### Success Metrics
 
-**Primary:** [one sentence]
+- [Measurable metric 1]
+- [Measurable metric 2]
 
-**Secondary:** [optional one sentence]
+## Target User/Use Case
 
-**Not for:** [one sentence]
-
----
+[Who will use this or what scenario does it address]
+[If market research available, include market size context: TAM/SAM/SOM estimates]
 
 ## Core Features
 
-### MVP scope
+### Feature 1
 
-- **[Capability 1]**: [what it does; why it matters in one breath]
-- **[Capability 2]**: […]
-- [optional **Fails until** line per capability if it prevents scope arguments]
+[Description]
 
-**Out of scope for MVP:** [short list—comma or semicolons, not a manifesto]
+### Feature 2
 
----
+[Description]
 
-## Success Metrics
+## User Stories
 
-**Outcomes (what “good” means in plain language):**
+### Story 1: [High-level user story]
 
-- [Outcome A — tied to goal 1]
-- [Outcome B — tied to goal 2]
+**As a** [user type], **I want to** [action], **so that** [benefit/value].
 
-**Failing tests (write first; pass = outcome is plausibly true):**
+#### 1.1 [Substory or acceptance criteria]
 
-- Fails until: [observable check — human, metric, or automated]
-- Fails until: [observable check]
-- Fails until: [optional; keep the list small and sharp]
+- [Specific detail or requirement]
 
-**Validation phase** (if you’re running a page / channel test):
+#### 1.2 [Substory or acceptance criteria]
 
-- [Metric or event]: [target or band]
-- **Go / no-go:** [what result means “don’t build more until we fix X”]
+- [Specific detail or requirement]
 
-**MVP phase** (after you’re building the real surface):
+### Story 2: [High-level user story]
 
-- [Metric]: [target]
+**As a** [user type], **I want to** [action], **so that** [benefit/value].
 
----
+#### 2.1 [Substory or acceptance criteria]
+
+- [Specific detail or requirement]
+
+#### 2.2 [Substory or acceptance criteria]
+
+- [Specific detail or requirement]
+
+#### 2.3 [Substory or acceptance criteria]
+
+- [Specific detail or requirement]
+
+### Story 3: [High-level user story]
+
+**As a** [user type], **I want to** [action], **so that** [benefit/value].
+
+#### 3.1 [Substory or acceptance criteria]
+
+- [Specific detail or requirement]
+
+## Technical Requirements
+
+- [Requirement 1]
+- [Requirement 2]
+
+## Implementation Approach
+
+[High-level approach or phases]
 
 ## Validation Plan (Landing Page)
 
-[2–4 sentences: hypothesis, who you’re reaching, CTA, duration/budget if any. If `type: tool` and there is no landing, say so in one line.]
+### Hypothesis
+
+[What are we trying to validate with the landing page?]
+
+### Target Audience
+
+[Who are we trying to reach with ads/channels?]
+
+### Traffic Sources
+
+- [Source 1: e.g., Google Ads, Facebook, Reddit, etc.]
+- [Source 2]
+
+### Success Metrics
+
+- **Primary**: [e.g., Email signup conversion rate > 5%]
+- **Secondary**: [e.g., Time on page > 30 seconds]
+
+### Landing Page Requirements
+
+- [Key messaging/value proposition to test]
+- [Call-to-action (e.g., email signup, waitlist)]
+- [Data to capture: email, opt-in reason, etc.]
+
+### Budget & Timeline
+
+- **Budget**: [e.g., $100-500 for initial test]
+- **Duration**: [e.g., 2 weeks]
+
+## Non-Requirements
+
+[What is explicitly out of scope]
+
+## Future Considerations
+
+[Optional future enhancements]
 ```
 
-**Do not** add: User stories section, technical requirements section, data model section, “phase 2/3 roadmap” essay, or market tables copied from market research.
+### Step 3: Write Each Section
 
----
+#### Overview
 
-## Writing standards
+- Start with the experiment statement
+- Provide context about why this experiment matters
+- Keep it concise (2-3 sentences)
 
-- **Tie goals ↔ failing tests** so an agent can trace a line from “we claim X” to “we test X.”
-- **Prefer falsifiable checks** over NPS and vibes.
-- **Avoid:** agile clichés, “MVP” repeated every paragraph, “leverage,” “delight,” “seamless,” “robust” without a measurable meaning.
-- **Tables:** only when comparing options or tracking launch hygiene—not for philosophy.
-- If the product is real in code, add a one-line **Prototype** pointer (`experiments/.../prototype/app/`, `npm run dev`, port from `package.json`) inside **Overview** or as a foot of Overview—don’t let the PRD claim a port that the app doesn’t use.
+#### Problem Statement
 
-## After output
+- Clearly articulate the problem
+- Explain why it's worth solving
+- Include any relevant background
 
-- Confirm save path; offer a tight revision pass for one section the user names.
-- If the experiment is in this hub, the **PRD** tab and workflow UI read `docs/PRD.md`.
-- Do not auto-start prototype work unless asked.
+#### Goals & Objectives
 
-## Integration
+- Derive from the experiment statement
+- Make goals specific and measurable
+- Include both primary goals and success metrics
 
-- **Business case** (`business-case-writer`) supplies direction; this skill supplies the **testable** build spec.
-- **Design:** `@design-advisor` for UI completeness when the PRD names screens or flows.
-- **Hub template:** `.cursor/rules/prd-template.mdc` — keep PRD body aligned when the rule changes, and vice versa.
+#### Target User/Use Case
+
+- For experiments, this might be the developer or a specific scenario
+- Be specific about the use case
+
+#### Core Features
+
+- Break down the experiment into key features or components
+- Keep it focused on MVP scope
+- Avoid feature creep
+
+#### User Stories
+
+Create hierarchical user stories with numbered stories and substories:
+
+**Structure**:
+
+- Each main story follows the format: "As a [user type], I want to [action], so that [benefit]"
+- Number stories sequentially (Story 1, Story 2, Story 3, etc.)
+- Number substories hierarchically (1.1, 1.2, 2.1, 2.2, etc.)
+- Substories can be:
+  - Acceptance criteria for the main story
+  - Edge cases or variations
+  - Related functionality that supports the main story
+  - Error handling or validation requirements
+
+**Guidelines**:
+
+- Start with the most critical user journeys
+- Focus on user value, not implementation details
+- Break complex stories into smaller, testable substories
+- Ensure each story is independent and deliverable
+- Include both happy path and edge cases in substories
+- Consider different user types if applicable
+
+**Example Structure**:
+
+```
+### Story 1: User can create a new experiment
+As a solo entrepreneur, I want to quickly create a new experiment entry, so that I can start tracking a product idea.
+
+#### 1.1 Basic experiment creation
+- User can provide an experiment statement
+- System generates a unique experiment ID
+- System creates experiment directory structure
+
+#### 1.2 Validation and error handling
+- System validates experiment statement is not empty
+- System handles duplicate experiment names gracefully
+- System provides clear error messages for validation failures
+
+### Story 2: User can view all experiments
+As a solo entrepreneur, I want to see a list of all my experiments, so that I can quickly find and reference past work.
+
+#### 2.1 List view display
+- System displays all experiments in a list
+- Each experiment shows: statement, status, created date
+- List is sortable by date, status, or name
+
+#### 2.2 Filtering and search
+- User can filter by status (Active, Completed, Abandoned)
+- User can search experiments by statement or tags
+- Filters persist across page refreshes
+```
+
+#### Technical Requirements
+
+- List technical constraints
+- Note required technologies or platforms
+- Include performance or other technical criteria
+
+#### Implementation Approach
+
+- Outline high-level steps or phases
+- Keep it practical and actionable
+- Focus on what's needed to validate the hypothesis
+
+#### Non-Requirements
+
+- Explicitly state what's out of scope
+- Helps maintain focus
+- Prevents scope creep
+
+### Step 4: Quality Checks
+
+- [ ] PRD is complete (all sections filled)
+- [ ] Problem statement is clear
+- [ ] Goals are specific and measurable
+- [ ] User stories are hierarchical and numbered correctly
+- [ ] User stories cover main user journeys
+- [ ] Substories include acceptance criteria and edge cases
+- [ ] Technical requirements are realistic
+- [ ] Scope is well-defined
+- [ ] Document is readable and well-structured
+
+### Step 5: Design Review Integration
+
+**Before final approval**, invoke `@design-advisor` to review the PRD for UI/UX completeness:
+
+- Call `@design-advisor` in PRD Review mode
+- Provide the PRD draft for review
+- Design Advisor will:
+  - Review UI/UX sections
+  - Identify missing design requirements
+  - Provide recommendations for design specifications
+- Incorporate design feedback into PRD
+- Present updated PRD with design recommendations to user
+
+**⚠️ APPROVAL CHECKPOINT**: After design review, present the complete PRD (including design enhancements) to the user for review and **WAIT for explicit approval** before writing any files.
+
+### Step 6: Save and Link
+
+- Save PRD to `experiments/{slug}/docs/PRD.md`
+- Update Documentation entry with:
+  - Title: "[Experiment Name] PRD"
+  - Content: Reference to PRD file or full content
+  - Last Modified: Current timestamp
+
+**⚠️ COMPLETION**: After saving the PRD, inform the user that the PRD is ready. **DO NOT automatically proceed** to building a prototype. Wait for the user to explicitly request `@prototype-builder`.
+
+## Example Output
+
+For experiment: "I'm attempting to implement WebAssembly-based image filters to achieve 3x faster processing than JavaScript"
+
+**PRD Overview**:
+"This experiment explores using WebAssembly to accelerate image filtering operations in the browser. The goal is to achieve at least 3x performance improvement over equivalent JavaScript implementations while maintaining image quality and browser compatibility."
+
+## Validation Rules
+
+- PRD must have at least Overview, Problem Statement, Goals, and User Stories sections
+- User stories must follow hierarchical numbering (1, 1.1, 1.2, 2, 2.1, etc.)
+- Each main story must have at least one substory
+- All sections should have meaningful content (not placeholders)
+- File must be valid Markdown
+- Documentation entry must be updated
+
+## Error Handling
+
+- If experiment doesn't exist, return error
+- If PRD file already exists, ask user if they want to overwrite or create new version
+- Validate Markdown syntax before saving
+- Ensure directory structure exists before writing
+
+## Integration Points
+
+- **Market Research**: If market research exists, incorporate TAM/SAM/SOM estimates and competitive insights into Target User and Goals sections
+- **Design Advisor**: Automatically invoke `@design-advisor` after completing PRD draft (before Step 5 approval checkpoint) to review UI/UX sections and ensure design requirements are properly specified
+- **Design Guidelines**: Reference `design-guidelines.md` when writing UI/UX sections (Design Advisor will provide active review)
+- Ensure PRD aligns with design principles
+- Include relevant design constraints in Technical Requirements
