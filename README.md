@@ -106,6 +106,10 @@ npm run dev       # http://localhost:3000
 
 **Optional — Supabase form submissions:** Copy `.env.example` to `.env.local` and set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Run the SQL in `.env.example` to create the `experiment_submissions` table. On Vercel, add the same vars to the project's environment variables.
 
+### Snap Issue (Chrome extension)
+
+**Snap Issue** is a personal Chrome extension (MV3) for drawing a viewport rectangle, capturing it, and opening a GitHub issue. It lives in `experiments/snap-issue/extension/`. In Chrome open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select that folder. [Full install, shortcuts, PAT, and permissions →](experiments/snap-issue/extension/README.md)
+
 ## Project structure
 
 ```
