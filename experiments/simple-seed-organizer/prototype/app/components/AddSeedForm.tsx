@@ -16,6 +16,8 @@ import {
 } from "@/lib/autoEntry";
 import { processImageFile } from "@/lib/imageUtils";
 import { uploadSeedPhoto } from "@/lib/seed-photos";
+import { needsLocalPhotoUpload } from "@/lib/seedPhotoSavePolicy";
+import { parseSeedYearFromInput } from "@/lib/seedFormYear";
 import { normalizeSunRequirement } from "@/lib/seedUtils";
 
 /** @figma S8YJQugvMmn5jaRqwFM5XO:21:3028 */
@@ -575,14 +577,8 @@ export function AddSeedForm({
     setSubmitting(true);
     try {
       const seedId = initialData?.id ?? crypto.randomUUID();
-      // Only re-upload local/blob or data URLs. Do not fetch(http…) — CORS or
-      // private buckets break fetch even when <img> can display the URL.
-      const frontNeedsUpload =
-        !!frontImage &&
-        (frontImage.startsWith("blob:") || frontImage.startsWith("data:"));
-      const backNeedsUpload =
-        !!backImage &&
-        (backImage.startsWith("blob:") || backImage.startsWith("data:"));
+      const frontNeedsUpload = needsLocalPhotoUpload(frontImage);
+      const backNeedsUpload = needsLocalPhotoUpload(backImage);
 
       let photoFrontPath: string | undefined;
       let photoBackPath: string | undefined;
@@ -610,12 +606,7 @@ export function AddSeedForm({
         type,
         brand: brand.trim() || undefined,
         source: source.trim() || undefined,
-        year: (() => {
-          const t = year.trim();
-          if (!t) return undefined;
-          const n = parseInt(t, 10);
-          return Number.isFinite(n) ? n : undefined;
-        })(),
+        year: parseSeedYearFromInput(year),
         purchaseDate: purchaseDate || undefined,
         quantity: quantity.trim() || undefined,
         daysToGermination: daysToGermination.trim() || undefined,
