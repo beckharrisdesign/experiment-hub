@@ -8,7 +8,7 @@ globs: components/**/*, app/**/*.tsx, app/**/*.css, **/*.tsx, **/globals.css
 ## Core principles
 
 1. **Simplicity first** — Minimal interface, clear hierarchy, no clutter, progressive disclosure.
-2. **Aesthetically agnostic** — Use
+2. **shadcn + structure, aesthetically agnostic** — Default UI to **shadcn/ui** (Radix + Tailwind, `components/ui/*`): Button, Input, Card, Dialog, Sheet, Dropdown, Tabs, Table, etc. Extend with `cva` / `cn()` and theme tokens—**do not** invent bespoke chrome or a one-off visual language per screen. Stay **aesthetically agnostic**: let design tokens and spacing drive look-and-feel; avoid locking pages to a specific “brand vibe” in code beyond what tokens encode. Bias toward **systematic layout** (consistent grids, spacing scale, composition patterns) and **semantic structure** (landmarks, headings, lists, labels, `button`/`a`/`nav` used correctly) over anonymous `div` stacks.
 3. **Speed & performance** — Fast load (&lt; 2s), instant feedback, smooth interactions (60fps), efficient navigation.
 4. **Focus & clarity** — One primary action per screen, clear labels, consistent patterns, error prevention.
 5. **Design for scanning** — Single-line rows when possible, columnar data, consistent alignment and row height, balance density with scannability.
@@ -17,13 +17,22 @@ globs: components/**/*, app/**/*.tsx, app/**/*.css, **/*.tsx, **/globals.css
 
 ## Visual system (dark theme default)
 
+The palette below is the **hub** baseline. For new work, prefer **shadcn theme variables** (`background`, `foreground`, `muted`, `border`, `primary`, …) mapped to these values where the surface uses shadcn—so appearance stays token-driven and swappable.
+
 **Colors**
 
+- Background: `#0d1117` (primary), `#161b22`, `#21262d`
+- Text: `#c9d1d9` (primary), `#8b949e` (secondary), `#6e7681` (muted)
+- Border: `#30363d`
+- Accent: `#58a6ff` / `#79c0ff`
+- Success `#3fb950`, Warning `#d29922`, Error `#f85149`
 - WCAG AA minimum contrast; accent for interactive elements only.
 
 **Typography**
 
+- Primary/code: system monospace (`'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace`)
 - UI text: system sans-serif
+- Scale: Tailwind xs (12px) → 2xl (24px) for labels through page titles; weights 400 body, 500–600 emphasis, 700 sparingly.
 
 **Spacing** — Tailwind scale (0.25rem base). Use consistent padding and section whitespace.
 
@@ -50,10 +59,11 @@ The hub uses Tailwind's default `md` and `lg` breakpoints as the canonical mobil
 
 ## Components
 
-- **Buttons** — Primary (accent bg), secondary (accent border), ghost. **Primary CTAs in containers/cards must be buttons, not text links.** Use text links for secondary or inline navigation only.
-- **Inputs** — Dark bg, border, clear focus (accent), muted placeholder, error state with message.
-- **Cards** — Subtle bg difference, border, padding, hover when interactive.
-- **Navigation** — Fixed left sidebar, clear active state, hover feedback, keyboard (arrows, Enter).
+- **shadcn first** — Implement with shadcn/ui primitives from `components/ui/` (or the project’s equivalent path). If the design system lacks a pattern, add or extend a shadcn-based primitive before shipping custom markup.
+- **Buttons** — Use `<Button>` variants (default, outline, ghost, destructive). **Primary CTAs in containers/cards must be buttons, not text links.** Use text links for secondary or inline navigation only.
+- **Inputs** — Use `<Input>`, `<Textarea>`, `<Label>`, `<Select>` (or shadcn form + `react-hook-form` + Zod when forms are non-trivial). Clear focus, muted placeholder, error text from field patterns.
+- **Cards** — Use `<Card>` (+ `CardHeader` / `CardContent` / `CardFooter`) for grouped content; hover only when the card is interactive.
+- **Navigation** — Prefer shadcn `NavigationMenu`, `DropdownMenu`, or `Sheet` for mobile nav. Fixed left sidebar is fine for hub shell; keep active state, hover, and keyboard support (arrows, Enter).
 
 ## UX patterns
 
@@ -71,6 +81,8 @@ The hub uses Tailwind's default `md` and `lg` breakpoints as the canonical mobil
 
 ## Quality checklist
 
+- [ ] UI built from shadcn primitives where applicable; no one-off bespoke chrome
+- [ ] Semantic landmarks and controls; not only `div` wrappers
 - [ ] Consistent color and typography hierarchy
 - [ ] Adequate spacing; clear visual hierarchy
 - [ ] Primary CTAs in containers/cards are buttons
