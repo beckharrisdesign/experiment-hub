@@ -16,6 +16,28 @@ To include converter contracts for JSONB/year:
 npm run test -- lib/storage.save.test.ts lib/seedPhotoSavePolicy.test.ts lib/seedFormYear.test.ts lib/seedConverters.test.ts
 ```
 
+## Supabase (migrations and PR branching)
+
+This app keeps database migrations under **`supabase/migrations/`** (next to this README).
+
+**GitHub integration (Supabase Branching):** In the Supabase Dashboard, set the integration **Working directory** to the parent of `supabase/` from the monorepo root:
+
+`experiments/simple-seed-organizer/prototype/app`
+
+That path is the directory that contains **`supabase/`**; do not use `.` at the repo root or migrations will not be found.
+
+**Layout Supabase expects:**
+
+| Path                        | Purpose                                                                                                                                                                                  |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `supabase/migrations/*.sql` | Applied on preview branches and production deploys when integration is enabled                                                                                                           |
+| `supabase/config.toml`      | Branch and service config as code ([branching configuration](https://supabase.com/docs/guides/deployment/branching/configuration)); add via `supabase init` in this directory if missing |
+| `supabase/seed.sql`         | Optional preview seed data ([seeding](https://supabase.com/docs/guides/cli/seeding-your-database))                                                                                       |
+
+**New migrations:** Prefer CLI-generated timestamp names (`supabase migration new <name>` → `YYYYMMDDHHMMSS_<name>.sql`) so ordering stays clear across rebases; see [branching troubleshooting](https://supabase.com/docs/guides/deployment/branching/troubleshooting). Existing `001_`–`007_` files remain valid for lexicographic order.
+
+**Docs:** [GitHub integration](https://supabase.com/docs/guides/deployment/branching/github-integration).
+
 ## Getting Started
 
 First, run the development server:
