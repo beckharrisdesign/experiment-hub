@@ -24,13 +24,32 @@ export function buildIssueBody({
   dpr,
   note,
   screenshotFilename,
+  screenshotMarkdownImage,
+  uploadFailureMessage,
 }) {
   const typeLabel = issueType === 'feedback' ? 'Feedback' : 'Bug';
   const noteBlock =
     (note || '').trim() || 'No note added at capture time.';
-  const fileLine = screenshotFilename
-    ? `Local file (Downloads): \`${screenshotFilename}\``
-    : '_(Screenshot filename unavailable — attach the downloaded PNG manually if needed.)_';
+  const localLine = screenshotFilename
+    ? `Also saved locally (Downloads): \`${screenshotFilename}\``
+    : '_(Local filename unavailable.)_';
+
+  const hosted = (screenshotMarkdownImage || '').trim();
+  const fail = (uploadFailureMessage || '').trim();
+  let hostedBlock;
+  if (hosted) {
+    hostedBlock = hosted;
+  } else if (fail) {
+    const short = fail.length > 600 ? `${fail.slice(0, 597)}…` : fail;
+    hostedBlock = `**No inline screenshot in this issue** (GitHub rejected creating/pushing the media branch — see below).
+
+> ${short}
+
+The PNG is still in **Downloads** (\`${screenshotFilename || 'snap-issue-*.png'}\`). Snap Issue normally uses branch \`snap-issue-media\` (off \`main\`) for uploads. If this failed, check your PAT can **create refs** and **push contents**, or set **Upload branch for screenshots** in Options to a branch your token can use, then reload the extension.`;
+  } else {
+    hostedBlock =
+      '_(GitHub-hosted image unavailable — attach the downloaded PNG manually if needed.)_';
+  }
 
   return `## Capture
 - Type: ${typeLabel}
@@ -45,7 +64,9 @@ export function buildIssueBody({
 ${noteBlock}
 
 ## Screenshot
-${fileLine}
+${hostedBlock}
+
+${localLine}
 
 ## Follow-up
 - Repro steps:
