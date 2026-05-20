@@ -7,6 +7,8 @@ import ExperimentTypeBadge from "@/components/ExperimentTypeBadge";
 import TabsContent from "./tabs-content";
 import type { Experiment } from "@/types";
 import type { parsePRD, parseMarketResearch } from "@/lib/data";
+import type { OpenSpecLifecycle } from "@/lib/openspec";
+import { formatBhdPhaseLabel } from "@/lib/openspec";
 
 interface Tab {
   id: string;
@@ -20,6 +22,7 @@ interface ExperimentDetailClientProps {
   prdRawContent: string | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
   businessCaseContent: string | null;
+  openSpecLifecycle: OpenSpecLifecycle | null;
   isEditor: boolean;
 }
 
@@ -30,14 +33,25 @@ export default function ExperimentDetailClient({
   prdRawContent,
   mr,
   businessCaseContent,
+  openSpecLifecycle,
   isEditor,
 }: ExperimentDetailClientProps) {
   const tabs: Tab[] = [
+    ...(openSpecLifecycle
+      ? [
+          {
+            id: "lifecycle",
+            label: `Lifecycle (${formatBhdPhaseLabel(openSpecLifecycle.currentPhase)})`,
+          },
+        ]
+      : []),
     { id: "business-case", label: "Business Case" },
     { id: "prd", label: "PRD" },
   ];
 
-  const [activeTab, setActiveTab] = useState("business-case");
+  const [activeTab, setActiveTab] = useState(
+    openSpecLifecycle ? "lifecycle" : "business-case",
+  );
 
   return (
     <div className="flex flex-col flex-1">
@@ -66,6 +80,11 @@ export default function ExperimentDetailClient({
             {experiment.name}
           </h1>
           <ExperimentTypeBadge type={experiment.type} />
+          {openSpecLifecycle && (
+            <span className="inline-flex items-center rounded-md border border-accent-primary/40 bg-accent-primary/10 px-2 py-0.5 text-xs font-medium text-accent-primary">
+              BHD · {formatBhdPhaseLabel(openSpecLifecycle.currentPhase)}
+            </span>
+          )}
         </div>
         <p className="mt-2 text-sm text-text-secondary">
           {experiment.statement}
@@ -98,6 +117,7 @@ export default function ExperimentDetailClient({
             prdRawContent={prdRawContent}
             mr={mr}
             businessCaseContent={businessCaseContent}
+            openSpecLifecycle={openSpecLifecycle}
             isEditor={isEditor}
             activeTab={activeTab}
             slug={slug}

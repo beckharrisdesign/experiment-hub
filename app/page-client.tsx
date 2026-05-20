@@ -5,7 +5,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Tooltip from "@/components/Tooltip";
 import type { Experiment, Prototype, Documentation } from "@/types";
-import { slugify } from "@/lib/utils";
+import { getExperimentHrefSlug } from "@/lib/utils";
+import { formatBhdPhaseLabel } from "@/lib/openspec";
+import type { BhdPhase } from "@/lib/openspec";
 import { calculateTotalScore } from "@/lib/scoring";
 import Link from "next/link";
 
@@ -23,6 +25,7 @@ interface ExperimentWithRelated extends Experiment {
   goNoGo?: string | null;
   somYear1?: string | null;
   somYear3?: string | null;
+  openSpecPhase?: BhdPhase | null;
 }
 
 interface HomePageClientProps {
@@ -357,11 +360,16 @@ export default function HomePageClient({
                     >
                       <td className="px-4 py-3">
                         <Link
-                          href={`/experiments/${slugify(experiment.name)}`}
+                          href={`/experiments/${getExperimentHrefSlug(experiment)}`}
                           className="block hover:text-accent-primary"
                         >
-                          <span className="font-heading text-xl font-medium text-text-dark">
+                          <span className="font-heading text-xl font-medium text-text-dark inline-flex items-center gap-2 flex-wrap">
                             {experiment.name || experiment.id || "Untitled"}
+                            {experiment.openSpecPhase && (
+                              <span className="text-xs font-medium rounded-md border border-accent-primary/40 bg-accent-primary/10 text-accent-primary px-1.5 py-0.5">
+                                {formatBhdPhaseLabel(experiment.openSpecPhase)}
+                              </span>
+                            )}
                           </span>
                           <span className="block text-sm text-text-dark-secondary leading-relaxed mt-0.5 line-clamp-1">
                             {experiment.statement}
@@ -378,7 +386,9 @@ export default function HomePageClient({
                             const total = calculateTotalScore(
                               experiment.scores,
                             );
-                            const experimentSlug = slugify(experiment.name);
+                            const experimentSlug = getExperimentHrefSlug(
+                              experiment,
+                            );
                             if (total !== null) {
                               return (
                                 <Tooltip
