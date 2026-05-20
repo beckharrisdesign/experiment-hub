@@ -6,6 +6,8 @@ import ScoreCard from "@/components/ScoreCard";
 import MetricCard from "@/components/MetricCard";
 import { Experiment } from "@/types";
 import type { parsePRD, parseMarketResearch } from "@/lib/data";
+import type { OpenSpecLifecycle } from "@/lib/openspec";
+import { formatBhdPhaseLabel } from "@/lib/openspec";
 
 interface TabsContentProps {
   experiment: Experiment;
@@ -13,6 +15,7 @@ interface TabsContentProps {
   prdRawContent: string | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
   businessCaseContent: string | null;
+  openSpecLifecycle: OpenSpecLifecycle | null;
   isEditor: boolean;
   activeTab: string;
   slug: string;
@@ -126,10 +129,45 @@ export default function TabsContent({
   prdRawContent,
   mr,
   businessCaseContent,
+  openSpecLifecycle,
   isEditor,
   activeTab,
   slug,
 }: TabsContentProps) {
+  if (activeTab === "lifecycle" && openSpecLifecycle) {
+    return (
+      <div className="space-y-8">
+        <p className="text-sm text-text-dark-secondary">
+          OpenSpec change{" "}
+          <code className="bg-background-mint px-1.5 py-0.5 rounded text-xs">
+            openspec/changes/{openSpecLifecycle.changeId}/
+          </code>{" "}
+          · schema {openSpecLifecycle.schema}
+        </p>
+        {openSpecLifecycle.artifacts.map((artifact) => (
+          <div
+            key={artifact.phase}
+            className="border border-border-dark rounded-lg overflow-hidden"
+          >
+            <div className="bg-[#194b31] px-4 py-2 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-text-primary">
+                {formatBhdPhaseLabel(artifact.phase)}
+              </h2>
+              {artifact.phase === openSpecLifecycle.currentPhase && (
+                <span className="text-xs text-accent-primary font-medium">
+                  Current phase
+                </span>
+              )}
+            </div>
+            <div className="p-4 prose prose-sm max-w-none text-text-dark-secondary">
+              <MarkdownContent content={artifact.content} variant="light" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (activeTab === "business-case") {
     return (
       <EditableTab

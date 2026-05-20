@@ -95,6 +95,16 @@ This agent helps refine experiment ideas and creates structured experiment entri
 
 **⚠️ COMPLETION**: After creating the experiment, inform the user that the experiment is ready. **DO NOT automatically proceed** to creating a PRD or generating scores. Wait for the user to explicitly request `@market-research` (which will generate scores after market analysis) or `@prd-writer`.
 
+**Optional — BHD lifecycle track:** When the user wants the full Explore → Archive ladder, suggest:
+
+```bash
+openspec new change <slug> --schema bhd-experiment
+```
+
+Then `/opsx:propose` on that change (one phase artifact per approval). For code, add a child change: `openspec new change <slug>-build --schema experiment-hub-lite`. See `openspec/schemas/bhd-experiment/README.md`.
+
+Set `openspecChangeId` and `openspecSchema: bhd-experiment` on the `experiments.json` row when using BHD so the hub list shows a phase chip and the detail page Lifecycle tab loads `explore.md` and later phases.
+
 ## Example Interaction
 
 **User Input**: "I want to test if we can use WebAssembly for faster image processing"

@@ -7,6 +7,7 @@ import {
 } from "@/lib/data";
 import HomePageClient from "./page-client";
 import type { Experiment, Prototype, Documentation } from "@/types";
+import { loadOpenSpecLifecycle, type BhdPhase } from "@/lib/openspec";
 
 interface ExperimentWithRelated extends Experiment {
   prototype?: Prototype | null;
@@ -19,6 +20,7 @@ interface ExperimentWithRelated extends Experiment {
   goNoGo?: string | null;
   somYear1?: string | null;
   somYear3?: string | null;
+  openSpecPhase?: BhdPhase | null;
 }
 
 export default async function HomePage() {
@@ -39,7 +41,10 @@ export default async function HomePage() {
       experiments.map(async (exp) => {
         try {
           // Batch all file system operations in parallel for this experiment
-          const fileChecks = await checkExperimentFiles(exp.directory);
+          const [fileChecks, openSpecLifecycle] = await Promise.all([
+            checkExperimentFiles(exp.directory),
+            loadOpenSpecLifecycle(exp).catch(() => null),
+          ]);
 
           // Parse market research if available
           let moa: string | null = null;
@@ -73,6 +78,7 @@ export default async function HomePage() {
             goNoGo,
             somYear1,
             somYear3,
+            openSpecPhase: openSpecLifecycle?.currentPhase ?? null,
           };
         } catch (error) {
           console.error(
@@ -92,6 +98,7 @@ export default async function HomePage() {
             goNoGo: null,
             somYear1: null,
             somYear3: null,
+            openSpecPhase: null,
           };
         }
       }),
