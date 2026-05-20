@@ -7,13 +7,12 @@ import ExperimentTypeBadge from "@/components/ExperimentTypeBadge";
 import TabsContent from "./tabs-content";
 import type { Experiment } from "@/types";
 import type { parsePRD, parseMarketResearch } from "@/lib/data";
-import type { OpenSpecLifecycle } from "@/lib/openspec";
-import { formatBhdPhaseLabel } from "@/lib/openspec";
-
-interface Tab {
-  id: string;
-  label: string;
-}
+import type { OpenSpecLifecycle } from "@/lib/openspec-shared";
+import {
+  buildExperimentDetailTabs,
+  formatBhdPhaseLabel,
+  resolveDefaultDetailTab,
+} from "@/lib/openspec-shared";
 
 interface ExperimentDetailClientProps {
   experiment: Experiment;
@@ -36,21 +35,14 @@ export default function ExperimentDetailClient({
   openSpecLifecycle,
   isEditor,
 }: ExperimentDetailClientProps) {
-  const tabs: Tab[] = [
-    ...(openSpecLifecycle
-      ? [
-          {
-            id: "lifecycle",
-            label: `Lifecycle (${formatBhdPhaseLabel(openSpecLifecycle.currentPhase)})`,
-          },
-        ]
-      : []),
-    { id: "business-case", label: "Business Case" },
-    { id: "prd", label: "PRD" },
-  ];
+  const tabs = buildExperimentDetailTabs({
+    openSpecLifecycle,
+    businessCaseContent,
+    prdRawContent,
+  });
 
   const [activeTab, setActiveTab] = useState(
-    openSpecLifecycle ? "lifecycle" : "business-case",
+    () => resolveDefaultDetailTab(tabs, openSpecLifecycle) ?? tabs[0]?.id ?? "",
   );
 
   return (
@@ -90,38 +82,46 @@ export default function ExperimentDetailClient({
           {experiment.statement}
         </p>
 
-        <div className="flex mt-6">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center h-[51px] px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
-                activeTab === tab.id
-                  ? "bg-background-active border-b-[3px] border-accent-primary text-text-primary"
-                  : "text-text-primary hover:bg-background-secondary"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        {tabs.length > 0 && (
+          <div className="flex mt-6 overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center h-[51px] px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? "bg-background-active border-b-[3px] border-accent-primary text-text-primary"
+                    : "text-text-primary hover:bg-background-secondary"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Body: two columns */}
       <div className="flex flex-1">
         {/* Main content */}
         <main className="flex-1 bg-background-light px-4 md:px-8 lg:px-16 py-12 min-w-0">
-          <TabsContent
-            experiment={experiment}
-            prd={prd}
-            prdRawContent={prdRawContent}
-            mr={mr}
-            businessCaseContent={businessCaseContent}
-            openSpecLifecycle={openSpecLifecycle}
-            isEditor={isEditor}
-            activeTab={activeTab}
-            slug={slug}
-          />
+          {tabs.length === 0 ? (
+            <p className="text-sm text-text-dark-secondary">
+              No documentation or OpenSpec artifacts yet for this experiment.
+            </p>
+          ) : (
+            <TabsContent
+              experiment={experiment}
+              prd={prd}
+              prdRawContent={prdRawContent}
+              mr={mr}
+              businessCaseContent={businessCaseContent}
+              openSpecLifecycle={openSpecLifecycle}
+              isEditor={isEditor}
+              activeTab={activeTab}
+              slug={slug}
+            />
+          )}
         </main>
       </div>
 

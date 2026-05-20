@@ -6,8 +6,8 @@ import ScoreCard from "@/components/ScoreCard";
 import MetricCard from "@/components/MetricCard";
 import { Experiment } from "@/types";
 import type { parsePRD, parseMarketResearch } from "@/lib/data";
-import type { OpenSpecLifecycle } from "@/lib/openspec";
-import { formatBhdPhaseLabel } from "@/lib/openspec";
+import type { OpenSpecLifecycle } from "@/lib/openspec-shared";
+import { formatBhdPhaseLabel, isBhdPhaseTab } from "@/lib/openspec-shared";
 
 interface TabsContentProps {
   experiment: Experiment;
@@ -134,9 +134,16 @@ export default function TabsContent({
   activeTab,
   slug,
 }: TabsContentProps) {
-  if (activeTab === "lifecycle" && openSpecLifecycle) {
+  if (openSpecLifecycle && isBhdPhaseTab(activeTab)) {
+    const artifact = openSpecLifecycle.artifacts.find(
+      (a) => a.phase === activeTab,
+    );
+    if (!artifact) {
+      return null;
+    }
+
     return (
-      <div className="space-y-8">
+      <div className="space-y-4">
         <p className="text-sm text-text-dark-secondary">
           OpenSpec change{" "}
           <code className="bg-background-mint px-1.5 py-0.5 rounded text-xs">
@@ -144,56 +151,41 @@ export default function TabsContent({
           </code>{" "}
           · schema {openSpecLifecycle.schema}
         </p>
-        {openSpecLifecycle.artifacts.map((artifact) => (
-          <div
-            key={artifact.phase}
-            className="border border-border-dark rounded-lg overflow-hidden"
-          >
-            <div className="bg-[#194b31] px-4 py-2 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-text-primary">
-                {formatBhdPhaseLabel(artifact.phase)}
-              </h2>
-              {artifact.phase === openSpecLifecycle.currentPhase && (
-                <span className="text-xs text-accent-primary font-medium">
-                  Current phase
-                </span>
-              )}
-            </div>
-            <div className="p-4 prose prose-sm max-w-none text-text-dark-secondary">
-              <MarkdownContent content={artifact.content} variant="light" />
-            </div>
+        <div className="border border-border-dark rounded-lg overflow-hidden">
+          <div className="bg-[#194b31] px-4 py-2 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-text-primary">
+              {formatBhdPhaseLabel(activeTab)}
+            </h2>
+            {activeTab === openSpecLifecycle.currentPhase && (
+              <span className="text-xs text-accent-primary font-medium">
+                Current phase
+              </span>
+            )}
           </div>
-        ))}
+          <div className="p-4 prose prose-sm max-w-none text-text-dark-secondary">
+            <MarkdownContent content={artifact.content} variant="light" />
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (activeTab === "business-case") {
+  if (activeTab === "business-case" && businessCaseContent?.trim()) {
     return (
       <EditableTab
         contentType="business_case"
         slug={slug}
-        initialContent={businessCaseContent ?? ""}
+        initialContent={businessCaseContent}
         isEditor={isEditor}
       >
-        {businessCaseContent ? (
-          <div className="prose prose-sm max-w-none text-text-dark-secondary">
-            <MarkdownContent content={businessCaseContent} variant="light" />
-          </div>
-        ) : (
-          <p className="text-sm text-text-dark-secondary italic">
-            No business case yet. Add a{" "}
-            <code className="bg-background-mint px-1.5 py-0.5 rounded text-xs not-italic">
-              docs/business-case.md
-            </code>{" "}
-            to this experiment.
-          </p>
-        )}
+        <div className="prose prose-sm max-w-none text-text-dark-secondary">
+          <MarkdownContent content={businessCaseContent} variant="light" />
+        </div>
       </EditableTab>
     );
   }
 
-  if (activeTab === "prd") {
+  if (activeTab === "prd" && prdRawContent?.trim()) {
     return (
       <EditableTab
         contentType="prd"
