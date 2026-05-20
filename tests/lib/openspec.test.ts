@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 import type { Experiment } from "@/types";
 import {
   resolveOpenSpecChangeId,
-  loadOpenSpecLifecycle,
   formatBhdPhaseLabel,
-} from "@/lib/openspec";
+} from "@/lib/openspec-shared";
+import { loadOpenSpecLifecycle } from "@/lib/openspec-server";
 import { getExperimentHrefSlug } from "@/lib/utils";
 import { getExperimentBySlug } from "@/lib/data";
 

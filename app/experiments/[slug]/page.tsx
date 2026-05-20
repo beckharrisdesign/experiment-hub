@@ -9,7 +9,7 @@ import {
   parsePRD,
   parseMarketResearch,
 } from "@/lib/data";
-import { loadOpenSpecLifecycle } from "@/lib/openspec";
+import { loadOpenSpecLifecycle } from "@/lib/openspec-server";
 import { getContent } from "@/lib/supabase";
 import ExperimentDetailClient from "./detail-client";
 

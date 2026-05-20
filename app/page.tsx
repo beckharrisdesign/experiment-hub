@@ -7,7 +7,8 @@ import {
 } from "@/lib/data";
 import HomePageClient from "./page-client";
 import type { Experiment, Prototype, Documentation } from "@/types";
-import { loadOpenSpecLifecycle, type BhdPhase } from "@/lib/openspec";
+import { loadOpenSpecLifecycle } from "@/lib/openspec-server";
+import type { BhdPhase } from "@/lib/openspec-shared";
 
 interface ExperimentWithRelated extends Experiment {
   prototype?: Prototype | null;

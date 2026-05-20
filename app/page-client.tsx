@@ -6,8 +6,8 @@ import Footer from "@/components/Footer";
 import Tooltip from "@/components/Tooltip";
 import type { Experiment, Prototype, Documentation } from "@/types";
 import { getExperimentHrefSlug } from "@/lib/utils";
-import { formatBhdPhaseLabel } from "@/lib/openspec";
-import type { BhdPhase } from "@/lib/openspec";
+import { formatBhdPhaseLabel } from "@/lib/openspec-shared";
+import type { BhdPhase } from "@/lib/openspec-shared";
 import { calculateTotalScore } from "@/lib/scoring";
 import Link from "next/link";
 
