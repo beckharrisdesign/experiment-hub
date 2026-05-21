@@ -12,7 +12,7 @@ Manifest **V3** extension: draw a **viewport** rectangle on any `http(s)` page, 
 ## First-time setup
 
 1. Click **Extension options** (or open the Snap Issue options tab from the extensions list).
-2. Fill in **GitHub owner**, **repository**, and a **personal access token** with permission to create issues (`repo` for private repos, or fine-grained “Issues” + metadata read).
+2. Fill in **GitHub owner**, **repository**, and a **personal access token** that can **create issues** and **write repository contents** (see [GitHub-hosted screenshots](#github-hosted-screenshots) below).
 3. Optionally set default **labels** (comma-separated) for Bug vs Feedback, and an **assignee** login.
 4. Save.
 
@@ -32,15 +32,34 @@ Then **drag** a rectangle, **Enter** to confirm, **Escape** to cancel. A **Revie
 
 ## Permissions (why)
 
-| Permission / host        | Purpose |
-| ------------------------ | ------- |
-| `activeTab`              | Capture the current tab and inject the overlay after a user gesture. |
-| `scripting`              | Inject `content-script.js` when starting capture. |
-| `storage`                | `sync` for GitHub settings; `session` for the in-flight review draft; `local` for last issue URL. |
-| `tabs`                   | Resolve the active tab for shortcuts and capture window id. |
-| `downloads`              | Save the cropped PNG with a stable filename referenced in the issue body. |
-| `contextMenus`           | Optional “Capture region” entry on the extension icon. |
-| `https://api.github.com/*` | Create issues via the GitHub REST API. |
+| Permission / host          | Purpose                                                                                           |
+| -------------------------- | ------------------------------------------------------------------------------------------------- |
+| `activeTab`                | Capture the current tab and inject the overlay after a user gesture.                              |
+| `scripting`                | Inject `content-script.js` when starting capture.                                                 |
+| `storage`                  | `sync` for GitHub settings; `session` for the in-flight review draft; `local` for last issue URL. |
+| `tabs`                     | Resolve the active tab for shortcuts and capture window id.                                       |
+| `downloads`                | Save the cropped PNG with a stable filename referenced in the issue body.                         |
+| `contextMenus`             | Optional “Capture region” entry on the extension icon.                                            |
+| `https://api.github.com/*` | Create issues and upload capture PNGs via the GitHub REST API.                                    |
+
+## GitHub-hosted screenshots
+
+On **Create GitHub issue**, the extension:
+
+1. Saves the crop to **Downloads** (as before).
+2. Uses branch **`snap-issue-media`** for uploads (not `main`): if that branch does not exist, Snap Issue **creates** `refs/heads/snap-issue-media` pointing at the **current default-branch tip**, then [`PUT`s](https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28) the PNG to `snap-issue-captures/<unique>.png` on **that branch**. Typical **protect-main** rulesets therefore do not block the upload.
+3. Inserts the returned **`raw.githubusercontent.com`** URL as `![Snap Issue capture](…)` in the issue body, plus the local download line.
+
+**Optional:** **Upload branch for screenshots** in Options replaces `snap-issue-media` with another branch name (same create-if-missing behavior).
+
+**Token scopes**
+
+- **Classic PAT:** `repo` (private) or `public_repo` (public only) — must allow **contents** (commits + refs) and **issues**.
+- **Fine-grained PAT:** **Contents: Read and write**, **Issues: Read and write**, **Metadata: Read**.
+
+**If upload still fails:** your org may block **creating refs/branches** or apply rules to **all** branches — the issue is still created with an explanation; check the yellow warning on the review tab or the **Screenshot** section on GitHub.
+
+**Repo footprint:** one-time branch pointer plus one commit per capture on the media branch under `snap-issue-captures/…`.
 
 ## MVP limitations
 
@@ -48,11 +67,11 @@ Then **drag** a rectangle, **Enter** to confirm, **Escape** to cancel. A **Revie
 - **Restricted pages** — `chrome://`, the Chrome Web Store, and other blocked URLs cannot be captured; you’ll see an on-page toast.
 - **iframes** — selection is viewport-level; cross-origin iframe contents are not isolated in the crop.
 - **PAT** — stored in **synced** storage; use a minimally scoped token and rotate if exposed.
-- **Images in GitHub** — v1 saves the file locally and mentions the filename in the issue body; attaching to the issue is manual if you want it inline. Future automation can plug into `image-host.js`.
+- **Images in GitHub** — uploads go to **`snap-issue-media`** (auto-created) by default so **protect-main** does not block them. If upload still fails, the issue is created with an explanation and the PNG stays in Downloads.
 
 ## Manual QA checklist (ship gate)
 
-Mirror of OpenSpec user outcomes — run before merge or release. Automated smoke: `npm run test -- tests/snap-issue-crop.test.ts` (DPR crop math).
+Mirror of OpenSpec user outcomes — run before merge or release. Automated smoke: `npm run test -- tests/snap-issue-crop.test.ts tests/snap-issue-github.test.ts` (crop math + issue body).
 
 - [ ] 1.1 Start capture from the extension icon (supported `http(s)` page).
 - [ ] 1.2 Start capture from the keyboard command / shortcut.
@@ -65,24 +84,24 @@ Mirror of OpenSpec user outcomes — run before merge or release. Automated smok
 - [ ] 1.9 Restricted URL shows capture error toast, not a silent failure.
 - [ ] 1.10 Options save and reload persist settings (sync).
 - [ ] 1.11 Submit without owner/repo/token is blocked with pointer to Options.
-- [ ] 1.12 Created issue has correct title + Capture / Note / Follow-up body.
-- [ ] 1.13 Downloads contains `snap-issue-*.png` and body references the filename.
+- [ ] 1.12 Created issue has correct title + Capture / Note / Follow-up body and **renders the screenshot inline** (not only local path text).
+- [ ] 1.13 Downloads contains `snap-issue-*.png` and the issue body still mentions the local filename; repo has a new file under `snap-issue-captures/` on branch **`snap-issue-media`** (or your override).
 - [ ] 1.14 Invalid token or repo shows a readable GitHub error on submit.
 
 ## File map
 
-| File | Role |
-| ---- | ---- |
-| `manifest.json` | MV3 entry, permissions, command |
-| `background.js` | Service worker: inject, capture, crop, session draft, GitHub, downloads |
-| `content-script.js` | Overlay, drag selection, Enter/Escape |
-| `crop.js` | CSS viewport rect → bitmap crop using capture/image size ratio |
-| `github.js` | Issue title/body + `POST` issue |
-| `image-host.js` | Stub for future hosted image / markdown embed |
-| `popup.html` / `popup.js` | Optional quick panel (open from Options) |
-| `options.html` / `options.js` | GitHub + label settings |
-| `review.html` / `review.js` | Preview, type, note, submit |
-| `extension-ui.css` | Dark styling aligned with hub palette |
+| File                          | Role                                                                    |
+| ----------------------------- | ----------------------------------------------------------------------- |
+| `manifest.json`               | MV3 entry, permissions, command                                         |
+| `background.js`               | Service worker: inject, capture, crop, session draft, GitHub, downloads |
+| `content-script.js`           | Overlay, drag selection, Enter/Escape                                   |
+| `crop.js`                     | CSS viewport rect → bitmap crop using capture/image size ratio          |
+| `github.js`                   | Issue title/body + `POST` issue                                         |
+| `image-host.js`               | Upload PNG via GitHub Contents API → markdown image URL                 |
+| `popup.html` / `popup.js`     | Optional quick panel (open from Options)                                |
+| `options.html` / `options.js` | GitHub + label settings                                                 |
+| `review.html` / `review.js`   | Preview, type, note, submit                                             |
+| `extension-ui.css`            | Dark styling aligned with hub palette                                   |
 
 ## Development notes
 

@@ -1,5 +1,9 @@
+const path = require("path");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Prevent Next from treating ~/package-lock.json as the monorepo root (breaks dev module resolution).
+  outputFileTracingRoot: path.join(__dirname),
   reactStrictMode: true,
   allowedDevOrigins: [
     '*.riker.replit.dev',

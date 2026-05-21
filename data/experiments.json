@@ -227,4 +227,20 @@
       "tool",
       "image-processing"
     ]
-  }]
+  },
+  {
+    "id": "pomodoro-maker",
+    "name": "Pomodoro Maker",
+    "statement": "A minimal, joyful Pomodoro timer for solo makers—custom rhythms without subscription noise.",
+    "type": "commercial",
+    "directory": "experiments/pomodoro-maker",
+    "documentationId": "doc-pomodoro-maker",
+    "prototypeId": "",
+    "status": "Active",
+    "createdDate": "2026-05-20",
+    "lastModified": "2026-05-20",
+    "tags": ["productivity", "pomodoro", "focus", "web"],
+    "openspecChangeId": "pomodoro-maker",
+    "openspecSchema": "bhd-experiment"
+  }
+]

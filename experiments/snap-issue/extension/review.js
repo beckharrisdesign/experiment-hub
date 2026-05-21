@@ -36,8 +36,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('submit').addEventListener('click', async () => {
     const formError = document.getElementById('formError');
+    const formWarn = document.getElementById('formWarn');
     const formSuccess = document.getElementById('formSuccess');
     show(formError, false);
+    show(formWarn, false);
     show(formSuccess, false);
     const note = document.getElementById('note').value;
     try {
@@ -49,14 +51,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         },
       });
       if (!res?.ok) {
+        show(formWarn, false);
         show(formError, true);
         formError.textContent = res?.error || 'Submit failed.';
         return;
+      }
+      show(formWarn, Boolean(res.imageUploadSkipped));
+      if (res.imageUploadSkipped) {
+        formWarn.innerHTML =
+          '<strong>No GitHub image in the issue.</strong> Upload failed (token cannot create/push the <code>snap-issue-media</code> branch, or a ruleset blocks that branch). The issue was still created; the screenshot is in <strong>Downloads</strong>. Fix: confirm <strong>Contents: Read and write</strong> on your PAT, or set <strong>Upload branch for screenshots</strong> in Options → <strong>Save</strong> → reload the extension on <code>chrome://extensions</code>.';
       }
       show(formSuccess, true);
       formSuccess.innerHTML = `Created. <a href="${res.issueUrl}" target="_blank" rel="noopener">Open issue</a>`;
       document.getElementById('submit').disabled = true;
     } catch (e) {
+      show(formWarn, false);
       show(formError, true);
       formError.textContent = e?.message || String(e);
     }
