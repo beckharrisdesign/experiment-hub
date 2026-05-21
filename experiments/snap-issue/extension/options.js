@@ -4,6 +4,7 @@ const KEYS = [
   'githubOwner',
   'githubRepo',
   'githubToken',
+  'githubSnapIssueBranch',
   'labelsBug',
   'labelsFeedback',
   'assignee',

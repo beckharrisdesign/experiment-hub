@@ -8,6 +8,7 @@
   --si-accent: #58a6ff;
   --si-danger: #f85149;
   --si-success: #3fb950;
+  --si-warn: #d29922;
 }
 
 * {
@@ -115,6 +116,17 @@ button.si-btn-ghost {
   color: var(--si-success);
   font-size: 13px;
   margin-top: 8px;
+}
+
+.si-warn {
+  color: var(--si-warn);
+  font-size: 13px;
+  line-height: 1.45;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--si-border);
+  background: var(--si-elevated);
 }
 
 .si-preview {

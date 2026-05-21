@@ -9,6 +9,7 @@ import {
   parsePRD,
   parseMarketResearch,
 } from "@/lib/data";
+import { loadOpenSpecLifecycle } from "@/lib/openspec-server";
 import { getContent } from "@/lib/supabase";
 import ExperimentDetailClient from "./detail-client";
 
@@ -66,6 +67,10 @@ export default async function ExperimentDetailPage({
   const { hasPRDFile, mrContent } = fileChecks;
 
   // Read all content in parallel — Supabase overrides file for editable content
+  const openSpecLifecycle = await loadOpenSpecLifecycle(experiment).catch(
+    () => null,
+  );
+
   const [prd, prdRawContent, mr, businessCaseContent] = await Promise.all([
     (async () => {
       if (!hasPRDFile) return null;
@@ -125,6 +130,7 @@ export default async function ExperimentDetailPage({
         prdRawContent={prdRawContent}
         mr={mr}
         businessCaseContent={businessCaseContent}
+        openSpecLifecycle={openSpecLifecycle}
         isEditor={isEditor}
       />
     </div>

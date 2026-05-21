@@ -1,5 +1,14 @@
 [
   {
+    "id": "doc-pomodoro-maker",
+    "title": "Pomodoro Maker Documentation",
+    "content": "BHD lifecycle tracked in openspec/changes/pomodoro-maker/.",
+    "experimentId": "pomodoro-maker",
+    "createdDate": "2026-05-20",
+    "lastModified": "2026-05-20",
+    "tags": ["productivity", "pomodoro", "bhd"]
+  },
+  {
     "id": "doc-pbn-research",
     "title": "PBN Research Lab Documentation",
     "content": "Notebook-first evaluation for paint-by-number pipeline research.",

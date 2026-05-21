@@ -6,6 +6,8 @@ import ScoreCard from "@/components/ScoreCard";
 import MetricCard from "@/components/MetricCard";
 import { Experiment } from "@/types";
 import type { parsePRD, parseMarketResearch } from "@/lib/data";
+import type { OpenSpecLifecycle } from "@/lib/openspec-shared";
+import { formatBhdPhaseLabel, isBhdPhaseTab } from "@/lib/openspec-shared";
 
 interface TabsContentProps {
   experiment: Experiment;
@@ -13,6 +15,7 @@ interface TabsContentProps {
   prdRawContent: string | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
   businessCaseContent: string | null;
+  openSpecLifecycle: OpenSpecLifecycle | null;
   isEditor: boolean;
   activeTab: string;
   slug: string;
@@ -126,36 +129,63 @@ export default function TabsContent({
   prdRawContent,
   mr,
   businessCaseContent,
+  openSpecLifecycle,
   isEditor,
   activeTab,
   slug,
 }: TabsContentProps) {
-  if (activeTab === "business-case") {
+  if (openSpecLifecycle && isBhdPhaseTab(activeTab)) {
+    const artifact = openSpecLifecycle.artifacts.find(
+      (a) => a.phase === activeTab,
+    );
+    if (!artifact) {
+      return null;
+    }
+
+    return (
+      <div className="space-y-4">
+        <p className="text-sm text-text-dark-secondary">
+          OpenSpec change{" "}
+          <code className="bg-background-mint px-1.5 py-0.5 rounded text-xs">
+            openspec/changes/{openSpecLifecycle.changeId}/
+          </code>{" "}
+          · schema {openSpecLifecycle.schema}
+        </p>
+        <div className="border border-border-dark rounded-lg overflow-hidden">
+          <div className="bg-[#194b31] px-4 py-2 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-text-primary">
+              {formatBhdPhaseLabel(activeTab)}
+            </h2>
+            {activeTab === openSpecLifecycle.currentPhase && (
+              <span className="text-xs text-accent-primary font-medium">
+                Current phase
+              </span>
+            )}
+          </div>
+          <div className="p-4 prose prose-sm max-w-none text-text-dark-secondary">
+            <MarkdownContent content={artifact.content} variant="light" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (activeTab === "business-case" && businessCaseContent?.trim()) {
     return (
       <EditableTab
         contentType="business_case"
         slug={slug}
-        initialContent={businessCaseContent ?? ""}
+        initialContent={businessCaseContent}
         isEditor={isEditor}
       >
-        {businessCaseContent ? (
-          <div className="prose prose-sm max-w-none text-text-dark-secondary">
-            <MarkdownContent content={businessCaseContent} variant="light" />
-          </div>
-        ) : (
-          <p className="text-sm text-text-dark-secondary italic">
-            No business case yet. Add a{" "}
-            <code className="bg-background-mint px-1.5 py-0.5 rounded text-xs not-italic">
-              docs/business-case.md
-            </code>{" "}
-            to this experiment.
-          </p>
-        )}
+        <div className="prose prose-sm max-w-none text-text-dark-secondary">
+          <MarkdownContent content={businessCaseContent} variant="light" />
+        </div>
       </EditableTab>
     );
   }
 
-  if (activeTab === "prd") {
+  if (activeTab === "prd" && prdRawContent?.trim()) {
     return (
       <EditableTab
         contentType="prd"

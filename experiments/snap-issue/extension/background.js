@@ -4,6 +4,7 @@ import {
   buildIssueTitle,
   createGitHubIssue,
 } from './github.js';
+import { uploadScreenshotForMarkdown } from './image-host.js';
 
 const MIN_SELECTION = 4;
 
@@ -217,6 +218,7 @@ async function handleSubmit(payload) {
     'githubOwner',
     'githubRepo',
     'githubToken',
+    'githubSnapIssueBranch',
     'labelsBug',
     'labelsFeedback',
     'assignee',
@@ -234,13 +236,33 @@ async function handleSubmit(payload) {
   const browserLine = ua || 'Unknown';
 
   const stamp = draft.capturedAtIso.replace(/[:.]/g, '-');
-  const filename = `snap-issue-${stamp}.png`;
+  const rand = Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) =>
+    b.toString(16).padStart(2, '0')
+  ).join('');
+  const filename = `snap-issue-${stamp}-${rand}.png`;
 
   await chrome.downloads.download({
     url: draft.imageDataUrl,
     filename,
     saveAs: false,
   });
+
+  let screenshotMarkdownImage = '';
+  let uploadFailureMessage = '';
+  try {
+    const uploaded = await uploadScreenshotForMarkdown({
+      owner,
+      repo,
+      token,
+      imageDataUrl: draft.imageDataUrl,
+      filename,
+      branch: (sync.githubSnapIssueBranch || '').trim() || undefined,
+    });
+    screenshotMarkdownImage = uploaded.markdownImage;
+  } catch (e) {
+    uploadFailureMessage =
+      e?.message || String(e) || 'Upload failed';
+  }
 
   const title = buildIssueTitle({
     issueType,
@@ -260,6 +282,8 @@ async function handleSubmit(payload) {
     dpr: draft.dpr,
     note,
     screenshotFilename: filename,
+    screenshotMarkdownImage,
+    uploadFailureMessage: uploadFailureMessage || undefined,
   });
 
   const issue = await createGitHubIssue({
@@ -278,5 +302,8 @@ async function handleSubmit(payload) {
   await chrome.storage.local.set({ snapIssueLastIssueUrl: issueUrl });
   await chrome.storage.session.remove('snapIssueReviewDraft');
 
-  return { issueUrl };
+  return {
+    issueUrl,
+    imageUploadSkipped: Boolean(uploadFailureMessage),
+  };
 }

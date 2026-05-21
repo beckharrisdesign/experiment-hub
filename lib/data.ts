@@ -42,7 +42,11 @@ export async function getExperimentBySlug(
   slug: string,
 ): Promise<Experiment | null> {
   const experiments = await getExperiments();
-  return experiments.find((exp) => slugify(exp.name) === slug) || null;
+  return (
+    experiments.find(
+      (exp) => slugify(exp.name) === slug || exp.id === slug,
+    ) || null
+  );
 }
 
 export async function getPrototypeByExperimentId(

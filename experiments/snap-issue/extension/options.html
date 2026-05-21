@@ -34,6 +34,23 @@
             />
           </div>
           <div class="si-row">
+            <label for="githubSnapIssueBranch"
+              >Upload branch for screenshots (optional)</label
+            >
+            <input
+              id="githubSnapIssueBranch"
+              name="githubSnapIssueBranch"
+              placeholder="leave empty for snap-issue-media"
+              autocomplete="off"
+            />
+            <p class="si-muted" style="margin-top: 6px; margin-bottom: 0">
+              By default Snap Issue uses branch <code>snap-issue-media</code> (created
+              automatically from your default branch if missing) so
+              <strong>protect-main</strong> rules do not block uploads. Override only if
+              you want a different branch name.
+            </p>
+          </div>
+          <div class="si-row">
             <label for="labelsBug">Default labels (Bug), comma-separated</label>
             <input id="labelsBug" name="labelsBug" placeholder="bug" />
           </div>

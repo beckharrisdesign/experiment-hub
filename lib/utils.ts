@@ -17,3 +17,14 @@ export function getExperimentSlug(name: string): string {
   return slugify(name);
 }
 
+/**
+ * Canonical href slug for /experiments/[slug] — prefers id when it differs from name slug.
+ */
+export function getExperimentHrefSlug(experiment: {
+  id: string;
+  name: string;
+}): string {
+  const nameSlug = slugify(experiment.name);
+  return nameSlug === experiment.id ? nameSlug : experiment.id;
+}
+

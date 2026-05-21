@@ -5,7 +5,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Tooltip from "@/components/Tooltip";
 import type { Experiment, Prototype, Documentation } from "@/types";
-import { slugify } from "@/lib/utils";
+import { getExperimentHrefSlug } from "@/lib/utils";
+import { formatBhdPhaseLabel } from "@/lib/openspec-shared";
+import type { BhdPhase } from "@/lib/openspec-shared";
 import { calculateTotalScore } from "@/lib/scoring";
 import Link from "next/link";
 
@@ -23,6 +25,7 @@ interface ExperimentWithRelated extends Experiment {
   goNoGo?: string | null;
   somYear1?: string | null;
   somYear3?: string | null;
+  openSpecPhase?: BhdPhase | null;
 }
 
 interface HomePageClientProps {
@@ -101,8 +104,8 @@ export default function HomePageClient({
       {/* Hero Section */}
       <section className="bg-background-primary px-4 md:px-8 lg:px-16 py-12 lg:py-[70px]">
         <div className="flex flex-col lg:flex-row gap-4 lg:items-start max-w-screen-xl mx-auto">
-          {/* Large heading */}
-          <div className="lg:w-[411px] lg:pr-5 lg:shrink-0">
+          {/* Large heading — grows on lg so info columns sit on the right */}
+          <div className="flex-1 min-w-0 lg:pr-5">
             <h1 className="font-heading text-4xl md:text-5xl lg:text-[60px] font-semibold text-text-primary leading-tight">
               Welcome
               <br />
@@ -110,14 +113,14 @@ export default function HomePageClient({
             </h1>
           </div>
           {/* Info columns */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:contents">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:flex lg:flex-row lg:shrink-0 lg:gap-4">
             {/* About column */}
             <div className="lg:w-[204px] lg:pr-4 lg:shrink-0">
               <p className="text-sm font-bold text-white leading-5 mb-2">
                 About BHD Labs
               </p>
               <p className="text-sm font-light text-white leading-5">
-                I&apos;m a neurodiverse founder. My best ideas come fast and
+                I&apos;m a neurodiverse designer and founder. My best ideas come fast and
                 from everywhere. This platform is how I develop them with rigor
                 and pursue the strongest ones with focus.
               </p>
@@ -129,8 +132,7 @@ export default function HomePageClient({
               </p>
               <p className="text-sm font-light text-white leading-5">
                 I build things I care deeply about, that serve a real market
-                need, and that make a difference in the world. All three have to
-                be true.
+                need, and that make a difference in the world. I make sure all three are true -- plus a few extras -- in a custom scoring system.
               </p>
             </div>
             {/* Core themes column */}
@@ -158,7 +160,7 @@ export default function HomePageClient({
       </section>
 
       {/* Scaffolding Section */}
-      <section className="bg-background-secondary px-4 md:px-8 lg:px-16 py-8 border-t border-b border-[rgba(20,174,92,0.2)]">
+      {/* <section className="bg-background-secondary px-4 md:px-8 lg:px-16 py-8 border-t border-b border-[rgba(20,174,92,0.2)]">
         <div className="max-w-screen-xl mx-auto">
           <p className="text-xs font-bold text-text-primary uppercase tracking-widest mb-5">
             The scaffolding
@@ -243,7 +245,7 @@ export default function HomePageClient({
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Experiment List Section */}
       <section className="bg-background-light px-4 md:px-8 lg:px-16 py-[46px] flex-1">
@@ -358,11 +360,16 @@ export default function HomePageClient({
                     >
                       <td className="px-4 py-3">
                         <Link
-                          href={`/experiments/${slugify(experiment.name)}`}
+                          href={`/experiments/${getExperimentHrefSlug(experiment)}`}
                           className="block hover:text-accent-primary"
                         >
-                          <span className="font-heading text-xl font-medium text-text-dark">
+                          <span className="font-heading text-xl font-medium text-text-dark inline-flex items-center gap-2 flex-wrap">
                             {experiment.name || experiment.id || "Untitled"}
+                            {experiment.openSpecPhase && (
+                              <span className="text-xs font-medium rounded-md border border-accent-primary/40 bg-accent-primary/10 text-accent-primary px-1.5 py-0.5">
+                                {formatBhdPhaseLabel(experiment.openSpecPhase)}
+                              </span>
+                            )}
                           </span>
                           <span className="block text-sm text-text-dark-secondary leading-relaxed mt-0.5 line-clamp-1">
                             {experiment.statement}
@@ -379,7 +386,9 @@ export default function HomePageClient({
                             const total = calculateTotalScore(
                               experiment.scores,
                             );
-                            const experimentSlug = slugify(experiment.name);
+                            const experimentSlug = getExperimentHrefSlug(
+                              experiment,
+                            );
                             if (total !== null) {
                               return (
                                 <Tooltip
