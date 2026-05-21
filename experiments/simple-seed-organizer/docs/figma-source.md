@@ -31,7 +31,7 @@ Prioritized prototype files include `/** @figma S8YJQugvMmn5jaRqwFM5XO:<node> */
 | --------------- | ---------- | ----------------------------------------------------------------------------------------------------- |
 | `AppShell`      | `21:4993`  | Page wrapper — Body Slot                                                                              |
 | `Header`        | `13:128`   | Header block symbol (canonical **DS anchor** for MCP / inventory)                                     |
-| `BottomNav`     | `21:2114`  | Bottom Navigation symbol                                                                              |
+| `BottomNav`     | `21:2114`  | Bottom Navigation symbol — ⚠️ Figma shows Type\|FAB\|Import (3 items); code renders Type\|FAB\|Photos\|Import (4 items, Month+Age hidden). Photos tab is missing from Figma symbol. |
 | `LandingPage`   | `18:2709`  | Landing Page Content symbol (see [landing inventory](./landing-figma-inventory.md) for section nodes) |
 | `LandingFooter` | `80:1268`  | Landing footer chrome — **`Sections`** frame (`13:820`), production parity                            |
 | `SeedList`      | `17:799`   | Seed List symbol                                                                                      |
@@ -39,6 +39,23 @@ Prioritized prototype files include `/** @figma S8YJQugvMmn5jaRqwFM5XO:<node> */
 | `AddSeedForm`   | `21:3028`  | Packet Editing View (full form context)                                                               |
 
 Update this table if frames move in Figma; keep JSDoc in sync.
+
+## Mobile screen frames (code-faithful reproductions for Code Connect)
+
+Built to exactly match the React prototype at 390px (iPhone SE / 14) so Code Connect can be wired up. Both frames live on the **Today** page.
+
+| Screen | Figma node | React source |
+| ------ | ---------- | ------------ |
+| Home / Seed List | `98:1270` | `app/app/page.tsx` + `SeedList.tsx` |
+| Seed Detail | `98:1398` | `SeedDetail.tsx` |
+
+**Seed Detail layout notes** (node `98:1398`):
+- Subheader: 73px white bar — chevron \| "Seed details" (18px Semi Bold #101828) \| "Edit" (16px #16a34a). No standalone bottom Edit button.
+- Title lockup: left col 141px (`flex-1 min-w-0`, gap-4, right col 201px fixed). Name wraps at 34px Bold; badges amber (warning) or orange (attention).
+- Image slots: 192.5×256px portrait, `overflow-x-auto` clipped container, `#d4d4d4` empty state with white "+".
+- PlantingCards: `#faf5ff` / `#e9d4ff` border / `#8200db` label / `#59168b` value.
+- GrowthStatCards: `#eff6ff` / `#bedbff` border / `#1447e6` label / `#1c398e` value.
+- AI button: `border-[#bbf7d0]` / `text-[#16a34a]`. Delete: `text-red-500` (#ef4444).
 
 ## Code Connect
 
