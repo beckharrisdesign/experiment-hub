@@ -40,16 +40,36 @@ Prioritized prototype files include `/** @figma S8YJQugvMmn5jaRqwFM5XO:<node> */
 
 Update this table if frames move in Figma; keep JSDoc in sync.
 
-## Mobile screen frames (code-faithful reproductions for Code Connect)
+## Surface inventory
 
-Built to exactly match the React prototype at 390px (iPhone SE / 14) so Code Connect can be wired up. Both frames live on the **Today** page.
+All surfaces in the SSO ecosystem — Figma frames and code routes. The **Surfaces** page (`0:1`) is the canonical Figma home for these; the **Components** page (`1:2`) supplies the symbols they use. Add rows here as new surfaces are designed or built; fill in missing node IDs as Figma frames are created.
 
-| Screen | Figma node | React source |
-| ------ | ---------- | ------------ |
-| Home / Seed List | `98:1270` | `app/app/page.tsx` + `SeedList.tsx` |
-| Seed Detail | `98:1398` | `SeedDetail.tsx` |
+| Surface | Route | Desktop node | Mobile node | Status |
+| ------- | ----- | ------------ | ----------- | ------ |
+| Landing / Marketing | `/` (unauthenticated) | `18:2588` | — | Desktop designed; no mobile frame |
+| Home / Seed List | `/` (authenticated) | `17:277` | `98:1270` ✓ | Desktop designed; mobile = code-faithful |
+| Seed Detail | `/seeds/[id]` | `13:3` | `98:1398` ✓ | Desktop designed; mobile = code-faithful |
+| Edit Seed Packet | `/seeds/[id]/edit` | `21:1572` | — | Desktop designed; no mobile frame |
+| Add Seed | `/add` | — | — | In code only (`AddSeedForm.tsx`, node `21:3028` is form content only) |
+| Import Zone | `/import` | `21:1614` | — | Desktop placeholder; no mobile frame |
+| Pricing | `/pricing` | `21:1528` | — | Desktop placeholder; no mobile frame |
+| Profile | `/profile` | `21:1700` | — | Desktop placeholder; no mobile frame |
+| Forgot Password | `/forgot-password` | `21:1529` | — | Desktop placeholder; no mobile frame |
+| Reset Password | `/reset-password` | — | — | In code only |
+| Login | `/login` | — | — | In code only |
+| Privacy Policy | `/privacy` | — | — | In code only |
+| Terms of Service | `/terms` | — | — | In code only |
+| Error | (error boundary) | `21:1657` | — | Desktop placeholder; no mobile frame |
 
-**Seed Detail layout notes** (node `98:1398`):
+**Key:**
+- ✓ = code-faithful reproduction built at 390px, suitable for Code Connect wiring
+- "Desktop designed" = full component-based Figma frame on the Surfaces page
+- "Desktop placeholder" = frame exists with Page Wrappers shell but content is a rectangle placeholder, not yet designed
+- "In code only" = route exists in the prototype but no Figma frame yet
+
+**Mobile frames** (`98:1270`, `98:1398`) live on the **Surfaces** page alongside the desktop frames. Both were built to exactly match the React prototype code.
+
+**Seed Detail mobile layout notes** (node `98:1398`):
 - Subheader: 73px white bar — chevron \| "Seed details" (18px Semi Bold #101828) \| "Edit" (16px #16a34a). No standalone bottom Edit button.
 - Title lockup: left col 141px (`flex-1 min-w-0`, gap-4, right col 201px fixed). Name wraps at 34px Bold; badges amber (warning) or orange (attention).
 - Image slots: 192.5×256px portrait, `overflow-x-auto` clipped container, `#d4d4d4` empty state with white "+".
