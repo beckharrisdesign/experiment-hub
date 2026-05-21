@@ -10,7 +10,7 @@ After clone: `bash scripts/link-agent-dirs.sh`
 
 **Always-applied:** `rules/principles.mdc`, `rules/github-workflow.mdc`, `rules/figma.mdc`
 
-**File-triggered:** `rules/commit-messages.mdc`, `rules/design-guidelines.mdc`, `rules/component-conventions.mdc`, `rules/nextjs-api-routes.mdc`, `rules/vitest-conventions.mdc`, `rules/prd-template.mdc`, `rules/market-research-template.mdc`, `rules/openspec-workflow.mdc`
+**File-triggered:** `rules/commit-messages.mdc`, `rules/design-guidelines.mdc`, `rules/component-conventions.mdc`, `rules/nextjs-api-routes.mdc`, `rules/vitest-conventions.mdc`, `rules/prd-template.mdc`, `rules/market-research-template.mdc`, `rules/openspec-workflow.mdc`, `rules/bhd-experiment.mdc`
 
 ## Skills
 

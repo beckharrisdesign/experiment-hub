@@ -25,7 +25,7 @@ Hub catalog (`experiments.json`) and BHD artifacts (`openspec/changes/<id>/`) ar
 
 ## Visual design / Figma
 
-| Item | Value |
-| ---- | ----- |
-| Figma URL | N/A — no UI redesign |
-| Frames | Reuse existing tab + table patterns from hub home and experiment detail |
+| Item      | Value                                                                   |
+| --------- | ----------------------------------------------------------------------- |
+| Figma URL | N/A — no UI redesign                                                    |
+| Frames    | Reuse existing tab + table patterns from hub home and experiment detail |

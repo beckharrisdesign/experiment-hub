@@ -1,0 +1,144 @@
+name: bhd-experiment
+version: 1
+description: |
+  BHD Experiment Framework v0.4 — moves product experiments from idea to archive via
+  four phases (Explore, Propose, Apply, Archive). Phases are states, not stage-gates.
+  All artifacts are editable in any phase. Transitions are human decisions.
+
+artifacts:
+  - id: explore
+    generates: explore.md
+    description: |
+      Initial hypothesis, who-it-is-for, market analysis, scoring, and permutations.
+      The artifact captures the founder's first crisp articulation of the experiment.
+    template: explore.md
+    instruction: |
+      Generate the Explore artifact for this experiment.
+
+      Pull always-loaded context from Soul, Goals, and Scoring stores.
+
+      Required sections:
+        - Hypothesis: what you believe, that if confirmed, justifies building this.
+        - Why this matters (Personal): the emotional / lived-experience driver.
+        - Why this matters (Strategic): which Soul theme does this serve?
+          (makers / neurodiversity / environment / other)
+          Prompt the user explicitly if blank. Allow "intentionally blank —
+          personal-only experiment" as a valid response.
+        - Who it's for: primary user. Flag proxy-user mode if building for someone else.
+        - What it does: capability summary.
+        - What it does NOT do: explicit exclusions.
+        - Existing options: competitive scan.
+        - Market analysis: TAM / SAM, market signals.
+        - Final scorecard: B, P, C, $, S each 1-5. Surface named shape alongside total.
+        - Permutations: 2-3 alternate versions with projected score deltas and trade-offs.
+          One must be marked "chosen"; the rest are logged as "rejected" with reasoning.
+
+      Score shape taxonomy (current): Strong-go, Big-bet, Mission-driven,
+      Cheap-and-useful, Hobby horse. If the score pattern doesn't match an existing
+      shape, propose a new shape and flag for taxonomy review.
+    requires: []
+
+  - id: propose
+    generates: propose.md
+    description: |
+      Four briefs that commit to a specific shape of the experiment: Business,
+      Service, Validation, and Measurement intent.
+    template: propose.md
+    instruction: |
+      Generate the Propose artifact for this experiment.
+
+      Pull retrieved context from Business Patterns, Service Patterns, BHD Ecosystem.
+      Continue to load Soul, Goals, Scoring.
+
+      Required sections:
+        - Business Brief: monetization model (decide BEFORE pricing), pricing, SKUs,
+          internal positioning (single-sentence elevator pitch for the founder).
+        - Service Brief: use cases included, use cases NOT included (defensive),
+          surfaces involved, platforms involved.
+        - Validation Plan: method, traffic / sample, budget, success thresholds,
+          kill criteria, decision point.
+        - Measurement Brief — Intent: success metric, leading indicator, kill criteria.
+          (Instrumentation is captured later, in Apply, attached to each Build Unit.)
+
+      After draft is complete, prompt:
+        "Major Propose decisions often shift the Explore scores. Re-score now?"
+      Log re-scores as deltas, not overwrites.
+    requires:
+      - explore
+
+  - id: apply
+    generates: apply.md
+    description: |
+      Build phase. Contains a sequence of named Build Units, each with its own state.
+      Apply is NOT monolithic — landing page, prototype, production are distinct units.
+    template: apply.md
+    instruction: |
+      Generate the Apply artifact for this experiment.
+
+      Pull retrieved context from BHD Surfaces, Product Design Patterns, and Pattern
+      Candidates. Continue to load all upstream stores.
+
+      Required sections:
+        - BHD Surfaces used.
+        - Product Design Patterns applied.
+        - Build Units: sequence of named units.
+
+      Each Build Unit must have:
+        - Name
+        - State (planned / in progress / live / archived)
+        - Purpose (validation / production / both)
+        - External Positioning variants (testable taglines, ad copy)
+          derived from Internal Positioning
+        - Measurement instrumentation
+        - Learnings log (append-only, timestamped, newest first)
+        - Pattern notes (feeds Pattern Candidates store)
+
+      State transitions:
+        - planned → in progress: human marks
+        - in progress → live: HYBRID — auto-detect observable signals
+          (URL responding, deployment timestamp, ad campaign started,
+          real user activity), then prompt human to confirm
+        - On live confirmation, fire just-in-time checks:
+          - If purpose includes validation → Validation Plan must exist
+          - If purpose includes production → Measurement Brief intent +
+            instrumentation must exist
+          - Prompts but does not block
+        - live → archived: human marks
+    requires:
+      - propose
+
+  - id: archive
+    generates: archive.md
+    description: |
+      Closes out the experiment. Records outcome, final score deltas, learnings,
+      and proposed write-backs to persistent stores.
+    template: archive.md
+    instruction: |
+      Generate the Archive artifact for this experiment.
+
+      Pull context from ALL stores. This is the only artifact authorized to
+      write back to the persistent pattern stores.
+
+      Required sections:
+        - Outcome: shipped / killed / paused / pivoted
+        - Final scorecard re-run with deltas vs. Explore scores and any
+          Propose-phase re-scores
+        - What we learned: synthesized from all Build Units' learnings logs
+        - Proposed store updates: diffs to Business Patterns, Service Patterns,
+          BHD Surfaces, Product Design Patterns. Human reviews diff and
+          accepts / rejects each entry. No auto-merge.
+    requires:
+      - apply
+
+apply:
+  requires: [apply]
+  tracks: apply.md
+  instruction: |
+    BHD Apply phase: maintain Build Units, learnings, and instrumentation in apply.md.
+    Do NOT treat this file as a code task list.
+
+    For implementation (prototype, app, landing code), create a **child** OpenSpec change
+    with schema experiment-hub-lite (e.g. openspec/changes/<slug>-build/) and run /opsx:apply there.
+    Link child proposal.md to this change's explore.md / propose.md.
+
+    Read `skills/openspec-apply-change.md` for schema-specific behavior.

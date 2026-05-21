@@ -1,32 +1,12 @@
 # Explore — Pomodoro Maker
 
-<!--
-  Stores: Soul, Goals, and founder pattern files are pending (docs/founder/*).
-  Scoring rubric: rules/scoring-criteria.mdc
-  Edit any section in any phase — no "complete" checkbox.
--->
-
 ## Hypothesis
 
-Solo makers and neurodivergent knowledge workers will adopt a **minimal, joyful Pomodoro timer** that lets them define work/break rhythms and session rituals in under a minute—if the first session feels calmer and more intentional than generic timer apps, retention will justify a small paid tier or tip jar within 90 days of launch.
+Solo makers and neurodivergent knowledge workers can benefit from a **minimal, joyful Pomodoro timer** that lets them define work/break rhythms and session rituals in under a minute.
 
 ## Why this matters
 
-### Personal
-
-_[Founder: replace with your lived-experience driver — why you, why now.]_
-
-Placeholder: Pomodoro blocks are already part of how you protect deep work; existing apps feel noisy, gamified, or subscription-heavy. You want something you would open every workday without friction.
-
-### Strategic
-
-**Pending your confirmation** — which Soul theme does Pomodoro Maker serve?
-
-- **Neurodiversity** (focus, ADHD-friendly rituals, reduced shame around breaks) — _draft assumption_
-- **Makers** (shop/studio rhythm, batch work sessions)
-- **Environment** (unlikely primary fit)
-- **Other:** \_\_\_
-- **Intentionally blank — personal-only experiment**
+Pomodoro blocks are already part of how you protect deep work; existing apps feel noisy, gamified, or subscription-heavy. You want something you would open every workday without friction.
 
 ## Who it's for
 
@@ -53,6 +33,7 @@ Placeholder: Pomodoro blocks are already part of how you protect deep work; exis
 
 ## Existing options
 
+
 | Product                | Price / model   | Strength            | Limitation vs. hypothesis           |
 | ---------------------- | --------------- | ------------------- | ----------------------------------- |
 | **Forest**             | Freemium / paid | Delight, habit loop | Gamification; not rhythm-first      |
@@ -60,6 +41,7 @@ Placeholder: Pomodoro blocks are already part of how you protect deep work; exis
 | **Be Focused** (macOS) | Free / tip      | Simple intervals    | Apple-centric; dated UX             |
 | **Pomofocus**          | Free / donate   | Clean web timer     | Limited “maker” identity / presets  |
 | **Physical timer**     | One-time        | Zero subscription   | No presets, no ritual customization |
+
 
 ## Market analysis
 
@@ -70,14 +52,16 @@ Placeholder: Pomodoro blocks are already part of how you protect deep work; exis
 
 ## Final scorecard
 
+
 | Dim                           | Score     | Reasoning                                                                  |
 | ----------------------------- | --------- | -------------------------------------------------------------------------- |
 | B — Business Opportunity      | 2/5       | Crowded category; path to meaningful revenue unclear without a sharp wedge |
 | P — Personal / Mission Impact | 4/5       | High if you are the daily user; weak if you would not use it yourself      |
 | C — Competitive Advantage     | 3/5       | Possible via calm UX + maker/neurodiversity positioning; not a moat yet    |
-| $ — Platform Cost             | 5/5       | Solo web MVP with AI tools in &lt;1 month; minimal infra                   |
+| $ — Platform Cost             | 5/5       | Solo web MVP with AI tools in <1 month; minimal infra                      |
 | S — Social Impact             | 4/5       | Helps sustainable focus habits; aligns with neurodiversity-friendly work   |
 | **Total**                     | **18/25** |                                                                            |
+
 
 **Score shape:** **Mission-driven** (moderate total, high P and S, modest B, strong $)
 
@@ -106,3 +90,4 @@ Placeholder: Pomodoro blocks are already part of how you protect deep work; exis
 - **Trade-offs:** Platform complexity; app-store dynamics
 - **Verdict:** rejected (for v1)
 - **Reasoning:** Platform cost and competition rise; web-first keeps $ at 5
+

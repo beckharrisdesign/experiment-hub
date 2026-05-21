@@ -31,7 +31,7 @@ Prioritized prototype files include `/** @figma S8YJQugvMmn5jaRqwFM5XO:<node> */
 | --------------- | ---------- | ----------------------------------------------------------------------------------------------------- |
 | `AppShell`      | `21:4993`  | Page wrapper — Body Slot                                                                              |
 | `Header`        | `13:128`   | Header block symbol (canonical **DS anchor** for MCP / inventory)                                     |
-| `BottomNav`     | `21:2114`  | Bottom Navigation symbol                                                                              |
+| `BottomNav`     | `21:2114`  | Bottom Navigation symbol — ⚠️ Figma shows Type\|FAB\|Import (3 items); code renders Type\|FAB\|Photos\|Import (4 items, Month+Age hidden). Photos tab is missing from Figma symbol. |
 | `LandingPage`   | `18:2709`  | Landing Page Content symbol (see [landing inventory](./landing-figma-inventory.md) for section nodes) |
 | `LandingFooter` | `80:1268`  | Landing footer chrome — **`Sections`** frame (`13:820`), production parity                            |
 | `SeedList`      | `17:799`   | Seed List symbol                                                                                      |
@@ -39,6 +39,43 @@ Prioritized prototype files include `/** @figma S8YJQugvMmn5jaRqwFM5XO:<node> */
 | `AddSeedForm`   | `21:3028`  | Packet Editing View (full form context)                                                               |
 
 Update this table if frames move in Figma; keep JSDoc in sync.
+
+## Surface inventory
+
+All surfaces in the SSO ecosystem — Figma frames and code routes. The **Surfaces** page (`0:1`) is the canonical Figma home for these; the **Components** page (`1:2`) supplies the symbols they use. Add rows here as new surfaces are designed or built; fill in missing node IDs as Figma frames are created.
+
+| Surface | Route | Desktop node | Mobile node | Status |
+| ------- | ----- | ------------ | ----------- | ------ |
+| Landing / Marketing | `/` (unauthenticated) | `18:2588` | — | Desktop designed; no mobile frame |
+| Home / Seed List | `/` (authenticated) | `17:277` | `98:1270` ✓ | Desktop designed; mobile = code-faithful |
+| Seed Detail | `/seeds/[id]` | `13:3` | `98:1398` ✓ | Desktop designed; mobile = code-faithful |
+| Edit Seed Packet | `/seeds/[id]/edit` | `21:1572` | — | Desktop designed; no mobile frame |
+| Add Seed | `/add` | — | — | In code only (`AddSeedForm.tsx`, node `21:3028` is form content only) |
+| Import Zone | `/import` | `21:1614` | — | Desktop placeholder; no mobile frame |
+| Pricing | `/pricing` | `21:1528` | — | Desktop placeholder; no mobile frame |
+| Profile | `/profile` | `21:1700` | — | Desktop placeholder; no mobile frame |
+| Forgot Password | `/forgot-password` | `21:1529` | — | Desktop placeholder; no mobile frame |
+| Reset Password | `/reset-password` | — | — | In code only |
+| Login | `/login` | — | — | In code only |
+| Privacy Policy | `/privacy` | — | — | In code only |
+| Terms of Service | `/terms` | — | — | In code only |
+| Error | (error boundary) | `21:1657` | — | Desktop placeholder; no mobile frame |
+
+**Key:**
+- ✓ = code-faithful reproduction built at 390px, suitable for Code Connect wiring
+- "Desktop designed" = full component-based Figma frame on the Surfaces page
+- "Desktop placeholder" = frame exists with Page Wrappers shell but content is a rectangle placeholder, not yet designed
+- "In code only" = route exists in the prototype but no Figma frame yet
+
+**Mobile frames** (`98:1270`, `98:1398`) live on the **Surfaces** page alongside the desktop frames. Both were built to exactly match the React prototype code.
+
+**Seed Detail mobile layout notes** (node `98:1398`):
+- Subheader: 73px white bar — chevron \| "Seed details" (18px Semi Bold #101828) \| "Edit" (16px #16a34a). No standalone bottom Edit button.
+- Title lockup: left col 141px (`flex-1 min-w-0`, gap-4, right col 201px fixed). Name wraps at 34px Bold; badges amber (warning) or orange (attention).
+- Image slots: 192.5×256px portrait, `overflow-x-auto` clipped container, `#d4d4d4` empty state with white "+".
+- PlantingCards: `#faf5ff` / `#e9d4ff` border / `#8200db` label / `#59168b` value.
+- GrowthStatCards: `#eff6ff` / `#bedbff` border / `#1447e6` label / `#1c398e` value.
+- AI button: `border-[#bbf7d0]` / `text-[#16a34a]`. Delete: `text-red-500` (#ef4444).
 
 ## Code Connect
 

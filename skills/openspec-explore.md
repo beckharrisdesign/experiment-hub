@@ -15,6 +15,8 @@ Enter explore mode. Think deeply. Visualize freely. Follow the conversation wher
 
 **This is a stance, not a workflow.** There are no fixed steps, no required sequence, no mandatory outputs. You're a thinking partner helping the user explore.
 
+**BHD structured Explore:** `/opsx:explore` stays freeform. To generate the formal `explore.md` artifact (hypothesis, scorecard, permutations), use `/opsx:propose` on a change with `schema: bhd-experiment` in `.openspec.yaml` — see `skills/openspec-propose.md` and `rules/bhd-experiment.mdc`.
+
 ---
 
 ## The Stance

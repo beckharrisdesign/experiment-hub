@@ -1,0 +1,47 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "simple-seed-organizer",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3009,
+      "cwd": "experiments/simple-seed-organizer/prototype/app"
+    },
+    {
+      "name": "etsy-listing-manager",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3001,
+      "cwd": "experiments/etsy-listing-manager/prototype"
+    },
+    {
+      "name": "seed-finder",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3002,
+      "cwd": "experiments/seed-finder/prototype"
+    },
+    {
+      "name": "pbn-research",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server.js"],
+      "port": 3010,
+      "cwd": "experiments/pbn-research/prototype"
+    },
+    {
+      "name": "photo-filters-banner",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3003,
+      "cwd": "experiments/photo-filters-banner/prototype"
+    },
+    {
+      "name": "experiment-hub (root)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "cwd": "."
+    }
+  ]
+}

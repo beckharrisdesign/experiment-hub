@@ -11,10 +11,31 @@ This directory holds **living capability specs** (`specs/`) and a **history of c
 | Schema                              | Use when                                                              |
 | ----------------------------------- | --------------------------------------------------------------------- |
 | **`experiment-hub-lite`** (default) | New experiment spikes, prototypes under `experiments/`                |
+| **`bhd-experiment`**                | Product lifecycle: explore → propose → apply → archive (Build Units)  |
 | **`experiment-hub`**                | Sponsor-backed ladder (Evidence / Proceed), platform cross-cutting    |
 | **`quickstart`**                    | Vanilla / upstream comparison (`spec-driven` alias may still resolve) |
 
-**Local schemas:** [`schemas/experiment-hub-lite/`](schemas/experiment-hub-lite/) (default) · [`schemas/experiment-hub/`](schemas/experiment-hub/) (full ladder — reference / sponsor) · [`schemas/quickstart/`](schemas/quickstart/)
+**Dual track (BHD + lite):** Parent change `schema: bhd-experiment` holds `explore.md` … `archive.md`. Child change `schema: experiment-hub-lite` (e.g. `<slug>-build`) ships code; `/opsx:apply` on the **child** only.
+
+```mermaid
+flowchart LR
+  bhdParent[bhd-experiment change]
+  liteChild[experiment-hub-lite child]
+  bhdParent -->|explore propose apply archive| bhdParent
+  bhdParent -->|code| liteChild
+  liteChild -->|opsx apply tasks| liteChild
+```
+
+**Local schemas:** [`schemas/experiment-hub-lite/`](schemas/experiment-hub-lite/) (default) · [`schemas/bhd-experiment/`](schemas/bhd-experiment/) · [`schemas/experiment-hub/`](schemas/experiment-hub/) (full ladder — reference / sponsor) · [`schemas/quickstart/`](schemas/quickstart/)
+
+**BHD vs lite slash commands** (same commands, different artifacts):
+
+| Command         | Lite / full                            | `bhd-experiment`                                                   |
+| --------------- | -------------------------------------- | ------------------------------------------------------------------ |
+| `/opsx:explore` | Freeform thinking                      | Still freeform; structured Explore = `/opsx:propose` on BHD change |
+| `/opsx:propose` | `proposal.md` → specs → design → tasks | `explore.md` → `propose.md` → `apply.md` → `archive.md`            |
+| `/opsx:apply`   | Implement `tasks.md`                   | Child lite change for code, or edit Build Units in `apply.md`      |
+| `/opsx:archive` | Move change folder to archive          | Complete `archive.md`, then folder archive                         |
 
 **Workflow:** See [`rules/openspec-workflow.mdc`](../rules/openspec-workflow.mdc).
 
