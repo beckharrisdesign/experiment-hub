@@ -12,3 +12,18 @@ context: |
   **Skills per artifact** — experiment-creator (proposal), prd-writer (specs/tasks §1), design-advisor (design), prototype-builder (apply). See openspec/schemas/experiment-hub-lite/schema.yaml instructions.
 
   **Lite vs full** — This schema omits Evidence / Proceed / Visual board in proposal. Use `schema: experiment-hub` in .openspec.yaml for sponsor ladder; `schema: quickstart` for vanilla upstream.
+
+  **When using schema bhd-experiment** (per-change `.openspec.yaml`, not the default above):
+
+  Phases: explore.md → propose.md → apply.md → archive.md. Phases are states, not gates; artifacts stay editable. Code ships via a **child** change with `schema: experiment-hub-lite` and `/opsx:apply` on the child only.
+
+  Persistent stores (read when present; stubs until `docs/founder/` exists):
+    - Soul: docs/founder/soul.md (pending)
+    - Goals: docs/founder/goals.md (pending)
+    - Scoring: rules/scoring-criteria.mdc (dimensions + score shapes)
+    - Business / Service patterns: docs/founder/business-patterns.md, service-patterns.md (pending)
+    - BHD Ecosystem: docs/founder/bhd-ecosystem.md (pending)
+    - BHD Surfaces / Product Design Patterns: docs/founder/bhd-surfaces.md, product-design-patterns.md (pending)
+    - Pattern candidates: docs/founder/pattern-candidates.md (pending)
+
+  Per-phase generation rules: rules/bhd-experiment.mdc. Schema: openspec/schemas/bhd-experiment/.

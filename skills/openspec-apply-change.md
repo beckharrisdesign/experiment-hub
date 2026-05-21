@@ -34,6 +34,19 @@ Implement tasks from an OpenSpec change.
    - `schemaName`: The workflow being used (e.g., "spec-driven")
    - Which artifact contains the tasks (typically "tasks" for spec-driven, check status for others)
 
+   **If `schemaName` is `bhd-experiment`:** follow **BHD Apply branch** below instead of steps 3–8 (task checkbox loop and commit/PR for code).
+
+   ### BHD Apply branch (`bhd-experiment` only)
+   1. Read `apply.md` and upstream artifacts from `openspec/changes/<name>/` (`explore.md`, `propose.md` if they exist).
+   2. **Default — code implementation:** Tell the user to use a **child** OpenSpec change:
+      ```bash
+      openspec new change <name>-build --schema experiment-hub-lite
+      ```
+      Child `proposal.md` should quote the Human anchor / hypothesis from parent `explore.md`. Run `/opsx:apply` on the **child** only (normal lite flow + step 8 commit/PR).
+   3. **Narrow path — Build Units only:** If the user only wants lifecycle doc updates, edit `apply.md` (Build Unit state, learnings, instrumentation, pattern notes). **Skip** step 8 commit/PR unless they also changed repo code.
+   4. Do **not** parse `apply.md` as `- [ ]` task checkboxes. Do **not** create `tasks.md` on the parent change.
+   5. End with `## Artifacts` per `openspec-artifacts-output.md`.
+
 3. **Get apply instructions**
 
    ```bash

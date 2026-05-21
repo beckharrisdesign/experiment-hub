@@ -1,3 +1,8 @@
+---
+description:
+alwaysApply: false
+---
+
 # Claude Code — project instructions
 
 > Substantive rules live in `rules/` (Cursor loads them via `.cursor/rules/` symlink).
@@ -24,6 +29,7 @@ After clone: `bash scripts/link-agent-dirs.sh`
 - `rules/prd-template.mdc` — experiment PRD format
 - `rules/market-research-template.mdc` — market research format
 - `rules/openspec-workflow.mdc` — OpenSpec vs experiment PRDs
+- `rules/bhd-experiment.mdc` — BHD schema phase artifacts (file-triggered)
 
 ## Skills
 

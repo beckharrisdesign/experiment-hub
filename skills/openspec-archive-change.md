@@ -39,16 +39,16 @@ Archive a completed change in the experimental workflow.
 
 3. **Check task completion status**
 
-   Read the tasks file (typically `tasks.md`) to check for incomplete tasks.
+   **If `schemaName` is `bhd-experiment`:**
+   - Read `archive.md` (and `apply.md` for Build Unit learnings). Completion = Outcome, final scorecard, and proposed store updates drafted (checkboxes for store accept/reject may stay open).
+   - **Do not** require `tasks.md`. Warn if `archive.md` is missing or Outcome is empty; confirm with user before archive.
+   - Store write-backs: show proposed diffs only — **do not** auto-edit `docs/founder/*` files.
 
-   Count tasks marked with `- [ ]` (incomplete) vs `- [x]` (complete).
-
-   **If incomplete tasks found:**
-   - Display warning showing count of incomplete tasks
-   - Use **AskUserQuestion tool** to confirm user wants to proceed
-   - Proceed if user confirms
-
-   **If no tasks file exists:** Proceed without task-related warning.
+   **Otherwise (lite / full / quickstart):**
+   - Read the tasks file (typically `tasks.md`) to check for incomplete tasks.
+   - Count tasks marked with `- [ ]` (incomplete) vs `- [x]` (complete).
+   - **If incomplete tasks found:** display warning, confirm with user, proceed if confirmed.
+   - **If no tasks file exists:** proceed without task-related warning.
 
 4. **Assess delta spec sync state**
 

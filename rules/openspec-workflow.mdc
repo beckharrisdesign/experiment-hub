@@ -8,10 +8,20 @@ globs: openspec/**/*
 ## When to use what
 
 - **OpenSpec lite** (default): **`experiment-hub-lite`** in [`openspec/config.yaml`](openspec/config.yaml) is the spike package — Human anchor, Outcomes, specs (≤5 requirements), design (Figma/breakpoints for UI), tasks §1 = user scenarios. `/opsx:propose` creates **one artifact per approval** when using lite. Strategist conversation → anchor in `proposal.md` → opsx for the rest.
+- **BHD experiment** (`schema: bhd-experiment` in `.openspec.yaml`): Product lifecycle artifacts `explore.md` → `propose.md` → `apply.md` → `archive.md`; one artifact per approval. Rules: [`bhd-experiment.mdc`](bhd-experiment.mdc). **Do not** mix lite files (`proposal.md`, `tasks.md`) on the same change. **Code:** child change `--schema experiment-hub-lite` + `/opsx:apply` on child only.
 - **PRD track** (optional): `@skills/prd-writer.md` can still produce `experiments/*/docs/PRD.md` for commercial narrative; lite proposal links it instead of duplicating TAM or business case.
 - **OpenSpec full** (`schema: experiment-hub` in `.openspec.yaml`): Sponsor Evidence / Proceed, Visual board in proposal, multi-capability hub platform work.
 - **OpenSpec vanilla**: `schema: quickstart` or upstream `spec-driven`.
 - **Shared hub behavior**: Use `openspec/` for APIs, catalog, cross-experiment flows; link `proposal.md` to `PRD.md` when an experiment drives platform work.
+
+### BHD vs lite (slash commands)
+
+| Command         | Lite / full                            | `bhd-experiment`                                               |
+| --------------- | -------------------------------------- | -------------------------------------------------------------- |
+| `/opsx:explore` | Freeform thinking                      | Freeform; structured Explore via `/opsx:propose` on BHD change |
+| `/opsx:propose` | `proposal.md` → specs → design → tasks | Phase artifacts explore → archive                              |
+| `/opsx:apply`   | `tasks.md` implementation + commit/PR  | Child lite change for code; parent = Build Units doc only      |
+| `/opsx:archive` | Archive change folder                  | `archive.md` outcome + folder archive                          |
 
 ## Git discipline
 

@@ -1,0 +1,52 @@
+---
+description: BHD Experiment Framework (bhd-experiment schema) — phase artifacts, stores, scoring, Build Units. Apply when change uses schema bhd-experiment or editing explore/propose/apply/archive.md under openspec/changes/.
+globs: openspec/changes/**/explore.md, openspec/changes/**/propose.md, openspec/changes/**/apply.md, openspec/schemas/bhd-experiment/**
+---
+
+# BHD experiment schema rules
+
+Use with `schema: bhd-experiment` in `openspec/changes/<name>/.openspec.yaml`. Default project schema remains `experiment-hub-lite`; see [openspec-workflow.mdc](openspec-workflow.mdc).
+
+## Stores
+
+**Always-loaded (Explore onward):** Soul, Goals, Scoring — paths in [openspec/config.yaml](../openspec/config.yaml). If a store file is missing, note it and continue with template placeholders.
+
+**Propose:** Business Patterns, Service Patterns, BHD Ecosystem.
+
+**Apply:** BHD Surfaces, Product Design Patterns, Pattern Candidates.
+
+**Archive only:** propose store write-backs as diffs; human accepts/rejects each entry. No auto-merge.
+
+## Explore
+
+- Prompt Strategic Why if blank — makers / neurodiversity / environment / other.
+- Accept `intentionally blank — personal-only experiment` for Strategic Why.
+- Name proxy user explicitly when building for someone else.
+- Require **What it does NOT do**.
+- After scorecard: Permutations Exercise (2–3 alternates; one chosen, rest rejected with reasoning).
+- Surface score **shape** alongside total ([scoring-criteria.mdc](scoring-criteria.mdc)).
+- Link `experiments/<slug>/docs/market-research.md` when present.
+
+## Propose
+
+- Monetization model before pricing.
+- Internal Positioning is for the founder; external copy lives in Apply Build Units.
+- Use cases NOT included is mandatory.
+- Validation Plan includes kill criteria.
+- Measurement Brief = intent only; instrumentation in Apply per Build Unit.
+- After draft: prompt re-score vs Explore; log deltas, not overwrites.
+- Link `experiments/<slug>/docs/business-case.md` when present.
+
+## Apply
+
+- Sequence of named **Build Units** (not monolithic).
+- States: planned → in progress → live → archived (live = hybrid detect + human confirm; prompts only).
+- Learnings log: append-only, timestamped, newest first.
+- Pattern notes → Pattern Candidates; promotion at 3+ experiments.
+- **Code:** child change `experiment-hub-lite` + `/opsx:apply` on child — not checkbox tasks in `apply.md`.
+
+## Archive
+
+- Outcome: shipped / killed / paused / pivoted.
+- Final scorecard with deltas vs Explore and Propose re-scores.
+- Synthesize learnings from Build Units; propose store diffs for human review.
