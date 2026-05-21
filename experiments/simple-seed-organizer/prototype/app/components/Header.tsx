@@ -51,6 +51,7 @@ function ProfileMark({ className }: { className?: string }) {
   );
 }
 
+/** @figma S8YJQugvMmn5jaRqwFM5XO:13:128 */
 interface HeaderProps {
   showProfileLink?: boolean;
 }
