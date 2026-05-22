@@ -1,6 +1,10 @@
 import { getSeedAgeYears, getViabilityStatus } from "@/lib/viability";
 import { SeedPill } from "@/components/SeedPill";
 
+/**
+ * @figma S8YJQugvMmn5jaRqwFM5XO:100:1408
+ * Sibling variant: Use First `100:1410` (both in Blocks frame `100:1412`)
+ */
 interface ViabilityBadgeProps {
   year: number | undefined;
   /** Crop name used for crop-specific viability thresholds (e.g. seed.name) */

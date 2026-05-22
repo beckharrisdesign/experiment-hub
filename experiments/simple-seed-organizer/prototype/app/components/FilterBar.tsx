@@ -6,6 +6,7 @@ import { SeedPill } from "@/components/SeedPill";
 
 type FilterType = SeedType | "all" | "use-first";
 
+/** @figma S8YJQugvMmn5jaRqwFM5XO:17:727 */
 interface FilterBarProps {
   activeType?: FilterType;
   onTypeChange: (type: FilterType) => void;

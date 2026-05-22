@@ -20,13 +20,13 @@ export FIGMA_ACCESS_TOKEN=<your-token>
 
 ## 3. Implementation
 
-- [ ] 3.1 Install `@figma/code-connect` as a dev dependency
+- [x] 3.1 Install `@figma/code-connect` as a dev dependency
   ```bash
   cd experiments/simple-seed-organizer/prototype/app
   npm install --save-dev @figma/code-connect
   ```
 
-- [ ] 3.2 Create `figma.config.ts` at `experiments/simple-seed-organizer/prototype/app/`
+- [x] 3.2 Create `figma.config.ts` at `experiments/simple-seed-organizer/prototype/app/`
   ```ts
   import { defineConfig } from "@figma/code-connect";
 
@@ -36,7 +36,7 @@ export FIGMA_ACCESS_TOKEN=<your-token>
   ```
   _(Access token supplied via `FIGMA_ACCESS_TOKEN` env var at publish time — not committed to source.)_
 
-- [ ] 3.3 Add `@figma` annotation to `SeedDetail.tsx` — node `98:1398` (Seed Detail mobile frame)
+- [x] 3.3 Add `@figma` annotation to `SeedDetail.tsx` — node `98:1398` (Seed Detail mobile frame)
   Place in JSDoc block immediately above the props interface:
   ```ts
   /**
@@ -44,17 +44,17 @@ export FIGMA_ACCESS_TOKEN=<your-token>
    */
   ```
 
-- [ ] 3.4 Add `@figma` annotation to `SearchBar.tsx` — node `17:706` ("Search Bar" symbol, Blocks)
+- [x] 3.4 Add `@figma` annotation to `SearchBar.tsx` — node `17:706` ("Search Bar" symbol, Blocks)
   ```ts
   /** @figma S8YJQugvMmn5jaRqwFM5XO:17:706 */
   ```
 
-- [ ] 3.5 Add `@figma` annotation to `FilterBar.tsx` — node `17:727` ("Search Filters" symbol, Blocks)
+- [x] 3.5 Add `@figma` annotation to `FilterBar.tsx` — node `17:727` ("Search Filters" symbol, Blocks)
   ```ts
   /** @figma S8YJQugvMmn5jaRqwFM5XO:17:727 */
   ```
 
-- [ ] 3.6 Add `@figma` annotation to `SeedPill.tsx` — primary node `13:791` (Type=Badge); note sibling variants
+- [x] 3.6 Add `@figma` annotation to `SeedPill.tsx` — primary node `13:791` (Type=Badge); note sibling variants
   ```ts
   /**
    * @figma S8YJQugvMmn5jaRqwFM5XO:13:791
@@ -62,7 +62,7 @@ export FIGMA_ACCESS_TOKEN=<your-token>
    */
   ```
 
-- [ ] 3.7 Add `@figma` annotation to `ViabilityBadge.tsx` — primary node `100:1408` (Status=Watch); note sibling
+- [x] 3.7 Add `@figma` annotation to `ViabilityBadge.tsx` — primary node `100:1408` (Status=Watch); note sibling
   ```ts
   /**
    * @figma S8YJQugvMmn5jaRqwFM5XO:100:1408
@@ -95,14 +95,14 @@ export FIGMA_ACCESS_TOKEN=<your-token>
   - _(Plus any of the 15 previously-annotated components that were already wired but never renamed)_
   Surface frames on the Surfaces page are **not** renamed.
 
-- [ ] 3.11 Update `experiments/simple-seed-organizer/docs/figma-source.md`
+- [x] 3.11 Update `experiments/simple-seed-organizer/docs/figma-source.md`
   - Change Code Connect status from "Deferred" to active
   - Document `figma.config.ts` location and publish command
   - Add `⚡` naming convention note under the components table
 
 ## 4. QA
 
-- [ ] 4.1 Manual: `grep "@figma" components/SeedDetail.tsx components/SearchBar.tsx components/FilterBar.tsx components/SeedPill.tsx components/ViabilityBadge.tsx` — all 5 files return a match with the correct node ID
+- [x] 4.1 Manual: `grep "@figma" components/SeedDetail.tsx components/SearchBar.tsx components/FilterBar.tsx components/SeedPill.tsx components/ViabilityBadge.tsx` — all 5 files return a match with the correct node ID
 - [ ] 4.2 Manual: `npx figma connect parse` exits 0 with zero "component not found" warnings
 - [ ] 4.3 Manual: open Figma Dev Mode → select a wired component instance (e.g. SeedCard on the Home surface frame) → Code panel shows correct React import and usage example
 - [ ] 4.4 Manual: re-run `figma connect publish` → exits 0; inspect Dev Mode again and confirm no duplicate snippets appeared

@@ -14,6 +14,10 @@ export type SeedPillTone = 'attention' | 'warning' | 'success' | 'neutral';
 export type SeedPillSize = 'sm' | 'md';
 export type SeedPillIconPlacement = 'leading' | 'trailing';
 
+/**
+ * @figma S8YJQugvMmn5jaRqwFM5XO:13:791
+ * Variant symbols (no component set): Filter Plain `17:1227`, Filter Selected `17:1265`
+ */
 interface SeedPillBaseProps {
   as?: 'button' | 'span';
   variant?: SeedPillVariant;

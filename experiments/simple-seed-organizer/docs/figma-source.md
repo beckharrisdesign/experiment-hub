@@ -25,18 +25,23 @@ For **simple-seed-organizer** reciprocal Figma ↔ prototype work, use **[node `
 
 ## Component → Figma nodes (Blocks / symbols)
 
-Prioritized prototype files include `/** @figma S8YJQugvMmn5jaRqwFM5XO:<node> */` above their props interface. Initial mappings:
+Prototype files include `/** @figma S8YJQugvMmn5jaRqwFM5XO:<node> */` above their props interface. Components with a **published Code Connect mapping** are renamed with an **`⚡` prefix** on the Components page (`1:2`) — e.g. `⚡ SeedCard`. Surface frames on the Surfaces page are not renamed.
 
-| React component | Figma node | Notes                                                                                                 |
-| --------------- | ---------- | ----------------------------------------------------------------------------------------------------- |
-| `AppShell`      | `21:4993`  | Page wrapper — Body Slot                                                                              |
-| `Header`        | `13:128`   | Header block symbol (canonical **DS anchor** for MCP / inventory)                                     |
-| `BottomNav`     | `21:2114`  | Bottom Navigation symbol — ⚠️ Figma shows Type\|FAB\|Import (3 items); code renders Type\|FAB\|Photos\|Import (4 items, Month+Age hidden). Photos tab is missing from Figma symbol. |
-| `LandingPage`   | `18:2709`  | Landing Page Content symbol (see [landing inventory](./landing-figma-inventory.md) for section nodes) |
-| `LandingFooter` | `80:1268`  | Landing footer chrome — **`Sections`** frame (`13:820`), production parity                            |
-| `SeedList`      | `17:799`   | Seed List symbol                                                                                      |
-| `SeedCard`      | `17:1164`  | Seed Card Wide variant                                                                                |
-| `AddSeedForm`   | `21:3028`  | Packet Editing View (full form context)                                                               |
+| React component    | Figma node  | Notes                                                                                                 |
+| ------------------ | ----------- | ----------------------------------------------------------------------------------------------------- |
+| `AppShell`         | `21:4993`   | Page wrapper — Body Slot                                                                              |
+| `Header`           | `13:128`    | Header block symbol (canonical **DS anchor** for MCP / inventory)                                     |
+| `BottomNav`        | `21:2114`   | Bottom Navigation symbol — ⚠️ Figma shows Type\|FAB\|Import (3 items); code renders Type\|FAB\|Photos\|Import (4 items, Month+Age hidden). Photos tab is missing from Figma symbol. |
+| `LandingPage`      | `18:2709`   | Landing Page Content symbol (see [landing inventory](./landing-figma-inventory.md) for section nodes) |
+| `LandingFooter`    | `80:1268`   | Landing footer chrome — **`Sections`** frame (`13:820`), production parity                            |
+| `SeedList`         | `17:799`    | Seed List symbol                                                                                      |
+| `SeedCard`         | `17:1164`   | Seed Card Wide variant                                                                                |
+| `AddSeedForm`      | `21:3028`   | Packet Editing View (full form context)                                                               |
+| `SeedDetail`       | `98:1398`   | Seed Detail mobile frame (code-faithful 390px reproduction)                                           |
+| `SearchBar`        | `17:706`    | "Search Bar" symbol — Blocks                                                                          |
+| `FilterBar`        | `17:727`    | "Search Filters" symbol — Blocks                                                                      |
+| `SeedPill`         | `13:791`    | Type=Badge (primary); variant symbols: Filter Plain `17:1227`, Filter Selected `17:1265` (no component set) |
+| `ViabilityBadge`   | `100:1408`  | Status=Watch (primary); sibling: Use First `100:1410` — both in Blocks frame `100:1412`              |
 
 Update this table if frames move in Figma; keep JSDoc in sync.
 
@@ -79,4 +84,15 @@ All surfaces in the SSO ecosystem — Figma frames and code routes. The **Surfac
 
 ## Code Connect
 
-**Deferred** — Org/Code Connect templates can be added later with the `/figma-code-connect` skill where the Figma plan supports it.
+**Active** — `@figma` annotations are published for all 5 core app components (phase 1). Inspect any wired component in Figma Dev Mode to see the React import and usage snippet.
+
+**Config:** `experiments/simple-seed-organizer/prototype/app/figma.config.ts`
+
+**Publish command** (run from `prototype/app/`):
+```bash
+FIGMA_ACCESS_TOKEN=<your-token> npx figma connect publish
+```
+
+Get a personal access token: Figma → Settings → Security → Personal access tokens (needs read+write on file `S8YJQugvMmn5jaRqwFM5XO`).
+
+**`⚡` naming convention:** After each publish, rename wired components on the **Components page (`1:2`) only** with an `⚡` prefix (e.g. `⚡ SeedCard`). Surface frames on the Surfaces page are not renamed. Unwired components keep their original names.

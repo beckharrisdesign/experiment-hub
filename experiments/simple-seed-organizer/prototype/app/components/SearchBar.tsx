@@ -1,5 +1,6 @@
 'use client';
 
+/** @figma S8YJQugvMmn5jaRqwFM5XO:17:706 */
 interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;

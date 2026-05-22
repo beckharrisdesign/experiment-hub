@@ -8,6 +8,9 @@ import { getPlantingGuidance } from "@/lib/plantingGuidance";
 import { SeedPill, type SeedPillTone } from "@/components/SeedPill";
 import toast from "react-hot-toast";
 
+/**
+ * @figma S8YJQugvMmn5jaRqwFM5XO:98:1398
+ */
 interface SeedDetailProps {
   seed: Seed;
   onClose: () => void;
