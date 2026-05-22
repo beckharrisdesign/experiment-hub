@@ -18,7 +18,18 @@ export function resolveOpenSpecChangeId(experiment: Experiment): string {
   return experiment.openspecChangeId ?? experiment.id;
 }
 
-export function formatBhdPhaseLabel(phase: BhdPhase): string {
+// Maps BHD phase slots → display label for each schema
+const LITE_PHASE_LABELS: Record<BhdPhase, string> = {
+  explore: "Spec",
+  propose: "Proposal",
+  apply: "Design",
+  archive: "Tasks",
+};
+
+export function formatBhdPhaseLabel(phase: BhdPhase, schema?: string): string {
+  if (schema === "experiment-hub-lite") {
+    return LITE_PHASE_LABELS[phase];
+  }
   return phase.charAt(0).toUpperCase() + phase.slice(1);
 }
 
@@ -46,7 +57,7 @@ export function buildExperimentDetailTabs(options: {
         (a) => a.phase === phase,
       );
       if (artifact && artifact.content.trim().length > 0) {
-        tabs.push({ id: phase, label: formatBhdPhaseLabel(phase) });
+        tabs.push({ id: phase, label: formatBhdPhaseLabel(phase, options.openSpecLifecycle.schema) });
       }
     }
   }

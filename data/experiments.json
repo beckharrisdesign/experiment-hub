@@ -47,6 +47,8 @@
     "directory": "experiments/simple-seed-organizer",
     "documentationId": "doc-simple-seed-organizer",
     "prototypeId": "",
+    "openspecChangeId": "sso-code-connect-phase-1",
+    "openspecSchema": "experiment-hub-lite",
     "status": "Active",
     "createdDate": "2024-11-01",
     "lastModified": "2026-04-24",

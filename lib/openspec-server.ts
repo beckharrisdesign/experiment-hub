@@ -8,11 +8,22 @@ import {
   type OpenSpecPhaseArtifact,
 } from "@/lib/openspec-shared";
 
-const PHASE_FILES: { phase: BhdPhase; filename: string }[] = [
+const BHD_PHASE_FILES: { phase: BhdPhase; filename: string }[] = [
   { phase: "explore", filename: "explore.md" },
   { phase: "propose", filename: "propose.md" },
   { phase: "apply", filename: "apply.md" },
   { phase: "archive", filename: "archive.md" },
+];
+
+// experiment-hub-lite maps its artifact files onto the 4 BHD phase slots:
+//   explore  → specs (first spec file in specs/)
+//   propose  → proposal.md
+//   apply    → design.md
+//   archive  → tasks.md
+const LITE_PHASE_FILES: { phase: BhdPhase; filename: string }[] = [
+  { phase: "propose", filename: "proposal.md" },
+  { phase: "apply", filename: "design.md" },
+  { phase: "archive", filename: "tasks.md" },
 ];
 
 const PHASE_ORDER: BhdPhase[] = ["explore", "propose", "apply", "archive"];
@@ -32,6 +43,23 @@ export async function openSpecChangeDirExists(
   }
 }
 
+/** Read specs/*.md files and join them, returning null if none found. */
+async function readLiteSpecs(changeId: string): Promise<string | null> {
+  const specsDir = path.join(changeDir(changeId), "specs");
+  try {
+    const files = await fs.readdir(specsDir);
+    const mdFiles = files.filter((f) => f.endsWith(".md")).sort();
+    const parts: string[] = [];
+    for (const file of mdFiles) {
+      const content = await fs.readFile(path.join(specsDir, file), "utf8");
+      if (content.trim()) parts.push(content.trim());
+    }
+    return parts.length > 0 ? parts.join("\n\n---\n\n") : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function loadOpenSpecLifecycle(
   experiment: Experiment,
 ): Promise<OpenSpecLifecycle | null> {
@@ -40,18 +68,40 @@ export async function loadOpenSpecLifecycle(
     return null;
   }
 
+  const schema = experiment.openspecSchema ?? "bhd-experiment";
   const artifacts: OpenSpecPhaseArtifact[] = [];
 
-  for (const { phase, filename } of PHASE_FILES) {
-    const filePath = path.join(changeDir(changeId), filename);
-    try {
-      await fs.access(filePath);
-    } catch {
-      continue;
+  if (schema === "experiment-hub-lite") {
+    // Load specs/*.md into the "explore" slot
+    const specsContent = await readLiteSpecs(changeId);
+    if (specsContent) {
+      artifacts.push({ phase: "explore", content: specsContent });
     }
-    const content = await fs.readFile(filePath, "utf8");
-    if (content.trim().length > 0) {
-      artifacts.push({ phase, content });
+    // Load the remaining lite files into their mapped phases
+    for (const { phase, filename } of LITE_PHASE_FILES) {
+      const filePath = path.join(changeDir(changeId), filename);
+      try {
+        await fs.access(filePath);
+      } catch {
+        continue;
+      }
+      const content = await fs.readFile(filePath, "utf8");
+      if (content.trim().length > 0) {
+        artifacts.push({ phase, content });
+      }
+    }
+  } else {
+    for (const { phase, filename } of BHD_PHASE_FILES) {
+      const filePath = path.join(changeDir(changeId), filename);
+      try {
+        await fs.access(filePath);
+      } catch {
+        continue;
+      }
+      const content = await fs.readFile(filePath, "utf8");
+      if (content.trim().length > 0) {
+        artifacts.push({ phase, content });
+      }
     }
   }
 
@@ -69,7 +119,7 @@ export async function loadOpenSpecLifecycle(
 
   return {
     changeId,
-    schema: experiment.openspecSchema ?? "bhd-experiment",
+    schema,
     currentPhase,
     artifacts,
   };

@@ -154,7 +154,7 @@ export default function TabsContent({
         <div className="border border-border-dark rounded-lg overflow-hidden">
           <div className="bg-[#194b31] px-4 py-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-text-primary">
-              {formatBhdPhaseLabel(activeTab)}
+              {formatBhdPhaseLabel(activeTab, openSpecLifecycle.schema)}
             </h2>
             {activeTab === openSpecLifecycle.currentPhase && (
               <span className="text-xs text-accent-primary font-medium">
