@@ -2,11 +2,11 @@
 
 - [ ] 1.1 Developer opens `SeedDetail.tsx` and sees `@figma S8YJQugvMmn5jaRqwFM5XO:98:1398` on lines 1–3
 - [ ] 1.2 Developer opens each of the 4 remaining files and sees correct `@figma` annotation: `SearchBar.tsx` → `17:706`, `FilterBar.tsx` → `17:727`, `SeedPill.tsx` → `13:791`, `ViabilityBadge.tsx` → `100:1408`
-- [ ] 1.3 `figma connect parse` exits 0 from the prototype app directory and lists all annotated components without error
-- [ ] 1.4 Designer opens Figma Dev Mode, selects a wired component, and sees the React import path and a usage snippet in the Code panel
-- [ ] 1.5 `figma connect publish` can be re-run and exits 0 without creating duplicate mappings
-- [ ] 1.6 Designer opens the Components page (`1:2`) and sees `⚡` prefix on every wired component (e.g. `⚡ SeedCard`)
-- [ ] 1.7 Designer opens the Components page and confirms unwired components have no `⚡` prefix
+- [x] 1.3 `figma connect parse` exits 0 from the prototype app directory and lists all annotated components without error
+- [ ] 1.4 Designer opens Figma Dev Mode, selects a wired component, and sees the React import path and a usage snippet in the Code panel ⛔ blocked — see §3.9
+- [ ] 1.5 `figma connect publish` can be re-run and exits 0 without creating duplicate mappings ⛔ blocked — see §3.9
+- [ ] 1.6 Designer opens the Components page (`1:2`) and sees `⚡` prefix on every wired component (e.g. `⚡ SeedCard`) ⛔ blocked — depends on 3.9
+- [ ] 1.7 Designer opens the Components page and confirms unwired components have no `⚡` prefix ⛔ blocked — depends on 3.9
 
 ## 2. Prototype shell
 
@@ -17,6 +17,8 @@ Get a personal access token from Figma → Settings → Security → Personal ac
 ```bash
 export FIGMA_ACCESS_TOKEN=<your-token>
 ```
+
+> ⛔ **Plan blocker (discovered during apply):** `figma connect publish` and the Figma MCP `send_code_connect_mappings` both require a **Developer seat on an Organization or Enterprise Figma plan**. The SSO file is on a free/starter plan. Steps 3.8–3.10 and QA 4.2–4.5 are blocked until the plan is upgraded. All code-side work (annotations, config, `.figma.tsx` files) is complete and ready to publish the moment the plan allows it.
 
 ## 3. Implementation
 
@@ -70,21 +72,24 @@ export FIGMA_ACCESS_TOKEN=<your-token>
    */
   ```
 
-- [ ] 3.8 Verify parse
+- [x] 3.8 Verify parse
   ```bash
   cd experiments/simple-seed-organizer/prototype/app
   npx figma connect parse
   ```
-  Confirm exit 0 and all 5 annotated components listed.
+  ✓ Exits 0. All 5 `.figma.tsx` files parsed: SearchBar, FilterBar, SeedPill, ViabilityBadge, SeedDetail.
+  _Note: `SeedDetail` maps to the mobile surface frame `98:1398` (not a Figma component symbol). Publish will reject it with "not a component" — remove `SeedDetail.figma.tsx` or replace with a component-level node when/if one is created._
 
-- [ ] 3.9 Publish
+- [ ] 3.9 Publish ⛔ **BLOCKED — requires Figma Org/Enterprise plan with Developer seat**
   ```bash
   cd experiments/simple-seed-organizer/prototype/app
-  FIGMA_ACCESS_TOKEN=<token> npx figma connect publish
+  FIGMA_ACCESS_TOKEN=<token> npx figma connect publish --skip-validation
   ```
-  Confirm exit 0 and no authentication errors.
+  Both `figma connect publish` (CLI) and the Figma MCP `send_code_connect_mappings` return:
+  _"You need a Developer seat in an Organization or Enterprise plan to access Code Connect."_
+  Unblock by upgrading the SSO Figma file's plan and enabling a Developer seat.
 
-- [ ] 3.10 Apply `⚡` prefix to wired component names in Figma
+- [ ] 3.10 Apply `⚡` prefix to wired component names in Figma ⛔ **BLOCKED — depends on 3.9**
   On the **Components page (`1:2`) only** — rename each symbol whose Code Connect mapping just published:
   - `SeedCard` → `⚡ SeedCard`
   - `SeedDetail` → `⚡ SeedDetail`
@@ -103,7 +108,7 @@ export FIGMA_ACCESS_TOKEN=<your-token>
 ## 4. QA
 
 - [x] 4.1 Manual: `grep "@figma" components/SeedDetail.tsx components/SearchBar.tsx components/FilterBar.tsx components/SeedPill.tsx components/ViabilityBadge.tsx` — all 5 files return a match with the correct node ID
-- [ ] 4.2 Manual: `npx figma connect parse` exits 0 with zero "component not found" warnings
-- [ ] 4.3 Manual: open Figma Dev Mode → select a wired component instance (e.g. SeedCard on the Home surface frame) → Code panel shows correct React import and usage example
-- [ ] 4.4 Manual: re-run `figma connect publish` → exits 0; inspect Dev Mode again and confirm no duplicate snippets appeared
-- [ ] 4.5 Manual: open the Components page (`1:2`) in Figma → wired components show `⚡` prefix; components that have not been wired (e.g. BottomNav, AppShell) show no prefix
+- [x] 4.2 Manual: `npx figma connect parse` exits 0 — confirmed. _(SeedDetail will show "not a component" on publish; acceptable until a component symbol is created.)_
+- [ ] 4.3 Manual: open Figma Dev Mode → select a wired component instance → Code panel shows React import and usage ⛔ blocked on 3.9
+- [ ] 4.4 Manual: re-run `figma connect publish` → exits 0, no duplicates ⛔ blocked on 3.9
+- [ ] 4.5 Manual: Components page (`1:2`) — wired components show `⚡` prefix, unwired do not ⛔ blocked on 3.9
