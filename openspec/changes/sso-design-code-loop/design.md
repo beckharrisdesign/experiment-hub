@@ -47,9 +47,17 @@ Use **slash-namespaced names** in Figma Variables that map directly to Tailwind 
 
 Scope: only the values **actually consumed** by SSO prototype components (audit `grep -rEo "(gap|p|px|py|m|mx|my|w|h|text)-[a-z0-9]+" experiments/simple-seed-organizer/prototype/app/components/` to confirm coverage before creating the Variables collection).
 
-### Typography: Figma Variables, not Text Styles
+### Typography: Figma Variables, not Text Styles — and **Tailwind names override Figma's semantic ones**
 
 Use **Figma Variables** for type tokens (font-family, font-size, line-height, font-weight as separate Number/String variables grouped under `text/<size>`). Two reasons: (1) Variables are the same primitive as spacing, so the mental model is consistent; (2) Variables can be referenced in Auto Layout text properties the same way as spacing values. Text Styles can still exist as a composite, but the parity contract is at the Variable level.
+
+**Naming:** the existing Figma Typography frame (`3:34`) uses semantic names — `Display-L / Display-M / Heading / Body-L/M/S / Label`. **Rename to Tailwind names** (`text/xs`, `text/sm`, `text/base`, `text/2xl`, …) so the token name reads identically on both sides and the parity check is a string match. This is a Figma-side refactor of every text node that currently references one of the old semantic styles. Mapping table lives in [`figma-source.md`](../../../experiments/simple-seed-organizer/docs/figma-source.md) → "Typography (rename existing Figma styles → Tailwind names)".
+
+### Color palette: replace Figma scaffold, in-scope for this change
+
+The Figma file's `Foundations/Color` frame (`3:5`) is a template scaffold with generic Tailwind sample values (Primary-500 = `#4F46E5` indigo) that do not match the prototype's actual palette (`--green-primary: #16a34a`, `--brand-primary: #15472d`, etc). The proposal originally marked colors as "stretch" — **promoting them to in-scope** because the existing scaffold is actively misleading, and the badge tone colors (`color/tone/*`) discovered via the `ViabilityBadge` Figma audit are needed to do the first-proof parity refactor.
+
+The full swap list (15 base colors + 9 badge tone colors) lives in [`figma-source.md`](../../../experiments/simple-seed-organizer/docs/figma-source.md) → "Figma scaffold → real tokens (one-time replacement)". The Figma-side work: replace the existing color swatch frames with the values from that list, organized into a Figma Variables collection grouped by namespace (`color/green/*`, `color/brand/*`, `color/bg/*`, `color/text/*`, `color/age/*`, `color/tone/*`).
 
 ### `/dev/components` route placement and structure
 
