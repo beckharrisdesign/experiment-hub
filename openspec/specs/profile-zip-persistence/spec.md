@@ -54,16 +54,16 @@ SHALL: The seed-view planting widget MUST hide its zip-prompt callout when `User
 
 ### Requirement: Automated test covers the persistence round-trip
 
-A vitest test MUST exercise the save → reload round-trip for `UserProfile.zipCode` at whichever layer is closest to the bug's root cause (lib/storage function, API route, or component-level integration) so a future regression of the same shape gets caught in CI rather than re-reported by a user.
+A vitest test MUST exercise the write → subsequent-read round-trip for `UserProfile.zipCode` at the shipped persistence layer closest to the bug's root cause (for this change, the Supabase-backed admin/data-access layer rather than the Profile editor save flow) so a future regression of the same shape gets caught in CI rather than re-reported by a user.
 
-**Fails until:** No test under `experiments/simple-seed-organizer/prototype/app/` asserts that a saved zip code is retrievable on subsequent reads.
+**Fails until:** No test under `experiments/simple-seed-organizer/prototype/app/` asserts that a saved zip code is retrievable on subsequent reads at the persistence layer used by production.
 
-SHALL: At least one vitest test asserts that `UserProfile.zipCode` written through the Profile save path is returned on a subsequent read.
+SHALL: At least one vitest test asserts that `UserProfile.zipCode` written through the shipped persistence/data layer is returned on a subsequent read.
 
 #### Scenario: Round-trip test fails before fix, passes after
 
 - **WHEN** the new vitest test is run against the unfixed code
-- **THEN** it fails (asserting the saved zip is not returned), proving it catches the bug; after the fix it passes
+- **THEN** it fails because the saved zip is not returned on a subsequent read at that layer, proving it catches the persistence regression; after the fix it passes
 
 ### Requirement: End-to-end verification on a real account
 
