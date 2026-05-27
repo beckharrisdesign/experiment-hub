@@ -85,9 +85,9 @@ function HomeContent() {
   useEffect(() => {
     if (!user || !usage || typeof usage.seedCount !== "number") return;
     if (usage.seedCount >= 5) return;
-    const FLAG = "sso:newUserImportRouted";
-    if (sessionStorage.getItem(FLAG)) return;
-    sessionStorage.setItem(FLAG, "1");
+    const flag = `sso:newUserImportRouted:${user.id}`;
+    if (sessionStorage.getItem(flag)) return;
+    sessionStorage.setItem(flag, "1");
     router.replace("/import");
   }, [user, usage, router]);
 
