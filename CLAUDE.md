@@ -37,6 +37,7 @@ Invocable via `/skill-name`. **Edit only `skills/`** (and `skills/figma/` for ve
 
 - OpenSpec: `skills/openspec-*.md` — see `openspec/README.md`
 - Figma: `npm run skills:sync` → `skills/figma/`
+- Triage: `skills/issue-triage.md` — P0–P4 rubric, light retitling, cluster identification across open issues
 
 ## Hooks (Claude Code only)
 
