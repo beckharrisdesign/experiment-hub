@@ -44,7 +44,7 @@ Prioritized prototype files include `/** @figma S8YJQugvMmn5jaRqwFM5XO:<node> */
 | `SeedList`       | `17:799`   | not-yet-linked | Seed List symbol.                                                                                                                                                                                              |
 | `SeedCard`       | `17:1164`  | not-yet-linked | Seed Card Wide variant. Sibling variant `18:1300` is "Seed Card No Tag".                                                                                                                                       |
 | `AddSeedForm`    | `21:3028`  | not-yet-linked | Packet Editing View (full form context).                                                                                                                                                                       |
-| `ViabilityBadge` | `100:1412` | partial        | **First-proof component.** Frame has three variants: `Status=Good 100:1406`, `Status=Watch 100:1408`, `Status=Use first 100:1410`. Code returns `null` for Good (Figma renders it — Figma variant is unused). Figma uses hardcoded `px-[10px] py-[4px] rounded-[4px]` + raw hex colors — exact target for the parity refactor. |
+| `ViabilityBadge` | `100:1412` | full           | **First proof complete (2026-05-27).** All three variants (`Status=Good 100:1406`, `Status=Watch 100:1408`, `Status=Use first 100:1410`) have padding (`space/2,5` L/R, `space/1` T/B), corner radius (`space/1`), fills, strokes, and text fontSize bound to Variables. Snapped `Use first` border `#ffc9c9 → red/200` and text `#e7000b → red/600` (~5% perceptual drift, within tolerance). Code returns `null` for Good — Figma's Good variant is unused; intentional asymmetry. Font family/weight/line-height remain raw values that match `font/family/sans` + `font/weight/medium` + `font/leading/4` by value but aren't bound yet (binding fontName via Plugin API needs a follow-up). |
 | `SeedPill`       | `17:1298`  | partial        | Figma calls this frame **"Button"** (name divergence — see decision in [design.md](../../../openspec/changes/sso-design-code-loop/design.md)). Shared variants: `default 13:211`, `filter-plain 17:1227`, `filter-selected 17:1265`, `badge 13:791`, `filter-badge-icon 17:1242`. Figma also has Primary/Secondary variants with no code analogue.                  |
 | `SearchBar`      | `17:706`   | not-yet-linked | Single frame, no variants.                                                                                                                                                                                     |
 | `FilterBar`      | _composition_ | not-yet-linked | Composition — a row of `SeedPill`s, not a single Figma symbol. Canonical anchor: `17:727` "Search Filters". Audit parity at the row level (gap, padding) only; per-pill parity rolls up from `SeedPill`.    |
@@ -82,61 +82,56 @@ Local-only routes that help close the design↔code loop. Not user-facing; `NODE
 | ------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `/dev/components`   | Priority components rendered in isolation with inline mock props. Boots with `npm run dev`; no sign-in required.    |
 
-## Figma scaffold → real tokens (one-time replacement)
+## Figma token system (live state, 2026-05-27)
 
-The Figma file's existing **Foundations/Color** (`3:5`) and **Foundations/Typography** (`3:34`) frames are **template scaffolds** (the frame description says "Replace token values and component anatomy once capture is available"). They use generic Tailwind sample values (Primary-500 = `#4F46E5` indigo) that do not match the real prototype palette. Before creating Figma Variables, swap the scaffold values for the prototype's actual tokens, listed below.
+A real Variables system already exists in this file (predates this change — likely from a prior Tailwind importer). **8 collections, 701 Variables, 13 Text Styles.** Discovery audit + the renames/fixes documented below were applied via the Figma MCP, not by hand.
 
-### Color palette (from `experiments/simple-seed-organizer/prototype/app/app/globals.css`)
+### Collections in use for parity
 
-| Figma Variable name | Hex value  | Tailwind equivalent | Used for                       | Source                |
-| ------------------- | ---------- | ------------------- | ------------------------------ | --------------------- |
-| `color/green/primary` | `#16a34a` | `green-600`         | Primary brand action color     | `--green-primary`     |
-| `color/green/dark`    | `#166534` | `green-800`         | Header secondary               | `--green-dark`        |
-| `color/green/button`  | `#00a63e` | (custom)            | Button fill                    | `--green-button`      |
-| `color/brand/primary` | `#15472d` | (custom dark green) | Header / hero bar              | `--brand-primary`     |
-| `color/green/header`  | `#166534` | `green-800`         | Header fallback                | `--green-header`      |
-| `color/bg/light`      | `#f3f4f6` | `gray-100`          | App background                 | `--bg-light`          |
-| `color/bg/white`      | `#ffffff` | `white`             | Surface background             | `--bg-white`          |
-| `color/text/heading`  | `#101828` | (~gray-900 #111827) | Headings                       | `--text-heading`      |
-| `color/text/label`    | `#4a5565` | (~gray-600)         | Form labels                    | `--text-label`        |
-| `color/text/muted`    | `#6a7282` | (~gray-500)         | Muted/secondary text           | `--text-muted`        |
-| `color/text/subtle`   | `#99a1af` | (~gray-400)         | Subtle/tertiary text           | `--text-subtle`       |
-| `color/age/new`       | `#f0fdf4` | `green-50`          | Newest age indicator           | `--age-new`           |
-| `color/age/1yr`       | `#dcfce7` | `green-100`         | 1-year age indicator           | `--age-1yr`           |
-| `color/age/2yr`       | `#bbf7d0` | `green-200`         | 2-year age indicator           | `--age-2yr`           |
-| `color/age/3yr`       | `#86efac` | `green-300`         | 3-year age indicator           | `--age-3yr`           |
+| Collection      | Purpose                                                                    | Status                                                                                                                  |
+| --------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `space`         | Spacing scale (`space/0`, `space/0,5`, `space/1`, … `space/96`)            | **Renamed from `gap` 2026-05-27.** 34 Variables, leaf names `gap-N → space/N`. Variable IDs preserved — references intact. |
+| `font`          | Type tokens: `family/*`, `text/xs…text/9xl`, `weight/*`, `leading/*`, `tracking/*` | **`size/*` Variables renamed to `text/*` 2026-05-27.** 13 size Variables renamed. Other namespaces left alone.            |
+| `color`         | Full Tailwind palette (`slate/50…950`, `gray/*`, `red/*`, `green/*`, etc.) | Use as-is. ⚠️ Collection has corrupted duplicates (`50 2` … `950 22`) — known follow-up cleanup outside this change.    |
+| `brand`         | One Variable: `primary = #15472d` (SSO dark green header, not in Tailwind) | **Created 2026-05-27.** Scopes: FRAME_FILL, SHAPE_FILL, STROKE_COLOR, TEXT_FILL.                                        |
+| `tokens`        | Raw numeric primitives `0,4`, `0,5`, `1`, … that `space` and `font` alias to | Leave alone.                                                                                                            |
+| `breakpoints`   | `max-w-screen-*`                                                           | Not relevant to component parity.                                                                                       |
+| `opacity`, `stroke`, `* Main` | Misc                                                              | Out of scope.                                                                                                           |
 
-### Badge tone colors (inferred from `ViabilityBadge` Figma `100:1412`)
+### Text Styles fixed 2026-05-27
 
-These aren't in `globals.css` yet — they live as hardcoded values in the Figma badge frame and (likely) in `SeedPill`'s badge variant. Lift to Variables and back-reference from code if not already.
+- All `Body/Body *` styles switched from **Crimson Text → Inter** (5 styles: XS, S, M, L, XL).
+- `Body/Body Base` size **36 → 16**.
+- `Display/Dsiplay 2XL` typo → `Display/Display 2XL`.
 
-| Figma Variable name      | Hex value | Tailwind equivalent | Used for                       |
-| ------------------------ | --------- | ------------------- | ------------------------------ |
-| `color/tone/attention/bg`     | `#fef2f2` | `red-50`       | Badge background (`use-first`) |
-| `color/tone/attention/border` | `#ffc9c9` | (~red-200)     | Badge border (`use-first`)     |
-| `color/tone/attention/text`   | `#e7000b` | (~red-600)     | Badge text (`use-first`)       |
-| `color/tone/warning/bg`       | `#fefce8` | `yellow-50`    | Badge background (`watch`)     |
-| `color/tone/warning/border`   | `#fde047` | `yellow-300`   | Badge border (`watch`)         |
-| `color/tone/warning/text`     | `#a16207` | `yellow-700`   | Badge text (`watch`)           |
-| `color/tone/success/bg`       | `#f0fdf4` | `green-50`     | Badge background (good — unused in code, present in Figma) |
-| `color/tone/success/border`   | `#bbf7d0` | `green-200`    | Badge border (good — unused)                                |
-| `color/tone/success/text`     | `#15803d` | `green-700`    | Badge text (good — unused)                                  |
+### Decimal convention
 
-### Typography (rename existing Figma styles → Tailwind names)
+Half-step Tailwind values use **comma**, not dot (Figma file locale): `space/0,5`, `space/1,5`, `space/2,5`, `space/3,5`. Match this convention when referencing.
 
-The existing Figma Typography frame (`3:34`) uses **semantic names** (Display-L / Display-M / Heading / Body-L/M/S / Label). The parity convention is to **rename these to Tailwind names** so the same token name reads identically on both sides. Mapping (values where Tailwind matches Figma exactly):
+### Legacy scaffolds (deprecated, do not use)
 
-| Figma current name | New Figma Variable name | Size / line height       | Tailwind class |
-| ------------------ | ----------------------- | ------------------------ | -------------- |
-| Body-S             | `text/xs`               | 12px / 16px              | `text-xs`      |
-| Body-M             | `text/sm`               | 14px / 20px              | `text-sm`      |
-| Body-L             | `text/base`             | 16px / 24px              | `text-base`    |
-| Heading            | `text/2xl`              | 24px / 32px              | `text-2xl`     |
-| Label              | `text/xs-medium`        | 12px / 16px (semi-bold)  | `text-xs font-medium` (composite — keep separate or split family/size/weight Variables) |
-| Display-M          | `text/3xl` or `text/4xl`| 32px / auto              | None clean — pick `text/3xl` (30px in Tailwind) and adjust size, or add custom Variable. |
-| Display-L          | `text/4xl` or `text/5xl`| 40px / auto              | None clean — same as above. |
+The **Foundations/Color** (`3:5`) and **Foundations/Typography** (`3:34`) frames in the Components page are template leftovers with generic indigo/secondary placeholder values and semantic typography names (Display-L, Body-S, etc). Disconnected from the real token system above. Safe to delete in a follow-up.
 
-For each Variable: split into four sub-Variables (`text/<size>/family`, `text/<size>/size`, `text/<size>/line-height`, `text/<size>/weight`) per [design.md](../../../openspec/changes/sso-design-code-loop/design.md) → Decisions → "Typography: Figma Variables, not Text Styles". Optional parallel Text Styles can compose these sub-Variables for one-click application.
+### Brand colors not yet lifted to Variables (consolidation candidates)
+
+These live in `experiments/simple-seed-organizer/prototype/app/app/globals.css` and are close to but not identical to standard Tailwind shades. Plan: consolidate code to use the closest Tailwind shade where the perceptual difference is acceptable; only `--brand-primary` keeps a custom Variable.
+
+| Code variable    | Hex value | Closest Tailwind / Variable | Action          |
+| ---------------- | --------- | --------------------------- | --------------- |
+| `--brand-primary`  | `#15472d` | `brand/primary` (created)   | ✓ done          |
+| `--green-primary`  | `#16a34a` | `color/green/600`           | Use existing    |
+| `--green-dark`     | `#166534` | `color/green/800`           | Use existing    |
+| `--green-button`   | `#00a63e` | ~`color/green/600`          | Consolidate     |
+| `--green-header`   | `#166534` | `color/green/800`           | Use existing    |
+| `--text-heading`   | `#101828` | ~`color/gray/900` (`#111827`) | Consolidate (code change) |
+| `--text-label`     | `#4a5565` | ~`color/gray/600`           | Consolidate (code change) |
+| `--text-muted`     | `#6a7282` | ~`color/gray/500`           | Consolidate (code change) |
+| `--text-subtle`    | `#99a1af` | ~`color/gray/400`           | Consolidate (code change) |
+| `--bg-light`       | `#f3f4f6` | `color/gray/100`            | Use existing    |
+| `--age-new`        | `#f0fdf4` | `color/green/50`            | Use existing    |
+| `--age-1yr`        | `#dcfce7` | `color/green/100`           | Use existing    |
+| `--age-2yr`        | `#bbf7d0` | `color/green/200`           | Use existing    |
+| `--age-3yr`        | `#86efac` | `color/green/300`           | Use existing    |
 
 ## Token sync (manual)
 
