@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ViewMode } from "@/types/seed";
 
@@ -20,7 +19,6 @@ export function BottomNav({
   onAddClick,
   canAddSeed = true,
 }: BottomNavProps) {
-  const pathname = usePathname();
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
   const allNavItems: {
@@ -139,6 +137,36 @@ export function BottomNav({
               />
               {/* Menu */}
               <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-56">
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    router.push("/add");
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                >
+                  <svg
+                    className="w-5 h-5 text-[#16a34a] shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                  <div>
+                    <div className="text-sm font-medium text-[#4a5565]">
+                      Manual entry
+                    </div>
+                    <div className="text-xs text-[#99a1af]">
+                      Type the details yourself
+                    </div>
+                  </div>
+                </button>
+                <div className="h-px bg-gray-100 mx-4" />
                 <button
                   onClick={() => {
                     setShowMenu(false);
@@ -282,28 +310,6 @@ export function BottomNav({
           </button>
         )}
 
-        {/* Import link */}
-        <Link
-          href="/import"
-          className={`flex flex-col items-center gap-1 px-3 py-1 ${
-            pathname === "/import" ? "text-[#16a34a]" : "text-[#6a7282]"
-          }`}
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-            />
-          </svg>
-          <span className="text-xs font-medium">Import</span>
-        </Link>
       </div>
     </nav>
   );
