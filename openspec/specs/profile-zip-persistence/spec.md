@@ -1,7 +1,7 @@
 # profile-zip-persistence Specification
 
 ## Purpose
-TBD - created by archiving change sso-zip-code-persistence. Update Purpose after archive.
+Ensure a user's zip code entered in Profile is saved reliably, persists across subsequent sessions and page loads, and is available to dependent experiences such as the planting widget.
 ## Requirements
 ### Requirement: Zip code persists across reload
 
