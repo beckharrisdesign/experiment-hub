@@ -140,12 +140,18 @@ export function SeedDetail({
 
   const age = getSeedAge(seed);
   const ageLabel = seed.year ? getAgeLabel(age) : null;
-  const [plantingGuidance, setPlantingGuidance] = useState<ReturnType<
-    typeof getPlantingGuidance
+  const [plantingGuidance, setPlantingGuidance] = useState<Awaited<
+    ReturnType<typeof getPlantingGuidance>
   > | null>(null);
 
   useEffect(() => {
-    setPlantingGuidance(getPlantingGuidance(seed));
+    let cancelled = false;
+    getPlantingGuidance(seed).then((g) => {
+      if (!cancelled) setPlantingGuidance(g);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [seed]);
 
   const hasMissingGrowingData = !seed.daysToGermination || !seed.daysToMaturity;

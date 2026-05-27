@@ -147,6 +147,7 @@ export function Profile() {
   const [seedCount, setSeedCount] = useState<number | null>(null);
   const [aiCompletions, setAiCompletions] = useState<number | null>(null);
   const [activeSection, setActiveSection] = useState<string>('account');
+  const [gardeningSaving, setGardeningSaving] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -154,8 +155,9 @@ export function Profile() {
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
-    const existing = getProfile();
-    if (existing) {
+    let cancelled = false;
+    getProfile().then((existing) => {
+      if (cancelled || !existing) return;
       setProfile(existing);
       setZipCode(existing.zipCode || '');
       setGrowingZone(existing.growingZone || '');
@@ -165,7 +167,10 @@ export function Profile() {
         setZoneLookupResult(result);
         if (result && !existing.growingZone) setGrowingZone(result.zone);
       }
-    }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -288,13 +293,25 @@ export function Profile() {
     }
   };
 
-  const handleSaveGardening = () => {
-    saveProfile({
-      zipCode: zipCode.trim() || undefined,
-      growingZone: growingZone.trim() || undefined,
-      location: location.trim() || undefined,
-    });
-    router.push('/');
+  const handleSaveGardening = async () => {
+    setGardeningSaving(true);
+    try {
+      await saveProfile({
+        zipCode: zipCode.trim() || undefined,
+        growingZone: growingZone.trim() || undefined,
+        location: location.trim() || undefined,
+      });
+      // Toast persists across navigation because <Toaster> is mounted globally
+      // in the root layout — see openspec/changes/sso-zip-code-persistence/design.md.
+      toast.success('Profile saved');
+      router.push('/');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not save your profile.';
+      toast.error(`Couldn't save your profile — ${message}`);
+      // On failure: keep the form values and skip navigation so the user can retry.
+    } finally {
+      setGardeningSaving(false);
+    }
   };
 
   return (
@@ -409,9 +426,11 @@ export function Profile() {
                 <div className="flex justify-end pt-2">
                   <button
                     onClick={handleSaveGardening}
-                    className="min-w-[120px] px-4 py-2 bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d]"
+                    disabled={gardeningSaving}
+                    aria-busy={gardeningSaving}
+                    className="min-w-[120px] px-4 py-2 bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d] disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    Save
+                    {gardeningSaving ? 'Saving…' : 'Save'}
                   </button>
                 </div>
               </div>

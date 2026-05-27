@@ -27,8 +27,8 @@ export interface PlantingGuidance {
 /**
  * Get planting guidance for a seed based on user's location
  */
-export function getPlantingGuidance(seed: Seed): PlantingGuidance {
-  const profile = getProfile();
+export async function getPlantingGuidance(seed: Seed): Promise<PlantingGuidance> {
+  const profile = await getProfile();
   if (!profile?.zipCode) {
     return {
       hasData: false,
