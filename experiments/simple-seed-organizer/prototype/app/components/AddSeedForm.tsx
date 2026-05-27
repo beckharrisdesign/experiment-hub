@@ -296,9 +296,10 @@ export function AddSeedForm({
   resetsAt,
   asPage,
 }: AddSeedFormProps) {
-  // Auto Entry: only show when user has AI completions remaining (all tiers have AI, limits vary)
-  const hasAutoEntry = canUseAI;
   const isEditMode = !!initialData;
+  // Auto Entry: only show when user has AI completions remaining (all tiers have AI, limits vary).
+  // Hidden on edit — Auto Entry is for first-time capture, not amending an existing packet.
+  const hasAutoEntry = canUseAI && !isEditMode;
   const [activeSection, setActiveSection] = useState<string>("front");
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
