@@ -80,6 +80,17 @@ function HomeContent() {
       .catch(() => setUsage(null));
   }, [user]);
 
+  // New-user routing: users with <5 seeds land on /import once per session.
+  // sessionStorage flag lets them navigate back to home freely afterward.
+  useEffect(() => {
+    if (!user || !usage || typeof usage.seedCount !== "number") return;
+    if (usage.seedCount >= 5) return;
+    const flag = `sso:newUserImportRouted:${user.id}`;
+    if (sessionStorage.getItem(flag)) return;
+    sessionStorage.setItem(flag, "1");
+    router.replace("/import");
+  }, [user, usage, router]);
+
   // Load seeds from Supabase when user is authenticated
   useEffect(() => {
     if (!user) {
