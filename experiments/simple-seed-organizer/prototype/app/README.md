@@ -1,5 +1,11 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Dev surfaces
+
+Local-only routes for the figma↔code parity loop (404 outside `NODE_ENV=development`):
+
+- **Component preview:** [http://localhost:3009/dev/components](http://localhost:3009/dev/components) — priority components rendered in isolation with inline mock props; no sign-in required. See [`../../docs/figma-source.md`](../../docs/figma-source.md) for the parity inventory.
+
 ## Testing (seed persistence)
 
 Persistence-focused Vitest files use a **10s** `testTimeout` (see `lib/storage.save.test.ts`, `lib/seedPhotoSavePolicy.test.ts`, `lib/seedFormYear.test.ts`) so a stuck Supabase or `fetch` mock cannot hang CI indefinitely.
