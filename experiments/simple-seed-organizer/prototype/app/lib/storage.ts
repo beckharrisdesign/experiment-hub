@@ -10,7 +10,9 @@ import {
 
 // Fallback to localStorage if Supabase is not configured
 const STORAGE_KEY = 'simple-seed-organizer-seeds';
-const PROFILE_STORAGE_KEY = 'simple-seed-organizer-profile';
+// Profile previously stored in localStorage under this key. Removed when
+// migrating to Supabase user_profiles (sso-zip-code-persistence).
+// Kept only if some legacy code in this file still references it; otherwise prune.
 
 const SEEDS_COLUMNS_WITHOUT_USER_ID = SEEDS_COLUMNS_WITHOUT_PHOTOS.split(',')
   .filter((column) => column !== 'user_id')
@@ -478,20 +480,78 @@ function convertDbRowToSeedWithUrls(row: any): Seed {
   return convertDbSeedToSeed(row, photoFront, photoBack);
 }
 
-// Profile storage functions (keeping localStorage for now, can migrate later)
-export function getProfile(): UserProfile | null {
-  if (typeof window === 'undefined') return null;
-  const data = localStorage.getItem(PROFILE_STORAGE_KEY);
-  return data ? JSON.parse(data) : null;
+// Profile storage — backed by Supabase user_profiles (migration 008).
+// See openspec/changes/sso-zip-code-persistence/ for the bug history.
+// One row per auth user; created lazily on first save via upsert.
+
+// Convert a DB row (snake_case columns) to the UserProfile shape (camelCase).
+function rowToProfile(row: {
+  zip_code: string | null;
+  growing_zone: string | null;
+  previous_zone: string | null;
+  location: string | null;
+  updated_at: string;
+}): UserProfile {
+  return {
+    zipCode: row.zip_code ?? undefined,
+    growingZone: row.growing_zone ?? undefined,
+    previousZone: row.previous_zone ?? undefined,
+    location: row.location ?? undefined,
+    updatedAt: row.updated_at,
+  };
 }
 
-export function saveProfile(profile: Partial<UserProfile>): UserProfile {
-  const existing = getProfile();
-  const updated: UserProfile = {
-    ...existing,
-    ...profile,
-    updatedAt: new Date().toISOString(),
-  };
-  localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updated));
-  return updated;
+export async function getProfile(): Promise<UserProfile | null> {
+  if (!supabase) return null;
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData?.user;
+  if (!user) return null;
+
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('zip_code, growing_zone, previous_zone, location, updated_at')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('getProfile failed:', error);
+    return null;
+  }
+  if (!data) return null;
+  return rowToProfile(data);
+}
+
+export async function saveProfile(profile: Partial<UserProfile>): Promise<UserProfile> {
+  if (!supabase) {
+    throw new Error('Supabase not configured — cannot save profile.');
+  }
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData?.user) {
+    throw new Error('Not signed in — cannot save profile.');
+  }
+  const userId = authData.user.id;
+
+  // Merge with existing so partial updates don't blank other columns.
+  const existing = await getProfile();
+  const merged = { ...existing, ...profile };
+
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .upsert(
+      {
+        user_id: userId,
+        zip_code: merged.zipCode ?? null,
+        growing_zone: merged.growingZone ?? null,
+        previous_zone: merged.previousZone ?? null,
+        location: merged.location ?? null,
+      },
+      { onConflict: 'user_id' },
+    )
+    .select('zip_code, growing_zone, previous_zone, location, updated_at')
+    .single();
+
+  if (error || !data) {
+    throw new Error(error?.message ?? 'Failed to save profile.');
+  }
+  return rowToProfile(data);
 }

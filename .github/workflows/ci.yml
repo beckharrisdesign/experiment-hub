@@ -31,13 +31,17 @@ jobs:
         run: pnpm test
 
   # ── Live integration tests ──────────────────────────────────────────────────
-  # Runs only on push to main (after merge). Hits the real Supabase project.
-  # Inserts a test row, verifies it, then cleans up.
+  # Runs on push to main (after merge) AND on PRs opened by the repo owner.
+  # Hits the real Supabase project: inserts a test row, verifies it, cleans up.
   # Requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in GitHub Actions secrets.
+  # The owner-gate prevents secret exposure to PRs from other contributors —
+  # they get the unit-tests gate only. See openspec/changes/sso-zip-code-persistence/.
   live-integration:
     name: Live integration tests
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+      || (github.event_name == 'pull_request' && github.actor == github.repository_owner)
     steps:
       - uses: actions/checkout@v4
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Seed } from "@/types/seed";
 import { getPlantingNow, groupByAction } from "@/lib/plantingNow";
@@ -42,9 +42,18 @@ export function PlantNowBanner({ seeds }: PlantNowBannerProps) {
     setDismissed(isDismissed());
   }, []);
 
-  const result = useMemo(() => getPlantingNow(seeds), [seeds]);
+  const [result, setResult] = useState<Awaited<ReturnType<typeof getPlantingNow>> | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    getPlantingNow(seeds).then((r) => {
+      if (!cancelled) setResult(r);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [seeds]);
 
-  if (dismissed || !result.hasZone) return null;
+  if (dismissed || !result || !result.hasZone) return null;
 
   const nowGroups = groupByAction(result.nowItems);
   const upcomingGroups = groupByAction(result.upcomingItems);

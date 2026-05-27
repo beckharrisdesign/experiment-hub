@@ -92,13 +92,13 @@ export function groupByAction(items: PlantingNowItem[]): PlantingNowGroup[] {
  * @param seeds  The user's full seed collection
  * @param today  Optional override for the current date (useful for testing)
  */
-export function getPlantingNow(seeds: Seed[], today: Date = new Date()): PlantingNowResult {
+export async function getPlantingNow(seeds: Seed[], today: Date = new Date()): Promise<PlantingNowResult> {
   if (seeds.length === 0) {
     return { nowItems: [], upcomingItems: [], hasZone: false };
   }
 
   // Check zone by testing the first seed's guidance
-  const testGuidance = getPlantingGuidance(seeds[0]);
+  const testGuidance = await getPlantingGuidance(seeds[0]);
   if (!testGuidance.hasData) {
     return { nowItems: [], upcomingItems: [], hasZone: false };
   }
@@ -108,7 +108,7 @@ export function getPlantingNow(seeds: Seed[], today: Date = new Date()): Plantin
   const seenNow = new Set<string>(); // seedId:action to dedupe
 
   for (const seed of seeds) {
-    const guidance = getPlantingGuidance(seed);
+    const guidance = await getPlantingGuidance(seed);
     if (!guidance.hasData) continue;
 
     const candidates: Array<{ date: Date; action: PlantingAction }> = [];
