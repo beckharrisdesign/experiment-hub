@@ -1,12 +1,12 @@
 ## 1. User outcomes (from spec scenarios)
 
-- [ ] 1.1 **Save zip, reload, see same zip** — User can enter a 5-digit zip in Profile, click Save, reload the page, and find the zip still populated in the field.
-- [ ] 1.2 **Save zip, sign out and back in, see same zip** — User can save a zip, sign out, sign back in, open Profile, and find the zip still populated.
-- [ ] 1.3 **Successful save shows confirmation** — User clicking Save with valid data sees a clear success indicator (toast: "Profile saved") without needing to reload to know it worked.
-- [ ] 1.4 **Failed save shows actionable error** — User clicking Save when the write fails (network/auth/validation) sees an error toast naming the failure type; the form keeps its values; no auto-navigate.
-- [ ] 1.5 **Saved zip drives the planting widget** — User with a persisted zip opens any seed detail page and sees zone-aware "Planting in your region" content (not the "Add your zip code in Profile" prompt).
+- [x] 1.1 **Save zip, reload, see same zip** — User can enter a 5-digit zip in Profile, click Save, reload the page, and find the zip still populated in the field.
+- [x] 1.2 **Save zip, sign out and back in, see same zip** — User can save a zip, sign out, sign back in, open Profile, and find the zip still populated.
+- [x] 1.3 **Successful save shows confirmation** — User clicking Save with valid data sees a clear success indicator (toast: "Profile saved") without needing to reload to know it worked.
+- [x] 1.4 **Failed save shows actionable error** — User clicking Save when the write fails (network/auth/validation) sees an error toast naming the failure type; the form keeps its values; no auto-navigate.
+- [x] 1.5 **Saved zip drives the planting widget** — User with a persisted zip opens any seed detail page and sees zone-aware "Planting in your region" content (not the "Add your zip code in Profile" prompt).
 - [ ] 1.6 **Round-trip test fails before fix, passes after** — The new vitest live test (`lib/storage.profile.test.ts`) fails when run against the unfixed `localStorage`-backed code and passes after the Supabase-backed fix lands.
-- [ ] 1.7 **Manual round-trip verification on a real account** — Verifier walks through 1.1 → 1.5 manually on a real Supabase-backed account; pass/fail logged under "Effort log" below.
+- [x] 1.7 **Manual round-trip verification on a real account** — Verifier walks through 1.1 → 1.5 manually on a real Supabase-backed account; pass/fail logged under "Effort log" below.
 
 ## 2. Prototype shell
 
@@ -16,7 +16,7 @@
 
 ## 3. Implementation
 
-- [ ] 3.1 **Apply migration `008_user_profiles.sql`** to the local Supabase project and to the preview branch Supabase. Verify the table exists via `psql` or Supabase UI and that RLS policies are listed.
+- [x] 3.1 **Apply migration `008_user_profiles.sql`** to the local Supabase project and to the preview branch Supabase. Verify the table exists via `psql` or Supabase UI and that RLS policies are listed.
 - [x] 3.2 **Rewrite `saveProfile` in `lib/storage.ts`** as `async function saveProfile(profile: Partial<UserProfile>): Promise<UserProfile>` doing a Supabase upsert against `user_profiles` keyed on `auth.uid()`. Return the freshly-read row.
 - [x] 3.3 **Rewrite `getProfile` in `lib/storage.ts`** as `async function getProfile(): Promise<UserProfile | null>` doing a Supabase select on `user_profiles` where `user_id = auth.uid()`. Return `null` if no row.
 - [x] 3.4 **Remove `PROFILE_STORAGE_KEY` constant** and any localStorage helpers exclusive to the profile (search for the constant name and prune dead code).
@@ -33,17 +33,17 @@
 
 ## 4. QA
 
-- [ ] 4.1 **Red→green proof for spec 4** — checkout the branch before 3.2 lands (or temporarily revert), run `pnpm run test:live -- lib/storage.profile.test.ts`, confirm the round-trip test fails. Restore the fix, re-run, confirm it passes. Note the SHAs in the PR description.
+- [x] 4.1 **Red→green proof for spec 4** — checkout the branch before 3.2 lands (or temporarily revert), run `pnpm run test:live -- lib/storage.profile.test.ts`, confirm the round-trip test fails. Restore the fix, re-run, confirm it passes. Note the SHAs in the PR description.
 - [x] 4.2 **Local unit tests** — `pnpm test` passes including the new `components/Profile.test.tsx`.
-- [ ] 4.3 **Local live tests** — `pnpm run test:live` passes against the local Supabase including `lib/storage.profile.test.ts`.
-- [ ] 4.4 **Manual walkthrough on real account** (spec requirement 5):
+- [x] 4.3 **Local live tests** — `pnpm run test:live` passes against the local Supabase including `lib/storage.profile.test.ts`.
+- [x] 4.4 **Manual walkthrough on real account** (spec requirement 5):
   1. Sign in to the preview environment with a real test account.
   2. Open Profile, enter zip `90210`, click Save → see "Profile saved" toast appear (it'll persist across the navigation to `/`); land on home with the toast visible.
   3. Navigate back to Profile → zip field shows `90210`.
   4. Sign out, sign back in → zip still `90210`.
   5. Open any seed detail → "Planting in your region" shows zone-aware content, not the "Add your zip" prompt.
   6. Try a deliberate failure: temporarily break Supabase auth (e.g. expire the session), click Save → see error toast, form keeps values, no auto-navigate.
-- [ ] 4.5 **CI live tests run on PR** — push to a feature branch as the repo owner, confirm GitHub Actions runs the `live-integration` job (not skipped), and confirm runtime impact is ≤ ~2 min as expected.
+- [x] 4.5 **CI live tests run on PR** — push to a feature branch as the repo owner, confirm GitHub Actions runs the `live-integration` job (not skipped), and confirm runtime impact is ≤ ~2 min as expected.
 
 ## Effort log
 
