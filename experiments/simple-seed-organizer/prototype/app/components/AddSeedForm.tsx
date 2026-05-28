@@ -1624,11 +1624,11 @@ export function AddSeedForm({
                                   Custom fields
                                 </td>
                                 <td className="py-1.5 text-[#101828]">
-                                  <div className="flex flex-col gap-2">
+                                  <div className="flex flex-col gap-3">
                                     {customFields.map((field) => (
                                       <div
                                         key={field.id}
-                                        className="grid grid-cols-[1fr_1fr_auto] gap-2"
+                                        className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start"
                                       >
                                         <input
                                           type="text"
@@ -1639,10 +1639,9 @@ export function AddSeedForm({
                                             })
                                           }
                                           placeholder="Label"
-                                          className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                          className="w-full text-sm px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
                                         />
-                                        <input
-                                          type="text"
+                                        <AutoTextarea
                                           value={String(field.value ?? "")}
                                           onChange={(e) =>
                                             updateCustomField(field.id, {
@@ -1650,25 +1649,51 @@ export function AddSeedForm({
                                             })
                                           }
                                           placeholder="Value"
-                                          className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+                                          className="w-full text-sm px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] leading-snug"
                                         />
                                         <button
                                           type="button"
                                           onClick={() =>
                                             removeCustomField(field.id)
                                           }
-                                          className="px-2 py-1 text-xs text-red-500"
+                                          aria-label="Remove field"
+                                          className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                                         >
-                                          Remove
+                                          <svg
+                                            className="w-4 h-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                          >
+                                            <path
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              strokeWidth={2}
+                                              d="M6 18L18 6M6 6l12 12"
+                                            />
+                                          </svg>
                                         </button>
                                       </div>
                                     ))}
                                     <button
                                       type="button"
                                       onClick={addCustomField}
-                                      className="self-start px-3 py-1.5 text-xs font-medium text-[#16a34a] border border-[#16a34a]/40 rounded hover:bg-[#f0fdf4]"
+                                      className="self-start inline-flex items-center gap-1.5 text-sm font-medium text-[#6a7282] hover:text-[#16a34a] transition-colors"
                                     >
-                                      Add custom field
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M12 4v16m8-8H4"
+                                        />
+                                      </svg>
+                                      Add another field
                                     </button>
                                   </div>
                                 </td>
