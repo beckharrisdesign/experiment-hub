@@ -3,13 +3,13 @@ export function LandingHero() {
   return (
     <section
       id="hero"
-      className="relative overflow-hidden bg-[color:var(--green-dark)] py-16 md:py-24 lg:py-32"
+      className="relative overflow-hidden bg-[color:var(--green-dark)] px-4 py-16 md:py-24 lg:py-32"
     >
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-10 w-64 h-64 bg-[#86efac] rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#bbf7d0] rounded-full blur-3xl" />
       </div>
-      <div className="max-w-[1200px] mx-auto text-center relative z-10 px-4">
+      <div className="max-w-[1200px] mx-auto text-center relative z-10">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white">
           Super simple seed inventory.
         </h1>
