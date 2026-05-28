@@ -281,11 +281,6 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
   };
 }
 
-const EDIT_SECTIONS = [
-  { id: "front", label: "Front" },
-  { id: "back", label: "Back" },
-] as const;
-
 export function AddSeedForm({
   onSubmit,
   onClose,
@@ -300,8 +295,6 @@ export function AddSeedForm({
   // Auto Entry: only show when user has AI completions remaining (all tiers have AI, limits vary).
   // Hidden on edit — Auto Entry is for first-time capture, not amending an existing packet.
   const hasAutoEntry = canUseAI && !isEditMode;
-  const [activeSection, setActiveSection] = useState<string>("front");
-  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const [name, setName] = useState(initialData?.name || "");
   const [variety, setVariety] = useState(initialData?.variety || "");
@@ -371,29 +364,6 @@ export function AddSeedForm({
   } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
-
-  const scrollToSection = (id: string) => {
-    sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    if (!isEditMode) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      { rootMargin: "-20% 0px -70% 0px", threshold: 0 },
-    );
-    EDIT_SECTIONS.forEach(({ id }) => {
-      const el = sectionRefs.current[id];
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
-  }, [isEditMode]);
 
   const applyExtractedToForm = (data: AIExtractedData) => {
     // Fills packet fields only — never hiddenFields or instructionAnnotations
@@ -836,70 +806,40 @@ export function AddSeedForm({
         <div
           className={`flex-1 flex min-h-0 ${isEditMode ? "bg-[#f9fafb]" : ""}`}
         >
-          {isEditMode && (
-            <>
-              <nav className="hidden lg:flex flex-col w-48 shrink-0 pt-4 pl-6 pr-4 bg-[#f9fafb] border-r border-gray-200">
-                {EDIT_SECTIONS.map(({ id, label }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => scrollToSection(id)}
-                    className={`text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      activeSection === id
-                        ? "bg-[#16a34a] text-white"
-                        : "text-[#4a5565] hover:bg-gray-200"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-                <div className="mt-4 pt-4 border-t border-gray-200">
+          <div
+            className={`flex-1 overflow-y-auto min-w-0 ${isEditMode ? "px-4 py-6 pb-32 lg:pb-24" : "p-4 pb-24"}`}
+          >
+            <div className={isEditMode ? "max-w-4xl mx-auto" : "space-y-6 mb-6"}>
+              {isEditMode && (
+                <div className="mb-6 flex items-center justify-end gap-2">
                   <button
                     type="button"
                     onClick={onClose}
-                    className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-[#4a5565] hover:bg-gray-200 transition-colors"
+                    className="px-4 py-2 rounded-lg text-sm font-medium text-[#4a5565] hover:bg-gray-200 transition-colors"
                   >
                     Cancel
                   </button>
-                </div>
-              </nav>
-              {/* Mobile nav - edit mode */}
-              <div className="lg:hidden fixed bottom-14 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 flex items-center gap-2 overflow-x-auto z-20">
-                {EDIT_SECTIONS.map(({ id, label }) => (
                   <button
-                    key={id}
-                    type="button"
-                    onClick={() => scrollToSection(id)}
-                    className={`shrink-0 px-3 py-2 rounded-lg text-sm font-medium ${
-                      activeSection === id
-                        ? "bg-[#16a34a] text-white"
-                        : "bg-gray-100 text-[#4a5565]"
-                    }`}
+                    type="submit"
+                    onClick={handleSubmit}
+                    disabled={!name.trim() || !variety.trim() || submitting}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold bg-[#00a63e] text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    {label}
+                    {submitting ? (
+                      <>
+                        <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent" />
+                        Saving…
+                      </>
+                    ) : (
+                      "Save changes"
+                    )}
                   </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="shrink-0 px-3 py-2 rounded-lg text-sm font-medium text-[#4a5565] bg-gray-100 ml-auto"
-                >
-                  Cancel
-                </button>
-              </div>
-            </>
-          )}
-          <div
-            className={`flex-1 overflow-y-auto min-w-0 ${isEditMode ? "px-4 lg:pl-8 py-6 pb-32 lg:pb-24" : "p-4 pb-24"}`}
-          >
-            <div className={isEditMode ? "max-w-4xl" : "space-y-6 mb-6"}>
+                </div>
+              )}
               {/* Front Image and Data */}
               <section
                 id="front"
-                ref={(el) => {
-                  sectionRefs.current.front = el;
-                }}
-                className={isEditMode ? "scroll-mt-24 mb-8" : "mb-6"}
+                className={isEditMode ? "mb-8" : "mb-6"}
               >
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6">
                   {/* Front Image */}
@@ -1683,13 +1623,7 @@ export function AddSeedForm({
               </section>
 
               {/* Back Image and Data */}
-              <section
-                id="back"
-                ref={(el) => {
-                  sectionRefs.current.back = el;
-                }}
-                className={isEditMode ? "scroll-mt-24" : ""}
-              >
+              <section id="back" className="">
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6">
                   {/* Back Image */}
                   <div className="pr-2">
@@ -1977,23 +1911,34 @@ export function AddSeedForm({
                   : "Variety is required"}
             </p>
           )}
-        <button
-          type="submit"
-          onClick={handleSubmit}
-          disabled={!name.trim() || !variety.trim() || submitting}
-          className="w-full py-3 bg-[#00a63e] text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {submitting ? (
-            <>
-              <span className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-              {initialData ? "Saving..." : "Adding..."}
-            </>
-          ) : initialData ? (
-            "Save changes"
-          ) : (
-            "Add to collection"
+        <div className={`flex items-center gap-2 ${isEditMode ? "" : ""}`}>
+          {isEditMode && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-3 rounded-lg text-sm font-medium text-[#4a5565] hover:bg-gray-100 transition-colors"
+            >
+              Cancel
+            </button>
           )}
-        </button>
+          <button
+            type="submit"
+            onClick={handleSubmit}
+            disabled={!name.trim() || !variety.trim() || submitting}
+            className="flex-1 py-3 bg-[#00a63e] text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {submitting ? (
+              <>
+                <span className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                {initialData ? "Saving..." : "Adding..."}
+              </>
+            ) : initialData ? (
+              "Save changes"
+            ) : (
+              "Add to collection"
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
