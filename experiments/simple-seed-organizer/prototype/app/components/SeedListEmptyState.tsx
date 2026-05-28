@@ -7,6 +7,7 @@ import Link from "next/link";
 type EntryMethod = {
   title: string;
   description: string;
+  href: string;
   icon: React.ReactNode;
 };
 
@@ -14,6 +15,7 @@ const ENTRY_METHODS: EntryMethod[] = [
   {
     title: "Manual",
     description: "Type the details yourself.",
+    href: "/add",
     icon: (
       <svg
         className="w-8 h-8 text-white"
@@ -33,6 +35,7 @@ const ENTRY_METHODS: EntryMethod[] = [
   {
     title: "Auto photograph",
     description: "Snap front & back, AI fills the fields.",
+    href: "/import",
     icon: (
       <svg
         className="w-8 h-8 text-white"
@@ -58,6 +61,7 @@ const ENTRY_METHODS: EntryMethod[] = [
   {
     title: "Bulk upload",
     description: "Upload existing photos from your device.",
+    href: "/import",
     icon: (
       <svg
         className="w-8 h-8 text-white"
@@ -83,9 +87,13 @@ export function SeedListEmptyState() {
         Let&rsquo;s add your first seeds
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-3xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl">
         {ENTRY_METHODS.map((m) => (
-          <div key={m.title} className="flex flex-col items-center gap-3">
+          <Link
+            key={m.title}
+            href={m.href}
+            className="flex flex-col items-center gap-3 p-6 rounded-xl border border-transparent hover:border-[#15803d]/20 hover:bg-[#f9fafb] transition-colors focus:outline-none focus:ring-2 focus:ring-[#15803d] focus:ring-offset-2"
+          >
             <div className="w-16 h-16 rounded-lg bg-[#15803d] flex items-center justify-center">
               {m.icon}
             </div>
@@ -95,16 +103,9 @@ export function SeedListEmptyState() {
             <p className="text-sm text-[#64748b] text-center max-w-[260px]">
               {m.description}
             </p>
-          </div>
+          </Link>
         ))}
       </div>
-
-      <Link
-        href="/add"
-        className="px-6 py-2 bg-[#15803d] text-white font-medium rounded hover:bg-[#14532d] transition-colors"
-      >
-        Continue
-      </Link>
     </div>
   );
 }
