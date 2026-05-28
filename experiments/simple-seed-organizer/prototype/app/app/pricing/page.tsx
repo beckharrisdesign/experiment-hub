@@ -291,10 +291,11 @@ function PricingContent() {
                 <button
                   type="button"
                   onClick={() => setBilling("monthly")}
+                  aria-pressed={billing === "monthly"}
                   className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                     billing === "monthly"
                       ? "bg-white text-[#101828] shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
+                      : "bg-white/50 text-[#374151] hover:bg-white/80"
                   }`}
                 >
                   Monthly
@@ -302,10 +303,11 @@ function PricingContent() {
                 <button
                   type="button"
                   onClick={() => setBilling("yearly")}
+                  aria-pressed={billing === "yearly"}
                   className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                     billing === "yearly"
                       ? "bg-white text-[#101828] shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
+                      : "bg-white/50 text-[#374151] hover:bg-white/80"
                   }`}
                 >
                   Yearly
