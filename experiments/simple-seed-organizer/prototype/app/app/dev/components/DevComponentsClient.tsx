@@ -5,6 +5,7 @@ import { ViabilityBadge } from "@/components/ViabilityBadge";
 import { SeedPill } from "@/components/SeedPill";
 import { SearchBar } from "@/components/SearchBar";
 import { FilterBar } from "@/components/FilterBar";
+import { SeedListEmptyState } from "@/components/SeedListEmptyState";
 
 /**
  * Dev-only component preview surface.
@@ -120,6 +121,18 @@ export function DevComponentsClient() {
               activeType={activeFilter}
               onTypeChange={(t) => setActiveFilter(t as typeof activeFilter)}
             />
+          </div>
+        </Row>
+      </Section>
+
+      <Section
+        name="SeedListEmptyState"
+        figmaNode="180:19450"
+        figmaUrl="https://www.figma.com/design/S8YJQugvMmn5jaRqwFM5XO/Simple-Seed-Organizer?node-id=180-19450"
+      >
+        <Row label="seeds = 0">
+          <div className="w-full bg-white rounded-xl shadow-[0px_0px_54px_0px_rgba(0,0,0,0.08)]">
+            <SeedListEmptyState />
           </div>
         </Row>
       </Section>

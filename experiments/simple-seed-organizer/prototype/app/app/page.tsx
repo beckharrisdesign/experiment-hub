@@ -10,6 +10,7 @@ import { FilterBar } from "@/components/FilterBar";
 import { SeedList } from "@/components/SeedList";
 import { BottomNav } from "@/components/BottomNav";
 import { LandingPage } from "@/components/LandingPage";
+import { SeedListEmptyState } from "@/components/SeedListEmptyState";
 import { PlantNowBanner } from "@/components/PlantNowBanner";
 import { SeedType } from "@/types/seed";
 import { getSeedAge } from "@/lib/storage";
@@ -195,30 +196,32 @@ function HomeContent() {
         )}
         <PlantNowBanner seeds={seeds} />
         <div className="bg-white rounded-xl shadow-[0px_0px_54px_0px_rgba(0,0,0,0.08)] p-8">
-          <SearchBar value={searchQuery} onChange={setSearchQuery} />
-
-          <div className="mt-3">
-            <FilterBar
-              activeType={activeFilter}
-              onTypeChange={setActiveFilter}
-            />
-          </div>
-
-          <div className="mt-4">
-            {seedsLoading ? (
-              <div className="flex flex-col items-center justify-center py-16">
-                <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#16a34a] border-t-transparent mb-4" />
-                <p className="text-[#6a7282] text-sm">Fetching your seeds…</p>
+          {seedsLoading ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#16a34a] border-t-transparent mb-4" />
+              <p className="text-[#6a7282] text-sm">Fetching your seeds…</p>
+            </div>
+          ) : seeds.length === 0 ? (
+            <SeedListEmptyState />
+          ) : (
+            <>
+              <SearchBar value={searchQuery} onChange={setSearchQuery} />
+              <div className="mt-3">
+                <FilterBar
+                  activeType={activeFilter}
+                  onTypeChange={setActiveFilter}
+                />
               </div>
-            ) : (
-              <SeedList
-                seeds={filteredSeeds}
-                viewMode={viewMode}
-                onSeedClick={(seed) => router.push(`/seeds/${seed.id}`)}
-                totalSeedCount={seeds.length}
-              />
-            )}
-          </div>
+              <div className="mt-4">
+                <SeedList
+                  seeds={filteredSeeds}
+                  viewMode={viewMode}
+                  onSeedClick={(seed) => router.push(`/seeds/${seed.id}`)}
+                  totalSeedCount={seeds.length}
+                />
+              </div>
+            </>
+          )}
         </div>
       </main>
 
