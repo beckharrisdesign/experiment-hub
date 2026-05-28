@@ -98,6 +98,12 @@ export function Header({ showProfileLink }: HeaderProps) {
               >
                 Login
               </Link>
+              <a
+                href="#signup"
+                className="hidden sm:inline-block rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#166534] transition-colors hover:bg-gray-100"
+              >
+                Get started
+              </a>
             </>
           )}
           {showProfileLink && (
