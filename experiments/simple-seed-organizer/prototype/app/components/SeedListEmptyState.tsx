@@ -100,7 +100,7 @@ export function SeedListEmptyState() {
       </div>
 
       <Link
-        href="/import"
+        href="/add"
         className="px-6 py-2 bg-[#15803d] text-white font-medium rounded hover:bg-[#14532d] transition-colors"
       >
         Continue
