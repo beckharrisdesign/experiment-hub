@@ -68,7 +68,7 @@ export function Header({ showProfileLink }: HeaderProps) {
           className="flex h-10 shrink-0 items-center gap-3 transition-opacity hover:opacity-90"
         >
           <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
-            <LogoMark className="size-6" />
+            <LogoMark className="size-8" />
           </div>
           <span className="whitespace-nowrap text-[18px] font-semibold leading-7">
             Simple Seed Organizer
