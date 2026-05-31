@@ -28,7 +28,7 @@ export function BottomNav({
   }[] = [
     {
       view: "type",
-      label: "Type",
+      label: "All seeds",
       icon: (
         <svg
           className="w-6 h-6"
