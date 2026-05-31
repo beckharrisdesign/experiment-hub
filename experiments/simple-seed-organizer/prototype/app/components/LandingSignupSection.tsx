@@ -11,7 +11,7 @@ export function LandingSignupSection() {
       id="signup"
       className="px-4 py-16 scroll-mt-20 bg-[color:var(--green-dark)]"
     >
-      <div className="max-w-sm mx-auto bg-[#f9fafb] rounded-[10px] px-10 py-[30px] flex flex-col gap-6">
+      <div className="max-w-xl mx-auto bg-[#f9fafb] rounded-[10px] px-10 py-[30px] flex flex-col gap-6">
         <div className="text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-2 text-[#101828]">
             Get started for free
