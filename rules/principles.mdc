@@ -52,6 +52,6 @@ Think in reusable systems and components. Prefer chat, shared docs, or existing 
 - **Protect critical areas** — Do not modify pricing logic, auth flows, API contracts, or legal/core copy without explicit review.
 - **Small, testable steps** — Break work into milestones you can run and verify. Plan before coding; cut scope so context stays manageable.
 - **Small loops** — Prefer many small prompt → run → refine cycles over one large prompt. Start fresh chats for new features to avoid context bloat.
-- **Review AI output** — If you wouldn't merge it from a junior dev without reading it, don't accept it from the LLM. Run tests and basic security checks on generated code.
+- **Match complexity to a solo context** — Default to the simplest solution that ships and that one person can maintain. Don't introduce new frameworks, abstractions, or services the codebase doesn't already use without first flagging the tradeoff.
+- **Higher rigor for risky code** — Apply extra review and tests to security- and performance-critical paths; keep prototypes and boilerplate low-ceremony.
 - **Security is on you** — Never commit secrets, and never place them in config files, allowlists, or `settings*.json` (committed or not) — secrets belong in `.env.local` and env vars only. Review auth and user-input handling; run security scans on generated code when it matters.
-- **Go manual when it matters** — Use vibe coding for prototyping and boilerplate; use normal review and rigor for security-critical or performance-critical code.
