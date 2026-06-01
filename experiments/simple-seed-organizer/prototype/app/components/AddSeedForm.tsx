@@ -6,6 +6,7 @@ import {
   Seed,
   SeedCustomFieldValue,
   SeedInstructionAnnotation,
+  SeedPhoto,
   SeedType,
   SunRequirement,
 } from "@/types/seed";
@@ -344,10 +345,10 @@ export function AddSeedForm({
 
   // Extraction state - separate loading per image for parallel extraction
   const [frontImage, setFrontImage] = useState<string | null>(
-    initialData?.photoFront || null,
+    initialData?.photos?.[0]?.path || initialData?.photoFront || null,
   );
   const [backImage, setBackImage] = useState<string | null>(
-    initialData?.photoBack || null,
+    initialData?.photos?.[1]?.path || initialData?.photoBack || null,
   );
   const [loadingFront, setLoadingFront] = useState(false);
   const [loadingBack, setLoadingBack] = useState(false);
@@ -583,25 +584,39 @@ export function AddSeedForm({
     setSubmitting(true);
     try {
       const seedId = initialData?.id ?? crypto.randomUUID();
-      const frontNeedsUpload = needsLocalPhotoUpload(frontImage);
-      const backNeedsUpload = needsLocalPhotoUpload(backImage);
+      const existingPhotos = initialData?.photos ?? [];
+      const photos: SeedPhoto[] = [];
 
-      let photoFrontPath: string | undefined;
-      let photoBackPath: string | undefined;
+      const addPhotoSlot = async (
+        image: string | null,
+        slot: number,
+        label: string,
+        legacyPath: string | undefined,
+      ) => {
+        if (!image) return;
+        if (needsLocalPhotoUpload(image)) {
+          const blob = await (await fetch(image)).blob();
+          const id = crypto.randomUUID();
+          const path = await uploadSeedPhoto(userId, seedId, id, blob);
+          photos.push({ id, path, order: photos.length, label });
+          return;
+        }
+        const existing = existingPhotos[slot];
+        photos.push({
+          id: existing?.id ?? crypto.randomUUID(),
+          path: legacyPath ?? existing?.path ?? image,
+          order: photos.length,
+          label: existing?.label ?? label,
+        });
+      };
 
-      if (frontNeedsUpload) {
-        const blob = await (await fetch(frontImage)).blob();
-        photoFrontPath = await uploadSeedPhoto(userId, seedId, "front", blob);
-      } else if (initialData?.photoFrontPath) {
-        photoFrontPath = initialData.photoFrontPath;
-      }
+      await addPhotoSlot(frontImage, 0, "front", initialData?.photoFrontPath);
+      await addPhotoSlot(backImage, 1, "back", initialData?.photoBackPath);
 
-      if (backNeedsUpload) {
-        const blob = await (await fetch(backImage)).blob();
-        photoBackPath = await uploadSeedPhoto(userId, seedId, "back", blob);
-      } else if (initialData?.photoBackPath) {
-        photoBackPath = initialData.photoBackPath;
-      }
+      // Preserve any photos beyond the front/back slots (Change 2 rail).
+      existingPhotos.slice(2).forEach((photo) => {
+        photos.push({ ...photo, order: photos.length });
+      });
 
       const seedData: Omit<Seed, "id" | "createdAt" | "updatedAt"> & {
         id?: string;
@@ -644,24 +659,8 @@ export function AddSeedForm({
           .filter((annotation) => annotation.note),
         rawPacketText: aiExtractedData?.rawKeyValuePairs ?? initialData?.rawPacketText,
         customExpirationDate: customExpirationDate || undefined,
-        photoFrontPath,
-        photoBackPath,
+        photos,
       };
-
-      if (
-        !photoFrontPath &&
-        !frontNeedsUpload &&
-        initialData?.photoFront?.startsWith("data:")
-      ) {
-        seedData.photoFront = initialData.photoFront;
-      }
-      if (
-        !photoBackPath &&
-        !backNeedsUpload &&
-        initialData?.photoBack?.startsWith("data:")
-      ) {
-        seedData.photoBack = initialData.photoBack;
-      }
 
       await onSubmit(seedData);
       setError(null);

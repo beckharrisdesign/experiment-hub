@@ -5,7 +5,7 @@ import { AIExtractedData } from "@/lib/packetReaderAI";
 import { saveSeed } from "@/lib/storage";
 import { uploadSeedPhoto } from "@/lib/seed-photos";
 import { processImageFile } from "@/lib/imageUtils";
-import { Seed } from "@/types/seed";
+import { Seed, SeedPhoto } from "@/types/seed";
 import {
   buildQueueItemsFromFiles,
   CapturedSeedImage,
@@ -88,29 +88,22 @@ export function useImportQueue({ userId }: UseImportQueueOptions) {
       updateItem(item.id, { status: "saving", errorMessage: undefined });
       try {
         const seedId = crypto.randomUUID();
+        const photos: SeedPhoto[] = [];
         const processed = await processImageFile(item.file);
-        const photoFrontPath = await uploadSeedPhoto(
-          userId,
-          seedId,
-          "front",
-          processed,
-        );
-        let photoBackPath: string | undefined;
+        const frontId = crypto.randomUUID();
+        const frontPath = await uploadSeedPhoto(userId, seedId, frontId, processed);
+        photos.push({ id: frontId, path: frontPath, order: 0 });
         if (item.backFile) {
           const processedBack = await processImageFile(item.backFile);
-          photoBackPath = await uploadSeedPhoto(
-            userId,
-            seedId,
-            "back",
-            processedBack,
-          );
+          const backId = crypto.randomUUID();
+          const backPath = await uploadSeedPhoto(userId, seedId, backId, processedBack);
+          photos.push({ id: backId, path: backPath, order: 1 });
         }
         const saved = await saveSeed(
           buildSeedPayloadFromExtracted({
             seedId,
             extracted: item.extracted,
-            photoFrontPath,
-            photoBackPath,
+            photos,
           }),
         );
         updateItem(item.id, {

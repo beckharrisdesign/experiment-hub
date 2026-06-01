@@ -42,8 +42,14 @@ function mapAIDataToSeed(aiData: AIExtractedData, frontImageBase64?: string, bac
     spacing: aiData.spacing,
     sunRequirement: normalizeSunRequirement(aiData.sunRequirement),
     notes: aiData.description || aiData.plantingInstructions || undefined,
-    photoFront: frontImageBase64 ? `data:image/png;base64,${frontImageBase64}` : undefined,
-    photoBack: backImageBase64 ? `data:image/png;base64,${backImageBase64}` : undefined,
+    photos: [
+      frontImageBase64
+        ? { id: crypto.randomUUID(), path: `data:image/png;base64,${frontImageBase64}`, order: 0, label: "front" }
+        : undefined,
+      backImageBase64
+        ? { id: crypto.randomUUID(), path: `data:image/png;base64,${backImageBase64}`, order: 1, label: "back" }
+        : undefined,
+    ].filter((p): p is NonNullable<typeof p> => p !== undefined),
   };
 }
 

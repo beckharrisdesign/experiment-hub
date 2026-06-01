@@ -26,7 +26,7 @@ function extractedToInitialSeed(
     ...buildSeedPayloadFromExtracted({
       seedId: crypto.randomUUID(),
       extracted,
-      photoFront: objectUrl,
+      photos: [{ id: crypto.randomUUID(), path: objectUrl, order: 0 }],
     }),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -141,7 +141,9 @@ export function BatchImport({
           name: "",
           variety: "",
           type: "other" as const,
-          photoFront: editingItem.objectUrl,
+          photos: [
+            { id: crypto.randomUUID(), path: editingItem.objectUrl, order: 0 },
+          ],
         };
 
     return (

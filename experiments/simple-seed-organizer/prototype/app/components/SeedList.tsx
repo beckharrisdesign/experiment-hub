@@ -105,7 +105,7 @@ export function SeedList({
   // Photo gallery view - show seeds with front or back images as gallery cards
   if (viewMode === "photo") {
     const seedsWithPhotos = seeds.filter(
-      (seed) => seed.photoFront || seed.photoBack,
+      (seed) => (seed.photos?.length ?? 0) > 0,
     );
     if (seedsWithPhotos.length === 0 && seeds.length > 0) {
       return (
