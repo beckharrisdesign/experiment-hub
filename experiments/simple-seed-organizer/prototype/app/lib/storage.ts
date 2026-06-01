@@ -1,8 +1,9 @@
-import { Seed } from '@/types/seed';
+import { Seed, SeedPhoto } from '@/types/seed';
 import { UserProfile } from '@/types/profile';
 import { supabase } from './supabase';
 import { getPhotoUrl, deleteSeedPhotos } from './seed-photos';
 import {
+  buildPhotoCollection,
   convertDbSeedToSeed,
   convertSeedToDbSeed,
   SEEDS_COLUMNS_WITHOUT_PHOTOS,
@@ -110,16 +111,17 @@ function isMissingColumnError(error: any): boolean {
 }
 
 /**
- * Get photo URLs for all seeds - use after getSeedsWithoutPhotos() for two-phase load.
- * Returns a map of seedId -> { photoFront?, photoBack? } (URLs for display).
+ * Get photo collections for all seeds - use after getSeedsWithoutPhotos() for two-phase load.
+ * Returns a map of seedId -> SeedPhoto[] (resolved, ordered), synthesizing the legacy
+ * front/back pair through the same shim as full reads.
  */
-export async function getSeedPhotos(): Promise<Map<string, { photoFront?: string; photoBack?: string }>> {
+export async function getSeedPhotos(): Promise<Map<string, SeedPhoto[]>> {
   if (!supabase) return new Map();
 
   try {
     const { data, error } = await supabase
       .from('seeds')
-      .select('id,photo_front_path,photo_back_path,photo_front,photo_back')
+      .select('id,photos,photo_front_path,photo_back_path,photo_front,photo_back')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -127,25 +129,12 @@ export async function getSeedPhotos(): Promise<Map<string, { photoFront?: string
       return new Map();
     }
 
-    const map = new Map<string, { photoFront?: string; photoBack?: string }>();
+    const map = new Map<string, SeedPhoto[]>();
     for (const row of data || []) {
-      // Prefer storage paths - use public URL for public buckets (RLS bypassed for downloads)
-      let photoFront: string | undefined;
-      let photoBack: string | undefined;
-      if (row.photo_front_path) {
-        photoFront = getPhotoUrl(row.photo_front_path) ?? undefined;
-      } else if (row.photo_front) {
-        photoFront = row.photo_front; // Legacy base64 fallback only when no path
+      const photos = buildPhotoCollection(row);
+      if (photos && photos.length > 0) {
+        map.set(row.id, photos);
       }
-      if (row.photo_back_path) {
-        photoBack = getPhotoUrl(row.photo_back_path) ?? undefined;
-      } else if (row.photo_back) {
-        photoBack = row.photo_back; // Legacy base64 fallback only when no path
-      }
-      if (photoFront || photoBack) {
-        console.log('[getSeedPhotos]', row.id, { path: row.photo_front_path, url: photoFront?.substring(0, 60) });
-      }
-      map.set(row.id, { photoFront, photoBack });
     }
     return map;
   } catch (err) {

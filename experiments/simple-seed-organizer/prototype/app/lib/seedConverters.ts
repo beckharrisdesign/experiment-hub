@@ -2,8 +2,10 @@ import {
   Seed,
   SeedCustomFieldValue,
   SeedInstructionAnnotation,
+  SeedPhoto,
   SeedRawPacketText,
 } from "@/types/seed";
+import { resolvePhotoSrc } from "./seed-photos";
 
 type DbSeed = Record<string, any>;
 
@@ -35,6 +37,7 @@ const FIELD_TO_COLUMN: Array<[keyof Seed, string]> = [
   ["customFields", "custom_fields"],
   ["instructionAnnotations", "instruction_annotations"],
   ["rawPacketText", "raw_packet_text"],
+  ["photos", "photos"],
   ["photoFrontPath", "photo_front_path"],
   ["photoBackPath", "photo_back_path"],
   ["photoFront", "photo_front"],
@@ -131,7 +134,10 @@ export function convertSeedToDbSeed(
       continue;
     }
 
-    if (seedKey === "hiddenFields") {
+    if (seedKey === "photos") {
+      // jsonb, nullable — empty/absent persists as NULL (= legacy, read via shim).
+      dbSeed[dbKey] = Array.isArray(value) && value.length > 0 ? value : null;
+    } else if (seedKey === "hiddenFields") {
       dbSeed[dbKey] = Array.isArray(value) && value.length > 0 ? value : [];
     } else if (seedKey === "useFirst") {
       dbSeed[dbKey] = Boolean(value);
@@ -179,6 +185,7 @@ export function convertDbSeedToSeed(
       dbSeed.instruction_annotations,
     ),
     rawPacketText: parseJsonArray<SeedRawPacketText>(dbSeed.raw_packet_text),
+    photos: buildPhotoCollection(dbSeed, photoFront, photoBack),
     photoFront: photoFront || dbSeed.photo_front || undefined,
     photoBack: photoBack || dbSeed.photo_back || undefined,
     photoFrontPath: dbSeed.photo_front_path || undefined,
@@ -188,6 +195,41 @@ export function convertDbSeedToSeed(
     createdAt: dbSeed.created_at,
     updatedAt: dbSeed.updated_at,
   };
+}
+
+/**
+ * Lazy read-time shim: produce the canonical photo collection for a row.
+ * - If the `photos` jsonb column is populated, it is authoritative (paths resolved to src).
+ * - Otherwise synthesize from legacy front/back, preferring the display URLs storage
+ *   already resolved (photoFront/photoBack) and falling back to row paths / base64.
+ * Legacy ids (`legacy-front`/`legacy-back`) mark a row that save will upgrade in place.
+ */
+export function buildPhotoCollection(
+  dbSeed: DbSeed,
+  photoFront?: string,
+  photoBack?: string,
+): SeedPhoto[] | undefined {
+  const fromColumn = parseJsonArray<SeedPhoto>(dbSeed.photos);
+  if (fromColumn && fromColumn.length > 0) {
+    return fromColumn
+      .map((photo, index) => ({
+        id: photo.id,
+        path: resolvePhotoSrc(photo.path) ?? photo.path,
+        order: typeof photo.order === "number" ? photo.order : index,
+        label: photo.label,
+      }))
+      .sort((a, b) => a.order - b.order);
+  }
+
+  const frontSrc =
+    photoFront || resolvePhotoSrc(dbSeed.photo_front_path) || dbSeed.photo_front || undefined;
+  const backSrc =
+    photoBack || resolvePhotoSrc(dbSeed.photo_back_path) || dbSeed.photo_back || undefined;
+
+  const legacy: SeedPhoto[] = [];
+  if (frontSrc) legacy.push({ id: "legacy-front", path: frontSrc, order: 0, label: "front" });
+  if (backSrc) legacy.push({ id: "legacy-back", path: backSrc, order: 1, label: "back" });
+  return legacy.length > 0 ? legacy : undefined;
 }
 
 function nullableInsertColumn(seedKey: keyof Seed): boolean {

@@ -114,13 +114,9 @@ function HomeContent() {
         if (cancelled) return;
         setSeeds((prev) =>
           prev.map((seed) => {
-            const p = photos.get(seed.id);
-            if (!p) return seed;
-            return {
-              ...seed,
-              photoFront: p.photoFront ?? seed.photoFront,
-              photoBack: p.photoBack ?? seed.photoBack,
-            };
+            const collection = photos.get(seed.id);
+            if (!collection) return seed;
+            return { ...seed, photos: collection };
           }),
         );
       } catch (error) {

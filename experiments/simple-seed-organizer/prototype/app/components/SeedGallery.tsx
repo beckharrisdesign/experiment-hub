@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Seed } from '@/types/seed';
+import { primarySeedPhotoSrc } from '@/lib/seed-photos';
 
 interface SeedGalleryProps {
   seeds: Seed[];
@@ -17,9 +18,8 @@ export function SeedGallery({ seeds, onSeedClick }: SeedGalleryProps) {
       seeds: seeds.map((s) => ({
         id: s.id,
         name: s.name,
-        hasPhotoFront: !!s.photoFront,
-        hasPhotoBack: !!s.photoBack,
-        photoFrontType: s.photoFront?.substring(0, 30),
+        photoCount: s.photos?.length ?? 0,
+        primaryType: primarySeedPhotoSrc(s)?.substring(0, 30),
         failedCount: failedImages.size,
       })),
     });
@@ -48,9 +48,9 @@ export function SeedGallery({ seeds, onSeedClick }: SeedGalleryProps) {
           onClick={() => onSeedClick(seed)}
           className="group block relative aspect-square w-full bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border-0 p-0 text-left appearance-none cursor-pointer"
         >
-          {(seed.photoFront || seed.photoBack) && !failedImages.has(seed.id) ? (
+          {primarySeedPhotoSrc(seed) && !failedImages.has(seed.id) ? (
             <img
-              src={seed.photoFront || seed.photoBack}
+              src={primarySeedPhotoSrc(seed)}
               alt={seed.variety || seed.name}
               loading="lazy"
               className="block w-full h-full object-cover bg-gray-100"

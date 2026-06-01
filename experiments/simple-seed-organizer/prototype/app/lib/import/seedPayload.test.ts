@@ -60,7 +60,7 @@ describe("seed import payloads", () => {
     const payload = buildSeedPayloadFromExtracted({
       seedId: "seed-2",
       extracted: EXTRACTED,
-      photoFrontPath: "user/seed/front.jpg",
+      photos: [{ id: "photo-1", path: "user/seed/photo-1.jpg", order: 0 }],
     });
 
     expect(payload.name).toBe("Tomato");
@@ -71,6 +71,9 @@ describe("seed import payloads", () => {
     );
     expect(payload.notes).toBeUndefined();
     expect(payload.rawPacketText).toEqual(EXTRACTED.rawKeyValuePairs);
+    expect(payload.photos).toEqual([
+      { id: "photo-1", path: "user/seed/photo-1.jpg", order: 0 },
+    ]);
   });
 
   it("does not overwrite user notes or annotations when merging packet facts", () => {

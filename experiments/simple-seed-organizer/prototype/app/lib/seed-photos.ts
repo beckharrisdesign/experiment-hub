@@ -1,34 +1,46 @@
 /**
  * Supabase Storage helpers for seed packet photos.
- * Path format: {user_id}/{seed_id}/front.jpg | back.jpg
+ * Path format: {user_id}/{seed_id}/{photo_id}.jpg
+ * (Legacy rows used .../front.jpg | back.jpg — those paths still resolve.)
  */
 
+import type { Seed } from '@/types/seed';
 import { supabase } from './supabase';
 
 const BUCKET = 'seed-photos';
 
-export function getPhotoPath(userId: string, seedId: string, side: 'front' | 'back'): string {
-  return `${userId}/${seedId}/${side}.jpg`;
+/** Resolved srcs for every photo on a seed, in order. */
+export function seedPhotoSrcs(seed: Pick<Seed, 'photos'>): string[] {
+  return (seed.photos ?? []).map((photo) => photo.path).filter(Boolean);
+}
+
+/** The first photo's src, or undefined. Use for thumbnails / single-image surfaces. */
+export function primarySeedPhotoSrc(seed: Pick<Seed, 'photos'>): string | undefined {
+  return seed.photos?.[0]?.path || undefined;
+}
+
+export function getPhotoPath(userId: string, seedId: string, photoId: string): string {
+  return `${userId}/${seedId}/${photoId}.jpg`;
 }
 
 /**
- * Upload a photo to storage. Returns the storage path.
+ * Upload a photo to storage under its stable photo id. Returns the storage path.
  */
 export async function uploadSeedPhoto(
   userId: string,
   seedId: string,
-  side: 'front' | 'back',
+  photoId: string,
   blob: Blob
 ): Promise<string> {
   if (!supabase) throw new Error('Supabase not configured');
 
-  const path = getPhotoPath(userId, seedId, side);
+  const path = getPhotoPath(userId, seedId, photoId);
 
   const { error } = await supabase.storage
     .from(BUCKET)
     .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
 
-  if (error) throw new Error(`Failed to upload ${side} photo: ${error.message}`);
+  if (error) throw new Error(`Failed to upload photo: ${error.message}`);
   return path;
 }
 
@@ -42,6 +54,19 @@ export function getPhotoUrl(path: string | null | undefined): string | undefined
   if (!path || !supabase) return undefined;
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
   return data.publicUrl;
+}
+
+/**
+ * Resolve a stored photo reference to a renderable src.
+ * Data URLs and absolute URLs pass through untouched (legacy base64, already-signed);
+ * everything else is treated as a storage path and resolved to a public URL.
+ */
+export function resolvePhotoSrc(value: string | null | undefined): string | undefined {
+  if (!value) return undefined;
+  if (value.startsWith('data:') || value.startsWith('http://') || value.startsWith('https://')) {
+    return value;
+  }
+  return getPhotoUrl(value);
 }
 
 /**
@@ -60,17 +85,21 @@ export async function getSignedPhotoUrl(path: string | null | undefined): Promis
   return data?.signedUrl;
 }
 
-
 /**
- * Delete photos for a seed from storage.
+ * Delete every photo for a seed from storage by listing its folder.
+ * Covers both new {photo_id}.jpg objects and legacy front/back.jpg.
  */
 export async function deleteSeedPhotos(userId: string, seedId: string): Promise<void> {
   if (!supabase) return;
 
-  const paths = [
-    getPhotoPath(userId, seedId, 'front'),
-    getPhotoPath(userId, seedId, 'back'),
-  ];
+  const folder = `${userId}/${seedId}`;
+  const { data, error } = await supabase.storage.from(BUCKET).list(folder);
+  if (error) {
+    console.warn('[seed-photos] Failed to list photos for deletion:', error);
+    return;
+  }
+  const paths = (data ?? []).map((obj) => `${folder}/${obj.name}`);
+  if (paths.length === 0) return;
 
   await supabase.storage.from(BUCKET).remove(paths);
 }

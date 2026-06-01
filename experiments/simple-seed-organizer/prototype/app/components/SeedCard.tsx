@@ -2,6 +2,7 @@
 
 import { Seed } from "@/types/seed";
 import { getSeedAge } from "@/lib/storage";
+import { primarySeedPhotoSrc } from "@/lib/seed-photos";
 import { ViabilityBadge } from "@/components/ViabilityBadge";
 import { getViabilityStatus } from "@/lib/viability";
 
@@ -21,6 +22,7 @@ function getAgeColor(age: number): string {
 export function SeedCard({ seed, onClick }: SeedCardProps) {
   const age = getSeedAge(seed);
   const ageColor = getAgeColor(age);
+  const thumbnailSrc = primarySeedPhotoSrc(seed);
 
   return (
     <button
@@ -29,9 +31,9 @@ export function SeedCard({ seed, onClick }: SeedCardProps) {
     >
       {/* Thumbnail: front image when available, else age indicator */}
       <div className="w-12 h-12 rounded-lg shrink-0 overflow-hidden bg-gray-100">
-        {seed.photoFront ? (
+        {thumbnailSrc ? (
           <img
-            src={seed.photoFront}
+            src={thumbnailSrc}
             alt=""
             loading="lazy"
             className="w-full h-full object-cover object-center"

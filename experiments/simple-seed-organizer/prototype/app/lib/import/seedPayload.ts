@@ -1,13 +1,12 @@
 import { AIExtractedData } from "@/lib/packetReaderAI";
 import { normalizeSunRequirement } from "@/lib/seedUtils";
-import { Seed } from "@/types/seed";
+import { Seed, SeedPhoto } from "@/types/seed";
 
 interface BuildSeedPayloadOptions {
   seedId: string;
   extracted: AIExtractedData;
-  photoFrontPath?: string;
-  photoBackPath?: string;
-  photoFront?: string;
+  /** Ordered photo collection (replaces the legacy front/back pair). */
+  photos?: SeedPhoto[];
 }
 
 interface MergeOptions {
@@ -32,9 +31,7 @@ const PACKET_FACT_KEYS = [
 export function buildSeedPayloadFromExtracted({
   seedId,
   extracted,
-  photoFrontPath,
-  photoBackPath,
-  photoFront,
+  photos,
 }: BuildSeedPayloadOptions): Omit<Seed, "createdAt" | "updatedAt"> {
   const name = extracted.name?.trim() || "Unknown";
   const variety = (
@@ -60,9 +57,7 @@ export function buildSeedPayloadFromExtracted({
     description: extracted.description,
     plantingInstructions: extracted.plantingInstructions,
     rawPacketText: extracted.rawKeyValuePairs,
-    photoFrontPath,
-    photoBackPath,
-    photoFront,
+    photos,
   };
 }
 

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { convertDbSeedToSeed, convertSeedToDbSeed } from "./seedConverters";
+import {
+  buildPhotoCollection,
+  convertDbSeedToSeed,
+  convertSeedToDbSeed,
+} from "./seedConverters";
 import { Seed } from "@/types/seed";
 
 // ---------------------------------------------------------------------------
@@ -168,5 +172,85 @@ describe("seed converters", () => {
       { mode: "update" },
     );
     expect(dbUpdate.year).toBeUndefined();
+  });
+
+  it("maps a photos collection to the photos column on insert", () => {
+    const db = convertSeedToDbSeed(
+      {
+        ...SEED,
+        photos: [
+          { id: "p1", path: "user/seed/p1.jpg", order: 0, label: "front" },
+        ],
+      },
+      { mode: "insert" },
+    );
+    expect(db.photos).toEqual([
+      { id: "p1", path: "user/seed/p1.jpg", order: 0, label: "front" },
+    ]);
+  });
+
+  it("stores SQL null for an empty photos collection", () => {
+    const db = convertSeedToDbSeed({ photos: [] }, { mode: "update" });
+    expect(db.photos).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Photo collection shim (lazy read-time migration)
+// ---------------------------------------------------------------------------
+
+describe("buildPhotoCollection", () => {
+  it("synthesizes an ordered collection from legacy front/back", () => {
+    const photos = buildPhotoCollection({
+      photo_front: "data:image/png;base64,FRONT",
+      photo_back: "data:image/png;base64,BACK",
+    });
+    expect(photos).toEqual([
+      { id: "legacy-front", path: "data:image/png;base64,FRONT", order: 0, label: "front" },
+      { id: "legacy-back", path: "data:image/png;base64,BACK", order: 1, label: "back" },
+    ]);
+  });
+
+  it("synthesizes a single-photo collection from a legacy front only", () => {
+    const photos = buildPhotoCollection({
+      photo_front: "https://cdn.example/front.jpg",
+    });
+    expect(photos).toEqual([
+      { id: "legacy-front", path: "https://cdn.example/front.jpg", order: 0, label: "front" },
+    ]);
+  });
+
+  it("passes through an existing photos column, sorted by order", () => {
+    const photos = buildPhotoCollection({
+      photos: JSON.stringify([
+        { id: "b", path: "https://cdn.example/2.jpg", order: 1 },
+        { id: "a", path: "https://cdn.example/1.jpg", order: 0 },
+      ]),
+      // Legacy columns are ignored once the photos column is present.
+      photo_front: "data:image/png;base64,IGNORED",
+    });
+    expect(photos).toEqual([
+      { id: "a", path: "https://cdn.example/1.jpg", order: 0, label: undefined },
+      { id: "b", path: "https://cdn.example/2.jpg", order: 1, label: undefined },
+    ]);
+  });
+
+  it("returns undefined when there are no photos at all", () => {
+    expect(buildPhotoCollection({})).toBeUndefined();
+  });
+
+  it("convertDbSeedToSeed populates seed.photos via the shim", () => {
+    const seed = convertDbSeedToSeed({
+      id: "s",
+      name: "Tomato",
+      variety: "Black Krim",
+      type: "vegetable",
+      photo_front: "data:image/png;base64,FRONT",
+      created_at: "2026-05-11T00:00:00Z",
+      updated_at: "2026-05-11T00:00:00Z",
+    });
+    expect(seed.photos).toEqual([
+      { id: "legacy-front", path: "data:image/png;base64,FRONT", order: 0, label: "front" },
+    ]);
   });
 });

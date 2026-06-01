@@ -25,6 +25,11 @@ export interface Seed {
   customFields?: SeedCustomFieldValue[];
   instructionAnnotations?: SeedInstructionAnnotation[];
   rawPacketText?: SeedRawPacketText[];
+  /** Canonical, ordered photo collection. Replaces photoFront/photoBack. */
+  photos?: SeedPhoto[];
+  // Legacy single-pair photo fields — retained read-only so the shim in
+  // lib/seedConverters.ts can synthesize `photos` for un-upgraded rows.
+  // New code paths must NOT write these; write `photos` instead.
   photoFront?: string; // URL (from storage) or legacy base64 data URL
   photoBack?: string;
   photoFrontPath?: string; // storage path (for save/update)
@@ -33,6 +38,17 @@ export interface Seed {
   customExpirationDate?: string; // ISO date string (YYYY-MM-DD)
   createdAt: string;
   updatedAt: string;
+}
+
+export interface SeedPhoto {
+  /** Stable uuid; also the storage object key ({user}/{seed}/{id}.jpg). */
+  id: string;
+  /** Storage path, resolved display URL, or legacy base64 data URL. */
+  path: string;
+  /** Ascending display order (rail order in the edit view). */
+  order: number;
+  /** Optional free-form hint ("instructions", "seed close-up") — not a side. */
+  label?: string;
 }
 
 export type SeedType = Seed['type'];
