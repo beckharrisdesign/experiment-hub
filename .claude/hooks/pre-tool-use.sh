@@ -37,6 +37,20 @@ if [ "$tool" = "Bash" ] || [ "$tool" = "Shell" ]; then
     echo "Blocked: rm -rf on source directories requires manual confirmation." >&2
     exit 2
   fi
+
+  # Block pushing to a branch whose PR is already merged (prevents orphaned commits).
+  # Matches both `git push` and the RTK-rewritten `rtk git push`. Push-only to keep
+  # the gh network call off the more frequent `git commit` path.
+  if echo "$command" | grep -qE 'git push( |$)'; then
+    branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+    if [ -n "$branch" ] && [ "$branch" != "main" ] && [ "$branch" != "master" ]; then
+      pr_state=$(gh pr view "$branch" --json state -q .state 2>/dev/null || echo "")
+      if [ "$pr_state" = "MERGED" ]; then
+        echo "Blocked: branch '$branch' already has a MERGED PR — new commits here will be orphaned. Start fresh: git checkout main && git pull && git checkout -b <new-branch>" >&2
+        exit 2
+      fi
+    fi
+  fi
 fi
 
 exit 0
