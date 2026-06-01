@@ -89,8 +89,8 @@ export default function TermsPage() {
           <section>
             <h2 className="text-base font-semibold text-[#101828] mb-2">9. Governing Law</h2>
             <p>
-              These terms are governed by the laws of [JURISDICTION], without regard to its conflict
-              of law provisions.
+              These terms are governed by the laws of the State of Texas, with venue in Travis
+              County, Austin, Texas, without regard to its conflict of law provisions.
             </p>
           </section>
 
