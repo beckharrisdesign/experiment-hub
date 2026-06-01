@@ -14,6 +14,11 @@ User experience and developer experience are not competitors. Always balance bot
 - Run the test first. If it fails, then write code to make it pass. Never write code first and hope it works.
 - **Strong bias toward tests agents can run** — prefer tests that an agent can execute (scripts, curl, fetch, browser actions) over manual-only checks.
 - When adding tests, ask: can an agent run this and interpret the result? If not, make it so.
+- **Verify before done** — for changes observable in the running app, confirm the behavior in the app/browser before reporting complete. A green typecheck or build is not proof the feature works.
+
+## Root cause over workaround
+
+Fix the underlying cause of a failure. Don't bypass checks (`--no-verify`, skipping validation), silence errors, or paper over symptoms just to make an obstacle go away.
 
 ## Log capture
 
@@ -47,6 +52,6 @@ Think in reusable systems and components. Prefer chat, shared docs, or existing 
 - **Protect critical areas** — Do not modify pricing logic, auth flows, API contracts, or legal/core copy without explicit review.
 - **Small, testable steps** — Break work into milestones you can run and verify. Plan before coding; cut scope so context stays manageable.
 - **Small loops** — Prefer many small prompt → run → refine cycles over one large prompt. Start fresh chats for new features to avoid context bloat.
-- **Review AI output** — If you wouldn't merge it from a junior dev without reading it, don't accept it from the LLM. Run tests and basic security checks on generated code.
-- **Security is on you** — Never commit secrets; review auth and user-input handling; run security scans on generated code when it matters.
-- **Go manual when it matters** — Use vibe coding for prototyping and boilerplate; use normal review and rigor for security-critical or performance-critical code.
+- **Match complexity to a solo context** — Default to the simplest solution that ships and that one person can maintain. Don't introduce new frameworks, abstractions, or services the codebase doesn't already use without first flagging the tradeoff.
+- **Higher rigor for risky code** — Apply extra review and tests to security- and performance-critical paths; keep prototypes and boilerplate low-ceremony.
+- **Security is on you** — Never commit secrets, and never place them in config files, allowlists, or `settings*.json` (committed or not) — secrets belong in `.env.local` and env vars only. Review auth and user-input handling; run security scans on generated code when it matters.
