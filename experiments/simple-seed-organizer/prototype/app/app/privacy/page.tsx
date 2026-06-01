@@ -26,7 +26,7 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-5 space-y-1">
               <li><strong>Account data:</strong> your email address and password, managed by Supabase Auth (we never store your password ourselves)</li>
               <li><strong>Seed inventory data:</strong> seed names, varieties, growing notes, and any photos you upload</li>
-              <li><strong>Uploaded photos:</strong> seed-packet and seed photos you upload are stored in our Supabase storage and may be served from public URLs</li>
+              <li><strong>Uploaded photos:</strong> seed-packet and seed photos you upload are stored in our Supabase storage. Photos kept in a public location can be viewed by anyone who has the link, even without an account</li>
               <li><strong>Payment data:</strong> billing details are handled by Stripe — we never see or store your card details</li>
               <li><strong>Usage data:</strong> page views and feature interactions, collected via Google Analytics</li>
             </ul>
@@ -51,13 +51,18 @@ export default function PrivacyPage() {
             <h2 className="text-base font-semibold text-[#101828] mb-2">3. Third-Party Services</h2>
             <p className="mb-2">We share data with these providers only as needed to run the Service:</p>
             <ul className="list-disc pl-5 space-y-1">
-              <li><strong>Supabase</strong> — database, authentication, and photo storage</li>
-              <li><strong>OpenAI</strong> — AI reading of seed-packet photos and enrichment of seed entries</li>
+              <li><strong>Supabase</strong> — database, authentication, and photo storage (hosted on AWS)</li>
+              <li><strong>OpenAI</strong> — AI reading of seed-packet photos and enrichment of seed entries, via the OpenAI API</li>
               <li><strong>Stripe</strong> — payment and subscription processing</li>
               <li><strong>Google Analytics</strong> — usage analytics</li>
               <li><strong>Vercel</strong> — application hosting</li>
             </ul>
-            <p className="mt-2">We do not sell your personal data.</p>
+            <p className="mt-2">
+              The photos and seed text you submit for AI features are sent to the OpenAI API.
+              Under OpenAI&rsquo;s API terms, this content is <strong>not used to train OpenAI&rsquo;s
+              models</strong> and is deleted within 30 days, except as needed to detect abuse or as
+              required by law. We do not sell your personal data.
+            </p>
           </section>
 
           <section>
@@ -86,7 +91,25 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-[#101828] mb-2">7. Contact</h2>
+            <h2 className="text-base font-semibold text-[#101828] mb-2">7. Children</h2>
+            <p>
+              The Service is not directed to children under 13, and we do not knowingly collect
+              personal data from them. If you believe a child has provided us data, contact us and
+              we will delete it.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-semibold text-[#101828] mb-2">8. International Data Transfers</h2>
+            <p>
+              Your data is stored with our hosting providers and may be processed in the United
+              States and other countries — including by the OpenAI API for the AI features described
+              above. By using the Service, you consent to this processing.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-semibold text-[#101828] mb-2">9. Contact</h2>
             <p>
               Privacy questions or data requests?{' '}
               <a href="mailto:katy@beckharrisdesign.com" className="text-[#16a34a] hover:underline">

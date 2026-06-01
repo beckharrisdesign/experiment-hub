@@ -45,7 +45,9 @@ export default function TermsPage() {
               Paid plans are billed monthly or annually, depending on the plan you choose.
               Subscriptions renew automatically unless cancelled before the renewal date. Refunds
               are issued at our discretion within 7 days of purchase. Payments are processed
-              securely by Stripe.
+              securely by Stripe. Nothing in this section limits any non-waivable refund or
+              cancellation rights you have under the consumer-protection laws of your country or
+              state of residence.
             </p>
           </section>
 
@@ -90,7 +92,9 @@ export default function TermsPage() {
             <h2 className="text-base font-semibold text-[#101828] mb-2">9. Governing Law</h2>
             <p>
               These terms are governed by the laws of the State of Texas, with venue in Travis
-              County, Austin, Texas, without regard to its conflict of law provisions.
+              County, Austin, Texas, without regard to its conflict of law provisions, except where
+              mandatory consumer-protection law in your country or state of residence gives you
+              other rights.
             </p>
           </section>
 
