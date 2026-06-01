@@ -36,6 +36,12 @@ Think in reusable systems and components. Prefer chat, shared docs, or existing 
 
 **Avoid** creating new one-off `.md` files for every analysis — extend existing docs or use chat instead.
 
+## Token efficiency
+
+- **Read file slices with the Read tool** (or `rtk read <file> --range A:B`), never `sed -n 'A,Bp'` or `awk` — those ranges aren't auto-optimized and dump raw output into context.
+- RTK auto-rewrites most Bash (`git`, `gh`, `grep`, `ls`, `find`, `cat`/`head`→`rtk read`, etc.) transparently — write commands normally and let the hook handle it; don't hand-prefix `rtk`.
+- Prefer one targeted command over exploratory chains; scope `grep`/`find` to a path, not the repo root.
+
 ## Solo founder / vibe coding
 
 - **Protect critical areas** — Do not modify pricing logic, auth flows, API contracts, or legal/core copy without explicit review.
