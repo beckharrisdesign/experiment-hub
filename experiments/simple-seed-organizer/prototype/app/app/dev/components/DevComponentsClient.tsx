@@ -6,6 +6,7 @@ import { SeedPill } from "@/components/SeedPill";
 import { SearchBar } from "@/components/SearchBar";
 import { FilterBar } from "@/components/FilterBar";
 import { SeedListEmptyState } from "@/components/SeedListEmptyState";
+import { PhotoRail } from "@/components/PhotoRail";
 
 /**
  * Dev-only component preview surface.
@@ -31,6 +32,16 @@ export function DevComponentsClient() {
   const [activeFilter, setActiveFilter] = useState<
     "all" | "use-first" | "vegetable" | "herb" | "flower" | "fruit"
   >("all");
+
+  // PhotoRail demo — inline SVG data URLs so it renders with no network.
+  const mockPhoto = (label: string, fill: string) =>
+    `data:image/svg+xml;utf8,${encodeURIComponent(
+      `<svg xmlns='http://www.w3.org/2000/svg' width='320' height='420'><rect width='100%' height='100%' fill='${fill}'/><text x='50%' y='50%' fill='white' font-family='sans-serif' font-size='28' text-anchor='middle' dominant-baseline='middle'>${label}</text></svg>`,
+    )}`;
+  const [railPhotos, setRailPhotos] = useState(() => [
+    { id: "p1", path: mockPhoto("Photo 1", "#15803d") },
+    { id: "p2", path: mockPhoto("Photo 2", "#166534") },
+  ]);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-10 space-y-12 text-[#0a0a0a]">
@@ -147,6 +158,37 @@ export function DevComponentsClient() {
             Not yet wired into the preview — needs a seed mock + lib stubs.
             Tracked in figma-source.md.
           </p>
+        </Row>
+      </Section>
+
+      <Section
+        name="PhotoRail"
+        figmaNode="156:9525 (Packet Edit · left column 149:1663)"
+        figmaUrl="https://www.figma.com/design/S8YJQugvMmn5jaRqwFM5XO/Simple-Seed-Organizer?node-id=156-9525"
+      >
+        <Row label="ordered rail + add-photo tile (L: beside fields · S: stacks)">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 w-full">
+            <div className="rounded-lg bg-white p-4 shadow-sm">
+              <PhotoRail
+                photos={railPhotos}
+                onAddFile={() =>
+                  setRailPhotos((prev) => [
+                    ...prev,
+                    {
+                      id: `p${prev.length + 1}`,
+                      path: mockPhoto(`Photo ${prev.length + 1}`, "#14532d"),
+                    },
+                  ])
+                }
+                canExtract
+                onExtract={() => {}}
+                extractingIds={[]}
+              />
+            </div>
+            <div className="rounded-lg bg-white p-4 shadow-sm text-sm text-gray-500">
+              One merged field set sits here (Metadata card, node 21:2851).
+            </div>
+          </div>
         </Row>
       </Section>
     </main>
