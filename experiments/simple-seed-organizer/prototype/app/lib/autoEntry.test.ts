@@ -74,6 +74,34 @@ const BACK: AIExtractedData = {
 // ---------------------------------------------------------------------------
 
 describe("mergeExtractedData", () => {
+  // seed-edit-photo-rail: photos fold into one field set with no side. Each
+  // photo's read is merged via mergeExtractedData(prev, data) — no front/back.
+  describe("photo-collection fold (no side)", () => {
+    it("fills empty fields from each photo with no front/back split", () => {
+      const first = mergeExtractedData(null, FRONT);
+      const result = mergeExtractedData(first, BACK);
+
+      // First photo's fields kept…
+      expect(result.name).toBe("Tomato");
+      expect(result.variety).toBe("Black Krim");
+      expect(result.description).toBe("Rich, dark fruits.");
+      // …second photo's fields added into the same set.
+      expect(result.daysToGermination).toBe("7-14 days");
+      expect(result.spacing).toBe("24-36 inches");
+      // All raw pairs kept, regardless of any legacy `source` tag.
+      expect(result.rawKeyValuePairs).toHaveLength(2);
+    });
+
+    it("does not overwrite an already-filled field with a later photo", () => {
+      const other = { ...FRONT, name: "Pepper" };
+      const result = mergeExtractedData(
+        mergeExtractedData(null, FRONT),
+        other,
+      );
+      expect(result.name).toBe("Tomato"); // first non-empty value wins
+    });
+  });
+
   describe("basic merging", () => {
     it("applies front-side fields when existing is null", () => {
       const result = mergeExtractedData(null, FRONT, "front");

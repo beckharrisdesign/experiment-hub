@@ -28,10 +28,35 @@ const MERGED_FIELDS = AI_EXTRACTABLE_PACKET_FIELD_KEYS;
 export function mergeExtractedData(
   existing: AIExtractedData | null,
   incoming: AIExtractedData,
-  side: "front" | "back",
+  side?: "front" | "back",
 ): AIExtractedData {
   if (incoming.canonicalExtraction) {
     return mergeCanonicalExtractedData(existing, incoming);
+  }
+
+  // Photo-collection model (no side): fold all photos into one field set,
+  // filling only empty fields and keeping every raw pair. No front/back split.
+  if (!side) {
+    const merged: AIExtractedData = {
+      ...(existing ?? {}),
+      fieldSources: {
+        ...(existing?.fieldSources ?? {}),
+        ...(incoming.fieldSources ?? {}),
+      },
+      rawKeyValuePairs: [
+        ...(existing?.rawKeyValuePairs ?? []),
+        ...(incoming.rawKeyValuePairs ?? []),
+      ],
+    };
+    for (const f of MERGED_FIELDS) {
+      const val = incoming[f];
+      if (val == null || val === "") continue;
+      if (existing?.[f] != null && existing[f] !== "") continue;
+      (merged as Record<string, unknown>)[f] = val;
+    }
+    if (merged.rawKeyValuePairs?.length === 0)
+      merged.rawKeyValuePairs = undefined;
+    return merged;
   }
 
   const merged: AIExtractedData = {

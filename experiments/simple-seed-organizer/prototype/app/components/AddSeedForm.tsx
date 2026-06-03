@@ -18,6 +18,8 @@ import {
 import { processImageFile } from "@/lib/imageUtils";
 import { uploadSeedPhoto } from "@/lib/seed-photos";
 import { needsLocalPhotoUpload } from "@/lib/seedPhotoSavePolicy";
+import { PhotoRail } from "@/components/PhotoRail";
+import { getEntryDefaults } from "@/lib/seedEntryDefaults";
 import { parseSeedYearFromInput } from "@/lib/seedFormYear";
 import { normalizeSunRequirement } from "@/lib/seedUtils";
 import {
@@ -101,20 +103,15 @@ function toTitleCase(text: string): string {
     .join(" ");
 }
 
-function getKeyValuePairsBySource(data: AIExtractedData): {
-  front: Array<{
-    key: string;
-    value: string;
-    source?: "front" | "back";
-    italic?: boolean;
-  }>;
-  back: Array<{
-    key: string;
-    value: string;
-    source?: "front" | "back";
-    italic?: boolean;
-  }>;
-} {
+/**
+ * Flatten extracted data into one ordered field set (seed-edit-photo-rail).
+ * All photos fold into a single list — no front/back split, no F/B provenance.
+ */
+function getKeyValuePairs(data: AIExtractedData): Array<{
+  key: string;
+  value: string;
+  italic?: boolean;
+}> {
   const pairs: Array<{
     key: string;
     value: string;
@@ -276,10 +273,7 @@ function getKeyValuePairsBySource(data: AIExtractedData): {
     });
   }
 
-  return {
-    front: pairs.filter((pair) => !pair.source || pair.source === "front"),
-    back: pairs.filter((pair) => pair.source === "back"),
-  };
+  return pairs;
 }
 
 export function AddSeedForm({
@@ -302,7 +296,17 @@ export function AddSeedForm({
   const [type, setType] = useState<SeedType>(initialData?.type || "vegetable");
   const [brand, setBrand] = useState(initialData?.brand || "");
   const [source, setSource] = useState(initialData?.source || "");
-  const [year, setYear] = useState(initialData?.year?.toString() || "");
+  // Good defaults (seed-entry-defaults): a new packet pre-fills common fields
+  // with editable suggestions. Never on edit, and never overwriting input —
+  // `defaultedFields` tracks untouched defaults so extraction can still win.
+  const entryDefaults = getEntryDefaults();
+  const [year, setYear] = useState(
+    initialData?.year?.toString() || (isEditMode ? "" : entryDefaults.year),
+  );
+  const defaultedFields = useRef<Set<string>>(
+    new Set(isEditMode ? [] : ["year"]),
+  );
+  const clearDefaulted = (key: string) => defaultedFields.current.delete(key);
   const [purchaseDate, setPurchaseDate] = useState(
     initialData?.purchaseDate ? initialData.purchaseDate.split("T")[0] : "",
   );
@@ -343,26 +347,26 @@ export function AddSeedForm({
       : "",
   );
 
-  // Extraction state - separate loading per image for parallel extraction
-  const [frontImage, setFrontImage] = useState<string | null>(
-    initialData?.photos?.[0]?.path || initialData?.photoFront || null,
-  );
-  const [backImage, setBackImage] = useState<string | null>(
-    initialData?.photos?.[1]?.path || initialData?.photoBack || null,
-  );
-  const [loadingFront, setLoadingFront] = useState(false);
-  const [loadingBack, setLoadingBack] = useState(false);
+  // Photo collection (seed-edit-photo-rail): one ordered rail drives the left
+  // column, replacing the front/back two-pane model. Built from Change 1's
+  // `photos[]`, falling back to legacy front/back for un-upgraded rows.
+  const [photos, setPhotos] = useState<SeedPhoto[]>(() => {
+    const fromCollection = initialData?.photos;
+    if (fromCollection && fromCollection.length > 0) {
+      return [...fromCollection].sort((a, b) => a.order - b.order);
+    }
+    const legacy: SeedPhoto[] = [];
+    const front = initialData?.photoFrontPath || initialData?.photoFront;
+    const back = initialData?.photoBackPath || initialData?.photoBack;
+    if (front) legacy.push({ id: crypto.randomUUID(), path: front, order: 0 });
+    if (back) legacy.push({ id: crypto.randomUUID(), path: back, order: 1 });
+    return legacy;
+  });
+  // Ids of photos currently being extracted (per-photo loading in the rail).
+  const [extractingIds, setExtractingIds] = useState<string[]>([]);
   const [aiExtractedData, setAiExtractedData] =
     useState<AIExtractedData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const frontFileInputRef = useRef<HTMLInputElement>(null);
-  const backFileInputRef = useRef<HTMLInputElement>(null);
-  const [hoverZoom, setHoverZoom] = useState<{
-    image: string;
-    x: number;
-    y: number;
-    rect: { left: number; top: number; width: number; height: number };
-  } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
@@ -378,7 +382,15 @@ export function AddSeedForm({
       );
     if (data.brand) setBrand((prev) => fieldAfterAutoEntry(prev, data.brand));
     if (data.year)
-      setYear((prev) => fieldAfterAutoEntry(prev, String(data.year)));
+      setYear((prev) => {
+        // Extraction overrides an untouched default year (default never wins
+        // over a real packet value); otherwise a user-typed value is kept.
+        if (defaultedFields.current.has("year")) {
+          defaultedFields.current.delete("year");
+          return String(data.year);
+        }
+        return fieldAfterAutoEntry(prev, String(data.year));
+      });
     if (data.quantity)
       setQuantity((prev) => fieldAfterAutoEntry(prev, data.quantity));
     if (data.daysToGermination)
@@ -407,26 +419,23 @@ export function AddSeedForm({
       );
   };
 
-  const extractSingleImage = async (
-    imageUrl: string,
-    side: "front" | "back",
-  ) => {
-    if (side === "front") setLoadingFront(true);
-    else setLoadingBack(true);
+  const extractPhoto = async (photo: { id: string; path: string }) => {
+    setExtractingIds((prev) =>
+      prev.includes(photo.id) ? prev : [...prev, photo.id],
+    );
     setError(null);
 
     try {
-      const response = await fetch(imageUrl);
+      const response = await fetch(photo.path);
       if (!response.ok)
         throw new Error("I couldn't load that image. Try uploading it again.");
       const blob = await response.blob();
-      const file = new File([blob], `packet-${side}.png`, {
+      const file = new File([blob], `packet-${photo.id}.png`, {
         type: blob.type || "image/png",
       });
 
       const formData = new FormData();
       formData.append("image", file);
-      formData.append("side", side);
 
       const res = await fetch("/api/packet/read-ai-single", {
         method: "POST",
@@ -452,11 +461,11 @@ export function AddSeedForm({
           "I couldn't extract any data from that image. Try a clearer photo.",
         );
 
-      // Bug A fix: functional updater reads the *current* aiExtractedData,
-      // not the stale closure value — safe when front and back are scanned
-      // concurrently or in quick succession.
-      setAiExtractedData((prev) => mergeExtractedData(prev, result.data, side));
-      // Bug B fix: each form-field setter uses a functional updater via
+      // Functional updater reads the *current* aiExtractedData, not the stale
+      // closure value — safe when several photos are scanned in quick
+      // succession. All photos fold into the one canonical field set (no side).
+      setAiExtractedData((prev) => mergeExtractedData(prev, result.data));
+      // Each form-field setter uses a functional updater via
       // applyExtractedToForm, so user edits made while the request was
       // in-flight are never overwritten by a stale empty-string check.
       applyExtractedToForm(result.data);
@@ -467,22 +476,20 @@ export function AddSeedForm({
           : "I couldn't scan that image. Try again or enter the details manually.",
       );
     } finally {
-      if (side === "front") setLoadingFront(false);
-      else setLoadingBack(false);
+      setExtractingIds((prev) => prev.filter((id) => id !== photo.id));
     }
   };
 
-  const handleFileSelect = async (side: "front" | "back", file: File) => {
+  /** Append a freshly selected image to the rail as a new local photo. */
+  const addPhotoFromFile = async (file: File) => {
     try {
       setError(null);
       const processedFile = await processImageFile(file, 1024, 0.8);
       const url = URL.createObjectURL(processedFile);
-
-      if (side === "front") {
-        setFrontImage(url);
-      } else {
-        setBackImage(url);
-      }
+      setPhotos((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), path: url, order: prev.length },
+      ]);
     } catch (err) {
       console.error("[AddSeedForm] Error processing image:", err);
       setError(
@@ -584,39 +591,25 @@ export function AddSeedForm({
     setSubmitting(true);
     try {
       const seedId = initialData?.id ?? crypto.randomUUID();
-      const existingPhotos = initialData?.photos ?? [];
-      const photos: SeedPhoto[] = [];
 
-      const addPhotoSlot = async (
-        image: string | null,
-        slot: number,
-        label: string,
-        legacyPath: string | undefined,
-      ) => {
-        if (!image) return;
-        if (needsLocalPhotoUpload(image)) {
-          const blob = await (await fetch(image)).blob();
-          const id = crypto.randomUUID();
-          const path = await uploadSeedPhoto(userId, seedId, id, blob);
-          photos.push({ id, path, order: photos.length, label });
-          return;
+      // Persist the rail in order. Newly added photos are local blob/data URLs
+      // (uploaded now, keyed by photo id); existing photos keep their resolved
+      // path as-is (Change 1 round-trip behavior). One loop, no front/back.
+      const savedPhotos: SeedPhoto[] = [];
+      for (const photo of photos) {
+        if (needsLocalPhotoUpload(photo.path)) {
+          const blob = await (await fetch(photo.path)).blob();
+          const path = await uploadSeedPhoto(userId, seedId, photo.id, blob);
+          savedPhotos.push({
+            id: photo.id,
+            path,
+            order: savedPhotos.length,
+            label: photo.label,
+          });
+        } else {
+          savedPhotos.push({ ...photo, order: savedPhotos.length });
         }
-        const existing = existingPhotos[slot];
-        photos.push({
-          id: existing?.id ?? crypto.randomUUID(),
-          path: legacyPath ?? existing?.path ?? image,
-          order: photos.length,
-          label: existing?.label ?? label,
-        });
-      };
-
-      await addPhotoSlot(frontImage, 0, "front", initialData?.photoFrontPath);
-      await addPhotoSlot(backImage, 1, "back", initialData?.photoBackPath);
-
-      // Preserve any photos beyond the front/back slots (Change 2 rail).
-      existingPhotos.slice(2).forEach((photo) => {
-        photos.push({ ...photo, order: photos.length });
-      });
+      }
 
       const seedData: Omit<Seed, "id" | "createdAt" | "updatedAt"> & {
         id?: string;
@@ -659,7 +652,7 @@ export function AddSeedForm({
           .filter((annotation) => annotation.note),
         rawPacketText: aiExtractedData?.rawKeyValuePairs ?? initialData?.rawPacketText,
         customExpirationDate: customExpirationDate || undefined,
-        photos,
+        photos: savedPhotos,
       };
 
       await onSubmit(seedData);
@@ -697,6 +690,7 @@ export function AddSeedForm({
     };
     const setter = keyMap[key];
     if (setter) {
+      if (key === "Year") clearDefaulted("year");
       setter(value);
     }
   };
@@ -729,21 +723,13 @@ export function AddSeedForm({
         </div>
       )}
 
-      {/* Loading status when extracting */}
-      {(loadingFront || loadingBack) && (
+      {/* Loading status when extracting one or more photos */}
+      {extractingIds.length > 0 && (
         <div className="bg-blue-50 border-b border-blue-200 px-4 py-2 flex items-center gap-4">
-          {loadingFront && (
-            <span className="text-sm text-[#6a7282] flex items-center gap-2">
-              <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-[#16a34a]" />
-              Extracting front...
-            </span>
-          )}
-          {loadingBack && (
-            <span className="text-sm text-[#6a7282] flex items-center gap-2">
-              <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-[#16a34a]" />
-              Extracting back...
-            </span>
-          )}
+          <span className="text-sm text-[#6a7282] flex items-center gap-2">
+            <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-[#16a34a]" />
+            Extracting{extractingIds.length > 1 ? ` ${extractingIds.length} photos` : ""}…
+          </span>
         </div>
       )}
 
@@ -841,146 +827,21 @@ export function AddSeedForm({
                 className={isEditMode ? "mb-8" : "mb-6"}
               >
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6">
-                  {/* Front Image */}
+                  {/* Photo rail — Figma S8YJQugvMmn5jaRqwFM5XO node 156-9525 left column */}
                   <div className="pr-2">
                     <div className="bg-white rounded-lg p-4 shadow-sm">
                       <h3 className="text-sm font-semibold text-[#4a5565] mb-3">
-                        Front image
+                        Photos
                       </h3>
-                      {frontImage ? (
-                        <div
-                          className="relative group"
-                          onMouseMove={(e) => {
-                            const rect =
-                              e.currentTarget.getBoundingClientRect();
-                            setHoverZoom({
-                              image: frontImage,
-                              x: e.clientX,
-                              y: e.clientY,
-                              rect: {
-                                left: rect.left,
-                                top: rect.top,
-                                width: rect.width,
-                                height: rect.height,
-                              },
-                            });
-                          }}
-                          onMouseLeave={() => setHoverZoom(null)}
-                        >
-                          {loadingFront && (
-                            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 rounded border border-gray-200">
-                              <div className="flex flex-col items-center gap-2">
-                                <span className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[#16a34a] border-t-transparent" />
-                                <span className="text-sm font-medium text-[#4a5565]">
-                                  Reading image…
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                          <img
-                            src={frontImage}
-                            alt="Front of packet"
-                            className="w-full rounded border border-gray-200"
-                            style={{
-                              filter: "brightness(1.1) contrast(1.1)",
-                              maxHeight: "400px",
-                              objectFit: "contain",
-                            }}
-                          />
-                          {hasAutoEntry && !loadingFront && (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                extractSingleImage(frontImage, "front")
-                              }
-                              className="absolute top-2 right-2 z-10 px-2 py-1 text-xs font-medium bg-white/90 text-gray-600 rounded shadow hover:bg-white transition-colors"
-                            >
-                              Auto Entry
-                            </button>
-                          )}
-                          {!canUseAI && frontImage && !loadingFront && (
-                            <div className="absolute top-2 right-2 left-2 z-10 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
-                              <p className="font-medium mb-1">
-                                You&apos;ve reached your AI extraction limit for
-                                this month.
-                              </p>
-                              {resetsAt && (
-                                <p className="text-[10px] text-amber-700 mb-1">
-                                  Resets{" "}
-                                  {new Date(resetsAt).toLocaleDateString(
-                                    "en-US",
-                                    {
-                                      month: "short",
-                                      day: "numeric",
-                                      year: "numeric",
-                                    },
-                                  )}
-                                </p>
-                              )}
-                              <Link
-                                href="/pricing?reason=ai"
-                                className="inline-block px-2 py-1 bg-[#16a34a] text-white font-semibold rounded hover:bg-[#15803d] transition-colors"
-                              >
-                                Upgrade now
-                              </Link>
-                            </div>
-                          )}
-                          {hoverZoom && hoverZoom.image === frontImage && (
-                            <div
-                              className="fixed pointer-events-none z-50 border-2 border-blue-400 bg-white shadow-2xl rounded overflow-hidden"
-                              style={{
-                                width: "300px",
-                                height: "300px",
-                                left: `${hoverZoom.x + 20}px`,
-                                top: `${hoverZoom.y - 150}px`,
-                                backgroundImage: `url(${frontImage})`,
-                                backgroundSize: "200%",
-                                backgroundPosition: `${((hoverZoom.x - hoverZoom.rect.left) / hoverZoom.rect.width) * 100}% ${((hoverZoom.y - hoverZoom.rect.top) / hoverZoom.rect.height) * 100}%`,
-                                backgroundRepeat: "no-repeat",
-                              }}
-                            />
-                          )}
-                        </div>
-                      ) : (
-                        <div>
-                          <input
-                            ref={frontFileInputRef}
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleFileSelect("front", file);
-                            }}
-                            className="hidden"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => frontFileInputRef.current?.click()}
-                            className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 hover:border-[#16a34a] hover:text-[#16a34a] transition-colors"
-                          >
-                            <svg
-                              className="w-8 h-8"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
+                      <PhotoRail
+                        photos={photos}
+                        onAddFile={addPhotoFromFile}
+                        onExtract={hasAutoEntry ? extractPhoto : undefined}
+                        extractingIds={extractingIds}
+                        canExtract={hasAutoEntry}
+                        atAiLimit={!canUseAI}
+                        resetsAt={resetsAt}
+                      />
                     </div>
                   </div>
 
@@ -1020,20 +881,11 @@ export function AddSeedForm({
                         <div className="overflow-x-auto">
                           <table className="w-full text-xs">
                             <tbody className="divide-y divide-gray-200">
-                              {getKeyValuePairsBySource(
-                                aiExtractedData,
-                              ).front.map((pair, index) => {
+                              {getKeyValuePairs(aiExtractedData).map(
+                                (pair, index) => {
                                 const isLongText =
                                   pair.key === "Planting Instructions" ||
                                   pair.key === "Description";
-                                const isScientificName =
-                                  pair.key === "Latin Name";
-                                const sourceColor =
-                                  pair.source === "back"
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-blue-100 text-blue-700";
-                                const sourceLabel =
-                                  pair.source === "back" ? "B" : "F";
 
                                 // Get current value from form state
                                 const getCurrentValue = () => {
@@ -1072,13 +924,6 @@ export function AddSeedForm({
                                     </td>
                                     <td className="py-1.5 text-[#101828]">
                                       <div className="flex items-start gap-2 min-w-0">
-                                        {pair.source && (
-                                          <span
-                                            className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 shrink-0 ${sourceColor}`}
-                                          >
-                                            {sourceLabel}
-                                          </span>
-                                        )}
                                         {isLongText ? (
                                           <AutoTextarea
                                             value={getCurrentValue()}
@@ -1640,278 +1485,6 @@ export function AddSeedForm({
                             </tbody>
                           </table>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Back Image and Data */}
-              <section id="back" className="">
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6">
-                  {/* Back Image */}
-                  <div className="pr-2">
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <h3 className="text-sm font-semibold text-[#4a5565] mb-3">
-                        Back image
-                      </h3>
-                      {backImage ? (
-                        <div
-                          className="relative group"
-                          onMouseMove={(e) => {
-                            const rect =
-                              e.currentTarget.getBoundingClientRect();
-                            setHoverZoom({
-                              image: backImage,
-                              x: e.clientX,
-                              y: e.clientY,
-                              rect: {
-                                left: rect.left,
-                                top: rect.top,
-                                width: rect.width,
-                                height: rect.height,
-                              },
-                            });
-                          }}
-                          onMouseLeave={() => setHoverZoom(null)}
-                        >
-                          {loadingBack && (
-                            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 rounded border border-gray-200">
-                              <div className="flex flex-col items-center gap-2">
-                                <span className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[#16a34a] border-t-transparent" />
-                                <span className="text-sm font-medium text-[#4a5565]">
-                                  Reading image…
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                          <img
-                            src={backImage}
-                            alt="Back of packet"
-                            className="w-full rounded border border-gray-200"
-                            style={{
-                              filter: "brightness(1.1) contrast(1.1)",
-                              maxHeight: "400px",
-                              objectFit: "contain",
-                            }}
-                          />
-                          {hasAutoEntry && !loadingBack && (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                extractSingleImage(backImage, "back")
-                              }
-                              className="absolute top-2 right-2 z-10 px-2 py-1 text-xs font-medium bg-white/90 text-gray-600 rounded shadow hover:bg-white transition-colors"
-                            >
-                              Auto Entry
-                            </button>
-                          )}
-                          {!canUseAI && backImage && !loadingBack && (
-                            <div className="absolute top-2 right-2 left-2 z-10 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
-                              <p className="font-medium mb-1">
-                                You&apos;ve reached your AI extraction limit for
-                                this month.
-                              </p>
-                              {resetsAt && (
-                                <p className="text-[10px] text-amber-700 mb-1">
-                                  Resets{" "}
-                                  {new Date(resetsAt).toLocaleDateString(
-                                    "en-US",
-                                    {
-                                      month: "short",
-                                      day: "numeric",
-                                      year: "numeric",
-                                    },
-                                  )}
-                                </p>
-                              )}
-                              <Link
-                                href="/pricing?reason=ai"
-                                className="inline-block px-2 py-1 bg-[#16a34a] text-white font-semibold rounded hover:bg-[#15803d] transition-colors"
-                              >
-                                Upgrade now
-                              </Link>
-                            </div>
-                          )}
-                          {hoverZoom && hoverZoom.image === backImage && (
-                            <div
-                              className="fixed pointer-events-none z-50 border-2 border-green-400 bg-white shadow-2xl rounded overflow-hidden"
-                              style={{
-                                width: "300px",
-                                height: "300px",
-                                left: `${hoverZoom.x + 20}px`,
-                                top: `${hoverZoom.y - 150}px`,
-                                backgroundImage: `url(${backImage})`,
-                                backgroundSize: "200%",
-                                backgroundPosition: `${((hoverZoom.x - hoverZoom.rect.left) / hoverZoom.rect.width) * 100}% ${((hoverZoom.y - hoverZoom.rect.top) / hoverZoom.rect.height) * 100}%`,
-                                backgroundRepeat: "no-repeat",
-                              }}
-                            />
-                          )}
-                        </div>
-                      ) : (
-                        <div>
-                          <input
-                            ref={backFileInputRef}
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleFileSelect("back", file);
-                            }}
-                            className="hidden"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => backFileInputRef.current?.click()}
-                            className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 hover:border-[#16a34a] hover:text-[#16a34a] transition-colors"
-                          >
-                            <svg
-                              className="w-8 h-8"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Legacy Back Data - Editable */}
-                  <div className="pr-2">
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <h2 className="text-lg font-semibold text-[#4a5565] mb-3">
-                        Back image evidence
-                      </h2>
-                      {!aiExtractedData?.canonicalExtraction &&
-                      aiExtractedData &&
-                      getKeyValuePairsBySource(aiExtractedData).back.length >
-                        0 ? (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-xs">
-                            <tbody className="divide-y divide-gray-200">
-                              {getKeyValuePairsBySource(
-                                aiExtractedData,
-                              ).back.map((pair, index) => {
-                                const isLongText =
-                                  pair.key === "Planting Instructions" ||
-                                  pair.key === "Description";
-                                const isScientificName =
-                                  pair.key === "Latin Name";
-                                const sourceColor =
-                                  "bg-green-100 text-green-700";
-                                const sourceLabel = "B";
-
-                                // Get current value from form state
-                                const getCurrentValue = () => {
-                                  const keyMap: Record<string, string> = {
-                                    Name: name,
-                                    Variety: variety,
-                                    "Latin Name": variety,
-                                    Brand: brand,
-                                    Year: year,
-                                    Quantity: quantity,
-                                    "Days to Germination": daysToGermination,
-                                    "Days to Maturity": daysToMaturity,
-                                    "Planting Depth": plantingDepth,
-                                    Spacing: spacing,
-                                    "Sun Requirement": sunRequirement || "",
-                                    Description: description,
-                                    "Planting Instructions":
-                                      plantingInstructions,
-                                  };
-                                  return keyMap[pair.key] || pair.value;
-                                };
-
-                                const isRequired =
-                                  pair.key === "Name" || pair.key === "Variety";
-                                const isEmpty =
-                                  isRequired && !getCurrentValue().trim();
-                                return (
-                                  <tr key={index}>
-                                    <td className="py-1.5 pr-4 font-medium text-[#6a7282] align-top w-1/3">
-                                      {pair.key}
-                                      {isRequired && (
-                                        <span className="text-red-500 ml-0.5">
-                                          *
-                                        </span>
-                                      )}
-                                    </td>
-                                    <td className="py-1.5 text-[#101828]">
-                                      <div className="flex items-start gap-2 min-w-0">
-                                        <span
-                                          className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mr-1.5 shrink-0 ${sourceColor}`}
-                                        >
-                                          {sourceLabel}
-                                        </span>
-                                        {isLongText ? (
-                                          <AutoTextarea
-                                            value={getCurrentValue()}
-                                            onChange={(e) =>
-                                              updateFieldFromKey(
-                                                pair.key,
-                                                e.target.value,
-                                              )
-                                            }
-                                            className={`flex-1 min-w-0 text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] ${isEmpty ? "border-red-400 bg-red-50" : "border-gray-300"}`}
-                                            placeholder={
-                                              pair.value ||
-                                              (isRequired
-                                                ? "Required"
-                                                : undefined)
-                                            }
-                                          />
-                                        ) : (
-                                          <input
-                                            type={
-                                              pair.key === "Year"
-                                                ? "number"
-                                                : "text"
-                                            }
-                                            value={getCurrentValue()}
-                                            onChange={(e) =>
-                                              updateFieldFromKey(
-                                                pair.key,
-                                                e.target.value,
-                                              )
-                                            }
-                                            className={`flex-1 min-w-0 text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-[#16a34a] ${pair.italic ? "italic" : ""} ${isEmpty ? "border-red-400 bg-red-50" : "border-gray-300"}`}
-                                            placeholder={
-                                              pair.value ||
-                                              (isRequired
-                                                ? "Required"
-                                                : undefined)
-                                            }
-                                          />
-                                        )}
-                                      </div>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-400">
-                          Back image evidence is folded into the canonical data
-                          above.
-                        </p>
                       )}
                     </div>
                   </div>
