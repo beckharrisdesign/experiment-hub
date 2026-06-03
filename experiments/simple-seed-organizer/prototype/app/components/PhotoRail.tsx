@@ -76,7 +76,7 @@ export function PhotoRail({
                 objectFit: "contain",
               }}
             />
-            {canExtract && onExtract && !isExtracting && (
+            {canExtract && onExtract && !atAiLimit && !isExtracting && (
               <button
                 type="button"
                 onClick={() => onExtract(photo)}
