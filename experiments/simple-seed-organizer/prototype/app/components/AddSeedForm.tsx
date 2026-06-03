@@ -19,7 +19,7 @@ import { processImageFile } from "@/lib/imageUtils";
 import { uploadSeedPhoto } from "@/lib/seed-photos";
 import { needsLocalPhotoUpload } from "@/lib/seedPhotoSavePolicy";
 import { PhotoRail } from "@/components/PhotoRail";
-import { getEntryDefaults, applyDefaultIfEmpty } from "@/lib/seedEntryDefaults";
+import { getEntryDefaults } from "@/lib/seedEntryDefaults";
 import { parseSeedYearFromInput } from "@/lib/seedFormYear";
 import { normalizeSunRequirement } from "@/lib/seedUtils";
 import {
