@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AIExtractedData } from "@/lib/packetReaderAI";
 import { saveSeed } from "@/lib/storage";
+import { trackSeedAdded, trackSaveError } from "@/lib/analytics";
 import { uploadSeedPhoto } from "@/lib/seed-photos";
 import { processImageFile } from "@/lib/imageUtils";
 import { Seed, SeedPhoto } from "@/types/seed";
@@ -106,6 +107,7 @@ export function useImportQueue({ userId }: UseImportQueueOptions) {
             photos,
           }),
         );
+        trackSeedAdded({ method: "import_auto", seedType: saved.type });
         updateItem(item.id, {
           status: "saved",
           savedSeed: saved,
@@ -113,6 +115,10 @@ export function useImportQueue({ userId }: UseImportQueueOptions) {
         });
         autoSaveIdsRef.current.delete(item.id);
       } catch (err) {
+        trackSaveError({
+          context: "import_auto",
+          message: err instanceof Error ? err.message : "save failed",
+        });
         updateItem(item.id, {
           status: "needs_review",
           errorMessage:

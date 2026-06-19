@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { AddSeedForm } from "@/components/AddSeedForm";
 import { useAuth } from "@/lib/auth-context";
 import { saveSeed } from "@/lib/storage";
+import { trackSeedAdded, trackSaveError } from "@/lib/analytics";
 import { Seed } from "@/types/seed";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
@@ -48,6 +49,7 @@ export default function AddSeedPage() {
   ) => {
     try {
       const newSeed = await saveSeed(seedData);
+      trackSeedAdded({ method: "manual", seedType: newSeed.type });
       setSavedSeed(newSeed);
     } catch (error) {
       console.error("[AddSeedPage] Error saving seed:", error);
@@ -55,6 +57,7 @@ export default function AddSeedPage() {
         error instanceof Error
           ? error.message
           : "Failed to save seed to database";
+      trackSaveError({ context: "manual", message: errorMessage });
       toast.error(
         "I'm having trouble saving your seed right now. Your info is still here — try again in a moment.",
       );

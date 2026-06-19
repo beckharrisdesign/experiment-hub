@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { trackSignUp } from '@/lib/analytics';
 
 interface SignUpFormProps {
   onSuccess: () => void;
@@ -28,6 +29,8 @@ export function SignUpForm({ onSuccess, onSwitchToLogin, embedded }: SignUpFormP
 
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
+
+      trackSignUp("email");
 
       // Supabase may require email confirmation - check session
       const { data: { session } } = await supabase.auth.getSession();

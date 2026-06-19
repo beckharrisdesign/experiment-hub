@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, Suspense } from "react";
+import { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Seed, ViewMode } from "@/types/seed";
@@ -16,9 +16,20 @@ import { SeedType } from "@/types/seed";
 import { getSeedAge } from "@/lib/storage";
 import { useAuth } from "@/lib/auth-context";
 import { seedMatchesSearch } from "@/lib/seedFieldRegistry";
+import {
+  trackSearchPerformed,
+  trackSeedOpened,
+  trackUseFirstFilter,
+} from "@/lib/analytics";
 import toast from "react-hot-toast";
 
 const VALID_VIEW_MODES: ViewMode[] = ["type", "month", "age", "photo"];
+
+/** Use-first rule: manually flagged, or 3+ seasons old by pack year. */
+function isUseFirstSeed(seed: Seed): boolean {
+  const age = getSeedAge(seed);
+  return Boolean(seed.useFirst || (seed.year && age >= 3));
+}
 
 function HomeContent() {
   const router = useRouter();
@@ -31,6 +42,9 @@ function HomeContent() {
     SeedType | "all" | "use-first"
   >("all");
   const [seedsLoading, setSeedsLoading] = useState(false);
+  // Time-to-find instrumentation: marks when a search session began
+  // (empty → typed) so we can report search→results and search→open timing.
+  const searchStartRef = useRef<number | null>(null);
   const [usage, setUsage] = useState<{
     canAddSeed: boolean;
     canUseAI: boolean;
@@ -141,10 +155,7 @@ function HomeContent() {
     let filtered = seeds;
 
     if (activeFilter === "use-first") {
-      filtered = filtered.filter((seed) => {
-        const age = getSeedAge(seed);
-        return seed.useFirst || (seed.year && age >= 3);
-      });
+      filtered = filtered.filter(isUseFirstSeed);
     } else if (activeFilter !== "all") {
       filtered = filtered.filter((seed) => seed.type === activeFilter);
     }
@@ -155,6 +166,49 @@ function HomeContent() {
 
     return filtered;
   }, [seeds, searchQuery, activeFilter]);
+
+  // Fire a single search_performed event once typing settles (PRD: time-to-find).
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (!q) return;
+    const startedAt = searchStartRef.current ?? performance.now();
+    const handle = setTimeout(() => {
+      trackSearchPerformed({
+        queryLength: q.length,
+        resultCount: filteredSeeds.length,
+        msToResults: performance.now() - startedAt,
+      });
+    }, 600);
+    return () => clearTimeout(handle);
+  }, [searchQuery, filteredSeeds.length]);
+
+  const handleSearchChange = (value: string) => {
+    if (value.trim() && searchStartRef.current === null) {
+      searchStartRef.current = performance.now();
+    } else if (!value.trim()) {
+      searchStartRef.current = null;
+    }
+    setSearchQuery(value);
+  };
+
+  const handleFilterChange = (next: SeedType | "all" | "use-first") => {
+    setActiveFilter(next);
+    if (next === "use-first") {
+      trackUseFirstFilter({ resultCount: seeds.filter(isUseFirstSeed).length });
+    }
+  };
+
+  const handleSeedClick = (seed: Seed) => {
+    const searching = searchQuery.trim().length > 0;
+    trackSeedOpened({
+      fromSearch: searching,
+      msSinceSearchStart:
+        searching && searchStartRef.current !== null
+          ? performance.now() - searchStartRef.current
+          : undefined,
+    });
+    router.push(`/seeds/${seed.id}`);
+  };
 
   if (authLoading) {
     return (
@@ -201,18 +255,18 @@ function HomeContent() {
             <SeedListEmptyState />
           ) : (
             <>
-              <SearchBar value={searchQuery} onChange={setSearchQuery} />
+              <SearchBar value={searchQuery} onChange={handleSearchChange} />
               <div className="mt-3">
                 <FilterBar
                   activeType={activeFilter}
-                  onTypeChange={setActiveFilter}
+                  onTypeChange={handleFilterChange}
                 />
               </div>
               <div className="mt-4">
                 <SeedList
                   seeds={filteredSeeds}
                   viewMode={viewMode}
-                  onSeedClick={(seed) => router.push(`/seeds/${seed.id}`)}
+                  onSeedClick={handleSeedClick}
                   totalSeedCount={seeds.length}
                 />
               </div>
