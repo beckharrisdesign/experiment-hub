@@ -46,60 +46,59 @@ export default function ResetPasswordPage() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center pt-[72px] px-4 py-8 bg-[#f9fafb]">
       <div className="w-full max-w-sm">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold mb-2">Choose a new password</h1>
-            <p className="text-gray-600">
-              {done
-                ? "Password updated! Redirecting you..."
-                : "Enter your new password below."}
-            </p>
-          </div>
-
-          {!done && (
-            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-[#4a5565] mb-1">
-                    New password
-                  </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    autoComplete="new-password"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
-                    placeholder="At least 6 characters"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#4a5565] mb-1">
-                    Confirm password
-                  </label>
-                  <input
-                    type="password"
-                    value={confirm}
-                    onChange={(e) => setConfirm(e.target.value)}
-                    required
-                    minLength={6}
-                    autoComplete="new-password"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
-                    placeholder="Repeat your password"
-                  />
-                </div>
-                {error && <p className="text-sm text-red-600">{error}</p>}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 bg-[#16a34a] text-white font-semibold rounded-lg hover:bg-[#15803d] disabled:opacity-50 transition-colors"
-                >
-                  {loading ? "Updating..." : "Update password"}
-                </button>
-              </form>
-            </div>
-          )}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold mb-2">Choose a new password</h1>
+          <p className="text-gray-600">
+            {done
+              ? "Password updated! Redirecting you..."
+              : "Enter your new password below."}
+          </p>
         </div>
+
+        {!done && (
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[#4a5565] mb-1">
+                  New password
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
+                  placeholder="At least 6 characters"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#4a5565] mb-1">
+                  Confirm password
+                </label>
+                <input
+                  type="password"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
+                  placeholder="Repeat your password"
+                />
+              </div>
+              {error && <p className="text-sm text-red-600">{error}</p>}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 bg-[#16a34a] text-white font-semibold rounded-lg hover:bg-[#15803d] disabled:opacity-50 transition-colors"
+              >
+                {loading ? "Updating..." : "Update password"}
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );
