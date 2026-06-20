@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { getTierIndex } from "@/lib/plans";
+import { getTierIndex, normalizeTier } from "@/lib/plans";
 import toast from "react-hot-toast";
 
 const HOME_GARDEN_PRICE_ID =
@@ -92,9 +92,7 @@ function PricingContent() {
 
   const isLoadingPlans = authLoading || (user && subscriptionLoading);
 
-  // "Paid" = a subscription whose price isn't in the current map; treat as Home Garden.
-  const isOnPaid =
-    getTierIndex(currentTier ?? "") > 0 || currentTier === "Paid";
+  const isOnPaid = getTierIndex(normalizeTier(currentTier ?? "")) > 0;
   const isOnFree = !isOnPaid;
 
   return (
@@ -173,7 +171,9 @@ function PricingContent() {
                     10 AI packets/month
                   </li>
                 </ul>
-                <p className="text-lg font-bold text-[#101828]">Free, forever</p>
+                <p className="text-lg font-bold text-[#101828]">
+                  Free, forever
+                </p>
                 {isOnPaid && customerId ? (
                   <button
                     type="button"
@@ -181,7 +181,9 @@ function PricingContent() {
                     disabled={portalLoading}
                     className="mt-4 py-3 text-center text-xs text-gray-500 hover:text-gray-700 hover:underline disabled:opacity-70"
                   >
-                    {portalLoading ? "Opening…" : "Switch to Seed Stash Starter"}
+                    {portalLoading
+                      ? "Opening…"
+                      : "Switch to Seed Stash Starter"}
                   </button>
                 ) : (
                   <Link
@@ -209,7 +211,9 @@ function PricingContent() {
                 <h3 className="text-xl font-bold text-[#101828] mb-1">
                   Home Garden
                 </h3>
-                <p className="text-sm text-gray-600 mb-4">Everything unlocked</p>
+                <p className="text-sm text-gray-600 mb-4">
+                  Everything unlocked
+                </p>
                 <ul className="space-y-2 text-sm text-gray-700 mb-6 flex-1">
                   <li className="flex gap-2">
                     <span className="text-[#16a34a] shrink-0">✓</span>
@@ -217,7 +221,7 @@ function PricingContent() {
                   </li>
                   <li className="flex gap-2">
                     <span className="text-[#16a34a] shrink-0">✓</span>
-                    100 AI packets/month
+                    50 AI packets/month
                   </li>
                 </ul>
                 <p className="text-lg font-bold text-[#101828] mb-4">

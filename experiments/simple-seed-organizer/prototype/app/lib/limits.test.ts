@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { canAddSeed, canUseAI, canUseAICount, getTierLimits } from "./limits";
 
-// Tier defaults: Starter={seeds:50, ai:10} | Home Garden={seeds:unlimited, ai:100}
+// Tier defaults: Starter={seeds:50, ai:10} | Home Garden={seeds:unlimited, ai:50}
 
 describe("getTierLimits", () => {
   it("returns correct limits for Seed Stash Starter", () => {
@@ -14,12 +14,19 @@ describe("getTierLimits", () => {
   it("returns correct limits for Home Garden (unlimited seeds, capped AI)", () => {
     expect(getTierLimits("Home Garden")).toEqual({
       seedLimit: null,
-      aiLimit: 100,
+      aiLimit: 50,
     });
   });
 
   it('treats "Paid" as Home Garden', () => {
-    expect(getTierLimits("Paid")).toEqual({ seedLimit: null, aiLimit: 100 });
+    expect(getTierLimits("Paid")).toEqual({ seedLimit: null, aiLimit: 50 });
+  });
+
+  it('treats legacy "Serious Hobby" tier as Home Garden', () => {
+    expect(getTierLimits("Serious Hobby")).toEqual({
+      seedLimit: null,
+      aiLimit: 50,
+    });
   });
 
   it("falls back to Starter limits for unknown tier", () => {
@@ -66,13 +73,13 @@ describe("canUseAI", () => {
     });
   });
 
-  describe("Home Garden (limit: 100/month)", () => {
+  describe("Home Garden (limit: 50/month)", () => {
     it("allows use when under limit", () => {
-      expect(canUseAI(99, "Home Garden")).toBe(true);
+      expect(canUseAI(49, "Home Garden")).toBe(true);
     });
 
     it("blocks use at the limit", () => {
-      expect(canUseAI(100, "Home Garden")).toBe(false);
+      expect(canUseAI(50, "Home Garden")).toBe(false);
     });
   });
 });
@@ -94,7 +101,7 @@ describe("canUseAICount", () => {
   });
 
   it("allows a large batch within the Home Garden limit", () => {
-    expect(canUseAICount(0, "Home Garden", 100)).toBe(true);
-    expect(canUseAICount(0, "Home Garden", 101)).toBe(false);
+    expect(canUseAICount(0, "Home Garden", 50)).toBe(true);
+    expect(canUseAICount(0, "Home Garden", 51)).toBe(false);
   });
 });

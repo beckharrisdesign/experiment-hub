@@ -5,6 +5,8 @@
  *   NEXT_PUBLIC_LIMIT_AI_STARTER=50
  */
 
+import { normalizeTier } from "./plans";
+
 export type TierName = "Seed Stash Starter" | "Home Garden";
 
 export interface TierLimits {
@@ -14,7 +16,7 @@ export interface TierLimits {
 
 const DEFAULT_LIMITS: Record<TierName, TierLimits> = {
   "Seed Stash Starter": { seedLimit: 50, aiLimit: 10 },
-  "Home Garden": { seedLimit: null, aiLimit: 100 },
+  "Home Garden": { seedLimit: null, aiLimit: 50 },
 };
 
 function parseEnvInt(key: string): number | undefined {
@@ -31,13 +33,9 @@ const TIER_ENV_SUFFIX: Record<string, string> = {
 };
 
 function getLimits(tier: string): TierLimits {
-  const key = tier as TierName;
-  // "Paid" = unknown price, treat as Home Garden
-  const resolvedTier = tier === "Paid" ? "Home Garden" : tier;
-  const defaults =
-    DEFAULT_LIMITS[resolvedTier as TierName] ??
-    DEFAULT_LIMITS["Seed Stash Starter"];
-  const suffix = TIER_ENV_SUFFIX[tier];
+  const resolvedTier = normalizeTier(tier);
+  const defaults = DEFAULT_LIMITS[resolvedTier];
+  const suffix = TIER_ENV_SUFFIX[resolvedTier];
   const envSeeds = suffix
     ? parseEnvInt(`NEXT_PUBLIC_LIMIT_SEEDS_${suffix}`)
     : undefined;

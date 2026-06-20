@@ -1,6 +1,7 @@
 import { PricingCard } from "./PricingCard";
 
-const HOME_GARDEN_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_YEARLY;
+const HOME_GARDEN_PRICE_ID =
+  process.env.NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_YEARLY;
 
 export interface LandingPricingSectionProps {
   onSubscribe: (priceId: string) => void;
@@ -57,7 +58,7 @@ export function LandingPricingSection({
             title="Home Garden"
             subTitle="Everything unlocked"
             highlight
-            features={["Unlimited seed packets", "100 AI packets/month"]}
+            features={["Unlimited seed packets", "50 AI packets/month"]}
             price="$15/year"
             priceId={HOME_GARDEN_PRICE_ID}
             onSubscribe={onSubscribe}
