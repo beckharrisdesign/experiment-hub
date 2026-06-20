@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { Seed } from "@/types/seed";
 import { AIExtractedData } from "@/lib/packetReaderAI";
 import { saveSeed } from "@/lib/storage";
+import { trackSeedAdded, trackSaveError } from "@/lib/analytics";
 import { processImageFile } from "@/lib/imageUtils";
 import { AddSeedForm } from "@/components/AddSeedForm";
 import { BulkCameraCapture } from "@/components/BulkCameraCapture";
@@ -105,8 +106,13 @@ export function BatchImport({
       if (!itemId) return;
       try {
         const saved = await saveSeed(seedData);
+        trackSeedAdded({ method: "import_review", seedType: saved.type });
         updateAfterManualSave(itemId, saved);
       } catch (error) {
+        trackSaveError({
+          context: "import_review",
+          message: error instanceof Error ? error.message : "save failed",
+        });
         toast.error("I couldn't save that seed. Try again in a moment.");
         retryItem(itemId, { autoSaveOnReady: false });
       }
