@@ -6,7 +6,9 @@ import { AppShell } from "@/components/AppShell";
 import { AppToaster } from "@/components/AppToaster";
 
 const GA_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://simple-seed-organizer.vercel.app';
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  "https://simple-seed-organizer.vercel.app";
 
 export const metadata: Metadata = {
   title: {
@@ -15,7 +17,13 @@ export const metadata: Metadata = {
   },
   description:
     "The simplest way to track your seed collection. Know what you own, what's still viable, and avoid rebuying seeds you already have.",
-  keywords: ["seed organizer", "seed inventory", "seed tracker", "home gardening", "seed collection"],
+  keywords: [
+    "seed organizer",
+    "seed inventory",
+    "seed tracker",
+    "home gardening",
+    "seed collection",
+  ],
   metadataBase: new URL(siteUrl),
   openGraph: {
     type: "website",
@@ -73,7 +81,9 @@ export default function RootLayout({
         )}
         <AuthProvider>
           <AppShell>
-            <div id="app-container">{children}</div>
+            <div id="app-container" className="flex-1 flex flex-col">
+              {children}
+            </div>
           </AppShell>
           <AppToaster />
         </AuthProvider>
