@@ -1,6 +1,7 @@
 "use client";
 
 import { Header } from "@/components/Header";
+import { LandingFooter } from "@/components/LandingFooter";
 import { useAuth } from "@/lib/auth-context";
 
 /** @figma S8YJQugvMmn5jaRqwFM5XO:21:4993 */
@@ -15,6 +16,7 @@ export function AppShell({ children }: AppShellProps) {
     <>
       <Header showProfileLink={!!user} />
       {children}
+      <LandingFooter />
     </>
   );
 }

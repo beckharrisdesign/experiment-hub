@@ -9,13 +9,16 @@ export function LandingFooter() {
           © 2026 Simple Seed Organizer. All rights reserved.
         </p>
         <div className="flex justify-center gap-6 text-sm">
-          <a href="#" className="hover:text-[#86efac] transition-colors">
+          <a href="/privacy" className="hover:text-[#86efac] transition-colors">
             Privacy Policy
           </a>
-          <a href="#" className="hover:text-[#86efac] transition-colors">
+          <a href="/terms" className="hover:text-[#86efac] transition-colors">
             Terms of Service
           </a>
-          <a href="#" className="hover:text-[#86efac] transition-colors">
+          <a
+            href="mailto:katy@beckharrisdesign.com"
+            className="hover:text-[#86efac] transition-colors"
+          >
             Contact
           </a>
         </div>
