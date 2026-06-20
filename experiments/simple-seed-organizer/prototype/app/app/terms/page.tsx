@@ -1,126 +1,177 @@
-import type { Metadata } from 'next';
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | Simple Seed Organizer',
-  description: 'Terms of Service for Simple Seed Organizer.',
+  title: "Terms of Service | Simple Seed Organizer",
+  description: "Terms of Service for Simple Seed Organizer.",
 };
 
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-[#f9fafb] pt-24 pb-16">
       <div className="max-w-2xl mx-auto px-6">
-        <h1 className="text-2xl font-bold text-[#101828] mb-2">Terms of Service</h1>
+        <h1 className="text-2xl font-bold text-[#101828] mb-2">
+          Terms of Service
+        </h1>
         <p className="text-sm text-[#6a7282] mb-8">Last updated: June 2026</p>
 
         <div className="prose prose-sm text-[#374151] space-y-6">
           <section>
-            <h2 className="text-base font-semibold text-[#101828] mb-2">1. Acceptance of Terms</h2>
+            <h2 className="text-base font-semibold text-[#101828] mb-2">
+              1. Acceptance of Terms
+            </h2>
             <p>
-              Simple Seed Organizer (&ldquo;the Service&rdquo;) is operated by Beck Harris Design
-              (&ldquo;we&rdquo;, &ldquo;us&rdquo;). By using the Service, you agree to these Terms of
-              Service. If you do not agree, do not use the Service.
+              Simple Seed Organizer (&ldquo;the Service&rdquo;) is operated by
+              Beck Harris Design (&ldquo;we&rdquo;, &ldquo;us&rdquo;). By using
+              the Service, you agree to these Terms of Service. If you do not
+              agree, do not use the Service.
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-[#101828] mb-2">2. Description of Service</h2>
+            <h2 className="text-base font-semibold text-[#101828] mb-2">
+              2. Description of Service
+            </h2>
             <p>
-              Simple Seed Organizer is a seed inventory tracking tool for home gardeners. The
-              Service allows you to store, organize, and retrieve information about your seed
-              collection, including AI-assisted reading of seed-packet photos you upload.
+              Simple Seed Organizer is a seed inventory tracking tool for home
+              gardeners. The Service allows you to store, organize, and retrieve
+              information about your seed collection, including AI-assisted
+              reading of seed-packet photos you upload.
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-[#101828] mb-2">3. User Accounts</h2>
+            <h2 className="text-base font-semibold text-[#101828] mb-2">
+              3. User Accounts
+            </h2>
             <p>
-              You are responsible for maintaining the security of your account credentials. You
-              must notify us immediately of any unauthorized access to your account.
+              You are responsible for maintaining the security of your account
+              credentials. You must notify us immediately of any unauthorized
+              access to your account. You may terminate your account at any time
+              by contacting us at{" "}
+              <a
+                href="mailto:katy@beckharrisdesign.com"
+                className="text-[#16a34a] hover:underline"
+              >
+                katy@beckharrisdesign.com
+              </a>
+              . Upon termination, your seed data and photos will be permanently
+              deleted within 30 days.
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-[#101828] mb-2">4. Payments &amp; Subscriptions</h2>
+            <h2 className="text-base font-semibold text-[#101828] mb-2">
+              4. Payments &amp; Subscriptions
+            </h2>
             <p>
-              Paid plans are billed monthly or annually, depending on the plan you choose.
-              Subscriptions renew automatically unless cancelled before the renewal date. Refunds
-              are issued at our discretion within 7 days of purchase. Payments are processed
-              securely by Stripe. Nothing in this section limits any non-waivable refund or
-              cancellation rights you have under the consumer-protection laws of your country or
-              state of residence.
+              The current paid plan is billed annually. Subscriptions renew
+              automatically unless cancelled before the renewal date. Refunds
+              are issued at our discretion within 7 days of purchase. Payments
+              are processed securely by Stripe. Nothing in this section limits
+              any non-waivable refund or cancellation rights you have under the
+              consumer-protection laws of your country or state of residence.
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-[#101828] mb-2">5. User Data &amp; Content</h2>
+            <h2 className="text-base font-semibold text-[#101828] mb-2">
+              5. User Data &amp; Content
+            </h2>
             <p>
-              Your seed inventory data and uploaded photos belong to you. By uploading content, you
-              grant us permission to store and process it to operate the Service, including sending
-              photos and seed text to our AI provider to extract and enrich seed information. We do
-              not sell your data or share it with third parties except as required to operate the
-              Service. See our <a href="/privacy" className="text-[#16a34a] hover:underline">Privacy Policy</a> for details.
+              Your seed inventory data and uploaded photos belong to you. By
+              uploading content, you grant us permission to store and process it
+              to operate the Service, including sending photos and seed text to
+              our AI provider to extract and enrich seed information. We do not
+              sell your data or share it with third parties except as required
+              to operate the Service. See our{" "}
+              <a href="/privacy" className="text-[#16a34a] hover:underline">
+                Privacy Policy
+              </a>{" "}
+              for details.
+            </p>
+            <p className="mt-2">
+              AI features (packet photo reading and seed enrichment) are subject
+              to monthly usage limits. These limits reset on the first day of
+              each calendar month, regardless of your subscription renewal date.
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-[#101828] mb-2">6. Acceptable Use</h2>
+            <h2 className="text-base font-semibold text-[#101828] mb-2">
+              6. Acceptable Use
+            </h2>
             <p>
-              You agree not to misuse the Service, attempt to gain unauthorized access, or use the
-              Service in any way that violates applicable laws.
+              You agree not to misuse the Service, attempt to gain unauthorized
+              access, or use the Service in any way that violates applicable
+              laws.
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-[#101828] mb-2">7. Disclaimer of Warranties</h2>
+            <h2 className="text-base font-semibold text-[#101828] mb-2">
+              7. Disclaimer of Warranties
+            </h2>
             <p>
-              The Service is provided &ldquo;as is&rdquo; without warranties of any kind. We do not
-              guarantee uninterrupted or error-free operation. Growing information generated by AI
-              features is provided for convenience and may contain errors; you are responsible for
-              verifying it.
+              The Service is provided &ldquo;as is&rdquo; without warranties of
+              any kind. We do not guarantee uninterrupted or error-free
+              operation. Growing information generated by AI features is
+              provided for convenience and may contain errors; you are
+              responsible for verifying it.
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-[#101828] mb-2">8. Limitation of Liability</h2>
+            <h2 className="text-base font-semibold text-[#101828] mb-2">
+              8. Limitation of Liability
+            </h2>
             <p>
-              To the maximum extent permitted by law, we are not liable for any indirect,
-              incidental, or consequential damages arising from use of the Service.
+              To the maximum extent permitted by law, we are not liable for any
+              indirect, incidental, or consequential damages arising from use of
+              the Service.
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-[#101828] mb-2">9. Governing Law</h2>
+            <h2 className="text-base font-semibold text-[#101828] mb-2">
+              9. Governing Law
+            </h2>
             <p>
-              These terms are governed by the laws of the State of Texas, with venue in Travis
-              County, Austin, Texas, without regard to its conflict of law provisions, except where
-              mandatory consumer-protection law in your country or state of residence gives you
-              other rights.
+              These terms are governed by the laws of the State of Texas, with
+              venue in Travis County, Austin, Texas, without regard to its
+              conflict of law provisions, except where mandatory
+              consumer-protection law in your country or state of residence
+              gives you other rights.
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-[#101828] mb-2">10. Changes to Terms</h2>
+            <h2 className="text-base font-semibold text-[#101828] mb-2">
+              10. Changes to Terms
+            </h2>
             <p>
-              We may update these terms at any time. Continued use of the Service after changes
-              constitutes acceptance of the new terms.
+              We may update these terms at any time. We will notify you of
+              material changes by email before they take effect. Continued use
+              of the Service after changes constitutes acceptance of the new
+              terms.
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-[#101828] mb-2">11. Contact</h2>
+            <h2 className="text-base font-semibold text-[#101828] mb-2">
+              11. Contact
+            </h2>
             <p>
-              Questions about these terms? Contact us at{' '}
-              <a href="mailto:katy@beckharrisdesign.com" className="text-[#16a34a] hover:underline">
+              Questions about these terms? Contact us at{" "}
+              <a
+                href="mailto:katy@beckharrisdesign.com"
+                className="text-[#16a34a] hover:underline"
+              >
                 katy@beckharrisdesign.com
               </a>
               .
             </p>
           </section>
         </div>
-
-        <p className="mt-10 text-xs text-[#9ca3af]">
-          <em>This is a placeholder document. Replace with reviewed legal content before launch.</em>
-        </p>
       </div>
     </div>
   );
