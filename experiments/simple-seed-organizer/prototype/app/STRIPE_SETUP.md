@@ -6,22 +6,18 @@ This app uses Stripe for subscription billing. Follow these steps to wire it up.
 
 1. Go to [https://dashboard.stripe.com](https://dashboard.stripe.com)
 2. **Products** → **Add product**
-3. Create three products (or reuse existing ones):
+3. Create one paid product (or reuse an existing one):
 
 | Product Name     | Price  | Billing | Price ID (you'll copy this) |
 |------------------|--------|---------|----------------------------|
-| Home Garden      | $5/mo  | Monthly | `price_xxx`                 |
-| Home Garden (yr) | $49/yr | Yearly  | `price_xxx`                 |
-| Serious Hobby    | $15/mo | Monthly | `price_xxx`                 |
-| Serious Hobby (yr)| $144/yr| Yearly  | `price_xxx`                 |
+| Home Garden      | $15/yr | Yearly  | `price_xxx`                 |
 
-For each product:
+Pricing is a single paid plan billed yearly. For the product:
 - Click **Add product**
-- Name it (e.g. "Home Garden")
-- Under **Pricing**, add a **Recurring** price
-- Set amount and interval (monthly or yearly)
+- Name it "Home Garden"
+- Under **Pricing**, add a **Recurring** price of **$15** with a **Yearly** interval
 - Click **Save**
-- Copy the **Price ID** (starts with `price_`) — you'll need it for env vars
+- Copy the **Price ID** (starts with `price_`) — you'll need it for the env var below
 
 **Tip:** Use **Test mode** (toggle in top-right) while developing. Switch to Live when ready.
 
@@ -43,14 +39,11 @@ Add these to `.env.local` in `prototype/app/`:
 STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxx
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxx
 
-# Price IDs (from step 1)
-NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_MONTHLY=price_xxxxxxxxxxxx
+# Price ID (from step 1) — the single $15/year paid plan
 NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_YEARLY=price_xxxxxxxxxxxx
-NEXT_PUBLIC_STRIPE_PRICE_SERIOUS_HOBBY_MONTHLY=price_xxxxxxxxxxxx
-NEXT_PUBLIC_STRIPE_PRICE_SERIOUS_HOBBY_YEARLY=price_xxxxxxxxxxxx
 ```
 
-Replace the `price_xxx` values with the actual Price IDs from your Stripe products.
+Replace the `price_xxx` value with the actual Price ID from your Stripe product.
 
 ## 4. Install Stripe
 
@@ -63,11 +56,11 @@ npm install stripe
 ## 5. Verify Setup
 
 1. Restart your Next.js dev server
-2. Click **Subscribe** on a paid tier on the landing page (choose Monthly or Yearly first)
+2. Click **Subscribe** on the Home Garden plan on the landing page
 3. You should be redirected to Stripe Checkout
 4. Use test card `4242 4242 4242 4242` to complete a test payment
 
-**Fallback:** If Stripe keys or price IDs are not set, the paid-tier buttons show "Get started" and link to the signup form instead.
+**Fallback:** If Stripe keys or the price ID are not set, the paid-plan button shows "Get started" and links to the signup form instead.
 
 ## 6. Webhooks (Recommended for production)
 

@@ -25,7 +25,7 @@ Tired of buying the same seed packets over and over? Simple Seed Organizer helps
 
 Just your seed inventory on your phone. No garden planning, no calendars—just store and find your seeds when you need them.
 
-Get early access for $12/year.
+Get early access for $15/year.
 ```
 
 ### Description (optional)
@@ -69,7 +69,7 @@ Can't remember which seeds are still viable? Simple Seed Organizer tracks purcha
 
 The simplest seed inventory tool—just store your seed info and get it back when you need it. No complex features, just what you need.
 
-Get early access for $12/year.
+Get early access for $15/year.
 ```
 
 ### Description (optional)
@@ -113,7 +113,7 @@ Your seed collection is a mess. You can't find what you need when you need it. S
 
 Find any seed in seconds. Add planting depth, spacing, and notes. Know what you have, when you need it.
 
-Get early access for $12/year.
+Get early access for $15/year.
 ```
 
 ### Description (optional)
@@ -158,7 +158,7 @@ Other seed apps force you to use garden planning and calendars you don't need. S
 
 No planning. No calendars. No design tools. Just store your seed info and find it when you need it—on your phone.
 
-Get early access for $12/year.
+Get early access for $15/year.
 ```
 
 ### Description (optional)
@@ -202,7 +202,7 @@ Need planting depth or spacing info? Don't dig through seed packets. Simple Seed
 
 Store what you need: planting depth, spacing, days to maturity, notes. Find it fast when you're ready to plant.
 
-Get early access for $12/year.
+Get early access for $15/year.
 ```
 
 ### Description (optional)
@@ -247,7 +247,7 @@ Stop wasting money on seeds that expire unused. Simple Seed Organizer shows you 
 
 Track purchase dates, see your "use-first" list, and never waste seeds again. Simple inventory tracking for smart gardeners.
 
-Get early access for $12/year.
+Get early access for $15/year.
 ```
 
 ### Description (optional)

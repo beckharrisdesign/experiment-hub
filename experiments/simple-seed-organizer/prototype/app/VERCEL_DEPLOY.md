@@ -38,10 +38,7 @@ Add these in Vercel → Project → **Settings** → **Environment Variables**. 
 | `OPENAI_API_KEY` | Yes | For AI packet extraction |
 | `STRIPE_SECRET_KEY` | Yes | Use test key (`sk_test_...`) for QA |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Yes | Use test key (`pk_test_...`) |
-| `NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_MONTHLY` | Yes | Stripe Price ID |
-| `NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_YEARLY` | Yes | |
-| `NEXT_PUBLIC_STRIPE_PRICE_SERIOUS_HOBBY_MONTHLY` | Yes | |
-| `NEXT_PUBLIC_STRIPE_PRICE_SERIOUS_HOBBY_YEARLY` | Yes | |
+| `NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_YEARLY` | Yes | Stripe Price ID for the single $15/year plan |
 | `STRIPE_WEBHOOK_SECRET` | Optional | Only if you configure a webhook for this env |
 | `NEXT_PUBLIC_GOOGLE_ANALYTICS_ID` | Optional | GA4 Measurement ID (e.g. `G-XXXXXXXXXX`) |
 

@@ -1,54 +1,36 @@
 /**
  * Single source of truth for subscription tiers.
  * Used by landing, pricing page, and profile.
+ *
+ * One free tier + one paid tier, billed yearly at a single price.
  */
 
-export const TIER_ORDER = ['Seed Stash Starter', 'Home Garden', 'Serious Hobby'] as const;
+export const TIER_ORDER = ['Seed Stash Starter', 'Home Garden'] as const;
 export type TierName = (typeof TIER_ORDER)[number];
 
 export interface TierPlan {
   id: TierName;
   seeds: string;
   ai: string;
-  monthlyPrice: string;
-  yearlyPrice: string;
-  yearlyDiscount: string;
-  priceIds: { monthly?: string; yearly?: string };
+  /** Display price, e.g. 'Free' or '$15/year'. */
+  price: string;
+  /** Stripe price ID for the paid plan (yearly). Undefined for the free tier. */
+  priceId?: string;
 }
 
 export const PLANS: TierPlan[] = [
   {
     id: 'Seed Stash Starter',
     seeds: '50',
-    ai: '5/month',
-    monthlyPrice: 'Free',
-    yearlyPrice: 'Free',
-    yearlyDiscount: '',
-    priceIds: {},
+    ai: '10/month',
+    price: 'Free',
   },
   {
     id: 'Home Garden',
-    seeds: '300',
-    ai: '20/month',
-    monthlyPrice: '$5',
-    yearlyPrice: '$49',
-    yearlyDiscount: '18% off',
-    priceIds: {
-      monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_MONTHLY,
-      yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_YEARLY,
-    },
-  },
-  {
-    id: 'Serious Hobby',
     seeds: 'Unlimited',
-    ai: 'Unlimited',
-    monthlyPrice: '$15',
-    yearlyPrice: '$144',
-    yearlyDiscount: '20% off',
-    priceIds: {
-      monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_SERIOUS_HOBBY_MONTHLY,
-      yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_SERIOUS_HOBBY_YEARLY,
-    },
+    ai: '100/month',
+    price: '$15/year',
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_HOME_GARDEN_YEARLY,
   },
 ];
 
@@ -71,8 +53,7 @@ export function getDowngradeTiers(currentTier: string): TierPlan[] {
 export function buildPriceToTierMap(): Record<string, string> {
   const map: Record<string, string> = {};
   for (const plan of PLANS) {
-    if (plan.priceIds.monthly) map[plan.priceIds.monthly] = plan.id;
-    if (plan.priceIds.yearly) map[plan.priceIds.yearly] = plan.id;
+    if (plan.priceId) map[plan.priceId] = plan.id;
   }
   return map;
 }

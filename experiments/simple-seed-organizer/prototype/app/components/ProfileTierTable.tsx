@@ -17,7 +17,7 @@ export function ProfileTierTable({
   const isPaid = currentIdx > 0;
 
   return (
-    <div className="grid md:grid-cols-3 gap-4 lg:gap-6">
+    <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
       {PLANS.map((plan) => {
         const isCurrent = plan.id === currentTier;
 
@@ -30,7 +30,7 @@ export function ProfileTierTable({
           >
             <h3 className="text-lg font-bold text-[#101828] mb-1">{plan.id}</h3>
             <p className="text-sm text-[#4a5565] mb-3">
-              {plan.monthlyPrice === 'Free' ? 'Free, forever' : `${plan.monthlyPrice}/mo`}
+              {plan.price === 'Free' ? 'Free, forever' : plan.price}
             </p>
             <ul className="space-y-1 text-sm text-gray-700 mb-4 flex-1">
               <li className="flex gap-2">
@@ -53,7 +53,7 @@ export function ProfileTierTable({
         );
       })}
       {isPaid && onManageBilling && (
-        <p className="md:col-span-3 text-xs text-[#99a1af] mt-1">
+        <p className="md:col-span-2 text-xs text-[#99a1af] mt-1">
           Upgrades and downgrades are managed in billing.
         </p>
       )}

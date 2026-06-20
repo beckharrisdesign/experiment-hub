@@ -5,7 +5,7 @@
  *   NEXT_PUBLIC_LIMIT_AI_STARTER=50
  */
 
-export type TierName = "Seed Stash Starter" | "Home Garden" | "Serious Hobby";
+export type TierName = "Seed Stash Starter" | "Home Garden";
 
 export interface TierLimits {
   seedLimit: number | null; // null = unlimited
@@ -13,9 +13,8 @@ export interface TierLimits {
 }
 
 const DEFAULT_LIMITS: Record<TierName, TierLimits> = {
-  "Seed Stash Starter": { seedLimit: 50, aiLimit: 50 },
-  "Home Garden": { seedLimit: 300, aiLimit: 20 },
-  "Serious Hobby": { seedLimit: null, aiLimit: null },
+  "Seed Stash Starter": { seedLimit: 50, aiLimit: 10 },
+  "Home Garden": { seedLimit: null, aiLimit: 100 },
 };
 
 function parseEnvInt(key: string): number | undefined {
@@ -29,7 +28,6 @@ function parseEnvInt(key: string): number | undefined {
 const TIER_ENV_SUFFIX: Record<string, string> = {
   "Seed Stash Starter": "STARTER",
   "Home Garden": "HOME_GARDEN",
-  "Serious Hobby": "SERIOUS_HOBBY",
 };
 
 function getLimits(tier: string): TierLimits {

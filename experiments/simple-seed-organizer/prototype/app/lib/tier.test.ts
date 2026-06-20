@@ -67,7 +67,7 @@ describe('getSubscriptionInfo', () => {
   it('returns the DB tier when subscription is trialing', async () => {
     const supabase = makeSupabaseMock({
       data: {
-        tier: 'Serious Hobby',
+        tier: 'Home Garden',
         status: 'trialing',
         current_period_end: '2026-04-01T00:00:00Z',
         cancel_at_period_end: false,
@@ -77,7 +77,7 @@ describe('getSubscriptionInfo', () => {
     });
 
     const result = await getSubscriptionInfo(USER_ID, supabase as never);
-    expect(result.tier).toBe('Serious Hobby');
+    expect(result.tier).toBe('Home Garden');
     expect(result.status).toBe('trialing');
   });
 
@@ -101,7 +101,7 @@ describe('getSubscriptionInfo', () => {
   it('downgrades to Starter when subscription is past_due', async () => {
     const supabase = makeSupabaseMock({
       data: {
-        tier: 'Serious Hobby',
+        tier: 'Home Garden',
         status: 'past_due',
         current_period_end: null,
         cancel_at_period_end: false,
