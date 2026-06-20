@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { updatePassword } from '@/lib/auth-actions';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { updatePassword } from "@/lib/auth-actions";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -23,8 +23,11 @@ export default function ResetPasswordPage() {
 
     setLoading(true);
     try {
-      const { supabase } = await import('@/lib/supabase');
-      if (!supabase) throw new Error("I'm having trouble connecting right now. Try reloading the page.");
+      const { supabase } = await import("@/lib/supabase");
+      if (!supabase)
+        throw new Error(
+          "I'm having trouble connecting right now. Try reloading the page.",
+        );
 
       const { error: updateError } = await updatePassword(password, supabase);
       if (updateError) {
@@ -32,22 +35,24 @@ export default function ResetPasswordPage() {
         return;
       }
       setDone(true);
-      setTimeout(() => router.replace('/'), 2000);
+      setTimeout(() => router.replace("/"), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.');
+      setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#f9fafb] pt-24 pb-16">
+    <div className="bg-[#f9fafb] pt-24 pb-16">
       <section className="px-4 py-16">
         <div className="max-w-sm mx-auto">
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold mb-2">Choose a new password</h1>
             <p className="text-gray-600">
-              {done ? 'Password updated! Redirecting you...' : 'Enter your new password below.'}
+              {done
+                ? "Password updated! Redirecting you..."
+                : "Enter your new password below."}
             </p>
           </div>
 
@@ -90,7 +95,7 @@ export default function ResetPasswordPage() {
                   disabled={loading}
                   className="w-full py-3 bg-[#16a34a] text-white font-semibold rounded-lg hover:bg-[#15803d] disabled:opacity-50 transition-colors"
                 >
-                  {loading ? 'Updating...' : 'Update password'}
+                  {loading ? "Updating..." : "Update password"}
                 </button>
               </form>
             </div>
