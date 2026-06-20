@@ -19,7 +19,7 @@ No garden planning. No calendars. Just store your seed info and get it back when
 **Primary CTA Button**:
 
 ```
-Get Early Access for $12/year
+Get Early Access for $15/year
 ```
 
 _(This is the "fake buy" button that leads to interest form)_
@@ -109,15 +109,13 @@ Simple pricing. No surprises.
 **Price Display**:
 
 ```
-$12/year
+$15/year
 ```
-
-_(or $15/year, depending on final pricing decision)_
 
 **Price Explanation**:
 
 ```
-Less than $1/month for a tool that saves you time and money.
+About $1.25/month for a tool that saves you time and money.
 ```
 
 **What's Included**:
@@ -132,7 +130,7 @@ Less than $1/month for a tool that saves you time and money.
 
 - SeedTime: $109/year (with planning features you don't need)
 - Planter: $12/year (focuses on garden planning, not inventory)
-- **Simple Seed Organizer**: $12/year (just seed inventory, nothing else)
+- **Simple Seed Organizer**: $15/year (just seed inventory, nothing else)
 
 ---
 
@@ -153,7 +151,7 @@ Join the early access list. We'll let you know when Simple Seed Organizer is rea
 **CTA Button**:
 
 ```
-Get Early Access for $12/year
+Get Early Access for $15/year
 ```
 
 _(Same fake buy button, leads to interest form)_

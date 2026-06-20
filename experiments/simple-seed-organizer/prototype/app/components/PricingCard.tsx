@@ -1,17 +1,14 @@
 "use client";
 
-import { useState } from "react";
-
 export interface PricingCardProps {
   title: string;
   subTitle?: string;
   badge?: string;
   highlight?: boolean;
   features: string[];
-  monthlyPrice: string;
-  yearlyPrice: string;
-  yearlyDiscount: string;
-  priceIds: { monthly?: string; yearly?: string };
+  /** Display price, e.g. '$15/year'. */
+  price: string;
+  priceId?: string;
   onSubscribe: (priceId: string) => void;
   loadingPriceId: string | null;
 }
@@ -28,17 +25,11 @@ export function PricingCard({
   badge,
   highlight,
   features,
-  monthlyPrice,
-  yearlyPrice,
-  yearlyDiscount,
-  priceIds,
+  price,
+  priceId,
   onSubscribe,
   loadingPriceId,
 }: PricingCardProps) {
-  const [billing, setBilling] = useState<"monthly" | "yearly">("yearly");
-  const priceId = billing === "monthly" ? priceIds.monthly : priceIds.yearly;
-  const hasStripe = priceId;
-
   return (
     <div
       className={`rounded-xl border-2 p-6 flex flex-col relative ${
@@ -60,48 +51,12 @@ export function PricingCard({
           </li>
         ))}
       </ul>
-      <div className="flex gap-2 mb-2">
+      <p className="text-lg font-bold text-[#101828] mb-4">{price}</p>
+      {priceId ? (
         <button
           type="button"
-          onClick={() => setBilling("monthly")}
-          className={`flex-1 py-1.5 text-sm font-medium rounded ${
-            billing === "monthly"
-              ? "bg-[#16a34a] text-white"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-          }`}
-        >
-          Monthly
-        </button>
-        <button
-          type="button"
-          onClick={() => setBilling("yearly")}
-          className={`flex-1 py-1.5 text-sm font-medium rounded ${
-            billing === "yearly"
-              ? "bg-[#16a34a] text-white"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-          }`}
-        >
-          Yearly
-        </button>
-      </div>
-      <p className="text-lg font-bold text-[#101828]">
-        {billing === "monthly" ? monthlyPrice : yearlyPrice}
-        <span className="text-sm font-normal text-gray-600">
-          /{billing === "monthly" ? "month" : "year"}
-        </span>
-      </p>
-      <p className="text-sm min-h-[1.25rem]">
-        {billing === "yearly" ? (
-          <span className="text-[#16a34a]">{yearlyDiscount}</span>
-        ) : (
-          "\u00A0"
-        )}
-      </p>
-      {hasStripe ? (
-        <button
-          type="button"
-          onClick={() => priceId && onSubscribe(priceId)}
-          disabled={!priceId || loadingPriceId === priceId}
+          onClick={() => onSubscribe(priceId)}
+          disabled={loadingPriceId === priceId}
           className="mt-4 w-full py-3 text-center bg-[#16a34a] text-white font-semibold rounded-lg hover:bg-[#15803d] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {loadingPriceId === priceId ? "Redirecting…" : "Subscribe"}
