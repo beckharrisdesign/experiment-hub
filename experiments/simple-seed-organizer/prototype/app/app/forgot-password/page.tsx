@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { requestPasswordReset } from '@/lib/auth-actions';
+import { useState } from "react";
+import { requestPasswordReset } from "@/lib/auth-actions";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -15,8 +15,11 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const { supabase } = await import('@/lib/supabase');
-      if (!supabase) throw new Error("I'm having trouble connecting right now. Try reloading the page.");
+      const { supabase } = await import("@/lib/supabase");
+      if (!supabase)
+        throw new Error(
+          "I'm having trouble connecting right now. Try reloading the page.",
+        );
 
       const { error: resetError } = await requestPasswordReset(email, supabase);
       if (resetError) {
@@ -25,14 +28,14 @@ export default function ForgotPasswordPage() {
       }
       setSubmitted(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.');
+      setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#f9fafb] pt-24 pb-16">
+    <div className="bg-[#f9fafb] pt-24 pb-16">
       <section className="px-4 py-16">
         <div className="max-w-sm mx-auto">
           <div className="text-center mb-6">
@@ -67,7 +70,7 @@ export default function ForgotPasswordPage() {
                   disabled={loading}
                   className="w-full py-3 bg-[#16a34a] text-white font-semibold rounded-lg hover:bg-[#15803d] disabled:opacity-50 transition-colors"
                 >
-                  {loading ? 'Sending...' : 'Send reset link'}
+                  {loading ? "Sending..." : "Send reset link"}
                 </button>
               </form>
             </div>

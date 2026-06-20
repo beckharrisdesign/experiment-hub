@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { AuthForm } from '@/components/AuthForm';
-import { useAuth } from '@/lib/auth-context';
-import { useEffect } from 'react';
+import { useRouter } from "next/navigation";
+import { AuthForm } from "@/components/AuthForm";
+import { useAuth } from "@/lib/auth-context";
+import { useEffect } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,7 +11,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.replace('/');
+      router.replace("/");
     }
   }, [user, loading, router]);
 
@@ -28,7 +28,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f9fafb] pt-24 pb-16">
+    <div className="bg-[#f9fafb] pt-24 pb-16">
       <section className="px-4 py-16">
         <div className="max-w-sm mx-auto">
           <div className="text-center mb-6">
@@ -38,7 +38,7 @@ export default function LoginPage() {
             </p>
           </div>
           <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-            <AuthForm onSuccess={() => router.push('/')} embedded />
+            <AuthForm onSuccess={() => router.push("/")} embedded />
           </div>
           <p className="mt-4 text-center text-sm text-gray-500">
             <a href="/" className="text-[#16a34a] hover:underline">

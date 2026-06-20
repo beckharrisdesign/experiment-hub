@@ -8,8 +8,6 @@ import { LandingHero } from "./LandingHero";
 import { LandingPricingSection } from "./LandingPricingSection";
 import { LandingProblemSection } from "./LandingProblemSection";
 import { LandingSignupSection } from "./LandingSignupSection";
-import { LandingFooter } from "./LandingFooter";
-
 /** @figma S8YJQugvMmn5jaRqwFM5XO:18:2709 */
 export function LandingPage() {
   const { user } = useAuth();
@@ -49,8 +47,6 @@ export function LandingPage() {
       />
       <LandingProblemSection />
       <LandingSignupSection />
-
-      <LandingFooter />
     </div>
   );
 }

@@ -13,10 +13,10 @@ export function AppShell({ children }: AppShellProps) {
   const { user } = useAuth();
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <Header showProfileLink={!!user} />
-      {children}
+      <div className="flex-1 bg-[#f9fafb]">{children}</div>
       <LandingFooter />
-    </>
+    </div>
   );
 }
