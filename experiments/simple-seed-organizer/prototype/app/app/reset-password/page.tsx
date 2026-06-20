@@ -44,9 +44,8 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="bg-[#f9fafb] pt-24 pb-16">
-      <section className="px-4 py-16">
-        <div className="max-w-sm mx-auto">
+    <div className="flex-1 flex flex-col items-center justify-center pt-[72px] px-4 py-8 bg-[#f9fafb]">
+      <div className="w-full max-w-sm">
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold mb-2">Choose a new password</h1>
             <p className="text-gray-600">
@@ -101,7 +100,7 @@ export default function ResetPasswordPage() {
             </div>
           )}
         </div>
-      </section>
+      </div>
     </div>
   );
 }

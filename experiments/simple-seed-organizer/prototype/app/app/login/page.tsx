@@ -28,25 +28,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-[#f9fafb] pt-24 pb-16">
-      <section className="px-4 py-16">
-        <div className="max-w-sm mx-auto">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold mb-2">Sign in</h1>
-            <p className="text-gray-600">
-              Enter your email and password to continue.
-            </p>
-          </div>
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-            <AuthForm onSuccess={() => router.push("/")} embedded />
-          </div>
-          <p className="mt-4 text-center text-sm text-gray-500">
-            <a href="/" className="text-[#16a34a] hover:underline">
-              ← Back to home
-            </a>
+    <div className="flex-1 flex flex-col items-center justify-center pt-[72px] px-4 py-8 bg-[#f9fafb]">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold mb-2">Sign in</h1>
+          <p className="text-gray-600">
+            Enter your email and password to continue.
           </p>
         </div>
-      </section>
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <AuthForm onSuccess={() => router.push("/")} embedded />
+        </div>
+        <p className="mt-4 text-center text-sm text-gray-500">
+          <a href="/" className="text-[#16a34a] hover:underline">
+            ← Back to home
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

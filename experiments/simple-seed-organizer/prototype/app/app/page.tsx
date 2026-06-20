@@ -161,7 +161,9 @@ function HomeContent() {
     }
 
     if (searchQuery.trim()) {
-      filtered = filtered.filter((seed) => seedMatchesSearch(seed, searchQuery));
+      filtered = filtered.filter((seed) =>
+        seedMatchesSearch(seed, searchQuery),
+      );
     }
 
     return filtered;
@@ -219,11 +221,7 @@ function HomeContent() {
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <LandingPage />
-      </div>
-    );
+    return <LandingPage />;
   }
 
   return (
