@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 /** @figma S8YJQugvMmn5jaRqwFM5XO:80:1268 */
 export function LandingFooter() {
   return (
@@ -9,12 +11,18 @@ export function LandingFooter() {
           © 2026 Simple Seed Organizer. All rights reserved.
         </p>
         <div className="flex justify-center gap-6 text-sm">
-          <a href="/privacy" className="hover:text-[#86efac] transition-colors">
+          <Link
+            href="/privacy"
+            className="hover:text-[#86efac] transition-colors"
+          >
             Privacy Policy
-          </a>
-          <a href="/terms" className="hover:text-[#86efac] transition-colors">
+          </Link>
+          <Link
+            href="/terms"
+            className="hover:text-[#86efac] transition-colors"
+          >
             Terms of Service
-          </a>
+          </Link>
           <a
             href="mailto:katy@beckharrisdesign.com"
             className="hover:text-[#86efac] transition-colors"

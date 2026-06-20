@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[#f9fafb] pt-24 pb-16">
+    <div className="bg-[#f9fafb] pt-24 pb-16">
       <div className="max-w-[1200px] mx-auto px-6">
         <h1 className="text-2xl font-bold text-[#101828] mb-2">
           Privacy Policy
@@ -42,9 +42,10 @@ export default function PrivacyPage() {
                 <strong>Uploaded photos:</strong> seed-packet and seed photos
                 you upload are stored in our Supabase storage. Photo URLs are
                 publicly accessible — anyone with the link can view the photo
-                without signing in. These links cannot be revoked once shared.
-                Photos are permanently deleted when you delete the associated
-                seed or when your account is deleted.
+                without signing in. Photos are permanently deleted when you
+                delete the associated seed or when your account is deleted, at
+                which point the URL will stop working. Anyone you previously
+                shared a link with may have saved a copy.
               </li>
               <li>
                 <strong>Profile data:</strong> optional information you provide

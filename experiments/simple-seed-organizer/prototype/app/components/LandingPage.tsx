@@ -38,7 +38,7 @@ export function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white text-gray-900">
+    <div className="bg-linear-to-b from-gray-50 to-white text-gray-900">
       <LandingHero />
       <LandingFeaturesSection />
       <LandingPricingSection
