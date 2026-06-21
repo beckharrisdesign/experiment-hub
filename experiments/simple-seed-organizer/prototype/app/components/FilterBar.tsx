@@ -11,6 +11,8 @@ interface FilterBarProps {
   onTypeChange: (type: FilterType) => void;
   disabledTypes?: FilterType[];
   iconOverrides?: Partial<Record<FilterType, ReactNode>>;
+  /** Only render type chips for types present in the user's collection. */
+  availableTypes?: Set<SeedType>;
 }
 
 function AllSeedsIcon() {
@@ -53,10 +55,19 @@ export function FilterBar({
   onTypeChange,
   disabledTypes = [],
   iconOverrides,
+  availableTypes,
 }: FilterBarProps) {
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       {filters.map((filter) => {
+        const isSeedType = filter.id !== "all" && filter.id !== "use-first";
+        if (
+          isSeedType &&
+          availableTypes &&
+          !availableTypes.has(filter.id as SeedType)
+        ) {
+          return null;
+        }
         const isSelected = activeType === filter.id;
         const isDisabled = disabledTypes.includes(filter.id);
         const inactiveVariant = filter.icon
