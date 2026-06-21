@@ -26,27 +26,40 @@ jobs:
               return;
             }
 
-            const result = await github.graphql(`
-              query($owner: String!, $repo: String!, $pr: Int!) {
-                repository(owner: $owner, name: $repo) {
-                  pullRequest(number: $pr) {
-                    reviewThreads(first: 100) {
-                      nodes {
-                        isResolved
-                        isOutdated
+            const allThreads = [];
+            let cursor = null;
+            while (true) {
+              const result = await github.graphql(`
+                query($owner: String!, $repo: String!, $pr: Int!, $after: String) {
+                  repository(owner: $owner, name: $repo) {
+                    pullRequest(number: $pr) {
+                      reviewThreads(first: 100, after: $after) {
+                        nodes {
+                          isResolved
+                          isOutdated
+                        }
+                        pageInfo {
+                          hasNextPage
+                          endCursor
+                        }
                       }
                     }
                   }
                 }
-              }
-            `, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pr: prNumber,
-            });
+              `, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pr: prNumber,
+                after: cursor,
+              });
 
-            const threads = result.repository.pullRequest.reviewThreads.nodes;
-            const unresolved = threads.filter(t => !t.isResolved && !t.isOutdated);
+              const page = result.repository.pullRequest.reviewThreads;
+              allThreads.push(...page.nodes);
+              if (!page.pageInfo.hasNextPage) break;
+              cursor = page.pageInfo.endCursor;
+            }
+
+            const unresolved = allThreads.filter(t => !t.isResolved && !t.isOutdated);
 
             if (unresolved.length > 0) {
               core.setFailed(

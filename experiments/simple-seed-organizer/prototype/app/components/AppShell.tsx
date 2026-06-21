@@ -10,13 +10,13 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header showProfileLink={!!user} />
       <div className="flex-1 flex flex-col bg-[#f9fafb]">{children}</div>
-      {!user && <LandingFooter />}
+      {!loading && !user && <LandingFooter />}
     </div>
   );
 }
