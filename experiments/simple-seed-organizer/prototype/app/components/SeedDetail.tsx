@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Seed } from "@/types/seed";
 import { getSeedAge } from "@/lib/storage";
-import { seedPhotoSrcs } from "@/lib/seed-photos";
 import { isUseFirst } from "@/lib/viability";
 import { getPlantingGuidance } from "@/lib/plantingGuidance";
 import { SeedPill, type SeedPillTone } from "@/components/SeedPill";
@@ -77,8 +76,7 @@ function AnnotationRow({
       )}
       {annotation && (
         <p className="mt-0.5 text-[13px] italic text-[#6a7282] leading-5 pl-0.5">
-          <span className="font-medium not-italic">My note:</span>{" "}
-          {annotation}
+          <span className="font-medium not-italic">My note:</span> {annotation}
         </p>
       )}
     </div>
@@ -163,7 +161,8 @@ export function SeedDetail({
     ]),
   );
 
-  const fieldHidden = (key: string) => seed.hiddenFields?.includes(key) ?? false;
+  const fieldHidden = (key: string) =>
+    seed.hiddenFields?.includes(key) ?? false;
 
   const handleEnrich = async () => {
     setEnriching(true);
@@ -291,62 +290,52 @@ export function SeedDetail({
               </div>
             </div>
 
-            {/* Packet Images */}
-            <div className="w-full">
-              <div className="flex gap-4 items-center overflow-x-auto pr-2 py-2">
-                {(seed.photos ?? []).map((photo, index) => {
-                  const src = seedPhotoSrcs(seed)[index];
-                  const failed = imgErrors.has(photo.id);
-                  return (
-                    <div
-                      key={photo.id}
-                      className="relative flex-shrink-0 w-[192.5px] h-[256px]"
-                    >
-                      {src && !failed ? (
-                        <>
-                          <img
-                            src={src}
-                            alt={photo.label ?? `Seed packet photo ${index + 1}`}
-                            loading="lazy"
-                            className="w-full h-full object-contain rounded-lg border border-gray-200 bg-white"
-                            onError={() =>
-                              setImgErrors((prev) =>
-                                new Set(prev).add(photo.id),
-                              )
-                            }
-                          />
-                          {photo.label && (
-                            <p className="absolute bottom-[15px] left-0 right-0 text-center text-[12px] text-white font-normal leading-4 capitalize">
-                              {photo.label}
-                            </p>
-                          )}
-                        </>
-                      ) : (
-                        <div className="w-full h-full bg-[#d4d4d4] rounded-lg flex items-center justify-center">
-                          <span className="text-white text-[48px] font-normal leading-4">
-                            +
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-
-                {/* Pad to a minimum of 7 slots so the strip keeps its shape */}
-                {Array.from({
-                  length: Math.max(0, 7 - (seed.photos?.length ?? 0)),
-                }).map((_, i) => (
-                  <div
-                    key={`empty-${i}`}
-                    className="relative flex-shrink-0 w-[192.5px] h-[256px] bg-[#d4d4d4] rounded-lg flex items-center justify-center"
-                  >
-                    <span className="text-white text-[48px] font-normal leading-4">
-                      +
-                    </span>
-                  </div>
-                ))}
+            {/* Packet Images — only render when real photos exist */}
+            {(seed.photos?.length ?? 0) > 0 && (
+              <div className="w-full">
+                <div className="flex gap-4 items-center overflow-x-auto pr-2 py-2">
+                  {(seed.photos ?? []).map((photo, index) => {
+                    const src = photo.path || undefined;
+                    const failed = imgErrors.has(photo.id);
+                    return (
+                      <div
+                        key={photo.id}
+                        className="relative flex-shrink-0 w-[192.5px] h-[256px]"
+                      >
+                        {src && !failed ? (
+                          <>
+                            <img
+                              src={src}
+                              alt={
+                                photo.label ?? `Seed packet photo ${index + 1}`
+                              }
+                              loading="lazy"
+                              className="w-full h-full object-contain rounded-lg border border-gray-200 bg-white"
+                              onError={() =>
+                                setImgErrors((prev) =>
+                                  new Set(prev).add(photo.id),
+                                )
+                              }
+                            />
+                            {photo.label && (
+                              <p className="absolute bottom-[15px] left-0 right-0 text-center text-[12px] text-white font-normal leading-4 capitalize">
+                                {photo.label}
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <div className="w-full h-full bg-[#d4d4d4] rounded-lg flex items-center justify-center">
+                            <span className="text-white text-[48px] font-normal leading-4">
+                              +
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* 2-Col Section: Planting + Metadata */}
             <div className="w-full p-4">
@@ -428,9 +417,7 @@ export function SeedDetail({
                       annotationsByField.get("description"))) ||
                     (!fieldHidden("plantingInstructions") &&
                       (seed.plantingInstructions ||
-                        annotationsByField.get(
-                          "plantingInstructions",
-                        )))) && (
+                        annotationsByField.get("plantingInstructions")))) && (
                     <div className="flex flex-col gap-2 pt-4 pr-4">
                       <p className="text-[16px] font-semibold text-[#4a5565] leading-5">
                         Printed packet text
@@ -442,31 +429,29 @@ export function SeedDetail({
                       )}
                       {!fieldHidden("description") &&
                         annotationsByField.get("description") && (
-                        <p className="text-[13px] italic text-[#6a7282] leading-5">
-                          <span className="font-medium not-italic">
-                            My note:
-                          </span>{" "}
-                          {annotationsByField.get("description")}
-                        </p>
-                      )}
+                          <p className="text-[13px] italic text-[#6a7282] leading-5">
+                            <span className="font-medium not-italic">
+                              My note:
+                            </span>{" "}
+                            {annotationsByField.get("description")}
+                          </p>
+                        )}
                       {!fieldHidden("plantingInstructions") &&
                         seed.plantingInstructions && (
-                        <p className="text-[14px] text-[#101828] leading-[22px] whitespace-pre-wrap">
-                          <span className="font-semibold">
-                            Instructions:
-                          </span>{" "}
-                          {seed.plantingInstructions}
-                        </p>
-                      )}
+                          <p className="text-[14px] text-[#101828] leading-[22px] whitespace-pre-wrap">
+                            <span className="font-semibold">Instructions:</span>{" "}
+                            {seed.plantingInstructions}
+                          </p>
+                        )}
                       {!fieldHidden("plantingInstructions") &&
                         annotationsByField.get("plantingInstructions") && (
-                        <p className="text-[13px] italic text-[#6a7282] leading-5">
-                          <span className="font-medium not-italic">
-                            My note:
-                          </span>{" "}
-                          {annotationsByField.get("plantingInstructions")}
-                        </p>
-                      )}
+                          <p className="text-[13px] italic text-[#6a7282] leading-5">
+                            <span className="font-medium not-italic">
+                              My note:
+                            </span>{" "}
+                            {annotationsByField.get("plantingInstructions")}
+                          </p>
+                        )}
                     </div>
                   )}
                 </div>
@@ -492,7 +477,7 @@ export function SeedDetail({
                   )}
 
                   {/* Packet info category */}
-                  {(seed.type ||
+                  {((seed.type && seed.type !== "other") ||
                     seed.brand ||
                     seed.source ||
                     seed.year ||
@@ -510,7 +495,7 @@ export function SeedDetail({
                       <InfoRow
                         label="Type"
                         value={
-                          seed.type
+                          seed.type && seed.type !== "other"
                             ? seed.type.charAt(0).toUpperCase() +
                               seed.type.slice(1)
                             : undefined
@@ -592,7 +577,14 @@ export function SeedDetail({
                         }
                       />
                       {seed.customFields
-                        ?.filter((field) => !field.hidden)
+                        ?.filter((field) => {
+                          if (field.hidden || field.value == null) return false;
+                          if (Array.isArray(field.value))
+                            return field.value.length > 0;
+                          if (typeof field.value === "string")
+                            return field.value.trim() !== "";
+                          return true; // number | boolean — always non-empty
+                        })
                         .map((field) => (
                           <InfoRow
                             key={field.id || field.label}

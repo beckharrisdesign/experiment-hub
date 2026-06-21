@@ -151,6 +151,24 @@ function HomeContent() {
     };
   }, [user]);
 
+  const availableTypes = useMemo(
+    () =>
+      new Set(
+        seeds
+          .map((s) => s.type)
+          .filter((t): t is SeedType => !!t && t !== "other"),
+      ),
+    [seeds],
+  );
+
+  // Reset to "all" if the active type filter is no longer in the collection.
+  useEffect(() => {
+    if (activeFilter === "all" || activeFilter === "use-first") return;
+    if (!availableTypes.has(activeFilter as SeedType)) {
+      setActiveFilter("all");
+    }
+  }, [availableTypes, activeFilter]);
+
   const filteredSeeds = useMemo(() => {
     let filtered = seeds;
 
@@ -258,6 +276,7 @@ function HomeContent() {
                 <FilterBar
                   activeType={activeFilter}
                   onTypeChange={handleFilterChange}
+                  availableTypes={availableTypes}
                 />
               </div>
               <div className="mt-4">
