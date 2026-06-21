@@ -16,7 +16,7 @@ export function AppShell({ children }: AppShellProps) {
     <div className="min-h-screen flex flex-col">
       <Header showProfileLink={!!user} />
       <div className="flex-1 flex flex-col bg-[#f9fafb]">{children}</div>
-      <LandingFooter />
+      {!user && <LandingFooter />}
     </div>
   );
 }
