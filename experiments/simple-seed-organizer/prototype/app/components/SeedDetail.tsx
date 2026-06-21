@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Seed } from "@/types/seed";
 import { getSeedAge } from "@/lib/storage";
-import { seedPhotoSrcs } from "@/lib/seed-photos";
 import { isUseFirst } from "@/lib/viability";
 import { getPlantingGuidance } from "@/lib/plantingGuidance";
 import { SeedPill, type SeedPillTone } from "@/components/SeedPill";
@@ -296,7 +295,7 @@ export function SeedDetail({
               <div className="w-full">
                 <div className="flex gap-4 items-center overflow-x-auto pr-2 py-2">
                   {(seed.photos ?? []).map((photo, index) => {
-                    const src = seedPhotoSrcs(seed)[index];
+                    const src = photo.path || undefined;
                     const failed = imgErrors.has(photo.id);
                     return (
                       <div
@@ -578,12 +577,14 @@ export function SeedDetail({
                         }
                       />
                       {seed.customFields
-                        ?.filter(
-                          (field) =>
-                            !field.hidden &&
-                            field.value != null &&
-                            field.value !== "",
-                        )
+                        ?.filter((field) => {
+                          if (field.hidden || field.value == null) return false;
+                          if (Array.isArray(field.value))
+                            return field.value.length > 0;
+                          if (typeof field.value === "string")
+                            return field.value.trim() !== "";
+                          return field.value !== "";
+                        })
                         .map((field) => (
                           <InfoRow
                             key={field.id || field.label}
