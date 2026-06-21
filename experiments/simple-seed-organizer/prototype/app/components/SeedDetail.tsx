@@ -583,7 +583,7 @@ export function SeedDetail({
                             return field.value.length > 0;
                           if (typeof field.value === "string")
                             return field.value.trim() !== "";
-                          return field.value !== "";
+                          return true; // number | boolean — always non-empty
                         })
                         .map((field) => (
                           <InfoRow
