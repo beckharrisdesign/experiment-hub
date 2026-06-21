@@ -46,7 +46,8 @@ export function buildQueueExtractionFailurePatch(
   return {
     status: "needs_review",
     errorMessage:
-      message || "I couldn't read that packet. Try again or enter details manually.",
+      message ||
+      "I couldn't read that packet. Try again or enter details manually.",
   };
 }
 
@@ -92,12 +93,22 @@ export function useImportQueue({ userId }: UseImportQueueOptions) {
         const photos: SeedPhoto[] = [];
         const processed = await processImageFile(item.file);
         const frontId = crypto.randomUUID();
-        const frontPath = await uploadSeedPhoto(userId, seedId, frontId, processed);
+        const frontPath = await uploadSeedPhoto(
+          userId,
+          seedId,
+          frontId,
+          processed,
+        );
         photos.push({ id: frontId, path: frontPath, order: 0 });
         if (item.backFile) {
           const processedBack = await processImageFile(item.backFile);
           const backId = crypto.randomUUID();
-          const backPath = await uploadSeedPhoto(userId, seedId, backId, processedBack);
+          const backPath = await uploadSeedPhoto(
+            userId,
+            seedId,
+            backId,
+            processedBack,
+          );
           photos.push({ id: backId, path: backPath, order: 1 });
         }
         const saved = await saveSeed(
@@ -138,6 +149,13 @@ export function useImportQueue({ userId }: UseImportQueueOptions) {
 
       try {
         const processed = await processImageFile(item.file);
+
+        // If the file was converted (e.g. HEIC → JPEG), swap the preview URL
+        // so the thumbnail renders instead of showing a broken image.
+        if (processed !== item.file) {
+          updateItem(item.id, { objectUrl: URL.createObjectURL(processed) });
+        }
+
         const formData = new FormData();
 
         let res: Response;
@@ -272,9 +290,12 @@ export function useImportQueue({ userId }: UseImportQueueOptions) {
 
   const enqueueFiles = useCallback(
     (files: FileList | File[], options: EnqueueOptions) => {
-      const acceptedFiles = Array.from(files).filter((file) =>
-        file.type.startsWith("image/"),
-      );
+      const acceptedFiles = Array.from(files).filter((file) => {
+        if (file.type.startsWith("image/")) return true;
+        // Some browsers report HEIC files with an empty MIME type — accept by extension.
+        const name = file.name.toLowerCase();
+        return name.endsWith(".heic") || name.endsWith(".heif");
+      });
       if (acceptedFiles.length === 0) return;
       enqueueCapturedImages(
         acceptedFiles.map((file) => ({ file })),
