@@ -169,14 +169,57 @@ const AD_SETS = [
   },
   {
     id: 3,
-    name: "Pinterest — Gardening",
-    platform: "Pinterest",
-    interests: ["Gardening", "Seed Starting", "Vegetable Gardening"],
+    name: "Google Ads — Search",
+    platform: "Google Search + Display",
+    interests: ["seed organizer", "seed inventory app", "seed tracker", "how to organize seeds"],
     age: "25–65",
     gender: "All",
-    placement: "Feed",
+    placement: "Search results + Display Network",
     budget: "$15/day",
-    variants: [3, 5, 1],
+    variants: [1, 5, 2],
+  },
+] as const;
+
+const CREATIVE_SIZES = [
+  {
+    platform: "Meta — Feed",
+    formats: [
+      { name: "Square", size: "1080 × 1080", ratio: "1:1", notes: "Works on FB + IG feed" },
+      { name: "Portrait", size: "1080 × 1350", ratio: "4:5", notes: "More vertical real estate" },
+      { name: "Landscape", size: "1200 × 628", ratio: "1.91:1", notes: "FB link preview default" },
+    ],
+  },
+  {
+    platform: "Meta — Stories & Reels",
+    formats: [
+      { name: "Full screen", size: "1080 × 1920", ratio: "9:16", notes: "Leave 250px safe zone top + bottom for UI" },
+    ],
+  },
+  {
+    platform: "Meta — Carousel",
+    formats: [
+      { name: "Card", size: "1080 × 1080", ratio: "1:1", notes: "2–10 cards; each card independent CTA" },
+    ],
+  },
+  {
+    platform: "Google — Responsive Display",
+    formats: [
+      { name: "Landscape", size: "1200 × 628", ratio: "1.91:1", notes: "Required — primary hero" },
+      { name: "Square", size: "1200 × 1200", ratio: "1:1", notes: "Required" },
+      { name: "Portrait", size: "900 × 1600", ratio: "9:16", notes: "Optional — improves coverage" },
+      { name: "Logo square", size: "1200 × 1200", ratio: "1:1", notes: "Logo on white/transparent bg" },
+      { name: "Logo landscape", size: "1200 × 300", ratio: "4:1", notes: "Optional logo variant" },
+    ],
+  },
+  {
+    platform: "Google — Standard Display",
+    formats: [
+      { name: "Medium Rectangle", size: "300 × 250", ratio: "—", notes: "Most common placement" },
+      { name: "Leaderboard", size: "728 × 90", ratio: "—", notes: "Desktop top/bottom" },
+      { name: "Large Rectangle", size: "336 × 280", ratio: "—", notes: "High performing" },
+      { name: "Half Page", size: "300 × 600", ratio: "—", notes: "Premium inventory" },
+      { name: "Mobile Banner", size: "320 × 50", ratio: "—", notes: "Mobile web standard" },
+    ],
   },
 ] as const;
 
@@ -217,7 +260,7 @@ export function AdCampaignClient() {
         </p>
         <h1 className="text-xl font-semibold">Ad Campaign</h1>
         <p className="text-sm text-green-200 mt-0.5">
-          Validation test &middot; Meta + Pinterest &middot; $200&ndash;500 initial budget
+          Validation test &middot; Meta + Google Ads &middot; $200&ndash;500 initial budget
         </p>
       </div>
 
@@ -226,7 +269,7 @@ export function AdCampaignClient() {
         {/* Campaign overview */}
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "Platforms", value: "Meta + Pinterest" },
+            { label: "Platforms", value: "Meta + Google Ads" },
             { label: "Budget", value: "$200–500 total" },
             { label: "Duration", value: "1–2 weeks" },
             { label: "Price point", value: "$15/year" },
@@ -403,9 +446,9 @@ export function AdCampaignClient() {
                     notes: "3 ad sets \xd7 $100 over 1 week",
                   },
                   {
-                    platform: "Pinterest",
+                    platform: "Google Ads (Search + Display)",
                     budget: "$100",
-                    notes: "2 ad sets \xd7 $50 over 1 week",
+                    notes: "1 search set + responsive display, 1 week",
                   },
                   {
                     platform: "Landing page hosting",
@@ -428,6 +471,42 @@ export function AdCampaignClient() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </section>
+
+        {/* Creative sizes */}
+        <section>
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-[#4a5565] mb-4">
+            Creative Sizes to Produce
+          </h2>
+          <div className="space-y-3">
+            {CREATIVE_SIZES.map((group) => (
+              <div key={group.platform} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div className="px-5 py-3 border-b border-gray-100">
+                  <p className="font-semibold text-sm">{group.platform}</p>
+                </div>
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-gray-50">
+                      <th className="text-left px-5 py-2 text-[#99a1af] font-medium">Name</th>
+                      <th className="text-left px-5 py-2 text-[#99a1af] font-medium">Size (px)</th>
+                      <th className="text-left px-5 py-2 text-[#99a1af] font-medium">Ratio</th>
+                      <th className="text-left px-5 py-2 text-[#99a1af] font-medium">Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {group.formats.map((fmt) => (
+                      <tr key={fmt.name} className="border-b border-gray-50 last:border-0">
+                        <td className="px-5 py-2.5 font-medium text-[#101828]">{fmt.name}</td>
+                        <td className="px-5 py-2.5 font-mono text-[#15472d]">{fmt.size}</td>
+                        <td className="px-5 py-2.5 text-[#6a7282]">{fmt.ratio}</td>
+                        <td className="px-5 py-2.5 text-[#6a7282]">{fmt.notes}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
           </div>
         </section>
 
