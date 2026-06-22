@@ -35,10 +35,20 @@ const PHASES = [
 ];
 
 const GOOGLE_RSA = {
+  campaignName: "SSO-validation-phase1",
+  adGroupName: "organizing-seeds",
+  campaignType: "Search",
+  goal: "Create a campaign without a goal's guidance",
+  networks: "Uncheck Display Network · Uncheck Search partners",
+  location: "United States",
+  language: "English",
+  bidding: "Maximize clicks",
+  maxCpc: "$2.50",
   budget: "$25–50 total",
-  dailyBudget: "$10–15/day",
+  dailyBudget: "$12/day",
   duration: "3–5 days — run fast, not trickled over weeks",
   matchType: "Exact and phrase only — no broad match",
+  displayPath: "simpleseedorganizer.app/app",
   targetKeywords: [
     "[organizing seeds]",
     "[organizing seed packets]",
@@ -335,21 +345,50 @@ export function AdCampaignClient() {
             Phase 1 — Google Search RSA
           </h2>
 
-          {/* Setup */}
+          {/* Setup checklist */}
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100">
               <p className="font-semibold text-sm">Campaign Setup</p>
+              <p className="text-xs text-[#6a7282]">
+                Fields in Google Ads wizard order
+              </p>
             </div>
-            <div className="px-5 py-4 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3 text-xs">
+            <div className="divide-y divide-gray-50 text-xs">
               {[
-                { label: "Total budget", value: GOOGLE_RSA.budget },
+                {
+                  label: "Campaign name",
+                  value: GOOGLE_RSA.campaignName,
+                  copy: true,
+                },
+                { label: "Campaign type", value: GOOGLE_RSA.campaignType },
+                { label: "Goal", value: GOOGLE_RSA.goal },
+                { label: "Networks", value: GOOGLE_RSA.networks, warn: true },
+                { label: "Location", value: GOOGLE_RSA.location },
+                { label: "Language", value: GOOGLE_RSA.language },
+                { label: "Bidding strategy", value: GOOGLE_RSA.bidding },
+                { label: "Max CPC cap", value: GOOGLE_RSA.maxCpc },
                 { label: "Daily budget", value: GOOGLE_RSA.dailyBudget },
                 { label: "Duration", value: GOOGLE_RSA.duration },
+                {
+                  label: "Ad group name",
+                  value: GOOGLE_RSA.adGroupName,
+                  copy: true,
+                },
                 { label: "Match types", value: GOOGLE_RSA.matchType },
               ].map((item) => (
-                <div key={item.label}>
-                  <p className="text-[#99a1af] mb-0.5">{item.label}</p>
-                  <p className="text-[#4a5565] font-medium">{item.value}</p>
+                <div
+                  key={item.label}
+                  className="px-5 py-2.5 flex items-center gap-3"
+                >
+                  <span className="text-[#99a1af] w-36 shrink-0">
+                    {item.label}
+                  </span>
+                  <span
+                    className={`flex-1 font-medium ${item.warn ? "text-amber-700" : "text-[#101828]"}`}
+                  >
+                    {item.value}
+                  </span>
+                  {item.copy && <CopyButton text={item.value} />}
                 </div>
               ))}
             </div>
@@ -454,15 +493,31 @@ export function AdCampaignClient() {
             </div>
           </div>
 
-          {/* UTM URL */}
-          <div className="bg-[#f0fdf4] rounded-xl px-5 py-4 flex items-start gap-3 border border-green-100">
-            <p className="text-xs font-medium text-[#166534] shrink-0 pt-0.5">
-              Final URL
-            </p>
-            <code className="text-xs text-[#15472d] break-all flex-1">
-              {GOOGLE_RSA.utmUrl}
-            </code>
-            <CopyButton text={GOOGLE_RSA.utmUrl} />
+          {/* URLs */}
+          <div className="bg-[#f0fdf4] rounded-xl border border-green-100 overflow-hidden">
+            <div className="px-5 py-3 border-b border-green-100">
+              <p className="text-xs font-semibold text-[#166534]">URLs</p>
+            </div>
+            <div className="divide-y divide-green-100">
+              <div className="px-5 py-3 flex items-start gap-3">
+                <p className="text-xs font-medium text-[#166534] w-24 shrink-0 pt-0.5">
+                  Final URL
+                </p>
+                <code className="text-xs text-[#15472d] break-all flex-1">
+                  {GOOGLE_RSA.utmUrl}
+                </code>
+                <CopyButton text={GOOGLE_RSA.utmUrl} />
+              </div>
+              <div className="px-5 py-3 flex items-center gap-3">
+                <p className="text-xs font-medium text-[#166534] w-24 shrink-0">
+                  Display path
+                </p>
+                <code className="text-xs text-[#15472d] flex-1">
+                  {GOOGLE_RSA.displayPath}
+                </code>
+                <CopyButton text={GOOGLE_RSA.displayPath} />
+              </div>
+            </div>
           </div>
 
           {/* Kill / continue rules */}
