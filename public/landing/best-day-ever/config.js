@@ -1,2 +1,3 @@
-// Injected at build time on Vercel from HUB_API_URL. For local/same-origin, leave empty.
-window.HUB_API_URL = '';
+// Injected at build time. Publishable key only — safe to expose in browser.
+window.SUPABASE_URL = "";
+window.SUPABASE_PUBLISHABLE_KEY = "";
