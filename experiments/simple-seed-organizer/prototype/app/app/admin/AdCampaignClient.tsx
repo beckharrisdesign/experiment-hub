@@ -2,238 +2,238 @@
 
 import { useState } from "react";
 
-const BASE_URL = "https://simpleseedorganizer.com/";
+const BASE_URL = "https://simpleseedorganizer.app/";
 
-const AD_VARIANTS = [
+const PHASES = [
   {
     id: 1,
+    label: "Phase 1 — Now",
+    channel: "Google Search",
+    format: "Text-only RSA",
+    budget: "$25–50 total",
+    goal: "Binary intent signal",
+    status: "launch",
+  },
+  {
+    id: 2,
+    label: "Phase 2 — If signal",
+    channel: "Meta (Facebook + Instagram)",
+    format: "Text + single photo",
+    budget: "$50–100 total",
+    goal: "Angle + audience validation",
+    status: "pending",
+  },
+  {
+    id: 3,
+    label: "Phase 3 — Future",
+    channel: "Meta",
+    format: "Designed creatives",
+    budget: "TBD",
+    goal: "Scale winners",
+    status: "future",
+  },
+];
+
+const GOOGLE_RSA = {
+  campaignName: "SSO-validation-phase1",
+  adGroupName: "organizing-seeds",
+  campaignType: "Search",
+  goal: "Create a campaign without a goal's guidance",
+  networks: "Uncheck Display Network · Uncheck Search partners",
+  location: "United States",
+  language: "English",
+  bidding: "Maximize clicks",
+  maxCpc: "$2.50",
+  budget: "$25–50 total",
+  dailyBudget: "$12/day",
+  duration: "3–5 days — run fast, not trickled over weeks",
+  matchType: "Exact and phrase only — no broad match",
+  displayPath: "simpleseedorganizer.app/app",
+  targetKeywords: [
+    "[organizing seeds]",
+    "[organizing seed packets]",
+    '"organizing seeds"',
+    '"organizing seed packets"',
+  ],
+  negativeKeywords: [
+    "box",
+    "binder",
+    "cabinet",
+    "kit",
+    "diy",
+    "ideas",
+    "storage box",
+    "organizer box",
+  ],
+  headlines: [
+    { text: "Organize Seeds With an App", chars: 26 },
+    { text: "Digital Seed Organizer · $15", chars: 28 },
+    { text: "Seed Inventory on Your Phone", chars: 28 },
+    { text: "Stop Rebuying Seeds You Own", chars: 27 },
+    { text: "Know Which Seeds Are Viable", chars: 27 },
+    { text: "Never Rebuy the Same Seeds", chars: 26 },
+    { text: "Find Any Seed in Seconds", chars: 24 },
+    { text: "Use Seeds Before They Expire", chars: 28 },
+    { text: "Your Seeds, Finally Organized", chars: 29 },
+    { text: "Simple Seed Organizer App", chars: 25 },
+    { text: "Track Seeds, Not Spreadsheets", chars: 29 },
+    { text: "Your Seeds. Searchable. Fast.", chars: 29 },
+    { text: "$15/Year. No Complexity.", chars: 24 },
+    { text: "Early Access · $15/Year", chars: 23 },
+    { text: "Know What Seeds You Own", chars: 23 },
+  ],
+  descriptions: [
+    "Track what you have, see which seeds to use first, never rebuy duplicates. $15/year.",
+    "Mobile-first seed inventory. No garden planning, no calendars—just your seeds.",
+    "Know which seeds to plant first before they expire. Simple, fast, on your phone.",
+    "Searchable seed inventory app. Find any packet in seconds. Get early access today.",
+  ],
+  utmUrl: `${BASE_URL}?utm_source=google&utm_medium=search&utm_campaign=validation&utm_content=rsa-v1`,
+  killRules: [
+    {
+      signal: "< 200 impressions after 4 days",
+      action: "Volume too thin — move remaining budget to Meta Phase 2",
+      type: "abort",
+    },
+    {
+      signal: "0 signups from 30+ clicks",
+      action: "Negative signal — revise landing page before spending more",
+      type: "negative",
+    },
+    {
+      signal: "1 signup",
+      action: "Ambiguous — spend another $25 before deciding",
+      type: "neutral",
+    },
+    {
+      signal: "2+ signups",
+      action: "Positive — continue and add Meta Phase 2",
+      type: "positive",
+    },
+  ],
+};
+
+const META_VARIANTS = [
+  {
+    id: "A",
     slug: "stop-rebuying",
     theme: "Stop Rebuying",
+    phase: "launch" as const,
     headline: "Stop Rebuying Seeds You Already Own",
     primaryText:
-      "Tired of buying the same seed packets over and over? Simple Seed Organizer helps you track what you have, so you never waste money on duplicates again.\n\nJust your seed inventory on your phone. No garden planning, no calendars—just store and find your seeds when you need them.\n\nGet early access for $15/year.",
-    description:
-      "Simple seed inventory tracking for home gardeners. Know what you have, find it fast, use it before it expires.",
+      "Tired of buying the same seed packets over and over?\n\nSimple Seed Organizer helps you track what you have, so you never waste money on duplicates again.\n\nJust your seed inventory on your phone. No garden planning, no calendars—just store and find your seeds when you need them.\n\nGet early access for $15/year.",
     cta: "Learn More",
-    imageSuggestions: [
-      "Before/after: Messy seed box vs. organized inventory",
-      "Shopping scenario: Person at garden center checking phone",
-      'Text overlay: "Never buy duplicates again"',
-    ],
-    targeting: {
-      interests: [
-        "Gardening",
-        "Home Gardening",
-        "Seed Starting",
-        "Vegetable Gardening",
-      ],
-      demographics: "25–65, interested in gardening",
-      notes: "Lookalike: Seed retailers, garden centers",
-    },
+    creative:
+      'Single photo of your own seed packet pile (phone shot, authentic over polished). Text overlay: "Never buy duplicates again."',
   },
   {
-    id: 2,
+    id: "B",
     slug: "seed-viability",
     theme: "Seed Viability",
+    phase: "launch" as const,
     headline: "Know Which Seed Packets Are Still Good",
     primaryText:
-      "Can't remember which seeds are still viable? Simple Seed Organizer tracks purchase dates and shows you a “use-first” list, so you plant seeds before they expire.\n\nThe simplest seed inventory tool—just store your seed info and get it back when you need it. No complex features, just what you need.\n\nGet early access for $15/year.",
-    description:
-      "Track seed viability and never waste old seeds. Simple inventory management for home gardeners.",
-    cta: "Get Early Access",
-    imageSuggestions: [
-      "Expired seed packets with dates visible",
-      '"Use First" list mockup',
-      'Text overlay: "Use seeds before they expire"',
-    ],
-    targeting: {
-      interests: [
-        "Seed Saving",
-        "Organic Gardening",
-        "Sustainable Gardening",
-      ],
-      demographics: "30–65, experienced gardeners",
-      notes: "Keywords: seed viability, seed expiration, seed storage",
-    },
+      "Can't remember which seeds are still viable?\n\nSimple Seed Organizer shows you a “use-first” list so you plant seeds before they expire—not after.\n\nThe simplest seed inventory tool. Store your seed info, get it back when you need it. No complexity.\n\nGet early access for $15/year.",
+    cta: "Learn More",
+    creative:
+      'Same base photo as Variant A. Different text overlay: "Use seeds before they expire."',
   },
   {
-    id: 3,
+    id: "C",
     slug: "messy-box",
     theme: "Organization",
+    phase: "backlog" as const,
     headline: "Turn Your Messy Seed Box Into a Searchable Library",
     primaryText:
-      "Your seed collection is a mess. You can't find what you need when you need it. Simple Seed Organizer turns your scattered seed packets into an organized, searchable inventory on your phone.\n\nFind any seed in seconds. Add planting depth, spacing, and notes. Know what you have, when you need it.\n\nGet early access for $15/year.",
-    description:
-      "Organize your seed collection. Simple, fast, mobile-first seed inventory tracking.",
+      "Your seed collection is a mess. You can't find what you need when you need it.\n\nSimple Seed Organizer turns your scattered seed packets into an organized, searchable inventory on your phone.\n\nFind any seed in seconds. Add planting depth, spacing, and notes.\n\nGet early access for $15/year.",
     cta: "Organize My Seeds",
-    imageSuggestions: [
-      "Messy seed box (before)",
-      "Organized app interface (after)",
-      "Search functionality mockup",
-      'Text overlay: "From chaos to organized"',
-    ],
-    targeting: {
-      interests: ["Organization", "Home Organization", "Gardening"],
-      demographics: "25–55, homeowners",
-      notes: "Lookalike: People interested in organization apps",
-    },
+    creative: "Messy seed box (before) → clean app interface (after).",
   },
   {
-    id: 4,
+    id: "D",
     slug: "simplicity",
     theme: "Simplicity",
+    phase: "backlog" as const,
     headline: "Finally, a Seed App That’s Actually Simple",
     primaryText:
-      "Other seed apps force you to use garden planning and calendars you don’t need. Simple Seed Organizer does one thing: helps you track your seed inventory.\n\nNo planning. No calendars. No design tools. Just store your seed info and find it when you need it—on your phone.\n\nGet early access for $15/year.",
-    description: "The simplest seed inventory tool. No bloat, just what you need.",
+      "Other seed apps force you to use garden planning and calendars you don't need.\n\nSimple Seed Organizer does one thing: helps you track your seed inventory. No planning. No calendars. No bloat.\n\nGet early access for $15/year.",
     cta: "Try It Simple",
-    imageSuggestions: [
-      "Comparison: Complex app vs. simple app",
-      "Clean, minimal interface mockup",
-      'Text overlay: "Simplicity first"',
-    ],
-    targeting: {
-      interests: ["Minimalism", "Simple Living", "Gardening"],
-      demographics: "25–50, tech-savvy",
-      notes: "Lookalike: Users of simple productivity apps",
-    },
+    creative: "Clean, minimal interface mockup.",
   },
   {
-    id: 5,
+    id: "E",
     slug: "quick-info",
     theme: "Quick Access",
+    phase: "backlog" as const,
     headline: "Find Seed Info in Seconds, Not Minutes",
     primaryText:
-      "Need planting depth or spacing info? Don’t dig through seed packets. Simple Seed Organizer gives you instant access to all your seed information on your phone.\n\nStore what you need: planting depth, spacing, days to maturity, notes. Find it fast when you’re ready to plant.\n\nGet early access for $15/year.",
-    description:
-      "Quick seed information access. Store it once, find it when you need it.",
+      "Need planting depth or spacing info? Don't dig through seed packets.\n\nSimple Seed Organizer gives you instant access to all your seed information on your phone.\n\nStore it once, find it fast. Get early access for $15/year.",
     cta: "Get Instant Access",
-    imageSuggestions: [
-      "Person in garden with phone",
-      "Quick search mockup",
-      "Seed info display mockup",
-      'Text overlay: "Info at your fingertips"',
-    ],
-    targeting: {
-      interests: ["Vegetable Gardening", "Seed Starting", "Planting"],
-      demographics: "30–60, active gardeners",
-      notes: "Keywords: planting depth, seed spacing, garden planning",
-    },
+    creative: "Person in garden with phone. Quick search mockup.",
   },
   {
-    id: 6,
+    id: "F",
     slug: "save-money",
     theme: "Save Money",
+    phase: "backlog" as const,
     headline: "Save Money by Using Seeds Before They Expire",
     primaryText:
-      "Stop wasting money on seeds that expire unused. Simple Seed Organizer shows you which seeds to use first, so you plant them before they go bad.\n\nTrack purchase dates, see your “use-first” list, and never waste seeds again. Simple inventory tracking for smart gardeners.\n\nGet early access for $15/year.",
-    description:
-      "Smart seed management. Use seeds before they expire, save money, reduce waste.",
+      "Stop wasting money on seeds that expire unused.\n\nSimple Seed Organizer shows you which seeds to use first, so you plant them before they go bad.\n\nTrack purchase dates, see your “use-first” list, never waste seeds again. $15/year.",
     cta: "Save My Seeds",
-    imageSuggestions: [
-      "Expired seed packets",
-      "Money/coins visual",
-      '"Use first" list mockup',
-      'Text overlay: "Save money, reduce waste"',
-    ],
-    targeting: {
-      interests: ["Frugal Living", "Sustainable Gardening", "Money Saving"],
-      demographics: "25–55, cost-conscious",
-      notes: "Lookalike: Budget-conscious gardeners",
-    },
+    creative: "Expired seed packets + use-first list mockup.",
   },
-] as const;
+];
 
-const AD_SETS = [
-  {
-    id: 1,
-    name: "Meta — Gardening Interests",
-    platform: "Facebook + Instagram",
-    interests: ["Gardening", "Home Gardening", "Seed Starting", "Vegetable Gardening"],
-    age: "25–65",
-    gender: "All",
-    placement: "Feed, Stories, Reels",
-    budget: "$20/day",
-    variants: [1, 2, 3],
-  },
-  {
-    id: 2,
-    name: "Meta — Seed Keywords",
-    platform: "Facebook + Instagram",
-    interests: ["Seed Saving", "Organic Gardening", "Heirloom Seeds"],
-    age: "30–65",
-    gender: "All",
-    placement: "Feed, Stories",
-    budget: "$20/day",
-    variants: [2, 6, 4],
-  },
-  {
-    id: 3,
-    name: "Google Ads — Search",
-    platform: "Google Search + Display",
-    interests: ["seed organizer", "seed inventory app", "seed tracker", "how to organize seeds"],
-    age: "25–65",
-    gender: "All",
-    placement: "Search results + Display Network",
-    budget: "$15/day",
-    variants: [1, 5, 2],
-  },
-] as const;
+const META_TARGETING = {
+  platform: "Facebook + Instagram",
+  format:
+    "Lead Gen ads (collects email inside Meta — no landing page required for first test)",
+  interests: [
+    "Gardening",
+    "Seed Starting",
+    "Vegetable Gardening",
+    "Heirloom Seeds",
+  ],
+  age: "30–65",
+  placement: "Feed only — no Reels or Stories until Phase 3",
+  budget: "$10/day · 7 days · $50–100 total",
+  killRules: [
+    {
+      signal: "CTR < 0.8% on both variants after day 4",
+      action: "Pause — revise hooks",
+      type: "negative",
+    },
+    {
+      signal: "One variant clearly outperforms",
+      action: "Kill loser, scale winner",
+      type: "neutral",
+    },
+    {
+      signal: "5+ signups at < $25 each",
+      action: "Positive — move to Phase 3",
+      type: "positive",
+    },
+  ],
+};
 
 const CREATIVE_SIZES = [
   {
-    platform: "Meta — Feed",
-    formats: [
-      { name: "Square", size: "1080 × 1080", ratio: "1:1", notes: "Works on FB + IG feed" },
-      { name: "Portrait", size: "1080 × 1350", ratio: "4:5", notes: "More vertical real estate" },
-      { name: "Landscape", size: "1200 × 628", ratio: "1.91:1", notes: "FB link preview default" },
-    ],
+    name: "Meta Feed (square)",
+    size: "1080 × 1080",
+    notes: "Primary format — Phase 2+",
   },
   {
-    platform: "Meta — Stories & Reels",
-    formats: [
-      { name: "Full screen", size: "1080 × 1920", ratio: "9:16", notes: "Leave 250px safe zone top + bottom for UI" },
-    ],
+    name: "Meta Feed (portrait)",
+    size: "1080 × 1350",
+    notes: "Better feed presence — Phase 2+",
   },
+  { name: "Meta Stories / Reels", size: "1080 × 1920", notes: "Phase 3 only" },
   {
-    platform: "Meta — Carousel",
-    formats: [
-      { name: "Card", size: "1080 × 1080", ratio: "1:1", notes: "2–10 cards; each card independent CTA" },
-    ],
+    name: "Meta Lead Gen card",
+    size: "1200 × 628",
+    notes: "In-form header image — Phase 2+",
   },
-  {
-    platform: "Google — Responsive Display",
-    formats: [
-      { name: "Landscape", size: "1200 × 628", ratio: "1.91:1", notes: "Required — primary hero" },
-      { name: "Square", size: "1200 × 1200", ratio: "1:1", notes: "Required" },
-      { name: "Portrait", size: "900 × 1600", ratio: "9:16", notes: "Optional — improves coverage" },
-      { name: "Logo square", size: "1200 × 1200", ratio: "1:1", notes: "Logo on white/transparent bg" },
-      { name: "Logo landscape", size: "1200 × 300", ratio: "4:1", notes: "Optional logo variant" },
-    ],
-  },
-  {
-    platform: "Google — Standard Display",
-    formats: [
-      { name: "Medium Rectangle", size: "300 × 250", ratio: "—", notes: "Most common placement" },
-      { name: "Leaderboard", size: "728 × 90", ratio: "—", notes: "Desktop top/bottom" },
-      { name: "Large Rectangle", size: "336 × 280", ratio: "—", notes: "High performing" },
-      { name: "Half Page", size: "300 × 600", ratio: "—", notes: "Premium inventory" },
-      { name: "Mobile Banner", size: "320 × 50", ratio: "—", notes: "Mobile web standard" },
-    ],
-  },
-] as const;
-
-const METRICS = [
-  { label: "CTR", target: "> 2%", note: "Pause if < 1% after 2–3 days" },
-  { label: "Landing conversion", target: "> 10%", note: "Visitors → form submission" },
-  { label: "CPC", target: "< $1–2", note: "Cost per click" },
-  { label: "Cost per signup", target: "< $10–20", note: "Optimize over time" },
 ];
-
-function utmUrl(slug: string, source: "meta" | "google") {
-  const medium = source === "google" ? "cpc" : "social";
-  return `${BASE_URL}?utm_source=${source}&utm_medium=${medium}&utm_campaign=validation&utm_content=${slug}`;
-}
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -246,7 +246,7 @@ function CopyButton({ text }: { text: string }) {
           setCopied(true);
           setTimeout(() => setCopied(false), 1800);
         } catch {
-          // clipboard unavailable (insecure context or permission denied)
+          // clipboard unavailable
         }
       }}
       className="text-xs px-2 py-0.5 rounded border border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors shrink-0"
@@ -256,7 +256,31 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
+function KillRulePill({ type }: { type: string }) {
+  const styles: Record<string, string> = {
+    abort: "bg-gray-100 text-gray-500",
+    negative: "bg-red-50 text-red-600",
+    neutral: "bg-amber-50 text-amber-700",
+    positive: "bg-green-50 text-green-700",
+  };
+  const labels: Record<string, string> = {
+    abort: "abort",
+    negative: "negative",
+    neutral: "ambiguous",
+    positive: "positive",
+  };
+  return (
+    <span
+      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide ${styles[type]}`}
+    >
+      {labels[type]}
+    </span>
+  );
+}
+
 export function AdCampaignClient() {
+  const [showBacklog, setShowBacklog] = useState(false);
+
   return (
     <main className="min-h-screen bg-[#f3f4f6] text-[#101828]">
       {/* Header */}
@@ -266,58 +290,342 @@ export function AdCampaignClient() {
         </p>
         <h1 className="text-xl font-semibold">Ad Campaign</h1>
         <p className="text-sm text-green-200 mt-0.5">
-          Validation test &middot; Meta + Google Ads &middot; $200&ndash;500 initial budget
+          Phase 1 · Google Search text ads · $25–50 to start
         </p>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-10">
-
-        {/* Campaign overview */}
-        <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: "Platforms", value: "Meta + Google Ads" },
-            { label: "Budget", value: "$200–500 total" },
-            { label: "Duration", value: "1–2 weeks" },
-            { label: "Price point", value: "$15/year" },
-          ].map((item) => (
-            <div key={item.label} className="bg-white rounded-xl p-4 shadow-sm">
-              <p className="text-xs text-[#6a7282] mb-1">{item.label}</p>
-              <p className="font-semibold text-sm">{item.value}</p>
-            </div>
-          ))}
-        </section>
-
-        {/* Ad variants */}
+        {/* Phase overview */}
         <section>
           <h2 className="text-sm font-semibold uppercase tracking-widest text-[#4a5565] mb-4">
-            Ad Variants ({AD_VARIANTS.length})
+            Phase Structure
           </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {PHASES.map((p) => (
+              <div
+                key={p.id}
+                className={`rounded-xl p-4 shadow-sm border-2 ${
+                  p.status === "launch"
+                    ? "bg-white border-[#15472d]"
+                    : p.status === "pending"
+                      ? "bg-white border-gray-200"
+                      : "bg-[#f9fafb] border-gray-100"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span
+                    className={`text-xs font-semibold uppercase tracking-wide ${
+                      p.status === "launch"
+                        ? "text-[#15472d]"
+                        : "text-[#99a1af]"
+                    }`}
+                  >
+                    {p.status === "launch"
+                      ? "▶ Launch now"
+                      : p.status === "pending"
+                        ? "Pending signal"
+                        : "Future"}
+                  </span>
+                  <span className="text-xs font-semibold text-[#15472d]">
+                    {p.budget}
+                  </span>
+                </div>
+                <p className="font-semibold text-sm mb-0.5">{p.label}</p>
+                <p className="text-xs text-[#6a7282]">{p.channel}</p>
+                <p className="text-xs text-[#6a7282]">{p.format}</p>
+                <p className="text-xs text-[#99a1af] mt-2 italic">{p.goal}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Phase 1: Google Search RSA */}
+        <section className="space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-[#4a5565]">
+            Phase 1 — Google Search RSA
+          </h2>
+
+          {/* Setup checklist */}
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100">
+              <p className="font-semibold text-sm">Campaign Setup</p>
+              <p className="text-xs text-[#6a7282]">
+                Fields in Google Ads wizard order
+              </p>
+            </div>
+            <div className="divide-y divide-gray-50 text-xs">
+              {[
+                {
+                  label: "Campaign name",
+                  value: GOOGLE_RSA.campaignName,
+                  copy: true,
+                },
+                { label: "Campaign type", value: GOOGLE_RSA.campaignType },
+                { label: "Goal", value: GOOGLE_RSA.goal },
+                { label: "Networks", value: GOOGLE_RSA.networks, warn: true },
+                { label: "Location", value: GOOGLE_RSA.location },
+                { label: "Language", value: GOOGLE_RSA.language },
+                { label: "Bidding strategy", value: GOOGLE_RSA.bidding },
+                { label: "Max CPC cap", value: GOOGLE_RSA.maxCpc },
+                { label: "Daily budget", value: GOOGLE_RSA.dailyBudget },
+                { label: "Duration", value: GOOGLE_RSA.duration },
+                {
+                  label: "Ad group name",
+                  value: GOOGLE_RSA.adGroupName,
+                  copy: true,
+                },
+                { label: "Match types", value: GOOGLE_RSA.matchType },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="px-5 py-2.5 flex items-center gap-3"
+                >
+                  <span className="text-[#99a1af] w-36 shrink-0">
+                    {item.label}
+                  </span>
+                  <span
+                    className={`flex-1 font-medium ${item.warn ? "text-amber-700" : "text-[#101828]"}`}
+                  >
+                    {item.value}
+                  </span>
+                  {item.copy && <CopyButton text={item.value} />}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Keywords */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+                <p className="font-semibold text-sm">Target Keywords</p>
+                <CopyButton text={GOOGLE_RSA.targetKeywords.join("\n")} />
+              </div>
+              <ul className="px-5 py-4 space-y-1.5">
+                {GOOGLE_RSA.targetKeywords.map((kw) => (
+                  <li
+                    key={kw}
+                    className="text-xs font-mono text-[#15472d] bg-[#f0fdf4] px-2 py-1 rounded"
+                  >
+                    {kw}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+                <p className="font-semibold text-sm">Negative Keywords</p>
+                <CopyButton text={GOOGLE_RSA.negativeKeywords.join(", ")} />
+              </div>
+              <div className="px-5 py-4 flex flex-wrap gap-1.5">
+                {GOOGLE_RSA.negativeKeywords.map((kw) => (
+                  <span
+                    key={kw}
+                    className="text-xs font-mono bg-red-50 text-red-600 px-2 py-0.5 rounded"
+                  >
+                    −{kw}
+                  </span>
+                ))}
+              </div>
+              <p className="px-5 pb-4 text-xs text-[#99a1af]">
+                Blocks physical-product searches (box, binder, etc.) — most
+                high-volume terms are physical intent.
+              </p>
+            </div>
+          </div>
+
+          {/* Headlines */}
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-sm">RSA Headlines</p>
+                <p className="text-xs text-[#6a7282]">
+                  Max 30 chars · Use all 15 slots · Lead with app/phone intent
+                </p>
+              </div>
+              <CopyButton
+                text={GOOGLE_RSA.headlines.map((h) => h.text).join("\n")}
+              />
+            </div>
+            <div className="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              {GOOGLE_RSA.headlines.map((h, i) => (
+                <div key={h.text} className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-[#99a1af] w-4 shrink-0">
+                    {i + 1}
+                  </span>
+                  <span className="text-xs text-[#101828] flex-1">
+                    {h.text}
+                  </span>
+                  <span
+                    className={`text-[10px] font-mono shrink-0 ${h.chars <= 30 ? "text-[#99a1af]" : "text-red-500 font-bold"}`}
+                  >
+                    {h.chars}/30
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Descriptions */}
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-sm">RSA Descriptions</p>
+                <p className="text-xs text-[#6a7282]">
+                  Max 90 chars · Use all 4 slots
+                </p>
+              </div>
+              <CopyButton text={GOOGLE_RSA.descriptions.join("\n")} />
+            </div>
+            <div className="px-5 py-4 space-y-2">
+              {GOOGLE_RSA.descriptions.map((d, i) => (
+                <div key={d} className="flex items-start gap-2">
+                  <span className="text-[10px] font-mono text-[#99a1af] w-4 shrink-0 pt-0.5">
+                    {i + 1}
+                  </span>
+                  <span className="text-xs text-[#101828] flex-1">{d}</span>
+                  <span className="text-[10px] font-mono text-[#99a1af] shrink-0">
+                    {d.length}/90
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* URLs */}
+          <div className="bg-[#f0fdf4] rounded-xl border border-green-100 overflow-hidden">
+            <div className="px-5 py-3 border-b border-green-100">
+              <p className="text-xs font-semibold text-[#166534]">URLs</p>
+            </div>
+            <div className="divide-y divide-green-100">
+              <div className="px-5 py-3 flex items-start gap-3">
+                <p className="text-xs font-medium text-[#166534] w-24 shrink-0 pt-0.5">
+                  Final URL
+                </p>
+                <code className="text-xs text-[#15472d] break-all flex-1">
+                  {GOOGLE_RSA.utmUrl}
+                </code>
+                <CopyButton text={GOOGLE_RSA.utmUrl} />
+              </div>
+              <div className="px-5 py-3 flex items-center gap-3">
+                <p className="text-xs font-medium text-[#166534] w-24 shrink-0">
+                  Display path
+                </p>
+                <code className="text-xs text-[#15472d] flex-1">
+                  {GOOGLE_RSA.displayPath}
+                </code>
+                <CopyButton text={GOOGLE_RSA.displayPath} />
+              </div>
+            </div>
+          </div>
+
+          {/* Kill / continue rules */}
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100">
+              <p className="font-semibold text-sm">Kill / Continue Rules</p>
+            </div>
+            <div className="divide-y divide-gray-50">
+              {GOOGLE_RSA.killRules.map((rule) => (
+                <div
+                  key={rule.signal}
+                  className="px-5 py-3 flex items-start gap-3"
+                >
+                  <KillRulePill type={rule.type} />
+                  <div className="flex-1 text-xs">
+                    <span className="font-medium text-[#101828]">
+                      {rule.signal}
+                    </span>
+                    <span className="text-[#6a7282]"> → {rule.action}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Phase 2: Meta */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-[#4a5565]">
+              Phase 2 — Meta Lead Gen
+            </h2>
+            <span className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded font-medium">
+              Launch when Phase 1 shows signal
+            </span>
+          </div>
+
+          {/* Targeting */}
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100">
+              <p className="font-semibold text-sm">Ad Set</p>
+            </div>
+            <div className="px-5 py-4 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3 text-xs">
+              <div>
+                <p className="text-[#99a1af] mb-0.5">Platform</p>
+                <p className="text-[#4a5565] font-medium">
+                  {META_TARGETING.platform}
+                </p>
+              </div>
+              <div>
+                <p className="text-[#99a1af] mb-0.5">Format</p>
+                <p className="text-[#4a5565] font-medium">
+                  {META_TARGETING.format}
+                </p>
+              </div>
+              <div>
+                <p className="text-[#99a1af] mb-0.5">Budget</p>
+                <p className="text-[#4a5565] font-medium">
+                  {META_TARGETING.budget}
+                </p>
+              </div>
+              <div>
+                <p className="text-[#99a1af] mb-0.5">Age</p>
+                <p className="text-[#4a5565] font-medium">
+                  {META_TARGETING.age}
+                </p>
+              </div>
+              <div>
+                <p className="text-[#99a1af] mb-0.5">Placement</p>
+                <p className="text-[#4a5565] font-medium">
+                  {META_TARGETING.placement}
+                </p>
+              </div>
+              <div>
+                <p className="text-[#99a1af] mb-0.5">Interests</p>
+                <p className="text-[#4a5565] font-medium">
+                  {META_TARGETING.interests.join(", ")}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Launch variants A + B */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {AD_VARIANTS.map((v) => (
+            {META_VARIANTS.filter((v) => v.phase === "launch").map((v) => (
               <div
                 key={v.id}
-                className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col"
+                className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col border-2 border-[#15472d]"
               >
-                {/* Card header */}
                 <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono bg-[#f3f4f6] text-[#4a5565] px-2 py-0.5 rounded">
-                      V{v.id}
+                    <span className="text-xs font-mono bg-[#15472d] text-white px-2 py-0.5 rounded">
+                      Variant {v.id}
                     </span>
                     <span className="text-xs text-[#6a7282]">{v.theme}</span>
                   </div>
-                  <span className="text-xs font-mono text-[#99a1af]">{v.slug}</span>
+                  <span className="text-xs text-[#15472d] font-semibold uppercase tracking-wide">
+                    Launch
+                  </span>
                 </div>
 
-                {/* Copy */}
                 <div className="px-5 py-4 flex-1 space-y-3">
-                  <p className="font-semibold text-base leading-snug">{v.headline}</p>
+                  <p className="font-semibold text-base leading-snug">
+                    {v.headline}
+                  </p>
                   <p className="text-xs text-[#4a5565] whitespace-pre-line leading-relaxed">
                     {v.primaryText}
                   </p>
-                  {v.description && (
-                    <p className="text-xs text-[#6a7282] italic">{v.description}</p>
-                  )}
                   <div className="flex items-center gap-2 pt-1">
                     <span className="text-xs text-[#6a7282]">CTA:</span>
                     <span className="text-xs font-semibold bg-[#15472d] text-white px-3 py-1 rounded-full">
@@ -326,158 +634,90 @@ export function AdCampaignClient() {
                   </div>
                 </div>
 
-                {/* Targeting */}
-                <div className="px-5 py-3 bg-[#f9fafb] border-t border-gray-100 space-y-1.5">
-                  <p className="text-xs font-medium text-[#4a5565]">Targeting</p>
-                  <p className="text-xs text-[#6a7282]">
-                    <span className="font-medium text-[#4a5565]">Interests: </span>
-                    {v.targeting.interests.join(", ")}
+                <div className="px-5 py-3 bg-[#f9fafb] border-t border-gray-100">
+                  <p className="text-xs font-medium text-[#4a5565] mb-1">
+                    Creative
                   </p>
-                  <p className="text-xs text-[#6a7282]">
-                    <span className="font-medium text-[#4a5565]">Demo: </span>
-                    {v.targeting.demographics}
-                  </p>
-                  <p className="text-xs text-[#6a7282]">{v.targeting.notes}</p>
+                  <p className="text-xs text-[#6a7282]">{v.creative}</p>
                 </div>
 
-                {/* Image ideas */}
-                <div className="px-5 py-3 border-t border-gray-100 space-y-1">
-                  <p className="text-xs font-medium text-[#4a5565]">Creative ideas</p>
-                  <ul className="space-y-0.5">
-                    {v.imageSuggestions.map((s) => (
-                      <li key={s} className="text-xs text-[#6a7282] flex gap-1.5">
-                        <span className="text-gray-300 shrink-0">&ndash;</span>
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* UTM URLs */}
-                <div className="px-5 py-3 bg-[#f0fdf4] border-t border-green-100 space-y-2">
-                  <p className="text-xs font-medium text-[#166534]">UTM URLs</p>
-                  {(["meta", "google"] as const).map((source) => (
-                    <div key={source} className="flex items-start gap-2">
-                      <span className="text-xs text-[#166534] shrink-0 w-12 pt-0.5 font-medium">
-                        {source === "meta" ? "Meta" : "Google"}
-                      </span>
-                      <code className="text-xs text-[#15472d] break-all flex-1 leading-relaxed">
-                        {utmUrl(v.slug, source)}
-                      </code>
-                      <CopyButton text={utmUrl(v.slug, source)} />
-                    </div>
-                  ))}
+                <div className="px-5 py-3 bg-[#f0fdf4] border-t border-green-100 flex items-start gap-2">
+                  <span className="text-xs font-medium text-[#166534] shrink-0 pt-0.5">
+                    UTM
+                  </span>
+                  <code className="text-xs text-[#15472d] break-all flex-1">
+                    {`${BASE_URL}?utm_source=meta&utm_medium=social&utm_campaign=validation&utm_content=${v.slug}`}
+                  </code>
+                  <CopyButton
+                    text={`${BASE_URL}?utm_source=meta&utm_medium=social&utm_campaign=validation&utm_content=${v.slug}`}
+                  />
                 </div>
               </div>
             ))}
           </div>
-        </section>
 
-        {/* Ad sets */}
-        <section>
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-[#4a5565] mb-4">
-            Ad Sets
-          </h2>
-          <div className="space-y-3">
-            {AD_SETS.map((set) => (
-              <div key={set.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
-                <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-sm">{set.name}</p>
-                    <p className="text-xs text-[#6a7282]">{set.platform}</p>
-                  </div>
-                  <span className="text-sm font-semibold text-[#15472d]">{set.budget}</span>
-                </div>
-                <div className="px-5 py-3 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2 text-xs">
-                  <div>
-                    <p className="text-[#99a1af] mb-0.5">Interests</p>
-                    <p className="text-[#4a5565]">{set.interests.join(", ")}</p>
-                  </div>
-                  <div>
-                    <p className="text-[#99a1af] mb-0.5">Age</p>
-                    <p className="text-[#4a5565]">{set.age}</p>
-                  </div>
-                  <div>
-                    <p className="text-[#99a1af] mb-0.5">Placement</p>
-                    <p className="text-[#4a5565]">{set.placement}</p>
-                  </div>
-                  <div>
-                    <p className="text-[#99a1af] mb-0.5">Test variants</p>
-                    <p className="text-[#4a5565]">
-                      {set.variants.map((n) => `V${n}`).join(", ")}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Metrics */}
-        <section>
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-[#4a5565] mb-4">
-            Success Metrics
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {METRICS.map((m) => (
-              <div key={m.label} className="bg-white rounded-xl p-4 shadow-sm">
-                <p className="text-xs text-[#6a7282] mb-1">{m.label}</p>
-                <p className="text-lg font-semibold text-[#15472d]">{m.target}</p>
-                <p className="text-xs text-[#99a1af] mt-1">{m.note}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Budget */}
-        <section>
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-[#4a5565] mb-4">
-            Budget Allocation
-          </h2>
+          {/* Kill / continue */}
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <table className="w-full text-sm">
+            <div className="px-5 py-3 border-b border-gray-100">
+              <p className="font-semibold text-sm">Kill / Continue Rules</p>
+            </div>
+            <div className="divide-y divide-gray-50">
+              {META_TARGETING.killRules.map((rule) => (
+                <div
+                  key={rule.signal}
+                  className="px-5 py-3 flex items-start gap-3"
+                >
+                  <KillRulePill type={rule.type} />
+                  <div className="flex-1 text-xs">
+                    <span className="font-medium text-[#101828]">
+                      {rule.signal}
+                    </span>
+                    <span className="text-[#6a7282]"> → {rule.action}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Phase 3: Creative sizes */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-[#4a5565]">
+              Phase 3 — Creative Sizes
+            </h2>
+            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded font-medium">
+              Build after a winning angle is confirmed
+            </span>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-gray-100">
-                  <th className="text-left px-5 py-3 text-xs font-medium text-[#6a7282]">
-                    Platform
+                  <th className="text-left px-5 py-3 text-[#99a1af] font-medium">
+                    Format
                   </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-[#6a7282]">
-                    Budget
+                  <th className="text-left px-5 py-3 text-[#99a1af] font-medium">
+                    Size (px)
                   </th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-[#6a7282]">
+                  <th className="text-left px-5 py-3 text-[#99a1af] font-medium">
                     Notes
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {[
-                  {
-                    platform: "Meta (Facebook + Instagram)",
-                    budget: "$300",
-                    notes: "3 ad sets \xd7 $100 over 1 week",
-                  },
-                  {
-                    platform: "Google Ads (Search + Display)",
-                    budget: "$100",
-                    notes: "1 search set + responsive display, 1 week",
-                  },
-                  {
-                    platform: "Landing page hosting",
-                    budget: "$0–20/mo",
-                    notes: "Vercel free tier",
-                  },
-                ].map((row) => (
+                {CREATIVE_SIZES.map((fmt) => (
                   <tr
-                    key={row.platform}
+                    key={fmt.name}
                     className="border-b border-gray-50 last:border-0"
                   >
                     <td className="px-5 py-3 font-medium text-[#101828]">
-                      {row.platform}
+                      {fmt.name}
                     </td>
-                    <td className="px-5 py-3 text-[#15472d] font-semibold">
-                      {row.budget}
+                    <td className="px-5 py-3 font-mono text-[#15472d]">
+                      {fmt.size}
                     </td>
-                    <td className="px-5 py-3 text-xs text-[#6a7282]">{row.notes}</td>
+                    <td className="px-5 py-3 text-[#6a7282]">{fmt.notes}</td>
                   </tr>
                 ))}
               </tbody>
@@ -485,126 +725,55 @@ export function AdCampaignClient() {
           </div>
         </section>
 
-        {/* Creative sizes */}
-        <section>
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-[#4a5565] mb-4">
-            Creative Sizes to Produce
-          </h2>
-          <div className="space-y-3">
-            {CREATIVE_SIZES.map((group) => (
-              <div key={group.platform} className="bg-white rounded-xl shadow-sm overflow-hidden">
-                <div className="px-5 py-3 border-b border-gray-100">
-                  <p className="font-semibold text-sm">{group.platform}</p>
-                </div>
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-gray-50">
-                      <th className="text-left px-5 py-2 text-[#99a1af] font-medium">Name</th>
-                      <th className="text-left px-5 py-2 text-[#99a1af] font-medium">Size (px)</th>
-                      <th className="text-left px-5 py-2 text-[#99a1af] font-medium">Ratio</th>
-                      <th className="text-left px-5 py-2 text-[#99a1af] font-medium">Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {group.formats.map((fmt) => (
-                      <tr key={fmt.name} className="border-b border-gray-50 last:border-0">
-                        <td className="px-5 py-2.5 font-medium text-[#101828]">{fmt.name}</td>
-                        <td className="px-5 py-2.5 font-mono text-[#15472d]">{fmt.size}</td>
-                        <td className="px-5 py-2.5 text-[#6a7282]">{fmt.ratio}</td>
-                        <td className="px-5 py-2.5 text-[#6a7282]">{fmt.notes}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Optimization schedule */}
-        <section>
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-[#4a5565] mb-4">
-            Optimization Schedule
-          </h2>
-          <div className="space-y-3">
-            {[
-              {
-                when: "After 2–3 days",
-                rules: [
-                  "Pause ads with CTR < 1%",
-                  "Increase budget for ads with CTR > 3%",
-                  "Test new variants for low performers",
-                ],
-              },
-              {
-                when: "After 1 week",
-                rules: [
-                  "Double down on top 2–3 performers",
-                  "Pause all low performers",
-                  "Test new angles based on learnings",
-                ],
-              },
-              {
-                when: "After 2 weeks",
-                rules: [
-                  "Evaluate overall campaign performance",
-                  "Decide: proceed to MVP launch or pivot messaging",
-                  "Document learnings for future campaigns",
-                ],
-              },
-            ].map((phase) => (
-              <div
-                key={phase.when}
-                className="bg-white rounded-xl shadow-sm px-5 py-4 flex gap-6"
-              >
-                <p className="text-xs font-semibold text-[#15472d] shrink-0 w-28 pt-0.5">
-                  {phase.when}
-                </p>
-                <ul className="space-y-1.5">
-                  {phase.rules.map((rule) => (
-                    <li key={rule} className="text-xs text-[#4a5565] flex gap-2">
-                      <span className="text-green-500 shrink-0">✓</span>
-                      {rule}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Launch checklist */}
+        {/* Backlog variants */}
         <section className="pb-10">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-[#4a5565] mb-4">
-            Launch Checklist
-          </h2>
-          <div className="bg-white rounded-xl shadow-sm px-5 py-4">
-            <ul className="space-y-2.5">
-              {[
-                "Create landing page (see experiments/simple-seed-organizer/docs/landing-page-content.md)",
-                "Set up Google Analytics + Facebook Pixel",
-                "Create ad creatives (images/videos for each variant)",
-                "Set up ad campaigns in Meta Ads Manager",
-                "Set up Pinterest ad campaigns",
-                "Launch with small daily budgets ($15–20/day per set)",
-                "Monitor daily for first week — CTR, CPC, conversions",
-                "Optimize after day 3 based on CTR data",
-                "Evaluate after week 2 against success criteria",
-              ].map((step, i) => (
-                <li
-                  key={step}
-                  className="flex items-start gap-3 text-sm text-[#4a5565]"
-                >
-                  <span className="text-xs font-mono text-[#99a1af] shrink-0 w-4 text-right mt-0.5">
-                    {i + 1}
-                  </span>
-                  {step}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
+          <button
+            type="button"
+            onClick={() => setShowBacklog((v) => !v)}
+            className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-[#99a1af] hover:text-[#4a5565] transition-colors mb-4"
+          >
+            <span>{showBacklog ? "▾" : "▸"}</span>
+            Backlog Variants (C–F) — Phase 3+
+          </button>
 
+          {showBacklog && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {META_VARIANTS.filter((v) => v.phase === "backlog").map((v) => (
+                <div
+                  key={v.id}
+                  className="bg-white rounded-xl shadow-sm overflow-hidden opacity-70 flex flex-col"
+                >
+                  <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono bg-[#f3f4f6] text-[#4a5565] px-2 py-0.5 rounded">
+                        Variant {v.id}
+                      </span>
+                      <span className="text-xs text-[#6a7282]">{v.theme}</span>
+                    </div>
+                    <span className="text-xs text-[#99a1af]">Backlog</span>
+                  </div>
+                  <div className="px-5 py-4 flex-1 space-y-2">
+                    <p className="font-semibold text-sm leading-snug">
+                      {v.headline}
+                    </p>
+                    <p className="text-xs text-[#4a5565] whitespace-pre-line leading-relaxed">
+                      {v.primaryText}
+                    </p>
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className="text-xs text-[#6a7282]">CTA:</span>
+                      <span className="text-xs font-medium border border-gray-200 text-[#4a5565] px-3 py-1 rounded-full">
+                        {v.cta}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="px-5 py-3 bg-[#f9fafb] border-t border-gray-100">
+                    <p className="text-xs text-[#6a7282]">{v.creative}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </main>
   );
