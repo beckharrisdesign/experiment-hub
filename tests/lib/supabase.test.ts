@@ -30,7 +30,7 @@ import { insertSubmission } from "@/lib/supabase";
 describe("insertSubmission", () => {
   beforeEach(() => {
     vi.stubEnv("SUPABASE_URL", "https://test.supabase.co");
-    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test-service-role-key");
+    vi.stubEnv("SUPABASE_PUBLISHABLE_KEY", "test-publishable-key");
 
     // Re-wire the chain after any clearAllMocks
     mockSingle.mockResolvedValue({ data: null, error: null });
@@ -135,21 +135,21 @@ describe("insertSubmission", () => {
   it("throws when SUPABASE_URL is not set", async () => {
     vi.unstubAllEnvs();
     delete process.env.SUPABASE_URL;
-    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "some-key");
+    vi.stubEnv("SUPABASE_PUBLISHABLE_KEY", "some-key");
 
     await expect(
       insertSubmission({ experiment: "test", email: "test@example.com" }),
-    ).rejects.toThrow("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set");
+    ).rejects.toThrow("SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY must be set");
   });
 
-  it("throws when SUPABASE_SERVICE_ROLE_KEY is not set", async () => {
+  it("throws when SUPABASE_PUBLISHABLE_KEY is not set", async () => {
     vi.unstubAllEnvs();
     vi.stubEnv("SUPABASE_URL", "https://test.supabase.co");
-    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    delete process.env.SUPABASE_PUBLISHABLE_KEY;
 
     await expect(
       insertSubmission({ experiment: "test", email: "test@example.com" }),
-    ).rejects.toThrow("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set");
+    ).rejects.toThrow("SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY must be set");
   });
 
   // ---------------------------------------------------------------------------

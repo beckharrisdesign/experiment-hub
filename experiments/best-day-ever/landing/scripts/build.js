@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Vercel build: copy static assets to dist and inject HUB_API_URL into config.js.
+ * Vercel build: copy static assets to dist and inject Supabase config into config.js.
  * Run from landing folder: node scripts/build.js
  */
 const fs = require("fs");
@@ -18,10 +18,12 @@ if (!fs.existsSync(dist)) {
   fs.copyFileSync(path.join(root, file), path.join(dist, file));
 });
 
-// Write config.js with env HUB_API_URL (empty string = same-origin)
-const hubUrl = (process.env.HUB_API_URL || "").trim();
-const configContent = `// Injected at build time on Vercel from HUB_API_URL. For local/same-origin, leave empty.
-window.HUB_API_URL = ${JSON.stringify(hubUrl)};
+// Write config.js with Supabase credentials (publishable key — safe for browser)
+const supabaseUrl = (process.env.SUPABASE_URL || "").trim();
+const supabaseKey = (process.env.SUPABASE_PUBLISHABLE_KEY || "").trim();
+const configContent = `// Injected at build time. Publishable key only — safe to expose in browser.
+window.SUPABASE_URL = ${JSON.stringify(supabaseUrl)};
+window.SUPABASE_PUBLISHABLE_KEY = ${JSON.stringify(supabaseKey)};
 `;
 fs.writeFileSync(path.join(dist, "config.js"), configContent, "utf8");
 
@@ -39,7 +41,7 @@ if (htmlOut.includes("localhost:")) {
 }
 
 console.log(
-  "Build complete: dist/ (HUB_API_URL =",
-  hubUrl || "(same-origin)",
+  "Build complete: dist/ (SUPABASE_URL =",
+  supabaseUrl || "(not set)",
   ")",
 );
