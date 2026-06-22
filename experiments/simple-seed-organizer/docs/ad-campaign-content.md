@@ -20,38 +20,50 @@
 
 ### Keywords
 
+Keyword research shows most volume is physical-product intent ("box", "binder"). Focus on the two terms where app intent is plausible, and use negative keywords to filter the rest.
+
+**Target keywords (exact + phrase match only)**
 ```
-[seed organizer]
-[seed organizer app]
-[seed inventory app]
-[seed inventory tracker]
-[seed tracker app]
-[seed collection app]
-[organize seed collection]
-"seed organizer"
-"seed inventory"
-"organize seeds"
-"seed collection organizer"
+[organizing seeds]
+[organizing seed packets]
+"organizing seeds"
+"organizing seed packets"
 ```
+
+**Negative keywords — add these to block physical-product searches**
+```
+box
+binder
+cabinet
+kit
+diy
+ideas
+storage box
+organizer box
+```
+
+> Note: "seed organizer app", "seed inventory app", etc. show near-zero search volume — confirmed not worth bidding on. If impressions on the above are < 200 after 4 days, the search channel isn't viable and budget moves to Meta.
 
 ### RSA Headlines (max 30 chars — use all 15 slots)
 
+Lead with "app" or "on your phone" to immediately self-select for digital intent — most searchers expect physical products.
+
 ```
+Organize Seeds With an App
+Digital Seed Organizer · $15
+Seed Inventory on Your Phone
 Stop Rebuying Seeds You Own
 Know Which Seeds Are Viable
 Never Buy Duplicate Seeds Again
-Seed Inventory on Your Phone
 Find Any Seed in Seconds
 Use Seeds Before They Expire
-Organize Your Seed Collection
+Seed Packets, Finally Organized
 Simple Seed Organizer App
 Track Seeds, Not Spreadsheets
 Your Seeds. Searchable. Fast.
 $15/Year. No Complexity.
 Early Access · $15/Year
-Seed Packets, Finally Organized
 Know What Seeds You Own
-Search Your Seed Collection
 ```
 
 ### RSA Descriptions (max 90 chars — use all 4 slots)
