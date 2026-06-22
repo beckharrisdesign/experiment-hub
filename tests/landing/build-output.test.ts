@@ -23,7 +23,13 @@ const DIST_CONFIG = path.join(DIST_DIR, "config.js");
 function runBuild(env: Record<string, string> = {}) {
   return spawnSync("node", ["scripts/build.js"], {
     cwd: LANDING_DIR,
-    env: { ...process.env, ...env },
+    env: {
+      ...process.env,
+      // Zero out Supabase vars so tests are hermetic regardless of the shell environment.
+      SUPABASE_URL: "",
+      SUPABASE_PUBLISHABLE_KEY: "",
+      ...env,
+    },
     encoding: "utf8",
   });
 }

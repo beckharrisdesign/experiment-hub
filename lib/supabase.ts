@@ -70,7 +70,13 @@ export async function upsertContent(
   contentType: "prd" | "business_case",
   content: string,
 ): Promise<void> {
-  const { error } = await getAdminClient().from("experiment_content").upsert(
+  let client;
+  try {
+    client = getAdminClient();
+  } catch {
+    return;
+  }
+  const { error } = await client.from("experiment_content").upsert(
     {
       experiment_id: experimentId,
       content_type: contentType,
