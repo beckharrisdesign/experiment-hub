@@ -36,9 +36,15 @@ branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 if [ "$branch" != "main" ] && [ "$branch" != "master" ] && [ "$branch" != "HEAD" ]; then
   commits_ahead=$(git rev-list --count "origin/main..HEAD" 2>/dev/null || echo "0")
   if [ "$commits_ahead" -gt 0 ]; then
-    marker=".git/claude-pr-verified-${branch//\//-}"
+    # Resolve the actual git directory — in a worktree .git is a file
+    # pointing to the real dir; dereference it so the marker path is valid.
+    git_dir=".git"
+    if [ -f ".git" ]; then
+      git_dir=$(grep '^gitdir:' .git | sed 's/^gitdir: //')
+    fi
+    marker="${git_dir}/claude-pr-verified-${branch//\//-}"
     if [ ! -f "$marker" ]; then
-      echo "Branch '$branch' has $commits_ahead commit(s) ahead of main. Use your GitHub MCP tools to check whether an open pull request exists for this branch in beckharrisdesign/experiment-hub. If no open PR exists, create one following the PR guidelines in CLAUDE.md. Once confirmed, run: touch ${CLAUDE_PROJECT_DIR}/${marker}" >&2
+      echo "Branch '$branch' has $commits_ahead commit(s) ahead of main. Use your GitHub MCP tools to check whether an open pull request exists for this branch in beckharrisdesign/experiment-hub. If no open PR exists, create one following the PR guidelines in CLAUDE.md. Once confirmed, run: touch ${marker}" >&2
       exit 2
     fi
   fi
