@@ -78,7 +78,7 @@ Searchable seed inventory app. Find any packet in seconds. Get early access toda
 ### Final URL
 
 ```
-https://simpleseedorganizer.com/?utm_source=google&utm_medium=search&utm_campaign=validation&utm_content=rsa-v1
+https://simpleseedorganizer.app/?utm_source=google&utm_medium=search&utm_campaign=validation&utm_content=rsa-v1
 ```
 
 ### Kill / continue rules

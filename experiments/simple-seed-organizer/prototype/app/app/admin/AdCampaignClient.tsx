@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const BASE_URL = "https://simpleseedorganizer.com/";
+const BASE_URL = "https://simpleseedorganizer.app/";
 
 const PHASES = [
   {
