@@ -54,10 +54,10 @@ Digital Seed Organizer · $15
 Seed Inventory on Your Phone
 Stop Rebuying Seeds You Own
 Know Which Seeds Are Viable
-Never Buy Duplicate Seeds Again
+Never Rebuy the Same Seeds
 Find Any Seed in Seconds
 Use Seeds Before They Expire
-Seed Packets, Finally Organized
+Your Seeds, Finally Organized
 Simple Seed Organizer App
 Track Seeds, Not Spreadsheets
 Your Seeds. Searchable. Fast.
@@ -85,7 +85,7 @@ https://simpleseedorganizer.com/?utm_source=google&utm_medium=search&utm_campaig
 
 | Signal | Action |
 |--------|--------|
-| < 200 impressions after 4 days | Volume too thin — move $25 remainder to Meta Phase 2 |
+| < 200 impressions after 4 days | Volume too thin — move remaining budget to Meta Phase 2 |
 | 0 signups from 30+ clicks | Negative signal — revise landing page before spending more |
 | 2+ signups | Positive — continue and add Meta Phase 2 |
 | 1 signup | Ambiguous — spend another $25 before deciding |
