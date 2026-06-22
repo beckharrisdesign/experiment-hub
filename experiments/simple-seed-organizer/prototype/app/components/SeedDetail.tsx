@@ -93,12 +93,13 @@ function SubHeader({
   return (
     <div className={`bg-white ${borderClass} border-[#e5e7eb]`}>
       <div className="max-w-[1200px] mx-auto px-2 flex items-center h-[46px]">
-        <button onClick={onClose} className="p-2 flex-shrink-0">
+        <button type="button" onClick={onClose} aria-label="Go back" className="p-2 flex-shrink-0">
           <svg
             className="w-6 h-6 text-[#64748b]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -112,6 +113,7 @@ function SubHeader({
           {seedName}
         </p>
         <button
+          type="button"
           onClick={onEdit}
           className="flex-shrink-0 px-4 py-1.5 text-[18px] font-medium text-[#15803d] border border-[#15803d] rounded"
         >
@@ -221,7 +223,7 @@ export function SeedDetail({
           <div className="max-w-[1200px] mx-auto flex items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
               <p className="text-[#15803d] text-2xl font-medium leading-tight">
-                {seed.name || seed.variety}
+                {seedName}
               </p>
               {seed.variety && seed.name && (
                 <p className="text-[#262626] text-xl font-normal leading-tight">
@@ -266,14 +268,15 @@ export function SeedDetail({
 
         {/* Main 2-col: plant info (left) + images (right) */}
         <div className="bg-white px-4 py-4">
-          <div className="max-w-[1200px] mx-auto flex gap-4 items-start">
+          <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row gap-4 items-start">
             {/* Left col: tabs + KV rows */}
-            <div className="w-[380px] flex-shrink-0 flex flex-col">
+            <div className="w-full md:w-[380px] md:flex-shrink-0 flex flex-col">
               {/* Tab bar */}
               <div className="flex overflow-hidden border-b border-[#e2e8f0]">
                 {TABS.map((tab) => (
                   <button
                     key={tab.id}
+                    type="button"
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex-1 px-2 py-2 text-[16px] font-medium text-[#262626] whitespace-nowrap transition-colors ${
                       activeTab === tab.id
@@ -490,9 +493,9 @@ export function SeedDetail({
             </div>
 
             {/* Right col: large primary image + 3×2 thumbnail grid */}
-            <div className="flex-1 min-w-0 flex gap-4 h-[544px]">
+            <div className="flex-1 min-w-0 flex flex-col sm:flex-row gap-4 sm:h-[544px]">
               {/* Large primary image */}
-              <div className="w-[55%] flex-shrink-0 rounded-lg overflow-hidden bg-[#e2e8f0]">
+              <div className="w-full h-48 sm:h-full sm:w-[55%] sm:flex-shrink-0 rounded-lg overflow-hidden bg-[#e2e8f0]">
                 {primaryPhoto && !imgErrors.has(primaryPhoto.id) && (
                   <img
                     src={primaryPhoto.path || undefined}
