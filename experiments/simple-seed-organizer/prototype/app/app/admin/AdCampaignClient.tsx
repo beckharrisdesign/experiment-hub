@@ -230,18 +230,24 @@ const METRICS = [
   { label: "Cost per signup", target: "< $10–20", note: "Optimize over time" },
 ];
 
-function utmUrl(slug: string) {
-  return `${BASE_URL}?utm_source=meta&utm_medium=social&utm_campaign=validation&utm_content=${slug}`;
+function utmUrl(slug: string, source: "meta" | "google") {
+  const medium = source === "google" ? "cpc" : "social";
+  return `${BASE_URL}?utm_source=${source}&utm_medium=${medium}&utm_campaign=validation&utm_content=${slug}`;
 }
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <button
+      type="button"
       onClick={async () => {
-        await navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1800);
+        try {
+          await navigator.clipboard.writeText(text);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1800);
+        } catch {
+          // clipboard unavailable (insecure context or permission denied)
+        }
       }}
       className="text-xs px-2 py-0.5 rounded border border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors shrink-0"
     >
@@ -347,15 +353,20 @@ export function AdCampaignClient() {
                   </ul>
                 </div>
 
-                {/* UTM URL */}
-                <div className="px-5 py-3 bg-[#f0fdf4] border-t border-green-100">
-                  <p className="text-xs font-medium text-[#166534] mb-1.5">UTM URL</p>
-                  <div className="flex items-center gap-2">
-                    <code className="text-xs text-[#15472d] break-all flex-1 leading-relaxed">
-                      {utmUrl(v.slug)}
-                    </code>
-                    <CopyButton text={utmUrl(v.slug)} />
-                  </div>
+                {/* UTM URLs */}
+                <div className="px-5 py-3 bg-[#f0fdf4] border-t border-green-100 space-y-2">
+                  <p className="text-xs font-medium text-[#166534]">UTM URLs</p>
+                  {(["meta", "google"] as const).map((source) => (
+                    <div key={source} className="flex items-start gap-2">
+                      <span className="text-xs text-[#166534] shrink-0 w-12 pt-0.5 font-medium">
+                        {source === "meta" ? "Meta" : "Google"}
+                      </span>
+                      <code className="text-xs text-[#15472d] break-all flex-1 leading-relaxed">
+                        {utmUrl(v.slug, source)}
+                      </code>
+                      <CopyButton text={utmUrl(v.slug, source)} />
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
@@ -570,7 +581,7 @@ export function AdCampaignClient() {
           <div className="bg-white rounded-xl shadow-sm px-5 py-4">
             <ul className="space-y-2.5">
               {[
-                "Create landing page (see docs/landing-page-content.md)",
+                "Create landing page (see experiments/simple-seed-organizer/docs/landing-page-content.md)",
                 "Set up Google Analytics + Facebook Pixel",
                 "Create ad creatives (images/videos for each variant)",
                 "Set up ad campaigns in Meta Ads Manager",
