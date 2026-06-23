@@ -95,6 +95,17 @@ export function trackUseFirstFilter(opts: { resultCount: number }): void {
   trackEvent("use_first_filter_used", { result_count: opts.resultCount });
 }
 
+/**
+ * Fire a Google Ads conversion event for new account sign-up.
+ * Conversion action: AW-10904266222/dX8MCLuApMQcEO7Lx88o
+ * Safe no-op when gtag is absent.
+ */
+export function trackAdsSignUp(): void {
+  getGtag()?.("event", "conversion", {
+    send_to: "AW-10904266222/dX8MCLuApMQcEO7Lx88o",
+  });
+}
+
 /** A save/import failed (PRD: reliability — error rate low enough to trust). */
 export function trackSaveError(opts: {
   context: SeedAddMethod;
