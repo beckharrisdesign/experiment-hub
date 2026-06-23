@@ -39,7 +39,7 @@ export function getHubGaMeasurementId() {
 }
 
 export function isOptedOut() {
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined" || !window.localStorage) return false;
   return window.localStorage.getItem("analytics_optout") === "true";
 }
 
