@@ -3,6 +3,7 @@ import {
   trackEvent,
   setAnalyticsUser,
   trackSignUp,
+  trackAdsSignUp,
   trackSeedAdded,
   trackSearchPerformed,
   trackSeedOpened,
@@ -25,6 +26,10 @@ describe("analytics — no gtag", () => {
 
   it("setAnalyticsUser does not throw when gtag is missing", () => {
     expect(() => setAnalyticsUser("user-1")).not.toThrow();
+  });
+
+  it("trackAdsSignUp does not throw when gtag is missing", () => {
+    expect(() => trackAdsSignUp()).not.toThrow();
   });
 });
 
@@ -81,7 +86,11 @@ describe("analytics — with gtag", () => {
   });
 
   it("trackSearchPerformed rounds ms_to_results", () => {
-    trackSearchPerformed({ queryLength: 5, resultCount: 3, msToResults: 120.7 });
+    trackSearchPerformed({
+      queryLength: 5,
+      resultCount: 3,
+      msToResults: 120.7,
+    });
     expect(gtag).toHaveBeenCalledWith("event", "search_performed", {
       query_length: 5,
       result_count: 3,
@@ -125,6 +134,13 @@ describe("analytics — with gtag", () => {
     expect(gtag).toHaveBeenCalledWith("event", "import_error", {
       context: "import_auto",
       message: "x".repeat(100),
+    });
+  });
+
+  it("trackAdsSignUp fires conversion with the correct send_to label", () => {
+    trackAdsSignUp();
+    expect(gtag).toHaveBeenCalledWith("event", "conversion", {
+      send_to: "AW-10904266222/dX8MCLuApMQcEO7Lx88o",
     });
   });
 });
