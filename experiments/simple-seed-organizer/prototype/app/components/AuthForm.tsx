@@ -1,6 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
+import { trackSignUp, trackAdsSignUp } from "@/lib/analytics";
 
 interface AuthFormProps {
   onSuccess: () => void;
@@ -18,8 +19,8 @@ interface AuthFormProps {
  * @figma S8YJQugvMmn5jaRqwFM5XO:7:202
  */
 export function AuthForm({ onSuccess, embedded }: AuthFormProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -31,37 +32,54 @@ export function AuthForm({ onSuccess, embedded }: AuthFormProps) {
     setLoading(true);
 
     try {
-      const { supabase } = await import('@/lib/supabase');
-      if (!supabase) throw new Error("I'm having trouble connecting right now. Try reloading the page.");
+      const { supabase } = await import("@/lib/supabase");
+      if (!supabase)
+        throw new Error(
+          "I'm having trouble connecting right now. Try reloading the page.",
+        );
 
       // Try sign in first (returning user)
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       if (!signInError) {
         onSuccess();
         return;
       }
 
       // Sign in failed - try sign up (new user)
-      const { error: signUpError } = await supabase.auth.signUp({ email, password });
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
       if (signUpError) {
         // "User already registered" = returning user with wrong password
-        if (signUpError.message.toLowerCase().includes('already registered')) {
-          setError('Invalid email or password');
+        if (signUpError.message.toLowerCase().includes("already registered")) {
+          setError("Invalid email or password");
         } else {
-          setError("I couldn't create your account. Check your details and try again.");
+          setError(
+            "I couldn't create your account. Check your details and try again.",
+          );
         }
         return;
       }
 
-      // Sign up succeeded - check if we have a session (or need email confirmation)
-      const { data: { session } } = await supabase.auth.getSession();
+      // Sign up succeeded — fire conversion before checking session state
+      trackSignUp();
+      trackAdsSignUp();
+
+      // Check if we have a session (or need email confirmation)
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session) {
         onSuccess();
       } else {
-        setMessage('Check your email to confirm your account, then sign in.');
+        setMessage("Check your email to confirm your account, then sign in.");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -69,14 +87,18 @@ export function AuthForm({ onSuccess, embedded }: AuthFormProps) {
 
   const formContent = (
     <>
-      <h1 className="text-xl font-semibold text-[#101828] mb-1">Continue with email</h1>
+      <h1 className="text-xl font-semibold text-[#101828] mb-1">
+        Continue with email
+      </h1>
       <p className="text-sm text-[#6a7282] mb-6">
         Enter your email and password. New users are added automatically.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-[#4a5565] mb-1">Email</label>
+          <label className="block text-sm font-medium text-[#4a5565] mb-1">
+            Email
+          </label>
           <input
             type="email"
             value={email}
@@ -89,8 +111,13 @@ export function AuthForm({ onSuccess, embedded }: AuthFormProps) {
         </div>
         <div>
           <div className="flex justify-between items-baseline mb-1">
-            <label className="block text-sm font-medium text-[#4a5565]">Password</label>
-            <a href="/forgot-password" className="text-xs text-[#16a34a] hover:underline">
+            <label className="block text-sm font-medium text-[#4a5565]">
+              Password
+            </label>
+            <a
+              href="/forgot-password"
+              className="text-xs text-[#16a34a] hover:underline"
+            >
               Forgot password?
             </a>
           </div>
@@ -105,18 +132,14 @@ export function AuthForm({ onSuccess, embedded }: AuthFormProps) {
             placeholder="e.g. 8+ characters, mix of letters and numbers"
           />
         </div>
-        {error && (
-          <p className="text-sm text-red-600">{error}</p>
-        )}
-        {message && (
-          <p className="text-sm text-[#16a34a]">{message}</p>
-        )}
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        {message && <p className="text-sm text-[#16a34a]">{message}</p>}
         <button
           type="submit"
           disabled={loading}
           className="w-full py-3 bg-[#16a34a] text-white font-semibold rounded-lg hover:bg-[#15803d] disabled:opacity-50 transition-colors"
         >
-          {loading ? 'Continuing...' : 'Continue'}
+          {loading ? "Continuing..." : "Continue"}
         </button>
       </form>
     </>

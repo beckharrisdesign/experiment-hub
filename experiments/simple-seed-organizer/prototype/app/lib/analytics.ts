@@ -95,6 +95,18 @@ export function trackUseFirstFilter(opts: { resultCount: number }): void {
   trackEvent("use_first_filter_used", { result_count: opts.resultCount });
 }
 
+/**
+ * Fire a Google Ads conversion event for new account sign-up.
+ * Requires NEXT_PUBLIC_GOOGLE_ADS_SIGNUP_CONVERSION set to the conversion
+ * label from your Google Ads conversion action (e.g. "AbCdEfGhIjKlMnOp").
+ * Safe no-op when the env var or gtag is absent.
+ */
+export function trackAdsSignUp(): void {
+  const label = process.env.NEXT_PUBLIC_GOOGLE_ADS_SIGNUP_CONVERSION;
+  if (!label) return;
+  getGtag()?.("event", "conversion", { send_to: `AW-10904266222/${label}` });
+}
+
 /** A save/import failed (PRD: reliability — error rate low enough to trust). */
 export function trackSaveError(opts: {
   context: SeedAddMethod;
