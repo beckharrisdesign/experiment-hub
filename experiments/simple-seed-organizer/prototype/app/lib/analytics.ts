@@ -31,8 +31,11 @@ export type SeedAddMethod = "manual" | "import_review" | "import_auto";
  * bare `window` that would throw outside the browser.
  */
 function isOptedOut(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.localStorage.getItem("analytics_optout") === "true";
+  try {
+    return window.localStorage.getItem("analytics_optout") === "true";
+  } catch {
+    return false;
+  }
 }
 
 function getGtag(): ((...args: unknown[]) => void) | undefined {

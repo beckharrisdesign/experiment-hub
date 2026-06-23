@@ -39,8 +39,11 @@ export function getHubGaMeasurementId() {
 }
 
 export function isOptedOut() {
-  if (typeof window === "undefined" || !window.localStorage) return false;
-  return window.localStorage.getItem("analytics_optout") === "true";
+  try {
+    return window.localStorage.getItem("analytics_optout") === "true";
+  } catch {
+    return false;
+  }
 }
 
 export function isAnalyticsEnabled() {
