@@ -97,14 +97,13 @@ export function trackUseFirstFilter(opts: { resultCount: number }): void {
 
 /**
  * Fire a Google Ads conversion event for new account sign-up.
- * Requires NEXT_PUBLIC_GOOGLE_ADS_SIGNUP_CONVERSION set to the conversion
- * label from your Google Ads conversion action (e.g. "AbCdEfGhIjKlMnOp").
- * Safe no-op when the env var or gtag is absent.
+ * Conversion action: AW-10904266222/dX8MCLuApMQcEO7Lx88o
+ * Safe no-op when gtag is absent.
  */
 export function trackAdsSignUp(): void {
-  const label = process.env.NEXT_PUBLIC_GOOGLE_ADS_SIGNUP_CONVERSION;
-  if (!label) return;
-  getGtag()?.("event", "conversion", { send_to: `AW-10904266222/${label}` });
+  getGtag()?.("event", "conversion", {
+    send_to: "AW-10904266222/dX8MCLuApMQcEO7Lx88o",
+  });
 }
 
 /** A save/import failed (PRD: reliability — error rate low enough to trust). */
