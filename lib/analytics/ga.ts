@@ -35,13 +35,16 @@ export interface AnalyticsLinkMetadata extends AnalyticsEventParams {
 }
 
 export function getHubGaMeasurementId() {
-  return (
-    process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || HUB_GA_MEASUREMENT_ID
-  );
+  return process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || HUB_GA_MEASUREMENT_ID;
+}
+
+export function isOptedOut() {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem("analytics_optout") === "true";
 }
 
 export function isAnalyticsEnabled() {
-  return Boolean(getHubGaMeasurementId());
+  return Boolean(getHubGaMeasurementId()) && !isOptedOut();
 }
 
 export function buildPageViewPayload(pathname: string): AnalyticsEventParams {
@@ -65,16 +68,18 @@ export function trackEvent(
   eventName: string,
   params: AnalyticsEventParams = {},
 ) {
-  if (typeof window === "undefined" || typeof window.gtag !== "function") {
+  if (
+    typeof window === "undefined" ||
+    typeof window.gtag !== "function" ||
+    isOptedOut()
+  ) {
     return;
   }
 
   window.gtag("event", eventName, params);
 }
 
-export function trackPageView(
-  pathnameOrParams: string | AnalyticsEventParams,
-) {
+export function trackPageView(pathnameOrParams: string | AnalyticsEventParams) {
   const params =
     typeof pathnameOrParams === "string"
       ? buildPageViewPayload(pathnameOrParams)

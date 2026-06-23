@@ -30,7 +30,13 @@ export type SeedAddMethod = "manual" | "import_review" | "import_auto";
  * browser, always defined under Node/test) so the module never references a
  * bare `window` that would throw outside the browser.
  */
+function isOptedOut(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem("analytics_optout") === "true";
+}
+
 function getGtag(): ((...args: unknown[]) => void) | undefined {
+  if (isOptedOut()) return undefined;
   const g = globalThis as { gtag?: (...args: unknown[]) => void };
   return typeof g.gtag === "function" ? g.gtag : undefined;
 }
