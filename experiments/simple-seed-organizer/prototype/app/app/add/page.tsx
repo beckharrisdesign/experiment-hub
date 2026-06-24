@@ -91,7 +91,7 @@ export default function AddSeedPage() {
             You added {label}
           </h2>
           <p className="text-sm text-[#99a1af] mb-8">
-            It's in your collection now
+            It&apos;s in your collection now
           </p>
           <div className="flex flex-col gap-3">
             <button
