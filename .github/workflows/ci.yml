@@ -56,8 +56,11 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: .
 
+      - name: Install app dependencies
+        run: npm ci
+
       - name: Run app unit tests
-        run: npx vitest run
+        run: npx vitest run lib components hooks
 
   # ── Build check ─────────────────────────────────────────────────────────────
   # Catches TypeScript errors and broken imports that unit tests won't surface.
@@ -83,6 +86,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: .
+
+      - name: Install app dependencies
+        run: npm ci
 
       - name: Build
         env:
