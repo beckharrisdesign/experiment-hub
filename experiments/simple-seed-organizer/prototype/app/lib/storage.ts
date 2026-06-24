@@ -52,6 +52,10 @@ export async function getSeedsWithoutPhotos(userId: string): Promise<Seed[]> {
     );
     return [];
   }
+  if (!userId) {
+    console.warn("[Storage] Missing userId for seed query, returning empty array");
+    return [];
+  }
 
   try {
     const { data, error } = await selectSeedsWithoutPhotos(userId);

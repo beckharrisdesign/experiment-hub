@@ -98,6 +98,13 @@ describe("storage seed loading", () => {
     expect(storageMocks.state.selectedColumns[1]).not.toContain("user_id");
   });
 
+  it("returns empty when userId is missing", async () => {
+    const seeds = await getSeedsWithoutPhotos("");
+
+    expect(seeds).toEqual([]);
+    expect(storageMocks.from).not.toHaveBeenCalled();
+  });
+
   it("falls back to a legacy column set when newer seed columns are missing", async () => {
     storageMocks.state.responses = [
       {
