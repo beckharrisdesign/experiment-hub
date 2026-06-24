@@ -361,7 +361,29 @@ export async function deleteSeed(
       await deleteSeedPhotos(userId, id);
     }
 
-    const { error } = await supabase.from("seeds").delete().eq("id", id);
+    let deleteQuery = supabase.from("seeds").delete().eq("id", id);
+    if (userId) {
+      const { error: scopedDeleteError } = await deleteQuery.eq("user_id", userId);
+
+      if (!scopedDeleteError) {
+        return true;
+      }
+
+      if (!isMissingColumnError(scopedDeleteError)) {
+        console.error("[Storage] Supabase delete error:", scopedDeleteError);
+        throw new Error(
+          `Failed to delete seed from database: ${scopedDeleteError.message}`,
+        );
+      }
+
+      console.warn(
+        "[Storage] Seed delete query hit a missing column; retrying with a compatible filter:",
+        scopedDeleteError.message,
+      );
+      deleteQuery = supabase.from("seeds").delete().eq("id", id);
+    }
+
+    const { error } = await deleteQuery;
 
     if (error) {
       console.error("[Storage] Supabase delete error:", error);
