@@ -46,8 +46,10 @@ export async function getSeedCount(userId: string): Promise<number> {
  * Photos can be loaded separately via getSeedPhotos() and merged.
  */
 export async function getSeedsWithoutPhotos(userId: string): Promise<Seed[]> {
-  if (!supabase) {
-    console.warn("[Storage] Supabase not configured, returning empty array");
+  if (!supabase || !userId) {
+    console.warn(
+      "[Storage] Supabase not configured or no userId, returning empty array",
+    );
     return [];
   }
 
@@ -283,6 +285,7 @@ function saveSeedLocal(seed: Seed): Seed {
 export async function updateSeed(
   id: string,
   updates: Partial<Seed>,
+  userId?: string,
 ): Promise<Seed | null> {
   if (!supabase) {
     throw new Error(
@@ -299,10 +302,10 @@ export async function updateSeed(
     const dbUpdates = convertSeedToDbSeed(updateData as Seed, {
       mode: "update",
     });
-    const { data, error } = await supabase
-      .from("seeds")
-      .update(dbUpdates)
-      .eq("id", id)
+    const baseQuery = supabase.from("seeds").update(dbUpdates).eq("id", id);
+    const { data, error } = await (
+      userId ? baseQuery.eq("user_id", userId) : baseQuery
+    )
       .select()
       .single();
 
@@ -363,7 +366,10 @@ export async function deleteSeed(
 
     let deleteQuery = supabase.from("seeds").delete().eq("id", id);
     if (userId) {
-      const { error: scopedDeleteError } = await deleteQuery.eq("user_id", userId);
+      const { error: scopedDeleteError } = await deleteQuery.eq(
+        "user_id",
+        userId,
+      );
 
       if (!scopedDeleteError) {
         return true;
@@ -448,7 +454,10 @@ function clearAllSeedsLocal(): void {
 /**
  * Get a seed by ID from Supabase (REQUIRED - no fallback)
  */
-export async function getSeedById(id: string): Promise<Seed | null> {
+export async function getSeedById(
+  id: string,
+  userId?: string,
+): Promise<Seed | null> {
   if (!supabase) {
     throw new Error(
       "Supabase is not configured. Please check your environment variables.",
@@ -456,11 +465,10 @@ export async function getSeedById(id: string): Promise<Seed | null> {
   }
 
   try {
-    const { data, error } = await supabase
-      .from("seeds")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const baseQuery = supabase.from("seeds").select("*").eq("id", id);
+    const { data, error } = await (
+      userId ? baseQuery.eq("user_id", userId) : baseQuery
+    ).single();
 
     if (error) {
       console.error("[Storage] Supabase getById error:", error);

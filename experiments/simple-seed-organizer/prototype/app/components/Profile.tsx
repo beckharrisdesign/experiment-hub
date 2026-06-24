@@ -256,7 +256,7 @@ export function Profile() {
     getSeedCount(user.id)
       .then(setSeedCount)
       .catch(() => setSeedCount(0));
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user) return;
