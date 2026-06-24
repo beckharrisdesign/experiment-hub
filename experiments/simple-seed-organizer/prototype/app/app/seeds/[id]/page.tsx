@@ -22,7 +22,7 @@ export default function SeedDetailPage() {
   useEffect(() => {
     if (!id || !user) return;
     let cancelled = false;
-    getSeedById(id)
+    getSeedById(id, user.id)
       .then((s) => {
         if (!cancelled) {
           setSeed(s);

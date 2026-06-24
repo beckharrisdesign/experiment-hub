@@ -37,7 +37,7 @@ export default function EditSeedPage() {
   useEffect(() => {
     if (!id || !user) return;
     let cancelled = false;
-    getSeedById(id)
+    getSeedById(id, user.id)
       .then((s) => {
         if (!cancelled) {
           setSeed(s);
@@ -97,7 +97,7 @@ export default function EditSeedPage() {
     seedData: Omit<Seed, "id" | "createdAt" | "updatedAt"> & { id?: string },
   ) => {
     try {
-      const updated = await updateSeed(seed.id, seedData);
+      const updated = await updateSeed(seed.id, seedData, user.id);
       if (updated) {
         router.push(`/seeds/${updated.id}`);
       }

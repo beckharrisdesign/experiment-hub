@@ -1,37 +1,38 @@
-import { Seed, SeedPhoto } from '@/types/seed';
-import { UserProfile } from '@/types/profile';
-import { supabase } from './supabase';
-import { getPhotoUrl, deleteSeedPhotos } from './seed-photos';
+import { Seed, SeedPhoto } from "@/types/seed";
+import { UserProfile } from "@/types/profile";
+import { supabase } from "./supabase";
+import { getPhotoUrl, deleteSeedPhotos } from "./seed-photos";
 import {
   buildPhotoCollection,
   convertDbSeedToSeed,
   convertSeedToDbSeed,
   SEEDS_COLUMNS_WITHOUT_PHOTOS,
-} from './seedConverters';
+} from "./seedConverters";
 
 // Fallback to localStorage if Supabase is not configured
-const STORAGE_KEY = 'simple-seed-organizer-seeds';
+const STORAGE_KEY = "simple-seed-organizer-seeds";
 // Profile previously stored in localStorage under this key. Removed when
 // migrating to Supabase user_profiles (sso-zip-code-persistence).
 // Kept only if some legacy code in this file still references it; otherwise prune.
 
-const SEEDS_COLUMNS_WITHOUT_USER_ID = SEEDS_COLUMNS_WITHOUT_PHOTOS.split(',')
-  .filter((column) => column !== 'user_id')
-  .join(',');
+const SEEDS_COLUMNS_WITHOUT_USER_ID = SEEDS_COLUMNS_WITHOUT_PHOTOS.split(",")
+  .filter((column) => column !== "user_id")
+  .join(",");
 const LEGACY_SEEDS_COLUMNS_WITHOUT_PHOTOS =
-  'id,name,variety,type,brand,year,planting_months,notes,created_at,updated_at';
+  "id,name,variety,type,brand,year,planting_months,notes,created_at,updated_at";
 
 /**
  * Get seed count for usage display (profile, limits).
  */
-export async function getSeedCount(): Promise<number> {
-  if (!supabase) return 0;
+export async function getSeedCount(userId: string): Promise<number> {
+  if (!supabase || !userId) return 0;
   try {
     const { count, error } = await supabase
-      .from('seeds')
-      .select('*', { count: 'exact', head: true });
+      .from("seeds")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
     if (error) {
-      console.warn('[Storage] getSeedCount error:', error);
+      console.warn("[Storage] getSeedCount error:", error);
       return 0;
     }
     return count ?? 0;
@@ -44,43 +45,56 @@ export async function getSeedCount(): Promise<number> {
  * Get seeds without photo data - fast initial load for list view.
  * Photos can be loaded separately via getSeedPhotos() and merged.
  */
-export async function getSeedsWithoutPhotos(): Promise<Seed[]> {
-  if (!supabase) {
-    console.warn('[Storage] Supabase not configured, returning empty array');
+export async function getSeedsWithoutPhotos(userId: string): Promise<Seed[]> {
+  if (!supabase || !userId) {
+    console.warn(
+      "[Storage] Supabase not configured or no userId, returning empty array",
+    );
+    return [];
+  }
+  if (!userId) {
+    console.warn("[Storage] Missing userId for seed query, returning empty array");
     return [];
   }
 
   try {
-    const { data, error } = await selectSeedsWithoutPhotos();
+    const { data, error } = await selectSeedsWithoutPhotos(userId);
 
     if (error) {
-      console.error('[Storage] Supabase error:', error);
+      console.error("[Storage] Supabase error:", error);
       throw new Error(`Failed to load seeds from database: ${error.message}`);
     }
 
     return (data || []).map((row) => convertDbSeedToSeed(row));
   } catch (err) {
-    console.error('[Storage] Error fetching from Supabase:', err);
+    console.error("[Storage] Error fetching from Supabase:", err);
     if (err instanceof Error) {
       throw err;
     }
-    throw new Error('Failed to load seeds from database');
+    throw new Error("Failed to load seeds from database");
   }
 }
 
-async function selectSeedsWithoutPhotos() {
-  const columnSets = [
-    SEEDS_COLUMNS_WITHOUT_PHOTOS,
-    SEEDS_COLUMNS_WITHOUT_USER_ID,
-    LEGACY_SEEDS_COLUMNS_WITHOUT_PHOTOS,
+async function selectSeedsWithoutPhotos(userId: string) {
+  // Each attempt specifies whether to add an explicit user_id WHERE filter.
+  // The filter is applied only on column sets that include user_id; older
+  // schema fallbacks skip it since the column may not exist yet, relying on
+  // RLS for isolation in that degraded path.
+  const attempts = [
+    { columns: SEEDS_COLUMNS_WITHOUT_PHOTOS, filterByUserId: true },
+    { columns: SEEDS_COLUMNS_WITHOUT_USER_ID, filterByUserId: false },
+    { columns: LEGACY_SEEDS_COLUMNS_WITHOUT_PHOTOS, filterByUserId: false },
   ];
 
   let lastError: any = null;
-  for (const columns of columnSets) {
-    const { data, error } = await supabase!
-      .from('seeds')
-      .select(columns)
-      .order('created_at', { ascending: false });
+  for (const { columns, filterByUserId } of attempts) {
+    let query = supabase!.from("seeds").select(columns);
+    if (filterByUserId && userId) {
+      query = query.eq("user_id", userId);
+    }
+    const { data, error } = await query.order("created_at", {
+      ascending: false,
+    });
 
     if (!error) {
       return { data, error: null };
@@ -92,7 +106,7 @@ async function selectSeedsWithoutPhotos() {
     }
 
     console.warn(
-      '[Storage] Seed list query hit a missing column; retrying with a compatible column set:',
+      "[Storage] Seed list query hit a missing column; retrying with a compatible column set:",
       error.message,
     );
   }
@@ -101,12 +115,12 @@ async function selectSeedsWithoutPhotos() {
 }
 
 function isMissingColumnError(error: any): boolean {
-  const message = String(error?.message ?? '').toLowerCase();
+  const message = String(error?.message ?? "").toLowerCase();
   return (
-    error?.code === '42703' ||
-    error?.code === 'PGRST204' ||
-    (message.includes('column') && message.includes('does not exist')) ||
-    (message.includes('could not find') && message.includes('schema cache'))
+    error?.code === "42703" ||
+    error?.code === "PGRST204" ||
+    (message.includes("column") && message.includes("does not exist")) ||
+    (message.includes("could not find") && message.includes("schema cache"))
   );
 }
 
@@ -115,17 +129,22 @@ function isMissingColumnError(error: any): boolean {
  * Returns a map of seedId -> SeedPhoto[] (resolved, ordered), synthesizing the legacy
  * front/back pair through the same shim as full reads.
  */
-export async function getSeedPhotos(): Promise<Map<string, SeedPhoto[]>> {
-  if (!supabase) return new Map();
+export async function getSeedPhotos(
+  userId: string,
+): Promise<Map<string, SeedPhoto[]>> {
+  if (!supabase || !userId) return new Map();
 
   try {
     const { data, error } = await supabase
-      .from('seeds')
-      .select('id,photos,photo_front_path,photo_back_path,photo_front,photo_back')
-      .order('created_at', { ascending: false });
+      .from("seeds")
+      .select(
+        "id,photos,photo_front_path,photo_back_path,photo_front,photo_back",
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.warn('[Storage] Failed to load seed photos:', error);
+      console.warn("[Storage] Failed to load seed photos:", error);
       return new Map();
     }
 
@@ -138,7 +157,7 @@ export async function getSeedPhotos(): Promise<Map<string, SeedPhoto[]>> {
     }
     return map;
   } catch (err) {
-    console.warn('[Storage] Error fetching seed photos:', err);
+    console.warn("[Storage] Error fetching seed photos:", err);
     return new Map();
   }
 }
@@ -149,18 +168,18 @@ export async function getSeedPhotos(): Promise<Map<string, SeedPhoto[]>> {
  */
 export async function getSeeds(): Promise<Seed[]> {
   if (!supabase) {
-    console.warn('[Storage] Supabase not configured, returning empty array');
+    console.warn("[Storage] Supabase not configured, returning empty array");
     return [];
   }
 
   try {
     const { data, error } = await supabase
-      .from('seeds')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from("seeds")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error('[Storage] Supabase error:', error);
+      console.error("[Storage] Supabase error:", error);
       throw new Error(`Failed to load seeds from database: ${error.message}`);
     }
 
@@ -182,11 +201,11 @@ export async function getSeeds(): Promise<Seed[]> {
     });
     return seeds;
   } catch (err) {
-    console.error('[Storage] Error fetching from Supabase:', err);
+    console.error("[Storage] Error fetching from Supabase:", err);
     if (err instanceof Error) {
       throw err;
     }
-    throw new Error('Failed to load seeds from database');
+    throw new Error("Failed to load seeds from database");
   }
 }
 
@@ -194,7 +213,7 @@ export async function getSeeds(): Promise<Seed[]> {
  * Get seeds from localStorage (fallback)
  */
 function getSeedsLocal(): Seed[] {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
   const data = localStorage.getItem(STORAGE_KEY);
   return data ? JSON.parse(data) : [];
 }
@@ -202,9 +221,13 @@ function getSeedsLocal(): Seed[] {
 /**
  * Save a seed to Supabase (REQUIRED - no fallback)
  */
-export async function saveSeed(seedData: Omit<Seed, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Promise<Seed> {
+export async function saveSeed(
+  seedData: Omit<Seed, "id" | "createdAt" | "updatedAt"> & { id?: string },
+): Promise<Seed> {
   if (!supabase) {
-    throw new Error('Supabase is not configured. Please check your environment variables.');
+    throw new Error(
+      "Supabase is not configured. Please check your environment variables.",
+    );
   }
 
   const newSeed: Seed = {
@@ -215,32 +238,38 @@ export async function saveSeed(seedData: Omit<Seed, 'id' | 'createdAt' | 'update
   };
 
   try {
-    const dbSeed = convertSeedToDbSeed(newSeed, { mode: 'insert' });
-    console.log('[Storage] Attempting to save to Supabase:', { name: newSeed.name, variety: newSeed.variety });
-    
+    const dbSeed = convertSeedToDbSeed(newSeed, { mode: "insert" });
+    console.log("[Storage] Attempting to save to Supabase:", {
+      name: newSeed.name,
+      variety: newSeed.variety,
+    });
+
     const { data, error } = await supabase
-      .from('seeds')
+      .from("seeds")
       .insert([dbSeed])
       .select()
       .single();
 
     if (error) {
-      console.error('[Storage] Supabase insert error:', error);
+      console.error("[Storage] Supabase insert error:", error);
       throw new Error(`Failed to save seed to database: ${error.message}`);
     }
 
     if (!data) {
-      throw new Error('No data returned from Supabase after insert');
+      throw new Error("No data returned from Supabase after insert");
     }
 
-    console.log('[Storage] Successfully saved to Supabase:', { id: data.id, name: data.name });
+    console.log("[Storage] Successfully saved to Supabase:", {
+      id: data.id,
+      name: data.name,
+    });
     return convertDbRowToSeedWithUrls(data);
   } catch (err) {
-    console.error('[Storage] Error saving to Supabase:', err);
+    console.error("[Storage] Error saving to Supabase:", err);
     if (err instanceof Error) {
       throw err;
     }
-    throw new Error('Failed to save seed to database');
+    throw new Error("Failed to save seed to database");
   }
 }
 
@@ -257,9 +286,15 @@ function saveSeedLocal(seed: Seed): Seed {
 /**
  * Update a seed in Supabase (REQUIRED - no fallback)
  */
-export async function updateSeed(id: string, updates: Partial<Seed>): Promise<Seed | null> {
+export async function updateSeed(
+  id: string,
+  updates: Partial<Seed>,
+  userId?: string,
+): Promise<Seed | null> {
   if (!supabase) {
-    throw new Error('Supabase is not configured. Please check your environment variables.');
+    throw new Error(
+      "Supabase is not configured. Please check your environment variables.",
+    );
   }
 
   const updateData = {
@@ -268,16 +303,28 @@ export async function updateSeed(id: string, updates: Partial<Seed>): Promise<Se
   };
 
   try {
-    const dbUpdates = convertSeedToDbSeed(updateData as Seed, { mode: 'update' });
-    const { data, error } = await supabase
-      .from('seeds')
-      .update(dbUpdates)
-      .eq('id', id)
-      .select()
-      .single();
+    const dbUpdates = convertSeedToDbSeed(updateData as Seed, {
+      mode: "update",
+    });
+    const runUpdate = async (filterByUserId: boolean) => {
+      let query = supabase!.from("seeds").update(dbUpdates).eq("id", id);
+      if (filterByUserId && userId) {
+        query = query.eq("user_id", userId);
+      }
+      return query.select().single();
+    };
+
+    let { data, error } = await runUpdate(Boolean(userId));
+    if (error && userId && isMissingColumnError(error)) {
+      console.warn(
+        "[Storage] user_id missing during update; retrying without user filter:",
+        error.message,
+      );
+      ({ data, error } = await runUpdate(false));
+    }
 
     if (error) {
-      console.error('[Storage] Supabase update error:', error);
+      console.error("[Storage] Supabase update error:", error);
       throw new Error(`Failed to update seed in database: ${error.message}`);
     }
 
@@ -287,11 +334,11 @@ export async function updateSeed(id: string, updates: Partial<Seed>): Promise<Se
 
     return convertDbRowToSeedWithUrls(data);
   } catch (err) {
-    console.error('[Storage] Error updating in Supabase:', err);
+    console.error("[Storage] Error updating in Supabase:", err);
     if (err instanceof Error) {
       throw err;
     }
-    throw new Error('Failed to update seed in database');
+    throw new Error("Failed to update seed in database");
   }
 }
 
@@ -300,9 +347,9 @@ export async function updateSeed(id: string, updates: Partial<Seed>): Promise<Se
  */
 function updateSeedLocal(id: string, updates: Partial<Seed>): Seed | null {
   const seeds = getSeedsLocal();
-  const index = seeds.findIndex(s => s.id === id);
+  const index = seeds.findIndex((s) => s.id === id);
   if (index === -1) return null;
-  
+
   seeds[index] = {
     ...seeds[index],
     ...updates,
@@ -316,9 +363,14 @@ function updateSeedLocal(id: string, updates: Partial<Seed>): Seed | null {
  * Delete a seed from Supabase (REQUIRED - no fallback).
  * Also removes photos from storage when userId is provided.
  */
-export async function deleteSeed(id: string, userId?: string): Promise<boolean> {
+export async function deleteSeed(
+  id: string,
+  userId?: string,
+): Promise<boolean> {
   if (!supabase) {
-    throw new Error('Supabase is not configured. Please check your environment variables.');
+    throw new Error(
+      "Supabase is not configured. Please check your environment variables.",
+    );
   }
 
   try {
@@ -326,23 +378,45 @@ export async function deleteSeed(id: string, userId?: string): Promise<boolean> 
       await deleteSeedPhotos(userId, id);
     }
 
-    const { error } = await supabase
-      .from('seeds')
-      .delete()
-      .eq('id', id);
+    let deleteQuery = supabase.from("seeds").delete().eq("id", id);
+    if (userId) {
+      const { error: scopedDeleteError } = await deleteQuery.eq(
+        "user_id",
+        userId,
+      );
+
+      if (!scopedDeleteError) {
+        return true;
+      }
+
+      if (!isMissingColumnError(scopedDeleteError)) {
+        console.error("[Storage] Supabase delete error:", scopedDeleteError);
+        throw new Error(
+          `Failed to delete seed from database: ${scopedDeleteError.message}`,
+        );
+      }
+
+      console.warn(
+        "[Storage] Seed delete query hit a missing column; retrying with a compatible filter:",
+        scopedDeleteError.message,
+      );
+      deleteQuery = supabase.from("seeds").delete().eq("id", id);
+    }
+
+    const { error } = await deleteQuery;
 
     if (error) {
-      console.error('[Storage] Supabase delete error:', error);
+      console.error("[Storage] Supabase delete error:", error);
       throw new Error(`Failed to delete seed from database: ${error.message}`);
     }
 
     return true;
   } catch (err) {
-    console.error('[Storage] Error deleting from Supabase:', err);
+    console.error("[Storage] Error deleting from Supabase:", err);
     if (err instanceof Error) {
       throw err;
     }
-    throw new Error('Failed to delete seed from database');
+    throw new Error("Failed to delete seed from database");
   }
 }
 
@@ -351,7 +425,7 @@ export async function deleteSeed(id: string, userId?: string): Promise<boolean> 
  */
 function deleteSeedLocal(id: string): boolean {
   const seeds = getSeedsLocal();
-  const filtered = seeds.filter(s => s.id !== id);
+  const filtered = seeds.filter((s) => s.id !== id);
   if (filtered.length === seeds.length) return false;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
   return true;
@@ -362,51 +436,77 @@ function deleteSeedLocal(id: string): boolean {
  */
 export async function clearAllSeeds(): Promise<void> {
   if (!supabase) {
-    throw new Error('Supabase is not configured. Please check your environment variables.');
+    throw new Error(
+      "Supabase is not configured. Please check your environment variables.",
+    );
   }
 
   try {
     const { error } = await supabase
-      .from('seeds')
+      .from("seeds")
       .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all (using a condition that matches all)
+      .neq("id", "00000000-0000-0000-0000-000000000000"); // Delete all (using a condition that matches all)
 
     if (error) {
-      console.error('[Storage] Supabase clear error:', error);
+      console.error("[Storage] Supabase clear error:", error);
       throw new Error(`Failed to clear seeds from database: ${error.message}`);
     }
   } catch (err) {
-    console.error('[Storage] Error clearing Supabase:', err);
+    console.error("[Storage] Error clearing Supabase:", err);
     if (err instanceof Error) {
       throw err;
     }
-    throw new Error('Failed to clear seeds from database');
+    throw new Error("Failed to clear seeds from database");
   }
 }
 
 function clearAllSeedsLocal(): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.removeItem(STORAGE_KEY);
 }
 
 /**
  * Get a seed by ID from Supabase (REQUIRED - no fallback)
  */
-export async function getSeedById(id: string): Promise<Seed | null> {
+export async function getSeedById(
+  id: string,
+  userId?: string,
+): Promise<Seed | null> {
   if (!supabase) {
-    throw new Error('Supabase is not configured. Please check your environment variables.');
+    throw new Error(
+      "Supabase is not configured. Please check your environment variables.",
+    );
   }
 
   try {
-    const { data, error } = await supabase
-      .from('seeds')
-      .select('*')
-      .eq('id', id)
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    const effectiveUserId = authData?.user?.id ?? userId;
+    if (authError || !effectiveUserId) {
+      return null;
+    }
+
+    let { data, error } = await supabase
+      .from("seeds")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", effectiveUserId)
       .single();
 
+    if (error && isMissingColumnError(error)) {
+      console.warn(
+        "[Storage] getSeedById query hit a missing user_id column; retrying without explicit user filter:",
+        error.message,
+      );
+      ({ data, error } = await supabase
+        .from("seeds")
+        .select("*")
+        .eq("id", id)
+        .single());
+    }
+
     if (error) {
-      console.error('[Storage] Supabase getById error:', error);
-      if (error.code === 'PGRST116') {
+      console.error("[Storage] Supabase getById error:", error);
+      if (error.code === "PGRST116") {
         // No rows returned
         return null;
       }
@@ -429,17 +529,17 @@ export async function getSeedById(id: string): Promise<Seed | null> {
     }
     return convertDbSeedToSeed(data, photoFront, photoBack);
   } catch (err) {
-    console.error('[Storage] Error getting seed from Supabase:', err);
+    console.error("[Storage] Error getting seed from Supabase:", err);
     if (err instanceof Error) {
       throw err;
     }
-    throw new Error('Failed to get seed from database');
+    throw new Error("Failed to get seed from database");
   }
 }
 
 function getSeedByIdLocal(id: string): Seed | null {
   const seeds = getSeedsLocal();
-  return seeds.find(s => s.id === id) || null;
+  return seeds.find((s) => s.id === id) || null;
 }
 
 /**
@@ -497,26 +597,28 @@ export async function getProfile(): Promise<UserProfile | null> {
   if (!user) return null;
 
   const { data, error } = await supabase
-    .from('user_profiles')
-    .select('zip_code, growing_zone, previous_zone, location, updated_at')
-    .eq('user_id', user.id)
+    .from("user_profiles")
+    .select("zip_code, growing_zone, previous_zone, location, updated_at")
+    .eq("user_id", user.id)
     .maybeSingle();
 
   if (error) {
-    console.error('getProfile failed:', error);
+    console.error("getProfile failed:", error);
     return null;
   }
   if (!data) return null;
   return rowToProfile(data);
 }
 
-export async function saveProfile(profile: Partial<UserProfile>): Promise<UserProfile> {
+export async function saveProfile(
+  profile: Partial<UserProfile>,
+): Promise<UserProfile> {
   if (!supabase) {
-    throw new Error('Supabase not configured — cannot save profile.');
+    throw new Error("Supabase not configured — cannot save profile.");
   }
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData?.user) {
-    throw new Error('Not signed in — cannot save profile.');
+    throw new Error("Not signed in — cannot save profile.");
   }
   const userId = authData.user.id;
 
@@ -525,7 +627,7 @@ export async function saveProfile(profile: Partial<UserProfile>): Promise<UserPr
   const merged = { ...existing, ...profile };
 
   const { data, error } = await supabase
-    .from('user_profiles')
+    .from("user_profiles")
     .upsert(
       {
         user_id: userId,
@@ -534,13 +636,13 @@ export async function saveProfile(profile: Partial<UserProfile>): Promise<UserPr
         previous_zone: merged.previousZone ?? null,
         location: merged.location ?? null,
       },
-      { onConflict: 'user_id' },
+      { onConflict: "user_id" },
     )
-    .select('zip_code, growing_zone, previous_zone, location, updated_at')
+    .select("zip_code, growing_zone, previous_zone, location, updated_at")
     .single();
 
   if (error || !data) {
-    throw new Error(error?.message ?? 'Failed to save profile.');
+    throw new Error(error?.message ?? "Failed to save profile.");
   }
   return rowToProfile(data);
 }
