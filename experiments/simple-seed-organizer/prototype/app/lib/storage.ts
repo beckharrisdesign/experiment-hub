@@ -302,12 +302,22 @@ export async function updateSeed(
     const dbUpdates = convertSeedToDbSeed(updateData as Seed, {
       mode: "update",
     });
-    const baseQuery = supabase.from("seeds").update(dbUpdates).eq("id", id);
-    const { data, error } = await (
-      userId ? baseQuery.eq("user_id", userId) : baseQuery
-    )
-      .select()
-      .single();
+    const runUpdate = async (filterByUserId: boolean) => {
+      let query = supabase!.from("seeds").update(dbUpdates).eq("id", id);
+      if (filterByUserId && userId) {
+        query = query.eq("user_id", userId);
+      }
+      return query.select().single();
+    };
+
+    let { data, error } = await runUpdate(Boolean(userId));
+    if (error && userId && isMissingColumnError(error)) {
+      console.warn(
+        "[Storage] user_id missing during update; retrying without user filter:",
+        error.message,
+      );
+      ({ data, error } = await runUpdate(false));
+    }
 
     if (error) {
       console.error("[Storage] Supabase update error:", error);

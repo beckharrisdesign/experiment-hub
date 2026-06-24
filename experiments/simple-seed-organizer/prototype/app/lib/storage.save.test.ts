@@ -19,11 +19,11 @@ const persistMocks = vi.hoisted(() => {
   }));
 
   const singleUpdate = vi.fn(async () => updateResult);
-  const update = vi.fn(() => ({
-    eq: vi.fn(() => ({
-      select: () => ({ single: singleUpdate }),
-    })),
-  }));
+  const updateChain = {
+    eq: vi.fn(() => updateChain),
+    select: () => ({ single: singleUpdate }),
+  };
+  const update = vi.fn(() => updateChain);
 
   const from = vi.fn(() => ({ insert, update }));
 
@@ -133,7 +133,7 @@ describe("storage saveSeed / updateSeed (mocked Supabase)", () => {
     });
 
     await expect(
-      updateSeed("seed-1", { name: "Updated" }),
+      updateSeed("seed-1", { name: "Updated" }, "user-1"),
     ).rejects.toThrow(/row-level security/);
   });
 
@@ -158,7 +158,7 @@ describe("storage saveSeed / updateSeed (mocked Supabase)", () => {
     const row = makeInsertedRow({ name: "Renamed" });
     persistMocks.setUpdateResult({ data: row, error: null });
 
-    const seed = await updateSeed("seed-new", { name: "Renamed" });
+    const seed = await updateSeed("seed-new", { name: "Renamed" }, "user-1");
 
     expect(seed).not.toBeNull();
     expect(seed!.name).toBe("Renamed");
