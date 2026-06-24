@@ -88,6 +88,85 @@ export async function upsertContent(
   if (error) throw error;
 }
 
+export type NoteType =
+  | "observation"
+  | "decision"
+  | "learning"
+  | "question"
+  | "idea";
+
+export interface Note {
+  id: string;
+  experiment_id: string;
+  title: string | null;
+  content: string;
+  note_type: NoteType;
+  source_file: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getNotes(experimentId: string): Promise<Note[]> {
+  const { data, error } = await getAdminClient()
+    .from("notes")
+    .select("*")
+    .eq("experiment_id", experimentId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Note[];
+}
+
+export async function createNote(
+  experimentId: string,
+  note: {
+    title?: string | null;
+    content: string;
+    note_type?: NoteType;
+    source_file?: string | null;
+    created_at?: string;
+  },
+): Promise<Note> {
+  const payload: Record<string, unknown> = {
+    experiment_id: experimentId,
+    content: note.content,
+    note_type: note.note_type ?? "observation",
+  };
+  if (note.title !== undefined) payload.title = note.title;
+  if (note.source_file !== undefined) payload.source_file = note.source_file;
+  if (note.created_at !== undefined) payload.created_at = note.created_at;
+
+  const { data, error } = await getAdminClient()
+    .from("notes")
+    .insert(payload)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as Note;
+}
+
+export async function updateNote(
+  id: string,
+  updates: {
+    title?: string | null;
+    content?: string;
+    note_type?: NoteType;
+  },
+): Promise<Note> {
+  const { data, error } = await getAdminClient()
+    .from("notes")
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as Note;
+}
+
+export async function deleteNote(id: string): Promise<void> {
+  const { error } = await getAdminClient().from("notes").delete().eq("id", id);
+  if (error) throw error;
+}
+
 export async function insertSubmission(
   submission: ExperimentSubmission,
 ): Promise<{ id: string }> {
