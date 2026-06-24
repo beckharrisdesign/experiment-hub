@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 jobs:
-  # ── Unit tests ─────────────────────────────────────────────────────────────
+  # ── Unit tests (root) ───────────────────────────────────────────────────────
   # Runs on every push and every PR. No secrets needed — all external calls
   # are mocked. Fast (~10s). Gate before merge.
   unit-tests:
@@ -29,6 +29,93 @@ jobs:
 
       - name: Run unit tests
         run: pnpm test
+
+  # ── Unit tests (seed organizer app) ────────────────────────────────────────
+  # Tests in experiments/simple-seed-organizer/prototype/app/lib and components.
+  # The app is not a pnpm workspace member so root install covers its deps via
+  # node_modules traversal. Runs on every push and PR.
+  app-unit-tests:
+    name: Seed organizer unit tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: experiments/simple-seed-organizer/prototype/app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - name: Run app unit tests
+        run: npx vitest run
+
+  # ── Build check ─────────────────────────────────────────────────────────────
+  # Catches TypeScript errors and broken imports that unit tests won't surface.
+  # Placeholder env vars satisfy Next.js's NEXT_PUBLIC_ validation at build time.
+  build:
+    name: Build check (seed organizer)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: experiments/simple-seed-organizer/prototype/app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_placeholder
+        run: npx next build
+
+  # ── Lint ────────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint (seed organizer)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: experiments/simple-seed-organizer/prototype/app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - name: Lint
+        run: npx eslint .
 
   # ── Live integration tests ──────────────────────────────────────────────────
   # Runs on push to main (after merge) AND on PRs opened by the repo owner.
