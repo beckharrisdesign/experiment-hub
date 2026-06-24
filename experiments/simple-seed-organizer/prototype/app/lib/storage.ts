@@ -475,10 +475,30 @@ export async function getSeedById(
   }
 
   try {
-    const baseQuery = supabase.from("seeds").select("*").eq("id", id);
-    const { data, error } = await (
-      userId ? baseQuery.eq("user_id", userId) : baseQuery
-    ).single();
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    const effectiveUserId = authData?.user?.id ?? userId;
+    if (authError || !effectiveUserId) {
+      return null;
+    }
+
+    let { data, error } = await supabase
+      .from("seeds")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", effectiveUserId)
+      .single();
+
+    if (error && isMissingColumnError(error)) {
+      console.warn(
+        "[Storage] getSeedById query hit a missing user_id column; retrying without explicit user filter:",
+        error.message,
+      );
+      ({ data, error } = await supabase
+        .from("seeds")
+        .select("*")
+        .eq("id", id)
+        .single());
+    }
 
     if (error) {
       console.error("[Storage] Supabase getById error:", error);
