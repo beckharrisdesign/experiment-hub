@@ -107,26 +107,22 @@ export interface Note {
 }
 
 export async function getNotes(experimentId: string): Promise<Note[]> {
-  try {
-    const { data, error } = await getAdminClient()
-      .from("notes")
-      .select("*")
-      .eq("experiment_id", experimentId)
-      .order("created_at", { ascending: false });
-    if (error || !data) return [];
-    return data as Note[];
-  } catch {
-    return [];
-  }
+  const { data, error } = await getAdminClient()
+    .from("notes")
+    .select("*")
+    .eq("experiment_id", experimentId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Note[];
 }
 
 export async function createNote(
   experimentId: string,
   note: {
-    title?: string;
+    title?: string | null;
     content: string;
     note_type?: NoteType;
-    source_file?: string;
+    source_file?: string | null;
     created_at?: string;
   },
 ): Promise<Note> {

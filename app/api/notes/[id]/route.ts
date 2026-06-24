@@ -25,14 +25,37 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const body = await request.json();
-  const { title, content, note_type } = body;
 
-  if (note_type && !VALID_TYPES.includes(note_type)) {
-    return NextResponse.json({ error: "invalid note_type" }, { status: 400 });
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const note = await updateNote(id, { title, content, note_type });
+  const { title, content, note_type } = body;
+
+  if (note_type !== undefined && !VALID_TYPES.includes(note_type as NoteType)) {
+    return NextResponse.json({ error: "invalid note_type" }, { status: 400 });
+  }
+  if (content !== undefined && typeof content !== "string") {
+    return NextResponse.json(
+      { error: "content must be a string" },
+      { status: 400 },
+    );
+  }
+  if (title !== undefined && title !== null && typeof title !== "string") {
+    return NextResponse.json(
+      { error: "title must be a string" },
+      { status: 400 },
+    );
+  }
+
+  const note = await updateNote(id, {
+    title: title as string | null | undefined,
+    content: content as string | undefined,
+    note_type: note_type as NoteType | undefined,
+  });
   return NextResponse.json(note);
 }
 
