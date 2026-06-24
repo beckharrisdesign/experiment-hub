@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AuthForm } from "@/components/AuthForm";
 import { useAuth } from "@/lib/auth-context";
@@ -40,9 +41,9 @@ export default function LoginPage() {
           <AuthForm onSuccess={() => router.push("/")} embedded />
         </div>
         <p className="mt-4 text-center text-sm text-gray-500">
-          <a href="/" className="text-[#16a34a] hover:underline">
+          <Link href="/" className="text-[#16a34a] hover:underline">
             ← Back to home
-          </a>
+          </Link>
         </p>
       </div>
     </div>
