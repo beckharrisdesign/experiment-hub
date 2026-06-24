@@ -119,12 +119,12 @@ function HomeContent() {
     const loadSeeds = async () => {
       setSeedsLoading(true);
       try {
-        const seedsWithoutPhotos = await getSeedsWithoutPhotos();
+        const seedsWithoutPhotos = await getSeedsWithoutPhotos(user.id);
         if (cancelled) return;
         setSeeds(seedsWithoutPhotos);
         setSeedsLoading(false);
 
-        const photos = await getSeedPhotos();
+        const photos = await getSeedPhotos(user.id);
         if (cancelled) return;
         setSeeds((prev) =>
           prev.map((seed) => {
@@ -149,7 +149,7 @@ function HomeContent() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user?.id]);
 
   const availableTypes = useMemo(
     () =>

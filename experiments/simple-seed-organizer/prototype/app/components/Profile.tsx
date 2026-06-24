@@ -1,27 +1,42 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { UserProfile } from '@/types/profile';
-import { getProfile, saveProfile, getSeedCount } from '@/lib/storage';
-import { lookupZone, formatZoneTemperature } from '@/lib/zoneLookup';
-import { getGrowingSeasonLength } from '@/data/climate';
-import { useAuth } from '@/lib/auth-context';
-import toast from 'react-hot-toast';
-import { supabase } from '@/lib/supabase';
-import { PLANS, getTierIndex, getUpgradeTiers } from '@/lib/plans';
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { UserProfile } from "@/types/profile";
+import { getProfile, saveProfile, getSeedCount } from "@/lib/storage";
+import { lookupZone, formatZoneTemperature } from "@/lib/zoneLookup";
+import { getGrowingSeasonLength } from "@/data/climate";
+import { useAuth } from "@/lib/auth-context";
+import toast from "react-hot-toast";
+import { supabase } from "@/lib/supabase";
+import { PLANS, getTierIndex, getUpgradeTiers } from "@/lib/plans";
 
 // Helper to format frost dates
 function formatFrostDate(dateStr: string): string {
-  const [month, day] = dateStr.split('-').map(Number);
+  const [month, day] = dateStr.split("-").map(Number);
   const date = new Date(2024, month - 1, day);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 // Helper to get current month's average temperature
-function getCurrentMonthTemp(climate: { averageTemperatures: Record<string, number> }): number {
-  const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+function getCurrentMonthTemp(climate: {
+  averageTemperatures: Record<string, number>;
+}): number {
+  const monthNames = [
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
+  ];
   const currentMonth = new Date().getMonth();
   return climate.averageTemperatures[monthNames[currentMonth]] || 0;
 }
@@ -38,20 +53,23 @@ function ZoneInfoTooltip({
   zone: string;
   zoneLookupResult: ReturnType<typeof lookupZone>;
   zipCode: string;
-  formatZoneTemperature: (z: string, u: 'F' | 'C') => string;
+  formatZoneTemperature: (z: string, u: "F" | "C") => string;
   formatFrostDate: (s: string) => string;
   getGrowingSeasonLength: (zip: string) => number | null;
-  getCurrentMonthTemp: (c: { averageTemperatures: Record<string, number> }) => number;
+  getCurrentMonthTemp: (c: {
+    averageTemperatures: Record<string, number>;
+  }) => number;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
     };
-    if (open) document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    if (open) document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, [open]);
 
   if (!zoneLookupResult) return null;
@@ -59,14 +77,22 @@ function ZoneInfoTooltip({
   const parts: string[] = [];
   if (zoneLookupResult.zoneInfo) {
     parts.push(`${zoneLookupResult.zoneInfo.description}`);
-    parts.push(`Temp: ${formatZoneTemperature(zone, 'F')} (${formatZoneTemperature(zone, 'C')})`);
+    parts.push(
+      `Temp: ${formatZoneTemperature(zone, "F")} (${formatZoneTemperature(zone, "C")})`,
+    );
   }
   if (zoneLookupResult.changed && zoneLookupResult.previousZone) {
-    parts.push(`Zone shifted from ${zoneLookupResult.previousZone} to ${zone} in 2024 USDA update.`);
+    parts.push(
+      `Zone shifted from ${zoneLookupResult.previousZone} to ${zone} in 2024 USDA update.`,
+    );
   }
   if (zoneLookupResult.climate) {
-    parts.push(`First frost: ${formatFrostDate(zoneLookupResult.climate.averageFirstFrost)}`);
-    parts.push(`Last frost: ${formatFrostDate(zoneLookupResult.climate.averageLastFrost)}`);
+    parts.push(
+      `First frost: ${formatFrostDate(zoneLookupResult.climate.averageFirstFrost)}`,
+    );
+    parts.push(
+      `Last frost: ${formatFrostDate(zoneLookupResult.climate.averageLastFrost)}`,
+    );
     const season = getGrowingSeasonLength(zipCode);
     if (season) parts.push(`Growing season: ~${season} days`);
     const monthTemp = getCurrentMonthTemp(zoneLookupResult.climate);
@@ -88,7 +114,9 @@ function ZoneInfoTooltip({
       </button>
       {open && (
         <div className="absolute left-0 top-full mt-1 z-50 w-64 p-3 bg-white border border-gray-200 rounded-lg shadow-lg text-left">
-          <p className="text-xs text-[#4a5565] leading-relaxed whitespace-pre-line">{parts.join('\n\n')}</p>
+          <p className="text-xs text-[#4a5565] leading-relaxed whitespace-pre-line">
+            {parts.join("\n\n")}
+          </p>
         </div>
       )}
     </div>
@@ -101,12 +129,12 @@ const HARDINESS_ZONES = (() => {
   for (let i = 1; i <= 13; i++) zones.push(i.toString());
   for (let i = 1; i <= 13; i++) zones.push(`${i}a`, `${i}b`, `${i}c`);
   return zones.sort((a, b) => {
-    const aNum = parseInt(a.replace(/[abc]/g, '')) || 0;
-    const bNum = parseInt(b.replace(/[abc]/g, '')) || 0;
+    const aNum = parseInt(a.replace(/[abc]/g, "")) || 0;
+    const bNum = parseInt(b.replace(/[abc]/g, "")) || 0;
     if (aNum !== bNum) return aNum - bNum;
-    const aSub = a.match(/[abc]/)?.[0] || '';
-    const bSub = b.match(/[abc]/)?.[0] || '';
-    const subOrder: Record<string, number> = { '': 0, 'a': 1, 'b': 2, 'c': 3 };
+    const aSub = a.match(/[abc]/)?.[0] || "";
+    const bSub = b.match(/[abc]/)?.[0] || "";
+    const subOrder: Record<string, number> = { "": 0, a: 1, b: 2, c: 3 };
     return (subOrder[aSub] || 0) - (subOrder[bSub] || 0);
   });
 })();
@@ -117,15 +145,21 @@ interface SubscriptionData {
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
   customerId: string | null;
-  invoices: { id: string; amountPaid: number; currency: string; date: string | null; hostedUrl: string | null }[];
+  invoices: {
+    id: string;
+    amountPaid: number;
+    currency: string;
+    date: string | null;
+    hostedUrl: string | null;
+  }[];
 }
 
 const SECTIONS = [
-  { id: 'gardening', label: 'About your garden' },
-  { id: 'account', label: 'About you' },
-  { id: 'security', label: 'Password' },
-  { id: 'usage', label: 'Usage' },
-  { id: 'subscription', label: 'Subscription' },
+  { id: "gardening", label: "About your garden" },
+  { id: "account", label: "About you" },
+  { id: "security", label: "Password" },
+  { id: "usage", label: "Usage" },
+  { id: "subscription", label: "Subscription" },
 ] as const;
 
 export function Profile() {
@@ -134,24 +168,34 @@ export function Profile() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/login');
+    // Hard reload clears all React state and re-initialises the Supabase
+    // client from fresh cookies, preventing any stale session data from
+    // the previous account appearing on the next login.
+    window.location.href = "/login";
   };
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [zipCode, setZipCode] = useState('');
-  const [growingZone, setGrowingZone] = useState('');
-  const [location, setLocation] = useState('');
-  const [zoneLookupResult, setZoneLookupResult] = useState<ReturnType<typeof lookupZone> | null>(null);
-  const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
+  const [zipCode, setZipCode] = useState("");
+  const [growingZone, setGrowingZone] = useState("");
+  const [location, setLocation] = useState("");
+  const [zoneLookupResult, setZoneLookupResult] = useState<ReturnType<
+    typeof lookupZone
+  > | null>(null);
+  const [subscription, setSubscription] = useState<SubscriptionData | null>(
+    null,
+  );
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
   const [portalLoading, setPortalLoading] = useState(false);
   const [seedCount, setSeedCount] = useState<number | null>(null);
   const [aiCompletions, setAiCompletions] = useState<number | null>(null);
-  const [activeSection, setActiveSection] = useState<string>('account');
+  const [activeSection, setActiveSection] = useState<string>("account");
   const [gardeningSaving, setGardeningSaving] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
-  const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [passwordMessage, setPasswordMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
@@ -159,9 +203,9 @@ export function Profile() {
     getProfile().then((existing) => {
       if (cancelled || !existing) return;
       setProfile(existing);
-      setZipCode(existing.zipCode || '');
-      setGrowingZone(existing.growingZone || '');
-      setLocation(existing.location || '');
+      setZipCode(existing.zipCode || "");
+      setGrowingZone(existing.growingZone || "");
+      setLocation(existing.location || "");
       if (existing.zipCode) {
         const result = lookupZone(existing.zipCode);
         setZoneLookupResult(result);
@@ -189,9 +233,9 @@ export function Profile() {
       setSubscriptionLoading(false);
       return;
     }
-    fetch('/api/stripe/subscription', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("/api/stripe/subscription", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: user.email }),
     })
       .then((res) => res.json())
@@ -209,14 +253,14 @@ export function Profile() {
       setAiCompletions(null);
       return;
     }
-    getSeedCount()
+    getSeedCount(user.id)
       .then(setSeedCount)
       .catch(() => setSeedCount(0));
   }, [user]);
 
   useEffect(() => {
     if (!user) return;
-    fetch('/api/ai-usage', { credentials: 'include' })
+    fetch("/api/ai-usage", { credentials: "include" })
       .then((res) => (res.ok ? res.json() : { completions: 0 }))
       .then((data) => setAiCompletions(data.completions ?? 0))
       .catch(() => setAiCompletions(0));
@@ -232,7 +276,7 @@ export function Profile() {
           }
         });
       },
-      { rootMargin: '-20% 0px -70% 0px', threshold: 0 }
+      { rootMargin: "-20% 0px -70% 0px", threshold: 0 },
     );
     SECTIONS.forEach(({ id }) => {
       const el = sectionRefs.current[id];
@@ -242,23 +286,25 @@ export function Profile() {
   }, []);
 
   const scrollToSection = (id: string) => {
-    sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth' });
+    sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleManageBilling = async () => {
     if (!subscription?.customerId) return;
     setPortalLoading(true);
     try {
-      const res = await fetch('/api/stripe/portal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ customerId: subscription.customerId }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       if (data.url) window.location.href = data.url;
     } catch (err) {
-      toast.error("I'm having trouble reaching billing right now. Try reloading the page or waiting a few minutes.");
+      toast.error(
+        "I'm having trouble reaching billing right now. Try reloading the page or waiting a few minutes.",
+      );
     } finally {
       setPortalLoading(false);
     }
@@ -268,26 +314,46 @@ export function Profile() {
     e.preventDefault();
     setPasswordMessage(null);
     if (newPassword !== confirmPassword) {
-      setPasswordMessage({ type: 'error', text: "Those passwords don't match. Try again." });
+      setPasswordMessage({
+        type: "error",
+        text: "Those passwords don't match. Try again.",
+      });
       return;
     }
     if (newPassword.length < 6) {
-      setPasswordMessage({ type: 'error', text: 'Use at least 6 characters for your password.' });
+      setPasswordMessage({
+        type: "error",
+        text: "Use at least 6 characters for your password.",
+      });
       return;
     }
     if (!supabase) {
-      setPasswordMessage({ type: 'error', text: "I couldn't update your password. Try reloading the page." });
+      setPasswordMessage({
+        type: "error",
+        text: "I couldn't update your password. Try reloading the page.",
+      });
       return;
     }
     setPasswordLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
       if (error) throw error;
-      setPasswordMessage({ type: 'success', text: 'Your password has been updated.' });
-      setNewPassword('');
-      setConfirmPassword('');
+      setPasswordMessage({
+        type: "success",
+        text: "Your password has been updated.",
+      });
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (err) {
-      setPasswordMessage({ type: 'error', text: err instanceof Error ? err.message : "I couldn't update your password. Check your connection and try again." });
+      setPasswordMessage({
+        type: "error",
+        text:
+          err instanceof Error
+            ? err.message
+            : "I couldn't update your password. Check your connection and try again.",
+      });
     } finally {
       setPasswordLoading(false);
     }
@@ -303,10 +369,11 @@ export function Profile() {
       });
       // Toast persists across navigation because <Toaster> is mounted globally
       // in the root layout — see openspec/changes/sso-zip-code-persistence/design.md.
-      toast.success('Profile saved');
-      router.push('/');
+      toast.success("Profile saved");
+      router.push("/");
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Could not save your profile.';
+      const message =
+        err instanceof Error ? err.message : "Could not save your profile.";
       toast.error(`Couldn't save your profile — ${message}`);
       // On failure: keep the form values and skip navigation so the user can retry.
     } finally {
@@ -326,8 +393,8 @@ export function Profile() {
               onClick={() => scrollToSection(id)}
               className={`text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeSection === id
-                  ? 'bg-[#16a34a] text-white'
-                  : 'text-[#4a5565] hover:bg-gray-200'
+                  ? "bg-[#16a34a] text-white"
+                  : "text-[#4a5565] hover:bg-gray-200"
               }`}
             >
               {label}
@@ -345,357 +412,457 @@ export function Profile() {
         </div>
       </nav>
 
-        {/* Main content - left margin on desktop to clear fixed nav */}
-        <main className="min-w-0 px-4 lg:pl-8 lg:pr-8 py-6 pb-24 max-w-3xl lg:ml-48 lg:mr-auto">
-          <div className="max-w-2xl">
-            {/* Gardening */}
-            <section
-              id="gardening"
-              ref={(el) => { sectionRefs.current.gardening = el; }}
-              className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
-            >
-              <h2 className="text-lg font-semibold text-[#4a5565] mb-4">Gardening info</h2>
-              <p className="text-sm text-[#99a1af] mb-4">
-                Used for planting dates and zone-specific guidance.
-              </p>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-[#4a5565] mb-2">Zip Code</label>
-                  <input
-                    type="text"
-                    value={zipCode}
-                    onChange={(e) => setZipCode(e.target.value.replace(/[^\d-]/g, ''))}
-                    placeholder="e.g., 78701"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
-                    maxLength={10}
-                    inputMode="numeric"
-                  />
-                  {zipCode.length >= 5 && zoneLookupResult && (
-                    <p className="mt-1 text-xs text-[#16a34a]">✓ Zone {zoneLookupResult.zone} found</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#4a5565] mb-2">Growing Zone</label>
-                  <div className="flex items-center gap-3">
-                    <select
-                      value={growingZone}
-                      onChange={(e) => setGrowingZone(e.target.value)}
-                      className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
-                    >
-                      <option value="">Select zone...</option>
-                      {Array.from({ length: 13 }, (_, i) => i + 1).map((zoneNum) => {
+      {/* Main content - left margin on desktop to clear fixed nav */}
+      <main className="min-w-0 px-4 lg:pl-8 lg:pr-8 py-6 pb-24 max-w-3xl lg:ml-48 lg:mr-auto">
+        <div className="max-w-2xl">
+          {/* Gardening */}
+          <section
+            id="gardening"
+            ref={(el) => {
+              sectionRefs.current.gardening = el;
+            }}
+            className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
+          >
+            <h2 className="text-lg font-semibold text-[#4a5565] mb-4">
+              Gardening info
+            </h2>
+            <p className="text-sm text-[#99a1af] mb-4">
+              Used for planting dates and zone-specific guidance.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[#4a5565] mb-2">
+                  Zip Code
+                </label>
+                <input
+                  type="text"
+                  value={zipCode}
+                  onChange={(e) =>
+                    setZipCode(e.target.value.replace(/[^\d-]/g, ""))
+                  }
+                  placeholder="e.g., 78701"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
+                  maxLength={10}
+                  inputMode="numeric"
+                />
+                {zipCode.length >= 5 && zoneLookupResult && (
+                  <p className="mt-1 text-xs text-[#16a34a]">
+                    ✓ Zone {zoneLookupResult.zone} found
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#4a5565] mb-2">
+                  Growing Zone
+                </label>
+                <div className="flex items-center gap-3">
+                  <select
+                    value={growingZone}
+                    onChange={(e) => setGrowingZone(e.target.value)}
+                    className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
+                  >
+                    <option value="">Select zone...</option>
+                    {Array.from({ length: 13 }, (_, i) => i + 1).map(
+                      (zoneNum) => {
                         const baseZone = zoneNum.toString();
                         return (
                           <optgroup key={baseZone} label={`Zone ${baseZone}`}>
-                            <option value={baseZone}>{baseZone} (General)</option>
+                            <option value={baseZone}>
+                              {baseZone} (General)
+                            </option>
                             <option value={`${baseZone}a`}>{baseZone}a</option>
                             <option value={`${baseZone}b`}>{baseZone}b</option>
                             <option value={`${baseZone}c`}>{baseZone}c</option>
                           </optgroup>
                         );
-                      })}
-                    </select>
-                    {growingZone && (
-                      <div className="flex items-center shrink-0">
-                        <span className="text-sm text-[#16a34a] font-medium">Zone {growingZone}</span>
-                        {zoneLookupResult && (
-                          <ZoneInfoTooltip
-                            zone={growingZone}
-                            zoneLookupResult={zoneLookupResult}
-                            zipCode={zipCode}
-                            formatZoneTemperature={formatZoneTemperature}
-                            formatFrostDate={formatFrostDate}
-                            getGrowingSeasonLength={getGrowingSeasonLength}
-                            getCurrentMonthTemp={getCurrentMonthTemp}
-                          />
-                        )}
-                      </div>
+                      },
                     )}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#4a5565] mb-2">Location (optional)</label>
-                  <input
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="e.g., Austin, TX"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
-                  />
-                </div>
-                <div className="flex justify-end pt-2">
-                  <button
-                    onClick={handleSaveGardening}
-                    disabled={gardeningSaving}
-                    aria-busy={gardeningSaving}
-                    className="min-w-[120px] px-4 py-2 bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d] disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {gardeningSaving ? 'Saving…' : 'Save'}
-                  </button>
+                  </select>
+                  {growingZone && (
+                    <div className="flex items-center shrink-0">
+                      <span className="text-sm text-[#16a34a] font-medium">
+                        Zone {growingZone}
+                      </span>
+                      {zoneLookupResult && (
+                        <ZoneInfoTooltip
+                          zone={growingZone}
+                          zoneLookupResult={zoneLookupResult}
+                          zipCode={zipCode}
+                          formatZoneTemperature={formatZoneTemperature}
+                          formatFrostDate={formatFrostDate}
+                          getGrowingSeasonLength={getGrowingSeasonLength}
+                          getCurrentMonthTemp={getCurrentMonthTemp}
+                        />
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-            </section>
-
-            {/* Account */}
-            <section
-              id="account"
-              ref={(el) => { sectionRefs.current.account = el; }}
-              className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
-            >
-              <h2 className="text-lg font-semibold text-[#4a5565] mb-4">Account</h2>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">Email</p>
-                  <p className="text-[#101828]">{user?.email ?? '—'}</p>
-                </div>
-                {!subscriptionLoading && (
-                  <div>
-                    <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">Plan</p>
-                    <p className="text-[#16a34a] font-medium">
-                      {subscription?.tier ?? 'Seed Stash Starter'}
-                    </p>
-                  </div>
-                )}
-                <div className="flex justify-end pt-2">
-                  <button
-                    type="button"
-                    disabled
-                    className="min-w-[120px] px-4 py-2 bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d] disabled:opacity-70 disabled:cursor-not-allowed"
-                  >
-                    Edit
-                  </button>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-[#4a5565] mb-2">
+                  Location (optional)
+                </label>
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g., Austin, TX"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
+                />
               </div>
-            </section>
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={handleSaveGardening}
+                  disabled={gardeningSaving}
+                  aria-busy={gardeningSaving}
+                  className="min-w-[120px] px-4 py-2 bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d] disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {gardeningSaving ? "Saving…" : "Save"}
+                </button>
+              </div>
+            </div>
+          </section>
 
-            {/* Security / Password */}
-            <section
-              id="security"
-              ref={(el) => { sectionRefs.current.security = el; }}
-              className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
-            >
-              <h2 className="text-lg font-semibold text-[#4a5565] mb-4">Change password</h2>
-              <form onSubmit={handleChangePassword} className="space-y-4">
+          {/* Account */}
+          <section
+            id="account"
+            ref={(el) => {
+              sectionRefs.current.account = el;
+            }}
+            className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
+          >
+            <h2 className="text-lg font-semibold text-[#4a5565] mb-4">
+              Account
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">
+                  Email
+                </p>
+                <p className="text-[#101828]">{user?.email ?? "—"}</p>
+              </div>
+              {!subscriptionLoading && (
                 <div>
-                  <label className="block text-sm font-medium text-[#4a5565] mb-1">New password</label>
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
-                    autoComplete="new-password"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#4a5565] mb-1">Confirm password</label>
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
-                    autoComplete="new-password"
-                  />
-                </div>
-                {passwordMessage && (
-                  <p className={`text-sm ${passwordMessage.type === 'success' ? 'text-[#16a34a]' : 'text-red-600'}`}>
-                    {passwordMessage.text}
+                  <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">
+                    Plan
                   </p>
-                )}
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={passwordLoading}
-                    className="min-w-[120px] px-4 py-2 bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d] disabled:opacity-70"
-                  >
-                    {passwordLoading ? 'Updating…' : 'Update password'}
-                  </button>
-                </div>
-              </form>
-            </section>
-
-            {/* Usage */}
-            <section
-              id="usage"
-              ref={(el) => { sectionRefs.current.usage = el; }}
-              className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
-            >
-              <h2 className="text-lg font-semibold text-[#4a5565] mb-4">Usage</h2>
-              <p className="text-sm text-[#99a1af] mb-4">
-                Your usage against your plan limits. AI completions reset on your billing cycle.
-              </p>
-              {seedCount === null && aiCompletions === null ? (
-                <p className="text-sm text-[#99a1af]">Loading…</p>
-              ) : (
-                <div className="space-y-4">
-                  {(() => {
-                    const tier = subscription?.tier ?? 'Seed Stash Starter';
-                    const plan = PLANS[getTierIndex(tier)];
-                    const seedLimit = plan.seeds === 'Unlimited' ? null : parseInt(plan.seeds, 10);
-                    const aiLimit = plan.ai === 'Unlimited' ? null : parseInt(plan.ai.replace('/month', ''), 10);
-                    const seeds = seedCount ?? 0;
-                    const ai = aiCompletions ?? 0;
-                    const seedPct = seedLimit !== null ? Math.min(100, (seeds / seedLimit) * 100) : 35;
-                    const aiPct = aiLimit !== null ? Math.min(100, (ai / aiLimit) * 100) : 35;
-                    const seedAtLimit = seedLimit !== null && seeds >= seedLimit;
-                    const aiAtLimit = aiLimit !== null && ai >= aiLimit;
-                    return (
-                      <>
-                        <div>
-                          <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">Seed packets</p>
-                          <p className="text-[#101828] font-medium">
-                            {seeds}
-                            {seedLimit !== null ? ` / ${seedLimit}` : ' / unlimited'}
-                          </p>
-                          <div className="mt-1.5 h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-[width] ${seedAtLimit ? 'bg-amber-500' : 'bg-[#16a34a]'}`}
-                              style={{ width: `${seedPct}%` }}
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">AI completions this month</p>
-                          <p className="text-[#101828] font-medium">
-                            {ai}
-                            {aiLimit !== null ? ` / ${aiLimit}` : ' / unlimited'}
-                          </p>
-                          <div className="mt-1.5 h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-[width] ${aiAtLimit ? 'bg-amber-500' : 'bg-[#16a34a]'}`}
-                              style={{ width: `${aiPct}%` }}
-                            />
-                          </div>
-                          {subscription?.currentPeriodEnd ? (
-                            <p className="text-xs text-[#99a1af] mt-1">
-                              Resets {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </p>
-                          ) : aiLimit !== null && (
-                            <p className="text-xs text-[#99a1af] mt-1">
-                              Resets {new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </p>
-                          )}
-                        </div>
-                        {(() => {
-                          const upgradeTiers = getUpgradeTiers(tier);
-                          const nextTier = upgradeTiers[0];
-                          if (!nextTier) return null;
-                          return (
-                            <div className="flex justify-end pt-2">
-                              <Link
-                                href="/pricing"
-                                className="min-w-[120px] inline-block px-4 py-2 font-medium text-center bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d]"
-                              >
-                                Upgrade to {nextTier.id}
-                              </Link>
-                            </div>
-                          );
-                        })()}
-                      </>
-                    );
-                  })()}
+                  <p className="text-[#16a34a] font-medium">
+                    {subscription?.tier ?? "Seed Stash Starter"}
+                  </p>
                 </div>
               )}
-            </section>
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  disabled
+                  className="min-w-[120px] px-4 py-2 bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d] disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  Edit
+                </button>
+              </div>
+            </div>
+          </section>
 
-            {/* Subscription */}
-            <section
-              id="subscription"
-              ref={(el) => { sectionRefs.current.subscription = el; }}
-              className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
-            >
-              <h2 className="text-lg font-semibold text-[#4a5565] mb-4">Subscription</h2>
-              {subscriptionLoading ? (
-                <p className="text-sm text-[#99a1af]">Loading…</p>
-              ) : (
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">Current plan</p>
-                    <p className="text-[#16a34a] font-medium">
-                      {subscription?.tier ?? 'Seed Stash Starter'}
-                    </p>
-                  </div>
-                  {subscription && subscription.status !== 'free' && subscription.currentPeriodEnd && (
+          {/* Security / Password */}
+          <section
+            id="security"
+            ref={(el) => {
+              sectionRefs.current.security = el;
+            }}
+            className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
+          >
+            <h2 className="text-lg font-semibold text-[#4a5565] mb-4">
+              Change password
+            </h2>
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[#4a5565] mb-1">
+                  New password
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
+                  autoComplete="new-password"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#4a5565] mb-1">
+                  Confirm password
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#16a34a] focus:border-transparent"
+                  autoComplete="new-password"
+                />
+              </div>
+              {passwordMessage && (
+                <p
+                  className={`text-sm ${passwordMessage.type === "success" ? "text-[#16a34a]" : "text-red-600"}`}
+                >
+                  {passwordMessage.text}
+                </p>
+              )}
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={passwordLoading}
+                  className="min-w-[120px] px-4 py-2 bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d] disabled:opacity-70"
+                >
+                  {passwordLoading ? "Updating…" : "Update password"}
+                </button>
+              </div>
+            </form>
+          </section>
+
+          {/* Usage */}
+          <section
+            id="usage"
+            ref={(el) => {
+              sectionRefs.current.usage = el;
+            }}
+            className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
+          >
+            <h2 className="text-lg font-semibold text-[#4a5565] mb-4">Usage</h2>
+            <p className="text-sm text-[#99a1af] mb-4">
+              Your usage against your plan limits. AI completions reset on your
+              billing cycle.
+            </p>
+            {seedCount === null && aiCompletions === null ? (
+              <p className="text-sm text-[#99a1af]">Loading…</p>
+            ) : (
+              <div className="space-y-4">
+                {(() => {
+                  const tier = subscription?.tier ?? "Seed Stash Starter";
+                  const plan = PLANS[getTierIndex(tier)];
+                  const seedLimit =
+                    plan.seeds === "Unlimited"
+                      ? null
+                      : parseInt(plan.seeds, 10);
+                  const aiLimit =
+                    plan.ai === "Unlimited"
+                      ? null
+                      : parseInt(plan.ai.replace("/month", ""), 10);
+                  const seeds = seedCount ?? 0;
+                  const ai = aiCompletions ?? 0;
+                  const seedPct =
+                    seedLimit !== null
+                      ? Math.min(100, (seeds / seedLimit) * 100)
+                      : 35;
+                  const aiPct =
+                    aiLimit !== null ? Math.min(100, (ai / aiLimit) * 100) : 35;
+                  const seedAtLimit = seedLimit !== null && seeds >= seedLimit;
+                  const aiAtLimit = aiLimit !== null && ai >= aiLimit;
+                  return (
+                    <>
+                      <div>
+                        <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">
+                          Seed packets
+                        </p>
+                        <p className="text-[#101828] font-medium">
+                          {seeds}
+                          {seedLimit !== null
+                            ? ` / ${seedLimit}`
+                            : " / unlimited"}
+                        </p>
+                        <div className="mt-1.5 h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-[width] ${seedAtLimit ? "bg-amber-500" : "bg-[#16a34a]"}`}
+                            style={{ width: `${seedPct}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">
+                          AI completions this month
+                        </p>
+                        <p className="text-[#101828] font-medium">
+                          {ai}
+                          {aiLimit !== null ? ` / ${aiLimit}` : " / unlimited"}
+                        </p>
+                        <div className="mt-1.5 h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-[width] ${aiAtLimit ? "bg-amber-500" : "bg-[#16a34a]"}`}
+                            style={{ width: `${aiPct}%` }}
+                          />
+                        </div>
+                        {subscription?.currentPeriodEnd ? (
+                          <p className="text-xs text-[#99a1af] mt-1">
+                            Resets{" "}
+                            {new Date(
+                              subscription.currentPeriodEnd,
+                            ).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </p>
+                        ) : (
+                          aiLimit !== null && (
+                            <p className="text-xs text-[#99a1af] mt-1">
+                              Resets{" "}
+                              {new Date(
+                                new Date().getFullYear(),
+                                new Date().getMonth() + 1,
+                                1,
+                              ).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </p>
+                          )
+                        )}
+                      </div>
+                      {(() => {
+                        const upgradeTiers = getUpgradeTiers(tier);
+                        const nextTier = upgradeTiers[0];
+                        if (!nextTier) return null;
+                        return (
+                          <div className="flex justify-end pt-2">
+                            <Link
+                              href="/pricing"
+                              className="min-w-[120px] inline-block px-4 py-2 font-medium text-center bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d]"
+                            >
+                              Upgrade to {nextTier.id}
+                            </Link>
+                          </div>
+                        );
+                      })()}
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+          </section>
+
+          {/* Subscription */}
+          <section
+            id="subscription"
+            ref={(el) => {
+              sectionRefs.current.subscription = el;
+            }}
+            className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
+          >
+            <h2 className="text-lg font-semibold text-[#4a5565] mb-4">
+              Subscription
+            </h2>
+            {subscriptionLoading ? (
+              <p className="text-sm text-[#99a1af]">Loading…</p>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs font-medium text-[#99a1af] uppercase tracking-wide">
+                    Current plan
+                  </p>
+                  <p className="text-[#16a34a] font-medium">
+                    {subscription?.tier ?? "Seed Stash Starter"}
+                  </p>
+                </div>
+                {subscription &&
+                  subscription.status !== "free" &&
+                  subscription.currentPeriodEnd && (
                     <p className="text-xs text-[#99a1af]">
-                      {subscription.cancelAtPeriodEnd ? 'Cancels' : 'Renews'}{' '}
-                      {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                      {subscription.cancelAtPeriodEnd ? "Cancels" : "Renews"}{" "}
+                      {new Date(
+                        subscription.currentPeriodEnd,
+                      ).toLocaleDateString()}
                     </p>
                   )}
-                  <div className="flex flex-wrap gap-2 justify-end">
-                    {subscription?.customerId ? (
-                      <button
-                        type="button"
-                        onClick={handleManageBilling}
-                        disabled={portalLoading}
-                        className="min-w-[120px] px-4 py-2 font-medium border border-gray-300 text-[#4a5565] rounded-lg hover:bg-gray-50 disabled:opacity-70"
-                      >
-                        {portalLoading ? 'Opening…' : 'Manage subscription'}
-                      </button>
-                    ) : (
-                      <Link
-                        href="/pricing"
-                        className="min-w-[120px] inline-block px-4 py-2 font-medium text-center border border-gray-300 text-[#4a5565] rounded-lg hover:bg-gray-50"
-                      >
-                        Upgrade plan
-                      </Link>
-                    )}
+                <div className="flex flex-wrap gap-2 justify-end">
+                  {subscription?.customerId ? (
+                    <button
+                      type="button"
+                      onClick={handleManageBilling}
+                      disabled={portalLoading}
+                      className="min-w-[120px] px-4 py-2 font-medium border border-gray-300 text-[#4a5565] rounded-lg hover:bg-gray-50 disabled:opacity-70"
+                    >
+                      {portalLoading ? "Opening…" : "Manage subscription"}
+                    </button>
+                  ) : (
                     <Link
                       href="/pricing"
                       className="min-w-[120px] inline-block px-4 py-2 font-medium text-center border border-gray-300 text-[#4a5565] rounded-lg hover:bg-gray-50"
                     >
-                      Explore plans
+                      Upgrade plan
                     </Link>
-                  </div>
-                  {subscription && subscription.invoices.length > 0 && (
-                    <div className="pt-4 border-t border-gray-200">
-                      <p className="text-xs font-medium text-[#4a5565] mb-2">Recent charges</p>
-                      <ul className="space-y-1 text-xs text-[#99a1af]">
-                        {subscription.invoices.slice(0, 5).map((inv) => (
-                          <li key={inv.id} className="flex justify-between">
-                            <span>{inv.date ? new Date(inv.date).toLocaleDateString() : '—'}</span>
-                            <span>
-                              ${inv.amountPaid.toFixed(2)}
-                              {inv.hostedUrl && (
-                                <a href={inv.hostedUrl} target="_blank" rel="noopener noreferrer" className="ml-1 text-[#16a34a] hover:underline">
-                                  Receipt
-                                </a>
-                              )}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                      <p className="text-xs text-[#99a1af] mt-1">Full history in Manage subscription</p>
-                    </div>
                   )}
+                  <Link
+                    href="/pricing"
+                    className="min-w-[120px] inline-block px-4 py-2 font-medium text-center border border-gray-300 text-[#4a5565] rounded-lg hover:bg-gray-50"
+                  >
+                    Explore plans
+                  </Link>
                 </div>
-              )}
-            </section>
-          </div>
-        </main>
-
-        {/* Mobile nav - show at bottom on small screens */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 flex items-center gap-2 overflow-x-auto">
-          {SECTIONS.map(({ id, label }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => scrollToSection(id)}
-              className={`shrink-0 px-3 py-2 rounded-lg text-sm font-medium ${
-                activeSection === id ? 'bg-[#16a34a] text-white' : 'bg-gray-100 text-[#4a5565]'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="shrink-0 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 ml-auto"
-          >
-            Sign out
-          </button>
+                {subscription && subscription.invoices.length > 0 && (
+                  <div className="pt-4 border-t border-gray-200">
+                    <p className="text-xs font-medium text-[#4a5565] mb-2">
+                      Recent charges
+                    </p>
+                    <ul className="space-y-1 text-xs text-[#99a1af]">
+                      {subscription.invoices.slice(0, 5).map((inv) => (
+                        <li key={inv.id} className="flex justify-between">
+                          <span>
+                            {inv.date
+                              ? new Date(inv.date).toLocaleDateString()
+                              : "—"}
+                          </span>
+                          <span>
+                            ${inv.amountPaid.toFixed(2)}
+                            {inv.hostedUrl && (
+                              <a
+                                href={inv.hostedUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="ml-1 text-[#16a34a] hover:underline"
+                              >
+                                Receipt
+                              </a>
+                            )}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-xs text-[#99a1af] mt-1">
+                      Full history in Manage subscription
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
         </div>
+      </main>
+
+      {/* Mobile nav - show at bottom on small screens */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 flex items-center gap-2 overflow-x-auto">
+        {SECTIONS.map(({ id, label }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => scrollToSection(id)}
+            className={`shrink-0 px-3 py-2 rounded-lg text-sm font-medium ${
+              activeSection === id
+                ? "bg-[#16a34a] text-white"
+                : "bg-gray-100 text-[#4a5565]"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="shrink-0 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 ml-auto"
+        >
+          Sign out
+        </button>
       </div>
+    </div>
   );
 }

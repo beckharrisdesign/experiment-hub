@@ -52,6 +52,9 @@ vi.mock("./seed-photos", () => ({
   getPhotoUrl: vi.fn((path: string | null | undefined) =>
     path ? `https://storage.example/${path}` : undefined,
   ),
+  resolvePhotoSrc: vi.fn((path: string | null | undefined) =>
+    path ? `https://storage.example/${path}` : undefined,
+  ),
   deleteSeedPhotos: vi.fn(),
 }));
 
