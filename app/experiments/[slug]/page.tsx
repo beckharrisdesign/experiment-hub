@@ -10,7 +10,7 @@ import {
   parseMarketResearch,
 } from "@/lib/data";
 import { loadOpenSpecLifecycle } from "@/lib/openspec-server";
-import { getContent } from "@/lib/supabase";
+import { getContent, getNotes, getPullRequests } from "@/lib/supabase";
 import ExperimentDetailClient from "./detail-client";
 
 // Mark this route as dynamic to ensure it's always rendered on-demand
@@ -70,6 +70,11 @@ export default async function ExperimentDetailPage({
   const openSpecLifecycle = await loadOpenSpecLifecycle(experiment).catch(
     () => null,
   );
+
+  const [notes, pullRequests] = await Promise.all([
+    getNotes(experiment.id).catch(() => []),
+    getPullRequests(experiment.id).catch(() => []),
+  ]);
 
   const [prd, prdRawContent, mr, businessCaseContent] = await Promise.all([
     (async () => {
@@ -132,6 +137,8 @@ export default async function ExperimentDetailPage({
         businessCaseContent={businessCaseContent}
         openSpecLifecycle={openSpecLifecycle}
         isEditor={isEditor}
+        notes={notes}
+        pullRequests={pullRequests}
       />
     </div>
   );

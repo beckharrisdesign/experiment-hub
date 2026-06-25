@@ -5,9 +5,12 @@ import Link from "next/link";
 import Footer from "@/components/Footer";
 import ExperimentTypeBadge from "@/components/ExperimentTypeBadge";
 import TabsContent from "./tabs-content";
-import type { Experiment } from "@/types";
+import type { Experiment, ExperimentPullRequest } from "@/types";
 import type { parsePRD, parseMarketResearch } from "@/lib/data";
 import type { OpenSpecLifecycle } from "@/lib/openspec-shared";
+import type { Note } from "@/lib/supabase";
+import NotesList from "@/components/NotesList";
+import PullRequestsList from "@/components/PullRequestsList";
 import {
   buildExperimentDetailTabs,
   formatBhdPhaseLabel,
@@ -23,6 +26,8 @@ interface ExperimentDetailClientProps {
   businessCaseContent: string | null;
   openSpecLifecycle: OpenSpecLifecycle | null;
   isEditor: boolean;
+  notes: Note[];
+  pullRequests: ExperimentPullRequest[];
 }
 
 export default function ExperimentDetailClient({
@@ -34,6 +39,8 @@ export default function ExperimentDetailClient({
   businessCaseContent,
   openSpecLifecycle,
   isEditor,
+  notes,
+  pullRequests,
 }: ExperimentDetailClientProps) {
   const tabs = buildExperimentDetailTabs({
     openSpecLifecycle,
@@ -121,6 +128,26 @@ export default function ExperimentDetailClient({
               activeTab={activeTab}
               slug={slug}
             />
+          )}
+
+          {(notes.length > 0 || isEditor) && (
+            <div className="mt-12 pt-12 border-t border-border-dark">
+              <NotesList
+                experimentId={experiment.id}
+                initialNotes={notes}
+                isEditor={isEditor}
+              />
+            </div>
+          )}
+
+          {(pullRequests.length > 0 || isEditor) && (
+            <div className="mt-8">
+              <PullRequestsList
+                slug={slug}
+                initialPullRequests={pullRequests}
+                isEditor={isEditor}
+              />
+            </div>
           )}
         </main>
       </div>
