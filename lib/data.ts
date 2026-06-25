@@ -2,6 +2,18 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { Experiment, Prototype, Documentation } from "@/types";
 import { slugify } from "@/lib/utils";
+import {
+  getExperimentsFromSupabase,
+  getExperimentByIdFromSupabase,
+  getPrototypesFromSupabase,
+  getPrototypeByExperimentIdFromSupabase,
+  getDocumentationFromSupabase,
+  getDocumentationByExperimentIdFromSupabase,
+} from "@/lib/supabase";
+
+function hasSupabase() {
+  return !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
 
 const DATA_DIR = path.join(process.cwd(), "data");
 
@@ -20,49 +32,100 @@ async function readJsonFile<T>(filename: string): Promise<T[]> {
 }
 
 export async function getExperiments(): Promise<Experiment[]> {
+  if (hasSupabase()) {
+    try {
+      return await getExperimentsFromSupabase();
+    } catch {
+      // fall through to JSON
+    }
+  }
   return readJsonFile<Experiment>("experiments.json");
 }
 
 export async function getPrototypes(): Promise<Prototype[]> {
+  if (hasSupabase()) {
+    try {
+      return await getPrototypesFromSupabase();
+    } catch {
+      // fall through to JSON
+    }
+  }
   return readJsonFile<Prototype>("prototypes.json");
 }
 
 export async function getDocumentation(): Promise<Documentation[]> {
+  if (hasSupabase()) {
+    try {
+      return await getDocumentationFromSupabase();
+    } catch {
+      // fall through to JSON
+    }
+  }
   return readJsonFile<Documentation>("documentation.json");
 }
 
 export async function getExperimentById(
   id: string,
 ): Promise<Experiment | null> {
-  const experiments = await getExperiments();
-  return experiments.find((exp) => exp.id === id) || null;
+  if (hasSupabase()) {
+    try {
+      return await getExperimentByIdFromSupabase(id);
+    } catch {
+      // fall through to JSON
+    }
+  }
+  const experiments = await readJsonFile<Experiment>("experiments.json");
+  return experiments.find((exp) => exp.id === id) ?? null;
 }
 
 export async function getExperimentBySlug(
   slug: string,
 ): Promise<Experiment | null> {
-  const experiments = await getExperiments();
+  if (hasSupabase()) {
+    try {
+      const byId = await getExperimentByIdFromSupabase(slug);
+      if (byId) return byId;
+      const all = await getExperimentsFromSupabase();
+      return all.find((exp) => slugify(exp.name) === slug) ?? null;
+    } catch {
+      // fall through to JSON
+    }
+  }
+  const experiments = await readJsonFile<Experiment>("experiments.json");
   return (
-    experiments.find(
-      (exp) => slugify(exp.name) === slug || exp.id === slug,
-    ) || null
+    experiments.find((exp) => slugify(exp.name) === slug || exp.id === slug) ??
+    null
   );
 }
 
 export async function getPrototypeByExperimentId(
   experimentId: string,
 ): Promise<Prototype | null> {
-  const prototypes = await getPrototypes();
+  if (hasSupabase()) {
+    try {
+      return await getPrototypeByExperimentIdFromSupabase(experimentId);
+    } catch {
+      // fall through to JSON
+    }
+  }
+  const prototypes = await readJsonFile<Prototype>("prototypes.json");
   return (
-    prototypes.find((proto) => proto.experimentId === experimentId) || null
+    prototypes.find((proto) => proto.experimentId === experimentId) ?? null
   );
 }
 
 export async function getDocumentationByExperimentId(
   experimentId: string,
 ): Promise<Documentation | null> {
-  const docs = await getDocumentation();
-  return docs.find((doc) => doc.experimentId === experimentId) || null;
+  if (hasSupabase()) {
+    try {
+      return await getDocumentationByExperimentIdFromSupabase(experimentId);
+    } catch {
+      // fall through to JSON
+    }
+  }
+  const docs = await readJsonFile<Documentation>("documentation.json");
+  return docs.find((doc) => doc.experimentId === experimentId) ?? null;
 }
 
 export async function hasPRD(experimentDirectory: string): Promise<boolean> {

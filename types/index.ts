@@ -73,3 +73,20 @@ export interface Documentation {
 
 export type ContentType = "experiments" | "prototypes" | "documentation";
 
+export type PullRequestState = "open" | "closed" | "merged";
+
+export interface ExperimentPullRequest {
+  id: string;
+  experimentId: string;
+  repo: string;
+  prNumber: number;
+  title: string;
+  state: PullRequestState;
+  url: string;
+  branch: string;
+  author: string;
+  labels: string[];
+  openedAt: string;
+  mergedAt: string | null;
+  syncedAt: string;
+}

@@ -1,4 +1,17 @@
 import { createClient } from "@supabase/supabase-js";
+import type {
+  Experiment,
+  ExperimentKind,
+  ExperimentStatus,
+  ExperimentScores,
+  ScoreRationale,
+  ValidationLandingPage,
+  Prototype,
+  PrototypeStatus,
+  Documentation,
+  ExperimentPullRequest,
+  PullRequestState,
+} from "@/types";
 
 // Publishable key client — safe for server-side API routes, no RLS bypass.
 // Used for public-facing operations like form submissions.
@@ -165,6 +178,181 @@ export async function updateNote(
 export async function deleteNote(id: string): Promise<void> {
   const { error } = await getAdminClient().from("notes").delete().eq("id", id);
   if (error) throw error;
+}
+
+// ─── Experiments ─────────────────────────────────────────────────────────────
+
+function dbToExperiment(row: Record<string, unknown>): Experiment {
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    statement: row.statement as string,
+    type: (row.type as ExperimentKind) ?? undefined,
+    directory: row.directory as string,
+    documentationId: (row.documentation_id as string) ?? "",
+    prototypeId: (row.prototype_id as string) ?? "",
+    status: row.status as ExperimentStatus,
+    createdDate: (row.created_date as string) ?? "",
+    lastModified: (row.last_modified as string) ?? "",
+    tags: (row.tags as string[]) ?? [],
+    scores: (row.scores as ExperimentScores) ?? undefined,
+    scoreRationale: (row.score_rationale as ScoreRationale) ?? undefined,
+    validation: (row.validation as ValidationLandingPage) ?? undefined,
+    openspecChangeId: (row.openspec_change_id as string) ?? undefined,
+    openspecSchema: (row.openspec_schema as string) ?? undefined,
+  };
+}
+
+export async function getExperimentsFromSupabase(): Promise<Experiment[]> {
+  const { data, error } = await getAdminClient()
+    .from("experiments")
+    .select("*")
+    .order("last_modified", { ascending: false });
+  if (error) throw error;
+  return ((data ?? []) as Record<string, unknown>[]).map(dbToExperiment);
+}
+
+export async function getExperimentByIdFromSupabase(
+  id: string,
+): Promise<Experiment | null> {
+  const { data, error } = await getAdminClient()
+    .from("experiments")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error || !data) return null;
+  return dbToExperiment(data as Record<string, unknown>);
+}
+
+// ─── Prototypes ───────────────────────────────────────────────────────────────
+
+function dbToPrototype(row: Record<string, unknown>): Prototype {
+  return {
+    id: row.id as string,
+    title: row.title as string,
+    description: (row.description as string) ?? "",
+    linkPath: (row.link_path as string) ?? "",
+    experimentId: (row.experiment_id as string) ?? "",
+    status: row.status as PrototypeStatus,
+    createdDate: (row.created_date as string) ?? "",
+    lastModified: (row.last_modified as string) ?? "",
+    tags: (row.tags as string[]) ?? [],
+    port: (row.port as number) ?? undefined,
+  };
+}
+
+export async function getPrototypesFromSupabase(): Promise<Prototype[]> {
+  const { data, error } = await getAdminClient().from("prototypes").select("*");
+  if (error) throw error;
+  return ((data ?? []) as Record<string, unknown>[]).map(dbToPrototype);
+}
+
+export async function getPrototypeByExperimentIdFromSupabase(
+  experimentId: string,
+): Promise<Prototype | null> {
+  const { data, error } = await getAdminClient()
+    .from("prototypes")
+    .select("*")
+    .eq("experiment_id", experimentId)
+    .single();
+  if (error || !data) return null;
+  return dbToPrototype(data as Record<string, unknown>);
+}
+
+// ─── Documentation ────────────────────────────────────────────────────────────
+
+function dbToDocumentation(row: Record<string, unknown>): Documentation {
+  return {
+    id: row.id as string,
+    title: row.title as string,
+    content: (row.content as string) ?? "",
+    experimentId: (row.experiment_id as string) ?? "",
+    createdDate: (row.created_date as string) ?? "",
+    lastModified: (row.last_modified as string) ?? "",
+    tags: (row.tags as string[]) ?? [],
+  };
+}
+
+export async function getDocumentationFromSupabase(): Promise<Documentation[]> {
+  const { data, error } = await getAdminClient()
+    .from("documentation")
+    .select("*");
+  if (error) throw error;
+  return ((data ?? []) as Record<string, unknown>[]).map(dbToDocumentation);
+}
+
+export async function getDocumentationByExperimentIdFromSupabase(
+  experimentId: string,
+): Promise<Documentation | null> {
+  const { data, error } = await getAdminClient()
+    .from("documentation")
+    .select("*")
+    .eq("experiment_id", experimentId)
+    .single();
+  if (error || !data) return null;
+  return dbToDocumentation(data as Record<string, unknown>);
+}
+
+// ─── Pull Requests ────────────────────────────────────────────────────────────
+
+function dbToPullRequest(row: Record<string, unknown>): ExperimentPullRequest {
+  return {
+    id: row.id as string,
+    experimentId: row.experiment_id as string,
+    repo: row.repo as string,
+    prNumber: row.pr_number as number,
+    title: (row.title as string) ?? "",
+    state: (row.state as PullRequestState) ?? "open",
+    url: (row.url as string) ?? "",
+    branch: (row.branch as string) ?? "",
+    author: (row.author as string) ?? "",
+    labels: (row.labels as string[]) ?? [],
+    openedAt: (row.opened_at as string) ?? "",
+    mergedAt: (row.merged_at as string) ?? null,
+    syncedAt: (row.synced_at as string) ?? "",
+  };
+}
+
+export async function getPullRequests(
+  experimentId: string,
+): Promise<ExperimentPullRequest[]> {
+  try {
+    const { data, error } = await getAdminClient()
+      .from("experiment_pull_requests")
+      .select("*")
+      .eq("experiment_id", experimentId)
+      .order("opened_at", { ascending: false });
+    if (error) throw error;
+    return ((data ?? []) as Record<string, unknown>[]).map(dbToPullRequest);
+  } catch {
+    return [];
+  }
+}
+
+export async function upsertPullRequests(
+  rows: {
+    experiment_id: string;
+    repo: string;
+    pr_number: number;
+    title: string;
+    state: string;
+    url: string;
+    branch: string;
+    author: string;
+    labels: string[];
+    opened_at: string;
+    merged_at: string | null;
+  }[],
+): Promise<ExperimentPullRequest[]> {
+  const { data, error } = await getAdminClient()
+    .from("experiment_pull_requests")
+    .upsert(
+      rows.map((r) => ({ ...r, synced_at: new Date().toISOString() })),
+      { onConflict: "repo,pr_number" },
+    )
+    .select();
+  if (error) throw error;
+  return ((data ?? []) as Record<string, unknown>[]).map(dbToPullRequest);
 }
 
 export async function insertSubmission(
