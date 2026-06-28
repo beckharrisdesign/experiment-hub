@@ -1,4 +1,9 @@
-export type ExperimentStatus = "Active" | "Completed" | "Abandoned" | "On Hold";
+export type ExperimentStatus =
+  | "Active"
+  | "Completed"
+  | "Abandoned"
+  | "On Hold"
+  | "Archived";
 /** Product vs workflow tool (no market table or hub score / no `scores` in JSON) vs personal R&D. Defaults to commercial when omitted. */
 export type ExperimentKind = "commercial" | "tool" | "personal";
 export type PrototypeStatus = "Active" | "Completed" | "Abandoned";
