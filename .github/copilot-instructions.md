@@ -110,7 +110,8 @@ Flag commit messages that don't follow this format.
 Flag these structural issues in any `.tsx` file under `components/` or `app/`:
 
 - Default export is not a named function declaration (`export default function ComponentName`)
-- Props type is not named `Props` (e.g. `ButtonProps`, `CardProps` instead of just `Props`)
+- Props interface is not named `<ComponentName>Props` (e.g. `ButtonProps`, `CardProps`) — a
+  bare `Props` or any other name is incorrect
 - `"use client"` added to a component that has no browser-only APIs, event handlers,
   or hooks — server components are the default; flag if the directive appears unnecessary
 - Variant maps typed as `{ [key: string]: ... }` instead of `Record<VariantKey, ...>`
@@ -123,8 +124,8 @@ Flag these structural issues in any `.tsx` file under `components/` or `app/`:
 
 For any route handler in `app/api/`:
 
-- Flag if `checkAdminAuth` (or equivalent auth guard) is not the first `await` in
-  the handler body
+- Flag if `checkAdminAuth` (or equivalent auth guard) is not called before any other
+  logic in the handler body — it is called synchronously and need not be the first `await`
 - Flag response shapes that don't conform to `{ error: string }` for errors or
   `{ success: true, ...data }` for success — mixed shapes break the client contract
 - Flag CORS wrapper usage on routes that are not explicitly public endpoints
@@ -136,8 +137,10 @@ For any route handler in `app/api/`:
 
 For any `.test.ts` / `.test.tsx` file:
 
-- Flag `vi.mock(...)` calls that appear inside `describe` or `it` blocks — mocks
-  must be hoisted to module scope with `vi.hoisted()`
+- Flag `vi.mock(...)` calls that appear inside `describe` or `it` blocks — they must
+  be declared at module scope (top of the file, outside any block). Note: `vi.hoisted()`
+  is only for extracting mock handles referenced inside a `vi.mock()` factory; it is not
+  a replacement for moving `vi.mock()` to module scope
 - Flag snapshot assertions (`toMatchSnapshot`, `toMatchInlineSnapshot`) — they are
   banned; use explicit assertions instead
 - Flag dynamic API route imports outside `beforeEach` — route handlers must be
