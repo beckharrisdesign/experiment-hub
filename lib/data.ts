@@ -12,7 +12,11 @@ import {
 } from "@/lib/supabase";
 
 function hasSupabase() {
-  return !!(process.env.SUPABASE_URL && process.env.SUPABASE_PUBLISHABLE_KEY);
+  return !!(
+    process.env.SUPABASE_URL &&
+    (process.env.SUPABASE_PUBLISHABLE_KEY ||
+      process.env.SUPABASE_SERVICE_ROLE_KEY)
+  );
 }
 
 const DATA_DIR = path.join(process.cwd(), "data");
