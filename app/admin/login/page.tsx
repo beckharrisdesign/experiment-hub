@@ -1,8 +1,10 @@
-interface Props {
+interface AdminLoginPageProps {
   searchParams: Promise<{ error?: string }>;
 }
 
-export default async function AdminLoginPage({ searchParams }: Props) {
+export default async function AdminLoginPage({
+  searchParams,
+}: AdminLoginPageProps) {
   const { error } = await searchParams;
 
   return (

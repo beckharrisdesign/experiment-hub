@@ -363,7 +363,7 @@ export async function updateExperiment(
 ): Promise<Experiment> {
   const { data, error } = await getAdminClient()
     .from("experiments")
-    .update({ ...fields, updated_at: new Date().toISOString() })
+    .update({ ...fields, last_modified: new Date().toISOString().slice(0, 10) })
     .eq("id", id)
     .select()
     .single();

@@ -19,13 +19,15 @@ const STATUS_COLORS: Record<ExperimentStatus, string> = {
   Archived: "text-text-secondary",
 };
 
+interface StatusSelectProps {
+  experimentId: string;
+  initialStatus: ExperimentStatus;
+}
+
 export default function StatusSelect({
   experimentId,
   initialStatus,
-}: {
-  experimentId: string;
-  initialStatus: ExperimentStatus;
-}) {
+}: StatusSelectProps) {
   const [status, setStatus] = useState(initialStatus);
   const [saving, setSaving] = useState(false);
 

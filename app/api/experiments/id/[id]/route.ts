@@ -14,7 +14,20 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const body = await request.json();
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return NextResponse.json(
+      { error: "Body must be an object" },
+      { status: 400 },
+    );
+  }
+  const bodyObj = body as Record<string, unknown>;
 
   const allowed = [
     "name",
@@ -26,7 +39,8 @@ export async function PATCH(
   ];
   const fields: Record<string, unknown> = {};
   for (const key of allowed) {
-    if (key in body) fields[key] = body[key];
+    if (Object.prototype.hasOwnProperty.call(bodyObj, key))
+      fields[key] = bodyObj[key];
   }
 
   if (Object.keys(fields).length === 0) {

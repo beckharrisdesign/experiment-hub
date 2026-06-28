@@ -1,11 +1,11 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 
-export default async function AdminLayout({
-  children,
-}: {
+interface AdminLayoutProps {
   children: React.ReactNode;
-}) {
+}
+
+export default async function AdminLayout({ children }: AdminLayoutProps) {
   const cookieStore = await cookies();
   const editCookie = cookieStore.get("hub-edit");
   const isAuthenticated =
