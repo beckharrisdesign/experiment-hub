@@ -175,6 +175,7 @@ export default function TabsContent({
   if (activeTab === "business-case" && businessCaseContent?.trim()) {
     return (
       <EditableTab
+        key="business_case"
         contentType="business_case"
         slug={slug}
         initialContent={businessCaseContent}
@@ -190,6 +191,7 @@ export default function TabsContent({
   if (activeTab === "prd" && prdRawContent?.trim()) {
     return (
       <EditableTab
+        key="prd"
         contentType="prd"
         slug={slug}
         initialContent={prdRawContent ?? ""}
