@@ -244,7 +244,7 @@ function HomeContent() {
 
   return (
     <div className="min-h-screen w-full bg-[#f3f4f6] flex flex-col">
-      <main className="flex-1 w-full px-4 py-4 pt-24 pb-24 max-w-[1200px] mx-auto">
+      <main className="flex-1 w-full px-4 py-4 pt-24 pb-24 max-w-[1400px] mx-auto">
         {usage?.canAddSeed === false && (
           <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <p className="text-amber-800 font-medium">

@@ -9,7 +9,7 @@ export function LandingHero() {
         <div className="absolute top-20 left-10 w-64 h-64 bg-[#86efac] rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#bbf7d0] rounded-full blur-3xl" />
       </div>
-      <div className="max-w-[1200px] mx-auto text-center relative z-10">
+      <div className="max-w-[1400px] mx-auto text-center relative z-10">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white">
           Super simple seed inventory.
         </h1>
