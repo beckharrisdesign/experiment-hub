@@ -51,7 +51,7 @@ function EditableTab({
   children: React.ReactNode;
   isEditor: boolean;
 }) {
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(isEditor);
   const [draft, setDraft] = useState(initialContent);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
