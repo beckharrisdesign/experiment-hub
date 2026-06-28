@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import Link from "next/link";
 
 export default async function AdminLayout({
   children,
@@ -18,12 +19,12 @@ export default async function AdminLayout({
     <div className="min-h-screen bg-background-primary">
       <header className="border-b border-border-dark px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <a
+          <Link
             href="/"
             className="text-text-secondary hover:text-text-primary text-sm transition-colors"
           >
             ← Hub
-          </a>
+          </Link>
           <span className="text-text-primary font-semibold">Admin</span>
         </div>
         <form action="/api/admin/logout" method="POST">
