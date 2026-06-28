@@ -123,8 +123,8 @@ Flag these structural issues in any `.tsx` file under `components/` or `app/`:
   or hooks — server components are the default; flag if the directive appears unnecessary
 - `"use client"` is absent from a component that uses `useState`, `useEffect`,
   `useRef`, event handlers (`onClick`, `onChange`, etc.), or browser globals
-  (`window`, `document`, `localStorage`) — these require the directive or they will
-  throw at runtime as server components
+  (`window`, `document`, `localStorage`) — these will cause a build error or
+  runtime error when rendered as server components
 - Variant maps typed as `{ [key: string]: ... }` instead of `Record<VariantKey, ...>`
 - Static data (lookup tables, config objects) defined inside the component body
   instead of at module scope
@@ -181,13 +181,15 @@ A PR description explaining the change is not a flag; a change with no explanati
 
 Flag any string literal that resembles a secret appearing in committed source code:
 
-- Strings starting with `sk_`, `pk_`, `eyJ` (JWTs), `service_role`, or `anon`
+- Strings starting with `sk_`, `pk_`, `eyJ` (JWTs), or `service_role`
   appearing as hardcoded values (not as references to `process.env.*`)
 - API keys, tokens, or credentials assigned directly to variables or object properties
 - Any value that looks like a Supabase URL + key pair hardcoded together
 
-Secrets belong in `.env.local` only and must be accessed via `process.env.VARIABLE_NAME`.
-Never commit secrets to config files, `settings*.json`, or source files.
+Secrets must be stored as environment variables — in `.env.local` for local
+development, and in the deployment platform's environment config for production.
+They must be accessed via `process.env.VARIABLE_NAME` and never committed to
+source files, config files, or `settings*.json`.
 
 ---
 
