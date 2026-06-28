@@ -1,7 +1,7 @@
 [
   {
     "id": "etsy-listing-manager",
-    "name": "Etsy Patternator",
+    "name": "Patternator",
     "statement": "One design, all the listing assets you need.",
     "type": "commercial",
     "directory": "experiments/etsy-listing-manager",
@@ -227,6 +227,32 @@
       "tool",
       "image-processing"
     ]
+  },
+  {
+    "id": "photo-filters-banner",
+    "name": "Photo Filters Banner Studio",
+    "statement": "Client-only photo ingest, filter presets, banner overlays, and PNG download.",
+    "type": "tool",
+    "directory": "experiments/photo-filters-banner",
+    "documentationId": "",
+    "prototypeId": "proto-photo-filters-banner",
+    "status": "Active",
+    "createdDate": "2026-05-16",
+    "lastModified": "2026-05-16",
+    "tags": ["photo", "canvas", "filters", "download", "tool"]
+  },
+  {
+    "id": "snap-issue",
+    "name": "Snap Issue",
+    "statement": "Draw a viewport rectangle, crop the screenshot, create a GitHub issue—one gesture.",
+    "type": "tool",
+    "directory": "experiments/snap-issue",
+    "documentationId": "",
+    "prototypeId": "proto-snap-issue",
+    "status": "Active",
+    "createdDate": "2026-05-19",
+    "lastModified": "2026-05-19",
+    "tags": ["chrome-extension", "github", "screenshot", "internal-tools", "mv3"]
   },
   {
     "id": "pomodoro-maker",
