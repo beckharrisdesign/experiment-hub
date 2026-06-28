@@ -413,7 +413,7 @@ export function Profile() {
       </nav>
 
       {/* Main content - left margin on desktop to clear fixed nav */}
-      <main className="min-w-0 px-4 lg:pl-8 lg:pr-8 py-6 pb-24 max-w-3xl lg:ml-48 lg:mr-auto">
+      <main className="min-w-0 px-4 lg:pl-8 lg:pr-8 py-6 pb-24 max-w-[1400px] lg:ml-48 lg:mr-auto">
         <div className="max-w-2xl">
           {/* Gardening */}
           <section
