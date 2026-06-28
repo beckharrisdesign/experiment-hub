@@ -229,6 +229,30 @@
     ]
   },
   {
+    "id": "photo-filters-banner",
+    "name": "Photo Filters Banner Studio",
+    "statement": "Client-only photo ingest, filter presets, banner overlays, and PNG download.",
+    "type": "tool",
+    "directory": "experiments/photo-filters-banner",
+    "prototypeId": "proto-photo-filters-banner",
+    "status": "Active",
+    "createdDate": "2026-05-16",
+    "lastModified": "2026-05-16",
+    "tags": ["photo", "canvas", "filters", "download", "tool"]
+  },
+  {
+    "id": "snap-issue",
+    "name": "Snap Issue",
+    "statement": "Draw a viewport rectangle, crop the screenshot, create a GitHub issue—one gesture.",
+    "type": "tool",
+    "directory": "experiments/snap-issue",
+    "prototypeId": "proto-snap-issue",
+    "status": "Active",
+    "createdDate": "2026-05-19",
+    "lastModified": "2026-05-19",
+    "tags": ["chrome-extension", "github", "screenshot", "internal-tools", "mv3"]
+  },
+  {
     "id": "pomodoro-maker",
     "name": "Pomodoro Maker",
     "statement": "A minimal, joyful Pomodoro timer for solo makers—custom rhythms without subscription noise.",
