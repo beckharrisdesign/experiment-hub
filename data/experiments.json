@@ -1,7 +1,7 @@
 [
   {
     "id": "etsy-listing-manager",
-    "name": "Etsy Patternator",
+    "name": "Patternator",
     "statement": "One design, all the listing assets you need.",
     "type": "commercial",
     "directory": "experiments/etsy-listing-manager",
@@ -234,6 +234,7 @@
     "statement": "Client-only photo ingest, filter presets, banner overlays, and PNG download.",
     "type": "tool",
     "directory": "experiments/photo-filters-banner",
+    "documentationId": "",
     "prototypeId": "proto-photo-filters-banner",
     "status": "Active",
     "createdDate": "2026-05-16",
@@ -246,6 +247,7 @@
     "statement": "Draw a viewport rectangle, crop the screenshot, create a GitHub issue—one gesture.",
     "type": "tool",
     "directory": "experiments/snap-issue",
+    "documentationId": "",
     "prototypeId": "proto-snap-issue",
     "status": "Active",
     "createdDate": "2026-05-19",
