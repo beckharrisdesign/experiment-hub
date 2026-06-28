@@ -2,7 +2,7 @@
 export function LandingFeaturesSection() {
   return (
     <section id="features" className="px-4 py-16 bg-[#f3f4f6] scroll-mt-20">
-      <div className="max-w-[1200px] mx-auto">
+      <div className="max-w-[1400px] mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             The simplest way to track your seed collection

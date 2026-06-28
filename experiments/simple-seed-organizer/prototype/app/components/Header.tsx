@@ -62,7 +62,7 @@ export function Header({ showProfileLink }: HeaderProps) {
       className="fixed top-0 left-0 right-0 z-50 w-full min-w-0 px-8 py-4 text-white"
       style={{ backgroundColor: "var(--brand-primary)" }}
     >
-      <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between">
+      <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between">
         <Link
           href="/"
           className="flex h-10 shrink-0 items-center gap-3 transition-opacity hover:opacity-90"

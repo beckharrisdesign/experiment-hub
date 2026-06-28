@@ -6,7 +6,7 @@ import Link from "next/link";
 export function LandingFooter() {
   return (
     <footer className="px-4 py-8 bg-gray-800 text-gray-400">
-      <div className="max-w-[1200px] mx-auto text-center">
+      <div className="max-w-[1400px] mx-auto text-center">
         <p className="mb-4">
           © 2026 Simple Seed Organizer. All rights reserved.
         </p>

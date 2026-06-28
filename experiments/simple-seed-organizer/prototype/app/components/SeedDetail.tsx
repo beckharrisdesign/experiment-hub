@@ -92,7 +92,7 @@ function SubHeader({
 }) {
   return (
     <div className={`bg-white ${borderClass} border-[#e5e7eb]`}>
-      <div className="max-w-[1200px] mx-auto px-2 flex items-center h-[46px]">
+      <div className="max-w-[1400px] mx-auto px-2 flex items-center h-[46px]">
         <button type="button" onClick={onClose} aria-label="Go back" className="p-2 flex-shrink-0">
           <svg
             className="w-6 h-6 text-[#64748b]"
@@ -220,7 +220,7 @@ export function SeedDetail({
       <div className="flex-1 overflow-y-auto">
         {/* Title section */}
         <div className="bg-white px-4 py-2">
-          <div className="max-w-[1200px] mx-auto flex items-start justify-between gap-4">
+          <div className="max-w-[1400px] mx-auto flex items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
               <p className="text-[#15803d] text-2xl font-medium leading-tight">
                 {seedName}
@@ -268,7 +268,7 @@ export function SeedDetail({
 
         {/* Main 2-col: plant info (left) + images (right) */}
         <div className="bg-white px-4 py-4">
-          <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row gap-4 items-start">
+          <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row gap-4 items-start">
             {/* Left col: tabs + KV rows */}
             <div className="w-full md:w-[380px] md:flex-shrink-0 flex flex-col">
               {/* Tab bar */}
@@ -555,7 +555,7 @@ export function SeedDetail({
             (seed.plantingInstructions ||
               annotationsByField.get("plantingInstructions")))) && (
           <div className="bg-white mt-[1px] px-4 py-4">
-            <div className="max-w-[1200px] mx-auto flex flex-col gap-4">
+            <div className="max-w-[1400px] mx-auto flex flex-col gap-4">
               {seed.notes && (
                 <div className="flex flex-col gap-2">
                   <p className="text-[16px] font-semibold text-[#4a5565] leading-5">
@@ -620,7 +620,7 @@ export function SeedDetail({
 
         {/* Delete */}
         <div className="bg-white mt-[1px] px-4 py-4">
-          <div className="max-w-[1200px] mx-auto">
+          <div className="max-w-[1400px] mx-auto">
             <button
               onClick={onDelete}
               className="w-full py-2 text-xs text-red-500 hover:text-red-600 transition-colors"

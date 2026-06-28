@@ -2,7 +2,7 @@
 export function LandingProblemSection() {
   return (
     <section id="problem" className="px-4 py-16 bg-gray-50 scroll-mt-20">
-      <div className="max-w-[1200px] mx-auto">
+      <div className="max-w-[1400px] mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center text-[#101828]">
           Stop struggling with your seed collection.
         </h2>
