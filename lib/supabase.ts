@@ -357,6 +357,20 @@ export async function upsertPullRequests(
   return ((data ?? []) as Record<string, unknown>[]).map(dbToPullRequest);
 }
 
+export async function updateExperiment(
+  id: string,
+  fields: Record<string, unknown>,
+): Promise<Experiment> {
+  const { data, error } = await getAdminClient()
+    .from("experiments")
+    .update({ ...fields, last_modified: new Date().toISOString().slice(0, 10) })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw error;
+  return dbToExperiment(data as Record<string, unknown>);
+}
+
 export async function insertSubmission(
   submission: ExperimentSubmission,
 ): Promise<{ id: string }> {

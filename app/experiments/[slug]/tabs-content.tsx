@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import MarkdownContent from "@/components/MarkdownContent";
 import ScoreCard from "@/components/ScoreCard";
 import MetricCard from "@/components/MetricCard";
@@ -51,7 +52,8 @@ function EditableTab({
   children: React.ReactNode;
   isEditor: boolean;
 }) {
-  const [editing, setEditing] = useState(false);
+  const router = useRouter();
+  const [editing, setEditing] = useState(isEditor);
   const [draft, setDraft] = useState(initialContent);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +68,7 @@ function EditableTab({
         body: JSON.stringify({ type: contentType, content: draft }),
       });
       if (!res.ok) throw new Error("Save failed");
-      setEditing(false);
+      router.refresh();
     } catch {
       setError("Failed to save. Try again.");
     } finally {
