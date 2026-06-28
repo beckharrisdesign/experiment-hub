@@ -181,7 +181,7 @@ A PR description explaining the change is not a flag; a change with no explanati
 
 Flag any string literal that resembles a secret appearing in committed source code:
 
-- Strings starting with `sk_`, `pk_`, `eyJ` (JWTs), `service_role`, or `anon`
+- Strings starting with `sk_`, `pk_`, `eyJ` (JWTs), or `service_role`
   appearing as hardcoded values (not as references to `process.env.*`)
 - API keys, tokens, or credentials assigned directly to variables or object properties
 - Any value that looks like a Supabase URL + key pair hardcoded together
