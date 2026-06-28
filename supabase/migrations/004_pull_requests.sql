@@ -17,6 +17,3 @@ create table if not exists experiment_pull_requests (
 
 create index if not exists experiment_pull_requests_experiment_id
   on experiment_pull_requests(experiment_id);
-
-create index if not exists notes_experiment_id
-  on notes(experiment_id);
