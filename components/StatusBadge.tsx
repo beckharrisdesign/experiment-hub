@@ -8,9 +8,11 @@ interface StatusBadgeProps {
 
 const statusColors: Record<Status, string> = {
   Active: "bg-success/20 text-success border-success/30",
-  Completed: "bg-accent-primary/20 text-accent-primary border-accent-primary/30",
+  Completed:
+    "bg-accent-primary/20 text-accent-primary border-accent-primary/30",
   Abandoned: "bg-error/20 text-error border-error/30",
   "On Hold": "bg-warning/20 text-warning border-warning/30",
+  Archived: "bg-border-dark/40 text-text-secondary border-border-dark/40",
 };
 
 export default function StatusBadge({ status }: StatusBadgeProps) {
@@ -22,4 +24,3 @@ export default function StatusBadge({ status }: StatusBadgeProps) {
     </span>
   );
 }
-
