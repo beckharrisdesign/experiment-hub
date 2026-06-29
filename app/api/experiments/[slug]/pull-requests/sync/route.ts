@@ -53,7 +53,7 @@ export async function POST(
   const items: Record<string, unknown>[] = json.items ?? [];
 
   if (items.length === 0) {
-    return NextResponse.json({ pullRequests: [] });
+    return NextResponse.json({ success: true, pullRequests: [] });
   }
 
   const rows = items.map((item) => {
@@ -83,7 +83,7 @@ export async function POST(
 
   try {
     const pullRequests = await upsertPullRequests(rows);
-    return NextResponse.json({ pullRequests });
+    return NextResponse.json({ success: true, pullRequests });
   } catch (err) {
     console.error("[PR sync] Upsert error:", err);
     return NextResponse.json(

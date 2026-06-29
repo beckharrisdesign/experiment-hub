@@ -190,7 +190,7 @@ export default function TabsContent({
         initialContent={mrRawContent ?? ""}
         isEditor={isEditor}
       >
-        {!mrRawContent && !hasScores ? (
+        {!mrRawContent?.trim() && !hasScores ? (
           <EmptyState />
         ) : (
           <div className="space-y-4">
@@ -237,40 +237,46 @@ export default function TabsContent({
                 </div>
               </Section>
             )}
-            {mr && (mr.tam || mr.sam || mr.somYear1) && (
-              <Section title="Market size">
-                <div className="grid grid-cols-5 gap-3">
-                  <MetricCard
-                    label="TAM"
-                    value={mr.tam || "N/A"}
-                    description="Total Addressable"
-                    note={mr.tamDesc ?? undefined}
-                  />
-                  <MetricCard
-                    label="SAM"
-                    value={mr.sam || "N/A"}
-                    description="Serviceable"
-                    note={mr.samDesc ?? undefined}
-                  />
-                  <MetricCard
-                    label="SOM · Y1"
-                    value={mr.somYear1 || "N/A"}
-                    description="Obtainable yr 1"
-                  />
-                  <MetricCard
-                    label="SOM · Y2"
-                    value={mr.somYear2 || "N/A"}
-                    description="Obtainable yr 2"
-                  />
-                  <MetricCard
-                    label="SOM · Y3"
-                    value={mr.somYear3 || mr.som || "N/A"}
-                    description="Obtainable yr 3"
-                  />
-                </div>
-              </Section>
-            )}
-            {mrRawContent && (
+            {mr &&
+              (mr.tam ||
+                mr.sam ||
+                mr.somYear1 ||
+                mr.somYear2 ||
+                mr.somYear3 ||
+                mr.som) && (
+                <Section title="Market size">
+                  <div className="grid grid-cols-5 gap-3">
+                    <MetricCard
+                      label="TAM"
+                      value={mr.tam || "N/A"}
+                      description="Total Addressable"
+                      note={mr.tamDesc ?? undefined}
+                    />
+                    <MetricCard
+                      label="SAM"
+                      value={mr.sam || "N/A"}
+                      description="Serviceable"
+                      note={mr.samDesc ?? undefined}
+                    />
+                    <MetricCard
+                      label="SOM · Y1"
+                      value={mr.somYear1 || "N/A"}
+                      description="Obtainable yr 1"
+                    />
+                    <MetricCard
+                      label="SOM · Y2"
+                      value={mr.somYear2 || "N/A"}
+                      description="Obtainable yr 2"
+                    />
+                    <MetricCard
+                      label="SOM · Y3"
+                      value={mr.somYear3 || mr.som || "N/A"}
+                      description="Obtainable yr 3"
+                    />
+                  </div>
+                </Section>
+              )}
+            {mrRawContent?.trim() && (
               <Section title="Market research">
                 <div className="prose prose-sm max-w-none text-text-dark-secondary">
                   <MarkdownContent content={mrRawContent} variant="light" />
