@@ -29,14 +29,8 @@ export type ExperimentDetailTab = {
 
 const BHD_PHASE_ORDER: BhdPhase[] = ["explore", "propose", "apply", "archive"];
 
-function hasTrimmedContent(value: string | null | undefined): boolean {
-  return Boolean(value?.trim());
-}
-
 export function buildExperimentDetailTabs(options: {
   openSpecLifecycle: OpenSpecLifecycle | null;
-  businessCaseContent: string | null;
-  prdRawContent: string | null;
 }): ExperimentDetailTab[] {
   const tabs: ExperimentDetailTab[] = [];
 
@@ -51,12 +45,9 @@ export function buildExperimentDetailTabs(options: {
     }
   }
 
-  if (hasTrimmedContent(options.businessCaseContent)) {
-    tabs.push({ id: "business-case", label: "Business Case" });
-  }
-  if (hasTrimmedContent(options.prdRawContent)) {
-    tabs.push({ id: "prd", label: "PRD" });
-  }
+  tabs.push({ id: "discovery", label: "Discovery" });
+  tabs.push({ id: "business-case", label: "Business Case" });
+  tabs.push({ id: "prd", label: "PRD" });
 
   return tabs;
 }

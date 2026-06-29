@@ -188,4 +188,22 @@ describe("POST /api/experiments/[slug]/content", () => {
       "# PRD content",
     );
   });
+
+  it("saves market_research content correctly", async () => {
+    vi.stubEnv("ADMIN_SECRET", TEST_SECRET);
+    mockCookies.mockResolvedValue(makeCookieStore(TEST_SECRET));
+
+    const { POST } = await import("@/app/api/experiments/[slug]/content/route");
+    const res = await POST(
+      makeRequest({ type: "market_research", content: "# Market Research" }),
+      { params: Promise.resolve({ slug: "best-day-ever" }) },
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockUpsertContent).toHaveBeenCalledWith(
+      "best-day-ever",
+      "market_research",
+      "# Market Research",
+    );
+  });
 });

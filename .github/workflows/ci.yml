@@ -84,6 +84,14 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: .
 
+      - name: Cache npm packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('experiments/simple-seed-organizer/prototype/app/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
       - name: Install app dependencies
         run: npm ci
 

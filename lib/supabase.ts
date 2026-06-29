@@ -62,7 +62,7 @@ export interface ExperimentSubmission {
  */
 export async function getContent(
   experimentId: string,
-  contentType: "prd" | "business_case",
+  contentType: "prd" | "business_case" | "market_research",
 ): Promise<string | null> {
   try {
     const { data, error } = await getAdminClient()
@@ -80,7 +80,7 @@ export async function getContent(
 
 export async function upsertContent(
   experimentId: string,
-  contentType: "prd" | "business_case",
+  contentType: "prd" | "business_case" | "market_research",
   content: string,
 ): Promise<void> {
   let client;

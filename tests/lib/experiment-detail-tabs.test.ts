@@ -23,63 +23,65 @@ const multiPhaseLifecycle: OpenSpecLifecycle = {
 };
 
 describe("buildExperimentDetailTabs", () => {
-  it("shows Explore only when only explore.md is loaded", () => {
-    const tabs = buildExperimentDetailTabs({
-      openSpecLifecycle: exploreOnlyLifecycle,
-      businessCaseContent: null,
-      prdRawContent: null,
-    });
-    expect(tabs).toEqual([{ id: "explore", label: "Explore" }]);
-  });
-
-  it("shows Explore and Propose in schema order", () => {
-    const tabs = buildExperimentDetailTabs({
-      openSpecLifecycle: multiPhaseLifecycle,
-      businessCaseContent: null,
-      prdRawContent: null,
-    });
-    expect(tabs.map((t) => t.id)).toEqual(["explore", "propose"]);
-  });
-
-  it("omits Business Case and PRD when files are empty", () => {
-    const tabs = buildExperimentDetailTabs({
-      openSpecLifecycle: exploreOnlyLifecycle,
-      businessCaseContent: "  ",
-      prdRawContent: null,
-    });
-    expect(tabs.some((t) => t.id === "business-case")).toBe(false);
-    expect(tabs.some((t) => t.id === "prd")).toBe(false);
-  });
-
-  it("appends legacy tabs after phase tabs when content exists", () => {
-    const tabs = buildExperimentDetailTabs({
-      openSpecLifecycle: exploreOnlyLifecycle,
-      businessCaseContent: "# Business case",
-      prdRawContent: "# PRD",
-    });
+  it("always includes Discovery, Business Case, and PRD tabs", () => {
+    const tabs = buildExperimentDetailTabs({ openSpecLifecycle: null });
     expect(tabs.map((t) => t.id)).toEqual([
-      "explore",
+      "discovery",
       "business-case",
       "prd",
     ]);
   });
 
-  it("shows only legacy tabs when no OpenSpec lifecycle", () => {
+  it("prepends BHD phase tabs before the standard three", () => {
     const tabs = buildExperimentDetailTabs({
-      openSpecLifecycle: null,
-      businessCaseContent: null,
-      prdRawContent: "# Product requirements",
+      openSpecLifecycle: exploreOnlyLifecycle,
     });
-    expect(tabs).toEqual([{ id: "prd", label: "PRD" }]);
+    expect(tabs.map((t) => t.id)).toEqual([
+      "explore",
+      "discovery",
+      "business-case",
+      "prd",
+    ]);
+  });
+
+  it("shows multiple BHD phases in schema order before the standard three", () => {
+    const tabs = buildExperimentDetailTabs({
+      openSpecLifecycle: multiPhaseLifecycle,
+    });
+    expect(tabs.map((t) => t.id)).toEqual([
+      "explore",
+      "propose",
+      "discovery",
+      "business-case",
+      "prd",
+    ]);
+  });
+
+  it("omits a BHD phase tab when its artifact has no content", () => {
+    const lifecycle: OpenSpecLifecycle = {
+      changeId: "x",
+      schema: "bhd-experiment",
+      currentPhase: "explore",
+      artifacts: [
+        { phase: "explore", content: "   " },
+        { phase: "propose", content: "propose body" },
+      ],
+    };
+    const tabs = buildExperimentDetailTabs({ openSpecLifecycle: lifecycle });
+    expect(tabs.some((t) => t.id === "explore")).toBe(false);
+    expect(tabs.some((t) => t.id === "propose")).toBe(true);
   });
 });
 
 describe("resolveDefaultDetailTab", () => {
+  it("defaults to discovery when there is no OpenSpec lifecycle", () => {
+    const tabs = buildExperimentDetailTabs({ openSpecLifecycle: null });
+    expect(resolveDefaultDetailTab(tabs, null)).toBe("discovery");
+  });
+
   it("defaults to current BHD phase when that tab exists", () => {
     const tabs = buildExperimentDetailTabs({
       openSpecLifecycle: exploreOnlyLifecycle,
-      businessCaseContent: null,
-      prdRawContent: null,
     });
     expect(resolveDefaultDetailTab(tabs, exploreOnlyLifecycle)).toBe("explore");
   });
@@ -87,15 +89,11 @@ describe("resolveDefaultDetailTab", () => {
   it("defaults to propose when current phase is propose", () => {
     const tabs = buildExperimentDetailTabs({
       openSpecLifecycle: multiPhaseLifecycle,
-      businessCaseContent: null,
-      prdRawContent: null,
     });
     expect(resolveDefaultDetailTab(tabs, multiPhaseLifecycle)).toBe("propose");
   });
 
   it("returns null when there are no tabs", () => {
-    expect(
-      resolveDefaultDetailTab([], null),
-    ).toBeNull();
+    expect(resolveDefaultDetailTab([], null)).toBeNull();
   });
 });

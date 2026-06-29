@@ -76,54 +76,71 @@ export default async function ExperimentDetailPage({
     getPullRequests(experiment.id).catch(() => []),
   ]);
 
-  const [prd, prdRawContent, mr, businessCaseContent] = await Promise.all([
-    (async () => {
-      if (!hasPRDFile) return null;
-      try {
-        const saved = await getContent(slug, "prd").catch(() => null);
-        const prdContent = saved ?? (await readPRD(experiment.directory));
-        if (prdContent && prdContent.trim().length > 0) {
-          return parsePRD(prdContent);
+  const [prd, prdRawContent, mr, mrRawContent, businessCaseContent] =
+    await Promise.all([
+      (async () => {
+        try {
+          const saved = await getContent(slug, "prd").catch(() => null);
+          const prdContent =
+            saved ?? (hasPRDFile ? await readPRD(experiment.directory) : null);
+          if (prdContent && prdContent.trim().length > 0) {
+            return parsePRD(prdContent);
+          }
+        } catch (error) {
+          console.error(
+            "[ExperimentDetailPage] Error reading/parsing PRD:",
+            error,
+          );
         }
-      } catch (error) {
-        console.error(
-          "[ExperimentDetailPage] Error reading/parsing PRD:",
-          error,
-        );
-      }
-      return null;
-    })(),
-    (async () => {
-      try {
-        const saved = await getContent(slug, "prd").catch(() => null);
-        return (
-          saved ?? (hasPRDFile ? await readPRD(experiment.directory) : null)
-        );
-      } catch {
         return null;
-      }
-    })(),
-    (async () => {
-      if (!mrContent) return null;
-      try {
-        return parseMarketResearch(mrContent);
-      } catch (error) {
-        console.error(
-          "[ExperimentDetailPage] Error parsing Market Research:",
-          error,
-        );
-      }
-      return null;
-    })(),
-    (async () => {
-      try {
-        const saved = await getContent(slug, "business_case").catch(() => null);
-        return saved ?? (await readBusinessCase(experiment.directory));
-      } catch {
+      })(),
+      (async () => {
+        try {
+          const saved = await getContent(slug, "prd").catch(() => null);
+          return (
+            saved ?? (hasPRDFile ? await readPRD(experiment.directory) : null)
+          );
+        } catch {
+          return null;
+        }
+      })(),
+      (async () => {
+        try {
+          const saved = await getContent(slug, "market_research").catch(
+            () => null,
+          );
+          const raw = saved ?? mrContent;
+          if (!raw) return null;
+          return parseMarketResearch(raw);
+        } catch (error) {
+          console.error(
+            "[ExperimentDetailPage] Error parsing Market Research:",
+            error,
+          );
+        }
         return null;
-      }
-    })(),
-  ]);
+      })(),
+      (async () => {
+        try {
+          const saved = await getContent(slug, "market_research").catch(
+            () => null,
+          );
+          return saved ?? mrContent ?? null;
+        } catch {
+          return null;
+        }
+      })(),
+      (async () => {
+        try {
+          const saved = await getContent(slug, "business_case").catch(
+            () => null,
+          );
+          return saved ?? (await readBusinessCase(experiment.directory));
+        } catch {
+          return null;
+        }
+      })(),
+    ]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -134,6 +151,7 @@ export default async function ExperimentDetailPage({
         prd={prd}
         prdRawContent={prdRawContent}
         mr={mr}
+        mrRawContent={mrRawContent}
         businessCaseContent={businessCaseContent}
         openSpecLifecycle={openSpecLifecycle}
         isEditor={isEditor}
