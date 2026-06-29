@@ -1,47 +1,47 @@
 ## Outcomes
 
 - **Who:** Solo founder who wants to run hub agent workflows (skills, rules, commands) against a linked repo's code without switching repos or losing hub context.
-- **Job:** Open a linked repo's code as a worktree inside the hub session so all hub agent infrastructure applies natively.
-- **Done when:** A linked repo can be checked out as a git worktree under `worktrees/<repo-slug>/`; the hub session can read and operate on that code; the worktree path is registered against the linked repo record.
-- **Not doing:** Exporting hub config to linked repos; pushing worktree changes automatically; managing multiple concurrent worktrees per repo.
+- **Job:** Read, search, and operate on a linked repo's code from inside the hub session — hub skills, rules, and commands apply natively because the hub is already the context.
+- **Done when:** A hub session can read files, search code, and view PRs in any linked repo via GitHub MCP; the linked repo detail page surfaces an "Open in hub" entry point that primes the agent with the right repo context; an optional local worktree clone is available for persistent local sessions that need to run the code.
+- **Not doing:** Automatic cloning on session start; assuming clone persistence across cloud sessions; exporting hub config to linked repos.
 
 ## ADDED Requirements
 
-### Requirement: Linked repo checked out as a git worktree
+### Requirement: GitHub MCP used as the default file-access layer
 
-A linked repo's code is accessible inside the hub session via a named worktree.
+Linked repo code is accessed via GitHub MCP tools (file reads, code search, PR operations) — no clone required.
 
-**Fails until:** Running the checkout action for a linked repo creates `worktrees/<repo-slug>/` containing the repo's default branch code, and the path is stored on the `linked_repos` row.
+**Fails until:** A hub agent session can read a file and search code in a linked repo's `owner/repo` using GitHub MCP without any local clone present.
 
-The system SHALL support a "checkout worktree" action for a linked repo that clones or adds the repo as a git worktree at `worktrees/<repo-slug>/` and stores the `worktree_path` on the `linked_repos` row; `worktrees/` SHALL be listed in `.gitignore`.
+The system SHALL document and rely on GitHub MCP (`get_file_contents`, `search_code`) as the primary mechanism for accessing linked repo code from within the hub session; no clone or worktree SHALL be required for this default path; hub skills, rules, and commands apply natively because the hub is already the agent context.
 
-#### Scenario: Check out a linked repo as a worktree
+#### Scenario: Read a file from a linked repo in a hub session
 
-- **WHEN** a user triggers "open in hub" for a linked repo
-- **THEN** `worktrees/<repo-slug>/` is created containing the repo's code, and `linked_repos.worktree_path` is updated to that path
+- **WHEN** a user asks the hub agent to read a file from a linked repo
+- **THEN** the agent fetches it via GitHub MCP with no local clone present, and hub skills and rules apply to the response
 
-### Requirement: Worktree path surfaced in the hub UI
+### Requirement: Linked repo detail page surfaces an "Open in hub" context primer
 
-The linked repo detail page shows whether a worktree is active and provides the open/remove actions.
+The detail page provides a one-click way to start a hub agent session scoped to the linked repo.
 
-**Fails until:** The linked repo detail page shows "Worktree active at worktrees/<slug>" when checked out, and a "Remove worktree" action when one exists.
+**Fails until:** The linked repo detail page shows an "Open in hub" button that copies or opens a prompt primed with the repo's `owner/repo`, default branch, and a pointer to key entry files — ready to paste into a hub agent session.
 
-The system SHALL display worktree status on the linked repo detail page — inactive state with an "Open in hub" button when no worktree exists, and active state with the local path and a "Remove worktree" button when one does.
+The system SHALL add an "Open in hub" action to the linked repo detail page that generates a context-primer prompt containing the repo slug, default branch, and (if stored) notable entry points; this primer is the handoff between the hub UI and the hub agent session.
 
-#### Scenario: Detail page with an active worktree
+#### Scenario: Starting a hub session on a linked repo
 
-- **WHEN** a linked repo has a worktree checked out
-- **THEN** the detail page shows the worktree path and a "Remove worktree" button instead of the "Open in hub" button
+- **WHEN** a user clicks "Open in hub" on a linked repo detail page
+- **THEN** they get a ready-to-use context primer that orients the hub agent to that repo without requiring a clone
 
-### Requirement: worktrees/ excluded from hub git tracking
+### Requirement: Optional local worktree for persistent local sessions
 
-Worktree directories are not committed to the hub repo.
+A local clone at `worktrees/<repo-slug>/` is available as an opt-in for persistent local environments where running the code matters.
 
-**Fails until:** After checking out a linked repo worktree, `git status` in the hub repo shows no untracked files under `worktrees/`.
+**Fails until:** A user can trigger a "Clone for local editing" action that creates `worktrees/<repo-slug>/` and stores the path on the `linked_repos` row; `worktrees/` is in `.gitignore`; the detail page shows clone status and a remove action.
 
-The system SHALL add `worktrees/` to the hub's `.gitignore` so checked-out linked repo code is never staged or committed as part of the hub.
+The system SHALL support an optional "Clone for local editing" action that runs `git clone` into `worktrees/<repo-slug>/`, stores `worktree_path` on the `linked_repos` row, and adds `worktrees/` to `.gitignore`; the detail page SHALL show whether a local clone is present and offer a "Remove local clone" action; this path is explicitly NOT used in cloud/ephemeral sessions where clones do not persist.
 
-#### Scenario: Check out a worktree and inspect hub git status
+#### Scenario: Clone a linked repo for local editing
 
-- **WHEN** a linked repo worktree is created at `worktrees/mvds/`
-- **THEN** `git status` in the hub repo shows no changes in `worktrees/`
+- **WHEN** a user on a persistent local session triggers "Clone for local editing"
+- **THEN** `worktrees/<repo-slug>/` is created, `linked_repos.worktree_path` is updated, and the detail page reflects the active clone with a remove option
