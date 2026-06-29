@@ -6,13 +6,12 @@ import MarkdownContent from "@/components/MarkdownContent";
 import ScoreCard from "@/components/ScoreCard";
 import MetricCard from "@/components/MetricCard";
 import { Experiment } from "@/types";
-import type { parsePRD, parseMarketResearch } from "@/lib/data";
+import type { parseMarketResearch } from "@/lib/data";
 import type { OpenSpecLifecycle } from "@/lib/openspec-shared";
 import { formatBhdPhaseLabel, isBhdPhaseTab } from "@/lib/openspec-shared";
 
 interface TabsContentProps {
   experiment: Experiment;
-  prd: ReturnType<typeof parsePRD> | null;
   prdRawContent: string | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
   mrRawContent: string | null;
@@ -136,7 +135,6 @@ function EditableTab({
 
 export default function TabsContent({
   experiment,
-  prd,
   prdRawContent,
   mr,
   mrRawContent,
@@ -314,66 +312,9 @@ export default function TabsContent({
         initialContent={prdRawContent ?? ""}
         isEditor={isEditor}
       >
-        {prd ? (
-          <div className="space-y-4">
-            {prd.overview && (
-              <Section title="Overview">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent content={prd.overview} variant="light" />
-                </div>
-              </Section>
-            )}
-            {prd.problemStatement && (
-              <Section title="Problem">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent
-                    content={prd.problemStatement}
-                    variant="light"
-                  />
-                </div>
-              </Section>
-            )}
-            {prd.goals && (
-              <Section title="Goals">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent content={prd.goals} variant="light" />
-                </div>
-              </Section>
-            )}
-            {prd.targetUser && (
-              <Section title="Target user">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent content={prd.targetUser} variant="light" />
-                </div>
-              </Section>
-            )}
-            {prd.coreFeatures && (
-              <Section title="Core features">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent content={prd.coreFeatures} variant="light" />
-                </div>
-              </Section>
-            )}
-            {prd.successMetrics && (
-              <Section title="Success metrics">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent
-                    content={prd.successMetrics}
-                    variant="light"
-                  />
-                </div>
-              </Section>
-            )}
-            {prd.validationPlan && (
-              <Section title="Validation plan">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent
-                    content={prd.validationPlan}
-                    variant="light"
-                  />
-                </div>
-              </Section>
-            )}
+        {prdRawContent?.trim() ? (
+          <div className="prose prose-sm max-w-none text-text-dark-secondary">
+            <MarkdownContent content={prdRawContent} variant="light" />
           </div>
         ) : (
           <EmptyState />
