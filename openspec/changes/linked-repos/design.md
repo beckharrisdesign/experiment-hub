@@ -49,7 +49,7 @@ Detail page → "Open in hub" → copies a context primer prompt (repo slug, def
 | Grandfathered UI | Existing experiment cards and prototypes are exempt; no backfill required |
 | Future work | Evaluation/migration skill to surface experiments ready for MVDS uplift |
 | Breakpoints | S · 480px / L · 1024px per `rules/design-guidelines.mdc` |
-| Status | Design spec — Figma frames TBD when MVDS component library is linked |
+| Status | Design spec — MVDS package must be published before UI tasks begin; absence is a blocking gap, not a workaround |
 
 **LinkedRepoCard** (dashboard):
 - Same card shell as ExperimentCard; MVDS surface + border tokens
@@ -124,5 +124,5 @@ All UI introduced in this change and in future hub features uses MVDS. The decis
 
 - **Schema drift** — confirm actual `notes` and `experiment_pull_requests` columns via `list_tables` before adding FKs; don't assume column names from application code.
 - **PR sync scope** — the generalized sync must not re-fetch experiment PRs under the linked-repo path; the `entityType` guard is critical to prevent double-sync.
-- **MVDS availability** — if MVDS component library is not yet published/linked at implementation time, use MVDS design tokens and patterns directly rather than blocking on the library; note the gap in tasks.
+- **MVDS availability** — if the MVDS package is not yet published at implementation time, this is a **blocking dependency**, not a workaround situation. Do not fall back to hand-rolling tokens or patterns. Surface the gap, resolve it (publish MVDS or pin a pre-release), and only then proceed with UI tasks.
 - **Graduation is one-way (for now)** — no "un-graduate" action in this change; if needed, it's a follow-on.
