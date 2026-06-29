@@ -192,7 +192,7 @@ export default function TabsContent({
         initialContent={mrRawContent ?? ""}
         isEditor={isEditor}
       >
-        {!mr && !hasScores ? (
+        {!mrRawContent && !hasScores ? (
           <EmptyState />
         ) : (
           <div className="space-y-4">
@@ -239,7 +239,7 @@ export default function TabsContent({
                 </div>
               </Section>
             )}
-            {mr && (
+            {mr && (mr.tam || mr.sam || mr.somYear1) && (
               <Section title="Market size">
                 <div className="grid grid-cols-5 gap-3">
                   <MetricCard
@@ -272,33 +272,10 @@ export default function TabsContent({
                 </div>
               </Section>
             )}
-            {mr?.marketOpportunity && (
-              <Section title="Market opportunity">
+            {mrRawContent && (
+              <Section title="Market research">
                 <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent
-                    content={mr.marketOpportunity}
-                    variant="light"
-                  />
-                </div>
-              </Section>
-            )}
-            {mr?.competitiveLandscape && (
-              <Section title="Competitive landscape">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent
-                    content={mr.competitiveLandscape}
-                    variant="light"
-                  />
-                </div>
-              </Section>
-            )}
-            {mr?.recommendation && (
-              <Section title="Recommendation">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent
-                    content={mr.recommendation}
-                    variant="light"
-                  />
+                  <MarkdownContent content={mrRawContent} variant="light" />
                 </div>
               </Section>
             )}
