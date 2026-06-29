@@ -79,10 +79,10 @@ export default async function ExperimentDetailPage({
   const [prd, prdRawContent, mr, mrRawContent, businessCaseContent] =
     await Promise.all([
       (async () => {
-        if (!hasPRDFile) return null;
         try {
           const saved = await getContent(slug, "prd").catch(() => null);
-          const prdContent = saved ?? (await readPRD(experiment.directory));
+          const prdContent =
+            saved ?? (hasPRDFile ? await readPRD(experiment.directory) : null);
           if (prdContent && prdContent.trim().length > 0) {
             return parsePRD(prdContent);
           }
@@ -105,12 +105,12 @@ export default async function ExperimentDetailPage({
         }
       })(),
       (async () => {
-        if (!mrContent) return null;
         try {
           const saved = await getContent(slug, "market_research").catch(
             () => null,
           );
           const raw = saved ?? mrContent;
+          if (!raw) return null;
           return parseMarketResearch(raw);
         } catch (error) {
           console.error(
