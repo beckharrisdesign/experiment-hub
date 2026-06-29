@@ -17,5 +17,7 @@ link_dir() {
 link_dir ".cursor/rules" "../rules"
 link_dir ".cursor/skills" "../skills"
 link_dir ".claude/skills" "../skills"
+link_dir ".claude/commands" "../.cursor/commands"
 
 echo "Linked .cursor/rules, .cursor/skills, .claude/skills → rules/ and skills/"
+echo "Linked .claude/commands → .cursor/commands"
