@@ -69,6 +69,9 @@ next-env.d.ts
 ehthumbs.db
 Thumbs.db
 
+# Local worktree clones of linked repos (not for cloud sessions)
+worktrees/
+
 # Experiment Hub specific
 !/data/.gitkeep
 # Note: experiments/ folder and its contents are tracked
