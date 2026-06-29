@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import ExperimentTypeBadge from "@/components/ExperimentTypeBadge";
 import TabsContent from "./tabs-content";
 import type { Experiment, ExperimentPullRequest } from "@/types";
-import type { parsePRD, parseMarketResearch } from "@/lib/data";
+import type { parseMarketResearch } from "@/lib/data";
 import type { OpenSpecLifecycle } from "@/lib/openspec-shared";
 import type { Note } from "@/lib/supabase";
 import NotesList from "@/components/NotesList";
@@ -20,7 +20,6 @@ import {
 interface ExperimentDetailClientProps {
   experiment: Experiment;
   slug: string;
-  prd: ReturnType<typeof parsePRD> | null;
   prdRawContent: string | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
   mrRawContent: string | null;
@@ -34,7 +33,6 @@ interface ExperimentDetailClientProps {
 export default function ExperimentDetailClient({
   experiment,
   slug,
-  prd,
   prdRawContent,
   mr,
   mrRawContent,
@@ -113,7 +111,6 @@ export default function ExperimentDetailClient({
           <TabsContent
             key={activeTab}
             experiment={experiment}
-            prd={prd}
             prdRawContent={prdRawContent}
             mr={mr}
             mrRawContent={mrRawContent}

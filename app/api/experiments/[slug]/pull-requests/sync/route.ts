@@ -31,7 +31,7 @@ export async function POST(
   }
 
   // Search for PRs referencing the experiment ID in title, body, or branch
-  const q = `repo:beckharrisdesign/experiment-hub+is:pr+${experiment.id}`;
+  const q = `repo:beckharrisdesign/experiment-hub is:pr ${experiment.id}`;
   const res = await fetch(
     `https://api.github.com/search/issues?q=${encodeURIComponent(q)}&per_page=50&sort=updated`,
     {
@@ -53,7 +53,7 @@ export async function POST(
   const items: Record<string, unknown>[] = json.items ?? [];
 
   if (items.length === 0) {
-    return NextResponse.json({ pullRequests: [] });
+    return NextResponse.json({ success: true, pullRequests: [] });
   }
 
   const rows = items.map((item) => {
@@ -81,6 +81,14 @@ export async function POST(
     };
   });
 
-  const pullRequests = await upsertPullRequests(rows);
-  return NextResponse.json({ pullRequests });
+  try {
+    const pullRequests = await upsertPullRequests(rows);
+    return NextResponse.json({ success: true, pullRequests });
+  } catch (err) {
+    console.error("[PR sync] Upsert error:", err);
+    return NextResponse.json(
+      { error: "Failed to save pull requests" },
+      { status: 500 },
+    );
+  }
 }

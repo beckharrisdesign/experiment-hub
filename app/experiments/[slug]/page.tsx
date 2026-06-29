@@ -6,7 +6,6 @@ import {
   checkExperimentFiles,
   readPRD,
   readBusinessCase,
-  parsePRD,
   parseMarketResearch,
 } from "@/lib/data";
 import { loadOpenSpecLifecycle } from "@/lib/openspec-server";
@@ -76,24 +75,8 @@ export default async function ExperimentDetailPage({
     getPullRequests(experiment.id).catch(() => []),
   ]);
 
-  const [prd, prdRawContent, mr, mrRawContent, businessCaseContent] =
+  const [prdRawContent, mr, mrRawContent, businessCaseContent] =
     await Promise.all([
-      (async () => {
-        try {
-          const saved = await getContent(slug, "prd").catch(() => null);
-          const prdContent =
-            saved ?? (hasPRDFile ? await readPRD(experiment.directory) : null);
-          if (prdContent && prdContent.trim().length > 0) {
-            return parsePRD(prdContent);
-          }
-        } catch (error) {
-          console.error(
-            "[ExperimentDetailPage] Error reading/parsing PRD:",
-            error,
-          );
-        }
-        return null;
-      })(),
       (async () => {
         try {
           const saved = await getContent(slug, "prd").catch(() => null);
@@ -148,7 +131,6 @@ export default async function ExperimentDetailPage({
       <ExperimentDetailClient
         experiment={experiment}
         slug={slug}
-        prd={prd}
         prdRawContent={prdRawContent}
         mr={mr}
         mrRawContent={mrRawContent}

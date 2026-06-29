@@ -6,13 +6,12 @@ import MarkdownContent from "@/components/MarkdownContent";
 import ScoreCard from "@/components/ScoreCard";
 import MetricCard from "@/components/MetricCard";
 import { Experiment } from "@/types";
-import type { parsePRD, parseMarketResearch } from "@/lib/data";
+import type { parseMarketResearch } from "@/lib/data";
 import type { OpenSpecLifecycle } from "@/lib/openspec-shared";
 import { formatBhdPhaseLabel, isBhdPhaseTab } from "@/lib/openspec-shared";
 
 interface TabsContentProps {
   experiment: Experiment;
-  prd: ReturnType<typeof parsePRD> | null;
   prdRawContent: string | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
   mrRawContent: string | null;
@@ -136,7 +135,6 @@ function EditableTab({
 
 export default function TabsContent({
   experiment,
-  prd,
   prdRawContent,
   mr,
   mrRawContent,
@@ -192,7 +190,7 @@ export default function TabsContent({
         initialContent={mrRawContent ?? ""}
         isEditor={isEditor}
       >
-        {!mr && !hasScores ? (
+        {!mrRawContent?.trim() && !hasScores ? (
           <EmptyState />
         ) : (
           <div className="space-y-4">
@@ -239,66 +237,49 @@ export default function TabsContent({
                 </div>
               </Section>
             )}
-            {mr && (
-              <Section title="Market size">
-                <div className="grid grid-cols-5 gap-3">
-                  <MetricCard
-                    label="TAM"
-                    value={mr.tam || "N/A"}
-                    description="Total Addressable"
-                    note={mr.tamDesc ?? undefined}
-                  />
-                  <MetricCard
-                    label="SAM"
-                    value={mr.sam || "N/A"}
-                    description="Serviceable"
-                    note={mr.samDesc ?? undefined}
-                  />
-                  <MetricCard
-                    label="SOM · Y1"
-                    value={mr.somYear1 || "N/A"}
-                    description="Obtainable yr 1"
-                  />
-                  <MetricCard
-                    label="SOM · Y2"
-                    value={mr.somYear2 || "N/A"}
-                    description="Obtainable yr 2"
-                  />
-                  <MetricCard
-                    label="SOM · Y3"
-                    value={mr.somYear3 || mr.som || "N/A"}
-                    description="Obtainable yr 3"
-                  />
-                </div>
-              </Section>
-            )}
-            {mr?.marketOpportunity && (
-              <Section title="Market opportunity">
+            {mr &&
+              (mr.tam ||
+                mr.sam ||
+                mr.somYear1 ||
+                mr.somYear2 ||
+                mr.somYear3 ||
+                mr.som) && (
+                <Section title="Market size">
+                  <div className="grid grid-cols-5 gap-3">
+                    <MetricCard
+                      label="TAM"
+                      value={mr.tam || "N/A"}
+                      description="Total Addressable"
+                      note={mr.tamDesc ?? undefined}
+                    />
+                    <MetricCard
+                      label="SAM"
+                      value={mr.sam || "N/A"}
+                      description="Serviceable"
+                      note={mr.samDesc ?? undefined}
+                    />
+                    <MetricCard
+                      label="SOM · Y1"
+                      value={mr.somYear1 || "N/A"}
+                      description="Obtainable yr 1"
+                    />
+                    <MetricCard
+                      label="SOM · Y2"
+                      value={mr.somYear2 || "N/A"}
+                      description="Obtainable yr 2"
+                    />
+                    <MetricCard
+                      label="SOM · Y3"
+                      value={mr.somYear3 || mr.som || "N/A"}
+                      description="Obtainable yr 3"
+                    />
+                  </div>
+                </Section>
+              )}
+            {mrRawContent?.trim() && (
+              <Section title="Market research">
                 <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent
-                    content={mr.marketOpportunity}
-                    variant="light"
-                  />
-                </div>
-              </Section>
-            )}
-            {mr?.competitiveLandscape && (
-              <Section title="Competitive landscape">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent
-                    content={mr.competitiveLandscape}
-                    variant="light"
-                  />
-                </div>
-              </Section>
-            )}
-            {mr?.recommendation && (
-              <Section title="Recommendation">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent
-                    content={mr.recommendation}
-                    variant="light"
-                  />
+                  <MarkdownContent content={mrRawContent} variant="light" />
                 </div>
               </Section>
             )}
@@ -337,66 +318,9 @@ export default function TabsContent({
         initialContent={prdRawContent ?? ""}
         isEditor={isEditor}
       >
-        {prd ? (
-          <div className="space-y-4">
-            {prd.overview && (
-              <Section title="Overview">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent content={prd.overview} variant="light" />
-                </div>
-              </Section>
-            )}
-            {prd.problemStatement && (
-              <Section title="Problem">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent
-                    content={prd.problemStatement}
-                    variant="light"
-                  />
-                </div>
-              </Section>
-            )}
-            {prd.goals && (
-              <Section title="Goals">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent content={prd.goals} variant="light" />
-                </div>
-              </Section>
-            )}
-            {prd.targetUser && (
-              <Section title="Target user">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent content={prd.targetUser} variant="light" />
-                </div>
-              </Section>
-            )}
-            {prd.coreFeatures && (
-              <Section title="Core features">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent content={prd.coreFeatures} variant="light" />
-                </div>
-              </Section>
-            )}
-            {prd.successMetrics && (
-              <Section title="Success metrics">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent
-                    content={prd.successMetrics}
-                    variant="light"
-                  />
-                </div>
-              </Section>
-            )}
-            {prd.validationPlan && (
-              <Section title="Validation plan">
-                <div className="prose prose-sm max-w-none text-text-dark-secondary">
-                  <MarkdownContent
-                    content={prd.validationPlan}
-                    variant="light"
-                  />
-                </div>
-              </Section>
-            )}
+        {prdRawContent?.trim() ? (
+          <div className="prose prose-sm max-w-none text-text-dark-secondary">
+            <MarkdownContent content={prdRawContent} variant="light" />
           </div>
         ) : (
           <EmptyState />
