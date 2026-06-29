@@ -17,7 +17,11 @@ export async function POST(
   const body = await request.json();
   const { type, content } = body;
 
-  if (!type || !content || !["prd", "business_case"].includes(type)) {
+  if (
+    !type ||
+    !content ||
+    !["prd", "business_case", "market_research"].includes(type)
+  ) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 

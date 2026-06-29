@@ -23,6 +23,7 @@ interface ExperimentDetailClientProps {
   prd: ReturnType<typeof parsePRD> | null;
   prdRawContent: string | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
+  mrRawContent: string | null;
   businessCaseContent: string | null;
   openSpecLifecycle: OpenSpecLifecycle | null;
   isEditor: boolean;
@@ -36,6 +37,7 @@ export default function ExperimentDetailClient({
   prd,
   prdRawContent,
   mr,
+  mrRawContent,
   businessCaseContent,
   openSpecLifecycle,
   isEditor,
@@ -109,10 +111,12 @@ export default function ExperimentDetailClient({
         {/* Main content */}
         <main className="flex-1 bg-background-light px-4 md:px-8 lg:px-16 py-12 min-w-0">
           <TabsContent
+            key={activeTab}
             experiment={experiment}
             prd={prd}
             prdRawContent={prdRawContent}
             mr={mr}
+            mrRawContent={mrRawContent}
             businessCaseContent={businessCaseContent}
             openSpecLifecycle={openSpecLifecycle}
             isEditor={isEditor}

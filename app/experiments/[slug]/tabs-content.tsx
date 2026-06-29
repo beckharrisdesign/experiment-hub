@@ -15,6 +15,7 @@ interface TabsContentProps {
   prd: ReturnType<typeof parsePRD> | null;
   prdRawContent: string | null;
   mr: ReturnType<typeof parseMarketResearch> | null;
+  mrRawContent: string | null;
   businessCaseContent: string | null;
   openSpecLifecycle: OpenSpecLifecycle | null;
   isEditor: boolean;
@@ -54,7 +55,7 @@ function EditableTab({
   children,
   isEditor,
 }: {
-  contentType: "prd" | "business_case";
+  contentType: "prd" | "business_case" | "market_research";
   slug: string;
   initialContent: string;
   children: React.ReactNode;
@@ -138,6 +139,7 @@ export default function TabsContent({
   prd,
   prdRawContent,
   mr,
+  mrRawContent,
   businessCaseContent,
   openSpecLifecycle,
   isEditor,
@@ -182,108 +184,127 @@ export default function TabsContent({
 
   if (activeTab === "discovery") {
     const hasScores = experiment.scores && experiment.type !== "tool";
-    if (!mr && !hasScores) {
-      return <EmptyState />;
-    }
     return (
-      <div className="space-y-4">
-        {hasScores && (
-          <Section title="Scores">
-            <div className="grid grid-cols-5 gap-4">
-              <ScoreCard
-                value={experiment.scores!.businessOpportunity}
-                label="B"
-                fullName="Business Opportunity"
-                rationale={
-                  experiment.scoreRationale?.businessOpportunity ??
-                  (mr ? `TAM ${mr.tam || "N/A"}, SAM ${mr.sam || "N/A"}` : null)
-                }
-              />
-              <ScoreCard
-                value={experiment.scores!.personalImpact}
-                label="P"
-                fullName="Personal Impact"
-                rationale={experiment.scoreRationale?.personalImpact ?? null}
-              />
-              <ScoreCard
-                value={experiment.scores!.competitiveAdvantage}
-                label="C"
-                fullName="Competitive Advantage"
-                rationale={null}
-              />
-              <ScoreCard
-                value={experiment.scores!.platformCost}
-                label="$"
-                fullName="Platform Cost"
-                rationale={null}
-              />
-              <ScoreCard
-                value={experiment.scores!.socialImpact}
-                label="S"
-                fullName="Social Impact"
-                rationale={experiment.scoreRationale?.socialImpact ?? null}
-              />
-            </div>
-          </Section>
+      <EditableTab
+        key="market_research"
+        contentType="market_research"
+        slug={slug}
+        initialContent={mrRawContent ?? ""}
+        isEditor={isEditor}
+      >
+        {!mr && !hasScores ? (
+          <EmptyState />
+        ) : (
+          <div className="space-y-4">
+            {hasScores && (
+              <Section title="Scores">
+                <div className="grid grid-cols-5 gap-4">
+                  <ScoreCard
+                    value={experiment.scores!.businessOpportunity}
+                    label="B"
+                    fullName="Business Opportunity"
+                    rationale={
+                      experiment.scoreRationale?.businessOpportunity ??
+                      (mr
+                        ? `TAM ${mr.tam || "N/A"}, SAM ${mr.sam || "N/A"}`
+                        : null)
+                    }
+                  />
+                  <ScoreCard
+                    value={experiment.scores!.personalImpact}
+                    label="P"
+                    fullName="Personal Impact"
+                    rationale={
+                      experiment.scoreRationale?.personalImpact ?? null
+                    }
+                  />
+                  <ScoreCard
+                    value={experiment.scores!.competitiveAdvantage}
+                    label="C"
+                    fullName="Competitive Advantage"
+                    rationale={null}
+                  />
+                  <ScoreCard
+                    value={experiment.scores!.platformCost}
+                    label="$"
+                    fullName="Platform Cost"
+                    rationale={null}
+                  />
+                  <ScoreCard
+                    value={experiment.scores!.socialImpact}
+                    label="S"
+                    fullName="Social Impact"
+                    rationale={experiment.scoreRationale?.socialImpact ?? null}
+                  />
+                </div>
+              </Section>
+            )}
+            {mr && (
+              <Section title="Market size">
+                <div className="grid grid-cols-5 gap-3">
+                  <MetricCard
+                    label="TAM"
+                    value={mr.tam || "N/A"}
+                    description="Total Addressable"
+                    note={mr.tamDesc ?? undefined}
+                  />
+                  <MetricCard
+                    label="SAM"
+                    value={mr.sam || "N/A"}
+                    description="Serviceable"
+                    note={mr.samDesc ?? undefined}
+                  />
+                  <MetricCard
+                    label="SOM · Y1"
+                    value={mr.somYear1 || "N/A"}
+                    description="Obtainable yr 1"
+                  />
+                  <MetricCard
+                    label="SOM · Y2"
+                    value={mr.somYear2 || "N/A"}
+                    description="Obtainable yr 2"
+                  />
+                  <MetricCard
+                    label="SOM · Y3"
+                    value={mr.somYear3 || mr.som || "N/A"}
+                    description="Obtainable yr 3"
+                  />
+                </div>
+              </Section>
+            )}
+            {mr?.marketOpportunity && (
+              <Section title="Market opportunity">
+                <div className="prose prose-sm max-w-none text-text-dark-secondary">
+                  <MarkdownContent
+                    content={mr.marketOpportunity}
+                    variant="light"
+                  />
+                </div>
+              </Section>
+            )}
+            {mr?.competitiveLandscape && (
+              <Section title="Competitive landscape">
+                <div className="prose prose-sm max-w-none text-text-dark-secondary">
+                  <MarkdownContent
+                    content={mr.competitiveLandscape}
+                    variant="light"
+                  />
+                </div>
+              </Section>
+            )}
+            {mr?.recommendation && (
+              <Section title="Recommendation">
+                <div className="prose prose-sm max-w-none text-text-dark-secondary">
+                  <MarkdownContent
+                    content={mr.recommendation}
+                    variant="light"
+                  />
+                </div>
+              </Section>
+            )}
+          </div>
         )}
-        {mr && (
-          <Section title="Market size">
-            <div className="grid grid-cols-5 gap-3">
-              <MetricCard
-                label="TAM"
-                value={mr.tam || "N/A"}
-                description="Total Addressable"
-                note={mr.tamDesc ?? undefined}
-              />
-              <MetricCard
-                label="SAM"
-                value={mr.sam || "N/A"}
-                description="Serviceable"
-                note={mr.samDesc ?? undefined}
-              />
-              <MetricCard
-                label="SOM · Y1"
-                value={mr.somYear1 || "N/A"}
-                description="Obtainable yr 1"
-              />
-              <MetricCard
-                label="SOM · Y2"
-                value={mr.somYear2 || "N/A"}
-                description="Obtainable yr 2"
-              />
-              <MetricCard
-                label="SOM · Y3"
-                value={mr.somYear3 || mr.som || "N/A"}
-                description="Obtainable yr 3"
-              />
-            </div>
-          </Section>
-        )}
-        {mr?.marketOpportunity && (
-          <Section title="Market opportunity">
-            <div className="prose prose-sm max-w-none text-text-dark-secondary">
-              <MarkdownContent content={mr.marketOpportunity} variant="light" />
-            </div>
-          </Section>
-        )}
-        {mr?.competitiveLandscape && (
-          <Section title="Competitive landscape">
-            <div className="prose prose-sm max-w-none text-text-dark-secondary">
-              <MarkdownContent
-                content={mr.competitiveLandscape}
-                variant="light"
-              />
-            </div>
-          </Section>
-        )}
-        {mr?.recommendation && (
-          <Section title="Recommendation">
-            <div className="prose prose-sm max-w-none text-text-dark-secondary">
-              <MarkdownContent content={mr.recommendation} variant="light" />
-            </div>
-          </Section>
-        )}
-      </div>
+      </EditableTab>
     );
   }
 
