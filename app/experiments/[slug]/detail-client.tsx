@@ -42,11 +42,7 @@ export default function ExperimentDetailClient({
   notes,
   pullRequests,
 }: ExperimentDetailClientProps) {
-  const tabs = buildExperimentDetailTabs({
-    openSpecLifecycle,
-    businessCaseContent,
-    prdRawContent,
-  });
+  const tabs = buildExperimentDetailTabs({ openSpecLifecycle });
 
   const [activeTab, setActiveTab] = useState(
     () => resolveDefaultDetailTab(tabs, openSpecLifecycle) ?? tabs[0]?.id ?? "",
@@ -112,23 +108,17 @@ export default function ExperimentDetailClient({
       <div className="flex flex-1">
         {/* Main content */}
         <main className="flex-1 bg-background-light px-4 md:px-8 lg:px-16 py-12 min-w-0">
-          {tabs.length === 0 ? (
-            <p className="text-sm text-text-dark-secondary">
-              No documentation or OpenSpec artifacts yet for this experiment.
-            </p>
-          ) : (
-            <TabsContent
-              experiment={experiment}
-              prd={prd}
-              prdRawContent={prdRawContent}
-              mr={mr}
-              businessCaseContent={businessCaseContent}
-              openSpecLifecycle={openSpecLifecycle}
-              isEditor={isEditor}
-              activeTab={activeTab}
-              slug={slug}
-            />
-          )}
+          <TabsContent
+            experiment={experiment}
+            prd={prd}
+            prdRawContent={prdRawContent}
+            mr={mr}
+            businessCaseContent={businessCaseContent}
+            openSpecLifecycle={openSpecLifecycle}
+            isEditor={isEditor}
+            activeTab={activeTab}
+            slug={slug}
+          />
 
           {(notes.length > 0 || isEditor) && (
             <div className="mt-12 pt-12 border-t border-border-dark">
