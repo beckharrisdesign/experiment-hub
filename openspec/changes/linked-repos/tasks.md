@@ -1,6 +1,6 @@
 ## 0. Prerequisites
 
-- [ ] 0.1 **MVDS package availability** — ⚠️ verified 2026-07-04: not on npm (`mvds`, `@beckharrisdesign/mvds` both 404); sections 3–5 blocked until published or pinned — confirm MVDS is published and installable before starting any UI tasks (sections 3–5); if not published, stop and raise as a blocking issue; do not proceed with hand-rolled tokens or patterns
+- [x] 0.1 **MVDS package availability** — published to npm as `mvds` (per Katy, 2026-07-04); anonymous registry queries 404, so it is likely a private package — the follow-up UI change needs npm auth (NPM_TOKEN) locally and in Vercel. Decision: ship backend first; sections 3–5 move to a follow-up change — confirm MVDS is published and installable before starting any UI tasks (sections 3–5); if not published, stop and raise as a blocking issue; do not proceed with hand-rolled tokens or patterns
 - [x] 0.2 Confirm actual Supabase table columns via `list_tables` before writing any migrations — do not assume column names from application code
 - [ ] 0.3 Install MVDS in the hub app (`npm install @mvds/...` or equivalent) and verify import resolves
 
