@@ -72,8 +72,20 @@ export default function StatusSelect({
           </option>
         ))}
       </select>
-      {saving && <span className="text-xs text-text-secondary">Saving…</span>}
-      {error && <span className="text-xs text-red-400">{error}</span>}
+      {saving && (
+        <span aria-live="polite" className="text-xs text-text-secondary">
+          Saving…
+        </span>
+      )}
+      {error && (
+        <span
+          role="alert"
+          aria-live="assertive"
+          className="text-xs text-red-400"
+        >
+          {error}
+        </span>
+      )}
     </div>
   );
 }
