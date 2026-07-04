@@ -47,6 +47,14 @@ export async function PATCH(
     return NextResponse.json({ error: "No valid fields" }, { status: 400 });
   }
 
-  const updated = await updateExperiment(id, fields);
-  return NextResponse.json(updated);
+  try {
+    const updated = await updateExperiment(id, fields);
+    return NextResponse.json({ success: true, experiment: updated });
+  } catch (err) {
+    console.error("[Experiment update] Error:", err);
+    return NextResponse.json(
+      { error: "Failed to update experiment" },
+      { status: 500 },
+    );
+  }
 }
