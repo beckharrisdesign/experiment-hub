@@ -21,6 +21,16 @@ function hasSupabase() {
 
 const DATA_DIR = path.join(process.cwd(), "data");
 
+// The JSON files are a stale snapshot — if we land here while Supabase is
+// configured, edits made through the admin UI will appear not to persist
+// (#264), so make the fallback visible in server logs.
+function logSupabaseFallback(source: string, error: unknown) {
+  console.error(
+    `[data] Supabase read failed in ${source}; falling back to JSON snapshot:`,
+    error,
+  );
+}
+
 async function readJsonFile<T>(filename: string): Promise<T[]> {
   try {
     const filePath = path.join(DATA_DIR, filename);
@@ -39,8 +49,8 @@ export async function getExperiments(): Promise<Experiment[]> {
   if (hasSupabase()) {
     try {
       return await getExperimentsFromSupabase();
-    } catch {
-      // fall through to JSON
+    } catch (error) {
+      logSupabaseFallback("getExperiments", error);
     }
   }
   return readJsonFile<Experiment>("experiments.json");
@@ -50,8 +60,8 @@ export async function getPrototypes(): Promise<Prototype[]> {
   if (hasSupabase()) {
     try {
       return await getPrototypesFromSupabase();
-    } catch {
-      // fall through to JSON
+    } catch (error) {
+      logSupabaseFallback("getPrototypes", error);
     }
   }
   return readJsonFile<Prototype>("prototypes.json");
@@ -61,8 +71,8 @@ export async function getDocumentation(): Promise<Documentation[]> {
   if (hasSupabase()) {
     try {
       return await getDocumentationFromSupabase();
-    } catch {
-      // fall through to JSON
+    } catch (error) {
+      logSupabaseFallback("getDocumentation", error);
     }
   }
   return readJsonFile<Documentation>("documentation.json");
@@ -74,8 +84,8 @@ export async function getExperimentById(
   if (hasSupabase()) {
     try {
       return await getExperimentByIdFromSupabase(id);
-    } catch {
-      // fall through to JSON
+    } catch (error) {
+      logSupabaseFallback("getExperimentById", error);
     }
   }
   const experiments = await readJsonFile<Experiment>("experiments.json");
@@ -91,8 +101,8 @@ export async function getExperimentBySlug(
       if (byId) return byId;
       const all = await getExperimentsFromSupabase();
       return all.find((exp) => slugify(exp.name) === slug) ?? null;
-    } catch {
-      // fall through to JSON
+    } catch (error) {
+      logSupabaseFallback("getExperimentBySlug", error);
     }
   }
   const experiments = await readJsonFile<Experiment>("experiments.json");
@@ -108,8 +118,8 @@ export async function getPrototypeByExperimentId(
   if (hasSupabase()) {
     try {
       return await getPrototypeByExperimentIdFromSupabase(experimentId);
-    } catch {
-      // fall through to JSON
+    } catch (error) {
+      logSupabaseFallback("getPrototypeByExperimentId", error);
     }
   }
   const prototypes = await readJsonFile<Prototype>("prototypes.json");
@@ -124,8 +134,8 @@ export async function getDocumentationByExperimentId(
   if (hasSupabase()) {
     try {
       return await getDocumentationByExperimentIdFromSupabase(experimentId);
-    } catch {
-      // fall through to JSON
+    } catch (error) {
+      logSupabaseFallback("getDocumentationByExperimentId", error);
     }
   }
   const docs = await readJsonFile<Documentation>("documentation.json");
