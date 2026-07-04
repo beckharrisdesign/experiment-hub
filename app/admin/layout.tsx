@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 interface AdminLayoutProps {
@@ -12,7 +13,7 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
     !!editCookie && editCookie.value === process.env.ADMIN_SECRET;
 
   if (!isAuthenticated) {
-    return <>{children}</>;
+    redirect("/admin/login");
   }
 
   return (
