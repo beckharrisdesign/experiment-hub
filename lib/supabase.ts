@@ -199,6 +199,16 @@ export async function deleteNote(id: string): Promise<void> {
   if (error) throw error;
 }
 
+export async function getNoteById(id: string): Promise<Note | null> {
+  const { data, error } = await getAdminClient()
+    .from("notes")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error || !data) return null;
+  return data as Note;
+}
+
 // ─── Experiments ─────────────────────────────────────────────────────────────
 
 function dbToExperiment(row: Record<string, unknown>): Experiment {
@@ -350,10 +360,14 @@ export async function getPullRequests(
   }
 }
 
+// Exactly one owner per row — mirrors the DB one_owner check constraint
+// (num_nonnulls(experiment_id, linked_repo_id) = 1).
+type PullRequestOwner =
+  | { experiment_id: string; linked_repo_id: null }
+  | { experiment_id: null; linked_repo_id: string };
+
 export async function upsertPullRequests(
-  rows: {
-    experiment_id?: string | null;
-    linked_repo_id?: string | null;
+  rows: (PullRequestOwner & {
     repo: string;
     pr_number: number;
     title: string;
@@ -364,7 +378,7 @@ export async function upsertPullRequests(
     labels: string[];
     opened_at: string;
     merged_at: string | null;
-  }[],
+  })[],
 ): Promise<ExperimentPullRequest[]> {
   const { data, error } = await getAdminClient()
     .from("experiment_pull_requests")
@@ -394,17 +408,13 @@ export async function updateExperiment(
 export async function getLinkedRepoPullRequests(
   linkedRepoId: string,
 ): Promise<ExperimentPullRequest[]> {
-  try {
-    const { data, error } = await getAdminClient()
-      .from("experiment_pull_requests")
-      .select("*")
-      .eq("linked_repo_id", linkedRepoId)
-      .order("opened_at", { ascending: false });
-    if (error) throw error;
-    return ((data ?? []) as Record<string, unknown>[]).map(dbToPullRequest);
-  } catch {
-    return [];
-  }
+  const { data, error } = await getAdminClient()
+    .from("experiment_pull_requests")
+    .select("*")
+    .eq("linked_repo_id", linkedRepoId)
+    .order("opened_at", { ascending: false });
+  if (error) throw error;
+  return ((data ?? []) as Record<string, unknown>[]).map(dbToPullRequest);
 }
 
 // ─── Linked Repos ─────────────────────────────────────────────────────────────

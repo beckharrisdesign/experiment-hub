@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { updateNote, deleteNote, NoteType } from "@/lib/supabase";
+import { getNoteById, updateNote, deleteNote, NoteType } from "@/lib/supabase";
 
 async function requireAdmin() {
   const cookieStore = await cookies();
   const editCookie = cookieStore.get("hub-edit");
   return editCookie?.value === process.env.ADMIN_SECRET;
+}
+
+// The note must belong to the linked repo in the URL — otherwise this route
+// could mutate notes owned by another linked repo or an experiment.
+async function findScopedNote(linkedRepoId: string, noteId: string) {
+  const note = await getNoteById(noteId);
+  if (!note || note.linked_repo_id !== linkedRepoId) return null;
+  return note;
 }
 
 const VALID_TYPES: NoteType[] = [
@@ -24,7 +32,10 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { noteId } = await params;
+  const { id, noteId } = await params;
+  if (!(await findScopedNote(id, noteId))) {
+    return NextResponse.json({ error: "Note not found" }, { status: 404 });
+  }
 
   let body: Record<string, unknown>;
   try {
@@ -66,7 +77,10 @@ export async function DELETE(
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { noteId } = await params;
+  const { id, noteId } = await params;
+  if (!(await findScopedNote(id, noteId))) {
+    return NextResponse.json({ error: "Note not found" }, { status: 404 });
+  }
   await deleteNote(noteId);
   return new NextResponse(null, { status: 204 });
 }

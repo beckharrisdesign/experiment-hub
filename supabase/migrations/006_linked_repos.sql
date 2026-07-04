@@ -8,10 +8,13 @@ create table if not exists linked_repos (
   updated_at    timestamptz default now()
 );
 
+-- RLS on with no policies: anon/publishable keys are denied by default;
+-- the admin (service-role) client bypasses RLS, which is the only access
+-- path the API routes use. A permissive `using (true)` policy without a
+-- `to` clause would grant PUBLIC full read/write — drop it where applied.
 alter table linked_repos enable row level security;
 
-create policy "Service role full access" on linked_repos
-  using (true) with check (true);
+drop policy if exists "Service role full access" on linked_repos;
 
 -- Notes: allow linked-repo ownership alongside experiment ownership
 alter table notes alter column experiment_id drop not null;
