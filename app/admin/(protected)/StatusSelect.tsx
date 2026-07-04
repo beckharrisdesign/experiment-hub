@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ExperimentStatus } from "@/types";
 
+// "Graduated" is intentionally not selectable here — graduation is an atomic
+// action (status + linked repo) performed from the experiment detail page.
 const STATUSES: ExperimentStatus[] = [
   "Active",
   "Completed",
@@ -18,6 +20,7 @@ const STATUS_COLORS: Record<ExperimentStatus, string> = {
   Abandoned: "text-text-secondary",
   "On Hold": "text-yellow-400",
   Archived: "text-text-secondary",
+  Graduated: "text-purple-400",
 };
 
 interface StatusSelectProps {
@@ -77,6 +80,15 @@ export default function StatusSelect({
             {s}
           </option>
         ))}
+        {status === "Graduated" && (
+          <option
+            value="Graduated"
+            disabled
+            className="bg-background-secondary text-text-primary"
+          >
+            Graduated
+          </option>
+        )}
       </select>
       {saving && (
         <span aria-live="polite" className="text-xs text-text-secondary">
