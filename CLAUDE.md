@@ -38,6 +38,7 @@ Invocable via `/skill-name`. **Edit only `skills/`** (and `skills/figma/` for ve
 - OpenSpec: `skills/openspec-*.md` — see `openspec/README.md`
 - Figma: `npm run skills:sync` → `skills/figma/`
 - Triage: `skills/issue-triage.md` — P0–P4 rubric, light retitling, cluster identification across open issues
+- Linked repos: `skills/linked-repo-session.md` — GitHub MCP is the standard access path for linked-repo code from hub sessions; primer format; opt-in local clones
 
 ## Hooks (Claude Code only)
 

@@ -1,28 +1,28 @@
 ## 0. Prerequisites
 
-- [ ] 0.1 **MVDS package availability** — confirm MVDS is published and installable before starting any UI tasks (sections 3–5); if not published, stop and raise as a blocking issue; do not proceed with hand-rolled tokens or patterns
-- [ ] 0.2 Confirm actual Supabase table columns via `list_tables` before writing any migrations — do not assume column names from application code
+- [ ] 0.1 **MVDS package availability** — ⚠️ verified 2026-07-04: not on npm (`mvds`, `@beckharrisdesign/mvds` both 404); sections 3–5 blocked until published or pinned — confirm MVDS is published and installable before starting any UI tasks (sections 3–5); if not published, stop and raise as a blocking issue; do not proceed with hand-rolled tokens or patterns
+- [x] 0.2 Confirm actual Supabase table columns via `list_tables` before writing any migrations — do not assume column names from application code
 - [ ] 0.3 Install MVDS in the hub app (`npm install @mvds/...` or equivalent) and verify import resolves
 
 ## 1. Database migrations
 
-- [ ] 1.1 Migration: create `linked_repos` table (`id uuid pk`, `name text`, `repo_slug text not null`, `description text`, `worktree_path text`, `created_at timestamptz`, `updated_at timestamptz`)
-- [ ] 1.2 Migration: add nullable `linked_repo_id uuid references linked_repos(id)` to `notes` table + check constraint `num_nonnulls(experiment_id, linked_repo_id) = 1`
-- [ ] 1.3 Migration: add nullable `linked_repo_id uuid references linked_repos(id)` to `experiment_pull_requests` table + same check constraint
-- [ ] 1.4 Migration: add `"Graduated"` to the experiment status enum; add nullable `linked_repo_id uuid references linked_repos(id)` to `experiments` table
-- [ ] 1.5 Add `worktrees/` to `.gitignore`
+- [x] 1.1 Migration: create `linked_repos` table (`id uuid pk`, `name text`, `repo_slug text not null`, `description text`, `worktree_path text`, `created_at timestamptz`, `updated_at timestamptz`)
+- [x] 1.2 Migration: add nullable `linked_repo_id uuid references linked_repos(id)` to `notes` table + check constraint `num_nonnulls(experiment_id, linked_repo_id) = 1`
+- [x] 1.3 Migration: add nullable `linked_repo_id uuid references linked_repos(id)` to `experiment_pull_requests` table + same check constraint
+- [x] 1.4 Migration: add `"Graduated"` to the experiment status enum; add nullable `linked_repo_id uuid references linked_repos(id)` to `experiments` table
+- [x] 1.5 Add `worktrees/` to `.gitignore`
 
 ## 2. API routes
 
-- [ ] 2.1 `GET /api/linked-repos` — list all linked repos
-- [ ] 2.2 `POST /api/linked-repos` — create linked repo (name + repo_slug required)
-- [ ] 2.3 `GET /api/linked-repos/[id]` — get single linked repo
-- [ ] 2.4 `PATCH /api/linked-repos/[id]` — update (name, description, worktree_path)
-- [ ] 2.5 `DELETE /api/linked-repos/[id]` — delete linked repo (cascade notes + PRs)
-- [ ] 2.6 `GET /api/linked-repos/[id]/notes` + `POST` + `PATCH /[noteId]` + `DELETE /[noteId]` — notes scoped to linked repo
-- [ ] 2.7 `POST /api/linked-repos/[id]/sync-prs` — trigger GitHub PR sync for this repo's `owner/repo`; upsert into `experiment_pull_requests` with `linked_repo_id` set
-- [ ] 2.8 `POST /api/experiments/[id]/graduate` — set `status: "Graduated"` + `linked_repo_id` atomically
-- [ ] 2.9 Generalize PR sync service to accept `{ repoSlug, entityId, entityType: "experiment" | "linked_repo" }` — guard `entityType` so experiment PRs are never written under linked_repo path and vice versa
+- [x] 2.1 `GET /api/linked-repos` — list all linked repos
+- [x] 2.2 `POST /api/linked-repos` — create linked repo (name + repo_slug required)
+- [x] 2.3 `GET /api/linked-repos/[id]` — get single linked repo
+- [x] 2.4 `PATCH /api/linked-repos/[id]` — update (name, description, worktree_path)
+- [x] 2.5 `DELETE /api/linked-repos/[id]` — delete linked repo (cascade notes + PRs)
+- [x] 2.6 `GET /api/linked-repos/[id]/notes` + `POST` + `PATCH /[noteId]` + `DELETE /[noteId]` — notes scoped to linked repo
+- [x] 2.7 `POST /api/linked-repos/[id]/sync-prs` — trigger GitHub PR sync for this repo's `owner/repo`; upsert into `experiment_pull_requests` with `linked_repo_id` set
+- [x] 2.8 `POST /api/experiments/[id]/graduate` — set `status: "Graduated"` + `linked_repo_id` atomically
+- [x] 2.9 Generalize PR sync service to accept `{ repoSlug, entityId, entityType: "experiment" | "linked_repo" }` — guard `entityType` so experiment PRs are never written under linked_repo path and vice versa
 
 ## 3. Dashboard
 
@@ -50,7 +50,7 @@
 
 ## 6. Hub-as-proxy wiring
 
-- [ ] 6.1 Document in `CLAUDE.md` or a hub skill that GitHub MCP (`get_file_contents`, `search_code`) is the standard way to access linked repo code from a hub session — no clone needed
+- [x] 6.1 Document in `CLAUDE.md` or a hub skill that GitHub MCP (`get_file_contents`, `search_code`) is the standard way to access linked repo code from a hub session — no clone needed
 - [ ] 6.2 Context primer template (used by "Open in hub" button in 4.4) — confirm format works end-to-end in a real hub session against `beckharrisdesign/mvds`
 
 ## 7. QA

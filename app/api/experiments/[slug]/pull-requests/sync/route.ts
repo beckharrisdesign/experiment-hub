@@ -66,6 +66,9 @@ export async function POST(
         : "open";
     return {
       experiment_id: experiment.id,
+      // Explicitly null so an upsert onto a row previously synced under a
+      // linked repo can't end up with both owners set (one_owner constraint).
+      linked_repo_id: null,
       repo: "beckharrisdesign/experiment-hub",
       pr_number: item.number as number,
       title: (item.title as string) ?? "",
