@@ -36,6 +36,23 @@ function getAdminClient() {
   return createClient(url, key);
 }
 
+// Read client — prefers the publishable key, falls back to the service-role key.
+// Server-side only. Without this fallback, an environment configured with only
+// SUPABASE_SERVICE_ROLE_KEY writes to Supabase but reads from the stale JSON
+// fallback, so edits appear not to persist (#264).
+function getReadClient() {
+  const url = process.env.SUPABASE_URL;
+  const key =
+    process.env.SUPABASE_PUBLISHABLE_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error(
+      "SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY (or SUPABASE_SERVICE_ROLE_KEY) must be set",
+    );
+  }
+  return createClient(url, key);
+}
+
 export interface ExperimentSubmission {
   experiment: string;
   email: string;
@@ -207,7 +224,7 @@ function dbToExperiment(row: Record<string, unknown>): Experiment {
 }
 
 export async function getExperimentsFromSupabase(): Promise<Experiment[]> {
-  const { data, error } = await getPublishableClient()
+  const { data, error } = await getReadClient()
     .from("experiments")
     .select("*")
     .order("last_modified", { ascending: false });
@@ -218,7 +235,7 @@ export async function getExperimentsFromSupabase(): Promise<Experiment[]> {
 export async function getExperimentByIdFromSupabase(
   id: string,
 ): Promise<Experiment | null> {
-  const { data, error } = await getPublishableClient()
+  const { data, error } = await getReadClient()
     .from("experiments")
     .select("*")
     .eq("id", id)
@@ -245,9 +262,7 @@ function dbToPrototype(row: Record<string, unknown>): Prototype {
 }
 
 export async function getPrototypesFromSupabase(): Promise<Prototype[]> {
-  const { data, error } = await getPublishableClient()
-    .from("prototypes")
-    .select("*");
+  const { data, error } = await getReadClient().from("prototypes").select("*");
   if (error) throw error;
   return ((data ?? []) as Record<string, unknown>[]).map(dbToPrototype);
 }
@@ -255,7 +270,7 @@ export async function getPrototypesFromSupabase(): Promise<Prototype[]> {
 export async function getPrototypeByExperimentIdFromSupabase(
   experimentId: string,
 ): Promise<Prototype | null> {
-  const { data, error } = await getPublishableClient()
+  const { data, error } = await getReadClient()
     .from("prototypes")
     .select("*")
     .eq("experiment_id", experimentId)
@@ -279,7 +294,7 @@ function dbToDocumentation(row: Record<string, unknown>): Documentation {
 }
 
 export async function getDocumentationFromSupabase(): Promise<Documentation[]> {
-  const { data, error } = await getPublishableClient()
+  const { data, error } = await getReadClient()
     .from("documentation")
     .select("*");
   if (error) throw error;
@@ -289,7 +304,7 @@ export async function getDocumentationFromSupabase(): Promise<Documentation[]> {
 export async function getDocumentationByExperimentIdFromSupabase(
   experimentId: string,
 ): Promise<Documentation | null> {
-  const { data, error } = await getPublishableClient()
+  const { data, error } = await getReadClient()
     .from("documentation")
     .select("*")
     .eq("experiment_id", experimentId)
@@ -323,7 +338,7 @@ export async function getPullRequests(
   experimentId: string,
 ): Promise<ExperimentPullRequest[]> {
   try {
-    const { data, error } = await getPublishableClient()
+    const { data, error } = await getReadClient()
       .from("experiment_pull_requests")
       .select("*")
       .eq("experiment_id", experimentId)
