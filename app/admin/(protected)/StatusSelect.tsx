@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ExperimentStatus } from "@/types";
 
 const STATUSES: ExperimentStatus[] = [
@@ -28,6 +29,7 @@ export default function StatusSelect({
   experimentId,
   initialStatus,
 }: StatusSelectProps) {
+  const router = useRouter();
   const [status, setStatus] = useState(initialStatus);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +45,10 @@ export default function StatusSelect({
       });
       if (res.ok) {
         setStatus(next);
+        // Re-render the server table so persisted data (status, modified
+        // date) is what's on screen — a stale read shows up immediately
+        // instead of masquerading as a saved change (#264).
+        router.refresh();
       } else {
         const body = await res.json().catch(() => ({}));
         setError(body.error ?? "Save failed");
