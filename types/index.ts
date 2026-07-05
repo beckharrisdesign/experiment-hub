@@ -3,7 +3,8 @@ export type ExperimentStatus =
   | "Completed"
   | "Abandoned"
   | "On Hold"
-  | "Archived";
+  | "Archived"
+  | "Graduated";
 /** Product vs workflow tool (no market table or hub score / no `scores` in JSON) vs personal R&D. Defaults to commercial when omitted. */
 export type ExperimentKind = "commercial" | "tool" | "personal";
 export type PrototypeStatus = "Active" | "Completed" | "Abandoned";
@@ -51,6 +52,8 @@ export interface Experiment {
   openspecChangeId?: string;
   /** Workflow schema for linked change (e.g. bhd-experiment) */
   openspecSchema?: string;
+  /** Set when status === "Graduated"; points to the linked repo the experiment lives in */
+  linkedRepoId?: string;
 }
 
 export interface Prototype {
@@ -82,7 +85,8 @@ export type PullRequestState = "open" | "closed" | "merged";
 
 export interface ExperimentPullRequest {
   id: string;
-  experimentId: string;
+  experimentId: string | null;
+  linkedRepoId: string | null;
   repo: string;
   prNumber: number;
   title: string;
@@ -94,4 +98,14 @@ export interface ExperimentPullRequest {
   openedAt: string;
   mergedAt: string | null;
   syncedAt: string;
+}
+
+export interface LinkedRepo {
+  id: string;
+  name: string;
+  repoSlug: string;
+  description: string | null;
+  worktreePath: string | null;
+  createdAt: string;
+  updatedAt: string;
 }

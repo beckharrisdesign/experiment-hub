@@ -13,6 +13,7 @@ const statusColors: Record<Status, string> = {
   Abandoned: "bg-error/20 text-error border-error/30",
   "On Hold": "bg-warning/20 text-warning border-warning/30",
   Archived: "bg-border-dark/40 text-text-secondary border-border-dark/40",
+  Graduated: "bg-purple-500/20 text-purple-400 border-purple-500/30",
 };
 
 export default function StatusBadge({ status }: StatusBadgeProps) {

@@ -11,6 +11,7 @@ import type {
   Documentation,
   ExperimentPullRequest,
   PullRequestState,
+  LinkedRepo,
 } from "@/types";
 
 // Publishable key client — safe for server-side API routes, no RLS bypass.
@@ -127,7 +128,8 @@ export type NoteType =
 
 export interface Note {
   id: string;
-  experiment_id: string;
+  experiment_id: string | null;
+  linked_repo_id: string | null;
   title: string | null;
   content: string;
   note_type: NoteType;
@@ -197,6 +199,16 @@ export async function deleteNote(id: string): Promise<void> {
   if (error) throw error;
 }
 
+export async function getNoteById(id: string): Promise<Note | null> {
+  const { data, error } = await getAdminClient()
+    .from("notes")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error || !data) return null;
+  return data as Note;
+}
+
 // ─── Experiments ─────────────────────────────────────────────────────────────
 
 function dbToExperiment(row: Record<string, unknown>): Experiment {
@@ -217,6 +229,7 @@ function dbToExperiment(row: Record<string, unknown>): Experiment {
     validation: (row.validation as ValidationLandingPage) ?? undefined,
     openspecChangeId: (row.openspec_change_id as string) ?? undefined,
     openspecSchema: (row.openspec_schema as string) ?? undefined,
+    linkedRepoId: (row.linked_repo_id as string) ?? undefined,
   };
 }
 
@@ -315,7 +328,8 @@ export async function getDocumentationByExperimentIdFromSupabase(
 function dbToPullRequest(row: Record<string, unknown>): ExperimentPullRequest {
   return {
     id: row.id as string,
-    experimentId: row.experiment_id as string,
+    experimentId: (row.experiment_id as string) ?? null,
+    linkedRepoId: (row.linked_repo_id as string) ?? null,
     repo: row.repo as string,
     prNumber: row.pr_number as number,
     title: (row.title as string) ?? "",
@@ -346,9 +360,14 @@ export async function getPullRequests(
   }
 }
 
+// Exactly one owner per row — mirrors the DB one_owner check constraint
+// (num_nonnulls(experiment_id, linked_repo_id) = 1).
+type PullRequestOwner =
+  | { experiment_id: string; linked_repo_id: null }
+  | { experiment_id: null; linked_repo_id: string };
+
 export async function upsertPullRequests(
-  rows: {
-    experiment_id: string;
+  rows: (PullRequestOwner & {
     repo: string;
     pr_number: number;
     title: string;
@@ -359,7 +378,7 @@ export async function upsertPullRequests(
     labels: string[];
     opened_at: string;
     merged_at: string | null;
-  }[],
+  })[],
 ): Promise<ExperimentPullRequest[]> {
   const { data, error } = await getAdminClient()
     .from("experiment_pull_requests")
@@ -380,6 +399,154 @@ export async function updateExperiment(
     .from("experiments")
     .update({ ...fields, last_modified: new Date().toISOString().slice(0, 10) })
     .eq("id", id)
+    .select()
+    .single();
+  if (error) throw error;
+  return dbToExperiment(data as Record<string, unknown>);
+}
+
+export async function getLinkedRepoPullRequests(
+  linkedRepoId: string,
+): Promise<ExperimentPullRequest[]> {
+  const { data, error } = await getAdminClient()
+    .from("experiment_pull_requests")
+    .select("*")
+    .eq("linked_repo_id", linkedRepoId)
+    .order("opened_at", { ascending: false });
+  if (error) throw error;
+  return ((data ?? []) as Record<string, unknown>[]).map(dbToPullRequest);
+}
+
+// ─── Linked Repos ─────────────────────────────────────────────────────────────
+
+function dbToLinkedRepo(row: Record<string, unknown>): LinkedRepo {
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    repoSlug: row.repo_slug as string,
+    description: (row.description as string) ?? null,
+    worktreePath: (row.worktree_path as string) ?? null,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+export async function getLinkedRepos(): Promise<LinkedRepo[]> {
+  const { data, error } = await getAdminClient()
+    .from("linked_repos")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return ((data ?? []) as Record<string, unknown>[]).map(dbToLinkedRepo);
+}
+
+export async function getLinkedRepoById(
+  id: string,
+): Promise<LinkedRepo | null> {
+  const { data, error } = await getAdminClient()
+    .from("linked_repos")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error || !data) return null;
+  return dbToLinkedRepo(data as Record<string, unknown>);
+}
+
+export async function createLinkedRepo(input: {
+  name: string;
+  repo_slug: string;
+  description?: string | null;
+}): Promise<LinkedRepo> {
+  const { data, error } = await getAdminClient()
+    .from("linked_repos")
+    .insert({
+      name: input.name,
+      repo_slug: input.repo_slug,
+      description: input.description ?? null,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return dbToLinkedRepo(data as Record<string, unknown>);
+}
+
+export async function updateLinkedRepo(
+  id: string,
+  updates: {
+    name?: string;
+    description?: string | null;
+    worktree_path?: string | null;
+  },
+): Promise<LinkedRepo> {
+  const { data, error } = await getAdminClient()
+    .from("linked_repos")
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw error;
+  return dbToLinkedRepo(data as Record<string, unknown>);
+}
+
+export async function deleteLinkedRepo(id: string): Promise<void> {
+  const { error } = await getAdminClient()
+    .from("linked_repos")
+    .delete()
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function getLinkedRepoNotes(
+  linkedRepoId: string,
+): Promise<Note[]> {
+  const { data, error } = await getAdminClient()
+    .from("notes")
+    .select("*")
+    .eq("linked_repo_id", linkedRepoId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Note[];
+}
+
+export async function createLinkedRepoNote(
+  linkedRepoId: string,
+  note: {
+    title?: string | null;
+    content: string;
+    note_type?: NoteType;
+    source_file?: string | null;
+  },
+): Promise<Note> {
+  const payload: Record<string, unknown> = {
+    linked_repo_id: linkedRepoId,
+    experiment_id: null,
+    content: note.content,
+    note_type: note.note_type ?? "observation",
+  };
+  if (note.title !== undefined) payload.title = note.title;
+  if (note.source_file !== undefined) payload.source_file = note.source_file;
+
+  const { data, error } = await getAdminClient()
+    .from("notes")
+    .insert(payload)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as Note;
+}
+
+export async function graduateExperiment(
+  experimentId: string,
+  linkedRepoId: string,
+): Promise<Experiment> {
+  const { data, error } = await getAdminClient()
+    .from("experiments")
+    .update({
+      status: "Graduated",
+      linked_repo_id: linkedRepoId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", experimentId)
     .select()
     .single();
   if (error) throw error;

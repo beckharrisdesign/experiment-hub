@@ -16,7 +16,8 @@
 - A working prototype can be "graduated" by pointing its repo at a linked-repo entry, signaling it has left the experiment lifecycle
 
 **Not doing:**
-- Full GitHub repo management (creating repos, writing code, pushing commits)
+- Exporting or copying hub agent config into linked repos — hub stays the single source of context
+- Full GitHub repo management (creating repos, pushing commits) — read/operate, not own
 - Replacing the experiments workflow — linked repos are a peer concept, not an experiment type
 - Syncing arbitrary repo metadata (stars, forks, CI status) — PRs and notes only for now
 
@@ -24,6 +25,7 @@
 
 - **linked-repo-tracking** — New `linked_repos` table; dashboard card; detail page with notes panel and PR list; GitHub PR sync extended to any `owner/repo` string; notes and `experiment_pull_requests` tables generalized to support `linked_repo_id` alongside existing `experiment_id`
 - **prototype-graduation** — Mechanism to mark an experiment as "graduated" and associate it with a linked repo entry, signaling the prototype has left the nest
+- **hub-as-proxy** — Work on linked repos from inside the hub's Claude Code session; the hub's skills, rules, commands, and workflows are natively available without any config export or repo switching; linked repo code is accessible via a checked-out worktree scoped to that repo
 
 ## Optional links
 

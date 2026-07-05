@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getExperimentBySlug } from "@/lib/data";
-import { upsertPullRequests } from "@/lib/supabase";
+import { getLinkedRepoById, upsertPullRequests } from "@/lib/supabase";
 
 export async function POST(
   _request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const cookieStore = await cookies();
   const editCookie = cookieStore.get("hub-edit");
@@ -13,11 +12,11 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { slug } = await params;
-  const experiment = await getExperimentBySlug(slug);
-  if (!experiment) {
+  const { id } = await params;
+  const linkedRepo = await getLinkedRepoById(id);
+  if (!linkedRepo) {
     return NextResponse.json(
-      { error: "Experiment not found" },
+      { error: "Linked repo not found" },
       { status: 404 },
     );
   }
@@ -30,10 +29,9 @@ export async function POST(
     );
   }
 
-  // Search for PRs referencing the experiment ID in title, body, or branch
-  const q = `repo:beckharrisdesign/experiment-hub is:pr ${experiment.id}`;
+  const repoSlug = linkedRepo.repoSlug; // "owner/repo"
   const res = await fetch(
-    `https://api.github.com/search/issues?q=${encodeURIComponent(q)}&per_page=50&sort=updated`,
+    `https://api.github.com/repos/${repoSlug}/pulls?state=open&per_page=50&sort=updated`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -49,38 +47,30 @@ export async function POST(
     return NextResponse.json({ error: "GitHub API error" }, { status: 502 });
   }
 
-  const json = await res.json();
-  const items: Record<string, unknown>[] = json.items ?? [];
+  const items: Record<string, unknown>[] = await res.json();
 
   if (items.length === 0) {
     return NextResponse.json({ success: true, pullRequests: [] });
   }
 
   const rows = items.map((item) => {
-    const pr = item.pull_request as Record<string, unknown> | undefined;
-    const mergedAt = (pr?.merged_at as string) ?? null;
-    const state = mergedAt
-      ? "merged"
-      : (item.state as string) === "closed"
-        ? "closed"
-        : "open";
+    const head = item.head as Record<string, unknown> | undefined;
+    const user = item.user as Record<string, unknown> | undefined;
     return {
-      experiment_id: experiment.id,
-      // Explicitly null so an upsert onto a row previously synced under a
-      // linked repo can't end up with both owners set (one_owner constraint).
-      linked_repo_id: null,
-      repo: "beckharrisdesign/experiment-hub",
+      linked_repo_id: linkedRepo.id,
+      experiment_id: null,
+      repo: repoSlug,
       pr_number: item.number as number,
       title: (item.title as string) ?? "",
-      state,
+      state: "open" as const,
       url: (item.html_url as string) ?? "",
-      branch: "",
-      author: ((item.user as Record<string, unknown>)?.login as string) ?? "",
+      branch: (head?.ref as string) ?? "",
+      author: (user?.login as string) ?? "",
       labels: ((item.labels as Record<string, unknown>[]) ?? []).map(
         (l) => (l.name as string) ?? "",
       ),
       opened_at: (item.created_at as string) ?? new Date().toISOString(),
-      merged_at: mergedAt,
+      merged_at: null,
     };
   });
 
