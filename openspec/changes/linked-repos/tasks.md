@@ -1,8 +1,10 @@
 ## 0. Prerequisites
 
-- [x] 0.1 **MVDS package availability** — published to npm as `mvds` (per Katy, 2026-07-04); anonymous registry queries 404, so it is likely a private package — the follow-up UI change needs npm auth (NPM_TOKEN) locally and in Vercel. Decision: ship backend first; sections 3–5 move to a follow-up change — confirm MVDS is published and installable before starting any UI tasks (sections 3–5); if not published, stop and raise as a blocking issue; do not proceed with hand-rolled tokens or patterns
+- [x] 0.1 **MVDS package availability** — published as `@beckharrisdesign/mvds` on GitHub Packages (per Katy, 2026-07-05; supersedes the earlier "unscoped `mvds` on npm" note from 2026-07-04). GitHub Packages always requires auth, even for public packages: a PAT with `read:packages` exposed as `NODE_AUTH_TOKEN` locally, in the Claude environment settings, and in Vercel. Decision: ship backend first; sections 3–5 move to a follow-up change — confirm MVDS is installable (task 0.3) before starting any UI tasks (sections 3–5); do not proceed with hand-rolled tokens or patterns
 - [x] 0.2 Confirm actual Supabase table columns via `list_tables` before writing any migrations — do not assume column names from application code
-- [ ] 0.3 Install MVDS in the hub app (`npm install @mvds/...` or equivalent) and verify import resolves
+- [ ] 0.3 Install MVDS in the hub app (`npm install @beckharrisdesign/mvds`) and verify import resolves
+  - Package lives on GitHub Packages (`@beckharrisdesign:registry=https://npm.pkg.github.com` — added to `.npmrc`, committed, no secrets). Auth is always required, even for public packages: a PAT with `read:packages` exposed as `NODE_AUTH_TOKEN`. Session-start hook now writes the `~/.npmrc` authToken line when `NODE_AUTH_TOKEN` is present. Blocked until `NODE_AUTH_TOKEN` is added to the Claude environment settings (and Vercel, for deploys). Full runbook: MVDS repo `docs/CONSUMING.md`.
+  - After auth works: `npm install @beckharrisdesign/mvds`, wire CSS in `app/globals.css` (`@import "@beckharrisdesign/mvds/styles.css";` + `@source "../node_modules/@beckharrisdesign/mvds/dist-lib/**/*.js";`), verify `import { Button } from "@beckharrisdesign/mvds"` resolves.
 
 ## 1. Database migrations
 
