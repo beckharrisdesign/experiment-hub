@@ -10,7 +10,7 @@ _Investigated 2026-07-06. Question: are recent failing builds related to the ear
 ## Failing-build findings
 
 1. **`require-resolved-threads.yml` fails on every push** (main and branches) with zero jobs executed and instant failure. The workflow declares only `pull_request` / review triggers, yet GitHub records failed `push`-event runs — a startup/config failure. It is cosmetic noise, never blocks merges, and long predates the outage. Fix separately.
-2. **The single failed Vercel deployment (June 30)** failed type-checking: `Property 'Graduated' is missing in type ... Record<ExperimentStatus, string>` in `app/admin/StatusSelect.tsx`. Fixed the next day in the branch-repair commit. Not infrastructure-related.
+2. **The single failed Vercel deployment (June 30)** failed type-checking: `Property 'Graduated' is missing in type ... Record<ExperimentStatus, string>` in `StatusSelect.tsx` (at `app/admin/StatusSelect.tsx` when that build ran; the file now lives at `app/admin/(protected)/StatusSelect.tsx`). Fixed the next day in the branch-repair commit. Not infrastructure-related.
 3. **Builds cannot be affected by Supabase availability**: CI builds against `https://placeholder.supabase.co` and `next build` performs no database queries.
 
 ## What the outage was
@@ -29,7 +29,7 @@ Implication: serving traffic was never at risk, but the project should be on a c
 ## Plan
 
 1. **Preflight (~30 min)**
-   - Confirm current Postgres version: Dashboard → Project Settings → Infrastructure (the management API/MCP was 502ing during this investigation).
+   - Confirm current Postgres version: Dashboard → Project Settings → Infrastructure (the management API/MCP was 502ing during this investigation). _2026-07-06: dashboard confirms the project is on an older version and shows the upgrade as available; exact version string still to be recorded here._
    - Target: latest PG 17 patch (≥ 17.6.1.121).
    - Run Supabase advisors; confirm a fresh backup exists.
    - **Wait for full resolution on status.supabase.com before upgrading** — the incident specifically affected older-version instances during upgrades/restarts.
