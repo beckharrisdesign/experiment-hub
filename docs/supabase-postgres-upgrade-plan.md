@@ -5,7 +5,7 @@ _Investigated 2026-07-06. Question: are recent failing builds related to the ear
 ## TL;DR
 
 - **The Supabase outage is not a factor in any recent build failure.** CI is green everywhere; the recurring red check is a workflow-config quirk, and the one failed Vercel build was a TypeScript error (already fixed).
-- **Upgrading Postgres is low-risk here** and should take **2–4 hours total** (under 1 hour if the project is already on PG 17 and only needs the latest patch).
+- **Upgrading Postgres is low-risk here** and is the **patch-only scenario: under 1 hour total**. Confirmed 2026-07-06 via the management API: the project (`Experiment Hub 2.0`, `ulqdjuiffpazzixnwwso`) runs **Postgres 17.6.1.063** — already PG 17, but below the 17.6.1.121 threshold from the July incident. The upgrade is a patch restart (~1–2 min downtime), not a major-version migration.
 
 ## Failing-build findings
 
@@ -29,7 +29,8 @@ Implication: serving traffic was never at risk, but the project should be on a c
 ## Plan
 
 1. **Preflight (~30 min)**
-   - Confirm current Postgres version: Dashboard → Project Settings → Infrastructure (the management API/MCP was 502ing during this investigation). _2026-07-06: dashboard confirms the project is on an older version and shows the upgrade as available; exact version string still to be recorded here._
+   - ~~Confirm current Postgres version~~ **Done 2026-07-06: `17.6.1.063`** (management API, after the earlier 502s cleared). Target: any patch ≥ 17.6.1.121.
+   - Advisors run 2026-07-06 — no upgrade blockers. Pre-existing security lints to handle separately: `linked_repos` still carries the permissive `Service role full access` policy (the manual `drop policy` from the PR #260 follow-up has not been applied yet); `checkpoints`, `phase_transitions`, `drift_alerts`, `advisor_history` have RLS disabled; `experiment_content` and `notes` have RLS enabled with no policies.
    - Target: latest PG 17 patch (≥ 17.6.1.121).
    - Run Supabase advisors; confirm a fresh backup exists.
    - **Wait for full resolution on status.supabase.com before upgrading** — the incident specifically affected older-version instances during upgrades/restarts.
@@ -45,14 +46,14 @@ Implication: serving traffic was never at risk, but the project should be on a c
 
 | Scenario | Estimate |
 | --- | --- |
-| Already on PG 17, patch-only | < 1 hour |
-| PG 15 → 17 major upgrade | 3–5 hours |
-| Expected typical case | **2–4 hours** |
+| **Already on PG 17, patch-only (confirmed: 17.6.1.063 → latest)** | **< 1 hour** |
+| PG 15 → 17 major upgrade (not applicable) | 3–5 hours |
 
 Optional, separable chore: bump `@supabase/*` client packages (currently postgrest-js 2.10x — fine either way).
 
 ## Follow-ups
 
 - [ ] Fix or remove the `require-resolved-threads.yml` push-event failure noise.
-- [ ] Confirm exact Postgres version once the Supabase management API is reachable.
-- [ ] Schedule and execute the upgrade per the plan above.
+- [x] Confirm exact Postgres version — `17.6.1.063` (2026-07-06).
+- [ ] Schedule and execute the patch upgrade per the plan above (after status.supabase.com shows the July incidents fully resolved).
+- [ ] Apply the outstanding PR #260 follow-up: `drop policy if exists "Service role full access" on linked_repos;` (advisors confirm it is still live).
