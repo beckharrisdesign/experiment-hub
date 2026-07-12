@@ -10,6 +10,11 @@ import {
   getDocumentationFromSupabase,
   getDocumentationByExperimentIdFromSupabase,
 } from "@/lib/supabase";
+import {
+  hasNotionExperiments,
+  getExperimentsFromNotion,
+  getExperimentBySlugFromNotion,
+} from "@/lib/notion-experiments";
 
 function hasSupabase() {
   return !!(
@@ -31,6 +36,16 @@ function logSupabaseFallback(source: string, error: unknown) {
   );
 }
 
+// Notion is the preferred experiments source when configured; on failure we
+// fall through to Supabase/JSON so a Notion outage degrades instead of
+// blanking the site.
+function logNotionFallback(source: string, error: unknown) {
+  console.error(
+    `[data] Notion read failed in ${source}; falling back to Supabase/JSON:`,
+    error,
+  );
+}
+
 async function readJsonFile<T>(filename: string): Promise<T[]> {
   try {
     const filePath = path.join(DATA_DIR, filename);
@@ -46,6 +61,13 @@ async function readJsonFile<T>(filename: string): Promise<T[]> {
 }
 
 export async function getExperiments(): Promise<Experiment[]> {
+  if (hasNotionExperiments()) {
+    try {
+      return await getExperimentsFromNotion();
+    } catch (error) {
+      logNotionFallback("getExperiments", error);
+    }
+  }
   if (hasSupabase()) {
     try {
       return await getExperimentsFromSupabase();
@@ -81,6 +103,15 @@ export async function getDocumentation(): Promise<Documentation[]> {
 export async function getExperimentById(
   id: string,
 ): Promise<Experiment | null> {
+  if (hasNotionExperiments()) {
+    try {
+      // On a miss, fall through so experiments not yet in Notion still resolve.
+      const fromNotion = await getExperimentBySlugFromNotion(id);
+      if (fromNotion) return fromNotion;
+    } catch (error) {
+      logNotionFallback("getExperimentById", error);
+    }
+  }
   if (hasSupabase()) {
     try {
       return await getExperimentByIdFromSupabase(id);
@@ -95,6 +126,18 @@ export async function getExperimentById(
 export async function getExperimentBySlug(
   slug: string,
 ): Promise<Experiment | null> {
+  if (hasNotionExperiments()) {
+    try {
+      // On a miss, fall through so experiments not yet in Notion still resolve.
+      const bySlug = await getExperimentBySlugFromNotion(slug);
+      if (bySlug) return bySlug;
+      const all = await getExperimentsFromNotion();
+      const byName = all.find((exp) => slugify(exp.name) === slug);
+      if (byName) return byName;
+    } catch (error) {
+      logNotionFallback("getExperimentBySlug", error);
+    }
+  }
   if (hasSupabase()) {
     try {
       const byId = await getExperimentByIdFromSupabase(slug);
