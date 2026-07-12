@@ -3,7 +3,7 @@
  *   /api/linked-repos            — list, create
  *   /api/linked-repos/[id]       — get, update, delete
  *   /api/linked-repos/[id]/notes — list, create (linked_repo_id owner)
- *   /api/experiments/[id]/graduate — atomic Graduated + linked_repo_id
+ *   /api/experiments/id/[id]/graduate — atomic Graduated + linked_repo_id
  */
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { NextRequest } from "next/server";
@@ -288,16 +288,16 @@ describe("/api/linked-repos/[id]/notes", () => {
 });
 
 // ---------------------------------------------------------------------------
-// POST /api/experiments/[id]/graduate
+// POST /api/experiments/id/[id]/graduate
 // ---------------------------------------------------------------------------
 
-describe("POST /api/experiments/[id]/graduate", () => {
+describe("POST /api/experiments/id/[id]/graduate", () => {
   const EXP_ID = "best-day-ever";
   const params = Promise.resolve({ id: EXP_ID });
 
   function makeRequest(body: unknown) {
     return new NextRequest(
-      `http://localhost/api/experiments/${EXP_ID}/graduate`,
+      `http://localhost/api/experiments/id/${EXP_ID}/graduate`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -308,7 +308,7 @@ describe("POST /api/experiments/[id]/graduate", () => {
 
   it("returns 401 without hub-edit cookie", async () => {
     unauthed();
-    const { POST } = await import("@/app/api/experiments/[id]/graduate/route");
+    const { POST } = await import("@/app/api/experiments/id/[id]/graduate/route");
     const res = await POST(makeRequest({ linked_repo_id: REPO_ID }), {
       params,
     });
@@ -318,7 +318,7 @@ describe("POST /api/experiments/[id]/graduate", () => {
 
   it("returns 400 when linked_repo_id is missing", async () => {
     authed();
-    const { POST } = await import("@/app/api/experiments/[id]/graduate/route");
+    const { POST } = await import("@/app/api/experiments/id/[id]/graduate/route");
     const res = await POST(makeRequest({}), { params });
     expect(res.status).toBe(400);
   });
@@ -326,7 +326,7 @@ describe("POST /api/experiments/[id]/graduate", () => {
   it("returns 404 when the linked repo does not exist", async () => {
     authed();
     mockGetLinkedRepoById.mockResolvedValue(null);
-    const { POST } = await import("@/app/api/experiments/[id]/graduate/route");
+    const { POST } = await import("@/app/api/experiments/id/[id]/graduate/route");
     const res = await POST(makeRequest({ linked_repo_id: REPO_ID }), {
       params,
     });
@@ -342,7 +342,7 @@ describe("POST /api/experiments/[id]/graduate", () => {
       status: "Graduated",
       linkedRepoId: REPO_ID,
     });
-    const { POST } = await import("@/app/api/experiments/[id]/graduate/route");
+    const { POST } = await import("@/app/api/experiments/id/[id]/graduate/route");
     const res = await POST(makeRequest({ linked_repo_id: REPO_ID }), {
       params,
     });

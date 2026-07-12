@@ -23,7 +23,7 @@
 - [x] 2.5 `DELETE /api/linked-repos/[id]` — delete linked repo (cascade notes + PRs)
 - [x] 2.6 `GET /api/linked-repos/[id]/notes` + `POST` + `PATCH /[noteId]` + `DELETE /[noteId]` — notes scoped to linked repo
 - [x] 2.7 `POST /api/linked-repos/[id]/sync-prs` — trigger GitHub PR sync for this repo's `owner/repo`; upsert into `experiment_pull_requests` with `linked_repo_id` set
-- [x] 2.8 `POST /api/experiments/[id]/graduate` — set `status: "Graduated"` + `linked_repo_id` atomically
+- [x] 2.8 `POST /api/experiments/id/[id]/graduate` — set `status: "Graduated"` + `linked_repo_id` atomically
 - [x] 2.9 Generalize PR sync service to accept `{ repoSlug, entityId, entityType: "experiment" | "linked_repo" }` — guard `entityType` so experiment PRs are never written under linked_repo path and vice versa
 
 ## 3. Dashboard
@@ -46,7 +46,7 @@
 ## 5. Experiment graduation UI
 
 - [ ] 5.1 "Graduate" action on experiment detail page — opens modal to select or register a linked repo
-- [ ] 5.2 Calls `POST /api/experiments/[id]/graduate` with selected `linked_repo_id`
+- [ ] 5.2 Calls `POST /api/experiments/id/[id]/graduate` with selected `linked_repo_id`
 - [ ] 5.3 Experiment detail page shows "Graduated" status + link to linked repo detail page
 - [ ] 5.4 Linked repo detail page shows "Graduated from [experiment name]" link back to experiment
 
