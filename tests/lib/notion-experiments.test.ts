@@ -339,6 +339,13 @@ describe("toNotionStatus", () => {
       expect(toNotionStatus(status)).toBeNull();
     },
   );
+
+  it.each(["toString", "hasOwnProperty", "__proto__", "constructor"])(
+    "rejects inherited object key %s",
+    (key) => {
+      expect(toNotionStatus(key)).toBeNull();
+    },
+  );
 });
 
 describe("toNotionType", () => {
@@ -352,6 +359,11 @@ describe("toNotionType", () => {
 
   it("returns null for unknown kinds", () => {
     expect(toNotionType("mystery")).toBeNull();
+  });
+
+  it("rejects inherited object keys", () => {
+    expect(toNotionType("toString")).toBeNull();
+    expect(toNotionType("__proto__")).toBeNull();
   });
 });
 

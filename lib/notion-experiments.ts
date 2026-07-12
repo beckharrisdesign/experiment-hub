@@ -103,13 +103,19 @@ const HUB_TO_NOTION_TYPE: Record<string, string> = {
 
 /** Notion Status phase for a hub status or raw phase name; null if unwritable. */
 export function toNotionStatus(status: string): string | null {
-  if (status in STATUS_MAP) return status;
-  return HUB_TO_NOTION_STATUS[status] ?? null;
+  // Object.hasOwn, not `in`/direct access: inherited keys like "toString"
+  // must not pass validation or return prototype members.
+  if (Object.hasOwn(STATUS_MAP, status)) return status;
+  return Object.hasOwn(HUB_TO_NOTION_STATUS, status)
+    ? HUB_TO_NOTION_STATUS[status]
+    : null;
 }
 
 /** Notion Type option for a hub ExperimentKind; null if unknown. */
 export function toNotionType(type: string): string | null {
-  return HUB_TO_NOTION_TYPE[type] ?? null;
+  return Object.hasOwn(HUB_TO_NOTION_TYPE, type)
+    ? HUB_TO_NOTION_TYPE[type]
+    : null;
 }
 
 function mapScores(
@@ -259,7 +265,7 @@ export async function updateExperimentInNotion(
   const pageId = cache?.pageIdBySlug[slug];
   if (!pageId) return null;
 
-  const properties: Record<string, any> = {};
+  const properties: Record<string, NotionProperty> = {};
   if (fields.name !== undefined) {
     properties["Name"] = { rich_text: [{ text: { content: fields.name } }] };
   }
@@ -290,10 +296,10 @@ export async function updateExperimentInNotion(
   }
 
   const notion = await getUncachableNotionClient();
-  const updated: any = await notion.pages.update({
+  const updated = (await notion.pages.update({
     page_id: pageId,
     properties,
-  });
+  })) as NotionPage;
   clearNotionExperimentsCache();
   return (
     mapNotionPageToExperiment(updated) ?? getExperimentBySlugFromNotion(slug)

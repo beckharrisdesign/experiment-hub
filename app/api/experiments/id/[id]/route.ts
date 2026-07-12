@@ -65,7 +65,17 @@ export async function PATCH(
   if (hasNotionExperiments()) {
     const notionFields: Record<string, string> = {};
     for (const key of NOTION_EDITABLE) {
-      if (key in fields) notionFields[key] = String(fields[key]);
+      if (!Object.hasOwn(fields, key)) continue;
+      const value = fields[key];
+      // Reject non-strings instead of coercing: String(null) would write the
+      // literal text "null" into the Notion property.
+      if (typeof value !== "string") {
+        return NextResponse.json(
+          { error: `Field "${key}" must be a string` },
+          { status: 400 },
+        );
+      }
+      notionFields[key] = value;
     }
     if (Object.keys(notionFields).length === 0) {
       return NextResponse.json(

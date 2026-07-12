@@ -214,6 +214,23 @@ describe("PATCH /api/experiments/id/[id] with Notion configured", () => {
     },
   );
 
+  it.each([
+    ["null", null],
+    ["a number", 42],
+    ["an object", { nested: true }],
+  ])("returns 400 when a Notion-editable field is %s", async (_desc, value) => {
+    authorize();
+
+    const res = await PATCH(makeRequest({ name: value }), {
+      params: Promise.resolve({ id: EXP_ID }),
+    });
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toContain("must be a string");
+    expect(mockUpdateInNotion).not.toHaveBeenCalled();
+  });
+
   it("returns 400 when only Notion-unwritable fields are sent", async () => {
     authorize();
 
