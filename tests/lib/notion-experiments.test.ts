@@ -83,8 +83,21 @@ describe("hasNotionExperiments", () => {
     expect(hasNotionExperiments()).toBe(true);
   });
 
-  it("returns false when the token is missing", () => {
+  it("returns false when no auth mechanism is available", () => {
     vi.stubEnv("NOTION_TOKEN", "");
+    expect(hasNotionExperiments()).toBe(false);
+  });
+
+  it("returns true with Replit connector auth and no token", () => {
+    vi.stubEnv("NOTION_TOKEN", "");
+    vi.stubEnv("REPLIT_CONNECTORS_HOSTNAME", "connectors.replit.test");
+    vi.stubEnv("REPL_IDENTITY", "repl-identity");
+    expect(hasNotionExperiments()).toBe(true);
+  });
+
+  it("returns false with a connector hostname but no repl identity", () => {
+    vi.stubEnv("NOTION_TOKEN", "");
+    vi.stubEnv("REPLIT_CONNECTORS_HOSTNAME", "connectors.replit.test");
     expect(hasNotionExperiments()).toBe(false);
   });
 
@@ -245,6 +258,36 @@ describe("getExperimentsFromNotion", () => {
     mockQuery.mockRejectedValue(new Error("notion is down"));
 
     await expect(getExperimentsFromNotion()).rejects.toThrow("notion is down");
+  });
+
+  it("throws a clear error when the data source id is missing", async () => {
+    vi.stubEnv("NOTION_EXPERIMENTS_DATA_SOURCE_ID", "");
+
+    await expect(getExperimentsFromNotion()).rejects.toThrow(
+      "NOTION_EXPERIMENTS_DATA_SOURCE_ID",
+    );
+  });
+
+  it("authenticates via the Replit connector when NOTION_TOKEN is absent", async () => {
+    vi.stubEnv("NOTION_TOKEN", "");
+    vi.stubEnv("REPLIT_CONNECTORS_HOSTNAME", "connectors.replit.test");
+    vi.stubEnv("REPL_IDENTITY", "repl-identity");
+    const mockFetch = vi.fn().mockResolvedValue({
+      json: async () => ({
+        items: [{ settings: { access_token: "connector-token" } }],
+      }),
+    });
+    vi.stubGlobal("fetch", mockFetch);
+
+    const experiments = await getExperimentsFromNotion();
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("connectors.replit.test"),
+      expect.anything(),
+    );
+    expect(experiments).toHaveLength(1);
+
+    vi.unstubAllGlobals();
   });
 });
 

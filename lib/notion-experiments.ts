@@ -10,8 +10,9 @@
  *   1. Create an internal integration at notion.so/profile/integrations
  *   2. Share the database with the integration
  *   3. Set NOTION_TOKEN and NOTION_EXPERIMENTS_DATA_SOURCE_ID
+ *      (on Replit, the connector supplies auth and NOTION_TOKEN can be omitted)
  */
-import { Client } from "@notionhq/client";
+import { getUncachableNotionClient } from "@/lib/notion";
 import type {
   Experiment,
   ExperimentKind,
@@ -19,10 +20,18 @@ import type {
   ExperimentStatus,
 } from "@/types";
 
-export function hasNotionExperiments(): boolean {
+// Mirrors the auth paths of getUncachableNotionClient: an explicit token, or
+// the Replit connector (hostname + repl/depl identity).
+function hasNotionAuth(): boolean {
   return !!(
-    process.env.NOTION_TOKEN && process.env.NOTION_EXPERIMENTS_DATA_SOURCE_ID
+    process.env.NOTION_TOKEN ||
+    (process.env.REPLIT_CONNECTORS_HOSTNAME &&
+      (process.env.REPL_IDENTITY || process.env.WEB_REPL_RENEWAL))
   );
+}
+
+export function hasNotionExperiments(): boolean {
+  return !!(hasNotionAuth() && process.env.NOTION_EXPERIMENTS_DATA_SOURCE_ID);
 }
 
 // ---------------------------------------------------------------------------
@@ -142,8 +151,13 @@ export function clearNotionExperimentsCache() {
 }
 
 async function fetchAllPages(): Promise<NotionPage[]> {
-  const notion = new Client({ auth: process.env.NOTION_TOKEN });
-  const dataSourceId = process.env.NOTION_EXPERIMENTS_DATA_SOURCE_ID!;
+  const dataSourceId = process.env.NOTION_EXPERIMENTS_DATA_SOURCE_ID;
+  if (!dataSourceId) {
+    throw new Error(
+      "NOTION_EXPERIMENTS_DATA_SOURCE_ID is not set; cannot query Notion experiments.",
+    );
+  }
+  const notion = await getUncachableNotionClient();
   const pages: NotionPage[] = [];
   let cursor: string | undefined;
 
