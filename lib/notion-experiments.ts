@@ -298,7 +298,12 @@ export async function updateExperimentInNotion(
   const notion = await getUncachableNotionClient();
   const updated = (await notion.pages.update({
     page_id: pageId,
-    properties,
+    // Cast at the SDK boundary: its property-request union is stricter than
+    // the adapter's generic NotionProperty map, but these payloads match the
+    // schema's property types (rich_text / status / select).
+    properties: properties as Parameters<
+      typeof notion.pages.update
+    >[0]["properties"],
   })) as NotionPage;
   clearNotionExperimentsCache();
   return (
