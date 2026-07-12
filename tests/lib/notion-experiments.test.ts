@@ -30,6 +30,8 @@ import {
   toNotionStatus,
   toNotionType,
   updateExperimentInNotion,
+  formatNotionProperty,
+  getExperimentFieldsFromNotion,
 } from "@/lib/notion-experiments";
 
 // ---------------------------------------------------------------------------
@@ -460,5 +462,108 @@ describe("updateExperimentInNotion", () => {
     await expect(
       updateExperimentInNotion("seed-organizer", { name: "x" }),
     ).rejects.toThrow("notion is down");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// formatNotionProperty / getExperimentFieldsFromNotion
+// ---------------------------------------------------------------------------
+
+describe("formatNotionProperty", () => {
+  it("formats each common property type", () => {
+    expect(formatNotionProperty(title("Hello"))).toBe("Hello");
+    expect(formatNotionProperty(richText("World"))).toBe("World");
+    expect(formatNotionProperty({ select: { name: "Business" } })).toBe(
+      "Business",
+    );
+    expect(formatNotionProperty({ status: { name: "Validating" } })).toBe(
+      "Validating",
+    );
+    expect(
+      formatNotionProperty({
+        multi_select: [{ name: "ai" }, { name: "tools" }],
+      }),
+    ).toBe("ai, tools");
+    expect(formatNotionProperty({ number: 4 })).toBe("4");
+    expect(formatNotionProperty({ number: 0 })).toBe("0");
+    expect(formatNotionProperty({ checkbox: true })).toBe("Yes");
+    expect(formatNotionProperty({ checkbox: false })).toBe("No");
+    expect(formatNotionProperty({ date: { start: "2026-07-01" } })).toBe(
+      "2026-07-01",
+    );
+    expect(
+      formatNotionProperty({
+        date: { start: "2026-07-01", end: "2026-07-12" },
+      }),
+    ).toBe("2026-07-01 → 2026-07-12");
+    expect(formatNotionProperty({ url: "https://example.com" })).toBe(
+      "https://example.com",
+    );
+    expect(formatNotionProperty({ email: "k@example.com" })).toBe(
+      "k@example.com",
+    );
+    expect(
+      formatNotionProperty({ people: [{ name: "Katy" }, { name: "Sam" }] }),
+    ).toBe("Katy, Sam");
+    expect(
+      formatNotionProperty({ formula: { string: "computed" } }),
+    ).toBe("computed");
+  });
+
+  it("returns empty string for empty or unknown properties", () => {
+    expect(formatNotionProperty({ rich_text: [] })).toBe("");
+    expect(formatNotionProperty({ select: null })).toBe("");
+    expect(formatNotionProperty({ number: null })).toBe("");
+    expect(formatNotionProperty({ relation: [{ id: "abc" }] })).toBe("");
+  });
+});
+
+describe("getExperimentFieldsFromNotion", () => {
+  it("returns all non-empty fields except hero properties", async () => {
+    const fields = await getExperimentFieldsFromNotion("seed-organizer");
+
+    const labels = fields!.map((f) => f.label);
+    expect(labels).not.toContain("Name");
+    expect(labels).not.toContain("Tagline");
+    expect(fields).toContainEqual({ label: "Status", value: "Validating" });
+    expect(fields).toContainEqual({ label: "Type", value: "Business" });
+    expect(fields).toContainEqual({ label: "Slug", value: "seed-organizer" });
+    expect(fields).toContainEqual({
+      label: "Exec Summary",
+      value: "A tool for tracking seed packets.",
+    });
+    expect(fields).toContainEqual({ label: "Score:B", value: "4" });
+  });
+
+  it("orders known fields first, then extras alphabetically", async () => {
+    mockQuery.mockResolvedValue({
+      results: [
+        makePage({
+          Website: { url: "https://example.com" },
+          Audience: richText("Gardeners"),
+        }),
+      ],
+      has_more: false,
+    });
+
+    const labels = (await getExperimentFieldsFromNotion("seed-organizer"))!.map(
+      (f) => f.label,
+    );
+    expect(labels.slice(0, 4)).toEqual(["Status", "Type", "Slug", "Exec Summary"]);
+    expect(labels.slice(-2)).toEqual(["Audience", "Website"]);
+  });
+
+  it("skips empty properties", async () => {
+    mockQuery.mockResolvedValue({
+      results: [makePage({ Notes: { rich_text: [] } })],
+      has_more: false,
+    });
+
+    const fields = await getExperimentFieldsFromNotion("seed-organizer");
+    expect(fields!.map((f) => f.label)).not.toContain("Notes");
+  });
+
+  it("returns null for an unknown slug", async () => {
+    expect(await getExperimentFieldsFromNotion("nope")).toBeNull();
   });
 });
