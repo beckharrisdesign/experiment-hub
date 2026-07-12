@@ -6,14 +6,18 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-const { mockQuery } = vi.hoisted(() => ({
+const { mockQuery, mockPageUpdate } = vi.hoisted(() => ({
   mockQuery: vi.fn(),
+  mockPageUpdate: vi.fn(),
 }));
 
 vi.mock("@notionhq/client", () => ({
   // Regular function so `new Client(...)` works (arrows aren't constructible).
   Client: vi.fn(function () {
-    return { dataSources: { query: mockQuery } };
+    return {
+      dataSources: { query: mockQuery },
+      pages: { update: mockPageUpdate },
+    };
   }),
 }));
 
@@ -23,6 +27,9 @@ import {
   getExperimentsFromNotion,
   getExperimentBySlugFromNotion,
   clearNotionExperimentsCache,
+  toNotionStatus,
+  toNotionType,
+  updateExperimentInNotion,
 } from "@/lib/notion-experiments";
 
 // ---------------------------------------------------------------------------
@@ -304,5 +311,154 @@ describe("getExperimentBySlugFromNotion", () => {
   it("returns null when no row matches", async () => {
     const experiment = await getExperimentBySlugFromNotion("nope");
     expect(experiment).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Reverse vocabulary maps
+// ---------------------------------------------------------------------------
+
+describe("toNotionStatus", () => {
+  it.each([
+    ["Completed", "Launched"],
+    ["Graduated", "Graduated"],
+  ])("maps hub status %s to Notion phase %s", (hubStatus, phase) => {
+    expect(toNotionStatus(hubStatus)).toBe(phase);
+  });
+
+  it.each(["Ideation", "Discovery", "Business Case", "PRD", "Validating"])(
+    "passes Notion phase %s through unchanged",
+    (phase) => {
+      expect(toNotionStatus(phase)).toBe(phase);
+    },
+  );
+
+  it.each(["Active", "Abandoned", "On Hold", "Archived", "Nonsense"])(
+    "returns null for unwritable status %s",
+    (status) => {
+      expect(toNotionStatus(status)).toBeNull();
+    },
+  );
+
+  it.each(["toString", "hasOwnProperty", "__proto__", "constructor"])(
+    "rejects inherited object key %s",
+    (key) => {
+      expect(toNotionStatus(key)).toBeNull();
+    },
+  );
+});
+
+describe("toNotionType", () => {
+  it.each([
+    ["personal", "R+D"],
+    ["tool", "Tool"],
+    ["commercial", "Business"],
+  ])("maps hub kind %s to Notion option %s", (kind, option) => {
+    expect(toNotionType(kind)).toBe(option);
+  });
+
+  it("returns null for unknown kinds", () => {
+    expect(toNotionType("mystery")).toBeNull();
+  });
+
+  it("rejects inherited object keys", () => {
+    expect(toNotionType("toString")).toBeNull();
+    expect(toNotionType("__proto__")).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// updateExperimentInNotion
+// ---------------------------------------------------------------------------
+
+describe("updateExperimentInNotion", () => {
+  it("updates the matching page with mapped properties", async () => {
+    mockPageUpdate.mockResolvedValue(
+      makePage({
+        Name: richText("Renamed"),
+        Status: { status: { name: "Launched" } },
+      }),
+    );
+
+    const updated = await updateExperimentInNotion("seed-organizer", {
+      name: "Renamed",
+      statement: "New tagline",
+      status: "Completed",
+      type: "tool",
+    });
+
+    expect(mockPageUpdate).toHaveBeenCalledWith({
+      page_id: "page-1",
+      properties: {
+        Name: { rich_text: [{ text: { content: "Renamed" } }] },
+        Tagline: { rich_text: [{ text: { content: "New tagline" } }] },
+        Status: { status: { name: "Launched" } },
+        Type: { select: { name: "Tool" } },
+      },
+    });
+    expect(updated?.name).toBe("Renamed");
+    expect(updated?.status).toBe("Completed");
+  });
+
+  it("accepts a raw Notion phase name as status", async () => {
+    mockPageUpdate.mockResolvedValue(makePage());
+
+    await updateExperimentInNotion("seed-organizer", { status: "Discovery" });
+
+    expect(mockPageUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        properties: { Status: { status: { name: "Discovery" } } },
+      }),
+    );
+  });
+
+  it("returns null without updating when the slug is not in Notion", async () => {
+    const updated = await updateExperimentInNotion("not-migrated", {
+      name: "x",
+    });
+
+    expect(updated).toBeNull();
+    expect(mockPageUpdate).not.toHaveBeenCalled();
+  });
+
+  it("throws for a status with no Notion equivalent", async () => {
+    await expect(
+      updateExperimentInNotion("seed-organizer", { status: "On Hold" }),
+    ).rejects.toThrow("no Notion equivalent");
+    expect(mockPageUpdate).not.toHaveBeenCalled();
+  });
+
+  it("throws for an unknown type", async () => {
+    await expect(
+      updateExperimentInNotion("seed-organizer", { type: "mystery" }),
+    ).rejects.toThrow("Unknown experiment type");
+    expect(mockPageUpdate).not.toHaveBeenCalled();
+  });
+
+  it("returns the current experiment without updating when no fields map", async () => {
+    const updated = await updateExperimentInNotion("seed-organizer", {});
+
+    expect(updated?.id).toBe("seed-organizer");
+    expect(mockPageUpdate).not.toHaveBeenCalled();
+  });
+
+  it("invalidates the list cache after a successful update", async () => {
+    mockPageUpdate.mockResolvedValue(makePage());
+
+    await getExperimentsFromNotion();
+    expect(mockQuery).toHaveBeenCalledTimes(1);
+
+    await updateExperimentInNotion("seed-organizer", { name: "Renamed" });
+    await getExperimentsFromNotion();
+
+    expect(mockQuery).toHaveBeenCalledTimes(2);
+  });
+
+  it("propagates Notion API errors", async () => {
+    mockPageUpdate.mockRejectedValue(new Error("notion is down"));
+
+    await expect(
+      updateExperimentInNotion("seed-organizer", { name: "x" }),
+    ).rejects.toThrow("notion is down");
   });
 });

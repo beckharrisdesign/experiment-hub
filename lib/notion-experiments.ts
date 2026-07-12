@@ -85,6 +85,39 @@ const TYPE_MAP: Record<string, ExperimentKind> = {
   Business: "commercial",
 };
 
+// Reverse maps for the write path. Notion's Status is the richer vocabulary
+// (five pre-launch phases collapse into hub "Active"), so only unambiguous
+// hub statuses can be written back; Notion phase names are accepted as-is so
+// callers can set a specific phase directly. Abandoned/On Hold/Archived have
+// no Notion option and stay unwritable.
+const HUB_TO_NOTION_STATUS: Record<string, string> = {
+  Completed: "Launched",
+  Graduated: "Graduated",
+};
+
+const HUB_TO_NOTION_TYPE: Record<string, string> = {
+  personal: "R+D",
+  tool: "Tool",
+  commercial: "Business",
+};
+
+/** Notion Status phase for a hub status or raw phase name; null if unwritable. */
+export function toNotionStatus(status: string): string | null {
+  // Object.hasOwn, not `in`/direct access: inherited keys like "toString"
+  // must not pass validation or return prototype members.
+  if (Object.hasOwn(STATUS_MAP, status)) return status;
+  return Object.hasOwn(HUB_TO_NOTION_STATUS, status)
+    ? HUB_TO_NOTION_STATUS[status]
+    : null;
+}
+
+/** Notion Type option for a hub ExperimentKind; null if unknown. */
+export function toNotionType(type: string): string | null {
+  return Object.hasOwn(HUB_TO_NOTION_TYPE, type)
+    ? HUB_TO_NOTION_TYPE[type]
+    : null;
+}
+
 function mapScores(
   properties: Record<string, NotionProperty>,
 ): ExperimentScores | undefined {
@@ -143,7 +176,11 @@ export function mapNotionPageToExperiment(page: NotionPage): Experiment | null {
 // instance. Edits in Notion appear within CACHE_TTL_MS.
 const CACHE_TTL_MS = 60_000;
 
-let cache: { experiments: Experiment[]; fetchedAt: number } | null = null;
+let cache: {
+  experiments: Experiment[];
+  pageIdBySlug: Record<string, string>;
+  fetchedAt: number;
+} | null = null;
 
 /** Exported for tests. */
 export function clearNotionExperimentsCache() {
@@ -179,12 +216,17 @@ export async function getExperimentsFromNotion(): Promise<Experiment[]> {
   }
 
   const pages = await fetchAllPages();
-  const experiments = pages
-    .map(mapNotionPageToExperiment)
-    .filter((exp): exp is Experiment => exp !== null)
-    .sort((a, b) => b.lastModified.localeCompare(a.lastModified));
+  const pageIdBySlug: Record<string, string> = {};
+  const experiments: Experiment[] = [];
+  for (const page of pages) {
+    const experiment = mapNotionPageToExperiment(page);
+    if (!experiment) continue;
+    experiments.push(experiment);
+    pageIdBySlug[experiment.id] = page.id;
+  }
+  experiments.sort((a, b) => b.lastModified.localeCompare(a.lastModified));
 
-  cache = { experiments, fetchedAt: Date.now() };
+  cache = { experiments, pageIdBySlug, fetchedAt: Date.now() };
   return experiments;
 }
 
@@ -193,4 +235,78 @@ export async function getExperimentBySlugFromNotion(
 ): Promise<Experiment | null> {
   const experiments = await getExperimentsFromNotion();
   return experiments.find((exp) => exp.id === slug) ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Writing back to Notion
+// ---------------------------------------------------------------------------
+
+export interface NotionExperimentUpdate {
+  name?: string;
+  statement?: string;
+  /** Hub status or raw Notion phase name; must pass toNotionStatus. */
+  status?: string;
+  /** Hub ExperimentKind; must pass toNotionType. */
+  type?: string;
+}
+
+/**
+ * Updates the Notion page for `slug` and returns the updated experiment.
+ * Returns null when no row matches the slug, so callers can fall through to
+ * Supabase for experiments that haven't been migrated to Notion yet.
+ * Throws on unmappable status/type values — validate with toNotionStatus /
+ * toNotionType first for a friendlier error.
+ */
+export async function updateExperimentInNotion(
+  slug: string,
+  fields: NotionExperimentUpdate,
+): Promise<Experiment | null> {
+  await getExperimentsFromNotion();
+  const pageId = cache?.pageIdBySlug[slug];
+  if (!pageId) return null;
+
+  const properties: Record<string, NotionProperty> = {};
+  if (fields.name !== undefined) {
+    properties["Name"] = { rich_text: [{ text: { content: fields.name } }] };
+  }
+  if (fields.statement !== undefined) {
+    properties["Tagline"] = {
+      rich_text: [{ text: { content: fields.statement } }],
+    };
+  }
+  if (fields.status !== undefined) {
+    const phase = toNotionStatus(fields.status);
+    if (!phase) {
+      throw new Error(
+        `Status "${fields.status}" has no Notion equivalent; edit the phase in Notion instead.`,
+      );
+    }
+    properties["Status"] = { status: { name: phase } };
+  }
+  if (fields.type !== undefined) {
+    const option = toNotionType(fields.type);
+    if (!option) {
+      throw new Error(`Unknown experiment type "${fields.type}".`);
+    }
+    properties["Type"] = { select: { name: option } };
+  }
+
+  if (Object.keys(properties).length === 0) {
+    return getExperimentBySlugFromNotion(slug);
+  }
+
+  const notion = await getUncachableNotionClient();
+  const updated = (await notion.pages.update({
+    page_id: pageId,
+    // Cast at the SDK boundary: its property-request union is stricter than
+    // the adapter's generic NotionProperty map, but these payloads match the
+    // schema's property types (rich_text / status / select).
+    properties: properties as Parameters<
+      typeof notion.pages.update
+    >[0]["properties"],
+  })) as NotionPage;
+  clearNotionExperimentsCache();
+  return (
+    mapNotionPageToExperiment(updated) ?? getExperimentBySlugFromNotion(slug)
+  );
 }
