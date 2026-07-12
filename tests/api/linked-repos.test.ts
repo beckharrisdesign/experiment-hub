@@ -349,7 +349,8 @@ describe("POST /api/experiments/id/[id]/graduate", () => {
     expect(res.status).toBe(200);
     expect(mockGraduateExperiment).toHaveBeenCalledWith(EXP_ID, REPO_ID);
     const body = await res.json();
-    expect(body.status).toBe("Graduated");
+    expect(body.success).toBe(true);
+    expect(body.experiment.status).toBe("Graduated");
   });
 });
 

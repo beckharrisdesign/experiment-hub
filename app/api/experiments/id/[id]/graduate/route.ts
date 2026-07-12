@@ -39,5 +39,5 @@ export async function POST(
   }
 
   const experiment = await graduateExperiment(id, linked_repo_id);
-  return NextResponse.json(experiment);
+  return NextResponse.json({ success: true, experiment });
 }
