@@ -17,7 +17,6 @@ interface ExperimentWithRelated extends Experiment {
   documentation?: Documentation | null;
   hasPRDFile?: boolean;
   hasPrototypeDir?: boolean;
-  hasMRFile?: boolean;
   hasLandingPage?: boolean;
   moa?: string | null;
   goNoGo?: string | null;
@@ -75,7 +74,6 @@ export default async function HomePage() {
             hasPrototypeDir: showPrototypes
               ? fileChecks.hasPrototypeDir
               : false,
-            hasMRFile: fileChecks.hasMRFile,
             hasLandingPage: fileChecks.hasLandingPage,
             moa,
             goNoGo,
@@ -95,7 +93,6 @@ export default async function HomePage() {
             documentation: docsMap.get(exp.id) || null,
             hasPRDFile: false,
             hasPrototypeDir: false,
-            hasMRFile: false,
             hasLandingPage: false,
             moa: null,
             goNoGo: null,

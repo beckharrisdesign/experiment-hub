@@ -1,7 +1,16 @@
 import { getExperiments } from "@/lib/data";
-import StatusSelect from "./StatusSelect";
+import type { ExperimentStatus } from "@/types";
 
 export const dynamic = "force-dynamic";
+
+const STATUS_COLORS: Record<ExperimentStatus, string> = {
+  Active: "text-green-400",
+  Completed: "text-blue-400",
+  Abandoned: "text-text-secondary",
+  "On Hold": "text-yellow-400",
+  Archived: "text-text-secondary",
+  Graduated: "text-purple-400",
+};
 
 export default async function AdminPage() {
   const experiments = await getExperiments();
@@ -40,11 +49,8 @@ export default async function AdminPage() {
                   </p>
                 )}
               </td>
-              <td className="py-3 pr-4">
-                <StatusSelect
-                  experimentId={exp.id}
-                  initialStatus={exp.status}
-                />
+              <td className={`py-3 pr-4 ${STATUS_COLORS[exp.status]}`}>
+                {exp.status}
               </td>
               <td className="py-3 pr-4 text-text-secondary capitalize">
                 {exp.type ?? "commercial"}

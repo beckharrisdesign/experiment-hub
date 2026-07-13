@@ -168,6 +168,98 @@ export function mapNotionPageToExperiment(page: NotionPage): Experiment | null {
 }
 
 // ---------------------------------------------------------------------------
+// Full-row field extraction for the experiment detail page
+// ---------------------------------------------------------------------------
+
+export interface ExperimentField {
+  label: string;
+  value: string;
+}
+
+/** Flattens any Notion property value to a display string; "" when empty. */
+export function formatNotionProperty(prop: NotionProperty): string {
+  if (prop.title || prop.rich_text) return richTextToPlain(prop);
+  if (prop.select || prop.status) return selectName(prop);
+  if (Array.isArray(prop.multi_select)) {
+    return prop.multi_select
+      .map((option: { name?: string }) => option.name ?? "")
+      .filter(Boolean)
+      .join(", ");
+  }
+  if (typeof prop.number === "number") return String(prop.number);
+  if (typeof prop.checkbox === "boolean") return prop.checkbox ? "Yes" : "No";
+  if (prop.date?.start) {
+    return prop.date.end
+      ? `${prop.date.start} → ${prop.date.end}`
+      : prop.date.start;
+  }
+  if (typeof prop.url === "string") return prop.url;
+  if (typeof prop.email === "string") return prop.email;
+  if (typeof prop.phone_number === "string") return prop.phone_number;
+  if (Array.isArray(prop.people)) {
+    return prop.people
+      .map((person: { name?: string }) => person.name ?? "")
+      .filter(Boolean)
+      .join(", ");
+  }
+  if (typeof prop.created_time === "string") return prop.created_time;
+  if (typeof prop.last_edited_time === "string") return prop.last_edited_time;
+  if (prop.formula) return formatNotionProperty(prop.formula);
+  if (typeof prop.string === "string") return prop.string;
+  if (typeof prop.boolean === "boolean") return prop.boolean ? "Yes" : "No";
+  return "";
+}
+
+// Name and Tagline render in the page hero, so the field list skips them.
+const HERO_PROPERTIES = new Set(["Name", "Tagline"]);
+
+// Known properties surface first, in this order; anything else follows
+// alphabetically so new Notion columns appear without a code change.
+const FIELD_ORDER = [
+  "Status",
+  "Type",
+  "Slug",
+  "Exec Summary",
+  "Score:B",
+  "Score:P",
+  "Score:C",
+  "Score:D",
+  "Score:S",
+];
+
+/**
+ * Every non-empty property on the Notion row for `slug`, as display-ready
+ * label/value pairs. Returns null when no row matches the slug.
+ */
+export async function getExperimentFieldsFromNotion(
+  slug: string,
+): Promise<ExperimentField[] | null> {
+  await getExperimentsFromNotion();
+  const page = cache?.pageBySlug[slug];
+  if (!page) return null;
+
+  const fields: ExperimentField[] = [];
+  for (const [label, prop] of Object.entries(page.properties ?? {})) {
+    if (HERO_PROPERTIES.has(label)) continue;
+    const value = formatNotionProperty(prop);
+    if (value) fields.push({ label, value });
+  }
+
+  fields.sort((a, b) => {
+    const ai = FIELD_ORDER.indexOf(a.label);
+    const bi = FIELD_ORDER.indexOf(b.label);
+    if (ai !== -1 || bi !== -1) {
+      return (ai === -1 ? FIELD_ORDER.length : ai) -
+        (bi === -1 ? FIELD_ORDER.length : bi) ||
+        a.label.localeCompare(b.label);
+    }
+    return a.label.localeCompare(b.label);
+  });
+
+  return fields;
+}
+
+// ---------------------------------------------------------------------------
 // Fetching with a short in-memory TTL cache
 // ---------------------------------------------------------------------------
 
@@ -178,7 +270,7 @@ const CACHE_TTL_MS = 60_000;
 
 let cache: {
   experiments: Experiment[];
-  pageIdBySlug: Record<string, string>;
+  pageBySlug: Record<string, NotionPage>;
   fetchedAt: number;
 } | null = null;
 
@@ -216,17 +308,17 @@ export async function getExperimentsFromNotion(): Promise<Experiment[]> {
   }
 
   const pages = await fetchAllPages();
-  const pageIdBySlug: Record<string, string> = {};
+  const pageBySlug: Record<string, NotionPage> = {};
   const experiments: Experiment[] = [];
   for (const page of pages) {
     const experiment = mapNotionPageToExperiment(page);
     if (!experiment) continue;
     experiments.push(experiment);
-    pageIdBySlug[experiment.id] = page.id;
+    pageBySlug[experiment.id] = page;
   }
   experiments.sort((a, b) => b.lastModified.localeCompare(a.lastModified));
 
-  cache = { experiments, pageIdBySlug, fetchedAt: Date.now() };
+  cache = { experiments, pageBySlug, fetchedAt: Date.now() };
   return experiments;
 }
 
@@ -262,7 +354,7 @@ export async function updateExperimentInNotion(
   fields: NotionExperimentUpdate,
 ): Promise<Experiment | null> {
   await getExperimentsFromNotion();
-  const pageId = cache?.pageIdBySlug[slug];
+  const pageId = cache?.pageBySlug[slug]?.id;
   if (!pageId) return null;
 
   const properties: Record<string, NotionProperty> = {};

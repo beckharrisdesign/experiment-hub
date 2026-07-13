@@ -19,7 +19,6 @@ interface ExperimentWithRelated extends Experiment {
   documentation?: Documentation | null;
   hasPRDFile?: boolean;
   hasPrototypeDir?: boolean;
-  hasMRFile?: boolean;
   hasLandingPage?: boolean;
   moa?: string | null;
   goNoGo?: string | null;
@@ -377,42 +376,36 @@ export default function HomePageClient({
                         </Link>
                       </td>
                       <td className="w-px whitespace-nowrap px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
-                        {!experiment.hasMRFile ? (
-                          <span className="text-sm text-text-dark-secondary">
-                            —
-                          </span>
-                        ) : (
-                          (() => {
-                            const total = calculateTotalScore(
-                              experiment.scores,
-                            );
-                            const experimentSlug = getExperimentHrefSlug(
-                              experiment,
-                            );
-                            if (total !== null) {
-                              return (
-                                <Tooltip
-                                  content={`${total}/25. Click to see breakdown.`}
-                                  position="top"
-                                >
-                                  <Link
-                                    href={`/experiments/${experimentSlug}#overview`}
-                                    data-analytics-event="experiment_score_click"
-                                    data-analytics-surface="hub-home"
-                                    data-analytics-experiment={experimentSlug}
-                                    data-analytics-label={String(total)}
-                                    className={`inline-flex items-center justify-center h-7 min-w-[2rem] rounded-md border text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity ${getTotalBadgeColor(total)}`}
-                                  >
-                                    {total}
-                                  </Link>
-                                </Tooltip>
-                              );
-                            }
+                        {(() => {
+                          const total = calculateTotalScore(experiment.scores);
+                          if (total === null) {
                             return (
-                              <span className="text-accent-primary">✓</span>
+                              <span className="text-sm text-text-dark-secondary">
+                                —
+                              </span>
                             );
-                          })()
-                        )}
+                          }
+                          const experimentSlug = getExperimentHrefSlug(
+                            experiment,
+                          );
+                          return (
+                            <Tooltip
+                              content={`${total}/25. Click to see breakdown.`}
+                              position="top"
+                            >
+                              <Link
+                                href={`/experiments/${experimentSlug}`}
+                                data-analytics-event="experiment_score_click"
+                                data-analytics-surface="hub-home"
+                                data-analytics-experiment={experimentSlug}
+                                data-analytics-label={String(total)}
+                                className={`inline-flex items-center justify-center h-7 min-w-[2rem] rounded-md border text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity ${getTotalBadgeColor(total)}`}
+                              >
+                                {total}
+                              </Link>
+                            </Tooltip>
+                          );
+                        })()}
                       </td>
                       <td className="w-px whitespace-nowrap px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
                         {experiment.hasPRDFile ? (
