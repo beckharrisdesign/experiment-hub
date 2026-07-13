@@ -80,7 +80,13 @@ export default async function ExperimentDetailPage({
   }
 
   const notionFields = hasNotionExperiments()
-    ? await getExperimentFieldsFromNotion(slug).catch(() => null)
+    ? await getExperimentFieldsFromNotion(slug).catch((error) => {
+        console.error(
+          `[ExperimentDetailPage] Notion field fetch failed for "${slug}"; falling back to hub fields:`,
+          error,
+        );
+        return null;
+      })
     : null;
   const fields = notionFields ?? buildFieldsFromExperiment(experiment);
 

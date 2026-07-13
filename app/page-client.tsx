@@ -394,7 +394,7 @@ export default function HomePageClient({
                               position="top"
                             >
                               <Link
-                                href={`/experiments/${experimentSlug}#overview`}
+                                href={`/experiments/${experimentSlug}`}
                                 data-analytics-event="experiment_score_click"
                                 data-analytics-surface="hub-home"
                                 data-analytics-experiment={experimentSlug}
