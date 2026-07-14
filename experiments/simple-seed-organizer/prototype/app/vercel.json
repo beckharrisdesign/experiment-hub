@@ -1,5 +1,5 @@
 {
-  "installCommand": "npm install",
-  "buildCommand": "npm run build",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ../../../../packages"
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm run build",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ../../../../packages ../../../../pnpm-lock.yaml ../../../../pnpm-workspace.yaml"
 }

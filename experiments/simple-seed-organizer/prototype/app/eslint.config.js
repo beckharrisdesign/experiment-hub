@@ -1,10 +1,8 @@
-const { FlatCompat } = require("@eslint/eslintrc");
-const path = require("path");
-
-const compat = new FlatCompat({ baseDirectory: __dirname });
+// eslint-config-next 16+ ships native flat config — no FlatCompat bridge.
+const nextCoreWebVitals = require("eslint-config-next/core-web-vitals");
 
 module.exports = [
-  ...compat.extends("next/core-web-vitals"),
+  ...(nextCoreWebVitals.default || nextCoreWebVitals),
   { ignores: [".next/**", "out/**", "build/**", "next-env.d.ts"] },
   {
     rules: {

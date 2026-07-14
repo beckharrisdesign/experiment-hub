@@ -8,19 +8,22 @@ on:
     paths:
       - 'experiments/simple-seed-organizer/**'
       - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
       - '.github/workflows/seed-organizer-ci.yml'
   pull_request:
     branches: [main]
     paths:
       - 'experiments/simple-seed-organizer/**'
       - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
       - '.github/workflows/seed-organizer-ci.yml'
 
 jobs:
   # ── Unit tests (seed organizer app) ────────────────────────────────────────
   # Tests in experiments/simple-seed-organizer/prototype/app/lib and components.
-  # The app is not a pnpm workspace member so root install covers its deps via
-  # node_modules traversal.
+  # The app is a pnpm workspace member; one root install covers all packages.
   app-unit-tests:
     name: Seed organizer unit tests
     runs-on: ubuntu-latest
@@ -70,17 +73,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: .
-
-      - name: Cache npm packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('experiments/simple-seed-organizer/prototype/app/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
-
-      - name: Install app dependencies
-        run: npm ci
 
       - name: Build
         env:

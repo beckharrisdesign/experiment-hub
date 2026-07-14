@@ -96,6 +96,85 @@ export default function PacketExtractionTestPage() {
     };
   }, []);
 
+  const processWithAI = async (frontUrl: string, backUrl: string) => {
+    try {
+      setStatus('Loading images...');
+
+      // Convert image URLs to File objects for processing
+      const frontResponse = await fetch(frontUrl);
+      const frontBlob = await frontResponse.blob();
+      const frontFile = new File([frontBlob], 'packet-front.png', { type: 'image/png' });
+      console.log(`[Client] Front image size: ${(frontFile.size / 1024).toFixed(0)}KB`);
+
+      const backResponse = await fetch(backUrl);
+      const backBlob = await backResponse.blob();
+      const backFile = new File([backBlob], 'packet-back.png', { type: 'image/png' });
+      console.log(`[Client] Back image size: ${(backFile.size / 1024).toFixed(0)}KB`);
+
+      // Convert to base64 for storing in seed data
+      const blobToBase64 = (blob: Blob): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const result = reader.result as string;
+            // Remove data URL prefix if present
+            const base64 = result.includes(',') ? result.split(',')[1] : result;
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      };
+
+      const frontBase64 = await blobToBase64(frontBlob);
+      setFrontImageBase64(frontBase64);
+
+      const backBase64 = await blobToBase64(backBlob);
+      setBackImageBase64(backBase64);
+
+      setStatus('Sending to OpenAI API...');
+
+      const formData = new FormData();
+      formData.append('frontImage', frontFile);
+      formData.append('backImage', backFile);
+
+      const response = await fetch('/api/packet/read-ai', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const responseText = await response.text();
+
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (e) {
+        throw new Error("I couldn't read the server response. Try again in a moment.");
+      }
+
+      if (!response.ok) {
+        throw new Error(result.error || result.message || "I couldn't process those images. Try again or check your connection.");
+      }
+
+      if (!result.data) {
+        throw new Error("I couldn't extract any data from those images. Try a clearer photo.");
+      }
+
+      setAiExtractedData(result.data);
+
+      // Map AI data to Seed format and show form
+      const mappedData = mapAIDataToSeed(result.data, frontBase64, backBase64);
+      setSeedData(mappedData);
+      setShowForm(true);
+      setStatus('Complete!');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "I couldn't process those images. Try again or check your connection.");
+      setStatus('Error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Auto-load images on mount
   useEffect(() => {
     const loadImages = async () => {
@@ -132,85 +211,6 @@ export default function PacketExtractionTestPage() {
 
     loadImages();
   }, []);
-
-  const processWithAI = async (frontUrl: string, backUrl: string) => {
-    try {
-      setStatus('Loading images...');
-      
-      // Convert image URLs to File objects for processing
-      const frontResponse = await fetch(frontUrl);
-      const frontBlob = await frontResponse.blob();
-      const frontFile = new File([frontBlob], 'packet-front.png', { type: 'image/png' });
-      console.log(`[Client] Front image size: ${(frontFile.size / 1024).toFixed(0)}KB`);
-
-      const backResponse = await fetch(backUrl);
-      const backBlob = await backResponse.blob();
-      const backFile = new File([backBlob], 'packet-back.png', { type: 'image/png' });
-      console.log(`[Client] Back image size: ${(backFile.size / 1024).toFixed(0)}KB`);
-
-      // Convert to base64 for storing in seed data
-      const blobToBase64 = (blob: Blob): Promise<string> => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const result = reader.result as string;
-            // Remove data URL prefix if present
-            const base64 = result.includes(',') ? result.split(',')[1] : result;
-            resolve(base64);
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      };
-
-      const frontBase64 = await blobToBase64(frontBlob);
-      setFrontImageBase64(frontBase64);
-
-      const backBase64 = await blobToBase64(backBlob);
-      setBackImageBase64(backBase64);
-
-      setStatus('Sending to OpenAI API...');
-      
-      const formData = new FormData();
-      formData.append('frontImage', frontFile);
-      formData.append('backImage', backFile);
-
-      const response = await fetch('/api/packet/read-ai', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const responseText = await response.text();
-      
-      let result;
-      try {
-        result = JSON.parse(responseText);
-      } catch (e) {
-        throw new Error("I couldn't read the server response. Try again in a moment.");
-      }
-
-      if (!response.ok) {
-        throw new Error(result.error || result.message || "I couldn't process those images. Try again or check your connection.");
-      }
-
-      if (!result.data) {
-        throw new Error("I couldn't extract any data from those images. Try a clearer photo.");
-      }
-
-      setAiExtractedData(result.data);
-      
-      // Map AI data to Seed format and show form
-      const mappedData = mapAIDataToSeed(result.data, frontBase64, backBase64);
-      setSeedData(mappedData);
-      setShowForm(true);
-      setStatus('Complete!');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "I couldn't process those images. Try again or check your connection.");
-      setStatus('Error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleFileSelect = async (side: 'front' | 'back', file: File) => {
     const url = URL.createObjectURL(file);
