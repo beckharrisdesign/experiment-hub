@@ -9,6 +9,10 @@
       "outputs": [],
       "cache": true
     },
+    "//#test": {
+      "outputs": [],
+      "cache": true
+    },
     "test:live": {
       "outputs": [],
       "cache": false

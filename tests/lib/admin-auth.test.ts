@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { checkAdminAuth } from "@/lib/admin-auth";
 

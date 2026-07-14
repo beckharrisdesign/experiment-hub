@@ -1,7 +1,13 @@
+# NOTE: the repo root is the workspace root but deliberately NOT a member.
+# Listing "." here makes turbo treat the root as a regular package and run
+# its scripts — root "lint"/"build" call turbo again, recursing infinitely
+# (this froze an 8GB machine twice on 2026-07-14). Root-level tasks are
+# declared as "//#<task>" in turbo.json instead.
 packages:
-  - "."
   - "packages/*"
+  - "experiments/simple-seed-organizer/prototype/app"
 
 onlyBuiltDependencies:
   - esbuild
   - unrs-resolver
+  - sharp
