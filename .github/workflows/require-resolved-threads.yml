@@ -1,14 +1,15 @@
 name: Require resolved conversations
 
-# Fires on PR changes and whenever a review thread is resolved/unresolved,
-# so the status check stays current without waiting for a new commit.
+# Fires on PR changes and review activity. GitHub's workflow validator
+# rejects the `pull_request_review_thread` event ("Unexpected value"), which
+# made this file invalid and produced a failed zero-job run on every push —
+# so that trigger is intentionally absent. After resolving threads, re-run
+# this check from the PR's checks UI (or push/submit a review) to refresh it.
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
   pull_request_review:
     types: [submitted, dismissed]
-  pull_request_review_thread:
-    types: [resolved, unresolved]
 
 jobs:
   check-resolved-threads:
