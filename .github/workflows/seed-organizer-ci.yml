@@ -1,0 +1,115 @@
+name: Seed organizer CI
+
+# Runs only when the seed organizer app (or shared packages it may consume)
+# changes. Hub-only pushes skip these jobs entirely. None of these checks are
+# required by the main ruleset, so path-skipping cannot block a PR merge.
+on:
+  push:
+    paths:
+      - 'experiments/simple-seed-organizer/**'
+      - 'packages/**'
+      - '.github/workflows/seed-organizer-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'experiments/simple-seed-organizer/**'
+      - 'packages/**'
+      - '.github/workflows/seed-organizer-ci.yml'
+
+jobs:
+  # ── Unit tests (seed organizer app) ────────────────────────────────────────
+  # Tests in experiments/simple-seed-organizer/prototype/app/lib and components.
+  # The app is not a pnpm workspace member so root install covers its deps via
+  # node_modules traversal.
+  app-unit-tests:
+    name: Seed organizer unit tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: experiments/simple-seed-organizer/prototype/app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - name: Run app unit tests
+        run: npx vitest run lib components hooks
+
+  # ── Build check ─────────────────────────────────────────────────────────────
+  # Catches TypeScript errors and broken imports that unit tests won't surface.
+  # Placeholder env vars satisfy Next.js's NEXT_PUBLIC_ validation at build time.
+  build:
+    name: Build check (seed organizer)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: experiments/simple-seed-organizer/prototype/app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - name: Cache npm packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('experiments/simple-seed-organizer/prototype/app/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install app dependencies
+        run: npm ci
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+        run: npx next build
+
+  # ── Lint ────────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint (seed organizer)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: experiments/simple-seed-organizer/prototype/app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - name: Lint
+        run: npx eslint .
