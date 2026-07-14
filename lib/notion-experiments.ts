@@ -139,10 +139,15 @@ function mapScores(
   };
 }
 
-/** Exported for tests. Returns null for rows without a Slug (untitled rows). */
+/**
+ * Exported for tests. Returns null for rows without a slug.
+ * The slug lives in the `repo` text property ("Slug" is accepted as a legacy
+ * fallback from the pre-rename schema); `Name` is the title property.
+ */
 export function mapNotionPageToExperiment(page: NotionPage): Experiment | null {
   const properties = page.properties ?? {};
-  const slug = richTextToPlain(properties["Slug"]);
+  const slug =
+    richTextToPlain(properties["repo"]) || richTextToPlain(properties["Slug"]);
   if (!slug) return null;
 
   const name = richTextToPlain(properties["Name"]) || slug;
@@ -213,18 +218,14 @@ export function formatNotionProperty(prop: NotionProperty): string {
 // Name and Tagline render in the page hero, so the field list skips them.
 const HERO_PROPERTIES = new Set(["Name", "Tagline"]);
 
-// Known properties surface first, in this order; anything else follows
-// alphabetically so new Notion columns appear without a code change.
-const FIELD_ORDER = [
-  "Status",
-  "Type",
-  "Slug",
+// Primary properties surface first, in this order; anything else follows
+// alphabetically so new Notion columns appear without a code change. The
+// detail page renders non-primary fields below a divider.
+export const PRIMARY_FIELD_ORDER = [
+  "Why this matters",
+  "Hypothesis",
   "Exec Summary",
-  "Score:B",
-  "Score:P",
-  "Score:C",
-  "Score:D",
-  "Score:S",
+  "Status",
 ];
 
 /**
@@ -246,11 +247,11 @@ export async function getExperimentFieldsFromNotion(
   }
 
   fields.sort((a, b) => {
-    const ai = FIELD_ORDER.indexOf(a.label);
-    const bi = FIELD_ORDER.indexOf(b.label);
+    const ai = PRIMARY_FIELD_ORDER.indexOf(a.label);
+    const bi = PRIMARY_FIELD_ORDER.indexOf(b.label);
     if (ai !== -1 || bi !== -1) {
-      return (ai === -1 ? FIELD_ORDER.length : ai) -
-        (bi === -1 ? FIELD_ORDER.length : bi) ||
+      return (ai === -1 ? PRIMARY_FIELD_ORDER.length : ai) -
+        (bi === -1 ? PRIMARY_FIELD_ORDER.length : bi) ||
         a.label.localeCompare(b.label);
     }
     return a.label.localeCompare(b.label);
@@ -318,6 +319,15 @@ export async function getExperimentsFromNotion(): Promise<Experiment[]> {
   }
   experiments.sort((a, b) => b.lastModified.localeCompare(a.lastModified));
 
+  // A schema rename in Notion (e.g. the slug property changing name) makes
+  // every row unmappable while the query still "succeeds", so the site goes
+  // blank with no fallback and no error. Make that state visible.
+  if (pages.length > 0 && experiments.length === 0) {
+    console.warn(
+      `[notion-experiments] Query returned ${pages.length} page(s) but none mapped to experiments — check that the data source still has "repo" (slug) and "Name" properties.`,
+    );
+  }
+
   cache = { experiments, pageBySlug, fetchedAt: Date.now() };
   return experiments;
 }
@@ -359,7 +369,8 @@ export async function updateExperimentInNotion(
 
   const properties: Record<string, NotionProperty> = {};
   if (fields.name !== undefined) {
-    properties["Name"] = { rich_text: [{ text: { content: fields.name } }] };
+    // Name is the database's title property, so it takes a title payload.
+    properties["Name"] = { title: [{ text: { content: fields.name } }] };
   }
   if (fields.statement !== undefined) {
     properties["Tagline"] = {
@@ -392,7 +403,7 @@ export async function updateExperimentInNotion(
     page_id: pageId,
     // Cast at the SDK boundary: its property-request union is stricter than
     // the adapter's generic NotionProperty map, but these payloads match the
-    // schema's property types (rich_text / status / select).
+    // schema's property types (title / rich_text / status / select).
     properties: properties as Parameters<
       typeof notion.pages.update
     >[0]["properties"],

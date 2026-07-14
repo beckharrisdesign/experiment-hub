@@ -7,6 +7,7 @@ import { getExperimentBySlug } from "@/lib/data";
 import {
   getExperimentFieldsFromNotion,
   hasNotionExperiments,
+  PRIMARY_FIELD_ORDER,
   type ExperimentField,
 } from "@/lib/notion-experiments";
 import type { Experiment } from "@/types";
@@ -67,6 +68,45 @@ function FieldValue({ value }: { value: string }) {
   return <span className="whitespace-pre-wrap">{value}</span>;
 }
 
+/** Stable kebab-case identifier for a field label, e.g. "Why this matters" → "why-this-matters", "Score:B" → "score-b". */
+function fieldSlug(label: string): string {
+  return label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+interface FieldRowsProps {
+  fields: ExperimentField[];
+  group: "primary" | "extra";
+}
+
+function FieldRows({ fields, group }: FieldRowsProps) {
+  return (
+    <dl
+      className={`experiment-fields experiment-fields-${group} divide-y divide-border-dark/15`}
+    >
+      {fields.map((field) => {
+        const displayLabel = SCORE_LABELS[field.label] ?? field.label;
+        return (
+        <div
+          key={field.label}
+          className="experiment-field grid grid-cols-1 md:grid-cols-[240px_1fr] gap-1 md:gap-8 py-4"
+          data-field={fieldSlug(displayLabel)}
+        >
+          <dt className="experiment-field-label text-xs font-medium uppercase tracking-[0.08em] text-text-dark-secondary md:pt-0.5">
+            {displayLabel}
+          </dt>
+          <dd className="experiment-field-value text-sm text-text-dark leading-relaxed">
+            <FieldValue value={field.value} />
+          </dd>
+        </div>
+        );
+      })}
+    </dl>
+  );
+}
+
 export default async function ExperimentDetailPage({
   params,
 }: {
@@ -89,6 +129,13 @@ export default async function ExperimentDetailPage({
       })
     : null;
   const fields = notionFields ?? buildFieldsFromExperiment(experiment);
+  // Primary fields render on top; everything else drops below a divider.
+  const primaryFields = fields.filter((field) =>
+    PRIMARY_FIELD_ORDER.includes(field.label),
+  );
+  const extraFields = fields.filter(
+    (field) => !PRIMARY_FIELD_ORDER.includes(field.label),
+  );
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -137,21 +184,13 @@ export default async function ExperimentDetailPage({
               No details recorded for this experiment yet.
             </p>
           ) : (
-            <dl className="divide-y divide-border-dark/15">
-              {fields.map((field) => (
-                <div
-                  key={field.label}
-                  className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-1 md:gap-8 py-4"
-                >
-                  <dt className="text-xs font-medium uppercase tracking-[0.08em] text-text-dark-secondary md:pt-0.5">
-                    {SCORE_LABELS[field.label] ?? field.label}
-                  </dt>
-                  <dd className="text-sm text-text-dark leading-relaxed">
-                    <FieldValue value={field.value} />
-                  </dd>
-                </div>
-              ))}
-            </dl>
+            <>
+              <FieldRows fields={primaryFields} group="primary" />
+              {primaryFields.length > 0 && extraFields.length > 0 && (
+                <hr className="experiment-fields-divider my-8 border-t border-border-dark/40" />
+              )}
+              <FieldRows fields={extraFields} group="extra" />
+            </>
           )}
         </div>
       </main>
