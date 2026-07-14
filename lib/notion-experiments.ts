@@ -218,19 +218,14 @@ export function formatNotionProperty(prop: NotionProperty): string {
 // Name and Tagline render in the page hero, so the field list skips them.
 const HERO_PROPERTIES = new Set(["Name", "Tagline"]);
 
-// Known properties surface first, in this order; anything else follows
-// alphabetically so new Notion columns appear without a code change.
-const FIELD_ORDER = [
-  "Status",
-  "Type",
-  "repo",
-  "Slug",
+// Primary properties surface first, in this order; anything else follows
+// alphabetically so new Notion columns appear without a code change. The
+// detail page renders non-primary fields below a divider.
+export const PRIMARY_FIELD_ORDER = [
+  "Why this matters",
+  "Hypothesis",
   "Exec Summary",
-  "Score:B",
-  "Score:P",
-  "Score:C",
-  "Score:D",
-  "Score:S",
+  "Status",
 ];
 
 /**
@@ -252,11 +247,11 @@ export async function getExperimentFieldsFromNotion(
   }
 
   fields.sort((a, b) => {
-    const ai = FIELD_ORDER.indexOf(a.label);
-    const bi = FIELD_ORDER.indexOf(b.label);
+    const ai = PRIMARY_FIELD_ORDER.indexOf(a.label);
+    const bi = PRIMARY_FIELD_ORDER.indexOf(b.label);
     if (ai !== -1 || bi !== -1) {
-      return (ai === -1 ? FIELD_ORDER.length : ai) -
-        (bi === -1 ? FIELD_ORDER.length : bi) ||
+      return (ai === -1 ? PRIMARY_FIELD_ORDER.length : ai) -
+        (bi === -1 ? PRIMARY_FIELD_ORDER.length : bi) ||
         a.label.localeCompare(b.label);
     }
     return a.label.localeCompare(b.label);

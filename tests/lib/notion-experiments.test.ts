@@ -56,6 +56,8 @@ function makePage(overrides: Record<string, unknown> = {}) {
       repo: richText("seed-organizer"),
       Tagline: richText("Never buy duplicate seeds again"),
       "Exec Summary": richText("A tool for tracking seed packets."),
+      "Why this matters": richText("Seed boxes are chaos."),
+      Hypothesis: richText("Gardeners need inventory-first tracking."),
       Status: { status: { name: "Validating" } },
       Type: { select: { name: "Business" } },
       "Score:B": { number: 4 },
@@ -559,7 +561,7 @@ describe("getExperimentFieldsFromNotion", () => {
     expect(fields).toContainEqual({ label: "Score:B", value: "4" });
   });
 
-  it("orders known fields first, then extras alphabetically", async () => {
+  it("orders primary fields first, then extras alphabetically", async () => {
     mockQuery.mockResolvedValue({
       results: [
         makePage({
@@ -573,8 +575,13 @@ describe("getExperimentFieldsFromNotion", () => {
     const labels = (await getExperimentFieldsFromNotion("seed-organizer"))!.map(
       (f) => f.label,
     );
-    expect(labels.slice(0, 4)).toEqual(["Status", "Type", "repo", "Exec Summary"]);
-    expect(labels.slice(-2)).toEqual(["Audience", "Website"]);
+    expect(labels.slice(0, 4)).toEqual([
+      "Why this matters",
+      "Hypothesis",
+      "Exec Summary",
+      "Status",
+    ]);
+    expect(labels.slice(-2)).toEqual(["Type", "Website"]);
   });
 
   it("skips empty properties", async () => {
