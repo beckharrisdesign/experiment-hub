@@ -254,18 +254,21 @@ describe("getExperimentsFromNotion", () => {
 
   it("warns when rows exist but none map to experiments", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    mockQuery.mockResolvedValue({
-      results: [makePage({ repo: richText(""), Slug: undefined })],
-      has_more: false,
-    });
+    try {
+      mockQuery.mockResolvedValue({
+        results: [makePage({ repo: richText(""), Slug: undefined })],
+        has_more: false,
+      });
 
-    const experiments = await getExperimentsFromNotion();
+      const experiments = await getExperimentsFromNotion();
 
-    expect(experiments).toHaveLength(0);
-    expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining("none mapped to experiments"),
-    );
-    warn.mockRestore();
+      expect(experiments).toHaveLength(0);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining("none mapped to experiments"),
+      );
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it("sorts by lastModified descending", async () => {
