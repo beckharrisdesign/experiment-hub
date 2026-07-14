@@ -1,5 +1,6 @@
 {
   "framework": "nextjs",
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "next build"
+  "buildCommand": "next build",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)experiments' ':(exclude)docs' ':(exclude)openspec' ':(exclude)rules' ':(exclude)skills'"
 }
