@@ -6,6 +6,7 @@
  * missing the agent has drifted from its spec — these tests fail fast.
  */
 
+import { beforeAll, describe, expect, it } from "vitest";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { agentRubrics } from "@/lib/agent-rubrics";

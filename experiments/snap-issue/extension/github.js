@@ -25,7 +25,7 @@ export function buildIssueBody({
   note,
   screenshotFilename,
   screenshotMarkdownImage,
-  uploadFailureMessage,
+  uploadFailureMessage = '',
 }) {
   const typeLabel = issueType === 'feedback' ? 'Feedback' : 'Bug';
   const noteBlock =
