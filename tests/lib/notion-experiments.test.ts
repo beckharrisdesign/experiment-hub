@@ -52,8 +52,8 @@ function makePage(overrides: Record<string, unknown> = {}) {
     created_time: "2026-01-01T00:00:00.000Z",
     last_edited_time: "2026-06-01T00:00:00.000Z",
     properties: {
-      Slug: title("seed-organizer"),
-      Name: richText("Seed Organizer"),
+      Name: title("Seed Organizer"),
+      repo: richText("seed-organizer"),
       Tagline: richText("Never buy duplicate seeds again"),
       "Exec Summary": richText("A tool for tracking seed packets."),
       Status: { status: { name: "Validating" } },
@@ -146,13 +146,21 @@ describe("mapNotionPageToExperiment", () => {
     });
   });
 
-  it("returns null for rows without a Slug", () => {
-    const page = makePage({ Slug: title("") });
+  it("returns null for rows without a repo slug", () => {
+    const page = makePage({ repo: richText("") });
     expect(mapNotionPageToExperiment(page)).toBeNull();
   });
 
-  it("falls back to Slug when Name is empty", () => {
-    const page = makePage({ Name: richText("") });
+  it("falls back to the legacy Slug property when repo is empty", () => {
+    const page = makePage({
+      repo: richText(""),
+      Slug: richText("legacy-slug"),
+    });
+    expect(mapNotionPageToExperiment(page)?.id).toBe("legacy-slug");
+  });
+
+  it("falls back to the slug when Name is empty", () => {
+    const page = makePage({ Name: title("") });
     expect(mapNotionPageToExperiment(page)?.name).toBe("seed-organizer");
   });
 
@@ -213,7 +221,7 @@ describe("getExperimentsFromNotion", () => {
   });
 
   it("paginates until has_more is false", async () => {
-    const page2 = makePage({ Slug: title("second-experiment") });
+    const page2 = makePage({ repo: richText("second-experiment") });
     mockQuery
       .mockResolvedValueOnce({
         results: [makePage()],
@@ -232,9 +240,9 @@ describe("getExperimentsFromNotion", () => {
     expect(experiments).toHaveLength(2);
   });
 
-  it("filters out untitled rows", async () => {
+  it("filters out rows without a slug", async () => {
     mockQuery.mockResolvedValue({
-      results: [makePage(), makePage({ Slug: title("") })],
+      results: [makePage(), makePage({ repo: richText("") })],
       has_more: false,
     });
 
@@ -242,10 +250,26 @@ describe("getExperimentsFromNotion", () => {
     expect(experiments).toHaveLength(1);
   });
 
+  it("warns when rows exist but none map to experiments", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    mockQuery.mockResolvedValue({
+      results: [makePage({ repo: richText(""), Slug: undefined })],
+      has_more: false,
+    });
+
+    const experiments = await getExperimentsFromNotion();
+
+    expect(experiments).toHaveLength(0);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("none mapped to experiments"),
+    );
+    warn.mockRestore();
+  });
+
   it("sorts by lastModified descending", async () => {
-    const older = makePage({ Slug: title("older") });
+    const older = makePage({ repo: richText("older") });
     older.last_edited_time = "2026-02-01T00:00:00.000Z";
-    const newer = makePage({ Slug: title("newer") });
+    const newer = makePage({ repo: richText("newer") });
     newer.last_edited_time = "2026-07-01T00:00:00.000Z";
     mockQuery.mockResolvedValue({
       results: [older, newer],
@@ -377,7 +401,7 @@ describe("updateExperimentInNotion", () => {
   it("updates the matching page with mapped properties", async () => {
     mockPageUpdate.mockResolvedValue(
       makePage({
-        Name: richText("Renamed"),
+        Name: title("Renamed"),
         Status: { status: { name: "Launched" } },
       }),
     );
@@ -392,7 +416,7 @@ describe("updateExperimentInNotion", () => {
     expect(mockPageUpdate).toHaveBeenCalledWith({
       page_id: "page-1",
       properties: {
-        Name: { rich_text: [{ text: { content: "Renamed" } }] },
+        Name: { title: [{ text: { content: "Renamed" } }] },
         Tagline: { rich_text: [{ text: { content: "New tagline" } }] },
         Status: { status: { name: "Launched" } },
         Type: { select: { name: "Tool" } },
@@ -527,7 +551,7 @@ describe("getExperimentFieldsFromNotion", () => {
     expect(labels).not.toContain("Tagline");
     expect(fields).toContainEqual({ label: "Status", value: "Validating" });
     expect(fields).toContainEqual({ label: "Type", value: "Business" });
-    expect(fields).toContainEqual({ label: "Slug", value: "seed-organizer" });
+    expect(fields).toContainEqual({ label: "repo", value: "seed-organizer" });
     expect(fields).toContainEqual({
       label: "Exec Summary",
       value: "A tool for tracking seed packets.",
@@ -549,7 +573,7 @@ describe("getExperimentFieldsFromNotion", () => {
     const labels = (await getExperimentFieldsFromNotion("seed-organizer"))!.map(
       (f) => f.label,
     );
-    expect(labels.slice(0, 4)).toEqual(["Status", "Type", "Slug", "Exec Summary"]);
+    expect(labels.slice(0, 4)).toEqual(["Status", "Type", "repo", "Exec Summary"]);
     expect(labels.slice(-2)).toEqual(["Audience", "Website"]);
   });
 
