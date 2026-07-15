@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { requireAdminCookie } from "@/lib/admin-auth";
 import {
   getLinkedRepoNotes,
   createLinkedRepoNote,
   NoteType,
 } from "@/lib/supabase";
-
-async function requireAdmin() {
-  const cookieStore = await cookies();
-  const editCookie = cookieStore.get("hub-edit");
-  return editCookie?.value === process.env.ADMIN_SECRET;
-}
 
 const VALID_TYPES: NoteType[] = [
   "observation",
@@ -24,7 +18,7 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!(await requireAdmin())) {
+  if (!(await requireAdminCookie())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await params;
@@ -36,7 +30,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!(await requireAdmin())) {
+  if (!(await requireAdminCookie())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,22 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { requireAdminCookie } from "@/lib/admin-auth";
 import {
   getLinkedRepoById,
   updateLinkedRepo,
   deleteLinkedRepo,
 } from "@/lib/supabase";
 
-async function requireAdmin() {
-  const cookieStore = await cookies();
-  const editCookie = cookieStore.get("hub-edit");
-  return editCookie?.value === process.env.ADMIN_SECRET;
-}
-
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!(await requireAdmin())) {
+  if (!(await requireAdminCookie())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await params;
@@ -31,7 +25,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!(await requireAdmin())) {
+  if (!(await requireAdminCookie())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -85,7 +79,7 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!(await requireAdmin())) {
+  if (!(await requireAdminCookie())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await params;
