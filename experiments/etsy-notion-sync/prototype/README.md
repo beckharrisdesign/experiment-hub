@@ -44,10 +44,13 @@ Credentials live only in `.env` / environment variables (never committed):
      ever lapses — e.g. the job didn't run for 90+ days — just redo step 2.)
 - **Notion**: create an internal integration, share the Inventory database
   with it, set `NOTION_TOKEN` + `NOTION_INVENTORY_DB_ID`.
-- Confirm the property names in `.env` match the Notion database exactly
-  (`SKU`, `Single price sum`, `Inventory value`, `Status`). The sync validates
-  Status options against the live schema and skips anything that doesn't
-  match, so a mismatch is safe but produces warnings instead of updates.
+- Property mapping (defaults match the real Inventory database): rows match
+  on `Etsy Listing ID` first, `SKU` as fallback; price writes to `Etsy price`
+  and quantity to `Inventory level` (both plain numbers — Notion's API cannot
+  write rollups/formulas like `Single price sum` or `Inventory value`). The
+  sync validates Status options against the live schema and skips anything
+  that doesn't match, so a mismatch is safe but produces warnings instead of
+  updates.
 
 ## Run
 

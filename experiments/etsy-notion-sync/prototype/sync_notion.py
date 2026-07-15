@@ -70,28 +70,42 @@ def _status_options(db_schema, status_prop):
     return {option.get("name") for option in options}
 
 
-def build_sku_index(pages, sku_property):
-    """Map SKU text -> Notion page. Duplicate SKUs keep the first page and warn."""
-    index = {}
+def build_page_indexes(pages, listing_id_property, sku_property):
+    """Two match indexes: Etsy listing id text -> page, and SKU text -> page.
+
+    Listing id is the primary key (exact, survives SKU format changes); SKU is
+    the fallback for rows where the listing id property is empty. Duplicates
+    keep the first page and warn.
+    """
+    by_listing_id = {}
+    by_sku = {}
     for page in pages:
-        prop = (page.get("properties") or {}).get(sku_property)
-        if not prop:
-            continue
-        sku = _plain_text(prop)
-        if not sku:
-            continue
-        if sku in index:
-            log.warning("Duplicate SKU %r in Notion — keeping first page, ignoring %s", sku, page.get("id"))
-            continue
-        index[sku] = page
-    return index
+        properties = page.get("properties") or {}
+        for prop_name, index, label in (
+            (listing_id_property, by_listing_id, "listing id"),
+            (sku_property, by_sku, "SKU"),
+        ):
+            prop = properties.get(prop_name)
+            if not prop:
+                continue
+            value = _plain_text(prop)
+            if not value:
+                continue
+            if value in index:
+                log.warning("Duplicate %s %r in Notion — keeping first page, ignoring %s",
+                            label, value, page.get("id"))
+                continue
+            index[value] = page
+    return by_listing_id, by_sku
 
 
-def plan_updates(latest, sku_index, db_schema, config):
+def plan_updates(latest, indexes, db_schema, config):
     """Compare latest Etsy state against Notion pages; return only real changes.
 
-    Returns (plans, unmatched_skus). Each plan: {page_id, sku, changes, properties}.
+    indexes is (by_listing_id, by_sku) from build_page_indexes. Returns
+    (plans, unmatched). Each plan: {page_id, listing_id, matched_by, changes, properties}.
     """
+    by_listing_id, by_sku = indexes
     db_props = db_schema.get("properties") or {}
     status_options = _status_options(db_schema, config["status_property"])
     state_to_status = config["state_to_status"]
@@ -101,13 +115,14 @@ def plan_updates(latest, sku_index, db_schema, config):
     for listing_id, snapshot in sorted(latest.items()):
         parsed = snapshot["parsed"]
         skus = parsed.get("skus") or ([snapshot["sku"]] if snapshot["sku"] else [])
-        page = None
-        matched_sku = None
-        for sku in skus:
-            if sku in sku_index:
-                page = sku_index[sku]
-                matched_sku = sku
-                break
+        page = by_listing_id.get(str(listing_id))
+        matched_by = str(listing_id) if page is not None else None
+        if page is None:
+            for sku in skus:
+                if sku in by_sku:
+                    page = by_sku[sku]
+                    matched_by = sku
+                    break
         if page is None:
             unmatched.append({"listing_id": listing_id, "skus": skus})
             continue
@@ -155,7 +170,7 @@ def plan_updates(latest, sku_index, db_schema, config):
             plans.append({
                 "page_id": page["id"],
                 "listing_id": listing_id,
-                "sku": matched_sku,
+                "matched_by": matched_by,
                 "changes": changes,
                 "properties": properties,
             })
@@ -167,7 +182,7 @@ def apply_updates(client, plans, dry_run):
         log.info(
             "%s %s (listing %s): %s",
             "DRY RUN — would update" if dry_run else "Updating",
-            plan["sku"],
+            plan["matched_by"],
             plan["listing_id"],
             json.dumps(plan["changes"]),
         )
@@ -183,9 +198,9 @@ def run_sync(client, backend, database_id, config, dry_run=True):
 
     db_schema = client.get_database(database_id)
     pages = list(client.query_database_all(database_id))
-    sku_index = build_sku_index(pages, config["sku_property"])
+    indexes = build_page_indexes(pages, config["listing_id_property"], config["sku_property"])
 
-    plans, unmatched = plan_updates(latest, sku_index, db_schema, config)
+    plans, unmatched = plan_updates(latest, indexes, db_schema, config)
     for miss in unmatched:
         log.warning("No Notion row matched listing %s (skus=%s)", miss["listing_id"], miss["skus"])
     apply_updates(client, plans, dry_run)
@@ -209,10 +224,15 @@ def _require_env(name):
 
 
 def config_from_env():
+    # Defaults match the real Inventory database (2026-07-15): "Etsy price" is
+    # a plain number the sync owns; "Inventory level" is the writable stock
+    # count ("Single price sum"/"Inventory value" are rollup/formula — the API
+    # cannot write those); "Etsy Listing ID" is the primary match key.
     return {
+        "listing_id_property": os.environ.get("NOTION_LISTING_ID_PROPERTY", "Etsy Listing ID"),
         "sku_property": os.environ.get("NOTION_SKU_PROPERTY", "SKU"),
-        "price_property": os.environ.get("NOTION_PRICE_PROPERTY", "Single price sum"),
-        "quantity_property": os.environ.get("NOTION_QUANTITY_PROPERTY", "Inventory value"),
+        "price_property": os.environ.get("NOTION_PRICE_PROPERTY", "Etsy price"),
+        "quantity_property": os.environ.get("NOTION_QUANTITY_PROPERTY", "Inventory level"),
         "status_property": os.environ.get("NOTION_STATUS_PROPERTY", "Status"),
         "state_to_status": json.loads(
             os.environ.get("ETSY_STATE_TO_STATUS_JSON", json.dumps(DEFAULT_STATE_TO_STATUS))

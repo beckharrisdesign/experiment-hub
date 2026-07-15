@@ -4,6 +4,7 @@ from tests.conftest import make_inventory, make_listing
 from tests.test_capture import FakeEtsyClient
 
 CONFIG = {
+    "listing_id_property": "Etsy Listing ID",
     "sku_property": "SKU",
     "price_property": "Single price sum",
     "quantity_property": "Inventory value",
@@ -24,10 +25,14 @@ DB_SCHEMA = {
 }
 
 
-def make_page(page_id, sku, price=None, quantity=None, status=None):
+def make_page(page_id, sku, price=None, quantity=None, status=None, listing_id=None):
     return {
         "id": page_id,
         "properties": {
+            "Etsy Listing ID": {
+                "type": "rich_text",
+                "rich_text": [{"plain_text": str(listing_id)}] if listing_id else [],
+            },
             "SKU": {"type": "rich_text", "rich_text": [{"plain_text": sku}]},
             "Single price sum": {"type": "number", "number": price},
             "Inventory value": {"type": "number", "number": quantity},
@@ -121,5 +126,28 @@ def test_unknown_status_option_is_skipped(backend):
 
 def test_duplicate_skus_keep_first_page():
     pages = [make_page("page-1", "SKU-1"), make_page("page-2", "SKU-1")]
-    index = sync_notion.build_sku_index(pages, "SKU")
-    assert index["SKU-1"]["id"] == "page-1"
+    _, by_sku = sync_notion.build_page_indexes(pages, "Etsy Listing ID", "SKU")
+    assert by_sku["SKU-1"]["id"] == "page-1"
+
+
+def test_listing_id_match_beats_sku(backend):
+    """The row whose Etsy Listing ID matches wins, even when another row has the SKU."""
+    capture_fixture(backend, quantity=99)  # listing_id=1, sku=SKU-1
+    decoy = make_page("page-sku", "SKU-1", quantity=50)
+    right = make_page("page-lid", "OTHER-SKU", quantity=50, listing_id=1)
+    client = FakeNotionClient(DB_SCHEMA, [decoy, right])
+
+    sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
+
+    assert [page_id for page_id, _ in client.updates] == ["page-lid"]
+
+
+def test_sku_fallback_when_listing_id_empty(backend):
+    capture_fixture(backend, quantity=99)
+    page = make_page("page-1", "SKU-1", quantity=50)  # no listing id set
+    client = FakeNotionClient(DB_SCHEMA, [page])
+
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
+
+    assert summary["updates"] == 1
+    assert client.updates[0][0] == "page-1"
