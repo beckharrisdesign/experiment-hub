@@ -1,5 +1,14 @@
 [
   {
+    "id": "doc-etsy-notion-sync",
+    "title": "Etsy → Notion Sync Documentation",
+    "content": "Spec (docs/SPEC.md) and PRD (docs/PRD.md) for the read-only Etsy v3 historical capture + one-way Notion inventory sync.",
+    "experimentId": "etsy-notion-sync",
+    "createdDate": "2026-07-15",
+    "lastModified": "2026-07-15",
+    "tags": ["etsy", "notion", "api-v3", "tool"]
+  },
+  {
     "id": "doc-pomodoro-maker",
     "title": "Pomodoro Maker Documentation",
     "content": "BHD lifecycle tracked in openspec/changes/pomodoro-maker/.",
