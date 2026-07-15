@@ -9,8 +9,8 @@ import json
 import logging
 import os
 
-import store
-from capture import DEFAULT_DB_PATH, LISTINGS_ENDPOINT_TEMPLATE
+from backends import make_backend
+from capture import LISTINGS_ENDPOINT_TEMPLATE
 from notion_api import NotionClient
 
 log = logging.getLogger("sync_notion")
@@ -175,8 +175,8 @@ def apply_updates(client, plans, dry_run):
             client.update_page(plan["page_id"], plan["properties"])
 
 
-def run_sync(client, conn, database_id, config, dry_run=True):
-    latest = store.latest_parsed_by_listing(conn, LISTINGS_ENDPOINT_TEMPLATE)
+def run_sync(client, backend, database_id, config, dry_run=True):
+    latest = backend.latest_parsed_by_listing(LISTINGS_ENDPOINT_TEMPLATE)
     if not latest:
         log.warning("No captured listings in the store — run capture.py first.")
         return {"updates": 0, "unmatched": 0, "dry_run": dry_run}
@@ -230,14 +230,12 @@ def main():
 
     token = _require_env("NOTION_TOKEN")
     database_id = _require_env("NOTION_INVENTORY_DB_ID")
-    db_path = os.environ.get("CAPTURE_DB_PATH", DEFAULT_DB_PATH)
     dry_run = os.environ.get("DRY_RUN", "true").strip().lower() != "false"
     if dry_run:
         log.info("DRY_RUN is on (default) — no Notion writes will happen. Set DRY_RUN=false to write.")
 
     client = NotionClient(token)
-    conn = store.connect(db_path)
-    run_sync(client, conn, database_id, config_from_env(), dry_run=dry_run)
+    run_sync(client, make_backend(), database_id, config_from_env(), dry_run=dry_run)
 
 
 if __name__ == "__main__":

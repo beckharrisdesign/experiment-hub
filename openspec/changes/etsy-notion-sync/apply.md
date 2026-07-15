@@ -42,7 +42,7 @@
 
 ### Build Unit 2: Server-side store + scheduled runner (Supabase + GitHub Actions)
 
-- **State:** planned
+- **State:** in progress (schema live on Supabase; code + workflow on PR #284; awaiting secrets + first real run)
 - **Purpose:** both (validation infrastructure; production home for history + tokens)
 
 Scope per Propose: port `listing_snapshots` / `runs` / `schema_keys` to Supabase Postgres (append-only semantics unchanged); Etsy token custody in a service-role-only table; GitHub Actions workflow with daily schedule + `workflow_dispatch`; local cron/SQLite remains documented fallback.
@@ -54,7 +54,8 @@ Scope per Propose: port `listing_snapshots` / `runs` / `schema_keys` to Supabase
 
 #### Learnings log
 
-- _(empty — unit not started)_
+- **2026-07-15:** Append-only can be enforced in the database itself (Postgres triggers rejecting UPDATE/DELETE), not just by code discipline — stronger than the SQLite version ever was.
+- **2026-07-15:** Hub `.env.local` pointed `NEXT_PUBLIC_SUPABASE_URL` at the Simple Seed Organizer project, not "Experiment Hub 2.0" — stale config worth cleaning up; the migration went to the correct hub project (verified by table inventory, not env).
 
 #### Pattern notes
 
@@ -68,6 +69,8 @@ Scope per Propose: port `listing_snapshots` / `runs` / `schema_keys` to Supabase
 - **Purpose:** validation (proves the v1 shape: operable from the hub, no terminal)
 
 Scope per Propose: prototype page on the experiment's hub entry — run history (time, status, listings captured, fields changed, new-field notices, quota remaining) and a "sync now" button that dispatches the Actions workflow. MVDS components; `design.md` with component mapping in the child change before implementation.
+
+Blocked 2026-07-15 on the MVDS consumption spike: MVDS is Tailwind v4, the hub is v3.4, and installing `@beckharrisdesign/mvds` needs registry auth (GitHub PAT today; founder is moving MVDS to public npm, which removes it). API routes for the page (runs read + admin-gated dispatch) shipped ahead in Build Unit 2's PR.
 
 #### Measurement instrumentation
 

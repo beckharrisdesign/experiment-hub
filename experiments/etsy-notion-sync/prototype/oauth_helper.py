@@ -194,6 +194,14 @@ def _require_env(name):
     return value
 
 
+def _seed_supabase(access_token, refresh_token, expires_in):
+    from store_supabase import SupabaseStore
+
+    backend = SupabaseStore(_require_env("SUPABASE_URL"), _require_env("SUPABASE_SERVICE_ROLE_KEY"))
+    backend.set_tokens(access_token, refresh_token, expires_in=expires_in)
+    log.info("Tokens seeded to the Supabase etsy_tokens table.")
+
+
 def _report(tokens, shop_id, write_env, env_file):
     values = {"ETSY_OAUTH_TOKEN": tokens["access_token"]}
     # A refresh response may omit refresh_token; never blank out the stored one.
@@ -221,6 +229,9 @@ def main():
                         help="rotate tokens using ETSY_REFRESH_TOKEN instead of the browser flow")
     parser.add_argument("--write-env", action="store_true",
                         help="write the resulting tokens into the env file in place")
+    parser.add_argument("--to-supabase", action="store_true",
+                        help="seed the resulting tokens into the Supabase etsy_tokens table"
+                             " (requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY)")
     parser.add_argument("--env-file", default=".env")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
     args = parser.parse_args()
@@ -237,6 +248,10 @@ def main():
         refresh_token = _require_env("ETSY_REFRESH_TOKEN")
         tokens = refresh_tokens(api_key, refresh_token)
         _report(tokens, None, args.write_env, args.env_file)
+        if args.to_supabase:
+            _seed_supabase(tokens["access_token"],
+                           tokens.get("refresh_token") or refresh_token,
+                           tokens.get("expires_in"))
         return
 
     redirect_uri = "http://localhost:{}/callback".format(args.port)
@@ -253,6 +268,8 @@ def main():
     shop_id = fetch_shop_id(api_key, tokens["access_token"])
     log.info("Authorized shop_id=%s with scope %s", shop_id, SCOPE)
     _report(tokens, shop_id, args.write_env, args.env_file)
+    if args.to_supabase:
+        _seed_supabase(tokens["access_token"], tokens["refresh_token"], tokens.get("expires_in"))
 
 
 if __name__ == "__main__":
