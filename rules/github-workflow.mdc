@@ -13,19 +13,26 @@ globs:
 
 ## Pull requests
 
-- **Always open a PR** when a feature, fix, or test task is complete. Use the **GitHub CLI** (`gh`) — e.g. `gh pr create --draft`.
+- **Always open a PR** when a feature, fix, or test task is complete. Use the **GitHub CLI** (`gh`) — e.g. `gh pr create`.
 - **OpenSpec `/opsx:apply`:** Commit/push/PR timing lives in the active schema’s `apply.instruction` (see `openspec/schemas/*/schema.yaml`) and `skills/openspec-apply-change.md` step 8 — not duplicated here.
 - **One PR per logical unit of work.** Don't bundle unrelated changes.
-- **Never merge or approve the PR.** User reviews CI checks and the Vercel preview, then merges. Agents must not run `gh pr merge`, approve reviews, or mark ready for review unless she explicitly asks.
+- **Never merge or approve the PR.** User reviews CI checks and the Vercel preview, and always makes the final merge decision. Agents must not run `gh pr merge` or approve reviews.
 - **Never have two PRs open for the same work item.** If a PR exists for the current task, push additional fixes to that branch rather than opening a new PR. Keep iterating on the existing PR until all checks pass.
-- **PR description** must include: what changed and why. Don't include a test plan unless its an actual automated test that's been implemented.
+- **PR description** must include: what changed and why. Don't include a test plan unless it's an actual automated test that's been implemented.
 
-### Single draft PR until merge (default)
+### Single ready-for-review PR until merge (default)
 
 - Prefer **one active branch + one PR** per ongoing effort. Keep **adding commits to that branch** and **updating the same PR** until user approves and merges. Avoid opening many parallel branches/PRs for follow-ups in the same workstream.
-- Open the PR as a **draft** while iterating; mark **ready for review** when its ready for review.
+- Open PRs **ready for review, not draft**, so the automated Copilot review kicks off immediately (`gh pr create` without `--draft`). If a PR was opened as a draft, mark it ready (`gh pr ready`).
 - Start a **new** branch + PR only after the previous one is merged, or when the work is **clearly unrelated** (different experiment, different product surface).
-- If using GitHub CLI: `gh pr create --draft` for new PRs; push additional commits to the same branch to refresh the existing PR.
+- Push additional commits to the same branch to refresh the existing PR.
+
+### Copilot review loop
+
+- After opening a PR (or pushing substantive new commits to one), **wait for Copilot's automated review** and check for its comments before ending the task — it usually posts within a few minutes (`gh api repos/OWNER/REPO/pulls/NUMBER/comments`).
+- **Address every actionable comment**: push fixes to the same branch, then **reply to each comment** saying what changed — or why no change was needed. Never leave a Copilot comment unanswered.
+- If a session finds an open PR with unanswered Copilot comments from an earlier session, address them the same way.
+- The user still reviews and makes the final merge decision.
 
 ## Commits
 
