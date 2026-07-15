@@ -111,6 +111,17 @@ describe("GET /api/linked-repos", () => {
     expect(res.status).toBe(401);
   });
 
+  it("returns 401 when ADMIN_SECRET is unset and no cookie is sent", async () => {
+    // Regression: the guard must fail closed, not treat
+    // undefined === undefined as authorized.
+    vi.stubEnv("ADMIN_SECRET", "");
+    delete process.env.ADMIN_SECRET;
+    mockCookies.mockResolvedValue(makeCookieStore());
+    const { GET } = await import("@/app/api/linked-repos/route");
+    const res = await GET();
+    expect(res.status).toBe(401);
+  });
+
   it("returns linked repos when authorized", async () => {
     authed();
     mockGetLinkedRepos.mockResolvedValue([LINKED_REPO]);

@@ -1,4 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+
+/**
+ * Validates the hub-edit admin cookie. Fails closed: an unset ADMIN_SECRET
+ * denies every request instead of granting open access.
+ */
+export async function requireAdminCookie(): Promise<boolean> {
+  const adminSecret = process.env.ADMIN_SECRET;
+  if (!adminSecret) {
+    return false;
+  }
+  const cookieStore = await cookies();
+  return cookieStore.get("hub-edit")?.value === adminSecret;
+}
 
 /**
  * Validates the request carries a valid admin secret.

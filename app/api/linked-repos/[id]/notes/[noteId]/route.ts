@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { requireAdminCookie } from "@/lib/admin-auth";
 import { getNoteById, updateNote, deleteNote, NoteType } from "@/lib/supabase";
-
-async function requireAdmin() {
-  const cookieStore = await cookies();
-  const editCookie = cookieStore.get("hub-edit");
-  return editCookie?.value === process.env.ADMIN_SECRET;
-}
 
 // The note must belong to the linked repo in the URL — otherwise this route
 // could mutate notes owned by another linked repo or an experiment.
@@ -28,7 +22,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; noteId: string }> },
 ) {
-  if (!(await requireAdmin())) {
+  if (!(await requireAdminCookie())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -74,7 +68,7 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string; noteId: string }> },
 ) {
-  if (!(await requireAdmin())) {
+  if (!(await requireAdminCookie())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id, noteId } = await params;

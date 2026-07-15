@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { requireAdminCookie } from "@/lib/admin-auth";
 import { getExperimentBySlug } from "@/lib/data";
 import { upsertPullRequests } from "@/lib/supabase";
 
@@ -7,9 +7,7 @@ export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  const cookieStore = await cookies();
-  const editCookie = cookieStore.get("hub-edit");
-  if (!editCookie || editCookie.value !== process.env.ADMIN_SECRET) {
+  if (!(await requireAdminCookie())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,5 +1,5 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { requireAdminCookie } from "@/lib/admin-auth";
 import Link from "next/link";
 
 interface AdminLayoutProps {
@@ -7,10 +7,7 @@ interface AdminLayoutProps {
 }
 
 export default async function AdminLayout({ children }: AdminLayoutProps) {
-  const cookieStore = await cookies();
-  const editCookie = cookieStore.get("hub-edit");
-  const isAuthenticated =
-    !!editCookie && editCookie.value === process.env.ADMIN_SECRET;
+  const isAuthenticated = await requireAdminCookie();
 
   if (!isAuthenticated) {
     redirect("/admin/login");

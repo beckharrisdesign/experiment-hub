@@ -1,15 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { requireAdminCookie } from "@/lib/admin-auth";
 import { getLinkedRepos, createLinkedRepo } from "@/lib/supabase";
 
-async function requireAdmin() {
-  const cookieStore = await cookies();
-  const editCookie = cookieStore.get("hub-edit");
-  return editCookie?.value === process.env.ADMIN_SECRET;
-}
-
 export async function GET() {
-  if (!(await requireAdmin())) {
+  if (!(await requireAdminCookie())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const linkedRepos = await getLinkedRepos();
@@ -17,7 +11,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  if (!(await requireAdmin())) {
+  if (!(await requireAdminCookie())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
