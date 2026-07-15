@@ -30,8 +30,8 @@ def make_fake_client(**kwargs):
     return FakeEtsyClient(listings, inventories, **kwargs)
 
 
-def test_capture_writes_listing_and_inventory_snapshots(conn):
-    summary = capture.run_capture(make_fake_client(), conn, "shop123")
+def test_capture_writes_listing_and_inventory_snapshots(conn, backend):
+    summary = capture.run_capture(make_fake_client(), backend, "shop123")
 
     assert summary["listings_captured"] == 2
     assert summary["snapshots_written"] == 4  # listing + inventory per listing
@@ -44,9 +44,9 @@ def test_capture_writes_listing_and_inventory_snapshots(conn):
     assert versions == {"v3"}
 
 
-def test_second_run_chains_ancestry_and_stays_quiet_on_schema(conn):
-    capture.run_capture(make_fake_client(), conn, "shop123")
-    summary = capture.run_capture(make_fake_client(), conn, "shop123")
+def test_second_run_chains_ancestry_and_stays_quiet_on_schema(conn, backend):
+    capture.run_capture(make_fake_client(), backend, "shop123")
+    summary = capture.run_capture(make_fake_client(), backend, "shop123")
 
     assert summary["new_fields"] == []  # baseline already recorded, nothing new
     orphans = conn.execute(
@@ -57,21 +57,21 @@ def test_second_run_chains_ancestry_and_stays_quiet_on_schema(conn):
     assert orphans == 4  # only the first run's snapshots lack a parent
 
 
-def test_new_field_detected_on_later_run(conn):
-    capture.run_capture(make_fake_client(), conn, "shop123")
+def test_new_field_detected_on_later_run(conn, backend):
+    capture.run_capture(make_fake_client(), backend, "shop123")
 
     client = make_fake_client()
     client.listings[0]["buyer_price"] = {"amount": 700, "divisor": 100}
-    summary = capture.run_capture(client, conn, "shop123")
+    summary = capture.run_capture(client, backend, "shop123")
 
     new_keys = {field["key"] for field in summary["new_fields"]}
     assert "buyer_price" in new_keys
     assert "buyer_price.amount" in new_keys
 
 
-def test_quota_low_pauses_run(conn):
+def test_quota_low_pauses_run(conn, backend):
     client = make_fake_client(quota_low_after=1)
-    summary = capture.run_capture(client, conn, "shop123")
+    summary = capture.run_capture(client, backend, "shop123")
 
     assert summary["quota_low"] is True
     assert summary["listings_captured"] == 1  # stopped after the first listing

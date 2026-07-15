@@ -4,6 +4,7 @@ from tests.conftest import make_inventory, make_listing
 from tests.test_capture import FakeEtsyClient
 
 CONFIG = {
+    "listing_id_property": "Etsy Listing ID",
     "sku_property": "SKU",
     "price_property": "Single price sum",
     "quantity_property": "Inventory value",
@@ -24,10 +25,14 @@ DB_SCHEMA = {
 }
 
 
-def make_page(page_id, sku, price=None, quantity=None, status=None):
+def make_page(page_id, sku, price=None, quantity=None, status=None, listing_id=None):
     return {
         "id": page_id,
         "properties": {
+            "Etsy Listing ID": {
+                "type": "rich_text",
+                "rich_text": [{"plain_text": str(listing_id)}] if listing_id else [],
+            },
             "SKU": {"type": "rich_text", "rich_text": [{"plain_text": sku}]},
             "Single price sum": {"type": "number", "number": price},
             "Inventory value": {"type": "number", "number": quantity},
@@ -52,19 +57,19 @@ class FakeNotionClient:
         self.updates.append((page_id, properties))
 
 
-def capture_fixture(conn, price_amount=600, quantity=50, state="active"):
+def capture_fixture(backend, price_amount=600, quantity=50, state="active"):
     listing = make_listing(1, sku="SKU-1", price_amount=price_amount, quantity=quantity, state=state)
     client = FakeEtsyClient([listing], {1: make_inventory("SKU-1")})
-    capture.run_capture(client, conn, "shop123")
+    capture.run_capture(client, backend, "shop123")
 
 
-def test_only_changed_fields_are_planned(conn):
-    capture_fixture(conn, price_amount=600, quantity=50, state="active")
+def test_only_changed_fields_are_planned(backend):
+    capture_fixture(backend, price_amount=600, quantity=50, state="active")
     # Price already correct; quantity and status differ.
     page = make_page("page-1", "SKU-1", price=6.0, quantity=10, status="Inactive")
     client = FakeNotionClient(DB_SCHEMA, [page])
 
-    summary = sync_notion.run_sync(client, conn, "db-1", CONFIG, dry_run=False)
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
 
     assert summary["updates"] == 1
     page_id, properties = client.updates[0]
@@ -75,44 +80,44 @@ def test_only_changed_fields_are_planned(conn):
     }
 
 
-def test_idempotent_when_nothing_changed(conn):
-    capture_fixture(conn, price_amount=600, quantity=50, state="active")
+def test_idempotent_when_nothing_changed(backend):
+    capture_fixture(backend, price_amount=600, quantity=50, state="active")
     page = make_page("page-1", "SKU-1", price=6.0, quantity=50, status="Active")
     client = FakeNotionClient(DB_SCHEMA, [page])
 
-    summary = sync_notion.run_sync(client, conn, "db-1", CONFIG, dry_run=False)
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
 
     assert summary["updates"] == 0
     assert client.updates == []
 
 
-def test_dry_run_never_writes(conn):
-    capture_fixture(conn, price_amount=999, quantity=1, state="active")
+def test_dry_run_never_writes(backend):
+    capture_fixture(backend, price_amount=999, quantity=1, state="active")
     page = make_page("page-1", "SKU-1", price=6.0, quantity=50, status="Active")
     client = FakeNotionClient(DB_SCHEMA, [page])
 
-    summary = sync_notion.run_sync(client, conn, "db-1", CONFIG, dry_run=True)
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=True)
 
     assert summary["updates"] == 1  # a change was planned...
     assert client.updates == []  # ...but nothing was written
 
 
-def test_unmatched_listing_is_reported_not_written(conn):
-    capture_fixture(conn)
+def test_unmatched_listing_is_reported_not_written(backend):
+    capture_fixture(backend)
     client = FakeNotionClient(DB_SCHEMA, [make_page("page-1", "OTHER-SKU")])
 
-    summary = sync_notion.run_sync(client, conn, "db-1", CONFIG, dry_run=False)
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
 
     assert summary["unmatched"] == 1
     assert client.updates == []
 
 
-def test_unknown_status_option_is_skipped(conn):
-    capture_fixture(conn, state="draft")  # "Draft" not among the DB's select options
+def test_unknown_status_option_is_skipped(backend):
+    capture_fixture(backend, state="draft")  # "Draft" not among the DB's select options
     page = make_page("page-1", "SKU-1", price=999.0, quantity=50, status="Active")
     client = FakeNotionClient(DB_SCHEMA, [page])
 
-    sync_notion.run_sync(client, conn, "db-1", CONFIG, dry_run=False)
+    sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
 
     _, properties = client.updates[0]
     assert "Status" not in properties  # option missing in Notion — skipped with a warning
@@ -121,5 +126,28 @@ def test_unknown_status_option_is_skipped(conn):
 
 def test_duplicate_skus_keep_first_page():
     pages = [make_page("page-1", "SKU-1"), make_page("page-2", "SKU-1")]
-    index = sync_notion.build_sku_index(pages, "SKU")
-    assert index["SKU-1"]["id"] == "page-1"
+    _, by_sku = sync_notion.build_page_indexes(pages, "Etsy Listing ID", "SKU")
+    assert by_sku["SKU-1"]["id"] == "page-1"
+
+
+def test_listing_id_match_beats_sku(backend):
+    """The row whose Etsy Listing ID matches wins, even when another row has the SKU."""
+    capture_fixture(backend, quantity=99)  # listing_id=1, sku=SKU-1
+    decoy = make_page("page-sku", "SKU-1", quantity=50)
+    right = make_page("page-lid", "OTHER-SKU", quantity=50, listing_id=1)
+    client = FakeNotionClient(DB_SCHEMA, [decoy, right])
+
+    sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
+
+    assert [page_id for page_id, _ in client.updates] == ["page-lid"]
+
+
+def test_sku_fallback_when_listing_id_empty(backend):
+    capture_fixture(backend, quantity=99)
+    page = make_page("page-1", "SKU-1", quantity=50)  # no listing id set
+    client = FakeNotionClient(DB_SCHEMA, [page])
+
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
+
+    assert summary["updates"] == 1
+    assert client.updates[0][0] == "page-1"

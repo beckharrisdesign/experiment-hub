@@ -44,10 +44,13 @@ Credentials live only in `.env` / environment variables (never committed):
      ever lapses — e.g. the job didn't run for 90+ days — just redo step 2.)
 - **Notion**: create an internal integration, share the Inventory database
   with it, set `NOTION_TOKEN` + `NOTION_INVENTORY_DB_ID`.
-- Confirm the property names in `.env` match the Notion database exactly
-  (`SKU`, `Single price sum`, `Inventory value`, `Status`). The sync validates
-  Status options against the live schema and skips anything that doesn't
-  match, so a mismatch is safe but produces warnings instead of updates.
+- Property mapping (defaults match the real Inventory database): rows match
+  on `Etsy Listing ID` first, `SKU` as fallback; price writes to `Etsy price`
+  and quantity to `Inventory level` (both plain numbers — Notion's API cannot
+  write rollups/formulas like `Single price sum` or `Inventory value`). The
+  sync validates Status options against the live schema and skips anything
+  that doesn't match, so a mismatch is safe but produces warnings instead of
+  updates.
 
 ## Run
 
@@ -108,18 +111,31 @@ ORDER BY first_seen_at DESC;
 
 ## Scheduling
 
-Local cron (daily), running both steps in sequence:
+### Server-side (canonical): GitHub Actions + Supabase
+
+`.github/workflows/etsy-notion-sync.yml` runs `scheduled_run.py` daily (and on
+`workflow_dispatch` from the hub's "Sync now" button). In this mode:
+
+- The store is Supabase (`STORE_BACKEND=supabase`): `etsy_listing_snapshots`,
+  `etsy_runs`, `etsy_schema_keys` — same append-only semantics, enforced by
+  DB triggers, service-role-only RLS.
+- Etsy tokens live in the `etsy_tokens` table (Etsy rotates refresh tokens on
+  every use, so a static secret can't hold them). Seed once after the browser
+  flow: `python oauth_helper.py --to-supabase`.
+- Repo secrets: `ETSY_API_KEY`, `ETSY_SHOP_ID`, `SUPABASE_URL`,
+  `SUPABASE_SERVICE_ROLE_KEY`, `NOTION_TOKEN`, `NOTION_INVENTORY_DB_ID`.
+  Repo variable `ETSY_SYNC_DRY_RUN=false` flips real Notion writes on
+  (defaults to dry-run when unset — no commit needed either way).
+
+### Local cron (fallback)
 
 ```cron
 0 6 * * * cd /path/to/experiments/etsy-notion-sync/prototype && .venv/bin/python oauth_helper.py --refresh --write-env && .venv/bin/python capture.py && .venv/bin/python sync_notion.py >> sync.log 2>&1
 ```
 
 The refresh step must come first: Etsy access tokens only live for an hour,
-so yesterday's token is always stale by the next scheduled run.
-
-GitHub Actions on a schedule works too (private repo, secrets for the env
-vars) — the store would then need to live somewhere persistent (artifact,
-committed DB, or a small remote store), so start with local cron.
+so yesterday's token is always stale by the next scheduled run. Local runs
+default to `STORE_BACKEND=sqlite` (`data/etsy_history.sqlite3`).
 
 ## Guardrails recap
 

@@ -11,7 +11,7 @@ import os
 from datetime import datetime, timezone
 
 import schema_watch
-import store
+from backends import make_backend
 from etsy_api import (
     API_VERSION,
     INVENTORY_ENDPOINT,
@@ -20,8 +20,6 @@ from etsy_api import (
 )
 
 log = logging.getLogger("capture")
-
-DEFAULT_DB_PATH = "data/etsy_history.sqlite3"
 
 # Endpoints are stored as the templated path (not the id-substituted URL) so
 # snapshots and schema keys group across listings; see SPEC record shape.
@@ -65,12 +63,13 @@ def parse_inventory(inventory):
     }
 
 
-def _watch_schema(conn, endpoint, payload, seen_at, summary):
-    baseline = len(store.known_keys(conn, endpoint)) == 0
-    new_keys = schema_watch.detect_new_keys(store.known_keys(conn, endpoint), payload)
+def _watch_schema(backend, endpoint, payload, seen_at, summary):
+    known = backend.known_keys(endpoint)
+    baseline = len(known) == 0
+    new_keys = schema_watch.detect_new_keys(known, payload)
     if not new_keys:
         return
-    store.record_keys(conn, endpoint, new_keys, seen_at)
+    backend.record_keys(endpoint, new_keys, seen_at)
     if baseline:
         log.info("Schema baseline for %s: %d keys recorded", endpoint, len(new_keys))
         return
@@ -79,9 +78,10 @@ def _watch_schema(conn, endpoint, payload, seen_at, summary):
         summary["new_fields"].append({"endpoint": endpoint, "key": key, "sample": sample})
 
 
-def run_capture(client, conn, shop_id, states=("active",), now=None):
+def run_capture(client, backend, shop_id, states=("active",), now=None,
+                trigger_source="scheduled"):
     captured_at = (now or datetime.now(timezone.utc)).isoformat()
-    run_id = store.start_run(conn, captured_at)
+    run_id = backend.start_run(captured_at, trigger_source)
     summary = {
         "listings_captured": 0,
         "snapshots_written": 0,
@@ -94,9 +94,8 @@ def run_capture(client, conn, shop_id, states=("active",), now=None):
             listing_id = listing["listing_id"]
             sku = ",".join(listing.get("skus") or []) or None
 
-            _watch_schema(conn, LISTINGS_ENDPOINT_TEMPLATE, listing, captured_at, summary)
-            store.append_snapshot(
-                conn,
+            _watch_schema(backend, LISTINGS_ENDPOINT_TEMPLATE, listing, captured_at, summary)
+            backend.append_snapshot(
                 captured_at=captured_at,
                 etsy_api_version=API_VERSION,
                 endpoint=LISTINGS_ENDPOINT_TEMPLATE,
@@ -108,9 +107,8 @@ def run_capture(client, conn, shop_id, states=("active",), now=None):
             summary["snapshots_written"] += 1
 
             inventory = client.get_listing_inventory(listing_id)
-            _watch_schema(conn, INVENTORY_ENDPOINT_TEMPLATE, inventory, captured_at, summary)
-            store.append_snapshot(
-                conn,
+            _watch_schema(backend, INVENTORY_ENDPOINT_TEMPLATE, inventory, captured_at, summary)
+            backend.append_snapshot(
                 captured_at=captured_at,
                 etsy_api_version=API_VERSION,
                 endpoint=INVENTORY_ENDPOINT_TEMPLATE,
@@ -122,7 +120,7 @@ def run_capture(client, conn, shop_id, states=("active",), now=None):
             summary["snapshots_written"] += 1
             summary["listings_captured"] += 1
             # One commit per listing: durable progress without an fsync per row.
-            conn.commit()
+            backend.commit()
 
             if client.quota_is_low():
                 summary["quota_low"] = True
@@ -138,7 +136,7 @@ def run_capture(client, conn, shop_id, states=("active",), now=None):
     finally:
         summary["quota"] = dict(client.last_quota)
         finished_at = datetime.now(timezone.utc).isoformat()
-        store.finish_run(conn, run_id, finished_at, status, summary)
+        backend.finish_run(run_id, finished_at, status, summary)
         log.info("Capture run %s finished (%s): %s", run_id, status, json.dumps(summary))
     return summary
 
@@ -162,16 +160,12 @@ def main():
     oauth_token = _require_env("ETSY_OAUTH_TOKEN")
     shop_id = _require_env("ETSY_SHOP_ID")
     states = [s.strip() for s in os.environ.get("ETSY_LISTING_STATES", "active").split(",") if s.strip()]
-    db_path = os.environ.get("CAPTURE_DB_PATH", DEFAULT_DB_PATH)
     quota_floor = float(os.environ.get("QUOTA_SAFETY_FLOOR", "0.1"))
 
-    parent = os.path.dirname(db_path)
-    if parent:
-        os.makedirs(parent, exist_ok=True)
-
     client = EtsyClient(api_key, oauth_token, quota_floor=quota_floor)
-    conn = store.connect(db_path)
-    run_capture(client, conn, shop_id, states=states)
+    backend = make_backend()
+    run_capture(client, backend, shop_id, states=states,
+                trigger_source=os.environ.get("TRIGGER_SOURCE", "scheduled"))
 
 
 if __name__ == "__main__":

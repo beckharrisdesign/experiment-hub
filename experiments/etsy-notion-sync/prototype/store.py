@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS runs (
   started_at TEXT NOT NULL,
   finished_at TEXT,
   status TEXT NOT NULL DEFAULT 'running',
+  trigger_source TEXT NOT NULL DEFAULT 'scheduled',
   summary TEXT
 );
 """
@@ -47,6 +48,10 @@ CREATE TABLE IF NOT EXISTS runs (
 def connect(path):
     conn = sqlite3.connect(path)
     conn.executescript(SCHEMA)
+    try:
+        conn.execute("ALTER TABLE runs ADD COLUMN trigger_source TEXT NOT NULL DEFAULT 'scheduled'")
+    except sqlite3.OperationalError:
+        pass  # column already exists (fresh DBs get it from SCHEMA)
     return conn
 
 
@@ -105,8 +110,11 @@ def latest_parsed_by_listing(conn, endpoint):
     }
 
 
-def start_run(conn, started_at):
-    cursor = conn.execute("INSERT INTO runs (started_at) VALUES (?)", (started_at,))
+def start_run(conn, started_at, trigger_source="scheduled"):
+    cursor = conn.execute(
+        "INSERT INTO runs (started_at, trigger_source) VALUES (?, ?)",
+        (started_at, trigger_source),
+    )
     conn.commit()
     return cursor.lastrowid
 
@@ -117,3 +125,38 @@ def finish_run(conn, run_id, finished_at, status, summary):
         (finished_at, status, json.dumps(summary), run_id),
     )
     conn.commit()
+
+
+class SqliteStore:
+    """Object interface over the sqlite functions; mirrors SupabaseStore.
+
+    Token custody is intentionally absent: local runs read tokens from .env
+    (oauth_helper --write-env); only the server-side store holds tokens.
+    """
+
+    def __init__(self, conn):
+        self.conn = conn
+
+    def append_snapshot(self, **kwargs):
+        return append_snapshot(self.conn, **kwargs)
+
+    def known_keys(self, endpoint):
+        return known_keys(self.conn, endpoint)
+
+    def record_keys(self, endpoint, new_keys, seen_at):
+        record_keys(self.conn, endpoint, new_keys, seen_at)
+
+    def latest_parsed_by_listing(self, endpoint):
+        return latest_parsed_by_listing(self.conn, endpoint)
+
+    def start_run(self, started_at, trigger_source="scheduled"):
+        return start_run(self.conn, started_at, trigger_source)
+
+    def finish_run(self, run_id, finished_at, status, summary):
+        finish_run(self.conn, run_id, finished_at, status, summary)
+
+    def commit(self):
+        self.conn.commit()
+
+    def get_tokens(self):
+        return None

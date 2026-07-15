@@ -82,3 +82,8 @@ def conn():
     connection = store.connect(":memory:")
     yield connection
     connection.close()
+
+
+@pytest.fixture
+def backend(conn):
+    return store.SqliteStore(conn)

@@ -1,0 +1,42 @@
+# etsy-notion-sync scheduled runner (openspec/changes/etsy-notion-sync-build)
+# Daily capture + Notion sync, plus workflow_dispatch for the hub's "Sync now".
+# DRY_RUN comes from a repo *variable* (not code) so flipping to real Notion
+# writes never needs a commit; it defaults to dry-run when unset.
+name: etsy-notion-sync
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: etsy-notion-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: experiments/etsy-notion-sync/prototype
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python scheduled_run.py
+        env:
+          ETSY_API_KEY: ${{ secrets.ETSY_API_KEY }}
+          ETSY_SHOP_ID: ${{ secrets.ETSY_SHOP_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_INVENTORY_DB_ID: ${{ secrets.NOTION_INVENTORY_DB_ID }}
+          TRIGGER_SOURCE: ${{ github.event_name == 'workflow_dispatch' && 'manual' || 'scheduled' }}
+          DRY_RUN: ${{ vars.ETSY_SYNC_DRY_RUN || 'true' }}
+          ETSY_LISTING_STATES: ${{ vars.ETSY_LISTING_STATES || 'active' }}
