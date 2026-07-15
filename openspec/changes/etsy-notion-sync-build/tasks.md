@@ -10,7 +10,7 @@
 
 ## 2. Prototype shell
 
-- [ ] 2.1 **Tailwind v4/v3 spike (gate for all UI tasks):** install `@beckharrisdesign/mvds` in the hub, render `Button`/`Badge`/`Card`/`Section` on a dev-only route, decide the consumption path (compiled CSS alongside v3 · page-scoped v4 build · hub v4 upgrade as separate change). Record the decision in `design.md`.
+- [ ] 2.1 **Tailwind v4/v3 spike (gate for all UI tasks):** ~~decide the consumption path~~ **decided 2026-07-15: hub upgrades to Tailwind v4 as its own change (`hub-tailwind-v4`)** — spike confirmed the package ships v4 source only (no compiled CSS). Remaining: after the upgrade lands, install `@beckharrisdesign/mvds` and render `Button`/`Badge`/`Card`/`Section` on a dev-only route to close this task.
 - [x] 2.2 Supabase schema migration (hub project): `etsy_listing_snapshots` (append-only, ancestry FK), `etsy_runs` (incl. `trigger_source`), `etsy_schema_keys`, `etsy_tokens` (service-role-only RLS; no client access to any of these tables)
 
 ## 3. Implementation
