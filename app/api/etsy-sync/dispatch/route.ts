@@ -17,5 +17,5 @@ export async function POST() {
       { status: 502 },
     );
   }
-  return NextResponse.json({ dispatched: true }, { status: 202 });
+  return NextResponse.json({ success: true, dispatched: true }, { status: 202 });
 }

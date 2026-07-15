@@ -4,7 +4,7 @@ import { getEtsySyncRuns } from "@/lib/etsy-sync";
 export async function GET() {
   try {
     const runs = await getEtsySyncRuns();
-    return NextResponse.json(runs);
+    return NextResponse.json({ success: true, runs });
   } catch (error) {
     return NextResponse.json(
       {

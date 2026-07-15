@@ -3,7 +3,7 @@
  *   /api/etsy-sync/runs     — public run-history read (server-side Supabase)
  *   /api/etsy-sync/dispatch — admin-gated workflow dispatch ("Sync now")
  */
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const TEST_SECRET = "test-admin-secret-xyz";
 
@@ -36,11 +36,18 @@ function withCookie(value?: string) {
   });
 }
 
-import { GET as getRuns } from "@/app/api/etsy-sync/runs/route";
-import { POST as postDispatch } from "@/app/api/etsy-sync/dispatch/route";
+// Route handlers are imported dynamically after mocks are in place
+// (rules/vitest-conventions.mdc — API route tests).
+let getRuns: () => Promise<Response>;
+let postDispatch: () => Promise<Response>;
+
+beforeEach(async () => {
+  vi.clearAllMocks();
+  ({ GET: getRuns } = await import("@/app/api/etsy-sync/runs/route"));
+  ({ POST: postDispatch } = await import("@/app/api/etsy-sync/dispatch/route"));
+});
 
 afterEach(() => {
-  vi.clearAllMocks();
   vi.unstubAllEnvs();
 });
 
@@ -54,7 +61,7 @@ describe("GET /api/etsy-sync/runs", () => {
 
     const response = await getRuns();
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual(runs);
+    expect(await response.json()).toEqual({ success: true, runs });
   });
 
   it("returns 503 when Supabase is not configured", async () => {
@@ -92,7 +99,7 @@ describe("POST /api/etsy-sync/dispatch", () => {
 
     const response = await postDispatch();
     expect(response.status).toBe(202);
-    expect(await response.json()).toEqual({ dispatched: true });
+    expect(await response.json()).toEqual({ success: true, dispatched: true });
     expect(mockDispatchEtsySyncWorkflow).toHaveBeenCalledOnce();
   });
 
