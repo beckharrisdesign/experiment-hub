@@ -13,12 +13,12 @@ globs:
 
 ## Pull requests
 
-- **Always open a PR** when a feature, fix, or test task is complete. Use the **GitHub CLI** (`gh`) — e.g. `gh pr create --draft`.
+- **Always open a PR** when a feature, fix, or test task is complete. Use the **GitHub CLI** (`gh`) — e.g. `gh pr create`.
 - **OpenSpec `/opsx:apply`:** Commit/push/PR timing lives in the active schema’s `apply.instruction` (see `openspec/schemas/*/schema.yaml`) and `skills/openspec-apply-change.md` step 8 — not duplicated here.
 - **One PR per logical unit of work.** Don't bundle unrelated changes.
 - **Never merge or approve the PR.** User reviews CI checks and the Vercel preview, and always makes the final merge decision. Agents must not run `gh pr merge` or approve reviews.
 - **Never have two PRs open for the same work item.** If a PR exists for the current task, push additional fixes to that branch rather than opening a new PR. Keep iterating on the existing PR until all checks pass.
-- **PR description** must include: what changed and why. Don't include a test plan unless its an actual automated test that's been implemented.
+- **PR description** must include: what changed and why. Don't include a test plan unless it's an actual automated test that's been implemented.
 
 ### Single ready-for-review PR until merge (default)
 
@@ -29,8 +29,8 @@ globs:
 
 ### Copilot review loop
 
-- After opening a PR (or pushing substantive new commits to one), **wait for Copilot's automated review** and check for its comments before ending the task — it usually posts within a few minutes (`gh api repos/<owner>/<repo>/pulls/<n>/comments`).
-- **Address every actionable comment**: push fixes to the same branch, then **reply on each comment** saying what changed — or why no change was needed. Never leave a Copilot comment unanswered.
+- After opening a PR (or pushing substantive new commits to one), **wait for Copilot's automated review** and check for its comments before ending the task — it usually posts within a few minutes (`gh api repos/OWNER/REPO/pulls/NUMBER/comments`).
+- **Address every actionable comment**: push fixes to the same branch, then **reply to each comment** saying what changed — or why no change was needed. Never leave a Copilot comment unanswered.
 - If a session finds an open PR with unanswered Copilot comments from an earlier session, address them the same way.
 - The user still reviews and makes the final merge decision.
 
