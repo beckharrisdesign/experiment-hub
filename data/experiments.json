@@ -268,5 +268,18 @@
     "tags": ["productivity", "pomodoro", "focus", "web"],
     "openspecChangeId": "pomodoro-maker",
     "openspecSchema": "bhd-experiment"
+  },
+  {
+    "id": "etsy-notion-sync",
+    "name": "Etsy → Notion Sync",
+    "statement": "Read-only Etsy v3 capture with append-only history, mirrored one-way into Notion.",
+    "type": "tool",
+    "directory": "experiments/etsy-notion-sync",
+    "documentationId": "doc-etsy-notion-sync",
+    "prototypeId": "",
+    "status": "Active",
+    "createdDate": "2026-07-15",
+    "lastModified": "2026-07-15",
+    "tags": ["etsy", "notion", "sync", "api-v3", "inventory", "data-capture", "tool"]
   }
 ]

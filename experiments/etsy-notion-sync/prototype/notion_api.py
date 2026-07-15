@@ -1,0 +1,62 @@
+"""Minimal Notion API client — just what the sync step needs."""
+import requests
+
+API_BASE = "https://api.notion.com/v1"
+NOTION_VERSION = "2022-06-28"
+
+
+class NotionApiError(RuntimeError):
+    pass
+
+
+class NotionClient:
+    def __init__(self, token, session=None):
+        self.token = token
+        self.session = session or requests.Session()
+
+    def _headers(self):
+        return {
+            "Authorization": "Bearer {}".format(self.token),
+            "Notion-Version": NOTION_VERSION,
+            "Content-Type": "application/json",
+        }
+
+    def _check(self, response, context):
+        if response.status_code >= 400:
+            raise NotionApiError(
+                "{} failed with {}: {}".format(context, response.status_code, response.text[:500])
+            )
+        return response.json()
+
+    def get_database(self, database_id):
+        response = self.session.get(
+            "{}/databases/{}".format(API_BASE, database_id), headers=self._headers(), timeout=30
+        )
+        return self._check(response, "GET database {}".format(database_id))
+
+    def query_database_all(self, database_id):
+        """Yield every page in the database, following pagination."""
+        cursor = None
+        while True:
+            body = {"start_cursor": cursor} if cursor else {}
+            response = self.session.post(
+                "{}/databases/{}/query".format(API_BASE, database_id),
+                headers=self._headers(),
+                json=body,
+                timeout=30,
+            )
+            payload = self._check(response, "Query database {}".format(database_id))
+            for page in payload.get("results") or []:
+                yield page
+            if not payload.get("has_more"):
+                break
+            cursor = payload.get("next_cursor")
+
+    def update_page(self, page_id, properties):
+        response = self.session.patch(
+            "{}/pages/{}".format(API_BASE, page_id),
+            headers=self._headers(),
+            json={"properties": properties},
+            timeout=30,
+        )
+        return self._check(response, "Update page {}".format(page_id))

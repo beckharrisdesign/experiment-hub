@@ -1,0 +1,9 @@
+[project]
+name = "etsy-notion-sync"
+version = "0.1.0"
+description = "Read-only Etsy v3 historical capture + one-way Notion inventory sync"
+requires-python = ">=3.9"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
