@@ -3,6 +3,10 @@
 Rows in listing_snapshots are never mutated or deleted (SPEC ancestry
 requirement). Each snapshot points at the previous snapshot for the same
 (listing_id, endpoint) via previous_record_id.
+
+append_snapshot and record_keys do NOT commit — callers batch related
+inserts and commit at a natural boundary (capture.py commits once per
+listing) to avoid an fsync per row. start_run/finish_run commit themselves.
 """
 import json
 import sqlite3
@@ -69,7 +73,6 @@ def append_snapshot(conn, captured_at, etsy_api_version, endpoint, listing_id, s
             previous[0] if previous else None,
         ),
     )
-    conn.commit()
     return cursor.lastrowid
 
 
@@ -85,7 +88,6 @@ def record_keys(conn, endpoint, new_keys, seen_at):
         " VALUES (?, ?, ?, ?)",
         [(endpoint, key, seen_at, sample) for key, sample in new_keys.items()],
     )
-    conn.commit()
 
 
 def latest_parsed_by_listing(conn, endpoint):

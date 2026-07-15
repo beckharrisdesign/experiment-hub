@@ -58,7 +58,12 @@ class EtsyClient:
             response = self.session.get(url, params=params, headers=headers, timeout=30)
             self._record_quota(response.headers)
             if response.status_code == 429:
-                retry_after = float(response.headers.get("retry-after", 1))
+                # retry-after may be an HTTP date rather than seconds; fall
+                # back to a short wait instead of crashing mid-run.
+                try:
+                    retry_after = float(response.headers.get("retry-after", 1))
+                except (TypeError, ValueError):
+                    retry_after = 1.0
                 log.warning("429 from %s — honoring retry-after=%ss", path, retry_after)
                 self.sleep(retry_after)
                 continue

@@ -34,6 +34,16 @@ def test_429_honors_retry_after_then_succeeds():
     assert sleeps[0] == 3.0
 
 
+def test_non_numeric_retry_after_falls_back_to_one_second():
+    session = FakeSession()
+    session.queue(FakeResponse(status_code=429, headers={"retry-after": "Wed, 15 Jul 2026 14:00:00 GMT"}))
+    session.queue(FakeResponse(json_body={"ok": True}))
+    client, sleeps = make_client(session)
+
+    assert client.get("/path") == {"ok": True}
+    assert sleeps[0] == 1.0
+
+
 def test_gives_up_after_max_retries():
     session = FakeSession()
     for _ in range(4):

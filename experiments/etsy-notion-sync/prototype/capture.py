@@ -121,6 +121,8 @@ def run_capture(client, conn, shop_id, states=("active",), now=None):
             )
             summary["snapshots_written"] += 1
             summary["listings_captured"] += 1
+            # One commit per listing: durable progress without an fsync per row.
+            conn.commit()
 
             if client.quota_is_low():
                 summary["quota_low"] = True
