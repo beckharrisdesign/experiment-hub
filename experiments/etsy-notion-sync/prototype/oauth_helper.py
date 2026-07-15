@@ -19,6 +19,7 @@ import hashlib
 import http.server
 import logging
 import os
+import re
 import secrets
 import urllib.parse
 import webbrowser
@@ -99,6 +100,11 @@ def fetch_shop_id(api_key, access_token, session=None):
     """The access token is '<user_id>.<secret>'; look up the shop it owns."""
     session = session or requests.Session()
     user_id = access_token.split(".", 1)[0]
+    if "." not in access_token or not user_id.isdigit():
+        raise OAuthError(
+            "Unexpected access token format — expected '<user_id>.<secret>',"
+            " cannot derive the user id for the shop lookup."
+        )
     response = session.get(
         SHOPS_URL.format(user_id=user_id),
         headers={"x-api-key": api_key, "Authorization": "Bearer {}".format(access_token)},
@@ -123,7 +129,14 @@ def wait_for_callback(port, expected_state):
 
     class Handler(http.server.BaseHTTPRequestHandler):
         def do_GET(self):
-            query = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+            parsed = urllib.parse.urlparse(self.path)
+            query = urllib.parse.parse_qs(parsed.query)
+            # Stray hits (e.g. /favicon.ico) must not end the wait — only a
+            # real callback carrying a code or error counts.
+            if parsed.path != "/callback" or not ("code" in query or "error" in query):
+                self.send_response(404)
+                self.end_headers()
+                return
             captured["code"] = (query.get("code") or [None])[0]
             captured["state"] = (query.get("state") or [None])[0]
             captured["error"] = (query.get("error") or [None])[0]
@@ -137,7 +150,7 @@ def wait_for_callback(port, expected_state):
 
     server = http.server.HTTPServer(("127.0.0.1", port), Handler)
     try:
-        while "code" not in captured:
+        while not captured:
             server.handle_request()
     finally:
         server.server_close()
@@ -162,7 +175,10 @@ def update_env_file(path, values):
     for line in lines:
         key = line.split("=", 1)[0].strip() if "=" in line and not line.lstrip().startswith("#") else None
         if key in remaining:
-            updated.append("{}={}".format(key, remaining.pop(key)))
+            inline_comment = re.search(r"\s+#.*$", line)
+            updated.append("{}={}{}".format(
+                key, remaining.pop(key), inline_comment.group(0) if inline_comment else ""
+            ))
         else:
             updated.append(line)
     for key, value in remaining.items():
@@ -179,10 +195,10 @@ def _require_env(name):
 
 
 def _report(tokens, shop_id, write_env, env_file):
-    values = {
-        "ETSY_OAUTH_TOKEN": tokens["access_token"],
-        "ETSY_REFRESH_TOKEN": tokens.get("refresh_token", ""),
-    }
+    values = {"ETSY_OAUTH_TOKEN": tokens["access_token"]}
+    # A refresh response may omit refresh_token; never blank out the stored one.
+    if tokens.get("refresh_token"):
+        values["ETSY_REFRESH_TOKEN"] = tokens["refresh_token"]
     if shop_id is not None:
         values["ETSY_SHOP_ID"] = shop_id
     if write_env:

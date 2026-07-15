@@ -1,6 +1,11 @@
 import base64
 import hashlib
+import socket
+import threading
+import time
+import urllib.error
 import urllib.parse
+import urllib.request
 
 import pytest
 
@@ -106,3 +111,61 @@ def test_update_env_file_creates_missing_file(tmp_path):
     env_file = tmp_path / ".env"
     oauth_helper.update_env_file(str(env_file), {"ETSY_SHOP_ID": "987"})
     assert env_file.read_text() == "ETSY_SHOP_ID=987\n"
+
+
+def test_update_env_file_preserves_inline_comments(tmp_path):
+    env_file = tmp_path / ".env"
+    env_file.write_text("ETSY_OAUTH_TOKEN=old  # rotated daily\n")
+    oauth_helper.update_env_file(str(env_file), {"ETSY_OAUTH_TOKEN": "new"})
+    assert env_file.read_text() == "ETSY_OAUTH_TOKEN=new  # rotated daily\n"
+
+
+def test_refresh_without_new_refresh_token_keeps_existing(tmp_path):
+    env_file = tmp_path / ".env"
+    env_file.write_text("ETSY_REFRESH_TOKEN=keep-me\n")
+    oauth_helper._report({"access_token": "1.abc"}, None, True, str(env_file))
+    content = env_file.read_text()
+    assert "ETSY_REFRESH_TOKEN=keep-me" in content
+    assert "ETSY_OAUTH_TOKEN=1.abc" in content
+
+
+def test_fetch_shop_id_rejects_malformed_token():
+    with pytest.raises(oauth_helper.OAuthError, match="token format"):
+        oauth_helper.fetch_shop_id("key123", "no-dot-token", session=FakeSession())
+    with pytest.raises(oauth_helper.OAuthError, match="token format"):
+        oauth_helper.fetch_shop_id("key123", "notdigits.secret", session=FakeSession())
+
+
+def _free_port():
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
+
+
+def _get(url):
+    for _ in range(50):  # wait for the server thread to start listening
+        try:
+            return urllib.request.urlopen(url, timeout=2)
+        except urllib.error.HTTPError as error:
+            return error  # 404s reach here — still a served response
+        except OSError:
+            time.sleep(0.05)
+    raise AssertionError("Server never came up at {}".format(url))
+
+
+def test_wait_for_callback_ignores_stray_requests():
+    port = _free_port()
+    result = {}
+    thread = threading.Thread(
+        target=lambda: result.update(code=oauth_helper.wait_for_callback(port, "st4te"))
+    )
+    thread.start()
+    try:
+        assert _get("http://127.0.0.1:{}/favicon.ico".format(port)).code == 404
+        assert _get("http://127.0.0.1:{}/callback".format(port)).code == 404  # no code/error yet
+        response = _get("http://127.0.0.1:{}/callback?code=abc&state=st4te".format(port))
+        assert response.code == 200
+    finally:
+        thread.join(timeout=5)
+    assert not thread.is_alive()
+    assert result["code"] == "abc"
