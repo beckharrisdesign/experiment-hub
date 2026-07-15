@@ -15,6 +15,7 @@ Spec: [../docs/SPEC.md](../docs/SPEC.md) · PRD: [../docs/PRD.md](../docs/PRD.md
 | `sync_notion.py` | Diffs latest captured state against Notion; writes only changed fields; `DRY_RUN=true` by default |
 | `schema_watch.py` | Detects new/unexpected fields in raw responses ("new field detected" notices) |
 | `etsy_api.py` | GET-only Etsy v3 client: auth headers, pacing, `429`/`retry-after`, quota floor |
+| `oauth_helper.py` | One-time OAuth 2.0 PKCE browser flow + `--refresh` token rotation for cron |
 | `notion_api.py` | Minimal Notion client (database schema, paginated query, page update) |
 | `store.py` | Append-only SQLite store: `listing_snapshots` (with ancestry), `schema_keys`, `runs` audit table |
 
@@ -29,9 +30,18 @@ cp .env.example .env   # then fill in credentials
 
 Credentials live only in `.env` / environment variables (never committed):
 
-- **Etsy**: complete the Seller App OAuth 2.0 flow once (scope `listings_r`)
-  to get `ETSY_OAUTH_TOKEN`; `ETSY_API_KEY` is the app keystring. See
-  [Etsy's OAuth docs](https://developers.etsy.com/documentation/essentials/authentication).
+- **Etsy** — one-time OAuth 2.0 flow (scope `listings_r`), automated by the helper:
+  1. In the [Etsy developer portal](https://www.etsy.com/developers/your-apps),
+     copy your Seller App's **keystring** into `ETSY_API_KEY` in `.env`, and add
+     `http://localhost:8181/callback` to the app's **Callback URLs**.
+  2. Run `python oauth_helper.py --write-env`. It opens etsy.com in your
+     browser; sign in and click **Grant access**. The helper catches the
+     redirect, exchanges the code (PKCE), looks up your `ETSY_SHOP_ID`, and
+     writes `ETSY_OAUTH_TOKEN` / `ETSY_REFRESH_TOKEN` / `ETSY_SHOP_ID` into `.env`.
+  3. Access tokens expire after **1 hour**; refresh tokens last ~90 days and
+     rotate on use. Scheduled runs refresh first:
+     `python oauth_helper.py --refresh --write-env`. (If the refresh token
+     ever lapses — e.g. the job didn't run for 90+ days — just redo step 2.)
 - **Notion**: create an internal integration, share the Inventory database
   with it, set `NOTION_TOKEN` + `NOTION_INVENTORY_DB_ID`.
 - Confirm the property names in `.env` match the Notion database exactly
@@ -101,8 +111,11 @@ ORDER BY first_seen_at DESC;
 Local cron (daily), running both steps in sequence:
 
 ```cron
-0 6 * * * cd /path/to/experiments/etsy-notion-sync/prototype && .venv/bin/python capture.py && .venv/bin/python sync_notion.py >> sync.log 2>&1
+0 6 * * * cd /path/to/experiments/etsy-notion-sync/prototype && .venv/bin/python oauth_helper.py --refresh --write-env && .venv/bin/python capture.py && .venv/bin/python sync_notion.py >> sync.log 2>&1
 ```
+
+The refresh step must come first: Etsy access tokens only live for an hour,
+so yesterday's token is always stale by the next scheduled run.
 
 GitHub Actions on a schedule works too (private repo, secrets for the env
 vars) — the store would then need to live somewhere persistent (artifact,
