@@ -43,4 +43,6 @@ jobs:
           NOTION_INVENTORY_DB_ID: ${{ secrets.NOTION_INVENTORY_DB_ID }}
           TRIGGER_SOURCE: ${{ github.event_name == 'workflow_dispatch' && 'manual' || 'scheduled' }}
           DRY_RUN: ${{ vars.ETSY_SYNC_DRY_RUN || 'true' }}
-          ETSY_LISTING_STATES: ${{ vars.ETSY_LISTING_STATES || 'active' }}
+          # Etsy is the source of truth: capture every listing state so new,
+          # paused, sold-out, and expired listings all land in Notion.
+          ETSY_LISTING_STATES: ${{ vars.ETSY_LISTING_STATES || 'active,inactive,sold_out,draft,expired' }}
