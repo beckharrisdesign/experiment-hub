@@ -243,9 +243,6 @@ def main():
         pass
 
     api_key = _require_env("ETSY_API_KEY")
-    # client_id in token requests stays the bare keystring; only the x-api-key
-    # header wants "keystring:shared_secret" (Etsy enforcement since 2026-02-09).
-    x_api_key = "{}:{}".format(api_key, _require_env("ETSY_SHARED_SECRET"))
 
     if args.refresh:
         refresh_token = _require_env("ETSY_REFRESH_TOKEN")
@@ -256,6 +253,13 @@ def main():
                            tokens.get("refresh_token") or refresh_token,
                            tokens.get("expires_in"))
         return
+
+    # Only the browser flow needs the shared secret: the shop lookup sends
+    # "keystring:shared_secret" in x-api-key (Etsy enforcement since
+    # 2026-02-09), while token requests use the bare keystring as client_id.
+    # Require it before opening the browser so a misconfigured run fails
+    # up front rather than after the user has approved.
+    x_api_key = "{}:{}".format(api_key, _require_env("ETSY_SHARED_SECRET"))
 
     redirect_uri = "http://localhost:{}/callback".format(args.port)
     verifier, challenge = make_pkce_pair()
