@@ -72,6 +72,15 @@ Credential setup:
   sync validates Status options against the live schema and skips anything
   that doesn't match, so a mismatch is safe but produces warnings instead of
   updates.
+- Beyond price/quantity/status, the sync mirrors the extra Etsy fields in
+  `DEFAULT_EXTRA_FIELDS` (`sync_notion.py`): Description, Etsy Title, Etsy
+  URL, Views, Favorites, Tags, Materials, Currency, Etsy Created / Last
+  Modified. **Missing Notion properties are created automatically** on the
+  first live run (dry-run just logs what it would create), so adding a field
+  to the map — or overriding it via `NOTION_EXTRA_FIELDS_JSON` — needs no
+  manual Notion setup. Status/rollup/formula/relation types can't be created
+  through the API and are skipped with a warning. Long descriptions truncate
+  at Notion's 2000-character rich_text limit.
 
 ## Run
 

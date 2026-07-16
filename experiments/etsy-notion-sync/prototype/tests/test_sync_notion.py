@@ -11,6 +11,7 @@ CONFIG = {
     "quantity_property": "Inventory value",
     "status_property": "Status",
     "state_to_status": dict(sync_notion.DEFAULT_STATE_TO_STATUS),
+    "extra_fields": [],  # extra-field behavior has its own tests below
 }
 
 DB_SCHEMA = {
@@ -22,7 +23,7 @@ DB_SCHEMA = {
         "Inventory value": {"type": "number"},
         "Status": {
             "type": "select",
-            "select": {"options": [{"name": "Active"}, {"name": "Inactive"}, {"name": "Sold out"}]},
+            "select": {"options": [{"name": "Active"}, {"name": "Inactive"}, {"name": "Sold Out"}]},
         },
     }
 }
@@ -50,9 +51,13 @@ class FakeNotionClient:
         self.pages = pages
         self.updates = []
         self.creates = []
+        self.db_updates = []
 
     def get_database(self, database_id):
         return self.db_schema
+
+    def update_database(self, database_id, properties):
+        self.db_updates.append((database_id, properties))
 
     def query_database_all(self, database_id):
         return iter(self.pages)
@@ -64,8 +69,9 @@ class FakeNotionClient:
         self.creates.append((database_id, properties))
 
 
-def capture_fixture(backend, price_amount=600, quantity=50, state="active"):
-    listing = make_listing(1, sku="SKU-1", price_amount=price_amount, quantity=quantity, state=state)
+def capture_fixture(backend, price_amount=600, quantity=50, state="active", extra=None):
+    listing = make_listing(1, sku="SKU-1", price_amount=price_amount, quantity=quantity,
+                           state=state, extra=extra)
     client = FakeEtsyClient([listing], {1: make_inventory("SKU-1")})
     capture.run_capture(client, backend, "shop123")
 
@@ -202,3 +208,124 @@ def test_sku_fallback_when_listing_id_empty(backend):
 
     assert summary["updates"] == 1
     assert client.updates[0][0] == "page-1"
+
+
+# --- extra fields (description, tags, dates, ...) ---------------------------
+
+EXTRA_FIELDS = [
+    {"parsed_key": "description", "property": "Description", "type": "rich_text"},
+    {"parsed_key": "tags", "property": "Tags", "type": "multi_select"},
+    {"parsed_key": "last_modified_timestamp", "property": "Etsy Last Modified", "type": "date"},
+]
+
+EXTRA_CONFIG = dict(CONFIG, extra_fields=EXTRA_FIELDS)
+
+EXTRA_DB_SCHEMA = {
+    "properties": dict(
+        DB_SCHEMA["properties"],
+        **{
+            "Description": {"type": "rich_text"},
+            "Tags": {"type": "multi_select"},
+            "Etsy Last Modified": {"type": "date"},
+        },
+    )
+}
+
+
+def test_missing_extra_properties_are_created_and_written(backend):
+    capture_fixture(backend, extra={"description": "Hand-stitched."})
+    page = make_page("page-1", "SKU-1", price=6.0, quantity=50, status="Active")
+    client = FakeNotionClient(DB_SCHEMA, [page])  # schema lacks all three extras
+
+    sync_notion.run_sync(client, backend, "db-1", EXTRA_CONFIG, dry_run=False)
+
+    assert client.db_updates == [("db-1", {
+        "Description": {"rich_text": {}},
+        "Tags": {"multi_select": {}},
+        "Etsy Last Modified": {"date": {}},
+    })]
+    _, properties = client.updates[0]
+    assert properties["Description"] == {"rich_text": [{"text": {"content": "Hand-stitched."}}]}
+    assert properties["Tags"] == {"multi_select": [{"name": "embroidery"}]}
+    assert properties["Etsy Last Modified"] == {"date": {"start": "2009-02-13"}}
+
+
+def test_dry_run_plans_extra_fields_without_creating_properties(backend):
+    capture_fixture(backend, extra={"description": "Hand-stitched."})
+    page = make_page("page-1", "SKU-1", price=6.0, quantity=50, status="Active")
+    client = FakeNotionClient(DB_SCHEMA, [page])
+
+    summary = sync_notion.run_sync(client, backend, "db-1", EXTRA_CONFIG, dry_run=True)
+
+    assert summary["updates"] == 1  # extras were planned...
+    assert client.db_updates == []  # ...but no schema or page writes happened
+    assert client.updates == []
+
+
+def test_extra_fields_idempotent_when_unchanged(backend):
+    capture_fixture(backend, extra={"description": "  Hand-stitched.  "})
+    page = make_page("page-1", "SKU-1", price=6.0, quantity=50, status="Active")
+    page["properties"]["Description"] = {
+        "type": "rich_text", "rich_text": [{"plain_text": "Hand-stitched."}],
+    }
+    page["properties"]["Tags"] = {
+        "type": "multi_select", "multi_select": [{"name": "embroidery"}],
+    }
+    page["properties"]["Etsy Last Modified"] = {
+        "type": "date", "date": {"start": "2009-02-13"},
+    }
+    client = FakeNotionClient(EXTRA_DB_SCHEMA, [page])
+
+    summary = sync_notion.run_sync(client, backend, "db-1", EXTRA_CONFIG, dry_run=False)
+
+    assert summary["updates"] == 0
+    assert client.updates == []
+
+
+def test_long_description_is_truncated_for_notion(backend):
+    capture_fixture(backend, extra={"description": "x" * 2500})
+    page = make_page("page-1", "SKU-1", price=6.0, quantity=50, status="Active")
+    client = FakeNotionClient(EXTRA_DB_SCHEMA, [page])
+
+    sync_notion.run_sync(client, backend, "db-1", EXTRA_CONFIG, dry_run=False)
+
+    _, properties = client.updates[0]
+    content = properties["Description"]["rich_text"][0]["text"]["content"]
+    assert content == "x" * 2000
+
+
+def test_non_creatable_extra_field_type_is_skipped(backend):
+    capture_fixture(backend)
+    config = dict(CONFIG, extra_fields=[
+        {"parsed_key": "title", "property": "Linked Item", "type": "relation"},
+    ])
+    page = make_page("page-1", "SKU-1", price=6.0, quantity=50, status="Active")
+    client = FakeNotionClient(DB_SCHEMA, [page])
+
+    sync_notion.run_sync(client, backend, "db-1", config, dry_run=False)
+
+    assert client.db_updates == []  # relation can't be auto-created
+    assert all("Linked Item" not in props for _, props in client.updates)
+
+
+def test_unmatched_listing_create_includes_extra_fields(backend):
+    capture_fixture(backend, extra={"description": "Hand-stitched."})
+    client = FakeNotionClient(EXTRA_DB_SCHEMA, [make_page("page-1", "OTHER-SKU")])
+
+    summary = sync_notion.run_sync(client, backend, "db-1", EXTRA_CONFIG, dry_run=False)
+
+    assert summary["created"] == 1
+    _, properties = client.creates[0]
+    assert properties["Description"] == {"rich_text": [{"text": {"content": "Hand-stitched."}}]}
+    assert properties["Tags"] == {"multi_select": [{"name": "embroidery"}]}
+
+
+def test_sold_out_state_maps_to_notion_option(backend):
+    capture_fixture(backend, state="sold_out")
+    page = make_page("page-1", "SKU-1", price=6.0, quantity=50, status="Active")
+    client = FakeNotionClient(DB_SCHEMA, [page])
+
+    sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
+
+    _, properties = client.updates[0]
+    assert properties["Status"] == {"select": {"name": "Sold Out"}}

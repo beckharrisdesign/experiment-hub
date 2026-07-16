@@ -5,6 +5,7 @@ Read-only against Etsy; writes only to the local SQLite store. Safe to run
 on every scheduled cycle regardless of DRY_RUN (that flag only gates the
 Notion sync step in sync_notion.py).
 """
+import html
 import json
 import logging
 import os
@@ -31,22 +32,32 @@ assert LISTINGS_ENDPOINT_TEMPLATE == LISTINGS_ENDPOINT
 assert INVENTORY_ENDPOINT_TEMPLATE == INVENTORY_ENDPOINT
 
 
+def _unescape(text):
+    # Etsy v3 returns HTML-escaped text ("6&quot;", "&amp;"); raw_response
+    # keeps the original, the parsed projection carries readable text.
+    return html.unescape(text) if text is not None else None
+
+
 def parse_listing(listing):
     """Convenience projection of the fields we analyze most; raw JSON keeps the rest."""
     price = listing.get("price") or {}
     amount = price.get("amount")
     divisor = price.get("divisor") or 100
     return {
-        "title": listing.get("title"),
+        "title": _unescape(listing.get("title")),
+        "description": _unescape(listing.get("description")),
+        "url": listing.get("url"),
         "price": (amount / divisor) if amount is not None else None,
         "currency_code": price.get("currency_code"),
         "quantity": listing.get("quantity"),
         "state": listing.get("state"),
         "views": listing.get("views"),
         "num_favorers": listing.get("num_favorers"),
+        "original_creation_timestamp": listing.get("original_creation_timestamp"),
         "last_modified_timestamp": listing.get("last_modified_timestamp"),
         "skus": listing.get("skus") or [],
         "tags": listing.get("tags") or [],
+        "materials": listing.get("materials") or [],
     }
 
 
