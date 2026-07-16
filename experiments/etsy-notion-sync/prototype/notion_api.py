@@ -34,6 +34,16 @@ class NotionClient:
         )
         return self._check(response, "GET database {}".format(database_id))
 
+    def update_database(self, database_id, properties):
+        """Add or update database properties, e.g. {"Description": {"rich_text": {}}}."""
+        response = self.session.patch(
+            "{}/databases/{}".format(API_BASE, database_id),
+            headers=self._headers(),
+            json={"properties": properties},
+            timeout=30,
+        )
+        return self._check(response, "Update database {}".format(database_id))
+
     def query_database_all(self, database_id):
         """Yield every page in the database, following pagination."""
         cursor = None

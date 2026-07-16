@@ -85,6 +85,15 @@ def test_parse_listing_converts_money():
     assert parsed["currency_code"] == "USD"
 
 
+def test_parse_listing_unescapes_html_entities():
+    parsed = capture.parse_listing(make_listing(1, extra={
+        "title": "6&quot; hoop &amp; thread",
+        "description": "Stitch &#39;slowly&#39;",
+    }))
+    assert parsed["title"] == '6" hoop & thread'
+    assert parsed["description"] == "Stitch 'slowly'"
+
+
 def test_parse_inventory_totals_offerings():
     parsed = capture.parse_inventory(make_inventory("SKU-1", quantity=7))
     assert parsed == {"product_count": 1, "skus": ["SKU-1"], "total_offering_quantity": 7}
