@@ -18,6 +18,7 @@ Spec: [../docs/SPEC.md](../docs/SPEC.md) · PRD: [../docs/PRD.md](../docs/PRD.md
 | `oauth_helper.py` | One-time OAuth 2.0 PKCE browser flow + `--refresh` token rotation for cron |
 | `notion_api.py` | Minimal Notion client (database schema, paginated query, page update) |
 | `store.py` | Append-only SQLite store: `listing_snapshots` (with ancestry), `schema_keys`, `runs` audit table |
+| `env.py` | Shared dotenv loading: local `.env` first, repo root `.env.local` as fallback |
 
 ## Setup
 
@@ -28,7 +29,24 @@ pip install -r requirements.txt
 cp .env.example .env   # then fill in credentials
 ```
 
-Credentials live only in `.env` / environment variables (never committed):
+Credentials live only in env files / environment variables (never committed).
+Every entry point loads them with this precedence (via `env.py`):
+
+1. real environment variables
+2. the prototype's local `.env` (wins over the fallback when present)
+3. the repo root `.env.local` — the canonical shared location (see
+   `/.env.example`), so keys used by both the hub and experiments
+   (`NOTION_TOKEN`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`) only need
+   to be set once. Etsy-specific keys stay in the local `.env` because
+   `oauth_helper.py --write-env` rewrites tokens there.
+
+Both files are resolved relative to the prototype/repo (not the working
+directory), so the scripts behave the same run from here, the repo root, or
+cron. The prototype stays runnable standalone: outside the repo (no
+`.env.local` or `.git` in any parent directory) only the local `.env` is
+loaded.
+
+Credential setup:
 
 - **Etsy** — one-time OAuth 2.0 flow (scope `listings_r`), automated by the helper:
   1. In the [Etsy developer portal](https://www.etsy.com/developers/your-apps),
@@ -45,7 +63,8 @@ Credentials live only in `.env` / environment variables (never committed):
      `python oauth_helper.py --refresh --write-env`. (If the refresh token
      ever lapses — e.g. the job didn't run for 90+ days — just redo step 2.)
 - **Notion**: create an internal integration, share the Inventory database
-  with it, set `NOTION_TOKEN` + `NOTION_INVENTORY_DB_ID`.
+  with it, set `NOTION_TOKEN` (fine to keep in the repo root `.env.local`)
+  + `NOTION_INVENTORY_DB_ID`.
 - Property mapping (defaults match the real Inventory database): rows match
   on `Etsy Listing ID` first, `SKU` as fallback; price writes to `Etsy price`
   and quantity to `Inventory level` (both plain numbers — Notion's API cannot
