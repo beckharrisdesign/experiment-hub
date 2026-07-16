@@ -182,7 +182,7 @@ export default async function ExperimentDetailPage({
         <div className="max-w-screen-xl mx-auto">
           {/* Experiment-specific prototype surface (etsy-notion-sync-build 3.5) */}
           {slug === "etsy-notion-sync" && (
-            <div className="mb-10">
+            <div className="pb-10">
               <EtsySyncPanel />
             </div>
           )}

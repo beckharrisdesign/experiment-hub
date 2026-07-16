@@ -118,6 +118,26 @@ describe("EtsySyncPanel", () => {
     expect(screen.queryByTestId("queued-row")).not.toBeInTheDocument();
   });
 
+  it("shows 0% quota left when the daily quota is exhausted", async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(200, {
+        success: true,
+        runs: [
+          {
+            ...RUNS[0],
+            summary: {
+              ...RUNS[0].summary,
+              quota: { remaining_today: 0, limit_per_day: 10000 },
+            },
+          },
+        ],
+      }),
+    );
+
+    render(<EtsySyncPanel />);
+    expect(await screen.findByText("0% quota left")).toBeInTheDocument();
+  });
+
   it("renders the empty state before any runs exist", async () => {
     fetchMock.mockResolvedValue(jsonResponse(200, { success: true, runs: [] }));
 

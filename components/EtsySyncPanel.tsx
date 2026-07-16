@@ -61,7 +61,10 @@ function relativeTime(iso: string): string {
 
 function quotaLabel(run: SyncRun): string | null {
   const quota = run.summary?.quota;
-  if (!quota?.remaining_today || !quota.limit_per_day) return null;
+  // remaining_today === 0 is the most important value to show (quota
+  // exhausted), so only treat null/undefined as missing; a zero/absent
+  // limit still bails (nothing meaningful to divide by).
+  if (quota?.remaining_today == null || !quota.limit_per_day) return null;
   return `${Math.round((quota.remaining_today / quota.limit_per_day) * 100)}% quota left`;
 }
 
