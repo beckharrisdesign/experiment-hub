@@ -149,6 +149,20 @@ def test_no_listing_id_property_skips_creates(backend):
     assert client.creates == []
 
 
+def test_unwritable_listing_id_property_skips_creates(backend):
+    # A row created without its listing id could never match again, so the
+    # next run would create a duplicate — the plan must be dropped instead.
+    capture_fixture(backend)
+    schema = {"properties": dict(DB_SCHEMA["properties"],
+                                 **{"Etsy Listing ID": {"type": "formula"}})}
+    client = FakeNotionClient(schema, [make_page("page-1", "OTHER-SKU")])
+
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
+
+    assert summary["created"] == 0
+    assert client.creates == []
+
+
 def test_unknown_status_option_is_skipped(backend):
     capture_fixture(backend, state="draft")  # "Draft" not among the DB's select options
     page = make_page("page-1", "SKU-1", price=999.0, quantity=50, status="Active")

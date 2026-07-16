@@ -192,10 +192,12 @@ def plan_creates(unmatched, db_schema, config):
     status_options = _status_options(db_schema, config["status_property"])
     state_to_status = config["state_to_status"]
 
-    if config["listing_id_property"] not in db_props:
+    missing = [p for p in (config["listing_id_property"], config["title_property"])
+               if p not in db_props]
+    if missing:
         log.warning(
-            "Notion database has no property %r — cannot create rows for unmatched listings",
-            config["listing_id_property"],
+            "Notion database is missing properties %s — cannot create rows for unmatched listings",
+            missing,
         )
         return []
 
@@ -216,6 +218,7 @@ def plan_creates(unmatched, db_schema, config):
                 desired[config["status_property"]] = status
 
         properties = {}
+        values = {}
         for prop_name, new_value in desired.items():
             if new_value is None:
                 continue
@@ -226,7 +229,16 @@ def plan_creates(unmatched, db_schema, config):
             if payload is None:
                 continue
             properties[prop_name] = payload
-        creates.append({"listing_id": listing_id, "properties": properties})
+            values[prop_name] = new_value
+        # Without a written listing id the row can never match, so the next
+        # run would create a duplicate — skip rather than write an orphan.
+        if config["listing_id_property"] not in properties:
+            log.warning(
+                "Listing id property %r is not writable — skipping create for listing %s",
+                config["listing_id_property"], listing_id,
+            )
+            continue
+        creates.append({"listing_id": listing_id, "properties": properties, "values": values})
     return creates
 
 
@@ -236,7 +248,7 @@ def apply_creates(client, creates, database_id, dry_run):
             "%s Notion row for listing %s: %s",
             "DRY RUN — would create" if dry_run else "Creating",
             plan["listing_id"],
-            json.dumps(sorted(plan["properties"])),
+            json.dumps(plan["values"]),
         )
         if not dry_run:
             client.create_page(database_id, plan["properties"])
@@ -259,7 +271,8 @@ def run_sync(client, backend, database_id, config, dry_run=True):
     latest = backend.latest_parsed_by_listing(LISTINGS_ENDPOINT_TEMPLATE)
     if not latest:
         log.warning("No captured listings in the store — run capture.py first.")
-        return {"updates": 0, "unmatched": 0, "dry_run": dry_run}
+        return {"listings": 0, "notion_pages": 0, "updates": 0, "created": 0,
+                "unmatched": 0, "dry_run": dry_run}
 
     db_schema = client.get_database(database_id)
     pages = list(client.query_database_all(database_id))
