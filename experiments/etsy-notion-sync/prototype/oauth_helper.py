@@ -26,6 +26,8 @@ import webbrowser
 
 import requests
 
+from env import load_env
+
 AUTH_URL = "https://www.etsy.com/oauth/connect"
 TOKEN_URL = "https://api.etsy.com/v3/public/oauth/token"
 SHOPS_URL = "https://openapi.etsy.com/v3/application/users/{user_id}/shops"
@@ -236,11 +238,7 @@ def main():
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
     args = parser.parse_args()
 
-    try:
-        from dotenv import load_dotenv
-        load_dotenv(args.env_file)
-    except ImportError:
-        pass
+    load_env(args.env_file)
 
     api_key = _require_env("ETSY_API_KEY")
 

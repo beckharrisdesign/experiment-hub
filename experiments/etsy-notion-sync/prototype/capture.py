@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 
 import schema_watch
 from backends import make_backend
+from env import load_env
 from etsy_api import (
     API_VERSION,
     INVENTORY_ENDPOINT,
@@ -151,11 +152,7 @@ def _require_env(name):
 
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
-    try:
-        from dotenv import load_dotenv
-        load_dotenv()
-    except ImportError:
-        pass
+    load_env()
 
     api_key = _require_env("ETSY_API_KEY")
     oauth_token = _require_env("ETSY_OAUTH_TOKEN")

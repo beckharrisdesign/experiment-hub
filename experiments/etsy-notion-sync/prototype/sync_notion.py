@@ -11,6 +11,7 @@ import os
 
 from backends import make_backend
 from capture import LISTINGS_ENDPOINT_TEMPLATE
+from env import load_env
 from notion_api import NotionClient
 
 log = logging.getLogger("sync_notion")
@@ -242,11 +243,7 @@ def config_from_env():
 
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
-    try:
-        from dotenv import load_dotenv
-        load_dotenv()
-    except ImportError:
-        pass
+    load_env()
 
     token = _require_env("NOTION_TOKEN")
     database_id = _require_env("NOTION_INVENTORY_DB_ID")
