@@ -59,6 +59,10 @@ def _payload_for(prop_type, value):
         return {"select": {"name": value}}
     if prop_type == "status":
         return {"status": {"name": value}}
+    if prop_type == "title":
+        return {"title": [{"text": {"content": str(value)}}]}
+    if prop_type == "rich_text":
+        return {"rich_text": [{"text": {"content": str(value)}}]}
     return None
 
 
@@ -125,7 +129,7 @@ def plan_updates(latest, indexes, db_schema, config):
                     matched_by = sku
                     break
         if page is None:
-            unmatched.append({"listing_id": listing_id, "skus": skus})
+            unmatched.append({"listing_id": listing_id, "skus": skus, "parsed": parsed})
             continue
 
         desired = {
@@ -178,6 +182,79 @@ def plan_updates(latest, indexes, db_schema, config):
     return plans, unmatched
 
 
+def plan_creates(unmatched, db_schema, config):
+    """Build create plans so unmatched Etsy listings appear in Notion.
+
+    Etsy is the source of truth: a listing with no Notion row (e.g. created
+    on the fly from the Etsy app) gets a new row carrying its listing id,
+    title, price, quantity, and status. Subsequent runs match it by id.
+    """
+    db_props = db_schema.get("properties") or {}
+    status_options = _status_options(db_schema, config["status_property"])
+    state_to_status = config["state_to_status"]
+
+    missing = [p for p in (config["listing_id_property"], config["title_property"])
+               if p not in db_props]
+    if missing:
+        log.warning(
+            "Notion database is missing properties %s — cannot create rows for unmatched listings",
+            missing,
+        )
+        return []
+
+    creates = []
+    for miss in unmatched:
+        parsed = miss.get("parsed") or {}
+        listing_id = miss["listing_id"]
+        desired = {
+            config["listing_id_property"]: str(listing_id),
+            config["title_property"]: parsed.get("title") or "Etsy listing {}".format(listing_id),
+            config["price_property"]: parsed.get("price"),
+            config["quantity_property"]: parsed.get("quantity"),
+        }
+        state = parsed.get("state")
+        if state is not None:
+            status = state_to_status.get(state)
+            if status is not None and (status_options is None or status in status_options):
+                desired[config["status_property"]] = status
+
+        properties = {}
+        values = {}
+        for prop_name, new_value in desired.items():
+            if new_value is None:
+                continue
+            schema_prop = db_props.get(prop_name)
+            if schema_prop is None:
+                continue
+            payload = _payload_for(schema_prop.get("type"), new_value)
+            if payload is None:
+                continue
+            properties[prop_name] = payload
+            values[prop_name] = new_value
+        # Without a written listing id the row can never match, so the next
+        # run would create a duplicate — skip rather than write an orphan.
+        if config["listing_id_property"] not in properties:
+            log.warning(
+                "Listing id property %r is not writable — skipping create for listing %s",
+                config["listing_id_property"], listing_id,
+            )
+            continue
+        creates.append({"listing_id": listing_id, "properties": properties, "values": values})
+    return creates
+
+
+def apply_creates(client, creates, database_id, dry_run):
+    for plan in creates:
+        log.info(
+            "%s Notion row for listing %s: %s",
+            "DRY RUN — would create" if dry_run else "Creating",
+            plan["listing_id"],
+            json.dumps(plan["values"]),
+        )
+        if not dry_run:
+            client.create_page(database_id, plan["properties"])
+
+
 def apply_updates(client, plans, dry_run):
     for plan in plans:
         log.info(
@@ -195,7 +272,8 @@ def run_sync(client, backend, database_id, config, dry_run=True):
     latest = backend.latest_parsed_by_listing(LISTINGS_ENDPOINT_TEMPLATE)
     if not latest:
         log.warning("No captured listings in the store — run capture.py first.")
-        return {"updates": 0, "unmatched": 0, "dry_run": dry_run}
+        return {"listings": 0, "notion_pages": 0, "updates": 0, "created": 0,
+                "unmatched": 0, "dry_run": dry_run}
 
     db_schema = client.get_database(database_id)
     pages = list(client.query_database_all(database_id))
@@ -204,12 +282,15 @@ def run_sync(client, backend, database_id, config, dry_run=True):
     plans, unmatched = plan_updates(latest, indexes, db_schema, config)
     for miss in unmatched:
         log.warning("No Notion row matched listing %s (skus=%s)", miss["listing_id"], miss["skus"])
+    creates = plan_creates(unmatched, db_schema, config)
     apply_updates(client, plans, dry_run)
+    apply_creates(client, creates, database_id, dry_run)
 
     summary = {
         "listings": len(latest),
         "notion_pages": len(pages),
         "updates": len(plans),
+        "created": len(creates),
         "unmatched": len(unmatched),
         "dry_run": dry_run,
     }
@@ -231,6 +312,7 @@ def config_from_env():
     # cannot write those); "Etsy Listing ID" is the primary match key.
     return {
         "listing_id_property": os.environ.get("NOTION_LISTING_ID_PROPERTY", "Etsy Listing ID"),
+        "title_property": os.environ.get("NOTION_TITLE_PROPERTY", "Short Title"),
         "sku_property": os.environ.get("NOTION_SKU_PROPERTY", "SKU"),
         "price_property": os.environ.get("NOTION_PRICE_PROPERTY", "Etsy price"),
         "quantity_property": os.environ.get("NOTION_QUANTITY_PROPERTY", "Inventory level"),

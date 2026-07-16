@@ -49,11 +49,12 @@ def main():
     load_env()
 
     api_key = _require_env("ETSY_API_KEY")
+    shared_secret = _require_env("ETSY_SHARED_SECRET")
     shop_id = _require_env("ETSY_SHOP_ID")
     backend = SupabaseStore(_require_env("SUPABASE_URL"), _require_env("SUPABASE_SERVICE_ROLE_KEY"))
 
     access_token = refresh_tokens_from_store(backend, api_key)
-    client = EtsyClient(api_key, access_token,
+    client = EtsyClient(api_key, access_token, shared_secret=shared_secret,
                         quota_floor=float(os.environ.get("QUOTA_SAFETY_FLOOR", "0.1")))
 
     trigger_source = os.environ.get("TRIGGER_SOURCE", "scheduled")

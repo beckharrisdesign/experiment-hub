@@ -155,12 +155,13 @@ def main():
     load_env()
 
     api_key = _require_env("ETSY_API_KEY")
+    shared_secret = _require_env("ETSY_SHARED_SECRET")
     oauth_token = _require_env("ETSY_OAUTH_TOKEN")
     shop_id = _require_env("ETSY_SHOP_ID")
     states = [s.strip() for s in os.environ.get("ETSY_LISTING_STATES", "active").split(",") if s.strip()]
     quota_floor = float(os.environ.get("QUOTA_SAFETY_FLOOR", "0.1"))
 
-    client = EtsyClient(api_key, oauth_token, quota_floor=quota_floor)
+    client = EtsyClient(api_key, oauth_token, shared_secret=shared_secret, quota_floor=quota_floor)
     backend = make_backend()
     run_capture(client, backend, shop_id, states=states,
                 trigger_source=os.environ.get("TRIGGER_SOURCE", "scheduled"))

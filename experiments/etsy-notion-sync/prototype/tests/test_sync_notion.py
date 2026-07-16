@@ -5,6 +5,7 @@ from tests.test_capture import FakeEtsyClient
 
 CONFIG = {
     "listing_id_property": "Etsy Listing ID",
+    "title_property": "Short Title",
     "sku_property": "SKU",
     "price_property": "Single price sum",
     "quantity_property": "Inventory value",
@@ -14,6 +15,8 @@ CONFIG = {
 
 DB_SCHEMA = {
     "properties": {
+        "Etsy Listing ID": {"type": "rich_text"},
+        "Short Title": {"type": "title"},
         "SKU": {"type": "rich_text"},
         "Single price sum": {"type": "number"},
         "Inventory value": {"type": "number"},
@@ -46,6 +49,7 @@ class FakeNotionClient:
         self.db_schema = db_schema
         self.pages = pages
         self.updates = []
+        self.creates = []
 
     def get_database(self, database_id):
         return self.db_schema
@@ -55,6 +59,9 @@ class FakeNotionClient:
 
     def update_page(self, page_id, properties):
         self.updates.append((page_id, properties))
+
+    def create_page(self, database_id, properties):
+        self.creates.append((database_id, properties))
 
 
 def capture_fixture(backend, price_amount=600, quantity=50, state="active"):
@@ -102,14 +109,58 @@ def test_dry_run_never_writes(backend):
     assert client.updates == []  # ...but nothing was written
 
 
-def test_unmatched_listing_is_reported_not_written(backend):
+def test_unmatched_listing_creates_row(backend):
     capture_fixture(backend)
     client = FakeNotionClient(DB_SCHEMA, [make_page("page-1", "OTHER-SKU")])
 
     summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
 
     assert summary["unmatched"] == 1
+    assert summary["created"] == 1
     assert client.updates == []
+    database_id, properties = client.creates[0]
+    assert database_id == "db-1"
+    assert properties["Etsy Listing ID"] == {"rich_text": [{"text": {"content": "1"}}]}
+    assert properties["Short Title"] == {"title": [{"text": {"content": "Listing 1"}}]}
+    assert properties["Single price sum"] == {"number": 6.0}
+    assert properties["Inventory value"] == {"number": 50}
+    assert properties["Status"] == {"select": {"name": "Active"}}
+
+
+def test_dry_run_plans_creates_without_writing(backend):
+    capture_fixture(backend)
+    client = FakeNotionClient(DB_SCHEMA, [make_page("page-1", "OTHER-SKU")])
+
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=True)
+
+    assert summary["created"] == 1
+    assert client.creates == []
+
+
+def test_no_listing_id_property_skips_creates(backend):
+    capture_fixture(backend)
+    schema = {"properties": {k: v for k, v in DB_SCHEMA["properties"].items()
+                             if k != "Etsy Listing ID"}}
+    client = FakeNotionClient(schema, [make_page("page-1", "OTHER-SKU")])
+
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
+
+    assert summary["created"] == 0
+    assert client.creates == []
+
+
+def test_unwritable_listing_id_property_skips_creates(backend):
+    # A row created without its listing id could never match again, so the
+    # next run would create a duplicate — the plan must be dropped instead.
+    capture_fixture(backend)
+    schema = {"properties": dict(DB_SCHEMA["properties"],
+                                 **{"Etsy Listing ID": {"type": "formula"}})}
+    client = FakeNotionClient(schema, [make_page("page-1", "OTHER-SKU")])
+
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
+
+    assert summary["created"] == 0
+    assert client.creates == []
 
 
 def test_unknown_status_option_is_skipped(backend):

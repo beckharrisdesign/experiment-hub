@@ -47,7 +47,9 @@ Credential setup:
 
 - **Etsy** — one-time OAuth 2.0 flow (scope `listings_r`), automated by the helper:
   1. In the [Etsy developer portal](https://www.etsy.com/developers/your-apps),
-     copy your Seller App's **keystring** into `ETSY_API_KEY` in `.env`, and add
+     copy your Seller App's **keystring** into `ETSY_API_KEY` and its
+     **shared secret** into `ETSY_SHARED_SECRET` in `.env` (Etsy requires both
+     in the `x-api-key` header since 2026-02-09), and add
      `http://localhost:8181/callback` to the app's **Callback URLs**.
   2. Run `python oauth_helper.py --write-env`. It opens etsy.com in your
      browser; sign in and click **Grant access**. The helper catches the
@@ -138,8 +140,15 @@ ORDER BY first_seen_at DESC;
 - Etsy tokens live in the `etsy_tokens` table (Etsy rotates refresh tokens on
   every use, so a static secret can't hold them). Seed once after the browser
   flow: `python oauth_helper.py --to-supabase`.
-- Repo secrets: `ETSY_API_KEY`, `ETSY_SHOP_ID`, `SUPABASE_URL`,
-  `SUPABASE_SERVICE_ROLE_KEY`, `NOTION_TOKEN`, `NOTION_INVENTORY_DB_ID`.
+- Repo secrets: `ETSY_API_KEY`, `ETSY_SHARED_SECRET`, `ETSY_SHOP_ID`,
+  `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `NOTION_TOKEN`,
+  `NOTION_INVENTORY_DB_ID`.
+- Etsy is the source of truth: the workflow captures every listing state
+  (`ETSY_LISTING_STATES` defaults to all five), and listings with no matching
+  Notion row are auto-created with their listing id, title, price, quantity,
+  and status — so a listing made on the fly shows up in Notion the next run.
+  (Status values need matching options on the Notion Status property; unknown
+  options are skipped with a warning.)
   Repo variable `ETSY_SYNC_DRY_RUN=false` flips real Notion writes on
   (defaults to dry-run when unset — no commit needed either way).
 
