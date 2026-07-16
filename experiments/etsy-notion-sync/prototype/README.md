@@ -40,8 +40,11 @@ Every entry point loads them with this precedence (via `env.py`):
    to be set once. Etsy-specific keys stay in the local `.env` because
    `oauth_helper.py --write-env` rewrites tokens there.
 
-The prototype stays runnable standalone: outside the repo (no `.env.local`
-or `.git` in any parent directory) only the local `.env` is loaded.
+Both files are resolved relative to the prototype/repo (not the working
+directory), so the scripts behave the same run from here, the repo root, or
+cron. The prototype stays runnable standalone: outside the repo (no
+`.env.local` or `.git` in any parent directory) only the local `.env` is
+loaded.
 
 Credential setup:
 

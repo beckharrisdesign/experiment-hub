@@ -43,6 +43,15 @@ def test_local_env_wins_but_root_fills_gaps(fake_repo, monkeypatch):
     assert os.environ["ROOT_ONLY_KEY"] == "from-root"
 
 
+def test_local_env_loads_from_any_working_directory(fake_repo, monkeypatch):
+    repo_root = fake_repo.parents[2]
+    monkeypatch.chdir(repo_root)
+    env.load_env(start=fake_repo / "env.py")
+    assert os.environ["SHARED_KEY"] == "from-local"
+    assert os.environ["LOCAL_ONLY_KEY"] == "from-local"
+    assert os.environ["ROOT_ONLY_KEY"] == "from-root"
+
+
 def test_real_environment_beats_both_files(fake_repo, monkeypatch):
     monkeypatch.chdir(fake_repo)
     monkeypatch.setenv("SHARED_KEY", "from-real-env")
