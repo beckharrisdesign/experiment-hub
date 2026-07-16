@@ -16,7 +16,7 @@ Toolchain migration: Tailwind 3.4 → 4.x so the hub can consume `@beckharrisdes
 
 ## User flow / IA
 
-N/A — no new user-facing UI. One dev-only proof route (`app/dev/mvds/page.tsx`, returns `notFound()` in production) rendering MVDS `Button`/`Badge`/`Card`/`Section` in light and dark.
+N/A — no new user-facing UI. One dev-only proof route (`app/dev/mvds/page.tsx`, 404s in production but visible on Vercel previews) rendering MVDS `Button`/`Badge`/`Card`/`Section` in the hub's dark context — the hub pins `.dark` on `<html>`, so light mode is unreachable inside it (discovered at apply, 2026-07-15).
 
 ## Visual design / Figma
 
@@ -35,7 +35,7 @@ N/A — no new user-facing UI. One dev-only proof route (`app/dev/mvds/page.tsx`
 - **PostCSS:** `tailwindcss` + `autoprefixer` plugins → single `@tailwindcss/postcss` (v4 handles prefixing).
 - **MVDS wiring per its docs:** `globals.css` imports `@beckharrisdesign/mvds/styles.css` (which itself contains `@import "tailwindcss"` — it becomes the single Tailwind entry, hub `@theme` layered after it, avoiding a double-tailwind import) plus `@source` lines for the MVDS dist and hub source globs.
 - **Dependency check at apply time:** confirm `tw-animate-css` arrives as an MVDS dependency; if it's a peer, add it.
-- **Verification:** full vitest + `npm run build`, then side-by-side visual pass (home, experiment detail, header/nav, dark sections) against production via the Vercel preview; MVDS proof route screenshotted light + dark.
+- **Verification:** full vitest + `npm run build`, then side-by-side visual pass (home, experiment detail, header/nav, dark sections) against production via the Vercel preview; MVDS proof route screenshotted (dark — the hub's only mode).
 
 ## Risks / Trade-offs
 

@@ -72,8 +72,14 @@ def main():
     if dry_run:
         log.info("DRY_RUN is on — Notion step logs the plan only. Set DRY_RUN=false to write.")
     notion = NotionClient(_require_env("NOTION_TOKEN"))
-    sync_notion.run_sync(notion, backend, _require_env("NOTION_INVENTORY_DB_ID"),
-                         sync_notion.config_from_env(), dry_run=dry_run)
+    sync_summary = sync_notion.run_sync(notion, backend, _require_env("NOTION_INVENTORY_DB_ID"),
+                                        sync_notion.config_from_env(), dry_run=dry_run)
+    # Fold the Notion result into the run row so the hub page can show
+    # "N Notion updates" alongside the capture stats.
+    if summary.get("run_id"):
+        summary["notion"] = sync_summary
+        backend.finish_run(summary["run_id"], datetime.now(timezone.utc).isoformat(),
+                           "ok", summary)
     log.info("Run complete at %s (trigger=%s)", datetime.now(timezone.utc).isoformat(), trigger_source)
 
 

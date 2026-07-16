@@ -83,6 +83,7 @@ def run_capture(client, backend, shop_id, states=("active",), now=None,
     captured_at = (now or datetime.now(timezone.utc)).isoformat()
     run_id = backend.start_run(captured_at, trigger_source)
     summary = {
+        "run_id": run_id,
         "listings_captured": 0,
         "snapshots_written": 0,
         "new_fields": [],

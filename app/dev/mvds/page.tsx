@@ -19,7 +19,13 @@ import {
  * hub's information architecture — returns 404 in production.
  */
 export default function MvdsProofPage() {
-  if (process.env.NODE_ENV === "production") {
+  // Hide in real production only. NODE_ENV is "production" on Vercel previews
+  // too, so gate on VERCEL_ENV when present — previews must render this route
+  // for the QA pass (Copilot review, PR #288).
+  const isProduction = process.env.VERCEL_ENV
+    ? process.env.VERCEL_ENV === "production"
+    : process.env.NODE_ENV === "production";
+  if (isProduction) {
     notFound();
   }
 
