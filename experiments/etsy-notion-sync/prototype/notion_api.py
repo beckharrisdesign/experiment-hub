@@ -52,6 +52,15 @@ class NotionClient:
                 break
             cursor = payload.get("next_cursor")
 
+    def create_page(self, database_id, properties):
+        response = self.session.post(
+            "{}/pages".format(API_BASE),
+            headers=self._headers(),
+            json={"parent": {"database_id": database_id}, "properties": properties},
+            timeout=30,
+        )
+        return self._check(response, "Create page in {}".format(database_id))
+
     def update_page(self, page_id, properties):
         response = self.session.patch(
             "{}/pages/{}".format(API_BASE, page_id),

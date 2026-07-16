@@ -127,6 +127,12 @@ ORDER BY first_seen_at DESC;
 - Repo secrets: `ETSY_API_KEY`, `ETSY_SHARED_SECRET`, `ETSY_SHOP_ID`,
   `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `NOTION_TOKEN`,
   `NOTION_INVENTORY_DB_ID`.
+- Etsy is the source of truth: the workflow captures every listing state
+  (`ETSY_LISTING_STATES` defaults to all five), and listings with no matching
+  Notion row are auto-created with their listing id, title, price, quantity,
+  and status — so a listing made on the fly shows up in Notion the next run.
+  (Status values need matching options on the Notion Status property; unknown
+  options are skipped with a warning.)
   Repo variable `ETSY_SYNC_DRY_RUN=false` flips real Notion writes on
   (defaults to dry-run when unset — no commit needed either way).
 
