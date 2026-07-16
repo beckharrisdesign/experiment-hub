@@ -1,6 +1,53 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind v4 entry: MVDS's stylesheet contains `@import "tailwindcss"` and the
+ * design system's tokens/dark variant, so it is the single Tailwind entry for
+ * the hub (openspec/changes/hub-tailwind-v4). Hub tokens follow in @theme. */
+@import "@beckharrisdesign/mvds/styles.css";
+
+/* Utility sources: hub app + components (parity with the old tailwind.config.ts
+ * content globs) plus the MVDS dist so its component classes are generated. */
+@source "./**/*.{ts,tsx}";
+@source "../components/**/*.{ts,tsx}";
+@source "../node_modules/@beckharrisdesign/mvds/dist-lib/**/*.js";
+
+/* Hub theme — ported 1:1 from tailwind.config.ts (removed in this change).
+ * Note: --color-border intentionally overrides the MVDS token of the same name
+ * so existing hub `border-border` styling is unchanged; token reconciliation
+ * with MVDS is issue #285. The `dark` variant comes from MVDS's stylesheet. */
+@theme {
+  --color-background-primary: #194b31; /* dark green (main bg, hero) */
+  --color-background-secondary: #113723; /* darker green (header, footer, hover states) */
+  --color-background-light: #f7fff8; /* near-white (experiment list section) */
+  --color-background-mint: #cff7d3; /* mint (recent activity band) */
+  --color-background-active: rgba(20, 174, 92, 0.1); /* active nav item bg */
+  --color-background-overlay: rgba(255, 255, 255, 0.2); /* subtle white overlay on dark sections */
+
+  --color-text-primary: #cff7d3; /* light mint on dark bg */
+  --color-text-secondary: #78ffb7; /* brighter mint, secondary on dark */
+  --color-text-muted: #4d9a60; /* muted on dark bg */
+  --color-text-dark: #194b31; /* dark text for light sections */
+  --color-text-dark-secondary: #2d6b47; /* secondary text on light sections */
+  --color-text-logo: #f5f5f5; /* logo/wordmark text */
+
+  --color-border: rgba(20, 174, 92, 0.2);
+  --color-border-dark: #194b31; /* border on light sections */
+
+  --color-accent-primary: #14ae5c; /* green */
+  --color-accent-secondary: #0e8a49;
+
+  --color-success: #3ecf8e;
+  --color-warning: #f0c060;
+  --color-error: #f87171;
+
+  --color-score-5: #3ecf8e; /* success green */
+  --color-score-4: #a3e635; /* lime */
+  --color-score-3: #f0c060; /* warning yellow */
+  --color-score-2: #fb923c; /* orange */
+  --color-score-1: #f87171; /* error red */
+
+  --font-mono: "SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-heading: var(--font-fraunces), Georgia, serif;
+}
 
 @layer base {
   body {
@@ -30,4 +77,3 @@ nextjs-portal {
   left: unset !important;
   top: unset !important;
 }
-
