@@ -243,6 +243,9 @@ def main():
         pass
 
     api_key = _require_env("ETSY_API_KEY")
+    # client_id in token requests stays the bare keystring; only the x-api-key
+    # header wants "keystring:shared_secret" (Etsy enforcement since 2026-02-09).
+    x_api_key = "{}:{}".format(api_key, _require_env("ETSY_SHARED_SECRET"))
 
     if args.refresh:
         refresh_token = _require_env("ETSY_REFRESH_TOKEN")
@@ -265,7 +268,7 @@ def main():
 
     code = wait_for_callback(args.port, state)
     tokens = exchange_code(api_key, code, redirect_uri, verifier)
-    shop_id = fetch_shop_id(api_key, tokens["access_token"])
+    shop_id = fetch_shop_id(x_api_key, tokens["access_token"])
     log.info("Authorized shop_id=%s with scope %s", shop_id, SCOPE)
     _report(tokens, shop_id, args.write_env, args.env_file)
     if args.to_supabase:
