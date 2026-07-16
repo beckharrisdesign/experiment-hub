@@ -24,6 +24,15 @@ def test_get_sends_auth_headers_and_paces():
     assert sleeps == [0.2]  # gentle pacing between calls
 
 
+def test_shared_secret_joins_x_api_key_header():
+    session = FakeSession()
+    session.queue(FakeResponse(json_body={"ok": True}))
+    client, _ = make_client(session, shared_secret="hush")
+
+    client.get("/v3/application/listings/1/inventory")
+    assert session.requests[0]["headers"]["x-api-key"] == "key:hush"
+
+
 def test_429_honors_retry_after_then_succeeds():
     session = FakeSession()
     session.queue(FakeResponse(status_code=429, headers={"retry-after": "3"}))

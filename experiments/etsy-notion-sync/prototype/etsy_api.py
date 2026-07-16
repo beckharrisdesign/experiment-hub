@@ -37,8 +37,11 @@ class EtsyClient:
         pacing_seconds=0.2,
         quota_floor=0.1,
         max_retries=3,
+        shared_secret=None,
     ):
-        self.api_key = api_key
+        # Since 2026-02-09 Etsy requires "keystring:shared_secret" in x-api-key
+        # (https://github.com/etsy/open-api/discussions/1511).
+        self.api_key = "{}:{}".format(api_key, shared_secret) if shared_secret else api_key
         self.oauth_token = oauth_token
         self.session = session or requests.Session()
         self.sleep = sleep

@@ -254,6 +254,13 @@ def main():
                            tokens.get("expires_in"))
         return
 
+    # Only the browser flow needs the shared secret: the shop lookup sends
+    # "keystring:shared_secret" in x-api-key (Etsy enforcement since
+    # 2026-02-09), while token requests use the bare keystring as client_id.
+    # Require it before opening the browser so a misconfigured run fails
+    # up front rather than after the user has approved.
+    x_api_key = "{}:{}".format(api_key, _require_env("ETSY_SHARED_SECRET"))
+
     redirect_uri = "http://localhost:{}/callback".format(args.port)
     verifier, challenge = make_pkce_pair()
     state = secrets.token_urlsafe(16)
@@ -265,7 +272,7 @@ def main():
 
     code = wait_for_callback(args.port, state)
     tokens = exchange_code(api_key, code, redirect_uri, verifier)
-    shop_id = fetch_shop_id(api_key, tokens["access_token"])
+    shop_id = fetch_shop_id(x_api_key, tokens["access_token"])
     log.info("Authorized shop_id=%s with scope %s", shop_id, SCOPE)
     _report(tokens, shop_id, args.write_env, args.env_file)
     if args.to_supabase:
