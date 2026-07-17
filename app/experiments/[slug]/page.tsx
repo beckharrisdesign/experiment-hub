@@ -3,7 +3,6 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ExperimentTypeBadge from "@/components/ExperimentTypeBadge";
-import EtsySyncPanel from "@/components/EtsySyncPanel";
 import { getExperimentBySlug } from "@/lib/data";
 import {
   getExperimentFieldsFromNotion,
@@ -180,12 +179,6 @@ export default async function ExperimentDetailPage({
       {/* Fields */}
       <main className="flex-1 bg-background-light px-4 md:px-8 lg:px-16 py-12">
         <div className="max-w-screen-xl mx-auto">
-          {/* Experiment-specific prototype surface (etsy-notion-sync-build 3.5) */}
-          {slug === "etsy-notion-sync" && (
-            <div className="pb-10">
-              <EtsySyncPanel />
-            </div>
-          )}
           {fields.length === 0 ? (
             <p className="text-sm text-text-dark-secondary">
               No details recorded for this experiment yet.
