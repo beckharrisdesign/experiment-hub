@@ -55,5 +55,5 @@ The refined shape goes one step further than leak-plugging: the detail page beco
 ## Optional links
 
 - Review evidence: `labs.beckharrisdesign.com/experiments/mvds` ("PUBLIC No" rendered publicly), `/experiments/best-day-ever` (raw `LAST EDITED TIME`), homepage Etsy row ("Apply" chip)
-- Reversed design intent: `lib/notion-experiments.ts:224` comment (extra columns "appear without a code change", from PR #295)
+- Reversed design intent: the sort comment above `PRIMARY_FIELD_ORDER` in `lib/notion-experiments.ts` ("new Notion columns appear without a code change", from PR #295)
 - Related changes: `openspec/changes/tell-the-story/` (detail-page History section), `openspec/changes/publish-the-graveyard/` (independent)

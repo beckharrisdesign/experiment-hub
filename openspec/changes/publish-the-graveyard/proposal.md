@@ -16,7 +16,7 @@
   1. The Notion Status property gains **Abandoned**, **On Hold**, and **Archived** options, and `lib/notion-experiments.ts` maps them in both directions. Today the comment in that file says it plainly: "Abandoned/On Hold/Archived have no Notion option and stay unwritable" — the graveyard is structurally impossible until this lands.
   2. The six dead experiments that exist only in `data/experiments.json` (seed-finder, garden-guide-generator, photo-memories, the-illuminator, experience-principles-repository, ai-event-landing-zone) exist as Notion rows with correct statuses.
   3. Each dead experiment has a one-paragraph kill reason in an editable Notion property (**`Outcome`**, rich text), drafted from the existing `business-case.md` abandonment notes and approved by Katy before going live. Katy can edit or augment any of them in Notion at any time afterward.
-  4. The homepage **Inactive tab** lists Abandoned + Archived + On Hold experiments with their kill reason line. The current mis-bucketing is fixed: the filter at `app/page-client.tsx:59` keys only on `status !== "Abandoned"`, which is why Archived rows land in the Active tab.
+  4. The homepage **Inactive tab** lists Abandoned + Archived + On Hold experiments with their kill reason line. The current mis-bucketing is fixed: the active/inactive filter in `app/page-client.tsx` keys only on `status !== "Abandoned"`, which is why Archived rows land in the Active tab.
   5. Status conflicts between `data/experiments.json` and Notion are reconciled with Notion as the winner going forward (e.g., Landing Zone is Archived in the JSON but renders Active on the live site today).
   6. Enforcing the workflow gate becomes possible: Katy can demote gate-violating experiments (e.g., Pomodoro Maker, Active with only an `intent.md`) to On Hold directly in Notion. The demotion itself is her manual action, unblocked by this change.
 - **Not doing:** Full retrospectives or `learnings.md` backfill; case-study pages; automated status inference; deleting the `HIDDEN_EXPERIMENT_IDS` hack unless experience-principles-repository's new status makes it redundant (check during apply); the Outcome line for *active* experiments (that's `outcomes-column`).
@@ -57,5 +57,5 @@ This is a data-model problem first (no dead statuses exist in Notion), a migrati
 ## Optional links
 
 - Kill-reason draft sources: `experiments/seed-finder/docs/business-case.md`, `experiments/garden-guide-generator/docs/business-case.md`, `experiments/the-illuminator/docs/business-case.md`, `experiments/photo-memories/docs/business-case.md`, `experiments/ai-event-landing-zone/docs/business-case.md`
-- Mis-bucketing evidence: `app/page-client.tsx:59` (Active = `status !== "Abandoned"`), `app/page-client.tsx:36` (`HIDDEN_EXPERIMENT_IDS`)
+- Mis-bucketing evidence in `app/page-client.tsx`: the active filter (`status !== "Abandoned"`) and the `HIDDEN_EXPERIMENT_IDS` constant
 - Related changes: `openspec/changes/outcomes-column/` (consumes `Outcome`), `openspec/changes/stop-the-leaks/` (independent)
