@@ -1,4 +1,5 @@
 import { getExperiments } from "@/lib/data";
+import EtsySyncPanel from "@/components/EtsySyncPanel";
 import type { ExperimentStatus } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,10 @@ export default async function AdminPage() {
 
   return (
     <div>
+      {/* Experiment-specific prototype surface (etsy-notion-sync-build 3.5) */}
+      <div className="mb-10">
+        <EtsySyncPanel />
+      </div>
       <h1 className="text-text-primary text-2xl font-semibold mb-6">
         Experiments
       </h1>
