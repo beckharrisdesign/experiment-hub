@@ -16,7 +16,7 @@ Spec: [../docs/SPEC.md](../docs/SPEC.md) · PRD: [../docs/PRD.md](../docs/PRD.md
 | `schema_watch.py` | Detects new/unexpected fields in raw responses ("new field detected" notices) |
 | `etsy_api.py` | GET-only Etsy v3 client: auth headers, pacing, `429`/`retry-after`, quota floor |
 | `oauth_helper.py` | One-time OAuth 2.0 PKCE browser flow + `--refresh` token rotation for cron |
-| `notion_api.py` | Minimal Notion client (database schema, paginated query, page update) |
+| `notion_api.py` | Minimal Notion client (database schema, paginated query, page update, page comment) |
 | `store.py` | Append-only SQLite store: `listing_snapshots` (with ancestry), `schema_keys`, `runs` audit table |
 | `env.py` | Shared dotenv loading: local `.env` first, repo root `.env.local` as fallback |
 
@@ -81,6 +81,12 @@ Credential setup:
   manual Notion setup. Status/rollup/formula/relation types can't be created
   through the API and are skipped with a warning. Long descriptions truncate
   at Notion's 2000-character rich_text limit.
+- **Change comments**: whenever the sync writes to a page, it also posts a
+  comment on that page summarizing each field it changed (`old → new`), so the
+  page carries a lightweight activity log of what the sync touched. On by
+  default; set `NOTION_POST_CHANGE_COMMENTS=false` to skip it. Comments only
+  fire on real writes — a no-op (idempotent) run and a dry run both post
+  nothing, and newly created rows get no comment.
 
 ## Run
 

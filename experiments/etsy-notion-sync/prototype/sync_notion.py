@@ -143,6 +143,33 @@ def _extra_desired(parsed, extra_fields):
     }
 
 
+def _format_value(value):
+    """Human-readable rendering of a from/to value for a change comment."""
+    if value is None:
+        return "(empty)"
+    if isinstance(value, list):
+        return ", ".join(str(item) for item in value) or "(empty)"
+    return str(value)
+
+
+def change_comment_text(changes):
+    """A short, one-line-per-field summary of a plan's changes.
+
+    Rendered as the body of a Notion comment so the seller sees an
+    activity-log of exactly what the sync touched, and when, on the page
+    itself. Fields are sorted for stable, readable output. The result is
+    capped at Notion's single-block rich_text limit.
+    """
+    plural = "" if len(changes) == 1 else "s"
+    lines = ["Etsy sync updated {} field{}:".format(len(changes), plural)]
+    for prop_name in sorted(changes):
+        delta = changes[prop_name]
+        lines.append("• {}: {} → {}".format(
+            prop_name, _format_value(delta.get("from")), _format_value(delta.get("to"))
+        ))
+    return "\n".join(lines)[:RICH_TEXT_LIMIT]
+
+
 def ensure_properties(client, db_schema, database_id, extra_fields, dry_run):
     """Create any missing extra-field properties on the Notion database.
 
@@ -366,7 +393,21 @@ def apply_creates(client, creates, database_id, dry_run):
             client.create_page(database_id, plan["properties"])
 
 
-def apply_updates(client, plans, dry_run):
+def _post_change_comment(client, plan):
+    """Best-effort activity-log comment on the just-updated page.
+
+    A comment is a nicety layered on top of the write that already
+    succeeded, so a failure here is logged and swallowed rather than
+    aborting the run.
+    """
+    text = change_comment_text(plan["changes"])
+    try:
+        client.create_comment(plan["page_id"], [{"text": {"content": text}}])
+    except Exception:  # noqa: BLE001 — never fail the sync over a comment
+        log.warning("Failed to post change comment on page %s", plan["page_id"], exc_info=True)
+
+
+def apply_updates(client, plans, dry_run, post_comments=True):
     for plan in plans:
         log.info(
             "%s %s (listing %s): %s",
@@ -375,8 +416,11 @@ def apply_updates(client, plans, dry_run):
             plan["listing_id"],
             json.dumps(plan["changes"]),
         )
-        if not dry_run:
-            client.update_page(plan["page_id"], plan["properties"])
+        if dry_run:
+            continue
+        client.update_page(plan["page_id"], plan["properties"])
+        if post_comments:
+            _post_change_comment(client, plan)
 
 
 def run_sync(client, backend, database_id, config, dry_run=True):
@@ -396,13 +440,15 @@ def run_sync(client, backend, database_id, config, dry_run=True):
     for miss in unmatched:
         log.warning("No Notion row matched listing %s (skus=%s)", miss["listing_id"], miss["skus"])
     creates = plan_creates(unmatched, db_schema, config)
-    apply_updates(client, plans, dry_run)
+    post_comments = config.get("post_change_comments", True)
+    apply_updates(client, plans, dry_run, post_comments=post_comments)
     apply_creates(client, creates, database_id, dry_run)
 
     summary = {
         "listings": len(latest),
         "notion_pages": len(pages),
         "updates": len(plans),
+        "comments": len(plans) if post_comments else 0,
         "created": len(creates),
         "unmatched": len(unmatched),
         "dry_run": dry_run,
@@ -436,6 +482,12 @@ def config_from_env():
         "extra_fields": json.loads(
             os.environ.get("NOTION_EXTRA_FIELDS_JSON", json.dumps(DEFAULT_EXTRA_FIELDS))
         ),
+        # Post an activity-log comment on each page the sync updates, listing
+        # what changed. On by default; set NOTION_POST_CHANGE_COMMENTS=false to
+        # skip (e.g. to keep chatty pages quiet).
+        "post_change_comments": os.environ.get(
+            "NOTION_POST_CHANGE_COMMENTS", "true"
+        ).strip().lower() != "false",
     }
 
 

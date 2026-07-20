@@ -12,6 +12,7 @@ CONFIG = {
     "status_property": "Status",
     "state_to_status": dict(sync_notion.DEFAULT_STATE_TO_STATUS),
     "extra_fields": [],  # extra-field behavior has its own tests below
+    "post_change_comments": True,
 }
 
 DB_SCHEMA = {
@@ -52,6 +53,7 @@ class FakeNotionClient:
         self.updates = []
         self.creates = []
         self.db_updates = []
+        self.comments = []
 
     def get_database(self, database_id):
         return self.db_schema
@@ -67,6 +69,9 @@ class FakeNotionClient:
 
     def create_page(self, database_id, properties):
         self.creates.append((database_id, properties))
+
+    def create_comment(self, page_id, rich_text):
+        self.comments.append((page_id, rich_text))
 
 
 def capture_fixture(backend, price_amount=600, quantity=50, state="active", extra=None):
@@ -329,3 +334,101 @@ def test_sold_out_state_maps_to_notion_option(backend):
 
     _, properties = client.updates[0]
     assert properties["Status"] == {"select": {"name": "Sold Out"}}
+
+
+# --- change comments (activity log on updated pages) ------------------------
+
+
+def test_change_comment_text_summarizes_each_field():
+    text = sync_notion.change_comment_text({
+        "Inventory value": {"from": 10, "to": 50},
+        "Status": {"from": "Inactive", "to": "Active"},
+        "Tags": {"from": None, "to": ["a", "b"]},
+    })
+    assert text.splitlines()[0] == "Etsy sync updated 3 fields:"
+    assert "• Inventory value: 10 → 50" in text
+    assert "• Status: Inactive → Active" in text
+    assert "• Tags: (empty) → a, b" in text  # None renders as (empty); lists join
+
+
+def test_change_comment_text_single_field_is_not_pluralized():
+    text = sync_notion.change_comment_text({"Inventory value": {"from": 10, "to": 50}})
+    assert text.splitlines()[0] == "Etsy sync updated 1 field:"
+
+
+def test_change_comment_posted_on_the_updated_page(backend):
+    capture_fixture(backend, price_amount=600, quantity=50, state="active")
+    page = make_page("page-1", "SKU-1", price=6.0, quantity=10, status="Inactive")
+    client = FakeNotionClient(DB_SCHEMA, [page])
+
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
+
+    assert summary["comments"] == 1
+    assert len(client.comments) == 1
+    page_id, rich_text = client.comments[0]
+    assert page_id == "page-1"
+    body = rich_text[0]["text"]["content"]
+    assert "Inventory value: 10 → 50" in body
+    assert "Status: Inactive → Active" in body
+
+
+def test_no_comment_when_nothing_changed(backend):
+    capture_fixture(backend, price_amount=600, quantity=50, state="active")
+    page = make_page("page-1", "SKU-1", price=6.0, quantity=50, status="Active")
+    client = FakeNotionClient(DB_SCHEMA, [page])
+
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
+
+    assert summary["comments"] == 0
+    assert client.comments == []
+
+
+def test_dry_run_posts_no_comments(backend):
+    capture_fixture(backend, price_amount=999, quantity=1, state="active")
+    page = make_page("page-1", "SKU-1", price=6.0, quantity=50, status="Active")
+    client = FakeNotionClient(DB_SCHEMA, [page])
+
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=True)
+
+    assert summary["updates"] == 1  # a change was planned...
+    assert client.comments == []  # ...but nothing was written, comment included
+
+
+def test_comments_can_be_disabled_via_config(backend):
+    capture_fixture(backend, price_amount=600, quantity=50, state="active")
+    page = make_page("page-1", "SKU-1", price=6.0, quantity=10, status="Inactive")
+    client = FakeNotionClient(DB_SCHEMA, [page])
+    config = dict(CONFIG, post_change_comments=False)
+
+    summary = sync_notion.run_sync(client, backend, "db-1", config, dry_run=False)
+
+    assert summary["updates"] == 1  # the page is still updated...
+    assert len(client.updates) == 1
+    assert summary["comments"] == 0  # ...just without the comment
+    assert client.comments == []
+
+
+def test_created_rows_get_no_comment(backend):
+    capture_fixture(backend)
+    client = FakeNotionClient(DB_SCHEMA, [make_page("page-1", "OTHER-SKU")])
+
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
+
+    assert summary["created"] == 1  # a new row, not an update
+    assert client.comments == []  # comments are only for changes to existing pages
+
+
+def test_comment_failure_does_not_abort_the_sync(backend):
+    capture_fixture(backend, price_amount=600, quantity=50, state="active")
+    page = make_page("page-1", "SKU-1", price=6.0, quantity=10, status="Inactive")
+    client = FakeNotionClient(DB_SCHEMA, [page])
+
+    def boom(page_id, rich_text):
+        raise RuntimeError("Notion comment API down")
+
+    client.create_comment = boom
+
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
+
+    assert summary["updates"] == 1  # the update still succeeded despite the comment error
+    assert client.updates[0][0] == "page-1"

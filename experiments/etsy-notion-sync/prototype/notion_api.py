@@ -79,3 +79,14 @@ class NotionClient:
             timeout=30,
         )
         return self._check(response, "Update page {}".format(page_id))
+
+    def create_comment(self, page_id, rich_text):
+        """Post a comment on a page. rich_text is a list of Notion rich_text
+        blocks, e.g. [{"text": {"content": "..."}}]."""
+        response = self.session.post(
+            "{}/comments".format(API_BASE),
+            headers=self._headers(),
+            json={"parent": {"page_id": page_id}, "rich_text": rich_text},
+            timeout=30,
+        )
+        return self._check(response, "Create comment on {}".format(page_id))
