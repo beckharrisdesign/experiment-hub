@@ -3,107 +3,40 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ExperimentTypeBadge from "@/components/ExperimentTypeBadge";
+import StatusBadge from "@/components/StatusBadge";
 import { getExperimentBySlug } from "@/lib/data";
 import {
   getExperimentFieldsFromNotion,
   hasNotionExperiments,
-  PRIMARY_FIELD_ORDER,
+  PUBLIC_FIELD_ALLOWLIST,
   type ExperimentField,
 } from "@/lib/notion-experiments";
-import type { Experiment } from "@/types";
+import { requireAdminCookie } from "@/lib/admin-auth";
 
 // Mark this route as dynamic to ensure it's always rendered on-demand
 export const dynamic = "force-dynamic";
 export const dynamicParams = true; // Allow any slug, not just pre-generated ones
 
-const SCORE_LABELS: Record<string, string> = {
-  "Score:B": "Business Opportunity",
-  "Score:P": "Personal Impact",
-  "Score:C": "Competitive Advantage",
-  "Score:D": "Platform Cost",
-  "Score:S": "Social Impact",
-};
-
-/** Fallback when the experiment isn't in Notion: fields from the hub record. */
-function buildFieldsFromExperiment(experiment: Experiment): ExperimentField[] {
-  const fields: ExperimentField[] = [
-    { label: "Status", value: experiment.status },
-    {
-      label: "Type",
-      value: experiment.type
-        ? experiment.type[0].toUpperCase() + experiment.type.slice(1)
-        : "",
-    },
-    { label: "Slug", value: experiment.id },
-    { label: "Directory", value: experiment.directory },
-    { label: "Tags", value: experiment.tags.join(", ") },
-    { label: "Created", value: experiment.createdDate },
-    { label: "Last modified", value: experiment.lastModified },
-  ];
-  if (experiment.scores) {
-    fields.push(
-      { label: "Business Opportunity", value: String(experiment.scores.businessOpportunity) },
-      { label: "Personal Impact", value: String(experiment.scores.personalImpact) },
-      { label: "Competitive Advantage", value: String(experiment.scores.competitiveAdvantage) },
-      { label: "Platform Cost", value: String(experiment.scores.platformCost) },
-      { label: "Social Impact", value: String(experiment.scores.socialImpact) },
-    );
-  }
-  return fields.filter((field) => field.value);
-}
-
-function FieldValue({ value }: { value: string }) {
-  if (/^https?:\/\/\S+$/.test(value)) {
-    return (
-      <a
-        href={value}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-accent-secondary underline underline-offset-2 hover:text-accent-primary break-all"
-      >
-        {value}
-      </a>
-    );
-  }
-  return <span className="whitespace-pre-wrap">{value}</span>;
-}
-
-/** Stable kebab-case identifier for a field label, e.g. "Why this matters" → "why-this-matters", "Score:B" → "score-b". */
-function fieldSlug(label: string): string {
-  return label
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-interface FieldRowsProps {
-  fields: ExperimentField[];
-  group: "primary" | "extra";
-}
-
-function FieldRows({ fields, group }: FieldRowsProps) {
+/** One narrative statement: uppercase label over reading-size prose. */
+function Statement({ label, value }: ExperimentField) {
   return (
-    <dl
-      className={`experiment-fields experiment-fields-${group} divide-y divide-border-dark/15`}
-    >
-      {fields.map((field) => {
-        const displayLabel = SCORE_LABELS[field.label] ?? field.label;
-        return (
-        <div
-          key={field.label}
-          className="experiment-field grid grid-cols-1 md:grid-cols-[240px_1fr] gap-1 md:gap-8 py-4"
-          data-field={fieldSlug(displayLabel)}
-        >
-          <dt className="experiment-field-label text-xs font-medium uppercase tracking-[0.08em] text-text-dark-secondary md:pt-0.5">
-            {displayLabel}
-          </dt>
-          <dd className="experiment-field-value text-sm text-text-dark leading-relaxed">
-            <FieldValue value={field.value} />
-          </dd>
-        </div>
-        );
-      })}
-    </dl>
+    <div className="max-w-[720px]">
+      <div className="text-xs font-medium uppercase tracking-[0.08em] text-text-dark-secondary">
+        {label}
+      </div>
+      <p className="mt-2 text-lg leading-[1.7] text-text-dark whitespace-pre-wrap">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+/** Admin-only empty slot prompting Katy to fill a missing statement. */
+function GhostPrompt({ label }: { label: string }) {
+  return (
+    <div className="max-w-[720px] rounded-lg border border-dashed border-border-dark/30 px-4 py-3 text-sm text-text-dark-secondary/70">
+      Add {label.charAt(0).toLowerCase() + label.slice(1)} →
+    </div>
   );
 }
 
@@ -119,23 +52,33 @@ export default async function ExperimentDetailPage({
     notFound();
   }
 
-  const notionFields = hasNotionExperiments()
-    ? await getExperimentFieldsFromNotion(slug).catch((error) => {
+  // Admin edit mode (the `hub-edit` cookie) may view private rows and sees
+  // ghost prompts; anonymous visitors get neither.
+  const editMode = await requireAdminCookie();
+
+  // Private-by-default: a Notion row with Public unchecked (public === false)
+  // never renders on a public route. Non-Notion rows (public === undefined)
+  // are unaffected. Admin edit mode bypasses the gate so Katy can fill it in.
+  if (experiment.public === false && !editMode) {
+    notFound();
+  }
+
+  const statements = hasNotionExperiments()
+    ? ((await getExperimentFieldsFromNotion(slug).catch((error) => {
         console.error(
-          `[ExperimentDetailPage] Notion field fetch failed for "${slug}"; falling back to hub fields:`,
+          `[ExperimentDetailPage] Notion field fetch failed for "${slug}":`,
           error,
         );
         return null;
-      })
-    : null;
-  const fields = notionFields ?? buildFieldsFromExperiment(experiment);
-  // Primary fields render on top; everything else drops below a divider.
-  const primaryFields = fields.filter((field) =>
-    PRIMARY_FIELD_ORDER.includes(field.label),
-  );
-  const extraFields = fields.filter(
-    (field) => !PRIMARY_FIELD_ORDER.includes(field.label),
-  );
+      })) ?? [])
+    : [];
+
+  const present = new Set(statements.map((field) => field.label));
+  const missing = PUBLIC_FIELD_ALLOWLIST.filter((label) => !present.has(label));
+  // The narrative band renders when there is something to show — real
+  // statements, or (in edit mode) ghost prompts for what's missing. When a
+  // public page has all three empty, the band is dropped entirely.
+  const showNarrative = statements.length > 0 || (editMode && missing.length > 0);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -167,6 +110,7 @@ export default async function ExperimentDetailPage({
               {experiment.name}
             </h1>
             <ExperimentTypeBadge type={experiment.type} />
+            <StatusBadge status={experiment.status} />
           </div>
           {experiment.statement && (
             <p className="mt-2 text-sm text-text-secondary">
@@ -176,24 +120,21 @@ export default async function ExperimentDetailPage({
         </div>
       </section>
 
-      {/* Fields */}
-      <main className="flex-1 bg-background-light px-4 md:px-8 lg:px-16 py-12">
-        <div className="max-w-screen-xl mx-auto">
-          {fields.length === 0 ? (
-            <p className="text-sm text-text-dark-secondary">
-              No details recorded for this experiment yet.
-            </p>
-          ) : (
-            <>
-              <FieldRows fields={primaryFields} group="primary" />
-              {primaryFields.length > 0 && extraFields.length > 0 && (
-                <hr className="experiment-fields-divider my-8 border-t border-border-dark/40" />
-              )}
-              <FieldRows fields={extraFields} group="extra" />
-            </>
-          )}
-        </div>
-      </main>
+      {/* Narrative statements (curated allowlist only) */}
+      {showNarrative && (
+        <main className="flex-1 bg-background-light px-4 md:px-8 lg:px-16 py-12">
+          <div className="max-w-screen-xl mx-auto flex flex-col gap-8">
+            {statements.map((field) => (
+              <Statement key={field.label} {...field} />
+            ))}
+            {editMode &&
+              missing.map((label) => <GhostPrompt key={label} label={label} />)}
+          </div>
+        </main>
+      )}
+      {/* All statements empty on a public page: no content band — keep the
+          dark hero flush to the footer instead of a bare gap. */}
+      {!showNarrative && <div className="flex-1 bg-background-primary" />}
 
       <Footer />
     </div>
