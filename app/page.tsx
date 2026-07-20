@@ -11,6 +11,7 @@ import HomePageClient from "./page-client";
 import type { Experiment, Prototype, Documentation } from "@/types";
 import { loadOpenSpecLifecycle } from "@/lib/openspec-server";
 import type { BhdPhase } from "@/lib/openspec-shared";
+import { requireAdminCookie } from "@/lib/admin-auth";
 
 interface ExperimentWithRelated extends Experiment {
   prototype?: Prototype | null;
@@ -29,7 +30,13 @@ export default async function HomePage() {
   const showPrototypes = process.env.SHOW_PROTOTYPES === "true";
 
   try {
-    const experiments = await getExperiments();
+    const allExperiments = await getExperiments();
+    // Admin edit mode (the `hub-edit` cookie) sees every row and the OpenSpec
+    // phase chip; anonymous visitors see neither private rows nor the chip.
+    const editMode = await requireAdminCookie();
+    const experiments = allExperiments.filter(
+      (exp) => editMode || exp.public !== false,
+    );
     const prototypes = showPrototypes ? await getPrototypes() : [];
     const docs = await getDocumentation();
 
@@ -45,7 +52,9 @@ export default async function HomePage() {
           // Batch all file system operations in parallel for this experiment
           const [fileChecks, openSpecLifecycle] = await Promise.all([
             checkExperimentFiles(exp.directory),
-            loadOpenSpecLifecycle(exp).catch(() => null),
+            // The OpenSpec phase chip is an internal process indicator — only
+            // load it in admin edit mode so it never renders publicly.
+            editMode ? loadOpenSpecLifecycle(exp).catch(() => null) : null,
           ]);
 
           // Parse market research if available

@@ -1,0 +1,128 @@
+name: Deploy Hub
+
+# Vercel's own Git auto-deploy is turned off for all projects
+# (`git.deploymentEnabled: false` in each vercel.json) so behind-the-scenes
+# changes never create a deployment — even a skipped one counts toward the
+# Hobby daily deployment limit. This workflow is the only thing that deploys
+# the hub, and only when APP code actually changes: the `paths-ignore` list
+# below skips agent-instruction / schema / docs / experiment changes.
+#
+# Deploys a preview on app-code PRs; production on app-code merges to main.
+#
+# Required repo secrets (Settings → Secrets and variables → Actions):
+#   VERCEL_TOKEN       — a token from https://vercel.com/account/tokens
+#   VERCEL_ORG_ID      — team_UhPjDkhxW0b4JX399pdc4iYs
+#   VERCEL_PROJECT_ID  — prj_ejSeutScnvJpS2TzHBGkJAF33TBL (experiment-hub)
+# Until VERCEL_TOKEN is set, this workflow no-ops (green) instead of failing.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'experiments/**'
+      - 'docs/**'
+      - 'openspec/**'
+      - 'rules/**'
+      - 'skills/**'
+      - '.claude/**'
+      - '.cursor/**'
+      - '.github/**'
+      - '*.md'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'experiments/**'
+      - 'docs/**'
+      - 'openspec/**'
+      - 'rules/**'
+      - 'skills/**'
+      - '.claude/**'
+      - '.cursor/**'
+      - '.github/**'
+      - '*.md'
+
+env:
+  # Project/org IDs are not secret; the token is. Kept in secrets for convenience.
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+# The deploy step comments the preview URL via `gh pr comment`, which needs
+# pull-requests write; keep everything else read-only.
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: deploy-hub-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy hub
+    runs-on: ubuntu-latest
+    # Only the repo owner's events may use the Vercel token (mirrors ci.yml's
+    # live-integration gate) — PRs from other contributors get no deploy.
+    if: github.event_name == 'push' || github.actor == github.repository_owner
+    steps:
+      - name: Check for required Vercel secrets
+        id: guard
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Missing one or more Vercel secrets (VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID) — skipping deploy (add all three to enable)." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.guard.outputs.skip != 'true'
+
+      - uses: pnpm/action-setup@v4
+        if: steps.guard.outputs.skip != 'true'
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        if: steps.guard.outputs.skip != 'true'
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install Vercel CLI
+        if: steps.guard.outputs.skip != 'true'
+        # Pinned major for reproducible deploys — bump intentionally. Must be
+        # recent enough for the project's Node.js version (24.x needs a current CLI).
+        run: npm install -g vercel@56
+
+      - name: Resolve target (production on main, preview otherwise)
+        if: steps.guard.outputs.skip != 'true'
+        id: target
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ] && [ "${{ github.event_name }}" = "push" ]; then
+            echo "env=production" >> "$GITHUB_OUTPUT"
+            echo "prod_flag=--prod" >> "$GITHUB_OUTPUT"
+          else
+            echo "env=preview" >> "$GITHUB_OUTPUT"
+            echo "prod_flag=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Pull Vercel project settings
+        if: steps.guard.outputs.skip != 'true'
+        run: vercel pull --yes --environment=${{ steps.target.outputs.env }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build
+        if: steps.guard.outputs.skip != 'true'
+        run: vercel build ${{ steps.target.outputs.prod_flag }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy
+        if: steps.guard.outputs.skip != 'true'
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt ${{ steps.target.outputs.prod_flag }} --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed (${{ steps.target.outputs.env }}) → $url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment preview URL on PR
+        if: steps.guard.outputs.skip != 'true' && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "🔷 Preview deploy: ${{ steps.deploy.outputs.url }}"

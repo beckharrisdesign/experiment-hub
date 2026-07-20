@@ -71,7 +71,11 @@ Credential setup:
   write rollups/formulas like `Single price sum` or `Inventory value`). The
   sync validates Status options against the live schema and skips anything
   that doesn't match, so a mismatch is safe but produces warnings instead of
-  updates.
+  updates. If two Etsy listings resolve to the *same* Notion page (e.g. a
+  shared SKU with no `Etsy Listing ID` on the row), only the first by listing
+  id keeps the page; the rest are skipped and counted as `conflicts` in the run
+  summary — this prevents two listings churning one page's fields every run.
+  Fix the underlying duplicate listing/SKU on Etsy to clear the warning.
 - Beyond price/quantity/status, the sync mirrors the extra Etsy fields in
   `DEFAULT_EXTRA_FIELDS` (`sync_notion.py`): Description, Etsy Title, Etsy
   URL, Views, Favorites, Tags, Materials, Currency, Etsy Created / Last
@@ -81,6 +85,13 @@ Credential setup:
   manual Notion setup. Status/rollup/formula/relation types can't be created
   through the API and are skipped with a warning. Long descriptions truncate
   at Notion's 2000-character rich_text limit.
+- After each live update the sync posts a **comment** on the changed Notion
+  page logging every field it touched (`Views: 8 → 13`, `Status: … → …`).
+  On by default; set `NOTION_SYNC_COMMENTS=false` to turn it off. Needs the
+  integration's "insert comments" capability — without it the write still
+  lands and the comment is skipped with a warning. Never fires under
+  `DRY_RUN`. Note: Views/Favorites move on most listings every run, so
+  expect a comment on each active listing daily.
 
 ## Run
 

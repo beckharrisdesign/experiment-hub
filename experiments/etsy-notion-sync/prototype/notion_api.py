@@ -79,3 +79,20 @@ class NotionClient:
             timeout=30,
         )
         return self._check(response, "Update page {}".format(page_id))
+
+    def create_comment(self, page_id, text):
+        """Post a plain-text comment on a page.
+
+        Requires the integration to have the "insert comments" capability
+        enabled in Notion; without it the API returns 403.
+        """
+        response = self.session.post(
+            "{}/comments".format(API_BASE),
+            headers=self._headers(),
+            json={
+                "parent": {"page_id": page_id},
+                "rich_text": [{"text": {"content": text}}],
+            },
+            timeout=30,
+        )
+        return self._check(response, "Create comment on {}".format(page_id))
