@@ -67,7 +67,7 @@ Before scoring, fetch the current rubric from:
 
 Use that page as the **authoritative** source for dimension definitions, score thresholds, and verdict labels. Do not use a static rubric from memory — fetch fresh so the case stays in sync with the founder's current values.
 
-**Fallback (if the URL is unreachable):** In this repository, use `../rules/scoring-criteria.mdc` for per-dimension 1–5 definitions. If composite verdict labels (e.g. Strong GO / Promising / Pass) are only on the live page, state that scoring dimensions are from the repo but **verdict label** should be reconciled with the live page when available.
+**Fallback (if the URL is unreachable):** In this repository, use `rules/scoring-criteria.mdc` for per-dimension 1–5 definitions. If composite verdict labels (e.g. Strong GO / Promising / Pass) are only on the live page, state that scoring dimensions are from the repo but **verdict label** should be reconciled with the live page when available.
 
 Score the idea using the fetched rubric. **Let the score shape the recommendation** — do not write the recommendation first and reverse-engineer the score.
 
