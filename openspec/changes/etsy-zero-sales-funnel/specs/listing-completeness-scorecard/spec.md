@@ -45,25 +45,30 @@ The scorecard SHALL compute Tier B as the share of *applicable* criteria met (ph
 - **WHEN** a listing's `listing_type` is `download`
 - **THEN** shipping, processing, and return-policy criteria are excluded from its denominator rather than counted as failures.
 
-### Requirement: Full sortable scorecard table, fix-first by default
+### Requirement: Full sortable scorecard table with visibility-weighted fix priority
 
-Every captured listing appears as one condensed row in a sortable table that defaults to fix-first order, so the founder can both scan the whole shop and re-sort to explore.
+Every captured listing appears as one condensed row — including its views and favorites — in a sortable table that defaults to an impact-weighted fix-priority order, so effort lands on the listings that are seen most and easiest to fix.
 
-The scorecard SHALL render every captured listing as exactly one single-line row (no truncation or "+N more" collapse) using the same table component/conventions as the hub's main experiments table, SHALL default-sort with any Tier-A-failure listing above all Tier-A-complete listings and ascending Tier-B percentage within each group, SHALL let the user re-sort by a column with the active sort indicated, and SHALL link each listing (in both the table and the "fix these first" list) to its Etsy listing edit view.
+The scorecard SHALL render every captured listing as exactly one single-line row (no truncation or "+N more" collapse) using the same table component/conventions as the hub's main experiments table; SHALL include sortable **Views** (`views`) and **Favorites** (`num_favorers`) columns alongside Publishable and Completeness; SHALL default-sort by a **fix-priority** order that ranks the most-visible listings with unmet criteria first (visibility × fixability), treating Tier-A publishability blockers as high-severity but not auto-ranking a zero-traffic blocker above a high-traffic fixable listing; SHALL let the user re-sort by any column with the active sort indicated; and SHALL link each listing (in both the table and the "fix these first" list) to its Etsy listing edit view.
 
 #### Scenario: Every captured listing shows as one condensed row
 
 - **WHEN** a shop with 20+ captured listings is scored
 - **THEN** every listing renders as its own single-line row and none are hidden behind a "+N more" affordance.
 
-#### Scenario: Table loads in fix-first order
+#### Scenario: Table loads in visibility-weighted fix-priority order
 
 - **WHEN** the scorecard table first loads
-- **THEN** listings with a Tier-A failure appear above every Tier-A-complete listing, and within each group the lowest Tier-B % appears first.
+- **THEN** listings that have unmet criteria and higher visibility (views, then favorites) rank above lower-visibility listings with similar gaps, and Tier-A blockers are surfaced as high-severity without a zero-view blocker outranking a high-traffic fixable listing.
+
+#### Scenario: A high-visibility fixable listing is prioritized over a low-visibility one
+
+- **WHEN** two publishable listings have comparable unmet criteria but one has far more views/favorites
+- **THEN** the more-visible listing ranks higher in the default order and in the "fix these first" list.
 
 #### Scenario: User re-sorts by a column
 
-- **WHEN** the user activates a sortable column header (e.g. Completeness or Publishable)
+- **WHEN** the user activates a sortable column header (Publishable, Views, Favorites, or Completeness)
 - **THEN** the rows reorder by that column and the active sort column and direction are indicated.
 
 #### Scenario: Each listing links to its Etsy edit view

@@ -9,7 +9,7 @@
 - **Who:** Katy, running a super-early Etsy shop (~20 listings, zero sales, zero reviews), plus anyone reading the public labs page.
 - **Job:** See, per listing, whether it is objectively *finished* to Etsy's own standard — separating "just not done yet" from "done, needs a real test" — so hygiene gets fixed before any experiment muddies the signal.
 - **Done when:** The labs project page publicly shows each listing's completeness score with a ranked "fix these first" list, computed only from data the read-only pipeline already captures.
-- **Not doing:** No writes to Etsy. No A/B tests or copy suggestions. No sales/receipts/reviews data (none exist yet). No favorites-trend (L2) or tag-map (L3) — sequenced follow-ons, held.
+- **Not doing:** No writes to Etsy. No A/B tests or copy suggestions. No sales/receipts/reviews data (none exist yet). No tag-map (L3). Current **views/favorites values** are shown and used to prioritize suggestions (a cheap, already-captured slice of L2); the favorites/views **trend over time** stays L2 and is held.
 
 ## Why
 

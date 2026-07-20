@@ -34,8 +34,9 @@ no Python/capture change, no DB migration.
         │     • "Listing 123 — Not publishable-complete: no photo, quantity 0"
         │     • "Listing 456 — 40% complete: +6 photos, +9 tags, no video"
         └─ Full sortable table: ALL listings, one condensed single-line row each
-              cols → Listing · Publishable badge · Completeness bar+% · Unmet (condensed)
-              • sortable column headers (default: fix-first — Tier-A fails, then asc %)
+              cols → Listing · Publishable · Views · Favorites · Completeness · Unmet (condensed)
+              • sortable headers (default: fix priority — most-visible with issues first)
+              • each listing links to its Etsy edit view
               • no "+N more" — every captured listing renders
 ```
 
@@ -116,6 +117,18 @@ tokenized primitives (the accepted "existing markup" fallback); a hub `BHD Labs 
    for the founder; anonymous public visitors following it hit Etsy's sign-in. The `listing_id`
    is not sensitive (it appears in the public listing URL), so exposing it on the public page is
    fine. (Optional later: also expose the public `url` field for non-owner visitors.)
+
+9. **Visibility-weighted fix priority (founder feedback 2026-07-20):** the table shows sortable
+   **Views** (`views`) and **Favorites** (`num_favorers`) columns — both already captured on the
+   listing object — and the default order + "fix these first" card rank by **impact = visibility
+   × fixability**, not raw completeness. Rationale: a live listing pulling 300 views at 45%
+   complete is losing sales *now*; a 0-view draft is broken but not bleeding traffic. v1 model
+   (tunable): score each listing-with-issues by visibility (views, favorites as tiebreak),
+   surface the most-visible fixable ones first; Tier-A blockers are flagged high-severity /
+   "hidden — not searchable until fixed" but a zero-traffic blocker does **not** auto-outrank a
+   high-traffic fixable listing. Suggestions cite the numbers ("320 views, 18 ♥ but 45% — add 6
+   photos + a video"). **Scope note:** this pulls the *current-value* slice of L2 (visibility) into
+   L1 for prioritization; the favorites/views **trend over time** remains L2.
 
 ## Risks / Trade-offs
 
