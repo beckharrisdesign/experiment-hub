@@ -15,7 +15,7 @@
 
 Every captured listing is judged pass/fail on the hard, Etsy-enforced "can this even be a good published listing" criteria, and any failing check is named.
 
-**Fails until:** a listing missing a required field (e.g. no photo, `quantity` = 0) is shown as gate-complete.
+**Fails until:** a listing missing a required field (e.g. no photo, `quantity` = 0) is flagged "Not publishable-complete" with the failing criterion named.
 
 The scorecard SHALL mark a listing Tier-A **complete** only when all applicable gate criteria (title, description, price > 0, `quantity` > 0, ≥ 1 image, `who_made`/`when_made`/`is_supply`, `taxonomy_id`, `state = active`, plus `shipping_profile_id` and `readiness_state_id` for physical listings) are present, and SHALL list each failing criterion by name otherwise.
 
@@ -85,7 +85,7 @@ The scorecard SHALL render every captured listing as exactly one single-line row
 
 The scorecard is a public artifact on the labs project page; the sync trigger stays authenticated and no buyer/account data is exposed.
 
-**Fails until:** the scorecard requires auth to view, or a sync trigger appears on the public page, or any buyer/account PII is rendered.
+**Fails until:** the scorecard is viewable publicly without auth, exposes no sync trigger, and renders no buyer/account PII.
 
 The scorecard SHALL render on the public experiment page (`app/experiments/[slug]/page.tsx`) without authentication, showing each listing's Tier-A status, Tier-B %, and the fix-first list, and SHALL expose no sync trigger and no buyer/account PII (scores and listing-field flags only).
 

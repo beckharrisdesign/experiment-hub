@@ -44,7 +44,7 @@ What the API *can* see at zero sales, from data the prototype already pulls:
 
 | Signal | Source (read-only) | What it tells you |
 |---|---|---|
-| Listing **completeness / quality** | `getListing` (wide `includes`), images, videos, properties, inventory | Is the listing objectively *finished*? (hygiene, not a test) |
+| Listing **completeness / quality** | `getListing` (wide `includes`), images, videos, inventory | Is the listing objectively *finished*? (hygiene, not a test) |
 | **`num_favorers`** (favorites) | on the listing object; already snapshotted append-only | The one leading indicator before a sale — earliest funnel probe |
 
 Everything above the favorites line (did anyone even *see* it) needs the founder to
