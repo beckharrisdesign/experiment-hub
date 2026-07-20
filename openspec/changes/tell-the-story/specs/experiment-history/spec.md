@@ -1,8 +1,13 @@
 # experiment-history — spec
 
+## Outcomes
+
 See [proposal.md](../../proposal.md) — each experiment detail page carries a dated, evidence-linked History reconstructing where the project (and Katy's thinking) was over time. Generate-then-approve: drafts are assembled from real repo evidence; every published entry is approved and editable in Notion.
 
-**Outcomes (from proposal):** Outside readers get the journey, not just the verdict; Katy hangs context on each experiment as it happens. History sits below the `stop-the-leaks` narrative statements, renders read-only, and is silent when empty.
+- **Who:** Outside readers who want the journey (a hiring manager reading a case study that wrote itself), and Katy hanging context on each experiment as she lives it.
+- **Job:** History sits below the `stop-the-leaks` narrative statements, renders read-only, and is silent when empty.
+- **Done when:** the five requirements below hold on the detail page.
+- **Not doing:** homepage timeline, per-day granularity, chat-transcript mining, auto-publish, link-artifact chips (v1).
 
 ## ADDED Requirements
 
