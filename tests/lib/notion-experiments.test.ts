@@ -145,7 +145,19 @@ describe("mapNotionPageToExperiment", () => {
         platformCost: 4,
         socialImpact: 2,
       },
+      // No `Public` checkbox on this page → private by default.
+      public: false,
     });
+  });
+
+  it("marks a row public only when the Public checkbox is checked", () => {
+    expect(mapNotionPageToExperiment(makePage())?.public).toBe(false);
+    expect(
+      mapNotionPageToExperiment(makePage({ Public: { checkbox: false } }))?.public,
+    ).toBe(false);
+    expect(
+      mapNotionPageToExperiment(makePage({ Public: { checkbox: true } }))?.public,
+    ).toBe(true);
   });
 
   it("returns null for rows without a repo slug", () => {
@@ -548,28 +560,25 @@ describe("formatNotionProperty", () => {
 });
 
 describe("getExperimentFieldsFromNotion", () => {
-  it("returns all non-empty fields except hero properties", async () => {
+  it("returns only the allowlisted narrative statements, in order", async () => {
     const fields = await getExperimentFieldsFromNotion("seed-organizer");
 
-    const labels = fields!.map((f) => f.label);
-    expect(labels).not.toContain("Name");
-    expect(labels).not.toContain("Tagline");
-    expect(fields).toContainEqual({ label: "Status", value: "Validating" });
-    expect(fields).toContainEqual({ label: "Type", value: "Business" });
-    expect(fields).toContainEqual({ label: "repo", value: "seed-organizer" });
-    expect(fields).toContainEqual({
-      label: "Exec Summary",
-      value: "A tool for tracking seed packets.",
-    });
-    expect(fields).toContainEqual({ label: "Score:B", value: "4" });
+    expect(fields).toEqual([
+      { label: "Why this matters", value: "Seed boxes are chaos." },
+      { label: "Hypothesis", value: "Gardeners need inventory-first tracking." },
+      { label: "Exec Summary", value: "A tool for tracking seed packets." },
+    ]);
   });
 
-  it("orders primary fields first, then extras alphabetically", async () => {
+  it("never leaks bookkeeping, scores, status, type, or hero fields", async () => {
+    // Even with extra bookkeeping columns present, only the allowlist renders.
     mockQuery.mockResolvedValue({
       results: [
         makePage({
+          "Last edited time": { last_edited_time: "2026-07-01T00:00:00.000Z" },
+          "Name Alt": richText("seed-organizer"),
+          Public: { checkbox: true },
           Website: { url: "https://example.com" },
-          Audience: richText("Gardeners"),
         }),
       ],
       has_more: false,
@@ -578,23 +587,33 @@ describe("getExperimentFieldsFromNotion", () => {
     const labels = (await getExperimentFieldsFromNotion("seed-organizer"))!.map(
       (f) => f.label,
     );
-    expect(labels.slice(0, 4)).toEqual([
-      "Why this matters",
-      "Hypothesis",
-      "Exec Summary",
+    expect(labels).toEqual(["Why this matters", "Hypothesis", "Exec Summary"]);
+    for (const leaked of [
+      "Name",
+      "Tagline",
       "Status",
-    ]);
-    expect(labels.slice(-2)).toEqual(["Type", "Website"]);
+      "Type",
+      "repo",
+      "Score:B",
+      "Last edited time",
+      "Name Alt",
+      "Public",
+      "Website",
+    ]) {
+      expect(labels).not.toContain(leaked);
+    }
   });
 
-  it("skips empty properties", async () => {
+  it("omits an allowlisted statement that is empty", async () => {
     mockQuery.mockResolvedValue({
-      results: [makePage({ Notes: { rich_text: [] } })],
+      results: [makePage({ Hypothesis: { rich_text: [] } })],
       has_more: false,
     });
 
-    const fields = await getExperimentFieldsFromNotion("seed-organizer");
-    expect(fields!.map((f) => f.label)).not.toContain("Notes");
+    const labels = (await getExperimentFieldsFromNotion("seed-organizer"))!.map(
+      (f) => f.label,
+    );
+    expect(labels).toEqual(["Why this matters", "Exec Summary"]);
   });
 
   it("returns null for an unknown slug", async () => {

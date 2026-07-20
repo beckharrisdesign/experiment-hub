@@ -55,6 +55,10 @@ CREATABLE_TYPES = {"rich_text", "number", "select", "multi_select", "url", "date
 # Notion caps a single rich_text content block at 2000 characters.
 RICH_TEXT_LIMIT = 2000
 
+# Per-value cap inside a change comment, so one long field (e.g. Description)
+# can't dominate or blow past the block limit on its own.
+COMMENT_VALUE_LIMIT = 200
+
 
 def _plain_text(prop):
     """Best-effort plain-text value of a Notion property (for SKU matching)."""
@@ -217,7 +221,11 @@ def plan_updates(latest, indexes, db_schema, config):
     """Compare latest Etsy state against Notion pages; return only real changes.
 
     indexes is (by_listing_id, by_sku) from build_page_indexes. Returns
-    (plans, unmatched). Each plan: {page_id, listing_id, matched_by, changes, properties}.
+    (plans, unmatched, conflicts). Each plan: {page_id, listing_id, matched_by,
+    changes, properties}. `conflicts` holds listings that resolved to a Notion
+    page already claimed by an earlier listing this run (e.g. two Etsy listings
+    sharing one SKU) — they are skipped rather than left to overwrite each
+    other's fields every run.
     """
     by_listing_id, by_sku = indexes
     db_props = db_schema.get("properties") or {}
@@ -226,6 +234,8 @@ def plan_updates(latest, indexes, db_schema, config):
 
     plans = []
     unmatched = []
+    conflicts = []
+    claimed_pages = {}  # page id -> first listing id that resolved to it
     for listing_id, snapshot in sorted(latest.items()):
         parsed = snapshot["parsed"]
         skus = parsed.get("skus") or ([snapshot["sku"]] if snapshot["sku"] else [])
@@ -240,6 +250,28 @@ def plan_updates(latest, indexes, db_schema, config):
         if page is None:
             unmatched.append({"listing_id": listing_id, "skus": skus, "parsed": parsed})
             continue
+
+        # Two distinct listings resolving to the same page (a shared SKU with
+        # no listing-id match) would overwrite each other's fields on every
+        # run — a phantom, never-converging update. The first listing (sorted
+        # by id, so it's deterministic) keeps the page; the rest are reported
+        # so the duplicate listing/SKU can be cleaned up on Etsy.
+        page_id = page["id"]
+        if page_id in claimed_pages:
+            log.warning(
+                "Listing %s resolves to Notion page %s already claimed by listing %s "
+                "(matched by %r) — skipping to avoid overwrite churn; fix the duplicate "
+                "listing or SKU on Etsy.",
+                listing_id, page_id, claimed_pages[page_id], matched_by,
+            )
+            conflicts.append({
+                "listing_id": listing_id,
+                "page_id": page_id,
+                "claimed_by": claimed_pages[page_id],
+                "matched_by": matched_by,
+            })
+            continue
+        claimed_pages[page_id] = listing_id
 
         desired = {
             config["price_property"]: parsed.get("price"),
@@ -283,13 +315,13 @@ def plan_updates(latest, indexes, db_schema, config):
 
         if properties:
             plans.append({
-                "page_id": page["id"],
+                "page_id": page_id,
                 "listing_id": listing_id,
                 "matched_by": matched_by,
                 "changes": changes,
                 "properties": properties,
             })
-    return plans, unmatched
+    return plans, unmatched, conflicts
 
 
 def plan_creates(unmatched, db_schema, config):
@@ -366,7 +398,41 @@ def apply_creates(client, creates, database_id, dry_run):
             client.create_page(database_id, plan["properties"])
 
 
-def apply_updates(client, plans, dry_run):
+def _format_change_value(value):
+    """One-line, readable form of a change's before/after value for a comment."""
+    if value is None:
+        return "—"
+    if isinstance(value, list):
+        text = ", ".join(str(item) for item in value) or "—"
+    else:
+        text = str(value)
+    if len(text) > COMMENT_VALUE_LIMIT:
+        text = text[:COMMENT_VALUE_LIMIT - 1] + "…"
+    return text
+
+
+def changes_comment_text(changes, now=None):
+    """Comment body summarizing a page's field changes ({prop: {from, to}}).
+
+    Capped at Notion's single rich_text block limit. `now` is injectable so
+    the stamp is testable.
+    """
+    stamp = (now or datetime.now(timezone.utc)).strftime("%Y-%m-%d %H:%M UTC")
+    lines = ["Etsy → Notion sync · {}".format(stamp)]
+    for prop_name in sorted(changes):
+        change = changes[prop_name]
+        lines.append("• {}: {} → {}".format(
+            prop_name,
+            _format_change_value(change.get("from")),
+            _format_change_value(change.get("to")),
+        ))
+    text = "\n".join(lines)
+    if len(text) > RICH_TEXT_LIMIT:
+        text = text[:RICH_TEXT_LIMIT - 1] + "…"
+    return text
+
+
+def apply_updates(client, plans, dry_run, comments_enabled=False):
     for plan in plans:
         log.info(
             "%s %s (listing %s): %s",
@@ -375,8 +441,20 @@ def apply_updates(client, plans, dry_run):
             plan["listing_id"],
             json.dumps(plan["changes"]),
         )
-        if not dry_run:
-            client.update_page(plan["page_id"], plan["properties"])
+        if dry_run:
+            continue
+        client.update_page(plan["page_id"], plan["properties"])
+        if comments_enabled:
+            # Best-effort: the page write already succeeded, so nothing about
+            # the comment may abort the run — not a missing comment capability
+            # (NotionApiError), not a network blip/timeout (requests), not any
+            # other runtime error. The catch is intentionally broad because the
+            # comment is non-critical logging, not part of the sync contract.
+            try:
+                client.create_comment(plan["page_id"], changes_comment_text(plan["changes"]))
+            except Exception as exc:  # noqa: BLE001 — comment is non-critical
+                log.warning("Change comment failed for listing %s (update applied): %s",
+                            plan["listing_id"], exc)
 
 
 def run_sync(client, backend, database_id, config, dry_run=True):
@@ -384,7 +462,7 @@ def run_sync(client, backend, database_id, config, dry_run=True):
     if not latest:
         log.warning("No captured listings in the store — run capture.py first.")
         return {"listings": 0, "notion_pages": 0, "updates": 0, "created": 0,
-                "unmatched": 0, "dry_run": dry_run}
+                "unmatched": 0, "conflicts": 0, "dry_run": dry_run}
 
     db_schema = client.get_database(database_id)
     db_schema = ensure_properties(client, db_schema, database_id,
@@ -392,11 +470,11 @@ def run_sync(client, backend, database_id, config, dry_run=True):
     pages = list(client.query_database_all(database_id))
     indexes = build_page_indexes(pages, config["listing_id_property"], config["sku_property"])
 
-    plans, unmatched = plan_updates(latest, indexes, db_schema, config)
+    plans, unmatched, conflicts = plan_updates(latest, indexes, db_schema, config)
     for miss in unmatched:
         log.warning("No Notion row matched listing %s (skus=%s)", miss["listing_id"], miss["skus"])
     creates = plan_creates(unmatched, db_schema, config)
-    apply_updates(client, plans, dry_run)
+    apply_updates(client, plans, dry_run, config.get("comments_enabled", False))
     apply_creates(client, creates, database_id, dry_run)
 
     summary = {
@@ -405,6 +483,7 @@ def run_sync(client, backend, database_id, config, dry_run=True):
         "updates": len(plans),
         "created": len(creates),
         "unmatched": len(unmatched),
+        "conflicts": len(conflicts),
         "dry_run": dry_run,
     }
     log.info("Sync complete: %s", json.dumps(summary))
@@ -436,6 +515,10 @@ def config_from_env():
         "extra_fields": json.loads(
             os.environ.get("NOTION_EXTRA_FIELDS_JSON", json.dumps(DEFAULT_EXTRA_FIELDS))
         ),
+        # Post a comment on each updated Notion page logging what changed.
+        # On by default; needs the integration's "insert comments" capability.
+        # Never fires under DRY_RUN (no writes happen at all).
+        "comments_enabled": os.environ.get("NOTION_SYNC_COMMENTS", "true").strip().lower() != "false",
     }
 
 

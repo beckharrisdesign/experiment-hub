@@ -169,6 +169,9 @@ export function mapNotionPageToExperiment(page: NotionPage): Experiment | null {
     lastModified: page.last_edited_time ?? page.created_time ?? "",
     tags: [],
     scores: mapScores(properties),
+    // Notion `Public` is a checkbox; an unset box reads as false, so rows are
+    // private-by-default and only an explicitly-checked row renders publicly.
+    public: properties["Public"]?.checkbox === true,
   };
 }
 
@@ -215,22 +218,25 @@ export function formatNotionProperty(prop: NotionProperty): string {
   return "";
 }
 
-// Name and Tagline render in the page hero, so the field list skips them.
-const HERO_PROPERTIES = new Set(["Name", "Tagline"]);
-
-// Primary properties surface first, in this order; anything else follows
-// alphabetically so new Notion columns appear without a code change. The
-// detail page renders non-primary fields below a divider.
-export const PRIMARY_FIELD_ORDER = [
+/**
+ * The ONLY Notion properties allowed to render on a public experiment detail
+ * page, in display order. Everything else — bookkeeping (`Last edited time`,
+ * `Name Alt`, `Public`), scores, tags, slug, dates — never reaches a public
+ * route. `Status` is intentionally absent: it renders as a hero chip, not a
+ * narrative row. This allowlist is the single source of truth for what a
+ * detail page may show; adding a Notion column does not surface it publicly
+ * unless it is added here.
+ */
+export const PUBLIC_FIELD_ALLOWLIST = [
   "Why this matters",
   "Hypothesis",
   "Exec Summary",
-  "Status",
-];
+] as const;
 
 /**
- * Every non-empty property on the Notion row for `slug`, as display-ready
- * label/value pairs. Returns null when no row matches the slug.
+ * The allowlisted narrative statements for `slug`, in `PUBLIC_FIELD_ALLOWLIST`
+ * order, skipping any that are empty. Returns null when no row matches the
+ * slug. Only these three fields are ever returned — no bookkeeping or scores.
  */
 export async function getExperimentFieldsFromNotion(
   slug: string,
@@ -239,24 +245,13 @@ export async function getExperimentFieldsFromNotion(
   const page = cache?.pageBySlug[slug];
   if (!page) return null;
 
+  const properties = page.properties ?? {};
   const fields: ExperimentField[] = [];
-  for (const [label, prop] of Object.entries(page.properties ?? {})) {
-    if (HERO_PROPERTIES.has(label)) continue;
-    const value = formatNotionProperty(prop);
+  for (const label of PUBLIC_FIELD_ALLOWLIST) {
+    const prop = properties[label];
+    const value = prop ? formatNotionProperty(prop) : "";
     if (value) fields.push({ label, value });
   }
-
-  fields.sort((a, b) => {
-    const ai = PRIMARY_FIELD_ORDER.indexOf(a.label);
-    const bi = PRIMARY_FIELD_ORDER.indexOf(b.label);
-    if (ai !== -1 || bi !== -1) {
-      return (ai === -1 ? PRIMARY_FIELD_ORDER.length : ai) -
-        (bi === -1 ? PRIMARY_FIELD_ORDER.length : bi) ||
-        a.label.localeCompare(b.label);
-    }
-    return a.label.localeCompare(b.label);
-  });
-
   return fields;
 }
 
