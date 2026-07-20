@@ -4,6 +4,7 @@
  * service-role-only etsy_runs table, and workflow dispatch for "Sync now".
  */
 import { createClient } from "@supabase/supabase-js";
+import type { RawListing } from "@/lib/etsy-scorecard";
 
 export interface EtsySyncRun {
   id: number;
@@ -35,6 +36,36 @@ export async function getEtsySyncRuns(limit = 20): Promise<EtsySyncRun[]> {
     throw new Error(`Failed to load etsy sync runs: ${error.message}`);
   }
   return (data ?? []) as EtsySyncRun[];
+}
+
+/**
+ * The endpoint value stored on snapshot rows. It is the *un-interpolated*
+ * template, not a formatted path — matching it with `like '%listings%'` would
+ * also match `/v3/application/listings/{listing_id}/inventory` and silently
+ * double the row count with objects that carry none of the scored fields.
+ */
+const LISTINGS_ENDPOINT = "/v3/application/shops/{shop_id}/listings";
+
+/**
+ * Latest snapshot per listing, as raw Etsy JSON.
+ *
+ * Reads `etsy_latest_listing_snapshots` (the view already exposes
+ * `raw_response`; only the Python client narrows its select to `parsed`).
+ * Server-only — the service-role key is required and `raw_response` may carry
+ * `user`/buyer fields via the `User` include, so callers must project to
+ * scores before sending anything to the browser.
+ */
+export async function getLatestListingSnapshots(): Promise<RawListing[]> {
+  const { data, error } = await getServiceClient()
+    .from("etsy_latest_listing_snapshots")
+    .select("raw_response")
+    .eq("endpoint", LISTINGS_ENDPOINT);
+  if (error) {
+    throw new Error(`Failed to load etsy listing snapshots: ${error.message}`);
+  }
+  return (data ?? [])
+    .map((row) => (row as { raw_response: RawListing | null }).raw_response)
+    .filter((raw): raw is RawListing => !!raw && typeof raw.listing_id === "number");
 }
 
 const WORKFLOW_FILE = "etsy-notion-sync.yml";

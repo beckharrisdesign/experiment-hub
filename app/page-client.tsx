@@ -4,15 +4,13 @@ import { useState, useMemo } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Tooltip from "@/components/Tooltip";
+import ScoreTable, { type ScoreTableColumn } from "@/components/ScoreTable";
 import type { Experiment, Prototype, Documentation } from "@/types";
 import { getExperimentHrefSlug } from "@/lib/utils";
 import { formatBhdPhaseLabel } from "@/lib/openspec-shared";
 import type { BhdPhase } from "@/lib/openspec-shared";
 import { calculateTotalScore } from "@/lib/scoring";
 import Link from "next/link";
-
-type SortColumn = "name" | "total";
-type SortDirection = "asc" | "desc";
 
 interface ExperimentWithRelated extends Experiment {
   prototype?: Prototype | null;
@@ -42,11 +40,18 @@ function getTotalBadgeColor(score: number) {
   return "bg-red-500/80 border-red-400/80 text-white";
 }
 
+/** ✓ / — cell used by the PRD, Landing and Prototype columns. */
+function PresenceCell({ present }: { present: boolean }) {
+  return present ? (
+    <span className="text-accent-primary">✓</span>
+  ) : (
+    <span className="text-sm text-text-dark-secondary">—</span>
+  );
+}
+
 export default function HomePageClient({
   initialExperiments,
 }: HomePageClientProps) {
-  const [sortColumn, setSortColumn] = useState<SortColumn>("total");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [activeTab, setActiveTab] = useState<ViewTab>("active");
 
   const experiments = useMemo(
@@ -68,33 +73,86 @@ export default function HomePageClient({
   const displayedExperiments =
     activeTab === "active" ? activeExperiments : inactiveExperiments;
 
-  const handleSort = (column: SortColumn) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortColumn(column);
-      setSortDirection("desc");
-    }
-  };
-
-  const sortedExperiments = useMemo(() => {
-    return [...displayedExperiments].sort((a, b) => {
-      let aValue: string | number;
-      let bValue: string | number;
-
-      if (sortColumn === "name") {
-        aValue = a.name.toLowerCase();
-        bValue = b.name.toLowerCase();
-      } else {
-        aValue = calculateTotalScore(a.scores) ?? 0;
-        bValue = calculateTotalScore(b.scores) ?? 0;
-      }
-
-      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-      return 0;
-    });
-  }, [displayedExperiments, sortColumn, sortDirection]);
+  const columns = useMemo<ScoreTableColumn<ExperimentWithRelated>[]>(
+    () => [
+      {
+        key: "name",
+        header: "Experiment",
+        sortValue: (e) => e.name.toLowerCase(),
+        render: (experiment) => (
+          <Link
+            href={`/experiments/${getExperimentHrefSlug(experiment)}`}
+            className="block hover:text-accent-primary"
+          >
+            <span className="font-heading text-xl font-medium text-text-dark inline-flex items-center gap-2 flex-wrap">
+              {experiment.name || experiment.id || "Untitled"}
+              {/* Admin-only process indicator (gated to edit mode
+                  server-side). Dashed + unfilled so it reads as metadata,
+                  never as a CTA. */}
+              {experiment.openSpecPhase && (
+                <span className="text-[11px] font-medium rounded-md border border-dashed border-accent-primary/30 text-accent-primary/70 px-1.5 py-0.5">
+                  {formatBhdPhaseLabel(experiment.openSpecPhase)}
+                </span>
+              )}
+            </span>
+            <span className="block text-sm text-text-dark-secondary leading-relaxed mt-0.5 line-clamp-1">
+              {experiment.statement}
+            </span>
+          </Link>
+        ),
+      },
+      {
+        key: "total",
+        header: "Score",
+        headerTooltip: "Sum of B+P+C+$+S (5-25). Click to sort.",
+        compact: true,
+        sortValue: (e) => calculateTotalScore(e.scores) ?? 0,
+        render: (experiment) => {
+          const total = calculateTotalScore(experiment.scores);
+          if (total === null) {
+            return <span className="text-sm text-text-dark-secondary">—</span>;
+          }
+          const experimentSlug = getExperimentHrefSlug(experiment);
+          return (
+            <Tooltip content={`${total}/25. Click to see breakdown.`} position="top">
+              <Link
+                href={`/experiments/${experimentSlug}`}
+                data-analytics-event="experiment_score_click"
+                data-analytics-surface="hub-home"
+                data-analytics-experiment={experimentSlug}
+                data-analytics-label={String(total)}
+                className={`inline-flex items-center justify-center h-7 min-w-[2rem] rounded-md border text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity ${getTotalBadgeColor(total)}`}
+              >
+                {total}
+              </Link>
+            </Tooltip>
+          );
+        },
+      },
+      {
+        key: "prd",
+        header: "PRD",
+        headerTooltip: "Product Requirements Document",
+        compact: true,
+        render: (e) => <PresenceCell present={!!e.hasPRDFile} />,
+      },
+      {
+        key: "landing",
+        header: "Landing",
+        headerTooltip: "Landing page for validation",
+        compact: true,
+        render: (e) => <PresenceCell present={!!e.hasLandingPage} />,
+      },
+      {
+        key: "prototype",
+        header: "Prototype",
+        headerTooltip: "Prototype built",
+        compact: true,
+        render: (e) => <PresenceCell present={!!e.hasPrototypeDir} />,
+      },
+    ],
+    [],
+  );
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -283,166 +341,19 @@ export default function HomePageClient({
             </button>
           </div>
 
-          {/* Table */}
-          {sortedExperiments.length === 0 ? (
-            <div className="border border-border-dark rounded p-8 text-center">
-              <p className="text-sm text-text-dark-secondary">
-                {activeTab === "active"
-                  ? "No active experiments found."
-                  : "No inactive experiments."}
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto border border-[#194b31]">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-[#194b31]">
-                    <th
-                      className="px-4 py-4 text-left text-base font-medium text-text-primary cursor-pointer hover:bg-background-secondary transition-colors"
-                      onClick={() => handleSort("name")}
-                    >
-                      <div className="flex items-center gap-1">
-                        <span>Experiment</span>
-                        {sortColumn === "name" && (
-                          <span className="text-accent-primary">
-                            {sortDirection === "asc" ? "↑" : "↓"}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="w-px whitespace-nowrap px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)] cursor-pointer hover:bg-background-secondary transition-colors"
-                      onClick={() => handleSort("total")}
-                    >
-                      <Tooltip
-                        content="Sum of B+P+C+$+S (5-25). Click to sort."
-                        position="bottom"
-                      >
-                        <div className="flex items-center justify-center gap-1">
-                          <span>Score</span>
-                          {sortColumn === "total" && (
-                            <span className="text-accent-primary">
-                              {sortDirection === "asc" ? "↑" : "↓"}
-                            </span>
-                          )}
-                        </div>
-                      </Tooltip>
-                    </th>
-                    <th className="w-px whitespace-nowrap px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
-                      <Tooltip
-                        content="Product Requirements Document"
-                        position="bottom"
-                      >
-                        <span className="cursor-help">PRD</span>
-                      </Tooltip>
-                    </th>
-                    <th className="w-px whitespace-nowrap px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
-                      <Tooltip
-                        content="Landing page for validation"
-                        position="bottom"
-                      >
-                        <span className="cursor-help">Landing</span>
-                      </Tooltip>
-                    </th>
-                    <th className="w-px whitespace-nowrap px-2 py-4 text-center text-base font-medium text-text-primary border-l border-[rgba(20,174,92,0.3)]">
-                      <Tooltip content="Prototype built" position="bottom">
-                        <span className="cursor-help">Prototype</span>
-                      </Tooltip>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedExperiments.map((experiment) => (
-                    <tr
-                      key={experiment.id}
-                      className="border-t border-[rgba(20,174,92,0.2)] bg-[rgba(255,255,255,0.2)] hover:bg-[rgba(20,174,92,0.04)] transition-colors"
-                    >
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/experiments/${getExperimentHrefSlug(experiment)}`}
-                          className="block hover:text-accent-primary"
-                        >
-                          <span className="font-heading text-xl font-medium text-text-dark inline-flex items-center gap-2 flex-wrap">
-                            {experiment.name || experiment.id || "Untitled"}
-                            {/* Admin-only process indicator (gated to edit
-                                mode server-side). Dashed + unfilled so it
-                                reads as metadata, never as a CTA. */}
-                            {experiment.openSpecPhase && (
-                              <span className="text-[11px] font-medium rounded-md border border-dashed border-accent-primary/30 text-accent-primary/70 px-1.5 py-0.5">
-                                {formatBhdPhaseLabel(experiment.openSpecPhase)}
-                              </span>
-                            )}
-                          </span>
-                          <span className="block text-sm text-text-dark-secondary leading-relaxed mt-0.5 line-clamp-1">
-                            {experiment.statement}
-                          </span>
-                        </Link>
-                      </td>
-                      <td className="w-px whitespace-nowrap px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
-                        {(() => {
-                          const total = calculateTotalScore(experiment.scores);
-                          if (total === null) {
-                            return (
-                              <span className="text-sm text-text-dark-secondary">
-                                —
-                              </span>
-                            );
-                          }
-                          const experimentSlug = getExperimentHrefSlug(
-                            experiment,
-                          );
-                          return (
-                            <Tooltip
-                              content={`${total}/25. Click to see breakdown.`}
-                              position="top"
-                            >
-                              <Link
-                                href={`/experiments/${experimentSlug}`}
-                                data-analytics-event="experiment_score_click"
-                                data-analytics-surface="hub-home"
-                                data-analytics-experiment={experimentSlug}
-                                data-analytics-label={String(total)}
-                                className={`inline-flex items-center justify-center h-7 min-w-[2rem] rounded-md border text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity ${getTotalBadgeColor(total)}`}
-                              >
-                                {total}
-                              </Link>
-                            </Tooltip>
-                          );
-                        })()}
-                      </td>
-                      <td className="w-px whitespace-nowrap px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
-                        {experiment.hasPRDFile ? (
-                          <span className="text-accent-primary">✓</span>
-                        ) : (
-                          <span className="text-sm text-text-dark-secondary">
-                            —
-                          </span>
-                        )}
-                      </td>
-                      <td className="w-px whitespace-nowrap px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
-                        {experiment.hasLandingPage ? (
-                          <span className="text-accent-primary">✓</span>
-                        ) : (
-                          <span className="text-sm text-text-dark-secondary">
-                            —
-                          </span>
-                        )}
-                      </td>
-                      <td className="w-px whitespace-nowrap px-2 py-3 text-center border-l border-[rgba(20,174,92,0.2)]">
-                        {experiment.hasPrototypeDir ? (
-                          <span className="text-accent-primary">✓</span>
-                        ) : (
-                          <span className="text-sm text-text-dark-secondary">
-                            —
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          {/* Table — shared component, also used by the Etsy listing scorecard */}
+          <ScoreTable
+            rows={displayedExperiments}
+            columns={columns}
+            rowKey={(e) => e.id}
+            defaultSortKey="total"
+            defaultSortDirection="desc"
+            emptyMessage={
+              activeTab === "active"
+                ? "No active experiments found."
+                : "No inactive experiments."
+            }
+          />
         </div>
       </section>
 
