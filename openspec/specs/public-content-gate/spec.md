@@ -1,16 +1,14 @@
 # public-content-gate
 
-## Outcomes
+## Purpose
 
-See [proposal.md](../../proposal.md) — public pages render only content intended for outsiders; the detail page becomes a curated narrative surface; internal state never appears on a public URL.
+Public experiment pages render only content intended for outsiders: a Notion row not marked public never appears on any public route, the detail page shows a curated narrative drawn from an enumerated allowlist (guiding statements only, no bookkeeping fields), internal process indicators (OpenSpec phase chips, content-gap prompts) stay admin-only, and manual copy fixes are verified on the live pages.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Private rows never render publicly
 
-A Notion experiment row not explicitly marked public is invisible on every public route.
-
-**Fails until:** `labs.beckharrisdesign.com/experiments/mvds` stops rendering while its row shows `Public` = No, and `lib/notion-experiments.ts` reads the `Public` property at all.
+A Notion experiment row not explicitly marked public SHALL be invisible on every public route.
 
 #### Scenario: Private row is hidden from public routes
 
@@ -24,9 +22,7 @@ A Notion experiment row not explicitly marked public is invisible on every publi
 
 ### Requirement: Detail fields render from an enumerated allowlist
 
-The public detail page shows only the guiding statements — Why this matters, Hypothesis, Exec Summary — and nothing else, enforced by an exported, tested constant.
-
-**Fails until:** detail pages stop rendering `Last edited time`, `Name alt`, `Score tag`, `Public`, score rows, tags, slug, directory, and dates; `PUBLIC_FIELD_ALLOWLIST` SHALL be the single source of what renders.
+The public detail page SHALL show only the guiding statements — Why this matters, Hypothesis, Exec Summary — and nothing else, enforced by an exported, tested constant.
 
 #### Scenario: Bookkeeping fields are filtered out
 
@@ -40,7 +36,7 @@ The public detail page shows only the guiding statements — Why this matters, H
 
 ### Requirement: Curated presentation with silent empty states
 
-Guiding statements read as an intentional narrative — ordered, with Status as a hero chip, links as buttons, and missing fields omitted rather than dashed.
+Guiding statements SHALL read as an intentional narrative — ordered, with Status as a hero chip and missing fields omitted rather than dashed. (Demo/code link buttons are deferred to `clickable-artifacts`.)
 
 #### Scenario: Statements render in narrative order
 
@@ -54,9 +50,7 @@ Guiding statements read as an intentional narrative — ordered, with Status as 
 
 ### Requirement: Internal process indicators are admin-only
 
-OpenSpec phase chips and content-gap prompts exist for Katy in edit mode and never for anonymous visitors.
-
-**Fails until:** the "Apply" chip disappears from the public homepage row for Etsy → Notion Sync.
+OpenSpec phase chips and content-gap prompts SHALL appear for Katy in edit mode and never for anonymous visitors.
 
 #### Scenario: Phase chip gated to edit mode
 
@@ -70,7 +64,7 @@ OpenSpec phase chips and content-gap prompts exist for Katy in edit mode and nev
 
 ### Requirement: Notion content is corrected and verified manually
 
-The live copy fixes land with this change and are verified by loading the pages, since external-system edits cannot be code-tested.
+The live copy fixes SHALL land with this change and be verified by loading the pages, since external-system edits cannot be code-tested.
 
 #### Scenario: Copy fixes verified on live pages
 
