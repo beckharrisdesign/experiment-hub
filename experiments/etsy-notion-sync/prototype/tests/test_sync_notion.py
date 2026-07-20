@@ -227,19 +227,27 @@ def test_two_listings_sharing_a_page_are_guarded(backend):
     # fields every run (phantom churn). The first listing by id keeps the page;
     # the rest are reported as conflicts and skipped — so exactly one write
     # lands, not two, and the next run converges.
-    l1 = make_listing(101, sku="DUP-SKU", price_amount=600)
-    l2 = make_listing(202, sku="DUP-SKU", price_amount=700)
+    #
+    # The two listings differ only in `state` (a listing-sourced field), so the
+    # written Status reveals which listing owned the page and proves the
+    # first-by-id wins policy — not just that a single write happened.
+    l1 = make_listing(101, sku="DUP-SKU", state="active")
+    l2 = make_listing(202, sku="DUP-SKU", state="inactive")
     etsy = FakeEtsyClient([l1, l2], {101: make_inventory("DUP-SKU"),
                                      202: make_inventory("DUP-SKU")})
     capture.run_capture(etsy, backend, "shop123")
-    page = make_page("page-dup", "DUP-SKU", price=9.99, quantity=50, status="Active")
+    page = make_page("page-dup", "DUP-SKU", price=6.0, quantity=50, status="Sold Out")
     client = FakeNotionClient(DB_SCHEMA, [page])
 
     summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
 
     assert summary["conflicts"] == 1  # listing 202 skipped
     assert len(client.updates) == 1  # the page is written once, not twice
-    assert client.updates[0][0] == "page-dup"
+    page_id, properties = client.updates[0]
+    assert page_id == "page-dup"
+    # Listing 101 (first by id) won — Status reflects its "active" state, not
+    # listing 202's "inactive".
+    assert properties["Status"] == {"select": {"name": "Active"}}
 
 
 # --- extra fields (description, tags, dates, ...) ---------------------------
