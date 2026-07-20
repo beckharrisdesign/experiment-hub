@@ -36,7 +36,7 @@ The public detail page shows only the guiding statements — Why this matters, H
 
 ### Requirement: Curated presentation with silent empty states
 
-Guiding statements read as an intentional narrative — ordered, with Status as a hero chip, links as buttons, and missing fields omitted rather than dashed.
+Guiding statements read as an intentional narrative — ordered, with Status as a hero chip and missing fields omitted rather than dashed. (Demo/code link buttons are deferred to `clickable-artifacts`.)
 
 #### Scenario: Statements render in narrative order
 
