@@ -207,6 +207,27 @@ tokenized primitives (the accepted "existing markup" fallback); a hub `BHD Labs 
     order would otherwise shuffle between renders depending on row order, making the
     "fix-first == table top rows" scenario untestable.
 
+12. **Fix-first card stays, and stays ahead of the table (founder decision 2026-07-20).**
+    Resolves the open question raised under decision 11 / the `02.3` build. The card is **not**
+    replaced by the systemic batch-fix callout.
+
+    *Rationale (founder):* the shape and nature of the data will change over time — today's thin
+    discoverability spread (19 of 25 listings already at the full 13 tags) is a snapshot, not a
+    permanent property of the shop. Designing the ordering around one snapshot would over-fit.
+    More fundamentally, UX principle: **show people what to act on before dumping the unopinionated
+    list.** An unranked table is a report; a ranked highlight is a recommendation.
+
+    *Resulting hierarchy (all three tiers already specified, no new work):*
+    1. **Shop summary strip** — shop-level systemic gaps (decision 11a). Sits *above* fix-first, so
+       the batch-fix finding is surfaced first without displacing the per-listing recommendation.
+    2. **"Fix these first" card** — per-listing, actionable, literal top-N of the table order
+       (decision 9's highlights-echo-the-set rule, unchanged).
+    3. **Full table** — every listing, unopinionated, re-sortable.
+
+    *Consequence for the weak-discrimination risk below:* accepted rather than mitigated. The
+    ordering is centralized in `rankFixPriority`, so it sharpens on its own as the data changes —
+    no code change needed when tag coverage or traffic shifts.
+
 ## Risks / Trade-offs
 
 - ~~**`raw_response` completeness**~~ — **CLOSED 2026-07-20** (decision 10). Fields present; four
@@ -226,9 +247,10 @@ tokenized primitives (the accepted "existing markup" fallback); a hub `BHD Labs 
   views alone (which tied 11 of 25 at 0–2 views), but neither key is strong, because the shop's real
   gaps are the four **systemic** ones — alt text, video, materials, styles — which are shop-level, not
   per-listing, and are surfaced by decision 11a's summary-strip line rather than by any ordering.
-  **Open question for the founder:** if the systemic batch-fix is the actual highest-value action, the
-  fix-first *card* may deserve to lead with it rather than with per-listing rows. Not resolved; does
-  not block apply (both orderings share one `rankFixPriority` seam).
+  ~~**Open question for the founder:**~~ **RESOLVED 2026-07-20 — see decision 12.** The card stays and
+  stays ahead of the table; the systemic finding surfaces above it in the summary strip. Weak
+  discrimination is **accepted, not mitigated**: it is a property of today's snapshot, and
+  `rankFixPriority` sharpens on its own as tag coverage and traffic change.
 - **Four criteria are currently non-discriminating (new, from decision 10):** alt-text, videos,
   materials, styles fail on 100% of listings, so they inform the shop-level strip but contribute
   nothing to per-listing ordering. If any becomes partially satisfied later, it starts
