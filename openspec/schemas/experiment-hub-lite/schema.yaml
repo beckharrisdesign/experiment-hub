@@ -46,7 +46,12 @@ artifacts:
     instruction: |
       Before writing, read `skills/design-advisor.md` and `.cursor/rules/figma.mdc`; apply checklist thinking to this artifact only (full design report only if user asks).
 
-      **UI changes:** Visual design / Figma table is required — URL, frames, libraries, breakpoints (BHD Content Types S=480px / L=1024px). API-only changes: one row "N/A — no UI" with brief rationale.
+      **Figma gate (UI changes — REQUIRED, not skippable):** Any change that adds or alters UI MUST produce a Figma **as-is + proposed** pair before design.md is approved — the same treatment `openspec/changes/stop-the-leaks/design.md` used:
+        1. **As-is frame** — the current surface reconstructed from code (or captured from the running page via `generate_figma_design`); flag any non-code-derivable values as reference per `rules/figma.mdc`.
+        2. **Proposed frame(s)** — the changed surface, built on the hub design system (MVDS + `tailwind.config.ts` / `globals.css` tokens), not bespoke chrome.
+      Then fill the Visual design / Figma table with the real **file URL**, **as-is + proposed frame names**, **library/version**, breakpoints (BHD Content Types S=480px / L=1024px), and any Code Connect note. "Reuses existing components" is NOT grounds to skip — reused components still get placed in a proposed frame.
+
+      **N/A is allowed ONLY for genuinely API-only / no-UI changes** — one row "N/A — no UI" with a brief rationale. If the change renders anything a user sees, it is not API-only.
 
       **Breakpoints:** Reference hub `design-guidelines.mdc` for tokens and spacing.
 
