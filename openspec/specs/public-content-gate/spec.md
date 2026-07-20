@@ -8,7 +8,7 @@ Public experiment pages render only content intended for outsiders: a Notion row
 
 ### Requirement: Private rows never render publicly
 
-A Notion experiment row not explicitly marked public is invisible on every public route.
+A Notion experiment row not explicitly marked public SHALL be invisible on every public route.
 
 #### Scenario: Private row is hidden from public routes
 
@@ -22,7 +22,7 @@ A Notion experiment row not explicitly marked public is invisible on every publi
 
 ### Requirement: Detail fields render from an enumerated allowlist
 
-The public detail page shows only the guiding statements — Why this matters, Hypothesis, Exec Summary — and nothing else, enforced by an exported, tested constant.
+The public detail page SHALL show only the guiding statements — Why this matters, Hypothesis, Exec Summary — and nothing else, enforced by an exported, tested constant.
 
 #### Scenario: Bookkeeping fields are filtered out
 
@@ -36,7 +36,7 @@ The public detail page shows only the guiding statements — Why this matters, H
 
 ### Requirement: Curated presentation with silent empty states
 
-Guiding statements read as an intentional narrative — ordered, with Status as a hero chip and missing fields omitted rather than dashed. (Demo/code link buttons are deferred to `clickable-artifacts`.)
+Guiding statements SHALL read as an intentional narrative — ordered, with Status as a hero chip and missing fields omitted rather than dashed. (Demo/code link buttons are deferred to `clickable-artifacts`.)
 
 #### Scenario: Statements render in narrative order
 
@@ -50,7 +50,7 @@ Guiding statements read as an intentional narrative — ordered, with Status as 
 
 ### Requirement: Internal process indicators are admin-only
 
-OpenSpec phase chips and content-gap prompts exist for Katy in edit mode and never for anonymous visitors.
+OpenSpec phase chips and content-gap prompts SHALL appear for Katy in edit mode and never for anonymous visitors.
 
 #### Scenario: Phase chip gated to edit mode
 
@@ -64,7 +64,7 @@ OpenSpec phase chips and content-gap prompts exist for Katy in edit mode and nev
 
 ### Requirement: Notion content is corrected and verified manually
 
-The live copy fixes land with this change and are verified by loading the pages, since external-system edits cannot be code-tested.
+The live copy fixes SHALL land with this change and be verified by loading the pages, since external-system edits cannot be code-tested.
 
 #### Scenario: Copy fixes verified on live pages
 
