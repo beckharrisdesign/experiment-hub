@@ -26,6 +26,18 @@ For changes under `openspec/changes/<id>/`, every **`design.md` MUST include a �
 - **Frames/components in scope**
 - Whether **Code Connect** mappings need updates (`figma-code-connect` skill)
 
+### File page/frame naming convention (REQUIRED)
+
+Every OpenSpec Figma file uses **numbered pages** and treats each proposal iteration as a distinct page — never edit or append to an existing proposal page in place:
+
+- `00 Components` — imported DS components + local "hub tokens" variable collection.
+- `01 Current state` — the as-is frame(s), reconstructed from code or captured from the running app.
+- `02 Proposed` — the first proposed iteration.
+- `02.1`, `02.2`, … — **each subsequent proposal iteration is a NEW numbered page** (`02.1 Proposed — <what changed>`), so prior iterations stay intact for comparison. **Never** overwrite or append frames on an already-built/approved proposal page.
+- Name frames within a page by treatment + breakpoint, e.g. `Proposed · Desktop 1024`, `Proposed · Mobile 480`.
+
+Record the exact page names + frame node IDs in the `design.md` Visual design table, and restate this file convention there (as `stop-the-leaks/design.md` does).
+
 Map kit variables to **`tailwind.config.ts`** tokens; treat MCP-exported layout as reference, not literals (see Project-specific rules above).
 
 ## Component annotation

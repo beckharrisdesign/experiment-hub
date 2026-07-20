@@ -44,12 +44,13 @@ Anonymous visitor sees all of the above; nothing is behind auth; no buyer/accoun
 ## Visual design / Figma
 
 Figma **as-is + proposed** pair built and screenshot-verified (2026-07-20), per the `stop-the-leaks` process.
+**File convention** (per `rules/figma.mdc`): numbered pages `00 Components` / `01 Current state` / `02 Proposed`; each new proposal iteration is a new numbered page (`02.1`, `02.2`, …), never an in-place edit of an existing proposal page.
 
 | Item              | Value                                                                                                                                                                                                 |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Primary file URL  | https://www.figma.com/design/EdxL37LSW5exXAepqaH9ZM ("experiment-detail — listing-completeness-scorecard", BHD team drafts)                                                                          |
 | As-is frame(s)    | `01 Current state → As-is · Desktop 1024` (node `4:2`) — current experiment page reconstructed from `app/experiments/[slug]/page.tsx`                                                                 |
-| Proposed frame(s) | `02 Proposed → Proposed · Desktop 1024` (node `6:2`) and `Proposed · Mobile 480` (node `14:7`) — page + new "Listing health" section (summary strip → fix-first card → per-listing table)             |
+| Proposed frame(s) | Iter 1 — `02 Proposed → Proposed · Desktop 1024` (node `6:2`) + `Proposed · Mobile 480` (node `14:7`). Iter 2 — `02.1 Proposed — Sortable one-line table` (revised per founder feedback: single-line rows, sortable headers, all rows; node IDs pending build). Prior pages kept intact per the numbered-page convention. |
 | Libraries         | **MVDS Core** Badge instances for Tier-A status chips (`variant=success`/`destructive`, by key — MVDS not enabled as a team-library dep, same as stop-the-leaks); 16 "hub tokens" vars ported 1:1 from `app/globals.css @theme` (Fraunces/Inter), bound to all fills — no hardcoded hex |
 | Code Connect      | None created. Note for apply: hub's `components/ExperimentTypeBadge.tsx` is bespoke, not wired to the MVDS Badge the prototype uses; type badge renders `null` for `commercial` experiments (etsy-notion-sync is commercial) |
 | Breakpoints       | S · 480px mobile / L · 1024px desktop (BHD Content Types). Table collapses to stacked cards under `md` (mobile frame built).                                                                          |
