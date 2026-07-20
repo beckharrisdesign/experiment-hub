@@ -45,16 +45,26 @@ The scorecard SHALL compute Tier B as the share of *applicable* criteria met (ph
 - **WHEN** a listing's `listing_type` is `download`
 - **THEN** shipping, processing, and return-policy criteria are excluded from its denominator rather than counted as failures.
 
-### Requirement: Ranked "fix these first" list
+### Requirement: Full sortable scorecard table, fix-first by default
 
-The shop-level view orders listings so the founder always knows the single next thing to fix.
+Every captured listing appears as one condensed row in a sortable table that defaults to fix-first order, so the founder can both scan the whole shop and re-sort to explore.
 
-The scorecard SHALL rank listings with any Tier-A failure above all Tier-A-complete listings, and SHALL order within each group by ascending Tier-B percentage.
+The scorecard SHALL render every captured listing as exactly one single-line row (no truncation or "+N more" collapse), SHALL default-sort with any Tier-A-failure listing above all Tier-A-complete listings and ascending Tier-B percentage within each group, and SHALL let the user re-sort by a column with the active sort indicated.
 
-#### Scenario: Fix-first ordering puts gate failures on top
+#### Scenario: Every captured listing shows as one condensed row
 
-- **WHEN** the shop is scored
+- **WHEN** a shop with 20+ captured listings is scored
+- **THEN** every listing renders as its own single-line row and none are hidden behind a "+N more" affordance.
+
+#### Scenario: Table loads in fix-first order
+
+- **WHEN** the scorecard table first loads
 - **THEN** listings with a Tier-A failure appear above every Tier-A-complete listing, and within each group the lowest Tier-B % appears first.
+
+#### Scenario: User re-sorts by a column
+
+- **WHEN** the user activates a sortable column header (e.g. Completeness or Publishable)
+- **THEN** the rows reorder by that column and the active sort column and direction are indicated.
 
 ### Requirement: Public read-only surface on the labs project page
 

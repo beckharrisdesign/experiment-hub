@@ -33,7 +33,10 @@ no Python/capture change, no DB migration.
         ├─ Fix these first  (ranked): Tier-A failures on top, then lowest Tier-B %
         │     • "Listing 123 — Not publishable-complete: no photo, quantity 0"
         │     • "Listing 456 — 40% complete: +6 photos, +9 tags, no video"
-        └─ Full table: one row per listing → Tier-A badge, Tier-B %, unmet-criteria chips
+        └─ Full sortable table: ALL listings, one condensed single-line row each
+              cols → Listing · Publishable badge · Completeness bar+% · Unmet (condensed)
+              • sortable column headers (default: fix-first — Tier-A fails, then asc %)
+              • no "+N more" — every captured listing renders
 ```
 
 Anonymous visitor sees all of the above; nothing is behind auth; no buyer/account data appears.
@@ -86,6 +89,14 @@ tokenized primitives (the accepted "existing markup" fallback); a hub `BHD Labs 
 
 5. **Physical/digital awareness:** `listing_type = download` excludes shipping, processing, and
    return-policy criteria from both the Tier-A gate and the Tier-B denominator.
+
+6. **Table behavior (founder feedback 2026-07-20):** the full table shows **all** captured
+   listings (no "+N more" — the shop already has 20+), **one condensed single-line row** per
+   listing, with **sortable** column headers. The unmet-criteria cell is condensed to fit one
+   line — a compact count + truncated preview (e.g. "4 unmet · No photo, Qty 0, +2") rather than
+   wrapping chips. Default sort is fix-first (Tier-A fails on top, then ascending Tier-B %); the
+   separate "Fix these first" card stays as the top-offenders highlight. Sorting is client-side
+   over the already-loaded rows (server sends all scored rows; ~20 items → no pagination).
 
 ## Risks / Trade-offs
 
