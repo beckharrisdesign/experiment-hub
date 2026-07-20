@@ -46,6 +46,12 @@ env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
+# The deploy step comments the preview URL via `gh pr comment`, which needs
+# pull-requests write; keep everything else read-only.
+permissions:
+  contents: read
+  pull-requests: write
+
 concurrency:
   group: deploy-hub-${{ github.ref }}
   cancel-in-progress: true
@@ -58,12 +64,12 @@ jobs:
     # live-integration gate) — PRs from other contributors get no deploy.
     if: github.event_name == 'push' || github.actor == github.repository_owner
     steps:
-      - name: Check for deploy token
+      - name: Check for required Vercel secrets
         id: guard
         run: |
-          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "VERCEL_TOKEN is not set — skipping deploy (add the secret to enable)." >> "$GITHUB_STEP_SUMMARY"
+            echo "Missing one or more Vercel secrets (VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID) — skipping deploy (add all three to enable)." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - uses: actions/checkout@v4
@@ -82,7 +88,8 @@ jobs:
 
       - name: Install Vercel CLI
         if: steps.guard.outputs.skip != 'true'
-        run: npm install -g vercel@latest
+        # Pinned for reproducible deploys — bump intentionally, not on every CLI release.
+        run: npm install -g vercel@39
 
       - name: Resolve target (production on main, preview otherwise)
         if: steps.guard.outputs.skip != 'true'
