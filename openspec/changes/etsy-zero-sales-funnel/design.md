@@ -118,17 +118,21 @@ tokenized primitives (the accepted "existing markup" fallback); a hub `BHD Labs 
    is not sensitive (it appears in the public listing URL), so exposing it on the public page is
    fine. (Optional later: also expose the public `url` field for non-owner visitors.)
 
-9. **Visibility-weighted fix priority (founder feedback 2026-07-20):** the table shows sortable
-   **Views** (`views`) and **Favorites** (`num_favorers`) columns — both already captured on the
-   listing object — and the default order + "fix these first" card rank by **impact = visibility
-   × fixability**, not raw completeness. Rationale: a live listing pulling 300 views at 45%
-   complete is losing sales *now*; a 0-view draft is broken but not bleeding traffic. v1 model
-   (tunable): score each listing-with-issues by visibility (views, favorites as tiebreak),
-   surface the most-visible fixable ones first; Tier-A blockers are flagged high-severity /
-   "hidden — not searchable until fixed" but a zero-traffic blocker does **not** auto-outrank a
-   high-traffic fixable listing. Suggestions cite the numbers ("320 views, 18 ♥ but 45% — add 6
-   photos + a video"). **Scope note:** this pulls the *current-value* slice of L2 (visibility) into
-   L1 for prioritization; the favorites/views **trend over time** remains L2.
+9. **Visibility-weighted fix priority + single source of order (founder feedback 2026-07-20):**
+   the table shows sortable **Views** (`views`) and **Favorites** (`num_favorers`) columns — both
+   already captured — and there is **one** fix-priority order used by BOTH the table's default
+   sort and the "fix these first" card. Per the "highlights echo the set" principle
+   (`design-guidelines.mdc` #8), the card is **literally the top N rows of the table's default
+   order** — same membership, same sequence, same caption — never a separately-ranked list.
+   Rationale for the order: a live listing pulling 300 views at 45% complete is losing sales
+   *now*, so impact = visibility × fixability surfaces the most-visible fixable listings first.
+   Suggestions cite the numbers ("320 views, 18 ♥ but 45% — add 6 photos + a video").
+   **All listings appear in the table** — Tier-A blockers are shown and flagged "Not publishable",
+   **not hidden** (hiding your most-broken listings is itself untrustworthy). **Open (tunable)
+   question:** whether blockers sort purely by impact (0 views → they sink) or are pinned to the
+   top as max-severity; either way the card must mirror the table. **Scope note:** this pulls the
+   *current-value* slice of L2 (visibility) into L1 for prioritization; the favorites/views
+   **trend over time** remains L2.
 
 ## Risks / Trade-offs
 

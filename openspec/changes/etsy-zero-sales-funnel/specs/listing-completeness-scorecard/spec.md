@@ -49,7 +49,7 @@ The scorecard SHALL compute Tier B as the share of *applicable* criteria met (ph
 
 Every captured listing appears as one condensed row — including its views and favorites — in a sortable table that defaults to an impact-weighted fix-priority order, so effort lands on the listings that are seen most and easiest to fix.
 
-The scorecard SHALL render every captured listing as exactly one single-line row (no truncation or "+N more" collapse) using the same table component/conventions as the hub's main experiments table; SHALL include sortable **Views** (`views`) and **Favorites** (`num_favorers`) columns alongside Publishable and Completeness; SHALL default-sort by a **fix-priority** order that ranks the most-visible listings with unmet criteria first (visibility × fixability), treating Tier-A publishability blockers as high-severity but not auto-ranking a zero-traffic blocker above a high-traffic fixable listing; SHALL let the user re-sort by any column with the active sort indicated; and SHALL link each listing (in both the table and the "fix these first" list) to its Etsy listing edit view.
+The scorecard SHALL render every captured listing as exactly one single-line row (no truncation or "+N more" collapse) using the same table component/conventions as the hub's main experiments table; SHALL include sortable **Views** (`views`) and **Favorites** (`num_favorers`) columns alongside Publishable and Completeness; SHALL default-sort by a single **fix-priority** order that ranks the most-visible listings with unmet criteria first (visibility × fixability); SHALL let the user re-sort by any column with the active sort indicated; SHALL link each listing (in both the table and the "fix these first" list) to its Etsy listing edit view; and — per the "highlights echo the set" principle — the **"fix these first" highlight SHALL contain exactly the top-ranked listings of this same default order** (identical membership and sequence), never a separately-ranked selection. Every captured listing appears in the table (Tier-A blockers are shown and flagged, not hidden).
 
 #### Scenario: Every captured listing shows as one condensed row
 
@@ -65,6 +65,11 @@ The scorecard SHALL render every captured listing as exactly one single-line row
 
 - **WHEN** two publishable listings have comparable unmet criteria but one has far more views/favorites
 - **THEN** the more-visible listing ranks higher in the default order and in the "fix these first" list.
+
+#### Scenario: The fix-first highlight matches the table's default order
+
+- **WHEN** the scorecard renders the "fix these first" card and the table in its default order
+- **THEN** the card lists exactly the top N rows of the table in the same sequence, and no listing is called out in the highlight that is hidden from or ordered differently in the table.
 
 #### Scenario: User re-sorts by a column
 

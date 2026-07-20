@@ -14,6 +14,7 @@ globs: components/**/*, app/**/*.tsx, app/**/*.css, **/*.tsx, **/globals.css
 5. **Design for scanning** — Single-line rows when possible, columnar data, consistent alignment and row height, balance density with scannability.
 6. **Design with real data** — Use real data early; avoid lorem ipsum and mocks that hide edge cases.
 7. **Navigation/content match** — Click label (e.g. "Market Research") must match loaded content; no surprise labels.
+8. **Highlights echo the set** — When you call out a subset ("fix these first", "top 5", a featured/highlights strip), it MUST use the identical ordering and membership logic as the full list or table it summarizes — the highlight is literally the top of that set, not a separately-ranked selection. If the callout and the full set disagree on order or contents, users stop trusting both. (When the user re-sorts the full set, the highlight still reflects the canonical **default** order it summarizes.)
 
 ## Visual system (dark theme default)
 
