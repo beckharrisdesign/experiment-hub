@@ -123,4 +123,5 @@ jobs:
         if: steps.guard.outputs.skip != 'true' && github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "🔷 Preview deploy: ${{ steps.deploy.outputs.url }}"
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "🔷 Preview deploy: ${{ steps.deploy.outputs.url }}"
