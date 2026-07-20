@@ -55,7 +55,7 @@ Figma **as-is + proposed** pair built and screenshot-verified (2026-07-20), per 
 | Libraries         | **MVDS Core** Badge instances for Tier-A status chips (`variant=success`/`destructive`, by key — MVDS not enabled as a team-library dep, same as stop-the-leaks); 16 "hub tokens" vars ported 1:1 from `app/globals.css @theme` (Fraunces/Inter), bound to all fills — no hardcoded hex |
 | Code Connect      | None created. Note for apply: hub's `components/ExperimentTypeBadge.tsx` is bespoke, not wired to the MVDS Badge the prototype uses; type badge renders `null` for `commercial` experiments (etsy-notion-sync is commercial) |
 | Breakpoints       | S · 480px mobile / L · 1024px desktop (BHD Content Types). Table collapses to stacked cards under `md` (mobile frame built).                                                                          |
-| Status            | **Approved 2026-07-20** (iter 3 / `02.2`). Blocker placement = option (a) pure-impact. (As-is mobile not built — desktop-only for as-is; meets the L-minimum bar.) **Frame/decision drift (2026-07-20):** decision 11b changed the ranking key *after* `02.2` was approved. The frame's **layout is still accurate** — same columns incl. Views/Favorites, same one-line rows, same fix-first card — but the **row order it depicts is the superseded visibility-weighted one**, and the page is named accordingly. No re-cut required to build (order is data-driven, not a layout property); if a later iteration is cut, it should be a new numbered page (`02.3`) per the convention, never an in-place edit. |
+| Status            | **Approved 2026-07-20** (iter 3 / `02.2`). Blocker placement = option (a) pure-impact. (As-is mobile not built — desktop-only for as-is; meets the L-minimum bar.) **Frame/decision drift (2026-07-20):** decision 11b changed the ranking key *after* `02.2` was approved. The frame's **layout is still accurate** — same columns incl. Views/Favorites, same one-line rows, same fix-first card — but the **row order it depicts is the superseded visibility-weighted one**, and the page is named accordingly. No re-cut required to build (order is data-driven, not a layout property); if a later iteration is cut, it should be a new numbered page (`02.4`, since `02.3` is now Iter 4) per the convention, never an in-place edit. |
 
 Status color semantics come from theme tokens only (`destructive` for Tier-A fail,
 `success` for publishable, `muted`/`primary` for the completeness bar) — no raw hex, per `design-guidelines.mdc`.
@@ -195,6 +195,10 @@ tokenized primitives (the accepted "existing markup" fallback); a hub `BHD Labs 
     For a zero-traffic shop the lever is *discoverability* (tags and title keywords — the inputs to
     Etsy search), so the primary key becomes tag/title gap severity, with **views demoted to a
     tiebreak**. Decision 9's single-order and card-mirrors-table rules are unchanged.
+    **Full key order (normative — spec, design and tasks must agree):**
+    `discoverability gap ↓ → views ↓ → num_favorers ↓ → listing_id ↑`. Favourites is retained as a
+    secondary tiebreak (carried over from decision 9) rather than dropped; it breaks the views ties
+    that dominate this dataset before `listing_id` has to.
     **Assumption flagged (founder-confirmed 2026-07-20):** the tags→discoverability link is
     reasoned from general Etsy search mechanics, *not* measured in this shop's data. If that link
     is weaker than assumed, this ordering weakens with it.
@@ -203,7 +207,7 @@ tokenized primitives (the accepted "existing markup" fallback); a hub `BHD Labs 
     sell, so "not publishable" on it is a category label, not a miss worth surfacing first. The 3
     drafts stay in the table with a state marker (not hidden — same honesty rule as blockers).
 
-    **(d) Deterministic final tiebreak (`listing_id`).** With this many exact ties on both keys,
+    **(d) Deterministic final tiebreak (`listing_id`).** With this many exact ties on every prior key,
     order would otherwise shuffle between renders depending on row order, making the
     "fix-first == table top rows" scenario untestable.
 
