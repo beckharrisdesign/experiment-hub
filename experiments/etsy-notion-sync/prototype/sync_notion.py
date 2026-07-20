@@ -55,6 +55,10 @@ CREATABLE_TYPES = {"rich_text", "number", "select", "multi_select", "url", "date
 # Notion caps a single rich_text content block at 2000 characters.
 RICH_TEXT_LIMIT = 2000
 
+# Per-value cap inside a change comment, so one long field (e.g. Description)
+# can't dominate or blow past the block limit on its own.
+COMMENT_VALUE_LIMIT = 200
+
 
 def _plain_text(prop):
     """Best-effort plain-text value of a Notion property (for SKU matching)."""
@@ -366,7 +370,41 @@ def apply_creates(client, creates, database_id, dry_run):
             client.create_page(database_id, plan["properties"])
 
 
-def apply_updates(client, plans, dry_run):
+def _format_change_value(value):
+    """One-line, readable form of a change's before/after value for a comment."""
+    if value is None:
+        return "—"
+    if isinstance(value, list):
+        text = ", ".join(str(item) for item in value) or "—"
+    else:
+        text = str(value)
+    if len(text) > COMMENT_VALUE_LIMIT:
+        text = text[:COMMENT_VALUE_LIMIT - 1] + "…"
+    return text
+
+
+def changes_comment_text(changes, now=None):
+    """Comment body summarizing a page's field changes ({prop: {from, to}}).
+
+    Capped at Notion's single rich_text block limit. `now` is injectable so
+    the stamp is testable.
+    """
+    stamp = (now or datetime.now(timezone.utc)).strftime("%Y-%m-%d %H:%M UTC")
+    lines = ["Etsy → Notion sync · {}".format(stamp)]
+    for prop_name in sorted(changes):
+        change = changes[prop_name]
+        lines.append("• {}: {} → {}".format(
+            prop_name,
+            _format_change_value(change.get("from")),
+            _format_change_value(change.get("to")),
+        ))
+    text = "\n".join(lines)
+    if len(text) > RICH_TEXT_LIMIT:
+        text = text[:RICH_TEXT_LIMIT - 1] + "…"
+    return text
+
+
+def apply_updates(client, plans, dry_run, comments_enabled=False):
     for plan in plans:
         log.info(
             "%s %s (listing %s): %s",
@@ -375,8 +413,20 @@ def apply_updates(client, plans, dry_run):
             plan["listing_id"],
             json.dumps(plan["changes"]),
         )
-        if not dry_run:
-            client.update_page(plan["page_id"], plan["properties"])
+        if dry_run:
+            continue
+        client.update_page(plan["page_id"], plan["properties"])
+        if comments_enabled:
+            # Best-effort: the page write already succeeded, so nothing about
+            # the comment may abort the run — not a missing comment capability
+            # (NotionApiError), not a network blip/timeout (requests), not any
+            # other runtime error. The catch is intentionally broad because the
+            # comment is non-critical logging, not part of the sync contract.
+            try:
+                client.create_comment(plan["page_id"], changes_comment_text(plan["changes"]))
+            except Exception as exc:  # noqa: BLE001 — comment is non-critical
+                log.warning("Change comment failed for listing %s (update applied): %s",
+                            plan["listing_id"], exc)
 
 
 def run_sync(client, backend, database_id, config, dry_run=True):
@@ -396,7 +446,7 @@ def run_sync(client, backend, database_id, config, dry_run=True):
     for miss in unmatched:
         log.warning("No Notion row matched listing %s (skus=%s)", miss["listing_id"], miss["skus"])
     creates = plan_creates(unmatched, db_schema, config)
-    apply_updates(client, plans, dry_run)
+    apply_updates(client, plans, dry_run, config.get("comments_enabled", False))
     apply_creates(client, creates, database_id, dry_run)
 
     summary = {
@@ -436,6 +486,10 @@ def config_from_env():
         "extra_fields": json.loads(
             os.environ.get("NOTION_EXTRA_FIELDS_JSON", json.dumps(DEFAULT_EXTRA_FIELDS))
         ),
+        # Post a comment on each updated Notion page logging what changed.
+        # On by default; needs the integration's "insert comments" capability.
+        # Never fires under DRY_RUN (no writes happen at all).
+        "comments_enabled": os.environ.get("NOTION_SYNC_COMMENTS", "true").strip().lower() != "false",
     }
 
 

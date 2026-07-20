@@ -81,6 +81,13 @@ Credential setup:
   manual Notion setup. Status/rollup/formula/relation types can't be created
   through the API and are skipped with a warning. Long descriptions truncate
   at Notion's 2000-character rich_text limit.
+- After each live update the sync posts a **comment** on the changed Notion
+  page logging every field it touched (`Views: 8 → 13`, `Status: … → …`).
+  On by default; set `NOTION_SYNC_COMMENTS=false` to turn it off. Needs the
+  integration's "insert comments" capability — without it the write still
+  lands and the comment is skipped with a warning. Never fires under
+  `DRY_RUN`. Note: Views/Favorites move on most listings every run, so
+  expect a comment on each active listing daily.
 
 ## Run
 
