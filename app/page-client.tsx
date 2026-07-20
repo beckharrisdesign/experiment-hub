@@ -364,8 +364,11 @@ export default function HomePageClient({
                         >
                           <span className="font-heading text-xl font-medium text-text-dark inline-flex items-center gap-2 flex-wrap">
                             {experiment.name || experiment.id || "Untitled"}
+                            {/* Admin-only process indicator (gated to edit
+                                mode server-side). Dashed + unfilled so it
+                                reads as metadata, never as a CTA. */}
                             {experiment.openSpecPhase && (
-                              <span className="text-xs font-medium rounded-md border border-accent-primary/40 bg-accent-primary/10 text-accent-primary px-1.5 py-0.5">
+                              <span className="text-[11px] font-medium rounded-md border border-dashed border-accent-primary/30 text-accent-primary/70 px-1.5 py-0.5">
                                 {formatBhdPhaseLabel(experiment.openSpecPhase)}
                               </span>
                             )}
