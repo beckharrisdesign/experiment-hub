@@ -88,8 +88,9 @@ jobs:
 
       - name: Install Vercel CLI
         if: steps.guard.outputs.skip != 'true'
-        # Pinned for reproducible deploys — bump intentionally, not on every CLI release.
-        run: npm install -g vercel@39
+        # Pinned major for reproducible deploys — bump intentionally. Must be
+        # recent enough for the project's Node.js version (24.x needs a current CLI).
+        run: npm install -g vercel@56
 
       - name: Resolve target (production on main, preview otherwise)
         if: steps.guard.outputs.skip != 'true'
