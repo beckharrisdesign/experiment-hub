@@ -1,5 +1,8 @@
 {
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm run build",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ../../../../packages ../../../../pnpm-lock.yaml ../../../../pnpm-workspace.yaml"
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ../../../../packages ../../../../pnpm-lock.yaml ../../../../pnpm-workspace.yaml",
+  "git": {
+    "deploymentEnabled": false
+  }
 }
