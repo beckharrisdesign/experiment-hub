@@ -108,7 +108,7 @@ Implement tasks from an OpenSpec change.
 
    **Skip only** if the session changed no files (e.g. blocked before step 6) or git is unavailable—say so explicitly.
 
-   a. **Branch** — [github-workflow.mdc](../rules/github-workflow.mdc): never on `main`. Use `cursor/<descriptor>` in kebab-case; **descriptor = OpenSpec change name** when one exists (e.g. change `openspec-artifact-links` → branch `cursor/openspec-artifact-links`). Create and check out the branch before committing if needed.
+   a. **Branch** — [github-workflow.mdc](../rules/github-workflow.mdc): never on `main`. Name it `<harness>/<descriptor>` in kebab-case, where **harness = the assisting tool** (`claude/…` under Claude Code, `cursor/…` under Cursor, etc. — per github-workflow.mdc, do NOT hardcode one) and **descriptor = OpenSpec change name** when one exists (e.g. change `openspec-artifact-links` under Claude Code → branch `claude/openspec-artifact-links`). Create and check out the branch before committing if needed.
 
    b. **Commit** — Stage only files touched this apply session (implementation + `tasks.md` checkboxes). [commit-messages.mdc](../rules/commit-messages.mdc):
    - **Subject:** `<type>(<scope>): <imperative>` — max 50 chars, lowercase start, no period. Scope = area or change slug (e.g. `openspec`, `sso`, `experiments`).
