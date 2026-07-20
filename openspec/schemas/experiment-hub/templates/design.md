@@ -19,7 +19,7 @@
 ## Visual design / Figma
 
 <!--
-  Mandatory shape for hub UI work echoes `.cursor/rules/figma.mdc` —
+  Mandatory shape for hub UI work echoes `rules/figma.mdc` —
   Primary file URL • libraries • frames in scope • Code Connect deltas if any • `N/A` rows for backend-only deltas.
 -->
 

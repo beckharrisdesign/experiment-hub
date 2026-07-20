@@ -44,7 +44,7 @@ artifacts:
     requires:
       - proposal
     instruction: |
-      Before writing, read `skills/design-advisor.md` and `.cursor/rules/figma.mdc`; apply checklist thinking to this artifact only (full design report only if user asks).
+      Before writing, read `skills/design-advisor.md` and `rules/figma.mdc`; apply checklist thinking to this artifact only (full design report only if user asks).
 
       **Figma gate (UI changes — REQUIRED, not skippable):** Any change that adds or alters UI MUST produce a Figma **as-is + proposed** pair before design.md is approved — the same treatment `openspec/changes/stop-the-leaks/design.md` used:
         1. **As-is frame** — the current surface reconstructed from code (or captured from the running page via `generate_figma_design`); flag any non-code-derivable values as reference per `rules/figma.mdc`.
