@@ -108,9 +108,9 @@ Implement tasks from an OpenSpec change.
 
    **Skip only** if the session changed no files (e.g. blocked before step 6) or git is unavailable—say so explicitly.
 
-   a. **Branch** — [github-workflow.mdc](../.cursor/rules/github-workflow.mdc): never on `main`. Use `cursor/<descriptor>` in kebab-case; **descriptor = OpenSpec change name** when one exists (e.g. change `openspec-artifact-links` → branch `cursor/openspec-artifact-links`). Create and check out the branch before committing if needed.
+   a. **Branch** — [github-workflow.mdc](../rules/github-workflow.mdc): never on `main`. Use `cursor/<descriptor>` in kebab-case; **descriptor = OpenSpec change name** when one exists (e.g. change `openspec-artifact-links` → branch `cursor/openspec-artifact-links`). Create and check out the branch before committing if needed.
 
-   b. **Commit** — Stage only files touched this apply session (implementation + `tasks.md` checkboxes). [commit-messages.mdc](../.cursor/rules/commit-messages.mdc):
+   b. **Commit** — Stage only files touched this apply session (implementation + `tasks.md` checkboxes). [commit-messages.mdc](../rules/commit-messages.mdc):
    - **Subject:** `<type>(<scope>): <imperative>` — max 50 chars, lowercase start, no period. Scope = area or change slug (e.g. `openspec`, `sso`, `experiments`).
    - **Body:** **Brief but substantive** — 1–3 sentences: what shipped this session and why it matters (not a file list, not “WIP”). Wrap at 72 chars.
    - **Type:** `feat` for new behavior, `fix` for bugs, `docs` for workflow/docs-only, `test` for tests-only.
@@ -127,7 +127,7 @@ Implement tasks from an OpenSpec change.
 
    c. **Push** — `git push -u origin HEAD` (or push to the existing feature branch).
 
-   d. **PR** — Open **ready for review, not draft**, so the automated Copilot review starts immediately (per [github-workflow.mdc](../.cursor/rules/github-workflow.mdc)). If no open PR for this branch: `gh pr create` (no `--draft`) with summary, why, and test plan (brief but substantive, same bar as the commit). If a PR already exists as a draft, `gh pr ready` it; if it exists and is already ready, push only and CI re-runs. Then run the **Copilot review loop** (github-workflow.mdc): wait for Copilot's review, address every actionable comment on the same branch, and reply to each — never leave one unanswered.
+   d. **PR** — Open **ready for review, not draft**, so the automated Copilot review starts immediately (per [github-workflow.mdc](../rules/github-workflow.mdc)). If no open PR for this branch: `gh pr create` (no `--draft`) with summary, why, and test plan (brief but substantive, same bar as the commit). If a PR already exists as a draft, `gh pr ready` it; if it exists and is already ready, push only and CI re-runs. Then run the **Copilot review loop** (github-workflow.mdc): wait for Copilot's review, address every actionable comment on the same branch, and reply to each — never leave one unanswered.
 
    e. **Report** — In the completion or pause summary, include commit subject, PR URL, and that checks are running.
 
