@@ -221,6 +221,27 @@ def test_sku_fallback_when_listing_id_empty(backend):
     assert client.updates[0][0] == "page-1"
 
 
+def test_two_listings_sharing_a_page_are_guarded(backend):
+    # Two distinct Etsy listings with the SAME SKU both resolve to one Notion
+    # page via the SKU fallback. Without a guard they overwrite each other's
+    # fields every run (phantom churn). The first listing by id keeps the page;
+    # the rest are reported as conflicts and skipped — so exactly one write
+    # lands, not two, and the next run converges.
+    l1 = make_listing(101, sku="DUP-SKU", price_amount=600)
+    l2 = make_listing(202, sku="DUP-SKU", price_amount=700)
+    etsy = FakeEtsyClient([l1, l2], {101: make_inventory("DUP-SKU"),
+                                     202: make_inventory("DUP-SKU")})
+    capture.run_capture(etsy, backend, "shop123")
+    page = make_page("page-dup", "DUP-SKU", price=9.99, quantity=50, status="Active")
+    client = FakeNotionClient(DB_SCHEMA, [page])
+
+    summary = sync_notion.run_sync(client, backend, "db-1", CONFIG, dry_run=False)
+
+    assert summary["conflicts"] == 1  # listing 202 skipped
+    assert len(client.updates) == 1  # the page is written once, not twice
+    assert client.updates[0][0] == "page-dup"
+
+
 # --- extra fields (description, tags, dates, ...) ---------------------------
 
 EXTRA_FIELDS = [

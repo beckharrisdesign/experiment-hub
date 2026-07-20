@@ -71,7 +71,11 @@ Credential setup:
   write rollups/formulas like `Single price sum` or `Inventory value`). The
   sync validates Status options against the live schema and skips anything
   that doesn't match, so a mismatch is safe but produces warnings instead of
-  updates.
+  updates. If two Etsy listings resolve to the *same* Notion page (e.g. a
+  shared SKU with no `Etsy Listing ID` on the row), only the first by listing
+  id keeps the page; the rest are skipped and counted as `conflicts` in the run
+  summary — this prevents two listings churning one page's fields every run.
+  Fix the underlying duplicate listing/SKU on Etsy to clear the warning.
 - Beyond price/quantity/status, the sync mirrors the extra Etsy fields in
   `DEFAULT_EXTRA_FIELDS` (`sync_notion.py`): Description, Etsy Title, Etsy
   URL, Views, Favorites, Tags, Materials, Currency, Etsy Created / Last
