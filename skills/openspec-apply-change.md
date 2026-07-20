@@ -121,17 +121,17 @@ Implement tasks from an OpenSpec change.
    ```
    feat(openspec): wire artifact links into apply skill
 
-   End /opsx:apply with commit and draft PR so CI runs. Step 8
-   documents branch naming and conventional commit format.
+   End /opsx:apply with commit and a ready-for-review PR so CI runs.
+   Step 8 documents branch naming and conventional commit format.
    ```
 
    c. **Push** — `git push -u origin HEAD` (or push to the existing feature branch).
 
-   d. **PR** — If no open PR for this branch: `gh pr create --draft` with summary, why, and test plan (brief but substantive, same bar as the commit). If a PR exists: push only; CI re-runs.
+   d. **PR** — Open **ready for review, not draft**, so the automated Copilot review starts immediately (per [github-workflow.mdc](../.cursor/rules/github-workflow.mdc)). If no open PR for this branch: `gh pr create` (no `--draft`) with summary, why, and test plan (brief but substantive, same bar as the commit). If a PR already exists as a draft, `gh pr ready` it; if it exists and is already ready, push only and CI re-runs. Then run the **Copilot review loop** (github-workflow.mdc): wait for Copilot's review, address every actionable comment on the same branch, and reply to each — never leave one unanswered.
 
    e. **Report** — In the completion or pause summary, include commit subject, PR URL, and that checks are running.
 
-   **Never:** `gh pr merge`, approve/review the PR, or mark ready for review unless Katy explicitly asks.
+   **Never:** `gh pr merge` or approve/review the PR.
 
 **Artifacts output (required):** Follow [`skills/openspec-artifacts-output.md`](openspec-artifacts-output.md). After reading `contextFiles`, include `## Artifacts` with repo-relative links to every context path (and any `tasks.md` or change file edited this session). On session end or when all tasks are `[x]`, list all artifact files for the change via status JSON.
 
@@ -165,7 +165,7 @@ Working on task 4/7: <task description>
 
 All tasks complete! Ready to archive this change.
 
-**PR:** https://github.com/beckharrisdesign/experiment-hub/pull/NNN (draft — CI running)
+**PR:** https://github.com/beckharrisdesign/experiment-hub/pull/NNN (ready for review — CI running)
 ```
 
 **Output On Pause (Issue Encountered)**
@@ -185,7 +185,7 @@ All tasks complete! Ready to archive this change.
 2. <option 2>
 3. Other approach
 
-**PR:** https://github.com/beckharrisdesign/experiment-hub/pull/NNN (draft — CI running; partial apply committed)
+**PR:** https://github.com/beckharrisdesign/experiment-hub/pull/NNN (ready for review — CI running; partial apply committed)
 
 What would you like to do?
 ```
