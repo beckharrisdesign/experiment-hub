@@ -55,7 +55,7 @@ Figma **as-is + proposed** pair built and screenshot-verified (2026-07-20), per 
 | Libraries         | **MVDS Core** Badge instances for Tier-A status chips (`variant=success`/`destructive`, by key — MVDS not enabled as a team-library dep, same as stop-the-leaks); 16 "hub tokens" vars ported 1:1 from `app/globals.css @theme` (Fraunces/Inter), bound to all fills — no hardcoded hex |
 | Code Connect      | None created. Note for apply: hub's `components/ExperimentTypeBadge.tsx` is bespoke, not wired to the MVDS Badge the prototype uses; type badge renders `null` for `commercial` experiments (etsy-notion-sync is commercial) |
 | Breakpoints       | S · 480px mobile / L · 1024px desktop (BHD Content Types). Table collapses to stacked cards under `md` (mobile frame built).                                                                          |
-| Status            | As-is + proposed built & verified; design pending approval. (As-is mobile not built — desktop-only for as-is; meets the L-minimum bar.)                                                               |
+| Status            | **Approved 2026-07-20** (iter 3 / `02.2`). Blocker placement = option (a) pure-impact. (As-is mobile not built — desktop-only for as-is; meets the L-minimum bar.)                                     |
 
 Status color semantics come from theme tokens only (`destructive` for Tier-A fail,
 `success` for publishable, `muted`/`primary` for the completeness bar) — no raw hex, per `design-guidelines.mdc`.
