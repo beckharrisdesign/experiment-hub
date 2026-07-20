@@ -51,7 +51,7 @@ Figma **as-is + proposed** pair built and screenshot-verified (2026-07-20), per 
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Primary file URL  | https://www.figma.com/design/EdxL37LSW5exXAepqaH9ZM ("experiment-detail — listing-completeness-scorecard", BHD team drafts)                                                                          |
 | As-is frame(s)    | `01 Current state → As-is · Desktop 1024` (node `4:2`) — current experiment page reconstructed from `app/experiments/[slug]/page.tsx`                                                                 |
-| Proposed frame(s) | Iter 1 — `02 Proposed → Proposed · Desktop 1024` (node `6:2`) + `Proposed · Mobile 480` (node `14:7`). Iter 2 — `02.1 Proposed — Sortable one-line table` (revised per founder feedback: single-line rows, sortable headers, all rows; node IDs pending build). Prior pages kept intact per the numbered-page convention. |
+| Proposed frame(s) | Iter 1 — `02 Proposed` (desktop `6:2`, mobile `14:7`) — original wrapping-chip table. Iter 2 — `02.1 Proposed — Sortable one-line table` (desktop `28:43`, mobile `28:388`) — single-line sortable rows, no Views/Favorites. **Iter 3 (current) — `02.2 Proposed — Visibility-weighted priority` (desktop `41:43`, mobile `49:106`)** — adds Views + Favorites columns, one visibility-weighted fix-priority order, fix-first card == table top rows. All prior pages kept intact per the numbered-page convention. |
 | Libraries         | **MVDS Core** Badge instances for Tier-A status chips (`variant=success`/`destructive`, by key — MVDS not enabled as a team-library dep, same as stop-the-leaks); 16 "hub tokens" vars ported 1:1 from `app/globals.css @theme` (Fraunces/Inter), bound to all fills — no hardcoded hex |
 | Code Connect      | None created. Note for apply: hub's `components/ExperimentTypeBadge.tsx` is bespoke, not wired to the MVDS Badge the prototype uses; type badge renders `null` for `commercial` experiments (etsy-notion-sync is commercial) |
 | Breakpoints       | S · 480px mobile / L · 1024px desktop (BHD Content Types). Table collapses to stacked cards under `md` (mobile frame built).                                                                          |
@@ -66,6 +66,16 @@ labels, ordering, and token styling are faithful.
 **Build follow-up (not blocking):** the table, completeness bars, and chips were built natively with
 tokenized primitives (the accepted "existing markup" fallback); a hub `BHD Labs / shadcn` `Table` +
 `Progressbar` exist and swapping to them is a clean later refinement.
+
+**Known frame gaps (honest, from the build):**
+- **Mobile parity:** the `02.1`/`02.2` mobile frames omit the upper experiment-fields band
+  (Status / Why / Hypothesis / Exec summary) the desktop frames show — they go Hero → Listing
+  health → cards. A desktop/mobile parity gap to close in apply (implementation renders the full
+  page responsively regardless).
+- **Header label color:** column labels use the code's `text-text-primary` mint (`#cff7d3`), matching
+  `page-client.tsx` — not white as Etsy's footer/reference used.
+- **Fraunces weight:** titles use Fraunces Regular (no static Medium instance in Figma); code uses
+  `font-medium` (500). Cosmetic approximation in the frame only.
 
 ## Decisions
 
