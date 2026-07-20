@@ -45,26 +45,47 @@ The scorecard SHALL compute Tier B as the share of *applicable* criteria met (ph
 - **WHEN** a listing's `listing_type` is `download`
 - **THEN** shipping, processing, and return-policy criteria are excluded from its denominator rather than counted as failures.
 
-### Requirement: Full sortable scorecard table with visibility-weighted fix priority
+### Requirement: Full sortable scorecard table with discoverability-weighted fix priority
 
-Every captured listing appears as one condensed row — including its views and favorites — in a sortable table that defaults to an impact-weighted fix-priority order, so effort lands on the listings that are seen most and easiest to fix.
+Every captured listing appears as one condensed row — including its views and favorites — in a sortable table that defaults to a fix-priority order led by discoverability gaps, so effort lands on the listings whose search visibility is most improvable.
 
-The scorecard SHALL render every captured listing as exactly one single-line row (no truncation or "+N more" collapse) using the same table component/conventions as the hub's main experiments table; SHALL include sortable **Views** (`views`) and **Favorites** (`num_favorers`) columns alongside Publishable and Completeness; SHALL default-sort by a single **fix-priority** order that ranks the most-visible listings with unmet criteria first (visibility × fixability); SHALL let the user re-sort by any column with the active sort indicated; SHALL link each listing (in both the table and the "fix these first" list) to its Etsy listing edit view; and — per the "highlights echo the set" principle — the **"fix these first" highlight SHALL contain exactly the top-ranked listings of this same default order** (identical membership and sequence), never a separately-ranked selection. Every captured listing appears in the table (Tier-A blockers are shown and flagged, not hidden).
+> **Amended 2026-07-20** (design decisions 10–11). Originally specified as *visibility-weighted*
+> (views × fixability). Pre-build verification against live Supabase found 105 total views across
+> 25 listings (max 21, half tied at 0–2), so views do not discriminate; ranking now leads on
+> discoverability gaps with views demoted to a tiebreak. Single-order and highlights-echo-the-set
+> rules are unchanged.
+
+The scorecard SHALL render every captured listing as exactly one single-line row (no truncation or "+N more" collapse) using the same table component/conventions as the hub's main experiments table; SHALL include sortable **Views** (`views`) and **Favorites** (`num_favorers`) columns alongside Publishable and Completeness; SHALL default-sort by a single **fix-priority** order that ranks listings by the severity of their *discoverability* gaps (tags and title — the inputs to Etsy search), using views and then favorites only as tiebreaks, and `listing_id` as a final tiebreak so the order is stable across renders; SHALL let the user re-sort by any column with the active sort indicated; SHALL link each listing (in both the table and the "fix these first" list) to its Etsy listing edit view; and — per the "highlights echo the set" principle — the **"fix these first" highlight SHALL contain exactly the top-ranked listings of this same default order** (identical membership and sequence), never a separately-ranked selection, **excluding listings in `draft` state** (which cannot sell). Every captured listing appears in the table (Tier-A blockers and drafts are shown and flagged, not hidden).
 
 #### Scenario: Every captured listing shows as one condensed row
 
 - **WHEN** a shop with 20+ captured listings is scored
 - **THEN** every listing renders as its own single-line row and none are hidden behind a "+N more" affordance.
 
-#### Scenario: Table loads in visibility-weighted fix-priority order
+#### Scenario: Table loads in discoverability-weighted fix-priority order
 
 - **WHEN** the scorecard table first loads
-- **THEN** listings that have unmet criteria and higher visibility (views, then favorites) rank above lower-visibility listings with similar gaps, and Tier-A blockers are surfaced as high-severity without a zero-view blocker outranking a high-traffic fixable listing.
+- **THEN** listings with the largest discoverability gaps (missing or thin tags, weak titles) rank above listings whose search inputs are complete, and Tier-A blockers are surfaced as high-severity.
 
-#### Scenario: A high-visibility fixable listing is prioritized over a low-visibility one
+#### Scenario: A listing with thin tags is prioritized over a fully-tagged one
 
-- **WHEN** two publishable listings have comparable unmet criteria but one has far more views/favorites
-- **THEN** the more-visible listing ranks higher in the default order and in the "fix these first" list.
+- **WHEN** two publishable listings are otherwise comparable but one has zero or few tags and the other is fully tagged
+- **THEN** the under-tagged listing ranks higher in the default order and in the "fix these first" list.
+
+#### Scenario: Views break ties but do not lead the order
+
+- **WHEN** two listings have equivalent discoverability gaps but different view counts
+- **THEN** the higher-view listing ranks above the lower-view one — but a listing with a larger discoverability gap outranks a higher-view listing with a smaller gap.
+
+#### Scenario: Order is stable across renders
+
+- **WHEN** multiple listings tie on every ranking key (as most of this shop currently does)
+- **THEN** they resolve by `listing_id` and the rendered order is identical between two loads of the same data.
+
+#### Scenario: Drafts appear in the table but not in fix-first
+
+- **WHEN** the shop contains listings in `draft` state
+- **THEN** each draft renders in the table with a state marker, and none appear in the "fix these first" list.
 
 #### Scenario: The fix-first highlight matches the table's default order
 

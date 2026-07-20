@@ -51,17 +51,25 @@ Figma **as-is + proposed** pair built and screenshot-verified (2026-07-20), per 
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Primary file URL  | https://www.figma.com/design/EdxL37LSW5exXAepqaH9ZM ("experiment-detail — listing-completeness-scorecard", BHD team drafts)                                                                          |
 | As-is frame(s)    | `01 Current state → As-is · Desktop 1024` (node `4:2`) — current experiment page reconstructed from `app/experiments/[slug]/page.tsx`                                                                 |
-| Proposed frame(s) | Iter 1 — `02 Proposed` (desktop `6:2`, mobile `14:7`) — original wrapping-chip table. Iter 2 — `02.1 Proposed — Sortable one-line table` (desktop `28:43`, mobile `28:388`) — single-line sortable rows, no Views/Favorites. **Iter 3 (current) — `02.2 Proposed — Visibility-weighted priority` (desktop `41:43`, mobile `49:106`)** — adds Views + Favorites columns, one visibility-weighted fix-priority order, fix-first card == table top rows. All prior pages kept intact per the numbered-page convention. |
+| Proposed frame(s) | Iter 1 — `02 Proposed` (desktop `6:2`, mobile `14:7`) — original wrapping-chip table. Iter 2 — `02.1 Proposed — Sortable one-line table` (desktop `28:43`, mobile `28:388`) — single-line sortable rows, no Views/Favorites. Iter 3 — `02.2 Proposed — Visibility-weighted priority` (desktop `41:43`, mobile `49:106`) — adds Views + Favorites columns, visibility-weighted order. **Iter 4 (current) — `02.3 Proposed — Discoverability-weighted priority` (page `59:860`, desktop `59:42`, mobile `59:529`)** — decision 11 applied: discoverability-led order, active-sort caret moved from Views to Unmet criteria, drafts shown with a neutral `Draft` badge and excluded from fix-first, shop-summary third stat repurposed to the systemic-gap count. All prior pages kept intact per the numbered-page convention. |
 | Libraries         | **MVDS Core** Badge instances for Tier-A status chips (`variant=success`/`destructive`, by key — MVDS not enabled as a team-library dep, same as stop-the-leaks); 16 "hub tokens" vars ported 1:1 from `app/globals.css @theme` (Fraunces/Inter), bound to all fills — no hardcoded hex |
 | Code Connect      | None created. Note for apply: hub's `components/ExperimentTypeBadge.tsx` is bespoke, not wired to the MVDS Badge the prototype uses; type badge renders `null` for `commercial` experiments (etsy-notion-sync is commercial) |
 | Breakpoints       | S · 480px mobile / L · 1024px desktop (BHD Content Types). Table collapses to stacked cards under `md` (mobile frame built).                                                                          |
-| Status            | **Approved 2026-07-20** (iter 3 / `02.2`). Blocker placement = option (a) pure-impact. (As-is mobile not built — desktop-only for as-is; meets the L-minimum bar.)                                     |
+| Status            | **Approved 2026-07-20** (iter 3 / `02.2`). Blocker placement = option (a) pure-impact. (As-is mobile not built — desktop-only for as-is; meets the L-minimum bar.) **Frame/decision drift (2026-07-20):** decision 11b changed the ranking key *after* `02.2` was approved. The frame's **layout is still accurate** — same columns incl. Views/Favorites, same one-line rows, same fix-first card — but the **row order it depicts is the superseded visibility-weighted one**, and the page is named accordingly. No re-cut required to build (order is data-driven, not a layout property); if a later iteration is cut, it should be a new numbered page (`02.3`) per the convention, never an in-place edit. |
 
 Status color semantics come from theme tokens only (`destructive` for Tier-A fail,
 `success` for publishable, `muted`/`primary` for the completeness bar) — no raw hex, per `design-guidelines.mdc`.
 **Placeholder-values caveat** (per `rules/figma.mdc`): all field text and every listing name/score/chip
 in the frames are illustrative reference, not derived from code or a live Notion/Supabase read; layout,
 labels, ordering, and token styling are faithful.
+
+**Exception — `02.3` uses real data (2026-07-20).** Unlike every earlier page, `02.3`'s 20 rows are the
+**actual top-20 listings** from `etsy_latest_listing_snapshots`, in the real discoverability order, with
+real titles, view/favourite counts, tag counts and states. This was deliberate: the superseded frames
+depicted 320/280/240-view listings, so re-sorting *fictional* data would not have shown why the ordering
+changed. Only the Tier-B percentages are still derived (computed from a provisional 7-criteria digital /
+9-criteria physical set, since `SCORECARD_DEFAULTS` is not final) — treat the **percentages** as
+illustrative and everything else on `02.3` as real.
 
 **Build follow-up (not blocking):** the table, completeness bars, and chips were built natively with
 tokenized primitives (the accepted "existing markup" fallback); a hub `BHD Labs / shadcn` `Table` +
@@ -144,15 +152,90 @@ tokenized primitives (the accepted "existing markup" fallback); a hub `BHD Labs 
    *current-value* slice of L2 (visibility) into L1 for prioritization; the favorites/views
    **trend over time** remains L2.
 
+   > **Superseded 2026-07-20 by decision 11** (ranking key inverted after live-data verification).
+   > The "one order, card == table top rows" principle here still holds — only the sort key changes.
+
+10. **Pre-apply data verification (2026-07-20).** Tasks 4.3 and 4.4 were run against live Supabase
+    (`ulqdjuiffpazzixnwwso`) *before* implementation rather than as post-build QA. Findings:
+
+    - **4.3 — resolved, non-issue.** The view `etsy_latest_listing_snapshots` **does** expose
+      `raw_response` (jsonb). The `parsed`-only narrowing is in the *Python client's* select string
+      (`store_supabase.py:113`), not the view. No migration, no new view needed.
+    - **Endpoint literal correction:** the stored value is the un-interpolated template
+      `/v3/application/shops/{shop_id}/listings` — note the `/v3/application/` prefix. It must be
+      matched with `=`, **not** `LIKE '%listings%'`: the inventory endpoint
+      `/v3/application/listings/{listing_id}/inventory` also contains "listings" and silently
+      doubles the row count with objects that have none of the scored fields.
+    - **4.4 — fields present, values genuinely empty.** Across 25 listing snapshots: `images`
+      populated (avg 8.4), `tags` non-empty on 22/25 (avg 11.3), `description`/`title`/`views`/
+      `num_favorers` all present. But `images[].alt_text` is **null on every image**, and `videos`,
+      `materials`, `style` are **`[]` on all 25**. These are *genuine* empties, not capture gaps —
+      `Images` and `Videos` are both in `LISTING_INCLUDES` (`etsy_api.py:13`), so the API returned
+      the fields and they are really empty.
+    - **Composition:** 21 digital (`download`) / 4 physical; 22 active / **3 draft**.
+
+11. **Ranking inverted toward discoverability; percentage stays complete (2026-07-20).**
+    Two consequences follow from decision 10, and they are split across two different numbers:
+
+    **(a) Tier-B % keeps every applicable criterion**, including the four that all 25 listings fail.
+    A universally-failed criterion adds an identical constant to every score, so it changes the
+    absolute number but has *zero* effect on ordering. Including it keeps the percentage an honest,
+    stable, trendable absolute measure. Explicitly **rejected:** dynamically dropping
+    universally-failed criteria from the denominator — that makes a listing's score change when
+    *other* listings change (fix alt-text on three listings and every other listing's percentage
+    drops without anything about them changing), which is untrustworthy across two page loads and
+    would poison any later trend view. The four systemic gaps surface **once** in the shop-summary
+    strip as a shop-level finding, not as 25 identical row-level flags.
+
+    **(b) `rankFixPriority` sorts on fixable discoverability gaps, not visibility.** Decision 9's
+    premise — impact = visibility × fixability — assumes a pool of listings that get traffic. The
+    live data says otherwise: **105 views total across 25 listings, max 21, half the shop tied at
+    0–2 views, 12 favorites total.** Ranking by views on that distribution amplifies noise rather
+    than prioritizing; the gap between 21 views and 2 views is not a real difference in opportunity.
+    For a zero-traffic shop the lever is *discoverability* (tags and title keywords — the inputs to
+    Etsy search), so the primary key becomes tag/title gap severity, with **views demoted to a
+    tiebreak**. Decision 9's single-order and card-mirrors-table rules are unchanged.
+    **Assumption flagged (founder-confirmed 2026-07-20):** the tags→discoverability link is
+    reasoned from general Etsy search mechanics, *not* measured in this shop's data. If that link
+    is weaker than assumed, this ordering weakens with it.
+
+    **(c) Drafts excluded from fix-first, retained in the table.** A `state = draft` listing cannot
+    sell, so "not publishable" on it is a category label, not a miss worth surfacing first. The 3
+    drafts stay in the table with a state marker (not hidden — same honesty rule as blockers).
+
+    **(d) Deterministic final tiebreak (`listing_id`).** With this many exact ties on both keys,
+    order would otherwise shuffle between renders depending on row order, making the
+    "fix-first == table top rows" scenario untestable.
+
 ## Risks / Trade-offs
 
-- **`raw_response` completeness:** scoring assumes the stored raw listing carries the full
-  `includes` set (images/videos/tags/materials). Confirmed from `capture.py` (stores the whole
-  `listing` object) — but a **task will assert** an alt-text/image field is actually present on a
-  real snapshot before trusting the alt-text criterion.
-- **Latest-per-listing read:** `store_supabase.latest_parsed_by_listing` selects only `parsed`;
-  the hub read must select `raw_response` instead (query the base table with a latest-per-listing
-  filter, or confirm the `LATEST_VIEW` exposes `raw_response`). Small, verified in a task.
+- ~~**`raw_response` completeness**~~ — **CLOSED 2026-07-20** (decision 10). Fields present; four
+  are genuinely empty shop-wide, handled by decision 11(a).
+- ~~**Latest-per-listing read**~~ — **CLOSED 2026-07-20** (decision 10). `etsy_latest_listing_snapshots`
+  exposes `raw_response`; the `parsed`-only narrowing was in the Python client, not the view.
+- **Ranking rests on an unmeasured assumption (new, from decision 11b):** discoverability-weighted
+  ordering assumes tags/title drive Etsy search visibility. Not measured in this shop's data.
+  Mitigated by centralizing the ranking in one pure function (`rankFixPriority`) so the key can be
+  re-weighted in a single edit once real traffic data exists.
+- **⚠️ Discoverability also discriminates weakly on today's data (new, surfaced while building `02.3`
+  with real rows):** the shop is *already* well-tagged. Of 25 listings, **3 have 0 tags (all drafts),
+  3 have 12, and the remaining 19 sit at the full 13** — so once drafts are excluded from fix-first,
+  the discoverability key separates only **3** listings before collapsing to the views tiebreak, and
+  the top recommendation is the marginal "add 1 tag". This is visible in `02.3`: rows 4–6 differ, rows
+  7–20 are effectively views-ordered. **Implication:** decision 11b is still better than ranking on
+  views alone (which tied 11 of 25 at 0–2 views), but neither key is strong, because the shop's real
+  gaps are the four **systemic** ones — alt text, video, materials, styles — which are shop-level, not
+  per-listing, and are surfaced by decision 11a's summary-strip line rather than by any ordering.
+  **Open question for the founder:** if the systemic batch-fix is the actual highest-value action, the
+  fix-first *card* may deserve to lead with it rather than with per-listing rows. Not resolved; does
+  not block apply (both orderings share one `rankFixPriority` seam).
+- **Four criteria are currently non-discriminating (new, from decision 10):** alt-text, videos,
+  materials, styles fail on 100% of listings, so they inform the shop-level strip but contribute
+  nothing to per-listing ordering. If any becomes partially satisfied later, it starts
+  discriminating on its own with no code change — the denominator is static by design (11a).
+- **Thin physical coverage (new, from decision 10):** only 4 of 25 listings are physical (1 active,
+  3 draft), so the digital/physical branch (decision 5) is exercised but barely. Unit tests must
+  cover the physical path with fixtures rather than relying on live data.
 - **No persisted scores:** recomputing per request means no score-over-time trend yet — accepted;
   trending belongs to L2, and the append-only snapshots already retain the raw history to backfill later.
 - **Threshold accuracy:** v1 defaults are best-effort (Handbook caps not re-confirmed live).
