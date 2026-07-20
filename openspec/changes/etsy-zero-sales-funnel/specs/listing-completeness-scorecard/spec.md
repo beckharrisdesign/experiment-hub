@@ -49,7 +49,7 @@ The scorecard SHALL compute Tier B as the share of *applicable* criteria met (ph
 
 Every captured listing appears as one condensed row in a sortable table that defaults to fix-first order, so the founder can both scan the whole shop and re-sort to explore.
 
-The scorecard SHALL render every captured listing as exactly one single-line row (no truncation or "+N more" collapse), SHALL default-sort with any Tier-A-failure listing above all Tier-A-complete listings and ascending Tier-B percentage within each group, and SHALL let the user re-sort by a column with the active sort indicated.
+The scorecard SHALL render every captured listing as exactly one single-line row (no truncation or "+N more" collapse) using the same table component/conventions as the hub's main experiments table, SHALL default-sort with any Tier-A-failure listing above all Tier-A-complete listings and ascending Tier-B percentage within each group, SHALL let the user re-sort by a column with the active sort indicated, and SHALL link each listing (in both the table and the "fix these first" list) to its Etsy listing edit view.
 
 #### Scenario: Every captured listing shows as one condensed row
 
@@ -65,6 +65,11 @@ The scorecard SHALL render every captured listing as exactly one single-line row
 
 - **WHEN** the user activates a sortable column header (e.g. Completeness or Publishable)
 - **THEN** the rows reorder by that column and the active sort column and direction are indicated.
+
+#### Scenario: Each listing links to its Etsy edit view
+
+- **WHEN** the founder clicks a listing in the table or the fix-first list
+- **THEN** it opens that listing's Etsy edit view (`etsy.com/your/shops/me/listing-editor/edit/{listing_id}`) so the fix can be made immediately.
 
 ### Requirement: Public read-only surface on the labs project page
 

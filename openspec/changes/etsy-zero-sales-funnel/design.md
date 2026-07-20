@@ -99,6 +99,24 @@ tokenized primitives (the accepted "existing markup" fallback); a hub `BHD Labs 
    separate "Fix these first" card stays as the top-offenders highlight. Sorting is client-side
    over the already-loaded rows (server sends all scored rows; ~20 items → no pagination).
 
+7. **Reuse the main experiments table component (founder feedback 2026-07-20):** the scorecard
+   table must use the **same** table as the hub home page — the sortable table in
+   `app/page-client.tsx` (dark-green `background-primary` header, state-driven
+   `sortColumn`/`sortDirection` with a ↓/↑ caret on the active column, title+subtitle rows,
+   colored **score-pill** thresholds green→yellow→orange→red). It is currently inline in
+   `page-client.tsx`; **apply must extract it into a shared component** (e.g.
+   `components/SortableExperimentTable` or a generic `components/ScoreTable`) and consume it in
+   both the home page and the scorecard — no bespoke second table. The completeness % reuses the
+   score-pill color treatment.
+
+8. **Link every listing to its Etsy edit view (founder feedback 2026-07-20):** each listing in
+   the table and the fix-first list links to `https://www.etsy.com/your/shops/me/listing-editor/edit/{listing_id}`,
+   mirroring how the main table rows are `<Link>`s to the experiment detail page. **Owner-only
+   nuance:** the edit view requires being signed in as the shop owner, so the link is actionable
+   for the founder; anonymous public visitors following it hit Etsy's sign-in. The `listing_id`
+   is not sensitive (it appears in the public listing URL), so exposing it on the public page is
+   fine. (Optional later: also expose the public `url` field for non-owner visitors.)
+
 ## Risks / Trade-offs
 
 - **`raw_response` completeness:** scoring assumes the stored raw listing carries the full
