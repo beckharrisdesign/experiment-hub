@@ -45,6 +45,13 @@ export interface Experiment {
   createdDate: string;
   lastModified: string;
   tags: string[];
+  /**
+   * Public-visibility flag from the Notion `Public` checkbox. `false` means
+   * the row is hidden from public routes (homepage table + detail page).
+   * `undefined` for non-Notion sources (legacy Supabase/JSON rows), which
+   * stay visible — only an explicit `false` hides a row.
+   */
+  public?: boolean;
   scores?: ExperimentScores; // Optional scoring (1-5 for each dimension)
   scoreRationale?: ScoreRationale; // Optional rationale for Business Opportunity, Personal Impact, Social Impact
   validation?: ValidationLandingPage; // Landing page validation status
