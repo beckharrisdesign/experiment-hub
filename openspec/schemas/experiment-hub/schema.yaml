@@ -186,7 +186,7 @@ artifacts:
 
       - **User flow / IA (optional)** — Mermaid snippet or FigJam/board link aligning to proposal.Visual board.
 
-      ALSO echo `.cursor/rules/figma.mdc` for UI-impacting work:
+      ALSO echo `rules/figma.mdc` for UI-impacting work:
 
       - **Visual design / Figma** table (URLs, libraries, frames in scope, Code Connect deltas — literal `N/A` rows for backend-only).
 
