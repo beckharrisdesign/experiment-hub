@@ -218,9 +218,6 @@ export function formatNotionProperty(prop: NotionProperty): string {
   return "";
 }
 
-// Name and Tagline render in the page hero, so the field list skips them.
-const HERO_PROPERTIES = new Set(["Name", "Tagline"]);
-
 /**
  * The ONLY Notion properties allowed to render on a public experiment detail
  * page, in display order. Everything else — bookkeeping (`Last edited time`,

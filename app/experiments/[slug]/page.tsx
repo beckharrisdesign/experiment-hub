@@ -35,7 +35,7 @@ function Statement({ label, value }: ExperimentField) {
 function GhostPrompt({ label }: { label: string }) {
   return (
     <div className="max-w-[720px] rounded-lg border border-dashed border-border-dark/30 px-4 py-3 text-sm text-text-dark-secondary/70">
-      Add {label.charAt(0).toLowerCase() + label.slice(1)} →
+      Add {label.toLowerCase()} →
     </div>
   );
 }
