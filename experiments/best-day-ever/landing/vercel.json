@@ -3,5 +3,8 @@
   "outputDirectory": "dist",
   "framework": null,
   "installCommand": "npm install",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ../../../packages"
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ../../../packages",
+  "git": {
+    "deploymentEnabled": false
+  }
 }
