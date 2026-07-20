@@ -47,7 +47,7 @@ def make_page(page_id, sku, price=None, quantity=None, status=None, listing_id=N
 
 
 class FakeNotionClient:
-    def __init__(self, db_schema, pages, comment_error=False):
+    def __init__(self, db_schema, pages, comment_error=False, comment_exc=None):
         self.db_schema = db_schema
         self.pages = pages
         self.updates = []
@@ -55,6 +55,7 @@ class FakeNotionClient:
         self.db_updates = []
         self.comments = []
         self.comment_error = comment_error
+        self.comment_exc = comment_exc
 
     def get_database(self, database_id):
         return self.db_schema
@@ -72,6 +73,8 @@ class FakeNotionClient:
         self.creates.append((database_id, properties))
 
     def create_comment(self, page_id, text):
+        if self.comment_exc is not None:
+            raise self.comment_exc
         if self.comment_error:
             raise NotionApiError("Create comment on {} failed with 403".format(page_id))
         self.comments.append((page_id, text))
@@ -403,6 +406,20 @@ def test_comment_failure_does_not_block_update(backend):
     assert client.comments == []  # comment raised and was swallowed
 
 
+def test_comment_network_error_does_not_block_update(backend):
+    # A non-NotionApiError (e.g. a requests timeout / connection drop) must
+    # also be swallowed — the page write already succeeded.
+    capture_fixture(backend, quantity=1)
+    page = make_page("page-1", "SKU-1", price=6.0, quantity=50, status="Active")
+    client = FakeNotionClient(DB_SCHEMA, [page], comment_exc=ConnectionError("timeout"))
+
+    summary = sync_notion.run_sync(client, backend, "db-1", COMMENT_CONFIG, dry_run=False)
+
+    assert summary["updates"] == 1
+    assert len(client.updates) == 1
+    assert client.comments == []
+
+
 def test_changes_comment_text_formats_values():
     from datetime import datetime, timezone
 
@@ -423,3 +440,13 @@ def test_changes_comment_text_caps_long_value():
     change = {"Description": {"from": "old", "to": "x" * 5000}}
     text = sync_notion.changes_comment_text(change)
     assert len(text) <= sync_notion.RICH_TEXT_LIMIT
+
+
+def test_changes_comment_text_caps_long_list_value():
+    # Multi-select fields (Tags/Materials) join to a long string that must be
+    # capped just like a long scalar.
+    tags = ["tag{}".format(i) for i in range(100)]
+    text = sync_notion.changes_comment_text({"Tags": {"from": None, "to": tags}})
+    value = next(l for l in text.splitlines() if l.startswith("• Tags:")).split(" → ", 1)[1]
+    assert value.endswith("…")
+    assert len(value) <= sync_notion.COMMENT_VALUE_LIMIT

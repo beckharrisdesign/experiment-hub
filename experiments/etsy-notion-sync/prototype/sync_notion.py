@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from backends import make_backend
 from capture import LISTINGS_ENDPOINT_TEMPLATE
 from env import load_env
-from notion_api import NotionApiError, NotionClient
+from notion_api import NotionClient
 
 log = logging.getLogger("sync_notion")
 
@@ -375,8 +375,9 @@ def _format_change_value(value):
     if value is None:
         return "—"
     if isinstance(value, list):
-        return ", ".join(str(item) for item in value) or "—"
-    text = str(value)
+        text = ", ".join(str(item) for item in value) or "—"
+    else:
+        text = str(value)
     if len(text) > COMMENT_VALUE_LIMIT:
         text = text[:COMMENT_VALUE_LIMIT - 1] + "…"
     return text
@@ -416,12 +417,14 @@ def apply_updates(client, plans, dry_run, comments_enabled=False):
             continue
         client.update_page(plan["page_id"], plan["properties"])
         if comments_enabled:
-            # Best-effort: the page write already succeeded, so a comment
-            # failure (e.g. the integration lacks comment capability) is
-            # logged and swallowed rather than failing the run.
+            # Best-effort: the page write already succeeded, so nothing about
+            # the comment may abort the run — not a missing comment capability
+            # (NotionApiError), not a network blip/timeout (requests), not any
+            # other runtime error. The catch is intentionally broad because the
+            # comment is non-critical logging, not part of the sync contract.
             try:
                 client.create_comment(plan["page_id"], changes_comment_text(plan["changes"]))
-            except NotionApiError as exc:
+            except Exception as exc:  # noqa: BLE001 — comment is non-critical
                 log.warning("Change comment failed for listing %s (update applied): %s",
                             plan["listing_id"], exc)
 
