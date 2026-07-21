@@ -47,6 +47,17 @@ Think in reusable systems and components. Prefer chat, shared docs, or existing 
 - RTK auto-rewrites most Bash (`git`, `gh`, `grep`, `ls`, `find`, `cat`/`head`→`rtk read`, etc.) transparently — write commands normally and let the hook handle it; don't hand-prefix `rtk`.
 - Prefer one targeted command over exploratory chains; scope `grep`/`find` to a path, not the repo root.
 
+## Asking for decisions: one at a time, sequentially
+
+Katy has ADHD. A response that stacks several open decisions causes real items to be missed — not a style preference, an accessibility requirement.
+
+- **One decision per turn.** Ask the single decision that blocks progress. Hold the rest until it's answered — even when the others are cheap, related, or "while we're here."
+- **Never bundle a blocking decision with optional ones.** Optional asks (tooling, cleanup, naming, nice-to-haves) crowd out the one that matters. Ship them later, or just make the call yourself and say what you did.
+- **Plain language, no jargon.** State what you'd do, what changes for her, and what happens if she says no. Skip the option matrix unless she asks to compare.
+- **Lead with a recommendation**, not a menu. "I'd do X because Y — okay?" beats three options with tradeoffs.
+- **Keep a visible queue.** When decisions are pending, park them in the change's `tasks.md` rather than repeating them in chat. Chat carries the current one; the file carries the backlog.
+- **Decide it yourself when it's reversible and low-stakes.** Then report the call in one line. Only escalate what's genuinely hers: irreversible things, workspace/data structure, public-facing content, anything with a cost.
+
 ## Solo founder / vibe coding
 
 - **Protect critical areas** — Do not modify pricing logic, auth flows, API contracts, or legal/core copy without explicit review.

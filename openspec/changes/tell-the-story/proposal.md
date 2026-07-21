@@ -14,12 +14,16 @@
 - **Job:** Each experiment detail page carries a dated, evidence-linked History: a short list of milestone entries reconstructing where the project (and Katy's thinking) was at over time, from first description to launch — or to a well-explained death.
 - **Done when:**
   1. Each experiment's Notion row can hold approved timeline entries (date + one-sentence milestone + optional receipt link/number), and the hub renders them read-only as a **History** section on the detail page, below the guiding statements curated by `stop-the-leaks`. Month-level dates, chronological, roughly 5–10 entries per experiment.
-  2. A draft generator assembles candidate entries from real sources at rollup grain — "pushed 5 PRs focused on foundations", never raw commit-log dumps. **Source model (corrected 2026-07-17):** the hub is a monorepo, so v1 sources are (a) the GitHub PR archive of `experiment-hub` — which survives the git-history truncation intact back to PR #1, March 2026 — filtered per experiment by title/paths, (b) path-scoped history `git log -- experiments/{slug}/` where it survives, and (c) external repos only where one genuinely exists (e.g. `mvds`; the Notion `Repo` field is currently unreliable and must not be trusted blindly — Best Day Ever's points to a nonexistent repo).
+  2. A draft generator assembles candidate entries from real sources at rollup grain — "pushed 5 PRs focused on foundations", never raw commit-log dumps. **Source model (corrected again 2026-07-21 after a live check):** the hub is a monorepo, so v1 sources are (a) path-scoped history `git log -- experiments/{slug}/`, (b) the GitHub PR archive of `experiment-hub` filtered per experiment by title/paths, (c) **the experiment's Figma file** — named versions, numbered iteration pages, and comment threads, and (d) external repos only where one genuinely exists (e.g. `mvds`; the Notion `repo` field — lowercase — is unreliable and must not be trusted blindly: Best Day Ever's points to a nonexistent repo).
+
+**On Figma (added 2026-07-21):** design iteration is first-class evidence, not decoration. Katy is a product designer; Figma is an anchor tool, and for design-led experiments the iteration trail shows the *thinking* change while commits only record which version won. The repo already treats it this way — `rules/figma.mdc` is always-applied and `rules/openspec-workflow.mdc` requires design context for UI-impacting changes. Practical limit: named versions and numbered iteration pages are legible to a generator; unlabeled autosave points are noise and are ignored. Katy's existing file-naming convention (`02 Proposed`, `02.1 Proposed — History preview`) is what makes the trail machine-readable.
+
+~~The hub's git history is truncated at 2026-06-21.~~ **Not true.** Verified 2026-07-21: the repo's root commit is `8609b56` (2025-11-12, "initial experiment hub implementation"), it is a direct ancestor of `main`, the clone is not shallow, and `main` carries 665 commits. Path-scoped `git log` is therefore the *primary* source, not a fallback — Best Day Ever alone yields 22 commits spanning 2026-03-09 → 2026-07-20. The truncation claim likely came from reading RTK-filtered `git log` output piped to `head`/`tail`, which truncates before the pipe sees it.
   3. **Nothing generated publishes without Katy.** Every entry is approved and editable in Notion before it renders. Generated drafts are assembly of real evidence — counts that are countable, dates that are real. Synthetic describes assembly, never invention.
   4. Entries that assert results carry the receipt **in the sentence** — the number itself ("500 visits, 38 signups") — or they don't ship. Linked-artifact chips are explicitly deferred past v1 (founder call, 2026-07-17: don't overbuild the first pass). Launch/campaign entries (e.g., Meta results) are hand-written by Katy; publishing spend/CPA figures is her call per entry.
   5. Failures and dead ends appear as first-class entries. For dead experiments, the terminal entry aligns with the kill reason in `Outcome` (from `publish-the-graveyard`); for live ones, any numbered entry must agree with the `Outcome` line's source — one honesty rule, no drift between surfaces.
   6. An experiment with no approved entries shows no History section at all (silent omission, matching the detail page's empty-state rule).
-- **Not doing:** Chat/session transcripts as a pipeline input — high privacy risk (secrets, personal context); they may inform Katy's own writing but are never quoted or mined automatically. No auto-publish, no scheduled regeneration, no per-day granularity, no timeline on the homepage table, no backfill requirement for every experiment before shipping (start with one or two exemplars).
+- **Not doing:** Chat/session transcripts as a pipeline input — high privacy risk (secrets, personal context); they may inform Katy's own writing but are never quoted or mined automatically. No auto-publish, no per-day granularity, no timeline on the homepage table, no backfill requirement for every experiment before shipping (start with one or two exemplars). ~~No scheduled regeneration~~ → **narrowed 2026-07-21:** no scheduled *overwriting*. Drafts accumulate on a monthly schedule (append-only, always unapproved); the job never modifies or deletes an existing entry, so approved wording never churns.
 
 ## Why
 
@@ -32,7 +36,7 @@ Generate-then-approve keeps the authenticity bar the rest of the site is being h
 - Notion "BHD Labs Projects": a structure for timeline entries per experiment (property vs child blocks — decide in design; must support date + text + optional URL receipt and stay hand-editable).
 - `lib/notion-experiments.ts` (or a sibling adapter): read approved entries.
 - `app/experiments/[slug]/page.tsx`: History section below guiding statements — mono date, one sentence, chronological.
-- A draft-generation script (repo-local tool, not a hub route): reads commits/PRs from the experiment's repo via `gh`, proposes rollup milestones for Katy's review; writes nothing to Notion without approval.
+- A draft generator (repo-local tool, **not** a hub route): reads commits, PRs, and Figma versions, proposes rollup milestones. Runs on a **monthly schedule** (GitHub Action) and appends drafts to Notion with `Approved` unchecked — insert-only, never updating or deleting. Nothing it writes is publicly visible until Katy ticks the box.
 - Exemplar content: one built-out history (suggest Best Day Ever or Etsy → Notion Sync) before generalizing.
 
 ## Capabilities
@@ -48,11 +52,11 @@ Generate-then-approve keeps the authenticity bar the rest of the site is being h
 ## Impact
 
 - Notion database structure (timeline storage), `lib/notion-experiments.ts` or new adapter, `app/experiments/[slug]/page.tsx`
-- New generation script under `scripts/` or the experiment's tooling
+- New generation script under `scripts/`, plus a monthly GitHub Action to run it (needs a Notion token scoped to the History database only — the hub's own read path stays write-free)
 - Tests: rendering order/empty-state; adapter parsing; generator unit tests on rollup logic (fixture repos)
 - Ordering: after `stop-the-leaks` (it curates the page this section joins); pairs with `publish-the-graveyard` (kill-reason terminal entries) and `outcomes-column` (shared honesty rule); no hard blocks
 
 ## Optional links
 
 - Related changes: `openspec/changes/stop-the-leaks/`, `openspec/changes/publish-the-graveyard/`, `openspec/changes/outcomes-column/`
-- Source constraint: hub git history truncated at 2026-06-21; per-experiment repos are the real archive (Notion `Repo` field, e.g. `best-day-ever`)
+- ~~Source constraint: hub git history truncated at 2026-06-21; per-experiment repos are the real archive~~ — **retracted 2026-07-21**, see "Source model" above. Hub history is intact to 2025-11-12; the hub *is* the archive. The Notion `repo` field stays unreliable regardless.
