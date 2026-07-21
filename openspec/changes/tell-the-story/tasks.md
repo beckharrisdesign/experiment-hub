@@ -10,8 +10,9 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 
 1. ~~**0.1 — Notion storage shape.**~~ ✅ approved by Katy 2026-07-21 — new related table.
 2. ~~**2.3 — exemplar experiment.**~~ ✅ **Best Day Ever**, chosen by Katy 2026-07-21 — the "purest" experiment; she wants its narrative trail visible.
-3. Branch naming for this PR (cosmetic — will drop unless raised).
-4. GitHub MCP re-auth + the stale `mcp__github__*` allowlist entries in `.claude/settings.json` (optional; `gh` works today — see the scratchpad tee-up).
+3. **3.6 — where the Figma file reference lives.** No per-experiment Figma property exists in Notion; options are a new property or deriving it from `design.md`. Ask when 3.6 is reached.
+4. Branch naming for this PR (cosmetic — will drop unless raised).
+5. GitHub MCP re-auth + the stale `mcp__github__*` allowlist entries in `.claude/settings.json` (optional; `gh` works today — see the scratchpad tee-up).
 
 ## 0. Storage-shape decision (resolve first)
 
@@ -47,6 +48,10 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 - [ ] 1.5 Generator never mines chat/session transcripts
 - [ ] 1.6 A result-claiming entry without an inline number doesn't ship
 - [ ] 1.7 A dead experiment's terminal entry agrees with its `Outcome` kill reason
+- [ ] 1.8 A month of activity produces a draft entry with no human action
+- [ ] 1.9 Previously edited/approved entries are untouched by the job
+- [ ] 1.10 A quiet month (or hub-wide-only changes) adds nothing
+- [ ] 1.11 Figma named versions and numbered iteration pages count as evidence
 
 ## 2. Notion setup (manual, gating §3)
 
@@ -65,7 +70,12 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 - [ ] 3.3 `app/experiments/[slug]/page.tsx`: History band below the narrative statements, above the footer. Per [design.md](design.md): fixed **88px** left gutter, dates mono/tabular **13px** muted right-aligned, sentences **14px** Inter on the **720px** measure, `HISTORY` uppercase label matching the statements' treatment. Zero approved entries → render nothing at all, no heading. At S (480px) collapse the gutter to stacked date-over-sentence, keeping the mono/tabular date. (→ 1.1, 1.2)
 - [ ] 3.4 Draft generator `scripts/draft-history.ts` (repo-local CLI, **not** a hub route). **Primary source is path-scoped `git log -- experiments/{slug}/`** — history is intact to 2025-11-12 (verified 2026-07-21; proposal's truncation claim retracted), so this alone carries the trail. Supplement with `gh pr list` filtered by title/paths, and a genuine external repo only where one exists and is verified (§2.4). Emits rollup candidates ("pushed 5 PRs focused on foundations") to stdout/markdown for Katy to paste and edit in Notion. **No Notion client import in this file** — that's the structural guarantee behind 1.4. (→ 1.4)
   - Rollup logic must distinguish **experiment-specific** commits from **hub-wide** ones that sweep the folder incidentally (BDE has 3 such: `fdda7ba`, `a78ef49`, `0d25a7c`). Counting those as activity would invent a story — it would show BDE "active" in July when it has been quiet since April.
-- [ ] 3.5 Generator source allowlist is explicit and commented: commits, PRs, release notes only. No transcript/session/chat path is read. (→ 1.5)
+- [ ] 3.5 Generator source allowlist is explicit and commented: commits, PRs, release notes, Figma versions. No transcript/session/chat path is read. (→ 1.5)
+- [ ] 3.6 **Figma source adapter**: read named versions, numbered iteration pages, and comment threads for the experiment's file. Ignore unlabeled autosave points (noise). Needs a per-experiment Figma file reference — no such Notion property exists yet; decide whether to add one or derive it from `design.md`. (→ 1.11)
+- [ ] 3.7 **Notion append writer** (`scripts/` only — never imported by the hub app): inserts entries with `Approved` unchecked. Insert-only by construction — no update or delete call exists in the module. Tests assert this. (→ 1.8, 1.9)
+- [ ] 3.8 **Watermark / idempotency**: the job must not re-append a month it already covered. Derive coverage from existing rows (max `Date` per experiment, plus `Source`) rather than storing separate state — a re-run over a covered month is a no-op. (→ 1.9)
+- [ ] 3.9 **Monthly GitHub Action** invoking 3.7. Needs a Notion token scoped to the History database only. ⚠️ Per `feedback_centralized_secrets`, check existing secret stores before asking Katy for a new key. (→ 1.8)
+- [ ] 3.10 **Quiet-month rule**: no activity, or only hub-wide commits that swept the experiment's paths, produces no entry. Reuses the 3.4 experiment-specific vs hub-wide classifier. (→ 1.10)
 
 ## 4. QA
 
@@ -73,4 +83,6 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 - [ ] 4.2 Automated: generator rollup logic against fixture PR/commit data — counts match the fixture exactly (countable counts, real dates). Assert the module has no Notion write import. (→ 1.4, 1.5)
 - [ ] 4.3 Manual walkthrough on the running app: the exemplar experiment shows History below the statements with dates aligned in the gutter; an experiment with no entries shows no band and no heading; unchecking `Approved` in Notion removes that entry within the 60s cache window. (→ 1.1, 1.2, 1.3)
 - [ ] 4.4 Content review before publishing the exemplar (Katy, authoring-time — not enforced by code): every result-claiming entry carries its number inline; if the experiment is dead, the terminal entry's reason matches the `Outcome` line. Design decision 3 puts this upstream of layout deliberately. (→ 1.6, 1.7)
-- [ ] 4.5 `tsc --noEmit` clean; full vitest suite green.
+- [ ] 4.5 Automated: the append writer inserts only unapproved rows; running the job twice over the same month produces no duplicate; a hand-edited row is byte-identical after a run. (→ 1.8, 1.9)
+- [ ] 4.6 Automated: a month with only hub-wide commits yields zero entries (fixture: BDE's `fdda7ba`, `a78ef49`, `0d25a7c`). (→ 1.10)
+- [ ] 4.7 `tsc --noEmit` clean; full vitest suite green.
