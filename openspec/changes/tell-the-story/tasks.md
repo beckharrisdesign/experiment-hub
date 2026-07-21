@@ -35,7 +35,9 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
   | `Experiment` | relation → BHD Labs Database | The join key |
   | `Approved` | checkbox | Gate — unchecked never renders (mirrors `Public`) |
   | `Receipt URL` | url | Optional; **not rendered in v1** (chips deferred), stored for provenance |
-  | `Source` | text | Optional; where the generator drew it from (e.g. "PR #142–#147") |
+  | `Source` | rich_text | Optional; where the generator drew it from (e.g. "PR #142–#147") |
+
+  > **Type naming:** the Notion MCP's schema view labels this `text`, but the REST API the hub actually uses calls it `rich_text` — see `prop.rich_text` in `formatNotionProperty` ([lib/notion-experiments.ts](../../../lib/notion-experiments.ts) L189). `rich_text` is the name that matters when writing the adapter.
 
 - [ ] 0.2 Confirm the entry cap is guidance, not enforcement — proposal says "roughly 5–10 entries"; render whatever is approved.
 
@@ -58,10 +60,10 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 - [x] 2.1 **Created 2026-07-21** — "BHD Labs History" under **Beck Harris Design**, schema per §0.1. Two-way relation to BHD Labs Database (adds a synced `History` property there, so entries are visible from the experiment row too).
   - Database: https://app.notion.com/p/85a672d61e1c48449e09755a5fdfa8af
   - Data source: `b68916bb-235e-411b-827d-7dfc0c0f0a07`
-- [ ] 2.2 Add the data source ID above to env as `NOTION_HISTORY_DATA_SOURCE_ID` (local `.env.local` + Vercel). Follows the `NOTION_EXPERIMENTS_DATA_SOURCE_ID` pattern in [lib/notion-experiments.ts:279](../../../lib/notion-experiments.ts:279). ⚠️ Also confirm the hub's Notion integration has access to the new database — Notion integrations are granted per-page, so a new DB is invisible to the app until shared with it.
+- [ ] 2.2 Add the data source ID above to env as `NOTION_HISTORY_DATA_SOURCE_ID` (local `.env.local` + Vercel). Follows the `NOTION_EXPERIMENTS_DATA_SOURCE_ID` pattern in [`lib/notion-experiments.ts` L279](../../../lib/notion-experiments.ts). ⚠️ Also confirm the hub's Notion integration has access to the new database — Notion integrations are granted per-page, so a new DB is invisible to the app until shared with it.
 - [ ] 2.3 Author the exemplar history by hand — **Best Day Ever** (chosen 2026-07-21), ~5–7 entries — to validate the shape before the generator exists. Evidence gathered: 22 commits, 2026-03-09 → 2026-07-20, in four clusters (one-day launch → polish → 2026-04-20 pricing pivot → silence after 04-26). Raw material in the session scratchpad `best-day-ever-evidence.md`.
   - ⚠️ The trail can't answer *why*: what phase-1 actually got, what prompted the 2026-04-20 pivot, and whether BDE is dead/paused/waiting. Those are Katy's to write, and the last one gates Requirement 4 (terminal entry must agree with `Outcome`).
-- [ ] 2.4 ⚠️ Note for §3.4: the repo property is lowercase **`repo`** (text), not `Repo`. It is unreliable — Best Day Ever's points at a nonexistent repo — so the generator must verify before trusting it. Moot for BDE now that hub history is confirmed intact (see §3.4).
+- [ ] 2.4 ⚠️ Note for §3.4: the repo property is lowercase **`repo`** (`rich_text`), not `Repo`. It is unreliable — Best Day Ever's points at a nonexistent repo — so the generator must verify before trusting it. Moot for BDE now that hub history is confirmed intact (see §3.4).
 
 ## 3. Implementation
 
