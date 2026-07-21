@@ -334,6 +334,18 @@ export async function getExperimentBySlugFromNotion(
   return experiments.find((exp) => exp.id === slug) ?? null;
 }
 
+/**
+ * The Notion page id backing `slug`, or null. The `Experiment` relation in the
+ * BHD Labs History database points at these ids, so the history adapter needs
+ * this to match rows to an experiment. Reads the same cache as the list.
+ */
+export async function getExperimentPageIdFromNotion(
+  slug: string,
+): Promise<string | null> {
+  await getExperimentsFromNotion();
+  return cache?.pageBySlug[slug]?.id ?? null;
+}
+
 // ---------------------------------------------------------------------------
 // Writing back to Notion
 // ---------------------------------------------------------------------------

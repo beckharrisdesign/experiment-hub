@@ -43,9 +43,9 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 
 ## 1. User outcomes (from spec scenarios)
 
-- [ ] 1.1 Approved entries render chronologically (ascending, month-level dates)
-- [ ] 1.2 No approved entries hides the section entirely (silent omission)
-- [ ] 1.3 Only approved entries publish; unapproved/draft never render
+- [x] 1.1 Approved entries render chronologically (ascending, month-level dates) — `selectApprovedEntries` sort + `formatMonthYear`, tested
+- [x] 1.2 No approved entries hides the section entirely — `History` returns null; `showNarrative` drops the band when statements + history are both empty
+- [x] 1.3 Only approved entries publish; unapproved/draft never render — `Approved === true` filter, tested
 - [ ] 1.4 Generator proposes rollup candidates, writes nothing to Notion
 - [ ] 1.5 Generator never mines chat/session transcripts
 - [ ] 1.6 A result-claiming entry without an inline number doesn't ship
@@ -67,9 +67,9 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 
 ## 3. Implementation
 
-- [ ] 3.1 New adapter `lib/notion-history.ts` (sibling, not an extension of `notion-experiments.ts` — different data source, different cache): `getHistoryForExperiment(slug)` returns `{ date, milestone }[]`, filtered to `Approved === true`, sorted date-ascending. Reuse the 60s TTL cache pattern. Read-only — **no write path exists in this module**. (→ 1.1, 1.3)
-- [ ] 3.2 Month-date formatting helper: render `Date` as `Mon YYYY` (e.g. "Mar 2026"), ignoring day precision. Guard against missing/malformed dates by skipping the entry rather than rendering `Invalid Date`. (→ 1.1)
-- [ ] 3.3 `app/experiments/[slug]/page.tsx`: History band below the narrative statements, above the footer. Per [design.md](design.md): fixed **88px** left gutter, dates mono/tabular **13px** muted right-aligned, sentences **14px** Inter on the **720px** measure, `HISTORY` uppercase label matching the statements' treatment. Zero approved entries → render nothing at all, no heading. At S (480px) collapse the gutter to stacked date-over-sentence, keeping the mono/tabular date. (→ 1.1, 1.2)
+- [x] 3.1 New adapter `lib/notion-history.ts` — `getHistoryForExperiment(slug)` returns `HistoryEntry[]` filtered to `Approved === true`, sorted date-ascending. Own 60s TTL cache. Read-only — **no write path in this module**. Resolves slug→page id via a new `getExperimentPageIdFromNotion` in the experiments adapter (History relates by page id, not slug). (→ 1.1, 1.3)
+- [x] 3.2 `formatMonthYear` — renders `Date` as `Mon YYYY`, ignoring day. Parses the string directly (timezone-agnostic) and returns null for missing/malformed dates so the entry is skipped, never `Invalid Date`. (→ 1.1)
+- [x] 3.3 `app/experiments/[slug]/page.tsx`: History band below the statements. 88px mono/tabular gutter (right-aligned, stacks over the sentence at `<sm`), 13px muted dates, `HISTORY` uppercase label. Empty → renders nothing. **Visual sign-off deferred to 4.3** — needs live entries + the env var, not observable locally. (→ 1.1, 1.2)
 - [ ] 3.4 Draft generator `scripts/draft-history.ts` (repo-local CLI, **not** a hub route). **Primary source is path-scoped `git log -- experiments/{slug}/`** — history is intact to 2025-11-12 (verified 2026-07-21; proposal's truncation claim retracted), so this alone carries the trail. Supplement with `gh pr list` filtered by title/paths, and a genuine external repo only where one exists and is verified (§2.4). Emits rollup candidates ("pushed 5 PRs focused on foundations") to stdout/markdown for Katy to paste and edit in Notion. **No Notion client import in this file** — that's the structural guarantee behind 1.4. (→ 1.4)
   - Rollup logic must distinguish **experiment-specific** commits from **hub-wide** ones that sweep the folder incidentally (BDE has 3 such: `fdda7ba`, `a78ef49`, `0d25a7c`). Counting those as activity would invent a story — it would show BDE "active" in July when it has been quiet since April.
 - [ ] 3.5 Generator source allowlist is explicit and commented: commits, PRs, release notes, Figma versions. No transcript/session/chat path is read. (→ 1.5)
@@ -81,10 +81,10 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 
 ## 4. QA
 
-- [ ] 4.1 Automated (vitest, `tests/lib/notion-history.test.ts`): unapproved entries are filtered out; entries sort ascending regardless of Notion return order; malformed/missing dates are skipped; an experiment with no entries returns `[]`. (→ 1.1, 1.2, 1.3)
+- [x] 4.1 Automated (vitest, `tests/lib/notion-history.test.ts`, 11 tests): unapproved filtered out; wrong-experiment filtered out; sort ascending regardless of return order; malformed/missing dates skipped; empty milestone skipped; nothing-qualifies returns `[]`. (→ 1.1, 1.2, 1.3)
 - [ ] 4.2 Automated: generator rollup logic against fixture PR/commit data — counts match the fixture exactly (countable counts, real dates). Assert the module has no Notion write import. (→ 1.4, 1.5)
 - [ ] 4.3 Manual walkthrough on the running app: the exemplar experiment shows History below the statements with dates aligned in the gutter; an experiment with no entries shows no band and no heading; unchecking `Approved` in Notion removes that entry within the 60s cache window. (→ 1.1, 1.2, 1.3)
 - [ ] 4.4 Content review before publishing the exemplar (Katy, authoring-time — not enforced by code): every result-claiming entry carries its number inline; if the experiment is dead, the terminal entry's reason matches the `Outcome` line. Design decision 3 puts this upstream of layout deliberately. (→ 1.6, 1.7)
 - [ ] 4.5 Automated: the append writer inserts only unapproved rows; running the job twice over the same month produces no duplicate; a hand-edited row is byte-identical after a run. (→ 1.8, 1.9)
 - [ ] 4.6 Automated: a month with only hub-wide commits yields zero entries (fixture: BDE's `fdda7ba`, `a78ef49`, `0d25a7c`). (→ 1.10)
-- [ ] 4.7 `tsc --noEmit` clean; full vitest suite green.
+- [ ] 4.7 `tsc --noEmit` clean; full vitest suite green. *(Read-path slice: my files typecheck clean and 565 tests pass. Two pre-existing failures unrelated to this change — `EtsySyncPanel` + `app/dev/mvds` both fail on `@beckharrisdesign/mvds`, the unadopted shared package, on `main` too.)*

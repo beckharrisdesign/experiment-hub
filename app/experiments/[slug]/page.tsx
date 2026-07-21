@@ -11,6 +11,11 @@ import {
   PUBLIC_FIELD_ALLOWLIST,
   type ExperimentField,
 } from "@/lib/notion-experiments";
+import {
+  getHistoryForExperiment,
+  hasNotionHistory,
+  type HistoryEntry,
+} from "@/lib/notion-history";
 import { requireAdminCookie } from "@/lib/admin-auth";
 
 // Mark this route as dynamic to ensure it's always rendered on-demand
@@ -28,6 +33,38 @@ function Statement({ label, value }: ExperimentField) {
         {value}
       </p>
     </div>
+  );
+}
+
+/**
+ * The History band: a vertical scan line of dated milestones below the
+ * narrative statements. Month dates sit in a fixed 88px mono/tabular gutter
+ * (stacked above the sentence on small screens); sentences run on the 720px
+ * measure, oldest first. Renders nothing when there are no approved entries.
+ */
+function History({ entries }: { entries: HistoryEntry[] }) {
+  if (entries.length === 0) return null;
+  return (
+    <section className="max-w-[720px]">
+      <div className="text-xs font-medium uppercase tracking-[0.08em] text-text-dark-secondary">
+        History
+      </div>
+      <ol className="mt-4 flex flex-col gap-4">
+        {entries.map((entry) => (
+          <li
+            key={`${entry.date}-${entry.milestone}`}
+            className="flex flex-col sm:flex-row sm:gap-4"
+          >
+            <span className="w-[88px] shrink-0 font-mono text-[13px] tabular-nums text-text-dark-secondary sm:text-right">
+              {entry.month}
+            </span>
+            <span className="text-sm leading-[1.7] text-text-dark">
+              {entry.milestone}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 
@@ -73,12 +110,26 @@ export default async function ExperimentDetailPage({
       })) ?? [])
     : [];
 
+  const history = hasNotionHistory()
+    ? ((await getHistoryForExperiment(slug).catch((error) => {
+        console.error(
+          `[ExperimentDetailPage] Notion history fetch failed for "${slug}":`,
+          error,
+        );
+        return [];
+      })) ?? [])
+    : [];
+
   const present = new Set(statements.map((field) => field.label));
   const missing = PUBLIC_FIELD_ALLOWLIST.filter((label) => !present.has(label));
-  // The narrative band renders when there is something to show — real
-  // statements, or (in edit mode) ghost prompts for what's missing. When a
-  // public page has all three empty, the band is dropped entirely.
-  const showNarrative = statements.length > 0 || (editMode && missing.length > 0);
+  // The content band renders when there is something to show — real
+  // statements, (in edit mode) ghost prompts for what's missing, or approved
+  // History entries. When a public page has none of these, the band is dropped
+  // entirely and the dark hero stays flush to the footer.
+  const showNarrative =
+    statements.length > 0 ||
+    history.length > 0 ||
+    (editMode && missing.length > 0);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -129,6 +180,7 @@ export default async function ExperimentDetailPage({
             ))}
             {editMode &&
               missing.map((label) => <GhostPrompt key={label} label={label} />)}
+            <History entries={history} />
           </div>
         </main>
       )}
