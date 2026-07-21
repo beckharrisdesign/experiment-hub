@@ -5,9 +5,9 @@
 See [proposal.md](../../proposal.md) — each experiment detail page carries a dated, evidence-linked History reconstructing where the project (and Katy's thinking) was over time. Generate-then-approve: drafts are assembled from real repo evidence; every published entry is approved and editable in Notion.
 
 - **Who:** Outside readers who want the journey (a hiring manager reading a case study that wrote itself), and Katy hanging context on each experiment as she lives it.
-- **Job:** History sits below the `stop-the-leaks` narrative statements, renders read-only, and is silent when empty.
+- **Job:** History sits below the `stop-the-leaks` narrative statements, renders read-only, and is silent when empty. It accumulates on its own; Katy approves rather than authors from scratch.
 - **Done when:** the five requirements below hold on the detail page.
-- **Not doing:** homepage timeline, per-day granularity, chat-transcript mining, auto-publish, link-artifact chips (v1).
+- **Not doing:** homepage timeline, per-day granularity, chat-transcript mining, auto-publish, link-artifact chips (v1). Scheduled *overwriting* is out — accumulation is append-only.
 
 ## ADDED Requirements
 
@@ -44,16 +44,21 @@ Each rendered entry SHALL originate from an approved Notion record; unapproved o
 
 ### Requirement: Drafts are assembled from real evidence, never invented
 
-A repo-local draft generator proposes candidate entries at rollup grain from real sources — the `experiment-hub` PR archive (filtered per experiment by title/paths), path-scoped `git log -- experiments/{slug}/`, and genuine external repos — and writes nothing to Notion. Counts are countable; dates are real. "Synthetic" describes assembly, never invention.
+A draft generator proposes candidate entries at rollup grain from real sources: path-scoped `git log -- experiments/{slug}/` (primary — hub history is intact to 2025-11-12), the `experiment-hub` PR archive filtered by title/paths, **the experiment's Figma file — named versions, numbered iteration pages, and comment threads**, and genuine external repos where one exists. Counts are countable; dates are real. "Synthetic" describes assembly, never invention.
 
-**Fails until:** running the generator on an experiment emits rollup candidate entries (e.g. "pushed 5 PRs focused on foundations") sourced from actual PRs/commits, and makes zero Notion writes.
+**Fails until:** the generator emits rollup candidate entries (e.g. "pushed 5 PRs focused on foundations", "third iteration of the landing approved in Figma") sourced from actual commits, PRs, and Figma versions.
 
-The generator SHALL derive entries only from real repository evidence and SHALL NOT publish; a human approves each entry in Notion before it can render.
+The generator SHALL derive entries only from real evidence and SHALL NOT publish; a human approves each entry in Notion before it can render.
 
 #### Scenario: Generator proposes, never publishes
 
-- **WHEN** Katy runs the draft generator against an experiment's repo history
-- **THEN** it outputs candidate rollup milestones drawn from real PRs/commits for her review, and writes nothing to Notion
+- **WHEN** the draft generator runs against an experiment's history
+- **THEN** it outputs candidate rollup milestones drawn from real commits, PRs, and Figma versions, every one of them unapproved
+
+#### Scenario: Design iteration counts as evidence
+
+- **WHEN** an experiment's Figma file carries named versions or numbered iteration pages
+- **THEN** those are eligible source material for entries — design iteration is first-class history, not decoration (unlabeled autosave points are ignored as noise)
 
 #### Scenario: Chat transcripts are never mined
 
@@ -77,3 +82,26 @@ A result-claiming entry SHALL contain its supporting figure inline; a terminal e
 
 - **WHEN** an experiment is dead and has a terminal History entry
 - **THEN** that entry's reason agrees with the `Outcome` line — one honesty rule, no drift between surfaces
+
+### Requirement: Entries accumulate on a schedule without publishing
+
+History accretes on its own. A scheduled job appends draft entries as work happens, so an experiment's story exists by the time it ships or dies — without Katy remembering to run anything. Accumulation and publication are separate: the job only ever inserts unapproved rows, and never modifies or deletes an existing one.
+
+**Fails until:** a month of activity produces a draft entry in Notion with no human action, that entry does not render publicly, and a previously edited entry is byte-identical after the job runs.
+
+The job SHALL run monthly, SHALL insert only with `Approved` unchecked, and SHALL NOT update or delete existing entries. It SHALL run outside the hub app — the hub's read path stays write-free.
+
+#### Scenario: A month of work appears as a draft
+
+- **WHEN** an experiment has commits, merged PRs, or Figma versions in a given month
+- **THEN** the job appends one rollup draft entry for that month, unapproved, and it does not appear on the public page
+
+#### Scenario: Katy's edits are never clobbered
+
+- **WHEN** the job runs against an experiment whose entries she has already edited or approved
+- **THEN** those rows are untouched — the job appends only, so approved wording never churns
+
+#### Scenario: A quiet month adds nothing
+
+- **WHEN** an experiment has no real activity in a month, or only hub-wide changes that swept its paths incidentally
+- **THEN** no entry is created — silence is accurate, and inventing activity would misrepresent a stalled experiment as live
