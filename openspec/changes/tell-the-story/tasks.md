@@ -9,7 +9,7 @@
 Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current ask is **0.1**; everything below waits its turn.
 
 1. ~~**0.1 — Notion storage shape.**~~ ✅ approved by Katy 2026-07-21 — new related table.
-2. **2.3 — exemplar experiment.** Etsy → Notion Sync (richest PR trail) vs Best Day Ever. ← asking now
+2. ~~**2.3 — exemplar experiment.**~~ ✅ **Best Day Ever**, chosen by Katy 2026-07-21 — the "purest" experiment; she wants its narrative trail visible.
 3. Branch naming for this PR (cosmetic — will drop unless raised).
 4. GitHub MCP re-auth + the stale `mcp__github__*` allowlist entries in `.claude/settings.json` (optional; `gh` works today — see the scratchpad tee-up).
 
@@ -54,15 +54,17 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
   - Database: https://app.notion.com/p/85a672d61e1c48449e09755a5fdfa8af
   - Data source: `b68916bb-235e-411b-827d-7dfc0c0f0a07`
 - [ ] 2.2 Add the data source ID above to env as `NOTION_HISTORY_DATA_SOURCE_ID` (local `.env.local` + Vercel). Follows the `NOTION_EXPERIMENTS_DATA_SOURCE_ID` pattern in [lib/notion-experiments.ts:279](../../../lib/notion-experiments.ts:279). ⚠️ Also confirm the hub's Notion integration has access to the new database — Notion integrations are granted per-page, so a new DB is invisible to the app until shared with it.
-- [ ] 2.3 Author the exemplar history by hand — one experiment, 5–10 entries — to validate the shape before the generator exists. Proposal suggests **Etsy → Notion Sync** (richest real PR trail: #300, #302, #305, #312, #313) or Best Day Ever.
-- [ ] 2.4 ⚠️ Note for §3.4: the repo property is lowercase **`repo`** (text), not `Repo`. Per the proposal it is unreliable — Best Day Ever's points at a nonexistent repo — so the generator must verify before trusting it.
+- [ ] 2.3 Author the exemplar history by hand — **Best Day Ever** (chosen 2026-07-21), ~5–7 entries — to validate the shape before the generator exists. Evidence gathered: 22 commits, 2026-03-09 → 2026-07-20, in four clusters (one-day launch → polish → 2026-04-20 pricing pivot → silence after 04-26). Raw material in the session scratchpad `best-day-ever-evidence.md`.
+  - ⚠️ The trail can't answer *why*: what phase-1 actually got, what prompted the 2026-04-20 pivot, and whether BDE is dead/paused/waiting. Those are Katy's to write, and the last one gates Requirement 4 (terminal entry must agree with `Outcome`).
+- [ ] 2.4 ⚠️ Note for §3.4: the repo property is lowercase **`repo`** (text), not `Repo`. It is unreliable — Best Day Ever's points at a nonexistent repo — so the generator must verify before trusting it. Moot for BDE now that hub history is confirmed intact (see §3.4).
 
 ## 3. Implementation
 
 - [ ] 3.1 New adapter `lib/notion-history.ts` (sibling, not an extension of `notion-experiments.ts` — different data source, different cache): `getHistoryForExperiment(slug)` returns `{ date, milestone }[]`, filtered to `Approved === true`, sorted date-ascending. Reuse the 60s TTL cache pattern. Read-only — **no write path exists in this module**. (→ 1.1, 1.3)
 - [ ] 3.2 Month-date formatting helper: render `Date` as `Mon YYYY` (e.g. "Mar 2026"), ignoring day precision. Guard against missing/malformed dates by skipping the entry rather than rendering `Invalid Date`. (→ 1.1)
 - [ ] 3.3 `app/experiments/[slug]/page.tsx`: History band below the narrative statements, above the footer. Per [design.md](design.md): fixed **88px** left gutter, dates mono/tabular **13px** muted right-aligned, sentences **14px** Inter on the **720px** measure, `HISTORY` uppercase label matching the statements' treatment. Zero approved entries → render nothing at all, no heading. At S (480px) collapse the gutter to stacked date-over-sentence, keeping the mono/tabular date. (→ 1.1, 1.2)
-- [ ] 3.4 Draft generator `scripts/draft-history.ts` (repo-local CLI, **not** a hub route): reads the `experiment-hub` PR archive via `gh pr list` (survives the git truncation back to PR #1, March 2026) filtered per experiment by title/paths, plus path-scoped `git log -- experiments/{slug}/`, plus a genuine external repo where one exists and is verified (§2.4). Emits rollup candidates ("pushed 5 PRs focused on foundations") to stdout/markdown for Katy to paste and edit in Notion. **No Notion client import in this file** — that's the structural guarantee behind 1.4. (→ 1.4)
+- [ ] 3.4 Draft generator `scripts/draft-history.ts` (repo-local CLI, **not** a hub route). **Primary source is path-scoped `git log -- experiments/{slug}/`** — history is intact to 2025-11-12 (verified 2026-07-21; proposal's truncation claim retracted), so this alone carries the trail. Supplement with `gh pr list` filtered by title/paths, and a genuine external repo only where one exists and is verified (§2.4). Emits rollup candidates ("pushed 5 PRs focused on foundations") to stdout/markdown for Katy to paste and edit in Notion. **No Notion client import in this file** — that's the structural guarantee behind 1.4. (→ 1.4)
+  - Rollup logic must distinguish **experiment-specific** commits from **hub-wide** ones that sweep the folder incidentally (BDE has 3 such: `fdda7ba`, `a78ef49`, `0d25a7c`). Counting those as activity would invent a story — it would show BDE "active" in July when it has been quiet since April.
 - [ ] 3.5 Generator source allowlist is explicit and commented: commits, PRs, release notes only. No transcript/session/chat path is read. (→ 1.5)
 
 ## 4. QA
