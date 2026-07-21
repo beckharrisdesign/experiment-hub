@@ -8,14 +8,14 @@
 
 Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current ask is **0.1**; everything below waits its turn.
 
-1. **0.1 — Notion storage shape.** ← asking now
-2. **2.3 — exemplar experiment.** Etsy → Notion Sync (richest PR trail) vs Best Day Ever. Ask after 0.1 lands.
+1. ~~**0.1 — Notion storage shape.**~~ ✅ approved by Katy 2026-07-21 — new related table.
+2. **2.3 — exemplar experiment.** Etsy → Notion Sync (richest PR trail) vs Best Day Ever. ← asking now
 3. Branch naming for this PR (cosmetic — will drop unless raised).
 4. GitHub MCP re-auth + the stale `mcp__github__*` allowlist entries in `.claude/settings.json` (optional; `gh` works today — see the scratchpad tee-up).
 
 ## 0. Storage-shape decision (resolve first)
 
-- [ ] 0.1 **Decide: related database, not row properties or child blocks.** Recommendation below; confirm before building.
+- [x] 0.1 **Decided 2026-07-21 (Katy): related database**, not row properties or child blocks. Rationale below; created as §2.1.
 
   Live schema (verified 2026-07-21, data source `collection://399b908d-7b37-80cb-beb5-000b54ca2967`) has no timeline field, and none of the existing 24 properties can carry 5–10 dated entries.
 
@@ -50,8 +50,10 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 
 ## 2. Notion setup (manual, gating §3)
 
-- [ ] 2.1 Create the "BHD Labs History" database per §0.1 under **Beck Harris Design** (parent page `19fb908d-7b37-8012-9d88-e8a981556626`), alongside BHD Labs Database.
-- [ ] 2.2 Add its data source ID to env as `NOTION_HISTORY_DATA_SOURCE_ID` (local `.env.local` + Vercel). Follows the `NOTION_EXPERIMENTS_DATA_SOURCE_ID` pattern in [lib/notion-experiments.ts:279](../../../lib/notion-experiments.ts:279).
+- [x] 2.1 **Created 2026-07-21** — "BHD Labs History" under **Beck Harris Design**, schema per §0.1. Two-way relation to BHD Labs Database (adds a synced `History` property there, so entries are visible from the experiment row too).
+  - Database: https://app.notion.com/p/85a672d61e1c48449e09755a5fdfa8af
+  - Data source: `b68916bb-235e-411b-827d-7dfc0c0f0a07`
+- [ ] 2.2 Add the data source ID above to env as `NOTION_HISTORY_DATA_SOURCE_ID` (local `.env.local` + Vercel). Follows the `NOTION_EXPERIMENTS_DATA_SOURCE_ID` pattern in [lib/notion-experiments.ts:279](../../../lib/notion-experiments.ts:279). ⚠️ Also confirm the hub's Notion integration has access to the new database — Notion integrations are granted per-page, so a new DB is invisible to the app until shared with it.
 - [ ] 2.3 Author the exemplar history by hand — one experiment, 5–10 entries — to validate the shape before the generator exists. Proposal suggests **Etsy → Notion Sync** (richest real PR trail: #300, #302, #305, #312, #313) or Best Day Ever.
 - [ ] 2.4 ⚠️ Note for §3.4: the repo property is lowercase **`repo`** (text), not `Repo`. Per the proposal it is unreliable — Best Day Ever's points at a nonexistent repo — so the generator must verify before trusting it.
 
