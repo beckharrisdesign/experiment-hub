@@ -2,11 +2,11 @@
 
 ## 1. User outcomes (from spec scenarios)
 
-- [ ] 1.1 Old links land on the homepage — visiting `/workflow` permanently redirects to `/`, no workflow content renders
-- [ ] 1.2 Header has no Workflow link — desktop and mobile navs offer Experiments · Scoring · Heuristics · Harness only
-- [ ] 1.3 Dead code and its tests are gone — no source file references the deleted modules; build and tests pass without them
-- [ ] 1.4 Tooltip matches reality — the score column tooltip describes the score without promising a breakdown view
-- [ ] 1.5 Suite passes after removal — type-check, build, and all tests green with no test expecting `/workflow` in the sitemap
+- [x] 1.1 Old links land on the homepage — verified live 2026-07-21: `curl -I labs.beckharrisdesign.com/workflow` → HTTP/2 308 → `/`
+- [x] 1.2 Header has no Workflow link — verified live 2026-07-21: homepage HTML contains zero `href="/workflow"`; nav renders Experiments · Scoring · Heuristics · Harness
+- [x] 1.3 Dead code and its tests are gone — repo sweep clean; CI (Feature tests ×2) green without them
+- [x] 1.4 Tooltip matches reality — copy now `{total}/25 across five scoring dimensions — see /scoring.` (code-verified; deployed with #316)
+- [x] 1.5 Suite passes after removal — CI green on #316 and on main post-merge; sitemap route list asserts 4 hub routes
 
 ## 2. Prototype shell
 
@@ -23,4 +23,4 @@
 ## 4. QA
 
 - [x] 4.1 Automated: `tsc --noEmit` clean; `vitest` suite passes — locally 512/512 tests pass with zero references to deleted modules (only failures were pre-existing `@beckharrisdesign/mvds` resolution in a fresh worktree, files untouched); CI authoritative pass on PR #316: Feature tests ×2, Live integration tests, Deploy hub all green.
-- [ ] 4.2 Manual walkthrough (dev server): `/workflow` redirects to `/`; header shows four items on desktop and in the mobile menu; score tooltip shows the new copy
+- [x] 4.2 Walkthrough performed against production (post-merge deploy) instead of dev server: redirect 308 ✓, four-item nav ✓, tooltip copy code-verified ✓
