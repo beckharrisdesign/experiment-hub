@@ -12,7 +12,7 @@ Visiting `/workflow` SHALL permanently redirect (308) to `/`; no workflow conten
 
 #### Scenario: Old links land on the homepage
 
-- **WHEN** a visitor opens `labs.beckharrisdesign.com/workflow` from an old link
+- **WHEN** a visitor opens `https://labs.beckharrisdesign.com/workflow` from an old link
 - **THEN** they are permanently redirected to `/` and no workflow content renders
 
 ### Requirement: Navigation no longer offers Workflow
