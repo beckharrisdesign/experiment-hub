@@ -51,7 +51,15 @@ function hasNotionAuth(): boolean {
 }
 
 export function hasNotionHistory(): boolean {
-  return !!(hasNotionAuth() && process.env.NOTION_HISTORY_DATA_SOURCE_ID);
+  // The experiments data source is also required: getHistoryForExperiment
+  // resolves slug -> experiment page id through the experiments adapter, so
+  // without it every request would fetch history, fail to resolve, and log.
+  // Gating on both keeps a half-configured deploy quiet instead of noisy.
+  return !!(
+    hasNotionAuth() &&
+    process.env.NOTION_HISTORY_DATA_SOURCE_ID &&
+    process.env.NOTION_EXPERIMENTS_DATA_SOURCE_ID
+  );
 }
 
 // ---------------------------------------------------------------------------

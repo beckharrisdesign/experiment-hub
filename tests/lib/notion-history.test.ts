@@ -1,8 +1,29 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
+// Mock the Notion client and the experiments adapter so the fetch/cache/env
+// behavior can be exercised without a network. vi.hoisted keeps the handles
+// available inside the hoisted vi.mock factories.
+const { queryMock, pageIdMock } = vi.hoisted(() => ({
+  queryMock: vi.fn(),
+  pageIdMock: vi.fn(),
+}));
+
+vi.mock("@/lib/notion", () => ({
+  getUncachableNotionClient: vi.fn(async () => ({
+    dataSources: { query: queryMock },
+  })),
+}));
+
+vi.mock("@/lib/notion-experiments", () => ({
+  getExperimentPageIdFromNotion: pageIdMock,
+}));
+
 import {
   formatMonthYear,
   mapHistoryPage,
   selectApprovedEntries,
+  getHistoryForExperiment,
+  clearNotionHistoryCache,
 } from "@/lib/notion-history";
 
 // ---------------------------------------------------------------------------
@@ -166,5 +187,81 @@ describe("selectApprovedEntries", () => {
       mapHistoryPage(row({ milestone: "Draft", approved: false })),
     ];
     expect(selectApprovedEntries(allDrafts, EXPERIMENT_ID)).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getHistoryForExperiment — fetch, pagination, cache, env gating
+// ---------------------------------------------------------------------------
+
+function queryPage(
+  milestone: string,
+  opts: { hasMore?: boolean; cursor?: string } = {},
+) {
+  return {
+    results: [
+      row({ milestone, date: "2026-03-09", experimentIds: [EXPERIMENT_ID] }),
+    ],
+    has_more: opts.hasMore ?? false,
+    next_cursor: opts.cursor ?? null,
+  };
+}
+
+describe("getHistoryForExperiment", () => {
+  beforeEach(() => {
+    vi.stubEnv("NOTION_HISTORY_DATA_SOURCE_ID", "hist-ds");
+    vi.stubEnv("NOTION_EXPERIMENTS_DATA_SOURCE_ID", "exp-ds");
+    clearNotionHistoryCache();
+    pageIdMock.mockResolvedValue(EXPERIMENT_ID);
+    queryMock.mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.clearAllMocks();
+  });
+
+  it("queries the configured history data source", async () => {
+    queryMock.mockResolvedValueOnce(queryPage("Launched"));
+    const entries = await getHistoryForExperiment("best-day-ever");
+    expect(entries.map((e) => e.milestone)).toEqual(["Launched"]);
+    expect(queryMock).toHaveBeenCalledWith(
+      expect.objectContaining({ data_source_id: "hist-ds" }),
+    );
+  });
+
+  it("paginates until has_more is false", async () => {
+    queryMock
+      .mockResolvedValueOnce(queryPage("First", { hasMore: true, cursor: "c1" }))
+      .mockResolvedValueOnce(queryPage("Second"));
+    const entries = await getHistoryForExperiment("best-day-ever");
+    expect(queryMock).toHaveBeenCalledTimes(2);
+    // Second call carries the cursor from the first page.
+    expect(queryMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ start_cursor: "c1" }),
+    );
+    expect(entries.map((e) => e.milestone).sort()).toEqual(["First", "Second"]);
+  });
+
+  it("caches within the TTL — a second call issues no new query", async () => {
+    queryMock.mockResolvedValueOnce(queryPage("Cached"));
+    await getHistoryForExperiment("best-day-ever");
+    await getHistoryForExperiment("best-day-ever");
+    expect(queryMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns [] without querying when the slug has no experiment row", async () => {
+    pageIdMock.mockResolvedValueOnce(null);
+    const entries = await getHistoryForExperiment("does-not-exist");
+    expect(entries).toEqual([]);
+    expect(queryMock).not.toHaveBeenCalled();
+  });
+
+  it("throws when the history data source env var is missing", async () => {
+    vi.stubEnv("NOTION_HISTORY_DATA_SOURCE_ID", "");
+    await expect(getHistoryForExperiment("best-day-ever")).rejects.toThrow(
+      /NOTION_HISTORY_DATA_SOURCE_ID/,
+    );
   });
 });

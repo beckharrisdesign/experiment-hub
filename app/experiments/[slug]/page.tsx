@@ -42,7 +42,11 @@ function Statement({ label, value }: ExperimentField) {
  * (stacked above the sentence on small screens); sentences run on the 720px
  * measure, oldest first. Renders nothing when there are no approved entries.
  */
-function History({ entries }: { entries: HistoryEntry[] }) {
+interface HistoryProps {
+  entries: HistoryEntry[];
+}
+
+function History({ entries }: HistoryProps) {
   if (entries.length === 0) return null;
   return (
     <section className="max-w-[720px]">
@@ -50,9 +54,13 @@ function History({ entries }: { entries: HistoryEntry[] }) {
         History
       </div>
       <ol className="mt-4 flex flex-col gap-4">
-        {entries.map((entry) => (
+        {entries.map((entry, index) => (
           <li
-            key={`${entry.date}-${entry.milestone}`}
+            // date+milestone isn't guaranteed unique (a repeated milestone in
+            // one month is plausible); index disambiguates. The list is a
+            // static, deterministically-sorted server render, so index keys
+            // carry no reconciliation risk.
+            key={`${entry.date}-${index}`}
             className="flex flex-col sm:flex-row sm:gap-4"
           >
             <span className="w-[88px] shrink-0 font-mono text-[13px] tabular-nums text-text-dark-secondary sm:text-right">

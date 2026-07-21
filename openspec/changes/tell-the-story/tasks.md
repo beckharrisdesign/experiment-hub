@@ -81,7 +81,7 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 
 ## 4. QA
 
-- [x] 4.1 Automated (vitest, `tests/lib/notion-history.test.ts`, 11 tests): unapproved filtered out; wrong-experiment filtered out; sort ascending regardless of return order; malformed/missing dates skipped; empty milestone skipped; nothing-qualifies returns `[]`. (→ 1.1, 1.2, 1.3)
+- [x] 4.1 Automated (vitest, `tests/lib/notion-history.test.ts`, 16 tests): pure helpers — unapproved filtered out; wrong-experiment filtered out; sort ascending regardless of return order; malformed/missing dates skipped; empty milestone skipped; nothing-qualifies returns `[]`. Plus adapter integration (mocked Notion client) — queries the configured data source, paginates until `has_more` is false, caches within the TTL, returns `[]` without querying for an unknown slug, and throws on a missing env var. (→ 1.1, 1.2, 1.3)
 - [ ] 4.2 Automated: generator rollup logic against fixture PR/commit data — counts match the fixture exactly (countable counts, real dates). Assert the module has no Notion write import. (→ 1.4, 1.5)
 - [ ] 4.3 Manual walkthrough on the running app: the exemplar experiment shows History below the statements with dates aligned in the gutter; an experiment with no entries shows no band and no heading; unchecking `Approved` in Notion removes that entry within the 60s cache window. (→ 1.1, 1.2, 1.3)
 - [ ] 4.4 Content review before publishing the exemplar (Katy, authoring-time — not enforced by code): every result-claiming entry carries its number inline; if the experiment is dead, the terminal entry's reason matches the `Outcome` line. Design decision 3 puts this upstream of layout deliberately. (→ 1.6, 1.7)
