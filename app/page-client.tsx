@@ -114,7 +114,7 @@ export default function HomePageClient({
           }
           const experimentSlug = getExperimentHrefSlug(experiment);
           return (
-            <Tooltip content={`${total}/25. Click to see breakdown.`} position="top">
+            <Tooltip content={`${total}/25 across five scoring dimensions — see /scoring.`} position="top">
               <Link
                 href={`/experiments/${experimentSlug}`}
                 data-analytics-event="experiment_score_click"

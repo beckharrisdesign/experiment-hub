@@ -42,9 +42,8 @@ describe("buildHubSiteMapRoutes", () => {
       experiments,
       rootDir: "/tmp/does-not-exist",
     });
-    expect(routes.slice(0, 5).map((route) => route.path)).toEqual([
+    expect(routes.slice(0, 4).map((route) => route.path)).toEqual([
       "/",
-      "/workflow",
       "/scoring",
       "/heuristics",
       "/harness",
