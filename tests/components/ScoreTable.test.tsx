@@ -104,16 +104,16 @@ describe("ScoreTable — sorting", () => {
   it("sorts descending on first click of a sortable header", () => {
     render(<ScoreTable rows={ROWS} columns={COLUMNS} rowKey={(r) => r.id} />);
 
-    fireEvent.click(screen.getByRole("columnheader", { name: /Name/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Name/ }));
     expect(rowOrder()).toEqual(["gamma", "beta", "alpha"]);
   });
 
   it("toggles direction on a second click of the same header", () => {
     render(<ScoreTable rows={ROWS} columns={COLUMNS} rowKey={(r) => r.id} />);
 
-    const header = screen.getByRole("columnheader", { name: /Name/ });
-    fireEvent.click(header);
-    fireEvent.click(header);
+    const button = screen.getByRole("button", { name: /Name/ });
+    fireEvent.click(button);
+    fireEvent.click(button);
     expect(rowOrder()).toEqual(["alpha", "beta", "gamma"]);
   });
 
@@ -121,16 +121,20 @@ describe("ScoreTable — sorting", () => {
     render(<ScoreTable rows={ROWS} columns={COLUMNS} rowKey={(r) => r.id} />);
 
     const header = screen.getByRole("columnheader", { name: /Score/ });
-    fireEvent.click(header);
+    const button = screen.getByRole("button", { name: /Score/ });
+
+    fireEvent.click(button);
     expect(header).toHaveAttribute("aria-sort", "descending");
 
-    fireEvent.click(header);
+    fireEvent.click(button);
     expect(header).toHaveAttribute("aria-sort", "ascending");
   });
 
   it("ignores clicks on a column with no sortValue", () => {
     render(<ScoreTable rows={ROWS} columns={COLUMNS} rowKey={(r) => r.id} />);
 
+    // Non-sortable columns render no button at all, so there is nothing to click.
+    expect(screen.queryByRole("button", { name: /Static/ })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("columnheader", { name: /Static/ }));
     expect(rowOrder()).toEqual(["beta", "alpha", "gamma"]);
   });
@@ -139,8 +143,36 @@ describe("ScoreTable — sorting", () => {
     const rows = [...ROWS];
     render(<ScoreTable rows={rows} columns={COLUMNS} rowKey={(r) => r.id} />);
 
-    fireEvent.click(screen.getByRole("columnheader", { name: /Score/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Score/ }));
     expect(rows.map((r) => r.id)).toEqual([1, 2, 3]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Keyboard accessibility
+// ---------------------------------------------------------------------------
+
+describe("ScoreTable — keyboard access", () => {
+  it("exposes each sortable column as a focusable button", () => {
+    render(<ScoreTable rows={ROWS} columns={COLUMNS} rowKey={(r) => r.id} />);
+
+    // Two sortable columns; the static one must not be a control.
+    expect(screen.getAllByRole("button")).toHaveLength(2);
+    expect(screen.getByRole("button", { name: /Name/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Score/ })).toBeInTheDocument();
+  });
+
+  it("sorts when a header button is activated by keyboard", () => {
+    render(<ScoreTable rows={ROWS} columns={COLUMNS} rowKey={(r) => r.id} />);
+
+    const button = screen.getByRole("button", { name: /Name/ });
+    button.focus();
+    expect(button).toHaveFocus();
+
+    // A native button fires click on Enter/Space, which is precisely why the
+    // handler lives on a button rather than the <th>.
+    fireEvent.click(button);
+    expect(rowOrder()).toEqual(["gamma", "beta", "alpha"]);
   });
 });
 

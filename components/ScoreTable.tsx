@@ -88,20 +88,27 @@ export default function ScoreTable<T>({
   emptyMessage,
   rowClassName,
 }: ScoreTableProps<T>) {
-  const [sortColumn, setSortColumn] = useState<string | null>(
-    defaultSortKey ?? null,
-  );
-  const [sortDirection, setSortDirection] =
-    useState<SortDirection>(defaultSortDirection);
+  // Key and direction live in one state object so a toggle is a single
+  // functional update. Two clicks landing in the same batch (fast
+  // double-click) would otherwise both read the same captured direction and
+  // toggle only once.
+  const [sort, setSort] = useState<{
+    key: string | null;
+    direction: SortDirection;
+  }>({ key: defaultSortKey ?? null, direction: defaultSortDirection });
+
+  const { key: sortColumn, direction: sortDirection } = sort;
 
   const handleSort = (column: ScoreTableColumn<T>) => {
     if (!column.sortValue) return;
-    if (sortColumn === column.key) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortColumn(column.key);
-      setSortDirection("desc");
-    }
+    setSort((current) =>
+      current.key === column.key
+        ? {
+            key: current.key,
+            direction: current.direction === "asc" ? "desc" : "asc",
+          }
+        : { key: column.key, direction: "desc" },
+    );
   };
 
   const sortedRows = useMemo(() => {
@@ -154,16 +161,30 @@ export default function ScoreTable<T>({
                 </div>
               );
 
+              // Sortable headers wrap their label in a real <button> so
+              // keyboard users get focus and Enter/Space activation for free —
+              // a click handler on the <th> alone is mouse-only.
+              const content = sortable ? (
+                <button
+                  type="button"
+                  onClick={() => handleSort(column)}
+                  // [font:inherit] keeps the <th>'s type ramp — a bare
+                  // <button> would otherwise reset family, size and weight.
+                  className="w-full cursor-pointer bg-transparent p-0 text-inherit [font:inherit]"
+                >
+                  {label}
+                </button>
+              ) : (
+                label
+              );
+
               return (
                 <th
                   key={column.key}
                   scope="col"
                   className={`${column.compact ? HEADER_COMPACT : HEADER_BASE} ${
-                    sortable
-                      ? "cursor-pointer hover:bg-background-secondary"
-                      : ""
+                    sortable ? "hover:bg-background-secondary" : ""
                   }`}
-                  onClick={sortable ? () => handleSort(column) : undefined}
                   aria-sort={
                     sortColumn === column.key && sortable
                       ? sortDirection === "asc"
@@ -174,10 +195,10 @@ export default function ScoreTable<T>({
                 >
                   {column.headerTooltip ? (
                     <Tooltip content={column.headerTooltip} position="bottom">
-                      {label}
+                      {content}
                     </Tooltip>
                   ) : (
-                    label
+                    content
                   )}
                 </th>
               );

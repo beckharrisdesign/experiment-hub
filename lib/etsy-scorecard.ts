@@ -3,10 +3,10 @@
  * (openspec/changes/etsy-zero-sales-funnel).
  *
  * Pure functions only — no I/O, no Supabase, no fetch. The server component
- * reads snapshots (see `getLatestListingSnapshots` in lib/etsy-scorecard-data.ts)
- * and passes raw listing JSON through `scoreListing`, then orders the results
- * with `rankFixPriority`. Keeping this module I/O-free is what makes the
- * thresholds unit-testable without a database.
+ * reads snapshots (`getLatestListingSnapshots` in lib/etsy-sync.ts, which owns
+ * the service-role client) and passes raw listing JSON through `scoreListing`,
+ * then orders the results with `rankFixPriority`. Keeping this module I/O-free
+ * is what makes the thresholds unit-testable without a database.
  *
  * Two tiers, per design decision 4:
  *   Tier A — publishable gate. Binary. A listing failing any Tier-A criterion
