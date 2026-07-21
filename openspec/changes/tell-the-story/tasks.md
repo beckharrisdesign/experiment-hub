@@ -4,6 +4,15 @@
 >
 > **Open decision carried from [design.md](design.md) §Risks — resolved below in §0. §0.1 needs Katy's sign-off before §2 or §3 start.**
 
+## Parked decisions (queue — ask one at a time, never bundled)
+
+Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current ask is **0.1**; everything below waits its turn.
+
+1. **0.1 — Notion storage shape.** ← asking now
+2. **2.3 — exemplar experiment.** Etsy → Notion Sync (richest PR trail) vs Best Day Ever. Ask after 0.1 lands.
+3. Branch naming for this PR (cosmetic — will drop unless raised).
+4. GitHub MCP re-auth + the stale `mcp__github__*` allowlist entries in `.claude/settings.json` (optional; `gh` works today — see the scratchpad tee-up).
+
 ## 0. Storage-shape decision (resolve first)
 
 - [ ] 0.1 **Decide: related database, not row properties or child blocks.** Recommendation below; confirm before building.
