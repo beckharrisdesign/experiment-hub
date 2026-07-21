@@ -29,6 +29,17 @@ Match [github-workflow.mdc](github-workflow.mdc): one branch per logical unit na
 
 **`/opsx:apply`:** Implement tasks; when apply **finishes**, commit + push + a **ready-for-review** PR (not draft, so Copilot reviews immediately — see [`github-workflow.mdc`](github-workflow.mdc)) per the active schema’s **`apply.instruction`** (returned by `openspec instructions apply --json`) and [`skills/openspec-apply-change.md`](../skills/openspec-apply-change.md) step 8. **`/opsx:propose`** does not commit; artifacts stay local until apply.
 
+## Scope pivots
+
+When Katy redirects a change's scope mid-flight (e.g. "rewrite the page" becomes "remove the page"):
+
+- **Rename the change directory** to describe what the change now does (`git mv openspec/changes/<old> openspec/changes/<new>`) — the change id should stay truthful, not historical.
+- **Rewrite the proposal** to the new scope, and quote the redirecting sentence **verbatim** as the new (or leading) Human anchor — the pivot instruction is founder intent.
+- **Record the pivot in the proposal**, one or two lines: what it began as, what redirected it, and where superseded work lives (Figma pages, Notion docs) so nothing explored is lost.
+- **Retitle/re-body the open PR** to match; superseded design artifacts stay in their file as a parked record, not deleted.
+
+(Precedent: `method-page` → `remove-workflow-page`, 2026-07-21.)
+
 ## Figma and `design.md`
 
 UI-impacting changes MUST document design context in `design.md` (see [figma.mdc](figma.mdc) § OpenSpec).
