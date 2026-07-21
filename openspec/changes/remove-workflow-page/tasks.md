@@ -22,5 +22,5 @@
 
 ## 4. QA
 
-- [ ] 4.1 Automated: `tsc --noEmit` clean; `vitest` suite passes — locally: 512/512 tests pass, zero references to deleted modules; the only failures (2 tsc errors, 1 test file) are pre-existing `@beckharrisdesign/mvds` resolution in this fresh worktree (files untouched by this change). CI is the authoritative pass.
+- [x] 4.1 Automated: `tsc --noEmit` clean; `vitest` suite passes — locally 512/512 tests pass with zero references to deleted modules (only failures were pre-existing `@beckharrisdesign/mvds` resolution in a fresh worktree, files untouched); CI authoritative pass on PR #316: Feature tests ×2, Live integration tests, Deploy hub all green.
 - [ ] 4.2 Manual walkthrough (dev server): `/workflow` redirects to `/`; header shows four items on desktop and in the mobile menu; score tooltip shows the new copy
