@@ -16,17 +16,6 @@ const STATIC_ROUTES = Object.freeze([
     sortIndex: 0,
   },
   {
-    id: "route:workflow",
-    path: "/workflow",
-    title: "Workflow",
-    group: "Hub",
-    pageType: "top-level",
-    parentId: "route:home",
-    depth: 1,
-    optional: false,
-    sortIndex: 10,
-  },
-  {
     id: "route:scoring",
     path: "/scoring",
     title: "Scoring",
