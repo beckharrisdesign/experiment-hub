@@ -13,6 +13,16 @@ const nextConfig = {
     'localhost',
     '127.0.0.1',
   ],
+  async redirects() {
+    return [
+      {
+        // /workflow removed 2026-07 (remove-workflow-page); method narrative lives in Notion
+        source: '/workflow',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
