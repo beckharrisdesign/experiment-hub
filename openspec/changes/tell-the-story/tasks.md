@@ -61,8 +61,24 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
   - Database: https://app.notion.com/p/85a672d61e1c48449e09755a5fdfa8af
   - Data source: `b68916bb-235e-411b-827d-7dfc0c0f0a07`
 - [ ] 2.2 Add the data source ID above to env as `NOTION_HISTORY_DATA_SOURCE_ID` (local `.env.local` + Vercel). Follows the `NOTION_EXPERIMENTS_DATA_SOURCE_ID` pattern in [`lib/notion-experiments.ts` L279](../../../lib/notion-experiments.ts). ⚠️ Also confirm the hub's Notion integration has access to the new database — Notion integrations are granted per-page, so a new DB is invisible to the app until shared with it.
-- [ ] 2.3 Author the exemplar history by hand — **Best Day Ever** (chosen 2026-07-21), ~5–7 entries — to validate the shape before the generator exists. Evidence gathered: 22 commits, 2026-03-09 → 2026-07-20, in four clusters (one-day launch → polish → 2026-04-20 pricing pivot → silence after 04-26). Raw material in the session scratchpad `best-day-ever-evidence.md`.
-  - ⚠️ The trail can't answer *why*: what phase-1 actually got, what prompted the 2026-04-20 pivot, and whether BDE is dead/paused/waiting. Those are Katy's to write, and the last one gates Requirement 4 (terminal entry must agree with `Outcome`).
+- [ ] 2.3 Author the exemplar history by hand — **Best Day Ever** (chosen 2026-07-21), ~5–7 entries — to validate the shape before the generator exists. Evidence below (folded in from session scratch so it travels with the change).
+
+  **The trail** — 22 commits under `experiments/best-day-ever/`, `public/landing/best-day-ever/`, and its test, spanning 2026-03-09 → 2026-07-20 (hub history is intact to 2025-11-12; see §3.4). Four clusters:
+
+  | Cluster | When | What the commits show |
+  | --- | --- | --- |
+  | **Launch, one day** | 2026-03-09 | PRD (tactile-first framing), landing content, ad-campaign content, and a deployed phase-1 landing with Vercel CI/CD — all in a single day. Fastest zero-to-live in the trail. |
+  | **Polish & rigor** | 2026-03-23 → 03-30 | Voice & tone copy audit, inline-SVG fixes, landing-submission API tests, removed a welcome-email reference. The work of someone expecting real traffic. |
+  | **The reframe** | 2026-04-20 → 04-26 | Pricing removed from the PRD, validation refocused on demand, business case + Overview revised, PRD outcomes leaned. A documented change of mind ~3 weeks after launch. |
+  | **Silence** | after 2026-04-26 | No BDE-specific work. Every later commit touching these paths is hub-wide infra that swept the folder incidentally (`fdda7ba`, `a78ef49`, `0d25a7c` — the §3.4 quiet-month fixtures). |
+
+  Suggested ~5–7 entries: one per cluster + the launch + a terminal entry. Any result claim carries its number inline or it doesn't ship.
+
+  - ⚠️ **The trail can't answer *why* — only Katy can, and this is the whole point of the exemplar:**
+    - What phase-1 actually got (visits/signups) — no analytics numbers live in the repo.
+    - What prompted the 2026-04-20 reframe.
+    - Where BDE stands. Per [[project_best_day_ever_stalled]]: it's **stalled in Validating** — she drafted the ad campaign but balked at running it, because it relied on an email-list signup she didn't believe in. That principled stop is invisible in the commits and is the strongest entry the page can carry. It's also the terminal entry, which gates Requirement 4 (must agree with `Outcome`).
+    - Note: Notion `Status` reads "Validating" but the enum has no paused/stalled/dead value — a gap that belongs to `publish-the-graveyard`, not here.
 - [ ] 2.4 ⚠️ Note for §3.4: the repo property is lowercase **`repo`** (`rich_text`), not `Repo`. It is unreliable — Best Day Ever's points at a nonexistent repo — so the generator must verify before trusting it. Moot for BDE now that hub history is confirmed intact (see §3.4).
 
 ## 3. Implementation
