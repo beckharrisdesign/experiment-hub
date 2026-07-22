@@ -1,0 +1,80 @@
+name: Accumulate experiment history
+
+# Appends month-grained DRAFT History milestones to the "BHD Labs History"
+# Notion database. Every appended row is UNAPPROVED — nothing renders publicly
+# until Katy checks Approved in Notion.
+#
+# ⚠️ MANUAL TRIGGER ONLY, for now. The monthly `schedule` below is intentionally
+# commented out until the first live run is reviewed and approved. To turn on
+# accumulation, uncomment it — the job is insert-only and watermarked, so a
+# scheduled run only ever adds months it hasn't added before.
+#
+# ⚠️ SECRETS: needs a Notion token with access to BOTH the History and
+# Experiments data sources, plus their ids. Before adding new secrets, check
+# whether the hub already stores a Notion token in Actions secrets and reuse it.
+#   NOTION_TOKEN, NOTION_HISTORY_DATA_SOURCE_ID, NOTION_EXPERIMENTS_DATA_SOURCE_ID
+# Until these exist, a run with write=true fails fast (missing-env guard) —
+# which is safe: it cannot partially write.
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Experiment slug (e.g. best-day-ever)"
+        required: true
+        type: string
+      write:
+        description: "Actually create rows? Leave false for a dry run."
+        required: true
+        type: boolean
+        default: false
+  # schedule:
+  #   # 06:00 UTC on the 1st of each month. Uncomment to enable accumulation.
+  #   - cron: "0 6 1 * *"
+
+jobs:
+  accumulate:
+    name: Append draft history
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so `git log -- experiments/<slug>/` sees the whole
+          # trail, not just recent commits.
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Append history (dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_HISTORY_DATA_SOURCE_ID: ${{ secrets.NOTION_HISTORY_DATA_SOURCE_ID }}
+          NOTION_EXPERIMENTS_DATA_SOURCE_ID: ${{ secrets.NOTION_EXPERIMENTS_DATA_SOURCE_ID }}
+          # gh (PR evidence) authenticates with the workflow token.
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          pnpm exec tsx scripts/append-history.ts
+          "${{ inputs.slug }}"
+          ${{ inputs.write && '--write' || '' }}
+
+      # When the monthly schedule is enabled, it accumulates the exemplar first.
+      # Extend to more slugs (or loop over a list) once the pattern is trusted.
+      - name: Append history (scheduled — best-day-ever)
+        if: github.event_name == 'schedule'
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_HISTORY_DATA_SOURCE_ID: ${{ secrets.NOTION_HISTORY_DATA_SOURCE_ID }}
+          NOTION_EXPERIMENTS_DATA_SOURCE_ID: ${{ secrets.NOTION_EXPERIMENTS_DATA_SOURCE_ID }}
+          GH_TOKEN: ${{ github.token }}
+        run: pnpm exec tsx scripts/append-history.ts best-day-ever --write
