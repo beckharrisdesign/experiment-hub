@@ -10,7 +10,7 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 
 1. ~~**0.1 — Notion storage shape.**~~ ✅ approved by Katy 2026-07-21 — new related table.
 2. ~~**2.3 — exemplar experiment.**~~ ✅ **Best Day Ever**, chosen by Katy 2026-07-21 — the "purest" experiment; she wants its narrative trail visible.
-3. **3.6 — where the Figma file reference lives.** No per-experiment Figma property exists in Notion; options are a new property or deriving it from `design.md`. Ask when 3.6 is reached.
+3. ~~**3.6 — where the Figma file reference lives.**~~ ✅ resolved-by-moot 2026-07-22 — BDE has no Figma (landing-page-only), so the adapter isn't needed for the exemplar; deferred to a future Figma-rich experiment (see §3.6).
 4. Branch naming for this PR (cosmetic — will drop unless raised).
 5. GitHub MCP re-auth + the stale `mcp__github__*` allowlist entries in `.claude/settings.json` (optional; `gh` works today — see the scratchpad tee-up).
 
@@ -46,14 +46,14 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 - [x] 1.1 Approved entries render chronologically (ascending, month-level dates) — `selectApprovedEntries` sort + `formatMonthYear`, tested
 - [x] 1.2 No approved entries hides the section entirely — `History` returns null; `showNarrative` drops the band when statements + history are both empty
 - [x] 1.3 Only approved entries publish; unapproved/draft never render — `Approved === true` filter, tested
-- [ ] 1.4 Generator proposes rollup candidates, writes nothing to Notion
-- [ ] 1.5 Generator never mines chat/session transcripts
-- [ ] 1.6 A result-claiming entry without an inline number doesn't ship
-- [ ] 1.7 A dead experiment's terminal entry agrees with its `Outcome` kill reason
-- [ ] 1.8 A month of activity produces a draft entry with no human action
-- [ ] 1.9 Previously edited/approved entries are untouched by the job
-- [ ] 1.10 A quiet month (or hub-wide-only changes) adds nothing
-- [ ] 1.11 Figma named versions and numbered iteration pages count as evidence
+- [x] 1.4 Generator proposes rollup candidates, writes nothing to Notion — `scripts/draft-history.ts`, no Notion import (asserted by test)
+- [x] 1.5 Generator never mines chat/session transcripts — sources are git commits + PRs (+ Figma seam) only
+- [ ] 1.6 A result-claiming entry without an inline number doesn't ship — authoring-time rule (§4.4), not code
+- [ ] 1.7 A dead experiment's terminal entry agrees with its `Outcome` kill reason — authoring-time rule (§4.4), not code
+- [x] 1.8 A month of activity produces a draft entry with no human action — append writer + monthly Action (Action is manual-only until approved, see §3.9)
+- [x] 1.9 Previously edited/approved entries are untouched by the job — insert-only writer + month watermark, tested
+- [x] 1.10 A quiet month (or hub-wide-only changes) adds nothing — classifier + quiet-month rule, tested against BDE's real hub-wide commits
+- [ ] 1.11 Figma named versions and numbered iteration pages count as evidence — **deferred with §3.6** (seam wired; BDE has no Figma so it's moot for the exemplar; build against a Figma-rich experiment later)
 
 ## 2. Notion setup (manual, gating §3)
 
@@ -86,21 +86,24 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 - [x] 3.1 New adapter `lib/notion-history.ts` — `getHistoryForExperiment(slug)` returns `HistoryEntry[]` filtered to `Approved === true`, sorted date-ascending. Own 60s TTL cache. Read-only — **no write path in this module**. Resolves slug→page id via a new `getExperimentPageIdFromNotion` in the experiments adapter (History relates by page id, not slug). (→ 1.1, 1.3)
 - [x] 3.2 `formatMonthYear` — renders `Date` as `Mon YYYY`, ignoring day. Parses the string directly (timezone-agnostic) and returns null for missing/malformed dates so the entry is skipped, never `Invalid Date`. (→ 1.1)
 - [x] 3.3 `app/experiments/[slug]/page.tsx`: History band below the statements. 88px mono/tabular gutter (right-aligned, stacks over the sentence at `<sm`), 13px muted dates, `HISTORY` uppercase label. Empty → renders nothing. **Visual sign-off deferred to 4.3** — needs live entries + the env var, not observable locally. (→ 1.1, 1.2)
-- [ ] 3.4 Draft generator `scripts/draft-history.ts` (repo-local CLI, **not** a hub route). **Primary source is path-scoped `git log -- experiments/{slug}/`** — history is intact to 2025-11-12 (verified 2026-07-21; proposal's truncation claim retracted), so this alone carries the trail. Supplement with `gh pr list` filtered by title/paths, and a genuine external repo only where one exists and is verified (§2.4). Emits rollup candidates ("pushed 5 PRs focused on foundations") to stdout/markdown for Katy to paste and edit in Notion. **No Notion client import in this file** — that's the structural guarantee behind 1.4. (→ 1.4)
-  - Rollup logic must distinguish **experiment-specific** commits from **hub-wide** ones that sweep the folder incidentally (BDE has 3 such: `fdda7ba`, `a78ef49`, `0d25a7c`). Counting those as activity would invent a story — it would show BDE "active" in July when it has been quiet since April.
-- [ ] 3.5 Generator source allowlist is explicit and commented: commits, PRs, release notes, Figma versions. No transcript/session/chat path is read. (→ 1.5)
-- [ ] 3.6 **Figma source adapter**: read named versions, numbered iteration pages, and comment threads for the experiment's file. Ignore unlabeled autosave points (noise). Needs a per-experiment Figma file reference — no such Notion property exists yet; decide whether to add one or derive it from `design.md`. (→ 1.11)
-- [ ] 3.7 **Notion append writer** (`scripts/` only — never imported by the hub app): inserts entries with `Approved` unchecked. Insert-only by construction — no update or delete call exists in the module. Tests assert this. (→ 1.8, 1.9)
-- [ ] 3.8 **Watermark / idempotency**: the job must not re-append a month it already covered. Derive coverage from existing rows (max `Date` per experiment, plus `Source`) rather than storing separate state — a re-run over a covered month is a no-op. (→ 1.9)
-- [ ] 3.9 **Monthly GitHub Action** invoking 3.7. Needs a Notion token scoped to the History database only. ⚠️ Per `feedback_centralized_secrets`, check existing secret stores before asking Katy for a new key. (→ 1.8)
-- [ ] 3.10 **Quiet-month rule**: no activity, or only hub-wide commits that swept the experiment's paths, produces no entry. Reuses the 3.4 experiment-specific vs hub-wide classifier. (→ 1.10)
+- [x] 3.4 Draft generator `scripts/draft-history.ts` (repo-local CLI, **not** a hub route). Primary source path-scoped `git log`; supplemented by `gh pr list`. Rollup logic in `lib/history-rollup.ts` (pure, no imports). **No Notion import** (asserted). Emits a review block or `--json`. (→ 1.4)
+  - **Classifier — discovery from the real dry run:** the experiment-specific vs hub-wide split needed two rules, both found by running against BDE:
+    1. A bare `gh --search "<slug>"` full-text match pulled in **63 unrelated PRs** in one month. Fixed to `<slug> in:title`.
+    2. File-fraction alone wasn't enough. Real `fdda7ba` is a *platform auth refactor* whose files are 64% BDE — it passed the ≥0.5 fraction and falsely showed BDE active in June. Added: platform commit types (`ci`, `build`, `chore`, `refactor`, `perf`) are excluded unless the commit's conventional-commit **scope names the experiment**. The two pure-CI commits (`a78ef49`, `0d25a7c`) are excluded by fraction.
+  - Validated: `tsx scripts/draft-history.ts best-day-ever` now yields exactly **Mar 2026 + Apr 2026**, then silence — the true trail.
+- [x] 3.5 Source allowlist explicit + commented in `draft-history.ts`: git commits, PRs (+ Figma seam). No transcript/session/chat path exists. (→ 1.5)
+- [ ] 3.6 **Figma source adapter — DEFERRED (not needed for the BDE exemplar).** Resolved 2026-07-22: Katy confirmed Best Day Ever has **no Figma** — it's landing-page-only, no design file with versions/iterations to mine. So Figma contributes nothing to this exemplar, and the commits+PRs generator is sufficient. The seam stays wired (`RollupSources.figmaVersions`, `gatherEvidence` returns `[]`, `rollupByMonth` folds them in), and Figma remains a first-class source in the spec. **Build it later against a Figma-rich experiment** — building blind, with no real design trail to validate against, would risk the same "invent activity" errors the commit classifier hit. The per-experiment Figma-reference storage decision (Notion property vs `design.md`) rides along with that future work. (→ 1.11)
+- [x] 3.7 **Notion append writer** `scripts/append-history.ts` (never imported by the hub app): inserts with `Approved` unchecked. Insert-only by construction — only `pages.create`; a test greps the source to assert no update/delete/archive. **Dry-run by default**; writes only with `--write`. (→ 1.8, 1.9)
+- [x] 3.8 **Watermark / idempotency**: `filterUncoveredMonths` skips any month already present for the experiment (coverage read from existing rows' `Date`, no separate state). Re-run is a no-op — tested. (→ 1.9)
+- [~] 3.9 **Monthly GitHub Action** `.github/workflows/history-accumulate.yml` — written, but **`schedule` is commented out** and the workflow is **manual-dispatch, dry-run by default**. Deliberately not live: the first real write is Katy's call. To turn on: provision secrets (⚠️ check whether `NOTION_TOKEN` already exists in Actions secrets before adding — `feedback_centralized_secrets`), run a manual dry run, then a manual `write=true`, then uncomment `schedule`. (→ 1.8)
+- [x] 3.10 **Quiet-month rule**: no scoped activity → no entry; a month of only hub-wide commits → no entry. Tested against BDE's real `fdda7ba` / `a78ef49` / `0d25a7c`. (→ 1.10)
 
 ## 4. QA
 
 - [x] 4.1 Automated (vitest, `tests/lib/notion-history.test.ts`, 16 tests): pure helpers — unapproved filtered out; wrong-experiment filtered out; sort ascending regardless of return order; malformed/missing dates skipped; empty milestone skipped; nothing-qualifies returns `[]`. Plus adapter integration (mocked Notion client) — queries the configured data source, paginates until `has_more` is false, caches within the TTL, returns `[]` without querying for an unknown slug, and throws on a missing env var. (→ 1.1, 1.2, 1.3)
-- [ ] 4.2 Automated: generator rollup logic against fixture PR/commit data — counts match the fixture exactly (countable counts, real dates). Assert the module has no Notion write import. (→ 1.4, 1.5)
+- [x] 4.2 Automated (`tests/lib/history-rollup.test.ts`, 19 tests): classifier (experiment-specific vs platform/CI/repo-init), conventional-prefix parse, count-based milestone formatting, month grouping + ordering, quiet-month → `[]`, hub-wide-only month → `[]`, watermark filtering. Plus `tests/lib/append-history.test.ts` asserts the generator has **no Notion import**. (→ 1.4, 1.5, 1.10)
 - [ ] 4.3 Manual walkthrough on the running app: the exemplar experiment shows History below the statements with dates aligned in the gutter; an experiment with no entries shows no band and no heading; unchecking `Approved` in Notion removes that entry within the 60s cache window. (→ 1.1, 1.2, 1.3)
 - [ ] 4.4 Content review before publishing the exemplar (Katy, authoring-time — not enforced by code): every result-claiming entry carries its number inline; if the experiment is dead, the terminal entry's reason matches the `Outcome` line. Design decision 3 puts this upstream of layout deliberately. (→ 1.6, 1.7)
-- [ ] 4.5 Automated: the append writer inserts only unapproved rows; running the job twice over the same month produces no duplicate; a hand-edited row is byte-identical after a run. (→ 1.8, 1.9)
-- [ ] 4.6 Automated: a month with only hub-wide commits yields zero entries (fixture: BDE's `fdda7ba`, `a78ef49`, `0d25a7c`). (→ 1.10)
-- [ ] 4.7 `tsc --noEmit` clean; full vitest suite green. *(Read-path slice: my files typecheck clean and 565 tests pass. Two pre-existing failures unrelated to this change — `EtsySyncPanel` + `app/dev/mvds` both fail on `@beckharrisdesign/mvds`, the unadopted shared package, on `main` too.)*
+- [x] 4.5 Automated (`tests/lib/append-history.test.ts`, 8 tests): dry run writes nothing; `--write` inserts each uncovered month with `Approved: false`, correct relation + first-of-month date; a month already present is skipped; all-present → zero creates (re-run no-op); missing env + missing experiment row throw. Insert-only asserted structurally. (→ 1.8, 1.9)
+- [x] 4.6 Covered by 4.2 — hub-wide-only month yields zero entries, fixtures are BDE's real `fdda7ba` / `a78ef49` / `0d25a7c`. (→ 1.10)
+- [x] 4.7 `tsc --noEmit` clean for all new files; **555 tests pass** (43 new: rollup 19, append 8, plus read-path 16). Unrelated pre-existing failures only: `EtsySyncPanel` on `@beckharrisdesign/mvds`, and stale `.next/` types referencing the removed `/workflow` page — both environmental, not this change (see `project_fresh_worktree_env_noise`).
