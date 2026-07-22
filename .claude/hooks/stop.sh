@@ -50,4 +50,19 @@ if [ "$branch" != "main" ] && [ "$branch" != "master" ] && [ "$branch" != "HEAD"
   fi
 fi
 
+# Block stop while the branch's open PR has unresolved review threads
+# (Copilot comments must be addressed, replied to, and resolved — see
+# rules/github-workflow.mdc "Copilot review loop").
+if [ "$branch" != "main" ] && [ "$branch" != "master" ] && [ "$branch" != "HEAD" ] && command -v gh >/dev/null 2>&1; then
+  pr=$(gh pr view --json number,state -q 'select(.state=="OPEN") | .number' 2>/dev/null || true)
+  if [ -n "$pr" ]; then
+    unresolved=$(gh api graphql -f query="{repository(owner:\"beckharrisdesign\",name:\"experiment-hub\"){pullRequest(number:$pr){reviewThreads(first:50){nodes{isResolved}}}}}" \
+      -q '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved==false)] | length' 2>/dev/null || echo 0)
+    if [ "${unresolved:-0}" -gt 0 ]; then
+      echo "PR #$pr has $unresolved unresolved review thread(s). Address each Copilot comment, reply, and resolve the threads before stopping." >&2
+      exit 2
+    fi
+  fi
+fi
+
 exit 0
