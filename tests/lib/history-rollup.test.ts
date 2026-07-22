@@ -104,13 +104,21 @@ describe("isExperimentScoped", () => {
     expect(isExperimentScoped(commit("e", "2026-03-01", []), SLUG)).toBe(false);
   });
 
-  it("counts a commit where the experiment is the majority", () => {
+  it("counts a commit where the experiment is a strict majority", () => {
     const c = commit("d", "2026-03-20", [
       "experiments/best-day-ever/a.md",
       "experiments/best-day-ever/b.md",
       "lib/shared.ts",
     ]);
     expect(isExperimentScoped(c, SLUG)).toBe(true);
+  });
+
+  it("excludes an exactly-half (50/50) commit as ambiguous", () => {
+    const c = commit("half", "2026-03-20", [
+      "experiments/best-day-ever/a.md",
+      "lib/shared.ts",
+    ]);
+    expect(isExperimentScoped(c, SLUG)).toBe(false);
   });
 });
 

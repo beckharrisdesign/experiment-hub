@@ -6,10 +6,11 @@
  * rules and imports nothing (no Notion client, no filesystem, no shell), so
  * every rule below is unit-tested in isolation:
  *
- *   - A commit counts as this experiment's work only if the majority of its
- *     changed files sit inside the experiment's paths. Hub-wide changes that
- *     merely sweep the folder (CI, deploy, framework migrations) are excluded
- *     — counting them would show an experiment "active" in a month it was not.
+ *   - A commit counts as this experiment's work only if a strict majority of
+ *     its changed files sit inside the experiment's paths. Hub-wide changes
+ *     that merely sweep the folder (CI, deploy, framework migrations) are
+ *     excluded — counting them would show an experiment "active" in a month it
+ *     was not. A 50/50 commit is ambiguous and is not counted.
  *   - A month with no experiment-scoped activity yields no candidate. Silence
  *     is accurate; inventing a milestone would misrepresent a stalled project.
  *   - Milestones are count-based assemblies of real evidence — countable
@@ -98,11 +99,13 @@ function monthOf(iso: string | undefined | null): string | null {
 
 /**
  * Whether a commit is this experiment's own work rather than a hub-wide change
- * that incidentally touched its folder. True when at least one changed file is
- * inside the experiment's paths AND those files are the majority of the
- * commit. A CI/deploy/framework commit that sweeps the folder alongside many
- * unrelated files falls below the majority and is excluded; so does the
- * repo-init commit that scaffolds every experiment at once.
+ * that incidentally touched its folder. True when a strict majority of the
+ * commit's changed files are inside the experiment's paths. A CI/deploy/
+ * framework commit that sweeps the folder alongside many unrelated files falls
+ * below the majority and is excluded; so does the repo-init commit that
+ * scaffolds every experiment at once. An exactly-half (50/50) commit is
+ * ambiguous and is not counted — the conservative choice for honesty-critical
+ * logic that must never overstate activity.
  */
 export function isExperimentScoped(commit: CommitRecord, slug: string): boolean {
   const prefixes = experimentPathPrefixes(slug);
@@ -117,7 +120,7 @@ export function isExperimentScoped(commit: CommitRecord, slug: string): boolean 
   if (scoped.length === 0) return false;
   // A platform commit type sweeping the folder is not experiment progress.
   if (PLATFORM_TYPES.has(type)) return false;
-  return scoped.length / files.length >= 0.5;
+  return scoped.length / files.length > 0.5;
 }
 
 /** Only the commits that are this experiment's own work. */

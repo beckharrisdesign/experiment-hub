@@ -13,8 +13,10 @@ name: Accumulate experiment history
 # Experiments data sources, plus their ids. Before adding new secrets, check
 # whether the hub already stores a Notion token in Actions secrets and reuse it.
 #   NOTION_TOKEN, NOTION_HISTORY_DATA_SOURCE_ID, NOTION_EXPERIMENTS_DATA_SOURCE_ID
-# Until these exist, a run with write=true fails fast (missing-env guard) —
-# which is safe: it cannot partially write.
+# These are required even for a DRY RUN: the writer reads the existing rows
+# (Notion query) to compute the watermark before printing what it would create.
+# So a run without secrets fails fast in either mode — safe, and never a
+# partial write.
 
 on:
   workflow_dispatch:
