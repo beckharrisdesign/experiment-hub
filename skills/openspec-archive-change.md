@@ -47,7 +47,8 @@ Archive a completed change in the experimental workflow.
    **Otherwise (lite / full / quickstart):**
    - Read the tasks file (typically `tasks.md`) to check for incomplete tasks.
    - Count tasks marked with `- [ ]` (incomplete) vs `- [x]` (complete).
-   - **If incomplete tasks found:** display warning, confirm with user, proceed if confirmed.
+   - **Convert manual gates to live receipts first.** If unchecked boxes are manual-verification outcomes (§1 user outcomes, walkthroughs) and the change is already deployed, verify them against the live surface before asking for a waiver — e.g. `curl -I` the route for a redirect, fetch the page HTML and grep for the removed/added element. Check the box with the receipt recorded inline (what was verified, where, when). Only ask the user to confirm what genuinely cannot be verified remotely.
+   - **If incomplete tasks remain:** display warning, confirm with user, proceed if confirmed.
    - **If no tasks file exists:** proceed without task-related warning.
 
 4. **Assess delta spec sync state**
