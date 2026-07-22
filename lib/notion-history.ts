@@ -19,7 +19,8 @@
  *   Date        date       — month-level; the day is ignored on render
  *   Experiment  relation   — page-id array pointing at BHD Labs Projects rows
  *   Approved    checkbox    — unchecked rows never render publicly
- *   Receipt URL url        — stored for provenance; NOT rendered in v1
+ *   Receipt URL url        — optional; rendered as a small receipt link
+ *                            (un-deferred 2026-07-22 at Katy's request)
  *   Source      rich_text   — optional generator provenance
  */
 import { getUncachableNotionClient } from "@/lib/notion";
@@ -39,6 +40,8 @@ export interface HistoryEntry {
   month: string;
   /** The one-sentence milestone. */
   milestone: string;
+  /** Optional provenance link (usually a GitHub commit/PR); null when unset. */
+  receiptUrl: string | null;
 }
 
 /** Mirrors notion-experiments' auth check. */
@@ -93,6 +96,7 @@ interface RawHistoryRow {
   milestone: string;
   approved: boolean;
   experimentIds: string[];
+  receiptUrl: string | null;
 }
 
 /** Flattens a Notion history page to the fields this adapter needs. */
@@ -109,11 +113,13 @@ export function mapHistoryPage(page: NotionPage): RawHistoryRow {
   const experimentIds = Array.isArray(relation)
     ? relation.map((r: { id?: string }) => r.id ?? "").filter(Boolean)
     : [];
+  const receiptUrl = props["Receipt URL"]?.url;
   return {
     date: props["Date"]?.date?.start ?? "",
     milestone,
     approved: props["Approved"]?.checkbox === true,
     experimentIds,
+    receiptUrl: typeof receiptUrl === "string" && receiptUrl !== "" ? receiptUrl : null,
   };
 }
 
@@ -135,7 +141,14 @@ export function selectApprovedEntries(
     )
     .map((row) => {
       const month = formatMonthYear(row.date);
-      return month ? { date: row.date, month, milestone: row.milestone } : null;
+      return month
+        ? {
+            date: row.date,
+            month,
+            milestone: row.milestone,
+            receiptUrl: row.receiptUrl,
+          }
+        : null;
     })
     .filter((entry): entry is HistoryEntry => entry !== null)
     .sort((a, b) => a.date.localeCompare(b.date));
