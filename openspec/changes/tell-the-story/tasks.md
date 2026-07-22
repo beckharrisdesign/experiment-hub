@@ -10,7 +10,7 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 
 1. ~~**0.1 — Notion storage shape.**~~ ✅ approved by Katy 2026-07-21 — new related table.
 2. ~~**2.3 — exemplar experiment.**~~ ✅ **Best Day Ever**, chosen by Katy 2026-07-21 — the "purest" experiment; she wants its narrative trail visible.
-3. **3.6 — where the Figma file reference lives.** No per-experiment Figma property exists in Notion; options are a new property or deriving it from `design.md`. Ask when 3.6 is reached.
+3. ~~**3.6 — where the Figma file reference lives.**~~ ✅ resolved-by-moot 2026-07-22 — BDE has no Figma (landing-page-only), so the adapter isn't needed for the exemplar; deferred to a future Figma-rich experiment (see §3.6).
 4. Branch naming for this PR (cosmetic — will drop unless raised).
 5. GitHub MCP re-auth + the stale `mcp__github__*` allowlist entries in `.claude/settings.json` (optional; `gh` works today — see the scratchpad tee-up).
 
@@ -53,7 +53,7 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
 - [x] 1.8 A month of activity produces a draft entry with no human action — append writer + monthly Action (Action is manual-only until approved, see §3.9)
 - [x] 1.9 Previously edited/approved entries are untouched by the job — insert-only writer + month watermark, tested
 - [x] 1.10 A quiet month (or hub-wide-only changes) adds nothing — classifier + quiet-month rule, tested against BDE's real hub-wide commits
-- [ ] 1.11 Figma named versions and numbered iteration pages count as evidence — **deferred with §3.6** (seam wired, live adapter needs Katy's Figma-reference decision)
+- [ ] 1.11 Figma named versions and numbered iteration pages count as evidence — **deferred with §3.6** (seam wired; BDE has no Figma so it's moot for the exemplar; build against a Figma-rich experiment later)
 
 ## 2. Notion setup (manual, gating §3)
 
@@ -92,7 +92,7 @@ Per `rules/principles.mdc` → "Asking for decisions: one at a time". Current as
     2. File-fraction alone wasn't enough. Real `fdda7ba` is a *platform auth refactor* whose files are 64% BDE — it passed the ≥0.5 fraction and falsely showed BDE active in June. Added: platform commit types (`ci`, `build`, `chore`, `refactor`, `perf`) are excluded unless the commit's conventional-commit **scope names the experiment**. The two pure-CI commits (`a78ef49`, `0d25a7c`) are excluded by fraction.
   - Validated: `tsx scripts/draft-history.ts best-day-ever` now yields exactly **Mar 2026 + Apr 2026**, then silence — the true trail.
 - [x] 3.5 Source allowlist explicit + commented in `draft-history.ts`: git commits, PRs (+ Figma seam). No transcript/session/chat path exists. (→ 1.5)
-- [ ] 3.6 **Figma source adapter — DEFERRED (needs Katy).** Seam is wired: `RollupSources.figmaVersions` and `gatherEvidence` return `[]`, and `rollupByMonth` already folds Figma versions in, so the adapter drops in with no rollup change. **Open decision:** where the per-experiment Figma file reference lives — a new Notion property vs deriving from `design.md`. No such property exists yet. (→ 1.11)
+- [ ] 3.6 **Figma source adapter — DEFERRED (not needed for the BDE exemplar).** Resolved 2026-07-22: Katy confirmed Best Day Ever has **no Figma** — it's landing-page-only, no design file with versions/iterations to mine. So Figma contributes nothing to this exemplar, and the commits+PRs generator is sufficient. The seam stays wired (`RollupSources.figmaVersions`, `gatherEvidence` returns `[]`, `rollupByMonth` folds them in), and Figma remains a first-class source in the spec. **Build it later against a Figma-rich experiment** — building blind, with no real design trail to validate against, would risk the same "invent activity" errors the commit classifier hit. The per-experiment Figma-reference storage decision (Notion property vs `design.md`) rides along with that future work. (→ 1.11)
 - [x] 3.7 **Notion append writer** `scripts/append-history.ts` (never imported by the hub app): inserts with `Approved` unchecked. Insert-only by construction — only `pages.create`; a test greps the source to assert no update/delete/archive. **Dry-run by default**; writes only with `--write`. (→ 1.8, 1.9)
 - [x] 3.8 **Watermark / idempotency**: `filterUncoveredMonths` skips any month already present for the experiment (coverage read from existing rows' `Date`, no separate state). Re-run is a no-op — tested. (→ 1.9)
 - [~] 3.9 **Monthly GitHub Action** `.github/workflows/history-accumulate.yml` — written, but **`schedule` is commented out** and the workflow is **manual-dispatch, dry-run by default**. Deliberately not live: the first real write is Katy's call. To turn on: provision secrets (⚠️ check whether `NOTION_TOKEN` already exists in Actions secrets before adding — `feedback_centralized_secrets`), run a manual dry run, then a manual `write=true`, then uncomment `schedule`. (→ 1.8)
