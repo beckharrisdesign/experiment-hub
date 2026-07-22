@@ -38,10 +38,12 @@ function row(overrides: {
   date?: string;
   approved?: boolean;
   experimentIds?: string[];
+  receiptUrl?: string | null;
 }) {
   return {
     id: `hist-${Math.random()}`,
     properties: {
+      "Receipt URL": { url: overrides.receiptUrl ?? null },
       Milestone: {
         title:
           overrides.milestone === undefined
@@ -103,6 +105,7 @@ describe("mapHistoryPage", () => {
         date: "2026-03-09",
         approved: true,
         experimentIds: [EXPERIMENT_ID],
+        receiptUrl: "https://github.com/x/y/commit/abc123",
       }),
     );
     expect(mapped).toEqual({
@@ -110,6 +113,7 @@ describe("mapHistoryPage", () => {
       date: "2026-03-09",
       approved: true,
       experimentIds: [EXPERIMENT_ID],
+      receiptUrl: "https://github.com/x/y/commit/abc123",
     });
   });
 
@@ -120,7 +124,12 @@ describe("mapHistoryPage", () => {
       date: "",
       approved: false,
       experimentIds: [],
+      receiptUrl: null,
     });
+  });
+
+  it("normalizes an empty-string Receipt URL to null", () => {
+    expect(mapHistoryPage(row({ receiptUrl: "" })).receiptUrl).toBeNull();
   });
 });
 
@@ -179,6 +188,24 @@ describe("selectApprovedEntries", () => {
     ];
     const entries = selectApprovedEntries(rows, EXPERIMENT_ID);
     expect(entries.map((e) => e.milestone)).toEqual(["Real"]);
+  });
+
+  it("carries the receipt URL through to the entry, null when unset", () => {
+    const rows = [
+      mapHistoryPage(
+        row({
+          milestone: "Linked",
+          date: "2026-03-09",
+          receiptUrl: "https://github.com/x/y/commit/abc123",
+        }),
+      ),
+      mapHistoryPage(row({ milestone: "Unlinked", date: "2026-04-09" })),
+    ];
+    const entries = selectApprovedEntries(rows, EXPERIMENT_ID);
+    expect(entries.map((e) => e.receiptUrl)).toEqual([
+      "https://github.com/x/y/commit/abc123",
+      null,
+    ]);
   });
 
   it("returns an empty array when nothing qualifies", () => {
