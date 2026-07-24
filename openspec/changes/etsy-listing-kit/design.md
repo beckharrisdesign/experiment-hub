@@ -38,7 +38,7 @@ Each transition maps to an analytics event (see below) — the funnel *is* the d
 
 Two-accent system (terracotta + ochre + cream) added 2026-07-24 — a single terracotta on white read sterile. Ochre carries eyebrow tags ("FOR EMBROIDERY & CRAFT SELLERS", "⚡ INSTANT DOWNLOAD") and the cream warms dropzone/purchase panels. Spacing pass same date: hero→dropzone gap opened up, dropzone given side margins.
 
-Type: **Fraunces** headings + **Inter** body (reviewable — MVDS default is Inter-only; Fraunces is the product's display choice, see REVIEW_QUEUE #13).
+Type: **Fraunces** headings + **Inter** body (reviewable — MVDS default is Inter-only; Fraunces is the product's display choice, see REVIEW_QUEUE #14).
 **File naming convention** (per `rules/figma.mdc`): numbered pages, each iteration a NEW page, never edited in place. Mobile frames live alongside desktop on the same iteration page, named by breakpoint.
 
 **Iteration pages:**

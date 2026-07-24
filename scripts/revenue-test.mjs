@@ -7,10 +7,16 @@
  * until the real $100 target is met. Can NEVER pass on test-mode/seed/mock data.
  *
  * Requires STRIPE_SECRET_KEY (read access). Without it, the test is INACTIVE and
- * reports so — it does not claim success. Target config: lib/etsy-listing-kit/config.ts.
+ * reports so — it does not claim success.
+ *
+ * NOTE ON CONFIG: this is a zero-dependency Node CLI (no TS/tsx in the CI path),
+ * so it mirrors the target from lib/etsy-listing-kit/config.ts as plain constants
+ * below. These MUST stay in sync with config.ts — the revenue-test unit tests
+ * (task 4.2) assert parity so the two can never silently drift.
  */
 import Stripe from 'stripe';
 
+// MIRRORS lib/etsy-listing-kit/config.ts — keep in sync (asserted by tests).
 const EXPERIMENT_ID = 'etsy-listing-kit';
 const TARGET_CENTS = 100_00;
 const WINDOW_DAYS = 14;
@@ -26,7 +32,8 @@ if (!key) {
   process.exit(3); // distinct code: inactive, not pass/fail
 }
 const stripe = new Stripe(key);
-const isLiveKey = key.startsWith('sk_live_');
+// Accept standard (sk_live_) and restricted read-only (rk_live_) live keys.
+const isLiveKey = key.startsWith('sk_live_') || key.startsWith('rk_live_');
 
 if (!LAUNCHED_AT) {
   console.log('revenue:test — RED: not launched yet (ELK_LAUNCHED_AT unset). Qualifying revenue = $0 / $100.');

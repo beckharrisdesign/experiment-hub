@@ -40,7 +40,7 @@ patterns rather than building fresh:
 
 | Asset | Path | Reuse for `etsy-listing-kit` |
 | --- | --- | --- |
-| Stripe SDK | `stripe` ^20.3.1 | Same version |
+| Stripe SDK | SSO prototype uses `stripe` ^20.3.1 | Hub root now adds `stripe` ^22.3.2 — newer major; patterns carry over but verify any API-shape changes |
 | Checkout route | `app/api/stripe/checkout/route.ts` | Copy pattern, switch `mode: 'subscription'` → **`mode: 'payment'`** (one-time) |
 | Webhook (signature-verified) | `app/api/stripe/webhook/route.ts` | Copy `constructEvent` verification + event switch; handle `checkout.session.completed` → mark order paid → fulfill |
 | Portal / subscription routes | `app/api/stripe/{portal,subscription}/route.ts` | **Not needed** (no subscription/accounts) |
