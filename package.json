@@ -18,7 +18,8 @@
     "sitemap:capture": "node scripts/capture-site-map.js",
     "dev:landing": "cd experiments/simple-seed-organizer/prototype/validation-landing && pnpm install && pnpm dev",
     "dev:photo-filters-banner": "cd experiments/photo-filters-banner/prototype && npm install && npm run dev",
-    "skills:sync": "node scripts/sync-skills.js"
+    "skills:sync": "node scripts/sync-skills.js",
+    "revenue:test": "node scripts/revenue-test.mjs"
   },
   "dependencies": {
     "@beckharrisdesign/mvds": "^0.2.0",
@@ -31,10 +32,12 @@
     "next": "^16.2.10",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "stripe": "^22.3.2",
     "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
+    "@tailwindcss/postcss": "^4.3.2",
     "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -43,7 +46,6 @@
     "eslint": "^9.39.1",
     "eslint-config-next": "^16.2.10",
     "jsdom": "^28.1.0",
-    "@tailwindcss/postcss": "^4.3.2",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.3.2",
     "tsx": "^4.19.2",

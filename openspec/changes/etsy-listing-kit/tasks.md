@@ -1,0 +1,57 @@
+# Tasks: Etsy Listing Kit
+
+Package manager: **pnpm** (hub root). Dev: `pnpm dev` → funnel at `/etsy-listing-kit` (hub app, deploys to the Vercel production subdomain). Stripe test mode until launch.
+
+## 1. User outcomes (spec scenarios — must all pass before archive)
+
+- [ ] 1.1 User can upload a valid PNG/JPG/SVG and see it accepted with a thumbnail *(Upload · valid file)*
+- [ ] 1.2 User gets a clear, non-technical error on an unsupported/oversized file — no order created *(Upload · bad file)*
+- [ ] 1.3 User sees a watermarked preview of all 6 curated images with price + what they get *(Preview the pack)*
+- [ ] 1.4 User completes a one-time $3 Stripe payment (test mode) and lands on a success URL tied to their order *(Complete payment)*
+- [ ] 1.5 User who cancels checkout returns to the preview with upload intact and no charge *(Cancel payment)*
+- [ ] 1.6 A signature-valid `checkout.session.completed` marks the order paid, builds the un-watermarked zip, exposes a signed download, sends one email *(Webhook fulfils once)*
+- [ ] 1.7 A duplicated Stripe event/session does not double-fulfil, double-email, or double-count *(Duplicate webhook)*
+- [ ] 1.8 A paid buyer can re-open their signed link and re-download within 7 days, no account *(Retrieve later)*
+- [ ] 1.9 `pnpm revenue:test` prints red (target/actual/gap/purchases/AOV/days/run-rate) while live revenue < $100 *(Revenue red)*
+- [ ] 1.10 `revenue:test` counts only live-mode, post-launch, refund-adjusted `etsy-listing-kit` payments; green only on real attainment *(Only qualifying revenue / green on real)*
+
+## 2. Data + infrastructure
+
+- [x] 2.1 Supabase migration: `elk_orders` (id, stripe_session_id UNIQUE, stripe_event_id UNIQUE, experiment_id, status enum, amount, currency, email, input_ref, output_ref, utm/click-id cols, timestamps) — `supabase/migrations/007_elk_orders.sql` (file written; not yet applied to the DB)
+- [x] 2.2 RLS on `elk_orders`: enabled, no client policies (service-role only) — in 007 migration
+- [ ] 2.3 Private Supabase Storage buckets: `elk-inputs`, `elk-outputs`; signed URLs only; 7-day retention policy documented
+- [x] 2.4 Env: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PRICE_ELK`, `ELK_LAUNCHED_AT`, `SUPABASE_SERVICE_ROLE_KEY` documented in `.env.example` (Katy sets live values)
+
+## 3. Build (reuse SSO patterns from `simple-seed-organizer/prototype/app`)
+
+- [ ] 3.1 Routes `app/etsy-listing-kit/` (landing+upload, preview, processing, result) built to the approved 02.3 Figma on MVDS tokens (terracotta/ochre/cream, Fraunces+Inter)
+- [ ] 3.2 Upload API: validate type/size (client + server), store input to private bucket, rate-limit (reuse `lib/rate-limit`)
+- [ ] 3.3 Image asset-pack generator (server): from one design → 6 × 2000px square JPGs (flat, framed, in-hoop, detail, scale, info-card); watermarked + clean variants
+- [ ] 3.4 Checkout API: adapt SSO route → `mode:'payment'`, $3 price, metadata `experiment_id`+`order_id`, create order row before redirect
+- [ ] 3.5 Webhook API: adapt SSO route → verify signature, idempotent on event/session id, `checkout.session.completed` → paid → generate clean zip → signed download → email
+- [ ] 3.6 Result/download route: serve signed zip, re-download within 7 days, no account
+- [ ] 3.7 Transactional email: detect provider; else minimal adapter (no new account) — "your images are ready" + link; idempotent
+- [ ] 3.8 Analytics layer: funnel events (`landing_view`→`result_delivered` + `payment_cancelled`/`processing_failed`/`payment_refunded`); GA4 purchase on verified payment only; persist UTM/click-id through Checkout metadata
+- [ ] 3.9 Minimal owner view (protected): orders, status, revenue-target progress, attribution, retry a failed order
+- [ ] 3.10 Error/recovery states per Figma: cancelled (upload intact), processing failed (auto-retry → auto-refund + email)
+
+## 4. Revenue test
+
+- [x] 4.1 `revenue:test` script + `pnpm revenue:test`: queries live Stripe by `experiment_id`, post-launch timestamp, minus refunds, excl tax, dedup; exits non-zero until $100; config in `lib/etsy-listing-kit/config.ts`. Verified: reports INACTIVE/red with no key (exit 3) — starts failing honestly
+- [ ] 4.2 Unit tests for revenue logic (test/live modes, full/partial refund, dup webhook/event, missing/wrong metadata, multi-currency, out-of-window, pre-launch, unpaid, failed, disputed, tax exclusion, exact boundary, zero, invalid config)
+
+## 5. QA
+
+- [ ] 5.1 Automated (vitest): upload validation, checkout metadata, webhook idempotency, email adapter, analytics dedup, revenue logic — Stripe test mode + `__mocks__/stripe`
+- [ ] 5.2 E2E happy path (test card) → paid → fulfilled → download → email → analytics events
+- [ ] 5.3 E2E cancelled payment, duplicate webhook, processing failure/refund
+- [ ] 5.4 Manual §1 walkthrough on preview deploy (first-time visitor, mobile, keyboard, invalid input, refund path)
+- [ ] 5.5 Accessibility: re-run MVDS `check:contrast`; keyboard + mobile critical-flow pass
+
+## 6. Deploy
+
+- [ ] 6.1 Preview deploy (Vercel), test-mode Stripe, smoke test full flow
+- [ ] 6.2 Launch checklist: Katy sets live Stripe keys + registers live webhook; record production launch timestamp for revenue window; flip to live; production smoke test
+- [ ] 6.3 Prepare (do not fund) the $1/day ad campaign + UTM convention; Katy performs turn-on
+
+> Stop rule: after tasks.md, wait for approval before `/opsx:apply`.
