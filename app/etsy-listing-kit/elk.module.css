@@ -1,0 +1,113 @@
+/* Etsy Listing Kit — scoped MVDS-base + terracotta theme (NOT the hub green).
+   Matches Figma 02.3. Tokens are local to this route via .kit wrapper. */
+
+.kit {
+  --bg: #ffffff;
+  --surface: #f7f7f7;
+  --border: #e5e5e5;
+  --ink: #252525;
+  --muted: #555555;
+  --primary: #b24a2e;
+  --primary-hover: #8f3a24;
+  --accent: #d99a2b;
+  --accent-tint: #f5e3be;
+  --accent-ink: #7a4d12;
+  --cream: #fdf3ee;
+
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 40px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.logo { font-family: var(--font-fraunces), Georgia, serif; font-weight: 700; font-size: 18px; }
+.headerNote { color: var(--muted); font-size: 13px; }
+
+.hero {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 64px 24px 36px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.eyebrow {
+  display: inline-block;
+  background: var(--accent-tint);
+  border: 1px solid var(--accent);
+  color: var(--accent-ink);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  padding: 6px 14px;
+  border-radius: 100px;
+}
+.h1 {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(28px, 5vw, 44px);
+  line-height: 1.1;
+  margin: 0;
+}
+.sub { color: var(--muted); font-size: 17px; line-height: 1.5; margin: 0; }
+
+.uploadWrap { max-width: 840px; margin: 0 auto; padding: 8px 40px 28px; }
+.dropzone {
+  background: var(--cream);
+  border: 2px dashed var(--primary);
+  border-radius: 16px;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.dropzone.dragging { background: #fbe9e0; border-color: var(--primary-hover); }
+.dropTitle { font-size: 20px; font-weight: 500; }
+.dropHint { color: var(--muted); font-size: 14px; }
+.button {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.button:hover { background: var(--primary-hover); }
+.hiddenInput { display: none; }
+
+.thumbRow { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+.thumb { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+.fileName { font-size: 14px; color: var(--ink); }
+.error { color: #b3261e; font-size: 14px; margin-top: 8px; }
+
+.trust {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  padding: 8px 40px 48px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .header, .uploadWrap, .trust { padding-left: 20px; padding-right: 20px; }
+  .hero { padding-top: 40px; }
+  .trust { flex-direction: column; align-items: center; gap: 8px; }
+}
