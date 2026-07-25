@@ -7,10 +7,11 @@
 
 ## Go-live checklist (Katy — these need you)
 
-1. **Supabase**
-   - Run `supabase/migrations/007_elk_orders.sql` on the project.
-   - Create two **private** Storage buckets: `elk-inputs`, `elk-outputs`.
-   - Set `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` in Vercel.
+1. **Supabase** — project: **Experiment Hub 2.0** (`ulqdjuiffpazzixnwwso`); confirmed this is the hub DB (has migrations 001–006 tables).
+   - [x] **Migration 007** (`elk_orders`, RLS-locked, service-role only) — **APPLIED 2026-07-25** via connector; verified `public.elk_orders` exists with RLS enabled, 0 rows.
+   - [ ] Create two **private** Storage buckets: `elk-inputs`, `elk-outputs` (no public access; signed URLs only).
+   - [ ] Set `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` in Vercel (service-role is server-only).
+   - ⚠ *Unrelated pre-existing advisory on this project:* RLS is **disabled** on `advisor_history`, `drift_alerts`, `phase_transitions`, `checkpoints` (anon key can read/write them). Not part of this experiment — decide separately (enable RLS **with** policies). `elk_orders` is already locked down.
 2. **Stripe** (test first, then live)
    - Set `STRIPE_SECRET_KEY` (`sk_test_…` → `sk_live_…`).
    - Add a webhook endpoint → `https://<your-vercel-domain>/etsy-listing-kit/api/webhook`, event `checkout.session.completed`; put its signing secret in `STRIPE_WEBHOOK_SECRET`.
