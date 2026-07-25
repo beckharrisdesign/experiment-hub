@@ -28,7 +28,7 @@ Statuses: `REVIEW_REQUESTED` · `DEFAULT_IMPLEMENTED` · `BLOCKS_PRODUCTION` · 
 
 Both production boundaries are now **APPROVED**. What still requires *you* at launch time:
 
-- ✅ **Supabase migration 007 applied** (Experiment Hub 2.0 `ulqdjuiffpazzixnwwso`, 2026-07-25, `elk_orders` RLS-on). Still need: the two private storage buckets (`elk-inputs`/`elk-outputs`) + `SUPABASE_SERVICE_ROLE_KEY` in Vercel.
+- ✅ **Supabase migration 007 applied** + **private buckets `elk-inputs`/`elk-outputs` created** (Experiment Hub 2.0 `ulqdjuiffpazzixnwwso`, 2026-07-25). Still need: `SUPABASE_SERVICE_ROLE_KEY` in Vercel.
 - **Set live Stripe keys** (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`) + register the live webhook endpoint in the Stripe Dashboard — I build for live mode but cannot handle the secrets.
 - **Email (Resend):** email is a plain HTTPS API call (no SMTP to run). Create a free Resend account, set `RESEND_API_KEY` (+ `ELK_EMAIL_FROM` once your domain is verified). Without it, fulfillment still works — email is a logged no-op. Provider is swappable (~10 lines) for Postmark/SendGrid.
 - **Analytics (optional):** set `NEXT_PUBLIC_GA_MEASUREMENT_ID` (client funnel) + `GA_API_SECRET` (server purchase event) to activate GA4; no-op without them.

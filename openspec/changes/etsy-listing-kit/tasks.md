@@ -19,7 +19,7 @@ Package manager: **pnpm** (hub root). Dev: `pnpm dev` → funnel at `/etsy-listi
 
 - [x] 2.1 Supabase migration: `elk_orders` (id, stripe_session_id UNIQUE, stripe_event_id UNIQUE, experiment_id, status enum, amount, currency, email, input_ref, output_ref, utm/click-id cols, timestamps) — `supabase/migrations/007_elk_orders.sql`; **APPLIED to Experiment Hub 2.0 (`ulqdjuiffpazzixnwwso`) 2026-07-25**, RLS verified on
 - [x] 2.2 RLS on `elk_orders`: enabled, no client policies (service-role only) — in 007 migration
-- [~] 2.3 Private Storage: code reads/writes `elk-inputs`/`elk-outputs` with signed URLs (7-day TTL); the buckets themselves still need creating in Supabase (deploy step)
+- [x] 2.3 Private Storage: `elk-inputs`/`elk-outputs` **created** (private, size + MIME limits) on Experiment Hub 2.0 2026-07-25; code reads/writes with signed URLs (7-day TTL); service-role-only (no public policies)
 - [x] 2.4 Env: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PRICE_ELK`, `ELK_LAUNCHED_AT`, `SUPABASE_SERVICE_ROLE_KEY` documented in `.env.example` (Katy sets live values)
 
 ## 3. Build (reuse SSO patterns from `simple-seed-organizer/prototype/app`)
