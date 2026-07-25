@@ -25,7 +25,31 @@ export default function EtsyListingKitLanding() {
   const [error, setError] = useState<string | null>(null);
   const [previews, setPreviews] = useState<{ id: string; label: string; dataUrl: string }[] | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [checkingOut, setCheckingOut] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const checkout = useCallback(async () => {
+    if (!file) return;
+    setCheckingOut(true); setError(null);
+    try {
+      const fd = new FormData();
+      fd.append('design', file);
+      // carry ad attribution through Checkout
+      const q = new URLSearchParams(window.location.search);
+      for (const k of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']) {
+        const v = q.get(k); if (v) fd.append(k, v);
+      }
+      const clickId = q.get('gclid') || q.get('fbclid'); if (clickId) fd.append('click_id', clickId);
+      fd.append('landing_path', window.location.pathname);
+      const res = await fetch('/etsy-listing-kit/api/checkout', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (!res.ok || !json.url) throw new Error(json.error || 'Could not start checkout.');
+      window.location.href = json.url;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not start checkout.');
+      setCheckingOut(false);
+    }
+  }, [file]);
 
   const generate = useCallback(async () => {
     if (!file) return;
@@ -144,8 +168,8 @@ export default function EtsyListingKitLanding() {
             <span className={styles.tag}>⚡ INSTANT DOWNLOAD</span>
             <span className={styles.price}>{priceLabel}</span>
             <span className={styles.priceNote}>one-time · all 6 images</span>
-            <button className={styles.primaryWide} type="button" disabled title="Checkout coming next">
-              Pay {priceLabel} &amp; download →
+            <button className={styles.primaryWide} type="button" onClick={checkout} disabled={checkingOut}>
+              {checkingOut ? 'Starting checkout…' : `Pay ${priceLabel} & download →`}
             </button>
             <strong style={{ fontSize: 13 }}>What lands in your inbox:</strong>
             <ul className={styles.panelList}>
@@ -154,7 +178,7 @@ export default function EtsyListingKitLanding() {
               <li>• Zip download + emailed link</li>
               <li>• Yours to re-grab for 7 days</li>
             </ul>
-            <span className={styles.panelFoot}>Checkout wiring is next — this preview is live.</span>
+            <span className={styles.panelFoot}>Secure Stripe checkout · re-download for 7 days · refund by reply</span>
           </aside>
         </section>
       )}

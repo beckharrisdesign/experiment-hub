@@ -19,7 +19,7 @@ Package manager: **pnpm** (hub root). Dev: `pnpm dev` → funnel at `/etsy-listi
 
 - [x] 2.1 Supabase migration: `elk_orders` (id, stripe_session_id UNIQUE, stripe_event_id UNIQUE, experiment_id, status enum, amount, currency, email, input_ref, output_ref, utm/click-id cols, timestamps) — `supabase/migrations/007_elk_orders.sql` (file written; not yet applied to the DB)
 - [x] 2.2 RLS on `elk_orders`: enabled, no client policies (service-role only) — in 007 migration
-- [ ] 2.3 Private Supabase Storage buckets: `elk-inputs`, `elk-outputs`; signed URLs only; 7-day retention policy documented
+- [~] 2.3 Private Storage: code reads/writes `elk-inputs`/`elk-outputs` with signed URLs (7-day TTL); the buckets themselves still need creating in Supabase (deploy step)
 - [x] 2.4 Env: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PRICE_ELK`, `ELK_LAUNCHED_AT`, `SUPABASE_SERVICE_ROLE_KEY` documented in `.env.example` (Katy sets live values)
 
 ## 3. Build (reuse SSO patterns from `simple-seed-organizer/prototype/app`)
@@ -27,9 +27,9 @@ Package manager: **pnpm** (hub root). Dev: `pnpm dev` → funnel at `/etsy-listi
 - [ ] 3.1 Routes `app/etsy-listing-kit/` (landing+upload, preview, processing, result) built to the approved 02.3 Figma on MVDS tokens (terracotta/ochre/cream, Fraunces+Inter)
 - [~] 3.2 Upload: type/size validated **client + server** (preview API re-validates); private-bucket storage + rate-limit still TODO
 - [x] 3.3 Image asset-pack generator (server): one design → 6 × 2000px JPGs (flat, framed, in-hoop, detail, scale, info-card), watermarked + clean, under 1MB — `lib/etsy-listing-kit/generator.ts`, verified rendering all six + preview API
-- [ ] 3.4 Checkout API: adapt SSO route → `mode:'payment'`, $3 price, metadata `experiment_id`+`order_id`, create order row before redirect
-- [ ] 3.5 Webhook API: adapt SSO route → verify signature, idempotent on event/session id, `checkout.session.completed` → paid → generate clean zip → signed download → email
-- [ ] 3.6 Result/download route: serve signed zip, re-download within 7 days, no account
+- [x] 3.4 Checkout API: `mode:'payment'`, $3, metadata `experiment_id`+`order_id`, order row created + design stored before redirect; attribution captured — `app/etsy-listing-kit/api/checkout`
+- [x] 3.5 Webhook API: signature-verified, idempotent on event id, scope+paid guards, `checkout.session.completed` → paid → idempotent fulfillment (generate 6 clean → store) — `app/etsy-listing-kit/api/webhook`. Email still TODO
+- [x] 3.6 Result page + order API: post-payment retrieval, polls till fulfilled, signed download URLs (7-day TTL), no account — `app/etsy-listing-kit/result` + `api/order`. (Individual JPGs; zip a later refinement)
 - [ ] 3.7 Transactional email: detect provider; else minimal adapter (no new account) — "your images are ready" + link; idempotent
 - [ ] 3.8 Analytics layer: funnel events (`landing_view`→`result_delivered` + `payment_cancelled`/`processing_failed`/`payment_refunded`); GA4 purchase on verified payment only; persist UTM/click-id through Checkout metadata
 - [ ] 3.9 Minimal owner view (protected): orders, status, revenue-target progress, attribution, retry a failed order
