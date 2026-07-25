@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
-import { stripe } from '../../../../lib/etsy-listing-kit/stripe';
+import { stripe, webhookSecret } from '../../../../lib/etsy-listing-kit/stripe';
 import { createAdminSupabaseClient } from '../../../../lib/etsy-listing-kit/supabase-admin';
 import { fulfillOrder } from '../../../../lib/etsy-listing-kit/fulfillment';
 import { refundFailedOrder } from '../../../../lib/etsy-listing-kit/refund';
@@ -18,7 +18,7 @@ export const maxDuration = 60;
  */
 export async function POST(request: NextRequest) {
   if (!stripe) return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 });
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  const secret = webhookSecret();
   if (!secret) return NextResponse.json({ error: 'Webhook secret not set' }, { status: 500 });
 
   let event: Stripe.Event;

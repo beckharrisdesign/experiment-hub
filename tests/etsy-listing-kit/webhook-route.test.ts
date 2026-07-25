@@ -8,7 +8,7 @@ const { constructEvent, createAdminSupabaseClient, fulfillOrder, refundFailedOrd
   headersGet: vi.fn(() => 'sig_123'),
 }));
 
-vi.mock('@/lib/etsy-listing-kit/stripe', () => ({ stripe: { webhooks: { constructEvent } }, isLiveMode: () => true }));
+vi.mock('@/lib/etsy-listing-kit/stripe', () => ({ stripe: { webhooks: { constructEvent } }, isLiveMode: () => true, webhookSecret: () => 'whsec_test' }));
 vi.mock('@/lib/etsy-listing-kit/supabase-admin', () => ({ createAdminSupabaseClient }));
 vi.mock('@/lib/etsy-listing-kit/fulfillment', () => ({ fulfillOrder }));
 vi.mock('@/lib/etsy-listing-kit/refund', () => ({ refundFailedOrder }));

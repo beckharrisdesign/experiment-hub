@@ -25,9 +25,10 @@ const LAUNCHED_AT = process.env.ELK_LAUNCHED_AT || null;
 
 function fail(msg) { console.error(msg); process.exit(2); }
 
-const key = process.env.STRIPE_SECRET_KEY;
+// Revenue is inherently about LIVE money — prefer the live key regardless of app STRIPE_MODE.
+const key = process.env.STRIPE_SECRET_KEY_LIVE || process.env.STRIPE_SECRET_KEY;
 if (!key) {
-  console.log('revenue:test — INACTIVE: STRIPE_SECRET_KEY not set. Cannot read live revenue.');
+  console.log('revenue:test — INACTIVE: no live key (STRIPE_SECRET_KEY_LIVE / STRIPE_SECRET_KEY). Cannot read live revenue.');
   console.log('Set a read-capable live key to activate. (Test is not passing — it is not running.)');
   process.exit(3); // distinct code: inactive, not pass/fail
 }
