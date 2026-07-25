@@ -33,7 +33,7 @@ Package manager: **pnpm** (hub root). Dev: `pnpm dev` → funnel at `/etsy-listi
 - [x] 3.7 Transactional email: provider-agnostic adapter (Resend if `RESEND_API_KEY`, else safe logged no-op — no new account); "your images are ready" HTML+text; wired into fulfillment, idempotent via `email_message_id` — `lib/etsy-listing-kit/email.ts`
 - [x] 3.8 Analytics layer: typed funnel events wired (`landing_view`, `upload_started`, `preview_viewed`, `checkout_started`, `result_delivered`, `payment_cancelled`); GA4 client (gtag) + server purchase (Measurement Protocol, once on fulfillment); UTM/click-id persisted through Checkout — `lib/etsy-listing-kit/analytics.ts` (no-op without GA keys)
 - [x] 3.9 Owner view at `/admin/etsy-listing-kit` (gated by the hub's existing `hub-edit`/`ADMIN_SECRET` middleware): orders table (status, amount, mode, email, fulfilled, attribution), revenue-target progress bar, failed orders highlighted. Read-only — retry/refund tooling is a follow-up
-- [~] 3.10 Recovery: cancelled-payment banner on return (`?canceled=1`, fires `payment_cancelled`) done; processing-failed marks order `failed` for owner retry — auto-retry/auto-refund still TODO
+- [x] 3.10 Recovery: cancelled-payment banner (`?canceled=1`); **auto-refund** on failed fulfillment (webhook catches → `refundFailedOrder` full refund + apology email, idempotent via `shouldRefund` guard) + result page shows "you're covered" — `lib/etsy-listing-kit/refund.ts`, 4 tests
 
 ## 4. Revenue test
 

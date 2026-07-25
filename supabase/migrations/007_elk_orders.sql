@@ -10,6 +10,7 @@ create table if not exists public.elk_orders (
                                         'fulfilled','failed','refunded','partially_refunded')),
   -- Stripe linkage (metadata-based, no user account)
   stripe_session_id text unique,
+  stripe_payment_intent text,                  -- for refunds
   stripe_event_id   text unique,               -- last processed event (idempotency)
   amount_total      integer,                    -- minor units (cents)
   currency          text default 'usd',

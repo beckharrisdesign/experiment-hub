@@ -30,13 +30,18 @@ function ResultInner() {
   // Poll until fulfilled (webhook fulfils just after payment).
   useEffect(() => {
     poll();
-    const t = setInterval(() => { if (status !== 'fulfilled') poll(); }, 3000);
+    const done = ['fulfilled', 'refunded', 'failed'];
+    const t = setInterval(() => { if (!done.includes(status)) poll(); }, 3000);
     return () => clearInterval(t);
   }, [poll, status]);
 
-  useEffect(() => { if (status === 'fulfilled') track('result_delivered'); }, [status]);
+  useEffect(() => {
+    if (status === 'fulfilled') track('result_delivered');
+    if (status === 'refunded' || status === 'failed') track('processing_failed', { status });
+  }, [status]);
 
   const ready = status === 'fulfilled' && images;
+  const covered = status === 'refunded' || status === 'failed';
 
   return (
     <main className={styles.kit}>
@@ -50,6 +55,13 @@ function ResultInner() {
           <>
             <h1 className={styles.h1}>We hit a snag</h1>
             <p className={styles.sub}>{error} If you paid, your download link is also in your email — or reply to your receipt and we&rsquo;ll sort it.</p>
+          </>
+        ) : covered ? (
+          <>
+            <h1 className={styles.h1}>Something went wrong — you&rsquo;re covered</h1>
+            <p className={styles.sub}>
+              Your payment went through, but we hit a snag building your images and couldn&rsquo;t finish. We&rsquo;ve automatically refunded you in full — nothing for you to do. Reply to your receipt if you&rsquo;d like to try again.
+            </p>
           </>
         ) : ready ? (
           <>

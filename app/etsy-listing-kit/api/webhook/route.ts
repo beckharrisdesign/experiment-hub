@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { stripe } from '../../../../lib/etsy-listing-kit/stripe';
 import { createAdminSupabaseClient } from '../../../../lib/etsy-listing-kit/supabase-admin';
 import { fulfillOrder } from '../../../../lib/etsy-listing-kit/fulfillment';
+import { refundFailedOrder } from '../../../../lib/etsy-listing-kit/refund';
 import { decideWebhookAction } from '../../../../lib/etsy-listing-kit/webhook-logic';
 
 export const runtime = 'nodejs';
@@ -62,6 +63,7 @@ export async function POST(request: NextRequest) {
   await db.from('elk_orders').update({
     status: 'paid',
     stripe_event_id: event.id,
+    stripe_payment_intent: typeof session.payment_intent === 'string' ? session.payment_intent : undefined,
     amount_total: session.amount_total ?? undefined,
     currency: session.currency ?? undefined,
     livemode: event.livemode,
@@ -70,12 +72,17 @@ export async function POST(request: NextRequest) {
     updated_at: new Date().toISOString(),
   }).eq('id', decision.orderId);
 
-  // Fulfil (idempotent). Failure here shouldn't 500 the webhook — Stripe would
-  // retry; the order is already 'paid' and can be retried by the owner.
+  // Fulfil (idempotent). If it fails, the customer paid but we can't deliver →
+  // auto-refund in full + apology email. Never 500 the webhook.
   try {
     await fulfillOrder(decision.orderId);
   } catch (err) {
-    console.error(`[elk webhook] fulfillment failed for ${decision.orderId}:`, err);
+    console.error(`[elk webhook] fulfillment failed for ${decision.orderId}, auto-refunding:`, err);
+    try {
+      await refundFailedOrder(decision.orderId);
+    } catch (refundErr) {
+      console.error(`[elk webhook] auto-refund also failed for ${decision.orderId}:`, refundErr);
+    }
   }
 
   return NextResponse.json({ received: true }, { status: 200 });
