@@ -3,6 +3,7 @@
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import styles from '../elk.module.css';
+import { track } from '../../../lib/etsy-listing-kit/analytics';
 
 interface OrderImage { id: string; label: string; url: string; }
 
@@ -32,6 +33,8 @@ function ResultInner() {
     const t = setInterval(() => { if (status !== 'fulfilled') poll(); }, 3000);
     return () => clearInterval(t);
   }, [poll, status]);
+
+  useEffect(() => { if (status === 'fulfilled') track('result_delivered'); }, [status]);
 
   const ready = status === 'fulfilled' && images;
 

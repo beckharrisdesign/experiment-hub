@@ -106,6 +106,18 @@
   font-size: 14px;
 }
 
+.banner {
+  max-width: 760px;
+  margin: 16px auto 0;
+  background: var(--accent-tint);
+  border: 1px solid var(--accent);
+  color: var(--accent-ink);
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 14px;
+  text-align: center;
+}
+
 .primaryWide {
   margin-top: 4px;
   background: var(--primary);

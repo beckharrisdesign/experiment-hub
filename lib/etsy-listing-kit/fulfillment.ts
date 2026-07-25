@@ -7,6 +7,7 @@ import { createAdminSupabaseClient } from './supabase-admin';
 import { downloadInput, storeOutput } from './orders';
 import { generatePack } from './generator';
 import { sendResultEmail } from './email';
+import { trackPurchaseServer } from './analytics';
 
 function siteUrl(): string {
   const base = process.env.ELK_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
@@ -36,6 +37,9 @@ export async function fulfillOrder(orderId: string): Promise<{ alreadyDone: bool
     await db.from('elk_orders')
       .update({ status: 'fulfilled', output_ref: outputRef, fulfilled_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq('id', orderId);
+
+    // Verified purchase → GA4 (server-side, fires once on first fulfillment).
+    await trackPurchaseServer({ id: orderId, amount_total: order.amount_total, currency: order.currency, click_id: order.click_id });
 
     // Confirmation email — idempotent: only if we have a recipient and haven't sent.
     if (order.customer_email && !order.email_message_id) {

@@ -31,9 +31,9 @@ Package manager: **pnpm** (hub root). Dev: `pnpm dev` → funnel at `/etsy-listi
 - [x] 3.5 Webhook API: signature-verified, idempotent on event id, scope+paid guards, `checkout.session.completed` → paid → idempotent fulfillment (generate 6 clean → store) — `app/etsy-listing-kit/api/webhook`. Email still TODO
 - [x] 3.6 Result page + order API: post-payment retrieval, polls till fulfilled, signed download URLs (7-day TTL), no account — `app/etsy-listing-kit/result` + `api/order`. (Individual JPGs; zip a later refinement)
 - [x] 3.7 Transactional email: provider-agnostic adapter (Resend if `RESEND_API_KEY`, else safe logged no-op — no new account); "your images are ready" HTML+text; wired into fulfillment, idempotent via `email_message_id` — `lib/etsy-listing-kit/email.ts`
-- [ ] 3.8 Analytics layer: funnel events (`landing_view`→`result_delivered` + `payment_cancelled`/`processing_failed`/`payment_refunded`); GA4 purchase on verified payment only; persist UTM/click-id through Checkout metadata
+- [x] 3.8 Analytics layer: typed funnel events wired (`landing_view`, `upload_started`, `preview_viewed`, `checkout_started`, `result_delivered`, `payment_cancelled`); GA4 client (gtag) + server purchase (Measurement Protocol, once on fulfillment); UTM/click-id persisted through Checkout — `lib/etsy-listing-kit/analytics.ts` (no-op without GA keys)
 - [ ] 3.9 Minimal owner view (protected): orders, status, revenue-target progress, attribution, retry a failed order
-- [ ] 3.10 Error/recovery states per Figma: cancelled (upload intact), processing failed (auto-retry → auto-refund + email)
+- [~] 3.10 Recovery: cancelled-payment banner on return (`?canceled=1`, fires `payment_cancelled`) done; processing-failed marks order `failed` for owner retry — auto-retry/auto-refund still TODO
 
 ## 4. Revenue test
 

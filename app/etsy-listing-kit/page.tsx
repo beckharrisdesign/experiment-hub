@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './elk.module.css';
 import { PRICE_CENTS, UPLOAD } from '../../lib/etsy-listing-kit/config';
+import { track } from '../../lib/etsy-listing-kit/analytics';
 
 const priceLabel = `$${(PRICE_CENTS / 100).toFixed(PRICE_CENTS % 100 ? 2 : 0)}`;
 const acceptAttr = UPLOAD.acceptedMime.join(',');
@@ -26,11 +27,22 @@ export default function EtsyListingKitLanding() {
   const [previews, setPreviews] = useState<{ id: string; label: string; dataUrl: string }[] | null>(null);
   const [generating, setGenerating] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
+  const [canceled, setCanceled] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Funnel: landing view + cancel-return detection.
+  useEffect(() => {
+    track('landing_view');
+    if (new URLSearchParams(window.location.search).get('canceled')) {
+      setCanceled(true);
+      track('payment_cancelled');
+    }
+  }, []);
 
   const checkout = useCallback(async () => {
     if (!file) return;
     setCheckingOut(true); setError(null);
+    track('checkout_started');
     try {
       const fd = new FormData();
       fd.append('design', file);
@@ -61,6 +73,7 @@ export default function EtsyListingKitLanding() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Preview failed');
       setPreviews(json.previews);
+      track('preview_viewed', { image_count: json.previews?.length });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong generating your preview.');
     } finally {
@@ -76,6 +89,7 @@ export default function EtsyListingKitLanding() {
     setPreviews(null);
     setFile(f);
     setPreview((old) => { if (old) URL.revokeObjectURL(old); return URL.createObjectURL(f); });
+    track('upload_started', { file_type: f.type });
   }, []);
 
   const onDrop = useCallback((e: React.DragEvent) => {
@@ -94,6 +108,12 @@ export default function EtsyListingKitLanding() {
         <span className={styles.logo}>Etsy Listing Kit</span>
         <span className={styles.headerNote}>One design → 6 Etsy-ready images · {priceLabel}</span>
       </header>
+
+      {canceled && (
+        <div className={styles.banner} role="status">
+          No charge — your work&rsquo;s still here. Re-add your design below whenever you&rsquo;re ready.
+        </div>
+      )}
 
       <section className={styles.hero}>
         <span className={styles.eyebrow}>FOR EMBROIDERY &amp; CRAFT SELLERS</span>
