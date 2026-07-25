@@ -20,6 +20,29 @@
 5. **Launch stamp:** set `ELK_LAUNCHED_AT` to the go-live ISO timestamp (revenue:test counts only after this).
 6. **Site URL:** set `ELK_SITE_URL` to the production origin (used in email links).
 
+## Environment variables — status
+
+Confirmed already set in Vercel (from the 2026-07-25 env screenshot):
+
+| Var | Status | Used by |
+| --- | --- | --- |
+| `SUPABASE_URL` | ✅ set (redeploy to apply) | `lib/etsy-listing-kit/supabase-admin.ts` |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ set (redeploy to apply) | admin client — server only |
+| `ADMIN_SECRET` | ✅ set | `/admin/etsy-listing-kit` gate (hub middleware) |
+
+Still to set:
+
+| Var | Status | Used by |
+| --- | --- | --- |
+| `STRIPE_SECRET_KEY` | ⬜ needed | checkout + webhook + revenue:test |
+| `STRIPE_WEBHOOK_SECRET` | ⬜ needed | webhook signature verification |
+| `ELK_LAUNCHED_AT` | ⬜ at go-live | revenue window start |
+| `ELK_SITE_URL` | ⬜ needed | email download links |
+| `RESEND_API_KEY` (+ `ELK_EMAIL_FROM`) | ⬜ optional | confirmation/refund email |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` + `GA_API_SECRET` | ⬜ optional | funnel + purchase analytics |
+
+> The three ✅ vars show Vercel "Needs Attention" only because the current deployment predates them — the next deploy applies them.
+
 ## First three launch actions
 
 1. Merge PR #331, deploy to the Vercel production subdomain.
