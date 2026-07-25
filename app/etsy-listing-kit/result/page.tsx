@@ -70,6 +70,12 @@ function ResultInner() {
 
       {ready && (
         <section className={styles.previewSection} style={{ gridTemplateColumns: '1fr' }}>
+          <div style={{ textAlign: 'center', marginBottom: 8 }}>
+            <a className={styles.primaryWide} href={`/etsy-listing-kit/api/download?order=${encodeURIComponent(orderId!)}`}
+               style={{ display: 'inline-block', textDecoration: 'none' }} download>
+              ⬇ Download all 6 (.zip)
+            </a>
+          </div>
           <div className={styles.grid}>
             {images!.map((img) => (
               <a key={img.id} className={styles.gridCell} href={img.url} download={`${img.id}.jpg`} style={{ textDecoration: 'none' }}>

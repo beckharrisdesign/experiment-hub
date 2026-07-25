@@ -74,6 +74,14 @@ export async function storeOutput(orderId: string, name: string, buf: Buffer, co
   return path;
 }
 
+export async function downloadOutput(path: string): Promise<Buffer> {
+  const db = createAdminSupabaseClient();
+  if (!db) throw new Error('Supabase not configured');
+  const { data, error } = await db.storage.from(OUTPUT_BUCKET).download(path);
+  if (error || !data) throw new Error(`output download failed: ${error?.message}`);
+  return Buffer.from(await data.arrayBuffer());
+}
+
 /** Signed URL for a stored output (paid download). */
 export async function signedOutputUrl(path: string, ttlSeconds: number): Promise<string> {
   const db = createAdminSupabaseClient();

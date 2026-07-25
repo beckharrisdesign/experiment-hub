@@ -4,20 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './elk.module.css';
 import { PRICE_CENTS, UPLOAD } from '../../lib/etsy-listing-kit/config';
 import { track } from '../../lib/etsy-listing-kit/analytics';
+import { validateUpload, uploadMaxMb } from '../../lib/etsy-listing-kit/upload';
 
 const priceLabel = `$${(PRICE_CENTS / 100).toFixed(PRICE_CENTS % 100 ? 2 : 0)}`;
 const acceptAttr = UPLOAD.acceptedMime.join(',');
-
-function validate(file: File): string | null {
-  if (!(UPLOAD.acceptedMime as readonly string[]).includes(file.type)) {
-    return 'That file type isn’t supported — please use a PNG, JPG, or SVG.';
-  }
-  if (file.size > UPLOAD.maxBytes) {
-    const mb = Math.round(UPLOAD.maxBytes / (1024 * 1024));
-    return `That file is a bit big — please keep it under ${mb} MB.`;
-  }
-  return null;
-}
 
 export default function EtsyListingKitLanding() {
   const [dragging, setDragging] = useState(false);
@@ -83,7 +73,7 @@ export default function EtsyListingKitLanding() {
 
   const accept = useCallback((f: File | undefined) => {
     if (!f) return;
-    const err = validate(f);
+    const err = validateUpload(f);
     if (err) { setError(err); setFile(null); setPreview(null); return; }
     setError(null);
     setPreviews(null);
@@ -143,7 +133,7 @@ export default function EtsyListingKitLanding() {
           ) : (
             <>
               <span className={styles.dropTitle}>⬆ Drop your design here (or paste it)</span>
-              <span className={styles.dropHint}>PNG · JPG · SVG · up to {Math.round(UPLOAD.maxBytes / (1024 * 1024))} MB</span>
+              <span className={styles.dropHint}>PNG · JPG · SVG · up to {uploadMaxMb} MB</span>
             </>
           )}
           <button className={styles.button} type="button" onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}>
