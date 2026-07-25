@@ -23,13 +23,33 @@ export default function EtsyListingKitLanding() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [previews, setPreviews] = useState<{ id: string; label: string; dataUrl: string }[] | null>(null);
+  const [generating, setGenerating] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const generate = useCallback(async () => {
+    if (!file) return;
+    setGenerating(true); setError(null); setPreviews(null);
+    try {
+      const fd = new FormData();
+      fd.append('design', file);
+      const res = await fetch('/etsy-listing-kit/api/preview', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Preview failed');
+      setPreviews(json.previews);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong generating your preview.');
+    } finally {
+      setGenerating(false);
+    }
+  }, [file]);
 
   const accept = useCallback((f: File | undefined) => {
     if (!f) return;
     const err = validate(f);
     if (err) { setError(err); setFile(null); setPreview(null); return; }
     setError(null);
+    setPreviews(null);
     setFile(f);
     setPreview((old) => { if (old) URL.revokeObjectURL(old); return URL.createObjectURL(f); });
   }, []);
@@ -93,8 +113,51 @@ export default function EtsyListingKitLanding() {
             onChange={(e) => accept(e.target.files?.[0])}
           />
         </div>
+        {file && (
+          <div style={{ textAlign: 'center', marginTop: 16 }}>
+            <button className={styles.primaryWide} type="button" onClick={generate} disabled={generating}>
+              {generating ? 'Building your 6 images…' : 'Preview my 6 listing images →'}
+            </button>
+          </div>
+        )}
         {error && <p className={styles.error} role="alert">{error}</p>}
       </div>
+
+      {previews && (
+        <section className={styles.previewSection}>
+          <div>
+            <h2 className={styles.previewHead}>Here&rsquo;s your set — take a look</h2>
+            <p className={styles.previewSub}>
+              These are just previews (that&rsquo;s the watermark). Pay once and the clean, full-size six are yours to keep.
+            </p>
+            <div className={styles.grid}>
+              {previews.map((p) => (
+                <div key={p.id} className={styles.gridCell}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.dataUrl} alt={p.label} className={styles.gridImg} />
+                  <div className={styles.gridLabel}>{p.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <aside className={styles.panel}>
+            <span className={styles.tag}>⚡ INSTANT DOWNLOAD</span>
+            <span className={styles.price}>{priceLabel}</span>
+            <span className={styles.priceNote}>one-time · all 6 images</span>
+            <button className={styles.primaryWide} type="button" disabled title="Checkout coming next">
+              Pay {priceLabel} &amp; download →
+            </button>
+            <strong style={{ fontSize: 13 }}>What lands in your inbox:</strong>
+            <ul className={styles.panelList}>
+              <li>• Six full-size photos (2000px)</li>
+              <li>• No watermark, sized for Etsy</li>
+              <li>• Zip download + emailed link</li>
+              <li>• Yours to re-grab for 7 days</li>
+            </ul>
+            <span className={styles.panelFoot}>Checkout wiring is next — this preview is live.</span>
+          </aside>
+        </section>
+      )}
 
       <div className={styles.trust}>
         <span>✓ See a full preview before you pay</span>

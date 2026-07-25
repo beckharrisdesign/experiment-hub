@@ -25,8 +25,8 @@ Package manager: **pnpm** (hub root). Dev: `pnpm dev` → funnel at `/etsy-listi
 ## 3. Build (reuse SSO patterns from `simple-seed-organizer/prototype/app`)
 
 - [ ] 3.1 Routes `app/etsy-listing-kit/` (landing+upload, preview, processing, result) built to the approved 02.3 Figma on MVDS tokens (terracotta/ochre/cream, Fraunces+Inter)
-- [ ] 3.2 Upload API: validate type/size (client + server), store input to private bucket, rate-limit (reuse `lib/rate-limit`)
-- [ ] 3.3 Image asset-pack generator (server): from one design → 6 × 2000px square JPGs (flat, framed, in-hoop, detail, scale, info-card); watermarked + clean variants
+- [~] 3.2 Upload: type/size validated **client + server** (preview API re-validates); private-bucket storage + rate-limit still TODO
+- [x] 3.3 Image asset-pack generator (server): one design → 6 × 2000px JPGs (flat, framed, in-hoop, detail, scale, info-card), watermarked + clean, under 1MB — `lib/etsy-listing-kit/generator.ts`, verified rendering all six + preview API
 - [ ] 3.4 Checkout API: adapt SSO route → `mode:'payment'`, $3 price, metadata `experiment_id`+`order_id`, create order row before redirect
 - [ ] 3.5 Webhook API: adapt SSO route → verify signature, idempotent on event/session id, `checkout.session.completed` → paid → generate clean zip → signed download → email
 - [ ] 3.6 Result/download route: serve signed zip, re-download within 7 days, no account
