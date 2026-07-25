@@ -41,20 +41,24 @@ Still to set:
 
 | Var | Status | Used by |
 | --- | --- | --- |
-| `STRIPE_SECRET_KEY` | ⬜ needed | checkout + webhook + revenue:test |
-| `STRIPE_WEBHOOK_SECRET` | ⬜ needed | webhook signature verification |
+| `STRIPE_MODE` | ⬜ `test` or `live` | which key pair the app uses (flip to switch modes) |
+| `STRIPE_SECRET_KEY_LIVE` | ⬜ needed | checkout + webhook in live mode |
+| `STRIPE_WEBHOOK_SECRET_LIVE` | ⬜ needed | webhook signature (live endpoint) |
+| `STRIPE_SECRET_KEY_TEST` / `STRIPE_WEBHOOK_SECRET_TEST` | ⬜ optional | test-mode dry runs |
 | `ELK_LAUNCHED_AT` | ⬜ at go-live | revenue window start |
 | `ELK_SITE_URL` | ⬜ needed | email download links |
 | `RESEND_API_KEY` (+ `ELK_EMAIL_FROM`) | ⬜ optional | confirmation/refund email |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` + `GA_API_SECRET` | ⬜ optional | funnel + purchase analytics |
+
+> Mode toggle: store both `_TEST`/`_LIVE` key pairs once, set `STRIPE_MODE` to switch — no editing secret values. `revenue:test` always uses the live key.
 
 > The three ✅ vars show Vercel "Needs Attention" only because the current deployment predates them — the next deploy applies them.
 
 ## First three launch actions
 
 1. Merge PR #331, deploy to the Vercel production subdomain.
-2. Run a **test-mode** end-to-end payment (test card `4242…`) → confirm order fulfils, download works, email logs/sends.
-3. Flip to live keys, set `ELK_LAUNCHED_AT`, run one live $3 self-purchase to verify, then start the ad.
+2. **Live-mode from the start** (Katy's call 2026-07-25 — no users/products to endanger; makes real revenue count immediately). Requires account **activation** (bank + identity) for charges to settle. Verify with **one real $3 self-purchase on a real card** (test cards don't work in live mode), confirm it fulfils + downloads + emails, then **refund it** from the dashboard.
+3. Set `ELK_LAUNCHED_AT` at go-live, then start the ad.
 
 ## Verification
 
