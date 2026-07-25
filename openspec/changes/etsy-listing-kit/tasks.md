@@ -32,7 +32,7 @@ Package manager: **pnpm** (hub root). Dev: `pnpm dev` → funnel at `/etsy-listi
 - [x] 3.6 Result page + order/download APIs: post-payment retrieval, polls till fulfilled, per-image signed URLs (7-day TTL) **and a "Download all (.zip)"** via a dependency-free zip writer — `result` + `api/order` + `api/download` + `lib/zip.ts`, no account
 - [x] 3.7 Transactional email: provider-agnostic adapter (Resend if `RESEND_API_KEY`, else safe logged no-op — no new account); "your images are ready" HTML+text; wired into fulfillment, idempotent via `email_message_id` — `lib/etsy-listing-kit/email.ts`
 - [x] 3.8 Analytics layer: typed funnel events wired (`landing_view`, `upload_started`, `preview_viewed`, `checkout_started`, `result_delivered`, `payment_cancelled`); GA4 client (gtag) + server purchase (Measurement Protocol, once on fulfillment); UTM/click-id persisted through Checkout — `lib/etsy-listing-kit/analytics.ts` (no-op without GA keys)
-- [ ] 3.9 Minimal owner view (protected): orders, status, revenue-target progress, attribution, retry a failed order
+- [x] 3.9 Owner view at `/admin/etsy-listing-kit` (gated by the hub's existing `hub-edit`/`ADMIN_SECRET` middleware): orders table (status, amount, mode, email, fulfilled, attribution), revenue-target progress bar, failed orders highlighted. Read-only — retry/refund tooling is a follow-up
 - [~] 3.10 Recovery: cancelled-payment banner on return (`?canceled=1`, fires `payment_cancelled`) done; processing-failed marks order `failed` for owner retry — auto-retry/auto-refund still TODO
 
 ## 4. Revenue test
