@@ -12,9 +12,16 @@
    - [x] **Private Storage buckets created 2026-07-25**: `elk-inputs` (20 MB, PNG/JPG/SVG) + `elk-outputs` (5 MB, JPEG), both `public=false`; no public policies → service-role only, signed URLs for buyers.
    - [x] `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` **already set in Vercel** (names match `lib/etsy-listing-kit/supabase-admin.ts`). `ADMIN_SECRET` also set → owner view gated. Note: Vercel "Needs Attention" = redeploy required for them to take effect.
    - ⚠ *Unrelated pre-existing advisory on this project:* RLS is **disabled** on `advisor_history`, `drift_alerts`, `phase_transitions`, `checkpoints` (anon key can read/write them). Not part of this experiment — decide separately (enable RLS **with** policies). `elk_orders` is already locked down.
-2. **Stripe** (test first, then live)
-   - Set `STRIPE_SECRET_KEY` (`sk_test_…` → `sk_live_…`).
+2. **Stripe** (test first, then live) — **distinct brand per experiment** (decided 2026-07-25)
+   - **Separate Stripe account** for this experiment under a **Beck Harris Design Organization** (never the personal account). Each experiment = its own account = its own brand/payouts/keys.
+   - **Activate under the business entity** (Beck Harris Design DBA/LLC if registered) so the internal legal name isn't a personal name. Customers never see the legal entity regardless.
+   - Customer-facing fields to set on that account (this is what prevents a personal name on statements):
+     - **Statement descriptor** = `ETSY LISTING KIT` (≤22 chars) — the card-statement string.
+     - **Public business name** = the experiment brand · **Branding** = logo + terracotta `#b24a2e`.
+     - **Support email** = a **brand** address, not personal (also set `ELK_EMAIL_FROM` to match).
+   - Set `STRIPE_SECRET_KEY` (`sk_test_…` → `sk_live_…`) from **that account**.
    - Add a webhook endpoint → `https://<your-vercel-domain>/etsy-listing-kit/api/webhook`, event `checkout.session.completed`; put its signing secret in `STRIPE_WEBHOOK_SECRET`.
+   - *No code change needed — the app uses whatever keys you supply. Attribution already works via `experiment_id` metadata; separate accounts are for brand + payout isolation + privacy.*
 3. **Email (optional but recommended):** create a Resend account, set `RESEND_API_KEY` (+ `ELK_EMAIL_FROM` once your domain is verified). Without it, orders still fulfil; email is a no-op.
 4. **Analytics (optional):** `NEXT_PUBLIC_GA_MEASUREMENT_ID` + `GA_API_SECRET`.
 5. **Launch stamp:** set `ELK_LAUNCHED_AT` to the go-live ISO timestamp (revenue:test counts only after this).
