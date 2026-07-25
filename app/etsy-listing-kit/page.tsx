@@ -114,15 +114,14 @@ export default function EtsyListingKitLanding() {
       </section>
 
       <div className={styles.uploadWrap}>
+        {/* Container is a mouse/drag convenience only; the real keyboard/AT
+            control is the "Choose file" button inside (no nested-interactive). */}
         <div
           className={`${styles.dropzone} ${dragging ? styles.dragging : ''}`}
           onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
-          role="button"
-          tabIndex={0}
           onClick={() => inputRef.current?.click()}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click(); }}
         >
           {preview ? (
             <div className={styles.thumbRow}>

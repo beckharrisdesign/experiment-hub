@@ -46,7 +46,7 @@ Package manager: **pnpm** (hub root). Dev: `pnpm dev` → funnel at `/etsy-listi
 - [ ] 5.2 E2E happy path (test card) → paid → fulfilled → download → email → analytics events
 - [ ] 5.3 E2E cancelled payment, duplicate webhook, processing failure/refund
 - [ ] 5.4 Manual §1 walkthrough on preview deploy (first-time visitor, mobile, keyboard, invalid input, refund path)
-- [ ] 5.5 Accessibility: re-run MVDS `check:contrast`; keyboard + mobile critical-flow pass
+- [x] 5.5 Accessibility: palette WCAG-AA audited (design.md); fixed a nested-interactive dropzone → native button is the keyboard/AT control; landing component test asserts named CTA + focusable control + scoped file input; mobile 375px verified rendering
 
 ## 6. Deploy
 
