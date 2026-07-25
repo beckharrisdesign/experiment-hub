@@ -10,7 +10,7 @@
 1. **Supabase** — project: **Experiment Hub 2.0** (`ulqdjuiffpazzixnwwso`); confirmed this is the hub DB (has migrations 001–006 tables).
    - [x] **Migration 007** (`elk_orders`, RLS-locked, service-role only) — **APPLIED 2026-07-25** via connector; verified `public.elk_orders` exists with RLS enabled, 0 rows.
    - [x] **Private Storage buckets created 2026-07-25**: `elk-inputs` (20 MB, PNG/JPG/SVG) + `elk-outputs` (5 MB, JPEG), both `public=false`; no public policies → service-role only, signed URLs for buyers.
-   - [ ] Set `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` in Vercel (service-role is server-only).
+   - [x] `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` **already set in Vercel** (names match `lib/etsy-listing-kit/supabase-admin.ts`). `ADMIN_SECRET` also set → owner view gated. Note: Vercel "Needs Attention" = redeploy required for them to take effect.
    - ⚠ *Unrelated pre-existing advisory on this project:* RLS is **disabled** on `advisor_history`, `drift_alerts`, `phase_transitions`, `checkpoints` (anon key can read/write them). Not part of this experiment — decide separately (enable RLS **with** policies). `elk_orders` is already locked down.
 2. **Stripe** (test first, then live)
    - Set `STRIPE_SECRET_KEY` (`sk_test_…` → `sk_live_…`).
