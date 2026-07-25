@@ -42,7 +42,7 @@ Package manager: **pnpm** (hub root). Dev: `pnpm dev` → funnel at `/etsy-listi
 
 ## 5. QA
 
-- [ ] 5.1 Automated (vitest): upload validation, checkout metadata, webhook idempotency, email adapter, analytics dedup, revenue logic — Stripe test mode + `__mocks__/stripe`
+- [x] 5.1 Automated (vitest): 44 tests — pure logic (revenue qualification, webhook decision, refund guard, upload, zip, email) + **route integration** (checkout metadata/validation, webhook signature/scope/idempotency/auto-refund, preview watermark-only/errors) via mocked Stripe/Supabase/generator
 - [ ] 5.2 E2E happy path (test card) → paid → fulfilled → download → email → analytics events
 - [ ] 5.3 E2E cancelled payment, duplicate webhook, processing failure/refund
 - [ ] 5.4 Manual §1 walkthrough on preview deploy (first-time visitor, mobile, keyboard, invalid input, refund path)
