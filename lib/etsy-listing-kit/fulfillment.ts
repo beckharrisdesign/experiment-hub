@@ -6,6 +6,12 @@
 import { createAdminSupabaseClient } from './supabase-admin';
 import { downloadInput, storeOutput } from './orders';
 import { generatePack } from './generator';
+import { sendResultEmail } from './email';
+
+function siteUrl(): string {
+  const base = process.env.ELK_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
+  return base.replace(/\/$/, '');
+}
 
 export async function fulfillOrder(orderId: string): Promise<{ alreadyDone: boolean; outputRef?: string }> {
   const db = createAdminSupabaseClient();
@@ -30,6 +36,17 @@ export async function fulfillOrder(orderId: string): Promise<{ alreadyDone: bool
     await db.from('elk_orders')
       .update({ status: 'fulfilled', output_ref: outputRef, fulfilled_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq('id', orderId);
+
+    // Confirmation email — idempotent: only if we have a recipient and haven't sent.
+    if (order.customer_email && !order.email_message_id) {
+      const url = `${siteUrl()}/etsy-listing-kit/result?order=${orderId}`;
+      const email = await sendResultEmail(order.customer_email, url);
+      if (email.sent) {
+        await db.from('elk_orders')
+          .update({ email_message_id: email.id, email_sent_at: new Date().toISOString() })
+          .eq('id', orderId);
+      }
+    }
     return { alreadyDone: false, outputRef };
   } catch (err) {
     await db.from('elk_orders').update({ status: 'failed', updated_at: new Date().toISOString() }).eq('id', orderId);

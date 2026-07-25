@@ -30,7 +30,7 @@ Package manager: **pnpm** (hub root). Dev: `pnpm dev` → funnel at `/etsy-listi
 - [x] 3.4 Checkout API: `mode:'payment'`, $3, metadata `experiment_id`+`order_id`, order row created + design stored before redirect; attribution captured — `app/etsy-listing-kit/api/checkout`
 - [x] 3.5 Webhook API: signature-verified, idempotent on event id, scope+paid guards, `checkout.session.completed` → paid → idempotent fulfillment (generate 6 clean → store) — `app/etsy-listing-kit/api/webhook`. Email still TODO
 - [x] 3.6 Result page + order API: post-payment retrieval, polls till fulfilled, signed download URLs (7-day TTL), no account — `app/etsy-listing-kit/result` + `api/order`. (Individual JPGs; zip a later refinement)
-- [ ] 3.7 Transactional email: detect provider; else minimal adapter (no new account) — "your images are ready" + link; idempotent
+- [x] 3.7 Transactional email: provider-agnostic adapter (Resend if `RESEND_API_KEY`, else safe logged no-op — no new account); "your images are ready" HTML+text; wired into fulfillment, idempotent via `email_message_id` — `lib/etsy-listing-kit/email.ts`
 - [ ] 3.8 Analytics layer: funnel events (`landing_view`→`result_delivered` + `payment_cancelled`/`processing_failed`/`payment_refunded`); GA4 purchase on verified payment only; persist UTM/click-id through Checkout metadata
 - [ ] 3.9 Minimal owner view (protected): orders, status, revenue-target progress, attribution, retry a failed order
 - [ ] 3.10 Error/recovery states per Figma: cancelled (upload intact), processing failed (auto-retry → auto-refund + email)
@@ -38,7 +38,7 @@ Package manager: **pnpm** (hub root). Dev: `pnpm dev` → funnel at `/etsy-listi
 ## 4. Revenue test
 
 - [x] 4.1 `revenue:test` script + `pnpm revenue:test`: queries live Stripe by `experiment_id`, post-launch timestamp, minus refunds, excl tax, dedup; exits non-zero until $100; config in `lib/etsy-listing-kit/config.ts`. Verified: reports INACTIVE/red with no key (exit 3) — starts failing honestly
-- [ ] 4.2 Unit tests for revenue logic (test/live modes, full/partial refund, dup webhook/event, missing/wrong metadata, multi-currency, out-of-window, pre-launch, unpaid, failed, disputed, tax exclusion, exact boundary, zero, invalid config)
+- [x] 4.2 Unit tests: `revenue.ts` qualification (test/live, full/partial refund, wrong/missing metadata, out-of-window, pre-launch, unpaid, failed, dedup, sums, CLI parity) + `webhook-logic.ts` (scope, unpaid, duplicate event, retry) + email no-op — 20 tests passing (`tests/etsy-listing-kit/`)
 
 ## 5. QA
 

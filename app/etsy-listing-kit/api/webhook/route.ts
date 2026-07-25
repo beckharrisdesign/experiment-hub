@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { stripe } from '../../../../lib/etsy-listing-kit/stripe';
 import { createAdminSupabaseClient } from '../../../../lib/etsy-listing-kit/supabase-admin';
 import { fulfillOrder } from '../../../../lib/etsy-listing-kit/fulfillment';
-import { EXPERIMENT_ID } from '../../../../lib/etsy-listing-kit/config';
+import { decideWebhookAction } from '../../../../lib/etsy-listing-kit/webhook-logic';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -41,21 +41,22 @@ export async function POST(request: NextRequest) {
 
   const session = event.data.object as Stripe.Checkout.Session;
   const orderId = session.metadata?.order_id;
-  const experimentId = session.metadata?.experiment_id;
 
-  // Scope + payment guards: right product, actually paid.
-  if (experimentId !== EXPERIMENT_ID || !orderId) {
-    return NextResponse.json({ received: true, ignored: 'wrong scope' }, { status: 200 });
+  // Look up any already-processed event id for idempotency.
+  let existingEventId: string | null = null;
+  if (orderId) {
+    const { data } = await db.from('elk_orders').select('stripe_event_id').eq('id', orderId).single();
+    existingEventId = data?.stripe_event_id ?? null;
   }
-  if (session.payment_status !== 'paid') {
-    return NextResponse.json({ received: true, ignored: 'unpaid session' }, { status: 200 });
-  }
-
-  // Idempotency: if this event id is already recorded, no-op.
-  const { data: existing } = await db.from('elk_orders').select('stripe_event_id,status').eq('id', orderId).single();
-  if (existing?.stripe_event_id === event.id) {
-    return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
-  }
+  const decision = decideWebhookAction({
+    eventType: event.type,
+    eventId: event.id,
+    metadata: session.metadata ?? undefined,
+    paymentStatus: session.payment_status ?? undefined,
+    existingEventId,
+  });
+  if (decision.action === 'ignore') return NextResponse.json({ received: true, ignored: decision.reason }, { status: 200 });
+  if (decision.action === 'duplicate') return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
 
   // Mark paid (record event id first so a retry is idempotent).
   await db.from('elk_orders').update({
@@ -67,14 +68,14 @@ export async function POST(request: NextRequest) {
     customer_email: session.customer_details?.email ?? undefined,
     paid_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-  }).eq('id', orderId);
+  }).eq('id', decision.orderId);
 
   // Fulfil (idempotent). Failure here shouldn't 500 the webhook — Stripe would
   // retry; the order is already 'paid' and can be retried by the owner.
   try {
-    await fulfillOrder(orderId);
+    await fulfillOrder(decision.orderId);
   } catch (err) {
-    console.error(`[elk webhook] fulfillment failed for ${orderId}:`, err);
+    console.error(`[elk webhook] fulfillment failed for ${decision.orderId}:`, err);
   }
 
   return NextResponse.json({ received: true }, { status: 200 });

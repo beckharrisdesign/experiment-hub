@@ -20,6 +20,9 @@ create table if not exists public.elk_orders (
   input_ref         text,                       -- private storage path of uploaded design
   output_ref        text,                       -- private storage path of generated zip
   fulfilled_at      timestamptz,
+  -- transactional email (idempotent send)
+  email_message_id  text,                       -- provider id; non-null once sent (dedup)
+  email_sent_at     timestamptz,
   -- attribution (persisted through Checkout)
   utm_source        text,
   utm_medium        text,
