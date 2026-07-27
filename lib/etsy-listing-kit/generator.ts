@@ -4,7 +4,7 @@
  * One design → 6 curated 2000px-square Etsy listing images (clean + watermarked).
  * Composition language follows Katy's W&H listing reference (Figma
  * ZZusgWsPM4Fz8YuhKxnD4R node 134-22200): plain light studio background, an
- * arch logo badge top-left, and a cream FAQ-style info card with a centered
+ * arch logo badge top-left, and a peach FAQ-style info card with a centered
  * badge. Since buyers upload no logo, the badge is derived from their design
  * (dominant color arch + circular design thumbnail).
  *
@@ -55,8 +55,9 @@ const BADGE_W = 240, BADGE_H = 300, BADGE_INSET = 70;
  * terracotta for near-black line art or empty samples so the badge always
  * reads warm, never harsh.
  */
-async function dominantColor(design: Buffer): Promise<string> {
+export async function dominantColor(design: Buffer): Promise<string> {
   const { data, info } = await sharp(design, { density: 300 })
+    .rotate() // honor EXIF orientation, consistent with fit()/detail()
     .resize(64, 64, { fit: 'inside' })
     .ensureAlpha()
     .raw()
@@ -184,7 +185,7 @@ async function scale(design: Buffer, badge: Buffer) {
 }
 
 async function infoCard(_design: Buffer, badge: Buffer) {
-  // W&H FAQ-card language: cream ground, centered badge, centered serif copy.
+  // W&H FAQ-card language: peach ground, centered badge, centered serif copy.
   const lines = [
     'Six 2000px square JPGs',
     'No watermark, sized for Etsy',
