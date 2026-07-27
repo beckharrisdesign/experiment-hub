@@ -17,7 +17,7 @@ Craft/Etsy-tool keywords run ~$0.40–$2 CPC. At $1/day expect **1–3 clicks/da
 | Language | English |
 | Final URL | `https://labs.beckharrisdesign.com/etsy-listing-kit?utm_source=google&utm_medium=cpc&utm_campaign=elk-launch` |
 
-(gclid is auto-appended; the app already captures `gclid` + UTMs onto each order — conversion truth comes from the `elk_orders` table, no pixel setup needed for the decision.)
+(Google auto-appends the gclid; the app persists it into `elk_orders.click_id` — one column that holds gclid or fbclid — alongside the UTM columns. Conversion truth comes from the `elk_orders` table, no pixel setup needed for the decision.)
 
 ## Ad group: etsy listing images (exact + phrase)
 
@@ -52,7 +52,7 @@ Craft/Etsy-tool keywords run ~$0.40–$2 CPC. At $1/day expect **1–3 clicks/da
 ## Measurement (truth = orders table, not pixels)
 
 - Funnel: GA4 events fire only if GA keys are set (optional).
-- **Conversions:** `select count(*) from elk_orders where status in ('paid','processing','fulfilled') and (utm_source='google' or click_id is not null)` — every ad-attributed paid order carries its gclid.
+- **Conversions:** `select count(*) from elk_orders where status in ('paid','processing','fulfilled') and (utm_source='google' or click_id is not null)` — every ad-attributed paid order carries its click id in `elk_orders.click_id` (gclid for Google traffic).
 - CAC = spend ÷ ad-attributed paid orders. Break-even is impossible at $3 by design; this is a signal test.
 
 ## Stop / continue (from LAUNCH_PLAN)
@@ -62,7 +62,7 @@ Craft/Etsy-tool keywords run ~$0.40–$2 CPC. At $1/day expect **1–3 clicks/da
 
 ## Launch checklist for this campaign
 
-1. Statement descriptor set to `ETSY LISTING KIT` (before first stranger pays).
+1. Statement naming set (before first stranger pays): account descriptor must reflect the legal/DBA name (sole prop), so set the dashboard **shortened descriptor to `BHD`** — checkout adds a per-charge suffix and statements read **`BHD* ETSY KIT`**.
 2. `ELK_LAUNCHED_AT` set in Vercel (revenue window running).
 3. Resend key set (buyers need the email link to re-reach downloads).
 4. Create campaign per above → set $1/day → enable. Note the enable date here: `____`
