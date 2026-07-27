@@ -8,15 +8,15 @@ const nextConfig = {
   // into the serverless bundle (Etsy Listing Kit image generator). Without this
   // the linux-x64 libvips fails to load on Vercel.
   serverExternalPackages: ['sharp'],
-  // File tracing misses libvips (loaded at the binary level, never require()d),
-  // so force sharp's platform packages into the Etsy Listing Kit function
-  // bundles. Globs cover both top-level and pnpm-store layouts.
+  // File tracing misses libvips (loaded at the binary level via rpath, never
+  // require()d), so force ONLY the libvips store dir into the Etsy Listing Kit
+  // bundles. Deliberately narrow: including the sharp/sharp-linux-x64 store
+  // dirs too makes the deploy packager materialize their internal symlinks
+  // twice (real dir + symlink -> EEXIST). sharp-linux-x64 itself is already
+  // traced via require(); only the .so payload is missing.
   outputFileTracingIncludes: {
     '/etsy-listing-kit/**': [
-      'node_modules/@img/**',
-      'node_modules/.pnpm/@img+sharp-linux-x64@*/**',
-      'node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/**',
-      'node_modules/.pnpm/sharp@*/**',
+      'node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/node_modules/@img/sharp-libvips-linux-x64/**',
     ],
   },
   reactStrictMode: true,
