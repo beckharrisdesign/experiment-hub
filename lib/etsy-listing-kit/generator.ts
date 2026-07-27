@@ -10,8 +10,16 @@
  *
  * All output is 2000px square JPG, tuned to stay under Etsy's ~1MB guidance.
  */
+import path from 'path';
 import sharp from 'sharp';
 import { PACK_IMAGE_PX } from './config';
+
+// Serverless runtimes ship no fonts — point fontconfig at our bundled OFL
+// fonts (assets/fonts) BEFORE the first sharp text render, or SVG text comes
+// out as tofu boxes. Must run at module load; respect an explicit override.
+if (!process.env.FONTCONFIG_FILE) {
+  process.env.FONTCONFIG_FILE = path.join(process.cwd(), 'assets', 'fonts', 'fonts.conf');
+}
 
 const S = PACK_IMAGE_PX; // 2000
 
@@ -185,9 +193,9 @@ async function infoCard(_design: Buffer, badge: Buffer) {
     'Re-download for 7 days',
   ];
   const card = svg(`<svg width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">
-    <text x="${S / 2}" y="700" text-anchor="middle" font-family="Georgia, serif" font-size="92" font-weight="700" fill="${INK}">What you get</text>
-    <text x="${S / 2}" y="790" text-anchor="middle" font-family="Georgia, serif" font-size="42" fill="${PRIMARY}">6 Etsy-ready listing images · one design</text>
-    ${lines.map((t, i) => `<text x="${S / 2}" y="${960 + i * 110}" text-anchor="middle" font-family="Georgia, serif" font-size="48" fill="${INK}">${t}</text>`).join('')}
+    <text x="${S / 2}" y="700" text-anchor="middle" font-family="PT Serif, serif" font-size="92" font-weight="700" fill="${INK}">What you get</text>
+    <text x="${S / 2}" y="790" text-anchor="middle" font-family="PT Serif, serif" font-size="42" fill="${PRIMARY}">6 Etsy-ready listing images · one design</text>
+    ${lines.map((t, i) => `<text x="${S / 2}" y="${960 + i * 110}" text-anchor="middle" font-family="PT Serif, serif" font-size="48" fill="${INK}">${t}</text>`).join('')}
     <text x="${S / 2}" y="1720" text-anchor="middle" font-family="Inter, sans-serif" font-size="34" fill="${MUTED}">Questions? Just reply to your receipt.</text>
   </svg>`);
   return bg(PEACH)
