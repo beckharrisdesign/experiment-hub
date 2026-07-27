@@ -4,6 +4,10 @@ const path = require("path");
 const nextConfig = {
   // Prevent Next from treating ~/package-lock.json as the monorepo root (breaks dev module resolution).
   outputFileTracingRoot: path.join(__dirname),
+  // sharp is a native module — keep it external so its .so binaries are traced
+  // into the serverless bundle (Etsy Listing Kit image generator). Without this
+  // the linux-x64 libvips fails to load on Vercel.
+  serverExternalPackages: ['sharp'],
   reactStrictMode: true,
   allowedDevOrigins: [
     '*.riker.replit.dev',
@@ -51,7 +55,7 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com", // unsafe-eval required by Mermaid
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com",
+              "img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com https://*.supabase.co", // *.supabase.co: Etsy Listing Kit signed download images
               "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com",
               "frame-ancestors 'none'",
             ].join('; '),
