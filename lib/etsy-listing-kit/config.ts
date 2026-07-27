@@ -16,7 +16,7 @@ export const CURRENCY = 'usd' as const;
 export const PACK_IMAGE_PX = 2000;
 export const PACK_ITEMS = [
   { id: 'flat', label: 'Flat render' },
-  { id: 'framed', label: 'Framed mockup' },
+  { id: 'framed', label: 'Styled hoop photo' },
   { id: 'in-hoop', label: 'In-hoop mockup' },
   { id: 'detail', label: 'Detail crop' },
   { id: 'scale', label: 'Scale shot' },

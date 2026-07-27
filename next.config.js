@@ -20,6 +20,8 @@ const nextConfig = {
       // Bundled fonts — serverless has none; without these, SVG text renders
       // as tofu boxes (see assets/fonts/fonts.conf).
       'assets/fonts/**',
+      // Real hoop photo templates (exported from Katy's W&H Figma file).
+      'assets/mockups/**',
     ],
   },
   reactStrictMode: true,

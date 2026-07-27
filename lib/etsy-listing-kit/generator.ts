@@ -29,7 +29,7 @@ export interface GeneratedImage { id: PackItemId; label: string; clean: Buffer; 
 // ── palette ──────────────────────────────────────────────────────────────────
 const STUDIO = '#ececea';   // plain light studio gray (W&H reference bg)
 const PEACH = '#fbe3d3';    // FAQ/info card background (W&H reference)
-const INK = '#252525', MUTED = '#6b6b6b', PRIMARY = '#b24a2e', FRAME = '#3a2f28';
+const INK = '#252525', MUTED = '#6b6b6b', PRIMARY = '#b24a2e';
 
 function bg(color: string) {
   return sharp({ create: { width: S, height: S, channels: 4, background: color } });
@@ -125,39 +125,45 @@ async function flat(design: Buffer, badge: Buffer) {
     .jpeg({ quality: 86 }).toBuffer();
 }
 
+/** Styled flat-lay hoop with floss/props (W&H "Photo BG" layout template). */
 async function framed(design: Buffer, badge: Buffer) {
-  const mat = 1440, matPos = center(mat);
-  const d = await fit(design, mat - 320);
-  const matLayer = svg(`<svg width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg"><rect x="${matPos}" y="${matPos}" width="${mat}" height="${mat}" fill="#ffffff"/></svg>`);
-  const border = svg(`<svg width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">
-    <rect x="${matPos}" y="${matPos}" width="${mat}" height="${mat}" fill="none" stroke="${FRAME}" stroke-width="56"/>
-    <rect x="${matPos + 28}" y="${matPos + 28}" width="${mat - 56}" height="${mat - 56}" fill="none" stroke="#00000022" stroke-width="2"/>
-  </svg>`);
-  return bg(STUDIO)
+  return hoopPhoto(design, badge, 'hoop-alt.jpg', { cx: 1020, cy: 1010, r: 540, size: 1000 });
+}
+
+/**
+ * Composite the design onto a real hoop photo template (assets/mockups —
+ * exported from Katy's W&H Listing Generator Figma file, her own assets).
+ * The design is flattened to white and multiply-blended so the fabric weave
+ * shows through, and clipped to the fabric circle so nothing darkens the
+ * wooden ring or the styled surroundings.
+ */
+async function hoopPhoto(
+  design: Buffer,
+  badge: Buffer,
+  template: string,
+  spot: { cx: number; cy: number; r: number; size: number },
+) {
+  const prepped = await sharp(design, { density: 300 })
+    .rotate()
+    .resize(spot.size, spot.size, { fit: 'inside', withoutEnlargement: false })
+    .png().toBuffer();
+  const pm = await sharp(prepped).metadata();
+  const pw = pm.width ?? spot.size, ph = pm.height ?? spot.size;
+  const circleMask = svg(`<svg width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg"><circle cx="${spot.cx}" cy="${spot.cy}" r="${spot.r}" fill="#fff"/></svg>`);
+  const layer = await sharp({ create: { width: S, height: S, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
     .composite([
-      { input: matLayer, top: 0, left: 0 },
-      { input: d.buf, top: center(d.h), left: center(d.w) },
-      { input: border, top: 0, left: 0 },
-      badgeTopLeft(badge),
+      { input: prepped, top: Math.round(spot.cy - ph / 2), left: Math.round(spot.cx - pw / 2) },
+      { input: circleMask, blend: 'dest-in' },
     ])
+    .png().toBuffer();
+  return sharp(path.join(process.cwd(), 'assets', 'mockups', template))
+    .composite([{ input: layer, blend: 'multiply' }, badgeTopLeft(badge)])
     .jpeg({ quality: 86 }).toBuffer();
 }
 
+/** Clean studio hoop (W&H "Basic" layout template). */
 async function inHoop(design: Buffer, badge: Buffer) {
-  const D = 1360;
-  const mask = svg(`<svg width="${D}" height="${D}" xmlns="http://www.w3.org/2000/svg"><circle cx="${D / 2}" cy="${D / 2}" r="${D / 2}" fill="#fff"/></svg>`);
-  const disc = await sharp((await fit(design, D, { cover: true })).buf)
-    .resize(D, D, { fit: 'cover' })
-    .composite([{ input: mask, blend: 'dest-in' }])
-    .png().toBuffer();
-  const pos = center(D);
-  const ring = svg(`<svg width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="${S / 2}" cy="${S / 2}" r="${D / 2 + 34}" fill="none" stroke="#c9a06a" stroke-width="46"/>
-    <circle cx="${S / 2}" cy="${S / 2}" r="${D / 2 + 10}" fill="none" stroke="#00000018" stroke-width="3"/>
-    <rect x="${S / 2 - 46}" y="${center(D) - 92}" width="92" height="70" rx="10" fill="#b98a52"/>
-    <rect x="${S / 2 - 8}" y="${center(D) - 120}" width="16" height="40" rx="6" fill="#8a6a3e"/>
-  </svg>`);
-  return bg(STUDIO).composite([{ input: disc, top: pos, left: pos }, { input: ring, top: 0, left: 0 }, badgeTopLeft(badge)]).jpeg({ quality: 86 }).toBuffer();
+  return hoopPhoto(design, badge, 'hoop-basic.jpg', { cx: 985, cy: 1030, r: 665, size: 1280 });
 }
 
 async function detail(design: Buffer, badge: Buffer) {
@@ -189,7 +195,7 @@ async function infoCard(_design: Buffer, badge: Buffer) {
   const lines = [
     'Six 2000px square JPGs',
     'No watermark, sized for Etsy',
-    'Flat · framed · in-hoop · detail · scale',
+    'Flat · hoop · styled photo · detail · scale',
     'Instant download + emailed link',
     'Re-download for 7 days',
   ];
@@ -206,7 +212,7 @@ async function infoCard(_design: Buffer, badge: Buffer) {
 
 const COMPOSERS: { id: PackItemId; label: string; fn: (d: Buffer, badge: Buffer) => Promise<Buffer> }[] = [
   { id: 'flat', label: 'Flat render', fn: flat },
-  { id: 'framed', label: 'Framed mockup', fn: framed },
+  { id: 'framed', label: 'Styled hoop photo', fn: framed },
   { id: 'in-hoop', label: 'In-hoop mockup', fn: inHoop },
   { id: 'detail', label: 'Detail crop', fn: detail },
   { id: 'scale', label: 'Scale shot', fn: scale },
