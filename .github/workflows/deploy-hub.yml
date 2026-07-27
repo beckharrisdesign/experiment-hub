@@ -40,6 +40,10 @@ on:
       - '.cursor/**'
       - '.github/**'
       - '*.md'
+  # Manual trigger — needed when only env vars changed (no code push to
+  # deploy them) since Vercel git auto-deploy is off. Dispatch on main
+  # deploys production.
+  workflow_dispatch:
 
 env:
   # Project/org IDs are not secret; the token is. Kept in secrets for convenience.
@@ -96,7 +100,7 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         id: target
         run: |
-          if [ "${{ github.ref }}" = "refs/heads/main" ] && [ "${{ github.event_name }}" = "push" ]; then
+          if [ "${{ github.ref }}" = "refs/heads/main" ] && { [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; }; then
             echo "env=production" >> "$GITHUB_OUTPUT"
             echo "prod_flag=--prod" >> "$GITHUB_OUTPUT"
           else
