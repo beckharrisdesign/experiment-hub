@@ -187,7 +187,9 @@ export default function EtsyListingKitLanding() {
               <li>• Zip download + emailed link</li>
               <li>• Yours to re-grab for 7 days</li>
             </ul>
-            <span className={styles.panelFoot}>Secure Stripe checkout · re-download for 7 days · refund by reply</span>
+            <span className={styles.panelFoot}>
+              Secure Stripe checkout · re-download for 7 days · refund by reply · your card statement will show “BHD* ETSY KIT”
+            </span>
           </aside>
         </section>
       )}

@@ -20,6 +20,20 @@ Reusable patterns this experiment produced. **Not** auto-applied to shared packa
 | **Dropzone (drag/drop/paste) pattern** | Product-local now; a common enough interaction to live in MVDS |
 | **Watermarked preview grid** | Product-specific; probably stays local |
 
+## Acquisition-tooling gap (identified at etsy-listing-kit launch, 2026-07-27)
+
+The launch's last mile — creating the ad campaign — fell back to manual dashboard work,
+which belies the autonomous-experiment goal. Candidates, in preference order:
+
+| Candidate | Shape | Notes |
+| --- | --- | --- |
+| **Google Ads connector (claude.ai)** | Zero-build | If a first-party/marketplace connector exists, connect + re-auth and agents can drive campaign creation directly (create paused; human enables = spend authorization). Katy believed one was connected — verify in connector settings; not surfaced in-session as of 2026-07-27 |
+| **`google-ads-campaign` skill + thin API wrapper** | Scaffold build | Google Ads API v17+ via a service account / OAuth refresh token; smallest surface: create campaign (paused) + ad group + keywords + RSA from a JSON plan like `docs/AD_CAMPAIGN_GOOGLE.md`. Guard rails: hard budget cap param, always-create-paused, never enable |
+| **Editor-import generator** | Cheapest build | Emit a Google Ads Editor CSV from the campaign doc — halves the manual work (import + review + enable) without any API auth |
+
+Same pattern applies to Meta when that channel gets used. The campaign *plan* format in
+`docs/AD_CAMPAIGN_GOOGLE.md` is already structured enough to be the input contract.
+
 ## Do not
 
 - Do not modify or publish `@beckharrisdesign/mvds` from this experiment.
