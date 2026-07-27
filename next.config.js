@@ -8,6 +8,17 @@ const nextConfig = {
   // into the serverless bundle (Etsy Listing Kit image generator). Without this
   // the linux-x64 libvips fails to load on Vercel.
   serverExternalPackages: ['sharp'],
+  // File tracing misses libvips (loaded at the binary level, never require()d),
+  // so force sharp's platform packages into the Etsy Listing Kit function
+  // bundles. Globs cover both top-level and pnpm-store layouts.
+  outputFileTracingIncludes: {
+    '/etsy-listing-kit/**': [
+      'node_modules/@img/**',
+      'node_modules/.pnpm/@img+sharp-linux-x64@*/**',
+      'node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/**',
+      'node_modules/.pnpm/sharp@*/**',
+    ],
+  },
   reactStrictMode: true,
   allowedDevOrigins: [
     '*.riker.replit.dev',
