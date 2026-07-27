@@ -3,7 +3,7 @@
  *
  * One design → 6 curated 2000px-square Etsy listing images (clean + watermarked).
  * Composition language follows Katy's W&H listing reference (Figma
- * ZZusgWsPM4Fz8YuhKxnD4R node 134-22200): plain light studio background, an
+ * ZZusgWsPM4Fz8YuhKxnD4R): four real hoop photo scenes from her template set, an
  * arch logo badge top-left, and a peach FAQ-style info card with a centered
  * badge. Since buyers upload no logo, the badge is derived from their design
  * (dominant color arch + circular design thumbnail).
@@ -45,6 +45,18 @@ async function fit(input: Buffer, box: number, opts: { cover?: boolean } = {}) {
 }
 const center = (w: number) => Math.round((S - w) / 2);
 const svg = (s: string) => Buffer.from(s);
+
+/**
+ * Encode to JPEG, stepping quality down until under Etsy's ~1MB guidance —
+ * texture-heavy photo templates (linen weave) exceed 1MB at q86.
+ */
+async function toEtsyJpeg(pipeline: sharp.Sharp): Promise<Buffer> {
+  for (const quality of [86, 76, 68]) {
+    const buf = await pipeline.jpeg({ quality }).toBuffer();
+    if (buf.length < 1000 * 1024) return buf;
+  }
+  return pipeline.jpeg({ quality: 60 }).toBuffer();
+}
 
 // ── design-derived arch badge (stand-in for a shop logo) ─────────────────────
 const BADGE_W = 240, BADGE_H = 300, BADGE_INSET = 70;
@@ -113,16 +125,17 @@ function watermarkSvg() {
   return svg(`<svg width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">${rows.join('')}</svg>`);
 }
 async function watermark(clean: Buffer) {
-  return sharp(clean).composite([{ input: watermarkSvg(), top: 0, left: 0 }]).jpeg({ quality: 86 }).toBuffer();
+  return toEtsyJpeg(sharp(clean).composite([{ input: watermarkSvg(), top: 0, left: 0 }]));
 }
 
 // ── compositions ─────────────────────────────────────────────────────────────
+/**
+ * Hoop on natural linen with pastel floss (W&H "Linen" style). Replaces the
+ * old crisp flat render — presenting the raw design clean at 2000px made it
+ * trivially traceable by design thieves (Katy, 2026-07-27).
+ */
 async function flat(design: Buffer, badge: Buffer) {
-  const d = await fit(design, 1280);
-  const shadow = svg(`<svg width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg"><defs><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="24" stdDeviation="34" flood-color="#000" flood-opacity="0.12"/></filter></defs><rect x="${center(d.w)}" y="${center(d.h)}" width="${d.w}" height="${d.h}" rx="10" fill="#ffffff" filter="url(#s)"/></svg>`);
-  return bg(STUDIO)
-    .composite([{ input: shadow, top: 0, left: 0 }, { input: d.buf, top: center(d.h), left: center(d.w) }, badgeTopLeft(badge)])
-    .jpeg({ quality: 86 }).toBuffer();
+  return hoopPhoto(design, badge, 'hoop-linen.jpg', { cx: 995, cy: 906, r: 585, size: 820 });
 }
 
 /** Styled flat-lay hoop with floss/props (W&H "Photo BG" layout template). */
@@ -133,9 +146,9 @@ async function framed(design: Buffer, badge: Buffer) {
 /**
  * Composite the design onto a real hoop photo template (assets/mockups —
  * exported from Katy's W&H Listing Generator Figma file, her own assets).
- * The design is flattened to white and multiply-blended so the fabric weave
- * shows through, and clipped to the fabric circle so nothing darkens the
- * wooden ring or the styled surroundings.
+ * The design is multiply-blended so the fabric weave shows through (alpha
+ * preserved — transparent designs touch nothing outside their strokes), and
+ * clipped to the fabric circle so nothing darkens the ring or surroundings.
  */
 async function hoopPhoto(
   design: Buffer,
@@ -156,9 +169,10 @@ async function hoopPhoto(
       { input: circleMask, blend: 'dest-in' },
     ])
     .png().toBuffer();
-  return sharp(path.join(process.cwd(), 'assets', 'mockups', template))
-    .composite([{ input: layer, blend: 'multiply' }, badgeTopLeft(badge)])
-    .jpeg({ quality: 86 }).toBuffer();
+  return toEtsyJpeg(
+    sharp(path.join(process.cwd(), 'assets', 'mockups', template))
+      .composite([{ input: layer, blend: 'multiply' }, badgeTopLeft(badge)]),
+  );
 }
 
 /** Clean studio hoop (W&H "Basic" layout template). */
@@ -178,16 +192,13 @@ async function detail(design: Buffer, badge: Buffer) {
   return bg(STUDIO).composite([{ input: cropped, top: 60, left: 60 }, badgeTopLeft(badge)]).jpeg({ quality: 86 }).toBuffer();
 }
 
+/**
+ * Hoop on terracotta linen with walnut ring (W&H "Terra Cotta" style).
+ * Replaces the scale shot — the ruler wasn't earning its slot and the clean
+ * high-res design was traceable (Katy, 2026-07-27).
+ */
 async function scale(design: Buffer, badge: Buffer) {
-  const d = await fit(design, 1120);
-  const top = 300;
-  const ruler = svg(`<svg width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">
-    <line x1="${center(d.w)}" y1="${top + d.h + 120}" x2="${center(d.w) + d.w}" y2="${top + d.h + 120}" stroke="${INK}" stroke-width="5"/>
-    <line x1="${center(d.w)}" y1="${top + d.h + 96}" x2="${center(d.w)}" y2="${top + d.h + 144}" stroke="${INK}" stroke-width="5"/>
-    <line x1="${center(d.w) + d.w}" y1="${top + d.h + 96}" x2="${center(d.w) + d.w}" y2="${top + d.h + 144}" stroke="${INK}" stroke-width="5"/>
-    <text x="${S / 2}" y="${top + d.h + 210}" text-anchor="middle" font-family="Inter, sans-serif" font-size="46" fill="${MUTED}">approx. 8 in wide</text>
-  </svg>`);
-  return bg(STUDIO).composite([{ input: d.buf, top, left: center(d.w) }, { input: ruler, top: 0, left: 0 }, badgeTopLeft(badge)]).jpeg({ quality: 86 }).toBuffer();
+  return hoopPhoto(design, badge, 'hoop-terra.jpg', { cx: 1005, cy: 1000, r: 500, size: 690 });
 }
 
 async function infoCard(_design: Buffer, badge: Buffer) {
@@ -195,7 +206,7 @@ async function infoCard(_design: Buffer, badge: Buffer) {
   const lines = [
     'Six 2000px square JPGs',
     'No watermark, sized for Etsy',
-    'Flat · hoop · styled photo · detail · scale',
+    'Four styled hoop scenes + detail crop',
     'Instant download + emailed link',
     'Re-download for 7 days',
   ];
@@ -211,11 +222,11 @@ async function infoCard(_design: Buffer, badge: Buffer) {
 }
 
 const COMPOSERS: { id: PackItemId; label: string; fn: (d: Buffer, badge: Buffer) => Promise<Buffer> }[] = [
-  { id: 'flat', label: 'Flat render', fn: flat },
+  { id: 'flat', label: 'Hoop on linen', fn: flat },
   { id: 'framed', label: 'Styled hoop photo', fn: framed },
   { id: 'in-hoop', label: 'In-hoop mockup', fn: inHoop },
   { id: 'detail', label: 'Detail crop', fn: detail },
-  { id: 'scale', label: 'Scale shot', fn: scale },
+  { id: 'scale', label: 'Hoop on terracotta', fn: scale },
   { id: 'info-card', label: '“What you get” card', fn: infoCard },
 ];
 
