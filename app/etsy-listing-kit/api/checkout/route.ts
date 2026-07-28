@@ -51,7 +51,13 @@ export async function POST(request: NextRequest) {
         },
       }],
       metadata: { experiment_id: EXPERIMENT_ID, order_id: orderId },
-      payment_intent_data: { metadata: { experiment_id: EXPERIMENT_ID, order_id: orderId } },
+      payment_intent_data: {
+        metadata: { experiment_id: EXPERIMENT_ID, order_id: orderId },
+        // Account descriptor must reflect the legal/DBA name (sole prop), so the
+        // brand match happens via suffix: with shortened descriptor "BHD" set in
+        // the dashboard, card statements read "BHD* ETSY KIT".
+        statement_descriptor_suffix: 'ETSY KIT',
+      },
       success_url: `${origin}/etsy-listing-kit/result?order=${orderId}`,
       cancel_url: `${origin}/etsy-listing-kit?canceled=1`,
     });
