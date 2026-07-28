@@ -17,6 +17,11 @@ const nextConfig = {
   outputFileTracingIncludes: {
     '/etsy-listing-kit/**': [
       'node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/node_modules/@img/sharp-libvips-linux-x64/**',
+      // Bundled fonts — serverless has none; without these, SVG text renders
+      // as tofu boxes (see assets/fonts/fonts.conf).
+      'assets/fonts/**',
+      // Real hoop photo templates (exported from Katy's W&H Figma file).
+      'assets/mockups/**',
     ],
   },
   reactStrictMode: true,

@@ -15,11 +15,11 @@ export const CURRENCY = 'usd' as const;
 /** Curated v1 pack — 6 images, all 2000px square (no video/hero/alt-sizes). */
 export const PACK_IMAGE_PX = 2000;
 export const PACK_ITEMS = [
-  { id: 'flat', label: 'Flat render' },
-  { id: 'framed', label: 'Framed mockup' },
+  { id: 'flat', label: 'Hoop on linen' },
+  { id: 'framed', label: 'Styled hoop photo' },
   { id: 'in-hoop', label: 'In-hoop mockup' },
   { id: 'detail', label: 'Detail crop' },
-  { id: 'scale', label: 'Scale shot' },
+  { id: 'scale', label: 'Hoop on terracotta' },
   { id: 'info-card', label: '“What you get” card' },
 ] as const;
 
