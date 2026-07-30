@@ -19,7 +19,7 @@ Closes #336 · advances tracker #343 (1 of 2). Client-only: `app/etsy-listing-ki
 ## 3. QA
 
 - [x] 3.1 Component tests (vitest/jsdom): scrollIntoView called on success, focus on heading, live-region text for all three states, reduced-motion branch via matchMedia mock, repeat-submit blocked — 5 tests; full ELK suite 67/67 green 2026-07-30
-- [ ] 3.2 Manual pass on the production funnel after deploy: real upload → submit → auto-scroll lands on "Here's your set"; verify at 375px (shallow fold — the case that bit in #336)
+- [x] 3.2 Manual pass on the production funnel after deploy: real upload → submit → auto-scroll lands on "Here's your set"; verify at 375px (shallow fold — the case that bit in #336) — Katy's manual pass on the PR #345 preview deploy 2026-07-30 ("looks great"); production deploy green same day, live page serves the new status region (curl-verified)
 - [x] 3.3 Update parent `etsy-listing-kit/tasks.md` receipts (1.3/5.4 re-verify note) in the same PR — per the "Tasks stay true" rule — parent 1.3 receipt updated this PR
 
 > Stop rule: wait for approval before `/opsx:apply`.
