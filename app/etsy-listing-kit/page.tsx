@@ -18,7 +18,19 @@ export default function EtsyListingKitLanding() {
   const [generating, setGenerating] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
   const [canceled, setCanceled] = useState(false);
+  const [genStatus, setGenStatus] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const previewsRef = useRef<HTMLElement>(null);
+  const previewHeadRef = useRef<HTMLHeadingElement>(null);
+
+  // #336: bring the finished previews to the visitor — they mount below the
+  // fold, so without this the page "stays up top" and the click reads as a no-op.
+  useEffect(() => {
+    if (!previews) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    previewsRef.current?.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' });
+    previewHeadRef.current?.focus({ preventScroll: true });
+  }, [previews]);
 
   // Funnel: landing view + cancel-return detection.
   useEffect(() => {
@@ -56,6 +68,7 @@ export default function EtsyListingKitLanding() {
   const generate = useCallback(async () => {
     if (!file) return;
     setGenerating(true); setError(null); setPreviews(null);
+    setGenStatus('Building your 6 images…');
     try {
       const fd = new FormData();
       fd.append('design', file);
@@ -63,8 +76,10 @@ export default function EtsyListingKitLanding() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Preview failed');
       setPreviews(json.previews);
+      setGenStatus('Your 6 preview images are ready.');
       track('preview_viewed', { image_count: json.previews?.length });
     } catch (e) {
+      setGenStatus('');
       setError(e instanceof Error ? e.message : 'Something went wrong generating your preview.');
     } finally {
       setGenerating(false);
@@ -149,17 +164,25 @@ export default function EtsyListingKitLanding() {
         {file && (
           <div style={{ textAlign: 'center', marginTop: 16 }}>
             <button className={styles.primaryWide} type="button" onClick={generate} disabled={generating}>
-              {generating ? 'Building your 6 images…' : 'Preview my 6 listing images →'}
+              {generating ? (
+                <>
+                  <span className={styles.spinner} aria-hidden="true" /> Building your 6 images…
+                </>
+              ) : (
+                'Preview my 6 listing images →'
+              )}
             </button>
           </div>
         )}
+        {/* Failure keeps the role="alert" below; this region carries running/ready. */}
+        <p className={styles.srOnly} role="status" aria-live="polite">{genStatus}</p>
         {error && <p className={styles.error} role="alert">{error}</p>}
       </div>
 
       {previews && (
-        <section className={styles.previewSection}>
+        <section className={styles.previewSection} ref={previewsRef}>
           <div>
-            <h2 className={styles.previewHead}>Here&rsquo;s your set — take a look</h2>
+            <h2 className={styles.previewHead} ref={previewHeadRef} tabIndex={-1}>Here&rsquo;s your set — take a look</h2>
             <p className={styles.previewSub}>
               These are just previews (that&rsquo;s the watermark). Pay once and the clean, full-size six are yours to keep.
             </p>
