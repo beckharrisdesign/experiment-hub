@@ -4,12 +4,12 @@ Package manager: **pnpm** (hub root). Dev: `pnpm dev` → funnel at `/etsy-listi
 
 ## 1. User outcomes (spec scenarios — must all pass before archive)
 
-- [ ] 1.1 User can upload a valid PNG/JPG/SVG and see it accepted with a thumbnail *(Upload · valid file)*
+- [x] 1.1 User can upload a valid PNG/JPG/SVG and see it accepted with a thumbnail *(Upload · valid file)* — verified live walkthrough 2026-07-27; UX bug on submit scroll tracked in #336
 - [ ] 1.2 User gets a clear, non-technical error on an unsupported/oversized file — no order created *(Upload · bad file)*
-- [ ] 1.3 User sees a watermarked preview of all 6 curated images with price + what they get *(Preview the pack)*
-- [ ] 1.4 User completes a one-time $3 Stripe payment (test mode) and lands on a success URL tied to their order *(Complete payment)*
+- [x] 1.3 User sees a watermarked preview of all 6 curated images with price + what they get *(Preview the pack)* — verified live 2026-07-27; layout/crop feedback open in #335/#330 (partly addressed by #337 restyle, re-verify)
+- [x] 1.4 User completes a one-time $3 Stripe payment (test mode) and lands on a success URL tied to their order *(Complete payment)* — verified stronger than spec: **live** $3 payment 2026-07-27 (order `0484a635-a662`, `pi_3TxrgUKdCjejJ0FM…`), success URL tied to order
 - [ ] 1.5 User who cancels checkout returns to the preview with upload intact and no charge *(Cancel payment)*
-- [ ] 1.6 A signature-valid `checkout.session.completed` marks the order paid, builds the un-watermarked zip, exposes a signed download, sends one email *(Webhook fulfils once)*
+- [~] 1.6 A signature-valid `checkout.session.completed` marks the order paid, builds the un-watermarked zip, exposes a signed download, sends one email *(Webhook fulfils once)* — live receipt 2026-07-27: paid 16:47:28Z → fulfilled 16:47:34Z, event id + output stored (elk_orders row `0484a635`); **email did NOT send on that order** (`email_message_id` null) — root cause: `RESEND_API_KEY` was added to Vercel the same day but the order ran on the earlier deployment; current production (deployed 2026-07-28 with the key present) should send. Unverified live until the next real purchase
 - [ ] 1.7 A duplicated Stripe event/session does not double-fulfil, double-email, or double-count *(Duplicate webhook)*
 - [ ] 1.8 A paid buyer can re-open their signed link and re-download within 7 days, no account *(Retrieve later)*
 - [ ] 1.9 `pnpm revenue:test` prints red (target/actual/gap/purchases/AOV/days/run-rate) while live revenue < $100 *(Revenue red)*
@@ -45,13 +45,13 @@ Package manager: **pnpm** (hub root). Dev: `pnpm dev` → funnel at `/etsy-listi
 - [x] 5.1 Automated (vitest): 44 tests — pure logic (revenue qualification, webhook decision, refund guard, upload, zip, email) + **route integration** (checkout metadata/validation, webhook signature/scope/idempotency/auto-refund, preview watermark-only/errors) via mocked Stripe/Supabase/generator
 - [ ] 5.2 E2E happy path (test card) → paid → fulfilled → download → email → analytics events
 - [ ] 5.3 E2E cancelled payment, duplicate webhook, processing failure/refund
-- [ ] 5.4 Manual §1 walkthrough on preview deploy (first-time visitor, mobile, keyboard, invalid input, refund path)
+- [~] 5.4 Manual §1 walkthrough on preview deploy (first-time visitor, mobile, keyboard, invalid input, refund path) — happy-path walkthrough done **on production** 2026-07-27 (feedback filed: #330/#335/#336); mobile/keyboard/invalid-input/refund passes still open
 - [x] 5.5 Accessibility: palette WCAG-AA audited (design.md); fixed a nested-interactive dropzone → native button is the keyboard/AT control; landing component test asserts named CTA + focusable control + scoped file input; mobile 375px verified rendering
 
 ## 6. Deploy
 
-- [ ] 6.1 Preview deploy (Vercel), test-mode Stripe, smoke test full flow
-- [ ] 6.2 Launch checklist: Katy sets live Stripe keys + registers live webhook; record production launch timestamp for revenue window; flip to live; production smoke test
-- [ ] 6.3 Prepare (do not fund) the $1/day ad campaign + UTM convention; Katy performs turn-on
+- [~] 6.1 Preview deploy (Vercel), test-mode Stripe, smoke test full flow — **superseded**: went live from the start (STRIPE_MODE toggle); production smoke test replaced the test-mode pass
+- [x] 6.2 Launch checklist: Katy sets live Stripe keys + registers live webhook; record production launch timestamp for revenue window; flip to live; production smoke test — done 2026-07-25→27: live keys set, live webhook `we_1TxF9BKdCjejJ0FM…` enabled at `labs.beckharrisdesign.com/etsy-listing-kit/api/webhook`, live $3 self-purchase fulfilled 2026-07-27 (verified in Stripe + Supabase 2026-07-30). `ELK_LAUNCHED_AT` confirmed set in Vercel (added ~2026-07-27). **Decision (Katy, 2026-07-30): the revenue window excludes testing** — at ad turn-on, bump `ELK_LAUNCHED_AT` to the turn-on timestamp (`vercel env` + redeploy) so the \$3 self-purchase falls outside the window; refunding it is the fallback if the timestamp isn't bumped
+- [~] 6.3 Prepare (do not fund) the $1/day ad campaign + UTM convention; Katy performs turn-on — plan + UTM convention merged (PR #334); **campaign not yet populated** (Katy, 2026-07-30); turn-on pending. Turn-on checklist: populate campaign per #334 → bump `ELK_LAUNCHED_AT` to now (see 6.2) → fund
 
 > Stop rule: after tasks.md, wait for approval before `/opsx:apply`.
