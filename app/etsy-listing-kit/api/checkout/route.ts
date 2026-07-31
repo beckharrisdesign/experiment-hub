@@ -53,9 +53,9 @@ export async function POST(request: NextRequest) {
       metadata: { experiment_id: EXPERIMENT_ID, order_id: orderId },
       payment_intent_data: {
         metadata: { experiment_id: EXPERIMENT_ID, order_id: orderId },
-        // Account descriptor must reflect the legal/DBA name (sole prop), so the
-        // brand match happens via suffix: with shortened descriptor "BHD" set in
-        // the dashboard, card statements read "BHD* ETSY KIT".
+        // Stripe requires the account descriptor to match the business name, so
+        // branding rides on the suffix alone: statements read
+        // "<BUSINESS NAME>* ETSY KIT" (prefix derived by Stripe from the account).
         statement_descriptor_suffix: 'ETSY KIT',
       },
       success_url: `${origin}/etsy-listing-kit/result?order=${orderId}`,

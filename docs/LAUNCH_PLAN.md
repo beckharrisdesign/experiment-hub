@@ -16,7 +16,7 @@
    - **Separate Stripe account** for this experiment under a **Beck Harris Design Organization** (never the personal account). Each experiment = its own account = its own brand/payouts/keys.
    - **Activate under the business entity** (Beck Harris Design DBA/LLC if registered) so the internal legal name isn't a personal name. Customers never see the legal entity regardless.
    - Customer-facing fields to set on that account (this is what prevents a personal name on statements):
-     - **Statement naming** (sole-prop constraint 2026-07-27: the account descriptor must reflect the legal/DBA name): set the dashboard **shortened descriptor = `BHD`**; checkout sends `statement_descriptor_suffix: 'ETSY KIT'` so card statements read **`BHD* ETSY KIT`**.
+     - **Statement naming** — ~~shortened descriptor `BHD`~~ **dropped 2026-07-31**: Stripe requires the descriptor to match the business name. Checkout still sends `statement_descriptor_suffix: 'ETSY KIT'`, applied on top of the business-name prefix Stripe derives, so statements read **`<BUSINESS NAME>* ETSY KIT`** (verified by the live 2026-07-28 payment).
      - **Public business name** = the experiment brand · **Branding** = logo + terracotta `#b24a2e`.
      - **Support email** = a **brand** address, not personal (also set `ELK_EMAIL_FROM` to match).
    - Set `STRIPE_SECRET_KEY` (`sk_test_…` → `sk_live_…`) from **that account**.
