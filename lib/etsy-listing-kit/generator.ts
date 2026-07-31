@@ -50,12 +50,17 @@ async function toEtsyJpeg(pipeline: sharp.Sharp): Promise<Buffer> {
   return pipeline.jpeg({ quality: 60 }).toBuffer();
 }
 
-// ── watermark overlay (diagonal tiled PREVIEW text, low opacity) ─────────────
+// ── watermark overlay (diagonal tiled PREVIEW text) ──────────────────────────
+// Dual-tone (white + dark shadow copy) so it reads on light fabric AND dark
+// props; opacity tuned to clearly deter grabbing the preview (Katy,
+// 2026-07-31: the old 7% black vanished into photo texture) while the design
+// underneath stays judgeable.
 function watermarkSvg() {
   const rows: string[] = [];
-  for (let y = 0; y < S + 400; y += 260) {
-    for (let x = -200; x < S; x += 620) {
-      rows.push(`<text x="${x}" y="${y}" font-family="Inter, sans-serif" font-size="34" font-weight="600" fill="#000" fill-opacity="0.07" transform="rotate(-30 ${x} ${y})">PREVIEW · ETSY LISTING KIT</text>`);
+  for (let y = 0; y < S + 400; y += 230) {
+    for (let x = -200; x < S; x += 580) {
+      rows.push(`<text x="${x + 2}" y="${y + 2}" font-family="Inter, sans-serif" font-size="38" font-weight="600" fill="#000" fill-opacity="0.16" transform="rotate(-30 ${x + 2} ${y + 2})">PREVIEW · ETSY LISTING KIT</text>`);
+      rows.push(`<text x="${x}" y="${y}" font-family="Inter, sans-serif" font-size="38" font-weight="600" fill="#fff" fill-opacity="0.18" transform="rotate(-30 ${x} ${y})">PREVIEW · ETSY LISTING KIT</text>`);
     }
   }
   return svg(`<svg width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">${rows.join('')}</svg>`);
@@ -189,22 +194,29 @@ async function sewnPhoto(design: Buffer, template: string, spot: Spot) {
   );
 }
 
+// Fabric-circle geometry re-measured 2026-07-31 on a 100px grid — the old
+// eyeballed spots sat the design visibly off-center once sizing was unified.
 /** Hoop on natural linen with pastel floss (W&H "Linen" style). */
-const flat = (d: Buffer) => hoopPhoto(d, 'hoop-linen.jpg', { cx: 995, cy: 906, r: 585 });
-/** Styled flat-lay hoop with floss/props (W&H "Photograph" template). */
-const framed = (d: Buffer) => hoopPhoto(d, 'hoop-alt.jpg', { cx: 1020, cy: 1010, r: 540 });
+const flat = (d: Buffer) => hoopPhoto(d, 'hoop-linen.jpg', { cx: 1045, cy: 930, r: 600 });
+/** Styled sage flat-lay hoop with leaves/props (W&H "Blocks C" style). */
+const framed = (d: Buffer) => hoopPhoto(d, 'hoop-alt.jpg', { cx: 1055, cy: 1005, r: 595 });
 /** Clean studio hoop (W&H "Plain Hoop" template). */
-const inHoop = (d: Buffer) => hoopPhoto(d, 'hoop-basic.jpg', { cx: 985, cy: 1030, r: 665 });
+const inHoop = (d: Buffer) => hoopPhoto(d, 'hoop-basic.jpg', { cx: 1005, cy: 1025, r: 700 });
 /** Hoop on terracotta linen with walnut ring (W&H "Terra Cotta" style). */
-const scale = (d: Buffer) => hoopPhoto(d, 'hoop-terra.jpg', { cx: 1005, cy: 1000, r: 500 });
+const scale = (d: Buffer) => hoopPhoto(d, 'hoop-terra.jpg', { cx: 990, cy: 990, r: 505 });
 /**
  * Light sage scene with mustard/teal floss (W&H Alt "Blocks R", hoop offset
  * right). NEW per #335 — replaced the dark Mustard base (Katy, 2026-07-31:
  * dark line art vanished on dark fabric; lighter ground avoids inversions).
  */
 const floss = (d: Buffer) => hoopPhoto(d, 'hoop-floss.jpg', { cx: 1560, cy: 1010, r: 600 });
-/** Sage botanical scene (W&H Alt "Blocks C") with the fully-sewn render. NEW per #335. */
-const sewn = (d: Buffer) => sewnPhoto(d, 'hoop-sage.jpg', { cx: 1048, cy: 1005, r: 575 });
+/**
+ * Sage sketchbook scene (W&H Alt "Blocks L", hoop offset left) with the
+ * fully-sewn render. NEW per #335. Blocks C was the original pick but it is
+ * the same photo as the long-standing framed scene — swapped to keep all six
+ * scenes distinct.
+ */
+const sewn = (d: Buffer) => sewnPhoto(d, 'hoop-sage.jpg', { cx: 525, cy: 995, r: 570 });
 
 const COMPOSERS: { id: PackItemId; label: string; fn: (d: Buffer) => Promise<Buffer> }[] = [
   { id: 'flat', label: 'Hoop on linen', fn: flat },

@@ -44,7 +44,7 @@ describe('generatePack', () => {
     // compare against the untouched template at the same coordinates.
     const cases: { id: string; template: string; cx: number; cy: number }[] = [
       { id: 'floss', template: 'hoop-floss.jpg', cx: 1560, cy: 1010 },
-      { id: 'sewn', template: 'hoop-sage.jpg', cx: 1048, cy: 1005 },
+      { id: 'sewn', template: 'hoop-sage.jpg', cx: 525, cy: 995 },
     ];
     // Raw pixel read — sharp's stats() ignores a preceding extract(), so
     // sample the decoded buffer directly.
@@ -73,11 +73,11 @@ describe('generatePack', () => {
       const i = (cy * info.width + cx) * info.channels;
       return [data[i], data[i + 1], data[i + 2]];
     };
-    // Sewn scene: fabric circle (1048, 1005, r=575). Sample in the 15% buffer
+    // Sewn scene: fabric circle (525, 995, r=570). Sample in the 15% buffer
     // zone on the diagonal — inside the upload's white rectangle but outside
     // its ink. Must match the untouched template: no shadow box, no hatch box.
-    const d = Math.round((0.85 * 575) / Math.SQRT2); // ≈346
-    const [x, y] = [1048 + d, 1005 - d];
+    const d = Math.round((0.85 * 570) / Math.SQRT2); // ≈343
+    const [x, y] = [525 + d, 995 - d];
     const [r1, g1, b1] = await sample(sewn.clean, x, y);
     const [r0, g0, b0] = await sample(path.join(process.cwd(), 'assets', 'mockups', 'hoop-sage.jpg'), x, y);
     expect(Math.abs(r1 - r0) + Math.abs(g1 - g0) + Math.abs(b1 - b0)).toBeLessThan(20);
