@@ -1,4 +1,7 @@
 export const HUB_GA_MEASUREMENT_ID = "G-120M120GDY";
+// Google Ads account (conversion tracking) — configured alongside GA4 on the
+// same gtag.js load; conversion labels live with the features that fire them.
+export const GOOGLE_ADS_ID = "AW-10904266222";
 export const GA_SCRIPT_SRC = "https://www.googletagmanager.com";
 export const GA_COLLECT_SRC = "https://www.google-analytics.com";
 export const GA_REGION_COLLECT_SRC = "https://region1.google-analytics.com";

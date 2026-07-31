@@ -3,7 +3,7 @@ import { Inter, Fraunces } from "next/font/google";
 import { Suspense } from "react";
 import Script from "next/script";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
-import { getHubGaMeasurementId } from "@/lib/analytics/ga";
+import { getHubGaMeasurementId, GOOGLE_ADS_ID } from "@/lib/analytics/ga";
 import "./globals.css";
 
 const inter = Inter({
@@ -57,6 +57,7 @@ export default function RootLayout({
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
                 gtag('config', '${GA_ID}', { send_page_view: false });
+                gtag('config', '${GOOGLE_ADS_ID}');
               `}
             </Script>
             <Suspense fallback={null}>
