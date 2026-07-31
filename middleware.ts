@@ -1,7 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Vanity host for the Etsy Listing Kit ad funnel — serves /etsy-listing-kit at
+// its root so ads can point at a clean URL. The labs.* paths keep working
+// unchanged (Stripe webhook + email links stay on ELK_SITE_URL).
+const ELK_HOST = "etsy-listing-kit.vercel.app";
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // ── Etsy Listing Kit vanity host → rewrite to the funnel routes ────────────
+  const host = request.headers.get("host") ?? request.nextUrl.host;
+  if (host === ELK_HOST && !pathname.startsWith("/etsy-listing-kit")) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/etsy-listing-kit${pathname === "/" ? "" : pathname}`;
+    return NextResponse.rewrite(url);
+  }
 
   // ── Admin area protection ──────────────────────────────────────────────────
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
@@ -17,6 +30,14 @@ export function middleware(request: NextRequest) {
   }
 
   // ── Legacy ?edit= URL param → cookie (kept for backwards compat) ───────────
+  // Scoped to the paths the old matcher covered; the matcher itself is now
+  // wider so the ELK host rewrite can see every route.
+  if (
+    !pathname.startsWith("/admin") &&
+    !pathname.startsWith("/experiments")
+  ) {
+    return NextResponse.next();
+  }
   const editSecret = request.nextUrl.searchParams.get("edit");
 
   if (editSecret) {
@@ -42,5 +63,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/experiments/:path*"],
+  // Wide match (minus _next internals and files with extensions) so the ELK
+  // host rewrite applies everywhere; admin/edit logic self-scopes by pathname.
+  matcher: ["/((?!_next/|.*\\..*).*)"],
 };
