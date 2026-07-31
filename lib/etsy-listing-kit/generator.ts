@@ -3,10 +3,12 @@
  *
  * One design → 6 curated 2000px-square Etsy listing images (clean + watermarked).
  * Composition language follows Katy's W&H listing reference (Figma
- * ZZusgWsPM4Fz8YuhKxnD4R): four real hoop photo scenes from her template set, an
- * arch logo badge top-left, and a peach FAQ-style info card with a centered
- * badge. Since buyers upload no logo, the badge is derived from their design
- * (dominant color arch + circular design thumbnail).
+ * ZZusgWsPM4Fz8YuhKxnD4R): six real hoop photo scenes from her template sets.
+ * Pack recomposition per #335 (Figma page 02.4): detail crop + "what you get"
+ * card removed (seller-specific, unresolved designs); two more W&H mockup
+ * backgrounds folded in, one of which renders the design as fully sewn
+ * stitches. No logo/badge overlay — a buyer-logo slot is deferred and must
+ * never be filled from the uploaded design.
  *
  * All output is 2000px square JPG, tuned to stay under Etsy's ~1MB guidance.
  */
@@ -23,28 +25,17 @@ if (!process.env.FONTCONFIG_FILE) {
 
 const S = PACK_IMAGE_PX; // 2000
 
-export type PackItemId = 'flat' | 'framed' | 'in-hoop' | 'detail' | 'scale' | 'info-card';
+export type PackItemId = 'flat' | 'framed' | 'in-hoop' | 'scale' | 'mustard' | 'sewn';
 export interface GeneratedImage { id: PackItemId; label: string; clean: Buffer; watermarked: Buffer; }
 
-// ── palette ──────────────────────────────────────────────────────────────────
-const STUDIO = '#ececea';   // plain light studio gray (W&H reference bg)
-const PEACH = '#fbe3d3';    // FAQ/info card background (W&H reference)
-const INK = '#252525', MUTED = '#6b6b6b', PRIMARY = '#b24a2e';
-
-function bg(color: string) {
-  return sharp({ create: { width: S, height: S, channels: 4, background: color } });
-}
-async function fit(input: Buffer, box: number, opts: { cover?: boolean } = {}) {
-  const buf = await sharp(input, { density: 300 })
-    .rotate()
-    .resize(box, box, { fit: opts.cover ? 'cover' : 'inside', withoutEnlargement: false })
-    .png()
-    .toBuffer();
-  const m = await sharp(buf).metadata();
-  return { buf, w: m.width ?? box, h: m.height ?? box };
-}
-const center = (w: number) => Math.round((S - w) / 2);
 const svg = (s: string) => Buffer.from(s);
+
+/**
+ * The design always scales relative to its scene's fabric circle and sits
+ * centered in it: rendered size = fabric diameter × DESIGN_FILL, so every
+ * scene reads consistently regardless of how large the hoop is in frame.
+ */
+const DESIGN_FILL = 0.78;
 
 /**
  * Encode to JPEG, stepping quality down until under Etsy's ~1MB guidance —
@@ -57,62 +48,6 @@ async function toEtsyJpeg(pipeline: sharp.Sharp): Promise<Buffer> {
   }
   return pipeline.jpeg({ quality: 60 }).toBuffer();
 }
-
-// ── design-derived arch badge (stand-in for a shop logo) ─────────────────────
-const BADGE_W = 240, BADGE_H = 300, BADGE_INSET = 70;
-
-/**
- * Accent color from the design: average of the actually-inked pixels
- * (skips transparent + near-white background). Falls back to the product
- * terracotta for near-black line art or empty samples so the badge always
- * reads warm, never harsh.
- */
-export async function dominantColor(design: Buffer): Promise<string> {
-  const { data, info } = await sharp(design, { density: 300 })
-    .rotate() // honor EXIF orientation, consistent with fit()/detail()
-    .resize(64, 64, { fit: 'inside' })
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-  let r = 0, g = 0, b = 0, n = 0;
-  for (let i = 0; i < info.width * info.height; i++) {
-    const [pr, pg, pb, pa] = [data[i * 4], data[i * 4 + 1], data[i * 4 + 2], data[i * 4 + 3]];
-    if (pa < 200) continue;                       // transparent → background
-    if (pr > 230 && pg > 230 && pb > 230) continue; // near-white → background
-    r += pr; g += pg; b += pb; n++;
-  }
-  if (n === 0) return PRIMARY;
-  r /= n; g /= n; b /= n;
-  const luma = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-  if (luma < 0.15) return PRIMARY;                 // pure black line art → warm accent
-  if (luma > 0.72) { r *= 0.55; g *= 0.55; b *= 0.55; }
-  const hex = (v: number) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0');
-  return `#${hex(r)}${hex(g)}${hex(b)}`;
-}
-
-/** Arch badge PNG (240×300): dominant-color arch + white circle holding a design thumbnail. */
-async function designBadge(design: Buffer): Promise<Buffer> {
-  const color = await dominantColor(design);
-  const arch = svg(`<svg width="${BADGE_W}" height="${BADGE_H}" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0 ${BADGE_H} L0 ${BADGE_W / 2} A${BADGE_W / 2} ${BADGE_W / 2} 0 0 1 ${BADGE_W} ${BADGE_W / 2} L${BADGE_W} ${BADGE_H} Z" fill="${color}"/>
-    <circle cx="${BADGE_W / 2}" cy="150" r="80" fill="#ffffff"/>
-  </svg>`);
-  const D = 140;
-  const mask = svg(`<svg width="${D}" height="${D}" xmlns="http://www.w3.org/2000/svg"><circle cx="${D / 2}" cy="${D / 2}" r="${D / 2}" fill="#fff"/></svg>`);
-  const thumb = await sharp((await fit(design, D, { cover: true })).buf)
-    .resize(D, D, { fit: 'cover' })
-    .composite([{ input: mask, blend: 'dest-in' }])
-    .png().toBuffer();
-  return sharp({ create: { width: BADGE_W, height: BADGE_H, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
-    .composite([
-      { input: arch, top: 0, left: 0 },
-      { input: thumb, top: 150 - D / 2, left: (BADGE_W - D) / 2 },
-    ])
-    .png().toBuffer();
-}
-
-type Overlay = { input: Buffer; top: number; left: number };
-const badgeTopLeft = (badge: Buffer): Overlay => ({ input: badge, top: BADGE_INSET, left: BADGE_INSET });
 
 // ── watermark overlay (diagonal tiled PREVIEW text, low opacity) ─────────────
 function watermarkSvg() {
@@ -129,19 +64,22 @@ async function watermark(clean: Buffer) {
 }
 
 // ── compositions ─────────────────────────────────────────────────────────────
-/**
- * Hoop on natural linen with pastel floss (W&H "Linen" style). Replaces the
- * old crisp flat render — presenting the raw design clean at 2000px made it
- * trivially traceable by design thieves (Katy, 2026-07-27).
- */
-async function flat(design: Buffer, badge: Buffer) {
-  return hoopPhoto(design, badge, 'hoop-linen.jpg', { cx: 995, cy: 906, r: 585, size: 820 });
+/** A scene's fabric circle: center + radius in the 2000px template. */
+type Spot = { cx: number; cy: number; r: number };
+
+/** Design resized to the scene's fabric circle (centered, scaled to it). */
+async function prepDesign(design: Buffer, spot: Spot) {
+  const size = Math.round(2 * spot.r * DESIGN_FILL);
+  const buf = await sharp(design, { density: 300 })
+    .rotate()
+    .resize(size, size, { fit: 'inside', withoutEnlargement: false })
+    .png().toBuffer();
+  const m = await sharp(buf).metadata();
+  return { buf, w: m.width ?? size, h: m.height ?? size };
 }
 
-/** Styled flat-lay hoop with floss/props (W&H "Photo BG" layout template). */
-async function framed(design: Buffer, badge: Buffer) {
-  return hoopPhoto(design, badge, 'hoop-alt.jpg', { cx: 1020, cy: 1010, r: 540, size: 1000 });
-}
+const circleMask = (spot: Spot) =>
+  svg(`<svg width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg"><circle cx="${spot.cx}" cy="${spot.cy}" r="${spot.r}" fill="#fff"/></svg>`);
 
 /**
  * Composite the design onto a real hoop photo template (assets/mockups —
@@ -150,92 +88,103 @@ async function framed(design: Buffer, badge: Buffer) {
  * preserved — transparent designs touch nothing outside their strokes), and
  * clipped to the fabric circle so nothing darkens the ring or surroundings.
  */
-async function hoopPhoto(
-  design: Buffer,
-  badge: Buffer,
-  template: string,
-  spot: { cx: number; cy: number; r: number; size: number },
-) {
-  const prepped = await sharp(design, { density: 300 })
-    .rotate()
-    .resize(spot.size, spot.size, { fit: 'inside', withoutEnlargement: false })
-    .png().toBuffer();
-  const pm = await sharp(prepped).metadata();
-  const pw = pm.width ?? spot.size, ph = pm.height ?? spot.size;
-  const circleMask = svg(`<svg width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg"><circle cx="${spot.cx}" cy="${spot.cy}" r="${spot.r}" fill="#fff"/></svg>`);
+async function hoopPhoto(design: Buffer, template: string, spot: Spot) {
+  const prepped = await prepDesign(design, spot);
   const layer = await sharp({ create: { width: S, height: S, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
     .composite([
-      { input: prepped, top: Math.round(spot.cy - ph / 2), left: Math.round(spot.cx - pw / 2) },
-      { input: circleMask, blend: 'dest-in' },
+      { input: prepped.buf, top: Math.round(spot.cy - prepped.h / 2), left: Math.round(spot.cx - prepped.w / 2) },
+      { input: circleMask(spot), blend: 'dest-in' },
     ])
     .png().toBuffer();
   return toEtsyJpeg(
     sharp(path.join(process.cwd(), 'assets', 'mockups', template))
-      .composite([{ input: layer, blend: 'multiply' }, badgeTopLeft(badge)]),
+      .composite([{ input: layer, blend: 'multiply' }]),
   );
 }
 
-/** Clean studio hoop (W&H "Basic" layout template). */
-async function inHoop(design: Buffer, badge: Buffer) {
-  return hoopPhoto(design, badge, 'hoop-basic.jpg', { cx: 985, cy: 1030, r: 665, size: 1280 });
-}
-
-async function detail(design: Buffer, badge: Buffer) {
-  // zoom into the center ~46% of the design
-  const big = await sharp(design, { density: 300 }).rotate().resize(S * 2, S * 2, { fit: 'inside', withoutEnlargement: false }).png().toBuffer();
-  const m = await sharp(big).metadata();
-  const bw = m.width ?? S, bh = m.height ?? S;
-  const cropW = Math.round(bw * 0.46), cropH = Math.round(bh * 0.46);
-  const cropped = await sharp(big)
-    .extract({ left: Math.round((bw - cropW) / 2), top: Math.round((bh - cropH) / 2), width: cropW, height: cropH })
-    .resize(S - 120, S - 120, { fit: 'cover' }).png().toBuffer();
-  return bg(STUDIO).composite([{ input: cropped, top: 60, left: 60 }, badgeTopLeft(badge)]).jpeg({ quality: 86 }).toBuffer();
-}
-
 /**
- * Hoop on terracotta linen with walnut ring (W&H "Terra Cotta" style).
- * Replaces the scale shot — the ruler wasn't earning its slot and the clean
- * high-res design was traceable (Katy, 2026-07-27).
+ * "Fully sewn" treatment: the design reads as stitched thread, not a flat
+ * print — a soft relief shadow lifts it off the fabric, and a fine diagonal
+ * hatch (masked to the design's own inked pixels) suggests satin-stitch sheen.
  */
-async function scale(design: Buffer, badge: Buffer) {
-  return hoopPhoto(design, badge, 'hoop-terra.jpg', { cx: 1005, cy: 1000, r: 500, size: 690 });
+async function sewnPhoto(design: Buffer, template: string, spot: Spot) {
+  const prepped = await prepDesign(design, spot);
+  const top = Math.round(spot.cy - prepped.h / 2);
+  const left = Math.round(spot.cx - prepped.w / 2);
+
+  // Relief shadow: the design's silhouette, blurred and nudged down-right.
+  const silhouette = await sharp(prepped.buf)
+    .ensureAlpha()
+    .linear([0, 0, 0, 0.35], [0, 0, 0, 0]) // black at ~35% of the design's alpha
+    .blur(6)
+    .png().toBuffer();
+
+  // Satin-stitch hatch: fine 45° thread lines clipped to the design's alpha.
+  const lines: string[] = [];
+  const span = prepped.w + prepped.h;
+  for (let d = 0; d < span; d += 8) {
+    lines.push(`<line x1="${d}" y1="0" x2="0" y2="${d}" stroke="#ffffff" stroke-width="2.4" opacity="0.5"/>`);
+    lines.push(`<line x1="${d + 4}" y1="0" x2="0" y2="${d + 4}" stroke="#000000" stroke-width="1.6" opacity="0.28"/>`);
+  }
+  const hatch = await sharp(svg(`<svg width="${prepped.w}" height="${prepped.h}" xmlns="http://www.w3.org/2000/svg">${lines.join('')}</svg>`))
+    .composite([{ input: prepped.buf, blend: 'dest-in' }]) // only where the design has ink
+    .png().toBuffer();
+
+  const shadowLayer = await sharp({ create: { width: S, height: S, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+    .composite([
+      { input: silhouette, top: top + 7, left: left + 5 },
+      { input: circleMask(spot), blend: 'dest-in' },
+    ])
+    .png().toBuffer();
+  const designLayer = await sharp({ create: { width: S, height: S, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+    .composite([
+      { input: prepped.buf, top, left },
+      { input: circleMask(spot), blend: 'dest-in' },
+    ])
+    .png().toBuffer();
+  const hatchLayer = await sharp({ create: { width: S, height: S, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+    .composite([
+      { input: hatch, top, left },
+      { input: circleMask(spot), blend: 'dest-in' },
+    ])
+    .png().toBuffer();
+
+  return toEtsyJpeg(
+    sharp(path.join(process.cwd(), 'assets', 'mockups', template)).composite([
+      { input: shadowLayer, blend: 'multiply' },
+      { input: designLayer, blend: 'multiply' },
+      { input: hatchLayer, blend: 'overlay' },
+    ]),
+  );
 }
 
-async function infoCard(_design: Buffer, badge: Buffer) {
-  // W&H FAQ-card language: peach ground, centered badge, centered serif copy.
-  const lines = [
-    'Six 2000px square JPGs',
-    'No watermark, sized for Etsy',
-    'Four styled hoop scenes + detail crop',
-    'Instant download + emailed link',
-    'Re-download for 7 days',
-  ];
-  const card = svg(`<svg width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">
-    <text x="${S / 2}" y="700" text-anchor="middle" font-family="PT Serif, serif" font-size="92" font-weight="700" fill="${INK}">What you get</text>
-    <text x="${S / 2}" y="790" text-anchor="middle" font-family="PT Serif, serif" font-size="42" fill="${PRIMARY}">6 Etsy-ready listing images · one design</text>
-    ${lines.map((t, i) => `<text x="${S / 2}" y="${960 + i * 110}" text-anchor="middle" font-family="PT Serif, serif" font-size="48" fill="${INK}">${t}</text>`).join('')}
-    <text x="${S / 2}" y="1720" text-anchor="middle" font-family="Inter, sans-serif" font-size="34" fill="${MUTED}">Questions? Just reply to your receipt.</text>
-  </svg>`);
-  return bg(PEACH)
-    .composite([{ input: badge, top: 220, left: (S - BADGE_W) / 2 }, { input: card, top: 0, left: 0 }])
-    .jpeg({ quality: 86 }).toBuffer();
-}
+/** Hoop on natural linen with pastel floss (W&H "Linen" style). */
+const flat = (d: Buffer) => hoopPhoto(d, 'hoop-linen.jpg', { cx: 995, cy: 906, r: 585 });
+/** Styled flat-lay hoop with floss/props (W&H "Photograph" template). */
+const framed = (d: Buffer) => hoopPhoto(d, 'hoop-alt.jpg', { cx: 1020, cy: 1010, r: 540 });
+/** Clean studio hoop (W&H "Plain Hoop" template). */
+const inHoop = (d: Buffer) => hoopPhoto(d, 'hoop-basic.jpg', { cx: 985, cy: 1030, r: 665 });
+/** Hoop on terracotta linen with walnut ring (W&H "Terra Cotta" style). */
+const scale = (d: Buffer) => hoopPhoto(d, 'hoop-terra.jpg', { cx: 1005, cy: 1000, r: 500 });
+/** Hoop on mustard linen (W&H Alt "Mustard" — echoes the ELK ochre). NEW per #335. */
+const mustard = (d: Buffer) => hoopPhoto(d, 'hoop-mustard.jpg', { cx: 1000, cy: 920, r: 560 });
+/** Sage botanical scene (W&H Alt "Blocks C") with the fully-sewn render. NEW per #335. */
+const sewn = (d: Buffer) => sewnPhoto(d, 'hoop-sage.jpg', { cx: 1048, cy: 1005, r: 575 });
 
-const COMPOSERS: { id: PackItemId; label: string; fn: (d: Buffer, badge: Buffer) => Promise<Buffer> }[] = [
+const COMPOSERS: { id: PackItemId; label: string; fn: (d: Buffer) => Promise<Buffer> }[] = [
   { id: 'flat', label: 'Hoop on linen', fn: flat },
   { id: 'framed', label: 'Styled hoop photo', fn: framed },
   { id: 'in-hoop', label: 'In-hoop mockup', fn: inHoop },
-  { id: 'detail', label: 'Detail crop', fn: detail },
   { id: 'scale', label: 'Hoop on terracotta', fn: scale },
-  { id: 'info-card', label: '“What you get” card', fn: infoCard },
+  { id: 'mustard', label: 'Hoop on mustard', fn: mustard },
+  { id: 'sewn', label: 'Stitched preview', fn: sewn },
 ];
 
 /** Generate the full 6-image pack (clean + watermarked) from one design buffer. */
 export async function generatePack(design: Buffer): Promise<GeneratedImage[]> {
-  const badge = await designBadge(design);
   const out: GeneratedImage[] = [];
   for (const c of COMPOSERS) {
-    const clean = await c.fn(design, badge);
+    const clean = await c.fn(design);
     out.push({ id: c.id, label: c.label, clean, watermarked: await watermark(clean) });
   }
   return out;
