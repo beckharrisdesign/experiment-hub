@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import styles from '../elk.module.css';
-import { track } from '../../../lib/etsy-listing-kit/analytics';
+import { track, trackAdsConversion } from '../../../lib/etsy-listing-kit/analytics';
 
 interface OrderImage { id: string; label: string; url: string; }
 
@@ -36,9 +36,12 @@ function ResultInner() {
   }, [poll, status]);
 
   useEffect(() => {
-    if (status === 'fulfilled') track('result_delivered');
+    if (status === 'fulfilled') {
+      track('result_delivered');
+      if (orderId) trackAdsConversion(orderId);
+    }
     if (status === 'refunded' || status === 'failed') track('processing_failed', { status });
-  }, [status]);
+  }, [status, orderId]);
 
   const ready = status === 'fulfilled' && images;
   const covered = status === 'refunded' || status === 'failed';

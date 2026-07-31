@@ -5,8 +5,11 @@
  * system). The server-side verified purchase uses the GA4 Measurement Protocol.
  * All no-op safely when GA isn't configured — nothing is faked.
  */
-import { trackEvent } from '../analytics/ga';
+import { trackEvent, isOptedOut, GOOGLE_ADS_ID } from '../analytics/ga';
 import { EXPERIMENT_ID, PRICE_CENTS, CURRENCY } from './config';
+
+/** Google Ads conversion label: "Sign-up" action = paid image view delivered. */
+export const ADS_CONVERSION_PURCHASE = `${GOOGLE_ADS_ID}/dX8MCLuApMQcEO7Lx88o`;
 
 export type FunnelEvent =
   | 'landing_view'
@@ -23,6 +26,27 @@ type EventProps = Record<string, string | number | boolean | undefined>;
 /** Client-side funnel event — delegates to the hub GA helper (safe no-op if GA off). */
 export function track(event: FunnelEvent, props: EventProps = {}): void {
   trackEvent(event, { experiment_id: EXPERIMENT_ID, ...props });
+}
+
+/**
+ * Google Ads conversion — fired when the paid image view loads (result page
+ * reaches 'fulfilled'). transaction_id lets Google Ads dedupe page refreshes.
+ * Safe no-op when gtag isn't loaded or analytics is opted out.
+ */
+export function trackAdsConversion(orderId: string): void {
+  if (
+    typeof window === 'undefined' ||
+    typeof window.gtag !== 'function' ||
+    isOptedOut()
+  ) {
+    return;
+  }
+  window.gtag('event', 'conversion', {
+    send_to: ADS_CONVERSION_PURCHASE,
+    value: PRICE_CENTS / 100,
+    currency: CURRENCY.toUpperCase(),
+    transaction_id: orderId,
+  });
 }
 
 /**
