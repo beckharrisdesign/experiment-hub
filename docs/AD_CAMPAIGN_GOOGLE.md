@@ -15,7 +15,9 @@ Craft/Etsy-tool keywords run ~$0.40–$2 CPC. ~$15 buys **~15–30 clicks over 3
 | Bidding | Maximize clicks with **max CPC cap $0.50** (raise to $0.75 if no impressions day 1) |
 | Geo | United States |
 | Language | English |
-| Final URL | `https://labs.beckharrisdesign.com/etsy-listing-kit?utm_source=google&utm_medium=cpc&utm_campaign=elk-launch` |
+| Final URL | `https://etsy-listing-kit.vercel.app/?utm_source=google&utm_medium=cpc&utm_campaign=elk-launch` |
+
+(`etsy-listing-kit.vercel.app` is a vanity host on the same hub deploy — middleware rewrites it to `/etsy-listing-kit`. The `labs.beckharrisdesign.com/etsy-listing-kit` URL, Stripe webhook, and email links all keep working unchanged.)
 
 (Google auto-appends the gclid; the app persists it into `elk_orders.click_id` — one column that holds gclid or fbclid — alongside the UTM columns. Conversion truth comes from the `elk_orders` table, no pixel setup needed for the decision.)
 
@@ -82,4 +84,4 @@ Craft/Etsy-tool keywords run ~$0.40–$2 CPC. ~$15 buys **~15–30 clicks over 3
 1. Statement naming set (before first stranger pays): account descriptor must reflect the legal/DBA name (sole prop), so set the dashboard **shortened descriptor to `BHD`** — checkout adds a per-charge suffix and statements read **`BHD* ETSY KIT`**.
 2. `ELK_LAUNCHED_AT` set in Vercel (revenue window running).
 3. Resend key set (buyers need the email link to re-reach downloads).
-4. Create campaign per above → set $1/day → enable. Note the enable date here: `____`
+4. Create campaign per above → set $5/day (3-day burst) → enable. Note the enable date here: `____`
