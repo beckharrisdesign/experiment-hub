@@ -25,17 +25,18 @@ if (!process.env.FONTCONFIG_FILE) {
 
 const S = PACK_IMAGE_PX; // 2000
 
-export type PackItemId = 'flat' | 'framed' | 'in-hoop' | 'scale' | 'mustard' | 'sewn';
+export type PackItemId = 'flat' | 'framed' | 'in-hoop' | 'scale' | 'floss' | 'sewn';
 export interface GeneratedImage { id: PackItemId; label: string; clean: Buffer; watermarked: Buffer; }
 
 const svg = (s: string) => Buffer.from(s);
 
 /**
  * The design always scales relative to its scene's fabric circle and sits
- * centered in it: rendered size = fabric diameter × DESIGN_FILL, so every
- * scene reads consistently regardless of how large the hoop is in frame.
+ * centered in it, with a 15% buffer of visible fabric on each side before
+ * the hoop frame: rendered size = fabric diameter × 0.70. Uploads are
+ * trimmed first so files with baked-in padding still land at this size.
  */
-const DESIGN_FILL = 0.78;
+const DESIGN_FILL = 0.70;
 
 /**
  * Encode to JPEG, stepping quality down until under Etsy's ~1MB guidance —
@@ -67,15 +68,43 @@ async function watermark(clean: Buffer) {
 /** A scene's fabric circle: center + radius in the 2000px template. */
 type Spot = { cx: number; cy: number; r: number };
 
-/** Design resized to the scene's fabric circle (centered, scaled to it). */
+/**
+ * Design resized to the scene's fabric circle (centered, scaled to it).
+ * Trims the upload's own padding first (transparent or flat background)
+ * so the visible artwork — not the file's canvas — gets the 15% buffer.
+ */
 async function prepDesign(design: Buffer, spot: Spot) {
   const size = Math.round(2 * spot.r * DESIGN_FILL);
-  const buf = await sharp(design, { density: 300 })
-    .rotate()
+  let trimmed: Buffer;
+  try {
+    trimmed = await sharp(design, { density: 300 }).rotate().trim({ threshold: 25 }).png().toBuffer();
+  } catch {
+    // trim() throws on fully-uniform images — fall back to the original
+    trimmed = await sharp(design, { density: 300 }).rotate().png().toBuffer();
+  }
+  const buf = await sharp(trimmed)
     .resize(size, size, { fit: 'inside', withoutEnlargement: false })
     .png().toBuffer();
   const m = await sharp(buf).metadata();
   return { buf, w: m.width ?? size, h: m.height ?? size };
+}
+
+/**
+ * Alpha mask of the design's actual ink: transparent AND near-white pixels
+ * drop out. Opaque uploads (JPEG, white-background PNG) would otherwise
+ * carry their whole rectangle into effects that key off alpha — the sewn
+ * shadow/hatch must follow the artwork, never the file's canvas.
+ */
+async function inkMask(prepped: { buf: Buffer; w: number; h: number }): Promise<Buffer> {
+  const { data, info } = await sharp(prepped.buf).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const out = Buffer.alloc(data.length);
+  for (let i = 0; i < info.width * info.height; i++) {
+    const [r, g, b, a] = [data[i * 4], data[i * 4 + 1], data[i * 4 + 2], data[i * 4 + 3]];
+    const isInk = a > 40 && !(r > 230 && g > 230 && b > 230);
+    out[i * 4] = r; out[i * 4 + 1] = g; out[i * 4 + 2] = b;
+    out[i * 4 + 3] = isInk ? a : 0;
+  }
+  return sharp(out, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
 }
 
 const circleMask = (spot: Spot) =>
@@ -111,11 +140,13 @@ async function sewnPhoto(design: Buffer, template: string, spot: Spot) {
   const prepped = await prepDesign(design, spot);
   const top = Math.round(spot.cy - prepped.h / 2);
   const left = Math.round(spot.cx - prepped.w / 2);
+  // Effects key off the artwork's ink, not the upload's rectangle — opaque
+  // (JPEG/white-bg) files would otherwise stamp a visible box on the fabric.
+  const ink = await inkMask(prepped);
 
-  // Relief shadow: the design's silhouette, blurred and nudged down-right.
-  const silhouette = await sharp(prepped.buf)
-    .ensureAlpha()
-    .linear([0, 0, 0, 0.35], [0, 0, 0, 0]) // black at ~35% of the design's alpha
+  // Relief shadow: the ink's silhouette, blurred and nudged down-right.
+  const silhouette = await sharp(ink)
+    .linear([0, 0, 0, 0.35], [0, 0, 0, 0]) // black at ~35% of the ink's alpha
     .blur(6)
     .png().toBuffer();
 
@@ -127,7 +158,7 @@ async function sewnPhoto(design: Buffer, template: string, spot: Spot) {
     lines.push(`<line x1="${d + 4}" y1="0" x2="0" y2="${d + 4}" stroke="#000000" stroke-width="1.6" opacity="0.28"/>`);
   }
   const hatch = await sharp(svg(`<svg width="${prepped.w}" height="${prepped.h}" xmlns="http://www.w3.org/2000/svg">${lines.join('')}</svg>`))
-    .composite([{ input: prepped.buf, blend: 'dest-in' }]) // only where the design has ink
+    .composite([{ input: ink, blend: 'dest-in' }]) // only where the design has ink
     .png().toBuffer();
 
   const shadowLayer = await sharp({ create: { width: S, height: S, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
@@ -166,8 +197,12 @@ const framed = (d: Buffer) => hoopPhoto(d, 'hoop-alt.jpg', { cx: 1020, cy: 1010,
 const inHoop = (d: Buffer) => hoopPhoto(d, 'hoop-basic.jpg', { cx: 985, cy: 1030, r: 665 });
 /** Hoop on terracotta linen with walnut ring (W&H "Terra Cotta" style). */
 const scale = (d: Buffer) => hoopPhoto(d, 'hoop-terra.jpg', { cx: 1005, cy: 1000, r: 500 });
-/** Hoop on mustard linen (W&H Alt "Mustard" — echoes the ELK ochre). NEW per #335. */
-const mustard = (d: Buffer) => hoopPhoto(d, 'hoop-mustard.jpg', { cx: 1000, cy: 920, r: 560 });
+/**
+ * Light sage scene with mustard/teal floss (W&H Alt "Blocks R", hoop offset
+ * right). NEW per #335 — replaced the dark Mustard base (Katy, 2026-07-31:
+ * dark line art vanished on dark fabric; lighter ground avoids inversions).
+ */
+const floss = (d: Buffer) => hoopPhoto(d, 'hoop-floss.jpg', { cx: 1560, cy: 1010, r: 600 });
 /** Sage botanical scene (W&H Alt "Blocks C") with the fully-sewn render. NEW per #335. */
 const sewn = (d: Buffer) => sewnPhoto(d, 'hoop-sage.jpg', { cx: 1048, cy: 1005, r: 575 });
 
@@ -176,7 +211,7 @@ const COMPOSERS: { id: PackItemId; label: string; fn: (d: Buffer) => Promise<Buf
   { id: 'framed', label: 'Styled hoop photo', fn: framed },
   { id: 'in-hoop', label: 'In-hoop mockup', fn: inHoop },
   { id: 'scale', label: 'Hoop on terracotta', fn: scale },
-  { id: 'mustard', label: 'Hoop on mustard', fn: mustard },
+  { id: 'floss', label: 'Hoop with floss', fn: floss },
   { id: 'sewn', label: 'Stitched preview', fn: sewn },
 ];
 

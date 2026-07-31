@@ -15,7 +15,7 @@ describe('generatePack', () => {
     const pack = await generatePack(design);
 
     expect(pack.map((p) => p.id)).toEqual(PACK_ITEMS.map((i) => i.id));
-    expect(pack.map((p) => p.id)).toEqual(['flat', 'framed', 'in-hoop', 'scale', 'mustard', 'sewn']);
+    expect(pack.map((p) => p.id)).toEqual(['flat', 'framed', 'in-hoop', 'scale', 'floss', 'sewn']);
 
     for (const img of pack) {
       // both variants non-empty JPEGs (SOI marker 0xFFD8)
@@ -43,7 +43,7 @@ describe('generatePack', () => {
     // Fabric-circle centers must show the design (multiply darkens the fabric);
     // compare against the untouched template at the same coordinates.
     const cases: { id: string; template: string; cx: number; cy: number }[] = [
-      { id: 'mustard', template: 'hoop-mustard.jpg', cx: 1000, cy: 920 },
+      { id: 'floss', template: 'hoop-floss.jpg', cx: 1560, cy: 1010 },
       { id: 'sewn', template: 'hoop-sage.jpg', cx: 1048, cy: 1005 },
     ];
     // Raw pixel read — sharp's stats() ignores a preceding extract(), so
@@ -60,5 +60,26 @@ describe('generatePack', () => {
       // The red test circle multiply-blended at center must darken the template.
       expect(Math.abs(r1 - r0)).toBeGreaterThan(10);
     }
+  }, 60_000);
+
+  it('keeps opaque (white-background) uploads box-free — effects follow ink, and the 15% fabric buffer stays clean', async () => {
+    // Real uploads are often JPEGs: opaque white canvas around the art.
+    const opaque = await sharp(DESIGN).flatten({ background: '#ffffff' }).jpeg({ quality: 92 }).toBuffer();
+    const pack = await generatePack(opaque);
+    const sewn = pack.find((p) => p.id === 'sewn')!;
+
+    const sample = async (buf: Buffer | string, cx: number, cy: number) => {
+      const { data, info } = await sharp(buf).raw().toBuffer({ resolveWithObject: true });
+      const i = (cy * info.width + cx) * info.channels;
+      return [data[i], data[i + 1], data[i + 2]];
+    };
+    // Sewn scene: fabric circle (1048, 1005, r=575). Sample in the 15% buffer
+    // zone on the diagonal — inside the upload's white rectangle but outside
+    // its ink. Must match the untouched template: no shadow box, no hatch box.
+    const d = Math.round((0.85 * 575) / Math.SQRT2); // ≈346
+    const [x, y] = [1048 + d, 1005 - d];
+    const [r1, g1, b1] = await sample(sewn.clean, x, y);
+    const [r0, g0, b0] = await sample(path.join(process.cwd(), 'assets', 'mockups', 'hoop-sage.jpg'), x, y);
+    expect(Math.abs(r1 - r0) + Math.abs(g1 - g0) + Math.abs(b1 - b0)).toBeLessThan(20);
   }, 60_000);
 });
