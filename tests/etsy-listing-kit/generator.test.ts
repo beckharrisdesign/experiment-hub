@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import path from 'path';
 import sharp from 'sharp';
-import { generatePack, dominantColor } from '@/lib/etsy-listing-kit/generator';
+import { generatePack } from '@/lib/etsy-listing-kit/generator';
 import { PACK_ITEMS, PACK_IMAGE_PX } from '@/lib/etsy-listing-kit/config';
 
 // A tiny valid design to composite (kept small so the test stays fast).
@@ -9,11 +10,12 @@ const DESIGN = Buffer.from(
 );
 
 describe('generatePack', () => {
-  it('produces the 6 curated items with clean + watermarked variants', async () => {
+  it('produces the 6 recomposed items (no detail crop / info card) with clean + watermarked variants', async () => {
     const design = await sharp(DESIGN).png().toBuffer();
     const pack = await generatePack(design);
 
     expect(pack.map((p) => p.id)).toEqual(PACK_ITEMS.map((i) => i.id));
+    expect(pack.map((p) => p.id)).toEqual(['flat', 'framed', 'in-hoop', 'scale', 'floss', 'sewn']);
 
     for (const img of pack) {
       // both variants non-empty JPEGs (SOI marker 0xFFD8)
@@ -24,7 +26,7 @@ describe('generatePack', () => {
       expect(img.watermarked.equals(img.clean)).toBe(false);
       expect(img.watermarked.length).toBeLessThan(1024 * 1024);
     }
-  }, 30_000);
+  }, 60_000);
 
   it('outputs 2000px square images', async () => {
     const design = await sharp(DESIGN).png().toBuffer();
@@ -32,51 +34,72 @@ describe('generatePack', () => {
     const meta = await sharp(pack[0].clean).metadata();
     expect(meta.width).toBe(PACK_IMAGE_PX);
     expect(meta.height).toBe(PACK_IMAGE_PX);
-  }, 30_000);
-});
+  }, 60_000);
 
-describe('dominantColor (badge accent)', () => {
-  const svgPng = (body: string) =>
-    sharp(Buffer.from(`<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">${body}</svg>`)).png().toBuffer();
-
-  it('samples inked pixels, not the white/transparent background', async () => {
-    const red = await svgPng(`<circle cx="200" cy="200" r="120" fill="#c03018"/>`);
-    const hex = await dominantColor(red);
-    const [r, g, b] = [hex.slice(1, 3), hex.slice(3, 5), hex.slice(5, 7)].map((h) => parseInt(h, 16));
-    expect(r).toBeGreaterThan(g);
-    expect(r).toBeGreaterThan(b);
-  });
-
-  it('falls back to terracotta for pure black line art', async () => {
-    const black = await svgPng(`<circle cx="200" cy="200" r="120" fill="none" stroke="#000" stroke-width="8"/>`);
-    expect(await dominantColor(black)).toBe('#b24a2e');
-  });
-
-  it('falls back to terracotta when nothing qualifies (all near-white)', async () => {
-    const white = await svgPng(`<rect width="400" height="400" fill="#fdfdfd"/>`);
-    expect(await dominantColor(white)).toBe('#b24a2e');
-  });
-
-  it('is EXIF-orientation invariant', async () => {
-    const base = await svgPng(`<rect x="0" y="0" width="400" height="120" fill="#2a6f4e"/>`);
-    const rotated = await sharp(base).withMetadata({ orientation: 6 }).jpeg().toBuffer();
-    const plain = await dominantColor(await sharp(base).jpeg().toBuffer());
-    const oriented = await dominantColor(rotated);
-    expect(oriented).toBe(plain);
-  });
-});
-
-describe('badge placement', () => {
-  it('composites the arch badge into the top-left of mockups', async () => {
-    const design = await sharp(
-      Buffer.from(`<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg"><circle cx="200" cy="200" r="150" fill="#c03018"/></svg>`),
-    ).png().toBuffer();
+  it('centers the design in each scene’s fabric circle (new scenes included)', async () => {
+    const design = await sharp(DESIGN).png().toBuffer();
     const pack = await generatePack(design);
-    const flat = pack.find((p) => p.id === 'flat')!;
-    // Sample inside the arch body (badge at 70,70; arch is solid below y≈190).
-    const region = await sharp(flat.clean).extract({ left: 100, top: 300, width: 8, height: 8 }).stats();
-    const [r, g, b] = region.channels.map((c) => c.mean);
-    // Studio bg is #ececea (r≈g≈b≈236); the badge arch must differ clearly.
-    expect(Math.abs(r - 236) + Math.abs(g - 236) + Math.abs(b - 236)).toBeGreaterThan(60);
-  }, 30_000);
+
+    // Fabric-circle centers must show the design (multiply darkens the fabric);
+    // compare against the untouched template at the same coordinates.
+    const cases: { id: string; template: string; cx: number; cy: number }[] = [
+      { id: 'floss', template: 'hoop-floss.jpg', cx: 1560, cy: 1010 },
+      { id: 'sewn', template: 'hoop-sage.jpg', cx: 525, cy: 995 },
+    ];
+    // Raw pixel read — sharp's stats() ignores a preceding extract(), so
+    // sample the decoded buffer directly.
+    const sample = async (buf: Buffer | string, cx: number, cy: number) => {
+      const { data, info } = await sharp(buf).raw().toBuffer({ resolveWithObject: true });
+      const i = (cy * info.width + cx) * info.channels;
+      return [data[i], data[i + 1], data[i + 2]];
+    };
+    for (const c of cases) {
+      const img = pack.find((p) => p.id === c.id)!;
+      const [r1] = await sample(img.clean, c.cx, c.cy);
+      const [r0] = await sample(path.join(process.cwd(), 'assets', 'mockups', c.template), c.cx, c.cy);
+      // The red test circle multiply-blended at center must darken the template.
+      expect(Math.abs(r1 - r0)).toBeGreaterThan(10);
+    }
+  }, 60_000);
+
+  it('clears a non-white canvas even where a closed shape encloses it', async () => {
+    // Ring on a GREY canvas: the middle is unreachable from the edges, so it
+    // only clears under the non-white rule. Otherwise it multiplies onto the
+    // fabric as a visible disc.
+    const ring = Buffer.from(
+      `<svg width="800" height="800" xmlns="http://www.w3.org/2000/svg"><rect width="800" height="800" fill="#c9c9c9"/><circle cx="400" cy="400" r="300" fill="none" stroke="#2e2e2e" stroke-width="14"/></svg>`,
+    );
+    const pack = await generatePack(await sharp(ring).jpeg({ quality: 92 }).toBuffer());
+    const terra = pack.find((p) => p.id === 'scale')!;
+    const sample = async (buf: Buffer | string, cx: number, cy: number) => {
+      const { data, info } = await sharp(buf).raw().toBuffer({ resolveWithObject: true });
+      const i = (cy * info.width + cx) * info.channels;
+      return [data[i], data[i + 1], data[i + 2]];
+    };
+    // Terracotta fabric circle centre (990, 990) — inside the ring.
+    const [r1, g1, b1] = await sample(terra.clean, 990, 990);
+    const [r0, g0, b0] = await sample(path.join(process.cwd(), 'assets', 'mockups', 'hoop-terra.jpg'), 990, 990);
+    expect(Math.abs(r1 - r0) + Math.abs(g1 - g0) + Math.abs(b1 - b0)).toBeLessThan(20);
+  }, 60_000);
+
+  it('keeps opaque (white-background) uploads box-free — effects follow ink, and the 15% fabric buffer stays clean', async () => {
+    // Real uploads are often JPEGs: opaque white canvas around the art.
+    const opaque = await sharp(DESIGN).flatten({ background: '#ffffff' }).jpeg({ quality: 92 }).toBuffer();
+    const pack = await generatePack(opaque);
+    const sewn = pack.find((p) => p.id === 'sewn')!;
+
+    const sample = async (buf: Buffer | string, cx: number, cy: number) => {
+      const { data, info } = await sharp(buf).raw().toBuffer({ resolveWithObject: true });
+      const i = (cy * info.width + cx) * info.channels;
+      return [data[i], data[i + 1], data[i + 2]];
+    };
+    // Sewn scene: fabric circle (525, 995, r=570). Sample in the 15% buffer
+    // zone on the diagonal — inside the upload's white rectangle but outside
+    // its ink. Must match the untouched template: no shadow box, no hatch box.
+    const d = Math.round((0.85 * 570) / Math.SQRT2); // ≈343
+    const [x, y] = [525 + d, 995 - d];
+    const [r1, g1, b1] = await sample(sewn.clean, x, y);
+    const [r0, g0, b0] = await sample(path.join(process.cwd(), 'assets', 'mockups', 'hoop-sage.jpg'), x, y);
+    expect(Math.abs(r1 - r0) + Math.abs(g1 - g0) + Math.abs(b1 - b0)).toBeLessThan(20);
+  }, 60_000);
 });

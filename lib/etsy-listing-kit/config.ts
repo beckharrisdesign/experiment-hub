@@ -18,9 +18,9 @@ export const PACK_ITEMS = [
   { id: 'flat', label: 'Hoop on linen' },
   { id: 'framed', label: 'Styled hoop photo' },
   { id: 'in-hoop', label: 'In-hoop mockup' },
-  { id: 'detail', label: 'Detail crop' },
   { id: 'scale', label: 'Hoop on terracotta' },
-  { id: 'info-card', label: '“What you get” card' },
+  { id: 'floss', label: 'Hoop with floss' },
+  { id: 'sewn', label: 'Stitched preview' },
 ] as const;
 
 /**
