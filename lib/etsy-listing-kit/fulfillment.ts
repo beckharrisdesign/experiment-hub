@@ -42,12 +42,20 @@ export async function fulfillOrder(orderId: string): Promise<{ alreadyDone: bool
     await trackPurchaseServer({ id: orderId, amount_total: order.amount_total, currency: order.currency, click_id: order.click_id });
 
     // Confirmation email — idempotent: only if we have a recipient and haven't sent.
+    // A failed send must never break fulfillment, but it must never be silent
+    // either: the reason is logged and stored so a missing email is diagnosable.
     if (order.customer_email && !order.email_message_id) {
       const url = `${siteUrl()}/etsy-listing-kit/result?order=${orderId}`;
       const email = await sendResultEmail(order.customer_email, url);
+      const now = new Date().toISOString();
       if (email.sent) {
         await db.from('elk_orders')
-          .update({ email_message_id: email.id, email_sent_at: new Date().toISOString() })
+          .update({ email_message_id: email.id, email_sent_at: now, email_attempted_at: now, email_error: null })
+          .eq('id', orderId);
+      } else {
+        console.error(`[elk email] send FAILED for order ${orderId}: ${email.reason ?? 'unknown'}`);
+        await db.from('elk_orders')
+          .update({ email_attempted_at: now, email_error: email.reason ?? 'unknown' })
           .eq('id', orderId);
       }
     }

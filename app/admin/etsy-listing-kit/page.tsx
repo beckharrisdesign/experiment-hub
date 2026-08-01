@@ -12,6 +12,26 @@ export const dynamic = 'force-dynamic';
 const usd = (c: number) => `$${(c / 100).toFixed(2)}`;
 const PAID = new Set(['paid', 'processing', 'fulfilled', 'partially_refunded']);
 
+/**
+ * Confirmation-email outcome per order. A paid, fulfilled order whose email
+ * never sent is invisible without this — the send is deliberately non-fatal.
+ */
+type OrderRow = {
+  status: string; customer_email: string | null; fulfilled_at: string | null;
+  email_sent_at: string | null; email_error: string | null; email_attempted_at: string | null;
+};
+function emailStatus(o: OrderRow) {
+  if (o.email_sent_at) return <span style={{ color: '#1e7a3c' }}>sent</span>;
+  if (o.email_error) {
+    return <span style={{ color: '#b3261e' }} title={o.email_error}>
+      ✕ failed — {o.email_error.length > 48 ? `${o.email_error.slice(0, 48)}…` : o.email_error}
+    </span>;
+  }
+  if (!o.customer_email) return <span style={{ color: '#777' }}>no address</span>;
+  if (o.fulfilled_at) return <span style={{ color: '#b06a00' }}>not sent</span>;
+  return <span style={{ color: '#777' }}>—</span>;
+}
+
 export default async function OwnerView() {
   const db = createAdminSupabaseClient();
   if (!db) {
@@ -50,7 +70,7 @@ export default async function OwnerView() {
         <thead>
           <tr style={{ textAlign: 'left', borderBottom: '2px solid #e5e5e5' }}>
             <th style={{ padding: 8 }}>Order</th><th>Status</th><th>Amount</th><th>Mode</th>
-            <th>Email</th><th>Fulfilled</th><th>Attribution</th>
+            <th>Email</th><th>Email status</th><th>Fulfilled</th><th>Attribution</th>
           </tr>
         </thead>
         <tbody>
@@ -61,6 +81,7 @@ export default async function OwnerView() {
               <td>{o.amount_total != null ? usd(o.amount_total) : '—'}</td>
               <td>{o.livemode ? 'live' : 'test'}</td>
               <td>{o.customer_email ?? '—'}</td>
+              <td>{emailStatus(o)}</td>
               <td>{o.fulfilled_at ? new Date(o.fulfilled_at).toLocaleString() : '—'}</td>
               <td>{[o.utm_source, o.utm_campaign].filter(Boolean).join(' / ') || '—'}</td>
             </tr>
