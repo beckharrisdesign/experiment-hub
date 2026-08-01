@@ -74,20 +74,78 @@ async function watermark(clean: Buffer) {
 type Spot = { cx: number; cy: number; r: number };
 
 /**
+ * Knock out a flat background so the artwork composites naturally on any
+ * fabric: uploads are usually JPEG/PNG with a solid canvas (white, gray,
+ * cream …) that multiply would smear onto the scene as a box. Detects the
+ * background from the border pixels (must be near-uniform) and flood-fills
+ * it to transparent from the edges — enclosed same-color regions INSIDE the
+ * artwork survive. No-ops for already-transparent files and for photo
+ * backgrounds it can't identify safely.
+ */
+async function knockoutFlatBackground(png: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: w, height: h } = info;
+  // Already meaningfully transparent → trust the file's own alpha.
+  let transparent = 0;
+  for (let i = 0; i < w * h; i++) if (data[i * 4 + 3] < 200) transparent++;
+  if (transparent > w * h * 0.02) return png;
+  // Background color = mean of border pixels; bail if the border isn't flat.
+  const border: number[] = [];
+  for (let x = 0; x < w; x++) border.push(x, x + w * (h - 1));
+  for (let y = 1; y < h - 1; y++) border.push(y * w, y * w + w - 1);
+  let br = 0, bg = 0, bb = 0;
+  for (const p of border) { br += data[p * 4]; bg += data[p * 4 + 1]; bb += data[p * 4 + 2]; }
+  br /= border.length; bg /= border.length; bb /= border.length;
+  let dev = 0;
+  for (const p of border) dev += Math.abs(data[p * 4] - br) + Math.abs(data[p * 4 + 1] - bg) + Math.abs(data[p * 4 + 2] - bb);
+  if (dev / border.length > 60) return png; // busy border → photo, leave alone
+  // Flood fill from the border: connected pixels near the background color.
+  const TOL = 48;
+  const near = (p: number) =>
+    Math.abs(data[p * 4] - br) + Math.abs(data[p * 4 + 1] - bg) + Math.abs(data[p * 4 + 2] - bb) < TOL * 3;
+  const visited = new Uint8Array(w * h);
+  const queue: number[] = [];
+  for (const p of border) if (!visited[p] && near(p)) { visited[p] = 1; queue.push(p); }
+  while (queue.length) {
+    const p = queue.pop()!;
+    data[p * 4 + 3] = 0;
+    const x = p % w, y = (p / w) | 0;
+    for (const q of [x > 0 ? p - 1 : -1, x < w - 1 ? p + 1 : -1, y > 0 ? p - w : -1, y < h - 1 ? p + w : -1]) {
+      if (q >= 0 && !visited[q] && near(q)) { visited[q] = 1; queue.push(q); }
+    }
+  }
+  return sharp(data, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
+}
+
+/** Bounding box of visible (alpha) pixels — trim that respects the knockout. */
+async function trimToAlpha(png: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: w, height: h } = info;
+  let minX = w, minY = h, maxX = -1, maxY = -1;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (data[(y * w + x) * 4 + 3] > 16) {
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
+      if (y < minY) minY = y; if (y > maxY) maxY = y;
+    }
+  }
+  if (maxX < 0) return png; // nothing visible — leave as-is
+  return sharp(png).extract({ left: minX, top: minY, width: maxX - minX + 1, height: maxY - minY + 1 }).png().toBuffer();
+}
+
+/**
  * Design resized to the scene's fabric circle (centered, scaled to it).
- * Trims the upload's own padding first (transparent or flat background)
- * so the visible artwork — not the file's canvas — gets the 15% buffer.
+ * Background knocked out and padding trimmed first, so the visible artwork —
+ * not the file's canvas — gets the 15% buffer and nothing boxes the fabric.
  */
 async function prepDesign(design: Buffer, spot: Spot) {
   const size = Math.round(2 * spot.r * DESIGN_FILL);
-  let trimmed: Buffer;
-  try {
-    trimmed = await sharp(design, { density: 300 }).rotate().trim({ threshold: 25 }).png().toBuffer();
-  } catch {
-    // trim() throws on fully-uniform images — fall back to the original
-    trimmed = await sharp(design, { density: 300 }).rotate().png().toBuffer();
-  }
-  const buf = await sharp(trimmed)
+  // Bound the raster before pixel passes (SVGs at density 300 can be huge).
+  const raster = await sharp(design, { density: 300 })
+    .rotate()
+    .resize(1600, 1600, { fit: 'inside', withoutEnlargement: false })
+    .png().toBuffer();
+  const cut = await trimToAlpha(await knockoutFlatBackground(raster));
+  const buf = await sharp(cut)
     .resize(size, size, { fit: 'inside', withoutEnlargement: false })
     .png().toBuffer();
   const m = await sharp(buf).metadata();
@@ -95,19 +153,18 @@ async function prepDesign(design: Buffer, spot: Spot) {
 }
 
 /**
- * Alpha mask of the design's actual ink: transparent AND near-white pixels
- * drop out. Opaque uploads (JPEG, white-background PNG) would otherwise
- * carry their whole rectangle into effects that key off alpha — the sewn
- * shadow/hatch must follow the artwork, never the file's canvas.
+ * Alpha mask of the design's actual ink. prepDesign has already knocked out
+ * a flat background, so alpha is authoritative here — sub-threshold pixels
+ * drop out entirely, keeping the sewn shadow/hatch on the artwork rather
+ * than smearing across semi-transparent antialiasing.
  */
 async function inkMask(prepped: { buf: Buffer; w: number; h: number }): Promise<Buffer> {
   const { data, info } = await sharp(prepped.buf).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const out = Buffer.alloc(data.length);
   for (let i = 0; i < info.width * info.height; i++) {
-    const [r, g, b, a] = [data[i * 4], data[i * 4 + 1], data[i * 4 + 2], data[i * 4 + 3]];
-    const isInk = a > 40 && !(r > 230 && g > 230 && b > 230);
-    out[i * 4] = r; out[i * 4 + 1] = g; out[i * 4 + 2] = b;
-    out[i * 4 + 3] = isInk ? a : 0;
+    const a = data[i * 4 + 3];
+    out[i * 4] = data[i * 4]; out[i * 4 + 1] = data[i * 4 + 1]; out[i * 4 + 2] = data[i * 4 + 2];
+    out[i * 4 + 3] = a > 40 ? a : 0;
   }
   return sharp(out, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
 }
