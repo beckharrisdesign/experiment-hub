@@ -78,9 +78,15 @@ type Spot = { cx: number; cy: number; r: number };
  * fabric: uploads are usually JPEG/PNG with a solid canvas (white, gray,
  * cream …) that multiply would smear onto the scene as a box. Detects the
  * background from the border pixels (must be near-uniform) and flood-fills
- * it to transparent from the edges — enclosed same-color regions INSIDE the
- * artwork survive. No-ops for already-transparent files and for photo
- * backgrounds it can't identify safely.
+ * it to transparent from the edges. No-ops for already-transparent files
+ * and for photo backgrounds it can't identify safely.
+ *
+ * Regions enclosed by a closed shape (the middle of a wreath, inside a
+ * circular border) aren't reachable from the edges. For a **non-white**
+ * canvas those are cleared too — a colored canvas is a scan/export artifact
+ * and left behind it reads as a disc on the fabric. A near-white canvas is
+ * treated as paper and its enclosed areas are kept, since white fill inside
+ * artwork is usually deliberate (Katy's call, 2026-07-31, option C).
  */
 async function knockoutFlatBackground(png: Buffer): Promise<Buffer> {
   const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -113,6 +119,11 @@ async function knockoutFlatBackground(png: Buffer): Promise<Buffer> {
     for (const q of [x > 0 ? p - 1 : -1, x < w - 1 ? p + 1 : -1, y > 0 ? p - w : -1, y < h - 1 ? p + w : -1]) {
       if (q >= 0 && !visited[q] && near(q)) { visited[q] = 1; queue.push(q); }
     }
+  }
+  // Non-white canvas → also clear the enclosed pockets the fill can't reach.
+  const canvasIsWhite = br > 235 && bg > 235 && bb > 235;
+  if (!canvasIsWhite) {
+    for (let p = 0; p < w * h; p++) if (data[p * 4 + 3] !== 0 && near(p)) data[p * 4 + 3] = 0;
   }
   return sharp(data, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
 }

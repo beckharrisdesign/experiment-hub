@@ -62,6 +62,26 @@ describe('generatePack', () => {
     }
   }, 60_000);
 
+  it('clears a non-white canvas even where a closed shape encloses it', async () => {
+    // Ring on a GREY canvas: the middle is unreachable from the edges, so it
+    // only clears under the non-white rule. Otherwise it multiplies onto the
+    // fabric as a visible disc.
+    const ring = Buffer.from(
+      `<svg width="800" height="800" xmlns="http://www.w3.org/2000/svg"><rect width="800" height="800" fill="#c9c9c9"/><circle cx="400" cy="400" r="300" fill="none" stroke="#2e2e2e" stroke-width="14"/></svg>`,
+    );
+    const pack = await generatePack(await sharp(ring).jpeg({ quality: 92 }).toBuffer());
+    const terra = pack.find((p) => p.id === 'scale')!;
+    const sample = async (buf: Buffer | string, cx: number, cy: number) => {
+      const { data, info } = await sharp(buf).raw().toBuffer({ resolveWithObject: true });
+      const i = (cy * info.width + cx) * info.channels;
+      return [data[i], data[i + 1], data[i + 2]];
+    };
+    // Terracotta fabric circle centre (990, 990) — inside the ring.
+    const [r1, g1, b1] = await sample(terra.clean, 990, 990);
+    const [r0, g0, b0] = await sample(path.join(process.cwd(), 'assets', 'mockups', 'hoop-terra.jpg'), 990, 990);
+    expect(Math.abs(r1 - r0) + Math.abs(g1 - g0) + Math.abs(b1 - b0)).toBeLessThan(20);
+  }, 60_000);
+
   it('keeps opaque (white-background) uploads box-free — effects follow ink, and the 15% fabric buffer stays clean', async () => {
     // Real uploads are often JPEGs: opaque white canvas around the art.
     const opaque = await sharp(DESIGN).flatten({ background: '#ffffff' }).jpeg({ quality: 92 }).toBuffer();
