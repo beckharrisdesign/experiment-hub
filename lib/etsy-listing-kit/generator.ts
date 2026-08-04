@@ -164,18 +164,30 @@ async function prepDesign(design: Buffer, spot: Spot) {
 }
 
 /**
- * Alpha mask of the design's actual ink. prepDesign has already knocked out
- * a flat background, so alpha is authoritative here — sub-threshold pixels
- * drop out entirely, keeping the sewn shadow/hatch on the artwork rather
- * than smearing across semi-transparent antialiasing.
+ * Mask of the design's actual ink, for the sewn scene's relief shadow + hatch.
+ *
+ * Alpha alone is NOT enough to identify ink. knockOutFlatBackground keeps
+ * white *enclosed* by a closed shape (it reads as deliberate paper fill —
+ * the middle of a wreath, the inside of a leaf), so those pixels arrive here
+ * fully opaque. Treating opacity as ink filled every closed outline with the
+ * relief shadow, and multiply rendered it as a grey blob — which is nearly
+ * every line-art design in the catalogue.
+ *
+ * So darkness decides, and alpha only gates: a pixel is ink to the extent it
+ * is dark, scaled by how opaque it is. Antialiased strokes keep their soft
+ * falloff instead of hard-clipping.
  */
+const INK_LUMA_MAX = 200; // luma at/above this is paper, not thread
+
 async function inkMask(prepped: { buf: Buffer; w: number; h: number }): Promise<Buffer> {
   const { data, info } = await sharp(prepped.buf).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const out = Buffer.alloc(data.length);
   for (let i = 0; i < info.width * info.height; i++) {
-    const a = data[i * 4 + 3];
-    out[i * 4] = data[i * 4]; out[i * 4 + 1] = data[i * 4 + 1]; out[i * 4 + 2] = data[i * 4 + 2];
-    out[i * 4 + 3] = a > 40 ? a : 0;
+    const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2], a = data[i * 4 + 3];
+    const luma = (r * 299 + g * 587 + b * 114) / 1000;
+    const darkness = luma >= INK_LUMA_MAX ? 0 : 1 - luma / INK_LUMA_MAX;
+    out[i * 4] = r; out[i * 4 + 1] = g; out[i * 4 + 2] = b;
+    out[i * 4 + 3] = a > 40 ? Math.round(a * darkness) : 0;
   }
   return sharp(out, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
 }
