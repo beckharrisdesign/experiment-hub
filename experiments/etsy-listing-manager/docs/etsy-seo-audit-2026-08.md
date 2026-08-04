@@ -1,43 +1,56 @@
 # Etsy SEO audit — WatermarkandHue, August 2026
 
 Source: eRank Health Check export + Listing Audit, cross-checked against live
-Etsy API data for all 19 listings. Tag proposals are written from each listing's
-actual main image, not from the listing copy.
+Etsy API data for all 19 listings. Tag proposals were written from each listing's
+actual main image, not from the listing copy. Every number below is computed from
+live data at render time.
+
+## Terminology
+
+**10 images is eRank's recommendation, not an Etsy limit.** Etsy accepts up to 20
+per listing (`updateListing`'s `image_ids` takes "up to 20 images"), which is why
+several listings sit above 10 and need no action.
 
 ## What eRank missed
 
-eRank scores each listing in isolation, so it reported these as healthy-ish
-listings needing three more tags each. Across the shop:
+eRank scores each listing in isolation, so it reported these as healthy listings
+needing three more tags each. Across the shop:
 
 - **10 listings shared a byte-identical 10-tag set.** Geometric, leaf mandala,
   firecracker, floral and starburst patterns all carried the same words.
 - **3 more listings shared a second identical set**, two of them leaf patterns
   carrying floral tags.
-- `hand embroidery` appeared on 15 of 19 listings; `easy embroidery` on 14.
+- `hand embroidery` appeared on 15 of 19 listings.
 - Not one tag in the 10-listing block named what its pattern actually depicts.
 
 Filling the three empty slots would have left ten of thirteen tags identical.
+
+A second gap the audit did not cover: on the listings inspected, images 1-5 were
+the same photograph with different text overlays, and 6-8 were text-only FAQ
+cards — one photograph per listing, and no styled or lifestyle shot anywhere.
 
 ## Before and after
 
 | | Before | After |
 | --- | --- | --- |
-| Most-shared tag | `hand embroidery` on 15 listings | 5 listings |
-| Worst listing pair | 10 of 13 tags shared | 2 of 13 |
-| Listings at 13/13 | 5 of 19 | 19 of 19 |
-| Main images with alt text | 3 of 19 | 19 of 19 |
+| Most-shared tag | `hand embroidery` on 15 listings | `botanical embroidery` on 7 listings |
+| Worst listing pair | 10 of 13 tags shared | 6 of 13 |
+| Listings at 13/13 tags | 4 of 19 | 19 of 19 |
+| Listings at 10+ images | 3 of 19 | 5 of 19 |
+| Images with alt text | 3 | 7 |
 
 ## Corrections to the original brief
 
 - **Etsy tags cap at 20 characters.** Long multi-word phrases are not possible;
   every tag below is two or three words.
 - **No spelling fixes needed.** The fresh Health Check reports 0 spelling issues
-  on all 19. `timeframe` (#2) is standard English. `flowerbuds` (#13) is still
-  worth splitting to `flower buds` — included below as the only copy change.
-- **Alt text has no update endpoint.** `alt_text` only exists as a parameter on
-  image upload, so it is set by hand in Shop Manager or alongside new uploads.
+  on all 19. `timeframe` (#2) is standard English. `flowerbuds` (#13) was still
+  worth splitting to `flower buds` — the only copy change made.
+- **Alt text cannot be patched onto an existing image.** `alt_text` exists only as
+  a parameter on `uploadListingImage`, so it is set by hand in Shop Manager, or
+  free of charge on any newly uploaded image.
 - **Superstar Keyword is an eRank field**, set manually there. No API.
-- **Listing videos cannot be created via API.** Still outstanding on 18 listings.
+- **Listing videos cannot be created via API.**
 
 ## Per-listing changes
 
@@ -47,32 +60,32 @@ Filling the three empty slots would have left ten of thirteen tags identical.
 
 | | |
 | --- | --- |
-| Tags now | 13 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 13 before, 13 now |
 | Kept | `photo ornament`, `engraved ornament`, `portrait ornament`, `wood photo gift`, `heart ornament`, `circle ornament`, `personalized gift`, `family ornament`, `pet ornament`, `keepsake gift` |
 | Added | `christmas ornament`, `family photo gift`, `line art portrait` |
 | Removed | `star ornament`, `wood decor`, `custom gift` |
 | Superstar keyword | personalized photo ornament |
-| Images | 3 of 10, needs +7 |
+| Images | 3 — needs +7 to reach 10 |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
 
 > Heart-shaped wood ornament held in a hand outdoors, engraved with a teal line-art portrait of a family of four on a natural wood grain background.
 
-### 2. Digital leaf embroidery pattern — beginner-friendly design — PDF download for 6&quot; and 8&quot; hoops
+### 2. Digital leaf embroidery pattern — beginner-friendly design — PDF download for 6" and 8" hoops
 
 `4466791377` — Radial mandala of outlined leaves
 
 | | |
 | --- | --- |
-| Tags now | 10 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 10 before, 13 now |
 | Kept | `hand embroidery`, `embroidery pattern`, `embroidery hoop`, `beginner pattern`, `for beginners`, `easy embroidery`, `digital pattern`, `pdf pattern` |
 | Added | `leaf embroidery`, `leaf pattern pdf`, `botanical pattern`, `leaf hoop art`, `nature embroidery` |
 | Removed | `simple floral`, `floral hoop art` |
 | Superstar keyword | leaf embroidery pattern |
-| Images | 8 of 10, needs +2 |
+| Images | 10 — at or above target, no action |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
@@ -85,51 +98,51 @@ Alt text for the main image:
 
 | | |
 | --- | --- |
-| Tags now | 10 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 10 before, 13 now |
 | Kept | `simple embroidery`, `hand needlework`, `sketch embroidery`, `embroidery drawing`, `embroidery gift`, `needlework pattern`, `simple needlework` |
 | Added | `geometric pattern`, `geometric mandala`, `modern embroidery`, `mandala embroidery`, `geometric hoop art`, `minimalist pattern` |
 | Removed | `embroidery designs`, `hand embroidery`, `easy embroidery` |
 | Superstar keyword | geometric embroidery pattern |
-| Images | 8 of 10, needs +2 |
+| Images | 10 — at or above target, no action |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
 
 > Wooden embroidery hoop holding white fabric stitched with a geometric mandala of concentric circles filled with fine radiating black lines, forming a sunburst.
 
-### 4. Hand Drawn Leaf Mandala Embroidery Pattern – Beginner Friendly PDF Download (6&quot; & 8&quot; Hoops)
+### 4. Hand Drawn Leaf Mandala Embroidery Pattern – Beginner Friendly PDF Download (6" & 8" Hoops)
 
 `4466799018` — Leaf mandala with small buds and sprigs
 
 | | |
 | --- | --- |
-| Tags now | 10 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 10 before, 13 now |
 | Kept | `hand embroidery`, `hand needlework`, `easy embroidery` |
 | Added | `leaf mandala`, `mandala pattern`, `botanical mandala`, `folk leaf design`, `nature mandala`, `scandi embroidery`, `beginner mandala`, `hoop embroidery`, `beginner design`, `modern needlework` |
 | Removed | `simple embroidery`, `embroidery designs`, `sketch embroidery`, `embroidery drawing`, `embroidery gift`, `needlework pattern`, `simple needlework` |
 | Superstar keyword | leaf mandala pattern |
-| Images | 8 of 10, needs +2 |
+| Images | 8 — needs +2 to reach 10 |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
 
 > Wooden embroidery hoop holding white fabric stitched with a circular mandala of outlined leaves, small buds and sprigs radiating from a centre point in black thread.
 
-### 5. Leaf Floral Embroidery Pattern – Beginner Friendly PDF Download (6&quot; & 8&quot; Hoops)
+### 5. Leaf Floral Embroidery Pattern – Beginner Friendly PDF Download (6" & 8" Hoops)
 
 `4466795496` — Ring of pointed leaves alternating with segmented circles
 
 | | |
 | --- | --- |
-| Tags now | 10 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 10 before, 13 now |
 | Kept | none |
 | Added | `leaf rosette`, `geometric leaves`, `modern leaf art`, `radial leaf design`, `leaf circle pattern`, `simple leaf pattern`, `craft pattern pdf`, `instant download`, `printable pattern`, `embroidery template`, `stitching pattern`, `hoop embroidery`, `modern needlework` |
 | Removed | `hand embroidery`, `embroidery pattern`, `embroidery hoop`, `beginner pattern`, `for beginners`, `easy embroidery`, `simple floral`, `floral hoop art`, `digital pattern`, `pdf pattern` |
 | Superstar keyword | leaf hoop art pattern |
-| Images | 8 of 10, needs +2 |
+| Images | 8 — needs +2 to reach 10 |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
@@ -142,32 +155,32 @@ Alt text for the main image:
 
 | | |
 | --- | --- |
-| Tags now | 10 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 10 before, 13 now |
 | Kept | `embroidery designs`, `sketch embroidery`, `needlework pattern` |
 | Added | `starburst pattern`, `boho embroidery`, `sunburst design`, `star embroidery`, `boho hoop art`, `celestial pattern`, `firecracker design`, `embroidery pattern`, `embroidery template`, `digital pattern` |
 | Removed | `simple embroidery`, `hand embroidery`, `hand needlework`, `embroidery drawing`, `easy embroidery`, `embroidery gift`, `simple needlework` |
 | Superstar keyword | starburst embroidery pattern |
-| Images | 8 of 10, needs +2 |
+| Images | 8 — needs +2 to reach 10 |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
 
 > Wooden embroidery hoop holding white fabric stitched with a twelve-point star surrounded by radiating lines and small cross stitches, in black thread.
 
-### 7. Digital geometric embroidery pattern — beginner-friendly design — PDF download for 6&quot; and 8&quot; hoops
+### 7. Digital geometric embroidery pattern — beginner-friendly design — PDF download for 6" and 8" hoops
 
 `4466789627` — Radial wheel of pie segments in concentric rings
 
 | | |
 | --- | --- |
-| Tags now | 10 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 10 before, 13 now |
 | Kept | `simple embroidery`, `simple needlework` |
 | Added | `geometric wheel`, `radial pattern`, `modern geometric`, `wheel embroidery`, `abstract pattern`, `line art pattern`, `geometric design`, `pdf pattern`, `slow stitching`, `stitching pattern`, `beginner pattern` |
 | Removed | `embroidery designs`, `hand embroidery`, `hand needlework`, `sketch embroidery`, `embroidery drawing`, `easy embroidery`, `embroidery gift`, `needlework pattern` |
 | Superstar keyword | geometric wheel pattern |
-| Images | 8 of 10, needs +1 |
+| Images | 8 — needs +2 to reach 10 |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
@@ -180,32 +193,32 @@ Alt text for the main image:
 
 | | |
 | --- | --- |
-| Tags now | 10 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 10 before, 13 now |
 | Kept | `embroidery drawing`, `embroidery gift` |
 | Added | `geometric rosette`, `wall art pattern`, `geometric wall art`, `modern wall decor`, `circle pattern`, `boho wall art`, `mandala wall art`, `for beginners`, `hoop art pattern`, `instant download`, `organic pattern` |
 | Removed | `simple embroidery`, `embroidery designs`, `hand embroidery`, `hand needlework`, `sketch embroidery`, `easy embroidery`, `needlework pattern`, `simple needlework` |
 | Superstar keyword | geometric wall art pattern |
-| Images | 9 of 10, needs +1 |
+| Images | 9 — needs +1 to reach 10 |
+| Main image alt text | set |
 | Listing video | missing |
 
 Alt text for the main image:
 
 > Embroidery hoop on a green and tan flat lay with floss and scissors, holding fabric stitched with a geometric rosette of circles and triangles in black outline.
 
-### 9. Digital floral embroidery pattern — beginner-friendly design — PDF download for 6&quot; and 8&quot; hoops
+### 9. Digital floral embroidery pattern — beginner-friendly design — PDF download for 6" and 8" hoops
 
 `4466078772` — Folk floral: central plant, tulip blooms, arch border
 
 | | |
 | --- | --- |
-| Tags now | 10 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 10 before, 13 now |
 | Kept | `sketch embroidery` |
 | Added | `folk floral`, `tulip embroidery`, `folk art flowers`, `scandinavian floral`, `flower pattern pdf`, `folk hoop art`, `nordic embroidery`, `embroidery hoop`, `botanical embroidery`, `craft pattern pdf`, `easy embroidery pdf`, `printable pattern` |
 | Removed | `simple embroidery`, `embroidery designs`, `hand embroidery`, `hand needlework`, `embroidery drawing`, `easy embroidery`, `embroidery gift`, `needlework pattern`, `simple needlework` |
 | Superstar keyword | folk floral embroidery pattern |
-| Images | 8 of 10, needs +2 |
+| Images | 8 — needs +2 to reach 10 |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
@@ -218,32 +231,32 @@ Alt text for the main image:
 
 | | |
 | --- | --- |
-| Tags now | 10 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 10 before, 13 now |
 | Kept | `simple embroidery`, `embroidery designs` |
 | Added | `minimal embroidery`, `sunburst pattern`, `simple line art`, `modern minimalist`, `beginner geometric`, `calm stitching`, `easy line pattern`, `diy embroidery`, `hoop embroidery`, `embroidery pattern`, `modern needlework` |
 | Removed | `hand embroidery`, `hand needlework`, `sketch embroidery`, `embroidery drawing`, `easy embroidery`, `embroidery gift`, `needlework pattern`, `simple needlework` |
 | Superstar keyword | minimalist embroidery pattern |
-| Images | 9 of 10, needs +1 |
+| Images | 9 — needs +1 to reach 10 |
+| Main image alt text | set |
 | Listing video | missing |
 
 Alt text for the main image:
 
 > Embroidery hoop on a green and tan flat lay with floss and scissors, holding fabric stitched with a minimal sunburst of straight black lines radiating from a centre point.
 
-### 11. Digital floral embroidery pattern — beginner-friendly design — PDF download for 6&quot; or 8&quot; hoops
+### 11. Digital floral embroidery pattern — beginner-friendly design — PDF download for 6" or 8" hoops
 
 `4465359686` — Symmetrical folk arrangement of leaves and berry sprigs
 
 | | |
 | --- | --- |
-| Tags now | 10 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 10 before, 13 now |
 | Kept | `hand embroidery`, `easy embroidery` |
 | Added | `folk botanical`, `leaf and berry`, `symmetrical design`, `botanical folk art`, `berry embroidery`, `modern botanical`, `leafy pattern pdf`, `simple needlework`, `organic pattern`, `embroidery template`, `embroidery drawing` |
 | Removed | `embroidery pattern`, `embroidery hoop`, `beginner pattern`, `for beginners`, `simple floral`, `floral hoop art`, `digital pattern`, `pdf pattern` |
 | Superstar keyword | botanical embroidery pattern |
-| Images | 8 of 10, needs +2 |
+| Images | 8 — needs +2 to reach 10 |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
@@ -256,13 +269,13 @@ Alt text for the main image:
 
 | | |
 | --- | --- |
-| Tags now | 10 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 10 before, 13 now |
 | Kept | `needlework pattern`, `hand needlework` |
 | Added | `navy embroidery`, `leaf star design`, `intermediate pattern`, `detailed botanical`, `leaf rosette pdf`, `advanced embroidery`, `statement hoop art`, `pdf pattern`, `botanical embroidery`, `hoop embroidery`, `beginner pattern` |
 | Removed | `simple embroidery`, `embroidery designs`, `hand embroidery`, `sketch embroidery`, `embroidery drawing`, `easy embroidery`, `embroidery gift`, `simple needlework` |
 | Superstar keyword | intermediate embroidery pattern |
-| Images | 9 of 10, needs +1 |
+| Images | 9 — needs +1 to reach 10 |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
@@ -275,33 +288,33 @@ Alt text for the main image:
 
 | | |
 | --- | --- |
-| Tags now | 13 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 13 before, 13 now |
 | Kept | `embroidery designs`, `needlework pattern`, `simple needlework`, `floral pattern`, `botanical embroidery`, `self care gift`, `round wreath design`, `fall wreath diy`, `flower bud stitching`, `calm stitching`, `healing art project`, `printable pdf`, `digital product` |
 | Added | none |
 | Removed | none |
 | Superstar keyword | botanical wreath pattern |
-| Images | 8 of 10, needs +2 |
+| Images | 8 — needs +2 to reach 10 |
+| Main image alt text | missing |
 | Listing video | missing |
-| Description | `flowerbuds` to `flower buds` |
+| Description | `flowerbuds` to `flower buds` — applied |
 
 Alt text for the main image:
 
 > Wooden embroidery hoop holding white fabric stitched with a wreath of leafy vines enclosing a ring of seed pods around a starburst centre, in black thread.
 
-### 14. Digital floral embroidery pattern — beginner-friendly design — PDF download for 6&quot; & 8&quot; hoops
+### 14. Digital floral embroidery pattern — beginner-friendly design — PDF download for 6" & 8" hoops
 
 `4465356349` — Ring of striped leaf fans around a star centre
 
 | | |
 | --- | --- |
-| Tags now | 12 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 12 before, 13 now |
 | Kept | `radial design`, `calm stitching`, `slow craft`, `leaf embroidery` |
 | Added | `leaf fan design`, `striped leaf pattern`, `star centre mandala`, `fan embroidery`, `embroidery designs`, `hoop art pattern`, `botanical embroidery`, `diy embroidery`, `printable pattern` |
 | Removed | `hand embroidery`, `embroidery pattern`, `embroidery hoop`, `beginner pattern`, `for beginners`, `easy embroidery`, `simple floral`, `digital pattern` |
 | Superstar keyword | leaf mandala embroidery |
-| Images | 8 of 10, needs +2 |
+| Images | 8 — needs +2 to reach 10 |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
@@ -314,13 +327,13 @@ Alt text for the main image:
 
 | | |
 | --- | --- |
-| Tags now | 10 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 10 before, 13 now |
 | Kept | `embroidery gift` |
 | Added | `ornate floral`, `folk flower design`, `linen embroidery`, `vintage floral`, `decorative pattern`, `symmetrical floral`, `cottagecore pattern`, `digital pattern`, `beginner design`, `craft pattern pdf`, `for beginners`, `slow stitching` |
 | Removed | `simple embroidery`, `embroidery designs`, `hand embroidery`, `hand needlework`, `sketch embroidery`, `embroidery drawing`, `easy embroidery`, `needlework pattern`, `simple needlework` |
 | Superstar keyword | folk flower embroidery pattern |
-| Images | 13 of 10 — no action |
+| Images | 13 — at or above target, no action |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
@@ -333,32 +346,32 @@ Alt text for the main image:
 
 | | |
 | --- | --- |
-| Tags now | 10 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 10 before, 13 now |
 | Kept | `simple needlework` |
 | Added | `boho mandala`, `detailed mandala`, `intermediate design`, `ornate star pattern`, `mandala hoop art`, `bohemian pattern`, `statement mandala`, `hoop art pattern`, `embroidery hoop`, `modern needlework`, `easy embroidery pdf`, `instant download` |
 | Removed | `simple embroidery`, `embroidery designs`, `hand embroidery`, `hand needlework`, `sketch embroidery`, `embroidery drawing`, `easy embroidery`, `embroidery gift`, `needlework pattern` |
 | Superstar keyword | boho mandala embroidery pattern |
-| Images | 11 of 10 — no action |
+| Images | 11 — at or above target, no action |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
 
 > Wooden embroidery hoop holding white fabric stitched with an elaborate twelve-point boho mandala of layered chevrons, dots and starbursts in dense black thread.
 
-### 17. Beginner floral embroidery design — PDF digital product — 6&quot; & 8&quot; hoops
+### 17. Beginner floral embroidery design — PDF digital product — 6" & 8" hoops
 
 `4414949521` — Floral rosettes and leaves with scalloped border
 
 | | |
 | --- | --- |
-| Tags now | 11 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 11 before, 13 now |
 | Kept | `embroidery designs`, `self care gift`, `digital products`, `embroidery pattern`, `embroidery pdf`, `round embroidery`, `botanical embroidery`, `cross stitch designs`, `fall leaves art`, `hoop wall art`, `burnout recovery` |
 | Added | `floral rosette`, `scalloped border` |
 | Removed | none |
 | Superstar keyword | beginner floral embroidery |
-| Images | 12 of 10 — no action |
+| Images | 12 — at or above target, no action |
+| Main image alt text | set |
 | Listing video | yes |
 
 Alt text for the main image:
@@ -371,13 +384,13 @@ Alt text for the main image:
 
 | | |
 | --- | --- |
-| Tags now | 13 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 13 before, 13 now |
 | Kept | `embroidery designs`, `hand needlework`, `needlework pattern`, `beginner embroidery`, `floral hoop art`, `beginner friendly`, `fall hoop art`, `self care gift`, `calm stitching`, `pdf download`, `digital product`, `botanical embroidery`, `whimsical forest art` |
 | Added | none |
 | Removed | none |
 | Superstar keyword | botanical hoop art pattern |
-| Images | 8 of 10, needs +2 |
+| Images | 8 — needs +2 to reach 10 |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
@@ -390,13 +403,13 @@ Alt text for the main image:
 
 | | |
 | --- | --- |
-| Tags now | 13 of 13 |
-| Tags after | 13 of 13 |
+| Tags | 13 before, 13 now |
 | Kept | `hand embroidery`, `hoop art pattern`, `easy embroidery pdf`, `botanical embroidery`, `simple embroidery`, `beginner design`, `beginner craft`, `organic pattern`, `hand drawn pattern`, `meditation pattern`, `stress relief`, `modern hand pattern`, `slow stitching` |
 | Added | none |
 | Removed | none |
 | Superstar keyword | wreath embroidery pattern |
-| Images | 8 of 10, needs +2 |
+| Images | 8 — needs +2 to reach 10 |
+| Main image alt text | missing |
 | Listing video | missing |
 
 Alt text for the main image:
@@ -407,16 +420,16 @@ Alt text for the main image:
 
 | Change | Route | Status |
 | --- | --- | --- |
-| Tags (all 19) | `updateListing` PATCH | done, verified 2026-08-04 |
+| Tags (all 19) | `updateListing` PATCH | done, verified |
 | Description fix (#13) | `updateListing` PATCH | done, verified |
-| Alt text (16 listings) | Shop Manager by hand | outstanding |
-| Superstar keyword (19) | eRank, by hand | outstanding |
-| Images (+33 across 16 listings) | `uploadListingImage` | needs your files |
-| Listing video (18) | not available via API | outstanding |
+| Images | `uploadListingImage` | 30 still needed across 14 listings |
+| Main-image alt text | Shop Manager, by hand | 16 listings outstanding |
+| Superstar keyword | eRank, by hand | 19 outstanding |
+| Listing video | not available via API | 18 outstanding |
 
 ## Manual checklist
 
-### Alt text — paste into Shop Manager, main image of each listing
+### Main-image alt text — paste into Shop Manager
 
 - [ ] **1** `4522918821` — Heart-shaped wood ornament held in a hand outdoors, engraved with a teal line-art portrait of a family of four on a natural wood grain background.
 - [ ] **2** `4466791377` — Wooden embroidery hoop holding white fabric stitched with a radial mandala of outlined leaves in black thread, arranged in a circle around a central leaf.
@@ -434,8 +447,6 @@ Alt text for the main image:
 - [ ] **16** `4417250225` — Wooden embroidery hoop holding white fabric stitched with an elaborate twelve-point boho mandala of layered chevrons, dots and starbursts in dense black thread.
 - [ ] **18** `4465357735` — Wooden embroidery hoop holding white fabric stitched with a symmetrical botanical motif of leaves, buds and small flowers inside a dense blanket-stitch border.
 - [ ] **19** `4466797252` — Wooden embroidery hoop holding white fabric stitched with a leafy vine wreath enclosing a circle of branching stems radiating from the centre, in black thread.
-
-Already has alt text, no action: #8, #10, #17.
 
 ### Superstar keyword — set in eRank
 
@@ -462,12 +473,10 @@ Already has alt text, no action: #8, #10, #17.
 ### Images — upload to reach 10 each
 
 - [ ] **1** `4522918821` — has 3, needs +7
-- [ ] **2** `4466791377` — has 8, needs +2
-- [ ] **3** `4466080258` — has 8, needs +2
 - [ ] **4** `4466799018` — has 8, needs +2
 - [ ] **5** `4466795496` — has 8, needs +2
 - [ ] **6** `4466795015` — has 8, needs +2
-- [ ] **7** `4466789627` — has 8, needs +1
+- [ ] **7** `4466789627` — has 8, needs +2
 - [ ] **8** `4466082116` — has 9, needs +1
 - [ ] **9** `4466078772` — has 8, needs +2
 - [ ] **10** `4466076995` — has 9, needs +1
@@ -478,15 +487,22 @@ Already has alt text, no action: #8, #10, #17.
 - [ ] **18** `4465357735` — has 8, needs +2
 - [ ] **19** `4466797252` — has 8, needs +2
 
-Already at 10 or more: #15, #16, #17.
+Renders can be produced from the Figma base patterns via
+`lib/etsy-listing-kit/generator.ts` — see the note below.
 
-### Listing video — one per listing, not available via API
+## Generating listing images
 
-Missing on all except #17. 18 listings outstanding.
+Source art lives in the W&H Listing Generator Figma file, page
+`Embroidery Base Patterns`, as 2000x2000 components (`Geo Diagonals`,
+`Leaves Variety 8up`, `Hand Drawn Leaf Mandala`, ...). Export a component as PNG
+and run it through `generatePack()` for six scenes.
+
+Of the six, `scale` (terracotta linen on emerald velvet) is the highest-contrast
+and was absent from every listing gallery; `in-hoop` duplicates the plain-grey
+look those galleries already overuse.
 
 ## Rollback
 
-Every listing's original tag set is saved in the session scratchpad as
-`rollback_original_listings.json`. Reverting is a PATCH per listing with the
-old array.
+Original tag sets are saved as `rollback_original_listings.json` in the session
+scratchpad. Reverting is one PATCH per listing with the old array.
 
