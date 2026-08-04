@@ -50,8 +50,10 @@ describe('reply-to routing', () => {
   const savedReply = process.env.ELK_REPLY_TO;
   afterEach(() => {
     vi.unstubAllGlobals();
-    if (savedKey) process.env.RESEND_API_KEY = savedKey; else delete process.env.RESEND_API_KEY;
-    if (savedReply) process.env.ELK_REPLY_TO = savedReply; else delete process.env.ELK_REPLY_TO;
+    // Restore on `undefined`, not falsiness — an env var legitimately set to
+    // "" must be restored as "", or the suite becomes order-dependent.
+    if (savedKey !== undefined) process.env.RESEND_API_KEY = savedKey; else delete process.env.RESEND_API_KEY;
+    if (savedReply !== undefined) process.env.ELK_REPLY_TO = savedReply; else delete process.env.ELK_REPLY_TO;
     vi.resetModules();
   });
 

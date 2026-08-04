@@ -7,8 +7,9 @@
  *
  * Branding matches the funnel (Figma 02.3 tokens: terracotta #b24a2e, ochre
  * #d99a2b, cream #fdf3ee, Fraunces headings): buyers should recognise the email
- * as coming from the page they just paid on. Mail clients can't load webfonts,
- * so headings fall back to Georgia — the same fallback the site declares.
+ * as coming from the page they just paid on. The heading stack mirrors the
+ * site's — Fraunces first, then Georgia — but mail clients don't load webfonts,
+ * so in practice every recipient sees the Georgia fallback.
  */
 import { EXPERIMENT_ID } from './config';
 
@@ -27,7 +28,7 @@ const SITE_LABEL = SITE.replace(/^https?:\/\//, '');
 const INK = '#252525', MUTED = '#555555', FAINT = '#8a8a8a';
 const PRIMARY = '#b24a2e', ACCENT = '#d99a2b', ACCENT_TINT = '#f5e3be', ACCENT_INK = '#7a4d12';
 const CREAM = '#fdf3ee', SURFACE = '#f7f7f7', BORDER = '#e5e5e5';
-const SERIF = `Georgia,'Times New Roman',serif`;
+const SERIF = `Fraunces,Georgia,'Times New Roman',serif`;
 const SANS = 'Inter,Arial,sans-serif';
 
 /** Masthead + footer wrapper, so every ELK email reads as the same product. */
