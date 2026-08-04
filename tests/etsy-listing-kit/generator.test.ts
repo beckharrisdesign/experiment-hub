@@ -102,4 +102,44 @@ describe('generatePack', () => {
     const [r0, g0, b0] = await sample(path.join(process.cwd(), 'assets', 'mockups', 'hoop-sage.jpg'), x, y);
     expect(Math.abs(r1 - r0) + Math.abs(g1 - g0) + Math.abs(b1 - b0)).toBeLessThan(20);
   }, 60_000);
+
+  it('leaves white enclosed by a closed outline as fabric, not a grey blob', async () => {
+    // Regression: the catalogue is line art — closed outlines (leaves, wreaths,
+    // mandalas) on a white canvas. knockOutFlatBackground deliberately KEEPS
+    // white enclosed by a closed shape (it reads as paper), so those pixels
+    // reach the sewn scene fully opaque. inkMask used to treat opacity as ink,
+    // so the relief shadow filled every closed shape and multiply rendered it
+    // grey. Ink must be decided by darkness, not alpha.
+    //
+    // The sibling test above samples only OUTSIDE the artwork's ink, in the
+    // fabric buffer — it cannot see this. This one samples dead centre, inside
+    // the ring, where the bug lived.
+    const ring = await sharp(
+      Buffer.from(
+        `<svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">` +
+          `<rect width="600" height="600" fill="#ffffff"/>` +
+          `<circle cx="300" cy="300" r="220" fill="none" stroke="#111111" stroke-width="6"/>` +
+          `</svg>`,
+      ),
+    )
+      .jpeg({ quality: 92 })
+      .toBuffer();
+
+    const pack = await generatePack(ring);
+    const sewn = pack.find((p) => p.id === 'sewn')!;
+
+    const sample = async (buf: Buffer | string, cx: number, cy: number) => {
+      const { data, info } = await sharp(buf).raw().toBuffer({ resolveWithObject: true });
+      const i = (cy * info.width + cx) * info.channels;
+      return [data[i], data[i + 1], data[i + 2]];
+    };
+
+    // hoop-sage fabric circle centre — enclosed by the ring, contains no ink.
+    const [cx, cy] = [525, 995];
+    const [r1, g1, b1] = await sample(sewn.clean, cx, cy);
+    const [r0, g0, b0] = await sample(path.join(process.cwd(), 'assets', 'mockups', 'hoop-sage.jpg'), cx, cy);
+
+    // Must still read as bare fabric. Pre-fix this darkened by ~60 per channel.
+    expect(Math.abs(r1 - r0) + Math.abs(g1 - g0) + Math.abs(b1 - b0)).toBeLessThan(24);
+  }, 60_000);
 });
