@@ -84,4 +84,23 @@ Craft/Etsy-tool keywords run ~$0.40–$2 CPC. ~$15 buys **~15–30 clicks over 3
 1. ~~Statement naming~~ **Dropped (2026-07-31):** Stripe requires the descriptor to match the business name, so no `BHD` shortening. Checkout's `statement_descriptor_suffix: 'ETSY KIT'` still applies on top of the business-name prefix (verified working by the live 2026-07-28 payment) — statements read `<BUSINESS NAME>* ETSY KIT`.
 2. `ELK_LAUNCHED_AT` set in Vercel (revenue window running).
 3. Resend key set (buyers need the email link to re-reach downloads).
-4. Create campaign per above → set $5/day (3-day burst) → enable. Note the enable date here: `____`
+4. Create campaign per above → set $5/day (3-day burst) → enable. **ENABLED 2026-08-04** (campaign `etsy-listing-kit-test1`, id 24091208777).
+
+## Live run — day-by-day
+
+Burst window: **day 1 = 2026-08-04, day 2 = 2026-08-05, day 3 = 2026-08-06 → pause.**
+Check against the kill/continue table above; record what actually happened.
+
+| Day | Impr. | Clicks | Upload starts | Checkouts | Paid | Action taken |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | | | | | | |
+| 2 | | | | | | |
+| 3 | | | | | | **pause + run the numbers** |
+
+Funnel truth (not Google's numbers):
+```sql
+select status, count(*), count(click_id) as ad_attributed
+from elk_orders
+where created_at >= '2026-08-04'
+group by status;
+```
