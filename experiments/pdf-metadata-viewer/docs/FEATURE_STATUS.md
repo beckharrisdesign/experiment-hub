@@ -1,133 +1,97 @@
-# Feature Status Assessment
+# Feature Status
 
-## Core Workflow ✅ COMPLETE
-- ✅ Point application at directory of PDFs/images
-- ✅ Application loads first document in queue
-- ✅ User reviews document preview (multi-page support)
-- ✅ User manually edits metadata (title, subject, keywords, author)
-- ❌ Requests LLM analysis to suggest metadata values (Phase 2)
-- ✅ User saves and moves to next document (circular navigation)
+Verified against the code on 2026-08-05, during the migration into the hub.
 
-## Key Features
+The previous version of this file was written before the AI and taxonomy work
+landed and described both as "not started." Every claim below was checked
+against the source.
 
-### Document Viewing ✅ COMPLETE
-- ✅ Display PDF/image preview (multi-page with thumbnails)
-- ✅ Show current embedded metadata
-- ✅ Navigate through document queue with arrow keys/buttons
+---
 
-### Metadata Editing ✅ COMPLETE
-- ✅ Edit title, subject, and keywords fields
-- ✅ Tag-based keyword editor with add/remove functionality
-- ✅ Keywords stored as comma-delimited values in PDF metadata
-- ✅ File renaming (bonus feature)
+## Core workflow — complete
 
-### AI-Assisted Organization ❌ NOT STARTED
-- ❌ LLM analyzes document content and structure
-- ❌ Suggests values for: filename, title, subject, keywords
-- ❌ Suggests split points for multi-page PDFs
-- **Status**: Phase 2 - High Priority
+| Capability | State | Notes |
+|---|---|---|
+| Point at a directory of PDFs | ✅ | `PDFS_DIR`, relative or absolute; Google Drive mounts detected with specific error messaging |
+| Load and preview documents | ✅ | Multi-page with thumbnails, rendered in-browser via pdf.js |
+| Navigate the queue | ✅ | Arrow keys and buttons, circular |
+| Edit metadata | ✅ | Title, subject, author, keywords |
+| AI-suggested metadata | ✅ | Vision model, taxonomy-constrained, per-field accept |
+| Save and advance | ✅ | |
 
-### Tag Taxonomy ❌ NOT STARTED
-- ❌ Lightweight database (markdown file) of standardized tag slugs
-- ❌ People registry validation
-- ❌ Vendor/provider registry validation
-- **Status**: Mentioned in PRD but not yet implemented
+## Metadata editing — complete, with one gap
 
-### Activity Log ✅ COMPLETE (Implemented Early!)
-- ✅ Track which documents were updated
-- ✅ Record metadata changes
-- ✅ Timestamp of updates
+- ✅ Title, subject, author editable
+- ✅ Tag-chip keyword editor, comma-delimited storage
+- ✅ File renaming
+- ⚠️ **Creator and producer**: the API accepts writes for both, but the UI marks them `editable: false` ([app.js:910-911](../prototype/public/app.js)). Backend support exists; the frontend doesn't expose it.
+- ❌ Custom fields not editable
+
+## AI-assisted organization — complete
+
+- ✅ Page images plus current metadata sent to `gpt-4o-mini`
+- ✅ Suggests filename, title, subject, keywords
+- ✅ Suggestions constrained to the taxonomy by prompt
+- ✅ Per-field accept, displayed inline against current values
+- ✅ Prompt template externalized to `prototype/config/ai-prompt-template.md`, hot-reloaded by nodemon
+- ❌ **No post-response validation.** Tag conformance is prompt-only — nothing checks the model's output against the taxonomy before it reaches the user. This is the main reason taxonomy violations still occur.
+- ❌ AI-suggested split points
+- ❌ Auto-query on file open — currently a button click ([app.js:1171](../prototype/public/app.js))
+
+## Tag taxonomy — complete, now Notion-backed
+
+- ✅ Generic vocabulary in `prototype/config/tag-vocabulary.md` — 25 document types, 22 categories, 12 action, 8 status, 10 special flags
+- ✅ Entities resolved at runtime from the Notion Entities database, keyed on `Slug`
+- ✅ Field allowlist prevents contact and account data reaching the model, asserted by `prototype/testing/test-entity-projection.js`
+- ✅ Offline snapshot fallback and 10-minute cache
+- ❌ Validation of tags *against* the taxonomy (see above)
+
+## PDF splitter — complete
+
+- ✅ Split button appears only for multi-page PDFs
+- ✅ Thumbnail grid with click-to-insert break markers
+- ✅ Sequential auto-numbering (`name-001.pdf`)
+- ✅ Metadata preserved to every output: title, subject, keywords, author, creator, producer
+- ✅ Outputs tagged `from-split`; the original tagged `already-split` **and `needs-deleting`**
+- ❌ User-configurable naming pattern
+- ❌ Per-output metadata customization before execution
+
+## File list — complete
+
+- ✅ Paginated, `metadata=false` fast path for initial load
+- ✅ Client-side sort and filter
+- ✅ Metadata columns plus per-file update count from the activity log
+- ✅ Per-row kebab menu: view, rename, delete
+
+## Activity log — complete
+
+- ✅ Every metadata update, rename, and split recorded with field-level diffs
+- ✅ Capped at 1000 entries
 - ✅ Collapsible UI with auto-refresh
-- **Note**: This was in Phase 3 but implemented early!
 
-## Future Enhancements Status
+## Infrastructure — added during migration
 
-### Phase 1: Essential Metadata Features
+- ✅ Path traversal validation on every route, including body-sourced filenames
+- ✅ Server starts without `OPENAI_API_KEY` (AI suggestions genuinely optional)
+- ✅ Five unused dependencies removed
+- ✅ Eval corpus, entity snapshot, activity log, and PDFs all gitignored
 
-#### ✅ PDF Splitter Mode - COMPLETE
-- ✅ Split button in navigation bar (visible for multi-page PDFs)
-- ✅ Splitter view with page thumbnails in grid (3 per row)
-- ✅ Click-to-insert break markers between pages
-- ✅ Visual break markers
-- ✅ "Split PDF" button executes operation
-- ✅ Returns to main view after splitting
-- ✅ Auto-numbering: Sequential (filename-001.pdf, filename-002.pdf)
-- ✅ Metadata preservation (title, subject, keywords, author, creator, producer)
-- ❌ User can configure naming pattern before splitting (not implemented)
-- ❌ AI suggests split points (Phase 2)
+---
 
-#### ⚠️ Processing Tracking - PARTIALLY ENABLED
-- ✅ File list view shows update counts per file (enables tracking)
-- ❌ Track processing count in metadata
-- ❌ Append note to subject field
-- ❌ Add processing tag to keywords
-- **Status**: Phase 1 - High Priority (Foundation in place with file list view)
+## Not built
 
-#### ⚠️ Duplicate Detection - FOUNDATION READY
-- ✅ File list view enables visual duplicate detection
-- ❌ Automated duplicate detection (compare file hashes and metadata)
-- ❌ Content similarity analysis
-- **Status**: Phase 1 - High Priority (File list view provides foundation)
+| Feature | Priority | Note |
+|---|---|---|
+| Taxonomy validation of AI output | High | The highest-value remaining item — closes the loop the prompt can't |
+| Keyword read-back fix | High | See [roadmap.md](roadmap.md); blocks trusting embedded metadata |
+| Image file support | High | Many scans aren't PDFs and can't be processed at all |
+| Processing tracking | Medium | File list update counts provide the foundation |
+| Duplicate detection | Medium | File list enables it by eye; nothing automated |
+| OCR | Medium | Blocks scans without embedded text |
+| XMP packet syncing | Medium | |
+| Batch operations | Medium | |
+| Reporting and analytics | Low | |
+| Cloud read/write | Low | Drive mount detection already exists |
+| Automation | Low | |
 
-#### ❌ Editing Additional Metadata Fields - PARTIALLY DONE
-- ✅ Author is editable
-- ❌ Creator, producer editing (currently read-only)
-- ❌ Custom fields editing
-- **Status**: Phase 1 - Medium Priority (user tabled this)
-
-#### ❌ XMP Packet Metadata Syncing - NOT STARTED
-- Sync metadata in XMP packet format
-- **Status**: Phase 1 - Future Enhancement
-
-### Phase 2: AI & Content Enhancement ❌ NOT STARTED
-- ❌ AI-assisted organization (all suggestion types)
-- ❌ OCR text extraction
-- ❌ AI prompt optimization
-- **Status**: High Priority but requires OpenAI integration
-
-### Phase 3: Batch Processing ❌ NOT STARTED
-- ❌ Batch metadata operations
-- ✅ Activity log (implemented early!)
-- **Status**: Medium Priority
-
-### Phase 4: Reporting & Analytics ❌ NOT STARTED
-- **Status**: Medium Priority
-
-### Phase 5: Cloud Integration ❌ NOT STARTED
-- **Status**: Lower Priority
-
-### Phase 6: Automation ❌ NOT STARTED
-- **Status**: Lower Priority
-
-## Summary
-
-### ✅ Completed Features (Core MVP + Extras)
-1. **Core Workflow**: Fully functional document viewing and metadata editing
-2. **PDF Splitter**: Complete implementation with metadata preservation
-3. **Activity Logging**: Implemented early (was Phase 3)
-4. **File List View**: Complete file management interface with metadata display
-   - Table view showing all files with metadata columns
-   - Update counts per file from activity log
-   - Keywords displayed as tags matching detail view
-   - Delete file functionality
-   - Navigation between list and detail views
-5. **File Renaming**: Bonus feature not in original PRD
-6. **Multi-page Preview**: Enhanced beyond basic preview
-
-### 🎯 Next Priority Features (Based on PRD)
-1. **Processing Tracking** (Phase 1) - Mark processed documents
-2. **Duplicate Detection** (Phase 1) - Identify duplicate files
-3. **AI-Assisted Organization** (Phase 2) - LLM suggestions for metadata
-4. **Tag Taxonomy Validation** (Core Feature) - Validate keywords against taxonomy
-
-### 📊 Completion Status
-- **Core Features**: ~90% complete (file list view added, missing AI and taxonomy validation)
-- **Phase 1**: ~50% complete (splitter done, file list enables tracking/duplicates, automation pending)
-- **Phase 2**: 0% complete (AI features not started)
-- **Phase 3+**: Activity log done early, rest pending
-
-### 💡 Recommendations
-1. **Processing Tracking** would be a natural next step - helps track workflow progress
-2. **Tag Taxonomy** should be implemented before AI features to validate suggestions
-3. **AI-Assisted Organization** is the biggest workflow enhancement but requires OpenAI integration
-4. Consider implementing **duplicate detection** early to avoid processing duplicates
+Full detail in [roadmap.md](roadmap.md).
