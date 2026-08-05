@@ -43,13 +43,71 @@ worth more than the conclusion.
 This is the framing the rest of the work serves. The hosted instance, the
 database, the Drive handshake are all mechanism; the straddle is the problem.
 
-Note what the soccer/dance example demands that the current entity model cannot
-express. Entities today are flat — `slug`, `name`, `aliases`, `kind`,
-`relationship`, `categories`, `location`. An organization can record *a*
-relationship, but nothing links an organization to the specific person it
-belongs to. "Riverside Youth Soccer" and "Center Stage Dance" are both just
-organizations; which child each belongs to lives only in the founder's head.
-Telling them apart reliably means the entity database has to carry that edge.
+The soccer/dance example is already modelable — the work is plumbing, not design.
+
+The Notion Entities database carries three self-referential relations:
+`Parent Entity`, `Child Entities`, and `Related Entities`. An organization can
+therefore already point at the specific person it belongs to, which is exactly
+the edge that distinguishes one child's soccer team from another's dance studio.
+
+**What drops it is the projection, not the schema.** `ALLOWED_PROPERTIES` in
+`prototype/lib/entities-notion.js` lists eight fields — `Slug`, `Name`,
+`Aliases`, `Kind`, `Relationship`, `Category`, `Status`, `Location`. None of the
+three relations appear there, and the allowlist ignores anything unlisted by
+design. So the hierarchy exists in Notion, never reaches `loadTaxonomy()`, and
+never reaches the vision prompt. The model is being asked to disambiguate with
+information the pipeline is holding back.
+
+Two notes for whoever specs this:
+
+- The relations are absent from `DENIED_PROPERTIES` too. They aren't a privacy
+  exclusion, just unlisted — so adding them is a projection change, not a
+  reversal of the security boundary. The allowlist should stay an allowlist.
+- Notion returns relations as page references, not values, so projecting them
+  means mapping page id → slug. `queryAllPages()` already fetches every entity,
+  so that map can be built in the same pass rather than costing extra requests.
+
+---
+
+## Why this matters
+
+The strongest evidence this experiment has is that its only user used it hard
+and wanted more:
+
+> I spent a week or two dogfooding this idea with my own data and LOVED it. It
+> can get better, but even in rough shape it was revelatory.
+
+That is worth more than the scored eval runs, because it is a verdict on the
+workflow rather than on the model. A rough tool that survives two weeks of real
+household paperwork has cleared the bar that kills most personal-productivity
+projects: it beat doing nothing.
+
+Two supporting facts from the original repo:
+
+- **Cloud was in the plan from the first commit.** The earliest `PRD.md`
+  (`e470ef2`) lists under Future Enhancements: *"Point application at cloud
+  directories (Google Drive, Dropbox, etc.)"*. The hosted pivot is the original
+  roadmap arriving, not a change of mind.
+- **The bug that worried her most is still the bug that matters.** The original
+  PRD escalated keyword read-back to *"CRITICAL — DEAL BREAKER"*. It remains
+  the top item on [roadmap.md](roadmap.md) and is now a launch blocker.
+
+## Where the founder's own writing lives
+
+Deliberately not consolidated into this public repo — some of it cannot be.
+
+| Source | Where | Public? |
+|---|---|---|
+| Original PRD, 227 lines, plus 6 commits of evolution | `~/Documents/code/pdf-metadata-viewer/PRD.md` | Safe, not copied here — the hub PRD supersedes it |
+| Taxonomy and entity registry design, 421 lines | Same repo, `docs/tag_entity_database.md`; migrated into the **Notion Entities database**, now the live source of truth | **No** — real family names, including minors |
+| Scoring rubric and prompt template, original versions | Same repo, `docs/` | **No** — worked examples use real names. The hub's copies were rewritten with synthetic placeholders |
+| UI refinement notes, feature status, README, CLAUDE.md | Same repo | Safe |
+| Eval corpus — the measurement record | `~/Documents/code/pdf-metadata-viewer-eval/` | **No** — built from real household documents |
+| Redundant copy of all of the above | `~/Documents/code/pdf-metadata-viewer-eval/original-repo-writing/` | **No** — mixed; see `PROVENANCE.md` there |
+
+The original repo should stay private permanently: it holds both the unredacted
+history and the household registry. The copy under `original-repo-writing/`
+exists only so the writing survives if that repo is ever archived.
 
 ---
 
