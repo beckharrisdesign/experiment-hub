@@ -24,14 +24,26 @@ personal documents and queries a private Notion database. It runs on port 3004.
 ```bash
 cd prototype
 npm install
-cp .env.example .env   # then fill in
 npm run dev
 ```
 
 Open http://localhost:3004.
 
-Only `PDFS_DIR` is required to start. Notion credentials are needed for AI
-suggestions; `OPENAI_API_KEY` is optional and unrelated features work without it.
+**Notion is configured at the hub root, not here.** Set `NOTION_TOKEN` and
+`NOTION_ENTITIES_DATA_SOURCE_ID` once in the hub's `.env.local` and this
+prototype picks them up, sharing auth with the hub app through
+`@experiment-hub/notion-auth`. Create a `prototype/.env` only to override
+something locally — a different PDF directory, a test database, another port.
+
+Auth resolves exactly as it does for the hub app: `NOTION_TOKEN` if set,
+otherwise the Replit connector. The connector's token can't be used outside
+Replit, so local runs need a token.
+
+> `.env.local` is gitignored and therefore absent from git worktrees. Working in
+> one means copying it in or exporting the variables in your shell.
+
+The app starts without any of this — only `PDFS_DIR` matters for boot. Notion is
+needed for AI suggestions; `OPENAI_API_KEY` is optional on top of that.
 
 ## How the taxonomy works
 

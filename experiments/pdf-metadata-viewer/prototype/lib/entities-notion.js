@@ -1,4 +1,5 @@
 import { Client } from '@notionhq/client';
+import { resolveNotionToken, hasReplitConnector } from '@experiment-hub/notion-auth';
 import { readFile, writeFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -174,25 +175,36 @@ export async function loadEntities({ force = false } = {}) {
     return cache;
   }
 
-  const token = process.env.NOTION_TOKEN;
   const dataSourceId = process.env.NOTION_ENTITIES_DATA_SOURCE_ID;
 
-  if (!token || !dataSourceId) {
+  // Credentials resolve the same way as the hub app: a direct NOTION_TOKEN, or
+  // the Replit connector when running inside Replit.
+  const hasCredentials = Boolean(process.env.NOTION_TOKEN) || hasReplitConnector();
+
+  if (!dataSourceId || !hasCredentials) {
+    const missing = [
+      dataSourceId ? null : 'NOTION_ENTITIES_DATA_SOURCE_ID',
+      hasCredentials ? null : 'NOTION_TOKEN (or a Replit connector)'
+    ]
+      .filter(Boolean)
+      .join(' and ');
+
     const snapshot = await readSnapshot();
     if (snapshot) {
-      console.warn('⚠ NOTION_TOKEN or NOTION_ENTITIES_DATA_SOURCE_ID not set — using entity snapshot');
+      console.warn(`⚠ ${missing} not set — using entity snapshot from ${snapshot.fetchedAt}`);
       cache = snapshot;
       cachedAt = Date.now();
       return cache;
     }
     throw new Error(
-      'Notion is not configured and no entity snapshot exists. Set NOTION_TOKEN and ' +
-        'NOTION_ENTITIES_DATA_SOURCE_ID in .env — see .env.example.'
+      `Notion is not configured (missing ${missing}) and no entity snapshot exists. ` +
+        'Set these in the hub root .env.local so every experiment shares them, or in ' +
+        'this prototype\'s .env to override — see .env.example.'
     );
   }
 
   try {
-    const notion = new Client({ auth: token });
+    const notion = new Client({ auth: await resolveNotionToken() });
     const shaped = shapeEntities(await queryAllPages(notion, dataSourceId));
 
     console.log(

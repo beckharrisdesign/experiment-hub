@@ -1,70 +1,17 @@
 import { Client } from "@notionhq/client";
+import { resolveNotionToken } from "@experiment-hub/notion-auth";
 
-let connectionSettings: any;
-
-async function getAccessToken() {
-  if (
-    connectionSettings?.settings?.expires_at &&
-    new Date(connectionSettings.settings.expires_at).getTime() > Date.now()
-  ) {
-    return connectionSettings.settings.access_token;
-  }
-
-  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
-  const xReplitToken = process.env.REPL_IDENTITY
-    ? "repl " + process.env.REPL_IDENTITY
-    : process.env.WEB_REPL_RENEWAL
-      ? "depl " + process.env.WEB_REPL_RENEWAL
-      : null;
-
-  if (!xReplitToken) {
-    throw new Error("X_REPLIT_TOKEN not found for repl/depl");
-  }
-
-  if (!hostname) {
-    throw new Error("REPLIT_CONNECTORS_HOSTNAME not configured");
-  }
-
-  connectionSettings = await fetch(
-    "https://" +
-      hostname +
-      "/api/v2/connection?include_secrets=true&connector_names=notion",
-    {
-      headers: {
-        Accept: "application/json",
-        X_REPLIT_TOKEN: xReplitToken,
-      },
-    },
-  )
-    .then((res) => res.json())
-    .then((data) => data.items?.[0]);
-
-  if (!connectionSettings) {
-    throw new Error(
-      "Notion not connected. Please set up the Notion integration first.",
-    );
-  }
-
-  const accessToken =
-    connectionSettings?.settings?.access_token ||
-    connectionSettings?.settings?.oauth?.credentials?.access_token;
-
-  if (!accessToken) {
-    throw new Error(
-      "Notion access token not found. Please reconnect the Notion integration.",
-    );
-  }
-  return accessToken;
-}
-
+/**
+ * Notion client for the hub.
+ *
+ * Auth resolution lives in `@experiment-hub/notion-auth` so experiment
+ * prototypes — which are plain Node with no build step — share exactly this
+ * logic instead of reimplementing it. Configure NOTION_TOKEN once and both
+ * this app and the prototypes pick it up; inside Replit the connector is used
+ * automatically.
+ */
 export async function getUncachableNotionClient() {
-  // On Vercel (or any non-Replit host), set NOTION_TOKEN directly in env vars.
-  // The Replit connector is used as a fallback when NOTION_TOKEN is absent.
-  if (process.env.NOTION_TOKEN) {
-    return new Client({ auth: process.env.NOTION_TOKEN });
-  }
-  const accessToken = await getAccessToken();
-  return new Client({ auth: accessToken });
+  return new Client({ auth: await resolveNotionToken() });
 }
 
 // Valid options for multi-select fields (must match Notion database options)

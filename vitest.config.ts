@@ -14,6 +14,13 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "."),
+      // Mirrors the tsconfig path mapping. lib/notion.ts imports this, and
+      // lib/notion-experiments.ts and lib/notion-history.ts import that, so
+      // several suites resolve through it.
+      "@experiment-hub/notion-auth": path.resolve(
+        __dirname,
+        "packages/notion-auth/src/index.js",
+      ),
       "next/link": path.resolve(__dirname, "tests/__mocks__/next/link.tsx"),
     },
   },

@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import './lib/load-env.js';
 import express from 'express';
 import { readFile, readdir, writeFile, rename, unlink, stat } from 'fs/promises';
 import { PDFDocument } from 'pdf-lib';
