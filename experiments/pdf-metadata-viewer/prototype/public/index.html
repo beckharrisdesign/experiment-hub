@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Metadata Viewer</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <div class="file-selector">
+        <button id="back-to-list-btn" class="back-to-list-btn">← Back to List</button>
+        <button id="prev-btn" class="nav-btn" title="Previous PDF">‹</button>
+        <div id="view-title" class="view-title">PDF Files</div>
+        <div id="pdf-name" class="pdf-name" style="display: none;">-- No PDF selected --</div>
+        <button id="split-btn" class="nav-split-btn" title="Split PDF" style="display: none;">Split</button>
+        <button id="next-btn" class="nav-btn" title="Next PDF">›</button>
+        <button id="refresh-list-btn" class="refresh-btn" title="Refresh list" style="display: none;">↻</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <main>
+      <!-- File List View (default starting point) -->
+      <div id="file-list-view" class="file-list-view">
+        <div id="file-list-stats" class="file-list-stats">
+          <div class="stat-item">
+            <span class="stat-label">Total Files:</span>
+            <span class="stat-value" id="stat-total-files">-</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Files with Edits:</span>
+            <span class="stat-value" id="stat-files-with-edits">-</span>
+          </div>
+        </div>
+        <div id="file-list-container" class="file-list-container">
+          <p class="placeholder">Loading files...</p>
+        </div>
+      </div>
+
+      <!-- Detail View (single file view) -->
+      <div id="detail-view" class="detail-view" style="display: none;">
+        <div class="preview-section">
+          <div id="pdf-preview" class="pdf-preview">
+            <p class="placeholder">Select a PDF file to view</p>
+          </div>
+        </div>
+
+        <div class="metadata-section">
+          <div id="ai-suggestions-section" class="ai-suggestions-section" style="display: none;">
+            <div class="ai-suggestions-header">
+              <h3>AI Suggestions</h3>
+              <button id="close-ai-suggestions-btn" class="close-ai-btn">×</button>
+            </div>
+            <div id="ai-suggestions-content" class="ai-suggestions-content">
+              <p class="placeholder">Loading suggestions...</p>
+            </div>
+          </div>
+          
+          <div id="metadata-display" class="metadata-display">
+            <p class="placeholder">No file selected</p>
+          </div>
+          
+          <div class="activity-log-section">
+            <div class="activity-log-header" id="activity-log-toggle">
+              <h3>Activity Log</h3>
+              <span class="activity-log-toggle-icon">▼</span>
+            </div>
+            <div id="activity-log-content" class="activity-log-content" style="display: none;">
+              <div id="activity-log-entries" class="activity-log-entries">
+                <p class="placeholder">Loading activity log...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PDF Splitter View (hidden by default) -->
+        <div id="splitter-view" class="splitter-view" style="display: none;">
+          <div class="splitter-header">
+            <h2>Split PDF: <span id="splitter-filename"></span></h2>
+            <button id="splitter-back-btn" class="splitter-back-btn">← Back</button>
+          </div>
+          <div class="splitter-instructions">
+            <p>Click between pages to insert split markers. Each marker indicates where the PDF will be split.</p>
+          </div>
+          <div id="splitter-pages" class="splitter-pages"></div>
+          <div class="splitter-actions">
+            <button id="splitter-no-split-btn" class="splitter-no-split-btn">Mark as No-Split-Needed</button>
+            <button id="splitter-execute-btn" class="splitter-execute-btn" disabled>Split PDF</button>
+            <button id="splitter-clear-btn" class="splitter-clear-btn">Clear All Markers</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
