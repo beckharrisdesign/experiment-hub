@@ -422,10 +422,10 @@ Alt text for the main image:
 | --- | --- | --- |
 | Tags (all 19) | `updateListing` PATCH | done, verified |
 | Description fix (#13) | `updateListing` PATCH | done, verified |
-| Images | `uploadListingImage` | 7 still needed across 1 listings |
+| Images | `uploadListingImage` | 7 still needed across 1 listing |
 | Main-image alt text | Shop Manager, by hand | 11 listings outstanding |
 | Superstar keyword | eRank, by hand | 19 outstanding |
-| Listing video | not available via API | 18 outstanding |
+| Listing video | not available via API | 18 listings outstanding |
 
 ## Manual checklist
 
@@ -516,7 +516,7 @@ generator does not apply. Its 7 missing images need real product photography.
 - #12's base pattern is black but the listing is stitched navy. Its render is
   recoloured to `rgb(34, 32, 66)`, sampled from the live image.
 
-### uploadListingImage: rank is an INSERT position, not append
+### uploadListingImage: rank is an INSERT position, not an append index
 
 `rank` does not mean "put it at this index of the final array". Uploading two
 images a second apart with `rank: 9` and `rank: 10` to an 8-image listing did
