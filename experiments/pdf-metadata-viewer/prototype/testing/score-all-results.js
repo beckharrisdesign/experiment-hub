@@ -14,7 +14,7 @@ const __dirname = dirname(__filename);
 
 // Load taxonomy for validation (using shared loader)
 async function loadTaxonomyForScoring() {
-  const taxonomy = await loadTaxonomyForScoring();
+  const taxonomy = await loadTaxonomy();
   return {
     ...taxonomy,
     allTags: [
