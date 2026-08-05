@@ -30,6 +30,27 @@ worth more than the conclusion.
 > full file round trip. File storage can stay on drive in the short term and we
 > just store url refs to it in the database.
 
+## The actual problem
+
+> there are so many agents and tools out there, but the hardest problem is still
+> moving back and forth from my digital life to my physical one. Scanning,
+> tagging files, dedup-ing, doing your taxes, saving receipts -- if you have any
+> scrap of a real world life you end up straddling those worlds. I want to
+> combine a pdf editor with ai vision and a source of truth entity database that
+> always understands the difference between my sons soccer team and my
+> daughter's dance team.
+
+This is the framing the rest of the work serves. The hosted instance, the
+database, the Drive handshake are all mechanism; the straddle is the problem.
+
+Note what the soccer/dance example demands that the current entity model cannot
+express. Entities today are flat — `slug`, `name`, `aliases`, `kind`,
+`relationship`, `categories`, `location`. An organization can record *a*
+relationship, but nothing links an organization to the specific person it
+belongs to. "Riverside Youth Soccer" and "Center Stage Dance" are both just
+organizations; which child each belongs to lives only in the founder's head.
+Telling them apart reliably means the entity database has to carry that edge.
+
 ---
 
 ## What this supersedes
