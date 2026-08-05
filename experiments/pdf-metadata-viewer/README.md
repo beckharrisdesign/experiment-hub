@@ -10,9 +10,9 @@ carried over; see [Privacy](#privacy) for why.
 ## Status
 
 Working MVP. Core workflow, PDF splitting, activity logging, file list, and
-AI-assisted suggestions are all functional. See [docs/FEATURE_STATUS.md](docs/FEATURE_STATUS.md)
-— **note that file predates the AI and taxonomy work and understates what is
-built.** Refreshing it is outstanding.
+AI-assisted suggestions are all functional. [docs/FEATURE_STATUS.md](docs/FEATURE_STATUS.md)
+was rebuilt against the source during the migration and is current as of
+2026-08-05.
 
 ## Local only
 
@@ -109,6 +109,14 @@ prototype/
 
 ## Outstanding
 
-Migration steps not yet done: refresh `docs/FEATURE_STATUS.md` and the PRD to
-hub format, and register the experiment in `data/experiments.json` and
-`data/prototypes.json`.
+- **The live Notion round-trip is unverified.** Projection, shaping, caching,
+  and both failure paths are covered by `testing/test-entity-projection.js`,
+  but no `NOTION_TOKEN` was available where this was migrated — an actual query
+  and its pagination have never run.
+- **AI output is not validated against the taxonomy.** Tag conformance is
+  prompt-only; nothing checks the model's response before it reaches you. This
+  is the largest remaining gap — see [docs/FEATURE_STATUS.md](docs/FEATURE_STATUS.md).
+
+Migration into the hub is otherwise complete: docs rewritten against the
+source, and the experiment registered in `data/experiments.json`,
+`data/prototypes.json`, and `data/documentation.json`.
