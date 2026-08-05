@@ -55,6 +55,33 @@ for (const marker of LEAK_MARKERS) {
 assert.strictEqual(entity.slug, 'firstname-m-lastname');
 assert.strictEqual(entity.name, 'Firstname Lastname');
 assert.deepStrictEqual(entity.aliases, ['Firstname', 'Firstie']);
+
+// Alias separators are mixed in the real database: as of the migration, 28 of
+// 47 aliased entities use semicolons and only 2 use commas. Splitting on comma
+// alone collapses multi-alias rows into one unmatchable blob, which silently
+// breaks abbreviation matching — the main thing aliases exist for.
+assert.deepStrictEqual(
+  projectEntity({
+    properties: { Slug: title('s'), Aliases: richText('Alpha; Bravo; Charlie') }
+  }).aliases,
+  ['Alpha', 'Bravo', 'Charlie'],
+  'semicolon-separated aliases must split'
+);
+assert.deepStrictEqual(
+  projectEntity({
+    properties: { Slug: title('s'), Aliases: richText('Alpha; Bravo, Charlie') }
+  }).aliases,
+  ['Alpha', 'Bravo', 'Charlie'],
+  'mixed separators must split'
+);
+// Ampersands occur inside business names, not between them.
+assert.deepStrictEqual(
+  projectEntity({
+    properties: { Slug: title('s'), Aliases: richText('Alpha & Bravo') }
+  }).aliases,
+  ['Alpha & Bravo'],
+  'ampersand is part of a name, not a separator'
+);
 assert.strictEqual(entity.kind, 'Person');
 assert.deepStrictEqual(entity.categories, ['medical', 'financial']);
 
@@ -87,4 +114,5 @@ assert.ok(ALLOWED_PROPERTIES.every(p => !DENIED_PROPERTIES.includes(p)), 'allow/
 
 console.log('✓ entity projection: no contact or account data leaks');
 console.log('✓ unknown Notion columns are ignored');
+console.log('✓ aliases split on ; and , but not on & inside names');
 console.log('✓ slugless entities dropped, Former entities excluded from suggestions');

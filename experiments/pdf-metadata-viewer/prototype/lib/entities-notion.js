@@ -76,8 +76,11 @@ export function projectEntity(page) {
   return {
     slug,
     name: plainText(pick('Name')) || slug,
+    // Aliases are hand-entered and mixed: most rows separate with semicolons,
+    // a few with commas, and ampersands appear inside business names rather
+    // than between them. Split on ; , and newlines only.
     aliases: plainText(pick('Aliases'))
-      .split(',')
+      .split(/[;,\n]/)
       .map(alias => alias.trim())
       .filter(Boolean),
     kind: selectName(pick('Kind')),
