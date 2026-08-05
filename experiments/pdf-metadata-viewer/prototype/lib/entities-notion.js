@@ -1,5 +1,5 @@
 import { Client } from '@notionhq/client';
-import { resolveNotionToken, hasReplitConnector } from '@experiment-hub/notion-auth';
+import { resolveNotionToken, hasNotionAuth } from '@experiment-hub/notion-auth';
 import { readFile, writeFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -179,7 +179,7 @@ export async function loadEntities({ force = false } = {}) {
 
   // Credentials resolve the same way as the hub app: a direct NOTION_TOKEN, or
   // the Replit connector when running inside Replit.
-  const hasCredentials = Boolean(process.env.NOTION_TOKEN) || hasReplitConnector();
+  const hasCredentials = hasNotionAuth();
 
   if (!dataSourceId || !hasCredentials) {
     const missing = [

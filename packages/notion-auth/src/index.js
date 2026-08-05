@@ -24,6 +24,17 @@ export function hasReplitConnector() {
   );
 }
 
+/**
+ * True when either auth path is available.
+ *
+ * Synchronous, so callers can gate a feature without attempting a fetch — the
+ * hub uses this to decide whether Notion is a usable data source at all before
+ * falling through to Supabase or the JSON snapshot.
+ */
+export function hasNotionAuth() {
+  return Boolean(process.env.NOTION_TOKEN) || hasReplitConnector();
+}
+
 async function getConnectorToken() {
   if (
     connectionSettings?.settings?.expires_at &&
