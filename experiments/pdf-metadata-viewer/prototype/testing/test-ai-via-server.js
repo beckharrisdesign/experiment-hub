@@ -9,10 +9,12 @@ import 'dotenv/config';
 import { readdir, writeFile } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import fetch from 'node-fetch';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Must match the running server. server.js defaults to 3004 and honours PORT.
+const BASE_URL = `http://localhost:${process.env.PORT || 3004}`;
 
 // Use the browser to render PDFs and get images, then call the API
 // Since server-side rendering fails, we'll use puppeteer to get images from the browser
@@ -23,7 +25,7 @@ async function getPDFImagesViaBrowser(filename) {
   const page = await browser.newPage();
   
   try {
-    await page.goto(`http://localhost:3000`, { waitUntil: 'networkidle2' });
+    await page.goto(BASE_URL, { waitUntil: 'networkidle2' });
     
     // Navigate to the file
     await page.waitForSelector('.file-list-view, .detail-view', { timeout: 5000 });
@@ -62,7 +64,7 @@ async function getPDFImagesViaBrowser(filename) {
 }
 
 async function callAISuggestionsAPI(filename, images, attempt) {
-  const response = await fetch(`http://localhost:3000/api/ai-suggestions/${encodeURIComponent(filename)}`, {
+  const response = await fetch(`${BASE_URL}/api/ai-suggestions/${encodeURIComponent(filename)}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
