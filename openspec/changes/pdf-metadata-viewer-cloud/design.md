@@ -774,6 +774,28 @@ Proposed MVDS API, matching the Figma properties:
 Three additions to MVDS come out of this change, in the order they are needed:
 `input` and `table` via shadcn, then `Stat` authored against the token set.
 
+**Found while building the dashboard, and worth knowing before leaning harder on
+MVDS in the hub:**
+
+- **`Section` is unusable here.** It applies `bg-background` unconditionally —
+  there is no transparent option, and all four `SurfaceBg` values resolve to MVDS
+  tokens. In the hub's dark mode that is near-black (`lab(2.75 0 0)`), not the
+  hub's `--color-background-primary` green (`rgb(25 75 49)`), so it paints a black
+  band across the top of an otherwise green page. Verified in the browser, not
+  inferred. `Container` gives the same width cap and gutters without carrying a
+  background, so it is what the page uses. This is issue #285 showing up in
+  practice.
+- **The spacing scale rejects the Figma frames.** `Section py` accepts only
+  `24 | 64`; `Stack`/`Inline` gaps accept the 8-pt scale and refuse `12`. The
+  proposal frames used 12, 28, and 40 throughout. MVDS caught it at compile time,
+  which is the system working — but it means the Figma spacing and the design
+  system's grid currently disagree, and the frames are the ones that are wrong.
+- **0.3.0 is compatible with existing hub usage.** Installed locally, the full
+  suite goes to 57 files / 679 tests passing — including `EtsySyncPanel` and the
+  `/dev/mvds` route, both of which had been failing only because the package was
+  absent from the worktree. That is the evidence task 2.4 wanted and CI could not
+  supply.
+
 Compatibility was checked against the 0.3 typings before bumping: every
 component and variant the hub already uses — `Badge` success/destructive/muted,
 `Button` outline/ghost, `Section` `bg`/`py`, `Stack`/`Inline` `gap`, all `Card`

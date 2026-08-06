@@ -22,7 +22,7 @@ Each one changes work below it, so none should be discovered mid-build.
 - [ ] 2.1a **Spike before any Drive code:** confirm whether a Picker folder grant covers files added to that folder later. Decisive for the workflow, and not safe to assume
 - [x] 2.2 Splitter **moves to v2** — schema now, interface after the write path. See `design.md` D10
 - [x] 2.3 Workflow flags become **columns** — `from-split`/`already-split` derive from lineage; `needs-deleting`/`no-split-needed` become `marked_for_deletion`/`split_not_needed`. See `design.md` D11
-- [ ] 2.4 Confirm Actions is running again and CI verifies the MVDS 0.3 bump — currently unverified, no runs are being created
+- [ ] 2.4 Confirm Actions is running again and CI verifies the MVDS 0.3 bump. **Compatibility now evidenced locally** — with 0.3.0 installed the full suite passes 57 files / 679 tests, including EtsySyncPanel and /dev/mvds. The CI run itself is still outstanding
 
 ## 3. Data layer
 
@@ -42,7 +42,7 @@ Each one changes work below it, so none should be discovered mid-build.
 - [x] 4.5 Allowlist keyed on the `sub` claim, with `email_verified` checked
 - [x] 4.6 Verify a non-allowlisted Google account is refused — unit-covered; re-verify end to end once the handshake exists
 - [ ] 4.7 Verify revoking the app in Google settings ends both sign-in and Drive access
-- [ ] 4.8 Verify an unauthenticated request cannot distinguish a document that exists from one that does not
+- [x] 4.8 Verify an unauthenticated request cannot distinguish a document that exists from one that does not — confirmed against a running server: `/api/pdf-documents` 401s, the page redirects to sign-in, and the open handshake path is not gated
 
 ## 5. Drive connection
 
@@ -91,7 +91,7 @@ Each one changes work below it, so none should be discovered mid-build.
 
 - [ ] 9.1 Add `input` and `table` via `npx shadcn@latest add`, landing inside MVDS tokens
 - [ ] 9.2 Author `Stat` in MVDS — `<Stat label value tone />`, tone in default/warning/success/danger/muted. No shadcn equivalent exists; the Figma variant set at `19:17` is the reference
-- [ ] 9.3 Dashboard: stats, Needs attention list, bulk commit action, state column
+- [x] 9.3 Dashboard: stats, state column, table actions. Needs attention list and live bulk commit wait on the Drive client
 - [ ] 9.4 Detail: `Field` with `help` carrying the in-the-file value and `error` carrying a conflict
 - [ ] 9.5 Pending state visible at rest, not only during editing
 - [ ] 9.6 Import MVDS components into `00 Components` so Figma and code share a source
