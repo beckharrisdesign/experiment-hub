@@ -345,6 +345,32 @@ proposal iteration a *new* page — never edited or appended in place.
 | `02.3 Proposed — contained width (xl 1280)` | `24:8` | Fourth iteration — all three surfaces capped at the `xl` breakpoint and centred, per MVDS `Container` |
 | `02.4 Proposed — fewer borders` | `26:14` | Fifth iteration — Compare stripped from 20 stroked elements to 3 |
 | `02.5 Proposed — contrast + borders, all surfaces` | `27:40` | Sixth iteration — WCAG fixes and the border budget applied to all three surfaces |
+| `02.6 Proposed — changes as a table` | `30:14` | Seventh iteration — conflicts rendered in the dashboard's table idiom rather than as cards |
+
+### Changes are a table
+
+The conflict cards were a bespoke pattern for something the dashboard already
+has an idiom for. `02.6` renders the changes as a table built the same way —
+surface, header rule, row rules, same padding and type scale:
+
+| Field | Was | Yours | In Drive |
+|---|---|---|---|
+
+The choice lives *in the cell*: the chosen value carries the accent fill and the
+`text/on-accent` label, the other stays plain. That removes the card, the head
+row, and the side-by-side tiles, and it makes the baseline (`Was`) a column
+rather than a whispered annotation in the corner — which is what it should have
+been, since the whole three-way merge depends on it being legible.
+
+It also scales. Cards stack badly past three or four conflicts; rows don't.
+
+**Defect fixed in place, not iterated:** `needs-attention` and `documents` were
+not centred — their containers sat at x=0 while `header` and `stats` sat at x=80.
+Those two sections are *vertical* auto-layout, where `primaryAxisAlignItems`
+governs the vertical axis; horizontal centring is `counterAxisAlignItems`. The
+containment helper set the wrong one. Corrected on `02.3`, `02.5`, and `02.6`
+rather than given its own iteration page — iterations preserve design decisions,
+and a section that failed to centre was never a decision.
 
 ### Contrast — two hub tokens fail WCAG AA
 
