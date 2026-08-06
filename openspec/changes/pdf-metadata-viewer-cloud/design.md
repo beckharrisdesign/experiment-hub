@@ -342,6 +342,24 @@ proposal iteration a *new* page — never edited or appended in place.
 | `02 Proposed` | `1:3` | First iteration — Dashboard, Detail, Compare. Frozen; further changes go to a new numbered page |
 | `02.1 Proposed — Stat pattern` | `20:14` | Second iteration — Dashboard and Compare rebuilt on the `Stat` component. Only the two frames that changed |
 | `02.2 Proposed — document change leads` | `23:14` | Third iteration — Compare only, with the content change raised above the field decisions and its three outcomes made explicit |
+| `02.3 Proposed — contained width (xl 1280)` | `24:8` | Fourth iteration — all three surfaces capped at the `xl` breakpoint and centred, per MVDS `Container` |
+
+### Content width
+
+MVDS breakpoints are `sm 640 · md 768 · lg 1024 · xl 1280 · 2xl 1536`. At a 1440
+viewport the next smaller breakpoint is **`xl` = 1280**, so content caps there and
+centres — 80px gutters — via `<Container size="xl">`. Full-bleed bands keep their
+background edge to edge; only their contents are capped, so the cap produces the
+gutter rather than section padding faking one.
+
+The Detail view did not survive this unchanged, and that is worth recording. Its
+metadata panel had been styled as an edge-anchored drawer — left border only,
+outward shadow — which only reads correctly when it is flush to the viewport.
+Contained, it floated with background visible past it. The panel is now a bordered,
+rounded column inside the container. The alternative was to exempt Detail and let
+it run full-bleed; the split editor is the one screen with a real argument for
+that. Rejected for now because one screen opting out of the layout system is how
+a layout system stops being one.
 
 **Frames in scope:**
 
