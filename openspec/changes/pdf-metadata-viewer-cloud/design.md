@@ -291,6 +291,32 @@ where a literal `id/` segment separates the collection from the dynamic param.
 | `POST /api/pdf-documents/id/[id]/suggestions` | Vision suggestions |
 | `GET /api/pdf-drive/connect`, `/callback` | OAuth handshake |
 
+**Documents are addressed by database id, not filename.** v1's routes took
+`:filename` and resolved it against `PDFS_DIR`, which is the only reason
+`resolvePdfPath()` and its traversal guard had to exist. With a uuid key no
+user-supplied string reaches a filesystem path, so that guard is deleted rather
+than ported — the vulnerability class becomes unreachable instead of defended.
+
+**`/commit` is a verb on purpose.** It is not RESTful, and that is the point:
+commit is not updating a resource, it is an operation with side effects on a
+third-party system that can partially fail. Folding it into `PATCH` would make
+the one dangerous operation indistinguishable from the safe ones.
+
+**`/content` proxies the bytes; no direct Drive link is ever minted.** Drive can
+issue short-lived direct download URLs, which would be faster and would keep
+document bytes off the Vercel function entirely. Rejected: it puts a URL to a
+household medical record outside the authenticated session, where its lifetime is
+governed by a token in a link rather than by the session that requested it.
+
+The founder's reasoning is the deciding one — *Drive itself provides that*. If a
+shareable URL to a document is ever wanted, Drive already has that feature, and
+it is a decision made deliberately per document. This application should not
+manufacture one as a side effect of rendering a preview.
+
+The cost is accepted: every page preview goes through a function, and bandwidth
+is paid for twice. Preview rendering is already client-side via pdf.js, so the
+function streams rather than processes.
+
 `prototype/lib/taxonomy-loader.js` and `entities-notion.js` port across
 essentially unchanged — they already read config and Notion, not the filesystem.
 The snapshot fallback loses its disk; on serverless it degrades to

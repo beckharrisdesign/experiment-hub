@@ -32,6 +32,30 @@ unrecoverable grant as a re-authorization prompt rather than a generic failure.
 - **WHEN** any page or API response is produced
 - **THEN** it contains no Drive access or refresh token
 
+### Requirement: Document bytes are served only through the authenticated session
+
+The system SHALL serve document bytes through its own authenticated route and
+MUST NOT issue, embed, or expose a direct Drive URL that would grant access to a
+document outside that session.
+
+Drive can mint short-lived direct download links, and they are faster. They are
+excluded deliberately: a link to a household medical record whose lifetime is
+governed by a token in a URL, rather than by the session that requested it, is a
+worse trade than the bandwidth. Drive already provides deliberate per-document
+sharing when it is actually wanted.
+
+#### Scenario: Rendering a preview
+
+- **WHEN** a document preview is requested
+- **THEN** the bytes are streamed through the authenticated route
+- **AND** no direct Drive URL appears in the response or the page
+
+#### Scenario: An unauthenticated byte request
+
+- **WHEN** the content route is requested without a valid session
+- **THEN** it is refused
+- **AND** no request for the bytes is made to Drive
+
 ### Requirement: Documents are referenced, not copied
 
 The system SHALL record a reference to each document — the Drive file id plus
