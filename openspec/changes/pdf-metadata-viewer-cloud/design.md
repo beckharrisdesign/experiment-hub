@@ -195,6 +195,20 @@ Every instance states that no work was lost, because in every one of these paths
 the staged edits survive. Saying so at the point of alarm is the difference
 between the guarantee existing and the user believing it.
 
+**Commit is available from the dashboard, not only per document.** The batch
+model exists so a run of documents can be tagged and then written; making the
+user open each one to commit it reinstates the per-document friction the batch
+was meant to remove. The dashboard carries a primary
+*Commit N documents to Drive*, with *Review pending* beside it for inspecting
+first.
+
+Bulk commit is N independent read-modify-write cycles, not a transaction. Each
+document succeeds or fails on its own, and **anything that fails lands in Needs
+attention** — which is what makes the two sections one loop rather than two
+features. The button states its own exclusions up front (`3 excluded — see Needs
+attention`) so the count on the button always matches what will actually be
+attempted.
+
 Rendered at `02 Proposed` — see the Figma table below.
 
 ### D5 — Auth reuses the hub's existing gate
@@ -255,9 +269,10 @@ proposal iteration a *new* page — never edited or appended in place.
 |---|---|---|
 | `Current · File list · Desktop 1440` | `3:2` | Done |
 | `Current · Detail · Desktop 1440` | `3:95` | Done |
-| `Proposed · Dashboard · Desktop 1440` | `10:2` | Done — Needs attention list, pending-edit state on rows |
-| `Proposed · Detail · Desktop 1440` | — | **Required before implementation** |
+| `Proposed · Dashboard · Desktop 1440` | `10:2` | Done — Needs attention list, bulk commit action, pending state on rows |
+| `Proposed · Detail · Desktop 1440` | `12:10` | Done — per-field edited markers, in-the-file values, pinned commit bar |
 | `Proposed · Detail · Mobile 480` | — | Required if the hosted tool is used on a phone |
+| `Proposed · Compare (conflict)` | — | Outstanding — what *Compare* actually shows |
 
 All fills on the proposed frames are bound to `hub tokens` variables rather than
 hardcoded, so a token edit moves the design. Note the visual consequence of
