@@ -7,6 +7,7 @@ import {
 } from "@/lib/pdf-auth";
 import {
   OAUTH_STATE_COOKIE,
+  REFUSED_SUB_COOKIE,
   exchangeCodeForTokens,
   storeDriveGrant,
 } from "@/lib/pdf-drive";
@@ -70,7 +71,24 @@ export async function GET(request: NextRequest) {
         `\n  email=${identity?.email ?? "(absent)"}` +
         `  email_verified=${identity?.email_verified ?? "(absent)"}`,
     );
-    return back(request, "not_allowed");
+
+    const refused = back(request, "not_allowed");
+
+    // Also hand the sub to the sign-in page, so bootstrapping does not require
+    // reading server logs. Safe to show: whoever sees this just authenticated
+    // as that account, so it tells them nothing they could not read out of
+    // their own id_token. In a cookie rather than the URL, so it stays out of
+    // browser history and referrers. Short-lived, and cleared once displayed.
+    if (identity?.sub) {
+      refused.cookies.set(REFUSED_SUB_COOKIE, identity.sub, {
+        httpOnly: true, // the sign-in page renders server-side
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 300,
+      });
+    }
+    return refused;
   }
 
   // Drive tokens live server-side only; nothing here reaches the browser.

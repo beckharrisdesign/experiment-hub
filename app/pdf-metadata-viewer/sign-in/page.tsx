@@ -1,4 +1,6 @@
+import { cookies } from "next/headers";
 import { Button, Container, Stack } from "@beckharrisdesign/mvds";
+import { REFUSED_SUB_COOKIE } from "@/lib/pdf-drive";
 
 /**
  * Sign-in. Ungated by `isGatedPath`, or nobody could reach it.
@@ -26,6 +28,13 @@ export default async function SignInPage({
   const { error } = await searchParams;
   const message = error ? (REASONS[error] ?? "Sign-in failed.") : null;
 
+  // Set by the callback when an account is refused. Showing it here is what
+  // makes the documented bootstrap work without reading server logs.
+  const refusedSub =
+    error === "not_allowed"
+      ? ((await cookies()).get(REFUSED_SUB_COOKIE)?.value ?? null)
+      : null;
+
   return (
     <div className="py-6">
       <Container size="xl">
@@ -39,6 +48,26 @@ export default async function SignInPage({
                   Could not sign you in
                 </span>
                 <span className="text-sm text-text-muted">{message}</span>
+
+                {refusedSub ? (
+                  <Stack gap={8}>
+                    <span className="text-sm text-text-muted">
+                      This is the <code>sub</code> for the account you just
+                      signed in with. It is not your email address — the
+                      allowlist keys on <code>sub</code> because emails can be
+                      reassigned.
+                    </span>
+                    <code className="block rounded bg-background-primary px-3 py-2 font-mono text-sm text-text-primary">
+                      PDF_ALLOWED_GOOGLE_SUBS={refusedSub}
+                    </code>
+                    <span className="text-xs text-text-muted">
+                      Put that line in <code>.env.local</code>, restart the
+                      server, and sign in again. Add further accounts by
+                      separating them with commas — but note they would share
+                      this archive, not get their own.
+                    </span>
+                  </Stack>
+                ) : null}
               </Stack>
             </div>
           ) : null}

@@ -25,6 +25,14 @@ export const GOOGLE_SCOPES = [
 
 export const OAUTH_STATE_COOKIE = "pdf-oauth-state";
 
+/**
+ * Carries the refused account's `sub` to the sign-in page so the allowlist can
+ * be bootstrapped without reading server logs. Whoever sees it just proved they
+ * control that account, so it reveals nothing they could not decode from their
+ * own id_token.
+ */
+export const REFUSED_SUB_COOKIE = "pdf-refused-sub";
+
 const AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
 const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 
