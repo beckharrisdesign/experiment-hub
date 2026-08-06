@@ -37,10 +37,19 @@ the founder anchor above is the sponsor signal.
 
 ## Visual board (FigJam / light Figma)
 
-`pending:` — required before implementation of the batch-save UI. Moving from
-per-field autosave to an explicit commit changes the core editing interaction,
-which is visual composition and therefore gated on a rendered Figma page rather
-than spec prose.
+**https://www.figma.com/design/NGybYS2piBw5Q8T4c35Z2M** — `pdf-metadata-viewer-cloud`
+
+Pages created per the `rules/figma.mdc` convention, currently empty:
+
+| Page | Node id | Holds |
+|---|---|---|
+| `00 Components` | `0:1` | Imported DS components + hub tokens collection |
+| `01 Current state` | `1:2` | The v1 local tool's editing surface, as-is |
+| `02 Proposed` | `1:3` | First proposed iteration; later iterations become `02.1`, `02.2`, … as new pages |
+
+Frames land at `design.md` time, not now. The gating change is the move from
+per-field autosave to an explicit commit — that is visual composition, so it
+needs a rendered page and an explicit go before any code.
 
 ## What Changes
 
