@@ -31,7 +31,7 @@ Each one changes work below it, so none should be discovered mid-build.
 - [x] 3.3 Triggers maintaining `has_pending_edits` — on history insert, and on `committed_at` update
 - [x] 3.4 Ship the one-statement rebuild as a maintenance task, not just a snippet in `design.md`
 - [x] 3.5 Enable RLS on all three tables with no permissive policies
-- [ ] 3.6 Verify from a client-key context that all three tables are unreachable
+- [ ] 3.6 Verify from a client-key context that all three tables are unreachable — service-role reads confirmed working; the publishable-key denial is the half still untested
 
 ## 4. Identity and access
 
@@ -56,9 +56,9 @@ Each one changes work below it, so none should be discovered mid-build.
 
 ## 6. Read path
 
-- [x] 6.1 `GET /api/pdf-documents` — list from the database, fetching no bytes
-- [x] 6.2 `GET /api/pdf-documents/id/[id]` — metadata and pending state
-- [x] 6.3 `GET .../history` — full field-level history, newest first, uncapped
+- [x] 6.1 `GET /api/pdf-documents` — list from the database, fetching no bytes. **Verified against the live schema:** 200 `{documents:[],total:0}`
+- [x] 6.2 `GET /api/pdf-documents/id/[id]` — metadata and pending state. **Verified:** malformed and nonexistent uuids both 404 identically, no 22P02 leaking as a 500
+- [x] 6.3 `GET .../history` — full field-level history, newest first, uncapped. **Verified** against the live schema
 - [ ] 6.4 `GET .../content` — proxy bytes through the session, minting no Drive URL — blocked on the Drive client (group 5)
 - [ ] 6.5 Port `taxonomy-loader.js` and `entities-notion.js`, keeping the field allowlist intact
 - [ ] 6.6 Run `test-entity-projection.js` against the ported module
