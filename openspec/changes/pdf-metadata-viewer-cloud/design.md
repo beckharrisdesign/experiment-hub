@@ -434,13 +434,18 @@ thresholds may need surfacing before a commit rather than after it fails.
 The local Express prototype keeps working throughout and is retired only once the
 hosted instance has round-tripped a real document end to end.
 
-1. Migration for the three tables, RLS on, no policies.
-2. Drive OAuth handshake; confirm a token refresh survives expiry.
-3. Import a folder — reference rows only, no bytes copied.
-4. Read path: list and detail served from the database.
-5. **Keyword round-trip proof against an external reader.** Gate: stop here if it
-   fails.
-6. Figma `02 Proposed`, then the write path — stage, commit, conflict.
+1. **Keyword round-trip proof against an external reader.** Hard gate — stop here
+   if it fails. It runs first because it is the cheapest thing that can
+   invalidate the change and it needs none of the rest: the v1 prototype and one
+   PDF are enough. Proving it after the schema and OAuth are built would mean
+   discovering the premise is broken having already paid for everything else.
+2. Migration for the three tables, RLS on, no policies.
+3. Google identity and the Drive handshake; confirm a token refresh survives
+   expiry and that revocation ends both.
+4. Import a folder — reference rows only, no bytes copied.
+5. Read path: list, detail, and history served from the database.
+6. Figma `02 Proposed` — Compare in particular — then the write path: stage,
+   commit, conflict.
 7. Retire the prototype; rewrite `README.md`, `PRD.md`, `.env.example`, which
    still say local-only.
 
