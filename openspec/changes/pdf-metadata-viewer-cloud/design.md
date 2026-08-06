@@ -339,7 +339,9 @@ proposal iteration a *new* page — never edited or appended in place.
 |---|---|---|
 | `00 Components` | `0:1` | `hub tokens` collection + bound swatch board at `5:27` |
 | `01 Current state` | `1:2` | Built — reconstructed from `index.html` / `styles.css` |
-| `02 Proposed` | `1:3` | Dashboard built; detail view outstanding. Later iterations become `02.1 Proposed — <what changed>`, `02.2`, … |
+| `02 Proposed` | `1:3` | First iteration — Dashboard, Detail, Compare. Frozen; further changes go to a new numbered page |
+| `02.1 Proposed — Stat pattern` | `20:14` | Second iteration — Dashboard and Compare rebuilt on the `Stat` component. Only the two frames that changed |
+| `02.2 Proposed — document change leads` | `23:14` | Third iteration — Compare only, with the content change raised above the field decisions and its three outcomes made explicit |
 
 **Frames in scope:**
 
@@ -347,10 +349,16 @@ proposal iteration a *new* page — never edited or appended in place.
 |---|---|---|
 | `Current · File list · Desktop 1440` | `3:2` | Done |
 | `Current · Detail · Desktop 1440` | `3:95` | Done |
-| `Proposed · Dashboard · Desktop 1440` | `10:2` | Done — Needs attention list, bulk commit action, pending state on rows |
-| `Proposed · Detail · Desktop 1440` | `12:10` | Done — per-field edited markers, in-the-file values, pinned commit bar |
-| `Proposed · Compare (conflict) · Desktop 1440` | `16:2` | Done — three-way merge, baseline shown, content-change block |
+| `Proposed · Dashboard · Desktop 1440` | `10:2` | `02` — Needs attention list, bulk commit action, pending state on rows |
+| `Proposed · Detail · Desktop 1440` | `12:10` | `02` — per-field edited markers, in-the-file values, pinned commit bar |
+| `Proposed · Compare (conflict) · Desktop 1440` | `16:2` | `02` — three-way merge, baseline shown, content-change block |
+| `… — Stat` (Dashboard, Compare) | `20:15`, `20:128` | `02.1` — same two surfaces rebuilt on the `Stat` component |
 | `Proposed · Detail · Mobile 480` | — | Required if the hosted tool is used on a phone |
+
+Iterations live on their own pages per `rules/figma.mdc`: `02 Proposed` is frozen
+as the first iteration and `02.1` carries the change, so the two can be compared
+rather than one overwriting the other. `02.1` holds only the two frames that
+changed — Detail was untouched and stays on `02`.
 
 ### D7 — Build the UI from MVDS 0.3, not by hand
 
@@ -428,11 +436,35 @@ adjudicate five fields when two need them. The baseline appears on each conflict
 as `was: …`, because without it "you both changed this" is unreadable: you cannot
 tell who moved.
 
-**A content change is not resolvable by picking field values.** If the page count
-or bytes changed, the document may no longer be the one the staged metadata
-describes — a re-scan, an appended page, a signature. That gets its own block
-and its own action (*Open the new version*), because no choice between two title
-strings addresses it.
+**A content change is not resolvable by picking field values, and it leads the
+page.** If the page count or bytes changed, the document may no longer be the one
+the staged metadata describes — a re-scan, an appended page, a signature. Field
+conflicts ask *which value wins*; a content change asks *is this even the same
+document*. The second dominates the first, because picking a title for a document
+that no longer exists in that form is wasted work. So it sits directly under the
+what-happened band, above the decision summary, at alert weight rather than as a
+footnote.
+
+**One conflict per document, never a stack.** A conflict is keyed to the document,
+not appended to a list. It is "your staged edits versus Drive's current state,"
+and there is only ever one current state — so a further change in Drive makes the
+open conflict stale and recomputes it rather than adding a second instance.
+Without this, a document edited five times produces five rows in Needs attention
+and the list stops being readable.
+
+**Inspection never re-baselines.** *Open the new version* is a look, not a
+resolution: it clears nothing and changes no stored state. Re-baselining — moving
+`file_snapshot` and `drive_head_revision_id` to the new version — must be an
+explicit outcome the user picks, because doing it silently would make Drive's own
+metadata changes part of the new baseline. "Drive changed the title" would stop
+being detectable, and the staged title would overwrite theirs on the next commit
+with no conflict shown at all. That is the one path in this design that loses
+someone else's work without saying so.
+
+The three outcomes are therefore stated on the block itself: look, keep my edits
+(same document), or discard and re-tag (different document). A fourth exists and
+is deliberately out of scope for now — that the file became *two* documents, which
+is a split rather than an edit.
 
 Nothing is written until a choice is made, and leaving the page keeps the edits
 staged — consistent with D4: the exception waits, it does not corner the user.

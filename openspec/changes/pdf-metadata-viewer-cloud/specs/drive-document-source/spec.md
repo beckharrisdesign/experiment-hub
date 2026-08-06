@@ -131,6 +131,26 @@ address it.
 
 - **WHEN** the page count or content differs from what was read
 - **THEN** that is surfaced distinctly from field conflicts
+- **AND** it is presented ahead of them, because it can invalidate them
+
+#### Scenario: Inspecting the changed document
+
+- **WHEN** the user opens the changed version to look at it
+- **THEN** no stored state changes
+- **AND** the conflict remains open and unresolved
+
+#### Scenario: Re-baselining is explicit
+
+- **WHEN** the retained baseline is replaced with the current Drive version
+- **THEN** that happened because the user chose it
+- **AND** it never occurs as a side effect of viewing the document
+
+#### Scenario: The file changes again while a conflict is open
+
+- **WHEN** Drive reports a further change to a document that already has an open
+  conflict
+- **THEN** the existing conflict is recomputed against the new state
+- **AND** no second conflict is created for the same document
 
 #### Scenario: Leaving a conflict unresolved
 
