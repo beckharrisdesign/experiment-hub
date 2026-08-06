@@ -39,17 +39,28 @@ the founder anchor above is the sponsor signal.
 
 **https://www.figma.com/design/NGybYS2piBw5Q8T4c35Z2M** — `pdf-metadata-viewer-cloud`
 
-Pages created per the `rules/figma.mdc` convention, currently empty:
+Pages per the `rules/figma.mdc` convention:
 
-| Page | Node id | Holds |
+| Page | Node id | State |
 |---|---|---|
-| `00 Components` | `0:1` | Imported DS components + hub tokens collection |
-| `01 Current state` | `1:2` | The v1 local tool's editing surface, as-is |
-| `02 Proposed` | `1:3` | First proposed iteration; later iterations become `02.1`, `02.2`, … as new pages |
+| `00 Components` | `0:1` | Empty — DS components and hub tokens import at design time |
+| `01 Current state` | `1:2` | **Built** — two frames, see below |
+| `02 Proposed` | `1:3` | Empty — first iteration lands at `design.md`; later ones become `02.1`, `02.2`, … as new pages |
 
-Frames land at `design.md` time, not now. The gating change is the move from
-per-field autosave to an explicit commit — that is visual composition, so it
-needs a rendered page and an explicit go before any code.
+`01 Current state` frames:
+
+| Frame | Node id | Shows |
+|---|---|---|
+| `Current · File list · Desktop 1440` | `3:2` | Stats strip and the seven-column table — the view that reads and parses every PDF to fill its columns |
+| `Current · Detail · Desktop 1440` | `3:95` | Preview pane plus the fixed 400px metadata panel, where each field saves on its own and rewrites the whole PDF |
+
+Reconstructed from `prototype/public/index.html` and `styles.css` rather than
+screenshotting the running app, because the app renders real household documents
+and this file is shared. Sample content is synthetic.
+
+The detail frame is the one the change rewrites: moving from per-field autosave
+to an explicit commit is visual composition, so `02 Proposed` needs a rendered
+page and an explicit go before any code.
 
 ## What Changes
 
