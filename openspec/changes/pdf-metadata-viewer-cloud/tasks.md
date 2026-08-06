@@ -35,21 +35,22 @@ Each one changes work below it, so none should be discovered mid-build.
 
 ## 4. Identity and access
 
-- [ ] 4.1 Create the Google OAuth client and consent screen — `openid email profile` plus `drive.file`, no restricted scope
+- [x] 4.1 Google OAuth client and consent screen created; credentials in local env, and the handshake reaches Google with exactly the registered scopes
 - [x] 4.1a Consent screen scopes registered and **confirmed non-sensitive in the Console** — all four under "Your non-sensitive scopes", so D9's premise holds
 - [x] 4.2 Redirect-URI strategy settled: production + localhost only. Preview hostnames are hash-based and Google needs exact URIs, so authenticated routes are not available on previews — acceptable for a single-user instance
 - [x] 4.3 Signed, stateless session cookie — verifiable at the edge with no database call
 - [x] 4.4 Middleware gate covering every PDF route, refusing before any storage, database, or third-party call
 - [x] 4.5 Allowlist keyed on the `sub` claim, with `email_verified` checked
+- [x] 4.5a Callback logs the rejected `sub` server-side, so the allowlist bootstraps without a first-run bypass (restored — a renumbering pass had dropped this line)
 - [x] 4.6 Verify a non-allowlisted Google account is refused — unit-covered; re-verify end to end once the handshake exists
 - [ ] 4.7 Verify revoking the app in Google settings ends both sign-in and Drive access
 - [x] 4.8 Verify an unauthenticated request cannot distinguish a document that exists from one that does not — confirmed against a running server: `/api/pdf-documents` 401s, the page redirects to sign-in, and the open handshake path is not gated
 
 ## 5. Drive connection
 
-- [ ] 5.1 OAuth handshake storing the refresh token server-side
-- [ ] 5.2 Automatic access-token refresh, with no user prompt
-- [ ] 5.3 Re-authorization prompt on a revoked grant — distinct from a missing document
+- [x] 5.1 OAuth handshake storing the refresh token server-side — verified against the running server: four registered scopes, offline access, forced consent, 64-char state with an httpOnly cookie
+- [x] 5.2 Automatic access-token refresh, with no user prompt — 60s expiry skew. Not yet exercised against a real expiry
+- [x] 5.3 Re-authorization prompt on a revoked grant — `DriveReauthorizationRequired` separates revoked from never-connected from missing document
 - [ ] 5.4 Folder grant via the Google Picker — folders, never individual files — into reference rows, copying no bytes
 - [ ] 5.5 Detect documents in a granted folder that the grant does not cover, and surface them as a Needs attention instance with a re-grant action
 - [ ] 5.6 Broken reference surfaces as such while metadata and history survive
