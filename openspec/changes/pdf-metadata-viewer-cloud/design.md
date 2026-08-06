@@ -250,7 +250,7 @@ cache-or-error, which is acceptable when the operator can retry.
 | Item | Value |
 |---|---|
 | Primary file | **https://www.figma.com/design/NGybYS2piBw5Q8T4c35Z2M** — `pdf-metadata-viewer-cloud` |
-| Published libraries | None imported yet. MVDS (`@beckharrisdesign/mvds`) component import outstanding |
+| Published libraries | MVDS (`@beckharrisdesign/mvds`), bumped `^0.2.0` → `^0.3.0` by this change. Figma component import still outstanding |
 | Local variables | `hub tokens` — 24 colour variables ported 1:1 from the `@theme` block in `app/globals.css`, scoped per role |
 | Code Connect deltas | `N/A` — no component mappings change; the UI is composed from existing hub components |
 
@@ -273,6 +273,41 @@ proposal iteration a *new* page — never edited or appended in place.
 | `Proposed · Detail · Desktop 1440` | `12:10` | Done — per-field edited markers, in-the-file values, pinned commit bar |
 | `Proposed · Detail · Mobile 480` | — | Required if the hosted tool is used on a phone |
 | `Proposed · Compare (conflict)` | — | Outstanding — what *Compare* actually shows |
+
+### D7 — Build the UI from MVDS 0.3, not by hand
+
+0.3 is a different proposition from the 0.2 the hub was pinned to. It adds a
+form layer (`Field`, `Label`, `Checkbox`, `Switch`, `RadioGroup`, `Select`,
+`Textarea`), layout primitives (`Grid`, `GridItem`/`Col`, `Container`, `Spacer`),
+and `Chrome`, `Layer`, `Hero`, `MediaFrame`, `CardAction`, `CardFooter`.
+
+`Field` is close to purpose-built for the metadata panel — `{ label, help,
+error, required }` with the aria wiring done:
+
+| Panel need | `Field` prop |
+|---|---|
+| Field name | `label` |
+| *"In the file: Untitled"* | `help` |
+| Conflict on this field | `error` |
+
+So the staged-versus-committed treatment is a prop, not a bespoke component.
+
+**What MVDS still lacks: `Table` and a single-line `Input`.** Neither is a gap to
+hand-roll beside the system — MVDS is shadcn-based and its README names the path
+(`npx shadcn@latest add input …`), so both land inside the same tokens. `cn`,
+`buttonVariants`, and `badgeVariants` are exported, so anything genuinely custom
+composes from the same variant source rather than drifting from it.
+
+Compatibility was checked against the 0.3 typings before bumping: every
+component and variant the hub already uses — `Badge` success/destructive/muted,
+`Button` outline/ghost, `Section` `bg`/`py`, `Stack`/`Inline` `gap`, all `Card`
+subcomponents — exists unchanged. The bump is additive for existing usage.
+
+The bump regenerated `pnpm-lock.yaml`, which also picked up
+`packages/notion-auth` — added to the workspace by the migration change but
+never written into the lockfile.
+
+### Frames and tokens
 
 All fills on the proposed frames are bound to `hub tokens` variables rather than
 hardcoded, so a token edit moves the design. Note the visual consequence of
