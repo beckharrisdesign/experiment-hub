@@ -43,9 +43,18 @@ Pages per the `rules/figma.mdc` convention:
 
 | Page | Node id | State |
 |---|---|---|
-| `00 Components` | `0:1` | Empty — DS components and hub tokens import at design time |
+| `00 Components` | `0:1` | **Tokens built** — `hub tokens` collection, 24 colour variables ported 1:1 from the `@theme` block in `app/globals.css`, with a bound swatch board at `5:27`. MVDS component import still outstanding |
 | `01 Current state` | `1:2` | **Built** — two frames, see below |
-| `02 Proposed` | `1:3` | Empty — first iteration lands at `design.md`; later ones become `02.1`, `02.2`, … as new pages |
+| `02 Proposed` | `1:3` | Empty by design — the first iteration belongs to `design.md`; later ones become `02.1`, `02.2`, … as new pages |
+
+Token scopes are set per role — backgrounds to frame/shape fill, text to text
+fill, borders to stroke — so the pickers stay clean. Swatch fills are bound to
+the variables rather than hardcoded, so editing a variable updates the board.
+
+The cloud version lives in the hub app, so `00 Components` carries the **hub's**
+tokens, not the v1 prototype's bespoke CSS. That is the point of the page: the
+proposed design gets built from hub tokens rather than from the prototype's
+one-off greys.
 
 `01 Current state` frames:
 
