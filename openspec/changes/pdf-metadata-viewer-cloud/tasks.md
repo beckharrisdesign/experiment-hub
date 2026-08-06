@@ -36,6 +36,7 @@ Each one changes work below it, so none should be discovered mid-build.
 ## 4. Identity and access
 
 - [ ] 4.1 Create the Google OAuth client and consent screen — `openid email profile` plus `drive.file`, no restricted scope
+- [x] 4.1a Consent screen scopes registered and **confirmed non-sensitive in the Console** — all four under "Your non-sensitive scopes", so D9's premise holds
 - [x] 4.2 Redirect-URI strategy settled: production + localhost only. Preview hostnames are hash-based and Google needs exact URIs, so authenticated routes are not available on previews — acceptable for a single-user instance
 - [x] 4.3 Signed, stateless session cookie — verifiable at the edge with no database call
 - [x] 4.4 Middleware gate covering every PDF route, refusing before any storage, database, or third-party call

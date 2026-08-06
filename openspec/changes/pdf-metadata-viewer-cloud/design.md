@@ -356,6 +356,23 @@ medical and financial records; "the app cannot see files you did not hand it" is
 a materially smaller blast radius than "the app can read your Drive," and it is
 worth the Picker integration to have it.
 
+**Confirmed in the Console, 2026-08-06.** The premise was worth verifying rather
+than trusting, since everything else in D9 rests on it. All four requested scopes
+register under **"Your non-sensitive scopes"**:
+
+| Scope | Console description |
+|---|---|
+| `openid` | Associate you with your personal info on Google |
+| `.../auth/userinfo.email` | See your primary Google Account email address |
+| `.../auth/userinfo.profile` | See your personal info… |
+| `.../auth/drive.file` | See, edit, create, and delete **only the specific Google Drive files you use with this app** |
+
+Two things follow. No CASA assessment applies, so the app is publishable and the
+seven-day refresh-token expiry of Testing status is avoidable. And the Drive
+wording — *files you use with this app*, rather than *files created by this app* —
+is the phrasing that covers Picker-handed folders, which is what makes an
+existing archive reachable at all.
+
 **Folder granularity is part of the decision, not an implementation detail.**
 Per-file picking would mean handing over documents one at a time, which is
 unusable against a scanning workflow. The Picker must select folders.
