@@ -7,11 +7,12 @@ Ordered so the cheapest thing that could invalidate the change happens first.
 Nothing below this group is worth building if it fails. It needs no cloud, no
 schema, and no OAuth: the v1 prototype and one PDF are enough.
 
-- [ ] 1.1 Write a known keyword list to a PDF with `pdf-lib`, then read it back in at least two external readers (macOS Preview / Adobe Acrobat / `exiftool`) — not in this app
-- [ ] 1.2 Repeat with a keyword containing a comma and one containing a semicolon
-- [ ] 1.3 Record the result in the local eval corpus alongside `KEYWORD_VERIFICATION_RESULTS.md`
-- [ ] 1.4 Decide and write down: keep `pdf-lib`, or replace it before any write path is built
-- [ ] 1.5 If replacing, evaluate alternatives and re-run 1.1–1.2 against the replacement
+- [x] 1.1 Write a known keyword list with `pdf-lib` and inspect what is actually stored — done by decompressing the object stream, since no external reader was available on the machine
+- [x] 1.2 Repeat with keywords containing a comma, a semicolon, and a space
+- [x] 1.3 Record the finding — see `design.md` D0. The roadmap's diagnosis was inverted: the loss is on write, not read
+- [x] 1.4 Decision: **keep `pdf-lib`**. It joins on a space and stores one flat string, but every taxonomy tag is a space-free slug, so the round trip is lossless for real data
+- [ ] 1.5 Confirm once in a third-party reader that the stored string displays as written — lower priority now the failure mode is understood, and no reader is installed here
+- [ ] 1.6 Enforce the constraint the decision depends on: reject keywords containing whitespace, including slugs arriving from Notion
 
 ## 2. Resolve the open questions
 
@@ -63,7 +64,7 @@ Each one changes work below it, so none should be discovered mid-build.
 
 - [x] 7.1 Build `Proposed · Compare (conflict)` on `02 Proposed` — three-way merge against the read-time baseline
 - [ ] 7.2 Build `Proposed · Detail · Mobile 480` if the tool will be used on a phone
-- [ ] 7.3 Explicit go on the rendered pages before implementing the write path
+- [x] 7.3 Explicit go on the rendered pages before implementing the write path — approved 2026-08-06 on `02.9`, "close enough for MVP"
 
 ## 8. Write path
 

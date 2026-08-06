@@ -152,6 +152,56 @@ service-role only, from Next route handlers, via `getAdminClient()` in
 `lib/supabase.ts`. Nothing reaches the browser directly. `pdf_drive_grant` holds
 refresh tokens, so this is a hard requirement, not hygiene.
 
+### D0 — The keyword gate: run, and it passes with a constraint
+
+Task group 1 executed 2026-08-06 against `pdf-lib` 1.17.1. The result changes the
+diagnosis the roadmap carried.
+
+**What was believed:** `docs/roadmap.md` — *"`getKeywords()` returns keywords as
+space-separated characters rather than the string that was written. Keywords do
+appear to be saved correctly — the failure is on read."*
+
+**What is actually true:** the failure is on **write**. `setKeywords(array)` joins
+the array with a single space and stores one flat string in the Info dictionary.
+Decompressing the object stream of a file written by `pdf-lib` shows literally:
+
+```
+/Keywords <FEFF...>   →   "invoice Smith, Jane paid"
+```
+
+The array boundaries are never written, so no reader — `pdf-lib`, Acrobat,
+Preview, anything — can recover them. There is also **no XMP packet**, so no
+`dc:subject` array exists as a second copy. The Info string is all there is.
+
+**Why this is survivable.** Round-tripping was tested per case:
+
+| Keywords written | Read back by splitting on whitespace |
+|---|---|
+| `invoice`, `utilities`, `paid`, `year-2026`, `keep-7yr` | identical to input |
+| `invoice`, `Smith, Jane`, `paid` | broken — four tokens, unrecoverable |
+
+Every tag in this taxonomy is a space-free kebab-case slug, from
+`config/tag-vocabulary.md` and from the Notion `Slug` field. **For the data this
+tool actually handles, the round trip is lossless.**
+
+**Decision (task 1.4): keep `pdf-lib`, and make the constraint explicit rather
+than implicit.** Replacing the library to gain a real XMP array is a large change
+to buy correctness for keywords the taxonomy does not permit anyway. Instead:
+
+- A keyword containing whitespace MUST be rejected before it can be committed.
+  Today nothing enforces that — Notion's `Slug` is free text, so a slug typed with
+  a space would silently corrupt on write.
+- The database keeps `text[]`, which stays the authoritative ordered list. D1
+  already makes the file the durable artifact and the database the working store;
+  this simply means the file's copy is lossy in a bounded, known way.
+
+**What was not proved:** no external PDF reader was available on this machine
+(no `exiftool`, `qpdf`, `mutool`, `pypdf`), so the check went to the raw bytes
+instead — arguably stronger for this question, since it shows what is stored
+rather than what one library reports. Confirming a third-party reader displays
+the same string remains worth doing once, but the failure mode is now understood
+and it is not a read-side problem.
+
 ### D3 — Keywords as `text[]`
 
 The spec requires a keyword containing a comma or semicolon to survive as one

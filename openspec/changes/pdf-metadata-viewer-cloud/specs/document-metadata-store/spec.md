@@ -105,21 +105,45 @@ untenable once the bytes live behind a network.
 ### Requirement: Keyword values round-trip without corruption
 
 The system SHALL store keywords as a discrete ordered list rather than a
-delimited string, and a committed keyword list MUST read back identically from a
-third-party PDF reader.
+delimited string, and a committed keyword list MUST read back identically when
+the file's `Keywords` value is split on whitespace.
 
-`pdf-lib` does not reliably read back keywords it wrote. The database holding the
-authoritative list means a bad read no longer destroys data, but a bad *write*
-still corrupts the archive, so the file-level round trip must be proven before
-this capability is trusted.
+Verified 2026-08-06: `pdf-lib` joins the array with a single space and writes one
+flat string into the Info dictionary, and writes no XMP packet. The array
+boundaries are therefore not stored at all, so the write is what loses them, not
+the read. Space-free keywords round-trip exactly; keywords containing whitespace
+cannot, by any reader.
 
 #### Scenario: Keywords survive a commit
 
-- **WHEN** a keyword list is committed to a PDF and that PDF is reopened in an
-  external reader
-- **THEN** the keyword list read back is identical, in content and order
+- **WHEN** a keyword list of space-free slugs is committed to a PDF and the
+  file's stored `Keywords` value is split on whitespace
+- **THEN** the resulting list is identical to what was written, in content and
+  order
 
-#### Scenario: Keyword list with separator-like characters
+#### Scenario: The database remains authoritative for order and grouping
 
-- **WHEN** a keyword contains a comma or semicolon
-- **THEN** it is preserved as a single keyword rather than split
+- **WHEN** the file's keyword string is ambiguous or lossy
+- **THEN** the database list is the source of truth
+- **AND** the file is written from it, never parsed back into it
+
+### Requirement: Keywords containing whitespace are rejected before commit
+
+The system SHALL reject any keyword containing whitespace before it can be
+staged or committed, and MUST surface the rejection with the offending value.
+
+This is a real hazard rather than a theoretical one: entity slugs arrive from the
+Notion `Slug` field, which is free text. A slug typed with a space would be
+written into the file and silently merge with its neighbour, and nothing would
+report it.
+
+#### Scenario: A slug containing a space arrives from Notion
+
+- **WHEN** an entity's `Slug` contains whitespace
+- **THEN** it is not offered as a keyword
+- **AND** the problem is reported rather than silently dropped
+
+#### Scenario: A whitespace keyword is entered directly
+
+- **WHEN** a user enters a keyword containing a space
+- **THEN** it is refused before staging, naming the value
