@@ -25,11 +25,11 @@ Each one changes work below it, so none should be discovered mid-build.
 
 ## 3. Data layer
 
-- [ ] 3.1 Migration: `pdf_documents`, `pdf_document_history`, `pdf_drive_grant` — including `file_snapshot jsonb`, the merge baseline Compare depends on
-- [ ] 3.2 Index `pdf_document_history (document_id, changed_at)`
-- [ ] 3.3 Triggers maintaining `has_pending_edits` — on history insert, and on `committed_at` update
-- [ ] 3.4 Ship the one-statement rebuild as a maintenance task, not just a snippet in `design.md`
-- [ ] 3.5 Enable RLS on all three tables with no permissive policies
+- [x] 3.1 Migration: `pdf_documents`, `pdf_document_history`, `pdf_drive_grant` — including `file_snapshot jsonb`, the merge baseline Compare depends on
+- [x] 3.2 Index `pdf_document_history (document_id, changed_at)`
+- [x] 3.3 Triggers maintaining `has_pending_edits` — on history insert, and on `committed_at` update
+- [x] 3.4 Ship the one-statement rebuild as a maintenance task, not just a snippet in `design.md`
+- [x] 3.5 Enable RLS on all three tables with no permissive policies
 - [ ] 3.6 Verify from a client-key context that all three tables are unreachable
 
 ## 4. Identity and access
