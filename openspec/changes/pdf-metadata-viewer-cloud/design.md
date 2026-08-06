@@ -326,6 +326,58 @@ flow, with the allowlist later swapped for a user table. The auth layer gets
 built once rather than twice, and the version built is not the weakest part of
 the design.
 
+### D9 — Drive scope is `drive.file`, granted by folder
+
+**Decision: `drive.file`, with access granted through the Google Picker at
+folder granularity — never file by file.**
+
+`drive.file` covers files the app created *and* files the user explicitly hands
+over through the Picker, so it reaches an existing scanned archive. An earlier
+draft of this document said otherwise; that was wrong and drove the comparison
+the wrong way for a while.
+
+**Why not `drive.readonly` (+ write):**
+
+| | `drive.file` | `drive.readonly` |
+|---|---|---|
+| Classification | Non-sensitive | **Restricted** |
+| CASA security assessment | Never | Required to publish |
+| Refresh tokens in Testing status | n/a — publishable | **Expire after 7 days** |
+| What the app can read | Only what was handed to it | Every file in the Drive |
+| Survives productization | Yes | Hits the assessment wall |
+
+The 7-day expiry is the one that decides it operationally. A restricted-scope app
+left in Testing status re-authenticates weekly, forever — so sitting down to
+clear a backlog would begin with an OAuth dance every time, which is friction
+aimed squarely at the workflow this tool exists to make survivable.
+
+The least-privilege argument is not decorative either. This archive is household
+medical and financial records; "the app cannot see files you did not hand it" is
+a materially smaller blast radius than "the app can read your Drive," and it is
+worth the Picker integration to have it.
+
+**Folder granularity is part of the decision, not an implementation detail.**
+Per-file picking would mean handing over documents one at a time, which is
+unusable against a scanning workflow. The Picker must select folders.
+
+**The open risk, and the plan for it.** Whether a folder grant extends to files
+added to that folder *later* is the question the whole option rests on, and it is
+not settled here — it is a property of Google's current behaviour that needs
+observing rather than assuming. Task 2.1a spikes it before any Drive code is
+written.
+
+If inheritance does not cover later files, the design does **not** collapse — it
+degrades into something the app already has a shape for. The app knows the folder
+id, so it can compare what Drive reports against what it can actually open and
+surface the difference as **a fourth Needs attention instance type**: *"3 new
+documents in this folder need access."* Its action re-opens the Picker. That
+turns a silent gap into the same accumulating, resolvable exception as a conflict
+or a failed commit, rather than documents quietly never appearing.
+
+That fallback is worth building regardless of how the spike resolves: a
+re-scanned or moved file could drop out of the grant at any time, and finding out
+by noticing an absence is the failure mode worth designing out.
+
 ### D6 — Route layout
 
 Follows the hub's existing collision-avoiding convention (`app/api/experiments/id/[id]`),

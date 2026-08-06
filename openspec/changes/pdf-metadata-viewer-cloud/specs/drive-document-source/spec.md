@@ -163,16 +163,56 @@ address it.
 - **THEN** the commit fails with that reason
 - **AND** the pending edits remain intact
 
-### Requirement: Drive access is limited to what the tool needs
+### Requirement: Drive access uses the non-sensitive per-file scope, granted by folder
 
-The system SHALL request the narrowest OAuth scope sufficient to read and write
-the documents the user selects, and the granted scope SHALL be recorded so it can
-be re-examined when the tool moves beyond a single account.
+The system SHALL request only `drive.file` and MUST NOT request a restricted
+scope such as `drive.readonly` or full `drive`. Access SHALL be granted through
+the Google Picker at **folder** granularity; the system MUST NOT require the user
+to select documents individually. The granted scope SHALL be recorded alongside
+the grant.
 
-Scope choice is the gate on Google's restricted-scope security assessment, which
-a single-user instance defers but a multi-user one does not.
+`drive.file` is non-sensitive, so it never triggers Google's CASA security
+assessment and the app can be published — which also avoids the seven-day refresh
+token expiry that applies to apps left in Testing status. Per-file selection is
+excluded because it cannot keep pace with a scanning workflow.
+
+#### Scenario: Granting access to an archive
+
+- **WHEN** the user grants access
+- **THEN** they select one or more folders, not individual files
+- **AND** the documents within become available without further selection
+
+#### Scenario: The requested scope
+
+- **WHEN** authorization is requested
+- **THEN** the scope set contains `drive.file`
+- **AND** contains no restricted Drive scope
 
 #### Scenario: Scope is recorded at grant time
 
 - **WHEN** a Drive grant is stored
 - **THEN** the scope granted is stored alongside it
+
+### Requirement: Documents outside the grant are surfaced, never silently absent
+
+The system SHALL detect documents that exist in a granted folder but are not
+accessible under the current grant, and MUST surface them as an item requiring
+attention with an action that re-opens the grant. It MUST NOT allow such
+documents to be simply missing from the list.
+
+A `drive.file` grant may not extend to files added after it was given, and a file
+that is re-scanned, moved, or replaced can drop out of the grant at any time.
+Discovering that by noticing an absence is the failure this requirement exists to
+prevent.
+
+#### Scenario: New documents appear in a granted folder
+
+- **WHEN** a granted folder contains documents the grant does not cover
+- **THEN** they are reported as needing access, with a count
+- **AND** an action is offered that re-opens the folder grant
+
+#### Scenario: Access is restored
+
+- **WHEN** the user re-grants access to the folder
+- **THEN** the previously inaccessible documents become available
+- **AND** the attention item clears

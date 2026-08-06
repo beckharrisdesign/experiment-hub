@@ -18,7 +18,8 @@ schema, and no OAuth: the v1 prototype and one PDF are enough.
 
 Each one changes work below it, so none should be discovered mid-build.
 
-- [ ] 2.1 Choose the Drive OAuth scope, and record whether it keeps the app inside the unverified test-user allowance
+- [x] 2.1 Drive OAuth scope decided: **`drive.file`, granted by folder** — non-sensitive, so no CASA assessment and no seven-day refresh-token expiry. See `design.md` D9
+- [ ] 2.1a **Spike before any Drive code:** confirm whether a Picker folder grant covers files added to that folder later. Decisive for the workflow, and not safe to assume
 - [ ] 2.2 Decide whether the PDF splitter moves to v2 or stays on the local prototype
 - [ ] 2.3 Decide whether `from-split` / `already-split` / `needs-deleting` become real columns or stay keyword flags
 - [ ] 2.4 Confirm Actions is running again and CI verifies the MVDS 0.3 bump — currently unverified, no runs are being created
@@ -34,7 +35,7 @@ Each one changes work below it, so none should be discovered mid-build.
 
 ## 4. Identity and access
 
-- [ ] 4.1 Create the Google OAuth client and consent screen with `openid email profile` plus the Drive scope from 2.1
+- [ ] 4.1 Create the Google OAuth client and consent screen — `openid email profile` plus `drive.file`, no restricted scope
 - [ ] 4.2 Settle the redirect-URI strategy for Vercel preview deployments
 - [x] 4.3 Signed, stateless session cookie — verifiable at the edge with no database call
 - [x] 4.4 Middleware gate covering every PDF route, refusing before any storage, database, or third-party call
@@ -48,8 +49,9 @@ Each one changes work below it, so none should be discovered mid-build.
 - [ ] 5.1 OAuth handshake storing the refresh token server-side
 - [ ] 5.2 Automatic access-token refresh, with no user prompt
 - [ ] 5.3 Re-authorization prompt on a revoked grant — distinct from a missing document
-- [ ] 5.4 Import a folder into reference rows, copying no bytes
-- [ ] 5.5 Broken reference surfaces as such while metadata and history survive
+- [ ] 5.4 Folder grant via the Google Picker — folders, never individual files — into reference rows, copying no bytes
+- [ ] 5.5 Detect documents in a granted folder that the grant does not cover, and surface them as a Needs attention instance with a re-grant action
+- [ ] 5.6 Broken reference surfaces as such while metadata and history survive
 
 ## 6. Read path
 
