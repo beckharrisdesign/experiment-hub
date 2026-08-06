@@ -172,6 +172,31 @@ boundary where `pdf-lib` demands it.
 Staged edits are never cleared by a failed commit. That is the difference between
 a retry and lost work.
 
+**Failures accumulate on the dashboard; they do not interrupt.** A conflict, a
+refused write, or a vanished file becomes an *instance* in a **Needs attention**
+list on the document dashboard, reviewed when the user chooses. Nothing blocks
+mid-commit and nothing is resolved by a modal the user dismisses to get on with
+what they were doing.
+
+This matters more than it looks. The work happens in batches over a backlog; an
+interruption per exception is what makes a batch stop. Accumulating them also
+means the exception has a *resting state* — it can be looked at tomorrow, and it
+is still there — which a modal cannot provide.
+
+Instance types, each carrying cause, age, and one resolving action:
+
+| Type | Cause | Action |
+|---|---|---|
+| Conflict | File changed in Drive after it was read | Compare |
+| Commit failed | Drive refused the write, or the write errored | Retry |
+| File missing | Drive file no longer exists; metadata and history kept | Locate |
+
+Every instance states that no work was lost, because in every one of these paths
+the staged edits survive. Saying so at the point of alarm is the difference
+between the guarantee existing and the user believing it.
+
+Rendered at `02 Proposed` — see the Figma table below.
+
 ### D5 — Auth reuses the hub's existing gate
 
 `middleware.ts` already gates `/admin` on an `ADMIN_SECRET` cookie, with
@@ -222,7 +247,7 @@ proposal iteration a *new* page — never edited or appended in place.
 |---|---|---|
 | `00 Components` | `0:1` | `hub tokens` collection + bound swatch board at `5:27` |
 | `01 Current state` | `1:2` | Built — reconstructed from `index.html` / `styles.css` |
-| `02 Proposed` | `1:3` | **Empty — the open work.** Later iterations become `02.1 Proposed — <what changed>`, `02.2`, … |
+| `02 Proposed` | `1:3` | Dashboard built; detail view outstanding. Later iterations become `02.1 Proposed — <what changed>`, `02.2`, … |
 
 **Frames in scope:**
 
@@ -230,14 +255,21 @@ proposal iteration a *new* page — never edited or appended in place.
 |---|---|---|
 | `Current · File list · Desktop 1440` | `3:2` | Done |
 | `Current · Detail · Desktop 1440` | `3:95` | Done |
+| `Proposed · Dashboard · Desktop 1440` | `10:2` | Done — Needs attention list, pending-edit state on rows |
 | `Proposed · Detail · Desktop 1440` | — | **Required before implementation** |
 | `Proposed · Detail · Mobile 480` | — | Required if the hosted tool is used on a phone |
 
-The detail frame is the whole visual question. v1 has no save control at all —
-each field commits itself. v2 needs to express staged-vs-committed, a commit
-action, what pending looks like at rest, and what a conflict looks like. That is
-visual composition, so it is gated on a rendered `02 Proposed` page and an
-explicit go, not on this document.
+All fills on the proposed frames are bound to `hub tokens` variables rather than
+hardcoded, so a token edit moves the design. Note the visual consequence of
+living in the hub: the proposed surface is the hub's dark green, where v1 was
+light grey. That is correct — it is the same application — but it is a real shift
+to look at against `01 Current state`.
+
+The detail frame is the remaining visual question. v1 has no save control at all;
+each field commits itself. v2 needs to express staged-versus-committed, a commit
+action, what pending looks like at rest, and what a Compare resolution does. That
+is composition, so it is gated on a rendered page and an explicit go, not on this
+document.
 
 ## Risks / Trade-offs
 
