@@ -100,7 +100,9 @@ file; a table has no such pressure.
 **`pdf_drive_grant`** — single row. `access_token`, `refresh_token`,
 `expires_at`, `scope`, `google_account_email`.
 
-**Pending state is derived, not stored:**
+**Pending state: history is the record, a trigger-maintained boolean is the hook.**
+
+The authoritative answer is always this, and it is what any repair reads from:
 
 ```sql
 EXISTS (
@@ -111,10 +113,34 @@ EXISTS (
 )
 ```
 
-**Why derived over a `has_pending` boolean:** a boolean is a second source of
-truth for the thing this whole design is about keeping honest, and it can drift
-from the history that justifies it. If the subquery becomes a cost, denormalise
-then — as a cache with a known derivation, not as the record.
+Running that per row is a correlated subquery on every list load, and the list is
+the main view over a corpus in the thousands. It is also awkward to subscribe to.
+So `pdf_documents` carries `has_pending_edits boolean not null default false`,
+and the application **never writes it** — two triggers do:
+
+- `after insert on pdf_document_history` where `change_type = 'stage'` → set true
+- `after update of committed_at on pdf_documents` → recompute from the predicate
+  above
+
+Keeping the writes in the database is what stops it becoming a second source of
+truth. No route handler can set it, so no route handler can get it wrong, and it
+cannot drift by being forgotten on a new code path.
+
+It stays a cache because it is rebuildable from the record in one statement:
+
+```sql
+UPDATE pdf_documents d SET has_pending_edits = EXISTS (
+  SELECT 1 FROM pdf_document_history h
+  WHERE h.document_id = d.id AND h.change_type = 'stage'
+    AND h.changed_at > COALESCE(d.committed_at, '-infinity')
+);
+```
+
+That statement is the tie-breaker if the two ever disagree, and it should ship as
+a maintenance task rather than existing only in this document.
+
+Index `pdf_document_history (document_id, changed_at)` regardless — the repair
+statement and the per-document history view both want it.
 
 **Why not `committed_title` / `committed_subject` shadow columns:** doubles the
 column count, and still can't express "which fields are pending" without
