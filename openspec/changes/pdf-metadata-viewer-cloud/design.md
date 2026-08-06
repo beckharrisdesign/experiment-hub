@@ -348,6 +348,32 @@ proposal iteration a *new* page — never edited or appended in place.
 | `02.6 Proposed — changes as a table` | `30:14` | Seventh iteration — conflicts rendered in the dashboard's table idiom rather than as cards |
 | `02.7 Proposed — one table, all changes` | `31:8` | Eighth iteration — auto-resolving fields folded into the same table; the separate list is gone |
 | `02.8 Proposed — actions above and below` | `33:8` | Ninth iteration — commit and discard mirrored into the table's heading row for long lists |
+| **`02.9 Proposed — all surfaces current`** | `34:8` | **Current.** All three surfaces at their latest, consistent with each other |
+
+### `02.9` — the page to review
+
+Iterations 02.1–02.8 each carried one or two surfaces, so the latest state was
+spread across three pages. `02.9` pulls Dashboard, Detail, and Compare together
+at their furthest-along versions and reconciles them.
+
+What changed bringing Dashboard forward:
+
+- Its `Documents` table gained the same heading-row actions and count as Compare,
+  and a repeat below the table. Same reason: 1,284 documents do not fit on screen.
+- The action pair that had been sitting in the stats row was **removed**. With the
+  table pair added it appeared three times on one screen, which is worse than
+  appearing once. It now appears exactly twice, bracketing the thing it acts on.
+
+Two things deliberately *not* converted, since consistency is not the same as
+uniformity:
+
+- **Needs attention stays cards.** Its entries are heterogeneous — different
+  causes, different remedies, different actions — and a table would flatten
+  exactly the differences that tell you what to do. Tables are for comparing like
+  with like.
+- **The Detail panel stays a form.** In Detail you are authoring metadata; in
+  Compare you are reconciling two versions of it. The `Was / Yours / In Drive`
+  language belongs to the second job and would be noise in the first.
 
 ### Changes are a table
 
@@ -526,11 +552,18 @@ a layout system stops being one.
 |---|---|---|
 | `Current · File list · Desktop 1440` | `3:2` | Done |
 | `Current · Detail · Desktop 1440` | `3:95` | Done |
-| `Proposed · Dashboard · Desktop 1440` | `10:2` | `02` — Needs attention list, bulk commit action, pending state on rows |
-| `Proposed · Detail · Desktop 1440` | `12:10` | `02` — per-field edited markers, in-the-file values, pinned commit bar |
-| `Proposed · Compare (conflict) · Desktop 1440` | `16:2` | `02` — three-way merge, baseline shown, content-change block |
-| `… — Stat` (Dashboard, Compare) | `20:15`, `20:128` | `02.1` — same two surfaces rebuilt on the `Stat` component |
-| `Proposed · Detail · Mobile 480` | — | Required if the hosted tool is used on a phone |
+**Current frames — review these** (all on `02.9`):
+
+| Frame | Node id |
+|---|---|
+| `Proposed · Dashboard · Desktop 1440` | `34:172` |
+| `Proposed · Detail · Desktop 1440` | `34:289` |
+| `Proposed · Compare (conflict) · Desktop 1440` | `34:9` |
+| `Proposed · Detail · Mobile 480` | — outstanding, required if the tool gets phone use |
+
+Earlier pages hold the history: `02` first iteration, `02.1` Stat component,
+`02.2` document change leads, `02.3` contained width, `02.4` fewer borders,
+`02.5` contrast, `02.6` table idiom, `02.7` one table, `02.8` mirrored actions.
 
 Iterations live on their own pages per `rules/figma.mdc`: `02 Proposed` is frozen
 as the first iteration and `02.1` carries the change, so the two can be compared
