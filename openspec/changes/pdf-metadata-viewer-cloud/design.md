@@ -347,6 +347,7 @@ proposal iteration a *new* page — never edited or appended in place.
 | `02.5 Proposed — contrast + borders, all surfaces` | `27:40` | Sixth iteration — WCAG fixes and the border budget applied to all three surfaces |
 | `02.6 Proposed — changes as a table` | `30:14` | Seventh iteration — conflicts rendered in the dashboard's table idiom rather than as cards |
 | `02.7 Proposed — one table, all changes` | `31:8` | Eighth iteration — auto-resolving fields folded into the same table; the separate list is gone |
+| `02.8 Proposed — actions above and below` | `33:8` | Ninth iteration — commit and discard mirrored into the table's heading row for long lists |
 
 ### Changes are a table
 
@@ -382,6 +383,20 @@ table's own state column. The accent fill still draws the eye straight to the
 rows that want something from you, so nothing is lost by putting the quiet rows
 in the same place — and the section heading drops from "Needs your decision" to
 "Changes", because the table is now the full picture rather than a subset.
+
+`02.8` mirrors commit and discard into the table's heading row. Four rows fit on
+screen; a document with twenty changed fields does not, and asking someone to
+scroll past the whole table to reach the only two buttons that matter is the kind
+of thing that only shows up once there is real data in it. The heading row also
+carries a count — `4 changes · 2 need you` — so the actions are not floating
+without context.
+
+Two implementation notes this implies, neither of them free:
+
+- The two pairs must stay identical in label and behaviour. Two buttons that say
+  the same thing and do subtly different things is worse than one button.
+- The footer pair should be sticky rather than merely at the end of the document,
+  or it stops being reachable for exactly the long lists that motivated this.
 
 **Defect fixed in place, not iterated:** `needs-attention` and `documents` were
 not centred — their containers sat at x=0 while `header` and `stats` sat at x=80.
