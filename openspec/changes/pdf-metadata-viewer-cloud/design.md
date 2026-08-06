@@ -343,6 +343,40 @@ proposal iteration a *new* page — never edited or appended in place.
 | `02.1 Proposed — Stat pattern` | `20:14` | Second iteration — Dashboard and Compare rebuilt on the `Stat` component. Only the two frames that changed |
 | `02.2 Proposed — document change leads` | `23:14` | Third iteration — Compare only, with the content change raised above the field decisions and its three outcomes made explicit |
 | `02.3 Proposed — contained width (xl 1280)` | `24:8` | Fourth iteration — all three surfaces capped at the `xl` breakpoint and centred, per MVDS `Container` |
+| `02.4 Proposed — fewer borders` | `26:14` | Fifth iteration — Compare stripped from 20 stroked elements to 3 |
+
+### Border budget
+
+`02.3` Compare carried **20 stroked elements** and nested text 8 levels deep:
+every conflict card outlined, every option inside it outlined again, a radio
+outlined inside that, and the auto-resolved rows boxed and ruled. Nesting a
+highlight inside a highlight inside a highlight means none of them signal
+anything.
+
+`02.4` keeps **three** borders, all structural:
+
+| Kept | Why |
+|---|---|
+| `what-happened` | Left rail — this is an alert |
+| `document-changed` | Left rail — this is the blocking alert |
+| `footer-actions` | Top rule — separates the action bar from content |
+
+Everything else carries its meaning through fill, weight, and colour instead:
+
+- Conflict cards are a background, not an outline. The section heading already
+  says these need a decision.
+- An option is two text nodes — value and source. The selected one gets a tint, a
+  check, and primary text; the unselected gets nothing. The bordered box and the
+  radio both went.
+- Auto-resolved rows lost their wrapping box and per-row rules; spacing groups
+  them.
+- Secondary buttons use a tint rather than an outline.
+
+**The tradeoff to watch:** the unselected option is now quiet enough that it may
+read as information rather than as a choice you can take. The affordance rests on
+the tint, the check, and the section heading. If it tests badly, the fix is a
+hover or focus treatment on the unselected option — not restoring the outline,
+which is what created the problem.
 
 ### Content width
 
