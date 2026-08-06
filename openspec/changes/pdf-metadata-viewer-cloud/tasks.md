@@ -51,7 +51,7 @@ Each one changes work below it, so none should be discovered mid-build.
 - [x] 5.1 OAuth handshake storing the refresh token server-side — verified against the running server: four registered scopes, offline access, forced consent, 64-char state with an httpOnly cookie
 - [x] 5.2 Automatic access-token refresh, with no user prompt — 60s expiry skew. Not yet exercised against a real expiry
 - [x] 5.3 Re-authorization prompt on a revoked grant — `DriveReauthorizationRequired` separates revoked from never-connected from missing document
-- [ ] 5.4 Folder grant via the Google Picker — folders, never individual files — into reference rows, copying no bytes
+- [x] 5.4 Folder grant via the Google Picker — folders, never individual files — into reference rows, copying no bytes. **Untested against a real folder; that is the 2.1a spike**
 - [ ] 5.5 Detect documents in a granted folder that the grant does not cover, and surface them as a Needs attention instance with a re-grant action
 - [ ] 5.6 Broken reference surfaces as such while metadata and history survive
 

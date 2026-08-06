@@ -202,6 +202,80 @@ export async function readDriveGrant(): Promise<DriveGrant | null> {
   };
 }
 
+export interface DriveFile {
+  id: string;
+  name: string;
+  headRevisionId: string | null;
+  /** The file's own metadata as Drive reports it — the D8 merge baseline. */
+  snapshot: Record<string, unknown>;
+}
+
+/**
+ * List the PDFs in a granted folder.
+ *
+ * Under `drive.file` this only returns files the grant covers, which is exactly
+ * how the "documents need access" gap in task 5.5 becomes detectable: Drive can
+ * report a folder containing more than this returns.
+ */
+export async function listPdfsInFolder(
+  accessToken: string,
+  folderId: string,
+): Promise<DriveFile[]> {
+  const files: DriveFile[] = [];
+  let pageToken: string | undefined;
+
+  do {
+    const url = new URL("https://www.googleapis.com/drive/v3/files");
+    url.searchParams.set(
+      "q",
+      `'${folderId.replace(/'/g, "\\'")}' in parents and mimeType='application/pdf' and trashed=false`,
+    );
+    url.searchParams.set(
+      "fields",
+      "nextPageToken, files(id,name,headRevisionId,modifiedTime,size,properties,description)",
+    );
+    url.searchParams.set("pageSize", "100");
+    if (pageToken) url.searchParams.set("pageToken", pageToken);
+
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      throw new DriveReauthorizationRequired(
+        "Drive refused the request; the grant may have been revoked",
+      );
+    }
+    if (!response.ok) {
+      throw new Error(`Drive list failed (${response.status})`);
+    }
+
+    const data = (await response.json()) as {
+      nextPageToken?: string;
+      files?: Array<Record<string, unknown>>;
+    };
+
+    for (const f of data.files ?? []) {
+      if (typeof f.id !== "string" || typeof f.name !== "string") continue;
+      files.push({
+        id: f.id,
+        name: f.name,
+        headRevisionId: (f.headRevisionId as string) ?? null,
+        snapshot: {
+          name: f.name,
+          modifiedTime: f.modifiedTime ?? null,
+          size: f.size ?? null,
+          description: f.description ?? null,
+        },
+      });
+    }
+
+    pageToken = data.nextPageToken;
+  } while (pageToken);
+
+  return files;
+}
+
 /**
  * Connection state for display, carrying no tokens.
  *

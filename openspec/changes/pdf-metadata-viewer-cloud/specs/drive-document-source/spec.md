@@ -27,10 +27,27 @@ unrecoverable grant as a re-authorization prompt rather than a generic failure.
 - **THEN** the system prompts for re-authorization
 - **AND** does not present the failure as a missing document
 
-#### Scenario: Tokens are never exposed to the browser
+#### Scenario: The refresh token never leaves the server
 
 - **WHEN** any page or API response is produced
-- **THEN** it contains no Drive access or refresh token
+- **THEN** it contains no refresh token
+
+#### Scenario: An access token reaches the browser only for the Picker
+
+- **WHEN** the user opens the folder picker
+- **THEN** a short-lived access token is issued to the browser for that purpose
+- **AND** it is requested at that moment rather than embedded in page HTML
+
+This is a correction to an earlier requirement that said no token of any kind
+reaches the browser. That is not achievable alongside `drive.file`: a grant over
+*existing* files can only be established through the Google Picker, and the
+Picker is a browser API that takes an access token. The requirement described a
+property the chosen scope forbids.
+
+The distinction that does hold, and matters more: the **refresh token** — the
+long-lived credential — never leaves the server. What the browser receives is an
+access token that expires in about an hour and is scoped to `drive.file`, so
+before any folder is granted it can reach almost nothing.
 
 ### Requirement: Document bytes are served only through the authenticated session
 

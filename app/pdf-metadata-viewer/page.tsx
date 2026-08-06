@@ -1,6 +1,7 @@
 import { Badge, Button, Container, Inline, Stack } from "@beckharrisdesign/mvds";
 import { listPdfDocuments, type PdfDocument } from "@/lib/pdf-documents";
 import { getDriveConnection } from "@/lib/pdf-drive";
+import { FolderPicker } from "./FolderPicker";
 
 /**
  * Hosted pdf-metadata-viewer dashboard.
@@ -181,13 +182,7 @@ export default async function PdfMetadataViewerPage() {
                         your scans live in and its documents become available;
                         nothing else in your Drive is readable.
                       </span>
-                      <div>
-                        <Button disabled>Choose a folder</Button>
-                      </div>
-                      <span className="text-xs text-text-muted">
-                        The folder picker is not built yet — task 5.4. The
-                        connection above is real and stored.
-                      </span>
+                      <FolderPicker />
                     </Stack>
                   ) : (
                     <Stack gap={8}>
