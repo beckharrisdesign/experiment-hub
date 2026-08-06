@@ -55,10 +55,10 @@ Each one changes work below it, so none should be discovered mid-build.
 
 ## 6. Read path
 
-- [ ] 6.1 `GET /api/pdf-documents` — list from the database, fetching no bytes
-- [ ] 6.2 `GET /api/pdf-documents/id/[id]` — metadata and pending state
-- [ ] 6.3 `GET .../history` — full field-level history, newest first, uncapped
-- [ ] 6.4 `GET .../content` — proxy bytes through the session, minting no Drive URL
+- [x] 6.1 `GET /api/pdf-documents` — list from the database, fetching no bytes
+- [x] 6.2 `GET /api/pdf-documents/id/[id]` — metadata and pending state
+- [x] 6.3 `GET .../history` — full field-level history, newest first, uncapped
+- [ ] 6.4 `GET .../content` — proxy bytes through the session, minting no Drive URL — blocked on the Drive client (group 5)
 - [ ] 6.5 Port `taxonomy-loader.js` and `entities-notion.js`, keeping the field allowlist intact
 - [ ] 6.6 Run `test-entity-projection.js` against the ported module
 
