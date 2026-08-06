@@ -1,0 +1,172 @@
+# Google Console setup
+
+Owner-only steps for the hosted instance. Everything here needs Console access;
+none of it can be done from a session.
+
+Related: `openspec/changes/pdf-metadata-viewer-cloud/design.md` D5 (identity) and
+D9 (Drive scope).
+
+---
+
+## 1. First — delete the compromised client
+
+Unrelated to this tool, but it lives in the same Console and it is a live
+credential.
+
+**APIs & Services → Credentials →** OAuth 2.0 Client ID
+`8514092366-c7fapd4sdqi52mca728ml9n5rcf35qma.apps.googleusercontent.com`
+→ **Delete**.
+
+It belonged to `calendar-to-planner`, which is abandoned. Its secret was
+committed to that repo and is recoverable from git history; deleting the client
+is what makes that string inert. Nothing depends on it.
+
+Then, once deleted, check <https://myaccount.google.com/permissions> for any
+lingering grant to that app.
+
+---
+
+## 2. Create a **new** project — do not reuse
+
+Name it something like `pdf-metadata-viewer`.
+
+The temptation is to reuse the project the calendar work already lives in, since
+its consent screen is configured. Don't. Consent screens are per-project, and so
+is the registered scope list — that project has `calendar.readonly` on it, which
+is a **sensitive** scope.
+
+This tool's whole scope strategy (D9) rests on staying **non-sensitive**, because
+that is what lets the app be published, and publishing is what avoids the
+seven-day refresh-token expiry that applies to apps left in Testing status. A
+clean project whose consent screen has only ever seen `drive.file` and the
+identity scopes protects that.
+
+---
+
+## 3. Enable two APIs
+
+**APIs & Services → Library →** enable:
+
+- **Google Drive API** — reading and writing document metadata
+- **Google Picker API** — the folder grant flow
+
+---
+
+## 4. Configure the OAuth consent screen
+
+**APIs & Services → OAuth consent screen**
+
+| Field | Value |
+|---|---|
+| User type | External |
+| App name | PDF Metadata Viewer |
+| User support email | your address |
+| Developer contact | your address |
+| Authorised domain | `beckharrisdesign.com` |
+
+**Scopes — add exactly these four and nothing else:**
+
+```
+openid
+.../auth/userinfo.email
+.../auth/userinfo.profile
+https://www.googleapis.com/auth/drive.file
+```
+
+`drive.file` should show as **non-sensitive**. If the Console flags it as
+sensitive or restricted, stop — that contradicts D9 and the scope decision needs
+revisiting before any code depends on it.
+
+**Do not add** `drive`, `drive.readonly`, or `drive.metadata.readonly`. Those are
+restricted and pull in the CASA security assessment.
+
+---
+
+## 5. Create the OAuth client
+
+**Credentials → Create credentials → OAuth client ID**
+
+- **Application type: Web application** (not Desktop — the old calendar client
+  was Desktop, which is why none of it is reusable)
+- Name: `pdf-metadata-viewer web`
+
+**Authorised redirect URIs — exact, both of them:**
+
+```
+https://labs.beckharrisdesign.com/api/pdf-drive/callback
+http://localhost:3000/api/pdf-drive/callback
+```
+
+Google matches these character for character; a trailing slash breaks it.
+
+**Not registering Vercel preview URLs** (task 4.2). Preview deployments get a
+fresh hash-based hostname each time and Google needs exact URIs, so authenticated
+routes are production-and-local only. That is an acceptable limit for a
+single-user instance and is worth revisiting only if previews ever need to be
+signed into.
+
+---
+
+## 6. Capture the values
+
+Into the hub's `.env.local` locally, and Vercel project env vars for production:
+
+```
+PDF_GOOGLE_CLIENT_ID=<from the Console>
+PDF_GOOGLE_CLIENT_SECRET=<from the Console>
+PDF_GOOGLE_REDIRECT_URI=https://labs.beckharrisdesign.com/api/pdf-drive/callback
+PDF_SESSION_SECRET=<any long random string>
+PDF_ALLOWED_GOOGLE_SUBS=<see below — you cannot know this yet>
+```
+
+### Getting your `sub` for the allowlist
+
+The allowlist keys on the Google `sub` claim, not your email, because emails are
+reassignable. But `sub` is not shown anywhere in the Console — it only appears in
+a token.
+
+So there is a deliberate bootstrapping order:
+
+1. Leave `PDF_ALLOWED_GOOGLE_SUBS` empty and attempt to sign in.
+2. You will be **refused** — the allowlist fails closed, by design.
+3. The callback logs the rejected `sub` server-side (Vercel logs, or the terminal
+   locally).
+4. Paste that value into `PDF_ALLOWED_GOOGLE_SUBS` and sign in again.
+
+This is preferable to a bootstrap mode that admits the first caller. A
+first-run bypass is a permanent piece of code whose only job is to be
+dangerous if it is ever re-enabled.
+
+---
+
+## 7. The spike — before any Drive code (task 2.1a)
+
+The one open question that could change the design. Ten minutes:
+
+1. Sign in and grant access to a **folder** through the Picker.
+2. Confirm the app can list the PDFs already in it.
+3. **Drop a new PDF into that folder in Drive.**
+4. Re-list.
+
+**Does the new file appear?**
+
+- **Yes** — folder grants inherit. D9 holds as written and the fallback stays
+  belt-and-braces.
+- **No** — every scan needs re-granting. The design does not collapse, but the
+  "documents need access" instance in Needs attention (task 5.5) stops being a
+  safety net and becomes the primary workflow, which is worth knowing before it
+  is built rather than after.
+
+Record the answer in `design.md` D9 either way.
+
+---
+
+## What to hand back
+
+Only these, and none of them are secrets that need to travel through chat:
+
+- Whether `drive.file` showed as non-sensitive (step 4)
+- The spike result (step 7)
+
+The client ID and secret go straight into env vars — they should not be pasted
+into a session.
