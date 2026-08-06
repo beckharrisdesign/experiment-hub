@@ -80,10 +80,11 @@ Each one changes work below it, so none should be discovered mid-build.
 ## 9. Interface
 
 - [ ] 9.1 Add `input` and `table` via `npx shadcn@latest add`, landing inside MVDS tokens
-- [ ] 9.2 Dashboard: stats, Needs attention list, bulk commit action, state column
-- [ ] 9.3 Detail: `Field` with `help` carrying the in-the-file value and `error` carrying a conflict
-- [ ] 9.4 Pending state visible at rest, not only during editing
-- [ ] 9.5 Import MVDS components into `00 Components` so Figma and code share a source
+- [ ] 9.2 Author `Stat` in MVDS — `<Stat label value tone />`, tone in default/warning/success/danger/muted. No shadcn equivalent exists; the Figma variant set at `19:17` is the reference
+- [ ] 9.3 Dashboard: stats, Needs attention list, bulk commit action, state column
+- [ ] 9.4 Detail: `Field` with `help` carrying the in-the-file value and `error` carrying a conflict
+- [ ] 9.5 Pending state visible at rest, not only during editing
+- [ ] 9.6 Import MVDS components into `00 Components` so Figma and code share a source
 
 ## 10. Cut over
 

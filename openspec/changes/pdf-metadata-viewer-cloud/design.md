@@ -370,11 +370,30 @@ error, required }` with the aria wiring done:
 
 So the staged-versus-committed treatment is a prop, not a bespoke component.
 
-**What MVDS still lacks: `Table` and a single-line `Input`.** Neither is a gap to
-hand-roll beside the system — MVDS is shadcn-based and its README names the path
-(`npx shadcn@latest add input …`), so both land inside the same tokens. `cn`,
-`buttonVariants`, and `badgeVariants` are exported, so anything genuinely custom
-composes from the same variant source rather than drifting from it.
+**What MVDS still lacks: `Table`, a single-line `Input`, and `Stat`.** The first
+two are not gaps to hand-roll beside the system — MVDS is shadcn-based and its
+README names the path (`npx shadcn@latest add input …`), so both land inside the
+same tokens. `cn`, `buttonVariants`, and `badgeVariants` are exported, so
+anything genuinely custom composes from the same variant source rather than
+drifting from it.
+
+`Stat` is different: shadcn has no equivalent, so it is a genuine MVDS addition
+rather than an install. It is a label over a value, with a tone that colours the
+value — the dashboard's counts and Compare's decision summary are the same
+pattern, and building it twice is how two surfaces drift apart. Built in Figma
+first as a variant set (`19:17` on `00 Components`) with a `Tone` axis of
+Default / Warning / Success / Danger / Muted and TEXT properties for `Label` and
+`Value`. Both frames consume instances, so there is one source rather than two
+hand-built copies.
+
+Proposed MVDS API, matching the Figma properties:
+
+```tsx
+<Stat label="Pending edits" value="17" tone="warning" />
+```
+
+Three additions to MVDS come out of this change, in the order they are needed:
+`input` and `table` via shadcn, then `Stat` authored against the token set.
 
 Compatibility was checked against the 0.3 typings before bumping: every
 component and variant the hub already uses — `Badge` success/destructive/muted,
