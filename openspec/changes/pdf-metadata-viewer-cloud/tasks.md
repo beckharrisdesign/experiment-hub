@@ -36,10 +36,10 @@ Each one changes work below it, so none should be discovered mid-build.
 
 - [ ] 4.1 Create the Google OAuth client and consent screen with `openid email profile` plus the Drive scope from 2.1
 - [ ] 4.2 Settle the redirect-URI strategy for Vercel preview deployments
-- [ ] 4.3 Signed, stateless session cookie — verifiable at the edge with no database call
-- [ ] 4.4 Middleware gate covering every PDF route, refusing before any storage, database, or third-party call
-- [ ] 4.5 Allowlist keyed on the `sub` claim, with `email_verified` checked
-- [ ] 4.6 Verify a non-allowlisted Google account is refused
+- [x] 4.3 Signed, stateless session cookie — verifiable at the edge with no database call
+- [x] 4.4 Middleware gate covering every PDF route, refusing before any storage, database, or third-party call
+- [x] 4.5 Allowlist keyed on the `sub` claim, with `email_verified` checked
+- [x] 4.6 Verify a non-allowlisted Google account is refused — unit-covered; re-verify end to end once the handshake exists
 - [ ] 4.7 Verify revoking the app in Google settings ends both sign-in and Drive access
 - [ ] 4.8 Verify an unauthenticated request cannot distinguish a document that exists from one that does not
 
