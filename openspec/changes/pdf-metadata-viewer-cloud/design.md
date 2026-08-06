@@ -211,18 +211,69 @@ attempted.
 
 Rendered at `02 Proposed` — see the Figma table below.
 
-### D5 — Auth reuses the hub's existing gate
+### D5 — Google is the identity provider; no static shared secret
 
-`middleware.ts` already gates `/admin` on an `ADMIN_SECRET` cookie, with
-`lib/admin-auth.ts` behind it. Extending the matcher to the PDF routes reuses a
-path already in production and satisfies "refused before any storage, database,
-or third-party call" — middleware runs ahead of route handlers.
+**Rejected: reusing the hub's `ADMIN_SECRET` gate.** It was the obvious choice —
+`middleware.ts` already gates `/admin` on it, and extending the matcher is nearly
+free. Reading the implementation is what killed it. In
+[`lib/admin-auth.ts`](../../../lib/admin-auth.ts) the check is
+`cookieStore.get("hub-edit")?.value === adminSecret`: the cookie value **is** the
+secret, verbatim. It is not a session token derived from a credential — it is the
+master credential, sitting in the browser jar of every device that has ever
+signed in.
 
-**This is the weakest link in the design and should be named as such.** A single
-static shared secret, no rotation, no per-device revocation, guarding a family's
-medical records on a public URL. It is proportionate to one user who controls the
-secret, and it is the first thing to replace — before a second person has access,
-not after.
+So the exposure is not "a secret might leak." One compromised browser profile
+yields the credential for every device and every future session, the only remedy
+is rotating an env var and redeploying, and nothing signals that you need to.
+Proportionate for editing experiment metadata. Not for a family's medical,
+financial, and school records on a public URL.
+
+**Decision: authenticate with Google OAuth, pinned to an allowlisted account.**
+
+The reason this is cheap rather than a new subsystem: **a Google OAuth handshake
+is already being built for Drive.** Adding `openid email profile` to the same
+client is near-free — they are non-sensitive scopes requiring no verification
+review, so the restricted-scope question stays entirely about Drive and does not
+get worse. The identity is already inside the token being fetched.
+
+What it changes:
+
+- No static secret exists, so there is nothing to leak that cannot be revoked.
+- Revocation is real and singular — revoking the app in Google account settings
+  ends both sign-in and Drive access.
+- The account's MFA, passkeys, and security alerting are inherited.
+- Google's third-party-apps list becomes the session audit; devices are visible
+  and killable.
+- One consent instead of two — "sign in" and "connect Drive" collapse into a
+  single handshake.
+
+**Pin the allowlist on the `sub` claim, not the email.** Emails are reassignable,
+particularly in Workspace. Verify `email_verified` as well. An allowlist check
+that is missing or keyed on something mutable means any Google account can sign
+in — this is the one line where the design fails catastrophically rather than
+gracefully.
+
+**The session cookie must be signed and stateless.** Middleware has to verify
+signature and expiry at the edge with no database call, because the spec requires
+refusal *before* any storage, database, or third-party call is made. A
+database-backed session would forfeit that property.
+
+**Costs, stated honestly:**
+
+- Google requires exact redirect-URI registration, and Vercel preview URLs are
+  hash-based. Either register only the production callback and bounce previews
+  through it, or keep authenticated routes production-only. This is the real
+  implementation tax.
+- Sign-in depends on Google being reachable. Acceptable; the tool already depends
+  on Drive.
+- More code than comparing a string to an env var.
+
+**Why it is not more expensive than the alternative:** the static secret is work
+that gets deleted entirely the moment a second person needs access. Google OAuth
+with a one-entry allowlist is the first increment of the real thing — the same
+flow, with the allowlist later swapped for a user table. The auth layer gets
+built once rather than twice, and the version built is not the weakest part of
+the design.
 
 ### D6 — Route layout
 

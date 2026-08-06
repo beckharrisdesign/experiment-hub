@@ -2,12 +2,53 @@
 
 ## ADDED Requirements
 
+### Requirement: Identity comes from Google, and no static shared secret grants access
+
+The system SHALL authenticate the user through Google OAuth and MUST NOT accept
+any static shared secret as proof of identity. The session cookie MUST be a
+signed, expiring token — never a credential value itself — so that a captured
+cookie grants at most one bounded session rather than permanent access.
+
+Access SHALL be restricted to an allowlist keyed on the Google `sub` claim. The
+system MUST verify `email_verified` and MUST NOT key the allowlist on the email
+address, which is reassignable.
+
+#### Scenario: Signing in
+
+- **WHEN** an allowlisted Google account completes the OAuth flow
+- **THEN** a signed, expiring session cookie is issued
+- **AND** the cookie value is not any credential or secret
+
+#### Scenario: A non-allowlisted Google account
+
+- **WHEN** any Google account not on the allowlist completes the OAuth flow
+- **THEN** no session is issued and access is refused
+
+#### Scenario: Allowlist keyed on a stable identifier
+
+- **WHEN** an allowlisted account's email address changes
+- **THEN** access is unaffected, because the allowlist matches on `sub`
+
+#### Scenario: Unverified email
+
+- **WHEN** an account presents `email_verified: false`
+- **THEN** access is refused
+
+#### Scenario: Access revoked at Google
+
+- **WHEN** the user revokes the application in their Google account settings
+- **THEN** both sign-in and Drive access stop working
+- **AND** no separate revocation step is required in this system
+
 ### Requirement: Every route requires an authenticated session
 
 The system SHALL require an authenticated session for every route that reads or
 mutates documents, metadata, history, or the Drive connection. An unauthenticated
 request MUST be refused before any storage, database, or third-party call is
 made, and MUST NOT reveal whether a given document exists.
+
+Because refusal precedes any database call, the session MUST be verifiable from
+the cookie's own signature and expiry, without a lookup.
 
 In v1 nothing was authenticated, which was defensible when the server bound to
 localhost and read a local directory. On a public URL the same routes are an
@@ -41,8 +82,10 @@ open read and an open delete over the household archive.
 
 The system SHALL treat all documents, metadata, history, and the Drive grant as
 belonging to a single account, and MUST NOT expose any interface for creating
-additional accounts. Where a design decision would differ under multi-tenancy,
-the single-tenant assumption SHALL be recorded rather than left implicit.
+additional accounts. Single-tenancy SHALL be enforced by the allowlist holding
+exactly one entry, not by the absence of a sign-up form. Where a design decision
+would differ under multi-tenancy, the single-tenant assumption SHALL be recorded
+rather than left implicit.
 
 Stated so the boundary is a deliberate scope decision with a known exit cost,
 not an accident to be discovered later. The module-level entity cache in
@@ -61,10 +104,11 @@ not an accident to be discovered later. The module-level entity cache in
 
 ### Requirement: Credentials live in host configuration, not in the interface
 
-The system SHALL read the OpenAI key, the Notion token, and Drive client
-credentials from host environment configuration. It MUST NOT provide a UI for
-entering them and MUST NOT persist them in the application database. No
-credential SHALL ever be included in a response to the browser.
+The system SHALL read the OpenAI key, the Notion token, the Google OAuth client
+credentials, the session signing key, and the account allowlist from host
+environment configuration. It MUST NOT provide a UI for entering them and MUST
+NOT persist them in the application database. No credential SHALL ever be
+included in a response to the browser.
 
 A credentials UI would mean building secret storage, encryption, and rotation for
 a single user — work that would be redone properly at productization anyway.
