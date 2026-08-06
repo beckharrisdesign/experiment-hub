@@ -378,6 +378,65 @@ That fallback is worth building regardless of how the spike resolves: a
 re-scanned or moved file could drop out of the grant at any time, and finding out
 by noticing an absence is the failure mode worth designing out.
 
+### D10 — The splitter belongs in v2; its schema lands now, its screen later
+
+Splitting is not optional and not peripheral. An earlier draft here framed it as
+"ingest work" that could stay on the local prototype — wrong. Finding split
+boundaries means studying page thumbnails and deciding where one document ends,
+which is a considered, screen-based task, as suited to the hosted tool as tagging
+is. A local-only splitter would mean a document's journey cannot be finished from
+the hosted app, which undercuts the reason for hosting it.
+
+It is also not free to leave local, because both tools read the same bytes: the
+PDF directory already lives inside Google Drive (`roadmap.md`, Phase 6). A local
+split writes `already-split` and `needs-deleting` into the original, so the
+hosted tool's `file_snapshot` baseline stops matching and the next commit is a
+conflict; and the outputs, created through the filesystem rather than by the web
+app, fall outside a `drive.file` grant.
+
+**Decision: the splitter moves to v2. The schema for it lands now; the interface
+comes after the write path.**
+
+Splitting the decision this way is deliberate. The screen is the most complex in
+v1 — a thumbnail grid with click-to-insert break markers, 21 references in
+`app.js` — and appears in none of the proposal iterations, so it needs design
+before it needs code. But the *data model* is expensive to defer and cheap to
+add: outputs need a reference back to what they came from, and discovering that
+the model is wrong after documents exist is a migration against real data rather
+than an empty table.
+
+So `pdf_documents` gains:
+
+| Column | Purpose |
+|---|---|
+| `split_from_document_id` | The document this was produced from. Null for originals |
+| `split_index` | Position within that split, so ordering survives |
+| `superseded_at` | When an original was replaced by its outputs |
+
+This also settles the flags question (D11 below): with splitting in v2, the
+workflow states it produces are written by this application, not inherited from
+another one — so they belong in columns.
+
+### D11 — Split workflow states are columns, not keywords
+
+`from-split`, `already-split`, `needs-deleting`, and `no-split-needed` are
+application state wearing a keyword's clothing. They exist as tags in v1 because
+the PDF's keyword field was the only place to put anything.
+
+`from-split` and `already-split` are now expressed by
+`split_from_document_id` and `superseded_at` — derivable, not stored twice.
+`needs-deleting` and `no-split-needed` are decisions about a document rather than
+descriptions of it, so they become `marked_for_deletion` and `split_not_needed`.
+
+Two consequences worth stating:
+
+- **They stop polluting the taxonomy.** The AI is asked to choose keywords from a
+  controlled vocabulary; four of those options were never about content, and a
+  model picking `needs-deleting` from document *imagery* was always noise.
+- **Existing files keep theirs.** Documents already tagged in v1 carry these as
+  real keywords, so import reads them, sets the columns, and drops them from the
+  keyword list. That is a one-way migration on read, not a rewrite of the archive.
+
 ### D6 — Route layout
 
 Follows the hub's existing collision-avoiding convention (`app/api/experiments/id/[id]`),

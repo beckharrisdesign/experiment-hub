@@ -20,8 +20,8 @@ Each one changes work below it, so none should be discovered mid-build.
 
 - [x] 2.1 Drive OAuth scope decided: **`drive.file`, granted by folder** — non-sensitive, so no CASA assessment and no seven-day refresh-token expiry. See `design.md` D9
 - [ ] 2.1a **Spike before any Drive code:** confirm whether a Picker folder grant covers files added to that folder later. Decisive for the workflow, and not safe to assume
-- [ ] 2.2 Decide whether the PDF splitter moves to v2 or stays on the local prototype
-- [ ] 2.3 Decide whether `from-split` / `already-split` / `needs-deleting` become real columns or stay keyword flags
+- [x] 2.2 Splitter **moves to v2** — schema now, interface after the write path. See `design.md` D10
+- [x] 2.3 Workflow flags become **columns** — `from-split`/`already-split` derive from lineage; `needs-deleting`/`no-split-needed` become `marked_for_deletion`/`split_not_needed`. See `design.md` D11
 - [ ] 2.4 Confirm Actions is running again and CI verifies the MVDS 0.3 bump — currently unverified, no runs are being created
 
 ## 3. Data layer
@@ -67,6 +67,13 @@ Each one changes work below it, so none should be discovered mid-build.
 - [x] 7.1 Build `Proposed · Compare (conflict)` on `02 Proposed` — three-way merge against the read-time baseline
 - [ ] 7.2 Build `Proposed · Detail · Mobile 480` if the tool will be used on a phone
 - [x] 7.3 Explicit go on the rendered pages before implementing the write path — approved 2026-08-06 on `02.9`, "close enough for MVP"
+
+## 7b. Splitter — after the write path
+
+- [ ] 7b.1 Design the splitter on a numbered Figma page: thumbnail grid, break markers, output preview
+- [ ] 7b.2 Split creates outputs in Drive with lineage rows, and marks the original superseded
+- [ ] 7b.3 Outputs inherit metadata; the original keeps its history
+- [ ] 7b.4 On import, read v1's `from-split` / `already-split` / `needs-deleting` / `no-split-needed` keywords into columns and drop them from the keyword list
 
 ## 8. Write path
 
