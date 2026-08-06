@@ -346,6 +346,7 @@ proposal iteration a *new* page — never edited or appended in place.
 | `02.4 Proposed — fewer borders` | `26:14` | Fifth iteration — Compare stripped from 20 stroked elements to 3 |
 | `02.5 Proposed — contrast + borders, all surfaces` | `27:40` | Sixth iteration — WCAG fixes and the border budget applied to all three surfaces |
 | `02.6 Proposed — changes as a table` | `30:14` | Seventh iteration — conflicts rendered in the dashboard's table idiom rather than as cards |
+| `02.7 Proposed — one table, all changes` | `31:8` | Eighth iteration — auto-resolving fields folded into the same table; the separate list is gone |
 
 ### Changes are a table
 
@@ -363,6 +364,24 @@ rather than a whispered annotation in the corner — which is what it should hav
 been, since the whole three-way merge depends on it being legible.
 
 It also scales. Cards stack badly past three or four conflicts; rows don't.
+
+`02.7` folds the auto-resolving fields into the same table. They were the same
+data rendered twice in two different idioms — a table of some changes and a list
+of the others — which made the reader learn two patterns to read one set of
+facts. One table, one row per changed field, with three cell treatments doing the
+work:
+
+| Treatment | Means |
+|---|---|
+| Accent fill + tick | You chose this |
+| Tick, no fill | Applies automatically, nothing to decide |
+| Muted, "unchanged" | This side did not touch the field |
+
+A `State` column carries `Needs decision` / `Applies`, matching the dashboard
+table's own state column. The accent fill still draws the eye straight to the
+rows that want something from you, so nothing is lost by putting the quiet rows
+in the same place — and the section heading drops from "Needs your decision" to
+"Changes", because the table is now the full picture rather than a subset.
 
 **Defect fixed in place, not iterated:** `needs-attention` and `documents` were
 not centred — their containers sat at x=0 while `header` and `stats` sat at x=80.
