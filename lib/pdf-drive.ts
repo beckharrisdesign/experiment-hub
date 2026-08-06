@@ -202,6 +202,29 @@ export async function readDriveGrant(): Promise<DriveGrant | null> {
   };
 }
 
+/**
+ * Connection state for display, carrying no tokens.
+ *
+ * Separate from `readDriveGrant` on purpose: a page component has no business
+ * holding an access token, and the easiest way to guarantee that is to give it
+ * a shape that cannot contain one.
+ */
+export async function getDriveConnection(): Promise<{
+  connected: boolean;
+  email: string | null;
+  hasRefreshToken: boolean;
+}> {
+  const grant = await readDriveGrant();
+  if (!grant?.accessToken) {
+    return { connected: false, email: null, hasRefreshToken: false };
+  }
+  return {
+    connected: true,
+    email: grant.googleAccountEmail,
+    hasRefreshToken: Boolean(grant.refreshToken),
+  };
+}
+
 /** Distinguishes "you never connected" from "your grant stopped working". */
 export class DriveReauthorizationRequired extends Error {
   constructor(message: string) {

@@ -1,5 +1,6 @@
 import { Badge, Button, Container, Inline, Stack } from "@beckharrisdesign/mvds";
 import { listPdfDocuments, type PdfDocument } from "@/lib/pdf-documents";
+import { getDriveConnection } from "@/lib/pdf-drive";
 
 /**
  * Hosted pdf-metadata-viewer dashboard.
@@ -108,9 +109,13 @@ function DocumentsTable({ documents }: { documents: PdfDocument[] }) {
 export default async function PdfMetadataViewerPage() {
   let documents: PdfDocument[] = [];
   let loadError: string | null = null;
+  let drive = { connected: false, email: null as string | null, hasRefreshToken: false };
 
   try {
-    documents = await listPdfDocuments();
+    [documents, drive] = await Promise.all([
+      listPdfDocuments(),
+      getDriveConnection(),
+    ]);
   } catch (error) {
     // Surfaced rather than rendered as an empty archive — with RLS on and no
     // policies, a configuration problem would otherwise look like "no documents".
@@ -132,7 +137,13 @@ export default async function PdfMetadataViewerPage() {
         <Stack gap={32}>
           <Inline gap={16} align="center" justify="between">
             <h1 className="font-heading text-2xl">PDF Metadata Viewer</h1>
-            <Badge variant="muted">Drive not connected</Badge>
+            {drive.connected ? (
+              <Badge variant="success">
+                Drive connected{drive.email ? ` · ${drive.email}` : ""}
+              </Badge>
+            ) : (
+              <Badge variant="muted">Drive not connected</Badge>
+            )}
           </Inline>
 
           {loadError ? (
@@ -160,22 +171,41 @@ export default async function PdfMetadataViewerPage() {
 
               {documents.length === 0 ? (
                 <div className="rounded-lg bg-background-secondary p-8">
-                  <Stack gap={8}>
-                    <span className="font-semibold text-text-primary">
-                      No documents yet
-                    </span>
-                    <span className="text-sm text-text-muted">
-                      Connect Google Drive and choose the folder your scans live
-                      in. Documents stay in Drive — this only stores a reference
-                      to them.
-                    </span>
-                    <div>
-                      <Button disabled>Connect Google Drive</Button>
-                    </div>
-                    <span className="text-xs text-text-muted">
-                      Connecting is not built yet — the handshake is task 5.1.
-                    </span>
-                  </Stack>
+                  {drive.connected ? (
+                    <Stack gap={8}>
+                      <span className="font-semibold text-text-primary">
+                        Drive is connected — now choose a folder
+                      </span>
+                      <span className="text-sm text-text-muted">
+                        This app can only see files you hand it. Pick the folder
+                        your scans live in and its documents become available;
+                        nothing else in your Drive is readable.
+                      </span>
+                      <div>
+                        <Button disabled>Choose a folder</Button>
+                      </div>
+                      <span className="text-xs text-text-muted">
+                        The folder picker is not built yet — task 5.4. The
+                        connection above is real and stored.
+                      </span>
+                    </Stack>
+                  ) : (
+                    <Stack gap={8}>
+                      <span className="font-semibold text-text-primary">
+                        Connect Google Drive
+                      </span>
+                      <span className="text-sm text-text-muted">
+                        One approval covers signing in and access to the folder
+                        you choose. Documents stay in Drive — this only stores a
+                        reference to them.
+                      </span>
+                      <div>
+                        <a href="/api/pdf-drive/connect">
+                          <Button>Connect Google Drive</Button>
+                        </a>
+                      </div>
+                    </Stack>
+                  )}
                 </div>
               ) : (
                 <Stack gap={16}>
