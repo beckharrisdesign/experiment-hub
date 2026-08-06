@@ -344,6 +344,71 @@ proposal iteration a *new* page — never edited or appended in place.
 | `02.2 Proposed — document change leads` | `23:14` | Third iteration — Compare only, with the content change raised above the field decisions and its three outcomes made explicit |
 | `02.3 Proposed — contained width (xl 1280)` | `24:8` | Fourth iteration — all three surfaces capped at the `xl` breakpoint and centred, per MVDS `Container` |
 | `02.4 Proposed — fewer borders` | `26:14` | Fifth iteration — Compare stripped from 20 stroked elements to 3 |
+| `02.5 Proposed — contrast + borders, all surfaces` | `27:40` | Sixth iteration — WCAG fixes and the border budget applied to all three surfaces |
+
+### Contrast — two hub tokens fail WCAG AA
+
+Measured, not estimated. Ratios against the two hub backgrounds, AA for normal
+text being 4.5:1:
+
+| Token | on `background/primary` | on `background/secondary` | |
+|---|---|---|---|
+| `text/primary` `#cff7d3` | 8.55:1 | 11.22:1 | pass |
+| `text/secondary` `#78ffb7` | 8.02:1 | 10.53:1 | pass |
+| `status/warning` `#f0c060` | 5.93:1 | 7.79:1 | pass |
+| `status/success` `#3ecf8e` | 5.03:1 | 6.60:1 | pass |
+| **`text/muted` `#4d9a60`** | **2.92:1** | **3.83:1** | **fails both** |
+| `status/error` `#f87171` | 3.63:1 | 4.76:1 | fails on primary |
+| `accent/primary` as text | 3.46:1 | 4.54:1 | fails on primary |
+
+And the one that matters most, because it is on every primary action:
+**`text/dark` on an `accent/primary` fill is 3.46:1.** White would be worse at
+2.90:1.
+
+Two replacements are proposed as variables on `00 Components`, described there as
+proposals rather than ports so the collection does not misrepresent
+`globals.css`:
+
+| Proposed | Value | Ratios | Replaces |
+|---|---|---|---|
+| `text/muted-AA` | `#7ac98d` | 5.05:1 / 6.63:1 | `text/muted` for any text that must be read |
+| `text/on-accent` | `#0b2f1c` | 5.04:1 on `accent/primary` | `text/dark` on accent fills |
+
+`02.5` applies both — 64 muted text nodes swapped and 4 primary-button labels
+corrected across the three surfaces.
+
+**This is a hub-wide finding, not an experiment one.** `text/muted` and the
+primary-button label combination come from the `@theme` block in
+`app/globals.css` and are used across every hub surface. Fixing them here fixes
+three frames; fixing them in `globals.css` fixes the hub. Raised separately
+rather than folded into this change.
+
+### Selected and unselected states
+
+Removing borders in `02.4` left the unselected option too quiet to read as a
+choice, and its text below AA. `02.5` gives both options a real surface so each
+reads as pressable:
+
+- **Selected** — solid `accent/primary` with `text/on-accent` at 5.04:1, plus a
+  check and medium weight.
+- **Unselected** — `background/primary` surface with `text/primary` at 8.55:1.
+
+Neither uses an outline. The state is carried by fill and weight, which is what
+the border budget was for.
+
+### Border budget, applied universally
+
+The same audit run across all three surfaces, not just the one under review:
+
+| Surface | Before | After | Kept |
+|---|---|---|---|
+| Compare | 20 | 3 | two alert rails, footer rule |
+| Dashboard | 13 | 5 | table head and row rules |
+| Detail | 13 | 1 | commit-bar divider |
+
+The rule that fell out: a separator earns its keep, an outline around something
+that already has a fill does not. Anything that lost an outline and still needed
+to read as a control gained a fill instead.
 
 ### Border budget
 
