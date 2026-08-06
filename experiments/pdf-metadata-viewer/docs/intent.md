@@ -111,16 +111,38 @@ exists only so the writing survives if that repo is ever archived.
 
 ---
 
-## What this supersedes
+## Lineage — what this supersedes
 
-`docs/PRD.md` scopes the tool as single-operator and local:
+> yes, this experiment version supercedes what was really my first experiment in
+> the private repo and local tooling.
+
+**Experiment v1** — private repo, local tooling. `2026-01-10` to `2026-04-03`,
+from initial scaffold through the dogfooding run that produced the eval corpus.
+It predates the hub's experiment practice; it was the first one, run before
+there was a place to put experiments.
+
+**Experiment v2** — this directory, plus the
+[`pdf-metadata-viewer-cloud`](../../../openspec/changes/pdf-metadata-viewer-cloud/proposal.md)
+change. Same problem, same taxonomy, same entity database. Different premise:
+hosted rather than local.
+
+v2 is the continuation and the canonical version. v1 is not archived or
+abandoned — the private repo stays private permanently, because it holds both
+the unredacted history and the household registry — but it is no longer where
+work happens.
+
+### What that means for the docs here
+
+`docs/PRD.md` still scopes the tool as single-operator and local:
 
 > **Not for**: Teams, shared archives, or anyone needing multi-user access,
 > permissions, or an audit trail. This is a single-operator tool on local files.
 
-That framing is now historical. It described the prototype accurately and should
-stay in place until the cloud change lands, at which point the PRD needs a
-rewrite rather than an edit.
+That framing described v1 accurately and stays in place until the cloud change
+lands, at which point the PRD gets a rewrite rather than an edit. The same is
+true of the "not deployed and should not be" language in `README.md` and
+`prototype/.env.example`: correct for v1, superseded by v2, and deliberately not
+patched ahead of the change that makes it wrong.
 
 ## Deliberately deferred
 
