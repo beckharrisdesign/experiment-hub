@@ -24,7 +24,7 @@ Each one changes work below it, so none should be discovered mid-build.
 
 ## 3. Data layer
 
-- [ ] 3.1 Migration: `pdf_documents`, `pdf_document_history`, `pdf_drive_grant`
+- [ ] 3.1 Migration: `pdf_documents`, `pdf_document_history`, `pdf_drive_grant` — including `file_snapshot jsonb`, the merge baseline Compare depends on
 - [ ] 3.2 Index `pdf_document_history (document_id, changed_at)`
 - [ ] 3.3 Triggers maintaining `has_pending_edits` — on history insert, and on `committed_at` update
 - [ ] 3.4 Ship the one-statement rebuild as a maintenance task, not just a snippet in `design.md`
@@ -61,7 +61,7 @@ Each one changes work below it, so none should be discovered mid-build.
 
 ## 7. Design gate — before any write path
 
-- [ ] 7.1 Build `Proposed · Compare (conflict)` on `02 Proposed` — what reconciliation actually shows
+- [x] 7.1 Build `Proposed · Compare (conflict)` on `02 Proposed` — three-way merge against the read-time baseline
 - [ ] 7.2 Build `Proposed · Detail · Mobile 480` if the tool will be used on a phone
 - [ ] 7.3 Explicit go on the rendered pages before implementing the write path
 
@@ -70,10 +70,12 @@ Each one changes work below it, so none should be discovered mid-build.
 - [ ] 8.1 `PATCH .../id/[id]` — stage edits, writing history rows, touching no PDF
 - [ ] 8.2 `POST .../commit` — revision check, read-modify-write, same `drive_file_id`
 - [ ] 8.3 Conflict path: surface rather than overwrite, and leave staged edits intact
-- [ ] 8.4 Failure paths: storage error and permission error both preserve staged edits
-- [ ] 8.5 Bulk commit as N independent cycles, with per-document success and failure
-- [ ] 8.6 Every bulk-commit failure lands as an instance in Needs attention
-- [ ] 8.7 Verify keywords committed through the full path still read back externally (1.1 repeated end to end)
+- [ ] 8.4 Three-way classification per field against `file_snapshot` — only both-changed-differently asks for a decision
+- [ ] 8.5 Content-change detection surfaced separately from field conflicts
+- [ ] 8.6 Failure paths: storage error and permission error both preserve staged edits
+- [ ] 8.7 Bulk commit as N independent cycles, with per-document success and failure
+- [ ] 8.8 Every bulk-commit failure lands as an instance in Needs attention
+- [ ] 8.9 Verify keywords committed through the full path still read back externally (1.1 repeated end to end)
 
 ## 9. Interface
 

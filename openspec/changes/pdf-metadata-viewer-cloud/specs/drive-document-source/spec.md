@@ -96,6 +96,47 @@ and sharing survive.
 - **WHEN** a commit would overwrite a version written by something else
 - **THEN** the conflict is surfaced rather than silently overwritten
 
+### Requirement: A conflict resolves against the baseline the file had when it was read
+
+The system SHALL retain the document's file-level metadata as last read from
+Drive, captured in the same operation that records the revision identifier, so
+the two always describe the same version. Conflict resolution SHALL compare three
+values per field — staged, current-in-Drive, and that baseline — and SHALL treat
+a field as needing a decision only when both sides changed it to different
+values.
+
+Where the document's own content has changed, the system SHALL surface that
+separately from field conflicts, because choosing between field values does not
+address it.
+
+#### Scenario: Only one side changed a field
+
+- **WHEN** a field was changed by the user but not in Drive, or in Drive but not
+  by the user
+- **THEN** it resolves without asking, and is reported as resolved rather than
+  hidden
+
+#### Scenario: Both sides made the same change
+
+- **WHEN** both changed a field to the same value
+- **THEN** it is not reported as a conflict
+
+#### Scenario: Both sides changed a field differently
+
+- **WHEN** both changed a field to different values
+- **THEN** a decision is required
+- **AND** the baseline value is shown alongside both candidates
+
+#### Scenario: The document content changed
+
+- **WHEN** the page count or content differs from what was read
+- **THEN** that is surfaced distinctly from field conflicts
+
+#### Scenario: Leaving a conflict unresolved
+
+- **WHEN** the user leaves without choosing
+- **THEN** nothing is written and the staged edits remain intact
+
 #### Scenario: Write permission is missing
 
 - **WHEN** the grant allows reading but not writing a file

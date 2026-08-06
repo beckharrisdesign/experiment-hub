@@ -75,6 +75,7 @@ Three tables. Names follow the hub's existing lowercase-plural convention
 | `id` | `uuid` pk | |
 | `drive_file_id` | `text` unique not null | The reference. Bytes never copied |
 | `drive_head_revision_id` | `text` | Captured at read; compared at commit for conflict detection |
+| `file_snapshot` | `jsonb` | The file's own metadata as last read from Drive. The merge baseline for D8 — written in the same operation as `drive_head_revision_id` so the two can never describe different versions |
 | `filename` | `text` | |
 | `title`, `subject`, `author` | `text` | |
 | `keywords` | `text[]` | Ordered list, not a delimited string — see D3 |
@@ -348,8 +349,8 @@ proposal iteration a *new* page — never edited or appended in place.
 | `Current · Detail · Desktop 1440` | `3:95` | Done |
 | `Proposed · Dashboard · Desktop 1440` | `10:2` | Done — Needs attention list, bulk commit action, pending state on rows |
 | `Proposed · Detail · Desktop 1440` | `12:10` | Done — per-field edited markers, in-the-file values, pinned commit bar |
+| `Proposed · Compare (conflict) · Desktop 1440` | `16:2` | Done — three-way merge, baseline shown, content-change block |
 | `Proposed · Detail · Mobile 480` | — | Required if the hosted tool is used on a phone |
-| `Proposed · Compare (conflict)` | — | Outstanding — what *Compare* actually shows |
 
 ### D7 — Build the UI from MVDS 0.3, not by hand
 
@@ -383,6 +384,51 @@ subcomponents — exists unchanged. The bump is additive for existing usage.
 The bump regenerated `pnpm-lock.yaml`, which also picked up
 `packages/notion-auth` — added to the workspace by the migration change but
 never written into the lockfile.
+
+### D8 — Conflict resolution is a three-way merge, not "yours or theirs"
+
+Designing Compare showed the two-way framing is wrong. There are three states:
+
+1. What you staged
+2. What is in the Drive file now
+3. **What was in the file when you opened it** — the common ancestor
+
+With the baseline, each field classifies itself and most fields stop being
+conflicts at all:
+
+| You changed | Drive changed | Outcome |
+|---|---|---|
+| yes | no | Your edit applies. Not a conflict |
+| no | yes | Drive's value applies. Not a conflict |
+| yes | yes, same value | Agreement. Not a conflict |
+| yes | yes, differently | **The only real conflict** |
+
+So the screen leads with a count — *2 need your decision, 2 apply with no
+conflict* — and shows the non-conflicts quietly rather than making the user
+adjudicate five fields when two need them. The baseline appears on each conflict
+as `was: …`, because without it "you both changed this" is unreadable: you cannot
+tell who moved.
+
+**A content change is not resolvable by picking field values.** If the page count
+or bytes changed, the document may no longer be the one the staged metadata
+describes — a re-scan, an appended page, a signature. That gets its own block
+and its own action (*Open the new version*), because no choice between two title
+strings addresses it.
+
+Nothing is written until a choice is made, and leaving the page keeps the edits
+staged — consistent with D4: the exception waits, it does not corner the user.
+
+**Schema consequence — this needs a baseline the current schema does not store.**
+`pdf_documents` holds staged values and `pdf_document_history` holds old→new, so
+the baseline is *derivable* — the `old_value` of the earliest `stage` row after
+`committed_at`, falling back to the current value for fields never staged. That
+derivation is fiddly and easy to get subtly wrong at exactly the moment
+correctness matters most.
+
+Store it instead: **`pdf_documents.file_snapshot jsonb`**, the file's own metadata
+as last read from Drive, captured in the same operation that sets
+`drive_head_revision_id` so the snapshot and the revision it describes can never
+disagree. Compare then reads three explicit values rather than reconstructing one.
 
 ### Frames and tokens
 
