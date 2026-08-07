@@ -27,8 +27,14 @@ export async function GET() {
     const clientId = process.env.PDF_GOOGLE_CLIENT_ID ?? "";
     const appId = clientId.split("-")[0] || null;
 
+    // Google's Picker documentation lists the API key as required. It is not a
+    // secret in the way the client secret is — it is browser-visible by design
+    // and should be restricted by referrer in the Console — but it is still the
+    // difference between the picker loading and a bare 403.
+    const apiKey = process.env.PDF_GOOGLE_API_KEY ?? null;
+
     return NextResponse.json(
-      { accessToken, appId },
+      { accessToken, appId, apiKey },
       // Never cached: it is a credential with an expiry.
       { headers: { "Cache-Control": "no-store, private" } },
     );

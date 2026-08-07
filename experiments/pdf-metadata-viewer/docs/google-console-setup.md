@@ -50,6 +50,24 @@ identity scopes protects that.
 - **Google Drive API** — reading and writing document metadata
 - **Google Picker API** — the folder grant flow
 
+These are two separate APIs and enabling only Drive is the easy mistake. If the
+Picker API is off, the picker iframe returns Google's bare
+*"403. That's an error. We're sorry, but you do not have access to this page."*
+— which names neither the API nor the project.
+
+## 3b. Create an API key for the Picker
+
+**Credentials → Create credentials → API key.**
+
+Google's Picker documentation requires an API key alongside the OAuth token, and
+its absence produces the same unhelpful 403. It is browser-visible by design, so
+restrict it rather than leaving it open:
+
+- **API restrictions →** Google Picker API only
+- **Website restrictions →** `localhost:3000` and `labs.beckharrisdesign.com`
+
+Goes in `PDF_GOOGLE_API_KEY`.
+
 ---
 
 ## 4. Configure the OAuth consent screen

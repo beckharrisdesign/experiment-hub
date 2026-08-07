@@ -77,9 +77,10 @@ export function FolderPicker() {
         return;
       }
       if (!res.ok) throw new Error("Could not get a Drive token");
-      const { accessToken, appId } = (await res.json()) as {
+      const { accessToken, appId, apiKey } = (await res.json()) as {
         accessToken: string;
         appId: string | null;
+        apiKey: string | null;
       };
 
       await loadPickerApi();
@@ -131,7 +132,12 @@ export function FolderPicker() {
           window.location.reload();
         });
 
+      // Both matter. appId is what lets a drive.file grant attach to the picked
+      // folder at all; the developer key is what Google's docs require to load
+      // the picker, and its absence shows up as a bare 403 rather than anything
+      // that names the cause.
       if (appId) builder.setAppId(appId);
+      if (apiKey) builder.setDeveloperKey(apiKey);
       builder.build().setVisible(true);
     } catch (error) {
       setStatus({
