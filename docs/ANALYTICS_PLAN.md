@@ -2,8 +2,6 @@
 
 The funnel is the **primary KPI** (ad → checkout conversion + CAC), so events are typed in `lib/etsy-listing-kit/analytics.ts` (client delegates to the hub's `trackEvent`; server purchase uses the GA4 Measurement Protocol). All no-op without GA keys.
 
-| Event | Trigger | Source | Key props | Funnel stage | Dedup |
-| --- | --- | --- | --- | --- | --- |
 Every step a visitor can *attempt* has a **start** event and a **terminal** event (success or failure), so each step yields both a duration and a drop-off count. A step with only a success event is invisible when it fails or when the visitor abandons mid-step.
 
 | Event | Trigger | Source | Key props | Funnel stage | Dedup |

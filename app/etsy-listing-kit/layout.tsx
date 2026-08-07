@@ -31,8 +31,12 @@ export const metadata: Metadata = {
   },
 };
 
+interface EtsyListingKitLayoutProps {
+  children: React.ReactNode;
+}
+
 export default function EtsyListingKitLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: EtsyListingKitLayoutProps) {
   return children;
 }
