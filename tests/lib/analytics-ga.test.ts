@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import {
   buildPageViewPayload,
   getAnalyticsDataset,
+  resolveSurface,
   trackEvent,
   trackPageView,
 } from "@/lib/analytics/ga";
@@ -26,6 +27,42 @@ describe("analytics helpers", () => {
       "http://localhost:3000/experiments/seed-finder",
     );
     expect(payload.page_title).toBe("BHD Labs");
+  });
+
+  it("tags hub paths as the hub surface", () => {
+    expect(resolveSurface("/")).toEqual({
+      surface_name: "BHD Labs",
+      surface_type: "hub",
+    });
+    expect(resolveSurface("/experiments/seed-finder").surface_type).toBe("hub");
+  });
+
+  it("tags Etsy Listing Kit as its own surface, not hub traffic", () => {
+    // Regression: ELK pageviews used to report surface_name "BHD Labs" /
+    // surface_type "hub", making ad traffic indistinguishable from hub browsing.
+    for (const path of [
+      "/etsy-listing-kit",
+      "/etsy-listing-kit/result",
+      "/etsy-listing-kit?gclid=abc123",
+    ]) {
+      expect(resolveSurface(path)).toEqual({
+        surface_name: "Etsy Listing Kit",
+        surface_type: "landing",
+        experiment_slug: "etsy-listing-kit",
+      });
+    }
+  });
+
+  it("does not match a path that merely starts with the same characters", () => {
+    expect(resolveSurface("/etsy-listing-kit-manager").surface_type).toBe("hub");
+  });
+
+  it("carries the surface into the page view payload", () => {
+    const payload = buildPageViewPayload("/etsy-listing-kit?gclid=abc123");
+
+    expect(payload.surface_name).toBe("Etsy Listing Kit");
+    expect(payload.experiment_slug).toBe("etsy-listing-kit");
+    expect(payload.page_path).toBe("/etsy-listing-kit?gclid=abc123");
   });
 
   it("passes events through to gtag when available", () => {

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Fraunces } from "next/font/google";
 import { Suspense } from "react";
 import Script from "next/script";
@@ -32,6 +32,12 @@ export const metadata: Metadata = {
     title: "BHD Labs",
     description: "Manage product experiments from idea to prototype",
   },
+};
+
+// themeColor belongs in the viewport export, not metadata — Next ignored it here
+// and logged an "Unsupported metadata themeColor" warning on every render, so the
+// theme-color meta tag was never actually emitted.
+export const viewport: Viewport = {
   themeColor: "#113723",
 };
 
