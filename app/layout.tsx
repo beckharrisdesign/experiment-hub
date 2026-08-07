@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Fraunces } from "next/font/google";
 import { Suspense } from "react";
 import Script from "next/script";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
-import { getHubGaMeasurementId, GOOGLE_ADS_ID } from "@/lib/analytics/ga";
+import { getHubGaMeasurementId, GOOGLE_ADS_IDS } from "@/lib/analytics/ga";
 import "./globals.css";
 
 const inter = Inter({
@@ -32,6 +32,12 @@ export const metadata: Metadata = {
     title: "BHD Labs",
     description: "Manage product experiments from idea to prototype",
   },
+};
+
+// themeColor belongs in the viewport export, not metadata — Next ignored it here
+// and logged an "Unsupported metadata themeColor" warning on every render, so the
+// theme-color meta tag was never actually emitted.
+export const viewport: Viewport = {
   themeColor: "#113723",
 };
 
@@ -57,7 +63,7 @@ export default function RootLayout({
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
                 gtag('config', '${GA_ID}', { send_page_view: false });
-                gtag('config', '${GOOGLE_ADS_ID}');
+                ${GOOGLE_ADS_IDS.map((id) => `gtag('config', '${id}');`).join("\n                ")}
               `}
             </Script>
             <Suspense fallback={null}>
