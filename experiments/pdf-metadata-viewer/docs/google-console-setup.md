@@ -55,6 +55,30 @@ Picker API is off, the picker iframe returns Google's bare
 *"403. That's an error. We're sorry, but you do not have access to this page."*
 — which names neither the API nor the project.
 
+## 3a. Workspace admin — allow Drive apps at all
+
+**This one is in the Admin console, not the Cloud console**, and nothing about
+its symptom points there.
+
+**admin.google.com → Apps → Google Workspace → Drive and Docs → Features and
+Applications → Drive SDK →** tick *"Allow users to access Google Drive with the
+Drive SDK API"*.
+
+If this is off, every Drive API call from any third-party app is refused at the
+domain level:
+
+```
+403  "The domain administrators have disabled Drive apps."
+```
+
+What makes it hard to spot: **sign-in still works perfectly.** The identity
+scopes are unaffected, the consent screen appears, the grant is stored, and a
+refresh token comes back. Only Drive calls fail — and the Picker surfaces that
+as a bare *"403. That's an error."* with no mention of a domain policy.
+
+It is also scope-independent. `drive.file`, `drive.readonly`, full `drive` —
+all equally blocked. No amount of Cloud console configuration works around it.
+
 ## 3b. Create an API key for the Picker
 
 **Credentials → Create credentials → API key.**
