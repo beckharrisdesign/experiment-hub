@@ -3,6 +3,8 @@
  *   lib/etsy-listing-kit/analytics.ts — trackAdsConversion()
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   trackAdsConversion,
   trackFormSubmit,
@@ -116,5 +118,38 @@ describe("trackFormSubmit (GA4 event imported as Ads conversion 6657647682)", ()
     trackFormSubmit();
 
     expect(window.gtag).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * Regression: the ELK account was briefly `gtag('config', …)`'d in the ROOT
+ * layout, so every hub page (/heuristics, /prototypes, …) reported into the
+ * standalone ELK Ads account — rebuilding the exact "ELK traffic looks like
+ * general BHD Labs traffic" problem the separate account exists to solve, and
+ * seeding its remarketing lists with visitors who never saw the product.
+ *
+ * These assertions read source text rather than render, because the defect is
+ * *where* the config statement lives — which rendering a component in isolation
+ * cannot express. Kept in this file rather than its own suite: an extra test
+ * file shifts vitest's worker scheduling and surfaces unrelated latent races.
+ */
+describe("Google Ads tag scoping", () => {
+  const read = (p: string) => readFileSync(join(process.cwd(), p), "utf8");
+
+  it("root layout configures ONLY the hub Ads account", () => {
+    const src = read("app/layout.tsx");
+    expect(src).toContain("GOOGLE_ADS_ID");
+    expect(src).not.toContain(ELK_GOOGLE_ADS_ID);
+    expect(src).not.toContain("ELK_GOOGLE_ADS_ID");
+  });
+
+  it("ELK segment layout configures the ELK Ads account", () => {
+    const src = read("app/etsy-listing-kit/layout.tsx");
+    expect(src).toContain("ELK_GOOGLE_ADS_ID");
+    expect(src).toContain("gtag('config'");
+  });
+
+  it("no shared array re-introduces a config-everything list", () => {
+    expect(read("lib/analytics/ga.ts")).not.toContain("GOOGLE_ADS_IDS");
   });
 });

@@ -6,10 +6,17 @@ export const HUB_GA_MEASUREMENT_ID = "G-120M120GDY";
 // standalone account so its ad spend and conversions stay separable from hub
 // traffic — do NOT collapse these into one id.
 export const GOOGLE_ADS_ID = "AW-10904266222";
-export const ELK_GOOGLE_ADS_ID = "AW-277034089";
 
-/** Every Ads account to `gtag('config', …)` on page load. */
-export const GOOGLE_ADS_IDS = [GOOGLE_ADS_ID, ELK_GOOGLE_ADS_ID] as const;
+/**
+ * Etsy Listing Kit's standalone Ads account. Deliberately NOT configured in the
+ * root layout: `gtag('config', …)` there fires on every hub page, which would
+ * send /heuristics, /prototypes, etc. into the ELK account and rebuild exactly
+ * the "ELK traffic looks like general BHD Labs traffic" problem this account
+ * exists to solve (and pollute its remarketing lists with non-buyer traffic).
+ * It is configured in `app/etsy-listing-kit/layout.tsx` so it covers the ELK
+ * segment and nothing else. Keep it that way.
+ */
+export const ELK_GOOGLE_ADS_ID = "AW-277034089";
 export const GA_SCRIPT_SRC = "https://www.googletagmanager.com";
 export const GA_COLLECT_SRC = "https://www.google-analytics.com";
 export const GA_REGION_COLLECT_SRC = "https://region1.google-analytics.com";

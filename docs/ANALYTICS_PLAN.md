@@ -27,7 +27,11 @@ Every step a visitor can *attempt* has a **start** event and a **terminal** even
 
 **Attribution:** UTM params + `gclid`/`fbclid` captured on the landing, appended to the checkout `FormData`, persisted on the order row, and carried through Stripe. CAC = ad spend ÷ `purchase` count.
 
-**Google Ads conversions.** ELK runs its **own standalone Ads account, `AW-277034089`** — deliberately separate from the hub account (`AW-10904266222`) so ELK ad traffic and conversions stay distinguishable from general BHD Labs traffic. Both are `gtag('config', …)`'d in `app/layout.tsx`.
+**Google Ads conversions.** ELK runs its **own standalone Ads account, `AW-277034089`** — deliberately separate from the hub account (`AW-10904266222`) so ELK ad traffic and conversions stay distinguishable from general BHD Labs traffic.
+
+**Where each account is configured — this matters.** The hub account is `gtag('config', …)`'d in `app/layout.tsx` (every page). The ELK account is configured in `app/etsy-listing-kit/layout.tsx`, which covers the ELK segment (landing + result) **and nothing else**. Configuring the ELK account in the root layout instead sends every hub pageview — `/heuristics`, `/prototypes`, … — into the ELK Ads account, which recreates the exact traffic-mixing problem the separate account exists to solve and seeds its remarketing lists with people who never saw the product. Guarded by tests in `tests/etsy-listing-kit/ads-conversion.test.ts` ("Google Ads tag scoping").
+
+Corollary for the Google Ads / GA4 admin UI: do **not** add `AW-277034089` as a destination on the "BHD Labs" Google tag. That tag loads on every hub page, so adding it there reintroduces the same leak from the config side.
 
 | Ads action | Id | How it is fed |
 | --- | --- | --- |

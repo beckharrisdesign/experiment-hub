@@ -33,7 +33,13 @@ export default function EtsyListingKitLanding() {
   // fold, so without this the page "stays up top" and the click reads as a no-op.
   useEffect(() => {
     if (!previews) return;
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // matchMedia is absent in some embedded webviews (and in jsdom), where an
+    // unguarded call throws inside the effect and takes the scroll + focus with
+    // it. Missing support just means we can't detect the preference — fall back
+    // to animated scroll rather than losing the behavior entirely.
+    const reduceMotion =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     previewsRef.current?.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' });
     previewHeadRef.current?.focus({ preventScroll: true });
   }, [previews]);
