@@ -80,5 +80,17 @@
     "createdDate": "2026-05-19",
     "lastModified": "2026-05-19",
     "tags": ["chrome-extension", "github", "screenshot", "internal-tools"]
+  },
+  {
+    "id": "proto-pdf-metadata-viewer",
+    "title": "PDF Metadata Viewer",
+    "description": "Local Express + vanilla JS app for editing embedded PDF metadata against a Notion-backed entity taxonomy",
+    "linkPath": "experiments/pdf-metadata-viewer/prototype",
+    "experimentId": "pdf-metadata-viewer",
+    "status": "Active",
+    "createdDate": "2026-01-10",
+    "lastModified": "2026-08-05",
+    "tags": ["pdf", "metadata", "notion", "local-only"],
+    "port": 3004
   }
 ]

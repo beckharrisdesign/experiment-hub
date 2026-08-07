@@ -29,6 +29,9 @@
       "@experiment-hub/ai-utils": [
         "./packages/ai-utils/src/index.ts"
       ],
+      "@experiment-hub/notion-auth": [
+        "./packages/notion-auth/src/index.js"
+      ],
       "@experiment-hub/ui": [
         "./packages/ui/index.ts"
       ]

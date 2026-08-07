@@ -111,3 +111,14 @@ logs/
 # Obsidian — local vault for this repo (notes/settings are not part of the app on GitHub)
 BHD Labs/
 BHD Labs Hub/
+
+# pdf-metadata-viewer — local-only personal data.
+# The eval corpus contains real household documents (names, medical, financial,
+# school records) and the entity snapshot mirrors the Notion Entities DB.
+# These stay on-disk and never reach this public repo.
+experiments/pdf-metadata-viewer/eval/*
+!experiments/pdf-metadata-viewer/eval/README.md
+experiments/pdf-metadata-viewer/prototype/.entities-snapshot.json
+experiments/pdf-metadata-viewer/prototype/activity-log.json
+experiments/pdf-metadata-viewer/prototype/pdfs/*
+!experiments/pdf-metadata-viewer/prototype/pdfs/.gitkeep

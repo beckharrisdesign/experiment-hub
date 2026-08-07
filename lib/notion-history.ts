@@ -24,6 +24,7 @@
  *   Source      rich_text   — optional generator provenance
  */
 import { getUncachableNotionClient } from "@/lib/notion";
+import { hasNotionAuth } from "@experiment-hub/notion-auth";
 import { getExperimentPageIdFromNotion } from "@/lib/notion-experiments";
 
 type NotionProperty = Record<string, any>;
@@ -42,15 +43,6 @@ export interface HistoryEntry {
   milestone: string;
   /** Optional provenance link (usually a GitHub commit/PR); null when unset. */
   receiptUrl: string | null;
-}
-
-/** Mirrors notion-experiments' auth check. */
-function hasNotionAuth(): boolean {
-  return !!(
-    process.env.NOTION_TOKEN ||
-    (process.env.REPLIT_CONNECTORS_HOSTNAME &&
-      (process.env.REPL_IDENTITY || process.env.WEB_REPL_RENEWAL))
-  );
 }
 
 export function hasNotionHistory(): boolean {
