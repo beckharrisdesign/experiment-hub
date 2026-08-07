@@ -3,9 +3,10 @@
 --
 -- Advisory (critical): public.checkpoints, public.phase_transitions,
 -- public.drift_alerts and public.advisor_history were fully exposed to the
--- `anon` and `authenticated` roles — anyone holding the publishable key could
--- read or modify every row. All four were empty when this was found, so there
--- is no data exposure to remediate, only the open door.
+-- `anon` and `authenticated` roles — both hold full DML (SELECT/INSERT/
+-- UPDATE/DELETE/TRUNCATE), so anyone holding the publishable key could read
+-- or modify every row. All four were empty when this was found, so there is
+-- no data exposure to remediate, only the open door.
 --
 -- Access audit before locking these down: none of the four tables is
 -- referenced anywhere in lib/, app/api/ or scripts/ — no `.from("checkpoints")`
@@ -21,31 +22,68 @@
 -- future agent runtime needs client-key access to these tables, add explicit
 -- policies with a `to` clause — never a bare `using (true)`, which grants
 -- PUBLIC full read/write.
+--
+-- Guarded per table because these tables exist only on the live project, not
+-- in migration history: a fresh database (supabase db reset, local dev, a
+-- preview branch) replays 001..009 without them, and an unguarded ALTER TABLE
+-- aborts the whole migration. Missing tables are skipped with a notice.
+--
+-- The revoke includes PUBLIC as well as anon/authenticated, since privileges
+-- granted to the PUBLIC pseudo-role are inherited by every role and would
+-- otherwise survive this migration. service_role and postgres keep their
+-- grants — service_role is the intended access path and bypasses RLS.
+--
+-- Any pre-existing policy is dropped rather than a single hard-coded name:
+-- these tables were created by hand, so the policy set cannot be assumed. A
+-- leftover permissive policy would silently re-open access the moment RLS is
+-- enabled, which is the one failure mode this migration must not have. There
+-- are no policies on the live project today, so this is a no-op there.
 
-alter table public.checkpoints        enable row level security;
-alter table public.phase_transitions  enable row level security;
-alter table public.drift_alerts       enable row level security;
-alter table public.advisor_history    enable row level security;
+do $$
+declare
+  target_tables text[] := array[
+    'checkpoints', 'phase_transitions', 'drift_alerts', 'advisor_history'
+  ];
+  target_labels text[] := array[
+    'checkpoints', 'phase transitions', 'drift alerts', 'advisor history'
+  ];
+  i             int;
+  target_table  text;
+  existing      text;
+begin
+  for i in 1 .. array_length(target_tables, 1) loop
+    target_table := target_tables[i];
 
--- Explicitly deny all client roles (no policies = deny under RLS; stated for
--- clarity/audit, matching 007_elk_orders.sql).
-revoke all on public.checkpoints       from anon, authenticated;
-revoke all on public.phase_transitions from anon, authenticated;
-revoke all on public.drift_alerts      from anon, authenticated;
-revoke all on public.advisor_history   from anon, authenticated;
+    if to_regclass(format('public.%I', target_table)) is null then
+      raise notice 'skipping public.%: not present in this database', target_table;
+      continue;
+    end if;
 
--- Drop any permissive policy that may have been applied ad hoc in the SQL
--- editor, for the same reason 006_linked_repos.sql does.
-drop policy if exists "Service role full access" on public.checkpoints;
-drop policy if exists "Service role full access" on public.phase_transitions;
-drop policy if exists "Service role full access" on public.drift_alerts;
-drop policy if exists "Service role full access" on public.advisor_history;
+    for existing in
+      select policyname
+      from pg_policies
+      where schemaname = 'public'
+        and tablename = target_table
+    loop
+      execute format('drop policy %I on public.%I', existing, target_table);
+      raise notice 'dropped pre-existing policy % on public.%', existing, target_table;
+    end loop;
 
-comment on table public.checkpoints is
-  'Agent runtime checkpoints. RLS on, no client policies: service-role only. Created outside the migration flow; RLS retrofitted in 009.';
-comment on table public.phase_transitions is
-  'Agent runtime phase transitions. RLS on, no client policies: service-role only. Created outside the migration flow; RLS retrofitted in 009.';
-comment on table public.drift_alerts is
-  'Agent runtime drift alerts. RLS on, no client policies: service-role only. Created outside the migration flow; RLS retrofitted in 009.';
-comment on table public.advisor_history is
-  'Agent runtime advisor history. RLS on, no client policies: service-role only. Created outside the migration flow; RLS retrofitted in 009.';
+    execute format('alter table public.%I enable row level security', target_table);
+
+    execute format(
+      'revoke all on public.%I from public, anon, authenticated', target_table
+    );
+
+    execute format(
+      'comment on table public.%I is %L',
+      target_table,
+      format(
+        'Agent runtime %s. RLS on, no client policies: service-role only. '
+        'Created outside the migration flow; RLS retrofitted in 009.',
+        target_labels[i]
+      )
+    );
+  end loop;
+end
+$$;
