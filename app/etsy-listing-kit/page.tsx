@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './elk.module.css';
 import { PRICE_CENTS, UPLOAD } from '../../lib/etsy-listing-kit/config';
-import { track } from '../../lib/etsy-listing-kit/analytics';
+import { track, trackFormSubmit } from '../../lib/etsy-listing-kit/analytics';
 import { validateUpload, uploadMaxMb } from '../../lib/etsy-listing-kit/upload';
 
 const priceLabel = `$${(PRICE_CENTS / 100).toFixed(PRICE_CENTS % 100 ? 2 : 0)}`;
@@ -22,6 +22,12 @@ export default function EtsyListingKitLanding() {
   const inputRef = useRef<HTMLInputElement>(null);
   const previewsRef = useRef<HTMLElement>(null);
   const previewHeadRef = useRef<HTMLHeadingElement>(null);
+  // Step start times, so each terminal event carries how long the step took.
+  // GA4 can't derive this reliably from event timestamps alone.
+  const pickerOpenedAt = useRef<number | null>(null);
+  const previewStartedAt = useRef<number | null>(null);
+  const elapsed = (from: React.RefObject<number | null>) =>
+    from.current === null ? undefined : Math.round(performance.now() - from.current);
 
   // #336: bring the finished previews to the visitor — they mount below the
   // fold, so without this the page "stays up top" and the click reads as a no-op.
@@ -45,6 +51,8 @@ export default function EtsyListingKitLanding() {
     if (!file) return;
     setCheckingOut(true); setError(null);
     track('checkout_started');
+    // Feeds the GA4-imported Ads conversion "FormSubmit" (6657647682).
+    trackFormSubmit();
     try {
       const fd = new FormData();
       fd.append('design', file);
@@ -60,7 +68,11 @@ export default function EtsyListingKitLanding() {
       if (!res.ok || !json.url) throw new Error(json.error || 'Could not start checkout.');
       window.location.href = json.url;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not start checkout.');
+      // A checkout that never reaches Stripe looks identical to a visitor who
+      // simply left, unless we say so explicitly.
+      const message = e instanceof Error ? e.message : 'Could not start checkout.';
+      track('checkout_failed', { reason: message });
+      setError(message);
       setCheckingOut(false);
     }
   }, [file]);
@@ -69,6 +81,10 @@ export default function EtsyListingKitLanding() {
     if (!file) return;
     setGenerating(true); setError(null); setPreviews(null);
     setGenStatus('Building your 6 images…');
+    // Slowest step in the funnel (sharp renders 6 images server-side). Without a
+    // start event there is no way to measure it or see who abandons during it.
+    previewStartedAt.current = performance.now();
+    track('preview_requested', { file_type: file.type });
     try {
       const fd = new FormData();
       fd.append('design', file);
@@ -77,24 +93,53 @@ export default function EtsyListingKitLanding() {
       if (!res.ok) throw new Error(json.error || 'Preview failed');
       setPreviews(json.previews);
       setGenStatus('Your 6 preview images are ready.');
-      track('preview_viewed', { image_count: json.previews?.length });
+      track('preview_viewed', {
+        image_count: json.previews?.length,
+        duration_ms: elapsed(previewStartedAt),
+      });
     } catch (e) {
       setGenStatus('');
-      setError(e instanceof Error ? e.message : 'Something went wrong generating your preview.');
+      const message = e instanceof Error ? e.message : 'Something went wrong generating your preview.';
+      track('preview_failed', { reason: message, duration_ms: elapsed(previewStartedAt) });
+      setError(message);
     } finally {
       setGenerating(false);
     }
   }, [file]);
 
+  /** File picker opened (button or dropzone click) — the step *before* a file exists. */
+  const openPicker = useCallback(() => {
+    pickerOpenedAt.current = performance.now();
+    track('upload_picker_opened', { had_file: Boolean(file) });
+    inputRef.current?.click();
+  }, [file]);
+
   const accept = useCallback((f: File | undefined) => {
+    // Picker dismissed with no selection is a real drop-off, but the browser
+    // gives us no event for it — the absence of a following upload_* event
+    // after upload_picker_opened is the signal.
     if (!f) return;
     const err = validateUpload(f);
-    if (err) { setError(err); setFile(null); setPreview(null); return; }
+    if (err) {
+      // Rejected uploads used to be silent: the visitor saw an error and left,
+      // and the funnel showed nothing between landing_view and drop-off.
+      track('upload_rejected', {
+        file_type: f.type || 'unknown',
+        file_size_mb: Math.round((f.size / (1024 * 1024)) * 10) / 10,
+        reason: err,
+        ms_since_picker: elapsed(pickerOpenedAt),
+      });
+      setError(err); setFile(null); setPreview(null); return;
+    }
     setError(null);
     setPreviews(null);
     setFile(f);
     setPreview((old) => { if (old) URL.revokeObjectURL(old); return URL.createObjectURL(f); });
-    track('upload_started', { file_type: f.type });
+    track('upload_started', {
+      file_type: f.type,
+      file_size_mb: Math.round((f.size / (1024 * 1024)) * 10) / 10,
+      ms_since_picker: elapsed(pickerOpenedAt),
+    });
   }, []);
 
   const onDrop = useCallback((e: React.DragEvent) => {
@@ -136,7 +181,7 @@ export default function EtsyListingKitLanding() {
           onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
-          onClick={() => inputRef.current?.click()}
+          onClick={openPicker}
         >
           {preview ? (
             <div className={styles.thumbRow}>
@@ -150,7 +195,7 @@ export default function EtsyListingKitLanding() {
               <span className={styles.dropHint}>PNG · JPG · SVG · up to {uploadMaxMb} MB</span>
             </>
           )}
-          <button className={styles.button} type="button" onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}>
+          <button className={styles.button} type="button" onClick={(e) => { e.stopPropagation(); openPicker(); }}>
             {file ? 'Choose a different file' : 'Choose file'}
           </button>
           <input
