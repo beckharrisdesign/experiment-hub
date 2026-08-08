@@ -84,12 +84,33 @@ Craft/Etsy-tool keywords run ~$0.40–$2 CPC. ~$15 buys **~15–30 clicks over 3
 1. ~~Statement naming~~ **Dropped (2026-07-31):** Stripe requires the descriptor to match the business name, so no `BHD` shortening. Checkout's `statement_descriptor_suffix: 'ETSY KIT'` still applies on top of the business-name prefix (verified working by the live 2026-07-28 payment) — statements read `<BUSINESS NAME>* ETSY KIT`.
 2. `ELK_LAUNCHED_AT` set in Vercel (revenue window running).
 3. Resend key set (buyers need the email link to re-reach downloads).
-4. Create campaign per above → set $5/day (3-day burst) → enable. **ENABLED 2026-08-04** (campaign `etsy-listing-kit-test1`, id 24091208777).
+4. Create campaign per above → set $5/day (3-day burst) → enable. Campaign `etsy-listing-kit-test1`, id 24091208777. First enabled 2026-08-04; **that run is void (see below) — burst restarted 2026-08-08.**
+
+## Voided run — 2026-08-04 → 2026-08-06
+
+The first burst is **not counted as the test**. Two independent reasons:
+
+1. **Google Ads errors** throughout the run (Katy, 2026-08-08).
+2. **Conversion tracking was dead for the entire window.** Repaired 2026-08-07 by
+   PRs #363/#364 — the `Sign-up` conversion pointed at the wrong Ads account, the
+   `FormSubmit` action had no backing event, and CSP blocked every Ads beacon. Google
+   received zero conversion signal and could not optimize.
+
+What the funnel recorded regardless: **0 ad-attributed orders.** No row in `elk_orders`
+from that window carries a `utm_source` or `click_id`; all 6 lifetime paid orders are
+owner self-purchases (`@beckharrisdesign.com`). No day-by-day Google numbers were
+captured before the reset, so impressions/clicks for that window are unrecoverable.
 
 ## Live run — day-by-day
 
-Burst window: **day 1 = 2026-08-04, day 2 = 2026-08-05, day 3 = 2026-08-06 → pause.**
+Burst window: **day 1 = 2026-08-08, day 2 = 2026-08-09, day 3 = 2026-08-10 → pause.**
 Check against the kill/continue table above; record what actually happened.
+
+**Before re-enabling** (owner-only, both were open at the reset):
+- Link GA4 `G-120M120GDY` → Ads `AW-277034089` and confirm the `Sign-up` action's value
+  setting (left over from #363).
+- Bump `ELK_LAUNCHED_AT` to the re-enable timestamp + redeploy, so the revenue window
+  starts with this burst and the self-purchases fall outside it (decision 2026-07-30).
 
 | Day | Impr. | Clicks | Upload starts | Checkouts | Paid | Action taken |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -101,6 +122,6 @@ Funnel truth (not Google's numbers):
 ```sql
 select status, count(*), count(click_id) as ad_attributed
 from elk_orders
-where created_at >= '2026-08-04'
+where created_at >= '2026-08-08'
 group by status;
 ```

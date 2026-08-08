@@ -33,7 +33,7 @@ export const GA4_FORM_SUBMIT_EVENT = 'FormSubmit' as const;
  *     └─ upload_picker_opened → upload_started | upload_rejected
  *          └─ preview_requested → preview_viewed | preview_failed
  *               └─ checkout_started (+FormSubmit) → [Stripe] | checkout_failed
- *                    └─ result_delivered → download_clicked | processing_failed
+ *                    └─ result_delivered → download_clicked | restart_clicked | processing_failed
  *                       payment_cancelled (returned from Stripe unpaid)
  */
 export type FunnelEvent =
@@ -49,6 +49,7 @@ export type FunnelEvent =
   | 'payment_completed'
   | 'result_delivered'
   | 'download_clicked'
+  | 'restart_clicked'
   | 'payment_cancelled'
   | 'processing_failed';
 
