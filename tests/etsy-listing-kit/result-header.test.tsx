@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import Result from '@/app/etsy-listing-kit/result/page';
 
@@ -12,6 +12,12 @@ vi.mock('next/navigation', () => ({
 describe('Result page header — #360 route back to the start', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})));
+  });
+
+  // A never-resolving fetch is especially bad to leak — restore it, matching
+  // preview-feedback.test.tsx and email.test.ts.
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('exposes the wordmark as a link to the landing page', () => {
