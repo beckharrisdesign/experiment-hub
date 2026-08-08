@@ -68,11 +68,18 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com", // unsafe-eval required by Mermaid
+              // Google Ads conversion tracking does NOT go through googletagmanager.com —
+              // gtag loads a second script from googleadservices.com, then beacons to
+              // google.com/ccm, google.com/rmkt, googleads.g.doubleclick.net (as a
+              // *script*, not just a pixel) and ad.doubleclick.net. Omitting any of
+              // these silently drops Ads conversions: the tag fires, CSP blocks the
+              // beacon, and Google Ads records nothing. Verified against live console
+              // CSP reports — do not trim this list without re-checking the console.
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.googleadservices.com https://*.doubleclick.net", // unsafe-eval required by Mermaid
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com https://*.supabase.co", // *.supabase.co: Etsy Listing Kit signed download images
-              "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com",
+              "img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.googleadservices.com https://*.doubleclick.net https://*.supabase.co", // *.supabase.co: Etsy Listing Kit signed download images
+              "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.googleadservices.com https://*.doubleclick.net",
               "frame-ancestors 'none'",
             ].join('; '),
           },
