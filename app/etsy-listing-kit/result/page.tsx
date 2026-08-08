@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import styles from '../elk.module.css';
 import { track, trackAdsConversion } from '../../../lib/etsy-listing-kit/analytics';
@@ -53,7 +54,12 @@ function ResultInner() {
   return (
     <main className={styles.kit}>
       <header className={styles.header}>
-        <span className={styles.logo}>Etsy Listing Kit</span>
+        {/* #360: the wordmark is the way back to the start — a buyer who wants a
+            second set had no route out of this page. */}
+        <Link href="/etsy-listing-kit" className={`${styles.logo} ${styles.logoLink}`}
+              onClick={() => track('restart_clicked', { from: 'result_header' })}>
+          Etsy Listing Kit
+        </Link>
         {orderId && <span className={styles.headerNote}>order #{orderId.slice(0, 8)}</span>}
       </header>
 
