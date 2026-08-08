@@ -191,6 +191,9 @@
   .hero { padding-top: 40px; }
   .trust { flex-direction: column; align-items: center; gap: 8px; }
   .previewSection { grid-template-columns: 1fr; padding: 20px; }
+  /* Match .previewSection's 20px so the CTA's rule lines up with the grid above
+     it — at 40px the rule was visibly inset from the images. */
+  .againWrap { padding-left: 20px; padding-right: 20px; }
   .grid { grid-template-columns: repeat(2, 1fr); }
 }
 
