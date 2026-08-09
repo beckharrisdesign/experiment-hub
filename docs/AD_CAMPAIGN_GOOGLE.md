@@ -1,10 +1,24 @@
 # Google Search campaign — Etsy Listing Kit (burst funnel test)
 
-Ready to create in Google Ads. **I prepare; Katy creates/funds** (money-out step). Budget: **$5/day × 3 days ≈ $15 total** (burst approved 2026-07-27, same total as the original $1/day×14 — per the SSO playbook rule: *run fast, not trickled*).
+Ready to create in Google Ads. **I prepare; Katy creates/funds** (money-out step).
+
+> **Spend is no longer capped at ~$15.** The original plan was $5/day × 3 days ≈ $15 total
+> (burst approved 2026-07-27, same total as the original $1/day×14 — per the SSO playbook
+> rule: *run fast, not trickled*). **Superseded 2026-08-09:** the campaign did not serve at
+> all for its first week, so the 3-day stop is dropped and spend continues at $5/day until
+> the campaign has 15–30 clicks to evaluate. At the CPC observed so far that is roughly two
+> weeks and **~$50–70**, not $15. See the live run below.
 
 ## Reality check (set expectations)
 
-Craft/Etsy-tool keywords run ~$0.40–$2 CPC. ~$15 buys **~15–30 clicks over 3 days**. This buys a *message-match + intent signal*, not statistically strong conversion data. Any real paid conversion from a stranger is a strong positive at this volume.
+~~Craft/Etsy-tool keywords run ~$0.40–$2 CPC. ~$15 buys **~15–30 clicks over 3 days**.~~
+**That estimate was wrong (2026-08-09).** Observed CPC on these keywords is **~$3.30**, so
+$15 buys ~4–5 clicks, not 15–30. The $0.50 cap the plan called for was below the auction
+price, which is a likely reason the campaign never served. Budget the test at **~$50–70**
+for 15–30 clicks. (Caveat: $3.30 is the average of *two* clicks — a very noisy estimate.)
+
+What that buys is still a *message-match + intent signal*, not statistically strong
+conversion data. Any real paid conversion from a stranger is a strong positive at this volume.
 
 ## Campaign settings
 
@@ -12,7 +26,7 @@ Craft/Etsy-tool keywords run ~$0.40–$2 CPC. ~$15 buys **~15–30 clicks over 3
 | --- | --- |
 | Type | Search only (uncheck Display/Search partners) |
 | Budget | **$5.00/day**. ~~Pause after day 3~~ — **superseded 2026-08-09: no auto-pause**, see the live run below |
-| Bidding | Planned: Maximize clicks, **max CPC cap $0.50**. **Actual: cap raised to $15** (2026-08-07) to unblock a campaign that was not serving; observed CPC ~$3.30 |
+| Bidding | **Maximize clicks**, no max CPC bid limit set (2026-08-09). History: planned Maximize clicks + $0.50 cap → cap raised to $15 (2026-08-07) to unblock a campaign that was not serving → switched to Maximize conversions (2026-08-09) → **switched back to Maximize clicks the same day**, because conversion bidding cannot work with 0 recorded conversions. Observed CPC ~$3.30 |
 | Geo | United States |
 | Language | English |
 | Final URL | `https://etsy-listing-kit.vercel.app/?utm_source=google&utm_medium=cpc&utm_campaign=elk-launch` |
@@ -112,7 +126,7 @@ Funnel side, unchanged: **0 ad-attributed orders**; no `elk_orders` row carries 
 **Day 1 = 2026-08-07** (first impression, per Google) — *not* Aug 8. Katy's decision
 2026-08-09: **keep spending, no auto-pause at day 3** — the 3-day burst assumed a
 working campaign, and the first week was consumed by debugging. Now that delivery is
-unblocked she is retuning budget/CPC, so treat the numbers below as the start of the
+unblocked, she is retuning budget/CPC, so treat the numbers below as the start of the
 real test.
 
 | Day | Date | Impr. | Clicks | Upload starts | Checkouts | Paid | Notes |
@@ -145,8 +159,16 @@ the lever is budget and CPC cap, and lowering the cap risks re-blocking delivery
   conversions is enabled but our tag sends no user-provided data (only value, currency,
   `transaction_id`) — either disable it for this action or send a hashed email. Does not
   affect normal conversion tracking.
+- **Bid strategy reverted to Maximize clicks** (2026-08-09). It had been switched to
+  *Maximize conversions*, which cannot work here: the campaign has **0 recorded
+  conversions** ever, and conversion tracking was broken and unlinked until today, so
+  Google was bidding toward a signal it had never received. Conversion bidding generally
+  wants ~15–30 conversions/month. Revisit once there are real conversions. No max CPC bid
+  limit was set — a limit below the ~$3.30 auction price is what appears to have stopped
+  delivery originally; add one (~$4) only as a safety rail, not as a throttle.
 - **Watch:** account-level **auto-apply** is on with "display expansion + 19 more
-  recommendation types", so Google can modify a Search-only campaign on its own.
+  recommendation types", and campaign-level **AI Max** is on — both let Google modify a
+  Search-only campaign on its own.
 - Conversion actions in this account are named `SwiftSketchAI (web) …` — the account is
   partly repurposed from another project; don't assume every action belongs to ELK.
 
