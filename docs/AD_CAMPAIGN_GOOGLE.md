@@ -27,7 +27,7 @@ conversion data. Any real paid conversion from a stranger is a strong positive a
 | --- | --- |
 | Type | Search only (uncheck Display/Search partners) |
 | Budget | **$5.00/day**. ~~Pause after day 3~~ — **superseded 2026-08-09: no auto-pause**, see the live run below |
-| Bidding | **Maximize clicks**, no max CPC bid limit set (2026-08-09). History: planned Maximize clicks + $0.50 cap → cap raised to $15 (2026-08-07) to unblock a campaign that was not serving → switched to Maximize conversions (2026-08-09) → **switched back to Maximize clicks the same day**, because conversion bidding cannot work with 0 recorded conversions. Observed CPC ~$3.30 |
+| Bidding | **Maximize clicks**, no max CPC bid limit set (2026-08-09). History: planned Maximize clicks + $0.50 cap → cap raised to $15 (date not verified; before the Aug 7 first impressions) to unblock a campaign that was not serving → switched to Maximize conversions (2026-08-09) → **switched back to Maximize clicks the same day**, because conversion bidding cannot work with 0 recorded conversions. Observed CPC ~$3.30 |
 | Geo | United States |
 | Language | English |
 | Final URL | `https://etsy-listing-kit.vercel.app/?utm_source=google&utm_medium=cpc&utm_campaign=elk-launch` |
@@ -88,7 +88,7 @@ conversion data. Any real paid conversion from a stranger is a strong positive a
 
 | Signal | Action |
 | --- | --- |
-| < 150 impressions after day 2 | ~~raise CPC cap to $0.75~~ — **wrong, corrected 2026-08-09.** $0.75 is far below the ~$3.30 auction price and would keep the campaign from serving, which is what happened for its first week. Low impressions here means the bid is under the auction price or the keywords are too thin: check Search impression share (lost to rank), and either remove the max CPC limit entirely or set it above ~$4 — do not tighten it |
+| < 150 impressions after day 2 | ~~raise CPC cap to $0.75~~ — **wrong, corrected 2026-08-09.** $0.75 is far below the ~$3.30 auction price and would keep the campaign from serving, which is what happened for its first week. Low impressions here mean the bid is under the auction price or the keywords are too thin: check Search impression share (lost to rank), and either remove the max CPC limit entirely or set it above ~$4 — do not tighten it |
 | 15+ clicks, 0 upload-starts | Message mismatch — pause, revise landing/ad copy before spending more |
 | Any stranger's paid conversion | Strong positive — consider extending/scaling (separate spend authorization) |
 | Uploads but no checkouts | Value shown but price/trust gap — examine preview → checkout drop-off |
@@ -112,9 +112,11 @@ Aug 4–6 burst included. This was not an untracked run — there was no run.
 Two things were wrong at once, which is why the window taught us nothing:
 
 1. **The campaign was blocked and not serving.** Katy raised max CPC to **$15**
-   (arbitrarily high) to force it out of the blocked state; impressions started the
-   next day. That is why observed CPC now runs ~$3.30 against the original $0.50 cap —
-   a deliberate debugging move, not drift or auto-apply.
+   (arbitrarily high) to force it out of the blocked state, and **the first impressions
+   arrived Aug 7** — Google's own first-impression date. That is why observed CPC runs
+   ~$3.30 against the original $0.50 cap: a deliberate debugging move, not drift or
+   auto-apply. (The exact date the cap was raised was not verified against Ads change
+   history; only that it preceded the Aug 7 impressions.)
 2. **Conversion tracking was dead** for the same period. Repaired 2026-08-07 by PRs
    #363/#364 — `Sign-up` pointed at the wrong Ads account, `FormSubmit` had no backing
    event, and CSP blocked every Ads beacon.
