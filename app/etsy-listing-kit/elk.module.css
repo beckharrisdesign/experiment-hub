@@ -138,6 +138,39 @@
 .primaryWide:hover { background: var(--primary-hover); }
 .primaryWide:disabled { opacity: 0.6; cursor: default; }
 
+/* Make-another CTA (#361). Secondary by design: the paid download is the job to
+   be done — this must not compete with it, so it sits after the grid as an
+   outline button, not a second filled one. */
+.againWrap {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 0 40px 56px;
+  text-align: center;
+}
+.againRule { border: 0; border-top: 1px solid var(--border); margin: 0 0 28px; }
+.againLead {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-weight: 700;
+  font-size: 20px;
+  margin: 0 0 6px;
+}
+.againSub { color: var(--muted); font-size: 14px; margin: 0 0 18px; }
+.againBtn {
+  display: inline-block;
+  background: transparent;
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: 10px;
+  padding: 13px 26px;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.againBtn:hover { background: var(--cream); }
+.againBtn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
 .previewSection { max-width: 1024px; margin: 0 auto; padding: 24px 40px 56px; display: grid; grid-template-columns: 1fr 320px; gap: 32px; align-items: start; }
 .previewHead { font-family: var(--font-fraunces), Georgia, serif; font-weight: 700; font-size: 26px; margin: 0 0 6px; }
 .previewSub { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
@@ -158,6 +191,9 @@
   .hero { padding-top: 40px; }
   .trust { flex-direction: column; align-items: center; gap: 8px; }
   .previewSection { grid-template-columns: 1fr; padding: 20px; }
+  /* Match .previewSection's 20px so the CTA's rule lines up with the grid above
+     it — at 40px the rule was visibly inset from the images. */
+  .againWrap { padding-left: 20px; padding-right: 20px; }
   .grid { grid-template-columns: repeat(2, 1fr); }
 }
 

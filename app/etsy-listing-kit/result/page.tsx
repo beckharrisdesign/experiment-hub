@@ -114,6 +114,20 @@ function ResultInner() {
           </div>
         </section>
       )}
+
+      {ready && (
+        <section className={styles.againWrap}>
+          <hr className={styles.againRule} />
+          <p className={styles.againLead}>Got another design?</p>
+          <p className={styles.againSub}>
+            Same six photos, same $3 — takes about a minute.
+          </p>
+          <Link href="/etsy-listing-kit" className={styles.againBtn}
+                onClick={() => track('restart_clicked', { from: 'result_cta' })}>
+            Make another set
+          </Link>
+        </section>
+      )}
     </main>
   );
 }
