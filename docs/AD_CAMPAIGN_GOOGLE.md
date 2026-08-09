@@ -7,15 +7,16 @@ Ready to create in Google Ads. **I prepare; Katy creates/funds** (money-out step
 > rule: *run fast, not trickled*). **Superseded 2026-08-09:** the campaign did not serve at
 > all for its first week, so the 3-day stop is dropped and spend continues at $5/day until
 > the campaign has 15–30 clicks to evaluate. At the CPC observed so far that is roughly two
-> weeks and **~$50–70**, not $15. See the live run below.
+> weeks and **~$50–100**, not $15. See the live run below.
 
 ## Reality check (set expectations)
 
 ~~Craft/Etsy-tool keywords run ~$0.40–$2 CPC. ~$15 buys **~15–30 clicks over 3 days**.~~
 **That estimate was wrong (2026-08-09).** Observed CPC on these keywords is **~$3.30**, so
 $15 buys ~4–5 clicks, not 15–30. The $0.50 cap the plan called for was below the auction
-price, which is a likely reason the campaign never served. Budget the test at **~$50–70**
-for 15–30 clicks. (Caveat: $3.30 is the average of *two* clicks — a very noisy estimate.)
+price, which is a likely reason the campaign never served. At ~$3.30/click, budget the
+test at **~$50 for 15 clicks / ~$100 for 30**. (Caveat: $3.30 is the average of *two*
+clicks — a very noisy estimate, so treat the whole range as provisional.)
 
 What that buys is still a *message-match + intent signal*, not statistically strong
 conversion data. Any real paid conversion from a stranger is a strong positive at this volume.
