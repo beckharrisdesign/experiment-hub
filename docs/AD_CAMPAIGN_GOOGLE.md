@@ -88,7 +88,7 @@ conversion data. Any real paid conversion from a stranger is a strong positive a
 
 | Signal | Action |
 | --- | --- |
-| < 150 impressions after day 2 | Keywords too thin — broaden phrase variants or raise CPC cap to $0.75 |
+| < 150 impressions after day 2 | ~~raise CPC cap to $0.75~~ — **wrong, corrected 2026-08-09.** $0.75 is far below the ~$3.30 auction price and would keep the campaign from serving, which is what happened for its first week. Low impressions here means the bid is under the auction price or the keywords are too thin: check Search impression share (lost to rank), and either remove the max CPC limit entirely or set it above ~$4 — do not tighten it |
 | 15+ clicks, 0 upload-starts | Message mismatch — pause, revise landing/ad copy before spending more |
 | Any stranger's paid conversion | Strong positive — consider extending/scaling (separate spend authorization) |
 | Uploads but no checkouts | Value shown but price/trust gap — examine preview → checkout drop-off |
@@ -132,7 +132,7 @@ real test.
 
 | Day | Date | Impr. | Clicks | Upload starts | Checkouts | Paid | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| — | Jul 31 – Aug 6 | 0 | 0 | 0 | 0 | 0 | Campaign blocked; never served |
+| — | Jul 31 – Aug 6 | 0 | 0 | 0 | 0 | 0 | Published Jul 31, enabled Aug 4 — but served nothing until Aug 7 |
 | 1 | Aug 7 | \* | \* | 0 | 0 | 0 | First impressions; max CPC raised to $15 to unblock |
 | 2 | Aug 8 | \* | \* | 0 | 0 | 0 | |
 | | **Aug 7–8 total** | **129** | **2** | **0** | **0** | **0** | $6.59 spend · ~$3.30 avg CPC · 1.55% CTR · 0 conversions |
