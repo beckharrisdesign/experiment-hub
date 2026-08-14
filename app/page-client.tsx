@@ -9,7 +9,7 @@ import type { Experiment, Prototype, Documentation } from "@/types";
 import { getExperimentHrefSlug } from "@/lib/utils";
 import { formatBhdPhaseLabel } from "@/lib/openspec-shared";
 import type { BhdPhase } from "@/lib/openspec-shared";
-import { calculateTotalScore } from "@/lib/scoring";
+import { summarizeExperimentScore } from "@/lib/scoring";
 import Link from "next/link";
 
 interface ExperimentWithRelated extends Experiment {
@@ -33,17 +33,22 @@ type ViewTab = "active" | "inactive";
 
 const HIDDEN_EXPERIMENT_IDS = ["experience-principles-repository"];
 
-function getTotalBadgeColor(score: number) {
-  if (score >= 20) return "bg-green-600 border-green-500 text-white";
-  if (score >= 15) return "bg-yellow-500/80 border-yellow-400/80 text-white";
-  if (score >= 10) return "bg-orange-500/80 border-orange-400/80 text-white";
+// Thresholds are fractions of the shape's max so v3 (/15) and v1 (/25) rows
+// color consistently; 0.8/0.6/0.4 reproduce v1's old 20/15/10 breakpoints.
+function getTotalBadgeColor(total: number, max: number) {
+  const fraction = total / max;
+  if (fraction >= 0.8) return "bg-green-600 border-green-500 text-white";
+  if (fraction >= 0.6) return "bg-yellow-500/80 border-yellow-400/80 text-white";
+  if (fraction >= 0.4) return "bg-orange-500/80 border-orange-400/80 text-white";
   return "bg-red-500/80 border-red-400/80 text-white";
 }
 
-/** ✓ / — cell used by the PRD, Landing and Prototype columns. */
-function PresenceCell({ present }: { present: boolean }) {
-  return present ? (
-    <span className="text-accent-primary">✓</span>
+/** One impact sub-score cell; v1-only and unscored rows show a dash. */
+function SubScoreCell({ value }: { value: number | undefined }) {
+  return value !== undefined ? (
+    <span className="inline-flex items-center justify-center rounded bg-background-active px-2 py-1 text-xs font-semibold text-text-dark">
+      {value}
+    </span>
   ) : (
     <span className="text-sm text-text-dark-secondary">—</span>
   );
@@ -104,24 +109,34 @@ export default function HomePageClient({
       {
         key: "total",
         header: "Score",
-        headerTooltip: "Sum of B+P+C+$+S (5-25). Click to sort.",
+        headerTooltip:
+          "Impact score (PI+SI+BI, 3-15); v1 rows show their historical 5-25 total. Click to sort.",
         compact: true,
-        sortValue: (e) => calculateTotalScore(e.scores) ?? 0,
+        // Fraction of max so v3 (/15) and v1 (/25) rows sort comparably.
+        sortValue: (e) => {
+          const summary = summarizeExperimentScore(e);
+          return summary ? summary.total / summary.max : 0;
+        },
         render: (experiment) => {
-          const total = calculateTotalScore(experiment.scores);
-          if (total === null) {
+          const summary = summarizeExperimentScore(experiment);
+          if (summary === null) {
             return <span className="text-sm text-text-dark-secondary">—</span>;
           }
+          const { total, max, shape } = summary;
           const experimentSlug = getExperimentHrefSlug(experiment);
+          const tooltip =
+            shape === "impact"
+              ? `${total}/15 across Personal, Social, and Business impact.`
+              : `${total}/25 · v1 rubric (historical five dimensions).`;
           return (
-            <Tooltip content={`${total}/25 across five scoring dimensions — see /scoring.`} position="top">
+            <Tooltip content={tooltip} position="top">
               <Link
                 href={`/experiments/${experimentSlug}`}
                 data-analytics-event="experiment_score_click"
                 data-analytics-surface="hub-home"
                 data-analytics-experiment={experimentSlug}
                 data-analytics-label={String(total)}
-                className={`inline-flex items-center justify-center h-7 min-w-[2rem] rounded-md border text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity ${getTotalBadgeColor(total)}`}
+                className={`inline-flex items-center justify-center h-7 min-w-[2rem] rounded-md border text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity ${getTotalBadgeColor(total, max)}`}
               >
                 {total}
               </Link>
@@ -130,25 +145,29 @@ export default function HomePageClient({
         },
       },
       {
-        key: "prd",
-        header: "PRD",
-        headerTooltip: "Product Requirements Document",
+        key: "personal",
+        header: "Personal",
+        headerTooltip: "Personal Impact (1-5): would I use this?",
         compact: true,
-        render: (e) => <PresenceCell present={!!e.hasPRDFile} />,
+        sortValue: (e) => e.impactScores?.personal ?? 0,
+        render: (e) => <SubScoreCell value={e.impactScores?.personal} />,
       },
       {
-        key: "landing",
-        header: "Landing",
-        headerTooltip: "Landing page for validation",
+        key: "social",
+        header: "Social",
+        headerTooltip: "Social Impact (1-5): does the world need this?",
         compact: true,
-        render: (e) => <PresenceCell present={!!e.hasLandingPage} />,
+        sortValue: (e) => e.impactScores?.social ?? 0,
+        render: (e) => <SubScoreCell value={e.impactScores?.social} />,
       },
       {
-        key: "prototype",
-        header: "Prototype",
-        headerTooltip: "Prototype built",
+        key: "business",
+        header: "Business",
+        headerTooltip:
+          "Business Impact (1-5): would the market pay, and could this win?",
         compact: true,
-        render: (e) => <PresenceCell present={!!e.hasPrototypeDir} />,
+        sortValue: (e) => e.impactScores?.business ?? 0,
+        render: (e) => <SubScoreCell value={e.impactScores?.business} />,
       },
     ],
     [],
@@ -216,93 +235,6 @@ export default function HomePageClient({
         </div>
       </section>
 
-      {/* Scaffolding Section */}
-      {/* <section className="bg-background-secondary px-4 md:px-8 lg:px-16 py-8 border-t border-b border-[rgba(20,174,92,0.2)]">
-        <div className="max-w-screen-xl mx-auto">
-          <p className="text-xs font-bold text-text-primary uppercase tracking-widest mb-5">
-            The scaffolding
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-white leading-5 mb-1">
-                Workflow
-              </p>
-              <p className="text-sm font-light text-text-primary leading-5 mb-2">
-                The workflow columns below show exactly where each experiment
-                stands. A clear picture of what&apos;s in progress makes it easy
-                to dive back in with confidence.
-              </p>
-              <Link
-                href="/workflow"
-                data-analytics-event="scaffolding_link_click"
-                data-analytics-surface="hub-home"
-                data-analytics-label="workflow"
-                className="text-xs font-medium text-accent-primary hover:underline"
-              >
-                View workflow →
-              </Link>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-white leading-5 mb-1">
-                Scoring
-              </p>
-              <p className="text-sm font-light text-text-primary leading-5 mb-2">
-                Every experiment is scored across five dimensions after market
-                research. Comparing ideas side-by-side makes prioritization
-                intentional — I choose what to build next based on evidence, not
-                just momentum.
-              </p>
-              <Link
-                href="/scoring"
-                data-analytics-event="scaffolding_link_click"
-                data-analytics-surface="hub-home"
-                data-analytics-label="scoring"
-                className="text-xs font-medium text-accent-primary hover:underline"
-              >
-                View scoring →
-              </Link>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-white leading-5 mb-1">
-                Heuristics
-              </p>
-              <p className="text-sm font-light text-text-primary leading-5 mb-2">
-                Design and product decisions are captured in writing as I build.
-                Returning to an experiment weeks later, I can immediately pick
-                up the thread — with all my thinking intact.
-              </p>
-              <Link
-                href="/heuristics"
-                data-analytics-event="scaffolding_link_click"
-                data-analytics-surface="hub-home"
-                data-analytics-label="heuristics"
-                className="text-xs font-medium text-accent-primary hover:underline"
-              >
-                View heuristics →
-              </Link>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-white leading-5 mb-1">
-                Harness
-              </p>
-              <p className="text-sm font-light text-text-primary leading-5 mb-2">
-                The AI agents and structures that power the whole system — from
-                experiment creation through market research, PRD, design review,
-                and prototype.
-              </p>
-              <Link
-                href="/harness"
-                data-analytics-event="scaffolding_link_click"
-                data-analytics-surface="hub-home"
-                data-analytics-label="harness"
-                className="text-xs font-medium text-accent-primary hover:underline"
-              >
-                View harness →
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section> */}
 
       {/* Experiment List Section */}
       <section className="bg-background-light px-4 md:px-8 lg:px-16 py-[46px] flex-1">

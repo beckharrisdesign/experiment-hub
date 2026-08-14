@@ -3,92 +3,68 @@ description: Apply when scoring experiments or conducting market research.
 globs: experiments/*/docs/market-research.md, data/experiments.json
 ---
 
-# Experiment scoring (v2, 2026-08)
+# Experiment scoring (v3, 2026-08)
 
-Three dimensions, scored 1–3, **in this order**. Total 3–9.
+Three dimensions, scored 1–5, total 3–15. Each score is a proxy for the
+strength of one kind of impact — personal, social, business. The score is the
+summary; the argument lives on the experiment's `Why:` page in Notion (a
+paragraph or a full business case, founder's call).
 
-Each anchor is ordered by one variable. Sub-clauses are indicators of that
-variable, not a checklist — score the level that best describes the whole,
-don't require every clause.
+## Personal Impact (PI) — would I use this?
 
-## 1. Mission (M) — does this feed why the lab exists, and will it keep you moving?
+- **5** — Solves a daily problem I face, would use constantly
+- **4** — Solves a regular problem, would use frequently
+- **3** — Solves an occasional problem, would use sometimes
+- **2** — Solves a rare problem, would use rarely
+- **1** — No personal use case, wouldn't use it myself
 
-One rubric for the whole cluster: motivation, congruence, and impact on the
-people served. Measured, not gated — if it isn't scored, it can't get better.
+## Social Impact (SI) — does the world need this?
 
-- **3** — Serves people you can name in makers / neurodiversity / sustainability.
-  The whole path — build, launch, *selling* — feels like the mission. You'd work
-  on it even if it earned nothing.
-- **2** — The product is mission-true, but a step on the path isn't — you can
-  already name the step you'd balk at.
-- **1** — The mission connection is a story you can tell, but it wouldn't
-  survive your own scrutiny.
+- **5** — Addresses critical need, serves underserved communities, high joy
+- **4** — Addresses important need, good positive impact, meaningful
+- **3** — Addresses moderate need, some value, neutral contribution
+- **2** — Addresses minor need, minimal positive impact
+- **1** — No meaningful impact, no clear benefit to others
 
-**The balk test:** at scoring time, name the launch/selling step you least
-believe in. If naming it stings, score 2 and write the step down — it's the
-first thing to redesign, not a footnote. (Best Day Ever scored 22/25 on the old
-rubric and died at exactly this step: an email-list ad campaign the founder
-didn't believe in. The old instrument had no place to record that.)
+## Business Impact (BI) — would the market pay, and could this win?
 
-## 2. Pull (P) — evidence someone other than you wants it
+Merges v1's Business Opportunity and Competitive Advantage into one judgment.
+The TAM dollar gates are retired — across 45 v1 ratings they never separated
+candidates. Anchors are ordered by evidence, not market size.
 
-- **3** — Someone paid, or asked to buy, unprompted.
-- **2** — Someone outside your head described the problem unprompted — a forum
-  post, a review, a message.
-- **1** — You believe it. No external signal yet.
+- **5** — People already pay for worse; clear differentiation; a revenue path you could start this month
+- **4** — Validated demand in an underserved niche, limited competition
+- **3** — Real demand signals; competitive but viable positioning
+- **2** — Weak market indicators or a crowded field; the differentiation is a story
+- **1** — No demand evidence; saturated market or no clear revenue path
 
-Grade evidence, not belief: "I think people would want this" is a 1, however
-strongly held.
+## Where scores live
 
-## 3. Speed (S) — weeks to a version that can take money
+Scores are three number columns on the BHD Labs Projects Notion database
+(`Score:PI`, `Score:SI`, `Score:BI`), totaled in-database by the `Impact Score`
+formula column (empty until all three are filled — the v1 `Score` formula stays
+as history); each justification is a child page of the
+experiment's row titled `Why: Personal` / `Why: Social` / `Why: Business`. The
+hub renders them on the experiment detail page (`components/ImpactScores.tsx`),
+including each dimension's anchor legend — anchor text is mirrored in
+`lib/rubric.ts` and guarded by a drift test, so edit anchors here and there
+together.
 
-- **3** — ≤ 2 weeks.
-- **2** — 2–6 weeks.
-- **1** — More than 6 weeks.
+## Re-score at archive
 
-"Take money" means a live payment path, not a finished product.
-
-## Reading a score
-
-Read the profile before the total — same total, different meaning:
-
-- **M3 P1 S3** — mission-true and fast, unvalidated. Build the money path and go
-  find pull; don't polish.
-- **M1–2 P3 S2** — demand without belief. This is the kind that stalls at launch
-  (see the balk test). Redesign the incongruent step before committing, or park.
-- **Low S, high M+P** — the only case where a longer build is worth it. Say so
-  explicitly in the proposal.
-
-Score relatively when stuck between levels: "more or less pull than
-simple-seed-organizer?" is answerable; "is this a 2 or a 3?" often isn't.
-
-## Re-score at archive (the accuracy loop)
-
-Scores are predictions. When an experiment's change is archived, re-grade all
-three with what you now know, in `archive.md` — **Mission** (did it actually
-serve them? where did congruence break?), **Pull** (did the demand exist?),
-**Speed** (how long did it really take? — the easiest one to grade, and chronic
-underestimates feed the next score):
+Scores are predictions. When the experiment's change is archived, re-grade all
+three with what you now know, one line in `archive.md`:
 
 ```
-**Predicted:** M3 P2 S2 · **Actual:** M3 P1 S1 · **Missed:** assumed signups meant demand
+**Predicted:** PI4 SI3 BI2 · **Actual:** PI4 SI2 BI1 · **Missed:** assumed signups meant demand
 ```
 
-One line. The instrument only improves if it's graded — v1 scored nine
-experiments once, was never graded, and its top scorer stalled while its
-lowest business score became the flagship.
+## Legacy
 
-## Legacy (v1, five dimensions)
-
-Scores under the old keys (`businessOpportunity`, `personalImpact`,
-`competitiveAdvantage`, `platformCost`, `socialImpact`) in
-`data/experiments.json` are a historical record — do not backfill, convert, or
-delete them. The hub UI (`components/ExperimentScores.tsx`, `lib/scoring.ts`)
-and the Notion sync still read the v1 shape; migrating them to v2 is its own
-change, not a side-effect of scoring.
-
-Mapping, for reading old scores: `personalImpact` + `socialImpact` → Mission;
-`platformCost` → Speed; `businessOpportunity` (TAM anchors) and
-`competitiveAdvantage` retired — across 45 v1 ratings, 87% were 3s and 4s and
-totals never separated candidates. The v1 "score shapes" taxonomy is retired
-with it; the profile readings above replace it.
+- **v1 (five dimensions):** scores under the old keys (`businessOpportunity`,
+  `personalImpact`, `competitiveAdvantage`, `platformCost`, `socialImpact`) in
+  `data/experiments.json` and the `Score:B/P/C/D/S` Notion columns are a
+  historical record — do not backfill, convert, or delete them. The hub shows
+  their `n/25` totals labeled as v1 history.
+- **v2 (Mission/Pull/Speed):** superseded same-day 2026-08-14, never applied to
+  any experiment's data; see PR #372 for its text.

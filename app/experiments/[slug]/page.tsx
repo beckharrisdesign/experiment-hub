@@ -5,8 +5,10 @@ import Footer from "@/components/Footer";
 import ExperimentTypeBadge from "@/components/ExperimentTypeBadge";
 import StatusBadge from "@/components/StatusBadge";
 import { getExperimentBySlug } from "@/lib/data";
+import ImpactScoresDisplay from "@/components/ImpactScores";
 import {
   getExperimentFieldsFromNotion,
+  getImpactRationaleFromNotion,
   hasNotionExperiments,
   PUBLIC_FIELD_ALLOWLIST,
   type ExperimentField,
@@ -141,6 +143,18 @@ export default async function ExperimentDetailPage({
       })) ?? [])
     : [];
 
+  // Justification `Why:` pages only exist for v3-scored Notion rows.
+  const impactRationale =
+    experiment.impactScores && hasNotionExperiments()
+      ? await getImpactRationaleFromNotion(slug).catch((error) => {
+          console.error(
+            `[ExperimentDetailPage] Notion rationale fetch failed for "${slug}":`,
+            error,
+          );
+          return {};
+        })
+      : {};
+
   const present = new Set(statements.map((field) => field.label));
   const missing = PUBLIC_FIELD_ALLOWLIST.filter((label) => !present.has(label));
   // The content band renders when there is something to show — real
@@ -150,6 +164,7 @@ export default async function ExperimentDetailPage({
   const showNarrative =
     statements.length > 0 ||
     history.length > 0 ||
+    experiment.impactScores !== undefined ||
     (editMode && missing.length > 0);
 
   return (
@@ -201,7 +216,16 @@ export default async function ExperimentDetailPage({
             ))}
             {editMode &&
               missing.map((label) => <GhostPrompt key={label} label={label} />)}
-            <History entries={history} />
+            {experiment.impactScores ? (
+              // v3-scored rows: History rides along as the fourth tab.
+              <ImpactScoresDisplay
+                scores={experiment.impactScores}
+                rationale={impactRationale}
+                history={history}
+              />
+            ) : (
+              <History entries={history} />
+            )}
           </div>
         </main>
       )}

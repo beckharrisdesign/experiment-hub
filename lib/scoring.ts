@@ -1,4 +1,4 @@
-import type { ExperimentScores } from "@/types";
+import type { Experiment, ExperimentScores, ImpactScores } from "@/types";
 
 /**
  * Sum all 5 scoring dimensions. Returns null if scores are absent or incomplete.
@@ -33,6 +33,45 @@ export function calculateTotalScore(
     platformCost +
     socialImpact
   );
+}
+
+/**
+ * Sum the three v3 impact dimensions (3-15). Returns null if scores are
+ * absent or incomplete — a partial row must not show a misleading total.
+ */
+export function calculateImpactTotal(
+  scores: ImpactScores | null | undefined
+): number | null {
+  if (!scores) return null;
+  const { personal, social, business } = scores;
+  if (
+    personal === undefined ||
+    social === undefined ||
+    business === undefined
+  ) {
+    return null;
+  }
+  return personal + social + business;
+}
+
+export interface ScoreSummary {
+  total: number;
+  max: number;
+  shape: "impact" | "v1";
+}
+
+/**
+ * The total to display for an experiment, preferring the v3 impact shape over
+ * v1 history when both are complete. Null when neither shape is complete.
+ */
+export function summarizeExperimentScore(
+  experiment: Pick<Experiment, "scores" | "impactScores">
+): ScoreSummary | null {
+  const impact = calculateImpactTotal(experiment.impactScores);
+  if (impact !== null) return { total: impact, max: 15, shape: "impact" };
+  const v1 = calculateTotalScore(experiment.scores);
+  if (v1 !== null) return { total: v1, max: 25, shape: "v1" };
+  return null;
 }
 
 /**
