@@ -43,10 +43,12 @@ function getTotalBadgeColor(total: number, max: number) {
   return "bg-red-500/80 border-red-400/80 text-white";
 }
 
-/** ✓ / — cell used by the PRD, Landing and Prototype columns. */
-function PresenceCell({ present }: { present: boolean }) {
-  return present ? (
-    <span className="text-accent-primary">✓</span>
+/** One impact sub-score cell; v1-only and unscored rows show a dash. */
+function SubScoreCell({ value }: { value: number | undefined }) {
+  return value !== undefined ? (
+    <span className="inline-flex items-center justify-center rounded bg-background-active px-2 py-1 text-xs font-semibold text-text-dark">
+      {value}
+    </span>
   ) : (
     <span className="text-sm text-text-dark-secondary">—</span>
   );
@@ -143,25 +145,29 @@ export default function HomePageClient({
         },
       },
       {
-        key: "prd",
-        header: "PRD",
-        headerTooltip: "Product Requirements Document",
+        key: "personal",
+        header: "Personal",
+        headerTooltip: "Personal Impact (1-5): would I use this?",
         compact: true,
-        render: (e) => <PresenceCell present={!!e.hasPRDFile} />,
+        sortValue: (e) => e.impactScores?.personal ?? 0,
+        render: (e) => <SubScoreCell value={e.impactScores?.personal} />,
       },
       {
-        key: "landing",
-        header: "Landing",
-        headerTooltip: "Landing page for validation",
+        key: "social",
+        header: "Social",
+        headerTooltip: "Social Impact (1-5): does the world need this?",
         compact: true,
-        render: (e) => <PresenceCell present={!!e.hasLandingPage} />,
+        sortValue: (e) => e.impactScores?.social ?? 0,
+        render: (e) => <SubScoreCell value={e.impactScores?.social} />,
       },
       {
-        key: "prototype",
-        header: "Prototype",
-        headerTooltip: "Prototype built",
+        key: "business",
+        header: "Business",
+        headerTooltip:
+          "Business Impact (1-5): would the market pay, and could this win?",
         compact: true,
-        render: (e) => <PresenceCell present={!!e.hasPrototypeDir} />,
+        sortValue: (e) => e.impactScores?.business ?? 0,
+        render: (e) => <SubScoreCell value={e.impactScores?.business} />,
       },
     ],
     [],
