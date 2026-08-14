@@ -361,40 +361,22 @@ export async function readExperimentDoc(
 }
 
 /**
- * Batch check all experiment files in parallel for better performance
- * This avoids N+1 file system operations
+ * Batch-read the experiment files the landing page consumes. The presence
+ * booleans (PRD/prototype/landing) left with the presence columns
+ * (scoring-impact-rubric fast-follow).
  */
 export async function checkExperimentFiles(
   experimentDirectory: string,
 ): Promise<{
-  hasPRDFile: boolean;
-  hasPrototypeDir: boolean;
-  hasMRFile: boolean;
-  hasLandingPage: boolean;
   mrContent: string | null;
   learningsContent: string | null;
 }> {
-  // Run all file checks in parallel
-  const [hasPRDFile, hasPrototypeDir, hasLanding, mrContent, learningsContent] =
-    await Promise.all([
-      hasPRD(experimentDirectory),
-      hasPrototype(experimentDirectory),
-      hasLandingPage(experimentDirectory),
-      readMarketResearch(experimentDirectory).catch(() => null),
-      readLearnings(experimentDirectory).catch(() => null),
-    ]);
+  const [mrContent, learningsContent] = await Promise.all([
+    readMarketResearch(experimentDirectory).catch(() => null),
+    readLearnings(experimentDirectory).catch(() => null),
+  ]);
 
-  // hasMRFile is true if we successfully read the content
-  const hasMRFile = mrContent !== null;
-
-  return {
-    hasPRDFile,
-    hasPrototypeDir,
-    hasMRFile,
-    hasLandingPage: hasLanding,
-    mrContent,
-    learningsContent,
-  };
+  return { mrContent, learningsContent };
 }
 
 /**
