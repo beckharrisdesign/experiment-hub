@@ -64,7 +64,7 @@ When ready to implement, run /opsx:apply
 - Read store paths from `openspec/config.yaml` and `rules/bhd-experiment.mdc`. If a store file is missing, say so and use template placeholders.
 - **One artifact per user turn:** create only the next `ready` artifact (`explore` → `propose` → `apply` → `archive`), show it, **stop and wait for approval** before the next.
 - **Never** create `proposal.md`, `specs/**/*.md`, `design.md`, or `tasks.md` on this change.
-- **`explore`:** Strategic Why (or intentional blank), proxy user if needed, permutations, score shape per `rules/scoring-criteria.mdc`. Link `experiments/<slug>/docs/market-research.md` when present.
+- **`explore`:** Strategic Why (or intentional blank), proxy user if needed, permutations, M/P/S score profile per `rules/scoring-criteria.mdc`. Link `experiments/<slug>/docs/market-research.md` when present.
 - **`propose`:** After draft, prompt re-score vs Explore (deltas). Link `experiments/<slug>/docs/business-case.md` when present.
 - **`apply`:** Build Units only — remind that `/opsx:apply` for code uses a **child** lite change.
 - Optional: sync scorecard to `data/experiments.json` only when user asks (not automated).

@@ -37,6 +37,11 @@ yarn-error.log*
 # Local env files
 .env
 .env*.local
+# Belt-and-braces: env backups are named .env.bak-<ts>.local so the rule
+# above already covers them, but a stray *.bak of a secrets file must
+# never be committable on a naming slip.
+.env*.bak*
+*.env.bak*
 .env.development.local
 .env.test.local
 .env.production.local
