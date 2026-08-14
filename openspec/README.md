@@ -8,12 +8,12 @@ This directory holds **living capability specs** (`specs/`) and a **history of c
 
 **Project config:** [`config.yaml`](config.yaml) sets the default workflow schema (**`experiment-hub-lite`** — intent-first spikes: Human anchor, Outcomes, hub skill voices per artifact). Per-change override: `openspec/changes/<name>/.openspec.yaml` → `schema: …`.
 
-| Schema                              | Use when                                                              |
-| ----------------------------------- | --------------------------------------------------------------------- |
-| **`experiment-hub-lite`** (default) | New experiment spikes, prototypes under `experiments/`                |
-| **`bhd-experiment`**                | Product lifecycle: explore → propose → apply → archive (Build Units)  |
-| **`experiment-hub`**                | Sponsor-backed ladder (Evidence / Proceed), platform cross-cutting    |
-| **`quickstart`**                    | Vanilla / upstream comparison (`spec-driven` alias may still resolve) |
+| Schema                              | Use when                                                                                          |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **`experiment-hub-lite`** (default) | Everything. Take the default; don't shop for a schema.                                            |
+| **`bhd-experiment`**                | Only when the experiment's hub detail page should render phase tabs (`hub-bhd-phase-tabs` spec).  |
+
+`experiment-hub` and `quickstart` were removed 2026-08-14 — two changes between them, both smoke tests, neither promoted a spec.
 
 **Dual track (BHD + lite):** Parent change `schema: bhd-experiment` holds `explore.md` … `archive.md`. Child change `schema: experiment-hub-lite` (e.g. `<slug>-build`) ships code; `/opsx:apply` on the **child** only.
 
@@ -26,7 +26,7 @@ flowchart LR
   liteChild -->|opsx apply tasks| liteChild
 ```
 
-**Local schemas:** [`schemas/experiment-hub-lite/`](schemas/experiment-hub-lite/) (default) · [`schemas/bhd-experiment/`](schemas/bhd-experiment/) · [`schemas/experiment-hub/`](schemas/experiment-hub/) (full ladder — reference / sponsor) · [`schemas/quickstart/`](schemas/quickstart/)
+**Local schemas:** [`schemas/experiment-hub-lite/`](schemas/experiment-hub-lite/) (default) · [`schemas/bhd-experiment/`](schemas/bhd-experiment/) (phase tabs only)
 
 **BHD vs lite slash commands** (same commands, different artifacts):
 

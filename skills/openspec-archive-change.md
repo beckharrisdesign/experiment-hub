@@ -44,7 +44,7 @@ Archive a completed change in the experimental workflow.
    - **Do not** require `tasks.md`. Warn if `archive.md` is missing or Outcome is empty; confirm with user before archive.
    - Store write-backs: show proposed diffs only — **do not** auto-edit `docs/founder/*` files.
 
-   **Otherwise (lite / full / quickstart):**
+   **Otherwise (`experiment-hub-lite`):**
    - Read the tasks file (typically `tasks.md`) to check for incomplete tasks.
    - Count tasks marked with `- [ ]` (incomplete) vs `- [x]` (complete).
    - **Convert manual gates to live receipts first.** If unchecked boxes are manual-verification outcomes (§1 user outcomes, walkthroughs) and the change is already deployed, verify them against the live surface before asking for a waiver — e.g. `curl -I` the route for a redirect, fetch the page HTML and grep for the removed/added element. Check the box with the receipt recorded inline (what was verified, where, when). Only ask the user to confirm what genuinely cannot be verified remotely.
@@ -66,7 +66,30 @@ Archive a completed change in the experimental workflow.
 
    If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke openspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
 
-5. **Perform the archive**
+5. **Write `archive.md` (required — every schema, no exceptions)**
+
+   A change without an outcome record teaches nothing later. `bhd-experiment` changes already have `archive.md` as a phase artifact; for `experiment-hub-lite`, write one now, in the change directory, before the move:
+
+   ```markdown
+   # Archive — <name>
+
+   **Archived:** YYYY-MM-DD · **Created:** <from .openspec.yaml> · **Tasks:** n/m
+   **Outcome:** SHIPPED | SUPERSEDED | ABANDONED | PARKED
+
+   <One line: what actually happened.>
+
+   **Evidence:** <a path, migration, route, or spec that proves it — not a restatement of intent>
+   **Left open:** <what a future session would need — omit if nothing>
+   ```
+
+   Rules:
+   - **Derive the outcome from evidence, not from the task count.** 19/20 checkboxes is not proof of shipping; a merged migration or a component on disk is. If you cannot find evidence, say so in the line rather than assuming `SHIPPED`.
+   - `PARKED` replaces **Left open** with a **Wake condition** — the specific signal that would make this worth reopening.
+   - `SUPERSEDED` names the change that replaced it.
+   - If the change belongs to a scored experiment, add the re-grade line per `rules/scoring-criteria.mdc`: `**Predicted:** M3 P2 S2 · **Actual:** … · **Missed:** …`.
+   - Keep it to the block above. This is a record, not a retrospective.
+
+6. **Perform the archive**
 
    Create the archive directory if it doesn't exist:
 
@@ -84,11 +107,12 @@ Archive a completed change in the experimental workflow.
    mv openspec/changes/<name> openspec/changes/archive/YYYY-MM-DD-<name>
    ```
 
-6. **Display summary**
+7. **Display summary**
 
    Show archive completion summary including:
    - Change name
    - Schema that was used
+   - **Recorded outcome** (from `archive.md`)
    - Archive location
    - Whether specs were synced (if applicable)
    - Note about any warnings (incomplete artifacts/tasks)

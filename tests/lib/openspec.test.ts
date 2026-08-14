@@ -4,7 +4,10 @@ import {
   resolveOpenSpecChangeId,
   formatBhdPhaseLabel,
 } from "@/lib/openspec-shared";
-import { loadOpenSpecLifecycle } from "@/lib/openspec-server";
+import {
+  loadOpenSpecLifecycle,
+  __resetArchiveIndex,
+} from "@/lib/openspec-server";
 import { getExperimentHrefSlug } from "@/lib/utils";
 import { getExperimentBySlug } from "@/lib/data";
 
@@ -77,11 +80,71 @@ describe("getExperimentBySlug", () => {
 });
 
 describe("loadOpenSpecLifecycle", () => {
-  it("loads explore.md for pomodoro-maker change on disk", async () => {
+  // pomodoro-maker was archived 2026-08-14 (parked at explore). It still
+  // resolves: archiving a change must not erase an experiment's lifecycle
+  // story from the hub, so the loader falls back to
+  // openspec/changes/archive/YYYY-MM-DD-<changeId>/.
+  it("resolves a change that has been archived", async () => {
     const lifecycle = await loadOpenSpecLifecycle(baseExperiment);
     expect(lifecycle).not.toBeNull();
-    expect(lifecycle?.currentPhase).toBe("explore");
-    expect(lifecycle?.artifacts.some((a) => a.phase === "explore")).toBe(true);
-    expect(lifecycle?.artifacts[0].content).toContain("Hypothesis");
+    expect(lifecycle?.changeId).toBe("pomodoro-maker");
+  });
+
+  it("reads phase artifacts out of the archived folder", async () => {
+    const lifecycle = await loadOpenSpecLifecycle(baseExperiment);
+    const explore = lifecycle?.artifacts.find((a) => a.phase === "explore");
+    expect(explore).toBeDefined();
+    expect(explore?.content).toContain("Hypothesis");
+  });
+
+  it("reports the latest phase present as the current phase", async () => {
+    const lifecycle = await loadOpenSpecLifecycle(baseExperiment);
+    // explore.md + the archive.md written at archive time → archive is latest.
+    expect(lifecycle?.currentPhase).toBe("archive");
+  });
+
+  it("returns null when no change exists under either root", async () => {
+    const lifecycle = await loadOpenSpecLifecycle({
+      ...baseExperiment,
+      openspecChangeId: "no-such-change-anywhere",
+    });
+    expect(lifecycle).toBeNull();
+  });
+
+  it("rejects change ids that are not slugs (path-traversal guard)", async () => {
+    // openspecChangeId / experiment.id can arrive via Notion or Supabase rows;
+    // a value with path separators must never reach path.join.
+    for (const hostile of [
+      "../../.env.local",
+      "..",
+      "archive/2026-08-14-pomodoro-maker",
+      "pomodoro-maker/../../secrets",
+      ".hidden",
+      "UPPER-case",
+      "",
+    ]) {
+      const lifecycle = await loadOpenSpecLifecycle({
+        ...baseExperiment,
+        openspecChangeId: hostile,
+      });
+      expect(lifecycle, `expected null for id: ${JSON.stringify(hostile)}`).toBeNull();
+    }
+  });
+
+  it("matches the full YYYY-MM-DD-<id> shape, not a bare suffix", async () => {
+    // "maker" must not resolve to the archived "2026-08-14-pomodoro-maker".
+    const lifecycle = await loadOpenSpecLifecycle({
+      ...baseExperiment,
+      openspecChangeId: "maker",
+    });
+    expect(lifecycle).toBeNull();
+  });
+
+  it("still resolves after the archive index is dropped", async () => {
+    __resetArchiveIndex();
+    const first = await loadOpenSpecLifecycle(baseExperiment);
+    const second = await loadOpenSpecLifecycle(baseExperiment);
+    expect(first?.changeId).toBe("pomodoro-maker");
+    expect(second?.changeId).toBe("pomodoro-maker");
   });
 });

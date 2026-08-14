@@ -5,7 +5,7 @@ description: Shared rules for ## Artifacts markdown links at the end of every /o
 
 # OpenSpec Artifacts output (shared)
 
-Every opsx agent response that **creates, updates, or moves** files under `openspec/changes/` MUST end with a clickable **Artifacts** block. Applies to all schemas (`experiment-hub-lite`, `experiment-hub`, `quickstart`, `spec-driven`).
+Every opsx agent response that **creates, updates, or moves** files under `openspec/changes/` MUST end with a clickable **Artifacts** block. Applies to both schemas (`experiment-hub-lite`, `bhd-experiment`).
 
 ## Format
 
