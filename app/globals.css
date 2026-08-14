@@ -49,6 +49,69 @@
   --font-heading: var(--font-fraunces), Georgia, serif;
 }
 
+/* ─── Brand layer — hub tokens supersede MVDS defaults ──────────────────────
+ *
+ * MVDS is built to be branded from the consumer app: redefine the shadcn-
+ * convention tokens *after* the styles import and every component follows,
+ * with no component edits. See docs/THEMING.md in @beckharrisdesign/mvds.
+ *
+ * Until this existed, the hub imported MVDS's stylesheet and then added its
+ * palette under *namespaced* names (--color-accent-primary, …). Those create
+ * Tailwind utilities but never touch --primary/--background, so every MVDS
+ * component rendered in MVDS's own greyscale: <Button> came out near-white
+ * (.dark's --primary is oklch(0.922 0 0)) inside a dark green page, and the
+ * pdf-metadata-viewer Figma frames — which show green buttons — did not match
+ * what the app actually shipped.
+ *
+ * app/layout.tsx puts `dark` on <html>, so .dark is the mode that applies.
+ * :root carries the same brand for the hub's light sections and so the app
+ * does not fall back to greyscale if the class is ever dropped.
+ *
+ * Deliberately NOT overridden, per THEMING.md "What NOT to override":
+ * --spacing, --breakpoint-*, and the type ramp's shape. Those are the
+ * system's structure, not its skin.
+ */
+:root,
+.dark {
+  /* Primary — the 11-step primary-* ramp re-derives from this one token.
+   * The foreground is text/on-accent (#0b2f1c), the pair the change's 02.5
+   * contrast pass established at 5.04:1; MVDS's default pairing and the hub's
+   * old --color-text-dark both fail AA on this green. */
+  --primary: #14ae5c;
+  --primary-foreground: #0b2f1c;
+
+  /* Surfaces — the hub's two greens. */
+  --background: #194b31;
+  --foreground: #cff7d3;
+  --card: #113723;
+  --card-foreground: #cff7d3;
+  --popover: #113723;
+  --popover-foreground: #cff7d3;
+
+  /* Secondary / accent / muted. --muted-foreground is text/muted-AA
+   * (#7ac98d, 5.05:1) rather than the original text/muted (#4d9a60), which
+   * fails AA on both hub surfaces. */
+  --secondary: #113723;
+  --secondary-foreground: #cff7d3;
+  --accent: #0e8a49;
+  --accent-foreground: #cff7d3;
+  --muted: #113723;
+  --muted-foreground: #7ac98d;
+
+  /* Lines and focus. Matches the existing --color-border override above, so
+   * MVDS components and hub `border-border` styling agree. */
+  --border: rgba(20, 174, 92, 0.2);
+  --input: rgba(20, 174, 92, 0.2);
+  --ring: #14ae5c;
+
+  /* Status — the hub already publishes these; point MVDS's at the same values
+   * so a <Badge variant="destructive"> matches --color-error. */
+  --destructive: #f87171;
+  --destructive-foreground: #0b2f1c;
+  --success: #3ecf8e;
+  --success-foreground: #0b2f1c;
+}
+
 @layer base {
   body {
     @apply bg-background-primary text-text-primary font-sans;
