@@ -52,5 +52,14 @@
     "createdDate": "2024-11-01",
     "lastModified": "2024-12-16",
     "tags": ["gardening", "documentation"]
+  },
+  {
+    "id": "doc-pdf-metadata-viewer",
+    "title": "PDF Metadata Viewer Documentation",
+    "content": "Local-only tool for tagging scanned household documents. Generic tag vocabulary lives in the repo; people and organizations resolve at runtime from the Notion Entities database.",
+    "experimentId": "pdf-metadata-viewer",
+    "createdDate": "2026-01-10",
+    "lastModified": "2026-08-05",
+    "tags": ["pdf", "metadata", "notion", "documentation"]
   }
 ]

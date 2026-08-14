@@ -281,5 +281,19 @@
     "createdDate": "2026-07-15",
     "lastModified": "2026-07-15",
     "tags": ["etsy", "notion", "sync", "api-v3", "inventory", "data-capture", "tool"]
+  },
+  {
+    "id": "pdf-metadata-viewer",
+    "name": "PDF Metadata Viewer",
+    "statement": "Scanned household paperwork, tagged into an archive that stays searchable inside the files themselves.",
+    "type": "personal",
+    "directory": "experiments/pdf-metadata-viewer",
+    "documentationId": "doc-pdf-metadata-viewer",
+    "prototypeId": "proto-pdf-metadata-viewer",
+    "status": "Active",
+    "createdDate": "2026-01-10",
+    "lastModified": "2026-08-05",
+    "tags": ["pdf", "metadata", "taxonomy", "notion", "document-management", "ai-vision", "local-only"],
+    "public": false
   }
 ]
