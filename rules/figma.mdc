@@ -11,6 +11,50 @@ globs:
 
 **Cursor:** Use `/add-plugin figma` in agent chat to connect the Figma MCP server.
 
+## MVDS Core — the design system library (CHECK THIS FIRST)
+
+**MVDS Core is the design system for hub work.** Before drawing any component by
+hand in a Figma file, check whether MVDS already has it.
+
+| | |
+|---|---|
+| File | <https://www.figma.com/design/C20nU0mROzk3Zr0I9BELJF/MVDS-Core> (public view-only) |
+| `fileKey` | `C20nU0mROzk3Zr0I9BELJF` |
+| `libraryKey` | `lk-d54f86bcaf4bb7bd9ea1556e2af83e2ab93c839679852e05d720854cc1dedbfe8362b1503e1dbfc284ccb763a50cd240b2e52bd0af8904cf2ac7ffaaa8c09687` |
+| Code | `@beckharrisdesign/mvds` — public on npmjs, repo `beckharrisdesign/mvds` |
+
+**Always scope searches to the library key.** An unscoped
+`search_design_system` query for "Button" returns ~20 results across three
+libraries — `MVDS Core`, `BHD Labs / shadcn`, and `Simple Seed Organizer` — and
+MVDS Core is **not** first. Picking off the top of that list silently sources
+components from a stale kit that nothing in the hub uses:
+
+```
+search_design_system(
+  query: "Button",
+  fileKey: "<the change's figma file>",
+  includeLibraryKeys: ["lk-d54f86bc…09687"],   // MVDS Core only
+)
+```
+
+`BHD Labs / shadcn` and `Simple Seed Organizer` are **not** the hub's design
+system. Do not source components from them.
+
+**Code is law; Figma is a generated mirror.** MVDS Core is regenerated from the
+code by a one-way sync (`docs/SYNC.md` in the mvds repo, driven by authored
+manifests in `figma/components/*.figma.mjs`). Component descriptions in Figma say
+so: *"Edit in code, then re-run the sync — do not edit here."* Never fix an MVDS
+component in Figma — fix `src/components/**` in the mvds repo and re-sync.
+
+**Availability is per file.** A library existing is not the same as a library
+being usable: `get_libraries` reports what a given file has *subscribed*, not what
+exists. If MVDS Core does not appear for a new change's file, it has to be added
+to that file in the Figma UI (a founder action) before anything can be imported.
+
+**Layout primitives are deliberately absent.** `Stack`, `Inline` and `Container`
+have no Figma counterparts because they carry no visual treatment — auto-layout is
+their equivalent. Their absence is not a gap to fill.
+
 ## Project-specific rules
 
 - **Map to our system** — Treat Figma MCP output as design reference, not final code. Use this project's design tokens (`tailwind.config.ts`), components (`components/`), and typography (Fraunces headings, Inter body). Validate for 1:1 visual parity with the Figma screenshot.
@@ -22,7 +66,7 @@ globs:
 For changes under `openspec/changes/<id>/`, every **`design.md` MUST include a “Visual design / Figma” subsection** (use “N/A” table rows for API-only work). For UI work, specify:
 
 - Primary **Figma file URL** (`figma.com/design/...` or board URL)
-- **Published libraries** used (team kit, community DS, or hub library)
+- **Published libraries** used — normally `MVDS Core` (see above). If a change uses anything else, say which and why
 - **Frames/components in scope**
 - Whether **Code Connect** mappings need updates (`figma-code-connect` skill)
 
