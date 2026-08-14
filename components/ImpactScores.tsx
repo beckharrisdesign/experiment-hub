@@ -166,7 +166,7 @@ export default function ImpactScoresDisplay({
               </p>
             ) : (
               <p className="text-sm text-text-dark-secondary">
-                No justification written yet.
+                Nothing written here yet.
               </p>
             )}
           </>

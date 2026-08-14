@@ -55,7 +55,7 @@ describe("ImpactScoresDisplay", () => {
   it("shows the empty-state note for dimensions without a Why: page", () => {
     render(<ImpactScoresDisplay scores={scores} />);
     fireEvent.click(screen.getByRole("tab", { name: /Business/ }));
-    expect(screen.getByText("No justification written yet.")).toBeTruthy();
+    expect(screen.getByText("Nothing written here yet.")).toBeTruthy();
     expect(
       screen.getByText(IMPACT_ANCHORS.business[3].text),
     ).toBeTruthy();
