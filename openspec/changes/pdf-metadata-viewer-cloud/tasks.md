@@ -22,7 +22,7 @@ Each one changes work below it, so none should be discovered mid-build.
 - [ ] 2.1a **Spike before any Drive code:** confirm whether a Picker folder grant covers files added to that folder later. Decisive for the workflow, and not safe to assume
 - [x] 2.2 Splitter **moves to v2** — schema now, interface after the write path. See `design.md` D10
 - [x] 2.3 Workflow flags become **columns** — `from-split`/`already-split` derive from lineage; `needs-deleting`/`no-split-needed` become `marked_for_deletion`/`split_not_needed`. See `design.md` D11
-- [ ] 2.4 Confirm Actions is running again and CI verifies the MVDS 0.3 bump. **Compatibility now evidenced locally** — with 0.3.0 installed the full suite passes 57 files / 679 tests, including EtsySyncPanel and /dev/mvds. The CI run itself is still outstanding
+- [x] 2.4 Confirm Actions is running again and CI verifies the MVDS 0.3 bump — **done 2026-08-14 on PR #371**, which carries `@beckharrisdesign/mvds ^0.3.0` and went green: Feature tests, Deploy hub, and the seed organizer's tests, lint and build all SUCCESS. Actions is running; the outstanding CI run named here has now happened
 
 ## 3. Data layer
 
