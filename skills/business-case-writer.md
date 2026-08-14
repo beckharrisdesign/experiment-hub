@@ -67,11 +67,11 @@ Before scoring, fetch the current rubric from:
 
 Use that page as the **authoritative** source for dimension definitions, score thresholds, and verdict labels. Do not use a static rubric from memory — fetch fresh so the case stays in sync with the founder's current values.
 
-**Fallback (if the URL is unreachable):** In this repository, use `rules/scoring-criteria.mdc` for per-dimension 1–5 definitions. If composite verdict labels (e.g. Strong GO / Promising / Pass) are only on the live page, state that scoring dimensions are from the repo but **verdict label** should be reconciled with the live page when available.
+**Fallback (if the URL is unreachable):** In this repository, use `rules/scoring-criteria.mdc` for per-dimension definitions (v2: three dimensions — Mission, Pull, Speed — scored 1–3, total 3–9). If composite verdict labels (e.g. Strong GO / Promising / Pass) are only on the live page, state that scoring dimensions are from the repo but **verdict label** should be reconciled with the live page when available.
 
 Score the idea using the fetched rubric. **Let the score shape the recommendation** — do not write the recommendation first and reverse-engineer the score.
 
-If **total is 0–9**: the recommendation is **PASS**. Write that clearly and explain why.
+If the **total is in the bottom third of the scale** (v2: 3–4 out of 9): the recommendation is **PASS**. A **Mission score of 1** also reads as PASS regardless of total — Mission is the first score because motivational collapse, not market failure, is what kills experiments in this lab. Write the verdict clearly and explain why.
 
 ### Step 4: Write the document
 

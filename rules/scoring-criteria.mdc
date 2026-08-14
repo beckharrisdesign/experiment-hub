@@ -3,72 +3,92 @@ description: Apply when scoring experiments or conducting market research.
 globs: experiments/*/docs/market-research.md, data/experiments.json
 ---
 
-# Experiment scoring criteria
+# Experiment scoring (v2, 2026-08)
 
-Experiments are scored 1–5 across five dimensions. Maximum composite score: 25.
+Three dimensions, scored 1–3, **in this order**. Total 3–9.
 
-## Business Opportunity (B)
+Each anchor is ordered by one variable. Sub-clauses are indicators of that
+variable, not a checklist — score the level that best describes the whole,
+don't require every clause.
 
-Market potential and revenue opportunity.
+## 1. Mission (M) — does this feed why the lab exists, and will it keep you moving?
 
-- **5** — $1B+ TAM, clear path to $10M+ revenue, validated demand
-- **4** — $500M+ TAM, clear path to $1M+ revenue, strong growth signals
-- **3** — $100M+ TAM, path to $100K+ revenue, moderate indicators
-- **2** — $10M+ TAM, uncertain revenue path, weak indicators
-- **1** — <$10M TAM, unclear revenue path, minimal opportunity
+One rubric for the whole cluster: motivation, congruence, and impact on the
+people served. Measured, not gated — if it isn't scored, it can't get better.
 
-## Personal Impact (P)
+- **3** — Serves people you can name in makers / neurodiversity / sustainability.
+  The whole path — build, launch, *selling* — feels like the mission. You'd work
+  on it even if it earned nothing.
+- **2** — The product is mission-true, but a step on the path isn't — you can
+  already name the step you'd balk at.
+- **1** — The mission connection is a story you can tell, but it wouldn't
+  survive your own scrutiny.
 
-Would I personally use or benefit from this?
+**The balk test:** at scoring time, name the launch/selling step you least
+believe in. If naming it stings, score 2 and write the step down — it's the
+first thing to redesign, not a footnote. (Best Day Ever scored 22/25 on the old
+rubric and died at exactly this step: an email-list ad campaign the founder
+didn't believe in. The old instrument had no place to record that.)
 
-- **5** — Solves a daily problem, strong emotional connection, core personal need
-- **4** — Solves a regular problem, would use frequently
-- **3** — Solves an occasional problem, moderate connection
-- **2** — Solves a rare problem, weak connection
-- **1** — No personal use case, wouldn't use it myself
+## 2. Pull (P) — evidence someone other than you wants it
 
-## Competitive Advantage (C)
+- **3** — Someone paid, or asked to buy, unprompted.
+- **2** — Someone outside your head described the problem unprompted — a forum
+  post, a review, a message.
+- **1** — You believe it. No external signal yet.
 
-Market competition and differentiation.
+Grade evidence, not belief: "I think people would want this" is a 1, however
+strongly held.
 
-- **5** — First-mover, unique approach, defensible moat, minimal competition
-- **4** — Clear differentiation, underserved niche, limited competition
-- **3** — Some differentiation, competitive but viable
-- **2** — Limited differentiation, highly competitive
-- **1** — No differentiation, saturated market, dominant incumbents
+## 3. Speed (S) — weeks to a version that can take money
 
-## Platform Cost ($)
+- **3** — ≤ 2 weeks.
+- **2** — 2–6 weeks.
+- **1** — More than 6 weeks.
 
-Solo buildability with AI-assisted tools (Cursor, Claude Code, etc.).
+"Take money" means a live payment path, not a finished product.
 
-- **5** — Build solo in <1 month, minimal infra, <$50/mo ongoing
-- **4** — Build solo in 1–3 months, managed services, $50–200/mo
-- **3** — Build solo in 3–6 months, moderate infra, $200–500/mo
-- **2** — 6–12 months even with AI, complex infra, $500–2000/mo
-- **1** — 12+ months or team required, $2000+/mo, requires expertise I don't have
+## Reading a score
 
-AI-assisted tools can significantly reduce build time — if a project would be a 2 without AI but becomes feasible solo with it, score it higher.
+Read the profile before the total — same total, different meaning:
 
-## Social Impact (S)
+- **M3 P1 S3** — mission-true and fast, unvalidated. Build the money path and go
+  find pull; don't polish.
+- **M1–2 P3 S2** — demand without belief. This is the kind that stalls at launch
+  (see the balk test). Redesign the incongruent step before committing, or park.
+- **Low S, high M+P** — the only case where a longer build is worth it. Say so
+  explicitly in the proposal.
 
-Fun, joy, and whether the world needs this.
+Score relatively when stuck between levels: "more or less pull than
+simple-seed-organizer?" is answerable; "is this a 2 or a 3?" often isn't.
 
-- **5** — Addresses critical need, serves underserved communities, meaningful contribution
-- **4** — Addresses important need, good positive impact
-- **3** — Addresses moderate need, some value
-- **2** — Addresses minor need, minimal value
-- **1** — No meaningful impact, purely self-serving
+## Re-score at archive (the accuracy loop)
 
-## Score shapes (BHD framework)
+Scores are predictions. When an experiment's change is archived, re-grade all
+three with what you now know, in `archive.md` — **Mission** (did it actually
+serve them? where did congruence break?), **Pull** (did the demand exist?),
+**Speed** (how long did it really take? — the easiest one to grade, and chronic
+underestimates feed the next score):
 
-Named patterns from the five dimension scores (taxonomy may grow). **Shape is analytical, not a verdict** — same total with different shapes implies different risk and decisions.
+```
+**Predicted:** M3 P2 S2 · **Actual:** M3 P1 S1 · **Missed:** assumed signups meant demand
+```
 
-| Shape                | Pattern                                                   |
-| -------------------- | --------------------------------------------------------- |
-| **Strong-go**        | High across most dimensions                               |
-| **Big-bet**          | High P+S, decent B, modest C+$                            |
-| **Mission-driven**   | Moderate total, high P, modest B+C                        |
-| **Cheap-and-useful** | High $, moderate elsewhere                                |
-| **Hobby horse**      | Moderate everything; personal interest carries conviction |
+One line. The instrument only improves if it's graded — v1 scored nine
+experiments once, was never graded, and its top scorer stalled while its
+lowest business score became the flagship.
 
-If scores do not match an existing shape, propose a new shape name and flag for taxonomy review. Used in `bhd-experiment` schema `explore.md` scorecard and Archive re-runs.
+## Legacy (v1, five dimensions)
+
+Scores under the old keys (`businessOpportunity`, `personalImpact`,
+`competitiveAdvantage`, `platformCost`, `socialImpact`) in
+`data/experiments.json` are a historical record — do not backfill, convert, or
+delete them. The hub UI (`components/ExperimentScores.tsx`, `lib/scoring.ts`)
+and the Notion sync still read the v1 shape; migrating them to v2 is its own
+change, not a side-effect of scoring.
+
+Mapping, for reading old scores: `personalImpact` + `socialImpact` → Mission;
+`platformCost` → Speed; `businessOpportunity` (TAM anchors) and
+`competitiveAdvantage` retired — across 45 v1 ratings, 87% were 3s and 4s and
+totals never separated candidates. The v1 "score shapes" taxonomy is retired
+with it; the profile readings above replace it.
