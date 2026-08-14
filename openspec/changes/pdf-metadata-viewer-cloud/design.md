@@ -737,11 +737,34 @@ a layout system stops being one.
 | `Proposed · Dashboard · Desktop 1440` | `34:172` |
 | `Proposed · Detail · Desktop 1440` | `34:289` |
 | `Proposed · Compare (conflict) · Desktop 1440` | `34:9` |
-| `Proposed · Detail · Mobile 480` | — outstanding, required if the tool gets phone use |
+| `Proposed · Detail · Mobile 480` | `40:3` — on `02.10`, approved 2026-08-14 |
 
 Earlier pages hold the history: `02` first iteration, `02.1` Stat component,
 `02.2` document change leads, `02.3` contained width, `02.4` fewer borders,
-`02.5` contrast, `02.6` table idiom, `02.7` one table, `02.8` mirrored actions.
+`02.5` contrast, `02.6` table idiom, `02.7` one table, `02.8` mirrored actions,
+`02.10` Detail at Mobile 480.
+
+### Mobile 480 — what the small breakpoint costs
+
+`02.10` answers task 7.2. Preview above, fields below, commit bar pinned; not
+tabs, because tabs hide the document at exactly the moment you are deciding what
+to tag from it.
+
+Every interactive element is ≥44pt. That is not a detail — at desktop scale the
+keyword chips were 23pt and their remove affordance was an `×` **inside the text
+label**, so deleting a tag meant hitting a ~10pt glyph. Remove is now its own
+32pt target within a 44pt chip. The header links were worse: bare 15pt text with
+no padding at all.
+
+The cost is recorded rather than hidden: touch scale grew the metadata panel, so
+the preview yields height to it and lands around 185pt. Phone use is therefore
+tag-**confirming** — recognising a document and accepting suggestions — rather
+than tag-**deciding** from the page content. `Tap to expand` is the escape hatch.
+
+One deviation from desktop: `Discard` is an outline button here. Desktop pairs
+`text/muted-AA` with an `accent/primary` fill — `#7ac98d` on `#14ae5c` — which
+looks like it escaped the `02.5` contrast sweep and is worth fixing there rather
+than reproducing here.
 
 Iterations live on their own pages per `rules/figma.mdc`: `02 Proposed` is frozen
 as the first iteration and `02.1` carries the change, so the two can be compared

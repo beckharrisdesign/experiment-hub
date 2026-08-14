@@ -67,7 +67,7 @@ Each one changes work below it, so none should be discovered mid-build.
 ## 7. Design gate — before any write path
 
 - [x] 7.1 Build `Proposed · Compare (conflict)` on `02 Proposed` — three-way merge against the read-time baseline
-- [ ] 7.2 Build `Proposed · Detail · Mobile 480` if the tool will be used on a phone
+- [x] 7.2 Build `Proposed · Detail · Mobile 480` — the conditional resolved: Katy confirmed likely phone use on 2026-08-14. Built and **approved 2026-08-14** on page `02.10 Proposed — Detail on a phone`, frame `40:3`. Preview above, fields below, commit bar pinned. All 16 interactive elements ≥44pt, checked programmatically rather than by eye; the keyword remove control is a distinct 32pt target instead of a glyph inside the label. Cost recorded with the approval: the preview yields height to the panel (~185pt), making phone use tag-confirming rather than tag-deciding
 - [x] 7.3 Explicit go on the rendered pages before implementing the write path — approved 2026-08-06 on `02.9`, "close enough for MVP"
 
 ## 7b. Splitter — after the write path
