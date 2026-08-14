@@ -23,5 +23,5 @@ echo "Linked .cursor/rules, .cursor/skills, .claude/skills → rules/ and skills
 
 # Same idea for secrets: every worktree points at the one .env.local in the
 # main checkout, instead of each keeping a copy that drifts and dies with it.
-"$ROOT/scripts/link-worktree-env.sh"
+bash "$ROOT/scripts/link-worktree-env.sh"
 echo "Linked .claude/commands → .cursor/commands"

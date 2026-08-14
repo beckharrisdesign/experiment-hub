@@ -10,8 +10,11 @@ cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 # below, because a freshly created worktree starts with no env file at all —
 # which is how sessions used to lose an afternoon hunting for keys that were
 # already on the machine. Quiet unless something needs a human.
-if [ -x scripts/link-worktree-env.sh ]; then
-  scripts/link-worktree-env.sh --quiet || true
+# -f not -x, invoked via bash: the executable bit does not survive every clone
+# or platform, and gating on -x would skip this silently — the exact failure
+# this is meant to prevent.
+if [ -f scripts/link-worktree-env.sh ]; then
+  bash scripts/link-worktree-env.sh --quiet || true
 fi
 
 # Only run in remote Claude Code on the web environments

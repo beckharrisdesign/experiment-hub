@@ -33,8 +33,10 @@ MAIN_ROOT="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
 CANON="$MAIN_ROOT/.env.local"
 
 if [[ ! -f "$CANON" ]]; then
-  say "No canonical env file at $CANON — nothing to link."
-  say "Create it (see .env.example) and re-run."
+  # Not routed through say(): --quiet is for hook use, and this is exactly the
+  # case a hook must not swallow — it explains why nothing got linked.
+  echo "No canonical env file at $CANON — nothing to link." >&2
+  echo "Create it (see .env.example) and re-run." >&2
   exit 0
 fi
 
@@ -67,7 +69,10 @@ while read -r wt; do
       skipped=$((skipped + 1))
       continue
     fi
-    cp "$target" "$target.bak-$(date +%Y%m%d-%H%M%S)"
+    # Named to end in .local so the existing .gitignore rule (.env*.local)
+    # already covers it. "$target.bak-<ts>" would NOT be ignored, which is a
+    # backup full of secrets sitting in the tree waiting for a git add -A.
+    cp "$target" "$(dirname "$target")/.env.bak-$(date +%Y%m%d-%H%M%S).local"
     rm -f "$target"
   fi
 
