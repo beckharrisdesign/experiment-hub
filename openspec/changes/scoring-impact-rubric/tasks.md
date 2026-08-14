@@ -25,7 +25,7 @@
 - [x] 3.7 Wire into `app/experiments/[slug]/page.tsx`: Impact block after statements, standalone History section removed (its data feeds the History tab); graceful for every shape combination
 - [x] 3.8 Landing (`app/page-client.tsx`): shape-aware badge total, sort, and tooltip (impact dims for new shape, v1-history label otherwise)
 - [x] 3.9 Deletions: `app/scoring/`, `app/heuristics/`, `app/harness/`, `components/ExperimentScores.tsx`, `lib/agent-rubrics.ts`, `tests/agents/heuristics.test.ts`, Header nav entries (keep `Experiments`), commented-out Scaffolding section in `app/page-client.tsx`
-- [ ] 3.10 Add `Score:PI` / `Score:SI` / `Score:BI` number columns to the BHD Labs Projects database via the Notion connector — **confirm with Katy immediately before this schema change; no rows touched**
+- [x] 3.10 Add `Score:PI` / `Score:SI` / `Score:BI` number columns to the BHD Labs Projects database via the Notion connector — **confirm with Katy immediately before this schema change; no rows touched**
 - [x] 3.11 Tests (vitest, per `rules/vitest-conventions.mdc`): impact totals + badge rescale, Notion mapping with property/block fixtures (incl. title-drift and partial rows), `ImpactScores` render states, doc-route removal, and a rubric-drift guard asserting `lib/rubric.ts` anchors match `rules/scoring-criteria.mdc`
 
 ## 4. QA
