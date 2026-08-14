@@ -41,7 +41,9 @@ candidates. Anchors are ordered by evidence, not market size.
 ## Where scores live
 
 Scores are three number columns on the BHD Labs Projects Notion database
-(`Score:PI`, `Score:SI`, `Score:BI`); each justification is a child page of the
+(`Score:PI`, `Score:SI`, `Score:BI`), totaled in-database by the `Impact Score`
+formula column (empty until all three are filled — the v1 `Score` formula stays
+as history); each justification is a child page of the
 experiment's row titled `Why: Personal` / `Why: Social` / `Why: Business`. The
 hub renders them on the experiment detail page (`components/ImpactScores.tsx`),
 including each dimension's anchor legend — anchor text is mirrored in
