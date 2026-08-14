@@ -1,6 +1,6 @@
 ## Outcomes
 
-- **Who:** Solo founder running OpenSpec via Cursor (`/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`) across lite, full hub, and quickstart schemas.
+- **Who:** Solo founder running OpenSpec via Cursor (`/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`) across the hub's schemas.
 - **Job:** Finish an opsx turn and immediately open the files that were created or updated—without hunting under `openspec/changes/<name>/` or guessing paths from `outputPath` globs.
 - **Done when:** Every opsx skill and slash command ends with a short **Artifacts** block listing clickable paths for each file touched that turn (and, on completion summaries, for all artifacts in the change), derived from CLI output so behavior is schema-agnostic.
 - **Not doing:** Changing OpenSpec artifact templates or schema definitions; redesigning the propose/apply workflow; adding a custom IDE panel or web UI.
@@ -53,11 +53,11 @@ When an opsx command finishes a multi-artifact or all-tasks milestone, the agent
 
 ### Requirement: Paths are derived from CLI output, not hardcoded schema filenames
 
-Hub opsx skills and commands SHALL instruct agents to resolve artifact paths from OpenSpec CLI JSON (`outputPath`, `changeDir`, `contextFiles`, expanded spec paths) so the same **Artifacts** rule works for `experiment-hub-lite`, `experiment-hub`, and `quickstart` without per-schema filename tables.
+Hub opsx skills and commands SHALL instruct agents to resolve artifact paths from OpenSpec CLI JSON (`outputPath`, `changeDir`, `contextFiles`, expanded spec paths) so the same **Artifacts** rule works for `experiment-hub-lite` and `bhd-experiment` without per-schema filename tables.
 
-**Fails until:** A quickstart-schema change is documented in skills using only lite filenames (`proposal.md`, `design.md`, `tasks.md`) as the sole source of truth.
+**Fails until:** A change whose artifact set differs from lite is documented in skills using only lite filenames (`proposal.md`, `design.md`, `tasks.md`) as the sole source of truth.
 
-#### Scenario: Quickstart change uses different artifact set
+#### Scenario: A change uses a different artifact set
 
-- **WHEN** a change uses `schema: quickstart` and `openspec status --json` lists artifact IDs and `outputPath` values that differ from lite
+- **WHEN** a change uses `schema: bhd-experiment` and `openspec status --json` lists artifact IDs and `outputPath` values that differ from lite (`explore.md`, `propose.md`, `apply.md`, `archive.md`)
 - **THEN** agent instructions still require building the **Artifacts** block from that JSON rather than from a fixed filename list
