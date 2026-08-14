@@ -64,6 +64,11 @@ export function __resetArchiveIndex(): void {
  * on the suffix and prefer the most recent when a change was archived twice.
  */
 async function resolveChangeDir(changeId: string): Promise<string | null> {
+  // Change ids are slugs, never paths. The id can arrive via the Notion /
+  // Supabase experiment rows (openspecChangeId, experiment.id), so reject
+  // anything that could escape openspec/changes/ before it touches path.join.
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(changeId)) return null;
+
   const active = path.join(CHANGES_ROOT(), changeId);
   try {
     await fs.access(active);

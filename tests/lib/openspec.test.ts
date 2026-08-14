@@ -111,6 +111,26 @@ describe("loadOpenSpecLifecycle", () => {
     expect(lifecycle).toBeNull();
   });
 
+  it("rejects change ids that are not slugs (path-traversal guard)", async () => {
+    // openspecChangeId / experiment.id can arrive via Notion or Supabase rows;
+    // a value with path separators must never reach path.join.
+    for (const hostile of [
+      "../../.env.local",
+      "..",
+      "archive/2026-08-14-pomodoro-maker",
+      "pomodoro-maker/../../secrets",
+      ".hidden",
+      "UPPER-case",
+      "",
+    ]) {
+      const lifecycle = await loadOpenSpecLifecycle({
+        ...baseExperiment,
+        openspecChangeId: hostile,
+      });
+      expect(lifecycle, `expected null for id: ${JSON.stringify(hostile)}`).toBeNull();
+    }
+  });
+
   it("matches the full YYYY-MM-DD-<id> shape, not a bare suffix", async () => {
     // "maker" must not resolve to the archived "2026-08-14-pomodoro-maker".
     const lifecycle = await loadOpenSpecLifecycle({
