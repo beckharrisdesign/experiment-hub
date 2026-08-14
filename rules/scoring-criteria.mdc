@@ -64,12 +64,14 @@ simple-seed-organizer?" is answerable; "is this a 2 or a 3?" often isn't.
 
 ## Re-score at archive (the accuracy loop)
 
-Scores are predictions. When an experiment's change is archived, re-grade
-**Mission** (did it actually serve them? where did congruence break?) and
-**Pull** (did the demand exist?) with what you now know, in `archive.md`:
+Scores are predictions. When an experiment's change is archived, re-grade all
+three with what you now know, in `archive.md` — **Mission** (did it actually
+serve them? where did congruence break?), **Pull** (did the demand exist?),
+**Speed** (how long did it really take? — the easiest one to grade, and chronic
+underestimates feed the next score):
 
 ```
-**Predicted:** M3 P2 S2 · **Actual:** M3 P1 · **Missed:** assumed signups meant demand
+**Predicted:** M3 P2 S2 · **Actual:** M3 P1 S1 · **Missed:** assumed signups meant demand
 ```
 
 One line. The instrument only improves if it's graded — v1 scored nine
