@@ -26,7 +26,10 @@ if ! git rev-parse --abbrev-ref --symbolic-full-name "@{upstream}" >/dev/null 2>
   unpushed=$(git rev-list --count "origin/main..HEAD" 2>/dev/null || echo "0")
   if [ "$unpushed" -gt 0 ]; then
     branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
-    echo "Branch '$branch' has no upstream. Push with: git push -u origin $branch" >&2
+    # Single-quote the branch in the suggested command: git rejects spaces and
+    # glob characters in refnames, but permits $, ; and &, so an unquoted name
+    # pasted into a shell could execute rather than just push.
+    echo "Branch '$branch' has no upstream. Push with: git push -u origin '$branch'" >&2
     exit 2
   fi
 else
