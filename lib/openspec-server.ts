@@ -19,6 +19,42 @@ const PHASE_ORDER: BhdPhase[] = ["explore", "propose", "apply", "archive"];
 
 const CHANGES_ROOT = () => path.join(process.cwd(), "openspec", "changes");
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+const ARCHIVE_INDEX_TTL_MS = 5_000;
+let archiveIndex: { at: number; entries: Promise<string[]> } | null = null;
+
+/**
+ * Listing of `openspec/changes/archive/`, memoized briefly.
+ *
+ * The home page resolves a lifecycle per experiment inside a single
+ * `Promise.all`, and most experiments have no change folder at all — so an
+ * un-memoized lookup fires one `readdir` per experiment, concurrently. Caching
+ * the *promise* (not just its result) collapses that burst into one read: the
+ * concurrent callers all await the same in-flight listing.
+ *
+ * The TTL keeps a dev session honest — archive something and the hub reflects
+ * it within a few seconds. In production the archive is fixed per deployment.
+ */
+function archiveEntries(): Promise<string[]> {
+  const now = Date.now();
+  if (archiveIndex && now - archiveIndex.at < ARCHIVE_INDEX_TTL_MS) {
+    return archiveIndex.entries;
+  }
+  const entries = fs
+    .readdir(path.join(CHANGES_ROOT(), "archive"))
+    .catch(() => [] as string[]);
+  archiveIndex = { at: now, entries };
+  return entries;
+}
+
+/** Test seam — drop the memoized archive listing. */
+export function __resetArchiveIndex(): void {
+  archiveIndex = null;
+}
+
 /**
  * Resolve a change directory, falling back to the archive.
  *
@@ -36,20 +72,17 @@ async function resolveChangeDir(changeId: string): Promise<string | null> {
     // fall through to the archive
   }
 
-  const archiveRoot = path.join(CHANGES_ROOT(), "archive");
-  let entries: string[];
-  try {
-    entries = await fs.readdir(archiveRoot);
-  } catch {
-    return null;
-  }
-
-  const match = entries
-    .filter((name) => name.endsWith(`-${changeId}`))
+  // Match the full `YYYY-MM-DD-<changeId>` shape, not a bare suffix: a change
+  // called `maker` must not resolve to `2026-08-14-pomodoro-maker`. Sorting is
+  // safe because the date prefix is fixed-width and ISO — the last entry is the
+  // most recent archiving of this id.
+  const archived = new RegExp(`^\\d{4}-\\d{2}-\\d{2}-${escapeRegExp(changeId)}$`);
+  const match = (await archiveEntries())
+    .filter((name) => archived.test(name))
     .sort()
     .pop();
 
-  return match ? path.join(archiveRoot, match) : null;
+  return match ? path.join(CHANGES_ROOT(), "archive", match) : null;
 }
 
 export async function openSpecChangeDirExists(

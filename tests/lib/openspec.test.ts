@@ -4,7 +4,10 @@ import {
   resolveOpenSpecChangeId,
   formatBhdPhaseLabel,
 } from "@/lib/openspec-shared";
-import { loadOpenSpecLifecycle } from "@/lib/openspec-server";
+import {
+  loadOpenSpecLifecycle,
+  __resetArchiveIndex,
+} from "@/lib/openspec-server";
 import { getExperimentHrefSlug } from "@/lib/utils";
 import { getExperimentBySlug } from "@/lib/data";
 
@@ -106,5 +109,22 @@ describe("loadOpenSpecLifecycle", () => {
       openspecChangeId: "no-such-change-anywhere",
     });
     expect(lifecycle).toBeNull();
+  });
+
+  it("matches the full YYYY-MM-DD-<id> shape, not a bare suffix", async () => {
+    // "maker" must not resolve to the archived "2026-08-14-pomodoro-maker".
+    const lifecycle = await loadOpenSpecLifecycle({
+      ...baseExperiment,
+      openspecChangeId: "maker",
+    });
+    expect(lifecycle).toBeNull();
+  });
+
+  it("still resolves after the archive index is dropped", async () => {
+    __resetArchiveIndex();
+    const first = await loadOpenSpecLifecycle(baseExperiment);
+    const second = await loadOpenSpecLifecycle(baseExperiment);
+    expect(first?.changeId).toBe("pomodoro-maker");
+    expect(second?.changeId).toBe("pomodoro-maker");
   });
 });
