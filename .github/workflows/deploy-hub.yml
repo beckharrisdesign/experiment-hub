@@ -120,7 +120,9 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         id: deploy
         run: |
-          url=$(vercel deploy --prebuilt ${{ steps.target.outputs.prod_flag }} --token=${{ secrets.VERCEL_TOKEN }})
+          # --archive=tgz uploads one tarball instead of thousands of files,
+          # staying far under Vercel's 5000-uploads/24h hobby-plan cap.
+          url=$(vercel deploy --prebuilt --archive=tgz ${{ steps.target.outputs.prod_flag }} --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Deployed (${{ steps.target.outputs.env }}) → $url" >> "$GITHUB_STEP_SUMMARY"
 
