@@ -1,6 +1,5 @@
 // Turbopack logging: Logs are automatically captured to .next/turbopack.log
 // These logs are accessible via MCP filesystem resources for AI context
-import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -13,7 +12,12 @@ const nextConfig: NextConfig = {
   // It stayed invisible while the hub's middleware imported only "next/server";
   // it surfaced the moment that middleware gained a "@/lib/..." import.
   // Pinning the root keeps this build inside this directory.
-  turbopack: { root: path.resolve(__dirname) },
+  //
+  // process.cwd(), not __dirname: Next bundles this config before evaluating
+  // it, and __dirname arrives relative ("app"), so path.resolve() produced
+  // .../prototype/app/app and the build failed looking for next/package.json
+  // there. next build runs with this directory as its working directory.
+  turbopack: { root: process.cwd() },
 };
 
 export default nextConfig;
