@@ -86,7 +86,7 @@ Archive a completed change in the experimental workflow.
    - **Derive the outcome from evidence, not from the task count.** 19/20 checkboxes is not proof of shipping; a merged migration or a component on disk is. If you cannot find evidence, say so in the line rather than assuming `SHIPPED`.
    - `PARKED` replaces **Left open** with a **Wake condition** — the specific signal that would make this worth reopening.
    - `SUPERSEDED` names the change that replaced it.
-   - If the change belongs to a scored experiment, add the re-grade line per `rules/scoring-criteria.mdc`: `**Predicted:** M3 P2 S2 · **Actual:** … · **Missed:** …`.
+   - If the change belongs to a scored experiment, add the re-grade line per `rules/scoring-criteria.mdc`: `**Predicted:** PI4 SI3 BI2 · **Actual:** … · **Missed:** …`.
    - Keep it to the block above. This is a record, not a retrospective.
 
 6. **Perform the archive**

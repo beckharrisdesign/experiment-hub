@@ -6,9 +6,10 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-const { mockQuery, mockPageUpdate } = vi.hoisted(() => ({
+const { mockQuery, mockPageUpdate, mockBlocksList } = vi.hoisted(() => ({
   mockQuery: vi.fn(),
   mockPageUpdate: vi.fn(),
+  mockBlocksList: vi.fn(),
 }));
 
 vi.mock("@notionhq/client", () => ({
@@ -17,6 +18,7 @@ vi.mock("@notionhq/client", () => ({
     return {
       dataSources: { query: mockQuery },
       pages: { update: mockPageUpdate },
+      blocks: { children: { list: mockBlocksList } },
     };
   }),
 }));
@@ -32,6 +34,11 @@ import {
   updateExperimentInNotion,
   formatNotionProperty,
   getExperimentFieldsFromNotion,
+  getImpactRationaleFromNotion,
+  clearImpactRationaleCache,
+  renderBlocksToText,
+  IMPACT_SCORE_COLUMNS,
+  IMPACT_WHY_PAGE_TITLES,
 } from "@/lib/notion-experiments";
 
 // ---------------------------------------------------------------------------
@@ -618,5 +625,170 @@ describe("getExperimentFieldsFromNotion", () => {
 
   it("returns null for an unknown slug", async () => {
     expect(await getExperimentFieldsFromNotion("nope")).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// v3 impact scores (scoring-impact-rubric)
+// ---------------------------------------------------------------------------
+
+describe("mapNotionPageToExperiment · impact scores", () => {
+  it("pins the column-name contract", () => {
+    expect(IMPACT_SCORE_COLUMNS).toEqual({
+      personal: "Score:PI",
+      social: "Score:SI",
+      business: "Score:BI",
+    });
+    expect(IMPACT_WHY_PAGE_TITLES).toEqual({
+      personal: "Why: Personal",
+      social: "Why: Social",
+      business: "Why: Business",
+    });
+  });
+
+  it("maps the three impact columns", () => {
+    const experiment = mapNotionPageToExperiment(
+      makePage({
+        "Score:PI": { number: 5 },
+        "Score:SI": { number: 4 },
+        "Score:BI": { number: 2 },
+      }) as never,
+    );
+    expect(experiment?.impactScores).toEqual({
+      personal: 5,
+      social: 4,
+      business: 2,
+    });
+  });
+
+  it("keeps both shapes when v1 columns are also filled", () => {
+    const experiment = mapNotionPageToExperiment(
+      makePage({
+        "Score:PI": { number: 5 },
+        "Score:SI": { number: 4 },
+        "Score:BI": { number: 2 },
+        "Score:B": { number: 2 },
+        "Score:P": { number: 5 },
+        "Score:C": { number: 3 },
+        "Score:D": { number: 4 },
+        "Score:S": { number: 5 },
+      }) as never,
+    );
+    expect(experiment?.impactScores).toEqual({
+      personal: 5,
+      social: 4,
+      business: 2,
+    });
+    expect(experiment?.scores).toBeDefined();
+  });
+
+  it("leaves partial impact rows unscored rather than fabricating", () => {
+    const experiment = mapNotionPageToExperiment(
+      makePage({
+        "Score:PI": { number: 5 },
+        "Score:SI": { number: 4 },
+      }) as never,
+    );
+    expect(experiment?.impactScores).toBeUndefined();
+  });
+
+  it("drift in a column name reads as unscored (title-drift guard)", () => {
+    const experiment = mapNotionPageToExperiment(
+      makePage({
+        "Score:Pi": { number: 5 }, // wrong case
+        "Score:SI": { number: 4 },
+        "Score:BI": { number: 2 },
+      }) as never,
+    );
+    expect(experiment?.impactScores).toBeUndefined();
+  });
+});
+
+describe("renderBlocksToText", () => {
+  const rt = (text: string) => ({ rich_text: [{ plain_text: text }] });
+
+  it("renders the allowlisted block types with structure", () => {
+    const text = renderBlocksToText([
+      { type: "heading_2", heading_2: rt("The case") },
+      { type: "paragraph", paragraph: rt("First paragraph.") },
+      { type: "bulleted_list_item", bulleted_list_item: rt("one") },
+      { type: "bulleted_list_item", bulleted_list_item: rt("two") },
+      { type: "quote", quote: rt("a supporting quote") },
+      { type: "divider", divider: {} },
+      { type: "paragraph", paragraph: rt("Second paragraph.") },
+    ]);
+    expect(text).toBe(
+      "## The case\n\nFirst paragraph.\n\n- one\n- two\n\n> a supporting quote\n\n---\n\nSecond paragraph.",
+    );
+  });
+
+  it("keeps plain text of unknown block types and drops empties", () => {
+    const text = renderBlocksToText([
+      { type: "callout", callout: rt("kept as plain text") },
+      { type: "image", image: {} },
+      { type: "paragraph", paragraph: rt("") },
+    ]);
+    expect(text).toBe("kept as plain text");
+  });
+});
+
+describe("getImpactRationaleFromNotion", () => {
+  beforeEach(() => {
+    clearNotionExperimentsCache();
+    clearImpactRationaleCache();
+    process.env.NOTION_TOKEN = "test-token";
+    process.env.NOTION_EXPERIMENTS_DATA_SOURCE_ID = "ds-1";
+    mockQuery.mockResolvedValue({
+      results: [makePage()],
+      has_more: false,
+    });
+  });
+
+  afterEach(() => {
+    delete process.env.NOTION_TOKEN;
+    delete process.env.NOTION_EXPERIMENTS_DATA_SOURCE_ID;
+    mockQuery.mockReset();
+    mockBlocksList.mockReset();
+  });
+
+  const rt = (text: string) => ({ rich_text: [{ plain_text: text }] });
+
+  it("reads justifications from Why: child pages; missing pages are absent", async () => {
+    mockBlocksList.mockImplementation(async ({ block_id }) => {
+      if (block_id === "page-1") {
+        return {
+          results: [
+            {
+              id: "why-personal",
+              type: "child_page",
+              child_page: { title: "Why: Personal" },
+            },
+            // No Social or Business pages on this row.
+          ],
+          has_more: false,
+        };
+      }
+      if (block_id === "why-personal") {
+        return {
+          results: [
+            { type: "paragraph", paragraph: rt("I use it every season.") },
+            { type: "paragraph", paragraph: rt("It keeps me building.") },
+          ],
+          has_more: false,
+        };
+      }
+      return { results: [], has_more: false };
+    });
+
+    const rationale = await getImpactRationaleFromNotion("seed-organizer");
+    expect(rationale).toEqual({
+      personal: "I use it every season.\n\nIt keeps me building.",
+    });
+  });
+
+  it("returns {} for unknown slugs without calling the blocks API", async () => {
+    const rationale = await getImpactRationaleFromNotion("nope");
+    expect(rationale).toEqual({});
+    expect(mockBlocksList).not.toHaveBeenCalled();
   });
 });

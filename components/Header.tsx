@@ -5,12 +5,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navLinks = [
-  { label: "Experiments", href: "/" },
-  { label: "Scoring", href: "/scoring" },
-  { label: "Heuristics", href: "/heuristics" },
-  { label: "Harness", href: "/harness" },
-];
+// Scoring/Heuristics/Harness doc pages removed 2026-08 (scoring-impact-rubric):
+// they restated rules/ and skills/ content; the rubric renders in place on
+// experiment detail pages instead.
+const navLinks = [{ label: "Experiments", href: "/" }];
 
 export default function Header() {
   const pathname = usePathname();

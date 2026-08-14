@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { calculateTotalScore, parseSOMValue } from "@/lib/scoring";
+import {
+  calculateImpactTotal,
+  calculateTotalScore,
+  parseSOMValue,
+  summarizeExperimentScore,
+} from "@/lib/scoring";
 import type { ExperimentScores } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -152,5 +157,69 @@ describe("parseSOMValue", () => {
 
   it("parses fractional millions", () => {
     expect(parseSOMValue("$1.1M")).toBe(1_100_000);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// calculateImpactTotal / summarizeExperimentScore (v3)
+// ---------------------------------------------------------------------------
+
+describe("calculateImpactTotal", () => {
+  it("sums the three impact dimensions", () => {
+    expect(
+      calculateImpactTotal({ personal: 5, social: 4, business: 2 })
+    ).toBe(11);
+  });
+
+  it("stays within the 3-15 range at the extremes", () => {
+    expect(
+      calculateImpactTotal({ personal: 1, social: 1, business: 1 })
+    ).toBe(3);
+    expect(
+      calculateImpactTotal({ personal: 5, social: 5, business: 5 })
+    ).toBe(15);
+  });
+
+  it("returns null for absent scores", () => {
+    expect(calculateImpactTotal(null)).toBeNull();
+    expect(calculateImpactTotal(undefined)).toBeNull();
+  });
+
+  it("returns null for partial scores rather than a misleading total", () => {
+    expect(
+      calculateImpactTotal({ personal: 5, social: 4 } as never)
+    ).toBeNull();
+  });
+});
+
+describe("summarizeExperimentScore", () => {
+  const v1: ExperimentScores = {
+    businessOpportunity: 4,
+    personalImpact: 5,
+    competitiveAdvantage: 3,
+    platformCost: 4,
+    socialImpact: 5,
+  };
+
+  it("prefers the impact shape when both are complete", () => {
+    const summary = summarizeExperimentScore({
+      scores: v1,
+      impactScores: { personal: 5, social: 4, business: 2 },
+    });
+    expect(summary).toEqual({ total: 11, max: 15, shape: "impact" });
+  });
+
+  it("falls back to the v1 shape as history", () => {
+    const summary = summarizeExperimentScore({ scores: v1 });
+    expect(summary).toEqual({ total: 21, max: 25, shape: "v1" });
+  });
+
+  it("returns null when neither shape is complete", () => {
+    expect(summarizeExperimentScore({})).toBeNull();
+    expect(
+      summarizeExperimentScore({
+        impactScores: { personal: 5 } as never,
+      })
+    ).toBeNull();
   });
 });

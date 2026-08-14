@@ -25,6 +25,29 @@ export interface ScoreRationale {
   socialImpact?: string;
 }
 
+/**
+ * v3 impact-proxy scores (rules/scoring-criteria.mdc): three 1-5 dimensions,
+ * total 3-15. Lives alongside legacy `scores`; a row carrying both is
+ * rendered from this shape.
+ */
+export interface ImpactScores {
+  personal: number; // 1-5: would I use this?
+  social: number; // 1-5: does the world need this?
+  business: number; // 1-5: would the market pay, and could this win?
+}
+
+/**
+ * Per-dimension justification content, synced from the `Why:` child pages of
+ * the experiment's Notion row. Each value is the page's block content as
+ * markdown-ish plain text (paragraph breaks preserved); absent when the page
+ * doesn't exist.
+ */
+export interface ImpactRationale {
+  personal?: string;
+  social?: string;
+  business?: string;
+}
+
 export interface ValidationLandingPage {
   status: ValidationStatus;
   url?: string; // URL to the production landing page
@@ -52,8 +75,10 @@ export interface Experiment {
    * stay visible — only an explicit `false` hides a row.
    */
   public?: boolean;
-  scores?: ExperimentScores; // Optional scoring (1-5 for each dimension)
+  scores?: ExperimentScores; // v1 scoring, read-only history (1-5 for each of five dimensions)
   scoreRationale?: ScoreRationale; // Optional rationale for Business Opportunity, Personal Impact, Social Impact
+  impactScores?: ImpactScores; // v3 impact-proxy scores; wins over `scores` when both exist
+  impactRationale?: ImpactRationale; // Per-dimension justifications from Notion `Why:` pages
   validation?: ValidationLandingPage; // Landing page validation status
   /** OpenSpec change folder under openspec/changes/; defaults to experiment.id */
   openspecChangeId?: string;

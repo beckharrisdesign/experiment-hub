@@ -18,6 +18,8 @@ import type {
   ExperimentKind,
   ExperimentScores,
   ExperimentStatus,
+  ImpactRationale,
+  ImpactScores,
 } from "@/types";
 
 // Mirrors the auth paths of getUncachableNotionClient: an explicit token, or
@@ -118,6 +120,39 @@ export function toNotionType(type: string): string | null {
     : null;
 }
 
+/**
+ * v3 impact score columns on the Labs database and the conventional titles of
+ * the per-dimension justification child pages. These names are the contract
+ * between Notion and the hub — renaming a column or a `Why:` page silently
+ * drops the score/tab, so tests pin them.
+ */
+export const IMPACT_SCORE_COLUMNS = {
+  personal: "Score:PI",
+  social: "Score:SI",
+  business: "Score:BI",
+} as const;
+
+export const IMPACT_WHY_PAGE_TITLES = {
+  personal: "Why: Personal",
+  social: "Why: Social",
+  business: "Why: Business",
+} as const;
+
+export type ImpactDimension = keyof typeof IMPACT_SCORE_COLUMNS;
+
+function mapImpactScores(
+  properties: Record<string, NotionProperty>,
+): ImpactScores | undefined {
+  const personal = numberValue(properties[IMPACT_SCORE_COLUMNS.personal]);
+  const social = numberValue(properties[IMPACT_SCORE_COLUMNS.social]);
+  const business = numberValue(properties[IMPACT_SCORE_COLUMNS.business]);
+  // All three or nothing; partial rows must not fabricate a profile.
+  if (personal === null || social === null || business === null) {
+    return undefined;
+  }
+  return { personal, social, business };
+}
+
 function mapScores(
   properties: Record<string, NotionProperty>,
 ): ExperimentScores | undefined {
@@ -169,6 +204,7 @@ export function mapNotionPageToExperiment(page: NotionPage): Experiment | null {
     lastModified: page.last_edited_time ?? page.created_time ?? "",
     tags: [],
     scores: mapScores(properties),
+    impactScores: mapImpactScores(properties),
     // Notion `Public` is a checkbox; an unset box reads as false, so rows are
     // private-by-default and only an explicitly-checked row renders publicly.
     public: properties["Public"]?.checkbox === true,
@@ -253,6 +289,143 @@ export async function getExperimentFieldsFromNotion(
     if (value) fields.push({ label, value });
   }
   return fields;
+}
+
+// ---------------------------------------------------------------------------
+// Impact justification `Why:` pages (v3 scoring)
+// ---------------------------------------------------------------------------
+
+type NotionBlock = Record<string, any>;
+
+function blockRichText(block: NotionBlock, type: string): string {
+  const fragments = block[type]?.rich_text;
+  if (!Array.isArray(fragments)) return "";
+  return fragments
+    .map((f: { plain_text?: string }) => f.plain_text ?? "")
+    .join("");
+}
+
+/**
+ * Exported for tests. Renders a Notion block list to markdown-ish plain text.
+ * Allowlist per design.md: paragraphs, headings 1-3, bulleted/numbered lists,
+ * quotes, dividers. Unknown block types keep their plain text (or vanish when
+ * they have none). Blocks are separated by blank lines so `whitespace-pre-wrap`
+ * rendering preserves the structure.
+ */
+export function renderBlocksToText(blocks: NotionBlock[]): string {
+  const out: string[] = [];
+  for (const block of blocks) {
+    const type = block.type as string;
+    switch (type) {
+      case "paragraph": {
+        const text = blockRichText(block, type);
+        if (text) out.push(text);
+        break;
+      }
+      case "heading_1":
+      case "heading_2":
+      case "heading_3": {
+        const text = blockRichText(block, type);
+        if (text) out.push(`${"#".repeat(Number(type.slice(-1)))} ${text}`);
+        break;
+      }
+      case "bulleted_list_item": {
+        const text = blockRichText(block, type);
+        if (text) out.push(`- ${text}`);
+        break;
+      }
+      case "numbered_list_item": {
+        const text = blockRichText(block, type);
+        if (text) out.push(`1. ${text}`);
+        break;
+      }
+      case "quote": {
+        const text = blockRichText(block, type);
+        if (text) out.push(`> ${text}`);
+        break;
+      }
+      case "divider":
+        out.push("---");
+        break;
+      default: {
+        const text = type ? blockRichText(block, type) : "";
+        if (text) out.push(text);
+      }
+    }
+  }
+  // Consecutive list items group without blank lines; everything else gets one.
+  return out
+    .map((line, i) => {
+      const listy = /^(- |1\. )/;
+      const prev = out[i - 1];
+      if (i === 0) return line;
+      return listy.test(line) && prev !== undefined && listy.test(prev)
+        ? `\n${line}`
+        : `\n\n${line}`;
+    })
+    .join("");
+}
+
+async function listAllBlocks(blockId: string): Promise<NotionBlock[]> {
+  const notion = await getUncachableNotionClient();
+  const blocks: NotionBlock[] = [];
+  let cursor: string | undefined;
+  do {
+    const response: any = await notion.blocks.children.list({
+      block_id: blockId,
+      ...(cursor ? { start_cursor: cursor } : {}),
+    });
+    blocks.push(...(response.results ?? []));
+    cursor = response.has_more ? response.next_cursor : undefined;
+  } while (cursor);
+  return blocks;
+}
+
+// Same reasoning as the experiments cache: force-dynamic pages, slow
+// rate-limited API. Justifications are one child-block listing plus one page
+// fetch per existing `Why:` page.
+let rationaleCache: Record<
+  string,
+  { value: ImpactRationale; fetchedAt: number }
+> = {};
+
+/** Exported for tests. */
+export function clearImpactRationaleCache() {
+  rationaleCache = {};
+}
+
+/**
+ * The per-dimension justification content for `slug`, from the `Why:` child
+ * pages of its Notion row. Dimensions without a page are absent. Returns {}
+ * when the row has no matching child pages (every tab then shows its
+ * empty-state note).
+ */
+export async function getImpactRationaleFromNotion(
+  slug: string,
+): Promise<ImpactRationale> {
+  const cached = rationaleCache[slug];
+  if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
+    return cached.value;
+  }
+
+  await getExperimentsFromNotion();
+  const page = cache?.pageBySlug[slug];
+  if (!page) return {};
+
+  const children = await listAllBlocks(page.id);
+  const value: ImpactRationale = {};
+  for (const [dimension, title] of Object.entries(IMPACT_WHY_PAGE_TITLES)) {
+    const childPage = children.find(
+      (block) =>
+        block.type === "child_page" && block.child_page?.title === title,
+    );
+    if (!childPage) continue;
+    const text = renderBlocksToText(await listAllBlocks(childPage.id));
+    if (text) value[dimension as ImpactDimension] = text;
+  }
+
+  rationaleCache[slug] = { value, fetchedAt: Date.now() };
+  return value;
 }
 
 // ---------------------------------------------------------------------------

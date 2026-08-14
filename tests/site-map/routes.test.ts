@@ -42,12 +42,13 @@ describe("buildHubSiteMapRoutes", () => {
       experiments,
       rootDir: "/tmp/does-not-exist",
     });
-    expect(routes.slice(0, 4).map((route) => route.path)).toEqual([
-      "/",
-      "/scoring",
-      "/heuristics",
-      "/harness",
-    ]);
+    expect(routes[0].path).toBe("/");
+    // Doc pages removed by scoring-impact-rubric: the rubric renders on
+    // experiment detail pages now, not on standalone routes.
+    const paths = routes.map((route) => route.path);
+    expect(paths).not.toContain("/scoring");
+    expect(paths).not.toContain("/heuristics");
+    expect(paths).not.toContain("/harness");
   });
 
   it("creates experiment detail routes for every experiment", () => {
