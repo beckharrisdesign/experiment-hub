@@ -5,6 +5,15 @@ cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
 # Skills: edit skills/ only. Run scripts/link-agent-dirs.sh after clone if .claude/skills is missing.
 
+# Secrets: point this worktree's .env.local at the canonical file in the main
+# checkout. Runs locally as well as remotely and before the remote-only exit
+# below, because a freshly created worktree starts with no env file at all —
+# which is how sessions used to lose an afternoon hunting for keys that were
+# already on the machine. Quiet unless something needs a human.
+if [ -x scripts/link-worktree-env.sh ]; then
+  scripts/link-worktree-env.sh --quiet || true
+fi
+
 # Only run in remote Claude Code on the web environments
 if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   echo "Session start hook complete (local)."

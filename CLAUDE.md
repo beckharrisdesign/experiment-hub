@@ -9,7 +9,19 @@ alwaysApply: false
 > Skills live in `skills/` (Claude loads via `.claude/skills/` symlink).
 > **Edit `rules/` and `skills/` only.** This file is an index. Do not duplicate rule content here.
 
-After clone: `bash scripts/link-agent-dirs.sh`
+After clone: `bash scripts/link-agent-dirs.sh` — links `rules/` and `skills/` into
+the IDE paths, and points every worktree's `.env.local` at the one canonical file
+in the main checkout.
+
+## Secrets
+
+One file: `.env.local` in the main checkout. Worktrees symlink to it
+(`scripts/link-worktree-env.sh`, run automatically by the SessionStart hook), so
+a key added once is available everywhere and survives a worktree being recycled.
+
+`.env.example` is the registry — every key that exists, with its provenance, and
+no values. **Check it before hunting for a credential**; the answer is usually
+that you already have one.
 
 ## Rules
 
