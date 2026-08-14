@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+// Relative, not the "@/" alias, and deliberately so. The seed organizer app
+// (experiments/simple-seed-organizer/prototype/app) is a pnpm workspace member
+// whose Turbopack build infers the repo root as its workspace root and compiles
+// this file along with its own. Both tsconfigs map "@/*" to "./*", so under that
+// build "@/lib/pdf-auth" resolves against the seed app, where it does not exist,
+// and its build fails on code it never referenced. A relative specifier resolves
+// against this file instead, which is correct under either root.
 import {
   PDF_SESSION_COOKIE,
   isGatedPath,
   verifySession,
-} from "@/lib/pdf-auth";
+} from "./lib/pdf-auth";
 
 // Vanity host for the Etsy Listing Kit ad funnel — serves /etsy-listing-kit at
 // its root so ads can point at a clean URL. The labs.* paths keep working
