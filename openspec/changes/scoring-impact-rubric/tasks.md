@@ -7,7 +7,7 @@
 - [x] 1.3 **V1-only experiment renders unchanged** — a v1-only experiment's landing badge shows its `n/25` total as today, labeled as the v1 historical record; no five-dimension display is introduced or revived
 - [x] 1.4 **Every shape combination is safe** — experiments with new-only, v1-only, both, partial, and no scores all render their correct display with no runtime errors
 - [x] 1.5 **Totals computed per shape** — new-shape totals land in 3–15, v1 totals in 5–25, partial scores yield no total, and no tooltip hardcodes "/25 … see /scoring"
-- [ ] 1.6 **Impact-scored Notion row syncs** — filling the three score columns (and optionally writing `Why:` child pages) on a Labs database row puts the scores, justifications, and total on the hub; the new shape wins when v1 columns are also filled
+- [x] 1.6 **Impact-scored Notion row syncs** — filling the three score columns (and optionally writing `Why:` child pages) on a Labs database row puts the scores, justifications, and total on the hub; the new shape wins when v1 columns are also filled
 - [x] 1.7 **Doc pages and links are gone** — `/scoring`, `/heuristics`, and `/harness` return the app's not-found response and nothing in the header or landing page links to them
 
 ## 2. Prototype shell
@@ -30,5 +30,5 @@
 
 ## 4. QA
 
-- [ ] 4.1 Manual walkthrough: score an experiment in Notion (3 columns + one `Why:` page) → hub detail shows tabs and total; check a v1-only row's badge; visit `/scoring` → 404; both breakpoints
-- [ ] 4.2 Automated smoke: full vitest suite green in CI (fresh-worktree tsc/vitest noise is known — CI is authoritative)
+- [x] 4.1 Manual walkthrough: score an experiment in Notion (3 columns + one `Why:` page) → hub detail shows tabs and total; check a v1-only row's badge; visit `/scoring` → 404; both breakpoints
+- [x] 4.2 Automated smoke: full vitest suite green in CI (fresh-worktree tsc/vitest noise is known — CI is authoritative)
