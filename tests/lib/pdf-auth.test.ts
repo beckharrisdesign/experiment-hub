@@ -77,15 +77,25 @@ describe("signSession / verifySession", () => {
 // ---------------------------------------------------------------------------
 
 describe("isAllowedAccount", () => {
-  const env = { PDF_ALLOWED_GOOGLE_SUBS: "sub-one, sub-two" };
+  const env = { PDF_ALLOWED_GOOGLE_SUBS: "sub-one" };
 
-  it("admits a listed sub", () => {
+  it("admits the single listed sub", () => {
     expect(isAllowedAccount("sub-one", env)).toBe(true);
-    expect(isAllowedAccount("sub-two", env)).toBe(true);
   });
 
   it("refuses an unlisted sub", () => {
     expect(isAllowedAccount("sub-three", env)).toBe(false);
+  });
+
+  // The spec requires single-tenancy be enforced by this list holding exactly
+  // one entry. A second entry is a misconfiguration, and admitting both would
+  // silently make the instance multi-tenant — so it refuses everyone, the
+  // listed subs included.
+  it("refuses everyone when the allowlist holds more than one entry", () => {
+    const two = { PDF_ALLOWED_GOOGLE_SUBS: "sub-one, sub-two" };
+    expect(isAllowedAccount("sub-one", two)).toBe(false);
+    expect(isAllowedAccount("sub-two", two)).toBe(false);
+    expect(isAllowedAccount("sub-three", two)).toBe(false);
   });
 
   it("fails closed when the allowlist is unset or empty", () => {

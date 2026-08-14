@@ -145,14 +145,34 @@ export function allowedSubs(env: Record<string, string | undefined>): string[] {
     .filter(Boolean);
 }
 
-/** Fails closed: an unset or empty allowlist admits nobody. */
+/**
+ * Fails closed: an unset, empty, or over-populated allowlist admits nobody.
+ *
+ * "Exactly one" is the requirement, not "at least one" — the hosted-instance-
+ * access spec makes single-tenancy a property of this list rather than of the
+ * missing sign-up form. A second entry is therefore a misconfiguration, and the
+ * only safe reading is to refuse everyone: admitting both would quietly turn a
+ * single-tenant instance holding one household's medical and financial records
+ * into a multi-tenant one, with none of the isolation that would require.
+ *
+ * Refusing loudly on the server, rather than silently, because the symptom
+ * otherwise is "my own sign-in stopped working" with no stated cause.
+ */
 export function isAllowedAccount(
   sub: string | undefined,
   env: Record<string, string | undefined>,
 ): boolean {
   if (!sub) return false;
   const allowed = allowedSubs(env);
-  return allowed.length > 0 && allowed.includes(sub);
+  if (allowed.length > 1) {
+    console.warn(
+      "[pdf-metadata-viewer] PDF_ALLOWED_GOOGLE_SUBS holds " +
+        `${allowed.length} entries. This instance serves exactly one account, ` +
+        "so sign-in is refused for everyone until it holds a single sub.",
+    );
+    return false;
+  }
+  return allowed.length === 1 && allowed[0] === sub;
 }
 
 /**
