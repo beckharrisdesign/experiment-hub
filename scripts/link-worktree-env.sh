@@ -41,8 +41,15 @@ if [[ ! -f "$CANON" ]]; then
 fi
 
 # Key names only. Values are never read, printed, or compared.
+#
+# The `|| true` matters under `set -euo pipefail`: grep exits 1 when a file has
+# no keys at all (empty, or comments only), and pipefail propagates that. The
+# current call sites wrap this in process substitution, where the status is not
+# checked — verified: the script exits 0 against a comments-only canonical file.
+# But `x="$(keys_of f)"` as a plain assignment *does* abort the script, so this
+# is a landmine for the next caller. Absorbed here rather than at each use.
 keys_of() {
-  grep -oE '^[[:space:]]*[A-Za-z_][A-Za-z0-9_]*=' "$1" 2>/dev/null \
+  { grep -oE '^[[:space:]]*[A-Za-z_][A-Za-z0-9_]*=' "$1" 2>/dev/null || true; } \
     | tr -d ' =' | sort -u
 }
 
