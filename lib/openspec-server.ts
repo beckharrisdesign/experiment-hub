@@ -17,33 +17,60 @@ const PHASE_FILES: { phase: BhdPhase; filename: string }[] = [
 
 const PHASE_ORDER: BhdPhase[] = ["explore", "propose", "apply", "archive"];
 
-function changeDir(changeId: string): string {
-  return path.join(process.cwd(), "openspec", "changes", changeId);
+const CHANGES_ROOT = () => path.join(process.cwd(), "openspec", "changes");
+
+/**
+ * Resolve a change directory, falling back to the archive.
+ *
+ * Archiving a change must not erase an experiment's lifecycle story from the
+ * hub — the phases of a parked or finished experiment are the most interesting
+ * thing about it. Archived folders are named `YYYY-MM-DD-<changeId>`, so match
+ * on the suffix and prefer the most recent when a change was archived twice.
+ */
+async function resolveChangeDir(changeId: string): Promise<string | null> {
+  const active = path.join(CHANGES_ROOT(), changeId);
+  try {
+    await fs.access(active);
+    return active;
+  } catch {
+    // fall through to the archive
+  }
+
+  const archiveRoot = path.join(CHANGES_ROOT(), "archive");
+  let entries: string[];
+  try {
+    entries = await fs.readdir(archiveRoot);
+  } catch {
+    return null;
+  }
+
+  const match = entries
+    .filter((name) => name.endsWith(`-${changeId}`))
+    .sort()
+    .pop();
+
+  return match ? path.join(archiveRoot, match) : null;
 }
 
 export async function openSpecChangeDirExists(
   changeId: string,
 ): Promise<boolean> {
-  try {
-    await fs.access(changeDir(changeId));
-    return true;
-  } catch {
-    return false;
-  }
+  return (await resolveChangeDir(changeId)) !== null;
 }
 
 export async function loadOpenSpecLifecycle(
   experiment: Experiment,
 ): Promise<OpenSpecLifecycle | null> {
   const changeId = resolveOpenSpecChangeId(experiment);
-  if (!(await openSpecChangeDirExists(changeId))) {
+  const dir = await resolveChangeDir(changeId);
+  if (!dir) {
     return null;
   }
 
   const artifacts: OpenSpecPhaseArtifact[] = [];
 
   for (const { phase, filename } of PHASE_FILES) {
-    const filePath = path.join(changeDir(changeId), filename);
+    const filePath = path.join(dir, filename);
     try {
       await fs.access(filePath);
     } catch {

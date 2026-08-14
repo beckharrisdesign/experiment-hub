@@ -41,7 +41,7 @@ When ready to implement, run /opsx:apply
    openspec new change "<name>"
    ```
 
-   This creates a scaffolded change at `openspec/changes/<name>/` with `.openspec.yaml` using the **default schema** from `openspec/config.yaml` (currently **`experiment-hub-lite`**). Override: `--schema bhd-experiment` (product lifecycle), `--schema experiment-hub` (sponsor ladder), `--schema quickstart` (vanilla), or set `schema:` in `.openspec.yaml`.
+   This creates a scaffolded change at `openspec/changes/<name>/` with `.openspec.yaml` using the **default schema** from `openspec/config.yaml` — **`experiment-hub-lite`**. Take the default; do not offer a schema menu. The single override is `--schema bhd-experiment`, and only when the experiment's hub detail page should render phase tabs (see `rules/openspec-workflow.mdc`).
 
 3. **Get the artifact build order**
 
@@ -116,7 +116,7 @@ After completing all artifacts, summarize:
 - Change name and location
 - List of artifacts created with brief descriptions
 - What's ready: "All artifacts created! Ready for implementation."
-- Prompt: For lite/full — "Run `/opsx:apply` to implement tasks." For **bhd-experiment** — "Use a child change (`--schema experiment-hub-lite`) for code, or update Build Units in `apply.md`; parent `/opsx:apply` does not run task checkboxes."
+- Prompt: For **experiment-hub-lite** — "Run `/opsx:apply` to implement tasks." For **bhd-experiment** — "Use a child change (`--schema experiment-hub-lite`) for code, or update Build Units in `apply.md`; parent `/opsx:apply` does not run task checkboxes."
 
 **Artifacts output (required):** Follow [`skills/openspec-artifacts-output.md`](openspec-artifacts-output.md). After **each** artifact write (lite: every approval turn), end the message with `## Artifacts` linking files touched that turn. When all `applyRequires` artifacts are `done`, list every artifact file for the change (from `openspec status --change "<name>" --json`).
 

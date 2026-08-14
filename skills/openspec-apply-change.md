@@ -31,8 +31,8 @@ Implement tasks from an OpenSpec change.
    ```
 
    Parse the JSON to understand:
-   - `schemaName`: The workflow being used (e.g., "spec-driven")
-   - Which artifact contains the tasks (typically "tasks" for spec-driven, check status for others)
+   - `schemaName`: The workflow being used (`experiment-hub-lite` or `bhd-experiment`)
+   - Which artifact contains the tasks (`tasks` for `experiment-hub-lite`; check status for `bhd-experiment`)
 
    **If `schemaName` is `bhd-experiment`:** follow **BHD Apply branch** below instead of steps 3–8 (task checkbox loop and commit/PR for code).
 
@@ -68,8 +68,8 @@ Implement tasks from an OpenSpec change.
 
    Read every file path listed under `contextFiles` from the apply instructions output.
    The files depend on the schema being used:
-   - **spec-driven**: proposal, specs, design, tasks
-   - Other schemas: follow the contextFiles from CLI output
+   - **`experiment-hub-lite`**: proposal, specs, design, tasks
+   - **`bhd-experiment`**: follow the contextFiles from CLI output
 
 5. **Show current progress**
 
