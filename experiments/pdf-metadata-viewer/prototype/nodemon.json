@@ -1,0 +1,27 @@
+{
+  "watch": [
+    "server.js",
+    "lib/**/*.js",
+    "public/**/*.js",
+    "public/**/*.html",
+    "public/**/*.css",
+    "config/*.md"
+  ],
+  "ignore": [
+    "node_modules/**",
+    "pdfs/**",
+    "activity-log.json",
+    ".entities-snapshot.json",
+    "testing/**",
+    "scripts/**",
+    "*.log",
+    ".env"
+  ],
+  "ext": "js,html,css,md",
+  "exec": "node server.js",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "delay": 500,
+  "verbose": false
+}

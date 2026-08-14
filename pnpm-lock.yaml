@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@beckharrisdesign/mvds':
-        specifier: ^0.2.0
-        version: 0.2.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(tailwindcss@4.3.2)(typescript@5.9.3)
+        specifier: ^0.3.0
+        version: 0.3.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(tailwindcss@4.3.2)(typescript@5.9.3)
       '@notionhq/client':
         specifier: ^5.6.0
         version: 5.20.0
@@ -178,6 +178,8 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  packages/notion-auth: {}
 
   packages/ui:
     devDependencies:
@@ -417,8 +419,8 @@ packages:
     resolution: {integrity: sha512-4zBIxpPzowiZpusoFkyGVwakdRJUyuH5PxQ/PrqghfdFWWasvnCdPfQXHrenDai+gyLARulZjZowCOj6fjT4pA==}
     engines: {node: '>=6.9.0'}
 
-  '@beckharrisdesign/mvds@0.2.0':
-    resolution: {integrity: sha512-no0PQah5FrXJeZXJ8O+CrfSZD+pkmgHKTYqcx76G4ljSaK5RjMhcmT3uF8DPCJOfbw+J1OEu9XYwzvZCeGMeLA==}
+  '@beckharrisdesign/mvds@0.3.0':
+    resolution: {integrity: sha512-YwHW4v5z1k0rJMCGUVuCaTkiqWdHOBkmvemE1agX1axSMwXsX9IGBFxpybnW9IK7F+b0Kh1LrUs9gHb2tzDncA==}
     peerDependencies:
       react: ^19
       react-dom: ^19
@@ -5795,7 +5797,7 @@ snapshots:
       '@babel/helper-string-parser': 7.29.7
       '@babel/helper-validator-identifier': 7.29.7
 
-  '@beckharrisdesign/mvds@0.2.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(tailwindcss@4.3.2)(typescript@5.9.3)':
+  '@beckharrisdesign/mvds@0.3.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(tailwindcss@4.3.2)(typescript@5.9.3)':
     dependencies:
       '@fontsource-variable/inter': 5.2.8
       class-variance-authority: 0.7.1
@@ -9871,7 +9873,7 @@ snapshots:
 
   parse-json@5.2.0:
     dependencies:
-      '@babel/code-frame': 7.29.0
+      '@babel/code-frame': 7.29.7
       error-ex: 1.3.4
       json-parse-even-better-errors: 2.3.1
       lines-and-columns: 1.2.4
@@ -10324,7 +10326,7 @@ snapshots:
   shadcn@4.13.0(typescript@5.9.3):
     dependencies:
       '@babel/core': 7.29.0
-      '@babel/parser': 7.29.2
+      '@babel/parser': 7.29.7
       '@babel/plugin-transform-typescript': 7.29.7(@babel/core@7.29.0)
       '@babel/preset-typescript': 7.29.7(@babel/core@7.29.0)
       '@dotenvx/dotenvx': 1.75.1

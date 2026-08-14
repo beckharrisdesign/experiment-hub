@@ -44,9 +44,55 @@ const nextConfig = {
     ];
   },
   async headers() {
+    // Base CSP for the whole hub.
+    const baseCsp = {
+      'default-src': ["'self'"],
+      'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://www.googletagmanager.com'], // unsafe-eval required by Mermaid
+      'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      'font-src': ["'self'", 'https://fonts.gstatic.com'],
+      'img-src': ["'self'", 'data:', 'blob:', 'https://www.google-analytics.com', 'https://www.googletagmanager.com', 'https://*.supabase.co'], // *.supabase.co: Etsy Listing Kit signed download images
+      'connect-src': ["'self'", 'https://www.google-analytics.com', 'https://region1.google-analytics.com', 'https://www.googletagmanager.com'],
+      'frame-ancestors': ["'none'"],
+    };
+
+    // pdf-metadata-viewer only. The Google Picker is the sole way to establish a
+    // `drive.file` grant over existing files, and it needs its loader script, an
+    // iframe from docs.google.com, and calls to the Drive API. Scoped to these
+    // pages rather than widened hub-wide, so one feature's requirement does not
+    // become everyone's attack surface.
+    const pickerCsp = {
+      ...baseCsp,
+      'script-src': [...baseCsp['script-src'], 'https://apis.google.com'],
+      'connect-src': [...baseCsp['connect-src'], 'https://www.googleapis.com', 'https://content.googleapis.com'],
+      'frame-src': ["'self'", 'https://docs.google.com', 'https://drive.google.com'],
+      'img-src': [...baseCsp['img-src'], 'https://*.googleusercontent.com', 'https://drive-thirdparty.googleusercontent.com'],
+    };
+
+    const render = (csp) =>
+      Object.entries(csp)
+        .map(([directive, values]) => `${directive} ${values.join(' ')}`)
+        .join('; ');
+
+    const securityHeaders = (csp) => [
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+      { key: 'Content-Security-Policy', value: render(csp) },
+    ];
+
     return [
+      // The Picker pages. X-Frame-Options is omitted here rather than set to
+      // DENY: it is a legacy header with no frame-src equivalent, and
+      // frame-ancestors 'none' in the CSP already denies being framed.
+      { source: '/pdf-metadata-viewer', headers: securityHeaders(pickerCsp) },
+      { source: '/pdf-metadata-viewer/:path*', headers: securityHeaders(pickerCsp) },
+
+      // Everything else keeps the original policy. The negative lookahead stops
+      // two CSP headers landing on one response — browsers enforce the
+      // intersection of multiple policies, which would silently re-block the
+      // Picker.
       {
-        source: '/(.*)',
+        source: '/((?!pdf-metadata-viewer).*)',
         headers: [
           {
             key: 'X-Frame-Options',

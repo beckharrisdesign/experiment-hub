@@ -1,12 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
+// Relative, not the "@/" alias, and deliberately so. The seed organizer app
+// (experiments/simple-seed-organizer/prototype/app) is a pnpm workspace member
+// whose Turbopack build infers the repo root as its workspace root and compiles
+// this file along with its own. Both tsconfigs map "@/*" to "./*", so under that
+// build "@/lib/pdf-auth" resolves against the seed app, where it does not exist,
+// and its build fails on code it never referenced. A relative specifier resolves
+// against this file instead, which is correct under either root.
+import {
+  PDF_SESSION_COOKIE,
+  isGatedPath,
+  verifySession,
+} from "./lib/pdf-auth";
 
 // Vanity host for the Etsy Listing Kit ad funnel — serves /etsy-listing-kit at
 // its root so ads can point at a clean URL. The labs.* paths keep working
 // unchanged (Stripe webhook + email links stay on ELK_SITE_URL).
 const ELK_HOST = "etsy-listing-kit.vercel.app";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // ── pdf-metadata-viewer: refuse before anything else runs ─────────────────
+  // The spec requires an unauthenticated request to be refused before any
+  // storage, database, or third-party call, and to leave no way to tell an
+  // existing document from a missing one. Both hold because this returns here,
+  // identically, for every gated path — the route handler never executes, so it
+  // never opens a connection and never has a chance to 404 differently.
+  if (isGatedPath(pathname)) {
+    const session = await verifySession(
+      request.cookies.get(PDF_SESSION_COOKIE)?.value,
+      process.env.PDF_SESSION_SECRET ?? "",
+    );
+
+    if (!session) {
+      // Uniform for forged, expired, malformed, and absent alike.
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      return NextResponse.redirect(
+        new URL("/pdf-metadata-viewer/sign-in", request.url),
+      );
+    }
+
+    return NextResponse.next();
+  }
 
   // ── Etsy Listing Kit vanity host → rewrite to the funnel routes ────────────
   const host = request.headers.get("host") ?? request.nextUrl.host;

@@ -1,0 +1,21 @@
+{
+  "name": "@experiment-hub/notion-auth",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared Notion authentication: direct token or Replit connector, for both the hub app and experiment prototypes",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    }
+  },
+  "peerDependencies": {
+    "@notionhq/client": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "@notionhq/client": { "optional": true }
+  }
+}

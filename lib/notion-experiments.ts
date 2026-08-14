@@ -13,6 +13,7 @@
  *      (on Replit, the connector supplies auth and NOTION_TOKEN can be omitted)
  */
 import { getUncachableNotionClient } from "@/lib/notion";
+import { hasNotionAuth } from "@experiment-hub/notion-auth";
 import type {
   Experiment,
   ExperimentKind,
@@ -21,16 +22,6 @@ import type {
   ImpactRationale,
   ImpactScores,
 } from "@/types";
-
-// Mirrors the auth paths of getUncachableNotionClient: an explicit token, or
-// the Replit connector (hostname + repl/depl identity).
-function hasNotionAuth(): boolean {
-  return !!(
-    process.env.NOTION_TOKEN ||
-    (process.env.REPLIT_CONNECTORS_HOSTNAME &&
-      (process.env.REPL_IDENTITY || process.env.WEB_REPL_RENEWAL))
-  );
-}
 
 export function hasNotionExperiments(): boolean {
   return !!(hasNotionAuth() && process.env.NOTION_EXPERIMENTS_DATA_SOURCE_ID);
