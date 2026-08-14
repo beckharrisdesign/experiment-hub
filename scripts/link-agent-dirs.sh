@@ -20,4 +20,8 @@ link_dir ".claude/skills" "../skills"
 link_dir ".claude/commands" "../.cursor/commands"
 
 echo "Linked .cursor/rules, .cursor/skills, .claude/skills → rules/ and skills/"
+
+# Same idea for secrets: every worktree points at the one .env.local in the
+# main checkout, instead of each keeping a copy that drifts and dies with it.
+bash "$ROOT/scripts/link-worktree-env.sh"
 echo "Linked .claude/commands → .cursor/commands"
