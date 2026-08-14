@@ -18,15 +18,26 @@ fi
 
 # Require that local commits are pushed before ending the turn.
 if ! git rev-parse --abbrev-ref --symbolic-full-name "@{upstream}" >/dev/null 2>&1; then
-  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
-  echo "Branch '$branch' has no upstream. Push with: git push -u origin $branch" >&2
-  exit 2
-fi
-
-ahead_count=$(git rev-list --count "@{upstream}..HEAD")
-if [ "$ahead_count" -gt 0 ]; then
-  echo "There are $ahead_count unpushed commit(s). Push before stopping." >&2
-  exit 2
+  # A missing upstream only matters when there is something to push. Scratch
+  # worktrees start on a fresh branch at main's tip with zero commits, and
+  # blocking there strands the turn — the only way to satisfy the gate is to
+  # publish an empty branch to the shared remote. Guard on the same
+  # origin/main..HEAD count the PR check below already uses.
+  unpushed=$(git rev-list --count "origin/main..HEAD" 2>/dev/null || echo "0")
+  if [ "$unpushed" -gt 0 ]; then
+    branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+    # Single-quote the branch in the suggested command: git rejects spaces and
+    # glob characters in refnames, but permits $, ; and &, so an unquoted name
+    # pasted into a shell could execute rather than just push.
+    echo "Branch '$branch' has no upstream. Push with: git push -u origin '$branch'" >&2
+    exit 2
+  fi
+else
+  ahead_count=$(git rev-list --count "@{upstream}..HEAD")
+  if [ "$ahead_count" -gt 0 ]; then
+    echo "There are $ahead_count unpushed commit(s). Push before stopping." >&2
+    exit 2
+  fi
 fi
 
 # Require an open PR for any non-main branch that has commits beyond main.
