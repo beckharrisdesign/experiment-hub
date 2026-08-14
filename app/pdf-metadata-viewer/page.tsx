@@ -28,15 +28,16 @@ const TONE_CLASS: Record<Tone, string> = {
   danger: "text-error",
 };
 
-function Stat({
-  label,
-  value,
-  tone = "default",
-}: {
+// Column headers are static — module scope, not rebuilt on every render.
+const TABLE_HEADERS = ["Filename", "Title", "Keywords", "Pages", "State"];
+
+interface StatProps {
   label: string;
   value: string;
   tone?: Tone;
-}) {
+}
+
+function Stat({ label, value, tone = "default" }: StatProps) {
   return (
     <Stack gap={4}>
       <span className="text-xs font-medium text-text-muted">{label}</span>
@@ -65,7 +66,7 @@ function DocumentsTable({ documents }: { documents: PdfDocument[] }) {
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-border">
-            {["Filename", "Title", "Keywords", "Pages", "State"].map((h) => (
+            {TABLE_HEADERS.map((h) => (
               <th
                 key={h}
                 className="px-4 py-3 text-xs font-medium text-text-muted"

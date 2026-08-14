@@ -36,7 +36,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof DriveReauthorizationRequired) {
       return NextResponse.json(
-        { error: "reauthorize", message: error.message },
+        // Human-readable, because FolderPicker renders `detail.error` straight
+        // into the status line — the previous shape showed the user the literal
+        // word "reauthorize". The 409 remains the machine-readable signal.
+        { error: "Drive access needs re-authorizing. Sign in again." },
         { status: 409 },
       );
     }

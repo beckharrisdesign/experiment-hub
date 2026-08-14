@@ -13,7 +13,10 @@ import {
 
 const CONFIG = {
   PDF_GOOGLE_CLIENT_ID: "test-client.apps.googleusercontent.com",
-  PDF_GOOGLE_CLIENT_SECRET: "GOCSPX-test",
+  // Deliberately not the real "GOCSPX-" prefix: this repo is public, and a
+  // string shaped like a Google client secret trips secret scanning and
+  // push protection. Nothing here parses the prefix.
+  PDF_GOOGLE_CLIENT_SECRET: "not-a-real-client-secret",
   PDF_GOOGLE_REDIRECT_URI: "http://localhost:3000/api/pdf-drive/callback",
 };
 

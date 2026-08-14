@@ -41,7 +41,10 @@ export async function GET() {
   } catch (error) {
     if (error instanceof DriveReauthorizationRequired) {
       return NextResponse.json(
-        { error: "reauthorize", message: error.message },
+        // { error: string } per rules/nextjs-api-routes.mdc, and human-readable
+        // because clients surface `error` directly. The 409 status is what
+        // callers branch on; the body is what a person ends up reading.
+        { error: "Drive access needs re-authorizing. Sign in again." },
         { status: 409 },
       );
     }
