@@ -15,9 +15,6 @@ import Link from "next/link";
 interface ExperimentWithRelated extends Experiment {
   prototype?: Prototype | null;
   documentation?: Documentation | null;
-  hasPRDFile?: boolean;
-  hasPrototypeDir?: boolean;
-  hasLandingPage?: boolean;
   moa?: string | null;
   goNoGo?: string | null;
   somYear1?: string | null;

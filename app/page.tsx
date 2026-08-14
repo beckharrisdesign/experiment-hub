@@ -16,9 +16,6 @@ import { requireAdminCookie } from "@/lib/admin-auth";
 interface ExperimentWithRelated extends Experiment {
   prototype?: Prototype | null;
   documentation?: Documentation | null;
-  hasPRDFile?: boolean;
-  hasPrototypeDir?: boolean;
-  hasLandingPage?: boolean;
   moa?: string | null;
   goNoGo?: string | null;
   somYear1?: string | null;
@@ -79,11 +76,6 @@ export default async function HomePage() {
             ...exp,
             prototype: showPrototypes ? prototypeMap.get(exp.id) || null : null,
             documentation: docsMap.get(exp.id) || null,
-            hasPRDFile: fileChecks.hasPRDFile,
-            hasPrototypeDir: showPrototypes
-              ? fileChecks.hasPrototypeDir
-              : false,
-            hasLandingPage: fileChecks.hasLandingPage,
             moa,
             goNoGo,
             somYear1,
@@ -100,9 +92,6 @@ export default async function HomePage() {
             ...exp,
             prototype: prototypeMap.get(exp.id) || null,
             documentation: docsMap.get(exp.id) || null,
-            hasPRDFile: false,
-            hasPrototypeDir: false,
-            hasLandingPage: false,
             moa: null,
             goNoGo: null,
             somYear1: null,
