@@ -20,4 +20,4 @@ context: |
   change with `schema: experiment-hub-lite` and `/opsx:apply` on the child only.
   Per-phase generation rules: rules/bhd-experiment.mdc.
 
-  Scoring store: rules/scoring-criteria.mdc (dimensions + score shapes).
+  Scoring store: rules/scoring-criteria.mdc (v2: Mission/Pull/Speed, 1–3 each; re-grade at archive).

@@ -73,6 +73,11 @@ When a change is merged, move `openspec/changes/<name>/` to `openspec/changes/ar
 **Left open:** <what a future session would need — or omit>
 ```
 
+If the change belongs to a scored experiment, add the re-grade line per
+[`scoring-criteria.mdc`](scoring-criteria.mdc) (`**Predicted:** M3 P2 S2 ·
+**Actual:** … · **Missed:** …`) — scores are predictions, and archive is where
+they get graded.
+
 `PARKED` gets a wake condition instead. Between 2026-05 and 2026-08 the archive accumulated 18 changes with zero outcome records, and 11 more sat "active" for three months after their work had shipped — the queue stopped describing reality. An outcome line is the cheapest defence against that.
 
 **`openspec/changes/` is a working queue, not a backlog.** A change with no movement in ~6 weeks gets archived with an outcome, not left to age. Ideas worth keeping live as issues; the queue holds what's in flight.
