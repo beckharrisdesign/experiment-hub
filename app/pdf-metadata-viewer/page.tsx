@@ -1,7 +1,7 @@
 import { Badge, Button, Container, Inline, Stack } from "@beckharrisdesign/mvds";
 import { listPdfDocuments, type PdfDocument } from "@/lib/pdf-documents";
 import { getDriveConnection } from "@/lib/pdf-drive";
-import { FolderPicker } from "./FolderPicker";
+import FolderPicker from "./FolderPicker";
 
 /**
  * Hosted pdf-metadata-viewer dashboard.

@@ -34,7 +34,7 @@ export async function GET() {
     const apiKey = process.env.PDF_GOOGLE_API_KEY ?? null;
 
     return NextResponse.json(
-      { accessToken, appId, apiKey },
+      { success: true, accessToken, appId, apiKey },
       // Never cached: it is a credential with an expiry.
       { headers: { "Cache-Control": "no-store, private" } },
     );

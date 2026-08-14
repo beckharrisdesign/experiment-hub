@@ -28,7 +28,7 @@ export async function GET(
     if (!document) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-    return NextResponse.json({ document });
+    return NextResponse.json({ success: true, document });
   } catch (error) {
     console.error("Failed to load PDF document:", error);
     return NextResponse.json(

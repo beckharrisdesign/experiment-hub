@@ -60,7 +60,7 @@ type Status =
   | { kind: "done"; imported: number; total: number }
   | { kind: "error"; message: string };
 
-export function FolderPicker() {
+export default function FolderPicker() {
   const [status, setStatus] = useState<Status>({ kind: "idle" });
 
   const pick = useCallback(async () => {
@@ -123,11 +123,12 @@ export function FolderPicker() {
             return;
           }
 
-          const result = (await importRes.json()) as {
+          const { imported, total } = (await importRes.json()) as {
             imported: number;
+            skipped: number;
             total: number;
           };
-          setStatus({ kind: "done", ...result });
+          setStatus({ kind: "done", imported, total });
           // Server components hold the document list, so a reload is what shows it.
           window.location.reload();
         });

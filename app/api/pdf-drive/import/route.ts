@@ -48,7 +48,12 @@ export async function POST(request: NextRequest) {
   }
 
   if (files.length === 0) {
-    return NextResponse.json({ imported: 0, skipped: 0, total: 0 });
+    return NextResponse.json({
+      success: true,
+      imported: 0,
+      skipped: 0,
+      total: 0,
+    });
   }
 
   // `drive_file_id` is unique, so re-importing a folder updates the reference
@@ -75,8 +80,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Same shape as the empty-folder branch above: a caller should not have to
+  // discover which fields exist by checking whether the folder had anything in
+  // it. `skipped` is what the upsert did not return a row for.
+  const imported = data?.length ?? 0;
   return NextResponse.json({
-    imported: data?.length ?? 0,
+    success: true,
+    imported,
+    skipped: files.length - imported,
     total: files.length,
   });
 }

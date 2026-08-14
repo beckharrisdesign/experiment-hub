@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       "[pdf-metadata-viewer] Sign-in refused. To allow this account, add its " +
         `sub to PDF_ALLOWED_GOOGLE_SUBS:\n  sub=${identity?.sub ?? "(absent)"}` +
         `\n  email=${identity?.email ?? "(absent)"}` +
-        `  email_verified=${identity?.email_verified ?? "(absent)"}`,
+        `\n  email_verified=${identity?.email_verified ?? "(absent)"}`,
     );
 
     const refused = back(request, "not_allowed");

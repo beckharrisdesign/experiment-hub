@@ -14,7 +14,11 @@ import { listPdfDocuments } from "@/lib/pdf-documents";
 export async function GET() {
   try {
     const documents = await listPdfDocuments();
-    return NextResponse.json({ documents, total: documents.length });
+    return NextResponse.json({
+      success: true,
+      documents,
+      total: documents.length,
+    });
   } catch (error) {
     console.error("Failed to list PDF documents:", error);
     return NextResponse.json(

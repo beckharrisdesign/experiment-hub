@@ -29,7 +29,11 @@ export async function GET(
     }
 
     const history = await getPdfDocumentHistory(id);
-    return NextResponse.json({ history, total: history.length });
+    return NextResponse.json({
+      success: true,
+      history,
+      total: history.length,
+    });
   } catch (error) {
     console.error("Failed to load PDF document history:", error);
     return NextResponse.json(
