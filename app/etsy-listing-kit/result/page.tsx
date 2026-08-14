@@ -1,6 +1,7 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import styles from '../elk.module.css';
 import { track, trackAdsConversion } from '../../../lib/etsy-listing-kit/analytics';
@@ -13,6 +14,8 @@ function ResultInner() {
   const [status, setStatus] = useState<string>('loading');
   const [images, setImages] = useState<OrderImage[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Landed-on-result → fulfilled. This is the post-payment wait the buyer feels.
+  const arrivedAt = useRef<number>(performance.now());
 
   const poll = useCallback(async () => {
     if (!orderId) { setError('Missing order reference.'); return; }
@@ -37,10 +40,12 @@ function ResultInner() {
 
   useEffect(() => {
     if (status === 'fulfilled') {
-      track('result_delivered');
+      track('result_delivered', { wait_ms: Math.round(performance.now() - arrivedAt.current) });
       if (orderId) trackAdsConversion(orderId);
     }
-    if (status === 'refunded' || status === 'failed') track('processing_failed', { status });
+    if (status === 'refunded' || status === 'failed') {
+      track('processing_failed', { status, wait_ms: Math.round(performance.now() - arrivedAt.current) });
+    }
   }, [status, orderId]);
 
   const ready = status === 'fulfilled' && images;
@@ -49,7 +54,12 @@ function ResultInner() {
   return (
     <main className={styles.kit}>
       <header className={styles.header}>
-        <span className={styles.logo}>Etsy Listing Kit</span>
+        {/* #360: the wordmark is the way back to the start — a buyer who wants a
+            second set had no route out of this page. */}
+        <Link href="/etsy-listing-kit" className={`${styles.logo} ${styles.logoLink}`}
+              onClick={() => track('restart_clicked', { from: 'result_header' })}>
+          Etsy Listing Kit
+        </Link>
         {orderId && <span className={styles.headerNote}>order #{orderId.slice(0, 8)}</span>}
       </header>
 
@@ -87,19 +97,35 @@ function ResultInner() {
         <section className={styles.previewSection} style={{ gridTemplateColumns: '1fr' }}>
           <div style={{ textAlign: 'center', marginBottom: 8 }}>
             <a className={styles.primaryWide} href={`/etsy-listing-kit/api/download?order=${encodeURIComponent(orderId!)}`}
-               style={{ display: 'inline-block', textDecoration: 'none' }} download>
+               style={{ display: 'inline-block', textDecoration: 'none' }} download
+               onClick={() => track('download_clicked', { kind: 'zip' })}>
               ⬇ Download all 6 (.zip)
             </a>
           </div>
           <div className={styles.grid}>
             {images!.map((img) => (
-              <a key={img.id} className={styles.gridCell} href={img.url} download={`${img.id}.jpg`} style={{ textDecoration: 'none' }}>
+              <a key={img.id} className={styles.gridCell} href={img.url} download={`${img.id}.jpg`} style={{ textDecoration: 'none' }}
+                 onClick={() => track('download_clicked', { kind: 'single', image_id: img.id })}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={img.url} alt={img.label} className={styles.gridImg} />
                 <div className={styles.gridLabel}>⬇ {img.label}</div>
               </a>
             ))}
           </div>
+        </section>
+      )}
+
+      {ready && (
+        <section className={styles.againWrap}>
+          <hr className={styles.againRule} />
+          <p className={styles.againLead}>Got another design?</p>
+          <p className={styles.againSub}>
+            Same six photos, same $3 — takes about a minute.
+          </p>
+          <Link href="/etsy-listing-kit" className={styles.againBtn}
+                onClick={() => track('restart_clicked', { from: 'result_cta' })}>
+            Make another set
+          </Link>
         </section>
       )}
     </main>

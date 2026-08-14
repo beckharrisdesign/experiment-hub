@@ -1,7 +1,22 @@
 export const HUB_GA_MEASUREMENT_ID = "G-120M120GDY";
-// Google Ads account (conversion tracking) — configured alongside GA4 on the
+// Google Ads accounts (conversion tracking) — configured alongside GA4 on the
 // same gtag.js load; conversion labels live with the features that fire them.
+//
+// The hub account covers general BHD Labs traffic. Etsy Listing Kit runs its own
+// standalone account so its ad spend and conversions stay separable from hub
+// traffic — do NOT collapse these into one id.
 export const GOOGLE_ADS_ID = "AW-10904266222";
+
+/**
+ * Etsy Listing Kit's standalone Ads account. Deliberately NOT configured in the
+ * root layout: `gtag('config', …)` there fires on every hub page, which would
+ * send /heuristics, /prototypes, etc. into the ELK account and rebuild exactly
+ * the "ELK traffic looks like general BHD Labs traffic" problem this account
+ * exists to solve (and pollute its remarketing lists with non-buyer traffic).
+ * It is configured in `app/etsy-listing-kit/layout.tsx` so it covers the ELK
+ * segment and nothing else. Keep it that way.
+ */
+export const ELK_GOOGLE_ADS_ID = "AW-277034089";
 export const GA_SCRIPT_SRC = "https://www.googletagmanager.com";
 export const GA_COLLECT_SRC = "https://www.google-analytics.com";
 export const GA_REGION_COLLECT_SRC = "https://region1.google-analytics.com";
@@ -53,6 +68,45 @@ export function isAnalyticsEnabled() {
   return Boolean(getHubGaMeasurementId()) && !isOptedOut();
 }
 
+interface SurfaceDescriptor {
+  surface_name: string;
+  surface_type: AnalyticsSurfaceType;
+  experiment_slug?: string;
+}
+
+const HUB_SURFACE: SurfaceDescriptor = {
+  surface_name: "BHD Labs",
+  surface_type: "hub",
+};
+
+/**
+ * Experiments that live inside the hub app but are their own product surface.
+ * Without an entry here their pageviews report as generic "BHD Labs" hub
+ * traffic, so per-experiment funnels and ad-campaign traffic can't be separated
+ * from ordinary hub browsing in GA4. Longest-prefix wins, so a nested
+ * experiment route can override a parent.
+ */
+const EXPERIMENT_SURFACES: ReadonlyArray<readonly [string, SurfaceDescriptor]> = [
+  [
+    "/etsy-listing-kit",
+    {
+      surface_name: "Etsy Listing Kit",
+      surface_type: "landing",
+      experiment_slug: "etsy-listing-kit",
+    },
+  ],
+];
+
+/** Map a pathname to the surface that owns it (query string ignored). */
+export function resolveSurface(pathname: string): SurfaceDescriptor {
+  const path = pathname.split(/[?#]/)[0];
+  const matches = EXPERIMENT_SURFACES.filter(
+    ([prefix]) => path === prefix || path.startsWith(`${prefix}/`),
+  ).sort((a, b) => b[0].length - a[0].length);
+
+  return matches.length ? matches[0][1] : HUB_SURFACE;
+}
+
 export function buildPageViewPayload(pathname: string): AnalyticsEventParams {
   const title =
     typeof document !== "undefined" ? document.title || undefined : undefined;
@@ -65,8 +119,7 @@ export function buildPageViewPayload(pathname: string): AnalyticsEventParams {
     page_path: pathname,
     page_location: location,
     page_title: title,
-    surface_name: "BHD Labs",
-    surface_type: "hub",
+    ...resolveSurface(pathname),
   };
 }
 

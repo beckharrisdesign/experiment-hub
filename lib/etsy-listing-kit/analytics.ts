@@ -5,19 +5,51 @@
  * system). The server-side verified purchase uses the GA4 Measurement Protocol.
  * All no-op safely when GA isn't configured — nothing is faked.
  */
-import { trackEvent, isOptedOut, GOOGLE_ADS_ID } from '../analytics/ga';
+import { trackEvent, isOptedOut, ELK_GOOGLE_ADS_ID } from '../analytics/ga';
 import { EXPERIMENT_ID, PRICE_CENTS, CURRENCY } from './config';
 
-/** Google Ads conversion label: "Sign-up" action = paid image view delivered. */
-export const ADS_CONVERSION_PURCHASE = `${GOOGLE_ADS_ID}/dX8MCLuApMQcEO7Lx88o`;
+/**
+ * Google Ads conversion label: "Sign-up" action (id 7659388987) = paid image
+ * view delivered. Scoped to the standalone ELK Ads account, NOT the hub account —
+ * the same label string also exists under the hub account for simple-seed-organizer,
+ * so the account prefix is what keeps the two conversion actions distinct.
+ */
+export const ADS_CONVERSION_PURCHASE = `${ELK_GOOGLE_ADS_ID}/dX8MCLuApMQcEO7Lx88o`;
 
+/**
+ * GA4 event name backing the imported Ads conversion "FormSubmit" (id 6657647682).
+ * Must stay exactly this string — GA4 event names are case-sensitive and the Ads
+ * import matches literally, so the usual snake_case convention does not apply here.
+ */
+export const GA4_FORM_SUBMIT_EVENT = 'FormSubmit' as const;
+
+/**
+ * Funnel events. Every step a visitor can *attempt* has a start event and a
+ * terminal event (success or failure) so the funnel measures both duration and
+ * drop-off. A step with only a success event is invisible when it fails or when
+ * the visitor abandons mid-step — that was the gap this list closes.
+ *
+ *   landing_view
+ *     └─ upload_picker_opened → upload_started | upload_rejected
+ *          └─ preview_requested → preview_viewed | preview_failed
+ *               └─ checkout_started (+FormSubmit) → [Stripe] | checkout_failed
+ *                    └─ result_delivered → download_clicked | restart_clicked | processing_failed
+ *                       payment_cancelled (returned from Stripe unpaid)
+ */
 export type FunnelEvent =
   | 'landing_view'
+  | 'upload_picker_opened'
   | 'upload_started'
+  | 'upload_rejected'
+  | 'preview_requested'
   | 'preview_viewed'
+  | 'preview_failed'
   | 'checkout_started'
+  | 'checkout_failed'
   | 'payment_completed'
   | 'result_delivered'
+  | 'download_clicked'
+  | 'restart_clicked'
   | 'payment_cancelled'
   | 'processing_failed';
 
@@ -26,6 +58,16 @@ type EventProps = Record<string, string | number | boolean | undefined>;
 /** Client-side funnel event — delegates to the hub GA helper (safe no-op if GA off). */
 export function track(event: FunnelEvent, props: EventProps = {}): void {
   trackEvent(event, { experiment_id: EXPERIMENT_ID, ...props });
+}
+
+/**
+ * GA4 `FormSubmit` — the event Google Ads imports as conversion 6657647682.
+ * Fired on checkout submit (the pay button), alongside the snake_case
+ * `checkout_started` funnel event: `checkout_started` is ours for funnel
+ * analysis, `FormSubmit` exists solely to feed the Ads import. Keep both.
+ */
+export function trackFormSubmit(props: EventProps = {}): void {
+  trackEvent(GA4_FORM_SUBMIT_EVENT, { experiment_id: EXPERIMENT_ID, ...props });
 }
 
 /**
