@@ -73,7 +73,7 @@ if [ "$tool" = "Bash" ] || [ "$tool" = "Shell" ]; then
       echo "Secrets are op:// references resolved by 1Password, not values on disk." >&2
       echo "To list variable NAMES: grep -E '^[A-Z_]+=' <file> | cut -d= -f1" >&2
       echo "To read the registry:   cat .env.example" >&2
-      echo "To use a value:         op read 'op://Experiment Hub/<item>/<field>'" >&2
+      echo "To use a value:         op read 'op://BHD Labs/<item>/<field>'" >&2
       exit 2
     fi
   fi

@@ -31,7 +31,7 @@
 
 set -euo pipefail
 
-VAULT="Experiment Hub"
+VAULT="BHD Labs"
 STATE_FILE=".secrets-sync-state"
 APPLY=false
 [ "${1:-}" = "--apply" ] && APPLY=true
@@ -43,19 +43,29 @@ APPLY=false
 # Keep in step with .env.example, which is the registry of record.
 # ---------------------------------------------------------------------------
 MANIFEST=$(cat <<'EOF'
-OPENAI_API_KEY|op://Experiment Hub/OpenAI/credential|vercel
-STRIPE_SECRET_KEY_LIVE|op://Experiment Hub/Stripe/secret key live|vercel
-STRIPE_SECRET_KEY_TEST|op://Experiment Hub/Stripe/secret key test|vercel
-STRIPE_WEBHOOK_SECRET_LIVE|op://Experiment Hub/Stripe/webhook secret live|vercel
-STRIPE_WEBHOOK_SECRET_TEST|op://Experiment Hub/Stripe/webhook secret test|vercel
-SUPABASE_URL|op://Experiment Hub/Supabase/url|vercel,gh,gh-env:Production – experiment-hub
-SUPABASE_SERVICE_ROLE_KEY|op://Experiment Hub/Supabase/service role key|vercel,gh,gh-env:Production – experiment-hub
-FIGMA_ACCESS_TOKEN|op://Experiment Hub/Figma/access token|vercel
-GITHUB_DISPATCH_TOKEN|op://Experiment Hub/GitHub dispatch/token|vercel
-PDF_GOOGLE_CLIENT_ID|op://Experiment Hub/Google OAuth pdf-metadata-viewer/client id|vercel
-PDF_GOOGLE_CLIENT_SECRET|op://Experiment Hub/Google OAuth pdf-metadata-viewer/client secret|vercel
-PDF_GOOGLE_API_KEY|op://Experiment Hub/Google OAuth pdf-metadata-viewer/api key|vercel
-PDF_SESSION_SECRET|op://Experiment Hub/PDF session/secret|vercel
+OPENAI_API_KEY|op://BHD Labs/OpenAI/credential|vercel
+STRIPE_SECRET_KEY_LIVE|op://BHD Labs/Stripe/secret key live|vercel
+STRIPE_SECRET_KEY_TEST|op://BHD Labs/Stripe/secret key test|vercel
+STRIPE_WEBHOOK_SECRET_LIVE|op://BHD Labs/Stripe/webhook secret live|vercel
+STRIPE_WEBHOOK_SECRET_TEST|op://BHD Labs/Stripe/webhook secret test|vercel
+SUPABASE_URL|op://BHD Labs/Supabase/url|vercel,gh,gh-env:Production – experiment-hub
+SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase/service role key|vercel,gh,gh-env:Production – experiment-hub
+FIGMA_ACCESS_TOKEN|op://BHD Labs/Figma/access token|vercel
+GITHUB_DISPATCH_TOKEN|op://BHD Labs/GitHub dispatch/token|vercel
+PDF_GOOGLE_CLIENT_ID|op://BHD Labs/Google OAuth pdf-metadata-viewer/client id|vercel
+PDF_GOOGLE_CLIENT_SECRET|op://BHD Labs/Google OAuth pdf-metadata-viewer/client secret|vercel
+PDF_GOOGLE_API_KEY|op://BHD Labs/Google OAuth pdf-metadata-viewer/api key|vercel
+PDF_SESSION_SECRET|op://BHD Labs/PDF session/secret|vercel
+ETSY_API_KEY|op://BHD Labs/Etsy/api key|gh
+ETSY_SHARED_SECRET|op://BHD Labs/Etsy/shared secret|gh
+ETSY_SHOP_ID|op://BHD Labs/Etsy/shop id|gh
+NOTION_TOKEN|op://BHD Labs/Notion/token|gh
+NOTION_INVENTORY_DB_ID|op://BHD Labs/Notion/inventory db id|gh
+NOTION_EXPERIMENTS_DATA_SOURCE_ID|op://BHD Labs/Notion/experiments data source id|gh-env:Production – experiment-hub
+NOTION_HISTORY_DATA_SOURCE_ID|op://BHD Labs/Notion/history data source id|gh-env:Production – experiment-hub
+VERCEL_TOKEN|op://BHD Labs/Vercel/token|gh
+VERCEL_ORG_ID|op://BHD Labs/Vercel/org id|gh
+VERCEL_PROJECT_ID|op://BHD Labs/Vercel/project id|gh
 EOF
 )
 

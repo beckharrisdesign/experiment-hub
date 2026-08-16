@@ -3,8 +3,10 @@
 ## 0. Prerequisites (Katy — not code, and they block everything)
 
 - [ ] 0.1 Confirm 1Password account recovery is in order — Emergency Kit saved, recovery contact set. Do this **before** cutover, while plaintext values still exist as a fallback: after cutover, losing vault access means losing local dev.
-- [ ] 0.2 Create a standalone `Experiment Hub` vault (not `Private`, not a shared family vault).
-- [ ] 0.3 Populate it — one item per vendor, fields per credential: `OpenAI`, `Stripe` (live/test/webhook), `Supabase` (url / service role / publishable), `Figma`, `GitHub dispatch`, `Google OAuth (pdf-metadata-viewer)`.
+- [x] 0.2 Create a standalone `BHD Labs` vault (not `Private`, not a shared family vault).
+      - Named `BHD Labs`, not the `Experiment Hub` the artifacts originally assumed; every reference was renamed to match. A first attempt created a **collection** rather than a vault — collections are client-side *views over existing vaults* and store nothing, which is why `op vault list` could not see it.
+- [ ] 0.3 Populate it — one item per vendor, fields per credential: `OpenAI`, `Stripe` (live/test/webhook), `Supabase` (url / service role / publishable), `Figma`, `GitHub dispatch`, `Google OAuth (pdf-metadata-viewer)`, plus `Etsy` (api key / shared secret / shop id), `Notion` (token / inventory db id / experiments + history data source ids), and `Vercel` (token / org id / project id).
+      - The last three vendors were **not** in the original plan. The sync script's orphan report flagged 8 GitHub Actions secrets consumed by `etsy-notion-sync.yml`, `history-accumulate.yml`, and `deploy-hub.yml` but absent from the manifest — real credentials that would have stayed unmanaged. Manifest now covers 23 variables with zero orphans.
 - [ ] 0.4 Install the Vercel CLI (`npm i -g vercel`) and authenticate it — absent today, and `secret-sync` cannot write to Vercel without it.
 
 ## 1. User outcomes (from spec scenarios)
@@ -17,7 +19,7 @@
 - [x] 1.6 Legitimate key-name inspection still works
 - [ ] 1.7 Sync reports drift and corrects it
 - [ ] 1.8 Sync previews before it writes
-- [ ] 1.9 Orphaned secrets are surfaced, not silently kept
+- [x] 1.9 Orphaned secrets are surfaced, not silently kept
 - [ ] 1.10 Rotating a key with no prior context
 - [ ] 1.11 The runbook records vendor differences that caused past mistakes
 
@@ -38,7 +40,7 @@
 - [x] 3.7 Add the `.env*` bulk-read guard to `.claude/hooks/pre-tool-use.sh`, with an explicit carve-out for listing key *names* (spec 1.6). Test both directions before committing — a guard that blocks everything is as bad as one that blocks nothing.
       - Two bugs found by using it rather than by reading it. **False negative:** `grep` was missing from the blocklist, so `grep OPENAI_API_KEY .env.local` printed the value — the guard's biggest hole. **False positive:** any command merely *mentioning* `.env` in a quoted search pattern was blocked, which made searching the codebase for env references impossible. Fixed by stripping quoted sections before looking for a filename, and adding `grep`/`egrep`/`rg`/`ag`. Both are now regression-tested.
 - [x] 3.8 Write `scripts/sync-secrets.sh`: read the vault, diff against Vercel and GitHub Actions, report added / updated / unchanged / orphaned. **Preview by default; writing requires an explicit flag.**
-      - **Written but unverified end-to-end** — it cannot run past preflight until §0.2 creates the vault. Preflight failure messages were verified. One design consequence worth knowing: GitHub Actions secrets are write-only (`gh secret list` returns names and timestamps, never values), so "unchanged" cannot be decided by reading the target. The script records a SHA-256 of each value it writes to a gitignored `.secrets-sync-state` (hashes only). The honest limitation: a value edited directly in the Vercel or GitHub UI is invisible to this and will report "unchanged" until the vault value moves.
+      - **Verified end-to-end in preview** against the real `BHD Labs` vault: preflight passes, all 23 manifest entries resolve as "not in vault yet", and the orphan pass reports zero after the manifest was extended. Only the `--apply` write path is still unexercised, pending vault contents and the Vercel CLI. One design consequence worth knowing: GitHub Actions secrets are write-only (`gh secret list` returns names and timestamps, never values), so "unchanged" cannot be decided by reading the target. The script records a SHA-256 of each value it writes to a gitignored `.secrets-sync-state` (hashes only). The honest limitation: a value edited directly in the Vercel or GitHub UI is invisible to this and will report "unchanged" until the vault value moves.
 - [x] 3.9 Handle GitHub *environment* secrets, not just repo secrets — `SUPABASE_URL` and both `NOTION_*_DATA_SOURCE_ID`s live there, which is why they were invisible during the rotation audit.
       - Environment name is `Production – experiment-hub` (en-dash), used by `etsy-notion-sync.yml`. Separately: `ci.yml` references `secrets.SUPABASE_URL` **without** declaring an `environment:`, so it resolves against repo secrets — where no such secret exists. That job has been running with empty Supabase values. Out of scope here, but it should be looked at.
 - [x] 3.10 Write the rotation runbook: per credential, where it is stored, what consumes it, vendor-specific steps, and the ordering rule (revoke last — revoking early breaks CI and prod while local dev keeps working).

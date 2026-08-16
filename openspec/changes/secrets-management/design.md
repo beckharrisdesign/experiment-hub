@@ -32,7 +32,7 @@ The 1Password CLI (2.32.1) is installed and authenticates through desktop app in
 
 No user-facing surface. The two flows that change are Katy's:
 
-**Daily dev.** `npm run dev` → `op run` resolves `op://` references from the `Experiment Hub` vault via the already-authenticated desktop integration → Next starts with real values. No prompt in the common case; no export step; no change to how worktrees resolve `.env.local`.
+**Daily dev.** `npm run dev` → `op run` resolves `op://` references from the `BHD Labs` vault via the already-authenticated desktop integration → Next starts with real values. No prompt in the common case; no export step; no change to how worktrees resolve `.env.local`.
 
 **Rotation.** Roll at the vendor → update the one 1Password item → run the sync command in preview → run it with `--apply` → it reports each variable as added, updated, or unchanged across Vercel and GitHub Actions → revoke the old credential last. The runbook supplies the vendor-specific mechanics at step one and the ordering rule at the end.
 
@@ -54,7 +54,7 @@ The ordering matters and is the part the runbook must state loudly: revoking bef
 
 ## Decisions
 
-**A standalone `Experiment Hub` vault, not `Private` and not a shared vault.** The five existing vaults are `Private`, `Harris Family Main`, `Jenny B Harris`, `TKN Main`, `TKN Private`. A live Stripe key should not inherit family-vault access, and `Private` mixes infrastructure with personal logins so references would be hard to reason about. A dedicated vault also means access can be revoked or delegated as a unit later.
+**A standalone `BHD Labs` vault, not `Private` and not a shared vault.** The five existing vaults are `Private`, `Harris Family Main`, `Jenny B Harris`, `TKN Main`, `TKN Private`. A live Stripe key should not inherit family-vault access, and `Private` mixes infrastructure with personal logins so references would be hard to reason about. A dedicated vault also means access can be revoked or delegated as a unit later.
 
 **One item per vendor, fields per credential** — `Stripe` carries live/test/webhook fields; `Supabase` carries url + service role + publishable. This matches how rotation actually works: you roll at the vendor once and update one item, rather than hunting four sibling entries.
 

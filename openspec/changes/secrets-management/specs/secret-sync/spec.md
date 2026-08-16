@@ -17,7 +17,7 @@ A single command pushes current values from 1Password into Vercel and GitHub Act
 
 **Fails until:** a value updated in 1Password leaves Vercel and GitHub Actions serving the old one with nothing reporting the difference — the state that let the GitHub Actions `OPENAI_API_KEY` sit five months stale.
 
-The sync command SHALL read current values from the `Experiment Hub` vault, write them to Vercel and GitHub Actions, and report each variable as added, updated, or unchanged.
+The sync command SHALL read current values from the `BHD Labs` vault, write them to Vercel and GitHub Actions, and report each variable as added, updated, or unchanged.
 
 #### Scenario: Sync reports drift and corrects it
 

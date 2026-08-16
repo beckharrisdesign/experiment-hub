@@ -29,7 +29,7 @@ updated. That nearly happened on 2026-08-16.
 
 | Location | Authoritative? | How it is written |
 | --- | --- | --- |
-| 1Password → `Experiment Hub` vault | **yes** | by hand, once |
+| 1Password → `BHD Labs` vault | **yes** | by hand, once |
 | `.env.local` (repo root, symlinked into every worktree) | no — holds `op://` references | edited once at migration |
 | Vercel → Production env vars | no — derived | `scripts/sync-secrets.sh --apply` |
 | GitHub Actions → **repo** secrets | no — derived | `scripts/sync-secrets.sh --apply` |
@@ -105,7 +105,7 @@ old key keep working for a chosen window, so there is no reason to gap.
 ## Rotating, step by step
 
 1. **Roll or recreate** at the vendor, using the notes above. Do not revoke yet.
-2. **Update the 1Password item** in the `Experiment Hub` vault — one item per
+2. **Update the 1Password item** in the `BHD Labs` vault — one item per
    vendor, so this is a single edit even for multi-field vendors like Stripe.
 3. **Local picks it up automatically.** `.env.local` holds an `op://` reference,
    so there is nothing to edit and no restart-with-stale-env failure mode.
@@ -136,7 +136,7 @@ old key keep working for a chosen window, so there is no reason to gap.
 - **Integration toggle off.** 1Password → Settings → Developer → *Integrate with
   1Password CLI*. Quit the app fully (⌘Q) and reopen.
 - **Genuinely blocked and you need to work now.** Read the values you need with
-  `op read 'op://Experiment Hub/<item>/<field>'` and export them into your shell
+  `op read 'op://BHD Labs/<item>/<field>'` and export them into your shell
   for that session only. Do **not** paste them back into `.env.local` — a
   temporary plaintext copy that outlives the emergency is the exact problem this
   system removed.

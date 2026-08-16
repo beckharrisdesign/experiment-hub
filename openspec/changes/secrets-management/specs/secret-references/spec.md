@@ -27,7 +27,7 @@ The system SHALL store every credential in `.env.local` as an `op://` reference 
 #### Scenario: A dedicated vault holds the hub's credentials
 
 - **WHEN** the references in `.env.local` are resolved
-- **THEN** they resolve against a standalone `Experiment Hub` vault, not `Private` and not a vault shared with family members
+- **THEN** they resolve against a standalone `BHD Labs` vault, not `Private` and not a vault shared with family members
 
 ### Requirement: Local dev resolves references with no manual step
 

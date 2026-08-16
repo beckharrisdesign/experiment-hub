@@ -33,7 +33,7 @@ The encouraging part: of 22 variables in `.env.local`, only about **seven are ge
 
 **`.env.local` holds references, not values.** Seven lines become `op://` pointers resolved at process start. A stray `cat`, `sed`, or screen-share leaks a URI worth nothing. Non-secret config stays exactly as it is, so the file remains readable and diffable.
 
-**A standalone vault for the hub.** A dedicated `Experiment Hub` vault, not `Private` and not a shared family vault — the Stripe live key should not inherit family-vault access, and a dedicated vault keeps references stable and scoped. One item per vendor with fields per credential, matching how rotation actually works: roll at the vendor, update one item.
+**A standalone vault for the hub.** A dedicated `BHD Labs` vault, not `Private` and not a shared family vault — the Stripe live key should not inherit family-vault access, and a dedicated vault keeps references stable and scoped. One item per vendor with fields per credential, matching how rotation actually works: roll at the vendor, update one item.
 
 **Local dev runs under `op run`.** The `dev` script wraps in `op run --env-file=.env.local`, authenticating per-command through the already-working desktop app integration. Worktree symlinks are unaffected.
 
@@ -58,7 +58,7 @@ None.
 
 **Prerequisites that block implementation** — both are Katy's to do, neither is code:
 
-1. Create the `Experiment Hub` vault in 1Password and populate it with the current values.
+1. Create the `BHD Labs` vault in 1Password and populate it with the current values.
 2. Install the Vercel CLI (`npm i -g vercel`), which is not present.
 
 **Verified working already:** the `op` CLI (2.32.1) authenticates through desktop app integration with no sign-in step and no `~/.config/op/config`.
