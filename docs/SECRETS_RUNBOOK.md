@@ -122,6 +122,14 @@ old key keep working for a chosen window, so there is no reason to gap.
 - **Editing a fine-grained PAT's permissions does not change its value**;
   *Regenerate token* does. Prefer editing — regenerating means chasing down every
   place the old value was pasted, which for these tokens is not fully knowable.
+- **`Actions` is not `Secrets`.** The endpoints live at `/actions/secrets/…`, so a
+  token with *Read and Write access to actions* looks like it should work — it
+  cannot. GitHub governs secret management with a separate **Secrets**
+  permission: `PUT` and `DELETE /repos/{owner}/{repo}/actions/secrets/{name}`
+  both require `Secrets: write`, while listing needs `Secrets: read`.
+  Useful corollary when identifying which token the CLI holds: if `gh secret
+  list` works, that token already has `Secrets: read`, so any token lacking the
+  permission entirely is not the one in use.
 - **The `gh` CLI's own PAT needs `Secrets: Read and write`** for `sync-secrets.sh`
   to write GitHub targets. Being a repo admin is not sufficient: fine-grained PATs
   grant permissions individually, so a token can list secrets and still fail to
