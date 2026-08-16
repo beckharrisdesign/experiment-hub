@@ -99,8 +99,13 @@ while IFS='|' read -r name ref targets; do
   [ -z "$name" ] && continue
   synced_names="$synced_names $name"
 
-  if ! value=$(op read "$ref" 2>/dev/null) || [ -z "$value" ]; then
-    echo "  ? $name — not in vault yet ($ref)"
+  # PASTE_VALUE_HERE is the placeholder the scaffolded vault items ship with.
+  # 1Password will not store an empty field, so a freshly created item has to
+  # hold *something* — and without this guard the first --apply would happily
+  # push the literal string "PASTE_VALUE_HERE" into production Vercel and
+  # GitHub Actions, replacing working credentials with nonsense.
+  if ! value=$(op read "$ref" 2>/dev/null) || [ -z "$value" ] || [ "$value" = "PASTE_VALUE_HERE" ]; then
+    echo "  ? $name — not filled in yet ($ref)"
     skipped=$((skipped + 1))
     continue
   fi
