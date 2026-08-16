@@ -106,6 +106,9 @@ synced_names=""
 
 while IFS='|' read -r name ref targets; do
   [ -z "$name" ] && continue
+  # The manifest carries explanatory comments; without this they are read as
+  # variable names and reported as unfilled credentials.
+  case "$name" in \#*) continue;; esac
   synced_names="$synced_names $name"
 
   # Values that are not values. Pushing any of these would replace working
