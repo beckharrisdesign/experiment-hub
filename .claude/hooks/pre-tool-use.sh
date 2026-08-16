@@ -60,22 +60,29 @@ if [ "$tool" = "Bash" ] || [ "$tool" = "Shell" ]; then
   # heredoc, so `cat .env.local <<EOF` is still caught.)
   scan_target=${command%%<<*}
   unquoted=$(echo "$scan_target" | sed -e "s/'[^']*'//g" -e 's/"[^"]*"//g')
-  env_ref=$(echo "$unquoted" \
-    | grep -oE "[^[:space:]]*\.env[a-zA-Z0-9_.-]*" \
-    | grep -v '\.env\.example' || true)
-  if [ -n "$env_ref" ]; then
-    if echo "$command" | grep -qE 'cut -d= -f1|grep -c |test -f |\[ -f '; then
-      : # name-only inspection — allowed
-    # grep/rg belong here: `grep OPENAI_API_KEY .env.local` prints the VALUE.
-    # They were originally omitted, which left the guard's biggest hole.
-    elif echo "$command" | grep -qE '(^|[|;&[:space:]])(cat|bat|less|more|head|tail|sed|awk|nl|tac|strings|xxd|od|pbcopy|grep|egrep|rg|ag)([[:space:]]|$)'; then
-      echo "Blocked: that would print the contents of an env file." >&2
-      echo "Secrets are op:// references resolved by 1Password, not values on disk." >&2
-      echo "To list variable NAMES: grep -E '^[A-Z_]+=' <file> | cut -d= -f1" >&2
-      echo "To read the registry:   cat .env.example" >&2
-      echo "To use a value:         op read 'op://BHD Labs/<item>/<field>'" >&2
-      exit 2
-    fi
+  # Name-only idioms are allowed outright, wherever they appear in a pipeline.
+  if ! echo "$command" | grep -qE 'cut -d= -f1|grep -c |test -f |\[ -f '; then
+    # Judge each pipeline segment on its own. Scanning the whole command means
+    # `op run --env-file=.env.local -- node … | tail -8` is blocked because
+    # `tail` appears SOMEWHERE — even though it is reading the pipeline, not the
+    # env file. A segment is only dangerous when it names an env file AND runs a
+    # tool that emits file contents.
+    DUMPERS='(^|[[:space:]])(cat|bat|less|more|head|tail|sed|awk|nl|tac|strings|xxd|od|pbcopy|grep|egrep|rg|ag)([[:space:]]|$)'
+    while IFS= read -r segment; do
+      [ -z "$segment" ] && continue
+      seg_env=$(echo "$segment" \
+        | grep -oE "[^[:space:]]*\.env[a-zA-Z0-9_.-]*" \
+        | grep -v '\.env\.example' || true)
+      [ -z "$seg_env" ] && continue
+      if echo "$segment" | grep -qE "$DUMPERS"; then
+        echo "Blocked: that would print the contents of an env file." >&2
+        echo "Secrets are op:// references resolved by 1Password, not values on disk." >&2
+        echo "To list variable NAMES: grep -E '^[A-Z_]+=' <file> | cut -d= -f1" >&2
+        echo "To read the registry:   cat .env.example" >&2
+        echo "To use a value:         op read 'op://BHD Labs/<item>/<field>'" >&2
+        exit 2
+      fi
+    done <<< "$(echo "$unquoted" | sed -e 's/||/\n/g' -e 's/&&/\n/g' -e 's/[|;]/\n/g')"
   fi
 
   # Block pushing to a branch whose PR is already merged (prevents orphaned commits).

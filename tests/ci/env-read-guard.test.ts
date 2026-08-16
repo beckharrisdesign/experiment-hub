@@ -89,6 +89,12 @@ describe("pre-tool-use hook allows key-name inspection", () => {
     // reading an env file must not be blocked — this exact command was
     // refused while committing the guard itself.
     "git commit -F - <<'MSG'\nfix: grep OPENAI_API_KEY .env.local printed the value\nMSG",
+    // The whole point of the system: resolving references at process start.
+    // `tail` here reads the PIPELINE, not the env file — scanning the command
+    // as a whole blocked this, which would have made cutover impossible.
+    "op run --env-file=.env.local -- node -e 'console.log(1)' | tail -8",
+    "op run --env-file=.env.local -- next dev",
+    "op run --env-file=.env.local -- npm run build | head -20",
   ];
 
   it.each(allowed)("allows: %s", (command) => {

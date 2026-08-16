@@ -13,7 +13,7 @@
 
 - [ ] 1.1 Printing the env file leaks nothing
 - [ ] 1.2 A dedicated vault holds the hub's credentials
-- [ ] 1.3 Dev server starts with working credentials
+- [x] 1.3 Dev server starts with working credentials
 - [ ] 1.4 A broken CLI integration fails loudly, not silently
 - [x] 1.5 An agent attempt to print the env file is refused
 - [x] 1.6 Legitimate key-name inspection still works
@@ -32,9 +32,9 @@
 **Cutover — one credential at a time, verifying each before the next.** A bulk rewrite of `.env.local` is the tempting shortcut and the 2026-08-16 rotation is direct evidence against it: that file disagreed with expectations three times in a row.
 
 - [x] 3.1 Write the failing checks first (see §4.2) so the work ships failing-first per `rules/principles.mdc`.
-- [ ] 3.2 Convert `OPENAI_API_KEY` to an `op://` reference; confirm resolution before touching anything else. This is the canary — 11 files consume it.
+- [x] 3.2 Convert `OPENAI_API_KEY` to an `op://` reference; confirm resolution before touching anything else. This is the canary — 11 files consume it.
 - [ ] 3.3 Convert the remaining credentials: `STRIPE_SECRET_KEY_LIVE`, `STRIPE_SECRET_KEY_TEST`, `STRIPE_WEBHOOK_SECRET_LIVE`, `STRIPE_WEBHOOK_SECRET_TEST`, `SUPABASE_SERVICE_ROLE_KEY`, `FIGMA_ACCESS_TOKEN`, `GITHUB_DISPATCH_TOKEN`. Leave all non-secret config as literal plaintext.
-- [ ] 3.4 Wrap the dev script: `"dev": "op run --env-file=.env.local -- next dev"`. Verify worktree symlink resolution still works from a worktree, not just the main checkout.
+- [x] 3.4 Wrap the dev script: `"dev": "op run --env-file=.env.local -- next dev"`. Verify worktree symlink resolution still works from a worktree, not just the main checkout.
 - [ ] 3.5 Make a failed resolution loud — start-up must name 1Password as the cause and point at the documented bypass, never start with empty credentials (spec 1.4).
 - [ ] 3.6 Update `.env.example` so the registry shows which variables are references and which are plaintext config.
 - [x] 3.7 Add the `.env*` bulk-read guard to `.claude/hooks/pre-tool-use.sh`, with an explicit carve-out for listing key *names* (spec 1.6). Test both directions before committing — a guard that blocks everything is as bad as one that blocks nothing.
@@ -54,5 +54,5 @@
       - `tests/ci/no-plaintext-secrets.test.ts` — **2 failing by design**, naming `OPENAI_API_KEY`, `STRIPE_SECRET_KEY_LIVE`, `STRIPE_SECRET_KEY_TEST`, `FIGMA_ACCESS_TOKEN`. These stay red until §3.2–3.3 convert the file, which is the point of a failing-first check.
       - Assertion messages name **variables only, never values** — a failing run prints into a public CI log, and a leak guard that leaks would be worse than none.
       - Skips in CI (`describe.skipIf`), because `.env.local` is untracked and no workflow creates one. Verified — so these failures are local-only and do not redden the PR.
-- [ ] 4.3 **Post-cutover verification** — run the existing `experiments/simple-seed-organizer/prototype/app/tests/openai-connection.test.ts` against the resolved key, confirming the reference path works end to end and not just at start-up.
+- [x] 4.3 **Post-cutover verification** — run the existing `experiments/simple-seed-organizer/prototype/app/tests/openai-connection.test.ts` against the resolved key, confirming the reference path works end to end and not just at start-up.
 - [ ] 4.4 Only after §4.1–4.3 pass: revoke the superseded OpenAI key `…RQcA` and complete the outstanding GitHub Actions + Vercel updates from the 2026-08-16 rotation, which this system now makes a one-command operation.
