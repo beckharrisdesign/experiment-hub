@@ -99,6 +99,18 @@ old key keep working for a chosen window, so there is no reason to gap.
 - Fine-grained PATs: <https://github.com/settings/tokens?type=beta>
 - `GITHUB_DISPATCH_TOKEN` triggers `workflow_dispatch` runs. `secrets.GITHUB_TOKEN`
   is issued per-run by Actions and is **not** rotatable — leave it alone.
+- **`Experiment Hub PAT` (classic) is the highest-risk credential in this estate.**
+  Scopes include `admin:enterprise`, `admin:org`, `admin:org_hook`,
+  `admin:repo_hook`, `admin:ssh_signing_key`, `admin:gpg_key`, `audit_log`,
+  `repo`, `user`, `workflow`, `write:packages` — effectively full account
+  control, and classic tokens cannot be limited to specific repositories.
+  Expires 2026-10-03.
+  Treat it as the top rotation priority if it is ever exposed, and prefer
+  retiring it: a fine-grained `Experiment Hub FGT` already exists for what looks
+  like the same job. Before deleting, establish what still uses it.
+  **Do not authenticate the `gh` CLI with it** to work around a missing
+  fine-grained permission — that trades a scoped token for total account
+  authority to save one settings change.
 - **Fine-grained PATs expire, and nothing here warns you.** As of 2026-08-16 there
   are three, all on rolling dates: `Claude Code` (the `gh` CLI — expires
   2026-09-08), `Experiment Hub FGT` (2026-10-14), `Cursor Integration`
