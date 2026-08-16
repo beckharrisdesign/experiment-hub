@@ -46,6 +46,11 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# scripts/sync-secrets.sh state — SHA-256 hashes of synced values, never the
+# values themselves. Ignored because it is per-machine bookkeeping, not shared
+# config: committing it would make one machine's sync history everyone's.
+.secrets-sync-state
+
 # Vercel
 .vercel
 

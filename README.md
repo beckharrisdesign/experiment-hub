@@ -100,9 +100,13 @@ Dark green palette (`#194b31`, `#113723`) with mint accents (`#cff7d3`, `#78ffb7
 ## Getting started
 
 ```bash
-npm install
-npm run dev       # http://localhost:3000
+pnpm install
+pnpm dev          # http://localhost:3000
 ```
+
+This repo uses **pnpm** (`packageManager: pnpm@10.33.0`), and `pnpm-lock.yaml` is
+the lockfile CI installs from. Installing with `npm` builds a different tree from
+the stale `package-lock.json` and is a known source of phantom failures.
 
 **Optional — Supabase form submissions:** Copy `.env.example` to `.env.local` and set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Run the SQL in `.env.example` to create the `experiment_submissions` table. On Vercel, add the same vars to the project's environment variables.
 
