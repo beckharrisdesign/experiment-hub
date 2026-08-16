@@ -38,6 +38,53 @@ if [ "$tool" = "Bash" ] || [ "$tool" = "Shell" ]; then
     exit 2
   fi
 
+  # Block bulk reads of env files.
+  #
+  # On 2026-08-14 a `sed` range ran past its intended block and printed three
+  # live credentials into a session transcript. Secret scanning and push
+  # protection were both enabled and neither applied — the leak never went near
+  # git. This closes that route.
+  #
+  # Deliberately narrow. It blocks commands that EMIT file contents and leaves
+  # name-only inspection working, because a guard that blocks all env access
+  # just pushes the same work outside the harness, where nothing watches it.
+  # .env.example is exempt: it is the values-free registry, and reading it is
+  # how you avoid hunting for a credential you already have.
+  # Quoted sections are stripped before looking for a filename. Without this,
+  # `grep -nE "\.env" some-workflow.yml` is blocked for merely MENTIONING .env
+  # in its search pattern — a false positive that makes searching the codebase
+  # for env references impossible.
+  # Heredoc bodies are DATA, not commands — a commit message or doc that
+  # merely describes reading an env file must not be blocked. Scanning stops at
+  # the first `<<`. (Anything genuinely reading a file names it before the
+  # heredoc, so `cat .env.local <<EOF` is still caught.)
+  scan_target=${command%%<<*}
+  unquoted=$(echo "$scan_target" | sed -e "s/'[^']*'//g" -e 's/"[^"]*"//g')
+  # Name-only idioms are allowed outright, wherever they appear in a pipeline.
+  if ! echo "$command" | grep -qE 'cut -d= -f1|grep -c |test -f |\[ -f '; then
+    # Judge each pipeline segment on its own. Scanning the whole command means
+    # `op run --env-file=.env.local -- node … | tail -8` is blocked because
+    # `tail` appears SOMEWHERE — even though it is reading the pipeline, not the
+    # env file. A segment is only dangerous when it names an env file AND runs a
+    # tool that emits file contents.
+    DUMPERS='(^|[[:space:]])(cat|bat|less|more|head|tail|sed|awk|nl|tac|strings|xxd|od|pbcopy|grep|egrep|rg|ag)([[:space:]]|$)'
+    while IFS= read -r segment; do
+      [ -z "$segment" ] && continue
+      seg_env=$(echo "$segment" \
+        | grep -oE "[^[:space:]]*\.env[a-zA-Z0-9_.-]*" \
+        | grep -v '\.env\.example' || true)
+      [ -z "$seg_env" ] && continue
+      if echo "$segment" | grep -qE "$DUMPERS"; then
+        echo "Blocked: that would print the contents of an env file." >&2
+        echo "Secrets are op:// references resolved by 1Password, not values on disk." >&2
+        echo "To list variable NAMES: grep -E '^[A-Z_]+=' <file> | cut -d= -f1" >&2
+        echo "To read the registry:   cat .env.example" >&2
+        echo "To use a value:         op read 'op://BHD Labs/<item>/<field>'" >&2
+        exit 2
+      fi
+    done <<< "$(echo "$unquoted" | sed -e 's/||/\n/g' -e 's/&&/\n/g' -e 's/[|;]/\n/g')"
+  fi
+
   # Block pushing to a branch whose PR is already merged (prevents orphaned commits).
   # Matches both `git push` and the RTK-rewritten `rtk git push`. Push-only to keep
   # the gh network call off the more frequent `git commit` path.
