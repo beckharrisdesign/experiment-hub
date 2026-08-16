@@ -8,6 +8,9 @@
 - [ ] 0.3 Populate it — **scaffolding done, values are Katy's to paste in.** Ten items created in `BHD Labs` with all 23 fields: `OpenAI`, `Stripe`, `Supabase`, `Figma`, `GitHub dispatch`, `Google OAuth pdf-metadata-viewer`, `PDF session`, `Etsy`, `Notion`, `Vercel`. Every field holds `PASTE_VALUE_HERE`; replace each with the real value. All 23 `op://` references were verified to resolve, so a mistyped field label cannot masquerade as an unfilled one.
       - The last three vendors were **not** in the original plan. The sync script's orphan report flagged 8 GitHub Actions secrets consumed by `etsy-notion-sync.yml`, `history-accumulate.yml`, and `deploy-hub.yml` but absent from the manifest — real credentials that would have stayed unmanaged. Manifest now covers 23 variables with zero orphans.
 - [ ] 0.4 Install the Vercel CLI (`npm i -g vercel`) and authenticate it — absent today, and `secret-sync` cannot write to Vercel without it.
+- [ ] 0.5 Grant the `gh` CLI's fine-grained PAT **Secrets: Read and write** — <https://github.com/settings/tokens?type=beta>.
+      - Currently read-only for secrets: `gh api -X DELETE .../actions/secrets/OPENAI_API_KEY` returns **403 "Resource not accessible by personal access token"**, despite the repo role being `admin: true`. Listing works, writing does not.
+      - This blocks more than housekeeping: `scripts/sync-secrets.sh --apply` uses `gh secret set`, which needs the same permission, so all nine GitHub-targeted variables would fail while the Vercel ones succeeded. Not proven by test — the only way to test writing is to create a secret, and with deletion blocked that would leave junk behind that cannot be cleaned up.
 
 ## 1. User outcomes (from spec scenarios)
 

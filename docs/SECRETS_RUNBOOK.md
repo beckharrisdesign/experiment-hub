@@ -96,9 +96,14 @@ old key keep working for a chosen window, so there is no reason to gap.
 
 ### GitHub
 
-- Fine-grained PATs: <https://github.com/settings/tokens>
+- Fine-grained PATs: <https://github.com/settings/tokens?type=beta>
 - `GITHUB_DISPATCH_TOKEN` triggers `workflow_dispatch` runs. `secrets.GITHUB_TOKEN`
   is issued per-run by Actions and is **not** rotatable — leave it alone.
+- **The `gh` CLI's own PAT needs `Secrets: Read and write`** for `sync-secrets.sh`
+  to write GitHub targets. Being a repo admin is not sufficient: fine-grained PATs
+  grant permissions individually, so a token can list secrets and still fail to
+  set or delete them with `403 "Resource not accessible by personal access token"`.
+  If sync reports Vercel succeeding while every GitHub variable fails, this is why.
 
 ---
 
