@@ -138,6 +138,26 @@ old key keep working for a chosen window, so there is no reason to gap.
 
 ---
 
+## Vault item dates
+
+Items use the **API Credential** category, which carries `valid from` and
+`expires` DATE fields. Creating an item with `op item create` leaves both at
+`-43140` — **31 December 1969** — so 1Password reports every credential as
+expired and shows an error badge. Set both explicitly whenever you add an item:
+
+```bash
+op item edit "<item>" --vault "BHD Labs" \
+  'valid from[date]=YYYY-MM-DD' 'expires[date]=YYYY-MM-DD'
+```
+
+The field cannot be cleared — an empty value is rejected, so it must hold a date.
+
+**Convention as of 2026-08-16:** `expires` is a **rotation review date**, one year
+out, not a vendor expiry. Most credentials here never expire on their own, which
+is precisely why they rot unnoticed. Where a vendor *does* impose an expiry —
+GitHub fine-grained PATs — use the real date instead, so the item and GitHub
+agree.
+
 ## Vercel will not give you a Sensitive value back
 
 `vercel env ls` shows each variable as **Sensitive** or **Non-sensitive**, and
