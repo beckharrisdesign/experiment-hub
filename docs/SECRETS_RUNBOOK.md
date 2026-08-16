@@ -99,6 +99,17 @@ old key keep working for a chosen window, so there is no reason to gap.
 - Fine-grained PATs: <https://github.com/settings/tokens?type=beta>
 - `GITHUB_DISPATCH_TOKEN` triggers `workflow_dispatch` runs. `secrets.GITHUB_TOKEN`
   is issued per-run by Actions and is **not** rotatable — leave it alone.
+- **Fine-grained PATs expire, and nothing here warns you.** As of 2026-08-16 there
+  are three, all on rolling dates: `Claude Code` (the `gh` CLI — expires
+  2026-09-08), `Experiment Hub FGT` (2026-10-14), `Cursor Integration`
+  (2026-08-17). An expiry is a silent outage with a timer on it — the failure
+  looks like a permissions bug, not an expired credential.
+  Check <https://github.com/settings/personal-access-tokens> when a GitHub call
+  starts failing for no reason, and record the expiry date on the matching
+  1Password item so it is visible next to the value.
+- **Editing a fine-grained PAT's permissions does not change its value**;
+  *Regenerate token* does. Prefer editing — regenerating means chasing down every
+  place the old value was pasted, which for these tokens is not fully knowable.
 - **The `gh` CLI's own PAT needs `Secrets: Read and write`** for `sync-secrets.sh`
   to write GitHub targets. Being a repo admin is not sufficient: fine-grained PATs
   grant permissions individually, so a token can list secrets and still fail to
