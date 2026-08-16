@@ -60,10 +60,18 @@ PDF_SESSION_SECRET|op://BHD Labs/PDF session/secret|vercel
 ETSY_API_KEY|op://BHD Labs/Etsy/api key|gh
 ETSY_SHARED_SECRET|op://BHD Labs/Etsy/shared secret|gh
 ETSY_SHOP_ID|op://BHD Labs/Etsy/shop id|gh
+# Notion: four databases, names that do not disambiguate themselves. See the
+# "which database is which" table in docs/SECRETS_RUNBOOK.md before changing any
+# of these — two of them render parts of labs.beckharrisdesign.com.
+#   experiments data source -> "BHD Labs Database"  : hub experiment list + detail pages
+#   history data source     -> "BHD Labs History"   : History band on detail pages
+#   inventory db            -> Etsy listings        : etsy-notion-sync only, not the website
+# One token can serve all three, but only if every database is shared with that
+# same integration — Notion grants access per page, not per workspace.
 NOTION_TOKEN|op://BHD Labs/Notion/token|gh
 NOTION_INVENTORY_DB_ID|op://BHD Labs/Notion/inventory db id|gh
-NOTION_EXPERIMENTS_DATA_SOURCE_ID|op://BHD Labs/Notion/experiments data source id|gh-env:Production – experiment-hub
-NOTION_HISTORY_DATA_SOURCE_ID|op://BHD Labs/Notion/history data source id|gh-env:Production – experiment-hub
+NOTION_EXPERIMENTS_DATA_SOURCE_ID|op://BHD Labs/Notion/experiments data source id|vercel,gh
+NOTION_HISTORY_DATA_SOURCE_ID|op://BHD Labs/Notion/history data source id|vercel,gh
 VERCEL_TOKEN|op://BHD Labs/Vercel/token|gh
 VERCEL_ORG_ID|op://BHD Labs/Vercel/org id|gh
 VERCEL_PROJECT_ID|op://BHD Labs/Vercel/project id|gh
