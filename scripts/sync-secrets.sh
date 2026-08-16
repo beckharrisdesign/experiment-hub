@@ -100,12 +100,22 @@ while IFS='|' read -r name ref targets; do
   [ -z "$name" ] && continue
   synced_names="$synced_names $name"
 
-  # PASTE_VALUE_HERE is the placeholder the scaffolded vault items ship with.
-  # 1Password will not store an empty field, so a freshly created item has to
-  # hold *something* — and without this guard the first --apply would happily
-  # push the literal string "PASTE_VALUE_HERE" into production Vercel and
-  # GitHub Actions, replacing working credentials with nonsense.
-  if ! value=$(op read "$ref" 2>/dev/null) || [ -z "$value" ] || [ "$value" = "PASTE_VALUE_HERE" ]; then
+  # Values that are not values. Pushing any of these would replace working
+  # credentials with nonsense.
+  #
+  #   PASTE_VALUE_HERE  the placeholder scaffolded vault items ship with —
+  #                     1Password will not store an empty field, so a fresh item
+  #                     has to hold something.
+  #   [SENSITIVE]       what `vercel env pull` writes for any variable marked
+  #                     Sensitive. Vercel will not decrypt those, so a migration
+  #                     that reads from Vercel silently harvests this string
+  #                     instead of the credential. Found the hard way on
+  #                     2026-08-16: five vault fields were filled with it, all
+  #                     carrying the same 11-character fingerprint.
+  #
+  # Anything else short and constant that shows up here belongs in this list.
+  if ! value=$(op read "$ref" 2>/dev/null) || [ -z "$value" ] \
+     || [ "$value" = "PASTE_VALUE_HERE" ] || [ "$value" = "[SENSITIVE]" ]; then
     echo "  ? $name — not filled in yet ($ref)"
     skipped=$((skipped + 1))
     continue

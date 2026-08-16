@@ -138,6 +138,23 @@ old key keep working for a chosen window, so there is no reason to gap.
 
 ---
 
+## Vercel will not give you a Sensitive value back
+
+`vercel env ls` shows each variable as **Sensitive** or **Non-sensitive**, and
+`vercel env pull` writes the literal string `[SENSITIVE]` for every Sensitive one
+rather than the value. There is no flag that changes this — Sensitive means
+write-only, the same as GitHub Actions secrets.
+
+So Vercel is **not** a recovery source for most credentials. Only Non-sensitive
+variables can be read back, and as of 2026-08-16 that is just `SUPABASE_URL`,
+`SUPABASE_SERVICE_ROLE_KEY`, and `ADMIN_SECRET` — the last two arguably
+mislabelled, since a service-role key bypasses row-level security and should be
+Sensitive.
+
+`sync-secrets.sh` refuses to push `[SENSITIVE]` for exactly this reason. If a
+migration ever appears to succeed but every value is 11 characters long, this is
+what happened.
+
 ## Rotating, step by step
 
 1. **Roll or recreate** at the vendor, using the notes above. Do not revoke yet.
