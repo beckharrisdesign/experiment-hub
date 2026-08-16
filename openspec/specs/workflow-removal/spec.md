@@ -35,9 +35,9 @@ The gating-era modules (`WorkflowCells`, `workflow-states`, `ScoreDisplay`, `Exp
 
 ### Requirement: Score tooltip stops promising a breakdown
 
-The homepage score tooltip SHALL describe the score without promising a breakdown view, pointing at `/scoring` for the rubric.
+The homepage score tooltip SHALL describe the score without promising a breakdown view. (Updated by `experiment-impact-scoring`: `/scoring` no longer exists; the tooltip is shape-aware — impact dimensions for v3 rows, a v1-history label for legacy rows.)
 
 #### Scenario: Tooltip matches reality
 
 - **WHEN** a visitor hovers the score column on the homepage
-- **THEN** the tooltip describes the total across the five scoring dimensions and references `/scoring`, without promising a breakdown view
+- **THEN** the tooltip describes the row's total in its own shape (`n/15` impact or `n/25` v1 history) without promising a breakdown view or referencing removed routes
