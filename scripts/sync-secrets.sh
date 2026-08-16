@@ -51,7 +51,8 @@ STRIPE_WEBHOOK_SECRET_TEST|op://BHD Labs/Stripe/webhook secret test|vercel
 SUPABASE_URL|op://BHD Labs/Supabase/url|vercel,gh,gh-env:Production – experiment-hub
 SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase/service role key|vercel,gh,gh-env:Production – experiment-hub
 FIGMA_ACCESS_TOKEN|op://BHD Labs/Figma/access token|vercel
-GITHUB_DISPATCH_TOKEN|op://BHD Labs/GitHub dispatch/token|vercel
+GITHUB_DISPATCH_TOKEN|op://BHD Labs/GitHub/dispatch token|vercel
+GITHUB_TOKEN|op://BHD Labs/GitHub/api token|vercel
 PDF_GOOGLE_CLIENT_ID|op://BHD Labs/Google OAuth pdf-metadata-viewer/client id|vercel
 PDF_GOOGLE_CLIENT_SECRET|op://BHD Labs/Google OAuth pdf-metadata-viewer/client secret|vercel
 PDF_GOOGLE_API_KEY|op://BHD Labs/Google OAuth pdf-metadata-viewer/api key|vercel
