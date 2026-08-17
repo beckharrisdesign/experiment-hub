@@ -121,6 +121,20 @@ a database is invisible to a token until explicitly shared. One token can serve
 all of these, but only if every database is connected to that same integration —
 check with `POST /v1/search` filtered to `database` before assuming.
 
+**Capabilities are a separate axis from shares** (found 2026-08-17). A token can
+*see* a database and still get `403 restricted_resource — "Insufficient
+permissions for this endpoint"` on writes: that error means the *integration*
+lacks the **Update content** / **Insert content** capability, set at
+<https://www.notion.so/profile/integrations>, not a missing share. Reads
+succeeding while updates 403 is the fingerprint. Capabilities apply per
+integration, so they cover every token of that integration at once.
+
+**To identify whose token you hold** (tokens all look alike): `GET /v1/users/me`
+with the token returns the integration's name, and `POST /v1/search` returns
+what it can see — both value-free checks. This settled it when the vault token
+had to be matched to an integration after the GitHub copy (write-only) was
+overwritten.
+
 ### Supabase
 
 - Dashboard: <https://supabase.com/dashboard/project/ulqdjuiffpazzixnwwso/settings/api>

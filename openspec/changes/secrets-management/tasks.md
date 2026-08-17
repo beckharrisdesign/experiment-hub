@@ -24,8 +24,8 @@
 - [x] 1.4 A broken CLI integration fails loudly, not silently
 - [x] 1.5 An agent attempt to print the env file is refused
 - [x] 1.6 Legitimate key-name inspection still works
-- [ ] 1.7 Sync reports drift and corrects it
-- [ ] 1.8 Sync previews before it writes
+- [x] 1.7 Sync reports drift and corrects it
+- [x] 1.8 Sync previews before it writes
 - [x] 1.9 Orphaned secrets are surfaced, not silently kept
 - [ ] 1.10 Rotating a key with no prior context
 - [ ] 1.11 The runbook records vendor differences that caused past mistakes
@@ -58,7 +58,7 @@
 ## 4. QA
 
 - [ ] 4.1 **Manual walkthrough** — aligned to §1: print `.env.local` and confirm only `op://` references appear (1.1, 1.2); start dev from a fresh shell in a worktree and exercise an OpenAI-backed route (1.3); disable CLI integration and confirm the failure names 1Password (1.4); have an agent attempt `cat .env.local` and confirm refusal, then confirm a key-name listing still works (1.5, 1.6); run sync in preview against a deliberately drifted variable, then apply and re-run to confirm it reports unchanged (1.7, 1.8, 1.9); follow the runbook cold for one credential (1.10, 1.11).
-      - **Partial, 2026-08-17 (GitHub outage — local half done live):** 1.1/1.2 ✓ (8 `op://` reference lines, `no-plaintext-secrets` green); 1.5 ✓ (agent `cat .env.local` refused, refusal names the three safe routes); 1.6 ✓ (names-only listing allowed); 1.4 ✓ under real conditions — the session driving this walkthrough could not reach the desktop app (macOS app-data denial) and the preflight failed with the intended message, no stub required. **Remaining:** ~~1.3~~ ✓ done 2026-08-17 (fresh shell, preflight silent, labs UI up); 1.7–1.9 (sync drift/preview/apply); 1.10/1.11 (cold runbook follow — Katy's by design).
+      - **Partial, 2026-08-17 (GitHub outage — local half done live):** 1.1/1.2 ✓ (8 `op://` reference lines, `no-plaintext-secrets` green); 1.5 ✓ (agent `cat .env.local` refused, refusal names the three safe routes); 1.6 ✓ (names-only listing allowed); 1.4 ✓ under real conditions — the session driving this walkthrough could not reach the desktop app (macOS app-data denial) and the preflight failed with the intended message, no stub required. **Remaining:** ~~1.3~~ ✓ done 2026-08-17 (fresh shell, preflight silent, labs UI up); ~~1.7–1.9~~ ✓ done 2026-08-17 — first real `--apply` (23/23 written across Vercel + GitHub repo/environment secrets; re-run reported 23 unchanged; a mid-apply GitHub 503 proved the abort-before-record retry design). Post-apply workflow verification: etsy-notion-sync and history-accumulate both green on vault-sourced values — after two real findings, recorded in the runbook: the vault's Notion token lacked the **Update content capability** (403 `restricted_resource` looks like a share problem but is per-integration capability), and history-accumulate had never been able to see its ids at all (no `environment:` declaration; the apply's repo-secret writes fixed it). 1.10/1.11 (cold runbook follow — Katy's by design).
 - [x] 4.2 **Automated smoke** — a vitest check asserting no line in `.env.local` matches a known secret prefix (`sk-`, `sk_live_`, `sk_test_`, `GOCSPX-`, `figd_`), plus a shell test exercising the pre-tool-use guard in both directions. Both must fail before §3 and pass after.
       - `tests/ci/env-read-guard.test.ts` — **24 passing**, both directions.
       - `tests/ci/no-plaintext-secrets.test.ts` — **2 failing by design**, naming `OPENAI_API_KEY`, `STRIPE_SECRET_KEY_LIVE`, `STRIPE_SECRET_KEY_TEST`, `FIGMA_ACCESS_TOKEN`. These stay red until §3.2–3.3 convert the file, which is the point of a failing-first check.
