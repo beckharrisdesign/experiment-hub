@@ -48,13 +48,13 @@ STRIPE_SECRET_KEY_LIVE|op://BHD Labs/Stripe/secret key live|vercel
 STRIPE_SECRET_KEY_TEST|op://BHD Labs/Stripe/secret key test|vercel
 STRIPE_WEBHOOK_SECRET_LIVE|op://BHD Labs/Stripe/webhook secret live|vercel
 STRIPE_WEBHOOK_SECRET_TEST|op://BHD Labs/Stripe/webhook secret test|vercel
-SUPABASE_URL|op://BHD Labs/Supabase/url|vercel,gh,gh-env:Production – experiment-hub
-SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase/service role key|vercel,gh,gh-env:Production – experiment-hub
+SUPABASE_URL|op://BHD Labs/Supabase experiment-hub/url|vercel,gh,gh-env:Production – experiment-hub
+SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase experiment-hub/service role key|vercel,gh,gh-env:Production – experiment-hub
 # Publishable key is safe-by-design (RLS still applies) but ci.yml's live tests
 # need it as a repo secret — surfaced 2026-08-17, when the first apply created
 # SUPABASE_URL in repo scope and un-skipped a suite that had silently skipped
 # on the missing URL since sso-zip-code-persistence.
-SUPABASE_PUBLISHABLE_KEY|op://BHD Labs/Supabase/publishable key|gh
+SUPABASE_PUBLISHABLE_KEY|op://BHD Labs/Supabase experiment-hub/publishable key|gh
 # Simple Seed Organizer is a second Supabase project (orlpgxqbesxvlhlkbnqy),
 # item-per-scope like "Google OAuth pdf-metadata-viewer". Keys must match
 # their project: the 2026-08-17 500s were the hub URL paired with the SSO

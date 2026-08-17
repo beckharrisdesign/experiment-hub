@@ -143,7 +143,7 @@ wrong project is valid-looking and fails only at runtime — the 2026-08-17 CI
 
 | Project | Ref | Holds | Vault item |
 | --- | --- | --- | --- |
-| **Experiment Hub 2.0** | `ulqdjuiffpazzixnwwso` | `experiment_submissions`, `experiment_content`, Etsy/ELK/PDF tables | `Supabase` |
+| **Experiment Hub 2.0** | `ulqdjuiffpazzixnwwso` | `experiment_submissions`, `experiment_content`, Etsy/ELK/PDF tables | `Supabase experiment-hub` |
 | **Simple Seed Organizer** | `orlpgxqbesxvlhlkbnqy` | `seeds`, `user_profiles`, SSO tables | `Supabase simple-seed-organizer` |
 
 - Dashboards: <https://supabase.com/dashboard/project/ulqdjuiffpazzixnwwso/settings/api>
