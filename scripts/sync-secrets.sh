@@ -94,6 +94,26 @@ if ! command -v vercel >/dev/null 2>&1; then
   echo "  ! Vercel CLI not found — Vercel targets will be skipped. Install: npm i -g vercel"
 fi
 
+# `vercel env` needs a project context, and no checkout here is `vercel link`ed
+# — deploys go through Actions, and each worktree would need its own link
+# anyway (found on the first real --apply, 2026-08-17: "Your codebase isn't
+# linked to a project"). The CLI's documented link-free alternative is the
+# VERCEL_ORG_ID + VERCEL_PROJECT_ID environment variables, and both are already
+# manifest entries in the vault. Resolve them once here; refuse the same
+# non-values the sync loop refuses.
+vercel_org=""; vercel_project=""
+if $VERCEL_OK; then
+  vercel_org=$(op read "op://$VAULT/Vercel/org id" 2>/dev/null || true)
+  vercel_project=$(op read "op://$VAULT/Vercel/project id" 2>/dev/null || true)
+  for v in "$vercel_org" "$vercel_project"; do
+    case "$v" in ""|PASTE_VALUE_HERE|"[SENSITIVE]")
+      VERCEL_OK=false
+      echo "  ! Vercel org/project id not filled in the vault — Vercel targets will be skipped."
+      break;;
+    esac
+  done
+fi
+
 $APPLY && echo "== APPLYING ==" || echo "== PREVIEW (no writes; re-run with --apply) =="
 echo
 
@@ -150,8 +170,10 @@ while IFS='|' read -r name ref targets; do
       case "$target" in
         vercel)
           if $VERCEL_OK; then
-            vercel env rm "$name" production --yes >/dev/null 2>&1 || true
-            printf '%s' "$value" | vercel env add "$name" production >/dev/null
+            VERCEL_ORG_ID="$vercel_org" VERCEL_PROJECT_ID="$vercel_project" \
+              vercel env rm "$name" production --yes >/dev/null 2>&1 || true
+            printf '%s' "$value" | VERCEL_ORG_ID="$vercel_org" VERCEL_PROJECT_ID="$vercel_project" \
+              vercel env add "$name" production >/dev/null
           fi
           ;;
         gh)
