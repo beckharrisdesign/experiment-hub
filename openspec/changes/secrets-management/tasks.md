@@ -14,8 +14,8 @@
 
 ## 1. User outcomes (from spec scenarios)
 
-- [ ] 1.1 Printing the env file leaks nothing
-- [ ] 1.2 A dedicated vault holds the hub's credentials
+- [x] 1.1 Printing the env file leaks nothing
+- [x] 1.2 A dedicated vault holds the hub's credentials
 - [x] 1.3 Dev server starts with working credentials
 - [ ] 1.4 A broken CLI integration fails loudly, not silently
 - [x] 1.5 An agent attempt to print the env file is refused
@@ -36,7 +36,7 @@
 
 - [x] 3.1 Write the failing checks first (see §4.2) so the work ships failing-first per `rules/principles.mdc`.
 - [x] 3.2 Convert `OPENAI_API_KEY` to an `op://` reference; confirm resolution before touching anything else. This is the canary — 11 files consume it.
-- [ ] 3.3 Convert the remaining credentials: `STRIPE_SECRET_KEY_LIVE`, `STRIPE_SECRET_KEY_TEST`, `STRIPE_WEBHOOK_SECRET_LIVE`, `STRIPE_WEBHOOK_SECRET_TEST`, `SUPABASE_SERVICE_ROLE_KEY`, `FIGMA_ACCESS_TOKEN`, `GITHUB_DISPATCH_TOKEN`. Leave all non-secret config as literal plaintext.
+- [x] 3.3 Convert the remaining credentials: `STRIPE_SECRET_KEY_LIVE`, `STRIPE_SECRET_KEY_TEST`, `STRIPE_WEBHOOK_SECRET_LIVE`, `STRIPE_WEBHOOK_SECRET_TEST`, `SUPABASE_SERVICE_ROLE_KEY`, `FIGMA_ACCESS_TOKEN`, `GITHUB_DISPATCH_TOKEN`. Leave all non-secret config as literal plaintext.
 - [x] 3.4 Wrap the dev script: `"dev": "op run --env-file=.env.local -- next dev"`. Verify worktree symlink resolution still works from a worktree, not just the main checkout.
 - [ ] 3.5 Make a failed resolution loud — start-up must name 1Password as the cause and point at the documented bypass, never start with empty credentials (spec 1.4).
 - [ ] 3.6 Update `.env.example` so the registry shows which variables are references and which are plaintext config.

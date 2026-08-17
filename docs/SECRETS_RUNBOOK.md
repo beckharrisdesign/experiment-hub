@@ -81,6 +81,37 @@ old key keep working for a chosen window, so there is no reason to gap.
   match character-exactly, and publishing status must be **Published**, not
   Testing — apps left in Testing get refresh tokens that expire after 7 days.
 
+### Notion — which database is which
+
+Four Notion databases, and the names do not disambiguate themselves. Parts of
+`labs.beckharrisdesign.com` are rendered from two of them, so getting this wrong
+changes what the public site shows.
+
+| Variable | Notion database | What it drives |
+| --- | --- | --- |
+| `NOTION_EXPERIMENTS_DATA_SOURCE_ID` | **BHD Labs Database** | the hub's experiment list + detail pages. Read-only from the app; alternative to the Supabase `experiments` table |
+| `NOTION_HISTORY_DATA_SOURCE_ID` | **BHD Labs History** | the History band on public detail pages, approved rows only. Written by `scripts/` via `history-accumulate.yml`, never by the app |
+| `NOTION_INVENTORY_DB_ID` | the **Etsy listings** database | **not on the website.** Feeds `etsy-notion-sync.yml` only — SKUs, inventory levels, views, descriptions for shop `WatermarkandHue` (`shop_id` 5568941) |
+| — | **BHD Database** | the **portfolio** database (Challenge, TLDR, Year, Themes, Slug). Nothing in this repo reads it |
+
+**`data_source_id` is not `database_id`.** The two `*_DATA_SOURCE_ID`s are *not*
+the id in the Notion URL. The hub uses the newer API, where a database contains
+data sources with their own ids — fetch with:
+
+```bash
+curl -s "https://api.notion.com/v1/databases/<database_id>" \
+  -H "Authorization: Bearer $NOTION_TOKEN" -H "Notion-Version: 2025-09-03" \
+  | python3 -c 'import json,sys;[print(s["id"],s["name"]) for s in json.load(sys.stdin)["data_sources"]]'
+```
+
+`NOTION_INVENTORY_DB_ID` *is* a plain database id — the Python sync pins API
+version `2022-06-28`, which predates data sources.
+
+**Token scope is per-database.** Notion integrations are granted page by page, so
+a database is invisible to a token until explicitly shared. One token can serve
+all of these, but only if every database is connected to that same integration —
+check with `POST /v1/search` filtered to `database` before assuming.
+
 ### Supabase
 
 - Dashboard: <https://supabase.com/dashboard/project/ulqdjuiffpazzixnwwso/settings/api>
@@ -137,6 +168,43 @@ old key keep working for a chosen window, so there is no reason to gap.
   If sync reports Vercel succeeding while every GitHub variable fails, this is why.
 
 ---
+
+## Vault item dates
+
+Items use the **API Credential** category, which carries `valid from` and
+`expires` DATE fields. Creating an item with `op item create` leaves both at
+`-43140` — **31 December 1969** — so 1Password reports every credential as
+expired and shows an error badge. Set both explicitly whenever you add an item:
+
+```bash
+op item edit "<item>" --vault "BHD Labs" \
+  'valid from[date]=YYYY-MM-DD' 'expires[date]=YYYY-MM-DD'
+```
+
+The field cannot be cleared — an empty value is rejected, so it must hold a date.
+
+**Convention as of 2026-08-16:** `expires` is a **rotation review date**, one year
+out, not a vendor expiry. Most credentials here never expire on their own, which
+is precisely why they rot unnoticed. Where a vendor *does* impose an expiry —
+GitHub fine-grained PATs — use the real date instead, so the item and GitHub
+agree.
+
+## Vercel will not give you a Sensitive value back
+
+`vercel env ls` shows each variable as **Sensitive** or **Non-sensitive**, and
+`vercel env pull` writes the literal string `[SENSITIVE]` for every Sensitive one
+rather than the value. There is no flag that changes this — Sensitive means
+write-only, the same as GitHub Actions secrets.
+
+So Vercel is **not** a recovery source for most credentials. Only Non-sensitive
+variables can be read back, and as of 2026-08-16 that is just `SUPABASE_URL`,
+`SUPABASE_SERVICE_ROLE_KEY`, and `ADMIN_SECRET` — the last two arguably
+mislabelled, since a service-role key bypasses row-level security and should be
+Sensitive.
+
+`sync-secrets.sh` refuses to push `[SENSITIVE]` for exactly this reason. If a
+migration ever appears to succeed but every value is 11 characters long, this is
+what happened.
 
 ## Rotating, step by step
 

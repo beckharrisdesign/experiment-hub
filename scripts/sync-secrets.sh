@@ -60,10 +60,18 @@ PDF_SESSION_SECRET|op://BHD Labs/PDF session/secret|vercel
 ETSY_API_KEY|op://BHD Labs/Etsy/api key|gh
 ETSY_SHARED_SECRET|op://BHD Labs/Etsy/shared secret|gh
 ETSY_SHOP_ID|op://BHD Labs/Etsy/shop id|gh
+# Notion: four databases, names that do not disambiguate themselves. See the
+# "which database is which" table in docs/SECRETS_RUNBOOK.md before changing any
+# of these — two of them render parts of labs.beckharrisdesign.com.
+#   experiments data source -> "BHD Labs Database"  : hub experiment list + detail pages
+#   history data source     -> "BHD Labs History"   : History band on detail pages
+#   inventory db            -> Etsy listings        : etsy-notion-sync only, not the website
+# One token can serve all three, but only if every database is shared with that
+# same integration — Notion grants access per page, not per workspace.
 NOTION_TOKEN|op://BHD Labs/Notion/token|gh
 NOTION_INVENTORY_DB_ID|op://BHD Labs/Notion/inventory db id|gh
-NOTION_EXPERIMENTS_DATA_SOURCE_ID|op://BHD Labs/Notion/experiments data source id|gh-env:Production – experiment-hub
-NOTION_HISTORY_DATA_SOURCE_ID|op://BHD Labs/Notion/history data source id|gh-env:Production – experiment-hub
+NOTION_EXPERIMENTS_DATA_SOURCE_ID|op://BHD Labs/Notion/experiments data source id|vercel,gh
+NOTION_HISTORY_DATA_SOURCE_ID|op://BHD Labs/Notion/history data source id|vercel,gh
 VERCEL_TOKEN|op://BHD Labs/Vercel/token|gh
 VERCEL_ORG_ID|op://BHD Labs/Vercel/org id|gh
 VERCEL_PROJECT_ID|op://BHD Labs/Vercel/project id|gh
@@ -98,14 +106,27 @@ synced_names=""
 
 while IFS='|' read -r name ref targets; do
   [ -z "$name" ] && continue
+  # The manifest carries explanatory comments; without this they are read as
+  # variable names and reported as unfilled credentials.
+  case "$name" in \#*) continue;; esac
   synced_names="$synced_names $name"
 
-  # PASTE_VALUE_HERE is the placeholder the scaffolded vault items ship with.
-  # 1Password will not store an empty field, so a freshly created item has to
-  # hold *something* — and without this guard the first --apply would happily
-  # push the literal string "PASTE_VALUE_HERE" into production Vercel and
-  # GitHub Actions, replacing working credentials with nonsense.
-  if ! value=$(op read "$ref" 2>/dev/null) || [ -z "$value" ] || [ "$value" = "PASTE_VALUE_HERE" ]; then
+  # Values that are not values. Pushing any of these would replace working
+  # credentials with nonsense.
+  #
+  #   PASTE_VALUE_HERE  the placeholder scaffolded vault items ship with —
+  #                     1Password will not store an empty field, so a fresh item
+  #                     has to hold something.
+  #   [SENSITIVE]       what `vercel env pull` writes for any variable marked
+  #                     Sensitive. Vercel will not decrypt those, so a migration
+  #                     that reads from Vercel silently harvests this string
+  #                     instead of the credential. Found the hard way on
+  #                     2026-08-16: five vault fields were filled with it, all
+  #                     carrying the same 11-character fingerprint.
+  #
+  # Anything else short and constant that shows up here belongs in this list.
+  if ! value=$(op read "$ref" 2>/dev/null) || [ -z "$value" ] \
+     || [ "$value" = "PASTE_VALUE_HERE" ] || [ "$value" = "[SENSITIVE]" ]; then
     echo "  ? $name — not filled in yet ($ref)"
     skipped=$((skipped + 1))
     continue
