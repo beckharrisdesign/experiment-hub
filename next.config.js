@@ -51,7 +51,7 @@ const nextConfig = {
       'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       'font-src': ["'self'", 'https://fonts.gstatic.com'],
       'img-src': ["'self'", 'data:', 'blob:', 'https://www.google-analytics.com', 'https://www.googletagmanager.com', 'https://*.supabase.co'], // *.supabase.co: Etsy Listing Kit signed download images
-      'connect-src': ["'self'", 'https://www.google-analytics.com', 'https://region1.google-analytics.com', 'https://www.googletagmanager.com'],
+      'connect-src': ["'self'", 'https://www.google-analytics.com', 'https://region1.google-analytics.com', 'https://analytics.google.com', 'https://www.googletagmanager.com'],
       'frame-ancestors': ["'none'"],
     };
 
@@ -125,7 +125,11 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.googleadservices.com https://*.doubleclick.net https://*.supabase.co", // *.supabase.co: Etsy Listing Kit signed download images
-              "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.googleadservices.com https://*.doubleclick.net",
+              // analytics.google.com: GA4 falls back to this origin for collection in
+              // browsers that block the www.google-analytics.com / region1 hosts as
+              // third-party trackers (Safari ITP, Firefox ETP, Brave). Without it those
+              // visitors' events are CSP-blocked and never recorded.
+              "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://www.google.com https://www.googleadservices.com https://*.doubleclick.net",
               "frame-ancestors 'none'",
             ].join('; '),
           },
