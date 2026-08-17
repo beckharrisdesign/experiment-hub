@@ -15,15 +15,20 @@
  * manually per the change's tasks.md §4.4 — auth-scoped automated tests are a
  * follow-up if this test alone proves insufficient.
  *
- * Runs against the real Supabase project. Requires:
- *   SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in the environment.
+ * Runs against the real Simple Seed Organizer Supabase project — a DIFFERENT
+ * project from the hub's. `user_profiles` lives in `orlpgxqbesxvlhlkbnqy`
+ * (Simple Seed Organizer); the hub's tables live in `ulqdjuiffpazzixnwwso`
+ * (Experiment Hub 2.0). Under the hub's SUPABASE_URL this test can only fail
+ * with PGRST205 (table not found) — discovered 2026-08-17 when the secrets
+ * apply un-skipped the suite for the first time. Requires:
+ *   SSO_SUPABASE_URL and SSO_SUPABASE_SERVICE_ROLE_KEY in the environment.
  * Skips automatically if either is missing (safe for local dev without secrets).
  */
 import { describe, it, expect, beforeAll, afterEach } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env.SSO_SUPABASE_URL;
+const supabaseKey = process.env.SSO_SUPABASE_SERVICE_ROLE_KEY;
 const hasSecrets = Boolean(supabaseUrl && supabaseKey);
 
 const describeIf = hasSecrets ? describe : describe.skip;
