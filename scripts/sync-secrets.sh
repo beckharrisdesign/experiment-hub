@@ -50,6 +50,11 @@ STRIPE_WEBHOOK_SECRET_LIVE|op://BHD Labs/Stripe/webhook secret live|vercel
 STRIPE_WEBHOOK_SECRET_TEST|op://BHD Labs/Stripe/webhook secret test|vercel
 SUPABASE_URL|op://BHD Labs/Supabase/url|vercel,gh,gh-env:Production – experiment-hub
 SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase/service role key|vercel,gh,gh-env:Production – experiment-hub
+# Publishable key is safe-by-design (RLS still applies) but ci.yml's live tests
+# need it as a repo secret — surfaced 2026-08-17, when the first apply created
+# SUPABASE_URL in repo scope and un-skipped a suite that had silently skipped
+# on the missing URL since sso-zip-code-persistence.
+SUPABASE_PUBLISHABLE_KEY|op://BHD Labs/Supabase/publishable key|gh
 FIGMA_ACCESS_TOKEN|op://BHD Labs/Figma/access token|vercel
 GITHUB_DISPATCH_TOKEN|op://BHD Labs/GitHub/dispatch token|vercel
 GITHUB_TOKEN|op://BHD Labs/GitHub/api token|vercel
