@@ -55,6 +55,12 @@ SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase/service role key|vercel,gh,gh-e
 # SUPABASE_URL in repo scope and un-skipped a suite that had silently skipped
 # on the missing URL since sso-zip-code-persistence.
 SUPABASE_PUBLISHABLE_KEY|op://BHD Labs/Supabase/publishable key|gh
+# Simple Seed Organizer is a second Supabase project (orlpgxqbesxvlhlkbnqy),
+# item-per-scope like "Google OAuth pdf-metadata-viewer". Keys must match
+# their project: the 2026-08-17 500s were the hub URL paired with the SSO
+# publishable key.
+SSO_SUPABASE_URL|op://BHD Labs/Supabase simple-seed-organizer/url|gh
+SSO_SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase simple-seed-organizer/service role key|gh
 FIGMA_ACCESS_TOKEN|op://BHD Labs/Figma/access token|vercel
 GITHUB_DISPATCH_TOKEN|op://BHD Labs/GitHub/dispatch token|vercel
 GITHUB_TOKEN|op://BHD Labs/GitHub/api token|vercel

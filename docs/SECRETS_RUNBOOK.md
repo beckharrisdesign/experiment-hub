@@ -135,9 +135,21 @@ what it can see — both value-free checks. This settled it when the vault token
 had to be matched to an integration after the GitHub copy (write-only) was
 overwritten.
 
-### Supabase
+### Supabase — which project is which
 
-- Dashboard: <https://supabase.com/dashboard/project/ulqdjuiffpazzixnwwso/settings/api>
+**Two projects, and every key belongs to exactly one of them.** A key from the
+wrong project is valid-looking and fails only at runtime — the 2026-08-17 CI
+500s were the hub URL paired with the SSO publishable key.
+
+| Project | Ref | Holds | Vault item |
+| --- | --- | --- | --- |
+| **Experiment Hub 2.0** | `ulqdjuiffpazzixnwwso` | `experiment_submissions`, `experiment_content`, Etsy/ELK/PDF tables | `Supabase` |
+| **Simple Seed Organizer** | `orlpgxqbesxvlhlkbnqy` | `seeds`, `user_profiles`, SSO tables | `Supabase simple-seed-organizer` |
+
+- Dashboards: <https://supabase.com/dashboard/project/ulqdjuiffpazzixnwwso/settings/api>
+  · <https://supabase.com/dashboard/project/orlpgxqbesxvlhlkbnqy/settings/api>
+- When pasting any Supabase key into the vault, confirm the **project name** at
+  the top of the dashboard first — the key formats are identical across projects.
 - `SUPABASE_SERVICE_ROLE_KEY` bypasses row-level security. Server-side only —
   it must never reach a `NEXT_PUBLIC_*` variable or the browser bundle.
 - `lib/pdf-documents.ts` throws without it, so a missing value fails at import
