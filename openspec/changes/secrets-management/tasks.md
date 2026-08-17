@@ -2,12 +2,15 @@
 
 ## 0. Prerequisites (Katy — not code, and they block everything)
 
-- [ ] 0.1 Confirm 1Password account recovery is in order — Emergency Kit saved, recovery contact set. Do this **before** cutover, while plaintext values still exist as a fallback: after cutover, losing vault access means losing local dev.
+- [x] 0.1 Confirm 1Password account recovery is in order — Emergency Kit saved, recovery contact set. Do this **before** cutover, while plaintext values still exist as a fallback: after cutover, losing vault access means losing local dev.
+      - Confirmed 2026-08-17: Emergency Kit downloaded and stored separately from both the local machine and GitHub. (Sequencing note: this landed one day *after* cutover, not before as specified.)
 - [x] 0.2 Create a standalone `BHD Labs` vault (not `Private`, not a shared family vault).
       - Named `BHD Labs`, not the `Experiment Hub` the artifacts originally assumed; every reference was renamed to match. A first attempt created a **collection** rather than a vault — collections are client-side *views over existing vaults* and store nothing, which is why `op vault list` could not see it.
-- [ ] 0.3 Populate it — **scaffolding done, values are Katy's to paste in.** Ten items created in `BHD Labs` with all 23 fields: `OpenAI`, `Stripe`, `Supabase`, `Figma`, `GitHub dispatch`, `Google OAuth pdf-metadata-viewer`, `PDF session`, `Etsy`, `Notion`, `Vercel`. Every field holds `PASTE_VALUE_HERE`; replace each with the real value. All 23 `op://` references were verified to resolve, so a mistyped field label cannot masquerade as an unfilled one.
+- [x] 0.3 Populate it — **scaffolding done, values are Katy's to paste in.**
+      - Populated; verified 2026-08-17 by a values-free `op read` sweep: **23 of 24 fields filled.** The sole exception is `Stripe/webhook secret test`, **intentionally** left as the scaffold placeholder — no test-mode webhook endpoint exists at Stripe (test products/pricing only), so the secret does not exist to paste. Documented in the runbook's Stripe section; sync refuses the placeholder so it cannot be pushed. Ten items created in `BHD Labs` with all 23 fields: `OpenAI`, `Stripe`, `Supabase`, `Figma`, `GitHub dispatch`, `Google OAuth pdf-metadata-viewer`, `PDF session`, `Etsy`, `Notion`, `Vercel`. Every field holds `PASTE_VALUE_HERE`; replace each with the real value. All 23 `op://` references were verified to resolve, so a mistyped field label cannot masquerade as an unfilled one.
       - The last three vendors were **not** in the original plan. The sync script's orphan report flagged 8 GitHub Actions secrets consumed by `etsy-notion-sync.yml`, `history-accumulate.yml`, and `deploy-hub.yml` but absent from the manifest — real credentials that would have stayed unmanaged. Manifest now covers 23 variables with zero orphans.
-- [ ] 0.4 Install the Vercel CLI (`npm i -g vercel`) and authenticate it — absent today, and `secret-sync` cannot write to Vercel without it.
+- [x] 0.4 Install the Vercel CLI (`npm i -g vercel`) and authenticate it — absent today, and `secret-sync` cannot write to Vercel without it.
+      - Verified 2026-08-17: CLI 59.1.3 at `/opt/homebrew/bin/vercel`, authenticated as `katybeckbhd`.
 - [x] 0.5 Grant the `gh` CLI's fine-grained PAT **Secrets: Read and write** — <https://github.com/settings/tokens?type=beta>.
       - Resolved 2026-08-16 on the `Claude Code` token, which held `Secrets: Read-only`. Before that: `gh api -X DELETE .../actions/secrets/OPENAI_API_KEY` returns **403 "Resource not accessible by personal access token"**, despite the repo role being `admin: true`. Listing works, writing does not.
       - This blocks more than housekeeping: `scripts/sync-secrets.sh --apply` uses `gh secret set`, which needs the same permission, so all nine GitHub-targeted variables would fail while the Vercel ones succeeded. Not proven by test — the only way to test writing is to create a secret, and with deletion blocked that would leave junk behind that cannot be cleaned up.
@@ -17,7 +20,7 @@
 - [x] 1.1 Printing the env file leaks nothing
 - [x] 1.2 A dedicated vault holds the hub's credentials
 - [x] 1.3 Dev server starts with working credentials
-- [ ] 1.4 A broken CLI integration fails loudly, not silently
+- [x] 1.4 A broken CLI integration fails loudly, not silently
 - [x] 1.5 An agent attempt to print the env file is refused
 - [x] 1.6 Legitimate key-name inspection still works
 - [ ] 1.7 Sync reports drift and corrects it
@@ -38,8 +41,10 @@
 - [x] 3.2 Convert `OPENAI_API_KEY` to an `op://` reference; confirm resolution before touching anything else. This is the canary — 11 files consume it.
 - [x] 3.3 Convert the remaining credentials: `STRIPE_SECRET_KEY_LIVE`, `STRIPE_SECRET_KEY_TEST`, `STRIPE_WEBHOOK_SECRET_LIVE`, `STRIPE_WEBHOOK_SECRET_TEST`, `SUPABASE_SERVICE_ROLE_KEY`, `FIGMA_ACCESS_TOKEN`, `GITHUB_DISPATCH_TOKEN`. Leave all non-secret config as literal plaintext.
 - [x] 3.4 Wrap the dev script: `"dev": "op run --env-file=.env.local -- next dev"`. Verify worktree symlink resolution still works from a worktree, not just the main checkout.
-- [ ] 3.5 Make a failed resolution loud — start-up must name 1Password as the cause and point at the documented bypass, never start with empty credentials (spec 1.4).
-- [ ] 3.6 Update `.env.example` so the registry shows which variables are references and which are plaintext config.
+- [x] 3.5 Make a failed resolution loud — start-up must name 1Password as the cause and point at the documented bypass, never start with empty credentials (spec 1.4).
+      - `scripts/op-preflight.sh`, chained ahead of `op run` in the `dev` script (`predev` would be idiomatic but pnpm does not run pre/post scripts by default). Readiness check is `op vault get "BHD Labs"` — `op whoami` lies under app integration (see runbook) and `op vault list` succeeding would not prove the one vault that matters is visible. The failure message surfaces `op`'s own stderr and lists the three observed causes, including the macOS app-data denial found 2026-08-17 (a calling app without the privacy grant gets "No accounts configured" with the toggle on and the app running). Exercised for real: this session *is* that failure mode, and the preflight caught it with the right message. Tests: `tests/ci/dev-preflight.test.ts` (5 passing, stubbed `op`, both directions).
+- [x] 3.6 Update `.env.example` so the registry shows which variables are references and which are plaintext config.
+      - Every secret key annotated with its exact `op://` reference (`vault:` = referenced in `.env.local`; `vault (CI/deploy only):` = lives in the vault for sync, never in `.env.local`). Ground truth taken from `.env.local` itself via the guard's names-only carve-out, not assumed from the plan — which is how `STRIPE_WEBHOOK_SECRET_TEST` surfaced as intentionally plaintext-blank. Also added the eight CI-only manifest entries (Etsy ×3, Notion ×2, Vercel ×3) that were absent from the registry despite the manifest declaring it the registry of record.
 - [x] 3.7 Add the `.env*` bulk-read guard to `.claude/hooks/pre-tool-use.sh`, with an explicit carve-out for listing key *names* (spec 1.6). Test both directions before committing — a guard that blocks everything is as bad as one that blocks nothing.
       - Two bugs found by using it rather than by reading it. **False negative:** `grep` was missing from the blocklist, so `grep OPENAI_API_KEY .env.local` printed the value — the guard's biggest hole. **False positive:** any command merely *mentioning* `.env` in a quoted search pattern was blocked, which made searching the codebase for env references impossible. Fixed by stripping quoted sections before looking for a filename, and adding `grep`/`egrep`/`rg`/`ag`. Both are now regression-tested.
 - [x] 3.8 Write `scripts/sync-secrets.sh`: read the vault, diff against Vercel and GitHub Actions, report added / updated / unchanged / orphaned. **Preview by default; writing requires an explicit flag.**

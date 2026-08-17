@@ -68,6 +68,15 @@ old key keep working for a chosen window, so there is no reason to gap.
   silently means test mode.
 - Webhook signing secrets (`STRIPE_WEBHOOK_SECRET_*`) are separate credentials
   with their own rotation, found under the webhook endpoint, not the API keys page.
+- **`STRIPE_WEBHOOK_SECRET_TEST` is intentionally empty** (vault field still the
+  scaffold placeholder, `.env.local` line plaintext-blank, verified 2026-08-17).
+  No test-mode webhook endpoint exists — the account has test products and
+  pricing only — so the secret genuinely does not exist to paste. Nothing
+  breaks: the secret only verifies *incoming* webhooks, and Stripe sends none
+  without an endpoint. Create a test endpoint when testing ELK's webhook flow
+  end-to-end (or use `stripe listen`, which mints its own per-session secret),
+  then fill the vault field. Sync refuses `PASTE_VALUE_HERE` as a value, so the
+  placeholder can never reach Vercel by accident.
 
 ### Google OAuth (pdf-metadata-viewer)
 
@@ -232,13 +241,25 @@ what happened.
 ## If 1Password is unavailable
 
 `op run` is a hard dependency of local dev, so a broken CLI integration stops
-`pnpm dev`. In order of likelihood:
+`pnpm dev`. The dev script runs `scripts/op-preflight.sh` first, so the failure
+is a message pointing here — not Next starting with empty credentials and
+failing three layers deep. In order of likelihood:
 
 - **Desktop app locked or quit.** Unlock it. The CLI delegates auth to the app
   and has no session of its own — `op whoami` reporting "account is not signed
   in" is normal and is *not* a useful readiness check. Use `op vault list`.
 - **Integration toggle off.** 1Password → Settings → Developer → *Integrate with
   1Password CLI*. Quit the app fully (⌘Q) and reopen.
+- **macOS denying the calling app access to 1Password's data.** Symptom: `op`
+  reports "No accounts configured" even though the app is running and the
+  integration toggle is on. `op vault list --debug` names it: *"operation not
+  permitted"* reading `settings.json` under 1Password's Group Container — the
+  app your shell runs inside (e.g. the Claude desktop app, observed 2026-08-17)
+  lacks the macOS privacy grant to read another app's data. Fix: run from a
+  terminal that has the permission, or grant the hosting app access in System
+  Settings → Privacy & Security (Full Disk Access is the blunt but reliable
+  option). The toggle being on in 1Password cannot fix this; it is a grant to
+  the *calling* app, not a 1Password setting.
 - **Genuinely blocked and you need to work now.** Read the values you need with
   `op read 'op://BHD Labs/<item>/<field>'` and export them into your shell
   for that session only. Do **not** paste them back into `.env.local` — a
