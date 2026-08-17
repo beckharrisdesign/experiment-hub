@@ -128,6 +128,23 @@ fi
 $APPLY && echo "== APPLYING ==" || echo "== PREVIEW (no writes; re-run with --apply) =="
 echo
 
+# gh secret set with retry — GitHub's API 503'd three separate times during
+# the first apply session (2026-08-17 outage), and each flare aborted the whole
+# run at one variable. Transient 5xx deserves a backoff, not an abort; a real
+# failure still aborts after the last attempt, before anything is recorded.
+# Reads $value from the caller (bash dynamic scoping).
+set_gh_secret() {
+  local attempt
+  for attempt in 1 2 3 4 5; do
+    if printf '%s' "$value" | gh secret set "$@" >/dev/null; then return 0; fi
+    if [ "$attempt" -lt 5 ]; then
+      echo "    … GitHub API hiccup writing $1 — retry $attempt/4 in $((attempt * 5))s" >&2
+      sleep $((attempt * 5))
+    fi
+  done
+  return 1
+}
+
 # ---------------------------------------------------------------------------
 # Sync
 # ---------------------------------------------------------------------------
@@ -188,10 +205,10 @@ while IFS='|' read -r name ref targets; do
           fi
           ;;
         gh)
-          printf '%s' "$value" | gh secret set "$name" >/dev/null
+          set_gh_secret "$name"
           ;;
         gh-env:*)
-          printf '%s' "$value" | gh secret set "$name" --env "${target#gh-env:}" >/dev/null
+          set_gh_secret "$name" --env "${target#gh-env:}"
           ;;
       esac
     done
