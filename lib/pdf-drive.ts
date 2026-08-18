@@ -19,12 +19,15 @@ import { getPdfAdminClient } from "@/lib/pdf-documents";
  * the live grant on 2026-08-18 — Drive reported exactly one accessible item,
  * the folder itself, and zero files. See design.md D9.
  *
- * A restricted scope normally pulls in Google's CASA assessment and the
- * seven-day refresh-token expiry of Testing status. Neither applies here
- * because the consent screen is **User type: Internal**, which exempts the app
- * from verification. That exemption is what makes this affordable, and it holds
- * only while every account lives in the Workspace domain — the day an outside
- * account needs access, this becomes External, verified, and assessed.
+ * The consent screen is **External, in Testing status**, with a single listed
+ * test user. A test user may consent to a restricted scope with no verification,
+ * which is what makes this work today. Two consequences follow, both accepted
+ * deliberately (D9a): refresh tokens expire after **seven days**, so
+ * re-authorization is routine rather than exceptional; and publishing the app
+ * later requires Google verification plus the CASA security assessment.
+ *
+ * Internal would have avoided both, at the cost of never serving an account
+ * outside the Workspace domain. It was declined to keep that door open.
  */
 export const GOOGLE_SCOPES = [
   "openid",

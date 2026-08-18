@@ -401,10 +401,12 @@ That fallback is worth building regardless of how the spike resolves: a
 re-scanned or moved file could drop out of the grant at any time, and finding out
 by noticing an absence is the failure mode worth designing out.
 
-### D9a — Drive scope is full `drive`, with the consent screen set to Internal
+### D9a — Drive scope is full `drive`, on an External consent screen in Testing
 
-**Decision, 2026-08-18: request `https://www.googleapis.com/auth/drive`, and set
-the OAuth consent screen to User type `Internal`.**
+**Decision, 2026-08-18: request `https://www.googleapis.com/auth/drive`. The
+consent screen stays **External**, in **Testing** status, with the founder's own
+account as the sole test user — publishing, and the assessment it requires, is
+deferred until the tool has earned it.**
 
 **What forced it.** D9 assumed a Picker folder grant covers the files inside the
 folder. Task 2.1a existed to check that assumption before anything was built on
@@ -442,21 +444,51 @@ folder" from "grant covers nothing".
 Since any workable scope here is restricted, `drive.readonly` buys nothing over
 full `drive` — it pays the same compliance price and cannot support commit.
 
-**What makes it affordable: Internal.** A restricted scope normally means
-Google's CASA assessment, an unverified-app warning, and the seven-day
-refresh-token expiry that D9 correctly called decisive. An app whose consent
-screen is **User type: Internal** is exempt from verification entirely. D9's cost
-table was right about External and simply did not consider Internal, which was
-available the whole time because every account already lives in the
-`beckharrisdesign.com` Workspace.
+**How a restricted scope gets used at all.** Two routes exist, and the choice
+between them is the substance of this decision.
 
-| | D9 (`drive.file`, External) | D9a (`drive`, Internal) |
-|---|---|---|
-| CASA assessment | No | No |
-| Refresh-token expiry | None | None |
-| Folder listing | **Broken** | Works |
-| Reach | Files handed over | Every file in the Drive |
-| Serves accounts outside the domain | Yes | **No** |
+**Internal** exempts an app from verification entirely — no CASA, no unverified
+warning, no seven-day expiry — at the price of only ever serving accounts inside
+the Workspace domain. It was available here, and was offered.
+
+**External in Testing**, which is what was chosen, lets a listed test user
+consent to a restricted scope today with no verification. Its cost is the
+seven-day refresh-token expiry that D9 correctly called decisive, and the CASA
+security assessment whenever the app is eventually published.
+
+| | D9 (`drive.file`, External) | Internal (offered) | **D9a (`drive`, External/Testing)** |
+|---|---|---|---|
+| CASA assessment | No | No | **Deferred to publish** |
+| Refresh-token expiry | None | None | **Every 7 days** |
+| Folder listing | **Broken** | Works | **Works** |
+| Reach | Files handed over | Every file in the Drive | Every file in the Drive |
+| Serves accounts outside the domain | Yes | **No** | Yes, after verification |
+
+**Why External was chosen over Internal.** Founder decision, 2026-08-18: *"no,
+just until it works, and then I publish the app."* Internal would have been free
+and immediate, but it forecloses ever serving an outside account without
+unwinding the choice. External keeps productization open at the cost of weekly
+re-consent now and an assessment later — a deliberate trade of present
+convenience for a door left open.
+
+**The user-experience argument, which is the real one.** Founder, 2026-08-18:
+*"as a user, I'd rather reconsent — which is super common in apps today — than
+have to manually select every individual file I want to organize."*
+
+That reframes the comparison the earlier analysis got slightly wrong. D9 weighed
+the seven-day expiry against nothing in particular and called it disqualifying.
+The honest comparison is against the alternative that keeps `drive.file` viable:
+per-file picking. Re-consent is a periodic interruption on a flow users already
+recognize from every other app that touches their storage — it costs seconds and
+teaches nothing new. Per-file picking is an unbounded chore that recurs for every
+document, forever, and never becomes familiar because it never ends. A recurring
+cost of seconds beats a recurring cost proportional to the archive.
+
+Worth stating plainly, because it is easy to misread as a formality: publishing
+an External app with a restricted scope is **not a status toggle**. It requires
+Google verification plus the CASA security assessment, with annual
+reassessment. The wall D9 was built to avoid is not removed by this decision, it
+is scheduled.
 
 **What it costs.** Two things, both accepted deliberately.
 
@@ -467,12 +499,16 @@ is that the grant is single-tenant, the refresh token never leaves the server,
 and bytes are served only through the authenticated session — the mitigations
 D5 and the spec already require, now carrying more weight than they used to.
 
-And Internal is a one-way door for as long as it lasts: the day an account
-outside the Workspace needs access, this becomes External **and** restricted,
-which is a taller wall than D9 would ever have faced. Founder decision, recorded
-2026-08-18: *"it already can only serve accounts in beckharrisdesign.com — I'm ok
-with the future lift."* Multi-tenancy was already out of scope, so this moves a
-cost that was always coming rather than creating a new one.
+And the seven-day refresh-token expiry is now a live operational fact, not an
+avoided one. Roughly weekly the grant dies and Drive access stops until the user
+re-consents. The re-authorization path (5.3) therefore stops being an edge case
+for revoked grants and becomes routine — it needs to be genuinely pleasant, and
+it needs to leave staged edits intact, because it will be hit constantly.
+
+Founder decision, recorded 2026-08-18: *"it already can only serve accounts in
+beckharrisdesign.com — I'm ok with the future lift."* The lift is real: an
+assessment, not paperwork. Accepting it buys the folder workflow now without
+foreclosing an outside account later.
 
 ### D10 — The splitter belongs in v2; its schema lands now, its screen later
 

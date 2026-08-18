@@ -64,7 +64,6 @@ describe("GOOGLE_SCOPES", () => {
     );
   });
 
-  // Internal user type is what exempts a restricted scope from verification.
   // Read-only scopes would not survive the write path, so if one appears here
   // the commit path has been broken by a scope change.
   it("carries a Drive scope that can write", () => {

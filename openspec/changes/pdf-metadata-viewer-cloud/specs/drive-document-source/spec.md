@@ -180,10 +180,9 @@ address it.
 - **THEN** the commit fails with that reason
 - **AND** the pending edits remain intact
 
-### Requirement: Drive access uses the full Drive scope on an Internal consent screen
+### Requirement: Drive access uses the full Drive scope
 
-The system SHALL request the full `https://www.googleapis.com/auth/drive` scope,
-and the OAuth consent screen SHALL be configured with User type **Internal**.
+The system SHALL request the full `https://www.googleapis.com/auth/drive` scope.
 Access SHALL be granted through the Google Picker at **folder** granularity; the
 system MUST NOT require the user to select documents individually. The granted
 scope SHALL be recorded alongside the grant.
@@ -194,13 +193,27 @@ conveys the folder and none of its contents, so the folder granularity this
 requirement also mandates could not be satisfied at the same time. Measured
 2026-08-18 — see `design.md` D9a.
 
-A restricted scope is affordable only because of the Internal user type, which
-exempts the app from Google's verification, and with it the CASA assessment and
-the seven-day refresh-token expiry of Testing status. **Internal is therefore
-load-bearing, not incidental**: switching the consent screen to External without
-also revisiting the scope would put the app into a verification requirement it
-has not met. Read-only Drive scopes are excluded for a separate reason — commit
-writes back to the file, so the app cannot function without write access.
+Read-only Drive scopes are excluded for a separate reason — commit writes back to
+the file, so the app cannot function without write access.
+
+**The consent screen configuration is deliberately not specified here.** A
+restricted scope can be reached two ways, and the choice is a cost decision
+rather than a system property: User type **Internal**, which exempts the app from
+verification but confines it to the Workspace domain; or User type **External**,
+which needs Google verification and the CASA security assessment before it can be
+published, and meanwhile expires refresh tokens every seven days in Testing
+status. The founder chose External/Testing on 2026-08-18, accepting the weekly
+re-consent now and the assessment at publish time. See D9a.
+
+#### Scenario: The grant outlives a single session
+
+- **WHEN** a stored grant's refresh token is rejected as expired
+- **THEN** the user is prompted to re-authorize rather than shown a broken tool
+- **AND** staged edits and history survive the re-authorization
+
+This is not hypothetical under External/Testing: refresh tokens expire after
+seven days, so re-authorization is a routine event on that path, not an error
+case.
 
 #### Scenario: Granting access to an archive
 
