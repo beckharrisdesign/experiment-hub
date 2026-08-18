@@ -34,6 +34,26 @@ flowchart LR
 
 What variable exists where: `.env.example` is the registry (names + provenance, no values).
 
+### Why some non-secrets live in the vault
+
+The vault holds the **master copy of production config**, which is a slightly
+wider job than holding credentials. A value belongs here if losing it would cost
+real work to recover — whether or not it is secret.
+
+Two PDF viewer variables qualify and are neither secret:
+
+| Variable | Why it is not a secret | Why it is vaulted anyway |
+| --- | --- | --- |
+| `PDF_GOOGLE_REDIRECT_URI` | a public URL, visible in the browser mid-handshake | Vercel stores it write-only, so it cannot be read back |
+| `PDF_ALLOWED_GOOGLE_SUBS` | an opaque account id; it authenticates nobody | recovering it means failing a sign-in on purpose and reading the rejected claim from the runtime log |
+
+The failure this prevents: on 2026-08-18 production returned
+`{"error":"Google OAuth is not configured"}` because `PDF_GOOGLE_REDIRECT_URI`
+had never been set. Four of the five variables that route needs were in the
+manifest and synced; the fifth was plaintext config with no managed path, so
+nothing pushed it and nothing noticed. Anything set only by hand in a dashboard
+has no master copy and will go missing the same way.
+
 ## Where you rotate
 
 | Vault item | You rotate at | Watch out |
