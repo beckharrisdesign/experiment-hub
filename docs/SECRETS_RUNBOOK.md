@@ -1,16 +1,26 @@
 # Secrets runbook
 
+## Rotating a credential — your five steps
+
+1. **Create the new value at the vendor** — links in [Where you rotate](#where-you-rotate) below.
+2. **Paste it into the matching item** in the 1Password **BHD Labs** vault.
+3. **Push it out:** `bash scripts/sync-secrets.sh --apply` (run without `--apply` to preview first, or ask Claude).
+4. **Verify** — ask Claude: *"verify the ⟨vendor⟩ credential."*
+5. **Revoke the old one — always last.** Revoking early breaks CI and prod while
+   local dev keeps working, the most confusing failure available. Vercel values
+   take effect on the **next deploy**; GitHub values on the next workflow run.
+
 ## The mental model
 
 **One master copy; everything else is derived from it and can be regenerated.**
 
 ```mermaid
 flowchart LR
-    V["1Password vault: BHD Labs\n(edit values ONLY here)"]
-    E[".env.local\nholds op:// pointers, never values"]
-    D["pnpm dev\nfills real values at startup"]
-    VC["Vercel\n(takes effect next deploy)"]
-    GH["GitHub Actions\n(takes effect next workflow run)"]
+    V["1Password vault: BHD Labs<br/>(edit values ONLY here)"]
+    E[".env.local<br/>holds op:// pointers, never values"]
+    D["pnpm dev<br/>fills real values at startup"]
+    VC["Vercel<br/>(takes effect next deploy)"]
+    GH["GitHub Actions<br/>(takes effect next workflow run)"]
     V -- "pointers" --> E --> D
     V -- "sync --apply" --> VC
     V -- "sync --apply" --> GH
@@ -20,25 +30,11 @@ flowchart LR
   copies because they can't read the vault at runtime — but the next sync
   overwrites them, so editing those dashboards by hand is wasted work.
 - `.env.local` contains no secrets, only pointers — printing it leaks nothing.
-- Because of this shape, rotating **any** credential is always the same five
-  steps, whatever the vendor:
-  **create new at vendor → paste into the vault item → push → verify → revoke old.**
+- This shape is why the five steps above never change, whatever the vendor.
 
 What variable exists where: `.env.example` is the registry (names + provenance, no values).
 
-```bash
-bash scripts/sync-secrets.sh          # preview what would change
-bash scripts/sync-secrets.sh --apply  # push to Vercel + GitHub Actions
-```
-
-**Revoke LAST.** Revoking early breaks CI and prod while local dev keeps working —
-the most confusing failure available. Vercel values only take effect on the
-**next deploy**; GitHub values apply on the next workflow run.
-
 ## Where you rotate
-
-Your part is two steps: **create the new value at the link below, paste it into
-the vault item.** Then run the sync (or ask Claude to), verify, revoke.
 
 | Vault item | You rotate at | Watch out |
 | --- | --- | --- |
@@ -54,44 +50,7 @@ the vault item.** Then run the sync (or ask Claude to), verify, revoke.
 | Vercel | [account → tokens](https://vercel.com/account/settings/tokens) | tokens are never re-viewable |
 | PDF session | nowhere — mint any long random string | only invalidates live sessions |
 
-<details>
-<summary>How each credential gets verified after a push (Claude's job — just ask "verify the &lt;vendor&gt; credential")</summary>
-
-OpenAI → `experiments/simple-seed-organizer/prototype/app/tests/openai-connection.test.ts` ·
-Stripe → ELK checkout ·
-Supabase hub → prod page load ·
-Supabase SSO → SSO live test in CI ·
-Google → PDF viewer sign-in ·
-Notion / Etsy → dispatch `etsy-notion-sync.yml` ·
-GitHub dispatch token → hub "Sync now" button ·
-Vercel → `deploy-hub.yml` ·
-PDF session → PDF viewer sign-in
-
-</details>
-
-## Rules that were each learned the hard way
-
-- **Deployed copies are write-only.** GitHub secrets can't be read back; Vercel
-  Sensitive values read back as `[SENSITIVE]`. The vault is the only recoverable
-  copy — sync overwriting a target destroys the old value forever.
-- **Environment secrets hide.** `gh secret list` shows repo secrets only; add
-  `--env "Production – experiment-hub"` (en-dash) for the rest.
-- **Keys look identical across Supabase projects.** Hub tables live in
-  `ulqdjuiffpazzixnwwso`, SSO tables in `orlpgxqbesxvlhlkbnqy`. Confirm the
-  project name before pasting anything.
-- **Notion 403 `restricted_resource` on a write = missing capability, not a
-  missing share.** Capabilities (Update/Insert content) are per-integration, in
-  integration settings. Identify any token with `GET /v1/users/me`; list what it
-  sees with `POST /v1/search`.
-- **GitHub `Actions` permission ≠ `Secrets` permission.** `gh secret set` needs
-  `Secrets: Read and write` on the PAT; repo admin is not sufficient.
-- **Fine-grained PATs expire silently.** A GitHub call failing "for no reason" —
-  check [expiry dates](https://github.com/settings/personal-access-tokens) first,
-  and record the date on the 1Password item.
-- **`op item create` writes epoch dates.** Set `valid from`/`expires` explicitly
-  or 1Password badges the item as expired since 1969.
-- **Sweep `~/Downloads` after any Google credential reset:**
-  `grep -rlE "GOCSPX-|sk_live_|sk-proj-|ntn_|github_pat_|figd_|whsec_" ~/Downloads`
+Verification after a push is Claude's job — just ask **"verify the ⟨vendor⟩ credential."**
 
 ## Which Notion database is which
 
@@ -100,10 +59,6 @@ PDF session → PDF viewer sign-in
 | `NOTION_EXPERIMENTS_DATA_SOURCE_ID` | BHD Labs Database | hub experiment list + detail pages (public site) |
 | `NOTION_HISTORY_DATA_SOURCE_ID` | BHD Labs History | History band on detail pages (public site) |
 | `NOTION_INVENTORY_DB_ID` | Etsy listings | `etsy-notion-sync.yml` only — not the website |
-
-The two `*_DATA_SOURCE_ID`s are **not** the id in the Notion URL — fetch data
-sources via `GET /v1/databases/<database_id>` (API version `2025-09-03`).
-`NOTION_INVENTORY_DB_ID` *is* a plain database id (the Python sync pins `2022-06-28`).
 
 ## Intentionally empty
 
@@ -122,3 +77,46 @@ the calling app (op says "No accounts configured" with everything on) → run fr
 a terminal that has the grant, or System Settings → Privacy & Security.
 Emergency bypass, per shell only: `export KEY="$(op read 'op://BHD Labs/<item>/<field>')"` —
 never paste values back into `.env.local`.
+
+---
+
+## Agent notes
+
+Reference for Claude; the human playbook ends above this line.
+
+### Verification map
+
+| Credential | Verified by |
+| --- | --- |
+| OpenAI | `experiments/simple-seed-organizer/prototype/app/tests/openai-connection.test.ts` |
+| Stripe | ELK checkout |
+| Supabase experiment-hub | prod page load |
+| Supabase simple-seed-organizer | SSO live test in CI |
+| Google OAuth | PDF viewer sign-in |
+| Notion / Etsy | dispatch `etsy-notion-sync.yml` |
+| GitHub dispatch token | hub "Sync now" button |
+| Vercel | `deploy-hub.yml` |
+| PDF session | PDF viewer sign-in |
+
+### Gotchas, each learned the hard way
+
+- **Deployed copies are write-only.** GitHub secrets can't be read back; Vercel
+  Sensitive values read back as `[SENSITIVE]`. The vault is the only recoverable
+  copy — sync overwriting a target destroys the old value forever.
+- **Environment secrets hide.** `gh secret list` shows repo secrets only; add
+  `--env "Production – experiment-hub"` (en-dash) for the rest.
+- **Notion 403 `restricted_resource` on a write = missing capability, not a
+  missing share.** Capabilities are per-integration. Identify any token with
+  `GET /v1/users/me`; list what it sees with `POST /v1/search`.
+- **Notion `*_DATA_SOURCE_ID`s are not the id in the Notion URL** — fetch data
+  sources via `GET /v1/databases/<database_id>` (API version `2025-09-03`).
+  `NOTION_INVENTORY_DB_ID` *is* a plain database id (the Python sync pins `2022-06-28`).
+- **GitHub `Actions` permission ≠ `Secrets` permission.** `gh secret set` needs
+  `Secrets: Read and write` on the PAT; repo admin is not sufficient.
+- **Fine-grained PATs expire silently.** A GitHub call failing "for no reason" —
+  check [expiry dates](https://github.com/settings/personal-access-tokens) first,
+  and record the date on the 1Password item.
+- **`op item create` writes epoch dates.** Set `valid from`/`expires` explicitly
+  or 1Password badges the item as expired since 1969.
+- **Sweep `~/Downloads` after any Google credential reset:**
+  `grep -rlE "GOCSPX-|sk_live_|sk-proj-|ntn_|github_pat_|figd_|whsec_" ~/Downloads`
