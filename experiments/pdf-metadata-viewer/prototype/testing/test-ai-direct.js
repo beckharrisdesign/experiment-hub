@@ -44,8 +44,16 @@ import { loadTaxonomy } from '../lib/taxonomy-loader.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// The SDK throws on an empty apiKey, so check first and fail with a message
+// that says what to do rather than a constructor stack trace.
+if (!process.env.OPENAI_API_KEY) {
+  console.error('OPENAI_API_KEY is not set. This script calls the OpenAI API directly.');
+  console.error('Set it in the hub root .env.local, or export it for this shell.');
+  process.exit(1);
+}
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || ''
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 // Render PDF pages as images

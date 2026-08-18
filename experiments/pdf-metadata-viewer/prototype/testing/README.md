@@ -2,6 +2,41 @@
 
 This directory contains all test scripts and related testing documentation for the PDF metadata viewer.
 
+## The one automated test
+
+`test-entity-projection.js` is the only script here that runs unattended, asserts,
+and exits non-zero on failure. It needs no API key, no network, and no extra
+packages. Run it after any change to `lib/entities-notion.js`:
+
+```bash
+node testing/test-entity-projection.js
+```
+
+Everything else below is an eval harness: it calls a live model and prints
+results for a human to read.
+
+## Extra packages required
+
+These scripts render PDFs outside the browser or drive a real browser, so they
+need packages that are **deliberately not in `package.json`** — carrying them
+would pull Chromium into every install for scripts that run occasionally:
+
+| Script | Needs |
+|---|---|
+| `test-ai-direct.js` | `canvas`, `pdfjs-dist` |
+| `test-ai-suggestions-batch.js` | `canvas`, `pdfjs-dist` |
+| `test-ai-via-server.js` | `puppeteer` (plus a running server) |
+| `test-ai-batch-browser.js` | `puppeteer` (plus a running server) |
+
+Install them ad hoc when you need them, without touching the lockfile:
+
+```bash
+npm install --no-save canvas pdfjs-dist puppeteer
+```
+
+The two browser scripts talk to `http://localhost:${PORT:-3004}` — the same
+default `server.js` uses. Start the server first.
+
 ## Test Scripts
 
 ### AI Suggestion Testing

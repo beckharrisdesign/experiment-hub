@@ -15,6 +15,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Must match the running server. server.js defaults to 3004 and honours PORT.
+const BASE_URL = `http://localhost:${process.env.PORT || 3004}`;
+
 async function testAISuggestions() {
   console.log('\n🧪 Testing AI Suggestions via Browser Automation\n');
   
@@ -25,7 +28,7 @@ async function testAISuggestions() {
   const page = await browser.newPage();
   
   // Navigate to the app
-  await page.goto('http://localhost:3000', { waitUntil: 'networkidle2' });
+  await page.goto(BASE_URL, { waitUntil: 'networkidle2' });
   
   // Get list of PDFs
   const pdfsDir = join(__dirname, '..', 'pdfs');
