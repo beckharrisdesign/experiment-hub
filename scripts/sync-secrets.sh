@@ -68,6 +68,24 @@ PDF_GOOGLE_CLIENT_ID|op://BHD Labs/Google OAuth pdf-metadata-viewer/client id|ve
 PDF_GOOGLE_CLIENT_SECRET|op://BHD Labs/Google OAuth pdf-metadata-viewer/client secret|vercel
 PDF_GOOGLE_API_KEY|op://BHD Labs/Google OAuth pdf-metadata-viewer/api key|vercel
 PDF_SESSION_SECRET|op://BHD Labs/PDF session/secret|vercel
+# Neither of the next two is a secret: a public callback URL that is visible in
+# the browser during the handshake, and an opaque account id that authenticates
+# nobody. They are here because the vault is the master copy of production
+# config, not only of credentials.
+#
+# Both were hand-set on 2026-08-18 and Vercel stored them as Sensitive, meaning
+# write-only — so nothing could read them back and a recreated project would
+# lose them with no trace. The redirect URI is reconstructable from the docs;
+# the sub is not. Recovering that one means deliberately failing a sign-in and
+# reading the rejected claim out of the runtime log, which is how it was
+# obtained in the first place.
+#
+# Missing PDF_GOOGLE_REDIRECT_URI is what produced the production 503
+# "Google OAuth is not configured" on 2026-08-18: requireConfig() in
+# lib/pdf-drive.ts needs client id, secret AND redirect uri, and the sync
+# carried only the four vault-backed vars past it.
+PDF_GOOGLE_REDIRECT_URI|op://BHD Labs/Google OAuth pdf-metadata-viewer/redirect uri|vercel
+PDF_ALLOWED_GOOGLE_SUBS|op://BHD Labs/Google OAuth pdf-metadata-viewer/allowed sub|vercel
 ETSY_API_KEY|op://BHD Labs/Etsy/api key|gh
 ETSY_SHARED_SECRET|op://BHD Labs/Etsy/shared secret|gh
 ETSY_SHOP_ID|op://BHD Labs/Etsy/shop id|gh
