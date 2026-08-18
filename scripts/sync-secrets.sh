@@ -48,8 +48,19 @@ STRIPE_SECRET_KEY_LIVE|op://BHD Labs/Stripe/secret key live|vercel
 STRIPE_SECRET_KEY_TEST|op://BHD Labs/Stripe/secret key test|vercel
 STRIPE_WEBHOOK_SECRET_LIVE|op://BHD Labs/Stripe/webhook secret live|vercel
 STRIPE_WEBHOOK_SECRET_TEST|op://BHD Labs/Stripe/webhook secret test|vercel
-SUPABASE_URL|op://BHD Labs/Supabase/url|vercel,gh,gh-env:Production – experiment-hub
-SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase/service role key|vercel,gh,gh-env:Production – experiment-hub
+SUPABASE_URL|op://BHD Labs/Supabase experiment-hub/url|vercel,gh,gh-env:Production – experiment-hub
+SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase experiment-hub/service role key|vercel,gh,gh-env:Production – experiment-hub
+# Publishable key is safe-by-design (RLS still applies) but ci.yml's live tests
+# need it as a repo secret — surfaced 2026-08-17, when the first apply created
+# SUPABASE_URL in repo scope and un-skipped a suite that had silently skipped
+# on the missing URL since sso-zip-code-persistence.
+SUPABASE_PUBLISHABLE_KEY|op://BHD Labs/Supabase experiment-hub/publishable key|gh
+# Simple Seed Organizer is a second Supabase project (orlpgxqbesxvlhlkbnqy),
+# item-per-scope like "Google OAuth pdf-metadata-viewer". Keys must match
+# their project: the 2026-08-17 500s were the hub URL paired with the SSO
+# publishable key.
+SSO_SUPABASE_URL|op://BHD Labs/Supabase simple-seed-organizer/url|gh
+SSO_SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase simple-seed-organizer/service role key|gh
 FIGMA_ACCESS_TOKEN|op://BHD Labs/Figma/access token|vercel
 GITHUB_DISPATCH_TOKEN|op://BHD Labs/GitHub/dispatch token|vercel
 GITHUB_TOKEN|op://BHD Labs/GitHub/api token|vercel
@@ -94,8 +105,45 @@ if ! command -v vercel >/dev/null 2>&1; then
   echo "  ! Vercel CLI not found — Vercel targets will be skipped. Install: npm i -g vercel"
 fi
 
+# `vercel env` needs a project context, and no checkout here is `vercel link`ed
+# — deploys go through Actions, and each worktree would need its own link
+# anyway (found on the first real --apply, 2026-08-17: "Your codebase isn't
+# linked to a project"). The CLI's documented link-free alternative is the
+# VERCEL_ORG_ID + VERCEL_PROJECT_ID environment variables, and both are already
+# manifest entries in the vault. Resolve them once here; refuse the same
+# non-values the sync loop refuses.
+vercel_org=""; vercel_project=""
+if $VERCEL_OK; then
+  vercel_org=$(op read "op://$VAULT/Vercel/org id" 2>/dev/null || true)
+  vercel_project=$(op read "op://$VAULT/Vercel/project id" 2>/dev/null || true)
+  for v in "$vercel_org" "$vercel_project"; do
+    case "$v" in ""|PASTE_VALUE_HERE|"[SENSITIVE]")
+      VERCEL_OK=false
+      echo "  ! Vercel org/project id not filled in the vault — Vercel targets will be skipped."
+      break;;
+    esac
+  done
+fi
+
 $APPLY && echo "== APPLYING ==" || echo "== PREVIEW (no writes; re-run with --apply) =="
 echo
+
+# gh secret set with retry — GitHub's API 503'd three separate times during
+# the first apply session (2026-08-17 outage), and each flare aborted the whole
+# run at one variable. Transient 5xx deserves a backoff, not an abort; a real
+# failure still aborts after the last attempt, before anything is recorded.
+# Reads $value from the caller (bash dynamic scoping).
+set_gh_secret() {
+  local attempt
+  for attempt in 1 2 3 4 5; do
+    if printf '%s' "$value" | gh secret set "$@" >/dev/null; then return 0; fi
+    if [ "$attempt" -lt 5 ]; then
+      echo "    … GitHub API hiccup writing $1 — retry $attempt/4 in $((attempt * 5))s" >&2
+      sleep $((attempt * 5))
+    fi
+  done
+  return 1
+}
 
 # ---------------------------------------------------------------------------
 # Sync
@@ -150,15 +198,17 @@ while IFS='|' read -r name ref targets; do
       case "$target" in
         vercel)
           if $VERCEL_OK; then
-            vercel env rm "$name" production --yes >/dev/null 2>&1 || true
-            printf '%s' "$value" | vercel env add "$name" production >/dev/null
+            VERCEL_ORG_ID="$vercel_org" VERCEL_PROJECT_ID="$vercel_project" \
+              vercel env rm "$name" production --yes >/dev/null 2>&1 || true
+            printf '%s' "$value" | VERCEL_ORG_ID="$vercel_org" VERCEL_PROJECT_ID="$vercel_project" \
+              vercel env add "$name" production >/dev/null
           fi
           ;;
         gh)
-          printf '%s' "$value" | gh secret set "$name" >/dev/null
+          set_gh_secret "$name"
           ;;
         gh-env:*)
-          printf '%s' "$value" | gh secret set "$name" --env "${target#gh-env:}" >/dev/null
+          set_gh_secret "$name" --env "${target#gh-env:}"
           ;;
       esac
     done

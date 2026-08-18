@@ -556,19 +556,26 @@ export async function graduateExperiment(
 export async function insertSubmission(
   submission: ExperimentSubmission,
 ): Promise<{ id: string }> {
-  const { data, error } = await getPublishableClient()
+  // The id is generated here, NOT read back with `.insert().select("id")`.
+  // The table is write-only for the publishable role — an INSERT policy and no
+  // SELECT policy — so a returning clause is denied by RLS (42501) and every
+  // submission 500s. Found 2026-08-17, the first time the live suite ran in CI.
+  // Keep it write-only: adding an anon SELECT policy so we could read back our
+  // own insert would let anyone holding the publishable key read every
+  // submission, emails included.
+  const id = crypto.randomUUID();
+  const { error } = await getPublishableClient()
     .from("experiment_submissions")
     .insert({
+      id,
       experiment: submission.experiment,
       email: submission.email,
       name: submission.name ?? null,
       source: submission.source ?? "landing-page",
       notes: submission.notes ?? null,
       metadata: submission.metadata ?? null,
-    })
-    .select("id")
-    .single();
+    });
 
   if (error) throw error;
-  return data;
+  return { id };
 }

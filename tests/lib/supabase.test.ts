@@ -11,11 +11,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Build chainable mock handles via vi.hoisted so they're available in the factory.
+// mockSelect/mockSingle exist only to PROVE they are never called: the table is
+// write-only for the publishable role (INSERT policy, no SELECT policy), so a
+// returning `.select()` is denied by RLS with 42501 — the 2026-08-17 prod bug.
 const { mockSingle, mockSelect, mockInsert, mockFrom, mockCreateClient } =
   vi.hoisted(() => {
     const mockSingle = vi.fn();
     const mockSelect = vi.fn(() => ({ single: mockSingle }));
-    const mockInsert = vi.fn(() => ({ select: mockSelect }));
+    const mockInsert = vi.fn(async () => ({ error: null }));
     const mockFrom = vi.fn(() => ({ insert: mockInsert }));
     const mockCreateClient = vi.fn(() => ({ from: mockFrom }));
     return { mockSingle, mockSelect, mockInsert, mockFrom, mockCreateClient };
@@ -35,7 +38,7 @@ describe("insertSubmission", () => {
     // Re-wire the chain after any clearAllMocks
     mockSingle.mockResolvedValue({ data: null, error: null });
     mockSelect.mockReturnValue({ single: mockSingle });
-    mockInsert.mockReturnValue({ select: mockSelect });
+    mockInsert.mockResolvedValue({ error: null });
     mockFrom.mockReturnValue({ insert: mockInsert });
     mockCreateClient.mockReturnValue({ from: mockFrom });
   });
@@ -49,23 +52,32 @@ describe("insertSubmission", () => {
   // Happy path
   // ---------------------------------------------------------------------------
 
-  it("returns the inserted row id on success", async () => {
-    mockSingle.mockResolvedValueOnce({
-      data: { id: "uuid-abc-123" },
-      error: null,
-    });
-
+  it("returns a generated id that is also sent in the insert", async () => {
     const result = await insertSubmission({
       experiment: "best-day-ever",
       email: "test@example.com",
     });
 
-    expect(result).toEqual({ id: "uuid-abc-123" });
+    // Pre-generated client-side, not read back from the database.
+    expect(result.id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+    );
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({ id: result.id }),
+    );
+  });
+
+  it("never reads the row back — the table is write-only under RLS", async () => {
+    await insertSubmission({
+      experiment: "best-day-ever",
+      email: "test@example.com",
+    });
+
+    expect(mockSelect).not.toHaveBeenCalled();
+    expect(mockSingle).not.toHaveBeenCalled();
   });
 
   it("inserts into the experiment_submissions table", async () => {
-    mockSingle.mockResolvedValueOnce({ data: { id: "row-id" }, error: null });
-
     await insertSubmission({
       experiment: "best-day-ever",
       email: "test@example.com",
@@ -75,8 +87,6 @@ describe("insertSubmission", () => {
   });
 
   it("passes all provided fields to the insert call", async () => {
-    mockSingle.mockResolvedValueOnce({ data: { id: "row-id" }, error: null });
-
     await insertSubmission({
       experiment: "seed-organizer",
       email: "user@example.com",
@@ -99,8 +109,6 @@ describe("insertSubmission", () => {
   });
 
   it("defaults name, notes, and metadata to null when omitted", async () => {
-    mockSingle.mockResolvedValueOnce({ data: { id: "row-id" }, error: null });
-
     await insertSubmission({
       experiment: "best-day-ever",
       email: "test@example.com",
@@ -116,8 +124,6 @@ describe("insertSubmission", () => {
   });
 
   it("defaults source to 'landing-page' when omitted", async () => {
-    mockSingle.mockResolvedValueOnce({ data: { id: "row-id" }, error: null });
-
     await insertSubmission({
       experiment: "best-day-ever",
       email: "test@example.com",
@@ -158,7 +164,7 @@ describe("insertSubmission", () => {
 
   it("throws the Supabase error when the insert fails", async () => {
     const dbError = { message: "duplicate key value", code: "23505" };
-    mockSingle.mockResolvedValueOnce({ data: null, error: dbError });
+    mockInsert.mockResolvedValueOnce({ error: dbError });
 
     await expect(
       insertSubmission({
@@ -169,7 +175,7 @@ describe("insertSubmission", () => {
   });
 
   it("throws when the client call rejects (network error)", async () => {
-    mockSingle.mockRejectedValueOnce(new Error("network timeout"));
+    mockInsert.mockRejectedValueOnce(new Error("network timeout"));
 
     await expect(
       insertSubmission({
