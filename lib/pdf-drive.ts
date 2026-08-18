@@ -3,7 +3,7 @@
  * openspec/changes/pdf-metadata-viewer-cloud — design.md D5, D9.
  *
  * One client, one consent. Identity (`openid email profile`) and Drive access
- * (`drive.file`) are requested together, so "sign in" and "connect Drive" are a
+ * (full `drive`) are requested together, so "sign in" and "connect Drive" are a
  * single approval rather than two. The identity half becomes a signed session
  * cookie; the Drive half becomes a row in `pdf_drive_grant` that never leaves
  * the server.
@@ -11,16 +11,29 @@
 import { getPdfAdminClient } from "@/lib/pdf-documents";
 
 /**
- * Exactly the four scopes registered on the consent screen, all non-sensitive.
- * Adding a restricted Drive scope here would pull in Google's CASA security
- * assessment and the seven-day refresh-token expiry of Testing status — the two
- * things D9 exists to avoid. Confirmed non-sensitive in the Console 2026-08-06.
+ * Exactly the four scopes registered on the consent screen.
+ *
+ * The Drive scope is **restricted**, not non-sensitive, and that is deliberate.
+ * `drive.file` was tried first and cannot do the job: a folder handed over
+ * through the Picker grants the folder and nothing inside it. Measured against
+ * the live grant on 2026-08-18 — Drive reported exactly one accessible item,
+ * the folder itself, and zero files. See design.md D9.
+ *
+ * The consent screen is **External, in Testing status**, with a single listed
+ * test user. A test user may consent to a restricted scope with no verification,
+ * which is what makes this work today. Two consequences follow, both accepted
+ * deliberately (D9a): refresh tokens expire after **seven days**, so
+ * re-authorization is routine rather than exceptional; and publishing the app
+ * later requires Google verification plus the CASA security assessment.
+ *
+ * Internal would have avoided both, at the cost of never serving an account
+ * outside the Workspace domain. It was declined to keep that door open.
  */
 export const GOOGLE_SCOPES = [
   "openid",
   "https://www.googleapis.com/auth/userinfo.email",
   "https://www.googleapis.com/auth/userinfo.profile",
-  "https://www.googleapis.com/auth/drive.file",
+  "https://www.googleapis.com/auth/drive",
 ] as const;
 
 export const OAUTH_STATE_COOKIE = "pdf-oauth-state";
@@ -211,11 +224,13 @@ export interface DriveFile {
 }
 
 /**
- * List the PDFs in a granted folder.
+ * List the PDFs in a folder.
  *
- * Under `drive.file` this only returns files the grant covers, which is exactly
- * how the "documents need access" gap in task 5.5 becomes detectable: Drive can
- * report a folder containing more than this returns.
+ * Non-recursive by design: only direct children. Under the full `drive` scope
+ * this sees everything in the folder, so an empty result now means an empty
+ * folder — which it did not under `drive.file`, where the same empty list also
+ * meant "the grant covers nothing". That ambiguity is why an import could
+ * report success while quietly importing zero documents.
  */
 export async function listPdfsInFolder(
   accessToken: string,

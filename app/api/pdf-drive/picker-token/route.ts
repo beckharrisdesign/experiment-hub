@@ -7,10 +7,14 @@ import {
 /**
  * Short-lived access token for the Google Picker.
  *
- * The one place a Drive token is handed to the browser, and only because a
- * `drive.file` grant over *existing* files cannot be established any other way:
- * the Picker is a browser API and takes a token. See the spec correction in
+ * The one place a Drive token is handed to the browser: the Picker is a browser
+ * API and takes a token. This was once forced by `drive.file`, which could only
+ * reach existing files through the Picker; under full `drive` (D9a) it is the
+ * chooser UI that needs the token, not the grant. See the spec correction in
  * `drive-document-source` — the refresh token still never leaves the server.
+ *
+ * The token handed over is now restricted-scope, so its blast radius is wider
+ * than it was. It is still short-lived and still requested per-open.
  *
  * Requested at the moment the picker opens rather than embedded in page HTML,
  * so it is not sitting in a document someone can scroll back to.

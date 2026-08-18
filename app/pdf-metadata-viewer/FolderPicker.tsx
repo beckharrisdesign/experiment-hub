@@ -6,9 +6,13 @@ import { Button, Stack } from "@beckharrisdesign/mvds";
 /**
  * Google Picker, folder granularity.
  *
- * Per-file selection is deliberately unavailable (design.md D9): it cannot keep
- * pace with a scanning workflow. The Picker is also the only way a `drive.file`
- * grant can reach files the app did not create.
+ * Per-file selection is deliberately unavailable (design.md D9, unchanged by
+ * D9a): it cannot keep pace with a scanning workflow.
+ *
+ * Under full `drive` the Picker is no longer the only way to reach existing
+ * files — the scope already permits listing them. It stays because choosing a
+ * folder is a job the user has to do somehow, and Google's own chooser beats
+ * asking for a folder id.
  */
 
 declare global {
@@ -133,10 +137,12 @@ export default function FolderPicker() {
           window.location.reload();
         });
 
-      // Both matter. appId is what lets a drive.file grant attach to the picked
-      // folder at all; the developer key is what Google's docs require to load
-      // the picker, and its absence shows up as a bare 403 rather than anything
-      // that names the cause.
+      // Both still matter, for narrower reasons than before. appId used to be
+      // what let a drive.file grant attach to the picked folder; under full
+      // drive the scope already covers it, and appId now just identifies the
+      // app to the Picker. The developer key is what Google's docs require to
+      // load the picker, and its absence shows up as a bare 403 rather than
+      // anything that names the cause.
       if (appId) builder.setAppId(appId);
       if (apiKey) builder.setDeveloperKey(apiKey);
       builder.build().setVisible(true);

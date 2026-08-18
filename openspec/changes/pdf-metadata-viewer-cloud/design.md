@@ -328,6 +328,12 @@ the design.
 
 ### D9 — Drive scope is `drive.file`, granted by folder
 
+> **SUPERSEDED 2026-08-18 by D9a below.** The premise this decision rests on —
+> that a Picker folder grant reaches the files inside the folder — is false.
+> Kept in full because the reasoning is still sound wherever the premise holds,
+> and because the cost comparison is exactly the one D9a re-runs.
+
+
 **Decision: `drive.file`, with access granted through the Google Picker at
 folder granularity — never file by file.**
 
@@ -394,6 +400,115 @@ or a failed commit, rather than documents quietly never appearing.
 That fallback is worth building regardless of how the spike resolves: a
 re-scanned or moved file could drop out of the grant at any time, and finding out
 by noticing an absence is the failure mode worth designing out.
+
+### D9a — Drive scope is full `drive`, on an External consent screen in Testing
+
+**Decision, 2026-08-18: request `https://www.googleapis.com/auth/drive`. The
+consent screen stays **External**, in **Testing** status, with the founder's own
+account as the sole test user — publishing, and the assessment it requires, is
+deferred until the tool has earned it.**
+
+**What forced it.** D9 assumed a Picker folder grant covers the files inside the
+folder. Task 2.1a existed to check that assumption before anything was built on
+it, and the check was never run — the folder workflow was written against the
+assumption, and the domain-wide Drive block masked the result for eleven days.
+
+Measured against the live grant on 2026-08-18, with a folder selected and stored
+successfully:
+
+| Query against the grant | Result |
+|---|---|
+| All accessible items | **1** — the folder itself |
+| PDFs in any folder | **0** |
+| Folders | 1 |
+
+A `drive.file` folder grant conveys the folder and nothing within it. The scope
+description — *files you use with this app* — does not extend to a folder's
+contents, and D9 read more into that wording than it carries.
+
+**Why this was expensive to see.** Drive answers a listing for files the grant
+does not cover with an **empty list, not a 403**. So the import ran, succeeded,
+and reported `imported: 0`. Nothing failed. The tool and the logs both said the
+folder was empty, and only a direct probe of the grant distinguished "empty
+folder" from "grant covers nothing".
+
+**Why not the alternatives.**
+
+| Option | Verdict |
+|---|---|
+| Multi-select files in the Picker | Works, and stays non-sensitive. Rejected: every new scan needs re-picking, so the archive is never current by default |
+| App creates the folder it manages | Does not work. `drive.file` covers files the app created or opened; a PDF scanned into that folder is neither |
+| `drive.readonly` | Restricted anyway, and cannot write. Commit would be impossible |
+| Full `drive` | Chosen |
+
+Since any workable scope here is restricted, `drive.readonly` buys nothing over
+full `drive` — it pays the same compliance price and cannot support commit.
+
+**How a restricted scope gets used at all.** Two routes exist, and the choice
+between them is the substance of this decision.
+
+**Internal** exempts an app from verification entirely — no CASA, no unverified
+warning, no seven-day expiry — at the price of only ever serving accounts inside
+the Workspace domain. It was available here, and was offered.
+
+**External in Testing**, which is what was chosen, lets a listed test user
+consent to a restricted scope today with no verification. Its cost is the
+seven-day refresh-token expiry that D9 correctly called decisive, and the CASA
+security assessment whenever the app is eventually published.
+
+| | D9 (`drive.file`, External) | Internal (offered) | **D9a (`drive`, External/Testing)** |
+|---|---|---|---|
+| CASA assessment | No | No | **Deferred to publish** |
+| Refresh-token expiry | None | None | **Every 7 days** |
+| Folder listing | **Broken** | Works | **Works** |
+| Reach | Files handed over | Every file in the Drive | Every file in the Drive |
+| Serves accounts outside the domain | Yes | **No** | Yes, after verification |
+
+**Why External was chosen over Internal.** Founder decision, 2026-08-18: *"no,
+just until it works, and then I publish the app."* Internal would have been free
+and immediate, but it forecloses ever serving an outside account without
+unwinding the choice. External keeps productization open at the cost of weekly
+re-consent now and an assessment later — a deliberate trade of present
+convenience for a door left open.
+
+**The user-experience argument, which is the real one.** Founder, 2026-08-18:
+*"as a user, I'd rather reconsent — which is super common in apps today — than
+have to manually select every individual file I want to organize."*
+
+That reframes the comparison the earlier analysis got slightly wrong. D9 weighed
+the seven-day expiry against nothing in particular and called it disqualifying.
+The honest comparison is against the alternative that keeps `drive.file` viable:
+per-file picking. Re-consent is a periodic interruption on a flow users already
+recognize from every other app that touches their storage — it costs seconds and
+teaches nothing new. Per-file picking is an unbounded chore that recurs for every
+document, forever, and never becomes familiar because it never ends. A recurring
+cost of seconds beats a recurring cost proportional to the archive.
+
+Worth stating plainly, because it is easy to misread as a formality: publishing
+an External app with a restricted scope is **not a status toggle**. It requires
+Google verification plus the CASA security assessment, with annual
+reassessment. The wall D9 was built to avoid is not removed by this decision, it
+is scheduled.
+
+**What it costs.** Two things, both accepted deliberately.
+
+The least-privilege argument in D9 is genuinely lost. "The app can read your
+Drive" is a larger blast radius than "the app cannot see files you did not hand
+it", and this archive is household medical and financial records. What remains
+is that the grant is single-tenant, the refresh token never leaves the server,
+and bytes are served only through the authenticated session — the mitigations
+D5 and the spec already require, now carrying more weight than they used to.
+
+And the seven-day refresh-token expiry is now a live operational fact, not an
+avoided one. Roughly weekly the grant dies and Drive access stops until the user
+re-consents. The re-authorization path (5.3) therefore stops being an edge case
+for revoked grants and becomes routine — it needs to be genuinely pleasant, and
+it needs to leave staged edits intact, because it will be hit constantly.
+
+Founder decision, recorded 2026-08-18: *"it already can only serve accounts in
+beckharrisdesign.com — I'm ok with the future lift."* The lift is real: an
+assessment, not paperwork. Accepting it buys the folder workflow now without
+foreclosing an outside account later.
 
 ### D10 — The splitter belongs in v2; its schema lands now, its screen later
 

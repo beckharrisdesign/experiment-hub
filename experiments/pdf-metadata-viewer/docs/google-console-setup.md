@@ -35,11 +35,10 @@ its consent screen is configured. Don't. Consent screens are per-project, and so
 is the registered scope list — that project has `calendar.readonly` on it, which
 is a **sensitive** scope.
 
-This tool's whole scope strategy (D9) rests on staying **non-sensitive**, because
-that is what lets the app be published, and publishing is what avoids the
-seven-day refresh-token expiry that applies to apps left in Testing status. A
-clean project whose consent screen has only ever seen `drive.file` and the
-identity scopes protects that.
+This tool's scope strategy (D9a) depends on the consent screen carrying exactly
+one Drive scope and one publishing status. A clean project keeps that legible — a
+shared project carrying someone else's scopes and user type is exactly how a
+restricted-scope app ends up in a verification requirement nobody chose.
 
 ---
 
@@ -96,15 +95,40 @@ Goes in `PDF_GOOGLE_API_KEY`.
 
 ## 4. Configure the OAuth consent screen
 
-**APIs & Services → OAuth consent screen**
+**Google Auth Platform** — the consent screen was folded into this section, so
+the old *APIs & Services → OAuth consent screen* link now redirects to an
+overview. The settings live on separate sub-pages:
+
+| What you want | Where it is now |
+|---|---|
+| User type, publishing status, test users | **Audience** — `console.cloud.google.com/auth/audience` |
+| Scopes | **Data Access** — `console.cloud.google.com/auth/scopes` |
+| App name, support email | **Branding** |
+| OAuth clients and redirect URIs | **Clients** |
+
+Set the project selector to the `pdf-metadata-viewer` project before changing
+anything — consent screens are per-project.
 
 | Field | Value |
 |---|---|
-| User type | External |
+| User type | **External**, Testing status |
 | App name | PDF Metadata Viewer |
 | User support email | your address |
 | Developer contact | your address |
 | Authorised domain | `beckharrisdesign.com` |
+
+**Add yourself as a test user.** In Testing status a listed test user may consent
+to a restricted scope with no verification, which is what makes full `drive`
+usable today. Two costs come with it, both chosen deliberately in D9a: refresh
+tokens expire every **seven days**, so expect to re-consent about weekly; and
+publishing the app later requires Google verification **plus** the CASA security
+assessment — that is a submission and review process, not a status toggle.
+
+**Internal is the alternative, and it is free.** An Internal app is exempt from
+verification entirely — no CASA, no weekly expiry — but can only ever serve
+accounts inside the Workspace domain. It was declined to keep productization
+open. If that stops mattering, switching to Internal removes both costs at
+once.
 
 **Scopes — add exactly these four and nothing else:**
 
@@ -112,15 +136,22 @@ Goes in `PDF_GOOGLE_API_KEY`.
 openid
 .../auth/userinfo.email
 .../auth/userinfo.profile
-https://www.googleapis.com/auth/drive.file
+https://www.googleapis.com/auth/drive
 ```
 
-`drive.file` should show as **non-sensitive**. If the Console flags it as
-sensitive or restricted, stop — that contradicts D9 and the scope decision needs
-revisiting before any code depends on it.
+The Console will flag `drive` as **restricted**. That is expected. What makes it
+usable without verification is Testing status plus a listed test user — not
+anything about the scope itself.
 
-**Do not add** `drive`, `drive.readonly`, or `drive.metadata.readonly`. Those are
-restricted and pull in the CASA security assessment.
+**Do not add** `drive.readonly` or `drive.metadata.readonly`. They are restricted
+too, so they cost exactly the same, and neither can write metadata back on
+commit.
+
+**Why not `drive.file`**, which is non-sensitive and was the original choice: a
+folder handed over through the Picker grants the folder and nothing inside it.
+Verified against a live grant on 2026-08-18 — one accessible item, the folder,
+and zero files. Drive reports an uncovered listing as an empty list rather than
+an error, so an import against it succeeds while importing nothing.
 
 ---
 
