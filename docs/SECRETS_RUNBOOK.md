@@ -35,21 +35,39 @@ bash scripts/sync-secrets.sh --apply  # push to Vercel + GitHub Actions
 the most confusing failure available. Vercel values only take effect on the
 **next deploy**; GitHub values apply on the next workflow run.
 
-## Where to rotate
+## Where you rotate
 
-| Vault item | Rotate at | Mode | Verify with |
-| --- | --- | --- | --- |
-| OpenAI | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) — keys live under the **project**, not "User API keys" | create → revoke | `experiments/simple-seed-organizer/prototype/app/tests/openai-connection.test.ts` |
-| Stripe | [live](https://dashboard.stripe.com/apikeys) · [test](https://dashboard.stripe.com/test/apikeys) — webhook secrets are under the **endpoint**, not the API keys page | roll, with grace period | ELK checkout |
-| Supabase experiment-hub | [settings → API](https://supabase.com/dashboard/project/ulqdjuiffpazzixnwwso/settings/api) | create → revoke | prod page load |
-| Supabase simple-seed-organizer | [settings → API](https://supabase.com/dashboard/project/orlpgxqbesxvlhlkbnqy/settings/api) | create → revoke | SSO live test in CI |
-| Google OAuth pdf-metadata-viewer | [console credentials](https://console.cloud.google.com/apis/credentials) → `pdf-metadata-viewer web` | reset = **instant kill**, no grace — update Vercel same sitting | PDF viewer sign-in |
-| Notion | [integrations](https://www.notion.so/profile/integrations) → **BHD Portfolio** | regenerate | `etsy-notion-sync.yml` dispatch |
-| Figma | [figma.com → Settings → Security → PATs](https://www.figma.com/developers/api#access-tokens) | create → revoke | Figma MCP call |
-| GitHub (dispatch + api tokens) | [fine-grained PATs](https://github.com/settings/tokens?type=beta) | create → revoke; prefer **editing** permissions (keeps value) over regenerate | hub "Sync now" button |
-| Etsy | [etsy.com/developers/your-apps](https://www.etsy.com/developers/your-apps) | create → revoke | `etsy-notion-sync.yml` dispatch |
-| Vercel | [account → tokens](https://vercel.com/account/settings/tokens) | create → revoke — tokens are never re-viewable | `deploy-hub.yml` |
-| PDF session | nowhere — mint any long random string | rotate freely; only invalidates live sessions | PDF viewer sign-in |
+Your part is two steps: **create the new value at the link below, paste it into
+the vault item.** Then run the sync (or ask Claude to), verify, revoke.
+
+| Vault item | You rotate at | Watch out |
+| --- | --- | --- |
+| OpenAI | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) | keys live under the **project**, not "User API keys" |
+| Stripe | [live keys](https://dashboard.stripe.com/apikeys) · [test keys](https://dashboard.stripe.com/test/apikeys) | rolls with a grace period. Webhook secrets are separate, under the **endpoint** |
+| Supabase experiment-hub | [settings → API](https://supabase.com/dashboard/project/ulqdjuiffpazzixnwwso/settings/api) | confirm the project name — keys look identical across projects |
+| Supabase simple-seed-organizer | [settings → API](https://supabase.com/dashboard/project/orlpgxqbesxvlhlkbnqy/settings/api) | same warning, other direction |
+| Google OAuth pdf-metadata-viewer | [console credentials](https://console.cloud.google.com/apis/credentials) → `pdf-metadata-viewer web` | reset is an **instant kill**, no grace — push to Vercel in the same sitting |
+| Notion | [integrations](https://www.notion.so/profile/integrations) → **BHD Portfolio** | needs Update/Insert **capabilities** + a connection to each database |
+| Figma | [Settings → Security → PATs](https://www.figma.com/developers/api#access-tokens) | |
+| GitHub | [fine-grained PATs](https://github.com/settings/tokens?type=beta) | prefer **editing** permissions (keeps the value) over regenerating |
+| Etsy | [etsy.com/developers/your-apps](https://www.etsy.com/developers/your-apps) | |
+| Vercel | [account → tokens](https://vercel.com/account/settings/tokens) | tokens are never re-viewable |
+| PDF session | nowhere — mint any long random string | only invalidates live sessions |
+
+<details>
+<summary>How each credential gets verified after a push (Claude's job — just ask "verify the &lt;vendor&gt; credential")</summary>
+
+OpenAI → `experiments/simple-seed-organizer/prototype/app/tests/openai-connection.test.ts` ·
+Stripe → ELK checkout ·
+Supabase hub → prod page load ·
+Supabase SSO → SSO live test in CI ·
+Google → PDF viewer sign-in ·
+Notion / Etsy → dispatch `etsy-notion-sync.yml` ·
+GitHub dispatch token → hub "Sync now" button ·
+Vercel → `deploy-hub.yml` ·
+PDF session → PDF viewer sign-in
+
+</details>
 
 ## Rules that were each learned the hard way
 
