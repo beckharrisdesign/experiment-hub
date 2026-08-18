@@ -50,8 +50,12 @@ const nextConfig = {
       'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://www.googletagmanager.com'], // unsafe-eval required by Mermaid
       'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       'font-src': ["'self'", 'https://fonts.gstatic.com'],
-      'img-src': ["'self'", 'data:', 'blob:', 'https://www.google-analytics.com', 'https://www.googletagmanager.com', 'https://*.supabase.co'], // *.supabase.co: Etsy Listing Kit signed download images
-      'connect-src': ["'self'", 'https://www.google-analytics.com', 'https://region1.google-analytics.com', 'https://www.googletagmanager.com'],
+      'img-src': ["'self'", 'data:', 'blob:', 'https://www.google-analytics.com', 'https://analytics.google.com', 'https://www.googletagmanager.com', 'https://*.supabase.co'], // *.supabase.co: Etsy Listing Kit signed download images; analytics.google.com: GA4 pixel fallback for the same beacon
+
+      // analytics.google.com: GA4's current /g/collect beacon host — the tag
+      // migrated off www.google-analytics.com and hits were silently dropped
+      // (live console CSP reports, 2026-08-17).
+      'connect-src': ["'self'", 'https://www.google-analytics.com', 'https://region1.google-analytics.com', 'https://analytics.google.com', 'https://www.googletagmanager.com'],
       'frame-ancestors': ["'none'"],
     };
 
@@ -124,8 +128,9 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.googleadservices.com https://*.doubleclick.net", // unsafe-eval required by Mermaid
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.googleadservices.com https://*.doubleclick.net https://*.supabase.co", // *.supabase.co: Etsy Listing Kit signed download images
-              "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.googleadservices.com https://*.doubleclick.net",
+              "img-src 'self' data: blob: https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://www.google.com https://www.googleadservices.com https://*.doubleclick.net https://*.supabase.co", // *.supabase.co: Etsy Listing Kit signed download images; analytics.google.com: GA4 pixel fallback
+              // analytics.google.com: GA4's current /g/collect beacon host — see baseCsp note.
+              "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://www.google.com https://www.googleadservices.com https://*.doubleclick.net",
               "frame-ancestors 'none'",
             ].join('; '),
           },
