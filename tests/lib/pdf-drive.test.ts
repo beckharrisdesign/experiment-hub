@@ -41,22 +41,38 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe("GOOGLE_SCOPES", () => {
-  it("requests only the four non-sensitive scopes", () => {
+  it("requests exactly the four registered scopes", () => {
     expect([...GOOGLE_SCOPES]).toEqual([
       "openid",
       "https://www.googleapis.com/auth/userinfo.email",
       "https://www.googleapis.com/auth/userinfo.profile",
-      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/drive",
     ]);
   });
 
-  it("contains no restricted Drive scope", () => {
-    const restricted = [
+  // The inverse of this test used to assert no restricted scope was present.
+  // That inverted on 2026-08-18: `drive.file` cannot list a folder's contents,
+  // so the restricted scope is now the deliberate choice and the narrow one is
+  // the regression. Reverting to `drive.file` would silently reintroduce an
+  // import that reports success while importing nothing.
+  it("uses the full Drive scope, not the per-file one", () => {
+    expect(GOOGLE_SCOPES as readonly string[]).toContain(
       "https://www.googleapis.com/auth/drive",
+    );
+    expect(GOOGLE_SCOPES as readonly string[]).not.toContain(
+      "https://www.googleapis.com/auth/drive.file",
+    );
+  });
+
+  // Internal user type is what exempts a restricted scope from verification.
+  // Read-only scopes would not survive the write path, so if one appears here
+  // the commit path has been broken by a scope change.
+  it("carries a Drive scope that can write", () => {
+    const readOnly = [
       "https://www.googleapis.com/auth/drive.readonly",
       "https://www.googleapis.com/auth/drive.metadata.readonly",
     ];
-    for (const scope of restricted) {
+    for (const scope of readOnly) {
       expect(GOOGLE_SCOPES as readonly string[]).not.toContain(scope);
     }
   });

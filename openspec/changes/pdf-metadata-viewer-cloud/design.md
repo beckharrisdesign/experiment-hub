@@ -328,6 +328,12 @@ the design.
 
 ### D9 — Drive scope is `drive.file`, granted by folder
 
+> **SUPERSEDED 2026-08-18 by D9a below.** The premise this decision rests on —
+> that a Picker folder grant reaches the files inside the folder — is false.
+> Kept in full because the reasoning is still sound wherever the premise holds,
+> and because the cost comparison is exactly the one D9a re-runs.
+
+
 **Decision: `drive.file`, with access granted through the Google Picker at
 folder granularity — never file by file.**
 
@@ -394,6 +400,79 @@ or a failed commit, rather than documents quietly never appearing.
 That fallback is worth building regardless of how the spike resolves: a
 re-scanned or moved file could drop out of the grant at any time, and finding out
 by noticing an absence is the failure mode worth designing out.
+
+### D9a — Drive scope is full `drive`, with the consent screen set to Internal
+
+**Decision, 2026-08-18: request `https://www.googleapis.com/auth/drive`, and set
+the OAuth consent screen to User type `Internal`.**
+
+**What forced it.** D9 assumed a Picker folder grant covers the files inside the
+folder. Task 2.1a existed to check that assumption before anything was built on
+it, and the check was never run — the folder workflow was written against the
+assumption, and the domain-wide Drive block masked the result for eleven days.
+
+Measured against the live grant on 2026-08-18, with a folder selected and stored
+successfully:
+
+| Query against the grant | Result |
+|---|---|
+| All accessible items | **1** — the folder itself |
+| PDFs in any folder | **0** |
+| Folders | 1 |
+
+A `drive.file` folder grant conveys the folder and nothing within it. The scope
+description — *files you use with this app* — does not extend to a folder's
+contents, and D9 read more into that wording than it carries.
+
+**Why this was expensive to see.** Drive answers a listing for files the grant
+does not cover with an **empty list, not a 403**. So the import ran, succeeded,
+and reported `imported: 0`. Nothing failed. The tool and the logs both said the
+folder was empty, and only a direct probe of the grant distinguished "empty
+folder" from "grant covers nothing".
+
+**Why not the alternatives.**
+
+| Option | Verdict |
+|---|---|
+| Multi-select files in the Picker | Works, and stays non-sensitive. Rejected: every new scan needs re-picking, so the archive is never current by default |
+| App creates the folder it manages | Does not work. `drive.file` covers files the app created or opened; a PDF scanned into that folder is neither |
+| `drive.readonly` | Restricted anyway, and cannot write. Commit would be impossible |
+| Full `drive` | Chosen |
+
+Since any workable scope here is restricted, `drive.readonly` buys nothing over
+full `drive` — it pays the same compliance price and cannot support commit.
+
+**What makes it affordable: Internal.** A restricted scope normally means
+Google's CASA assessment, an unverified-app warning, and the seven-day
+refresh-token expiry that D9 correctly called decisive. An app whose consent
+screen is **User type: Internal** is exempt from verification entirely. D9's cost
+table was right about External and simply did not consider Internal, which was
+available the whole time because every account already lives in the
+`beckharrisdesign.com` Workspace.
+
+| | D9 (`drive.file`, External) | D9a (`drive`, Internal) |
+|---|---|---|
+| CASA assessment | No | No |
+| Refresh-token expiry | None | None |
+| Folder listing | **Broken** | Works |
+| Reach | Files handed over | Every file in the Drive |
+| Serves accounts outside the domain | Yes | **No** |
+
+**What it costs.** Two things, both accepted deliberately.
+
+The least-privilege argument in D9 is genuinely lost. "The app can read your
+Drive" is a larger blast radius than "the app cannot see files you did not hand
+it", and this archive is household medical and financial records. What remains
+is that the grant is single-tenant, the refresh token never leaves the server,
+and bytes are served only through the authenticated session — the mitigations
+D5 and the spec already require, now carrying more weight than they used to.
+
+And Internal is a one-way door for as long as it lasts: the day an account
+outside the Workspace needs access, this becomes External **and** restricted,
+which is a taller wall than D9 would ever have faced. Founder decision, recorded
+2026-08-18: *"it already can only serve accounts in beckharrisdesign.com — I'm ok
+with the future lift."* Multi-tenancy was already out of scope, so this moves a
+cost that was always coming rather than creating a new one.
 
 ### D10 — The splitter belongs in v2; its schema lands now, its screen later
 

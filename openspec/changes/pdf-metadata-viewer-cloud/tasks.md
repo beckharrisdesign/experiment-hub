@@ -18,8 +18,9 @@ schema, and no OAuth: the v1 prototype and one PDF are enough.
 
 Each one changes work below it, so none should be discovered mid-build.
 
-- [x] 2.1 Drive OAuth scope decided: **`drive.file`, granted by folder** — non-sensitive, so no CASA assessment and no seven-day refresh-token expiry. See `design.md` D9
-- [ ] 2.1a **Spike before any Drive code:** confirm whether a Picker folder grant covers files added to that folder later. Decisive for the workflow, and not safe to assume
+- [x] 2.1 Drive OAuth scope decided — **superseded 2026-08-18.** `drive.file` was chosen for being non-sensitive; it cannot list a folder's contents, so the scope is now full `drive` with the consent screen set to **Internal**, which exempts a restricted scope from verification. Still no CASA and no seven-day expiry. See `design.md` D9a
+- [x] 2.1a **Spike — run 2026-08-18, and it FAILED.** A `drive.file` Picker folder grant covers the folder and nothing inside it, so the question of whether it extends to files added *later* never arises: it does not reach the files there at the time. Probed against the live grant — all accessible items: **1**, the folder itself; PDFs: **0**. Drive answers an uncovered listing with an empty list rather than a 403, so the import returned `success: true, imported: 0` and was indistinguishable from an empty folder. Resolved by D9a (full `drive` + Internal), not by a workaround
+- [ ] 2.1b Re-consent after the scope change and confirm the stored grant carries full `drive` — the existing row predates it, and `include_granted_scopes` will not retroactively widen it
 - [x] 2.2 Splitter **moves to v2** — schema now, interface after the write path. See `design.md` D10
 - [x] 2.3 Workflow flags become **columns** — `from-split`/`already-split` derive from lineage; `needs-deleting`/`no-split-needed` become `marked_for_deletion`/`split_not_needed`. See `design.md` D11
 - [x] 2.4 Confirm Actions is running again and CI verifies the MVDS 0.3 bump — **done 2026-08-14 on PR #371**, which carries `@beckharrisdesign/mvds ^0.3.0` and went green: Feature tests, Deploy hub, and the seed organizer's tests, lint and build all SUCCESS. Actions is running; the outstanding CI run named here has now happened
@@ -51,8 +52,8 @@ Each one changes work below it, so none should be discovered mid-build.
 - [x] 5.1 OAuth handshake storing the refresh token server-side — verified against the running server: four registered scopes, offline access, forced consent, 64-char state with an httpOnly cookie
 - [x] 5.2 Automatic access-token refresh, with no user prompt — 60s expiry skew. Not yet exercised against a real expiry
 - [x] 5.3 Re-authorization prompt on a revoked grant — `DriveReauthorizationRequired` separates revoked from never-connected from missing document
-- [x] 5.4 Folder grant via the Google Picker — folders, never individual files — into reference rows, copying no bytes. **Untested against a real folder; that is the 2.1a spike**
-- [ ] 5.5 Detect documents in a granted folder that the grant does not cover, and surface them as a Needs attention instance with a re-grant action
+- [x] 5.4 Folder grant via the Google Picker — folders, never individual files — into reference rows, copying no bytes. **Tested against a real folder 2026-08-18:** the Picker works and the grant stores, but under `drive.file` it conveyed no files. Re-verify end to end once the scope change is live
+- [ ] ~~5.5 Detect documents in a granted folder that the grant does not cover, and surface them as a Needs attention instance with a re-grant action~~ — **dropped by D9a.** Full `drive` cannot have a covered/uncovered split within a folder, so the gap this detects no longer exists. The broken-reference case in 5.6 is separate and still stands
 - [ ] 5.6 Broken reference surfaces as such while metadata and history survive
 
 ## 6. Read path

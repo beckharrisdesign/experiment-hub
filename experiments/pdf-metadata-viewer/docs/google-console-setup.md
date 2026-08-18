@@ -35,11 +35,10 @@ its consent screen is configured. Don't. Consent screens are per-project, and so
 is the registered scope list — that project has `calendar.readonly` on it, which
 is a **sensitive** scope.
 
-This tool's whole scope strategy (D9) rests on staying **non-sensitive**, because
-that is what lets the app be published, and publishing is what avoids the
-seven-day refresh-token expiry that applies to apps left in Testing status. A
-clean project whose consent screen has only ever seen `drive.file` and the
-identity scopes protects that.
+This tool's scope strategy (D9a) rests on the consent screen being **Internal**,
+which is what exempts a restricted scope from verification. A clean project keeps
+that intact — a shared project carrying someone else's scopes and user type is
+exactly how that exemption gets lost by accident.
 
 ---
 
@@ -100,11 +99,18 @@ Goes in `PDF_GOOGLE_API_KEY`.
 
 | Field | Value |
 |---|---|
-| User type | External |
+| User type | **Internal** |
 | App name | PDF Metadata Viewer |
 | User support email | your address |
 | Developer contact | your address |
 | Authorised domain | `beckharrisdesign.com` |
+
+**User type must be Internal.** It is the single setting the scope decision rests
+on: an Internal app serves only accounts in the Workspace domain and is exempt
+from Google's verification, which is what makes a restricted Drive scope usable
+with no CASA assessment, no unverified-app warning, and no seven-day
+refresh-token expiry. Set to External, the same scope demands verification the
+app has not been through. Changed from External on 2026-08-18 — see D9a.
 
 **Scopes — add exactly these four and nothing else:**
 
@@ -112,15 +118,22 @@ Goes in `PDF_GOOGLE_API_KEY`.
 openid
 .../auth/userinfo.email
 .../auth/userinfo.profile
-https://www.googleapis.com/auth/drive.file
+https://www.googleapis.com/auth/drive
 ```
 
-`drive.file` should show as **non-sensitive**. If the Console flags it as
-sensitive or restricted, stop — that contradicts D9 and the scope decision needs
-revisiting before any code depends on it.
+The Console will flag `drive` as **restricted**. That is expected here, and it is
+the Internal user type — not the scope's classification — that keeps it
+affordable.
 
-**Do not add** `drive`, `drive.readonly`, or `drive.metadata.readonly`. Those are
-restricted and pull in the CASA security assessment.
+**Do not add** `drive.readonly` or `drive.metadata.readonly`. They are restricted
+too, so they cost exactly the same, and neither can write metadata back on
+commit.
+
+**Why not `drive.file`**, which is non-sensitive and was the original choice: a
+folder handed over through the Picker grants the folder and nothing inside it.
+Verified against a live grant on 2026-08-18 — one accessible item, the folder,
+and zero files. Drive reports an uncovered listing as an empty list rather than
+an error, so an import against it succeeds while importing nothing.
 
 ---
 

@@ -59,9 +59,11 @@ const nextConfig = {
       'frame-ancestors': ["'none'"],
     };
 
-    // pdf-metadata-viewer only. The Google Picker is the sole way to establish a
-    // `drive.file` grant over existing files, and it needs its loader script, an
-    // iframe from docs.google.com, and calls to the Drive API. Scoped to these
+    // pdf-metadata-viewer only. The Google Picker is how a folder gets chosen,
+    // and it needs its loader script, an iframe from docs.google.com, and calls
+    // to the Drive API. (It was once also the only way to establish a
+    // `drive.file` grant over existing files; full `drive` removed that
+    // constraint but not the CSP requirement.) Scoped to these
     // pages rather than widened hub-wide, so one feature's requirement does not
     // become everyone's attack surface.
     const pickerCsp = {

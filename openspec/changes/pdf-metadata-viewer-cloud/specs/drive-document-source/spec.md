@@ -180,18 +180,27 @@ address it.
 - **THEN** the commit fails with that reason
 - **AND** the pending edits remain intact
 
-### Requirement: Drive access uses the non-sensitive per-file scope, granted by folder
+### Requirement: Drive access uses the full Drive scope on an Internal consent screen
 
-The system SHALL request only `drive.file` and MUST NOT request a restricted
-scope such as `drive.readonly` or full `drive`. Access SHALL be granted through
-the Google Picker at **folder** granularity; the system MUST NOT require the user
-to select documents individually. The granted scope SHALL be recorded alongside
-the grant.
+The system SHALL request the full `https://www.googleapis.com/auth/drive` scope,
+and the OAuth consent screen SHALL be configured with User type **Internal**.
+Access SHALL be granted through the Google Picker at **folder** granularity; the
+system MUST NOT require the user to select documents individually. The granted
+scope SHALL be recorded alongside the grant.
 
-`drive.file` is non-sensitive, so it never triggers Google's CASA security
-assessment and the app can be published — which also avoids the seven-day refresh
-token expiry that applies to apps left in Testing status. Per-file selection is
-excluded because it cannot keep pace with a scanning workflow.
+This requirement replaces an earlier one mandating `drive.file` and forbidding
+any restricted scope. That was not implementable: a `drive.file` folder grant
+conveys the folder and none of its contents, so the folder granularity this
+requirement also mandates could not be satisfied at the same time. Measured
+2026-08-18 — see `design.md` D9a.
+
+A restricted scope is affordable only because of the Internal user type, which
+exempts the app from Google's verification, and with it the CASA assessment and
+the seven-day refresh-token expiry of Testing status. **Internal is therefore
+load-bearing, not incidental**: switching the consent screen to External without
+also revisiting the scope would put the app into a verification requirement it
+has not met. Read-only Drive scopes are excluded for a separate reason — commit
+writes back to the file, so the app cannot function without write access.
 
 #### Scenario: Granting access to an archive
 
@@ -202,8 +211,8 @@ excluded because it cannot keep pace with a scanning workflow.
 #### Scenario: The requested scope
 
 - **WHEN** authorization is requested
-- **THEN** the scope set contains `drive.file`
-- **AND** contains no restricted Drive scope
+- **THEN** the scope set contains `https://www.googleapis.com/auth/drive`
+- **AND** contains neither `drive.file` nor a read-only Drive scope
 
 #### Scenario: Scope is recorded at grant time
 
@@ -217,10 +226,11 @@ accessible under the current grant, and MUST surface them as an item requiring
 attention with an action that re-opens the grant. It MUST NOT allow such
 documents to be simply missing from the list.
 
-A `drive.file` grant may not extend to files added after it was given, and a file
-that is re-scanned, moved, or replaced can drop out of the grant at any time.
-Discovering that by noticing an absence is the failure this requirement exists to
-prevent.
+Narrowed 2026-08-18. This requirement was written against `drive.file`, where a
+grant might not extend to files added after it was given. Under full `drive` that
+partial-coverage case cannot arise, so what remains is the genuinely broken
+reference: a file deleted, moved out, or trashed in Drive. Discovering that by
+noticing an absence is the failure this requirement exists to prevent.
 
 #### Scenario: New documents appear in a granted folder
 
