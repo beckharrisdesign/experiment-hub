@@ -39,8 +39,7 @@ APPLY=false
 # ---------------------------------------------------------------------------
 # Manifest — variable | op:// reference | targets (comma-separated)
 #
-# Targets: vercel (production), vercel:<environment> (preview/development),
-#          gh (repo secret), gh-env:<environment>,
+# Targets: vercel, gh (repo secret), gh-env:<environment>,
 #          gh-repo:<owner/repo> (repo secret in ANOTHER repository)
 # Keep in step with .env.example, which is the registry of record.
 # ---------------------------------------------------------------------------
@@ -50,12 +49,8 @@ STRIPE_SECRET_KEY_LIVE|op://BHD Labs/Stripe/secret key live|vercel
 STRIPE_SECRET_KEY_TEST|op://BHD Labs/Stripe/secret key test|vercel
 STRIPE_WEBHOOK_SECRET_LIVE|op://BHD Labs/Stripe/webhook secret live|vercel
 STRIPE_WEBHOOK_SECRET_TEST|op://BHD Labs/Stripe/webhook secret test|vercel
-# Data-source config goes to preview as well as production. Preview had never
-# had it: every preview deployment was reading data/*.json instead, which is
-# why removing the JSON tier (2026-08-21) turned preview into a 500 while
-# production stayed fine. Money keys deliberately stay production-only.
-SUPABASE_URL|op://BHD Labs/Supabase experiment-hub/url|vercel,vercel:preview,gh,gh-env:Production – experiment-hub
-SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase experiment-hub/service role key|vercel,vercel:preview,gh,gh-env:Production – experiment-hub
+SUPABASE_URL|op://BHD Labs/Supabase experiment-hub/url|vercel,gh,gh-env:Production – experiment-hub
+SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase experiment-hub/service role key|vercel,gh,gh-env:Production – experiment-hub
 # Publishable key is safe-by-design (RLS still applies) but ci.yml's live tests
 # need it as a repo secret — surfaced 2026-08-17, when the first apply created
 # SUPABASE_URL in repo scope and un-skipped a suite that had silently skipped
@@ -105,8 +100,8 @@ ETSY_SHOP_ID|op://BHD Labs/Etsy/shop id|gh
 # same integration — Notion grants access per page, not per workspace.
 NOTION_TOKEN|op://BHD Labs/Notion/token|gh
 NOTION_INVENTORY_DB_ID|op://BHD Labs/Notion/inventory db id|gh
-NOTION_EXPERIMENTS_DATA_SOURCE_ID|op://BHD Labs/Notion/experiments data source id|vercel,vercel:preview,gh
-NOTION_HISTORY_DATA_SOURCE_ID|op://BHD Labs/Notion/history data source id|vercel,vercel:preview,gh
+NOTION_EXPERIMENTS_DATA_SOURCE_ID|op://BHD Labs/Notion/experiments data source id|vercel,gh
+NOTION_HISTORY_DATA_SOURCE_ID|op://BHD Labs/Notion/history data source id|vercel,gh
 # Chromatic is MVDS's only CI secret, and it is the one piece of this vault
 # discipline that repo genuinely should inherit — docs/MVDS_INTEGRATION_REVIEW.md
 # concluded MVDS stays a standalone repo, so this row syncs OUTWARD to it rather
@@ -212,8 +207,7 @@ while IFS='|' read -r name ref targets; do
 
   # Hash the targets alongside the value. Hashing the value alone meant adding
   # a target to an existing row was a silent no-op — the value had not changed,
-  # so the row reported "unchanged" and the new target was never written. Found
-  # 2026-08-21 adding vercel:preview to rows whose values were already synced.
+  # so the row reported "unchanged" and the new target was never written.
   hash=$(printf '%s|%s' "$value" "$targets" | shasum -a 256 | cut -d' ' -f1)
   prev=$(grep "^$name " "$STATE_FILE" 2>/dev/null | cut -d' ' -f2 || true)
 
@@ -230,16 +224,12 @@ while IFS='|' read -r name ref targets; do
     IFS=',' read -ra target_list <<< "$targets"
     for target in "${target_list[@]}"; do
       case "$target" in
-        vercel|vercel:*)
-          # Bare `vercel` means production; `vercel:preview` and
-          # `vercel:development` name the other two Vercel environments.
+        vercel)
           if $VERCEL_OK; then
-            vercel_env="production"
-            [ "$target" != "vercel" ] && vercel_env="${target#vercel:}"
             VERCEL_ORG_ID="$vercel_org" VERCEL_PROJECT_ID="$vercel_project" \
-              vercel env rm "$name" "$vercel_env" --yes >/dev/null 2>&1 || true
+              vercel env rm "$name" production --yes >/dev/null 2>&1 || true
             printf '%s' "$value" | VERCEL_ORG_ID="$vercel_org" VERCEL_PROJECT_ID="$vercel_project" \
-              vercel env add "$name" "$vercel_env" >/dev/null
+              vercel env add "$name" production >/dev/null
           fi
           ;;
         gh)
