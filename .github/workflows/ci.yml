@@ -30,6 +30,41 @@ jobs:
       - name: Run unit tests
         run: pnpm test
 
+  # ── Typecheck ───────────────────────────────────────────────────────────────
+  # Nothing ran `pnpm lint` in CI until 2026-08-21, which is how a TS2322 in
+  # tests/lib/supabase.test.ts sat broken on main unnoticed — the unit tests pass
+  # because vitest transpiles without typechecking. This job closes that gap.
+  #
+  # Filtered to exclude simple-seed-organizer: its eslint already runs in
+  # seed-organizer-ci.yml, path-filtered to its own directory, and running it
+  # here too would defeat that filter on every hub-only push. The negation form
+  # (rather than naming packages) means a new workspace package is covered
+  # automatically.
+  #
+  # Despite the name, both remaining packages run `tsc --noEmit` and neither has
+  # its own tsconfig, so both resolve the ROOT tsconfig — this typechecks the
+  # whole hub (app/, lib/, components/, tests/), not just packages/.
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm turbo run lint --concurrency=2 --filter='!simple-seed-organizer'
+
   # Seed organizer jobs (unit tests, build check, lint) live in
   # seed-organizer-ci.yml, path-filtered to experiments/simple-seed-organizer/**
   # and packages/** so hub-only changes skip them.
