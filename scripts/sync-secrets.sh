@@ -39,7 +39,8 @@ APPLY=false
 # ---------------------------------------------------------------------------
 # Manifest — variable | op:// reference | targets (comma-separated)
 #
-# Targets: vercel, gh (repo secret), gh-env:<environment>
+# Targets: vercel, gh (repo secret), gh-env:<environment>,
+#          gh-repo:<owner/repo> (repo secret in ANOTHER repository)
 # Keep in step with .env.example, which is the registry of record.
 # ---------------------------------------------------------------------------
 MANIFEST=$(cat <<'EOF'
@@ -101,6 +102,12 @@ NOTION_TOKEN|op://BHD Labs/Notion/token|gh
 NOTION_INVENTORY_DB_ID|op://BHD Labs/Notion/inventory db id|gh
 NOTION_EXPERIMENTS_DATA_SOURCE_ID|op://BHD Labs/Notion/experiments data source id|vercel,gh
 NOTION_HISTORY_DATA_SOURCE_ID|op://BHD Labs/Notion/history data source id|vercel,gh
+# Chromatic is MVDS's only CI secret, and it is the one piece of this vault
+# discipline that repo genuinely should inherit — docs/MVDS_INTEGRATION_REVIEW.md
+# concluded MVDS stays a standalone repo, so this row syncs OUTWARD to it rather
+# than pulling its code in here. Until the vault item exists this reports "not
+# filled in yet" and writes nothing, which is the safe default.
+CHROMATIC_PROJECT_TOKEN|op://BHD Labs/Chromatic/project token|gh-repo:beckharrisdesign/mvds
 VERCEL_TOKEN|op://BHD Labs/Vercel/token|gh
 VERCEL_ORG_ID|op://BHD Labs/Vercel/org id|gh
 VERCEL_PROJECT_ID|op://BHD Labs/Vercel/project id|gh
@@ -227,6 +234,9 @@ while IFS='|' read -r name ref targets; do
           ;;
         gh-env:*)
           set_gh_secret "$name" --env "${target#gh-env:}"
+          ;;
+        gh-repo:*)
+          set_gh_secret "$name" --repo "${target#gh-repo:}"
           ;;
       esac
     done
