@@ -19,13 +19,18 @@ after review get added here too, so the PR stays a full record.
 ## Founder intent
 
 <!--
-Why Katy asked for this, in her own framing as she explained it — the *why*,
-not a restatement of the bullets above. Required on every PR, chores included:
-the bullets say what moved, this says what it was for, and only one of those
-survives in the GitHub record as project history.
+Why Katy asked for this. Required on every PR, chores included.
 
-When the work belongs to an OpenSpec change with a Human anchor, quote one
-anchor line verbatim here as well (see rules/github-workflow.mdc).
+ONE paragraph, six sentences at the very most. Katy writes terse; a long
+section is not a fuller record, it is your voice crowding hers out.
+
+QUOTE HER. Pull the actual words from the session or the change's Human anchor
+and quote them verbatim. Paraphrase only what she never said outright, and
+prefer a short quote plus one line of context over a smooth summary.
+
+Her words and reasons ONLY. Your findings, the diagnosis, what the
+investigation turned up — those go in Summary or Notes. The moment this
+section explains what YOU discovered, it has stopped being founder intent.
 -->
 
 ## Test plan
