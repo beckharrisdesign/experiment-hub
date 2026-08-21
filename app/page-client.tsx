@@ -5,7 +5,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Tooltip from "@/components/Tooltip";
 import ScoreTable, { type ScoreTableColumn } from "@/components/ScoreTable";
-import type { Experiment, Prototype, Documentation } from "@/types";
+import type {
+  Experiment,
+  ExperimentStatus,
+  Prototype,
+  Documentation,
+} from "@/types";
 import { getExperimentHrefSlug } from "@/lib/utils";
 import { formatBhdPhaseLabel } from "@/lib/openspec-shared";
 import type { BhdPhase } from "@/lib/openspec-shared";
@@ -30,13 +35,25 @@ type ViewTab = "active" | "inactive";
 
 const HIDDEN_EXPERIMENT_IDS = ["experience-principles-repository"];
 
+// Statuses that put a row on the Inactive tab. This used to key on "Abandoned"
+// alone, which is why Archived rows rendered in the Active tab — Landing Zone is
+// Archived in data/experiments.json and showed as live. On Hold belongs here for
+// the same reason: none of the three are work in flight.
+const INACTIVE_STATUSES: ExperimentStatus[] = [
+  "Abandoned",
+  "Archived",
+  "On Hold",
+];
+
 // Thresholds are fractions of the shape's max so v3 (/15) and v1 (/25) rows
 // color consistently; 0.8/0.6/0.4 reproduce v1's old 20/15/10 breakpoints.
 function getTotalBadgeColor(total: number, max: number) {
   const fraction = total / max;
   if (fraction >= 0.8) return "bg-green-600 border-green-500 text-white";
-  if (fraction >= 0.6) return "bg-yellow-500/80 border-yellow-400/80 text-white";
-  if (fraction >= 0.4) return "bg-orange-500/80 border-orange-400/80 text-white";
+  if (fraction >= 0.6)
+    return "bg-yellow-500/80 border-yellow-400/80 text-white";
+  if (fraction >= 0.4)
+    return "bg-orange-500/80 border-orange-400/80 text-white";
   return "bg-red-500/80 border-red-400/80 text-white";
 }
 
@@ -63,12 +80,12 @@ export default function HomePageClient({
   );
 
   const activeExperiments = useMemo(
-    () => experiments.filter((e) => e.status !== "Abandoned"),
+    () => experiments.filter((e) => !INACTIVE_STATUSES.includes(e.status)),
     [experiments],
   );
 
   const inactiveExperiments = useMemo(
-    () => experiments.filter((e) => e.status === "Abandoned"),
+    () => experiments.filter((e) => INACTIVE_STATUSES.includes(e.status)),
     [experiments],
   );
 
@@ -81,27 +98,44 @@ export default function HomePageClient({
         key: "name",
         header: "Experiment",
         sortValue: (e) => e.name.toLowerCase(),
-        render: (experiment) => (
-          <Link
-            href={`/experiments/${getExperimentHrefSlug(experiment)}`}
-            className="block hover:text-accent-primary"
-          >
-            <span className="font-heading text-xl font-medium text-text-dark inline-flex items-center gap-2 flex-wrap">
-              {experiment.name || experiment.id || "Untitled"}
-              {/* Admin-only process indicator (gated to edit mode
+        render: (experiment) => {
+          const body = (
+            <>
+              <span className="font-heading text-xl font-medium text-text-dark inline-flex items-center gap-2 flex-wrap">
+                {experiment.name || experiment.id || "Untitled"}
+                {/* Admin-only process indicator (gated to edit mode
                   server-side). Dashed + unfilled so it reads as metadata,
                   never as a CTA. */}
-              {experiment.openSpecPhase && (
-                <span className="text-[11px] font-medium rounded-md border border-dashed border-accent-primary/30 text-accent-primary/70 px-1.5 py-0.5">
-                  {formatBhdPhaseLabel(experiment.openSpecPhase)}
-                </span>
-              )}
-            </span>
-            <span className="block text-sm text-text-dark-secondary leading-relaxed mt-0.5 line-clamp-1">
-              {experiment.statement}
-            </span>
-          </Link>
-        ),
+                {experiment.openSpecPhase && (
+                  <span className="text-[11px] font-medium rounded-md border border-dashed border-accent-primary/30 text-accent-primary/70 px-1.5 py-0.5">
+                    {formatBhdPhaseLabel(experiment.openSpecPhase)}
+                  </span>
+                )}
+              </span>
+              <span className="block text-sm text-text-dark-secondary leading-relaxed mt-0.5 line-clamp-1">
+                {experiment.statement}
+              </span>
+            </>
+          );
+
+          // Inactive rows are listed but not navigable. A detail page for dead
+          // work would have to be brought up to presentable standard before it
+          // could be linked, and that cost is exactly what nobody should have to
+          // pay to record a kill. The row still carries name, statement and
+          // status — enough to show the work existed and ended.
+          if (INACTIVE_STATUSES.includes(experiment.status)) {
+            return <div className="block cursor-default">{body}</div>;
+          }
+
+          return (
+            <Link
+              href={`/experiments/${getExperimentHrefSlug(experiment)}`}
+              className="block hover:text-accent-primary"
+            >
+              {body}
+            </Link>
+          );
+        },
       },
       {
         key: "total",
@@ -193,9 +227,9 @@ export default function HomePageClient({
                 About BHD Labs
               </p>
               <p className="text-sm font-light text-white leading-5">
-                I&apos;m a neurodiverse designer and founder. My best ideas come fast and
-                from everywhere. This platform is how I develop them with rigor
-                and pursue the strongest ones with focus.
+                I&apos;m a neurodiverse designer and founder. My best ideas come
+                fast and from everywhere. This platform is how I develop them
+                with rigor and pursue the strongest ones with focus.
               </p>
             </div>
             {/* What drives me column */}
@@ -205,7 +239,9 @@ export default function HomePageClient({
               </p>
               <p className="text-sm font-light text-white leading-5">
                 I build things I care deeply about, that serve a real market
-                need, and that make a difference in the world. I make sure all three are true -- plus a few extras -- in a custom scoring system.
+                need, and that make a difference in the world. I make sure all
+                three are true -- plus a few extras -- in a custom scoring
+                system.
               </p>
             </div>
             {/* Core themes column */}
@@ -231,7 +267,6 @@ export default function HomePageClient({
           </div>
         </div>
       </section>
-
 
       {/* Experiment List Section */}
       <section className="bg-background-light px-4 md:px-8 lg:px-16 py-[46px] flex-1">
