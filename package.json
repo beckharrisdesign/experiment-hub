@@ -14,6 +14,7 @@
     "test:pbn": "bash scripts/test-pbn.sh",
     "pbn:ui": "bash scripts/pbn-ui.sh",
     "lint": "turbo run lint --concurrency=2",
+    "lint:app": "eslint .",
     "setup:logging": "node scripts/setup-logging.js",
     "sitemap:capture": "node scripts/capture-site-map.js",
     "dev:landing": "cd experiments/simple-seed-organizer/prototype/validation-landing && pnpm install && pnpm dev",

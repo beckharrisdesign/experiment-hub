@@ -14,11 +14,20 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 // mockSelect/mockSingle exist only to PROVE they are never called: the table is
 // write-only for the publishable role (INSERT policy, no SELECT policy), so a
 // returning `.select()` is denied by RLS with 42501 — the 2026-08-17 prod bug.
+// The insert result is annotated rather than inferred. Without it TS narrows the
+// factory's return to the literal `{ error: null }`, and the error-path tests
+// below cannot resolve a real error object onto the same mock (TS2322).
+type MockInsertResult = {
+  error: { message: string; code?: string } | null;
+};
+
 const { mockSingle, mockSelect, mockInsert, mockFrom, mockCreateClient } =
   vi.hoisted(() => {
     const mockSingle = vi.fn();
     const mockSelect = vi.fn(() => ({ single: mockSingle }));
-    const mockInsert = vi.fn(async () => ({ error: null }));
+    const mockInsert = vi.fn(
+      async (): Promise<MockInsertResult> => ({ error: null }),
+    );
     const mockFrom = vi.fn(() => ({ insert: mockInsert }));
     const mockCreateClient = vi.fn(() => ({ from: mockFrom }));
     return { mockSingle, mockSelect, mockInsert, mockFrom, mockCreateClient };
