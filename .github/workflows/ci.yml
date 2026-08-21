@@ -30,10 +30,17 @@ jobs:
       - name: Run unit tests
         run: pnpm test
 
-  # ── Typecheck ───────────────────────────────────────────────────────────────
+  # ── Lint & typecheck ────────────────────────────────────────────────────────
   # Nothing ran `pnpm lint` in CI until 2026-08-21, which is how a TS2322 in
   # tests/lib/supabase.test.ts sat broken on main unnoticed — the unit tests pass
   # because vitest transpiles without typechecking. This job closes that gap.
+  #
+  # Two steps, because they cover different things and neither subsumes the
+  # other. The turbo step typechecks; the eslint step applies the lint rules
+  # types cannot see. Until 2026-08-21 the hub had no working eslint at all: a
+  # root .eslintrc.json existed but had been dead since the ESLint 9 upgrade,
+  # which looks for eslint.config.* and errors rather than falling back to
+  # eslintrc. See eslint.config.js.
   #
   # Filtered to exclude simple-seed-organizer: its eslint already runs in
   # seed-organizer-ci.yml, path-filtered to its own directory, and running it
@@ -45,7 +52,7 @@ jobs:
   # its own tsconfig, so both resolve the ROOT tsconfig — this typechecks the
   # whole hub (app/, lib/, components/, tests/), not just packages/.
   typecheck:
-    name: Typecheck
+    name: Lint & typecheck
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,6 +71,13 @@ jobs:
 
       - name: Typecheck
         run: pnpm turbo run lint --concurrency=2 --filter='!simple-seed-organizer'
+
+      # ESLint over the hub's own app/, lib/, components/, scripts/, tests/.
+      # Separate from the turbo run above because the hub root package's `lint`
+      # script IS that turbo orchestrator — it cannot also be its own eslint
+      # invocation without recursing.
+      - name: Lint (hub app)
+        run: pnpm run lint:app
 
   # Seed organizer jobs (unit tests, build check, lint) live in
   # seed-organizer-ci.yml, path-filtered to experiments/simple-seed-organizer/**

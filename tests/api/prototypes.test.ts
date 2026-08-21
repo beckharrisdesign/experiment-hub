@@ -63,7 +63,7 @@ vi.mock("@/lib/data", () => ({
 // promisify resolves with just the first arg (a string), breaking the destructure.
 // mockExecAsync is that custom implementation; we wire it up before the route imports.
 const mockExecAsync = vi.fn();
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 (mockExec as any)[promisify.custom] = mockExecAsync;
 
 // For CJS built-in modules Vitest requires an explicit `default` key alongside
@@ -121,7 +121,7 @@ function makeParams(port: string) {
 // ---------------------------------------------------------------------------
 
 describe("POST /api/prototypes/[port]/start", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   let POST: any;
 
   beforeEach(async () => {
@@ -227,7 +227,7 @@ describe("POST /api/prototypes/[port]/start", () => {
 // ---------------------------------------------------------------------------
 
 describe("POST /api/prototypes/[port]/stop", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   let POST: any;
 
   beforeEach(async () => {
@@ -287,7 +287,7 @@ describe("POST /api/prototypes/[port]/stop", () => {
 // ---------------------------------------------------------------------------
 
 describe("GET /api/prototypes/[port]/status", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   let GET: any;
 
   beforeEach(async () => {
