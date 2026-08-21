@@ -50,8 +50,8 @@ env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
-# The deploy step comments the preview URL via `gh pr comment`, which needs
-# pull-requests write; keep everything else read-only.
+# The deploy step creates/edits the sticky preview comment via the issue-comments
+# API, which needs pull-requests write; keep everything else read-only.
 permissions:
   contents: read
   pull-requests: write
@@ -126,9 +126,69 @@ jobs:
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Deployed (${{ steps.target.outputs.env }}) → $url" >> "$GITHUB_STEP_SUMMARY"
 
+      # One comment per PR, edited in place — not a new comment per deploy.
+      #
+      # Turning off Vercel's Git integration (#311, to stop every push creating a
+      # deployment record against the Hobby daily cap) also removed the bot's
+      # status table, and the one-line replacement appended a fresh comment on
+      # every push. This restores the table Vercel used to post without restoring
+      # the integration that caused the rate limiting.
+      #
+      # Found by MARKER, an HTML comment that does not render. First deploy on a
+      # PR creates the comment; later ones PATCH that same id.
+      #
+      # Runs with !cancelled() rather than success() so a FAILED deploy updates
+      # the table to Error instead of leaving a stale Ready from the last push.
       - name: Comment preview URL on PR
-        if: steps.guard.outputs.skip != 'true' && github.event_name == 'pull_request'
+        if: ${{ !cancelled() && steps.guard.outputs.skip != 'true' && github.event_name == 'pull_request' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Passed as env, never interpolated into the script body: a branch or
+          # commit message reaching the shell directly would be an injection.
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
+          TARGET_ENV: ${{ steps.target.outputs.env }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "🔷 Preview deploy: ${{ steps.deploy.outputs.url }}"
+          set -euo pipefail
+          MARKER='<!-- deploy-hub:preview -->'
+
+          if [ "$DEPLOY_OUTCOME" = "success" ] && [ -n "$DEPLOY_URL" ]; then
+            status='🟢 Ready'
+            preview="[Visit Preview]($DEPLOY_URL)"
+          else
+            status='🔴 Error'
+            preview="[View logs]($RUN_URL)"
+          fi
+
+          # Mirrors the column layout Vercel's bot used, so the PR reads the same.
+          updated=$(date -u '+%b %d, %Y %-I:%M%p' | sed 's/AM$/am/; s/PM$/pm/')
+
+          body=$(cat <<EOF
+          $MARKER
+          The latest updates on your deployment. Built and deployed by [Deploy Hub]($RUN_URL) — Vercel's Git integration is intentionally off (see workflow header).
+
+          | Project | Deployment | Environment | Preview | Updated (UTC) |
+          | --- | --- | --- | --- | --- |
+          | experiment-hub | $status | $TARGET_ENV | $preview | $updated |
+          EOF
+          )
+          # The heredoc is indented to match the YAML block; strip that back off.
+          body=$(printf '%s\n' "$body" | sed 's/^          //')
+
+          # --jq runs per PAGE, so a PR past 100 comments can emit one line per
+          # page; head -n1 keeps $existing a single id. Oldest match wins, which
+          # is the comment created on the first deploy.
+          existing=$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" --paginate \
+            --jq "map(select(.body | contains(\"$MARKER\"))) | .[0].id // empty" \
+            | head -n1)
+
+          if [ -n "$existing" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$existing" -f body="$body" >/dev/null
+            echo "Updated existing preview comment ($existing)." >> "$GITHUB_STEP_SUMMARY"
+          else
+            gh api -X POST "repos/$REPO/issues/$PR_NUMBER/comments" -f body="$body" >/dev/null
+            echo "Created preview comment." >> "$GITHUB_STEP_SUMMARY"
+          fi
