@@ -62,11 +62,6 @@ function numberValue(prop: NotionProperty | undefined): number | null {
 
 // Notion tracks lifecycle phases; the hub tracks activity states. Anything
 // pre-launch counts as Active so it shows up on the board.
-// The `?? "Active"` fallback at the read site means any Notion status missing
-// from this map renders as live work. That made the dead statuses below more
-// than a gap: the moment "Archived" was added as a Notion option, an archived
-// row would have appeared in the Active tab. They are mapped here so the
-// vocabulary is complete before it is used.
 const STATUS_MAP: Record<string, ExperimentStatus> = {
   Ideation: "Active",
   Discovery: "Active",
@@ -75,9 +70,6 @@ const STATUS_MAP: Record<string, ExperimentStatus> = {
   Validating: "Active",
   Launched: "Completed",
   Graduated: "Graduated",
-  "On Hold": "On Hold",
-  Archived: "Archived",
-  Abandoned: "Abandoned",
 };
 
 const TYPE_MAP: Record<string, ExperimentKind> = {
@@ -89,19 +81,11 @@ const TYPE_MAP: Record<string, ExperimentKind> = {
 // Reverse maps for the write path. Notion's Status is the richer vocabulary
 // (five pre-launch phases collapse into hub "Active"), so only unambiguous
 // hub statuses can be written back; Notion phase names are accepted as-is so
-// callers can set a specific phase directly.
-//
-// The three dead statuses map 1:1 in both directions. They require the matching
-// options to exist on the Notion Status property — Notion's API cannot create
-// status options (only the UI can), so adding them is a manual step. Until it is
-// done a write here fails at the API with an invalid-option error rather than
-// silently writing the wrong phase, which is the safer failure.
+// callers can set a specific phase directly. Abandoned/On Hold/Archived have
+// no Notion option and stay unwritable.
 const HUB_TO_NOTION_STATUS: Record<string, string> = {
   Completed: "Launched",
   Graduated: "Graduated",
-  "On Hold": "On Hold",
-  Archived: "Archived",
-  Abandoned: "Abandoned",
 };
 
 const HUB_TO_NOTION_TYPE: Record<string, string> = {

@@ -1,16 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Tooltip from "@/components/Tooltip";
 import ScoreTable, { type ScoreTableColumn } from "@/components/ScoreTable";
-import type {
-  Experiment,
-  ExperimentStatus,
-  Prototype,
-  Documentation,
-} from "@/types";
+import type { Experiment, Prototype, Documentation } from "@/types";
 import { getExperimentHrefSlug } from "@/lib/utils";
 import { formatBhdPhaseLabel } from "@/lib/openspec-shared";
 import type { BhdPhase } from "@/lib/openspec-shared";
@@ -31,19 +26,7 @@ interface HomePageClientProps {
   initialExperiments: ExperimentWithRelated[];
 }
 
-type ViewTab = "active" | "inactive";
-
 const HIDDEN_EXPERIMENT_IDS = ["experience-principles-repository"];
-
-// Statuses that put a row on the Inactive tab. This used to key on "Abandoned"
-// alone, which is why Archived rows rendered in the Active tab — Landing Zone is
-// Archived in data/experiments.json and showed as live. On Hold belongs here for
-// the same reason: none of the three are work in flight.
-const INACTIVE_STATUSES: ExperimentStatus[] = [
-  "Abandoned",
-  "Archived",
-  "On Hold",
-];
 
 // Thresholds are fractions of the shape's max so v3 (/15) and v1 (/25) rows
 // color consistently; 0.8/0.6/0.4 reproduce v1's old 20/15/10 breakpoints.
@@ -71,26 +54,11 @@ function SubScoreCell({ value }: { value: number | undefined }) {
 export default function HomePageClient({
   initialExperiments,
 }: HomePageClientProps) {
-  const [activeTab, setActiveTab] = useState<ViewTab>("active");
-
   const experiments = useMemo(
     () =>
       initialExperiments.filter((e) => !HIDDEN_EXPERIMENT_IDS.includes(e.id)),
     [initialExperiments],
   );
-
-  const activeExperiments = useMemo(
-    () => experiments.filter((e) => !INACTIVE_STATUSES.includes(e.status)),
-    [experiments],
-  );
-
-  const inactiveExperiments = useMemo(
-    () => experiments.filter((e) => INACTIVE_STATUSES.includes(e.status)),
-    [experiments],
-  );
-
-  const displayedExperiments =
-    activeTab === "active" ? activeExperiments : inactiveExperiments;
 
   const columns = useMemo<ScoreTableColumn<ExperimentWithRelated>[]>(
     () => [
@@ -98,44 +66,27 @@ export default function HomePageClient({
         key: "name",
         header: "Experiment",
         sortValue: (e) => e.name.toLowerCase(),
-        render: (experiment) => {
-          const body = (
-            <>
-              <span className="font-heading text-xl font-medium text-text-dark inline-flex items-center gap-2 flex-wrap">
-                {experiment.name || experiment.id || "Untitled"}
-                {/* Admin-only process indicator (gated to edit mode
+        render: (experiment) => (
+          <Link
+            href={`/experiments/${getExperimentHrefSlug(experiment)}`}
+            className="block hover:text-accent-primary"
+          >
+            <span className="font-heading text-xl font-medium text-text-dark inline-flex items-center gap-2 flex-wrap">
+              {experiment.name || experiment.id || "Untitled"}
+              {/* Admin-only process indicator (gated to edit mode
                   server-side). Dashed + unfilled so it reads as metadata,
                   never as a CTA. */}
-                {experiment.openSpecPhase && (
-                  <span className="text-[11px] font-medium rounded-md border border-dashed border-accent-primary/30 text-accent-primary/70 px-1.5 py-0.5">
-                    {formatBhdPhaseLabel(experiment.openSpecPhase)}
-                  </span>
-                )}
-              </span>
-              <span className="block text-sm text-text-dark-secondary leading-relaxed mt-0.5 line-clamp-1">
-                {experiment.statement}
-              </span>
-            </>
-          );
-
-          // Inactive rows are listed but not navigable. A detail page for dead
-          // work would have to be brought up to presentable standard before it
-          // could be linked, and that cost is exactly what nobody should have to
-          // pay to record a kill. The row still carries name, statement and
-          // status — enough to show the work existed and ended.
-          if (INACTIVE_STATUSES.includes(experiment.status)) {
-            return <div className="block cursor-default">{body}</div>;
-          }
-
-          return (
-            <Link
-              href={`/experiments/${getExperimentHrefSlug(experiment)}`}
-              className="block hover:text-accent-primary"
-            >
-              {body}
-            </Link>
-          );
-        },
+              {experiment.openSpecPhase && (
+                <span className="text-[11px] font-medium rounded-md border border-dashed border-accent-primary/30 text-accent-primary/70 px-1.5 py-0.5">
+                  {formatBhdPhaseLabel(experiment.openSpecPhase)}
+                </span>
+              )}
+            </span>
+            <span className="block text-sm text-text-dark-secondary leading-relaxed mt-0.5 line-clamp-1">
+              {experiment.statement}
+            </span>
+          </Link>
+        ),
       },
       {
         key: "total",
@@ -275,48 +226,14 @@ export default function HomePageClient({
             All experiments
           </h2>
 
-          {/* Tabs */}
-          <div className="flex">
-            <button
-              onClick={() => setActiveTab("active")}
-              data-analytics-event="hub_filter_toggle"
-              data-analytics-surface="hub-home"
-              data-analytics-label="active"
-              className={`flex items-center h-[51px] px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
-                activeTab === "active"
-                  ? "bg-[rgba(20,174,92,0.1)] border-b-[3px] border-accent-primary text-text-dark"
-                  : "text-text-dark hover:bg-[rgba(20,174,92,0.05)]"
-              }`}
-            >
-              Active ({activeExperiments.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("inactive")}
-              data-analytics-event="hub_filter_toggle"
-              data-analytics-surface="hub-home"
-              data-analytics-label="inactive"
-              className={`flex items-center h-[51px] px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
-                activeTab === "inactive"
-                  ? "bg-[rgba(20,174,92,0.1)] border-b-[3px] border-accent-primary text-text-dark"
-                  : "text-text-dark hover:bg-[rgba(20,174,92,0.05)]"
-              }`}
-            >
-              Inactive ({inactiveExperiments.length})
-            </button>
-          </div>
-
           {/* Table — shared component, also used by the Etsy listing scorecard */}
           <ScoreTable
-            rows={displayedExperiments}
+            rows={experiments}
             columns={columns}
             rowKey={(e) => e.id}
             defaultSortKey="total"
             defaultSortDirection="desc"
-            emptyMessage={
-              activeTab === "active"
-                ? "No active experiments found."
-                : "No inactive experiments."
-            }
+            emptyMessage="No experiments found."
           />
         </div>
       </section>

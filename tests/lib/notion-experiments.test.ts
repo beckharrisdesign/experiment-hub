@@ -160,12 +160,10 @@ describe("mapNotionPageToExperiment", () => {
   it("marks a row public only when the Public checkbox is checked", () => {
     expect(mapNotionPageToExperiment(makePage())?.public).toBe(false);
     expect(
-      mapNotionPageToExperiment(makePage({ Public: { checkbox: false } }))
-        ?.public,
+      mapNotionPageToExperiment(makePage({ Public: { checkbox: false } }))?.public,
     ).toBe(false);
     expect(
-      mapNotionPageToExperiment(makePage({ Public: { checkbox: true } }))
-        ?.public,
+      mapNotionPageToExperiment(makePage({ Public: { checkbox: true } }))?.public,
     ).toBe(true);
   });
 
@@ -202,12 +200,6 @@ describe("mapNotionPageToExperiment", () => {
     ["Validating", "Active"],
     ["Launched", "Completed"],
     ["Graduated", "Graduated"],
-    // The three dead statuses map 1:1. Before they were mapped they fell
-    // through to the `?? "Active"` default, so an archived row would have
-    // rendered as live work the moment the Notion option existed.
-    ["On Hold", "On Hold"],
-    ["Archived", "Archived"],
-    ["Abandoned", "Abandoned"],
     ["Unknown Phase", "Active"],
   ])("maps Notion status %s to hub status %s", (notionStatus, hubStatus) => {
     const page = makePage({ Status: { status: { name: notionStatus } } });
@@ -380,13 +372,6 @@ describe("toNotionStatus", () => {
   it.each([
     ["Completed", "Launched"],
     ["Graduated", "Graduated"],
-    // Writable as of 2026-08-21. These depend on the matching options existing
-    // on the Notion Status property; Notion's API cannot create status options,
-    // so that is a manual UI step. An unmapped write would have silently picked
-    // the wrong phase — an unwritable one fails loudly at the API instead.
-    ["On Hold", "On Hold"],
-    ["Archived", "Archived"],
-    ["Abandoned", "Abandoned"],
   ])("maps hub status %s to Notion phase %s", (hubStatus, phase) => {
     expect(toNotionStatus(hubStatus)).toBe(phase);
   });
@@ -398,10 +383,7 @@ describe("toNotionStatus", () => {
     },
   );
 
-  // "Active" stays unwritable on purpose: it is the hub's collapse of five
-  // distinct Notion phases, so writing it back could not pick one without
-  // guessing. Callers set a specific phase by name instead.
-  it.each(["Active", "Nonsense"])(
+  it.each(["Active", "Abandoned", "On Hold", "Archived", "Nonsense"])(
     "returns null for unwritable status %s",
     (status) => {
       expect(toNotionStatus(status)).toBeNull();
@@ -489,12 +471,9 @@ describe("updateExperimentInNotion", () => {
     expect(mockPageUpdate).not.toHaveBeenCalled();
   });
 
-  // "Active" is the only status with no Notion equivalent now: it collapses
-  // five Notion phases, so there is nothing unambiguous to write back. On Hold,
-  // Archived and Abandoned became writable on 2026-08-21.
   it("throws for a status with no Notion equivalent", async () => {
     await expect(
-      updateExperimentInNotion("seed-organizer", { status: "Active" }),
+      updateExperimentInNotion("seed-organizer", { status: "On Hold" }),
     ).rejects.toThrow("no Notion equivalent");
     expect(mockPageUpdate).not.toHaveBeenCalled();
   });
@@ -574,9 +553,9 @@ describe("formatNotionProperty", () => {
     expect(
       formatNotionProperty({ people: [{ name: "Katy" }, { name: "Sam" }] }),
     ).toBe("Katy, Sam");
-    expect(formatNotionProperty({ formula: { string: "computed" } })).toBe(
-      "computed",
-    );
+    expect(
+      formatNotionProperty({ formula: { string: "computed" } }),
+    ).toBe("computed");
   });
 
   it("returns empty string for empty or unknown properties", () => {
@@ -593,10 +572,7 @@ describe("getExperimentFieldsFromNotion", () => {
 
     expect(fields).toEqual([
       { label: "Why this matters", value: "Seed boxes are chaos." },
-      {
-        label: "Hypothesis",
-        value: "Gardeners need inventory-first tracking.",
-      },
+      { label: "Hypothesis", value: "Gardeners need inventory-first tracking." },
       { label: "Exec Summary", value: "A tool for tracking seed packets." },
     ]);
   });

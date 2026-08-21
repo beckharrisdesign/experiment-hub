@@ -197,11 +197,7 @@ describe("PATCH /api/experiments/id/[id] with Notion configured", () => {
     });
   });
 
-  // Only "Active" is left here. Abandoned / On Hold / Archived became writable
-  // on 2026-08-21 and now round-trip 1:1; "Active" stays rejected because it is
-  // the hub's collapse of five Notion phases and cannot be written back without
-  // guessing which one was meant.
-  it.each(["Active"])(
+  it.each(["Active", "Abandoned", "On Hold", "Archived"])(
     "returns 400 for status %s, which Notion cannot represent",
     async (status) => {
       authorize();
