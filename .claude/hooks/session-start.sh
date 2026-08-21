@@ -55,17 +55,22 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi
 
-# GitHub Packages auth for @beckharrisdesign/mvds (see docs in the MVDS repo).
-# NODE_AUTH_TOKEN must be set in the Claude environment settings (PAT with
-# read:packages). Written to ~/.npmrc, never committed.
-if [ -n "${NODE_AUTH_TOKEN:-}" ]; then
-  AUTH_LINE='//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}'
-  touch "$HOME/.npmrc"
-  chmod 600 "$HOME/.npmrc"
-  grep -qxF "$AUTH_LINE" "$HOME/.npmrc" || echo "$AUTH_LINE" >> "$HOME/.npmrc"
-else
-  echo "NODE_AUTH_TOKEN not set — @beckharrisdesign/* packages cannot be installed this session."
-fi
+# No registry auth is configured here on purpose. @beckharrisdesign/mvds — the
+# only @beckharrisdesign/* dependency — publishes to public npmjs.org via OIDC
+# trusted publishing, so it installs unauthenticated.
+#
+# This used to write a //npm.pkg.github.com/ auth line and, without a token,
+# print "NODE_AUTH_TOKEN not set — @beckharrisdesign/* packages cannot be
+# installed this session." That warning was false from the July 2026 move to
+# npmjs onward: no .npmrc in this repo names GitHub Packages, pnpm-lock.yaml
+# resolves the package from the default registry, and remote sessions installed
+# 0.3.0 successfully with the variable unset while the warning printed anyway.
+# It sent people hunting a credential that no longer exists.
+#
+# The block was also dead on its own terms: the guarded pnpm install above runs
+# BEFORE this point, so any auth written here would have arrived too late to
+# affect it. If a private @beckharrisdesign/* package is ever added, restore
+# the auth ABOVE that install, not here.
 
 # package.json declares packageManager: pnpm, and pnpm-lock.yaml is the real
 # lockfile. This ran `npm install` against a stale package-lock.json, building a
