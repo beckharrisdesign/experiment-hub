@@ -10,7 +10,13 @@
     "status": "Active",
     "createdDate": "2024-11-01",
     "lastModified": "2026-04-26",
-    "tags": ["etsy", "embroidery", "e-commerce", "pattern-management", "saas"],
+    "tags": [
+      "etsy",
+      "embroidery",
+      "e-commerce",
+      "pattern-management",
+      "saas"
+    ],
     "scores": {
       "businessOpportunity": 3,
       "personalImpact": 4,
@@ -30,7 +36,13 @@
     "status": "Abandoned",
     "createdDate": "2024-11-01",
     "lastModified": "2024-12-16",
-    "tags": ["gardening", "seeds", "plants", "hardiness-zones", "affiliate"],
+    "tags": [
+      "gardening",
+      "seeds",
+      "plants",
+      "hardiness-zones",
+      "affiliate"
+    ],
     "scores": {
       "businessOpportunity": 4,
       "personalImpact": 4,
@@ -50,7 +62,12 @@
     "status": "Active",
     "createdDate": "2024-11-01",
     "lastModified": "2026-04-24",
-    "tags": ["gardening", "seeds", "organization", "mobile-app"],
+    "tags": [
+      "gardening",
+      "seeds",
+      "organization",
+      "mobile-app"
+    ],
     "scores": {
       "businessOpportunity": 2,
       "personalImpact": 4,
@@ -75,7 +92,13 @@
     "status": "Active",
     "createdDate": "2024-11-01",
     "lastModified": "2026-04-24",
-    "tags": ["productivity", "adhd", "planner", "printable", "calendar"],
+    "tags": [
+      "productivity",
+      "adhd",
+      "planner",
+      "printable",
+      "calendar"
+    ],
     "scores": {
       "businessOpportunity": 4,
       "personalImpact": 5,
@@ -100,7 +123,13 @@
     "status": "Abandoned",
     "createdDate": "2024-11-01",
     "lastModified": "2026-04-24",
-    "tags": ["design", "ux", "principles", "saas", "llm"],
+    "tags": [
+      "design",
+      "ux",
+      "principles",
+      "saas",
+      "llm"
+    ],
     "scores": {
       "businessOpportunity": 4,
       "personalImpact": 4,
@@ -120,7 +149,13 @@
     "status": "Abandoned",
     "createdDate": "2024-11-01",
     "lastModified": "2024-12-16",
-    "tags": ["gardening", "guides", "personalization", "pdf", "affiliate"],
+    "tags": [
+      "gardening",
+      "guides",
+      "personalization",
+      "pdf",
+      "affiliate"
+    ],
     "scores": {
       "businessOpportunity": 3,
       "personalImpact": 4,
@@ -140,7 +175,12 @@
     "status": "Abandoned",
     "createdDate": "2024-11-01",
     "lastModified": "2024-12-16",
-    "tags": ["photos", "memories", "print-on-demand", "google-photos"],
+    "tags": [
+      "photos",
+      "memories",
+      "print-on-demand",
+      "google-photos"
+    ],
     "scores": {
       "businessOpportunity": 4,
       "personalImpact": 4,
@@ -160,7 +200,13 @@
     "status": "Abandoned",
     "createdDate": "2024-11-01",
     "lastModified": "2024-12-16",
-    "tags": ["ai", "ml", "embroidery", "craft", "photo"],
+    "tags": [
+      "ai",
+      "ml",
+      "embroidery",
+      "craft",
+      "photo"
+    ],
     "scores": {
       "businessOpportunity": 4,
       "personalImpact": 3,
@@ -177,10 +223,19 @@
     "directory": "experiments/ai-event-landing-zone",
     "documentationId": "doc-ai-event-landing-zone",
     "prototypeId": "",
-    "status": "Archived",
+    "status": "Active",
     "createdDate": "2024-11-16",
     "lastModified": "2024-12-16",
-    "tags": ["ai-ml", "calendar-integration", "event-parsing", "unstructured-data", "working-parents", "productivity", "sandwich-generation", "caregivers"],
+    "tags": [
+      "ai-ml",
+      "calendar-integration",
+      "event-parsing",
+      "unstructured-data",
+      "working-parents",
+      "productivity",
+      "sandwich-generation",
+      "caregivers"
+    ],
     "scores": {
       "businessOpportunity": 4,
       "personalImpact": 5,
@@ -205,7 +260,13 @@
     "status": "Active",
     "createdDate": "2026-04-05",
     "lastModified": "2026-04-26",
-    "tags": ["figma", "chrome-extension", "design-tools", "dom-capture", "workflow"]
+    "tags": [
+      "figma",
+      "chrome-extension",
+      "design-tools",
+      "dom-capture",
+      "workflow"
+    ]
   },
   {
     "id": "pbn-research",
@@ -215,7 +276,7 @@
     "directory": "experiments/pbn-research",
     "documentationId": "doc-pbn-research",
     "prototypeId": "",
-    "status": "Active",
+    "status": "Archived",
     "createdDate": "2026-04-18",
     "lastModified": "2026-04-26",
     "tags": [
@@ -236,10 +297,16 @@
     "directory": "experiments/photo-filters-banner",
     "documentationId": "",
     "prototypeId": "proto-photo-filters-banner",
-    "status": "Active",
+    "status": "Archived",
     "createdDate": "2026-05-16",
     "lastModified": "2026-05-16",
-    "tags": ["photo", "canvas", "filters", "download", "tool"]
+    "tags": [
+      "photo",
+      "canvas",
+      "filters",
+      "download",
+      "tool"
+    ]
   },
   {
     "id": "snap-issue",
@@ -252,7 +319,13 @@
     "status": "Active",
     "createdDate": "2026-05-19",
     "lastModified": "2026-05-19",
-    "tags": ["chrome-extension", "github", "screenshot", "internal-tools", "mv3"]
+    "tags": [
+      "chrome-extension",
+      "github",
+      "screenshot",
+      "internal-tools",
+      "mv3"
+    ]
   },
   {
     "id": "pomodoro-maker",
@@ -262,10 +335,15 @@
     "directory": "experiments/pomodoro-maker",
     "documentationId": "doc-pomodoro-maker",
     "prototypeId": "",
-    "status": "Active",
+    "status": "Archived",
     "createdDate": "2026-05-20",
     "lastModified": "2026-05-20",
-    "tags": ["productivity", "pomodoro", "focus", "web"],
+    "tags": [
+      "productivity",
+      "pomodoro",
+      "focus",
+      "web"
+    ],
     "openspecChangeId": "pomodoro-maker",
     "openspecSchema": "bhd-experiment"
   },
@@ -280,7 +358,15 @@
     "status": "Active",
     "createdDate": "2026-07-15",
     "lastModified": "2026-07-15",
-    "tags": ["etsy", "notion", "sync", "api-v3", "inventory", "data-capture", "tool"]
+    "tags": [
+      "etsy",
+      "notion",
+      "sync",
+      "api-v3",
+      "inventory",
+      "data-capture",
+      "tool"
+    ]
   },
   {
     "id": "pdf-metadata-viewer",
@@ -293,7 +379,15 @@
     "status": "Active",
     "createdDate": "2026-01-10",
     "lastModified": "2026-08-05",
-    "tags": ["pdf", "metadata", "taxonomy", "notion", "document-management", "ai-vision", "local-only"],
+    "tags": [
+      "pdf",
+      "metadata",
+      "taxonomy",
+      "notion",
+      "document-management",
+      "ai-vision",
+      "local-only"
+    ],
     "public": false
   }
 ]
