@@ -50,6 +50,22 @@ been made yet.
 
 Ideation currently holds zero rows, so nothing is displaced by starting to use it.
 
+### Leave `Public` unchecked
+
+The hub reads this same database, so a seed is a row the site can see. Leaving
+`Public` unchecked — Notion's default for a new row — keeps it off the public
+catalog: `lib/notion-experiments.ts` reads an unset checkbox as `public: false`,
+and both the experiment list and the detail route gate on that, the detail route
+by returning 404.
+
+Stated here rather than left to the default, because a default nobody wrote down
+is a default that eventually changes.
+
+One consequence worth knowing: inside admin edit mode a seed shows as **Active**.
+`STATUS_MAP` collapses all five pre-launch Notion phases — Ideation included —
+onto the single hub status `Active`. Accepted for now; see
+`openspec/changes/selection-seed-stage/design.md`.
+
 ### Why these three fields and not a new form
 
 They are what already produces the best writing in the system. Nothing here asks
