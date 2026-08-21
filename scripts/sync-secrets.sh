@@ -205,7 +205,10 @@ while IFS='|' read -r name ref targets; do
     continue
   fi
 
-  hash=$(printf '%s' "$value" | shasum -a 256 | cut -d' ' -f1)
+  # Hash the targets alongside the value. Hashing the value alone meant adding
+  # a target to an existing row was a silent no-op — the value had not changed,
+  # so the row reported "unchanged" and the new target was never written.
+  hash=$(printf '%s|%s' "$value" "$targets" | shasum -a 256 | cut -d' ' -f1)
   prev=$(grep "^$name " "$STATE_FILE" 2>/dev/null | cut -d' ' -f2 || true)
 
   if [ "$hash" = "$prev" ]; then

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Tooltip from "@/components/Tooltip";
@@ -26,8 +26,6 @@ interface HomePageClientProps {
   initialExperiments: ExperimentWithRelated[];
 }
 
-type ViewTab = "active" | "inactive";
-
 const HIDDEN_EXPERIMENT_IDS = ["experience-principles-repository"];
 
 // Thresholds are fractions of the shape's max so v3 (/15) and v1 (/25) rows
@@ -35,8 +33,10 @@ const HIDDEN_EXPERIMENT_IDS = ["experience-principles-repository"];
 function getTotalBadgeColor(total: number, max: number) {
   const fraction = total / max;
   if (fraction >= 0.8) return "bg-green-600 border-green-500 text-white";
-  if (fraction >= 0.6) return "bg-yellow-500/80 border-yellow-400/80 text-white";
-  if (fraction >= 0.4) return "bg-orange-500/80 border-orange-400/80 text-white";
+  if (fraction >= 0.6)
+    return "bg-yellow-500/80 border-yellow-400/80 text-white";
+  if (fraction >= 0.4)
+    return "bg-orange-500/80 border-orange-400/80 text-white";
   return "bg-red-500/80 border-red-400/80 text-white";
 }
 
@@ -54,26 +54,11 @@ function SubScoreCell({ value }: { value: number | undefined }) {
 export default function HomePageClient({
   initialExperiments,
 }: HomePageClientProps) {
-  const [activeTab, setActiveTab] = useState<ViewTab>("active");
-
   const experiments = useMemo(
     () =>
       initialExperiments.filter((e) => !HIDDEN_EXPERIMENT_IDS.includes(e.id)),
     [initialExperiments],
   );
-
-  const activeExperiments = useMemo(
-    () => experiments.filter((e) => e.status !== "Abandoned"),
-    [experiments],
-  );
-
-  const inactiveExperiments = useMemo(
-    () => experiments.filter((e) => e.status === "Abandoned"),
-    [experiments],
-  );
-
-  const displayedExperiments =
-    activeTab === "active" ? activeExperiments : inactiveExperiments;
 
   const columns = useMemo<ScoreTableColumn<ExperimentWithRelated>[]>(
     () => [
@@ -193,9 +178,9 @@ export default function HomePageClient({
                 About BHD Labs
               </p>
               <p className="text-sm font-light text-white leading-5">
-                I&apos;m a neurodiverse designer and founder. My best ideas come fast and
-                from everywhere. This platform is how I develop them with rigor
-                and pursue the strongest ones with focus.
+                I&apos;m a neurodiverse designer and founder. My best ideas come
+                fast and from everywhere. This platform is how I develop them
+                with rigor and pursue the strongest ones with focus.
               </p>
             </div>
             {/* What drives me column */}
@@ -205,7 +190,9 @@ export default function HomePageClient({
               </p>
               <p className="text-sm font-light text-white leading-5">
                 I build things I care deeply about, that serve a real market
-                need, and that make a difference in the world. I make sure all three are true -- plus a few extras -- in a custom scoring system.
+                need, and that make a difference in the world. I make sure all
+                three are true -- plus a few extras -- in a custom scoring
+                system.
               </p>
             </div>
             {/* Core themes column */}
@@ -232,7 +219,6 @@ export default function HomePageClient({
         </div>
       </section>
 
-
       {/* Experiment List Section */}
       <section className="bg-background-light px-4 md:px-8 lg:px-16 py-[46px] flex-1">
         <div className="max-w-screen-xl mx-auto">
@@ -240,48 +226,14 @@ export default function HomePageClient({
             All experiments
           </h2>
 
-          {/* Tabs */}
-          <div className="flex">
-            <button
-              onClick={() => setActiveTab("active")}
-              data-analytics-event="hub_filter_toggle"
-              data-analytics-surface="hub-home"
-              data-analytics-label="active"
-              className={`flex items-center h-[51px] px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
-                activeTab === "active"
-                  ? "bg-[rgba(20,174,92,0.1)] border-b-[3px] border-accent-primary text-text-dark"
-                  : "text-text-dark hover:bg-[rgba(20,174,92,0.05)]"
-              }`}
-            >
-              Active ({activeExperiments.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("inactive")}
-              data-analytics-event="hub_filter_toggle"
-              data-analytics-surface="hub-home"
-              data-analytics-label="inactive"
-              className={`flex items-center h-[51px] px-4 text-[15px] font-medium transition-colors whitespace-nowrap ${
-                activeTab === "inactive"
-                  ? "bg-[rgba(20,174,92,0.1)] border-b-[3px] border-accent-primary text-text-dark"
-                  : "text-text-dark hover:bg-[rgba(20,174,92,0.05)]"
-              }`}
-            >
-              Inactive ({inactiveExperiments.length})
-            </button>
-          </div>
-
           {/* Table — shared component, also used by the Etsy listing scorecard */}
           <ScoreTable
-            rows={displayedExperiments}
+            rows={experiments}
             columns={columns}
             rowKey={(e) => e.id}
             defaultSortKey="total"
             defaultSortDirection="desc"
-            emptyMessage={
-              activeTab === "active"
-                ? "No active experiments found."
-                : "No inactive experiments."
-            }
+            emptyMessage="No experiments found."
           />
         </div>
       </section>

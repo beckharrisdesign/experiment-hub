@@ -108,6 +108,40 @@ jobs:
             echo "prod_flag=" >> "$GITHUB_OUTPUT"
           fi
 
+      # Preview deployments carry their runtime credentials from the vault,
+      # attached to the deployment itself — Vercel's preview environment stores
+      # nothing. A stored copy is a copy that drifts: it goes stale the moment a
+      # value rotates, and nothing notices until a preview quietly reads the
+      # wrong thing. Reading at deploy time means a preview always runs on
+      # whatever 1Password holds right now.
+      #
+      # Production is untouched: it has stored env vars, synced by
+      # scripts/sync-secrets.sh.
+      - name: Check for the 1Password service account token
+        if: steps.guard.outputs.skip != 'true' && steps.target.outputs.env == 'preview'
+        run: |
+          if [ -z "${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}" ]; then
+            echo "::error::Preview deploys read their credentials from 1Password at deploy time, and OP_SERVICE_ACCOUNT_TOKEN is not set. Create a 1Password service account with read access to the BHD Labs vault, then add its token as a repo secret (Settings → Secrets and variables → Actions). Failing here rather than shipping a preview that 500s on every page."
+            exit 1
+          fi
+
+      - name: Read preview runtime credentials from 1Password
+        if: steps.guard.outputs.skip != 'true' && steps.target.outputs.env == 'preview'
+        uses: 1password/load-secrets-action@v2
+        with:
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          # Only what the site needs to READ ITS OWN DATA. Payment and model
+          # keys stay production-only: a preview URL is an easier bar to clear
+          # than production, and nothing in a preview should be able to charge a
+          # card. Refs must match scripts/sync-secrets.sh — .env.example is the
+          # registry of record for both.
+          SUPABASE_URL: op://BHD Labs/Supabase experiment-hub/url
+          SUPABASE_SERVICE_ROLE_KEY: op://BHD Labs/Supabase experiment-hub/service role key
+          NOTION_EXPERIMENTS_DATA_SOURCE_ID: op://BHD Labs/Notion/experiments data source id
+          NOTION_HISTORY_DATA_SOURCE_ID: op://BHD Labs/Notion/history data source id
+
       - name: Pull Vercel project settings
         if: steps.guard.outputs.skip != 'true'
         run: vercel pull --yes --environment=${{ steps.target.outputs.env }} --token=${{ secrets.VERCEL_TOKEN }}
@@ -120,9 +154,26 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         id: deploy
         run: |
+          set -euo pipefail
+
+          # `vercel deploy --env KEY=value` sets RUNTIME env for this deployment
+          # only (https://vercel.com/docs/cli/deploy). That is what makes a
+          # preview work without Vercel storing the values: the page reads them
+          # at request time from the deployment it was served by.
+          env_args=()
+          if [ "${{ steps.target.outputs.env }}" = "preview" ]; then
+            for name in SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY \
+                        NOTION_EXPERIMENTS_DATA_SOURCE_ID NOTION_HISTORY_DATA_SOURCE_ID; do
+              value="${!name:-}"
+              if [ -n "$value" ]; then
+                env_args+=( --env "$name=$value" )
+              fi
+            done
+          fi
+
           # --archive=tgz uploads one tarball instead of thousands of files,
           # staying far under Vercel's 5000-uploads/24h hobby-plan cap.
-          url=$(vercel deploy --prebuilt --archive=tgz ${{ steps.target.outputs.prod_flag }} --token=${{ secrets.VERCEL_TOKEN }})
+          url=$(vercel deploy --prebuilt --archive=tgz ${{ steps.target.outputs.prod_flag }} --token=${{ secrets.VERCEL_TOKEN }} "${env_args[@]}")
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Deployed (${{ steps.target.outputs.env }}) → $url" >> "$GITHUB_STEP_SUMMARY"
 

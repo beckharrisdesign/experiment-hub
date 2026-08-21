@@ -1,3 +1,9 @@
+// Reads live data (Notion, then Supabase). Rendered per request rather
+// than prerendered: with no JSON tier behind lib/data, a build with no
+// source configured would fail the export instead of quietly baking a
+// snapshot.
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import { getPrototypes, getExperimentById } from "@/lib/data";

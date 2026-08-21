@@ -24,40 +24,33 @@ function hasSupabase() {
   );
 }
 
-const DATA_DIR = path.join(process.cwd(), "data");
-
-// The JSON files are a stale snapshot — if we land here while Supabase is
-// configured, edits made through the admin UI will appear not to persist
-// (#264), so make the fallback visible in server logs.
-function logSupabaseFallback(source: string, error: unknown) {
-  console.error(
-    `[data] Supabase read failed in ${source}; falling back to JSON snapshot:`,
-    error,
-  );
-}
-
-// Notion is the preferred experiments source when configured; on failure we
-// fall through to Supabase/JSON so a Notion outage degrades instead of
-// blanking the site.
+// Notion is the source of truth for experiments; Supabase is the one fallback
+// behind it. There is no JSON snapshot tier any more — it was removed on
+// 2026-08-21 because a nine-month-stale file silently standing in for live data
+// is worse than an outage you can see. Experiment statuses and visibility are
+// edited in Notion and nowhere else.
 function logNotionFallback(source: string, error: unknown) {
   console.error(
-    `[data] Notion read failed in ${source}; falling back to Supabase/JSON:`,
+    `[data] Notion read failed in ${source}; falling back to Supabase:`,
     error,
   );
 }
 
-async function readJsonFile<T>(filename: string): Promise<T[]> {
-  try {
-    const filePath = path.join(DATA_DIR, filename);
-    const fileContents = await fs.readFile(filePath, "utf8");
-    return JSON.parse(fileContents);
-  } catch (error) {
-    // If file doesn't exist, return empty array
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return [];
-    }
-    throw error;
-  }
+function logSupabaseFailure(source: string, error: unknown) {
+  console.error(`[data] Supabase read failed in ${source}:`, error);
+}
+
+/**
+ * Thrown when every configured source failed or none is configured. Callers
+ * surface this rather than rendering a stale or empty catalog: app/page.tsx
+ * logs and rethrows into the error boundary, which is the visible-outage
+ * behaviour we want.
+ */
+function noSourceAvailable(source: string): never {
+  throw new Error(
+    `[data] ${source}: no data source available. Notion and Supabase both ` +
+      `failed or are unconfigured, and there is no JSON fallback.`,
+  );
 }
 
 export async function getExperiments(): Promise<Experiment[]> {
@@ -72,10 +65,11 @@ export async function getExperiments(): Promise<Experiment[]> {
     try {
       return await getExperimentsFromSupabase();
     } catch (error) {
-      logSupabaseFallback("getExperiments", error);
+      logSupabaseFailure("getExperiments", error);
+      throw error;
     }
   }
-  return readJsonFile<Experiment>("experiments.json");
+  noSourceAvailable("getExperiments");
 }
 
 export async function getPrototypes(): Promise<Prototype[]> {
@@ -83,10 +77,11 @@ export async function getPrototypes(): Promise<Prototype[]> {
     try {
       return await getPrototypesFromSupabase();
     } catch (error) {
-      logSupabaseFallback("getPrototypes", error);
+      logSupabaseFailure("getPrototypes", error);
+      throw error;
     }
   }
-  return readJsonFile<Prototype>("prototypes.json");
+  noSourceAvailable("getPrototypes");
 }
 
 export async function getDocumentation(): Promise<Documentation[]> {
@@ -94,10 +89,11 @@ export async function getDocumentation(): Promise<Documentation[]> {
     try {
       return await getDocumentationFromSupabase();
     } catch (error) {
-      logSupabaseFallback("getDocumentation", error);
+      logSupabaseFailure("getDocumentation", error);
+      throw error;
     }
   }
-  return readJsonFile<Documentation>("documentation.json");
+  noSourceAvailable("getDocumentation");
 }
 
 export async function getExperimentById(
@@ -116,11 +112,11 @@ export async function getExperimentById(
     try {
       return await getExperimentByIdFromSupabase(id);
     } catch (error) {
-      logSupabaseFallback("getExperimentById", error);
+      logSupabaseFailure("getExperimentById", error);
+      throw error;
     }
   }
-  const experiments = await readJsonFile<Experiment>("experiments.json");
-  return experiments.find((exp) => exp.id === id) ?? null;
+  noSourceAvailable("getExperimentById");
 }
 
 export async function getExperimentBySlug(
@@ -145,14 +141,11 @@ export async function getExperimentBySlug(
       const all = await getExperimentsFromSupabase();
       return all.find((exp) => slugify(exp.name) === slug) ?? null;
     } catch (error) {
-      logSupabaseFallback("getExperimentBySlug", error);
+      logSupabaseFailure("getExperimentBySlug", error);
+      throw error;
     }
   }
-  const experiments = await readJsonFile<Experiment>("experiments.json");
-  return (
-    experiments.find((exp) => slugify(exp.name) === slug || exp.id === slug) ??
-    null
-  );
+  noSourceAvailable("getExperimentBySlug");
 }
 
 export async function getPrototypeByExperimentId(
@@ -162,13 +155,11 @@ export async function getPrototypeByExperimentId(
     try {
       return await getPrototypeByExperimentIdFromSupabase(experimentId);
     } catch (error) {
-      logSupabaseFallback("getPrototypeByExperimentId", error);
+      logSupabaseFailure("getPrototypeByExperimentId", error);
+      throw error;
     }
   }
-  const prototypes = await readJsonFile<Prototype>("prototypes.json");
-  return (
-    prototypes.find((proto) => proto.experimentId === experimentId) ?? null
-  );
+  noSourceAvailable("getPrototypeByExperimentId");
 }
 
 export async function getDocumentationByExperimentId(
@@ -178,11 +169,11 @@ export async function getDocumentationByExperimentId(
     try {
       return await getDocumentationByExperimentIdFromSupabase(experimentId);
     } catch (error) {
-      logSupabaseFallback("getDocumentationByExperimentId", error);
+      logSupabaseFailure("getDocumentationByExperimentId", error);
+      throw error;
     }
   }
-  const docs = await readJsonFile<Documentation>("documentation.json");
-  return docs.find((doc) => doc.experimentId === experimentId) ?? null;
+  noSourceAvailable("getDocumentationByExperimentId");
 }
 
 export async function readMarketResearch(

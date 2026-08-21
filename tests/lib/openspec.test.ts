@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import type { Experiment } from "@/types";
 import {
   resolveOpenSpecChangeId,
@@ -10,6 +10,26 @@ import {
 } from "@/lib/openspec-server";
 import { getExperimentHrefSlug } from "@/lib/utils";
 import { getExperimentBySlug } from "@/lib/data";
+
+// lib/data has no JSON tier any more, so a slug lookup needs a live source.
+// Supabase stands in for one here; the assertion is about slug resolution, not
+// about where the row came from.
+vi.mock("@/lib/supabase", () => ({
+  getExperimentsFromSupabase: vi.fn(async () => []),
+  getExperimentByIdFromSupabase: vi.fn(async (id: string) =>
+    id === "pomodoro-maker"
+      ? { id: "pomodoro-maker", name: "Pomodoro Maker" }
+      : null,
+  ),
+  getPrototypesFromSupabase: vi.fn(async () => []),
+  getPrototypeByExperimentIdFromSupabase: vi.fn(async () => null),
+  getDocumentationFromSupabase: vi.fn(async () => []),
+  getDocumentationByExperimentIdFromSupabase: vi.fn(async () => null),
+}));
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 const baseExperiment: Experiment = {
   id: "pomodoro-maker",
@@ -74,6 +94,8 @@ describe("getExperimentHrefSlug", () => {
 
 describe("getExperimentBySlug", () => {
   it("finds pomodoro-maker by id slug", async () => {
+    vi.stubEnv("SUPABASE_URL", "https://example.supabase.co");
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test-key");
     const exp = await getExperimentBySlug("pomodoro-maker");
     expect(exp?.id).toBe("pomodoro-maker");
   });
