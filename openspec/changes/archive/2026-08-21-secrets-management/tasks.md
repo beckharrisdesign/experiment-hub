@@ -27,12 +27,14 @@
 - [x] 1.7 Sync reports drift and corrects it
 - [x] 1.8 Sync previews before it writes
 - [x] 1.9 Orphaned secrets are surfaced, not silently kept
-- [ ] 1.10 Rotating a key with no prior context
-- [ ] 1.11 The runbook records vendor differences that caused past mistakes
+- [x] 1.10 Rotating a key with no prior context
+      - Katy followed `docs/SECRETS_RUNBOOK.md` cold on 2026-08-21 (OpenAI section) and completed the rotation successfully — her confirmation, per design of this gate.
+- [x] 1.11 The runbook records vendor differences that caused past mistakes
+      - Verified by the same cold follow: the runbook alone was sufficient to complete a vendor rotation with no remembered context.
 
 ## 2. Prototype shell
 
-- [ ] 2.1 **N/A — no prototype.** This is repo infrastructure (env file, a script, a hook, docs), not an experiment with a running surface. No `experiments/<slug>/prototype/` directory, no port assignment, no `data/prototypes.json` row.
+- [x] 2.1 **N/A — no prototype.** This is repo infrastructure (env file, a script, a hook, docs), not an experiment with a running surface. No `experiments/<slug>/prototype/` directory, no port assignment, no `data/prototypes.json` row.
 
 ## 3. Implementation
 
@@ -57,7 +59,7 @@
 
 ## 4. QA
 
-- [ ] 4.1 **Manual walkthrough** — aligned to §1: print `.env.local` and confirm only `op://` references appear (1.1, 1.2); start dev from a fresh shell in a worktree and exercise an OpenAI-backed route (1.3); disable CLI integration and confirm the failure names 1Password (1.4); have an agent attempt `cat .env.local` and confirm refusal, then confirm a key-name listing still works (1.5, 1.6); run sync in preview against a deliberately drifted variable, then apply and re-run to confirm it reports unchanged (1.7, 1.8, 1.9); follow the runbook cold for one credential (1.10, 1.11).
+- [x] 4.1 **Manual walkthrough** — aligned to §1: print `.env.local` and confirm only `op://` references appear (1.1, 1.2); start dev from a fresh shell in a worktree and exercise an OpenAI-backed route (1.3); disable CLI integration and confirm the failure names 1Password (1.4); have an agent attempt `cat .env.local` and confirm refusal, then confirm a key-name listing still works (1.5, 1.6); run sync in preview against a deliberately drifted variable, then apply and re-run to confirm it reports unchanged (1.7, 1.8, 1.9); follow the runbook cold for one credential (1.10, 1.11).
       - **Partial, 2026-08-17 (GitHub outage — local half done live):** 1.1/1.2 ✓ (8 `op://` reference lines, `no-plaintext-secrets` green); 1.5 ✓ (agent `cat .env.local` refused, refusal names the three safe routes); 1.6 ✓ (names-only listing allowed); 1.4 ✓ under real conditions — the session driving this walkthrough could not reach the desktop app (macOS app-data denial) and the preflight failed with the intended message, no stub required. **Remaining:** ~~1.3~~ ✓ done 2026-08-17 (fresh shell, preflight silent, labs UI up); ~~1.7–1.9~~ ✓ done 2026-08-17 — first real `--apply` (23/23 written across Vercel + GitHub repo/environment secrets; re-run reported 23 unchanged; a mid-apply GitHub 503 proved the abort-before-record retry design). Post-apply workflow verification: etsy-notion-sync and history-accumulate both green on vault-sourced values — after two real findings, recorded in the runbook: the vault's Notion token lacked the **Update content capability** (403 `restricted_resource` looks like a share problem but is per-integration capability), and history-accumulate had never been able to see its ids at all (no `environment:` declaration; the apply's repo-secret writes fixed it). 1.10/1.11 (cold runbook follow — Katy's by design).
       - **Live-suite epilogue, 2026-08-17:** the apply un-skipped `test:live` in CI for the first time ever, which surfaced three stacked latent issues — `SUPABASE_PUBLISHABLE_KEY` missing from ci.yml/manifest entirely; the vault's publishable key belonging to the *wrong Supabase project* (Simple Seed Organizer's, ending `Y7W` — formats are identical across projects, verified via the management API); and the SSO live test hard-wired to the hub's `SUPABASE_URL` when `user_profiles` lives in project `orlpgxqbesxvlhlkbnqy`. Fixed by making multi-project Supabase first-class: items `Supabase experiment-hub` + `Supabase simple-seed-organizer`, `SSO_*` manifest rows and CI env, runbook "which project is which" table. GitHub-write retry with backoff added after three 503 flares each killed an apply mid-run. End state: **the full live suite is green** — landing tests against the hub project, SSO round-trip against its own.
 - [x] 4.2 **Automated smoke** — a vitest check asserting no line in `.env.local` matches a known secret prefix (`sk-`, `sk_live_`, `sk_test_`, `GOCSPX-`, `figd_`), plus a shell test exercising the pre-tool-use guard in both directions. Both must fail before §3 and pass after.
@@ -66,4 +68,5 @@
       - Assertion messages name **variables only, never values** — a failing run prints into a public CI log, and a leak guard that leaks would be worse than none.
       - Skips in CI (`describe.skipIf`), because `.env.local` is untracked and no workflow creates one. Verified — so these failures are local-only and do not redden the PR.
 - [x] 4.3 **Post-cutover verification** — run the existing `experiments/simple-seed-organizer/prototype/app/tests/openai-connection.test.ts` against the resolved key, confirming the reference path works end to end and not just at start-up.
-- [ ] 4.4 Only after §4.1–4.3 pass: revoke the superseded OpenAI key `…RQcA` and complete the outstanding GitHub Actions + Vercel updates from the 2026-08-16 rotation, which this system now makes a one-command operation.
+- [x] 4.4 Only after §4.1–4.3 pass: revoke the superseded OpenAI key `…RQcA` and complete the outstanding GitHub Actions + Vercel updates from the 2026-08-16 rotation, which this system now makes a one-command operation.
+      - Done 2026-08-21 as part of Katy's cold runbook follow (§1.10): superseded key revoked; GitHub + Vercel already carried vault-sourced values from the 2026-08-17 `--apply` and the 2026-08-18 prod deploy.
