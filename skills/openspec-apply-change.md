@@ -127,7 +127,7 @@ Implement tasks from an OpenSpec change.
 
    c. **Push** — `git push -u origin HEAD` (or push to the existing feature branch).
 
-   d. **PR** — Open **ready for review, not draft**, so the automated Copilot review starts immediately (per [github-workflow.mdc](../rules/github-workflow.mdc)). If no open PR for this branch: `gh pr create` (no `--draft`) with summary, why, and test plan (brief but substantive, same bar as the commit). If a PR already exists as a draft, `gh pr ready` it; if it exists and is already ready, push only and CI re-runs. Then run the **Copilot review loop** (github-workflow.mdc): wait for Copilot's review, address every actionable comment on the same branch, and reply to each — never leave one unanswered.
+   d. **PR** — Open **ready for review, not draft**, so the automated Copilot review starts immediately (per [github-workflow.mdc](../rules/github-workflow.mdc)). If no open PR for this branch: `gh pr create` (no `--draft`) with the two required sections — a `## Summary` list of **all** the code changes, and a `## Founder intent` section in Katy's framing, quoting the change's Human anchor verbatim (per [github-workflow.mdc](../rules/github-workflow.mdc)). Add a `## Test plan` section when there is something real to say about verification. If a PR already exists as a draft, `gh pr ready` it; if it exists and is already ready, push only and CI re-runs. Then run the **Copilot review loop** (github-workflow.mdc): wait for Copilot's review, address every actionable comment on the same branch, and reply to each — never leave one unanswered.
 
    e. **Report** — In the completion or pause summary, include commit subject, PR URL, and that checks are running.
 
