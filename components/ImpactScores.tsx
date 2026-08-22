@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ImpactRationale, ImpactScores } from "@/types";
 import type { HistoryEntry } from "@/lib/notion-history";
+import HistoryEntryRow from "@/components/HistoryEntryRow";
 import { calculateImpactTotal } from "@/lib/scoring";
 import {
   IMPACT_ANCHORS,
@@ -58,30 +59,7 @@ function HistoryList({ entries }: { entries: HistoryEntry[] }) {
   return (
     <ol className="flex flex-col gap-4">
       {entries.map((entry, index) => (
-        <li
-          key={`${entry.date}-${index}`}
-          className="flex flex-col sm:flex-row sm:gap-4"
-        >
-          <span className="w-[88px] shrink-0 font-mono text-[13px] tabular-nums text-text-dark-secondary sm:text-right">
-            {entry.when}
-          </span>
-          <span className="text-sm leading-[1.7] text-text-dark">
-            {entry.milestone}
-            {entry.receiptUrl && (
-              <>
-                {" "}
-                <a
-                  href={entry.receiptUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="whitespace-nowrap font-mono text-[12px] text-text-dark-secondary underline decoration-border-dark underline-offset-2 transition-colors hover:text-text-dark"
-                >
-                  receipt ↗
-                </a>
-              </>
-            )}
-          </span>
-        </li>
+        <HistoryEntryRow key={`${entry.date}-${index}`} entry={entry} />
       ))}
     </ol>
   );

@@ -67,10 +67,17 @@ describe("ImpactScoresDisplay", () => {
         scores={scores}
         history={[
           {
+            id: "hist-1",
             date: "2026-07-01",
             when: "Jul 2026",
             milestone: "Became the flagship.",
             receiptUrl: null,
+            sources: [
+              [
+                { text: "Katy:", bold: true, code: false, href: null },
+                { text: " \"the flagship story.\"", bold: false, code: false, href: null },
+              ],
+            ],
           },
         ]}
       />,
