@@ -48,25 +48,29 @@ test.
 
 - **gh:** copy audit, inline-SVG image fixes, landing-submission API tests,
   welcome-email reference removed — a steady polish pass over the following
-  three weeks.
+  three weeks. Real visitors did come (chapter 3), whatever brought them.
 - **Links:** [commit](https://github.com/beckharrisdesign/experiment-hub/commit/3583cc3) · [PR](https://github.com/beckharrisdesign/experiment-hub/pull/44) · [copy audit](https://github.com/beckharrisdesign/experiment-hub/commit/b4e22bb)
 
 ### 3 · The campaign and the signal
 
-**Milestone:** Ran a Facebook campaign that netted roughly 25 email signups
-from the landing page alone — real interest, bought at the cost of exhausting
-platform hoop-jumping.
+**Milestone:** Ran the phase-1 landing for a week: roughly 25 email signups —
+real interest, plainly counted.
 
-- **Katy:** "I did actually run an ad campaign, I just can't find evidence of
-  it anymore. It actually netted me something like 25 email signups just with
-  the landing page alone."
-- **Katy:** "It was a Facebook campaign, and the effort of making all the
-  right pages, jumping through the admin hoops, creating the various elements,
-  etc was exhausting. Facebook's interfaces were just so frustrating to
-  maneuver, and that added extra emotional friction for me as a designer."
+- **Katy** (2026-07-22 record): "Ran the phase-1 landing for a week" — the
+  account closest to the events; it put the figure at ~35.
+- **Katy** (2026-08-22): "It actually netted me something like 25 email
+  signups just with the landing page alone." Ruling, same day: "its 25
+  signups."
+- **Katy** (2026-08-22, unresolved): "I did actually run an ad campaign, I
+  just can't find evidence of it anymore. … It was a Facebook campaign, and
+  the effort of making all the right pages, jumping through the admin hoops,
+  creating the various elements, etc was exhausting." The July record says the
+  campaign was drafted but not run. Asked to pick: "I don't know." The
+  milestone therefore claims neither — both accounts agree the signups came
+  through the landing page.
 - **supabase:** one Best Day Ever submission in the live project — likely a
-  test row from the API work. The ~25 signups are not in this database; no
-  campaign records survive in the repo.
+  test row from the API work. The signups are not in this database; no
+  campaign or analytics records survive in the repo.
 - **Links:** none surviving — "roughly" because the figure is from the
   author's account, not a record.
 
@@ -126,24 +130,34 @@ practice shifts to smaller, more rapid tests.
 - **notion:** `Status` = Validating; no `Outcome` kill reason.
 - **Links:** none — the pause lives in no commit.
 
-## Staging notes
+## Reconciliation plan (drafted 2026-08-22; supersedes the fresh-staging plan)
 
-**Time grain decision (Katy, 2026-08-22): date ranges, not months.** Notion's
-`Date` property takes an optional end date; the hub gutter renders the natural
-grain — a single day as "Mar 9", a span as "Mar 10–30", a cross-month span as
-"Apr–Jun". Ordering sorts on the range's start. Requires a formatter change in
-the hub (task 3.11) before these render; dates stay out of the chapters above
-and live here:
+Discovery: Best Day Ever already has **14 approved entries** live in the
+History database, authored ~2026-07-22 — six shaped entries, two raw generator
+drafts approved as-is, and seven per-PR entries (including one mislabeled
+"experiment-hub · PR #33" related to Best Day Ever). Formatter for ranges
+shipped in PR #399. Facts ruled by Katy 2026-08-22: signups = 25; the pause is
+dated July; the campaign question is unresolved and the narrative claims
+neither account.
 
-| Entry | Working range | Basis |
-| --- | --- | --- |
-| 0 Prologue | Jul 13, 2024 | repo creation dates (both the same day) |
-| 1 Launch | Mar 9, 2026 | commits — a single day, now visible as one |
-| 2 Traffic-ready | Mar 10–30, 2026 | commits |
-| 3 Campaign | Apr 2026 (month-wide) | exact span unknown; bracketed by trail: page ready → reframe |
-| 4 Reframe | Apr 20–26, 2026 | commits |
-| 5 Practicing | May–Jun 2026 | author's account: friction ran Apr–Jun; starts after the reframe in the log |
-| 6 Pause | Jul 2026 | when the pause was named; keeps the quiet stretch visible in the gutter |
+Proposed writes, pending one approval (nothing executed yet):
+
+| # | Action | Live row | Change |
+| --- | --- | --- | --- |
+| 1 | Insert | — | Chapter 0 Prologue, date 2024-07-13 (single day) |
+| 2 | Edit | "Launched in one day…" (Mar 9) | Replace text with chapter 1 (adds the AI-tooling why); end date = start |
+| 3 | Edit | "Hardened for real traffic…" (Mar 23) | Replace text with chapter 2; range Mar 23–30 |
+| 4 | Edit | "Ran the phase-1 landing… ~35" (Mar 16) | Number → "roughly 25"; range Mar 16–23 ("a week"); Source notes the ~35→25 correction |
+| 5 | Edit | "Reframed the validation approach…" (Apr 20) | Replace text with chapter 4 merged with the July reason ("lukewarm results on another test" + overengineered tests); range Apr 20–26 |
+| 6 | Insert | — | Chapter 5 Practicing, range May–Jun 2026 |
+| 7 | Edit | "Stalled in validating…" (Apr 26) | Replace with chapter 6 pause (no "stalled", no campaign claim); date → Jul 2026 |
+| 8 | Unapprove | "Pushed 7 commits and 1 PR (#44)." (Mar 1) | Raw generator draft, redundant with shaped chapters |
+| 9 | Unapprove | "Pushed 3 commits and 1 PR (#103)." (Apr 1) | Same |
+| 10 | Unapprove | 7 per-PR rows (#30–33, #44, #45, #103) | Granular duplicates of chapters 2–4; rows kept, just not rendered — reversible by rechecking Approved |
+
+Nothing is deleted; unapproved rows stay in the database. Approving the plan
+executes rows 1–10; every edit's Source property records "revised 2026-08-22,
+session reconciliation".
 
 ## Consistency check (task 1.7 / 4.4)
 
