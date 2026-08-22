@@ -3,14 +3,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 // Mock the Notion client and the experiments adapter so the fetch/cache/env
 // behavior can be exercised without a network. vi.hoisted keeps the handles
 // available inside the hoisted vi.mock factories.
-const { queryMock, pageIdMock } = vi.hoisted(() => ({
+const { queryMock, pageIdMock, blocksMock } = vi.hoisted(() => ({
   queryMock: vi.fn(),
   pageIdMock: vi.fn(),
+  blocksMock: vi.fn(async () => ({ results: [], has_more: false })),
 }));
 
 vi.mock("@/lib/notion", () => ({
   getUncachableNotionClient: vi.fn(async () => ({
     dataSources: { query: queryMock },
+    blocks: { children: { list: blocksMock } },
   })),
 }));
 
@@ -21,6 +23,7 @@ vi.mock("@/lib/notion-experiments", () => ({
 import {
   formatMonthYear,
   formatDateSpan,
+  mapBodyBlocks,
   mapHistoryPage,
   selectApprovedEntries,
   getHistoryForExperiment,
@@ -136,6 +139,56 @@ describe("formatDateSpan", () => {
 });
 
 // ---------------------------------------------------------------------------
+// mapBodyBlocks — page-body paragraphs become attributed source lines
+// ---------------------------------------------------------------------------
+
+describe("mapBodyBlocks", () => {
+  const rich = (text: string, opts: { bold?: boolean; code?: boolean; href?: string } = {}) => ({
+    plain_text: text,
+    annotations: { bold: opts.bold ?? false, code: opts.code ?? false },
+    href: opts.href ?? null,
+  });
+
+  it("maps paragraph rich text with bold, code, and link annotations", () => {
+    const lines = mapBodyBlocks([
+      {
+        type: "paragraph",
+        paragraph: {
+          rich_text: [
+            rich("gh:", { bold: true }),
+            rich(" a small server with "),
+            rich("pdfGenerator.js", { code: true }),
+            rich("commit", { href: "https://github.com/x" }),
+          ],
+        },
+      },
+    ]);
+    expect(lines).toEqual([
+      [
+        { text: "gh:", bold: true, code: false, href: null },
+        { text: " a small server with ", bold: false, code: false, href: null },
+        { text: "pdfGenerator.js", bold: false, code: true, href: null },
+        { text: "commit", bold: false, code: false, href: "https://github.com/x" },
+      ],
+    ]);
+  });
+
+  it("drops non-paragraph blocks and empty paragraphs", () => {
+    const lines = mapBodyBlocks([
+      { type: "heading_2", heading_2: { rich_text: [rich("Skip me")] } },
+      { type: "paragraph", paragraph: { rich_text: [] } },
+      { type: "paragraph", paragraph: { rich_text: [rich("Keep me")] } },
+    ]);
+    expect(lines).toHaveLength(1);
+    expect(lines[0][0].text).toBe("Keep me");
+  });
+
+  it("returns [] for an empty body", () => {
+    expect(mapBodyBlocks([])).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // mapHistoryPage
 // ---------------------------------------------------------------------------
 
@@ -151,6 +204,7 @@ describe("mapHistoryPage", () => {
       }),
     );
     expect(mapped).toEqual({
+      id: expect.any(String),
       milestone: "Launched the landing page",
       date: "2026-03-09",
       endDate: null,
@@ -163,6 +217,7 @@ describe("mapHistoryPage", () => {
   it("treats a missing/empty date and empty relation as blank, not a crash", () => {
     const mapped = mapHistoryPage({ id: "x", properties: {} });
     expect(mapped).toEqual({
+      id: "x",
       milestone: "",
       date: "",
       endDate: null,

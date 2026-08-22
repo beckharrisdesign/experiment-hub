@@ -6,6 +6,7 @@ import ExperimentTypeBadge from "@/components/ExperimentTypeBadge";
 import StatusBadge from "@/components/StatusBadge";
 import { getExperimentBySlug } from "@/lib/data";
 import ImpactScoresDisplay from "@/components/ImpactScores";
+import HistoryEntryRow from "@/components/HistoryEntryRow";
 import {
   getExperimentFieldsFromNotion,
   getImpactRationaleFromNotion,
@@ -59,34 +60,11 @@ function History({ entries }: HistoryProps) {
       </div>
       <ol className="mt-4 flex flex-col gap-4">
         {entries.map((entry, index) => (
-          <li
-            // date+milestone isn't guaranteed unique (a repeated milestone in
-            // one month is plausible); index disambiguates. The list is a
-            // static, deterministically-sorted server render, so index keys
-            // carry no reconciliation risk.
-            key={`${entry.date}-${index}`}
-            className="flex flex-col sm:flex-row sm:gap-4"
-          >
-            <span className="w-[88px] shrink-0 font-mono text-[13px] tabular-nums text-text-dark-secondary sm:text-right">
-              {entry.when}
-            </span>
-            <span className="text-sm leading-[1.7] text-text-dark">
-              {entry.milestone}
-              {entry.receiptUrl && (
-                <>
-                  {" "}
-                  <a
-                    href={entry.receiptUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="whitespace-nowrap font-mono text-[12px] text-text-dark-secondary underline decoration-border-dark underline-offset-2 transition-colors hover:text-text-dark"
-                  >
-                    receipt ↗
-                  </a>
-                </>
-              )}
-            </span>
-          </li>
+          // date+milestone isn't guaranteed unique (a repeated milestone in
+          // one month is plausible); index disambiguates. The list is a
+          // static, deterministically-sorted server render, so index keys
+          // carry no reconciliation risk.
+          <HistoryEntryRow key={`${entry.date}-${index}`} entry={entry} />
         ))}
       </ol>
     </section>

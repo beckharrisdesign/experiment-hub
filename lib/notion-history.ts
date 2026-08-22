@@ -36,8 +36,21 @@ type NotionPage = {
   properties?: Record<string, NotionProperty>;
 };
 
+/** One styled fragment of a source line. */
+export interface SourceSpan {
+  text: string;
+  bold: boolean;
+  code: boolean;
+  href: string | null;
+}
+
+/** One line of an entry's source log (a paragraph from the Notion page body). */
+export type SourceLine = SourceSpan[];
+
 /** One approved milestone, ready to render. */
 export interface HistoryEntry {
+  /** Notion page id of the entry — the key for fetching its body. */
+  id: string;
   /** Raw ISO date from Notion (`Date.start`), retained for stable sorting. */
   date: string;
   /** Display date at its natural grain, e.g. "Mar 9, 2026", "Mar 10–30, 2026", "Apr–Jun 2026", "Apr 2026". */
@@ -46,6 +59,12 @@ export interface HistoryEntry {
   milestone: string;
   /** Optional provenance link (usually a GitHub commit/PR); null when unset. */
   receiptUrl: string | null;
+  /**
+   * The entry's source log — the page body paragraphs (gh/supabase/notion/Katy
+   * voices with their links), rendered under the milestone. Empty when the
+   * entry has no body or the body fetch failed.
+   */
+  sources: SourceLine[];
 }
 
 export function hasNotionHistory(): boolean {
@@ -133,12 +152,34 @@ export function formatDateSpan(
 }
 
 interface RawHistoryRow {
+  id: string;
   date: string;
   endDate: string | null;
   milestone: string;
   approved: boolean;
   experimentIds: string[];
   receiptUrl: string | null;
+}
+
+/**
+ * Maps Notion block-children results to source lines: paragraph blocks only,
+ * each rich-text fragment carrying its bold/code annotation and link; empty
+ * paragraphs dropped. Pure — exported for tests.
+ */
+export function mapBodyBlocks(blocks: any[]): SourceLine[] {
+  return blocks
+    .filter((b) => b?.type === "paragraph")
+    .map((b): SourceLine =>
+      (b.paragraph?.rich_text ?? [])
+        .map((rt: any): SourceSpan => ({
+          text: rt?.plain_text ?? "",
+          bold: rt?.annotations?.bold === true,
+          code: rt?.annotations?.code === true,
+          href: typeof rt?.href === "string" && rt.href !== "" ? rt.href : null,
+        }))
+        .filter((span: SourceSpan) => span.text !== ""),
+    )
+    .filter((line) => line.length > 0);
 }
 
 /** Flattens a Notion history page to the fields this adapter needs. */
@@ -158,6 +199,7 @@ export function mapHistoryPage(page: NotionPage): RawHistoryRow {
   const receiptUrl = props["Receipt URL"]?.url;
   const endDate = props["Date"]?.date?.end;
   return {
+    id: page.id,
     date: props["Date"]?.date?.start ?? "",
     endDate: typeof endDate === "string" && endDate !== "" ? endDate : null,
     milestone,
@@ -187,10 +229,12 @@ export function selectApprovedEntries(
       const when = formatDateSpan(row.date, row.endDate);
       return when
         ? {
+            id: row.id,
             date: row.date,
             when,
             milestone: row.milestone,
             receiptUrl: row.receiptUrl,
+            sources: [] as SourceLine[],
           }
         : null;
     })
@@ -205,10 +249,42 @@ export function selectApprovedEntries(
 const CACHE_TTL_MS = 60_000;
 
 let cache: { rows: RawHistoryRow[]; fetchedAt: number } | null = null;
+let bodyCache = new Map<string, { lines: SourceLine[]; fetchedAt: number }>();
 
 /** Exported for tests. */
 export function clearNotionHistoryCache() {
   cache = null;
+  bodyCache = new Map();
+}
+
+/**
+ * The source log from one entry's page body, cached on the same TTL as rows.
+ * A failed fetch yields [] — a missing source log must never take down the
+ * page's History band.
+ */
+async function getEntrySources(pageId: string): Promise<SourceLine[]> {
+  const cached = bodyCache.get(pageId);
+  if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
+    return cached.lines;
+  }
+  try {
+    const notion = await getUncachableNotionClient();
+    const blocks: any[] = [];
+    let cursor: string | undefined;
+    do {
+      const response: any = await notion.blocks.children.list({
+        block_id: pageId,
+        ...(cursor ? { start_cursor: cursor } : {}),
+      });
+      blocks.push(...(response.results ?? []));
+      cursor = response.has_more ? response.next_cursor : undefined;
+    } while (cursor);
+    const lines = mapBodyBlocks(blocks);
+    bodyCache.set(pageId, { lines, fetchedAt: Date.now() });
+    return lines;
+  } catch {
+    return [];
+  }
 }
 
 async function fetchAllHistoryRows(): Promise<RawHistoryRow[]> {
@@ -256,5 +332,11 @@ export async function getHistoryForExperiment(
   const experimentPageId = await getExperimentPageIdFromNotion(slug);
   if (!experimentPageId) return [];
   const rows = await getHistoryRows();
-  return selectApprovedEntries(rows, experimentPageId);
+  const entries = selectApprovedEntries(rows, experimentPageId);
+  return Promise.all(
+    entries.map(async (entry) => ({
+      ...entry,
+      sources: await getEntrySources(entry.id),
+    })),
+  );
 }
