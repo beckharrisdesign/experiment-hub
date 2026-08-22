@@ -40,9 +40,11 @@ function Statement({ label, value }: ExperimentField) {
 
 /**
  * The History band: a vertical scan line of dated milestones below the
- * narrative statements. Month dates sit in a fixed 88px mono/tabular gutter
- * (stacked above the sentence on small screens); sentences run on the 720px
- * measure, oldest first. Renders nothing when there are no approved entries.
+ * narrative statements. Dates render at their natural grain (a day, a span,
+ * a month — see formatDateSpan) in a fixed 88px mono/tabular gutter, wrapping
+ * to a second line when a span runs long (stacked above the sentence on small
+ * screens); sentences run on the 720px measure, oldest first. Renders nothing
+ * when there are no approved entries.
  */
 interface HistoryProps {
   entries: HistoryEntry[];
@@ -66,7 +68,7 @@ function History({ entries }: HistoryProps) {
             className="flex flex-col sm:flex-row sm:gap-4"
           >
             <span className="w-[88px] shrink-0 font-mono text-[13px] tabular-nums text-text-dark-secondary sm:text-right">
-              {entry.month}
+              {entry.when}
             </span>
             <span className="text-sm leading-[1.7] text-text-dark">
               {entry.milestone}
