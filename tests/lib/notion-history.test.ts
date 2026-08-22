@@ -20,6 +20,7 @@ vi.mock("@/lib/notion-experiments", () => ({
 
 import {
   formatMonthYear,
+  formatDateSpan,
   mapHistoryPage,
   selectApprovedEntries,
   getHistoryForExperiment,
@@ -36,6 +37,7 @@ const OTHER_ID = "exp-page-2";
 function row(overrides: {
   milestone?: string;
   date?: string;
+  endDate?: string;
   approved?: boolean;
   experimentIds?: string[];
   receiptUrl?: string | null;
@@ -53,9 +55,9 @@ function row(overrides: {
       Date: {
         date:
           overrides.date === undefined
-            ? { start: "2026-01-01" }
+            ? { start: "2026-01-01", end: overrides.endDate ?? null }
             : overrides.date
-              ? { start: overrides.date }
+              ? { start: overrides.date, end: overrides.endDate ?? null }
               : null,
       },
       Approved: { checkbox: overrides.approved ?? true },
@@ -94,6 +96,46 @@ describe("formatMonthYear", () => {
 });
 
 // ---------------------------------------------------------------------------
+// formatDateSpan — ranges render at their natural grain (decided 2026-08-22)
+// ---------------------------------------------------------------------------
+
+describe("formatDateSpan", () => {
+  it("renders month-wide with no end date — generator entries unchanged", () => {
+    expect(formatDateSpan("2026-04-01", null)).toBe("Apr 2026");
+    expect(formatDateSpan("2026-04-01", undefined)).toBe("Apr 2026");
+  });
+
+  it("renders a single day when end equals start", () => {
+    expect(formatDateSpan("2026-03-09", "2026-03-09")).toBe("Mar 9, 2026");
+  });
+
+  it("renders a within-month span with both days", () => {
+    expect(formatDateSpan("2026-03-10", "2026-03-30")).toBe("Mar 10–30, 2026");
+  });
+
+  it("renders a cross-month span within one year as months", () => {
+    expect(formatDateSpan("2026-05-01", "2026-06-30")).toBe("May–Jun 2026");
+  });
+
+  it("renders a cross-year span with both years", () => {
+    expect(formatDateSpan("2024-07-13", "2026-03-09")).toBe(
+      "Jul 2024–Mar 2026",
+    );
+  });
+
+  it("degrades an unparseable or out-of-order end to the start's month", () => {
+    expect(formatDateSpan("2026-03-10", "nonsense")).toBe("Mar 2026");
+    expect(formatDateSpan("2026-03-10", "2026-03-01")).toBe("Mar 2026");
+  });
+
+  it("returns null for a missing or unparseable start", () => {
+    expect(formatDateSpan("", "2026-03-09")).toBeNull();
+    expect(formatDateSpan(null, null)).toBeNull();
+    expect(formatDateSpan("not-a-date", "2026-03-09")).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // mapHistoryPage
 // ---------------------------------------------------------------------------
 
@@ -111,6 +153,7 @@ describe("mapHistoryPage", () => {
     expect(mapped).toEqual({
       milestone: "Launched the landing page",
       date: "2026-03-09",
+      endDate: null,
       approved: true,
       experimentIds: [EXPERIMENT_ID],
       receiptUrl: "https://github.com/x/y/commit/abc123",
@@ -122,6 +165,7 @@ describe("mapHistoryPage", () => {
     expect(mapped).toEqual({
       milestone: "",
       date: "",
+      endDate: null,
       approved: false,
       experimentIds: [],
       receiptUrl: null,
@@ -164,7 +208,7 @@ describe("selectApprovedEntries", () => {
     ];
     const entries = selectApprovedEntries(rows, EXPERIMENT_ID);
     expect(entries.map((e) => e.milestone)).toEqual(["March", "April", "July"]);
-    expect(entries.map((e) => e.month)).toEqual([
+    expect(entries.map((e) => e.when)).toEqual([
       "Mar 2026",
       "Apr 2026",
       "Jul 2026",

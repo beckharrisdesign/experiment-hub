@@ -16,7 +16,10 @@
  * or child blocks — only a per-row `Approved` checkbox satisfies the spec's
  * per-entry approval gate cleanly. Property types (REST API names):
  *   Milestone   title      — the one-sentence entry
- *   Date        date       — month-level; the day is ignored on render
+ *   Date        date       — start orders the log; an optional end date turns
+ *                            the display into a span (see formatDateSpan).
+ *                            No end date renders month-level, which keeps
+ *                            generator-written monthly entries unchanged.
  *   Experiment  relation   — page-id array pointing at BHD Labs Projects rows
  *   Approved    checkbox    — unchecked rows never render publicly
  *   Receipt URL url        — optional; rendered as a small receipt link
@@ -37,8 +40,8 @@ type NotionPage = {
 export interface HistoryEntry {
   /** Raw ISO date from Notion (`Date.start`), retained for stable sorting. */
   date: string;
-  /** Month-level display date, e.g. "Mar 2026". */
-  month: string;
+  /** Display date at its natural grain, e.g. "Mar 9, 2026", "Mar 10–30, 2026", "Apr–Jun 2026", "Apr 2026". */
+  when: string;
   /** The one-sentence milestone. */
   milestone: string;
   /** Optional provenance link (usually a GitHub commit/PR); null when unset. */
@@ -83,8 +86,55 @@ export function formatMonthYear(iso: string | undefined | null): string | null {
   return `${MONTHS[monthIndex]} ${year}`;
 }
 
+/** Parsed calendar parts of an ISO date, or null when unparseable. */
+function parseIsoParts(
+  iso: string | undefined | null,
+): { year: number; monthIndex: number; day: number } | null {
+  if (!iso) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (!match) return null;
+  const monthIndex = Number(match[2]) - 1;
+  const day = Number(match[3]);
+  if (monthIndex < 0 || monthIndex > 11 || day < 1 || day > 31) return null;
+  return { year: Number(match[1]), monthIndex, day };
+}
+
+/**
+ * Formats a date (or date range) at its natural grain. Decided 2026-08-22:
+ * month-only display was the accumulation generator's convenience leaking
+ * into hand-authored narratives — a one-day launch should read as one day.
+ *
+ *   start only              → "Mar 2026"        (month-wide; generator entries)
+ *   end === start           → "Mar 9, 2026"     (a single day, shown as one)
+ *   same month              → "Mar 10–30, 2026"
+ *   same year               → "Apr–Jun 2026"
+ *   across years            → "Jul 2024–Mar 2026"
+ *
+ * Returns null for an unparseable start so callers skip the entry. An
+ * unparseable or out-of-order end degrades to the start's month rather than
+ * dropping an otherwise-valid entry.
+ */
+export function formatDateSpan(
+  start: string | undefined | null,
+  end: string | undefined | null,
+): string | null {
+  const s = parseIsoParts(start);
+  if (!s) return formatMonthYear(start);
+  const e = parseIsoParts(end);
+  if (!e || end! < start!) return formatMonthYear(start);
+  if (s.year === e.year && s.monthIndex === e.monthIndex) {
+    if (s.day === e.day) return `${MONTHS[s.monthIndex]} ${s.day}, ${s.year}`;
+    return `${MONTHS[s.monthIndex]} ${s.day}–${e.day}, ${s.year}`;
+  }
+  if (s.year === e.year) {
+    return `${MONTHS[s.monthIndex]}–${MONTHS[e.monthIndex]} ${s.year}`;
+  }
+  return `${MONTHS[s.monthIndex]} ${s.year}–${MONTHS[e.monthIndex]} ${e.year}`;
+}
+
 interface RawHistoryRow {
   date: string;
+  endDate: string | null;
   milestone: string;
   approved: boolean;
   experimentIds: string[];
@@ -106,8 +156,10 @@ export function mapHistoryPage(page: NotionPage): RawHistoryRow {
     ? relation.map((r: { id?: string }) => r.id ?? "").filter(Boolean)
     : [];
   const receiptUrl = props["Receipt URL"]?.url;
+  const endDate = props["Date"]?.date?.end;
   return {
     date: props["Date"]?.date?.start ?? "",
+    endDate: typeof endDate === "string" && endDate !== "" ? endDate : null,
     milestone,
     approved: props["Approved"]?.checkbox === true,
     experimentIds,
@@ -132,11 +184,11 @@ export function selectApprovedEntries(
         row.experimentIds.includes(experimentPageId),
     )
     .map((row) => {
-      const month = formatMonthYear(row.date);
-      return month
+      const when = formatDateSpan(row.date, row.endDate);
+      return when
         ? {
             date: row.date,
-            month,
+            when,
             milestone: row.milestone,
             receiptUrl: row.receiptUrl,
           }

@@ -68,7 +68,7 @@ describe("ImpactScoresDisplay", () => {
         history={[
           {
             date: "2026-07-01",
-            month: "Jul 2026",
+            when: "Jul 2026",
             milestone: "Became the flagship.",
             receiptUrl: null,
           },

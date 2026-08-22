@@ -63,7 +63,7 @@ function HistoryList({ entries }: { entries: HistoryEntry[] }) {
           className="flex flex-col sm:flex-row sm:gap-4"
         >
           <span className="w-[88px] shrink-0 font-mono text-[13px] tabular-nums text-text-dark-secondary sm:text-right">
-            {entry.month}
+            {entry.when}
           </span>
           <span className="text-sm leading-[1.7] text-text-dark">
             {entry.milestone}
