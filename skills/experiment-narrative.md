@@ -84,6 +84,14 @@ by entry, in Notion. Database: "BHD Labs History", data source
 `b68916bb-235e-411b-827d-7dfc0c0f0a07`, related to the experiment row by page
 id.
 
+**A chapter is the whole block, not just the sentence.** The hub renders only
+the milestone + receipt link, so when staging, write the chapter's full source
+log (the gh/supabase/notion/Katy voices, all links) into the entry's Notion
+PAGE BODY — the milestone is the title; the body is the record behind it.
+Tell Katy explicitly which parts render publicly and which live only in the
+entry body; do not let the draft's rich form imply the hub shows all of it
+(learned 2026-08-22).
+
 ## Augmenting an existing narrative
 
 Read the live rows first (approved and drafts). New chapters slot by start

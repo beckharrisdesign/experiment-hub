@@ -159,6 +159,13 @@ Nothing is deleted; unapproved rows stay in the database. Approving the plan
 executes rows 1–10; every edit's Source property records "revised 2026-08-22,
 session reconciliation".
 
+**Executed 2026-08-22; verified live.** Follow-up the same day (Katy's call
+after seeing the render): each chapter's full source log — the gh/supabase/
+notion/Katy voices and all links — was written into its Notion entry's page
+body, so the entry carries the whole chapter even though the hub renders only
+the milestone sentence and receipt link. Rendering sources on the hub itself
+is a possible future design pass, gated on Figma.
+
 ## Consistency check (task 1.7 / 4.4)
 
 - Best Day Ever is not dead (notion: Validating, no kill reason); the
