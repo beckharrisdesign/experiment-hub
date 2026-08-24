@@ -295,5 +295,27 @@
     "lastModified": "2026-08-05",
     "tags": ["pdf", "metadata", "taxonomy", "notion", "document-management", "ai-vision", "local-only"],
     "public": false
+  },
+  {
+    "id": "exec-function-assessment",
+    "name": "Executive Function Assessment Suite",
+    "statement": "Standard executive-function protocols, digitized faithfully, so a baseline exists before anything gets reinvented.",
+    "type": "personal",
+    "directory": "experiments/exec-function-assessment",
+    "documentationId": "",
+    "prototypeId": "",
+    "status": "Active",
+    "createdDate": "2026-08-24",
+    "lastModified": "2026-08-24",
+    "tags": [
+      "executive-function",
+      "working-memory",
+      "corsi",
+      "n-back",
+      "measurement",
+      "adhd",
+      "local-first"
+    ],
+    "public": false
   }
 ]

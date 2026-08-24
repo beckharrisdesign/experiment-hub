@@ -112,6 +112,60 @@
   --success-foreground: #0b2f1c;
 }
 
+/* ---------------------------------------------------------------------------
+ * Executive Function Assessment Suite — MVDS defaults, not the hub skin.
+ *
+ * The block above repaints MVDS's semantic tokens in the hub's greens. That is
+ * right for the hub, but the assessment suite is a separate instrument and is
+ * meant to look like plain MVDS. Custom properties inherit, so re-declaring
+ * them on the route's wrapper restores the design system's own dark palette
+ * for that subtree and nothing else.
+ *
+ * Values are MVDS 0.3.0's `.dark` block verbatim. --color-border is relinked to
+ * var(--border) because the hub's @theme pins it to a literal green, which
+ * would otherwise survive into this scope.
+ * ------------------------------------------------------------------------ */
+.efa-theme {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.205 0 0);
+  --success: oklch(0.72 0.16 155);
+  --success-foreground: oklch(0.205 0 0);
+  --neutral: oklch(0.7 0 0);
+  --neutral-foreground: oklch(0.205 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+
+  --color-border: var(--border);
+
+  /* The hub sets a serif heading face globally; MVDS headings are the UI sans. */
+  --efa-heading-font: inherit;
+}
+
+/* MVDS sets `--font-heading: var(--font-sans)` — its headings are the UI sans.
+ * The hub repoints both the element selectors and the .font-heading utility at
+ * Fraunces, and MVDS's CardTitle renders a div carrying that utility, so both
+ * have to be undone here or card titles stay serif while page titles do not. */
+.efa-theme :is(h1, h2, h3, h4, h5, h6),
+.efa-theme .font-heading {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: normal;
+}
+
 @layer base {
   body {
     @apply bg-background-primary text-text-primary font-sans;

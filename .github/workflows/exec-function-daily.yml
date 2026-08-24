@@ -1,0 +1,73 @@
+# Daily nudge for the executive-function assessment suite.
+#
+# The cron below is UTC — GitHub Actions has no timezone option. Set it to the
+# UTC equivalent of the local time you want the email to land, and set
+# EFA_TIMEZONE in the vault to the matching IANA zone so the schedule and the
+# day-key agree about which calendar day it is.
+#
+# Auth needs no credential of its own: the job derives the API key from
+# SUPABASE_SERVICE_ROLE_KEY the same way lib/exec-function/access.ts does. That
+# secret is already synced here from 1Password by scripts/sync-secrets.sh.
+#
+# 14:00 UTC = 9am US Central during daylight time (CDT, UTC-5). GitHub cron has
+# no DST awareness, so from early November to mid-March this lands at 8am
+# Central instead. EFA_TIMEZONE stays America/Chicago either way — it decides
+# which calendar day a session counts toward, not when the mail goes out.
+name: exec-function-daily
+
+on:
+  schedule:
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: exec-function-daily
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    environment: "Production – experiment-hub"
+    timeout-minutes: 5
+    steps:
+      - name: Send today's assessment link
+        env:
+          # Optional: falls back to the production domain Vercel reports.
+          SITE_URL: ${{ secrets.EFA_SITE_URL }}
+          # The route accepts a key DERIVED from the service-role key, never the
+          # key itself (lib/exec-function/access.ts). This job already has that
+          # secret, synced from 1Password like every other one, so the daily
+          # email needs nothing new provisioned. Keep the label below in step
+          # with DERIVATION_LABEL.
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
+            echo "::error::SUPABASE_SERVICE_ROLE_KEY is not available to this job"
+            exit 1
+          fi
+
+          ACCESS_KEY=$(printf '%s' 'exec-function-assessment/access/v1' \
+            | openssl dgst -sha256 -hmac "$SUPABASE_SERVICE_ROLE_KEY" -r \
+            | cut -d' ' -f1)
+
+          # -sS keeps curl quiet but still prints transport errors; the body is
+          # captured so a 502 from the mail provider shows up in the log rather
+          # than as a bare exit code.
+          status=$(curl -sS -o response.json -w '%{http_code}' \
+            -X POST "${SITE_URL:-https://experiment-hub.vercel.app}/api/exec-function/daily-email" \
+            -H "x-efa-key: ${ACCESS_KEY}" \
+            -H 'content-type: application/json')
+
+          echo "HTTP ${status}"
+          cat response.json
+          echo
+
+          if [ "$status" != "200" ]; then
+            echo "::error::daily email was not sent"
+            exit 1
+          fi
