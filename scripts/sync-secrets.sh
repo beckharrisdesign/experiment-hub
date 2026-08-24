@@ -62,6 +62,11 @@ SUPABASE_PUBLISHABLE_KEY|op://BHD Labs/Supabase experiment-hub/publishable key|g
 # publishable key.
 SSO_SUPABASE_URL|op://BHD Labs/Supabase simple-seed-organizer/url|gh
 SSO_SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase simple-seed-organizer/service role key|gh
+# The hub's own admin password — what /admin/login checks, and what the
+# hub-edit cookie carries. Was a hand-set Vercel value that nothing tracked;
+# vaulting it closes that gap. Not needed by Actions: the assessment suite's
+# cron derives its key from the service-role key, not from this.
+ADMIN_SECRET|op://BHD Labs/BHD Labs Admin Secret/password|vercel
 FIGMA_ACCESS_TOKEN|op://BHD Labs/Figma/access token|vercel
 GITHUB_DISPATCH_TOKEN|op://BHD Labs/GitHub/dispatch token|vercel
 GITHUB_TOKEN|op://BHD Labs/GitHub/api token|vercel
