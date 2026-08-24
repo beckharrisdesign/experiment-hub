@@ -56,3 +56,18 @@ describe("daily email", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// Recipient
+// ---------------------------------------------------------------------------
+
+describe("recipient", () => {
+  it("defaults to the single user, with an env override", async () => {
+    // Guards the constant in app/api/exec-function/daily-email/route.ts: a typo
+    // there sends every nudge into the void with a 200 from the provider.
+    const route = await import("node:fs").then((fs) =>
+      fs.readFileSync("app/api/exec-function/daily-email/route.ts", "utf8"),
+    );
+    expect(route).toContain('process.env.EFA_NOTIFY_EMAIL || "katy@beckharrisdesign.com"');
+  });
+});

@@ -140,8 +140,11 @@ For the **daily email**:
 | Key | Where | What |
 | --- | --- | --- |
 | `RESEND_API_KEY` | Vercel | Shared with Etsy Listing Kit — same Vercel project, same env |
-| `EFA_NOTIFY_EMAIL` | Vercel | Where the nudge goes. An address, not a credential |
 | `ADMIN_SECRET` | GitHub secret | So the cron can derive the bearer key |
+
+The recipient defaults to `katy@beckharrisdesign.com` in the route — a
+single-user tool, so it is a constant rather than configuration. Set
+`EFA_NOTIFY_EMAIL` only to send somewhere else.
 
 The link's origin resolves from `NEXT_PUBLIC_APP_URL`, falling back to Vercel's
 production domain, so it needs no setting. `EFA_TIMEZONE` defaults to

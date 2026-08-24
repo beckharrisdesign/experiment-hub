@@ -23,13 +23,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const to = process.env.EFA_NOTIFY_EMAIL;
-  if (!to) {
-    return NextResponse.json(
-      { error: "EFA_NOTIFY_EMAIL is not set" },
-      { status: 503 },
-    );
-  }
+  // Single-user tool, so the recipient is a constant rather than configuration.
+  // This is a public repo, but the address is already the author of every commit
+  // in it — the most-scraped email source on GitHub — so writing it here adds no
+  // exposure the git history does not already give away. EFA_NOTIFY_EMAIL
+  // overrides it.
+  const to = process.env.EFA_NOTIFY_EMAIL || "katy@beckharrisdesign.com";
 
   // Central by default — the zone this is actually used in. Override with
   // EFA_TIMEZONE if that ever changes.
