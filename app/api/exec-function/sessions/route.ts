@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isAccessConfigured, keyMatches, readKey } from "@/lib/exec-function/access";
+import { isAccessConfigured, isAuthorized } from "@/lib/exec-function/access";
 import {
   getStoreClient,
   insertSession,
@@ -26,7 +26,7 @@ function guard(request: NextRequest): NextResponse | null {
       { status: 503 },
     );
   }
-  if (!keyMatches(readKey(request))) {
+  if (!isAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   return null;

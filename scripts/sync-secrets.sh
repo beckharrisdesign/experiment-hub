@@ -87,16 +87,16 @@ PDF_SESSION_SECRET|op://BHD Labs/PDF session/secret|vercel
 # carried only the four vault-backed vars past it.
 PDF_GOOGLE_REDIRECT_URI|op://BHD Labs/Google OAuth pdf-metadata-viewer/redirect uri|vercel
 PDF_ALLOWED_GOOGLE_SUBS|op://BHD Labs/Google OAuth pdf-metadata-viewer/allowed sub|vercel
-# Executive Function Assessment Suite. EFA_ACCESS_KEY is the only real secret —
-# it gates /api/exec-function/* and rides in the daily email link. The other
-# three are configuration, not credentials, but they live in the vault for the
-# same reason SUPABASE_URL does: one place that is pushed outward, rather than
-# a value typed into two dashboards and drifting. The cron needs the key and the
-# site URL as repo secrets; the API routes need all four on Vercel.
-EFA_ACCESS_KEY|op://BHD Labs/Exec Function Suite/access key|vercel,gh
+# Executive Function Assessment Suite. There is no access key to sync — the API
+# derives one from ADMIN_SECRET (lib/exec-function/access.ts), so the suite adds
+# no credential of its own. What is left is configuration for the daily email,
+# in the vault for the same reason SUPABASE_URL is: one place pushed outward,
+# rather than a value typed into two dashboards and drifting.
+#
+# Needs a vault item titled "Exec Function Suite" with these two fields. Until
+# it exists the app works fine; only the daily email is unconfigured.
 EFA_SITE_URL|op://BHD Labs/Exec Function Suite/site url|vercel,gh
 EFA_NOTIFY_EMAIL|op://BHD Labs/Exec Function Suite/notify email|vercel
-EFA_TIMEZONE|op://BHD Labs/Exec Function Suite/timezone|vercel
 ETSY_API_KEY|op://BHD Labs/Etsy/api key|gh
 ETSY_SHARED_SECRET|op://BHD Labs/Etsy/shared secret|gh
 ETSY_SHOP_ID|op://BHD Labs/Etsy/shop id|gh

@@ -5,15 +5,18 @@
 # EFA_TIMEZONE in the vault to the matching IANA zone so the schedule and the
 # day-key agree about which calendar day it is.
 #
-# Credentials come from scripts/sync-secrets.sh, which pushes them out of the
-# BHD Labs 1Password vault. Do not set them in the GitHub UI by hand.
+# Auth needs no credential of its own: the job derives the API key from
+# ADMIN_SECRET the same way lib/exec-function/access.ts does.
 #
-# Default here is 13:00 UTC = 9am US Eastern (8am during standard time).
+# 14:00 UTC = 9am US Central during daylight time (CDT, UTC-5). GitHub cron has
+# no DST awareness, so from early November to mid-March this lands at 8am
+# Central instead. EFA_TIMEZONE stays America/Chicago either way — it decides
+# which calendar day a session counts toward, not when the mail goes out.
 name: exec-function-daily
 
 on:
   schedule:
-    - cron: "0 13 * * *"
+    - cron: "0 14 * * *"
   workflow_dispatch:
 
 permissions:
@@ -32,14 +35,22 @@ jobs:
       - name: Send today's assessment link
         env:
           SITE_URL: ${{ secrets.EFA_SITE_URL }}
-          ACCESS_KEY: ${{ secrets.EFA_ACCESS_KEY }}
+          # The route accepts a key DERIVED from ADMIN_SECRET, never the secret
+          # itself (lib/exec-function/access.ts). The cron has no cookie jar, so
+          # it derives the same value here rather than needing a credential of
+          # its own. Keep the label in step with DERIVATION_LABEL.
+          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET }}
         run: |
           set -euo pipefail
 
-          if [ -z "${SITE_URL:-}" ] || [ -z "${ACCESS_KEY:-}" ]; then
-            echo "::error::EFA_SITE_URL and EFA_ACCESS_KEY must both be set (scripts/sync-secrets.sh --apply)"
+          if [ -z "${SITE_URL:-}" ] || [ -z "${ADMIN_SECRET:-}" ]; then
+            echo "::error::EFA_SITE_URL and ADMIN_SECRET must both be set as repo secrets"
             exit 1
           fi
+
+          ACCESS_KEY=$(printf '%s' 'exec-function-assessment/access/v1' \
+            | openssl dgst -sha256 -hmac "$ADMIN_SECRET" -r \
+            | cut -d' ' -f1)
 
           # -sS keeps curl quiet but still prints transport errors; the body is
           # captured so a 502 from the mail provider shows up in the log rather

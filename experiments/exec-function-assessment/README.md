@@ -97,35 +97,55 @@ Corsi backward, check-in.
 ## Storage
 
 Server-side (Supabase), because the daily link gets opened on whichever device is
-nearest and a per-device store would split one history into several. There are no
-accounts — a single shared secret (`EFA_ACCESS_KEY`) rides in the link once, the
-page keeps it, and every API call presents it.
+nearest and a per-device store would split one history into several. It reuses
+the hub's existing `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` — no new database
+credential.
 
-Every operation falls back to `localStorage` when Supabase or the key is absent,
-so the tool runs with no infrastructure at all. **The fallback is never silent** —
-the UI says which store answered, so a session that only reached one laptop is
-visible as such.
+Every operation falls back to `localStorage` when the server is unreachable or
+unauthorized, so the tool runs with no infrastructure at all. **The fallback is
+never silent** — the UI says which store answered, so a session that only
+reached one laptop is visible as such.
+
+## Access
+
+There are no accounts, and the suite adds no credential of its own. Two ways in:
+
+1. **The hub's admin cookie.** A browser signed in at `/admin/login` is already
+   trusted with more than this, so it authorizes with no key in any URL. This is
+   the path for a device you sit at.
+2. **A bearer key**, for the daily email link and the cron, which have no cookie
+   jar. It is *derived* from `ADMIN_SECRET` — `HMAC-SHA256(ADMIN_SECRET,
+   "exec-function-assessment/access/v1")` — and never `ADMIN_SECRET` itself.
+   `lib/pdf-auth.ts` already records why the raw secret in a cookie is a weak
+   spot; a link is worse, since it lands in email, browser history and
+   localStorage. The derived value grants this one table and nothing else.
+
+Rotating `ADMIN_SECRET` rotates the derived key, which invalidates old email
+links. That is correct, if occasionally surprising.
+
+Set `EFA_ACCESS_KEY` to use a dedicated key instead; it is then used as-is.
 
 ## Setup
 
-```bash
-# 1. Create the table
-psql "$SUPABASE_DB_URL" -f supabase/migrations/012_exec_function_sessions.sql
-```
+The table already exists (migration 012, applied to the `ulqdjuiffpazzixnwwso`
+"Experiment Hub 2.0" project — *not* `orlpgxqbesxvlhlkbnqy`, which is Simple Seed
+Organizer's and is what the repo's Supabase PR check misleadingly links to).
 
-Then set these (see `.env.example` for the full registry):
+Nothing else is needed for the app itself. For the **daily email**:
 
 | Key | Where | What |
 | --- | --- | --- |
-| `EFA_ACCESS_KEY` | Vercel + GitHub secret | Long random string; gates the API and rides in the daily link |
-| `EFA_NOTIFY_EMAIL` | Vercel | Address the nudge goes to |
-| `EFA_SITE_URL` | Vercel + GitHub variable | Production origin, for the link in the email |
-| `EFA_TIMEZONE` | Vercel | IANA zone the schedule's calendar day is computed in |
-| `EFA_EMAIL_FROM` | Vercel | From-address; falls back to Resend's onboarding sender |
-| `RESEND_API_KEY` | Vercel | Already present for Etsy Listing Kit |
+| `RESEND_API_KEY` | Vercel | Shared with Etsy Listing Kit — same Vercel project, same env |
+| `EFA_NOTIFY_EMAIL` | Vault → Vercel | Address the nudge goes to |
+| `EFA_SITE_URL` | Vault → Vercel + GitHub | Production origin, for the link in the email |
+| `ADMIN_SECRET` | GitHub secret | So the cron can derive the bearer key |
+| `EFA_TIMEZONE` | Vercel | IANA zone. Defaults to `America/Chicago` |
 
-Set the cron in the workflow to the UTC equivalent of the local time you want the
-email to land, and set `EFA_TIMEZONE` to match.
+The first two live in a 1Password item titled **Exec Function Suite**; push them
+with `./scripts/sync-secrets.sh --apply` rather than typing them into dashboards.
+
+The cron is `0 14 * * *` — 9am US Central during daylight time. GitHub cron has
+no DST awareness, so from November to March it lands at 8am Central instead.
 
 ## Not in v1
 

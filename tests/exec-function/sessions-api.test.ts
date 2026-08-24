@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
+import { createHmac } from "node:crypto";
 
 const listSessions = vi.fn();
 const insertSession = vi.fn();
@@ -15,7 +16,11 @@ vi.mock("@/lib/exec-function/server-store", () => ({
 
 const { GET, POST } = await import("@/app/api/exec-function/sessions/route");
 
-const KEY = "test-access-key-0123456789";
+const ADMIN = "test-admin-secret-0123456789";
+// The bearer key is derived from ADMIN_SECRET, never equal to it.
+const KEY = createHmac("sha256", ADMIN)
+  .update("exec-function-assessment/access/v1")
+  .digest("hex");
 
 function post(body: unknown, key: string | null = KEY): NextRequest {
   return new NextRequest("http://localhost/api/exec-function/sessions", {
@@ -46,12 +51,14 @@ const validSession = {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  process.env.EFA_ACCESS_KEY = KEY;
+  process.env.ADMIN_SECRET = ADMIN;
+  delete process.env.EFA_ACCESS_KEY;
   getStoreClient.mockReturnValue({});
 });
 
 afterEach(() => {
   delete process.env.EFA_ACCESS_KEY;
+  delete process.env.ADMIN_SECRET;
 });
 
 // ---------------------------------------------------------------------------
@@ -63,6 +70,7 @@ describe("access control", () => {
     // The client reads `configured: false` as "use the local store", so this
     // path is what keeps the tool working with no infrastructure.
     delete process.env.EFA_ACCESS_KEY;
+    delete process.env.ADMIN_SECRET;
     return Promise.all([GET(get()), POST(post(validSession))]).then(async ([g, p]) => {
       expect(g.status).toBe(503);
       expect((await g.json()).configured).toBe(false);
@@ -91,6 +99,39 @@ describe("access control", () => {
       { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(validSession) },
     );
     expect((await POST(request)).status).toBe(201);
+  });
+
+  it("authorizes a browser already signed in to the hub admin area", async () => {
+    // No bearer key at all — the cookie alone is enough, which is what lets the
+    // suite work on a device you sit at without a key in the URL.
+    insertSession.mockResolvedValue({ id: "row-cookie" });
+    const request = new NextRequest("http://localhost/api/exec-function/sessions", {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie: `hub-edit=${ADMIN}` },
+      body: JSON.stringify(validSession),
+    });
+    expect((await POST(request)).status).toBe(201);
+  });
+
+  it("rejects a wrong admin cookie", async () => {
+    const request = new NextRequest("http://localhost/api/exec-function/sessions", {
+      headers: { cookie: "hub-edit=not-the-secret" },
+    });
+    expect((await GET(request)).status).toBe(401);
+  });
+
+  it("does not accept the raw admin secret as the bearer key", async () => {
+    // The link token is derived, so a leaked link cannot be replayed at /admin
+    // and the admin secret is not a shortcut into this table either.
+    expect(KEY).not.toBe(ADMIN);
+    expect((await POST(post(validSession, ADMIN))).status).toBe(401);
+  });
+
+  it("prefers a dedicated EFA_ACCESS_KEY when one is set", async () => {
+    process.env.EFA_ACCESS_KEY = "dedicated-key-value";
+    insertSession.mockResolvedValue({ id: "row-dedicated" });
+    expect((await POST(post(validSession, "dedicated-key-value"))).status).toBe(201);
+    expect((await POST(post(validSession, KEY))).status).toBe(401);
   });
 
   it("returns 503 when the key is right but no store is configured", async () => {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { keyMatches, readKey } from "@/lib/exec-function/access";
+import { effectiveKey, isAuthorized } from "@/lib/exec-function/access";
 import { sendDailyEmail } from "@/lib/exec-function/email";
 import {
   assignmentFor,
@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
  * cannot make it send mail.
  */
 export async function POST(request: NextRequest) {
-  if (!keyMatches(readKey(request))) {
+  if (!isAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -31,14 +31,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const timeZone = process.env.EFA_TIMEZONE || "UTC";
+  // Central by default — the zone this is actually used in. Override with
+  // EFA_TIMEZONE if that ever changes.
+  const timeZone = process.env.EFA_TIMEZONE || "America/Chicago";
   const dayKey = dayKeyFor(new Date(), timeZone);
   const assignment = assignmentFor(dayKey);
 
   const siteUrl = (process.env.EFA_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
   // The key rides in the link so tapping it from the phone just works; the page
   // stores it locally, so it only has to travel this way once.
-  const link = `${siteUrl}${assignment.href}${assignment.href.includes("?") ? "&" : "?"}k=${encodeURIComponent(process.env.EFA_ACCESS_KEY ?? "")}`;
+  const link = `${siteUrl}${assignment.href}${assignment.href.includes("?") ? "&" : "?"}k=${encodeURIComponent(effectiveKey() ?? "")}`;
 
   // History is best-effort: a store that is down should still not stop the
   // reminder going out, it just goes out without the streak line.

@@ -96,68 +96,74 @@ function localId(): string {
 // Combined
 // ---------------------------------------------------------------------------
 
-function authHeaders(): HeadersInit | undefined {
+/**
+ * Headers for a server call. The bearer key is optional: the hub's admin cookie
+ * is sent automatically and authorizes on its own, so a browser signed in at
+ * /admin/login needs no key at all. Only the email link and a fresh device rely
+ * on the key.
+ */
+function authHeaders(): HeadersInit {
   const key = getAccessKey();
-  return key ? { [ACCESS_HEADER]: key } : undefined;
+  return key ? { [ACCESS_HEADER]: key } : {};
 }
 
 export async function loadSessions(): Promise<LoadResult> {
-  const headers = authHeaders();
+  try {
+    // Always try the server, key or not — the admin cookie may authorize it.
+    const res = await fetch("/api/exec-function/sessions", {
+      headers: authHeaders(),
+      credentials: "same-origin",
+      cache: "no-store",
+    });
 
-  if (headers) {
-    try {
-      const res = await fetch("/api/exec-function/sessions", { headers, cache: "no-store" });
-      if (res.ok) {
-        const body = await res.json();
-        // Merge in anything that only ever made it to this device, so a local
-        // fallback session is not invisible once the server comes back.
-        const local = readLocal().filter((s) => s.id.startsWith("local-"));
-        const sessions = [...(body.sessions as StoredSession[]), ...local].sort((a, b) =>
-          a.timestamp.localeCompare(b.timestamp),
-        );
-        return { sessions, tier: "server" };
-      }
-      return {
-        sessions: readLocal(),
-        tier: "local",
-        reason: res.status === 401 ? "Access key rejected" : "Session log unavailable",
-      };
-    } catch {
-      return { sessions: readLocal(), tier: "local", reason: "Could not reach the session log" };
+    if (res.ok) {
+      const body = await res.json();
+      // Merge in anything that only ever made it to this device, so a local
+      // fallback session is not invisible once the server comes back.
+      const local = readLocal().filter((s) => s.id.startsWith("local-"));
+      const sessions = [...(body.sessions as StoredSession[]), ...local].sort((a, b) =>
+        a.timestamp.localeCompare(b.timestamp),
+      );
+      return { sessions, tier: "server" };
     }
-  }
 
-  return { sessions: readLocal(), tier: "local", reason: "No access key on this device" };
+    return { sessions: readLocal(), tier: "local", reason: unauthorizedReason(res.status) };
+  } catch {
+    return { sessions: readLocal(), tier: "local", reason: "Could not reach the session log" };
+  }
+}
+
+/** Plain-language reason, so the banner says something actionable. */
+function unauthorizedReason(status: number): string {
+  if (status === 401) return "Sign in at /admin/login, or open today's link from your email";
+  if (status === 503) return "The shared history is not configured yet";
+  return "The shared history is unavailable";
 }
 
 export async function saveSession(session: Omit<StoredSession, "id">): Promise<SaveResult> {
-  const headers = authHeaders();
+  let reason = "The shared history is unavailable";
 
-  if (headers) {
-    try {
-      const res = await fetch("/api/exec-function/sessions", {
-        method: "POST",
-        headers: { ...headers, "content-type": "application/json" },
-        body: JSON.stringify(session),
-      });
-      if (res.ok) {
-        const body = await res.json();
-        return { session: body.session as StoredSession, tier: "server" };
-      }
-    } catch {
-      // Fall through to the local tier below.
+  try {
+    const res = await fetch("/api/exec-function/sessions", {
+      method: "POST",
+      headers: { ...authHeaders(), "content-type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify(session),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      return { session: body.session as StoredSession, tier: "server" };
     }
+    reason = unauthorizedReason(res.status);
+  } catch {
+    reason = "Could not reach the session log";
   }
 
   // Always land the result somewhere. A finished 8-minute block that vanishes
   // because the network blinked is the worst possible failure for this tool.
   const stored: StoredSession = { ...session, id: localId() };
   writeLocal([...readLocal(), stored]);
-  return {
-    session: stored,
-    tier: "local",
-    reason: headers ? "Saved on this device only" : "No access key on this device",
-  };
+  return { session: stored, tier: "local", reason };
 }
 
 /** Everything this device holds, as a JSON string, for manual export. */
