@@ -37,7 +37,17 @@ export async function POST(request: NextRequest) {
   const dayKey = dayKeyFor(new Date(), timeZone);
   const assignment = assignmentFor(dayKey);
 
-  const siteUrl = (process.env.EFA_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
+  // No dedicated config: the hub already knows where it lives. Prefer the
+  // stable production domain over VERCEL_URL, which is per-deployment and would
+  // put a URL in the email that stops resolving on the next deploy.
+  const origin =
+    process.env.EFA_SITE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "") ||
+    "http://localhost:3000";
+  const siteUrl = origin.replace(/\/$/, "");
   // The key rides in the link so tapping it from the phone just works; the page
   // stores it locally, so it only has to travel this way once.
   const link = `${siteUrl}${assignment.href}${assignment.href.includes("?") ? "&" : "?"}k=${encodeURIComponent(effectiveKey() ?? "")}`;

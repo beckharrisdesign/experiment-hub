@@ -131,18 +131,21 @@ The table already exists (migration 012, applied to the `ulqdjuiffpazzixnwwso`
 "Experiment Hub 2.0" project — *not* `orlpgxqbesxvlhlkbnqy`, which is Simple Seed
 Organizer's and is what the repo's Supabase PR check misleadingly links to).
 
-Nothing else is needed for the app itself. For the **daily email**:
+Nothing else is needed for the app itself — sign in at `/admin/login` and
+history persists. The suite adds no vault item and nothing to
+`scripts/sync-secrets.sh`.
+
+For the **daily email**:
 
 | Key | Where | What |
 | --- | --- | --- |
 | `RESEND_API_KEY` | Vercel | Shared with Etsy Listing Kit — same Vercel project, same env |
-| `EFA_NOTIFY_EMAIL` | Vault → Vercel | Address the nudge goes to |
-| `EFA_SITE_URL` | Vault → Vercel + GitHub | Production origin, for the link in the email |
+| `EFA_NOTIFY_EMAIL` | Vercel | Where the nudge goes. An address, not a credential |
 | `ADMIN_SECRET` | GitHub secret | So the cron can derive the bearer key |
-| `EFA_TIMEZONE` | Vercel | IANA zone. Defaults to `America/Chicago` |
 
-The first two live in a 1Password item titled **Exec Function Suite**; push them
-with `./scripts/sync-secrets.sh --apply` rather than typing them into dashboards.
+The link's origin resolves from `NEXT_PUBLIC_APP_URL`, falling back to Vercel's
+production domain, so it needs no setting. `EFA_TIMEZONE` defaults to
+`America/Chicago`. `EFA_SITE_URL` and `EFA_ACCESS_KEY` exist only as overrides.
 
 The cron is `0 14 * * *` — 9am US Central during daylight time. GitHub cron has
 no DST awareness, so from November to March it lands at 8am Central instead.
