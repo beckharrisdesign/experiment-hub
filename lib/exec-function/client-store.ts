@@ -1,0 +1,166 @@
+"use client";
+
+/**
+ * Browser-side access to the session log.
+ *
+ * Two-tier on purpose. The server log is the record of truth, because the daily
+ * link gets opened on whichever device is to hand and a per-device store would
+ * split one history into several. But the tool has to stay usable with no
+ * infrastructure — running it locally, or before the Supabase table exists —
+ * so every operation falls back to localStorage and says which tier it used.
+ *
+ * The fallback is never silent: the UI shows which store answered, so a session
+ * that only made it to one laptop is visible as such rather than looking like
+ * it is safely in the history.
+ */
+
+import { ACCESS_HEADER } from "./access";
+import type { StoredSession } from "./sessions";
+
+const LOCAL_SESSIONS_KEY = "efa:v1:sessions";
+const LOCAL_ACCESS_KEY = "efa:v1:key";
+
+export type StoreTier = "server" | "local";
+
+export interface LoadResult {
+  sessions: StoredSession[];
+  tier: StoreTier;
+  /** Why the server tier was not used, when it was not. */
+  reason?: string;
+}
+
+export interface SaveResult {
+  session: StoredSession;
+  tier: StoreTier;
+  reason?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Access key
+// ---------------------------------------------------------------------------
+
+/**
+ * Capture the key from the daily link and keep it, so the link only has to
+ * carry it once. Strips it from the address bar afterwards — a key sitting in
+ * a URL ends up in screenshots and browser history.
+ */
+export function captureAccessKey(): string | null {
+  if (typeof window === "undefined") return null;
+
+  const url = new URL(window.location.href);
+  const fromLink = url.searchParams.get("k");
+
+  if (fromLink) {
+    window.localStorage.setItem(LOCAL_ACCESS_KEY, fromLink);
+    url.searchParams.delete("k");
+    window.history.replaceState({}, "", url.toString());
+    return fromLink;
+  }
+
+  return window.localStorage.getItem(LOCAL_ACCESS_KEY);
+}
+
+export function getAccessKey(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(LOCAL_ACCESS_KEY);
+}
+
+// ---------------------------------------------------------------------------
+// Local tier
+// ---------------------------------------------------------------------------
+
+function readLocal(): StoredSession[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(LOCAL_SESSIONS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as StoredSession[]) : [];
+  } catch {
+    // A corrupt blob should not take the whole page down; an empty history is
+    // wrong but recoverable, and the export button still holds the raw string.
+    return [];
+  }
+}
+
+function writeLocal(sessions: StoredSession[]): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(LOCAL_SESSIONS_KEY, JSON.stringify(sessions));
+}
+
+function localId(): string {
+  return `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+// ---------------------------------------------------------------------------
+// Combined
+// ---------------------------------------------------------------------------
+
+function authHeaders(): HeadersInit | undefined {
+  const key = getAccessKey();
+  return key ? { [ACCESS_HEADER]: key } : undefined;
+}
+
+export async function loadSessions(): Promise<LoadResult> {
+  const headers = authHeaders();
+
+  if (headers) {
+    try {
+      const res = await fetch("/api/exec-function/sessions", { headers, cache: "no-store" });
+      if (res.ok) {
+        const body = await res.json();
+        // Merge in anything that only ever made it to this device, so a local
+        // fallback session is not invisible once the server comes back.
+        const local = readLocal().filter((s) => s.id.startsWith("local-"));
+        const sessions = [...(body.sessions as StoredSession[]), ...local].sort((a, b) =>
+          a.timestamp.localeCompare(b.timestamp),
+        );
+        return { sessions, tier: "server" };
+      }
+      return {
+        sessions: readLocal(),
+        tier: "local",
+        reason: res.status === 401 ? "Access key rejected" : "Session log unavailable",
+      };
+    } catch {
+      return { sessions: readLocal(), tier: "local", reason: "Could not reach the session log" };
+    }
+  }
+
+  return { sessions: readLocal(), tier: "local", reason: "No access key on this device" };
+}
+
+export async function saveSession(session: Omit<StoredSession, "id">): Promise<SaveResult> {
+  const headers = authHeaders();
+
+  if (headers) {
+    try {
+      const res = await fetch("/api/exec-function/sessions", {
+        method: "POST",
+        headers: { ...headers, "content-type": "application/json" },
+        body: JSON.stringify(session),
+      });
+      if (res.ok) {
+        const body = await res.json();
+        return { session: body.session as StoredSession, tier: "server" };
+      }
+    } catch {
+      // Fall through to the local tier below.
+    }
+  }
+
+  // Always land the result somewhere. A finished 8-minute block that vanishes
+  // because the network blinked is the worst possible failure for this tool.
+  const stored: StoredSession = { ...session, id: localId() };
+  writeLocal([...readLocal(), stored]);
+  return {
+    session: stored,
+    tier: "local",
+    reason: headers ? "Saved on this device only" : "No access key on this device",
+  };
+}
+
+/** Everything this device holds, as a JSON string, for manual export. */
+export function exportLocal(): string {
+  return JSON.stringify(readLocal(), null, 2);
+}

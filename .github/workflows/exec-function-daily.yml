@@ -1,0 +1,56 @@
+# Daily nudge for the executive-function assessment suite.
+#
+# The cron below is UTC — GitHub Actions has no timezone option. Set it to the
+# UTC equivalent of the local time you want the email to land, and set
+# EFA_TIMEZONE (a repo variable) to the matching IANA zone so the schedule and
+# the day-key agree about which calendar day it is.
+#
+# Default here is 13:00 UTC = 9am US Eastern (8am during standard time).
+name: exec-function-daily
+
+on:
+  schedule:
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: exec-function-daily
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    environment: "Production – experiment-hub"
+    timeout-minutes: 5
+    steps:
+      - name: Send today's assessment link
+        env:
+          SITE_URL: ${{ vars.EFA_SITE_URL }}
+          ACCESS_KEY: ${{ secrets.EFA_ACCESS_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SITE_URL:-}" ] || [ -z "${ACCESS_KEY:-}" ]; then
+            echo "::error::EFA_SITE_URL (variable) and EFA_ACCESS_KEY (secret) must both be set"
+            exit 1
+          fi
+
+          # -sS keeps curl quiet but still prints transport errors; the body is
+          # captured so a 502 from the mail provider shows up in the log rather
+          # than as a bare exit code.
+          status=$(curl -sS -o response.json -w '%{http_code}' \
+            -X POST "${SITE_URL%/}/api/exec-function/daily-email" \
+            -H "x-efa-key: ${ACCESS_KEY}" \
+            -H 'content-type: application/json')
+
+          echo "HTTP ${status}"
+          cat response.json
+          echo
+
+          if [ "$status" != "200" ]; then
+            echo "::error::daily email was not sent"
+            exit 1
+          fi
