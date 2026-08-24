@@ -114,13 +114,20 @@ There are no accounts, and the suite adds no credential of its own. Two ways in:
    trusted with more than this, so it authorizes with no key in any URL. This is
    the path for a device you sit at.
 2. **A bearer key**, for the daily email link and the cron, which have no cookie
-   jar. It is *derived* from `ADMIN_SECRET` — `HMAC-SHA256(ADMIN_SECRET,
-   "exec-function-assessment/access/v1")` — and never `ADMIN_SECRET` itself.
-   `lib/pdf-auth.ts` already records why the raw secret in a cookie is a weak
-   spot; a link is worse, since it lands in email, browser history and
-   localStorage. The derived value grants this one table and nothing else.
+   jar. It is *derived* — `HMAC-SHA256(SUPABASE_SERVICE_ROLE_KEY,
+   "exec-function-assessment/access/v1")` — and the root is never sent.
 
-Rotating `ADMIN_SECRET` rotates the derived key, which invalidates old email
+   The root is the service-role key rather than `ADMIN_SECRET` for two reasons.
+   **Security:** the derived token grants strictly *less* than its root — anyone
+   holding the service-role key can already read and write this table directly,
+   so a leaked link escalates to nothing. Deriving from `ADMIN_SECRET` would
+   mint a token for one thing (assessment data) out of a secret for another
+   (editing the whole hub). **Practical:** Vercel and GitHub Actions both
+   already hold the service-role key, synced from 1Password, so the daily email
+   needs nothing new provisioned. `ADMIN_SECRET` is in neither the vault nor
+   GitHub — it is a hand-set Vercel value.
+
+Rotating the service-role key rotates the derived key, invalidating old email
 links. That is correct, if occasionally surprising.
 
 Set `EFA_ACCESS_KEY` to use a dedicated key instead; it is then used as-is.
@@ -140,7 +147,9 @@ For the **daily email**:
 | Key | Where | What |
 | --- | --- | --- |
 | `RESEND_API_KEY` | Vercel | Shared with Etsy Listing Kit — same Vercel project, same env |
-| `ADMIN_SECRET` | GitHub secret | So the cron can derive the bearer key |
+
+That is the only one. The cron derives its key from `SUPABASE_SERVICE_ROLE_KEY`,
+which is already a repo secret.
 
 The recipient defaults to `katy@beckharrisdesign.com` in the route — a
 single-user tool, so it is a constant rather than configuration. Set

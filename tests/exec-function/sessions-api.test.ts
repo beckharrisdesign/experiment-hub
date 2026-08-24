@@ -17,8 +17,9 @@ vi.mock("@/lib/exec-function/server-store", () => ({
 const { GET, POST } = await import("@/app/api/exec-function/sessions/route");
 
 const ADMIN = "test-admin-secret-0123456789";
-// The bearer key is derived from ADMIN_SECRET, never equal to it.
-const KEY = createHmac("sha256", ADMIN)
+const SERVICE_ROLE = "test-service-role-key-0123456789";
+// The bearer key is derived from the service-role key, never equal to it.
+const KEY = createHmac("sha256", SERVICE_ROLE)
   .update("exec-function-assessment/access/v1")
   .digest("hex");
 
@@ -52,6 +53,7 @@ const validSession = {
 beforeEach(() => {
   vi.clearAllMocks();
   process.env.ADMIN_SECRET = ADMIN;
+  process.env.SUPABASE_SERVICE_ROLE_KEY = SERVICE_ROLE;
   delete process.env.EFA_ACCESS_KEY;
   getStoreClient.mockReturnValue({});
 });
@@ -59,6 +61,7 @@ beforeEach(() => {
 afterEach(() => {
   delete process.env.EFA_ACCESS_KEY;
   delete process.env.ADMIN_SECRET;
+  delete process.env.SUPABASE_SERVICE_ROLE_KEY;
 });
 
 // ---------------------------------------------------------------------------
@@ -71,6 +74,7 @@ describe("access control", () => {
     // path is what keeps the tool working with no infrastructure.
     delete process.env.EFA_ACCESS_KEY;
     delete process.env.ADMIN_SECRET;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
     return Promise.all([GET(get()), POST(post(validSession))]).then(async ([g, p]) => {
       expect(g.status).toBe(503);
       expect((await g.json()).configured).toBe(false);
@@ -120,10 +124,12 @@ describe("access control", () => {
     expect((await GET(request)).status).toBe(401);
   });
 
-  it("does not accept the raw admin secret as the bearer key", async () => {
-    // The link token is derived, so a leaked link cannot be replayed at /admin
-    // and the admin secret is not a shortcut into this table either.
+  it("does not accept either raw secret as the bearer key", async () => {
+    // The link token is derived, so a leaked link exposes neither the
+    // service-role key it comes from nor the hub's admin secret.
+    expect(KEY).not.toBe(SERVICE_ROLE);
     expect(KEY).not.toBe(ADMIN);
+    expect((await POST(post(validSession, SERVICE_ROLE))).status).toBe(401);
     expect((await POST(post(validSession, ADMIN))).status).toBe(401);
   });
 

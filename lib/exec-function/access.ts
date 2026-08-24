@@ -15,11 +15,10 @@
  *      for using the tool on a device you sit at.
  *
  *   2. A bearer key, for the daily email link and the cron, which have no
- *      cookie jar. The key is DERIVED from ADMIN_SECRET rather than being it:
- *      lib/pdf-auth.ts already records why the raw secret in a cookie is a
- *      weak spot ("one captured browser jar yields permanent access"), and a
- *      link is worse than a cookie — it lands in email, browser history and
- *      localStorage. The derived value grants this table and nothing else.
+ *      cookie jar. It is DERIVED from SUPABASE_SERVICE_ROLE_KEY, never sent
+ *      raw, and grants strictly less than its root — see effectiveKey below.
+ *      A link is a leakier place than a cookie (email, browser history,
+ *      localStorage), so it must not carry a secret that opens anything else.
  *
  * Set EFA_ACCESS_KEY to use a dedicated key instead; it is then used as-is,
  * because a purpose-made key is already scoped.
@@ -37,21 +36,34 @@ const DERIVATION_LABEL = "exec-function-assessment/access/v1";
 /**
  * The bearer key this deployment expects.
  *
- * Deriving rather than reusing means a leaked link cannot be replayed against
- * /admin. Rotating ADMIN_SECRET rotates this too, which invalidates old email
- * links — correct, if occasionally surprising.
+ * Derived from SUPABASE_SERVICE_ROLE_KEY, for two reasons.
+ *
+ * Security: the derived token grants strictly LESS than the secret it comes
+ * from. Anyone holding the service-role key can already read and write this
+ * table directly, so a leaked link escalates to nothing. Deriving from
+ * ADMIN_SECRET instead would mint a token for one thing (assessment data) out
+ * of a secret for another (editing the whole hub) — a worse trade.
+ *
+ * Practical: both environments that need it already have it, from the vault,
+ * tracked by scripts/sync-secrets.sh. Vercel gets it for the API routes and
+ * GitHub Actions gets it for the cron, so the daily email needs no new secret
+ * anywhere. ADMIN_SECRET is in neither the vault nor GitHub — it is a hand-set
+ * Vercel value — so deriving from it would have meant provisioning it twice.
+ *
+ * Rotating the service-role key rotates this too, invalidating old email
+ * links. Correct, if occasionally surprising.
  */
 export function effectiveKey(): string | null {
   const dedicated = process.env.EFA_ACCESS_KEY;
   if (dedicated) return dedicated;
 
-  const admin = process.env.ADMIN_SECRET;
-  if (!admin) return null;
+  const root = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!root) return null;
 
-  return createHmac("sha256", admin).update(DERIVATION_LABEL).digest("hex");
+  return createHmac("sha256", root).update(DERIVATION_LABEL).digest("hex");
 }
 
-/** False when neither a dedicated key nor ADMIN_SECRET exists — local-only. */
+/** False when no bearer key can be formed — the tool then runs local-only. */
 export function isAccessConfigured(): boolean {
   return effectiveKey() !== null;
 }

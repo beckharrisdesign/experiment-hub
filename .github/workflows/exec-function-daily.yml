@@ -6,7 +6,8 @@
 # day-key agree about which calendar day it is.
 #
 # Auth needs no credential of its own: the job derives the API key from
-# ADMIN_SECRET the same way lib/exec-function/access.ts does.
+# SUPABASE_SERVICE_ROLE_KEY the same way lib/exec-function/access.ts does. That
+# secret is already synced here from 1Password by scripts/sync-secrets.sh.
 #
 # 14:00 UTC = 9am US Central during daylight time (CDT, UTC-5). GitHub cron has
 # no DST awareness, so from early November to mid-March this lands at 8am
@@ -34,29 +35,31 @@ jobs:
     steps:
       - name: Send today's assessment link
         env:
+          # Optional: falls back to the production domain Vercel reports.
           SITE_URL: ${{ secrets.EFA_SITE_URL }}
-          # The route accepts a key DERIVED from ADMIN_SECRET, never the secret
-          # itself (lib/exec-function/access.ts). The cron has no cookie jar, so
-          # it derives the same value here rather than needing a credential of
-          # its own. Keep the label in step with DERIVATION_LABEL.
-          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET }}
+          # The route accepts a key DERIVED from the service-role key, never the
+          # key itself (lib/exec-function/access.ts). This job already has that
+          # secret, synced from 1Password like every other one, so the daily
+          # email needs nothing new provisioned. Keep the label below in step
+          # with DERIVATION_LABEL.
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           set -euo pipefail
 
-          if [ -z "${SITE_URL:-}" ] || [ -z "${ADMIN_SECRET:-}" ]; then
-            echo "::error::EFA_SITE_URL and ADMIN_SECRET must both be set as repo secrets"
+          if [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
+            echo "::error::SUPABASE_SERVICE_ROLE_KEY is not available to this job"
             exit 1
           fi
 
           ACCESS_KEY=$(printf '%s' 'exec-function-assessment/access/v1' \
-            | openssl dgst -sha256 -hmac "$ADMIN_SECRET" -r \
+            | openssl dgst -sha256 -hmac "$SUPABASE_SERVICE_ROLE_KEY" -r \
             | cut -d' ' -f1)
 
           # -sS keeps curl quiet but still prints transport errors; the body is
           # captured so a 502 from the mail provider shows up in the log rather
           # than as a bare exit code.
           status=$(curl -sS -o response.json -w '%{http_code}' \
-            -X POST "${SITE_URL%/}/api/exec-function/daily-email" \
+            -X POST "${SITE_URL:-https://experiment-hub.vercel.app}/api/exec-function/daily-email" \
             -H "x-efa-key: ${ACCESS_KEY}" \
             -H 'content-type: application/json')
 
