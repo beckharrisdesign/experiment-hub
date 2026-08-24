@@ -2,8 +2,11 @@
 #
 # The cron below is UTC — GitHub Actions has no timezone option. Set it to the
 # UTC equivalent of the local time you want the email to land, and set
-# EFA_TIMEZONE (a repo variable) to the matching IANA zone so the schedule and
-# the day-key agree about which calendar day it is.
+# EFA_TIMEZONE in the vault to the matching IANA zone so the schedule and the
+# day-key agree about which calendar day it is.
+#
+# Credentials come from scripts/sync-secrets.sh, which pushes them out of the
+# BHD Labs 1Password vault. Do not set them in the GitHub UI by hand.
 #
 # Default here is 13:00 UTC = 9am US Eastern (8am during standard time).
 name: exec-function-daily
@@ -28,13 +31,13 @@ jobs:
     steps:
       - name: Send today's assessment link
         env:
-          SITE_URL: ${{ vars.EFA_SITE_URL }}
+          SITE_URL: ${{ secrets.EFA_SITE_URL }}
           ACCESS_KEY: ${{ secrets.EFA_ACCESS_KEY }}
         run: |
           set -euo pipefail
 
           if [ -z "${SITE_URL:-}" ] || [ -z "${ACCESS_KEY:-}" ]; then
-            echo "::error::EFA_SITE_URL (variable) and EFA_ACCESS_KEY (secret) must both be set"
+            echo "::error::EFA_SITE_URL and EFA_ACCESS_KEY must both be set (scripts/sync-secrets.sh --apply)"
             exit 1
           fi
 

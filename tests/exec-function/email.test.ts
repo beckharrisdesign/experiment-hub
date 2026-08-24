@@ -44,11 +44,6 @@ describe("daily email", () => {
     expect(dailyEmailText({ ...base, streak: 1 })).toContain("Streak: 1 day");
   });
 
-  it("carries the non-clinical disclaimer", () => {
-    expect(dailyEmailText(base)).toContain("Not a clinical assessment");
-    expect(dailyEmailHtml(base)).toContain("Not a clinical assessment");
-  });
-
   it("offers no interpretation, encouragement, or advice", () => {
     // An explicit non-goal: a measurement tool that comments on its own
     // readings changes the thing it is measuring.

@@ -37,6 +37,7 @@ import {
 import { useRecorder } from "../components/useRecorder";
 import SaveNotice from "../components/SaveNotice";
 import TimingWarning from "../components/TimingWarning";
+import CompletionOverlay from "../components/CompletionOverlay";
 import { useVisibilityGuard } from "../components/useVisibilityGuard";
 
 /**
@@ -64,6 +65,7 @@ export default function NBackTask() {
   const [results, setResults] = useState<NBackBlockResult[]>([]);
   const [pendingN, setPendingN] = useState(DEFAULT_STARTING_N);
   const [startedAt, setStartedAt] = useState(0);
+  const [celebrating, setCelebrating] = useState(false);
 
   // Responses are read by the scorer the instant a block ends, so they live in
   // a ref — state would still be a render behind at that moment.
@@ -114,6 +116,7 @@ export default function NBackTask() {
         headline: peakN,
         detail: session,
       });
+      setCelebrating(true);
     },
     [decreaseThreshold, record, startingN],
   );
@@ -198,11 +201,21 @@ export default function NBackTask() {
   const currentN = plan?.n ?? startingN;
   const lastResult = results[results.length - 1];
 
+  const peakN = results.reduce((m, b) => Math.max(m, b.n), startingN);
+
   return (
     <Stack gap={24}>
+      <CompletionOverlay
+        open={celebrating}
+        taskLabel="Adaptive n-back"
+        metricLabel="Peak N"
+        metricValue={peakN}
+        onDismiss={() => setCelebrating(false)}
+      />
+
       <Card>
         <CardHeader>
-          <Inline gap={8} align="center" justify="between">
+          <Inline gap={8} align="center" justify="between" wrap>
             <CardTitle>Adaptive n-back</CardTitle>
             {phase === "running" && (
               <Badge variant="muted">
@@ -231,7 +244,7 @@ export default function NBackTask() {
                       value={String(startingN)}
                       onValueChange={(value) => setStartingN(Number(value))}
                     >
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger className="min-h-12 w-40 px-4">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -252,7 +265,7 @@ export default function NBackTask() {
                       value={String(decreaseThreshold)}
                       onValueChange={(value) => setDecreaseThreshold(Number(value))}
                     >
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger className="min-h-12 w-40 px-4">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -267,7 +280,9 @@ export default function NBackTask() {
                 </Inline>
 
                 <Inline gap={8}>
-                  <Button onClick={begin}>Start</Button>
+                  <Button onClick={begin} size="lg" className="min-h-12 px-8">
+                    Start
+                  </Button>
                 </Inline>
               </Stack>
             )}
@@ -280,7 +295,7 @@ export default function NBackTask() {
                   variant={responded ? "secondary" : "default"}
                   onClick={respond}
                   aria-pressed={responded}
-                  className="w-full max-w-xs"
+                  className="min-h-16 w-full max-w-sm text-base"
                 >
                   {responded ? "Match recorded" : `Match (${currentN} back)`}
                 </Button>
@@ -302,7 +317,11 @@ export default function NBackTask() {
                   {pendingN === lastResult.n && `Next block stays at ${pendingN}-back.`}
                 </p>
                 <Inline gap={8}>
-                  <Button onClick={() => startBlock(pendingN, results, startedAt)}>
+                  <Button
+                    onClick={() => startBlock(pendingN, results, startedAt)}
+                    size="lg"
+                    className="min-h-12 px-8"
+                  >
                     Continue
                   </Button>
                 </Inline>
@@ -313,7 +332,7 @@ export default function NBackTask() {
               <Stack gap={16}>
                 <TimingWarning interrupted={interrupted} />
                 <dl className="grid grid-cols-3 gap-4">
-                  <Metric label="Peak N" value={results.reduce((m, b) => Math.max(m, b.n), startingN)} />
+                  <Metric label="Peak N" value={peakN} />
                   <Metric label="Started at" value={startingN} />
                   <Metric
                     label="Mean accuracy"
@@ -354,11 +373,8 @@ export default function NBackTask() {
                 )}
 
                 <Inline gap={8}>
-                  <Button asChild>
+                  <Button asChild size="lg" className="min-h-12 px-6">
                     <Link href="/exec-function-assessment">See your history</Link>
-                  </Button>
-                  <Button variant="outline" onClick={() => setPhase("ready")}>
-                    Run it again
                   </Button>
                 </Inline>
               </Stack>

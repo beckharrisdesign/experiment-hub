@@ -1,4 +1,4 @@
-import { Callout, Container, Section, Stack } from "@beckharrisdesign/mvds";
+import { Container, Section, Stack } from "@beckharrisdesign/mvds";
 import HistoryDashboard from "./HistoryDashboard";
 
 export const metadata = {
@@ -23,15 +23,6 @@ export default function AssessmentSuitePage() {
               email each morning; results accumulate here.
             </p>
           </Stack>
-
-          <Callout>
-            <strong className="font-medium">A personal measurement tool.</strong>{" "}
-            Not a clinical assessment, not a diagnosis, and not a substitute for
-            one. The Corsi and n-back tasks follow published protocols but are
-            self-administered without an examiner, so they are not directly
-            comparable to normative data collected under standard conditions.
-            The check-in is an original questionnaire with no norms at all.
-          </Callout>
 
           <HistoryDashboard />
         </Stack>

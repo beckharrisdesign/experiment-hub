@@ -76,11 +76,7 @@ export function dailyEmailHtml(context: DailyEmailContext): string {
     </td></tr>`
         : ""
     }
-    <tr><td style="padding:24px 28px 26px">
-      <p style="margin:0;font:400 12px/1.5 ${SANS};color:${FAINT};border-top:1px solid ${BORDER};padding-top:14px">
-        Personal measurement tool. Not a clinical assessment and not a diagnosis.
-      </p>
-    </td></tr>
+    <tr><td style="padding:8px 28px 26px"></td></tr>
   </table>
 </td></tr></table></body></html>`;
 }
@@ -95,8 +91,6 @@ export function dailyEmailText(context: DailyEmailContext): string {
     context.link,
     "",
     facts,
-    "",
-    "Personal measurement tool. Not a clinical assessment and not a diagnosis.",
   ]
     .filter((line, i, all) => !(line === "" && all[i - 1] === ""))
     .join("\n");

@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   Badge,
   Button,
-  Callout,
   Card,
   CardContent,
   CardHeader,
@@ -31,6 +30,7 @@ import {
 } from "@/lib/exec-function/self-report";
 import { useRecorder } from "../components/useRecorder";
 import SaveNotice from "../components/SaveNotice";
+import CompletionOverlay from "../components/CompletionOverlay";
 
 /**
  * The everyday check-in.
@@ -44,6 +44,7 @@ import SaveNotice from "../components/SaveNotice";
 export default function SelfReportForm() {
   const [responses, setResponses] = useState<Responses>({});
   const [submitted, setSubmitted] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
   const [startedAt] = useState(() => Date.now());
   const { record, result, saving } = useRecorder();
 
@@ -74,10 +75,19 @@ export default function SelfReportForm() {
       headline: scores.composite.raw,
       detail: session,
     });
+    setCelebrating(true);
   };
 
   if (submitted && scores) {
     return (
+      <>
+      <CompletionOverlay
+        open={celebrating}
+        taskLabel="The everyday check-in"
+        metricLabel="Composite"
+        metricValue={scores.composite.raw}
+        onDismiss={() => setCelebrating(false)}
+      />
       <Card>
         <CardHeader>
           <CardTitle>Check-in complete</CardTitle>
@@ -88,8 +98,7 @@ export default function SelfReportForm() {
               <p className="text-xs text-muted-foreground">Composite (45–135)</p>
               <p className="text-4xl font-semibold text-foreground">{scores.composite.raw}</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Higher means more everyday difficulty reported. Only comparable to
-                your own earlier check-ins.
+                Higher means more everyday difficulty reported.
               </p>
             </div>
 
@@ -141,27 +150,19 @@ export default function SelfReportForm() {
             )}
 
             <Inline gap={8}>
-              <Button asChild>
+              <Button asChild size="lg" className="min-h-12 px-6">
                 <Link href="/exec-function-assessment">See your history</Link>
               </Button>
             </Inline>
           </Stack>
         </CardContent>
       </Card>
+      </>
     );
   }
 
   return (
     <Stack gap={24}>
-      <Callout>
-        <strong className="font-medium">Not a clinical instrument.</strong> This
-        questionnaire borrows the <em>structure</em> of the BRIEF-A — a 3-point
-        scale, nine subscales, two indices, a composite — and none of its
-        content. Every item here was written for this tool. It has no norms, no
-        standardization sample, and no diagnostic meaning; scores are only
-        comparable to your own earlier check-ins. It is not a substitute for a
-        BRIEF-A administered by a qualified professional.
-      </Callout>
 
       {(Object.keys(SUBSCALES) as SubscaleId[]).map((subscaleId) => {
         const subscale = SUBSCALES[subscaleId];
@@ -184,19 +185,33 @@ export default function SelfReportForm() {
                     <RadioGroup
                       value={responses[item.id] ? String(responses[item.id]) : undefined}
                       onValueChange={(value) => answer(item.id, Number(value) as ResponseValue)}
-                      className="flex flex-wrap gap-6"
+                      className="grid grid-cols-3 gap-2"
                     >
-                      {RESPONSE_OPTIONS.map((option) => (
-                        <div key={option.value} className="flex items-center gap-2">
-                          <RadioGroupItem
-                            id={`${item.id}-${option.value}`}
-                            value={String(option.value)}
-                          />
-                          <Label htmlFor={`${item.id}-${option.value}`} className="text-sm">
+                      {RESPONSE_OPTIONS.map((option) => {
+                        const selected = responses[item.id] === option.value;
+                        return (
+                          // The whole cell is the target, not the 16px dot. 48px
+                          // tall so it clears the minimum thumb size, and the
+                          // label sits inside it rather than beside it.
+                          <Label
+                            key={option.value}
+                            htmlFor={`${item.id}-${option.value}`}
+                            className={[
+                              "flex min-h-12 cursor-pointer items-center justify-center gap-2",
+                              "rounded-md border px-3 py-3 text-sm transition-colors",
+                              selected
+                                ? "border-foreground/40 bg-foreground/10 text-foreground"
+                                : "border-border hover:border-foreground/30",
+                            ].join(" ")}
+                          >
+                            <RadioGroupItem
+                              id={`${item.id}-${option.value}`}
+                              value={String(option.value)}
+                            />
                             {option.label}
                           </Label>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </RadioGroup>
                   </fieldset>
                 ))}
@@ -215,7 +230,12 @@ export default function SelfReportForm() {
                 : `${remaining} item${remaining === 1 ? "" : "s"} still unanswered.`}
             </p>
             <Inline gap={8}>
-              <Button onClick={submit} disabled={!complete}>
+              <Button
+                onClick={submit}
+                disabled={!complete}
+                size="lg"
+                className="min-h-12 w-full px-8 sm:w-auto"
+              >
                 Score and save
               </Button>
             </Inline>

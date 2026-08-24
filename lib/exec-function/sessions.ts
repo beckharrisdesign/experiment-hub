@@ -29,43 +29,73 @@ export interface StoredSession {
   detail: CorsiSession | NBackSession | SelfReportSession;
 }
 
-export interface ModuleMeta {
+/**
+ * A track is one line on the history page: a module, plus the variant that
+ * makes it its own measure. Corsi forward and backward are separate tracks
+ * rather than two series on one chart — they are administered as separate
+ * conditions, load different things (backward adds a mental reversal on top of
+ * the span), and have their own norms. Overlaying them invites reading a gap
+ * between the two lines as a finding, when it is just the task being harder.
+ */
+export interface Track {
+  /** Stable key: the module, plus the variant when the module has more than one. */
+  id: string;
+  module: ModuleId;
+  variant: string | null;
   label: string;
   headlineLabel: string;
   /** Which direction on the chart is the better one, in plain words. */
   direction: "higher is better" | "lower is better";
-  /** Series a module splits its history into, keyed by `variant`. */
-  variants: { key: string | null; label: string }[];
   href: string;
 }
 
-export const MODULE_META: Record<ModuleId, ModuleMeta> = {
-  corsi: {
-    label: "Corsi block-tapping",
+export const TRACKS: Track[] = [
+  {
+    id: "corsi-forward",
+    module: "corsi",
+    variant: "forward",
+    label: "Corsi — forward",
     headlineLabel: "Total Score",
     direction: "higher is better",
-    variants: [
-      { key: "forward", label: "Forward" },
-      { key: "backward", label: "Backward" },
-    ],
-    href: "/exec-function-assessment/corsi",
+    href: "/exec-function-assessment/corsi?condition=forward",
   },
-  "n-back": {
+  {
+    id: "corsi-backward",
+    module: "corsi",
+    variant: "backward",
+    label: "Corsi — backward",
+    headlineLabel: "Total Score",
+    direction: "higher is better",
+    href: "/exec-function-assessment/corsi?condition=backward",
+  },
+  {
+    id: "n-back",
+    module: "n-back",
+    variant: null,
     label: "Adaptive n-back",
     headlineLabel: "Peak N",
     direction: "higher is better",
-    variants: [{ key: null, label: "All sessions" }],
     href: "/exec-function-assessment/n-back",
   },
-  "self-report": {
+  {
+    id: "self-report",
+    module: "self-report",
+    variant: null,
     label: "Everyday check-in",
     headlineLabel: "Composite (45-135)",
     direction: "lower is better",
-    variants: [{ key: null, label: "All administrations" }],
     href: "/exec-function-assessment/self-report",
   },
-};
+];
 
+/** The track a given session or assignment belongs to. */
+export function trackFor(module: ModuleId, variant: string | null): Track | undefined {
+  return TRACKS.find(
+    (track) => track.module === module && track.variant === (variant ?? null),
+  );
+}
+
+/** Modules the API will accept a write for. */
 export const MODULE_ORDER: ModuleId[] = ["corsi", "n-back", "self-report"];
 
 // ---------------------------------------------------------------------------
@@ -79,19 +109,13 @@ export interface SeriesPoint {
   sessionId: string;
 }
 
-export interface Series {
-  variant: string | null;
-  label: string;
-  points: SeriesPoint[];
-}
-
-export interface ModuleSummary {
-  module: ModuleId;
-  meta: ModuleMeta;
+export interface TrackSummary {
+  track: Track;
   sessionCount: number;
-  series: Series[];
+  /** One series — a track is a single measure by construction. */
+  points: SeriesPoint[];
   latest: StoredSession | null;
-  /** Change from the previous session in the same series, if there is one. */
+  /** Change from the previous session on this same track, if there is one. */
   latestDelta: number | null;
   best: number | null;
 }
@@ -100,49 +124,51 @@ function ascendingByTime(a: { timestamp: string }, b: { timestamp: string }) {
   return a.timestamp.localeCompare(b.timestamp);
 }
 
-export function summarizeModule(
-  module: ModuleId,
+/** Sessions belonging to one track, oldest first. */
+export function sessionsFor(
+  track: Track,
   sessions: readonly StoredSession[],
-): ModuleSummary {
-  const meta = MODULE_META[module];
-  const mine = sessions.filter((s) => s.module === module).slice().sort(ascendingByTime);
+): StoredSession[] {
+  return sessions
+    .filter(
+      (s) =>
+        s.module === track.module &&
+        (track.variant === null || s.variant === track.variant),
+    )
+    .slice()
+    .sort(ascendingByTime);
+}
 
-  const series: Series[] = meta.variants.map((variant) => ({
-    variant: variant.key,
-    label: variant.label,
-    points: mine
-      .filter((s) => (variant.key === null ? true : s.variant === variant.key))
-      .map((s) => ({
-        dayKey: s.dayKey,
-        timestamp: s.timestamp,
-        value: s.headline,
-        sessionId: s.id,
-      })),
+export function summarizeTrack(
+  track: Track,
+  sessions: readonly StoredSession[],
+): TrackSummary {
+  const mine = sessionsFor(track, sessions);
+
+  const points: SeriesPoint[] = mine.map((s) => ({
+    dayKey: s.dayKey,
+    timestamp: s.timestamp,
+    value: s.headline,
+    sessionId: s.id,
   }));
 
   const latest = mine.length > 0 ? mine[mine.length - 1] : null;
-
-  let latestDelta: number | null = null;
-  if (latest) {
-    const sameSeries = mine.filter((s) => s.variant === latest.variant);
-    if (sameSeries.length >= 2) {
-      latestDelta = latest.headline - sameSeries[sameSeries.length - 2].headline;
-    }
-  }
+  const latestDelta =
+    mine.length >= 2 ? mine[mine.length - 1].headline - mine[mine.length - 2].headline : null;
 
   const values = mine.map((s) => s.headline);
   const best =
     values.length === 0
       ? null
-      : meta.direction === "lower is better"
+      : track.direction === "lower is better"
         ? Math.min(...values)
         : Math.max(...values);
 
-  return { module, meta, sessionCount: mine.length, series, latest, latestDelta, best };
+  return { track, sessionCount: mine.length, points, latest, latestDelta, best };
 }
 
-export function summarizeAll(sessions: readonly StoredSession[]): ModuleSummary[] {
-  return MODULE_ORDER.map((module) => summarizeModule(module, sessions));
+export function summarizeAll(sessions: readonly StoredSession[]): TrackSummary[] {
+  return TRACKS.map((track) => summarizeTrack(track, sessions));
 }
 
 /** Distinct calendar days with at least one completed session. */

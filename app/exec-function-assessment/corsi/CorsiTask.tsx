@@ -31,6 +31,7 @@ import {
 import { useRecorder } from "../components/useRecorder";
 import SaveNotice from "../components/SaveNotice";
 import TimingWarning from "../components/TimingWarning";
+import CompletionOverlay from "../components/CompletionOverlay";
 import { useVisibilityGuard } from "../components/useVisibilityGuard";
 
 /**
@@ -59,6 +60,7 @@ export default function CorsiTask({ condition }: Props) {
   const [taps, setTaps] = useState<number[]>([]);
   const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);
   const [startedAt, setStartedAt] = useState<number>(0);
+  const [celebrating, setCelebrating] = useState(false);
 
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const { record, result, saving } = useRecorder();
@@ -137,6 +139,7 @@ export default function CorsiTask({ condition }: Props) {
         headline: score.totalScore,
         detail: session,
       });
+      setCelebrating(true);
     },
     [condition, record],
   );
@@ -214,7 +217,9 @@ export default function CorsiTask({ condition }: Props) {
                   Taps cannot be taken back.
                 </p>
                 <Inline gap={8}>
-                  <Button onClick={begin}>Start</Button>
+                  <Button onClick={begin} size="lg" className="min-h-12 px-8">
+                    Start
+                  </Button>
                 </Inline>
               </Stack>
             )}
@@ -253,6 +258,14 @@ export default function CorsiTask({ condition }: Props) {
         </CardContent>
       </Card>
 
+      <CompletionOverlay
+        open={celebrating}
+        taskLabel={`Corsi ${condition}`}
+        metricLabel="Total Score"
+        metricValue={score.totalScore}
+        onDismiss={() => setCelebrating(false)}
+      />
+
       {phase === "done" && (
         <Card>
           <CardHeader>
@@ -276,11 +289,8 @@ export default function CorsiTask({ condition }: Props) {
                 <SaveNotice result={result} />
               )}
               <Inline gap={8}>
-                <Button asChild>
+                <Button asChild size="lg" className="min-h-12 px-6">
                   <Link href="/exec-function-assessment">See your history</Link>
-                </Button>
-                <Button variant="outline" onClick={begin}>
-                  Run it again
                 </Button>
               </Inline>
             </Stack>

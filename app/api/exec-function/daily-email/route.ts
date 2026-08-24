@@ -7,7 +7,7 @@ import {
   dayKeyFor,
 } from "@/lib/exec-function/schedule";
 import { getStoreClient, listSessions } from "@/lib/exec-function/server-store";
-import { MODULE_META, completedDayKeys } from "@/lib/exec-function/sessions";
+import { completedDayKeys, trackFor } from "@/lib/exec-function/sessions";
 
 export const dynamic = "force-dynamic";
 
@@ -57,8 +57,9 @@ export async function POST(request: NextRequest) {
           (assignment.condition ? s.variant === assignment.condition : true),
       );
       const last = sameTask[sameTask.length - 1];
-      if (last) {
-        lastScore = { label: MODULE_META[assignment.module].headlineLabel, value: last.headline };
+      const track = trackFor(assignment.module, assignment.condition ?? null);
+      if (last && track) {
+        lastScore = { label: track.headlineLabel, value: last.headline };
       }
     } catch (error) {
       console.error("[efa daily-email] history lookup failed", error);

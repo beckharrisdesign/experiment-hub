@@ -1,27 +1,35 @@
 "use client";
 
 import { useId, useState } from "react";
-import type { Series } from "@/lib/exec-function/sessions";
+import type { SeriesPoint } from "@/lib/exec-function/sessions";
 
 /**
- * Score over time for one module.
+ * Score over time for one track.
  *
  * Plotted against the calendar, not against session number, so a week with no
  * sessions reads as a gap rather than being compressed away. Points are the
  * data; the line only connects them.
  *
- * Palette: categorical slots 1 and 2, stepped for the dark card surface
- * (#171717) and validated for CVD separation. Two series is the most any of
- * these charts carries, so the fixed order never runs out and never cycles.
+ * One series per chart by construction, so there is no legend — the card title
+ * names the measure, and a legend box for a single line is noise.
  */
 
-const SERIES_COLORS = ["#3987e5", "#d95926"] as const;
+const SERIES_COLOR = "#3987e5";
 
 const VIEW_W = 480;
 const VIEW_H = 168;
 const PAD = { top: 14, right: 16, bottom: 26, left: 38 };
 const PLOT_W = VIEW_W - PAD.left - PAD.right;
 const PLOT_H = VIEW_H - PAD.top - PAD.bottom;
+
+interface Scale {
+  x: (dayKey: string) => number;
+  y: (value: number) => number;
+  rawMin: number;
+  rawMax: number;
+  firstDay: string;
+  lastDay: string;
+}
 
 function dayNumber(dayKey: string): number {
   const [y, m, d] = dayKey.split("-").map(Number);
@@ -33,41 +41,22 @@ function shortDate(dayKey: string): string {
   return `${m}/${d}`;
 }
 
-interface Scale {
-  x: (dayKey: string) => number;
-  y: (value: number) => number;
-  valueMin: number;
-  valueMax: number;
-  rawMin: number;
-  rawMax: number;
-  firstDay: string;
-  lastDay: string;
-}
-
-interface HoverPoint {
-  seriesIndex: number;
-  pointIndex: number;
-}
-
 export interface TrendChartProps {
-  series: Series[];
-  /** Names the measure, so a single-series chart needs no legend box. */
+  points: SeriesPoint[];
+  /** Names the measure, so the chart needs no legend of its own. */
   valueLabel: string;
   direction: "higher is better" | "lower is better";
 }
 
-export default function TrendChart({ series, valueLabel, direction }: TrendChartProps) {
+export default function TrendChart({ points, valueLabel, direction }: TrendChartProps) {
   const titleId = useId();
-  const [hover, setHover] = useState<HoverPoint | null>(null);
-
-  const populated = series.filter((s) => s.points.length > 0);
-  const allPoints = populated.flatMap((s) => s.points);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
   const scale = ((): Scale | null => {
-    if (allPoints.length === 0) return null;
+    if (points.length === 0) return null;
 
-    const days = allPoints.map((p) => dayNumber(p.dayKey));
-    const values = allPoints.map((p) => p.value);
+    const days = points.map((p) => dayNumber(p.dayKey));
+    const values = points.map((p) => p.value);
 
     const dayMin = Math.min(...days);
     const dayMax = Math.max(...days);
@@ -88,12 +77,10 @@ export default function TrendChart({ series, valueLabel, direction }: TrendChart
           : PAD.left + ((dayNumber(dayKey) - dayMin) / (dayMax - dayMin)) * PLOT_W,
       y: (value: number) =>
         PAD.top + PLOT_H - ((value - valueMin) / (valueMax - valueMin)) * PLOT_H,
-      valueMin,
-      valueMax,
       rawMin,
       rawMax,
-      firstDay: allPoints.reduce((a, b) => (a.dayKey <= b.dayKey ? a : b)).dayKey,
-      lastDay: allPoints.reduce((a, b) => (a.dayKey >= b.dayKey ? a : b)).dayKey,
+      firstDay: points.reduce((a, b) => (a.dayKey <= b.dayKey ? a : b)).dayKey,
+      lastDay: points.reduce((a, b) => (a.dayKey >= b.dayKey ? a : b)).dayKey,
     };
   })();
 
@@ -105,27 +92,14 @@ export default function TrendChart({ series, valueLabel, direction }: TrendChart
     );
   }
 
-  const hovered =
-    hover !== null ? populated[hover.seriesIndex]?.points[hover.pointIndex] ?? null : null;
-  const hoveredSeries = hover !== null ? populated[hover.seriesIndex] : null;
+  const hovered = hoverIndex === null ? null : points[hoverIndex];
+  const lastIndex = points.length - 1;
+  const path = points
+    .map((p, i) => `${i === 0 ? "M" : "L"}${scale.x(p.dayKey)},${scale.y(p.value)}`)
+    .join(" ");
 
   return (
     <div>
-      {populated.length > 1 && (
-        <ul className="mb-2 flex flex-wrap gap-4" aria-label="Series">
-          {populated.map((s, i) => (
-            <li key={s.label} className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span
-                aria-hidden="true"
-                className="inline-block h-2 w-2 rounded-full"
-                style={{ background: SERIES_COLORS[i % SERIES_COLORS.length] }}
-              />
-              {s.label}
-            </li>
-          ))}
-        </ul>
-      )}
-
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
         // Capped so a handful of points do not stretch into a 300px-tall
@@ -133,14 +107,14 @@ export default function TrendChart({ series, valueLabel, direction }: TrendChart
         className="h-auto w-full max-w-xl"
         role="img"
         aria-labelledby={titleId}
-        onMouseLeave={() => setHover(null)}
+        onMouseLeave={() => setHoverIndex(null)}
       >
         <title id={titleId}>
-          {valueLabel} over time, {direction}. {allPoints.length} session
-          {allPoints.length === 1 ? "" : "s"} from {scale.firstDay} to {scale.lastDay}.
+          {valueLabel} over time, {direction}. {points.length} session
+          {points.length === 1 ? "" : "s"} from {scale.firstDay} to {scale.lastDay}.
         </title>
 
-        {/* Axis frame — recessive, and only the two lines that carry meaning. */}
+        {/* Axis frame — recessive, and only the lines that carry meaning. */}
         <line
           x1={PAD.left}
           y1={PAD.top + PLOT_H}
@@ -160,12 +134,7 @@ export default function TrendChart({ series, valueLabel, direction }: TrendChart
         >
           {Math.round(scale.rawMin)}
         </text>
-        <text
-          x={PAD.left}
-          y={VIEW_H - 8}
-          textAnchor="start"
-          className="fill-muted-foreground text-[10px]"
-        >
+        <text x={PAD.left} y={VIEW_H - 8} textAnchor="start" className="fill-muted-foreground text-[10px]">
           {shortDate(scale.firstDay)}
         </text>
         <text
@@ -177,7 +146,6 @@ export default function TrendChart({ series, valueLabel, direction }: TrendChart
           {shortDate(scale.lastDay)}
         </text>
 
-        {/* Crosshair for the hovered point. */}
         {hovered && (
           <line
             x1={scale.x(hovered.dayKey)}
@@ -190,70 +158,57 @@ export default function TrendChart({ series, valueLabel, direction }: TrendChart
           />
         )}
 
-        {populated.map((s, seriesIndex) => {
-          const color = SERIES_COLORS[seriesIndex % SERIES_COLORS.length];
-          const path = s.points
-            .map((p, i) => `${i === 0 ? "M" : "L"}${scale.x(p.dayKey)},${scale.y(p.value)}`)
-            .join(" ");
-          const lastIndex = s.points.length - 1;
+        {points.length > 1 && (
+          <path d={path} fill="none" stroke={SERIES_COLOR} strokeWidth={2} strokeLinecap="round" />
+        )}
 
+        {points.map((p, i) => {
+          const isLatest = i === lastIndex;
+          const isHovered = hoverIndex === i;
           return (
-            <g key={s.label}>
-              {s.points.length > 1 && (
-                <path d={path} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" />
+            <g key={p.sessionId}>
+              {/* 2px surface ring keeps overlapping marks separable. */}
+              <circle
+                cx={scale.x(p.dayKey)}
+                cy={scale.y(p.value)}
+                r={isLatest ? 6 : 4}
+                fill={SERIES_COLOR}
+                stroke="var(--card)"
+                strokeWidth={2}
+              />
+              {isLatest && (
+                <circle
+                  cx={scale.x(p.dayKey)}
+                  cy={scale.y(p.value)}
+                  r={9}
+                  fill="none"
+                  stroke={SERIES_COLOR}
+                  strokeWidth={1.5}
+                  opacity={0.5}
+                />
               )}
-
-              {s.points.map((p, i) => {
-                const isLatest = i === lastIndex;
-                const isHovered =
-                  hover?.seriesIndex === seriesIndex && hover?.pointIndex === i;
-                return (
-                  <g key={p.sessionId}>
-                    {/* 2px surface ring keeps overlapping marks separable. */}
-                    <circle
-                      cx={scale.x(p.dayKey)}
-                      cy={scale.y(p.value)}
-                      r={isLatest ? 6 : 4}
-                      fill={color}
-                      stroke="var(--card)"
-                      strokeWidth={2}
-                    />
-                    {isLatest && (
-                      <circle
-                        cx={scale.x(p.dayKey)}
-                        cy={scale.y(p.value)}
-                        r={9}
-                        fill="none"
-                        stroke={color}
-                        strokeWidth={1.5}
-                        opacity={0.5}
-                      />
-                    )}
-                    {/* Hit target larger than the mark. */}
-                    <circle
-                      cx={scale.x(p.dayKey)}
-                      cy={scale.y(p.value)}
-                      r={14}
-                      fill="transparent"
-                      onMouseEnter={() => setHover({ seriesIndex, pointIndex: i })}
-                      onFocus={() => setHover({ seriesIndex, pointIndex: i })}
-                      tabIndex={0}
-                      role="button"
-                      aria-label={`${s.label}, ${p.dayKey}: ${p.value}`}
-                    />
-                    {isHovered && (
-                      <circle
-                        cx={scale.x(p.dayKey)}
-                        cy={scale.y(p.value)}
-                        r={isLatest ? 6 : 4}
-                        fill="none"
-                        stroke="var(--foreground)"
-                        strokeWidth={1.5}
-                      />
-                    )}
-                  </g>
-                );
-              })}
+              {/* Hit target larger than the mark. */}
+              <circle
+                cx={scale.x(p.dayKey)}
+                cy={scale.y(p.value)}
+                r={16}
+                fill="transparent"
+                onMouseEnter={() => setHoverIndex(i)}
+                onFocus={() => setHoverIndex(i)}
+                tabIndex={0}
+                role="button"
+                aria-label={`${p.dayKey}: ${p.value}`}
+              />
+              {isHovered && (
+                <circle
+                  cx={scale.x(p.dayKey)}
+                  cy={scale.y(p.value)}
+                  r={isLatest ? 6 : 4}
+                  fill="none"
+                  stroke="var(--foreground)"
+                  strokeWidth={1.5}
+                />
+              )}
             </g>
           );
         })}
@@ -261,17 +216,12 @@ export default function TrendChart({ series, valueLabel, direction }: TrendChart
 
       {/* Tooltip in text tokens — the mark beside it carries the identity. */}
       <p className="mt-1 min-h-5 text-xs text-muted-foreground">
-        {hovered && hoveredSeries ? (
+        {hovered ? (
           <>
             <span
               aria-hidden="true"
               className="mr-2 inline-block h-2 w-2 rounded-full align-middle"
-              style={{
-                background:
-                  SERIES_COLORS[
-                    populated.indexOf(hoveredSeries) % SERIES_COLORS.length
-                  ],
-              }}
+              style={{ background: SERIES_COLOR }}
             />
             {hovered.dayKey} · {valueLabel} {hovered.value}
           </>
