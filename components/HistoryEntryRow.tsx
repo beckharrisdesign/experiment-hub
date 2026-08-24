@@ -13,11 +13,14 @@ import type { HistoryEntry } from "@/lib/notion-history";
 export default function HistoryEntryRow({ entry }: { entry: HistoryEntry }) {
   return (
     <li className="flex flex-col sm:flex-row sm:gap-4">
-      <span className="w-[88px] shrink-0 font-mono text-[13px] tabular-nums text-text-dark-secondary sm:text-right">
+      {/* Fixed gutter, never wrapped: a date broken across two lines reads as
+       * two dates. 128px holds formatDateSpan's longest output — the 17-char
+       * cross-year span "Jul 2024–Mar 2026" — at the mono ramp's 0.6em advance. */}
+      <span className="w-[128px] shrink-0 whitespace-nowrap font-mono text-xs tabular-nums text-text-dark-secondary sm:text-right">
         {entry.when}
       </span>
       <div className="min-w-0">
-        <span className="text-sm leading-[1.7] text-text-dark">
+        <span className="text-body text-text-dark">
           {entry.milestone}
           {entry.receiptUrl && (
             <>
@@ -26,7 +29,7 @@ export default function HistoryEntryRow({ entry }: { entry: HistoryEntry }) {
                 href={entry.receiptUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="whitespace-nowrap font-mono text-[12px] text-text-dark-secondary underline decoration-border-dark underline-offset-2 transition-colors hover:text-text-dark"
+                className="whitespace-nowrap font-mono text-xs text-text-dark-secondary underline decoration-border-dark underline-offset-2 transition-colors hover:text-text-dark"
               >
                 receipt ↗
               </a>
@@ -34,16 +37,16 @@ export default function HistoryEntryRow({ entry }: { entry: HistoryEntry }) {
           )}
         </span>
         {entry.sources.length > 0 && (
-          <div className="mt-2 flex flex-col gap-1.5 border-l border-border-dark/40 pl-3">
+          <div className="mt-2 flex flex-col gap-2 border-l border-border-dark/40 pl-4">
             {entry.sources.map((line, lineIndex) => (
               <p
                 key={lineIndex}
-                className="text-[13px] leading-[1.6] text-text-dark-secondary"
+                className="text-small text-text-dark-secondary"
               >
                 {line.map((span, spanIndex) => {
                   let node: React.ReactNode = span.text;
                   if (span.code) {
-                    node = <code className="font-mono text-[12px]">{node}</code>;
+                    node = <code className="font-mono text-xs">{node}</code>;
                   }
                   if (span.bold) {
                     node = (

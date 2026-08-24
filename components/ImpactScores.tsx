@@ -53,11 +53,11 @@ function Legend({
 function HistoryList({ entries }: { entries: HistoryEntry[] }) {
   if (entries.length === 0) {
     return (
-      <p className="text-sm text-text-dark-secondary">No milestones yet.</p>
+      <p className="text-small text-text-dark-secondary">No milestones yet.</p>
     );
   }
   return (
-    <ol className="flex flex-col gap-4">
+    <ol className="flex flex-col gap-6">
       {entries.map((entry, index) => (
         <HistoryEntryRow key={`${entry.date}-${index}`} entry={entry} />
       ))}
@@ -83,7 +83,7 @@ export default function ImpactScoresDisplay({
   return (
     <section className="max-w-[720px]">
       <div className="flex items-center gap-3">
-        <span className="text-xs font-medium uppercase tracking-[0.08em] text-text-dark-secondary">
+        <span className="text-caption uppercase text-text-dark-secondary">
           Impact score
         </span>
         {total !== null && (
@@ -105,7 +105,7 @@ export default function ImpactScoresDisplay({
               role="tab"
               aria-selected={active}
               onClick={() => setTab(dimension)}
-              className={`flex items-center gap-1.5 p-4 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 p-4 text-small font-medium transition-colors ${
                 active
                   ? "border-b-2 border-accent-primary text-text-dark"
                   : "text-text-dark-secondary hover:text-text-dark"
@@ -122,7 +122,7 @@ export default function ImpactScoresDisplay({
           role="tab"
           aria-selected={tab === "history"}
           onClick={() => setTab("history")}
-          className={`flex items-center p-4 text-sm font-medium transition-colors ${
+          className={`flex items-center p-4 text-small font-medium transition-colors ${
             tab === "history"
               ? "border-b-2 border-accent-primary text-text-dark"
               : "text-text-dark-secondary hover:text-text-dark"
