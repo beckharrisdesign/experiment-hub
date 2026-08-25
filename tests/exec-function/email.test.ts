@@ -71,3 +71,28 @@ describe("recipient", () => {
     expect(route).toContain('process.env.EFA_NOTIFY_EMAIL || "katy@beckharrisdesign.com"');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Origin
+// ---------------------------------------------------------------------------
+
+describe("link origin", () => {
+  const route = () =>
+    require("node:fs").readFileSync(
+      "app/api/exec-function/daily-email/route.ts",
+      "utf8",
+    ) as string;
+
+  it("falls back to the hub's real production host", () => {
+    expect(route()).toContain('"https://labs.beckharrisdesign.com"');
+  });
+
+  it("never uses experiment-hub.vercel.app as a value", () => {
+    // That hostname belongs to an unrelated static app: it answers any GET with
+    // its own index.html and any POST with 405, so a link there is dead and a
+    // cron pointed at it fails in a way that looks like our bug. The comment in
+    // the route names it as a warning, so match the quoted *value*, not any
+    // mention of the string.
+    expect(route()).not.toContain('"https://experiment-hub.vercel.app"');
+  });
+});
