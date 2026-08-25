@@ -35,7 +35,9 @@ jobs:
     steps:
       - name: Send today's assessment link
         env:
-          # Optional: falls back to the production domain Vercel reports.
+          # Optional. The fallback below is the hub's real production host —
+          # NOT experiment-hub.vercel.app, which belongs to an unrelated static
+          # app and answers POST with 405.
           SITE_URL: ${{ secrets.EFA_SITE_URL }}
           # The route accepts a key DERIVED from the service-role key, never the
           # key itself (lib/exec-function/access.ts). This job already has that
@@ -59,7 +61,7 @@ jobs:
           # captured so a 502 from the mail provider shows up in the log rather
           # than as a bare exit code.
           status=$(curl -sS -o response.json -w '%{http_code}' \
-            -X POST "${SITE_URL:-https://experiment-hub.vercel.app}/api/exec-function/daily-email" \
+            -X POST "${SITE_URL:-https://labs.beckharrisdesign.com}/api/exec-function/daily-email" \
             -H "x-efa-key: ${ACCESS_KEY}" \
             -H 'content-type: application/json')
 

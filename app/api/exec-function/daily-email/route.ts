@@ -36,16 +36,15 @@ export async function POST(request: NextRequest) {
   const dayKey = dayKeyFor(new Date(), timeZone);
   const assignment = assignmentFor(dayKey);
 
-  // No dedicated config: the hub already knows where it lives. Prefer the
-  // stable production domain over VERCEL_URL, which is per-deployment and would
-  // put a URL in the email that stops resolving on the next deploy.
+  // The hub's production host. Hard-coded as the last resort rather than
+  // guessing from Vercel: NEXT_PUBLIC_APP_URL is not set in production, and
+  // VERCEL_PROJECT_PRODUCTION_URL is a *.vercel.app name — the obvious guess,
+  // experiment-hub.vercel.app, is an unrelated static app that answers POST
+  // with 405. A wrong origin here puts a dead link in every email.
   const origin =
     process.env.EFA_SITE_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : "") ||
-    "http://localhost:3000";
+    "https://labs.beckharrisdesign.com";
   const siteUrl = origin.replace(/\/$/, "");
   // The key rides in the link so tapping it from the phone just works; the page
   // stores it locally, so it only has to travel this way once.
