@@ -47,6 +47,14 @@ export interface Track {
   /** Which direction on the chart is the better one, in plain words. */
   direction: "higher is better" | "lower is better";
   href: string;
+  /**
+   * Header for the secondary count column, when the module has a count worth
+   * showing. Only Corsi does: its run length varies, and 2 trials against 8 is
+   * what separates a false start from a full administration. A completed
+   * n-back is always six blocks and a completed check-in always forty-five
+   * items, so on those tracks the column would be a constant.
+   */
+  countLabel?: string;
 }
 
 export const TRACKS: Track[] = [
@@ -58,6 +66,7 @@ export const TRACKS: Track[] = [
     headlineLabel: "Total Score",
     direction: "higher is better",
     href: "/exec-function-assessment/corsi?condition=forward",
+    countLabel: "Trials",
   },
   {
     id: "corsi-backward",
@@ -67,6 +76,7 @@ export const TRACKS: Track[] = [
     headlineLabel: "Total Score",
     direction: "higher is better",
     href: "/exec-function-assessment/corsi?condition=backward",
+    countLabel: "Trials",
   },
   {
     id: "n-back",
@@ -107,6 +117,22 @@ export interface SeriesPoint {
   timestamp: string;
   value: number;
   sessionId: string;
+  /** How long the session ran. Carried here so the table need not re-read `detail`. */
+  durationMs: number;
+  /** Trials administered, on tracks that report one (see `Track.countLabel`). */
+  count: number | null;
+}
+
+/**
+ * The count a track's `countLabel` names, read off the module's own detail.
+ *
+ * Null wherever there is nothing variable to report, rather than a constant
+ * dressed up as a measurement.
+ */
+export function secondaryCount(session: StoredSession): number | null {
+  if (session.module !== "corsi") return null;
+  const detail = session.detail as CorsiSession;
+  return Array.isArray(detail.trials) ? detail.trials.length : null;
 }
 
 export interface TrackSummary {
@@ -145,11 +171,17 @@ export function summarizeTrack(
 ): TrackSummary {
   const mine = sessionsFor(track, sessions);
 
+  // Every session on this track reaches the chart and the table. Nothing is
+  // filtered by score: a run that measured badly is still a run that happened,
+  // and a dashboard that decides which of your sessions counted is doing the
+  // one thing a measurement tool must not.
   const points: SeriesPoint[] = mine.map((s) => ({
     dayKey: s.dayKey,
     timestamp: s.timestamp,
     value: s.headline,
     sessionId: s.id,
+    durationMs: s.durationMs,
+    count: secondaryCount(s),
   }));
 
   const latest = mine.length > 0 ? mine[mine.length - 1] : null;
