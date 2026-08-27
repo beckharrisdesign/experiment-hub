@@ -23,6 +23,9 @@ import {
   isComplete,
   missingItems,
   score,
+  RECALL_WINDOW,
+  RECALL_WINDOW_CHIP,
+  RECALL_WINDOW_PROMPT,
   type Responses,
   type ResponseValue,
   type SelfReportSession,
@@ -66,6 +69,7 @@ export default function SelfReportForm() {
       durationMs,
       responses: responses as Record<string, ResponseValue>,
       scores,
+      recallWindow: RECALL_WINDOW,
     };
 
     await record({
@@ -163,6 +167,14 @@ export default function SelfReportForm() {
 
   return (
     <Stack gap={24}>
+      {/*
+        Stated here, and again in every card header below. Forty-five items
+        across nine cards scrolls this line away long before the last answer,
+        and the whole reason for a short window is that recall over a long one
+        is unreliable — a window you have to remember would reintroduce the
+        problem it exists to solve.
+      */}
+      <p className="text-base text-foreground">{RECALL_WINDOW_PROMPT}</p>
 
       {(Object.keys(SUBSCALES) as SubscaleId[]).map((subscaleId) => {
         const subscale = SUBSCALES[subscaleId];
@@ -173,7 +185,10 @@ export default function SelfReportForm() {
             <CardHeader>
               <Inline gap={8} align="center" justify="between">
                 <CardTitle>{subscale.label}</CardTitle>
-                <Badge variant="muted">{INDICES[subscale.index].label}</Badge>
+                <Inline gap={8} align="center">
+                  <Badge variant="muted">{INDICES[subscale.index].label}</Badge>
+                  <Badge variant="outline">{RECALL_WINDOW_CHIP}</Badge>
+                </Inline>
               </Inline>
               <p className="mt-1 text-sm text-muted-foreground">{subscale.blurb}</p>
             </CardHeader>

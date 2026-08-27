@@ -23,10 +23,16 @@ export interface Assignment {
 }
 
 /**
- * A seven-day cycle. Corsi forward, Corsi backward and n-back run twice a
- * week each; the self-report runs once. The questionnaire is deliberately the
- * odd one out — it asks about "the past month", so administering it daily
- * would sample the same month over and over and read as flat by construction.
+ * A seven-day cycle of *suggested* blocks. Corsi forward, Corsi backward and
+ * n-back are each suggested twice a week, the self-report once. This names the
+ * day's suggestion; what a track will actually accept is its own minimum
+ * interval (`Track.minIntervalDays`), which is what the dashboard gates on.
+ *
+ * The questionnaire is the odd one out because it asks about the past week, so
+ * running it more often would give consecutive scores an overlapping referent
+ * period and flatten the trend by construction. (Until 2026-08-27 this comment
+ * claimed a one-month window; no window was stated on the form at all, and the
+ * form now asks about the past week.)
  */
 const CYCLE: Assignment[] = [
   { module: "corsi", condition: "forward", label: "Corsi — forward", href: "/exec-function-assessment/corsi?condition=forward", estimatedMinutes: 6 },

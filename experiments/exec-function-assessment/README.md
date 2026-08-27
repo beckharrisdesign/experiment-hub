@@ -64,9 +64,16 @@ Monitor, Organization of Materials); together they form the composite (45–135)
 Every item is keyed in the same direction, so a rising line always means more
 reported difficulty.
 
-Scheduled weekly rather than daily: the items ask about ongoing patterns, so
-administering it every day would resample the same period and read as flat by
-construction.
+**Recall window: the past week.** Stated above the items, repeated in every
+subscale header, and recorded on each stored session. Long retrospective windows
+get reconstructed from a few salient incidents rather than averaged from
+experience, and here that reconstruction is performed by the executive function
+being measured — so a shorter window is the more rigorous choice, not the looser
+one. A week also matches the cadence, so consecutive check-ins do not share a
+referent period and flatten the trend by construction.
+
+Sessions recorded before 2026-08-27 carry no window, because the form stated
+none, and are not directly comparable with later ones.
 
 ## Known limits
 
