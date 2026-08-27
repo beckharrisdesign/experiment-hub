@@ -1,14 +1,24 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { SeriesPoint } from "@/lib/exec-function/sessions";
 
 /**
  * Score over time for one track.
  *
- * Plotted against the calendar, not against session number, so a week with no
+ * Plotted against elapsed time, not against session number, so a week with no
  * sessions reads as a gap rather than being compressed away. Points are the
  * data; the line only connects them.
+ *
+ * Positioned by the *instant* a session was recorded rather than by its
+ * calendar day. Day buckets sent every session sharing a date to one x — two
+ * runs in a morning drew as a vertical line, which looked like a rendering
+ * fault and hid the fact that they were two separate events.
+ *
+ * The chart spans its container at a fixed height, and the viewBox is sized to
+ * the measured width so one SVG unit is one CSS pixel. That keeps a 10px label
+ * at 10px everywhere; a fixed viewBox scaled as a unit, so the same label
+ * drifted between roughly 8.7px and 12px depending on the card.
  *
  * One series per chart by construction, so there is no legend — the card title
  * names the measure, and a legend box for a single line is noise.
@@ -16,14 +26,21 @@ import type { SeriesPoint } from "@/lib/exec-function/sessions";
 
 const SERIES_COLOR = "#3987e5";
 
-const VIEW_W = 480;
-const VIEW_H = 168;
+/**
+ * Height is fixed rather than derived from width. The chart used to carry a
+ * `max-w-xl` cap for exactly this reason — a fixed aspect ratio deepened the
+ * plot as it widened — but the cap paid for it by leaving unexplained empty
+ * space beside the chart on a wide card. Pinning the height buys the same
+ * protection and lets the plot use the room it is given.
+ */
+const CHART_H = 200;
+/** First paint, before the container has been measured. */
+const DEFAULT_W = 640;
 const PAD = { top: 14, right: 16, bottom: 26, left: 38 };
-const PLOT_W = VIEW_W - PAD.left - PAD.right;
-const PLOT_H = VIEW_H - PAD.top - PAD.bottom;
+const PLOT_H = CHART_H - PAD.top - PAD.bottom;
 
 interface Scale {
-  x: (dayKey: string) => number;
+  x: (timestamp: string) => number;
   y: (value: number) => number;
   rawMin: number;
   rawMax: number;
@@ -31,14 +48,35 @@ interface Scale {
   lastDay: string;
 }
 
-function dayNumber(dayKey: string): number {
-  const [y, m, d] = dayKey.split("-").map(Number);
-  return Math.floor(Date.UTC(y, m - 1, d) / 86_400_000);
-}
-
 function shortDate(dayKey: string): string {
   const [, m, d] = dayKey.split("-").map(Number);
   return `${m}/${d}`;
+}
+
+/**
+ * The rendered width of the chart's container.
+ *
+ * Server-rendered markup has no width to measure, so the first paint uses a
+ * defined default and the observer corrects it on mount. Without the observer
+ * the chart would keep whatever width it was born with and never respond to a
+ * resize.
+ */
+function useContainerWidth() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(DEFAULT_W);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver((entries) => {
+      const measured = entries[0]?.contentRect.width;
+      if (measured && measured > 0) setWidth(Math.round(measured));
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, width };
 }
 
 export interface TrendChartProps {
@@ -48,18 +86,25 @@ export interface TrendChartProps {
   direction: "higher is better" | "lower is better";
 }
 
+/** The direction string is stored lowercase for mid-sentence use in the SVG title. */
+function sentenceCase(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 export default function TrendChart({ points, valueLabel, direction }: TrendChartProps) {
   const titleId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const { ref: wrapRef, width } = useContainerWidth();
+  const PLOT_W = Math.max(width - PAD.left - PAD.right, 1);
 
   const scale = ((): Scale | null => {
     if (points.length === 0) return null;
 
-    const days = points.map((p) => dayNumber(p.dayKey));
+    const times = points.map((p) => Date.parse(p.timestamp));
     const values = points.map((p) => p.value);
 
-    const dayMin = Math.min(...days);
-    const dayMax = Math.max(...days);
+    const timeMin = Math.min(...times);
+    const timeMax = Math.max(...times);
     const rawMin = Math.min(...values);
     const rawMax = Math.max(...values);
 
@@ -71,10 +116,11 @@ export default function TrendChart({ points, valueLabel, direction }: TrendChart
     const valueMax = rawMax + padValue;
 
     return {
-      x: (dayKey: string) =>
-        dayMax === dayMin
+      // A lone point has no span to scale against, so it sits mid-plot.
+      x: (timestamp: string) =>
+        timeMax === timeMin
           ? PAD.left + PLOT_W / 2
-          : PAD.left + ((dayNumber(dayKey) - dayMin) / (dayMax - dayMin)) * PLOT_W,
+          : PAD.left + ((Date.parse(timestamp) - timeMin) / (timeMax - timeMin)) * PLOT_W,
       y: (value: number) =>
         PAD.top + PLOT_H - ((value - valueMin) / (valueMax - valueMin)) * PLOT_H,
       rawMin,
@@ -95,16 +141,16 @@ export default function TrendChart({ points, valueLabel, direction }: TrendChart
   const hovered = hoverIndex === null ? null : points[hoverIndex];
   const lastIndex = points.length - 1;
   const path = points
-    .map((p, i) => `${i === 0 ? "M" : "L"}${scale.x(p.dayKey)},${scale.y(p.value)}`)
+    .map((p, i) => `${i === 0 ? "M" : "L"}${scale.x(p.timestamp)},${scale.y(p.value)}`)
     .join(" ");
 
   return (
-    <div>
+    <div ref={wrapRef}>
       <svg
-        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-        // Capped so a handful of points do not stretch into a 300px-tall
-        // band of empty plot on a wide screen.
-        className="h-auto w-full max-w-xl"
+        viewBox={`0 0 ${width} ${CHART_H}`}
+        width="100%"
+        height={CHART_H}
+        className="block"
         role="img"
         aria-labelledby={titleId}
         onMouseLeave={() => setHoverIndex(null)}
@@ -134,23 +180,37 @@ export default function TrendChart({ points, valueLabel, direction }: TrendChart
         >
           {Math.round(scale.rawMin)}
         </text>
-        <text x={PAD.left} y={VIEW_H - 8} textAnchor="start" className="fill-muted-foreground text-[10px]">
-          {shortDate(scale.firstDay)}
-        </text>
-        <text
-          x={PAD.left + PLOT_W}
-          y={VIEW_H - 8}
-          textAnchor="end"
-          className="fill-muted-foreground text-[10px]"
-        >
-          {shortDate(scale.lastDay)}
-        </text>
+        {scale.firstDay === scale.lastDay ? (
+          // Printing the same date at both ends implies a range that is not there.
+          <text
+            x={PAD.left + PLOT_W / 2}
+            y={CHART_H - 8}
+            textAnchor="middle"
+            className="fill-muted-foreground text-[10px]"
+          >
+            {shortDate(scale.firstDay)}
+          </text>
+        ) : (
+          <>
+            <text x={PAD.left} y={CHART_H - 8} textAnchor="start" className="fill-muted-foreground text-[10px]">
+              {shortDate(scale.firstDay)}
+            </text>
+            <text
+              x={PAD.left + PLOT_W}
+              y={CHART_H - 8}
+              textAnchor="end"
+              className="fill-muted-foreground text-[10px]"
+            >
+              {shortDate(scale.lastDay)}
+            </text>
+          </>
+        )}
 
         {hovered && (
           <line
-            x1={scale.x(hovered.dayKey)}
+            x1={scale.x(hovered.timestamp)}
             y1={PAD.top}
-            x2={scale.x(hovered.dayKey)}
+            x2={scale.x(hovered.timestamp)}
             y2={PAD.top + PLOT_H}
             className="stroke-border"
             strokeWidth={1}
@@ -169,7 +229,7 @@ export default function TrendChart({ points, valueLabel, direction }: TrendChart
             <g key={p.sessionId}>
               {/* 2px surface ring keeps overlapping marks separable. */}
               <circle
-                cx={scale.x(p.dayKey)}
+                cx={scale.x(p.timestamp)}
                 cy={scale.y(p.value)}
                 r={isLatest ? 6 : 4}
                 fill={SERIES_COLOR}
@@ -178,7 +238,7 @@ export default function TrendChart({ points, valueLabel, direction }: TrendChart
               />
               {isLatest && (
                 <circle
-                  cx={scale.x(p.dayKey)}
+                  cx={scale.x(p.timestamp)}
                   cy={scale.y(p.value)}
                   r={9}
                   fill="none"
@@ -189,7 +249,7 @@ export default function TrendChart({ points, valueLabel, direction }: TrendChart
               )}
               {/* Hit target larger than the mark. */}
               <circle
-                cx={scale.x(p.dayKey)}
+                cx={scale.x(p.timestamp)}
                 cy={scale.y(p.value)}
                 r={16}
                 fill="transparent"
@@ -201,7 +261,7 @@ export default function TrendChart({ points, valueLabel, direction }: TrendChart
               />
               {isHovered && (
                 <circle
-                  cx={scale.x(p.dayKey)}
+                  cx={scale.x(p.timestamp)}
                   cy={scale.y(p.value)}
                   r={isLatest ? 6 : 4}
                   fill="none"
@@ -226,7 +286,7 @@ export default function TrendChart({ points, valueLabel, direction }: TrendChart
             {hovered.dayKey} · {valueLabel} {hovered.value}
           </>
         ) : (
-          <>Latest point ringed. {direction}.</>
+          <>Latest point ringed. {sentenceCase(direction)}.</>
         )}
       </p>
     </div>

@@ -140,6 +140,26 @@ export default function HistoryDashboard() {
   );
 }
 
+/**
+ * Clock time the session was recorded, in the reader's own zone.
+ *
+ * The table only renders after the client fetch, so there is no server render
+ * of these rows to disagree with.
+ */
+function formatTime(timestamp: string): string {
+  return new Date(timestamp).toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+/** Truncated rather than rounded, so a run is never reported as longer than it was. */
+function formatDuration(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  return minutes > 0 ? `${minutes}m ${seconds % 60}s` : `${seconds}s`;
+}
+
 function formatDelta(delta: number, direction: TrackSummary["track"]["direction"]): string {
   if (delta === 0) return "no change";
   const better = direction === "lower is better" ? delta < 0 : delta > 0;
@@ -195,12 +215,29 @@ function TrackCard({ summary }: { summary: TrackSummary }) {
               <summary className="cursor-pointer py-2 text-muted-foreground hover:text-foreground">
                 Session table
               </summary>
+              {/*
+                Date and Time are mixed strings and stay left; Duration, the
+                trial count and the measure are magnitudes read by comparison,
+                so they align right along with their headers. Column widths are
+                left to the table — the same five columns and labels appear at
+                every breakpoint, and letting content size them avoids the
+                clipping that fixed widths would risk below 480px.
+              */}
               <table className="mt-2 w-full text-left">
                 <caption className="sr-only">{track.label} sessions</caption>
                 <thead>
                   <tr className="text-xs text-muted-foreground">
                     <th scope="col" className="py-2 font-medium">Date</th>
-                    <th scope="col" className="py-2 font-medium">{track.headlineLabel}</th>
+                    <th scope="col" className="py-2 font-medium">Time</th>
+                    <th scope="col" className="py-2 text-right font-medium">Duration</th>
+                    {track.countLabel && (
+                      <th scope="col" className="py-2 text-right font-medium">
+                        {track.countLabel}
+                      </th>
+                    )}
+                    <th scope="col" className="py-2 text-right font-medium">
+                      {track.headlineLabel}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -208,8 +245,19 @@ function TrackCard({ summary }: { summary: TrackSummary }) {
                     .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
                     .map((point) => (
                       <tr key={point.sessionId} className="border-t border-border">
-                        <td className="py-2">{point.dayKey}</td>
-                        <td className="py-2 text-foreground">{point.value}</td>
+                        <td className="whitespace-nowrap py-2">{point.dayKey}</td>
+                        <td className="whitespace-nowrap py-2">{formatTime(point.timestamp)}</td>
+                        <td className="whitespace-nowrap py-2 text-right">
+                          {formatDuration(point.durationMs)}
+                        </td>
+                        {track.countLabel && (
+                          <td className="whitespace-nowrap py-2 text-right">
+                            {point.count ?? "—"}
+                          </td>
+                        )}
+                        <td className="whitespace-nowrap py-2 text-right text-foreground">
+                          {point.value}
+                        </td>
                       </tr>
                     ))}
                 </tbody>
