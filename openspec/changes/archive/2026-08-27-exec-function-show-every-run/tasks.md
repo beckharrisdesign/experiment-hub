@@ -1,17 +1,29 @@
 ## 1. User outcomes (from spec scenarios)
 
-- [ ] 1.1 A zero-scoring session is plotted and counted
-- [ ] 1.2 No score-based filtering is applied
-- [ ] 1.3 Two same-day sessions do not stack
-- [ ] 1.4 A single-day series uses the full plot width
-- [ ] 1.5 Gaps between days stay proportional
-- [ ] 1.6 A one-day series labels the axis once
-- [ ] 1.7 A multi-day series keeps both labels
-- [ ] 1.8 Same-day rows are distinguishable
-- [ ] 1.9 Every row keeps its headline value
-- [ ] 1.10 The chart spans its container
-- [ ] 1.11 Height does not track width
-- [ ] 1.12 Labels and marks keep their intended size
+- [x] 1.1 A zero-scoring session is plotted and counted  
+      ↳ verified 2026-08-27 · live data — summarizeAll over the 4 stored rows returns sessionCount 2 for corsi-backward with values [0, 20]
+- [x] 1.2 No score-based filtering is applied  
+      ↳ verified 2026-08-27 · live data — the series ids equal the stored ids; nothing is dropped by score
+- [x] 1.3 Two same-day sessions do not stack  
+      ↳ verified 2026-08-27 · component test at the real 8/25 timestamps (15:00:45 / 15:02:00) renders two distinct cx values
+- [x] 1.4 A single-day series uses the full plot width  
+      ↳ verified 2026-08-27 · component test — min cx is PAD.left, span > 100px for a single-day series
+- [x] 1.5 Gaps between days stay proportional  
+      ↳ verified 2026-08-27 · component test — a 75s gap renders <1/100th the width of a 7-day gap
+- [x] 1.6 A one-day series labels the axis once  
+      ↳ verified 2026-08-27 · component test — one 8/25 label for a single-day series
+- [x] 1.7 A multi-day series keeps both labels  
+      ↳ verified 2026-08-27 · component test — 8/25 and 9/1 both present for a multi-day series
+- [x] 1.8 Same-day rows are distinguishable  
+      ↳ verified 2026-08-27 · live data — the two 8/25 rows differ on time, duration (9509/65459ms) and trials (2/8)
+- [x] 1.9 Every row keeps its headline value  
+      ↳ verified 2026-08-27 · live data — the 0 headline survives to its row
+- [x] 1.10 The chart spans its container  
+      ↳ verified 2026-08-27 · component test — svg carries width 100%, no max-w class
+- [x] 1.11 Height does not track width  
+      ↳ verified 2026-08-27 · component test — height stays 200 across 912 -> 416 -> 912
+- [x] 1.12 Labels and marks keep their intended size  
+      ↳ verified 2026-08-27 · component test — every axis label keeps text-[10px] at both widths
 
 ## 2. Prototype shell
 

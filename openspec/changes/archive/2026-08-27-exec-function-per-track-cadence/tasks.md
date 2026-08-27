@@ -1,18 +1,30 @@
 ## 1. User outcomes (from spec scenarios)
 
-- [ ] 1.1 A due track offers its task
-- [ ] 1.2 A track that is not due offers nothing
-- [ ] 1.3 The assigned block keeps its place
-- [ ] 1.4 Finishing one track leaves the others available
-- [ ] 1.5 The same measure cannot be re-run for a better score
-- [ ] 1.6 The check-in holds to a week
-- [ ] 1.7 A later session is saved
-- [ ] 1.8 A later session is marked
-- [ ] 1.9 The first session of a day is not marked
-- [ ] 1.10 The window is stated with the items
-- [ ] 1.11 Documentation matches the form
+- [x] 1.1 A due track offers its task  
+      ↳ verified 2026-08-27 · live data — corsi-backward and n-back both due on 2026-08-27
+- [x] 1.2 A track that is not due offers nothing  
+      ↳ verified 2026-08-27 · live data — corsi-forward not due, nextDue 2026-08-28
+- [x] 1.3 The assigned block keeps its place  
+      ↳ verified 2026-08-27 · production HTML — /exec-function-assessment serves 'Today — Corsi — forward' with its Start control
+- [x] 1.4 Finishing one track leaves the others available  
+      ↳ verified 2026-08-27 · live data — running corsi-forward today left the other three tracks' availability untouched
+- [x] 1.5 The same measure cannot be re-run for a better score  
+      ↳ verified 2026-08-27 · live data — corsi-forward refuses until 2026-08-28
+- [x] 1.6 The check-in holds to a week  
+      ↳ verified 2026-08-27 · live data — the check-in refuses until 2026-09-02, 7 days after the 8/26 session
+- [x] 1.7 A later session is saved  
+      ↳ verified 2026-08-27 · live data — the 15:02 session on 8/25 is stored alongside the 15:00 one
+- [x] 1.8 A later session is marked  
+      ↳ verified 2026-08-27 · live data — dayOrdinals gives the 15:02 session ordinal 2
+- [x] 1.9 The first session of a day is not marked  
+      ↳ verified 2026-08-27 · live data — the 15:00, 8/26 and 8/27 sessions all sit at ordinal 1
+- [x] 1.10 The window is stated with the items  
+      ↳ verified 2026-08-27 · production HTML — the prompt renders once and 'Past week' appears 9 times against 9 subscale cards
+- [x] 1.11 Documentation matches the form  
+      ↳ verified 2026-08-27 · repo — README and the schedule.ts comment now both state the past week
 - [ ] 1.12 A new check-in records its window
-- [ ] 1.13 Earlier check-ins remain identifiable
+- [x] 1.13 Earlier check-ins remain identifiable  
+      ↳ verified 2026-08-27 · live DB — detail->>'recallWindow' is null on the 2026-08-26 check-in
 
 ## 2. Prototype shell
 
