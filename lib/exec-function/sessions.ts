@@ -55,6 +55,18 @@ export interface Track {
    * items, so on those tracks the column would be a constant.
    */
   countLabel?: string;
+  /**
+   * Days that must pass before this track is due again.
+   *
+   * One for the timed measures: they can be run daily, but not twice in a day
+   * — repeating the same measure is how a bad run gets re-rolled until it looks
+   * better, which is the one thing the old per-day gate was right to prevent.
+   *
+   * Seven for the check-in, which asks about the past week; running it more
+   * often would give consecutive scores an overlapping referent period and
+   * flatten the trend by construction.
+   */
+  minIntervalDays: number;
 }
 
 export const TRACKS: Track[] = [
@@ -66,6 +78,7 @@ export const TRACKS: Track[] = [
     headlineLabel: "Total Score",
     direction: "higher is better",
     href: "/exec-function-assessment/corsi?condition=forward",
+    minIntervalDays: 1,
     countLabel: "Trials",
   },
   {
@@ -76,6 +89,7 @@ export const TRACKS: Track[] = [
     headlineLabel: "Total Score",
     direction: "higher is better",
     href: "/exec-function-assessment/corsi?condition=backward",
+    minIntervalDays: 1,
     countLabel: "Trials",
   },
   {
@@ -86,6 +100,7 @@ export const TRACKS: Track[] = [
     headlineLabel: "Peak N",
     direction: "higher is better",
     href: "/exec-function-assessment/n-back",
+    minIntervalDays: 1,
   },
   {
     id: "self-report",
@@ -95,6 +110,7 @@ export const TRACKS: Track[] = [
     headlineLabel: "Composite (45-135)",
     direction: "lower is better",
     href: "/exec-function-assessment/self-report",
+    minIntervalDays: 7,
   },
 ];
 
@@ -121,6 +137,8 @@ export interface SeriesPoint {
   durationMs: number;
   /** Trials administered, on tracks that report one (see `Track.countLabel`). */
   count: number | null;
+  /** Position within its calendar day, across every track. 1 is that day's first. */
+  ordinalInDay: number;
 }
 
 /**
@@ -175,6 +193,9 @@ export function summarizeTrack(
   // filtered by score: a run that measured badly is still a run that happened,
   // and a dashboard that decides which of your sessions counted is doing the
   // one thing a measurement tool must not.
+  // Ordinals come from the unfiltered list, so "2nd today" counts across every
+  // track rather than only this one.
+  const ordinals = dayOrdinals(sessions);
   const points: SeriesPoint[] = mine.map((s) => ({
     dayKey: s.dayKey,
     timestamp: s.timestamp,
@@ -182,6 +203,7 @@ export function summarizeTrack(
     sessionId: s.id,
     durationMs: s.durationMs,
     count: secondaryCount(s),
+    ordinalInDay: ordinals.get(s.id) ?? 1,
   }));
 
   const latest = mine.length > 0 ? mine[mine.length - 1] : null;
@@ -201,6 +223,83 @@ export function summarizeTrack(
 
 export function summarizeAll(sessions: readonly StoredSession[]): TrackSummary[] {
   return TRACKS.map((track) => summarizeTrack(track, sessions));
+}
+
+// ---------------------------------------------------------------------------
+// Cadence
+// ---------------------------------------------------------------------------
+
+/** Days between two YYYY-MM-DD keys. */
+function daysBetween(from: string, to: string): number {
+  const n = (k: string) => {
+    const [y, m, d] = k.split("-").map(Number);
+    return Math.floor(Date.UTC(y, m - 1, d) / 86_400_000);
+  };
+  return n(to) - n(from);
+}
+
+export interface TrackAvailability {
+  due: boolean;
+  /** Most recent day this track was run, or null if never. */
+  lastDayKey: string | null;
+  /** The day it next becomes available, or null when it is available now. */
+  nextDueDayKey: string | null;
+}
+
+/**
+ * Whether a track can be started, decided per track rather than per day.
+ *
+ * Finishing one measure says nothing about whether another is due — the guard
+ * that matters is against repeating the *same* measure, not against doing more
+ * than one thing in a day.
+ */
+export function trackAvailability(
+  track: Track,
+  sessions: readonly StoredSession[],
+  todayKey: string,
+): TrackAvailability {
+  const mine = sessionsFor(track, sessions);
+  if (mine.length === 0) return { due: true, lastDayKey: null, nextDueDayKey: null };
+
+  const lastDayKey = mine[mine.length - 1].dayKey;
+  const elapsed = daysBetween(lastDayKey, todayKey);
+  if (elapsed >= track.minIntervalDays) {
+    return { due: true, lastDayKey, nextDueDayKey: null };
+  }
+
+  const ms = (Date.parse(`${lastDayKey}T00:00:00Z`) + track.minIntervalDays * 86_400_000);
+  return {
+    due: false,
+    lastDayKey,
+    nextDueDayKey: new Date(ms).toISOString().slice(0, 10),
+  };
+}
+
+/**
+ * Each session's position within its calendar day, counting across every track.
+ *
+ * Derived from the timestamps rather than written on save: it cannot drift from
+ * them, it needs no write path, and it applies to sessions recorded before the
+ * marker existed. "Second today" means second overall — Corsi then the n-back —
+ * because that is what carries the fatigue, not second on this particular
+ * track.
+ */
+export function dayOrdinals(sessions: readonly StoredSession[]): Map<string, number> {
+  const byDay = new Map<string, StoredSession[]>();
+  for (const session of sessions) {
+    const bucket = byDay.get(session.dayKey);
+    if (bucket) bucket.push(session);
+    else byDay.set(session.dayKey, [session]);
+  }
+
+  const ordinals = new Map<string, number>();
+  for (const bucket of byDay.values()) {
+    bucket
+      .slice()
+      .sort(ascendingByTime)
+      .forEach((session, index) => ordinals.set(session.id, index + 1));
+  }
+  return ordinals;
 }
 
 /** Distinct calendar days with at least one completed session. */

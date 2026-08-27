@@ -26,7 +26,10 @@ import {
 import {
   completedDayKeys,
   summarizeAll,
+  trackAvailability,
   trackFor,
+  TRACKS,
+  type TrackAvailability,
   type TrackSummary,
 } from "@/lib/exec-function/sessions";
 import TrendChart from "./components/TrendChart";
@@ -66,6 +69,16 @@ export default function HistoryDashboard() {
   const doneToday = todaysSessions.length > 0;
   const streak = currentStreak(completedDayKeys(sessions), today);
 
+  // Availability is per track. Finishing one measure says nothing about
+  // whether another is due, so the page keeps offering the ones that are.
+  // Four tracks and a list scan — not worth memoizing, and the manual memo it
+  // replaced blocked the React Compiler from optimizing the component at all.
+  const availability = new Map<string, TrackAvailability>();
+  for (const track of TRACKS) {
+    availability.set(track.id, trackAvailability(track, sessions, today));
+  }
+  const dueCount = TRACKS.filter((track) => availability.get(track.id)?.due).length;
+
   // Name what was actually completed, not what the schedule assigned — running
   // a different task than the one assigned still counts, and reporting the
   // assignment back would be simply wrong on that day.
@@ -83,7 +96,7 @@ export default function HistoryDashboard() {
         <CardHeader>
           <Inline gap={8} align="center" justify="between" wrap>
             <CardTitle>
-              {doneToday ? "That's today done" : `Today — ${assignment.label}`}
+              {doneToday ? "That's today's block done" : `Today — ${assignment.label}`}
             </CardTitle>
             {streak > 0 && (
               <Badge variant="success">
@@ -94,15 +107,18 @@ export default function HistoryDashboard() {
         </CardHeader>
         <CardContent>
           {doneToday ? (
-            // No run button. One block a day is the schedule; a replay affordance
-            // would let a bad run be re-rolled until it looked better.
+            // The day's assigned block is done — which is not the same as the
+            // day being over. Each track card below offers itself if it is due;
+            // the guard against re-rolling a bad run lives per track, not here.
             <Inline gap={16} align="center">
               <span aria-hidden="true" className="text-3xl text-success">
                 ✓
               </span>
               <p className="text-sm text-muted-foreground">
-                {doneLabels.join(" and ")} logged. Your next block arrives by
-                email tomorrow.
+                {doneLabels.join(" and ")} logged.{" "}
+                {dueCount > 0
+                  ? `${dueCount} other measure${dueCount === 1 ? " is" : "s are"} available today.`
+                  : "Nothing else is due today."}
               </p>
             </Inline>
           ) : (
@@ -132,7 +148,12 @@ export default function HistoryDashboard() {
       ) : (
         <Stack gap={24}>
           {summaries.map((summary) => (
-            <TrackCard key={summary.track.id} summary={summary} />
+            <TrackCard
+              key={summary.track.id}
+              summary={summary}
+              availability={availability.get(summary.track.id)}
+              today={today}
+            />
           ))}
         </Stack>
       )}
@@ -153,6 +174,22 @@ function formatTime(timestamp: string): string {
   });
 }
 
+/** 1 -> "1st", 2 -> "2nd". Only ever shown for 2 and above. */
+function ordinalLabel(n: number): string {
+  const tens = n % 100;
+  if (tens >= 11 && tens <= 13) return `${n}th`;
+  return `${n}${["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+}
+
+/** "tomorrow" while that is true, then the plain date — a countdown adds nothing. */
+function whenDue(nextDueDayKey: string, todayKey: string): string {
+  const day = (k: string) => {
+    const [y, m, d] = k.split("-").map(Number);
+    return Math.floor(Date.UTC(y, m - 1, d) / 86_400_000);
+  };
+  return day(nextDueDayKey) - day(todayKey) === 1 ? "tomorrow" : nextDueDayKey;
+}
+
 /** Truncated rather than rounded, so a run is never reported as longer than it was. */
 function formatDuration(ms: number): string {
   const seconds = Math.floor(ms / 1000);
@@ -166,8 +203,17 @@ function formatDelta(delta: number, direction: TrackSummary["track"]["direction"
   return `${delta > 0 ? "+" : ""}${delta} vs. previous (${better ? "better" : "worse"})`;
 }
 
-function TrackCard({ summary }: { summary: TrackSummary }) {
+function TrackCard({
+  summary,
+  availability,
+  today,
+}: {
+  summary: TrackSummary;
+  availability: TrackAvailability | undefined;
+  today: string;
+}) {
   const { track, latest, latestDelta, best, sessionCount, points } = summary;
+  const hasLaterSession = points.some((point) => point.ordinalInDay > 1);
 
   return (
     <Card>
@@ -183,6 +229,21 @@ function TrackCard({ summary }: { summary: TrackSummary }) {
 
       <CardContent>
         <Stack gap={16}>
+          {availability &&
+            (availability.due ? (
+              <Inline gap={8}>
+                <Button asChild size="lg" className="min-h-12 px-6">
+                  <Link href={track.href}>Start {track.label}</Link>
+                </Button>
+              </Inline>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Run {availability.lastDayKey === today ? "today" : `on ${availability.lastDayKey}`}.
+                {availability.nextDueDayKey
+                  ? ` Next due ${whenDue(availability.nextDueDayKey, today)}.`
+                  : ""}
+              </p>
+            ))}
           {latest && (
             <dl className="grid grid-cols-3 gap-4">
               <div>
@@ -246,7 +307,15 @@ function TrackCard({ summary }: { summary: TrackSummary }) {
                     .map((point) => (
                       <tr key={point.sessionId} className="border-t border-border">
                         <td className="whitespace-nowrap py-2">{point.dayKey}</td>
-                        <td className="whitespace-nowrap py-2">{formatTime(point.timestamp)}</td>
+                        <td className="whitespace-nowrap py-2">
+                          {formatTime(point.timestamp)}
+                          {point.ordinalInDay > 1 && (
+                            <span className="text-muted-foreground">
+                              {" "}
+                              ({ordinalLabel(point.ordinalInDay)})
+                            </span>
+                          )}
+                        </td>
                         <td className="whitespace-nowrap py-2 text-right">
                           {formatDuration(point.durationMs)}
                         </td>
@@ -262,6 +331,12 @@ function TrackCard({ summary }: { summary: TrackSummary }) {
                     ))}
                 </tbody>
               </table>
+              {hasLaterSession && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  ({ordinalLabel(2)}) — not that day&rsquo;s first session; an earlier
+                  task may have tired you.
+                </p>
+              )}
             </details>
           )}
         </Stack>

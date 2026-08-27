@@ -278,10 +278,27 @@ export function score(responses: Responses): SelfReportScore {
 // Session record
 // ---------------------------------------------------------------------------
 
+/**
+ * The period the form asked the respondent to think about.
+ *
+ * Stored because a timestamp cannot tell you what was asked. Check-ins taken
+ * before this existed carry no value, and must not be assumed to match: they
+ * were answered against whatever period came to mind.
+ */
+export type RecallWindow = "week";
+
+/** What the form states above the items. Exported so the copy has one home. */
+export const RECALL_WINDOW: RecallWindow = "week";
+export const RECALL_WINDOW_PROMPT =
+  "Thinking about the past week, how often has each of these been true?";
+export const RECALL_WINDOW_CHIP = "Past week";
+
 export interface SelfReportSession {
   id: string;
   timestamp: string;
   durationMs: number;
   responses: Record<string, ResponseValue>;
   scores: SelfReportScore;
+  /** Absent on check-ins recorded before any window was stated. */
+  recallWindow?: RecallWindow;
 }
