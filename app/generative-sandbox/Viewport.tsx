@@ -37,6 +37,9 @@ export function Viewport({ src, alt }: { src: string | null; alt: string }) {
         }}
       >
         {src ? (
+          // The source is a blob: URL created from the render response, which
+          // next/image cannot optimise or fetch — a plain <img> is correct here.
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={src}
             alt={alt}

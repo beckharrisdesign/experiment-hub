@@ -1,8 +1,16 @@
+/**
+ * @vitest-environment node
+ *
+ * The hub's vitest defaults to jsdom, which sets `window` — and the sandbox's
+ * server modules assert they are not in a browser before importing sharp. This
+ * suite exercises exactly that server path, so it opts into the node
+ * environment rather than weakening the guard.
+ */
 import { describe, expect, it } from 'vitest';
 import sharp from 'sharp';
-import { renderStack } from './render';
-import { MODULE_BY_ID, coerceParams } from './modules';
-import type { StackEntry } from './stack';
+import { renderStack } from '@/lib/generative-sandbox/render';
+import { MODULE_BY_ID, coerceParams } from '@/lib/generative-sandbox/modules';
+import type { StackEntry } from '@/lib/generative-sandbox/stack';
 
 const entry = (module: string, params: Record<string, number>, enabled = true): StackEntry =>
   ({ uid: module, module, enabled, params });

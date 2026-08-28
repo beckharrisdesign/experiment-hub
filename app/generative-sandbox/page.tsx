@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Badge, Button } from '@beckharrisdesign/mvds';
-import { ModuleRow } from '@/components/ModuleRow';
-import { Viewport } from '@/components/Viewport';
-import { MODULES } from '@/lib/modules';
-import { defaultStack, describe, move, newEntry, type StackEntry } from '@/lib/stack';
-import { markOpened, record } from '@/lib/instrument';
+import { ModuleRow } from './ModuleRow';
+import { Viewport } from './Viewport';
+import { MODULES } from '@/lib/generative-sandbox/modules';
+import { defaultStack, describe, move, newEntry, type StackEntry } from '@/lib/generative-sandbox/stack';
+import { markOpened, record } from '@/lib/generative-sandbox/instrument';
 
 export default function SandboxPage() {
   const [sourceRef, setSourceRef] = useState<string | null>(null);
@@ -24,13 +24,19 @@ export default function SandboxPage() {
 
   useEffect(() => markOpened(), []);
 
-  const requestRender = useCallback(() => setRenderKey((k) => k + 1), []);
+  // Busy is set where the user acts rather than inside the render effect —
+  // a synchronous setState in an effect costs an extra render pass, and the
+  // spinner honestly belongs to the interaction anyway.
+  const requestRender = useCallback(() => {
+    setBusy(true);
+    setRenderKey((k) => k + 1);
+  }, []);
 
   async function upload(file: File) {
     setError(null);
     const body = new FormData();
     body.append('file', file);
-    const res = await fetch('/api/source', { method: 'POST', body });
+    const res = await fetch('/api/generative-sandbox/source', { method: 'POST', body });
     const json = await res.json();
     if (!res.ok) {
       setError(json.error ?? 'upload failed');
@@ -47,9 +53,8 @@ export default function SandboxPage() {
     inFlight.current?.abort();
     const controller = new AbortController();
     inFlight.current = controller;
-    setBusy(true);
 
-    fetch('/api/render', {
+    fetch('/api/generative-sandbox/render', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sourceRef, stack, preview: true }),
@@ -110,7 +115,7 @@ export default function SandboxPage() {
 
   async function exportFull() {
     if (!sourceRef) return;
-    const res = await fetch('/api/render', {
+    const res = await fetch('/api/generative-sandbox/render', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sourceRef, stack, preview: false }),
@@ -125,7 +130,7 @@ export default function SandboxPage() {
   }
 
   return (
-    <main className="mx-auto flex h-dvh max-w-[1024px] flex-col gap-5 p-6">
+    <main className="mx-auto flex h-[calc(100dvh-4rem)] max-w-[1024px] flex-col gap-5 p-6">
       <header className="flex items-center gap-3">
         <h1 className="text-xl font-semibold">Generative Sandbox</h1>
         <span className="ml-auto" />

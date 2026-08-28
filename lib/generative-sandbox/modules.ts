@@ -48,20 +48,20 @@ export const MODULES: ModuleDef[] = [
 
 export const MODULE_BY_ID = new Map(MODULES.map((m) => [m.id, m]));
 
-export function defaultParams(module: ModuleDef): Record<string, number> {
-  return Object.fromEntries(module.params.map((p) => [p.name, p.default]));
+export function defaultParams(def: ModuleDef): Record<string, number> {
+  return Object.fromEntries(def.params.map((p) => [p.name, p.default]));
 }
 
 /** Clamp to the declared range so a hand-edited stack cannot crash the renderer. */
 export function coerceParams(
-  module: ModuleDef,
+  def: ModuleDef,
   params: Record<string, number> | undefined,
 ): Record<string, number> {
   const out: Record<string, number> = {};
-  for (const def of module.params) {
-    const raw = params?.[def.name];
-    const value = typeof raw === 'number' && Number.isFinite(raw) ? raw : def.default;
-    out[def.name] = Math.min(def.max, Math.max(def.min, value));
+  for (const p of def.params) {
+    const raw = params?.[p.name];
+    const value = typeof raw === 'number' && Number.isFinite(raw) ? raw : p.default;
+    out[p.name] = Math.min(p.max, Math.max(p.min, value));
   }
   return out;
 }

@@ -23,14 +23,14 @@ export interface RenderRequest {
 
 let counter = 0;
 export function newEntry(moduleId: string): StackEntry {
-  const module = MODULE_BY_ID.get(moduleId);
-  if (!module) throw new Error(`Unknown module: ${moduleId}`);
+  const def = MODULE_BY_ID.get(moduleId);
+  if (!def) throw new Error(`Unknown module: ${moduleId}`);
   counter += 1;
   return {
     uid: `${moduleId}-${counter}`,
     module: moduleId,
     enabled: true,
-    params: defaultParams(module),
+    params: defaultParams(def),
   };
 }
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { putSource } from '@/lib/storage';
-import { MAX_BYTES, isAcceptedMime, mimeRejectionMessage } from '@/lib/ingest';
+import { putSource } from '@/lib/generative-sandbox/storage';
+import { MAX_BYTES, isAcceptedMime, mimeRejectionMessage } from '@/lib/generative-sandbox/ingest';
 
 export const runtime = 'nodejs';
 

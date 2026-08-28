@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getSource } from '@/lib/storage';
-import { renderStack } from '@/lib/render';
-import type { StackEntry } from '@/lib/stack';
+import { getSource } from '@/lib/generative-sandbox/storage';
+import { renderStack } from '@/lib/generative-sandbox/render';
+import type { StackEntry } from '@/lib/generative-sandbox/stack';
 
 export const runtime = 'nodejs';
 

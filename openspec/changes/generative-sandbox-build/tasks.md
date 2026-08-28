@@ -17,11 +17,11 @@ convention and the root `dev:` scripts.
 
 ## 2. Prototype shell
 
-- [x] 2.1 Scaffold `experiments/generative-sandbox/prototype/` — Next.js matching the hub's stack, npm. Dev command `npm run dev`; from repo root `npm run dev:generative-sandbox`
-- [x] 2.2 Assign **port 3011** (`data/prototypes.json` holds 3001, 3002, 3003, 3004, 3009, 3010 — 3011 is the next free). Register `proto-generative-sandbox` with `linkPath`, tags, and that port; add the root `dev:` script
+- [x] 2.1 **Revised 2026-08-28 (founder): a route in the hub app, not a standalone prototype.** `app/generative-sandbox/` + `app/api/generative-sandbox/` + `lib/generative-sandbox/`, served at `/generative-sandbox` by the hub's own dev server and deploy. The first pass scaffolded a separate Next app on port 3011, which would have required its own Vercel project because `deploy-hub.yml` path-ignores `experiments/**`
+- [x] 2.2 Register `proto-generative-sandbox` with `linkPath: app/generative-sandbox` and **no port** — a hub route needs none, matching `proto-web-to-figma-grabber` and `proto-snap-issue`. Port 3011 and the root `dev:` script were removed with the standalone prototype
 - [x] 2.3 Register the experiment in `data/experiments.json`: `type: tool`, the utility statement, tags. Note the hub registry of record is Notion (`lib/notion-experiments.ts`); the JSON is legacy fallback, so the Notion row is the one that matters
-- [x] 2.4 Wire MVDS per `docs/CONSUMING.md` (styles import + both `@source` lines)
-- [x] 2.5 Compose the parameter slider locally (`npx shadcn@latest add slider`, styled with MVDS tokens) — MVDS Core has no Slider; `image-lab` hit the same gap (design.md)
+- [x] 2.4 MVDS needs no new wiring — the hub app already imports it (`@beckharrisdesign/mvds@^0.3.0`, which includes Switch, added 2026-06-12 and published in 0.3.0)
+- [x] 2.5 Parameter slider composed locally — a **native range input** styled with MVDS tokens rather than Radix, so no new dependency and no `pnpm-lock.yaml` churn against CI's `--frozen-lockfile`. MVDS Core still has no Slider; `image-lab` hit the same gap (design.md)
 
 ## 3. Implementation
 
@@ -65,7 +65,7 @@ convention and the root `dev:` scripts.
 ## 4. QA
 
 - [ ] 4.1 Manual walkthrough of every §1 outcome, on the deployed hub rather than localhost
-- [x] 4.2 Automated: vitest on the render lib — **order-dependence is the headline test** (blur→quantize must differ from quantize→blur), disabled modules excluded from the pipeline, out-of-range params rejected, palette size honoured
+- [x] 4.2 Automated: vitest on the render lib (`tests/generative-sandbox-render.test.ts`, in the hub's suite) — **order-dependence is the headline test** (blur→quantize must differ from quantize→blur), disabled modules excluded from the pipeline, out-of-range params rejected, palette size honoured
 - [ ] 4.3 Automated: saved-stack round trip — save, reopen, assert every module/order/param/seed survives
 - [ ] 4.4 Confirm the page stays responsive while a render is in flight, on a large photo — the failure that started this whole chain
 

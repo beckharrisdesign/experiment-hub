@@ -5,8 +5,10 @@
  * behaviour, so an optimiser that resequenced for speed would silently break the
  * thing being built (design.md, Decisions).
  */
-import 'server-only';
 import sharp from 'sharp';
+import { assertServerOnly } from './server-guard';
+
+assertServerOnly('lib/generative-sandbox/render');
 import { MODULE_BY_ID, coerceParams } from './modules';
 import { IMPLEMENTATIONS } from './modules.server';
 import type { StackEntry } from './stack';
@@ -43,12 +45,12 @@ export async function renderStack(
 
   for (const entry of stack) {
     if (!entry.enabled) continue;
-    const module = MODULE_BY_ID.get(entry.module);
+    const def = MODULE_BY_ID.get(entry.module);
     const impl = IMPLEMENTATIONS[entry.module];
     // An unknown id is skipped rather than fatal: saved stacks must keep loading
     // after the catalogue changes.
-    if (!module || !impl) continue;
-    buffer = await impl(buffer, coerceParams(module, entry.params));
+    if (!def || !impl) continue;
+    buffer = await impl(buffer, coerceParams(def, entry.params));
   }
 
   return buffer;

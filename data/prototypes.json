@@ -132,8 +132,8 @@
   {
     "id": "proto-generative-sandbox",
     "title": "Generative Sandbox",
-    "description": "Stack, reorder, and tune transform modules; processing runs server-side",
-    "linkPath": "experiments/generative-sandbox/prototype",
+    "description": "Stack, reorder, and tune transform modules; a hub route, processing runs server-side",
+    "linkPath": "app/generative-sandbox",
     "experimentId": "generative-sandbox",
     "status": "Active",
     "createdDate": "2026-08-28",
@@ -144,7 +144,6 @@
       "modules",
       "sharp",
       "sandbox"
-    ],
-    "port": 3011
+    ]
   }
 ]

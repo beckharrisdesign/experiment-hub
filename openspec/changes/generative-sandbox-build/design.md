@@ -101,6 +101,18 @@ re-sync, not a patch in this file.
 - **Private buckets + signed URLs, following `lib/etsy-listing-kit/orders.ts`.** A TTL
   purge is required: elk keeps inputs because they are order records, and a scratch
   session's photo belongs to nobody once the tab closes.
+- **The sandbox is a route in the hub app, not a standalone prototype server** (founder,
+  2026-08-28). `app/generative-sandbox/` with its API under
+  `app/api/generative-sandbox/`, deployed by `deploy-hub.yml` at
+  `/generative-sandbox` — the same shape as `app/pdf-metadata-viewer/` and
+  `app/exec-function-assessment/`. An earlier draft of this change scaffolded a separate
+  Next app under `experiments/generative-sandbox/prototype/` on port 3011; that would have
+  needed its own Vercel project, since `deploy-hub.yml` path-ignores `experiments/**`.
+  Correcting it restores the proposal's claim that this needs no new Vercel project.
+- **No new npm dependencies.** The parameter control is a native range input rather than
+  `@radix-ui/react-slider`, and the server guard is a local assertion rather than the
+  `server-only` package. Both avoid regenerating `pnpm-lock.yaml`, which the hub's CI
+  installs with `--frozen-lockfile`.
 - **Sharp applies enabled modules strictly in stack order** — one pass, no reordering
   optimisation. Order-dependence is the product behaviour; an optimiser that reorders for
   speed would silently break the thing being sold.

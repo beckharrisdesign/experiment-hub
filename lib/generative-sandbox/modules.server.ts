@@ -5,8 +5,10 @@
  * buffer and returns a PNG buffer, so modules chain in any order; that is what
  * makes the stack order-dependent rather than a pipeline with switches.
  */
-import 'server-only';
 import sharp from 'sharp';
+import { assertServerOnly } from './server-guard';
+
+assertServerOnly('lib/generative-sandbox/modules.server');
 
 export type ModuleImpl = (input: Buffer, params: Record<string, number>) => Promise<Buffer>;
 
