@@ -169,7 +169,8 @@ discovery, so there is nothing to specify until the frame has been argued with.
 | `02.7 Proposed — standing state above the timeline` | `Proposed · Change page · Desktop 1024` (`28:3`) — the gate rail and the outcome list above the timeline |
 | `02.8 Proposed — the prose comes out` | `Proposed · Change page · Desktop 1024` (`30:3`) — the explanatory paragraphs removed |
 | `02.9 Proposed — intent restored, without the byline` | `Proposed · Change page · Desktop 1024` (`31:3`) — the anchor returns, paraphrased |
-| `02.10 Proposed — anchor text verbatim, unquoted` | `Proposed · Change page · Desktop 1024` (`35:3`) — current iteration: the anchor's exact wording, without quote marks or byline |
+| `02.10 Proposed — anchor text verbatim, unquoted` | `Proposed · Change page · Desktop 1024` (`35:3`) — the anchor's exact wording, without quote marks or byline |
+| `02.11 Proposed — intent, three sentences` | `Proposed · Change page · Desktop 1024` (`43:3`) — current iteration: the intent statement settled at three sentences |
 
 Iterations get a **new numbered page** each time, per `rules/figma.mdc` — `02`
 stays intact as the record of what the first pass looked like, and is not edited
@@ -444,3 +445,31 @@ the quote marks.
 
 One duplicate went with it: the first timeline row was carrying the same sentence
 as a sub-line. The statement says it once, at the top.
+
+## The intent statement, settled
+
+Neither extreme worked. The verbatim anchor alone describes a feeling and never
+says what the change does; a generated summary alone loses the person and cannot
+be checked against `proposal.md`. The statement is a blend, capped at three
+sentences:
+
+> This change is about reconstructing a high level history of where my brain was
+> at over time — so when a project gets abandoned, or built out in full, there's a
+> way to hang context there. It gives every experiment page a dated,
+> evidence-linked History, drafted from commits, pull requests and Figma versions,
+> and approved before anything publishes. A case study of the experiment, in real
+> time.
+
+Ends are the anchor's own words — *where my brain was at over time*, *hang context
+there*, *a case study of the experiment in real time*. The middle sentence is
+generated, and carries the only thing the anchor never states outright: what the
+change actually produces.
+
+`This change is about…` is doing more work than it looks. The page titles itself
+with a slug, and a reader who has never heard of OpenSpec has no way to know that
+the slug names a unit of planned work rather than a project, a ticket, or a
+person's username.
+
+**Open, and bigger than this sentence:** `gates`, `specs`, `capabilities`, `apply`
+and `archive` all assume OpenSpec literacy. They are structural labels rather than
+prose, so no amount of rewriting the intent line fixes them. Needs its own pass.
