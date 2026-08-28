@@ -158,8 +158,14 @@ discovery, so there is nothing to specify until the frame has been argued with.
 | --- | --- |
 | File | <https://www.figma.com/design/2FEqaAxp50skge0yJI5wAC/openspec-change-visualizer> |
 | `fileKey` | `2FEqaAxp50skge0yJI5wAC` |
-| `01 Current state` | `Current state · Desktop 1024` — opens on the hypothesis above, then the five sources and the disagreement between them |
-| `02 Proposed` | `Proposed · Change card · Desktop 1024` — the six bands, filled with `tell-the-story`'s real values |
+| `01 Current state` | `Current state · Desktop 1024` (`1:3`) — opens on the hypothesis above, then the five sources and the disagreement between them |
+| `02 Proposed` | `Proposed · Change card · Desktop 1024` (`5:2`) — first iteration: six bands, filled with `tell-the-story`'s real values |
+| `02.1 Proposed — every outcome, its evidence, and frame provenance` | `Proposed · Change card · Desktop 1024` (`9:3`) — current iteration: all eleven outcomes with their measurement kind, plus the provenance stamp |
+
+Iterations get a **new numbered page** each time, per `rules/figma.mdc` — `02`
+stays intact as the record of what the first pass looked like, and is not edited
+again. `01 Current state` is the as-is rather than a proposal iteration, so it is
+revised in place.
 
 **Two honest gaps in the frames:**
 
