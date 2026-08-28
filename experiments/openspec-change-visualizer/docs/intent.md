@@ -167,7 +167,8 @@ discovery, so there is nothing to specify until the frame has been argued with.
 | `02.5 Proposed — the stream, carrying its artifacts` | `Proposed · Stream with artifacts · Desktop 1024` (`21:150`) — the stream with the real design images embedded in the rows that produced them |
 | `02.6 Proposed — stage lane, and notes behind an icon` | `Proposed · Stream with stages · Desktop 1024` (`23:3`) — a stage column, right-aligned meta, and provenance moved into a tooltip |
 | `02.7 Proposed — standing state above the timeline` | `Proposed · Change page · Desktop 1024` (`28:3`) — the gate rail and the outcome list above the timeline |
-| `02.8 Proposed — the prose comes out` | `Proposed · Change page · Desktop 1024` (`30:3`) — current iteration: the explanatory paragraphs removed |
+| `02.8 Proposed — the prose comes out` | `Proposed · Change page · Desktop 1024` (`30:3`) — the explanatory paragraphs removed |
+| `02.9 Proposed — intent restored, without the byline` | `Proposed · Change page · Desktop 1024` (`31:3`) — current iteration: the anchor returns as a plain intent statement |
 
 Iterations get a **new numbered page** each time, per `rules/figma.mdc` — `02`
 stays intact as the record of what the first pass looked like, and is not edited
@@ -414,3 +415,23 @@ on this page is tempting to introduce.
 The rule the page runs on now: labels name things, marks and colour carry state,
 `ⓘ` holds provenance, and sentences are spent only on findings — a loop, a
 retraction, a disagreement between sources.
+
+## Intent on the page, anchor in the record
+
+The anchor belongs at the top — the page should say what the change is *for*
+before it says where it stands. But rendered as a pull-quote with a byline
+(*"Katy · 2026-07-17 · proposal.md"*), it reads as ostentatious: a person quoted at
+you, on their own tool, about their own project.
+
+So the page carries the intent as a statement, in the page's own voice, with no
+quotation marks and no attribution. The `ⓘ` holds the verbatim line, the file and
+the date — provenance, where provenance goes.
+
+**This changes the rendering, not the record.** `proposal.md` keeps its Human
+anchor quoted verbatim; the schema requires it, and the whole drift-detection idea
+depends on the source staying exact. The page is a reading of that record, not a
+replacement for it — which is also why the `ⓘ` has to resolve back to the quoted
+line rather than paraphrasing it a second time.
+
+One duplicate went with it: the first timeline row was carrying the same sentence
+as a sub-line. The statement says it once, at the top.
