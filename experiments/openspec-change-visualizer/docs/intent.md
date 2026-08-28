@@ -160,7 +160,9 @@ discovery, so there is nothing to specify until the frame has been argued with.
 | `fileKey` | `2FEqaAxp50skge0yJI5wAC` |
 | `01 Current state` | `Current state · Desktop 1024` (`1:3`) — opens on the hypothesis above, then the five sources and the disagreement between them |
 | `02 Proposed` | `Proposed · Change card · Desktop 1024` (`5:2`) — first iteration: six bands, filled with `tell-the-story`'s real values |
-| `02.1 Proposed — every outcome, its evidence, and frame provenance` | `Proposed · Change card · Desktop 1024` (`9:3`) — current iteration: all eleven outcomes with their measurement kind, plus the provenance stamp |
+| `02.1 Proposed — every outcome, its evidence, and frame provenance` | `Proposed · Change card · Desktop 1024` (`9:3`) — all eleven outcomes with their measurement kind, plus the provenance stamp |
+| `02.2 Proposed — larger type scale` | `Proposed · Change card · Desktop 1024` (`10:3`) — same card, every small size raised one step (11→13, 12→14, 13/14→15, 15→16) |
+| `02.3 Proposed — multiple capabilities, and a loop back to design` | `Proposed · Change card · Desktop 1024` (`11:3`) — current iteration: the hard case, worked against `pdf-metadata-viewer-cloud` |
 
 Iterations get a **new numbered page** each time, per `rules/figma.mdc` — `02`
 stays intact as the record of what the first pass looked like, and is not edited
@@ -181,3 +183,63 @@ revised in place.
 
 `01 Current state` is a diagram of the problem rather than a reconstructed screen,
 because no surface answers this question today — that absence is the as-is.
+
+## The harder shapes the card has to survive
+
+`tell-the-story` is a kind change: one capability, one spec, a clean forward
+march. Most of the repo is not that, and the single-spine card breaks in three
+places. `02.3` works the hardest real case in the repo —
+`pdf-metadata-viewer-cloud` — rather than a hypothetical.
+
+### More than one capability — 12 of 46 changes
+
+Not an edge case. `pdf-metadata-viewer-cloud` and `linked-repos` carry three
+capabilities each; `2026-05-21-seed-packet-crud-and-custom-fields` carries four.
+
+**Requirements are the durable unit, not tasks.** They live per capability and
+every change has them, so the CAPABILITIES band lists one row per capability with
+its requirement count and any per-capability event —
+`drive-document-source · 7 requirements · rewritten 08-18, after the spike failed`.
+
+### The gates are not monotonic
+
+Changes go backwards, and the rail as first drawn reported only each artifact's
+*first* commit, which hides it entirely:
+
+- **`pdf-metadata-viewer-cloud`, 2026-08-18 — apply → design.** Spike 2.1a was run
+  against the live Drive grant and failed: a `drive.file` folder grant reached one
+  accessible item (the folder) and zero PDFs, so the import returned
+  `success: true, imported: 0` — indistinguishable from an empty folder. Decision
+  2.1 was superseded the same day, D9a added 115 lines to `design.md`, and the
+  `drive-document-source` spec was rewritten (+55 / −20). Shipped as #389.
+- **`tell-the-story`, 2026-07-21 — design → proposal.** Four days after `design.md`
+  was approved, the proposal was reopened to retract a false premise: "the hub's
+  git history is truncated at 2026-06-21" became "**Not true.**" That retraction
+  changed the source model the whole change rests on.
+
+So the rail carries a revision mark — `08-14 ↻ 08-18` — on any gate touched after
+a later gate opened, and a **LOOPS** band says what the loop changed and why.
+A loop is not failure; it is usually the most informative thing that happened, and
+it is currently the least visible.
+
+The repo already writes loops down in prose, with dates: `~~…~~ **Not true.**`,
+`**superseded 2026-08-18**`, `**retracted 2026-07-21**`, `**narrowed 2026-07-21**`.
+Those markers are machine-findable and carry the *reason*, not just the fact.
+
+### Not every change is shaped like the schema says
+
+Two assumptions the first card made, both false in the general case:
+
+- **`tasks.md` §1 is not always the user outcomes.** The lite schema asks for §1 to
+  mirror spec scenarios 1:1. `pdf-metadata-viewer-cloud` instead organises ten
+  workstreams (Prove the premise, Data layer, Identity and access, …), so progress
+  cannot be split per capability at all. The card reports the honest total — 34
+  done · 1 partial · 33 open of 68 — and states why it cannot split it, rather
+  than inventing a mapping.
+- **Not every change has a quoted anchor.** `pdf-metadata-viewer-cloud` has a
+  `## Why` and a link to `experiments/pdf-metadata-viewer/docs/intent.md`, no
+  quoted founder line. The card shows what exists and labels the absence.
+
+Both are cases where the card's real job is to say *this is missing* in the same
+breath as everything it does have. A card that only renders well-formed changes
+would answer "what's going on" for the changes that least need asking.
