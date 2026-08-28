@@ -168,7 +168,8 @@ discovery, so there is nothing to specify until the frame has been argued with.
 | `02.6 Proposed — stage lane, and notes behind an icon` | `Proposed · Stream with stages · Desktop 1024` (`23:3`) — a stage column, right-aligned meta, and provenance moved into a tooltip |
 | `02.7 Proposed — standing state above the timeline` | `Proposed · Change page · Desktop 1024` (`28:3`) — the gate rail and the outcome list above the timeline |
 | `02.8 Proposed — the prose comes out` | `Proposed · Change page · Desktop 1024` (`30:3`) — the explanatory paragraphs removed |
-| `02.9 Proposed — intent restored, without the byline` | `Proposed · Change page · Desktop 1024` (`31:3`) — current iteration: the anchor returns as a plain intent statement |
+| `02.9 Proposed — intent restored, without the byline` | `Proposed · Change page · Desktop 1024` (`31:3`) — the anchor returns, paraphrased |
+| `02.10 Proposed — anchor text verbatim, unquoted` | `Proposed · Change page · Desktop 1024` (`35:3`) — current iteration: the anchor's exact wording, without quote marks or byline |
 
 Iterations get a **new numbered page** each time, per `rules/figma.mdc` — `02`
 stays intact as the record of what the first pass looked like, and is not edited
@@ -423,15 +424,23 @@ before it says where it stands. But rendered as a pull-quote with a byline
 (*"Katy · 2026-07-17 · proposal.md"*), it reads as ostentatious: a person quoted at
 you, on their own tool, about their own project.
 
-So the page carries the intent as a statement, in the page's own voice, with no
-quotation marks and no attribution. The `ⓘ` holds the verbatim line, the file and
-the date — provenance, where provenance goes.
+The fix is presentation, not rewriting. `02.9` paraphrased the anchor into the
+page's own voice, which was a step too far — it swapped a real sentence for a
+serviceable one and quietly removed the person from their own project.
+
+`02.10` keeps the wording exactly as written and only drops the packaging: no
+quotation marks, no `— Katy` byline, no date line. The ellipsis stays, because the
+line is elided and hiding that would be a small lie. The `ⓘ` holds the file and
+the date.
+
+The distinction worth keeping: **quotation marks and a byline are framing; the
+words are evidence.** Strip the framing, never the words — a paraphrased anchor
+cannot be checked against `proposal.md`, and being checkable is the entire point.
 
 **This changes the rendering, not the record.** `proposal.md` keeps its Human
 anchor quoted verbatim; the schema requires it, and the whole drift-detection idea
-depends on the source staying exact. The page is a reading of that record, not a
-replacement for it — which is also why the `ⓘ` has to resolve back to the quoted
-line rather than paraphrasing it a second time.
+depends on the source staying exact. The page renders the same characters, minus
+the quote marks.
 
 One duplicate went with it: the first timeline row was carrying the same sentence
 as a sub-line. The statement says it once, at the top.
