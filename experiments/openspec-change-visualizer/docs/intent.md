@@ -165,7 +165,8 @@ discovery, so there is nothing to specify until the frame has been argued with.
 | `02.3 Proposed — multiple capabilities, and a loop back to design` | `Proposed · Change card · Desktop 1024` (`11:3`) — the hard case, worked against `pdf-metadata-viewer-cloud` |
 | `02.4 Proposed — the change as a stream` | `Proposed · Stream · Desktop 1024` (`16:3`) — the same change told as a pull-request-style timeline instead of stacked bands |
 | `02.5 Proposed — the stream, carrying its artifacts` | `Proposed · Stream with artifacts · Desktop 1024` (`21:150`) — the stream with the real design images embedded in the rows that produced them |
-| `02.6 Proposed — stage lane, and notes behind an icon` | `Proposed · Stream with stages · Desktop 1024` (`23:3`) — current iteration: a stage column, right-aligned meta, and provenance moved into a tooltip |
+| `02.6 Proposed — stage lane, and notes behind an icon` | `Proposed · Stream with stages · Desktop 1024` (`23:3`) — a stage column, right-aligned meta, and provenance moved into a tooltip |
+| `02.7 Proposed — standing state above the timeline` | `Proposed · Change page · Desktop 1024` (`28:3`) — current iteration: the gate rail and the outcome list above the timeline |
 
 Iterations get a **new numbered page** each time, per `rules/figma.mdc` — `02`
 stays intact as the record of what the first pass looked like, and is not edited
@@ -369,3 +370,27 @@ This settles two things about the design:
 - **Long is not a warning state.** Nothing about a long apply gets amber. Amber is
   for disagreement between sources, and for gates that went backwards. Duration is
   reported, never judged.
+
+## The page: standing state, then the timeline
+
+The two presentations answered different questions and neither needed to win.
+`02.7` puts them in the order the questions get asked:
+
+**Where it stands** — the gate rail and the full outcome list, lifted from `02.2`.
+The rail is the one element that answers *where are we* at a glance, which a
+chronological stream structurally cannot: you would have to read to the bottom and
+infer. The outcome list carries the same weight it earned in `02.1` — all eleven,
+each with the kind of evidence behind it.
+
+**What happened** — the timeline from `02.6`, with its stage lane, artifacts,
+silences and loops.
+
+One duplicate fell out in the merge: the timeline's closing *"Apply in progress —
+25 of 35 tasks · 8 of 11 outcomes"* box now says what the rail and the outcome
+table say better, so it is gone. The drift box stays — a disagreement between
+sources is a finding, not a status.
+
+The intent band (`JOB` / `DONE WHEN` / `NOT DOING`) is deliberately **not** carried
+over. The anchor quote at the top already does that work for this change, and the
+page is 3432px as it stands. Worth revisiting if a change turns up whose anchor
+does not imply its scope.
