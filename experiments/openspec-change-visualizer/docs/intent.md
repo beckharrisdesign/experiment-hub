@@ -163,7 +163,8 @@ discovery, so there is nothing to specify until the frame has been argued with.
 | `02.1 Proposed — every outcome, its evidence, and frame provenance` | `Proposed · Change card · Desktop 1024` (`9:3`) — all eleven outcomes with their measurement kind, plus the provenance stamp |
 | `02.2 Proposed — larger type scale` | `Proposed · Change card · Desktop 1024` (`10:3`) — same card, every small size raised one step (11→13, 12→14, 13/14→15, 15→16) |
 | `02.3 Proposed — multiple capabilities, and a loop back to design` | `Proposed · Change card · Desktop 1024` (`11:3`) — the hard case, worked against `pdf-metadata-viewer-cloud` |
-| `02.4 Proposed — the change as a stream` | `Proposed · Stream · Desktop 1024` (`16:3`) — current iteration: the same change told as a pull-request-style timeline instead of stacked bands |
+| `02.4 Proposed — the change as a stream` | `Proposed · Stream · Desktop 1024` (`16:3`) — the same change told as a pull-request-style timeline instead of stacked bands |
+| `02.5 Proposed — the stream, carrying its artifacts` | `Proposed · Stream with artifacts · Desktop 1024` (`21:150`) — current iteration: the stream with the real design images embedded in the rows that produced them |
 
 Iterations get a **new numbered page** each time, per `rules/figma.mdc` — `02`
 stays intact as the record of what the first pass looked like, and is not edited
@@ -268,3 +269,34 @@ as a label instead, so nothing is compressed silently.
 Open: the stream and the card are not yet reconciled. The stream answers *what
 happened*; the card answers *what is true now* — outcomes, capabilities, evidence
 kinds. Whether one absorbs the other, or the page carries both, is undecided.
+
+## Did the gate exist yet, and can the rows carry artifacts?
+
+**No — the gate arrived 43 minutes too late to have applied.** `tell-the-story`'s
+spec and design merged in #304 at 2026-07-20 18:26:38Z. The rule that makes a
+Figma as-is + proposed pair non-skippable merged in #305 at 19:10:11Z the same
+evening. The change's own `design.md` says *"File convention honored: the History
+mod is a new numbered iteration page (`02.1`), not frames appended to the approved
+`02 Proposed`"* — it followed a convention that was not yet written down, and the
+rule was codified out of what it had just done.
+
+That is worth the card knowing how to say. A gate row is not only *passed / not
+passed*; sometimes the answer is *this predates the gate*, and treating it as a
+failure would be wrong.
+
+**Yes, rows can carry the artifact — from two different sources.**
+
+| Source | Coverage | Cost |
+| --- | --- | --- |
+| Committed PNG under `openspec/changes/<id>/assets/` | 6 images across 3 of 46 changes | None — it is in the repo |
+| The Figma node id `design.md` records | Every change whose `design.md` follows the rule | Needs Figma access at render time |
+
+`02.5` uses both, on the rows that produced them: the approved History preview is
+fetched live from `HKy2SdRDyCJ37V29mvMpma` page `02.1`, node `9:82` — read straight
+out of the `design.md` table — and the 08-24 row carries
+`assets/proposed-history-type-scale.png`, committed with #402.
+
+The node-id path is the one that generalises, since the table is already required
+for UI changes. The committed PNG is the one that survives losing Figma access,
+which is exactly why `rules/github-workflow.mdc` already asks for PNGs in PR
+bodies. A row should prefer the committed file and fall back to the node id.
