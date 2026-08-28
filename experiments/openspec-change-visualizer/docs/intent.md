@@ -166,7 +166,8 @@ discovery, so there is nothing to specify until the frame has been argued with.
 | `02.4 Proposed — the change as a stream` | `Proposed · Stream · Desktop 1024` (`16:3`) — the same change told as a pull-request-style timeline instead of stacked bands |
 | `02.5 Proposed — the stream, carrying its artifacts` | `Proposed · Stream with artifacts · Desktop 1024` (`21:150`) — the stream with the real design images embedded in the rows that produced them |
 | `02.6 Proposed — stage lane, and notes behind an icon` | `Proposed · Stream with stages · Desktop 1024` (`23:3`) — a stage column, right-aligned meta, and provenance moved into a tooltip |
-| `02.7 Proposed — standing state above the timeline` | `Proposed · Change page · Desktop 1024` (`28:3`) — current iteration: the gate rail and the outcome list above the timeline |
+| `02.7 Proposed — standing state above the timeline` | `Proposed · Change page · Desktop 1024` (`28:3`) — the gate rail and the outcome list above the timeline |
+| `02.8 Proposed — the prose comes out` | `Proposed · Change page · Desktop 1024` (`30:3`) — current iteration: the explanatory paragraphs removed |
 
 Iterations get a **new numbered page** each time, per `rules/figma.mdc` — `02`
 stays intact as the record of what the first pass looked like, and is not edited
@@ -394,3 +395,22 @@ The intent band (`JOB` / `DONE WHEN` / `NOT DOING`) is deliberately **not** carr
 over. The anchor quote at the top already does that work for this change, and the
 page is 3432px as it stands. Worth revisiting if a change turns up whose anchor
 does not imply its scope.
+
+## The frame stops explaining itself
+
+Two paragraphs came out of `02.8`:
+
+- The outcomes summary — *"8 of 11 checked — but only 5 are held up by an automated
+  test…"*. Eleven checkboxes and a colour-mapped measure column already say it, and
+  faster. Prose that restates the table is the table admitting it does not work.
+- The page lede, which described the layout instead of letting the layout work.
+  Section labels do that job.
+
+Neither would have survived to production, which is reason enough not to draft
+with them. **A caption that narrates what the reader can already see is a defect,
+not a courtesy** — and it is the failure mode to watch for here, because every band
+on this page is tempting to introduce.
+
+The rule the page runs on now: labels name things, marks and colour carry state,
+`ⓘ` holds provenance, and sentences are spent only on findings — a loop, a
+retraction, a disagreement between sources.
