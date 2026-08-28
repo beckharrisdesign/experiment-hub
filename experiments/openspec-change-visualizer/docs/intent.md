@@ -62,17 +62,53 @@ tell-the-story                                          IN FLIGHT · day 42
   NOT     No transcripts as pipeline input. No auto-publish. No scheduled
    DOING  overwriting — drafts append, unapproved.
 
-  PROVEN  8 of 11 user outcomes checked · 43 automated tests
-  OPEN    Figma source adapter (deferred, needs a Figma-rich experiment) ·
-          exemplar content review · monthly Action written, not switched on
+  OUTCOMES   8 of 11 checked — but only 5 are held up by an automated test.
+             Three rest on a code path nobody re-checks, two wait on a
+             person remembering at authoring time, and one is deferred.
+
+    ✓ 1.1   Approved entries render chronologically      automated test
+    ✓ 1.2   No approved entries hides the section        code path
+    ✓ 1.3   Only approved entries publish                automated test
+    ✓ 1.4   Generator writes nothing to Notion           automated test
+    ✓ 1.5   Generator never mines transcripts            code path
+    ○ 1.6   Result claims carry an inline number         human review
+    ○ 1.7   A dead experiment's last entry agrees        human review
+    ✓ 1.8   A month of activity drafts itself            code path
+    ✓ 1.9   Approved entries are never overwritten       automated test
+    ✓ 1.10  A quiet month adds nothing                   automated test
+    ○ 1.11  Figma versions count as evidence             deferred
+
+  OPEN    1.6 · 1.7 are authoring-time rules, not code — nothing enforces
+          them. 1.11 is deferred: the seam is wired, but Best Day Ever has
+          no Figma file to validate the adapter against.
+
   DRIFT   3.11 date ranges — shipped in lib/notion-history.ts (#399),
           still unchecked in tasks.md
 
   CODE    11 PRs · 07-20 → 08-24 · all merged
 ```
 
-Six bands, in the order a person actually asks them: why, where, what, how far,
-what's lying, what shipped.
+Seven bands, in the order a person actually asks them: why, where, what,
+how far, why-not-yet, what's lying, what shipped.
+
+**Every outcome, not just the on-deck ones — and how each is measured.** The
+count alone ("8 of 11") is the number that flatters. Four measurement kinds
+carry very different weight, so the card names them per outcome rather than
+averaging them away:
+
+| Kind | What holds it up |
+| --- | --- |
+| `automated test` | A test fails if the outcome regresses. |
+| `code path` | The behaviour exists in code, but nothing re-checks it. |
+| `human review` | A person has to remember, at authoring time. Nothing enforces it. |
+| `deferred` | Not measured at all yet, and the card says so rather than staying silent. |
+
+On `tell-the-story` that split is the finding: 8 checked, 5 defended by a test.
+
+**Frame stamps.** Every frame carries its own provenance on the first line —
+`<change> — <numbered page> — <datetime>` — so a frame pasted into Notion, a
+deck, or a message still says which change it belongs to, which iteration it
+is, and when it was true. Frames outlive the file they were cut from.
 
 The DRIFT band is the part no existing tool has. Everything else is retrieval;
 that one is a comparison, and it is where "surprisingly hard to answer" turns
@@ -122,7 +158,7 @@ discovery, so there is nothing to specify until the frame has been argued with.
 | --- | --- |
 | File | <https://www.figma.com/design/2FEqaAxp50skge0yJI5wAC/openspec-change-visualizer> |
 | `fileKey` | `2FEqaAxp50skge0yJI5wAC` |
-| `01 Current state` | `Current state · Desktop 1024` — the five sources, and the disagreement between them |
+| `01 Current state` | `Current state · Desktop 1024` — opens on the hypothesis above, then the five sources and the disagreement between them |
 | `02 Proposed` | `Proposed · Change card · Desktop 1024` — the six bands, filled with `tell-the-story`'s real values |
 
 **Two honest gaps in the frames:**
