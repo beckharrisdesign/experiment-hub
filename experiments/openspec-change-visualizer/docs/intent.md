@@ -329,7 +329,18 @@ opening tasks). No row leaves you guessing, and the repeats cost nothing to skip
 - **Meta right-aligns.** Dates, PR counts and the info icon were sitting directly
   beside each row title and competing with it. They now sit at the right edge, so
   the titles form a clean left column to scan.
-- **Verification notes hide behind an icon.** Node ids, file paths, and "how do we
-  know this" belong one interaction away, not in the reading line. Each row that
-  has provenance carries an `ⓘ`; `02.6` renders one open so the pattern is visible
-  rather than described.
+- **Verification notes hide behind an icon.** Each row with provenance carries an
+  `ⓘ`; `02.6` renders one open so the pattern is visible rather than described.
+
+**What hides and what does not.** The first pass at the tooltip swept a finding
+into it along with the plumbing — that the Figma gate merged 43 minutes after the
+design it would have governed. That is the most interesting thing on the row, and
+putting it one interaction away made the row poorer.
+
+> **Provenance hides. Findings do not.**
+
+`ⓘ` holds *how we know* — node ids, file paths, commit stat lines, which query
+produced the number. The row keeps *what we learned* — that two gates shared one
+commit, that the rule arrived after the change that inspired it, that a claim and
+the code disagree. A card whose findings are all behind icons reads as empty, and
+answers "what's going on?" with a shrug.
