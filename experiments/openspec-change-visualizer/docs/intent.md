@@ -164,7 +164,8 @@ discovery, so there is nothing to specify until the frame has been argued with.
 | `02.2 Proposed — larger type scale` | `Proposed · Change card · Desktop 1024` (`10:3`) — same card, every small size raised one step (11→13, 12→14, 13/14→15, 15→16) |
 | `02.3 Proposed — multiple capabilities, and a loop back to design` | `Proposed · Change card · Desktop 1024` (`11:3`) — the hard case, worked against `pdf-metadata-viewer-cloud` |
 | `02.4 Proposed — the change as a stream` | `Proposed · Stream · Desktop 1024` (`16:3`) — the same change told as a pull-request-style timeline instead of stacked bands |
-| `02.5 Proposed — the stream, carrying its artifacts` | `Proposed · Stream with artifacts · Desktop 1024` (`21:150`) — current iteration: the stream with the real design images embedded in the rows that produced them |
+| `02.5 Proposed — the stream, carrying its artifacts` | `Proposed · Stream with artifacts · Desktop 1024` (`21:150`) — the stream with the real design images embedded in the rows that produced them |
+| `02.6 Proposed — stage lane, and notes behind an icon` | `Proposed · Stream with stages · Desktop 1024` (`23:3`) — current iteration: a stage column, right-aligned meta, and provenance moved into a tooltip |
 
 Iterations get a **new numbered page** each time, per `rules/figma.mdc` — `02`
 stays intact as the record of what the first pass looked like, and is not edited
@@ -300,3 +301,35 @@ The node-id path is the one that generalises, since the table is already require
 for UI changes. The committed PNG is the one that survives losing Figma access,
 which is exactly why `rules/github-workflow.mdc` already asks for PNGs in PR
 bodies. A row should prefer the committed file and fall back to the node id.
+
+## Which stage was it in? — the stage lane
+
+The stream told you what happened and lost what the card's rail did well: at any
+given row, which gate the change was actually sitting in. "Specs and design
+approved" read as a single event and left the obvious question unanswered.
+
+**It is a fair question, and the answer is yes — they were one moment.** #304
+committed `design.md` (+48) and `specs/experiment-history/spec.md` (+79) in a
+single commit on 2026-07-20. The lite schema treats them as two artifacts, each
+with its own stop rule — *"After writing spec(s), stop and wait for explicit user
+approval before design"* — but the record holds one moment where the schema
+expects two approvals. The card cannot resolve that, and should not pretend to;
+it names the stage `SPECS + DESIGN` and says why in the note.
+
+The same collapse was hiding one row lower: "Tasks opened, and the first code
+landed" was two stages in one row. Split into `TASKS` and `APPLY`.
+
+So every row now carries its stage in a left-hand column — full strength when the
+stage changes, dimmed when it repeats, amber when the stage went backwards
+(`↺ PROPOSAL + SPECS`, 07-21, where #314 revised the proposal *and* the spec while
+opening tasks). No row leaves you guessing, and the repeats cost nothing to skip.
+
+**Two smaller corrections in the same pass:**
+
+- **Meta right-aligns.** Dates, PR counts and the info icon were sitting directly
+  beside each row title and competing with it. They now sit at the right edge, so
+  the titles form a clean left column to scan.
+- **Verification notes hide behind an icon.** Node ids, file paths, and "how do we
+  know this" belong one interaction away, not in the reading line. Each row that
+  has provenance carries an `ⓘ`; `02.6` renders one open so the pattern is visible
+  rather than described.
