@@ -470,6 +470,7 @@ with a slug, and a reader who has never heard of OpenSpec has no way to know tha
 the slug names a unit of planned work rather than a project, a ticket, or a
 person's username.
 
-**Open, and bigger than this sentence:** `gates`, `specs`, `capabilities`, `apply`
-and `archive` all assume OpenSpec literacy. They are structural labels rather than
-prose, so no amount of rewriting the intent line fixes them. Needs its own pass.
+**Deferred to `design.md` (decided 2026-08-28):** `gates`, `specs`, `capabilities`,
+`apply` and `archive` all assume OpenSpec literacy. They are structural labels
+rather than prose, so no amount of rewriting the intent line fixes them — the
+vocabulary rides into the design gate as its own pass.
