@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* MVDS wiring per docs/CONSUMING.md — the styles import plus both @source lines
+   so Tailwind sees the design system's class usage. */
+@import "@beckharrisdesign/mvds/styles.css";
+@source "../node_modules/@beckharrisdesign/mvds/dist-lib/**/*.js";
+@source "../node_modules/@beckharrisdesign/mvds/dist-lib/**/*.mjs";

@@ -8,7 +8,11 @@
     "status": "Active",
     "createdDate": "2024-11-01",
     "lastModified": "2024-12-16",
-    "tags": ["etsy", "embroidery", "listings"],
+    "tags": [
+      "etsy",
+      "embroidery",
+      "listings"
+    ],
     "port": 3001
   },
   {
@@ -20,7 +24,11 @@
     "status": "Active",
     "createdDate": "2024-11-01",
     "lastModified": "2024-12-16",
-    "tags": ["gardening", "seeds", "usda"],
+    "tags": [
+      "gardening",
+      "seeds",
+      "usda"
+    ],
     "port": 3002
   },
   {
@@ -32,7 +40,11 @@
     "status": "Active",
     "createdDate": "2024-11-01",
     "lastModified": "2024-12-16",
-    "tags": ["gardening", "seeds", "landing-page"],
+    "tags": [
+      "gardening",
+      "seeds",
+      "landing-page"
+    ],
     "port": 3003
   },
   {
@@ -44,7 +56,12 @@
     "status": "Active",
     "createdDate": "2026-05-16",
     "lastModified": "2026-05-16",
-    "tags": ["photo", "canvas", "filters", "download"],
+    "tags": [
+      "photo",
+      "canvas",
+      "filters",
+      "download"
+    ],
     "port": 3009
   },
   {
@@ -56,7 +73,11 @@
     "status": "Active",
     "createdDate": "2026-04-18",
     "lastModified": "2026-04-18",
-    "tags": ["paint-by-number", "cv", "research"],
+    "tags": [
+      "paint-by-number",
+      "cv",
+      "research"
+    ],
     "port": 3010
   },
   {
@@ -68,7 +89,12 @@
     "status": "Active",
     "createdDate": "2026-04-05",
     "lastModified": "2026-04-05",
-    "tags": ["figma", "chrome-extension", "capture", "design-tools"]
+    "tags": [
+      "figma",
+      "chrome-extension",
+      "capture",
+      "design-tools"
+    ]
   },
   {
     "id": "proto-snap-issue",
@@ -79,7 +105,12 @@
     "status": "Active",
     "createdDate": "2026-05-19",
     "lastModified": "2026-05-19",
-    "tags": ["chrome-extension", "github", "screenshot", "internal-tools"]
+    "tags": [
+      "chrome-extension",
+      "github",
+      "screenshot",
+      "internal-tools"
+    ]
   },
   {
     "id": "proto-pdf-metadata-viewer",
@@ -90,7 +121,30 @@
     "status": "Active",
     "createdDate": "2026-01-10",
     "lastModified": "2026-08-05",
-    "tags": ["pdf", "metadata", "notion", "local-only"],
+    "tags": [
+      "pdf",
+      "metadata",
+      "notion",
+      "local-only"
+    ],
     "port": 3004
+  },
+  {
+    "id": "proto-generative-sandbox",
+    "title": "Generative Sandbox",
+    "description": "Stack, reorder, and tune transform modules; processing runs server-side",
+    "linkPath": "experiments/generative-sandbox/prototype",
+    "experimentId": "generative-sandbox",
+    "status": "Active",
+    "createdDate": "2026-08-28",
+    "lastModified": "2026-08-28",
+    "tags": [
+      "generative",
+      "image",
+      "modules",
+      "sharp",
+      "sandbox"
+    ],
+    "port": 3011
   }
 ]
