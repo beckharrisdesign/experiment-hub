@@ -344,3 +344,28 @@ produced the number. The row keeps *what we learned* — that two gates shared o
 commit, that the rule arrived after the change that inspired it, that a claim and
 the code disagree. A card whose findings are all behind icons reads as empty, and
 answers "what's going on?" with a shrug.
+
+## Apply is long, and the card should not apologise for it
+
+The stage lane put `APPLY` on eight of twelve rows, which looked at first like a
+grouping failure. It is not.
+
+> "apply is a long process, no matter what ai influencers say. You're unblocking,
+> rethinking, hunting down api keys, etc. This also happened to be a big effort so
+> its more complex than most. so I think running down eight of the rows is
+> appropriate."
+>
+> — Katy, 2026-08-28
+
+**Decided: apply does not subdivide.** Not by capability, not by burst. One long
+stage is the honest picture, and a card that compressed it would be lying in the
+direction everyone already wants to be lied to in.
+
+This settles two things about the design:
+
+- **The silences stay.** 31 days of nothing is not a gap in the record — it is
+  what unblocking, rethinking and key-hunting look like from the outside. A
+  presentation that closes that up to save room deletes the evidence.
+- **Long is not a warning state.** Nothing about a long apply gets amber. Amber is
+  for disagreement between sources, and for gates that went backwards. Duration is
+  reported, never judged.
