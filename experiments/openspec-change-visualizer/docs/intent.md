@@ -162,7 +162,8 @@ discovery, so there is nothing to specify until the frame has been argued with.
 | `02 Proposed` | `Proposed · Change card · Desktop 1024` (`5:2`) — first iteration: six bands, filled with `tell-the-story`'s real values |
 | `02.1 Proposed — every outcome, its evidence, and frame provenance` | `Proposed · Change card · Desktop 1024` (`9:3`) — all eleven outcomes with their measurement kind, plus the provenance stamp |
 | `02.2 Proposed — larger type scale` | `Proposed · Change card · Desktop 1024` (`10:3`) — same card, every small size raised one step (11→13, 12→14, 13/14→15, 15→16) |
-| `02.3 Proposed — multiple capabilities, and a loop back to design` | `Proposed · Change card · Desktop 1024` (`11:3`) — current iteration: the hard case, worked against `pdf-metadata-viewer-cloud` |
+| `02.3 Proposed — multiple capabilities, and a loop back to design` | `Proposed · Change card · Desktop 1024` (`11:3`) — the hard case, worked against `pdf-metadata-viewer-cloud` |
+| `02.4 Proposed — the change as a stream` | `Proposed · Stream · Desktop 1024` (`16:3`) — current iteration: the same change told as a pull-request-style timeline instead of stacked bands |
 
 Iterations get a **new numbered page** each time, per `rules/figma.mdc` — `02`
 stays intact as the record of what the first pass looked like, and is not edited
@@ -243,3 +244,27 @@ Two assumptions the first card made, both false in the general case:
 Both are cases where the card's real job is to say *this is missing* in the same
 breath as everything it does have. A card that only renders well-formed changes
 would answer "what's going on" for the changes that least need asking.
+
+## Showing instead of telling — the stream
+
+The band card describes a change. `02.4` lets the change describe itself: one row
+per thing that happened, an icon gutter with a connecting rail, pull requests
+nested under the day they landed, and boxed status at the bottom — the idiom a
+pull-request timeline already uses, because the audience already reads it fluently.
+
+It costs less room than the card it replaces (1659px against 1991px) and carries
+one thing the card structurally could not:
+
+**The silences.** `tell-the-story` ran hard for five days in July, went quiet for
+**31 days**, produced four pull requests on one day in August, and has been quiet
+for **4 days and counting**. Not one of those facts was visible on the card — a
+gate rail with a date under each dot cannot show absence, and a task count cannot
+either. For a question phrased as *what's going on?*, "nothing, for a month" is
+frequently the true answer and the one hardest to get any other way.
+
+The events are ordered, not spaced to scale; every gap carries its real duration
+as a label instead, so nothing is compressed silently.
+
+Open: the stream and the card are not yet reconciled. The stream answers *what
+happened*; the card answers *what is true now* — outcomes, capabilities, evidence
+kinds. Whether one absorbs the other, or the page carries both, is undecided.
