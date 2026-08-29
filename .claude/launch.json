@@ -61,6 +61,16 @@
       "cwd": "."
     },
     {
+      "name": "experiment-hub (admin preview)",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "ADMIN_SECRET=dev-preview NOTION_TOKEN=$(op read 'op://BHD Labs/Notion/token') NOTION_EXPERIMENTS_DATA_SOURCE_ID=399b908d-7b37-80cb-beb5-000b54ca2967 op run --env-file=.env.local -- next dev --port 3006"
+      ],
+      "port": 3006,
+      "cwd": "."
+    },
+    {
       "name": "experiment-hub (no 1Password)",
       "runtimeExecutable": "npx",
       "runtimeArgs": [

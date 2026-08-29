@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { getExperiments } from "@/lib/data";
 import EtsySyncPanel from "@/components/EtsySyncPanel";
 import type { ExperimentStatus } from "@/types";
@@ -19,10 +20,6 @@ export default async function AdminPage() {
 
   return (
     <div>
-      {/* Experiment-specific prototype surface (etsy-notion-sync-build 3.5) */}
-      <div className="mb-10">
-        <EtsySyncPanel />
-      </div>
       <h1 className="text-text-primary text-2xl font-semibold mb-6">
         Experiments
       </h1>
@@ -37,31 +34,39 @@ export default async function AdminPage() {
         </thead>
         <tbody>
           {sorted.map((exp) => (
-            <tr
-              key={exp.id}
-              className="border-b border-border-dark hover:bg-background-secondary transition-colors"
-            >
-              <td className="py-3 pr-4">
-                <a
-                  href={`/experiments/${exp.id}`}
-                  className="text-text-primary hover:text-accent-primary transition-colors font-medium"
-                >
-                  {exp.name}
-                </a>
-                {exp.statement && (
-                  <p className="text-text-secondary text-xs mt-0.5 line-clamp-1">
-                    {exp.statement}
-                  </p>
-                )}
-              </td>
-              <td className={`py-3 pr-4 ${STATUS_COLORS[exp.status]}`}>
-                {exp.status}
-              </td>
-              <td className="py-3 pr-4 text-text-secondary capitalize">
-                {exp.type ?? "commercial"}
-              </td>
-              <td className="py-3 text-text-secondary">{exp.lastModified}</td>
-            </tr>
+            <Fragment key={exp.id}>
+              <tr className="border-b border-border-dark hover:bg-background-secondary transition-colors">
+                <td className="py-3 pr-4">
+                  <a
+                    href={`/experiments/${exp.id}`}
+                    className="text-text-primary hover:text-accent-primary transition-colors font-medium"
+                  >
+                    {exp.name}
+                  </a>
+                  {exp.statement && (
+                    <p className="text-text-secondary text-xs mt-0.5 line-clamp-1">
+                      {exp.statement}
+                    </p>
+                  )}
+                </td>
+                <td className={`py-3 pr-4 ${STATUS_COLORS[exp.status]}`}>
+                  {exp.status}
+                </td>
+                <td className="py-3 pr-4 text-text-secondary capitalize">
+                  {exp.type ?? "commercial"}
+                </td>
+                <td className="py-3 text-text-secondary">{exp.lastModified}</td>
+              </tr>
+              {/* Experiment-specific prototype surface (etsy-notion-sync-build
+                  3.5, placed with its experiment row per issue #291). */}
+              {exp.id === "etsy-notion-sync" && (
+                <tr className="border-b border-border-dark">
+                  <td colSpan={4} className="py-4">
+                    <EtsySyncPanel />
+                  </td>
+                </tr>
+              )}
+            </Fragment>
           ))}
         </tbody>
       </table>
