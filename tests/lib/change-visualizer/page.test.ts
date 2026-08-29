@@ -268,3 +268,14 @@ describe("artifact links for a linked change", () => {
     expect(await listChangeArtifacts("seed-finder", repo)).toEqual([]);
   });
 });
+
+describe("drift precision", () => {
+  it("does not flag a task that cites the file it names as prior art", async () => {
+    // generative-sandbox-build 3.3.1 says to follow
+    // `lib/etsy-listing-kit/orders.ts (createSignedUrl)`. That symbol existing
+    // is the premise of the task, not evidence the work is secretly done.
+    const page = await loadChangePage("generative-sandbox-build", repo);
+    if (!page) return; // the change belongs to another branch's work
+    expect(page.findings.find((f) => f.taskId === "3.3.1")).toBeUndefined();
+  });
+});

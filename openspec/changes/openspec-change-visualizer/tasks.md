@@ -106,6 +106,17 @@ Added 2026-08-29 at Katy's request, after the planning artifacts were approved.
 - [x] 3b.4 The experiment is registered so the page exists — Notion row `OpenSpec Change Visualizer`, `repo` = `openspec-change-visualizer`, which is what resolveOpenSpecChangeId falls back to
       ↳ created 2026-08-29 with three Why: pages · PI 4 / SI 3 / BI 2
 
+## 3c. Known gap, found when another change landed on this branch
+
+`generative-sandbox` uses the `bhd-experiment` schema — `explore.md`, `propose.md`,
+`apply.md`, `archive.md` — and the rail is built for the lite artifacts, so it
+renders with no dated gates at all. The page still resolves and its history is
+right; only the rail is empty.
+
+- [ ] 3c.1 Read the schema from `.openspec.yaml` and build the rail from that
+      schema's artifacts, rather than assuming proposal / specs / design / tasks
+      ↳ not done — affects any `bhd-experiment` change; two exist today
+
 ## 4. QA
 
 - [ ] 4.1 Manual walkthrough on `pnpm dev`: `tell-the-story` (mid-flight, one capability, a loop, two silences), `pdf-metadata-viewer-cloud` (three capabilities, workstream tasks, apply→design loop), an archived change, and a change with only a proposal.

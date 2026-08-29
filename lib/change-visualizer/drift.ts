@@ -55,7 +55,13 @@ async function locateSymbols(
   try {
     ({ stdout } = await run(
       "git",
-      ["grep", "-I", "-n", "--no-color", ...patterns, "--", "lib", "app", "components", "scripts"],
+      // The visualizer's own source is excluded: prose in these files describes
+      // what changes claim, and matching that prose is never evidence about a
+      // change.
+      [
+        "grep", "-I", "-n", "--no-color", ...patterns,
+        "--", "lib", "app", "components", "scripts", ":(exclude)lib/change-visualizer",
+      ],
       { cwd, maxBuffer: 16 * 1024 * 1024 },
     ));
   } catch {
@@ -119,6 +125,14 @@ export async function findDrift(
   for (const item of openItems) {
     const evidence = (symbolsByItem.get(item.id) ?? [])
       .filter((symbol) => located.has(symbol))
+      // A task that already names the file a symbol lives in is citing prior
+      // art, not claiming work it has not done — `generative-sandbox-build`
+      // 3.3.1 points at an existing module to follow, and that module existing
+      // is the premise of the task rather than evidence against it.
+      //
+      // Naming the symbol itself in this comment would make the search find it
+      // here, in the detector's own source. It did, once.
+      .filter((symbol) => !item.text.includes(located.get(symbol) as string))
       .map((symbol) => `${symbol} is defined in ${located.get(symbol)}`);
 
     if (evidence.length > 0) {
