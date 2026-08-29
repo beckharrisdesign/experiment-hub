@@ -23,7 +23,7 @@ The sources also disagree, and nothing surfaces it. `tell-the-story` leaves task
 
 Discovery ran eleven Figma iterations against real changes rather than a hypothetical, and four assumptions failed:
 
-- **A count flatters.** "8 of 11 outcomes checked" hides that only 5 are defended by an automated test; 3 rest on a code path nobody re-checks, 2 on a person remembering at authoring time, and 1 is deferred.
+- **A count flatters.** "8 of 11 outcomes checked" says nothing about what holds each one up. Derived from the back-references `tasks.md` already records, `tell-the-story` splits 8 automated test / 2 human review / 1 deferred — every checked outcome is claimed by a test, and the three open ones are precisely the ones no test could settle. That is a different and more useful sentence than the count.
 - **One capability is not the norm.** Twelve of forty-six changes carry two or more. Requirements are the durable per-capability unit; tasks are not, and are frequently not mapped to a capability at all.
 - **Gates are not monotonic.** `pdf-metadata-viewer-cloud` went from apply back to design on 2026-08-18 when a spike failed against the live Drive grant; `tell-the-story` went design → proposal on 2026-07-21 to retract a false premise. A rail built from first-commit dates hides both.
 - **Silence is the answer more often than not.** `tell-the-story` ran hard for five days, went quiet for 31, shipped four pull requests in one August day, and has been quiet 4 days since. A gate rail cannot show absence and neither can a task count.

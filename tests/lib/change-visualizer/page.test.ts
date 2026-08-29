@@ -1,0 +1,224 @@
+import { describe, it, expect } from "vitest";
+import { readFileSync, readdirSync } from "fs";
+import path from "path";
+import { loadChangePage, listChangeIds, extractIntent } from "@/lib/change-visualizer";
+import { parseFigmaRef } from "@/lib/change-visualizer/design-ref";
+import { parseSpec } from "@/lib/change-visualizer/specs";
+import { prFromSubject, daysBetween } from "@/lib/change-visualizer/git";
+
+const repo = process.cwd();
+
+describe("resolving a change", () => {
+  it("opens an active change", async () => {
+    const page = await loadChangePage("tell-the-story", repo);
+    expect(page).not.toBeNull();
+    expect(page!.archived).toBe(false);
+  });
+
+  it("opens an archived change by its bare id", async () => {
+    const page = await loadChangePage("exec-function-per-track-cadence", repo);
+    expect(page).not.toBeNull();
+    expect(page!.archived).toBe(true);
+  });
+
+  it("returns null for a change that does not exist", async () => {
+    expect(await loadChangePage("no-such-change", repo)).toBeNull();
+  });
+
+  it("refuses an id that could escape the changes directory", async () => {
+    expect(await loadChangePage("../../etc", repo)).toBeNull();
+  });
+});
+
+describe("the stage rail", () => {
+  it("marks build as current on a change that has tasks and no archive record", async () => {
+    const page = (await loadChangePage("tell-the-story", repo))!;
+    expect(page.gates.find((g) => g.state === "current")?.id).toBe("apply");
+    expect(page.gates.find((g) => g.id === "archive")!.state).toBe("pending");
+  });
+
+  it("marks a gate that was touched again after a later gate opened", async () => {
+    const page = (await loadChangePage("tell-the-story", repo))!;
+    // #314 revised the proposal and the spec while opening tasks, on 07-21.
+    expect(page.gates.find((g) => g.id === "proposal")!.revisited).toBe(true);
+    expect(page.gates.find((g) => g.id === "specs")!.revisited).toBe(true);
+  });
+
+  it("reports a gate older than the rule that would have governed it", async () => {
+    const page = (await loadChangePage("tell-the-story", repo))!;
+    const design = page.gates.find((g) => g.id === "design")!;
+    // #304 merged 43 minutes before #305 introduced the Figma gate.
+    expect(design.predatesRule).not.toBeNull();
+    expect(design.predatesRule!.rule).toMatch(/Figma/);
+  });
+
+  it("names two gates that landed in one commit rather than sequencing them", async () => {
+    const page = (await loadChangePage("tell-the-story", repo))!;
+    expect(page.gates.find((g) => g.id === "design")!.sharedCommitWith).toContain("specs");
+  });
+
+  it("uses plain-language labels, not the schema's words", async () => {
+    const page = (await loadChangePage("tell-the-story", repo))!;
+    expect(page.gates.map((g) => g.label)).toEqual([
+      "proposal",
+      "requirements",
+      "design",
+      "tasks",
+      "build",
+      "archived",
+    ]);
+  });
+});
+
+describe("outcomes and capabilities", () => {
+  it("lists every capability with its requirement count", async () => {
+    const page = (await loadChangePage("pdf-metadata-viewer-cloud", repo))!;
+    expect(page.capabilities.map((c) => c.name)).toEqual([
+      "document-metadata-store",
+      "drive-document-source",
+      "hosted-instance-access",
+    ]);
+    expect(page.capabilities.map((c) => c.requirements.length)).toEqual([6, 7, 5]);
+  });
+
+  it("says a workstream task list cannot be split, instead of splitting it", async () => {
+    const page = (await loadChangePage("pdf-metadata-viewer-cloud", repo))!;
+    expect(page.outcomesAreScenarios).toBe(false);
+    expect(page.outcomes).toHaveLength(0);
+    expect(page.progress!.total).toBeGreaterThan(60);
+  });
+
+  it("carries an evidence kind on every outcome", async () => {
+    const page = (await loadChangePage("tell-the-story", repo))!;
+    expect(page.outcomes).toHaveLength(11);
+    expect(page.outcomes.every((o) => o.evidence.length > 0)).toBe(true);
+  });
+});
+
+describe("the history", () => {
+  it("shows a long silence with its real length", async () => {
+    const page = (await loadChangePage("tell-the-story", repo))!;
+    const gaps = page.events.filter((e) => e.kind === "gap");
+    expect(gaps.length).toBeGreaterThan(0);
+    expect(Math.max(...gaps.map((g) => (g.kind === "gap" ? g.days : 0)))).toBeGreaterThan(25);
+  });
+
+  it("gives every event a stage", async () => {
+    const page = (await loadChangePage("tell-the-story", repo))!;
+    const work = page.events.filter((e) => e.kind === "work");
+    expect(work.length).toBeGreaterThan(0);
+    expect(work.every((e) => e.kind === "work" && e.stageLabel.length > 0)).toBe(true);
+  });
+});
+
+describe("findings", () => {
+  it("catches work that shipped while its task stayed unchecked", async () => {
+    const page = (await loadChangePage("tell-the-story", repo))!;
+    const finding = page.findings.find((f) => f.taskId === "3.11");
+    expect(finding).toBeDefined();
+    expect(finding!.evidence.join(" ")).toMatch(/notion-history/);
+  });
+
+  it("catches a task still waiting on a pull request that merged", async () => {
+    const page = (await loadChangePage("pdf-metadata-viewer-cloud", repo))!;
+    const finding = page.findings.find((f) => f.taskId === "2.1b");
+    expect(finding).toBeDefined();
+    expect(finding!.record).toMatch(/#389 merged on 2026-08-18/);
+  });
+
+  it("states both readings and never picks one", async () => {
+    const page = (await loadChangePage("tell-the-story", repo))!;
+    for (const finding of page.findings) {
+      expect(finding.claims.length).toBeGreaterThan(0);
+      expect(finding.record.length).toBeGreaterThan(0);
+      expect(`${finding.claims} ${finding.record}`).not.toMatch(/should|must|wrong|fix/i);
+    }
+  });
+
+  it("says nothing when a change and the record agree", async () => {
+    const page = (await loadChangePage("exec-function-per-track-cadence", repo))!;
+    expect(page.findings).toEqual([]);
+  });
+});
+
+describe("small readers", () => {
+  it("reads a pull request number off a squash subject", () => {
+    expect(prFromSubject("feat(x): thing (#399)")).toBe(399);
+    expect(prFromSubject("feat(x): thing")).toBeNull();
+  });
+
+  it("counts whole days and never goes negative", () => {
+    expect(daysBetween("2026-07-22", "2026-08-22")).toBe(31);
+    expect(daysBetween("2026-08-22", "2026-07-22")).toBe(0);
+  });
+
+  it("pulls the Figma file key and node id out of a design table", () => {
+    const ref = parseFigmaRef(
+      "| Frames | Page `02.1 Proposed — History preview`: frame (node `9:82`) |\n" +
+        "| File | https://www.figma.com/design/HKy2SdRDyCJ37V29mvMpma |",
+    );
+    expect(ref).toEqual({
+      fileKey: "HKy2SdRDyCJ37V29mvMpma",
+      page: "02.1 Proposed — History preview",
+      nodeId: "9:82",
+    });
+  });
+
+  it("returns null when a design records no Figma file", () => {
+    expect(parseFigmaRef("N/A — no UI")).toBeNull();
+  });
+
+  it("counts requirements and scenarios in a spec", () => {
+    const parsed = parseSpec(
+      ["### Requirement: One", "#### Scenario: A", "#### Scenario: B", "### Requirement: Two"].join("\n"),
+    );
+    expect(parsed.requirements).toEqual(["One", "Two"]);
+    expect(parsed.scenarios).toEqual(["A", "B"]);
+  });
+
+  it("takes the anchor verbatim, and falls back to Why when there is none", () => {
+    expect(extractIntent("## Human anchor\n\n> Exactly this.\n\n## Outcomes\n")).toEqual({
+      text: "Exactly this.",
+      source: "human anchor",
+    });
+    expect(extractIntent("## Why\n\nBecause of a thing.\n\n## What changes\n")?.source).toBe("why");
+  });
+});
+
+describe("every change in the repo", () => {
+  it("renders without throwing", { timeout: 180_000 }, async () => {
+    const ids = await listChangeIds(repo);
+    expect(ids.length).toBeGreaterThan(40);
+
+    const empty: string[] = [];
+    for (const id of ids) {
+      const page = await loadChangePage(id, repo);
+      expect(page, `${id} failed to resolve`).not.toBeNull();
+      if (page!.gates.every((g) => g.firstDate === null) && page!.events.length === 0) {
+        empty.push(id);
+      }
+    }
+    // Reported rather than asserted away: a change with no history at all is a
+    // real state (nothing committed yet), not a bug.
+    expect(empty, `changes with no history: ${empty.join(", ")}`).toEqual([]);
+  });
+});
+
+describe("read-only by construction", () => {
+  it("has no write path to openspec/changes in its module graph", () => {
+    const dir = path.join(repo, "lib", "change-visualizer");
+    const sources = readdirSync(dir)
+      .filter((f) => f.endsWith(".ts"))
+      .map((f) => readFileSync(path.join(dir, f), "utf8"))
+      .join("\n");
+
+    // Match calls, not prose — a comment about a folder being "renamed" is not
+    // a write path, and a test that cannot tell the difference gets ignored.
+    const writeCall =
+      /\b(?:fs|fsp|promises)\s*\.\s*(?:writeFile|appendFile|mkdir|rm|rmdir|unlink|rename|copyFile|truncate)\s*\(/;
+    expect(sources).not.toMatch(writeCall);
+    expect(sources).not.toMatch(/createWriteStream\s*\(/);
+    // git is read-only here too: no command that mutates the repository.
+    expect(sources).not.toMatch(/"git",\s*\[\s*"(?:commit|add|checkout|push|rm|mv)"/);
+  });
+});

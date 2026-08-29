@@ -103,7 +103,7 @@ averaging them away:
 | `human review` | A person has to remember, at authoring time. Nothing enforces it. |
 | `deferred` | Not measured at all yet, and the card says so rather than staying silent. |
 
-On `tell-the-story` that split is the finding: 8 checked, 5 defended by a test.
+On `tell-the-story`, derived from the back-references the change records: 8 automated test, 2 human review, 1 deferred. Every checked outcome is claimed by a test; the three open ones are exactly the ones no test could settle. An earlier hand-made reading of the same file said 5 — the derivation corrected it.
 
 **Frame stamps.** Every frame carries its own provenance on the first line —
 `<change> — <numbered page> — <datetime>` — so a frame pasted into Notion, a
