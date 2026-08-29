@@ -13,7 +13,7 @@
 - **Who:** Katy mid-flight, wanting to know where a change actually stands without reassembling it by hand — and anyone handed the link who has never heard of OpenSpec.
 - **Job:** Answer "what's going on with this change?" from one page, in under a minute, without opening five sources that disagree.
 - **Done when:** Any change in `openspec/changes/` or its archive renders at `/changes/[id]` with: an intent statement; a gate rail showing which stage it is in; every outcome with the kind of evidence behind it; a dated timeline carrying stages, silences, loops and design artifacts; and any disagreement between what the change claims and what the repo shows, surfaced rather than buried.
-- **Not doing:** A list or portfolio view — one change at a time is the premise. Writing anything back into `tasks.md` or the change folder. Replacing `openspec status`, which this consumes. Experiment-grain narrative for outside readers, which is `tell-the-story`.
+- **Not doing:** ~~A list or portfolio view — one change at a time is the premise.~~ **Narrowed 2026-08-29:** no portfolio *dashboard* — no scoring, sorting, progress bars or cross-change rollups. A bare index is now in scope: forty-nine pages nothing links to are forty-nine pages nobody reads. Katy, after the change pages went live: *"yes lets do the minimal index so I can access the examples so far."* Writing anything back into `tasks.md` or the change folder. Replacing `openspec status`, which this consumes. Experiment-grain narrative for outside readers, which is `tell-the-story`.
 
 ## Why
 

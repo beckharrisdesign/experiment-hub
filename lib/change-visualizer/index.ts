@@ -221,6 +221,62 @@ export async function loadChangePage(
   };
 }
 
+export type ChangeSummary = {
+  id: string;
+  archived: boolean;
+  /** The stage it is sitting in, derived from which artifacts exist. */
+  stage: GateId;
+  stageLabel: string;
+  capabilities: number;
+};
+
+/**
+ * Enough about every change to list them, and **nothing that needs git**.
+ *
+ * The index has to work where the change pages currently cannot: the deployed
+ * runtime has no `.git`, so anything date- or commit-derived comes back empty
+ * there. Artifact presence is a filesystem read, so a stage is still honest.
+ */
+export async function listChanges(cwd = process.cwd()): Promise<ChangeSummary[]> {
+  const summaries: ChangeSummary[] = [];
+
+  for (const id of await listChangeIds(cwd)) {
+    const dir = await resolveChangeDir(id);
+    if (!dir) continue;
+
+    const present = new Set<GateId>();
+    if (await readIfPresent(path.join(dir, "proposal.md"))) present.add("proposal");
+    if (await readIfPresent(path.join(dir, "design.md"))) present.add("design");
+    if (await readIfPresent(path.join(dir, "tasks.md"))) present.add("tasks");
+    if (await readIfPresent(path.join(dir, "archive.md"))) present.add("archive");
+    const capabilities = await readCapabilities(dir);
+    if (capabilities.length) present.add("specs");
+
+    // The stage is the one after the last artifact that exists — a change with
+    // tasks and no archive record is being built.
+    let stage: GateId = "proposal";
+    if (present.has("archive")) stage = "archive";
+    else if (present.has("tasks")) stage = "apply";
+    else {
+      for (const gate of GATE_ORDER) {
+        if (present.has(gate)) continue;
+        stage = gate;
+        break;
+      }
+    }
+
+    summaries.push({
+      id,
+      archived: path.relative(cwd, dir).includes(`${path.sep}archive${path.sep}`),
+      stage,
+      stageLabel: GATE_LABELS[stage],
+      capabilities: capabilities.length,
+    });
+  }
+
+  return summaries;
+}
+
 /** Every change id the hub can render, active and archived. */
 export async function listChangeIds(cwd = process.cwd()): Promise<string[]> {
   const root = path.join(cwd, "openspec", "changes");

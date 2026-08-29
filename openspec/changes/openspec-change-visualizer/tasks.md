@@ -117,6 +117,20 @@ right; only the rail is empty.
       schema's artifacts, rather than assuming proposal / specs / design / tasks
       ↳ not done — affects any `bhd-experiment` change; two exist today
 
+## 3d. The index, and the shell
+
+Added 2026-08-29, after the change pages went live and turned out to be
+unreachable. Both were visible in production the moment the route shipped.
+
+- [x] 3d.1 An index at `/changes` lists every change, grouped in flight and archived, with the stage it is in and a link
+      ↳ app/changes/page.tsx · name, stage, capability count when there is more than one. No scoring, no sorting, no progress bars — an index, not a dashboard
+- [x] 3d.2 The index reads no git, so it works in the deployed runtime, which has no `.git`
+      ↳ verified 2026-08-29 · test 'works with no git available, which is what production has' asserts listChanges never calls a commit-derived reader
+- [x] 3d.3 A change page carries the hub shell and a breadcrumb back to the index
+      ↳ app/changes/[id]/page.tsx · the route shipped without Header or Footer, which the approved 02.12 and 02.13 frames both show
+- [x] 3d.4 Stage on the index is derived from artifact presence, not dates
+      ↳ verified 2026-08-29 · tests for an archived change, a change in build, and a three-capability change
+
 ## 4. QA
 
 - [ ] 4.1 Manual walkthrough on `pnpm dev`: `tell-the-story` (mid-flight, one capability, a loop, two silences), `pdf-metadata-viewer-cloud` (three capabilities, workstream tasks, apply→design loop), an archived change, and a change with only a proposal.
