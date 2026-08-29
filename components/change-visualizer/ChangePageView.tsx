@@ -251,7 +251,7 @@ function Findings({ page }: { page: ChangePage }) {
 export default function ChangePageView({ page }: { page: ChangePage }) {
   const current = page.gates.find((g) => g.state === "current");
   return (
-    <article className="flex flex-col gap-9 px-4 py-10 md:px-8 lg:px-16">
+    <article className="flex flex-col gap-9 px-4 pb-12 pt-6 md:px-8 lg:px-16">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-heading text-3xl font-semibold text-text-primary lg:text-4xl">
           {page.id}

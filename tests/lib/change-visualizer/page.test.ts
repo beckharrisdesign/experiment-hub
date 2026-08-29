@@ -2,7 +2,12 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { execFileSync } from "child_process";
 import { readFileSync, readdirSync } from "fs";
 import path from "path";
-import { loadChangePage, listChangeIds, extractIntent } from "@/lib/change-visualizer";
+import {
+  loadChangePage,
+  listChangeIds,
+  listChanges,
+  extractIntent,
+} from "@/lib/change-visualizer";
 import { parseFigmaRef } from "@/lib/change-visualizer/design-ref";
 import { parseSpec } from "@/lib/change-visualizer/specs";
 import { prFromSubject, daysBetween } from "@/lib/change-visualizer/git";
@@ -277,5 +282,45 @@ describe("drift precision", () => {
     const page = await loadChangePage("generative-sandbox-build", repo);
     if (!page) return; // the change belongs to another branch's work
     expect(page.findings.find((f) => f.taskId === "3.3.1")).toBeUndefined();
+  });
+});
+
+describe("the index", () => {
+  it("summarises every change without reading git", async () => {
+    const changes = await listChanges(repo);
+    const ids = await listChangeIds(repo);
+    expect(changes).toHaveLength(ids.length);
+    expect(changes.length).toBeGreaterThan(40);
+    expect(changes.every((c) => c.stageLabel.length > 0)).toBe(true);
+  });
+
+  it("puts a change with an archive record in the archived group", async () => {
+    const changes = await listChanges(repo);
+    const archived = changes.find((c) => c.id === "exec-function-per-track-cadence");
+    expect(archived?.archived).toBe(true);
+    expect(archived?.stageLabel).toBe("archived");
+  });
+
+  it("calls a change with tasks and no archive record 'build'", async () => {
+    const changes = await listChanges(repo);
+    expect(changes.find((c) => c.id === "tell-the-story")?.stageLabel).toBe("build");
+  });
+
+  it("counts capabilities so a multi-capability change is visible as one", async () => {
+    const changes = await listChanges(repo);
+    expect(changes.find((c) => c.id === "pdf-metadata-viewer-cloud")?.capabilities).toBe(3);
+  });
+
+  it("works with no git available, which is what production has", async () => {
+    // The deployed runtime has no .git, so anything commit-derived comes back
+    // empty there. The index must not depend on it — artifact presence is a
+    // filesystem read.
+    const dir = path.join(repo, "lib", "change-visualizer");
+    const source = readFileSync(path.join(dir, "index.ts"), "utf8");
+    const fn = source.slice(
+      source.indexOf("export async function listChanges"),
+      source.indexOf("/** Every change id the hub can render"),
+    );
+    expect(fn).not.toMatch(/commitsFor|buildGates|attributePrs|findDrift/);
   });
 });
