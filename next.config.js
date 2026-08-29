@@ -15,6 +15,10 @@ const nextConfig = {
   // twice (real dir + symlink -> EEXIST). sharp-linux-x64 itself is already
   // traced via require(); only the .so payload is missing.
   outputFileTracingIncludes: {
+    // The change pages read this by a path built at runtime, so tracing cannot
+    // follow it. Without it the deployed runtime has no history at all and the
+    // pages render every date as a dash (change-history-manifest).
+    '/changes/**': ['data/change-history.json'],
     '/etsy-listing-kit/**': [
       'node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/node_modules/@img/sharp-libvips-linux-x64/**',
       // Bundled fonts — serverless has none; without these, SVG text renders

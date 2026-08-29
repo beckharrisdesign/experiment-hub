@@ -8,6 +8,7 @@
  */
 import { execFile } from "child_process";
 import { promisify } from "util";
+import { resolveHistorySource } from "./history-source";
 
 const run = promisify(execFile);
 
@@ -35,6 +36,19 @@ export function prFromSubject(subject: string): number | null {
  * silently stitch two identities together.
  */
 export async function commitsForPath(
+  repoRelPath: string,
+  cwd = process.cwd(),
+): Promise<Commit[]> {
+  const { source, manifest } = await resolveHistorySource(cwd);
+
+  if (source.kind === "manifest") return manifest?.paths[repoRelPath] ?? [];
+  if (source.kind === "none") return [];
+
+  return commitsFromGit(repoRelPath, cwd);
+}
+
+/** The raw read. Generation calls this directly — it always has a checkout. */
+export async function commitsFromGit(
   repoRelPath: string,
   cwd = process.cwd(),
 ): Promise<Commit[]> {

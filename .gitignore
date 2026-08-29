@@ -138,3 +138,8 @@ experiments/pdf-metadata-viewer/prototype/pdfs/*
 # regenerates on demand and is machine-specific, so it must never be committed.
 # Bare pattern, so it matches at any depth rather than only the root.
 .turbo
+
+# Derived: rebuilt at deploy from full git history (change-history-manifest).
+# A tracked copy invites hand edits, and a hand-edited manifest makes the
+# change pages' drift band lie.
+data/change-history.json

@@ -16,6 +16,7 @@
 import { execFile } from "child_process";
 import { promisify } from "util";
 import type { TaskItem } from "./tasks";
+import { resolveHistorySource } from "./history-source";
 
 const run = promisify(execFile);
 
@@ -80,6 +81,11 @@ async function locateSymbols(
 }
 
 async function prMerged(pr: number, cwd: string): Promise<string | null> {
+  const { source, manifest } = await resolveHistorySource(cwd);
+
+  if (source.kind === "manifest") return manifest?.merges[String(pr)] ?? null;
+  if (source.kind === "none") return null;
+
   try {
     const { stdout } = await run(
       "git",
