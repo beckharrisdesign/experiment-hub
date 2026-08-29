@@ -282,6 +282,16 @@ export default function ChangePageView({ page }: { page: ChangePage }) {
             <Event key={event.kind === "gap" ? `gap-${i}` : `${event.date}-${i}`} event={event} />
           ))}
         </ol>
+        {page.events.length === 0 && (
+          <p className="text-[15px] text-text-muted">
+            {page.historySource.kind === "none"
+              ? "Nothing could be read about when this change was worked on. That is not the same as nothing having happened."
+              : "Nothing has been committed for this change yet."}
+          </p>
+        )}
+        <p className="font-mono text-[13px] text-text-muted">
+          {page.historySourceLabel}
+        </p>
         <p className="font-mono text-[13px] text-text-muted">
           {page.prs.prs.length} pull request{page.prs.prs.length === 1 ? "" : "s"}, found by{" "}
           {page.prs.method}

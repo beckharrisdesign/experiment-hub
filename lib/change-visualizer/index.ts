@@ -16,6 +16,11 @@ import { parseFigmaRef, type FigmaRef } from "./design-ref";
 import { attributePrs, type PrAttribution } from "./prs";
 import { findDrift, type Finding } from "./drift";
 import {
+  resolveHistorySource,
+  describeSource,
+  type HistorySource,
+} from "./history-source";
+import {
   parseTasks,
   evidenceKindFor,
   progress,
@@ -62,6 +67,9 @@ export type ChangePage = {
   assets: string[];
   events: TimelineEvent[];
   findings: Finding[];
+  /** Where the dates and pull requests came from, so empty is never ambiguous. */
+  historySource: HistorySource;
+  historySourceLabel: string;
 };
 
 async function readIfPresent(file: string): Promise<string | null> {
@@ -158,7 +166,7 @@ export async function loadChangePage(
   changeId: string,
   cwd = process.cwd(),
 ): Promise<ChangePage | null> {
-  const dir = await resolveChangeDir(changeId);
+  const dir = await resolveChangeDir(changeId, cwd);
   if (!dir) return null;
 
   const repoRel = path.relative(cwd, dir);
@@ -191,6 +199,7 @@ export async function loadChangePage(
     : [];
 
   const commits = await commitsForPath(repoRel, cwd);
+  const { source } = await resolveHistorySource(cwd);
 
   let assets: string[] = [];
   try {
@@ -218,6 +227,8 @@ export async function loadChangePage(
     assets,
     events: buildTimeline(commits, gates),
     findings: parsed ? await findDrift(parsed.items, cwd) : [],
+    historySource: source,
+    historySourceLabel: describeSource(source),
   };
 }
 
@@ -241,7 +252,7 @@ export async function listChanges(cwd = process.cwd()): Promise<ChangeSummary[]>
   const summaries: ChangeSummary[] = [];
 
   for (const id of await listChangeIds(cwd)) {
-    const dir = await resolveChangeDir(id);
+    const dir = await resolveChangeDir(id, cwd);
     if (!dir) continue;
 
     const present = new Set<GateId>();

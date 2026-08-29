@@ -232,8 +232,11 @@ describe("every change in the repo", () => {
 describe("read-only by construction", () => {
   it("has no write path to openspec/changes in its module graph", () => {
     const dir = path.join(repo, "lib", "change-visualizer");
+    // `generate.ts` is a build-time tool that lives here for testability and is
+    // never in the page's import graph. It does write — to `data/` only, which
+    // the next test pins.
     const sources = readdirSync(dir)
-      .filter((f) => f.endsWith(".ts"))
+      .filter((f) => f.endsWith(".ts") && f !== "generate.ts")
       .map((f) => readFileSync(path.join(dir, f), "utf8"))
       .join("\n");
 
@@ -322,5 +325,19 @@ describe("the index", () => {
       source.indexOf("/** Every change id the hub can render"),
     );
     expect(fn).not.toMatch(/commitsFor|buildGates|attributePrs|findDrift/);
+  });
+
+  it("lets the generator write only to data/, never to a change folder", () => {
+    const source = readFileSync(
+      path.join(repo, "lib", "change-visualizer", "generate.ts"),
+      "utf8",
+    );
+    // It writes exactly one file, and that path is composed from MANIFEST_PATH.
+    // It reads openspec/ freely — that is the whole job — so the check is on
+    // the write target, not on the word appearing anywhere in the file.
+    expect(source.match(/fs\.writeFile\(/g) ?? []).toHaveLength(1);
+    expect(source).toMatch(/path\.join\(cwd, MANIFEST_PATH\)/);
+    expect(source.match(/fs\.mkdir\(/g) ?? []).toHaveLength(1);
+    expect(source).toMatch(/fs\.mkdir\(path\.dirname\(out\)/);
   });
 });

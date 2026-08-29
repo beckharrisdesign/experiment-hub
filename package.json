@@ -20,7 +20,8 @@
     "dev:landing": "cd experiments/simple-seed-organizer/prototype/validation-landing && pnpm install && pnpm dev",
     "dev:photo-filters-banner": "cd experiments/photo-filters-banner/prototype && npm install && npm run dev",
     "skills:sync": "node scripts/sync-skills.js",
-    "revenue:test": "node scripts/revenue-test.mjs"
+    "revenue:test": "node scripts/revenue-test.mjs",
+    "history:manifest": "tsx scripts/generate-change-history.ts"
   },
   "dependencies": {
     "@beckharrisdesign/mvds": "^0.3.0",

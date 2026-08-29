@@ -78,6 +78,11 @@ jobs:
 
       - uses: actions/checkout@v4
         if: steps.guard.outputs.skip != 'true'
+        with:
+          # The change pages read artifact dates, pull requests and merges out of
+          # git. The deployed runtime has none, so the manifest is generated here
+          # instead — and a shallow clone would produce a plausible, wrong one.
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
         if: steps.guard.outputs.skip != 'true'
@@ -89,6 +94,18 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
+
+      - name: Install dependencies
+        if: steps.guard.outputs.skip != 'true'
+        run: pnpm install --frozen-lockfile
+
+      # Must run before `vercel build`, which traces the manifest into the
+      # /changes bundle. Generation fails loudly rather than emitting a thin
+      # manifest: a page that looks finished and says nothing is the defect
+      # being fixed here, and a red deploy is cheaper than shipping it again.
+      - name: Generate the change-history manifest
+        if: steps.guard.outputs.skip != 'true'
+        run: pnpm run history:manifest
 
       - name: Install Vercel CLI
         if: steps.guard.outputs.skip != 'true'

@@ -17,7 +17,8 @@ const PHASE_FILES: { phase: BhdPhase; filename: string }[] = [
 
 const PHASE_ORDER: BhdPhase[] = ["explore", "propose", "apply", "archive"];
 
-const CHANGES_ROOT = () => path.join(process.cwd(), "openspec", "changes");
+const CHANGES_ROOT = (root: string = process.cwd()) =>
+  path.join(root, "openspec", "changes");
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -38,15 +39,17 @@ let archiveIndex: { at: number; entries: Promise<string[]> } | null = null;
  * The TTL keeps a dev session honest — archive something and the hub reflects
  * it within a few seconds. In production the archive is fixed per deployment.
  */
-function archiveEntries(): Promise<string[]> {
+function archiveEntries(root?: string): Promise<string[]> {
   const now = Date.now();
-  if (archiveIndex && now - archiveIndex.at < ARCHIVE_INDEX_TTL_MS) {
+  // Memoize only the default root: a caller passing an explicit root is a test
+  // or a script pointed somewhere else, and must not read another root's cache.
+  if (!root && archiveIndex && now - archiveIndex.at < ARCHIVE_INDEX_TTL_MS) {
     return archiveIndex.entries;
   }
   const entries = fs
-    .readdir(path.join(CHANGES_ROOT(), "archive"))
+    .readdir(path.join(CHANGES_ROOT(root), "archive"))
     .catch(() => [] as string[]);
-  archiveIndex = { at: now, entries };
+  if (!root) archiveIndex = { at: now, entries };
   return entries;
 }
 
@@ -63,13 +66,16 @@ export function __resetArchiveIndex(): void {
  * thing about it. Archived folders are named `YYYY-MM-DD-<changeId>`, so match
  * on the suffix and prefer the most recent when a change was archived twice.
  */
-export async function resolveChangeDir(changeId: string): Promise<string | null> {
+export async function resolveChangeDir(
+  changeId: string,
+  root?: string,
+): Promise<string | null> {
   // Change ids are slugs, never paths. The id can arrive via the Notion /
   // Supabase experiment rows (openspecChangeId, experiment.id), so reject
   // anything that could escape openspec/changes/ before it touches path.join.
   if (!/^[a-z0-9][a-z0-9-]*$/.test(changeId)) return null;
 
-  const active = path.join(CHANGES_ROOT(), changeId);
+  const active = path.join(CHANGES_ROOT(root), changeId);
   try {
     await fs.access(active);
     return active;
@@ -82,12 +88,12 @@ export async function resolveChangeDir(changeId: string): Promise<string | null>
   // safe because the date prefix is fixed-width and ISO — the last entry is the
   // most recent archiving of this id.
   const archived = new RegExp(`^\\d{4}-\\d{2}-\\d{2}-${escapeRegExp(changeId)}$`);
-  const match = (await archiveEntries())
+  const match = (await archiveEntries(root))
     .filter((name) => archived.test(name))
     .sort()
     .pop();
 
-  return match ? path.join(CHANGES_ROOT(), "archive", match) : null;
+  return match ? path.join(CHANGES_ROOT(root), "archive", match) : null;
 }
 
 export async function openSpecChangeDirExists(
