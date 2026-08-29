@@ -6,6 +6,7 @@ import { loadChangePage, listChangeIds, extractIntent } from "@/lib/change-visua
 import { parseFigmaRef } from "@/lib/change-visualizer/design-ref";
 import { parseSpec } from "@/lib/change-visualizer/specs";
 import { prFromSubject, daysBetween } from "@/lib/change-visualizer/git";
+import { listChangeArtifacts } from "@/lib/change-visualizer/artifacts";
 
 const repo = process.cwd();
 
@@ -239,5 +240,31 @@ describe("read-only by construction", () => {
     expect(sources).not.toMatch(/createWriteStream\s*\(/);
     // git is read-only here too: no command that mutates the repository.
     expect(sources).not.toMatch(/"git",\s*\[\s*"(?:commit|add|checkout|push|rm|mv)"/);
+  });
+});
+
+describe("artifact links for a linked change", () => {
+  it("lists the change's artifacts, its renders, and its page on the hub", async () => {
+    const links = await listChangeArtifacts("openspec-change-visualizer", repo);
+    const labels = links.map((l) => l.label);
+
+    expect(labels).toContain("Change page");
+    expect(labels).toContain("Proposal");
+    expect(labels).toContain("Design");
+    expect(labels).toContain("Requirements — change-page");
+    expect(labels).toContain("Requirements — change-claim-verification");
+    expect(links.some((l) => l.group === "design")).toBe(true);
+
+    // The hub link is internal; everything else points at the repo so it
+    // survives the branch being deleted.
+    const hub = links.find((l) => l.label === "Change page")!;
+    expect(hub.href).toBe("/changes/openspec-change-visualizer");
+    expect(
+      links.filter((l) => l !== hub).every((l) => l.href.startsWith("https://github.com/")),
+    ).toBe(true);
+  });
+
+  it("returns nothing for an experiment with no linked change", async () => {
+    expect(await listChangeArtifacts("seed-finder", repo)).toEqual([]);
   });
 });

@@ -93,6 +93,19 @@
 - [x] 3.11 Read-only by construction: no write path to `openspec/changes/`, asserted structurally the way `tests/lib/append-history.test.ts` asserts insert-only. (→ 1.20)
       ↳ no write call in lib/change-visualizer, asserted structurally
 
+## 3b. Artifacts on the experiment detail page
+
+Added 2026-08-29 at Katy's request, after the planning artifacts were approved.
+
+- [x] 3b.1 A linked change's artifacts render on `/experiments/[slug]` — its page on the hub, the OpenSpec files, and the committed renders, grouped
+      ↳ lib/change-visualizer/artifacts.ts + components/change-visualizer/ChangeArtifacts.tsx, wired into app/experiments/[slug]/page.tsx
+- [x] 3b.2 An experiment with no linked change renders no heading at all, matching the detail page's habit of dropping empty bands
+      ↳ verified 2026-08-29 · test 'returns nothing for an experiment with no linked change'
+- [x] 3b.3 Repo links are absolute so they survive the branch being deleted; only the change page is internal
+      ↳ verified 2026-08-29 · asserted in 'lists the change's artifacts, its renders, and its page on the hub'
+- [x] 3b.4 The experiment is registered so the page exists — Notion row `OpenSpec Change Visualizer`, `repo` = `openspec-change-visualizer`, which is what resolveOpenSpecChangeId falls back to
+      ↳ created 2026-08-29 with three Why: pages · PI 4 / SI 3 / BI 2
+
 ## 4. QA
 
 - [ ] 4.1 Manual walkthrough on `pnpm dev`: `tell-the-story` (mid-flight, one capability, a loop, two silences), `pdf-metadata-viewer-cloud` (three capabilities, workstream tasks, apply→design loop), an archived change, and a change with only a proposal.
