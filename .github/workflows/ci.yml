@@ -14,6 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The change-visualizer tests read real artifact history out of git —
+          # gate dates, revisits, the 31-day silence on tell-the-story. A
+          # shallow clone has none of it, and they fail with assertions that do
+          # not name the cause.
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
         with:

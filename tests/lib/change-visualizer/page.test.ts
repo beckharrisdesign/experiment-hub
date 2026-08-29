@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
+import { execFileSync } from "child_process";
 import { readFileSync, readdirSync } from "fs";
 import path from "path";
 import { loadChangePage, listChangeIds, extractIntent } from "@/lib/change-visualizer";
@@ -7,6 +8,24 @@ import { parseSpec } from "@/lib/change-visualizer/specs";
 import { prFromSubject, daysBetween } from "@/lib/change-visualizer/git";
 
 const repo = process.cwd();
+
+/**
+ * These tests read real artifact history out of git. In a shallow clone there
+ * is nothing to read, and the assertions fail in ways that do not name the
+ * cause — so say it plainly instead. CI checks out with `fetch-depth: 0`.
+ */
+beforeAll(() => {
+  const shallow = execFileSync("git", ["rev-parse", "--is-shallow-repository"], {
+    cwd: repo,
+    encoding: "utf8",
+  }).trim();
+  if (shallow === "true") {
+    throw new Error(
+      "change-visualizer tests need full git history; this clone is shallow. " +
+        "Fetch it with `git fetch --unshallow`, or set fetch-depth: 0 on the checkout.",
+    );
+  }
+});
 
 describe("resolving a change", () => {
   it("opens an active change", async () => {
