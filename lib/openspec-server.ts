@@ -63,7 +63,7 @@ export function __resetArchiveIndex(): void {
  * thing about it. Archived folders are named `YYYY-MM-DD-<changeId>`, so match
  * on the suffix and prefer the most recent when a change was archived twice.
  */
-async function resolveChangeDir(changeId: string): Promise<string | null> {
+export async function resolveChangeDir(changeId: string): Promise<string | null> {
   // Change ids are slugs, never paths. The id can arrive via the Notion /
   // Supabase experiment rows (openspecChangeId, experiment.id), so reject
   // anything that could escape openspec/changes/ before it touches path.join.

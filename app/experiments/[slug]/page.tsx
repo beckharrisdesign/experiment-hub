@@ -2,6 +2,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ChangeArtifacts from "@/components/change-visualizer/ChangeArtifacts";
+import { listChangeArtifacts } from "@/lib/change-visualizer/artifacts";
+import { resolveOpenSpecChangeId } from "@/lib/openspec-shared";
 import ExperimentTypeBadge from "@/components/ExperimentTypeBadge";
 import StatusBadge from "@/components/StatusBadge";
 import { getExperimentBySlug } from "@/lib/data";
@@ -141,10 +144,17 @@ export default async function ExperimentDetailPage({
   // statements, (in edit mode) ghost prompts for what's missing, or approved
   // History entries. When a public page has none of these, the band is dropped
   // entirely and the dark hero stays flush to the footer.
+  // Artifacts for a linked OpenSpec change. Most experiments have none, and the
+  // section drops itself rather than rendering an empty heading.
+  const artifactLinks = await listChangeArtifacts(
+    resolveOpenSpecChangeId(experiment),
+  );
+
   const showNarrative =
     statements.length > 0 ||
     history.length > 0 ||
     experiment.impactScores !== undefined ||
+    artifactLinks.length > 0 ||
     (editMode && missing.length > 0);
 
   return (
@@ -206,6 +216,7 @@ export default async function ExperimentDetailPage({
             ) : (
               <History entries={history} />
             )}
+            <ChangeArtifacts links={artifactLinks} />
           </div>
         </main>
       )}
