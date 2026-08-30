@@ -17,12 +17,12 @@
 
 ## 2. Foundations
 
-- [ ] 2.1 Extract the Tier A/B rubric into a shared module (`lib/etsy-listing/rubric` or similar) with the 20-photo/video cap; fixture test pins identical output for ELK and the labs-scorecard path (serves 1.10)
-- [ ] 2.2 Rubric calls flagged in design decisions 12/21: photo+video cap = 20; decide the "non-trivial description" Tier A gate (the keychain's 3-character description); verify remaining † thresholds (tags 13, title 140, materials 13) in Shop Manager
-- [ ] 2.3 Citation registry: `{criterion, quote, sourceTitle, sourceUrl, lastCheckedAt}` — **manually verify each quote verbatim in a real browser** (etsy.com 403s automated fetches; quotes currently from 2026-08-30 search excerpts), then wire the "checked <date>" render (serves 1.3)
-- [ ] 2.4 Listing-fetch endpoint: parse listing id from pasted URLs (tolerate `ref=`/`logging_key=` clutter), fetch via official v3 API with the existing key; shop-URL → featured-listing lookup; per-listing server cache + per-IP throttle (serves 1.1, 1.8, 1.9 — and the founder's no-rate-limit constraint)
-- [ ] 2.5 Dev fixture mode: evaluation UI served from Supabase `etsy_latest_listing_snapshots` fixtures (W&H listings 4522917501 / 4465357735 / a full one) — zero live Etsy calls during development and tests
-- [ ] 2.6 `elk_evaluations` table (listing id, scores, timestamp; no PII) + migration
+- [x] 2.1 Shared rubric: `lib/etsy-scorecard.ts` already existed (zero-sales-funnel built it) — ELK's `evaluateListing` imports it; cap raised to 20; parity test pins identical output through both entry points (serves 1.10)
+- [ ] 2.2 Rubric calls (code decisions SHIPPED: cap=20; Tier A stays presence-only, mirroring what Etsy itself enforces — thinness lives in Tier B; documented in etsy-scorecard.ts). REMAINING: founder Shop Manager spot-check of tags/title/materials caps
+- [ ] 2.3 Citation registry SHIPPED (`lib/etsy-listing-kit/citations.ts`, `verifiedVerbatim:false` on every entry). REMAINING: human browser pass to verify each quote verbatim, then flip the flags (agent cannot — bot wall; serves 1.3)
+- [x] 2.4 Listing-fetch endpoint: parse listing id from pasted URLs (tolerate `ref=`/`logging_key=` clutter), fetch via official v3 API with the existing key; shop-URL → featured-listing lookup; per-listing server cache + per-IP throttle (serves 1.1, 1.8, 1.9 — and the founder's no-rate-limit constraint)
+- [x] 2.5 Dev fixture mode: evaluation UI served from Supabase `etsy_latest_listing_snapshots` fixtures (W&H listings 4522917501 / 4465357735 / a full one) — zero live Etsy calls during development and tests
+- [x] 2.6 `elk_evaluations` table + migration 013 (file in repo; applying to the live project awaits founder OK / deploy)
 
 ## 3. Implementation
 

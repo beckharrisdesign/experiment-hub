@@ -50,8 +50,13 @@ export interface RawListing {
 // ---------------------------------------------------------------------------
 
 export const SCORECARD_DEFAULTS = {
-  /** Etsy allows 10 photos; using all of them is the recommended maximum. */
-  photos: 10,
+  /**
+   * Etsy now allows 20 photos & videos per listing (raised from 10 — founder
+   * confirmed 2026-08-30, Seller Handbook agrees, and a live W&H listing
+   * carries 13). Shared by the labs scorecard and the ELK evaluation
+   * (openspec/changes/elk-listing-evaluation, design decision 12).
+   */
+  photos: 20,
   /** Etsy allows 13 tags; using fewer leaves search coverage on the table. */
   tags: 13,
   /** Per-tag character cap. */
@@ -134,6 +139,12 @@ function str(value: string | null | undefined): string {
 // Tier A — publishable gate
 // ---------------------------------------------------------------------------
 
+/**
+ * Tier A mirrors what Etsy itself enforces at publish time — presence, not
+ * quality. A 3-character description passes here (Etsy published it), and its
+ * thinness is Tier B's `description_length` criterion instead
+ * (elk-listing-evaluation design decision 21 flag, resolved at apply).
+ */
 function tierA(raw: RawListing, isDigital: boolean): TierAFailure[] {
   const failures: TierAFailure[] = [];
 

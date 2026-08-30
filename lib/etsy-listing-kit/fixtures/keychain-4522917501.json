@@ -1,0 +1,44 @@
+{
+  "tags": [],
+  "price": {
+    "amount": 2500,
+    "divisor": 100,
+    "currency_code": "USD"
+  },
+  "state": "draft",
+  "style": [],
+  "title": "Custom engraved pet keychain",
+  "views": 0,
+  "images": [
+    {
+      "rank": 1,
+      "alt_text": null,
+      "url_570xN": "https://i.etsystatic.com/5568941/r/il/8ca12d/8143800118/il_570xN.8143800118_mnuo.jpg",
+      "full_width": 3000,
+      "full_height": 3000
+    },
+    {
+      "rank": 2,
+      "alt_text": null,
+      "url_570xN": "https://i.etsystatic.com/5568941/r/il/7854eb/8143800124/il_570xN.8143800124_1pm2.jpg",
+      "full_width": 3000,
+      "full_height": 3000
+    }
+  ],
+  "videos": [],
+  "quantity": 5,
+  "who_made": "i_did",
+  "is_supply": false,
+  "materials": [],
+  "when_made": "made_to_order",
+  "listing_id": 4522917501,
+  "description": "TBD",
+  "taxonomy_id": 6472,
+  "listing_type": "physical",
+  "num_favorers": 0,
+  "processing_min": 6,
+  "shop_section_id": 58993341,
+  "return_policy_id": 1494844947925,
+  "readiness_state_id": 1406094113454,
+  "shipping_profile_id": 308752458830
+}
