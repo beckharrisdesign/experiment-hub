@@ -14,7 +14,7 @@ describe('Landing page — accessibility basics', () => {
   it('keeps the evaluation as the primary above-the-fold action with a kit skip link', () => {
     render(<Landing />);
     expect(screen.getByRole('textbox', { name: /listing url/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /skip straight to the \$3 kit/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /buy the whole kit now/i })).toBeInTheDocument();
   });
 
   it('uses a native button as the keyboard/AT upload control (no nested interactive)', () => {

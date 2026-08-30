@@ -215,7 +215,7 @@ export default function EtsyListingKitLanding() {
             </div>
           ) : (
             <>
-              <span className={styles.dropTitle}>⬆ Drop your design here (or paste it)</span>
+              <span className={styles.dropTitle}>Drop your design here (or paste it)</span>
               <span className={styles.dropHint}>PNG · JPG · SVG · up to {uploadMaxMb} MB</span>
             </>
           )}
@@ -238,7 +238,7 @@ export default function EtsyListingKitLanding() {
                   <span className={styles.spinner} aria-hidden="true" /> Building your 6 images…
                 </>
               ) : (
-                'Preview my 6 listing images →'
+                'Preview my 6 listing images'
               )}
             </button>
           </div>
@@ -270,7 +270,7 @@ export default function EtsyListingKitLanding() {
             <span className={styles.price}>{priceLabel}</span>
             <span className={styles.priceNote}>one-time · all 6 images</span>
             <button className={styles.primaryWide} type="button" onClick={checkout} disabled={checkingOut}>
-              {checkingOut ? 'Starting checkout…' : `Pay ${priceLabel} & download →`}
+              {checkingOut ? 'Starting checkout…' : `Pay ${priceLabel} & download`}
             </button>
             <strong style={{ fontSize: 13 }}>What lands in your inbox:</strong>
             <ul className={styles.panelList}>

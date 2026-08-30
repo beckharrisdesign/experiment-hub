@@ -35,6 +35,21 @@ type Phase =
 
 const SLOT_COUNT = 20;
 
+/** Display names for the shared rubric's Tier B criteria keys. */
+const RECOMMENDED_NAMES: Record<string, string> = {
+  photos: 'Photos',
+  tags: 'Tags',
+  tag_length: 'Tag length',
+  title_length: 'Title length',
+  description_length: 'Description',
+  alt_text: 'Alt text',
+  video: 'Video',
+  styles: 'Styles',
+  materials: 'Materials',
+  processing_time: 'Processing time',
+  return_policy: 'Return policy',
+};
+
 /* eslint-disable @next/next/no-img-element */
 
 function PhotoSlots({ photos }: { photos: PhotoEvidence[] }) {
@@ -101,7 +116,9 @@ function Evidence({ rec }: { rec: Recommendation }) {
               ) : (
                 <div className={styles.altThumb} />
               )}
-              <span className={styles.altChip}>{p.altText ? 'has alt text' : 'no alt text'}</span>
+              <span className={p.altText ? styles.altChipOn : styles.altChipOff}>
+                {p.altText ? 'has alt text' : 'no alt text'}
+              </span>
             </div>
           ))}
         </div>
@@ -127,9 +144,7 @@ function Evidence({ rec }: { rec: Recommendation }) {
     }
     case 'video':
       return (
-        <div className={styles.videoSlot} aria-hidden="true">
-          ▶
-        </div>
+        <div className={styles.videoSlot} aria-hidden="true" />
       );
     default:
       return null;
@@ -171,15 +186,17 @@ function ReportCard({
         </div>
         <Citation rec={rec} />
       </div>
-      <div className={styles.kitBox}>
-        <span className={styles.sampleLabel}>WHAT&rsquo;S IN THE KIT</span>
-        <p className={`${styles.kitText} ${rec.kit.comingSoon ? styles.kitTeaseText : ''}`}>{rec.kit.text}</p>
-        {!rec.kit.comingSoon && (
-          <button type="button" className={styles.skipLink} onClick={onSkipToKit}>
-            Skip to the full kit ↓
-          </button>
-        )}
-      </div>
+      {rec.key !== 'video' && !(rec.key === 'title' && sampleTitle) && (
+        <div className={styles.kitBox}>
+          <span className={styles.sampleLabel}>WHAT&rsquo;S IN THE KIT</span>
+          <p className={`${styles.kitText} ${rec.kit.comingSoon ? styles.kitTeaseText : ''}`}>{rec.kit.text}</p>
+          {!rec.kit.comingSoon && (
+            <button type="button" className={styles.againBtn} onClick={onSkipToKit}>
+              Buy the whole kit now
+            </button>
+          )}
+        </div>
+      )}
     </article>
   );
 }
@@ -197,7 +214,16 @@ function CurrentStateCard({ evaluation }: { evaluation: EvaluationResult }) {
         )}
         <div>
           <div className={styles.identTitle}>{e.identity.title}</div>
-          <div className={styles.identSub}>{e.identity.shopNote}</div>
+          <div className={styles.identSub}>
+            {e.identity.shopNote} · read{' '}
+            {new Date(e.fetchedAt).toLocaleString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit',
+            })}
+          </div>
         </div>
       </div>
       <div className={styles.verdictRow}>
@@ -208,15 +234,29 @@ function CurrentStateCard({ evaluation }: { evaluation: EvaluationResult }) {
           </span>
         </div>
         <div className={styles.fieldsPanel}>
-          <span className={styles.stateLabel} style={{ fontSize: 10 }}>
-            FIELDS
-          </span>
-          <div className={styles.fieldsGrid}>
-            {e.requiredFields.map((f) => (
-              <span key={f.key} className={`${styles.fieldItem} ${f.present ? '' : styles.fieldMiss}`}>
-                {f.present ? '✓' : '–'} {f.label}
-              </span>
-            ))}
+          <div>
+            <span className={styles.stateLabel} style={{ fontSize: 10 }}>
+              REQUIRED FIELDS
+            </span>
+            <div className={styles.fieldsGrid}>
+              {e.requiredFields.map((f) => (
+                <span key={f.key} className={f.present ? styles.fieldOn : styles.fieldOff}>
+                  {f.label}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <span className={styles.stateLabel} style={{ fontSize: 10 }}>
+              RECOMMENDED FIELDS
+            </span>
+            <div className={styles.fieldsGrid}>
+              {e.scored.criteria.map((c) => (
+                <span key={c.key} className={c.met ? styles.fieldOn : styles.fieldOff}>
+                  {RECOMMENDED_NAMES[c.key] ?? c.key}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
         <div className={`${styles.tierPanel} ${styles.tierRec}`}>
@@ -224,10 +264,6 @@ function CurrentStateCard({ evaluation }: { evaluation: EvaluationResult }) {
           <span className={styles.tierValueRec}>{e.recommendedInUse}% in use</span>
         </div>
       </div>
-      <p className={styles.explainer}>
-        Required fields are pass/fail — they get you published. The percentage grades only Etsy&rsquo;s
-        recommended checklist (photos, title, tags, alt text, video) — the guidance that gets you found.
-      </p>
     </section>
   );
 }
@@ -235,7 +271,7 @@ function CurrentStateCard({ evaluation }: { evaluation: EvaluationResult }) {
 function KitOffer({ state, onSkipToKit }: { state: 'gaps' | 'full'; onSkipToKit: () => void }) {
   return (
     <section className={styles.kitOffer} aria-label="The full listing kit">
-      <span className={styles.tag}>⚡ THE FULL LISTING KIT</span>
+      <span className={styles.tag}>THE FULL LISTING KIT</span>
       <h3 className={styles.kitOfferHead}>
         {state === 'full' ? 'A fresh set to test against your current one' : 'Your images, done for you'}
       </h3>
@@ -257,7 +293,7 @@ function KitOffer({ state, onSkipToKit }: { state: 'gaps' | 'full'; onSkipToKit:
       <span className={styles.kitPrice}>$3</span>
       <div className={styles.ctaRow}>
         <button type="button" className={styles.primaryWide} onClick={onSkipToKit}>
-          Build my listing kit →
+          Build my listing kit
         </button>
       </div>
       <span className={styles.panelFoot}>
@@ -330,20 +366,20 @@ export default function EvaluationSection({ onGoToKit }: { onGoToKit: () => void
           onChange={(e) => setUrl(e.target.value)}
           aria-label="Your Etsy listing URL"
         />
-        <div className={styles.ctaRow}>
+        <div className={styles.ctaPair}>
           <button className={styles.primaryWide} type="submit" disabled={phase.kind === 'checking'}>
             {phase.kind === 'checking' ? (
               <>
                 <span className={styles.spinner} aria-hidden="true" /> Reading your listing…
               </>
             ) : (
-              'Check my listing →'
+              'Check my listing'
             )}
           </button>
+          <button type="button" className={styles.againBtn} onClick={skipToKit}>
+            Buy the whole kit now
+          </button>
         </div>
-        <button type="button" className={styles.skipLink} onClick={skipToKit}>
-          Just want the images? Skip straight to the $3 kit ↓
-        </button>
         {phase.kind === 'invalid' && (
           <p className={styles.error} role="alert">
             {phase.reason}
@@ -369,7 +405,7 @@ export default function EvaluationSection({ onGoToKit }: { onGoToKit: () => void
               className={styles.button}
               onClick={() => void check(`https://www.etsy.com/listing/${phase.suggestion.listingId}/x`)}
             >
-              Check this one →
+              Check this one
             </button>
           </div>
           <p className={styles.evCaption}>Not this one? Paste that listing&rsquo;s own link instead.</p>
@@ -379,11 +415,9 @@ export default function EvaluationSection({ onGoToKit }: { onGoToKit: () => void
       {evaluation && (
         <div className={styles.evalColumn} ref={resultRef}>
           <CurrentStateCard evaluation={evaluation} />
-          <h2 className={styles.oppsHead}>
-            {evaluation.state === 'full'
-              ? 'Nothing to fill — now make it work harder'
-              : 'Your biggest opportunities'}
-          </h2>
+          {evaluation.state === 'full' && (
+            <h2 className={styles.oppsHead}>Nothing to fill — now make it work harder</h2>
+          )}
           {evaluation.recommendations.map((rec, i) => (
             <ReportCard
               key={rec.key}

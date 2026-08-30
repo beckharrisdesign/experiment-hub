@@ -291,6 +291,8 @@ export function composeSampleTitle(raw: RawApiListing): string | null {
 
 export interface EvaluationResult {
   listingId: number;
+  /** ISO timestamp of the data pull — rendered exactly (#426); no live socket. */
+  fetchedAt: string;
   identity: { title: string; imageUrl: string | null; shopNote: string };
   requiredFields: FieldCheck[];
   requiredPass: boolean;
@@ -311,10 +313,11 @@ export function evaluateListing(raw: RawApiListing): EvaluationResult {
 
   return {
     listingId: raw.listing_id,
+    fetchedAt: new Date().toISOString(),
     identity: {
       title: scored.title,
       imageUrl: raw.images?.[0]?.url_570xN ?? null,
-      shopNote: 'read from your public listing just now',
+      shopNote: 'read from your public listing',
     },
     requiredFields,
     requiredPass: requiredFields.every((f) => f.present),
