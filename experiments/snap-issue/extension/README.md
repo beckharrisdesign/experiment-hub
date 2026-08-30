@@ -66,7 +66,7 @@ On **Create GitHub issue**, the extension:
 - **Viewport only** — uses `chrome.tabs.captureVisibleTab` (not full-page scroll capture).
 - **Restricted pages** — `chrome://`, the Chrome Web Store, and other blocked URLs cannot be captured; you’ll see an on-page toast.
 - **iframes** — selection is viewport-level; cross-origin iframe contents are not isolated in the crop.
-- **PAT** — stored in **synced** storage; use a minimally scoped token and rotate if exposed.
+- **PAT** — stored in **synced** storage; use a minimally scoped token and rotate if exposed. The canonical copy lives in the **BHD Labs 1Password vault** (GitHub item) — rotations there must be re-pasted here by hand, since the extension never reads the vault or `.env.local` (lesson of 2026-08-30: the 08-16 token consolidation broke captures silently for two weeks).
 - **Images in GitHub** — uploads go to **`snap-issue-media`** (auto-created) by default so **protect-main** does not block them. If upload still fails, the issue is created with an explanation and the PNG stays in Downloads.
 
 ## Manual QA checklist (ship gate)
