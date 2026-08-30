@@ -237,14 +237,18 @@ function KitOffer({ state, onSkipToKit }: { state: 'gaps' | 'full'; onSkipToKit:
     <section className={styles.kitOffer} aria-label="The full listing kit">
       <span className={styles.tag}>⚡ THE FULL LISTING KIT</span>
       <h3 className={styles.kitOfferHead}>
-        {state === 'full' ? 'A fresh set to test against your current one' : 'Every opportunity above, done for you'}
+        {state === 'full' ? 'A fresh set to test against your current one' : 'Your images, done for you'}
       </h3>
       <div className={styles.kitList}>
-        <span>• Ten new or updated images, on brand and ready to upload</span>
-        <span>• A suggested title that works all 140 characters</span>
-        <span>• 13 suggested tags, drawn from your listing and Etsy&rsquo;s guidance</span>
-        <span>• Alt text written for every photo</span>
-        <span>• A template to make more images yourself</span>
+        <span>• Six Etsy-ready images, made from your design</span>
+        <span className={styles.kitTeaseRow}>
+          <span className={styles.kitTeaseText}>• A ten-image set with a reusable template</span>
+          <span className={styles.chipMuted}>COMING SOON</span>
+        </span>
+        <span className={styles.kitTeaseRow}>
+          <span className={styles.kitTeaseText}>• A suggested title, 13 tags, and alt text for every photo</span>
+          <span className={styles.chipMuted}>COMING SOON</span>
+        </span>
         <span className={styles.kitTeaseRow}>
           <span className={styles.kitTeaseText}>• A listing video, cut from your photos</span>
           <span className={styles.chipMuted}>COMING SOON</span>

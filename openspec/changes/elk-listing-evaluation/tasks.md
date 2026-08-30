@@ -30,7 +30,7 @@
 - [ ] 3.2 Card variants (PARTIAL: open-slots vs improve-existing switch + empty-tags card + full-state heading/kit reframe shipped; REMAINING: the fully-built state's test/refresh recommendation cards, and resolution chips on the improve-existing card UI)
 - [ ] 3.3 Character-block title evidence + numbered photo slots SHIPPED; REMAINING: per-photo quality/resolution chips on the improve card
 - [ ] 3.4 Flow states (PARTIAL: checking spinner, shop-link confirm card, unusable-URL error shipped; REMAINING: the fix flow re-cut with kit-shaped copy and evaluation context carried in)
-- [ ] 3.5 Kit scope: ten new-or-updated images + reusable template output from the generator (currently six, no template — pipeline gap from decision 25); title/tags/alt-text suggestion generation, grounded in listing content + Etsy guidance only (no search-data claims)
+- [ ] 3.5 Kit scope: ten new-or-updated images + reusable template output from the generator; title/tags/alt-text suggestion generation. INTERIM (founder-approved honesty patch, 2026-08-30): production copy now promises only today's real deliverable (six images) with everything else explicitly COMING SOON; the new non-embroidery scene system gets designed on Figma 02.26 before the generator rework
 - [ ] 3.6 De-niche pass (PARTIAL: landing hero/header/metadata done; REMAINING: result page + emails sweep)
 - [x] 3.7 Analytics events (evaluation_started/completed/failed, pack_offer_click added to the FunnelEvent union) + breakpoint CSS (citations stack under 1100, mobile scale at 600)
 - [ ] 3.8 Copy/layout standards enforced: opportunity framing, no em-dash after tallies, captions under visuals, CTAs on their own line centered, 8pt spacing — promote to `rules/design-guidelines.mdc`
