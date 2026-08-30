@@ -178,7 +178,9 @@ export function buildRecommendations(raw: RawApiListing, scored: ScoredListing):
       caption: `These are the ${photos.length === 1 ? 'photo buyers see' : `${photos.length} photos buyers see`} today — with ${openSlots} more ${openSlots === 1 ? 'chance' : 'chances'} to show this piece off.`,
       citation: withChecked('photos'),
       kit: {
-        text: 'Ten new or updated images that are on brand and ready to upload, plus a template for you to make more.',
+        // Honest to today's fulfillment: the generator ships six images. The
+        // ten-image set + template is the announced growth (design decision 25).
+        text: 'Six Etsy-ready images made from your design today — the ten-image set and template are on the way.',
       },
     });
   } else if (weakPhotos > 0) {
@@ -190,7 +192,7 @@ export function buildRecommendations(raw: RawApiListing, scored: ScoredListing):
       caption: `All ${photos.length} slots are in use, but ${weakPhotos} ${weakPhotos === 1 ? 'photo measures' : 'photos measure'} under Etsy’s recommended ${RECOMMENDED_PX}px. Full isn’t the same as working.`,
       citation: withChecked('photo_quality'),
       kit: {
-        text: 'Ten refreshed images at 2000px — your best shots re-edited, the weak ones replaced — plus a template for you to make more.',
+        text: 'Six refreshed images at 2000px made from your design — stronger scene styles are on the way.',
       },
     });
   }
@@ -206,7 +208,7 @@ export function buildRecommendations(raw: RawApiListing, scored: ScoredListing):
       evidence: { title: raw.title ?? '', used: titleLen, max: d.titleMaxLength, headroom },
       caption: `${headroom} characters free. Room for more of what this piece is.`,
       citation: withChecked('title_length'),
-      kit: { text: 'A ready-to-paste 140-character title, written from your listing.' },
+      kit: { text: 'A ready-to-paste 140-character title, written from your listing. Coming soon.', comingSoon: true },
     });
   }
 
@@ -220,7 +222,7 @@ export function buildRecommendations(raw: RawApiListing, scored: ScoredListing):
       evidence: { photos, missingAlt },
       caption: 'A line or two of alt text opens these photos to visually-impaired shoppers and image search.',
       citation: withChecked('alt_text'),
-      kit: { text: 'Alt text written for every photo — the ones you have and the ten it adds.' },
+      kit: { text: 'Alt text written for every photo. Coming soon.', comingSoon: true },
     });
   }
 
@@ -234,7 +236,7 @@ export function buildRecommendations(raw: RawApiListing, scored: ScoredListing):
       evidence: { tags: raw.tags ?? [], used: tagCount, max: d.tags },
       caption: `${tagCount} of ${d.tags} tag slots in use. Each tag is another way buyers can find this listing.`,
       citation: withChecked('tags'),
-      kit: { text: 'Thirteen suggested tags, drawn from your listing and Etsy’s guidance.' },
+      kit: { text: 'Thirteen suggested tags, drawn from your listing and Etsy’s guidance. Coming soon.', comingSoon: true },
     });
   }
 

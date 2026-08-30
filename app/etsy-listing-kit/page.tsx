@@ -192,6 +192,9 @@ export default function EtsyListingKitLanding() {
         <p className={styles.sub}>
           Upload the design behind your listing and get Etsy-ready images — styled, sized, and yours in minutes.
         </p>
+        <p className={styles.identSub}>
+          Currently styled for design-based listings — new scene styles are on the way.
+        </p>
       </section>
 
       <div className={styles.uploadWrap}>
