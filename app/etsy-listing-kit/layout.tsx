@@ -17,11 +17,11 @@ import { ELK_GOOGLE_ADS_ID } from "@/lib/analytics/ga";
 export const metadata: Metadata = {
   title: "Etsy Listing Kit — 6 Etsy-ready listing images from one design",
   description:
-    "Drop in your embroidery design and get six shop-worthy Etsy listing photos — sized for Etsy and ready to post in minutes. $3 one-time, no subscription.",
+    "Paste your Etsy listing's link for a free, honest read against Etsy's own standard — then fix the gaps with the $3 listing kit. No subscription.",
   openGraph: {
     title: "Etsy Listing Kit — 6 Etsy-ready listing images from one design",
     description:
-      "You made the design. We'll make it look good on Etsy. Six listing photos from one upload, $3 one-time.",
+      "Is your listing actually finished? A free check against Etsy's own standard, and a $3 kit to fix the gaps.",
     type: "website",
     siteName: "Etsy Listing Kit",
   },
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Etsy Listing Kit — 6 Etsy-ready listing images from one design",
     description:
-      "You made the design. We'll make it look good on Etsy. Six listing photos from one upload, $3 one-time.",
+      "Is your listing actually finished? A free check against Etsy's own standard, and a $3 kit to fix the gaps.",
   },
 };
 

@@ -211,3 +211,101 @@
 }
 /* Heading receives programmatic focus (tabIndex -1); not tab-reachable, so no ring */
 .previewHead:focus { outline: none; }
+
+/* ── Listing evaluation (elk-listing-evaluation, Figma 02.25 lineage) ──────
+   1400 app canvas, 1024 content column, MVDS 8pt spacing (design 17/19/23). */
+
+.evalColumn { max-width: 1024px; margin: 0 auto; padding: 0 40px 48px; display: flex; flex-direction: column; gap: 24px; }
+
+.urlForm { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px 40px 8px; }
+.urlInput {
+  width: min(430px, 100%); background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 15px 18px; font-size: 15px; font-family: inherit; color: var(--ink);
+}
+.urlInput:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Current state card (design 16/21/24) */
+.stateCard { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+.stateLabel { font-size: 12px; font-weight: 500; letter-spacing: 0.5px; color: var(--muted); }
+.identityRow { display: flex; align-items: center; gap: 16px; }
+.identThumb { width: 72px; height: 72px; border-radius: 8px; object-fit: cover; background: #d9cfc2; }
+.identTitle { font-size: 16px; font-weight: 500; }
+.identSub { font-size: 13px; color: var(--muted); }
+.verdictRow { display: flex; gap: 16px; align-items: stretch; }
+.tierPanel { border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.tierPass { background: rgba(62, 124, 79, 0.4); }
+.tierRec { background: rgba(217, 154, 43, 0.4); }
+.tierLabel { font-size: 12px; font-weight: 500; letter-spacing: 0.5px; color: var(--muted); }
+.tierValuePass { font-family: var(--font-fraunces), Georgia, serif; font-weight: 700; font-size: 28px; color: #3e7c4f; }
+.tierValueRec { font-family: var(--font-fraunces), Georgia, serif; font-weight: 700; font-size: 32px; }
+.fieldsPanel { background: var(--surface); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 20px; width: 300px; flex-shrink: 0; }
+.fieldsGrid { display: flex; flex-wrap: wrap; gap: 3px; }
+.fieldItem { width: 130px; font-size: 11px; color: #3e7c4f; }
+.fieldMiss { color: var(--muted); opacity: 0.6; }
+.explainer { font-size: 13px; color: var(--muted); line-height: 1.5; margin: 0; }
+
+/* Report cards (design 17/25) */
+.oppsHead { font-family: var(--font-fraunces), Georgia, serif; font-weight: 700; font-size: 26px; margin: 0; }
+.repCard { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.recEyebrow { font-size: 12px; letter-spacing: 0.5px; color: var(--muted); }
+.repHead { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.repHeadLeft { display: flex; align-items: center; gap: 14px; }
+.repRank { font-family: var(--font-fraunces), Georgia, serif; font-weight: 700; font-size: 24px; color: var(--primary); }
+.repTitle { font-family: var(--font-fraunces), Georgia, serif; font-weight: 700; font-size: 24px; letter-spacing: -0.12px; line-height: 1.3; margin: 0; }
+.chipMuted { background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-size: 11px; font-weight: 500; letter-spacing: 0.4px; padding: 4px 10px; border-radius: 100px; white-space: nowrap; }
+.repBody { display: flex; gap: 16px; align-items: flex-start; }
+.evidence { display: flex; flex-direction: column; gap: 12px; flex: 1; min-width: 0; }
+.evCaption { font-size: 13px; color: var(--muted); line-height: 1.5; margin: 0; }
+.citationCol { width: 280px; flex-shrink: 0; padding-top: 4px; display: flex; flex-direction: column; gap: 3px; }
+.citeQuote { font-size: 12px; font-style: italic; color: var(--muted); line-height: 1.5; margin: 0; }
+.citeSource { font-size: 11px; color: var(--muted); opacity: 0.8; margin: 0; }
+
+/* Evidence pieces */
+.slotGrid { display: flex; flex-wrap: wrap; gap: 8px; }
+.slot { width: 68px; height: 68px; border-radius: 8px; }
+.slotImg { object-fit: cover; width: 68px; height: 68px; border-radius: 8px; }
+.slotEmpty { background: var(--surface); border: 1.5px dashed var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--muted); opacity: 0.75; }
+.slotNum { opacity: 0.6; }
+.charBox { background: var(--surface); border-radius: 8px; padding: 16px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.charTitle { font-size: 15px; font-style: italic; margin-right: 4px; }
+.charBlock { width: 13px; height: 17px; background: #d9d9d9; }
+.sampleBox { background: var(--cream); border: 1px solid var(--accent); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+.sampleLabel { font-size: 11px; font-weight: 500; letter-spacing: 0.4px; color: var(--accent-ink); }
+.sampleTitle { font-size: 15px; font-weight: 500; line-height: 1.5; margin: 0; }
+.sampleCount { font-size: 12px; color: var(--muted); }
+.altRow { display: flex; gap: 8px; flex-wrap: wrap; }
+.altCol { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.altChip { background: var(--surface); border: 1px solid var(--border); border-radius: 100px; padding: 2px 8px; font-size: 10px; color: var(--muted); }
+.altThumb { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; background: #d9cfc2; }
+.videoSlot { width: 121px; height: 68px; border-radius: 8px; background: var(--surface); border: 1.5px dashed var(--border); display: flex; align-items: center; justify-content: center; color: var(--muted); opacity: 0.7; font-size: 18px; }
+.kitBox { background: var(--cream); border: 1px solid var(--accent); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+.kitText { font-size: 15px; margin: 0; }
+
+/* Kit offer card (design 25/26) */
+.kitOffer { background: var(--cream); border: 1.5px solid var(--accent); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+.kitOfferHead { font-family: var(--font-fraunces), Georgia, serif; font-weight: 700; font-size: 24px; margin: 0; }
+.kitList { display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+.kitTeaseRow { display: flex; align-items: center; gap: 8px; opacity: 0.85; }
+.kitTeaseText { opacity: 0.55; }
+.kitPrice { font-family: var(--font-fraunces), Georgia, serif; font-weight: 700; font-size: 32px; }
+.ctaRow { display: flex; justify-content: center; width: 100%; }
+.suggestCard { background: var(--cream); border: 1px solid var(--accent); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 16px; max-width: 640px; }
+.suggestText { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.skipLink { font-size: 14px; color: var(--primary); text-decoration: underline; background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; }
+
+@media (max-width: 1100px) {
+  .repBody { flex-direction: column; }
+  .citationCol { width: 100%; padding-top: 0; }
+  .verdictRow { flex-wrap: wrap; }
+  .fieldsPanel { width: 100%; }
+}
+@media (max-width: 600px) {
+  .evalColumn { padding: 0 20px 40px; gap: 16px; }
+  .repTitle { font-size: 18px; }
+  .repRank { font-size: 18px; }
+  .tierValuePass { font-size: 24px; }
+  .tierValueRec { font-size: 26px; }
+  .slot, .slotImg { width: 38px; height: 38px; border-radius: 6px; }
+  .slotEmpty { font-size: 9px; }
+  .verdictRow { flex-direction: column; }
+}

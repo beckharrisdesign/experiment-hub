@@ -51,7 +51,12 @@ export type FunnelEvent =
   | 'download_clicked'
   | 'restart_clicked'
   | 'payment_cancelled'
-  | 'processing_failed';
+  | 'processing_failed'
+  // elk-listing-evaluation funnel (spec: evaluation events fire without PII)
+  | 'evaluation_started'
+  | 'evaluation_completed'
+  | 'evaluation_failed'
+  | 'pack_offer_click';
 
 type EventProps = Record<string, string | number | boolean | undefined>;
 

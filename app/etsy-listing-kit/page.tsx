@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './elk.module.css';
+import EvaluationSection from './evaluation';
 import { PRICE_CENTS, UPLOAD } from '../../lib/etsy-listing-kit/config';
 import { track, trackFormSubmit } from '../../lib/etsy-listing-kit/analytics';
 import { validateUpload, uploadMaxMb } from '../../lib/etsy-listing-kit/upload';
@@ -20,6 +21,7 @@ export default function EtsyListingKitLanding() {
   const [canceled, setCanceled] = useState(false);
   const [genStatus, setGenStatus] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const packRef = useRef<HTMLElement>(null);
   const previewsRef = useRef<HTMLElement>(null);
   const previewHeadRef = useRef<HTMLHeadingElement>(null);
   // Step start times, so each terminal event carries how long the step took.
@@ -162,7 +164,7 @@ export default function EtsyListingKitLanding() {
     <main className={styles.kit} onPaste={onPaste}>
       <header className={styles.header}>
         <span className={styles.logo}>Etsy Listing Kit</span>
-        <span className={styles.headerNote}>One design → 6 Etsy-ready images · {priceLabel}</span>
+        <span className={styles.headerNote}>Free listing check · listing kit {priceLabel}</span>
       </header>
 
       {canceled && (
@@ -172,10 +174,23 @@ export default function EtsyListingKitLanding() {
       )}
 
       <section className={styles.hero}>
-        <span className={styles.eyebrow}>FOR EMBROIDERY &amp; CRAFT SELLERS</span>
-        <h1 className={styles.h1}>You made the design.<br />We&rsquo;ll make it look good on Etsy.</h1>
+        <span className={styles.eyebrow}>FOR ETSY SELLERS</span>
+        <h1 className={styles.h1}>Is your listing actually finished?</h1>
         <p className={styles.sub}>
-          Drop in your design and get six listing photos that look shop-worthy — sized for Etsy and ready to post in minutes.
+          Paste your listing&rsquo;s link and get an honest read against Etsy&rsquo;s own standard — free, in seconds.
+        </p>
+      </section>
+
+      <EvaluationSection
+        onGoToKit={() => {
+          packRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }}
+      />
+
+      <section ref={packRef} className={styles.hero} id="kit">
+        <h2 className={styles.previewHead}>The listing kit</h2>
+        <p className={styles.sub}>
+          Upload the design behind your listing and get Etsy-ready images — styled, sized, and yours in minutes.
         </p>
       </section>
 
