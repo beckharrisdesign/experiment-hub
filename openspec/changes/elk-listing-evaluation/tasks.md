@@ -1,0 +1,43 @@
+## 1. User outcomes (from spec scenarios)
+
+- [ ] 1.1 A public listing URL returns a rendered evaluation (current-state card: identity, required pass/fail, recommended %, field checklist)
+- [ ] 1.2 Every recommendation carries its evidence (report cards: photo slots, character blocks, alt-text status, video absence)
+- [ ] 1.3 Recommendations cite Etsy's current documentation (quote + source + "checked <date>" from the citation registry)
+- [ ] 1.4 The free evaluation includes one sample kit suggestion (title card's "What the kit would suggest")
+- [ ] 1.5 Recommendations speak in opportunities (framing what's available, facts stated plainly beneath)
+- [ ] 1.6 Full image slots with weak photos still get an image recommendation ("Improve the listing images you already have" with resolution chips)
+- [ ] 1.7 A fully populated listing gets opportunities, not invented gaps (100%, "Nothing to fill — now make it work harder", test/refresh cards)
+- [ ] 1.8 A shop link suggests its featured listing (confirm card, nothing scored until confirmed)
+- [ ] 1.9 An unusable URL fails honestly (plain-language reason, nothing scored or stored)
+- [ ] 1.10 The same listing data scores identically everywhere (ELK evaluation and labs scorecard share one rubric module)
+- [ ] 1.11 Evaluation events fire without PII (evaluation-start / evaluation-complete / pack-offer-click, listing id only)
+- [ ] 1.12 The report resolves into the kit offer (per-card "What's in the kit" boxes + the full-kit card, video as coming soon)
+- [ ] 1.13 The kit delivers suggestions, not writes (ten images + template + title + tags + alt text as paste-ready output; no Etsy writes)
+- [ ] 1.14 No embroidery framing survives anywhere (landing, evaluation, upload, result, emails)
+
+## 2. Foundations
+
+- [ ] 2.1 Extract the Tier A/B rubric into a shared module (`lib/etsy-listing/rubric` or similar) with the 20-photo/video cap; fixture test pins identical output for ELK and the labs-scorecard path (serves 1.10)
+- [ ] 2.2 Rubric calls flagged in design decisions 12/21: photo+video cap = 20; decide the "non-trivial description" Tier A gate (the keychain's 3-character description); verify remaining † thresholds (tags 13, title 140, materials 13) in Shop Manager
+- [ ] 2.3 Citation registry: `{criterion, quote, sourceTitle, sourceUrl, lastCheckedAt}` — **manually verify each quote verbatim in a real browser** (etsy.com 403s automated fetches; quotes currently from 2026-08-30 search excerpts), then wire the "checked <date>" render (serves 1.3)
+- [ ] 2.4 Listing-fetch endpoint: parse listing id from pasted URLs (tolerate `ref=`/`logging_key=` clutter), fetch via official v3 API with the existing key; shop-URL → featured-listing lookup; per-listing server cache + per-IP throttle (serves 1.1, 1.8, 1.9 — and the founder's no-rate-limit constraint)
+- [ ] 2.5 Dev fixture mode: evaluation UI served from Supabase `etsy_latest_listing_snapshots` fixtures (W&H listings 4522917501 / 4465357735 / a full one) — zero live Etsy calls during development and tests
+- [ ] 2.6 `elk_evaluations` table (listing id, scores, timestamp; no PII) + migration
+
+## 3. Implementation
+
+- [ ] 3.1 Evaluation surface per Figma 02.25 lineage: 1400 canvas / 1024 content column, current-state card (tinted verdict panels, "✓ 10 of 10", "% in use", FIELDS grid), report cards in fixed order (images → title → alt text → video), RECOMMENDATION eyebrows, "What's in the kit" boxes
+- [ ] 3.2 Card variants: open-slots vs improve-existing (one image card per listing, never both); empty-tags recommendation card (design decision 21 flag — the keychain has 0 tags); fully-built state
+- [ ] 3.3 Character-block title evidence + numbered photo slots + quality chips (resolution from API image dimensions)
+- [ ] 3.4 Flow states re-cut to the 1400 standard: checking, shop-link confirm, unusable URL, fix flow (kit-shaped copy, not photo-pack)
+- [ ] 3.5 Kit scope: ten new-or-updated images + reusable template output from the generator (currently six, no template — pipeline gap from decision 25); title/tags/alt-text suggestion generation, grounded in listing content + Etsy guidance only (no search-data claims)
+- [ ] 3.6 De-niche pass: retire embroidery copy/keywords/labels across landing, upload, result, emails (serves 1.14)
+- [ ] 3.7 Analytics events + GA4 wiring (serves 1.11); breakpoint adaptation per 02.25 (1400 → 1024 stacked citations → 480)
+- [ ] 3.8 Copy/layout standards enforced: opportunity framing, no em-dash after tallies, captions under visuals, CTAs on their own line centered, 8pt spacing — promote to `rules/design-guidelines.mdc`
+
+## 4. QA
+
+- [ ] 4.1 Manual walkthrough on `npm run dev` with fixtures: keychain (gaps), floral (shop-link confirm), full listing; then one live-fetch pass against a small number of W&H URLs only
+- [ ] 4.2 Automated smoke: rubric fixture parity test (1.10), URL-parser cases (listing/shop/junk/tracking-cluttered), evaluation API route tests, event payload PII check
+- [ ] 4.3 Visual check against Figma 02.25 at Desktop 1400, 1024, and Mobile 480
+- [ ] 4.4 Confirm zero non-fixture Etsy calls in dev/test logs; throttle + cache behave under repeat checks
