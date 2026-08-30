@@ -5,9 +5,16 @@ import Landing from '@/app/etsy-listing-kit/page';
 describe('Landing page — accessibility basics', () => {
   it('renders the promise, price, and named CTA', () => {
     render(<Landing />);
-    expect(screen.getByRole('heading', { name: /you made the design/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /is your listing actually finished/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /check my listing/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /choose file/i })).toBeInTheDocument();
     expect(screen.getAllByText(/\$3/).length).toBeGreaterThan(0);
+  });
+
+  it('keeps the evaluation as the primary above-the-fold action with a kit skip link', () => {
+    render(<Landing />);
+    expect(screen.getByRole('textbox', { name: /listing url/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /skip straight to the \$3 kit/i })).toBeInTheDocument();
   });
 
   it('uses a native button as the keyboard/AT upload control (no nested interactive)', () => {

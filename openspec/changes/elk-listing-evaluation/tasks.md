@@ -26,13 +26,13 @@
 
 ## 3. Implementation
 
-- [ ] 3.1 Evaluation surface per Figma 02.25 lineage: 1400 canvas / 1024 content column, current-state card (tinted verdict panels, "✓ 10 of 10", "% in use", FIELDS grid), report cards in fixed order (images → title → alt text → video), RECOMMENDATION eyebrows, "What's in the kit" boxes
-- [ ] 3.2 Card variants: open-slots vs improve-existing (one image card per listing, never both); empty-tags recommendation card (design decision 21 flag — the keychain has 0 tags); fully-built state
-- [ ] 3.3 Character-block title evidence + numbered photo slots + quality chips (resolution from API image dimensions)
-- [ ] 3.4 Flow states re-cut to the 1400 standard: checking, shop-link confirm, unusable URL, fix flow (kit-shaped copy, not photo-pack)
+- [x] 3.1 Evaluation surface per Figma 02.25 lineage: 1024 content column, current-state card (tinted verdict panels, truthful "N of 10", "% in use", FIELDS grid, explainer), report cards in fixed order, RECOMMENDATION eyebrows, "What's in the kit" boxes, kit offer with COMING SOON tease + centered CTA — verified live on dev against the keychain fixture
+- [ ] 3.2 Card variants (PARTIAL: open-slots vs improve-existing switch + empty-tags card + full-state heading/kit reframe shipped; REMAINING: the fully-built state's test/refresh recommendation cards, and resolution chips on the improve-existing card UI)
+- [ ] 3.3 Character-block title evidence + numbered photo slots SHIPPED; REMAINING: per-photo quality/resolution chips on the improve card
+- [ ] 3.4 Flow states (PARTIAL: checking spinner, shop-link confirm card, unusable-URL error shipped; REMAINING: the fix flow re-cut with kit-shaped copy and evaluation context carried in)
 - [ ] 3.5 Kit scope: ten new-or-updated images + reusable template output from the generator (currently six, no template — pipeline gap from decision 25); title/tags/alt-text suggestion generation, grounded in listing content + Etsy guidance only (no search-data claims)
-- [ ] 3.6 De-niche pass: retire embroidery copy/keywords/labels across landing, upload, result, emails (serves 1.14)
-- [ ] 3.7 Analytics events + GA4 wiring (serves 1.11); breakpoint adaptation per 02.25 (1400 → 1024 stacked citations → 480)
+- [ ] 3.6 De-niche pass (PARTIAL: landing hero/header/metadata done; REMAINING: result page + emails sweep)
+- [x] 3.7 Analytics events (evaluation_started/completed/failed, pack_offer_click added to the FunnelEvent union) + breakpoint CSS (citations stack under 1100, mobile scale at 600)
 - [ ] 3.8 Copy/layout standards enforced: opportunity framing, no em-dash after tallies, captions under visuals, CTAs on their own line centered, 8pt spacing — promote to `rules/design-guidelines.mdc`
 
 ## 4. QA
