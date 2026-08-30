@@ -34,7 +34,7 @@ function digital(overrides: Partial<RawListing> = {}): RawListing {
     tags: Array.from({ length: 13 }, (_, i) => `tag${i}`),
     materials: [],
     style: [],
-    images: Array.from({ length: 10 }, () => ({ alt_text: "described" })),
+    images: Array.from({ length: 20 }, () => ({ alt_text: "described" })),
     videos: [{}],
     ...overrides,
   };
