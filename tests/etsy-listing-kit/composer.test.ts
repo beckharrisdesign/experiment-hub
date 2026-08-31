@@ -40,12 +40,12 @@ describe('DeterministicComposer (keyless test double)', () => {
 
 describe('composerFromEnv', () => {
   it('returns null without a key — text deliverables go unavailable, never junk', () => {
-    expect(composerFromEnv({} as NodeJS.ProcessEnv)).toBeNull();
-    expect(composerFromEnv({ ANTHROPIC_API_KEY: '  ' } as NodeJS.ProcessEnv)).toBeNull();
+    expect(composerFromEnv({})).toBeNull();
+    expect(composerFromEnv({ ANTHROPIC_API_KEY: '  ' })).toBeNull();
   });
 
   it('returns the Haiku composer when the key is set', () => {
-    expect(composerFromEnv({ ANTHROPIC_API_KEY: 'sk-test' } as NodeJS.ProcessEnv)).toBeInstanceOf(HaikuComposer);
+    expect(composerFromEnv({ ANTHROPIC_API_KEY: 'sk-test' })).toBeInstanceOf(HaikuComposer);
   });
 });
 

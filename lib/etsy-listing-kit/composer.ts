@@ -132,7 +132,7 @@ export class HaikuComposer implements Composer {
  * without text deliverables and marks them unavailable (design decision 30) —
  * the DeterministicComposer is deliberately NOT the fallback here.
  */
-export function composerFromEnv(env: NodeJS.ProcessEnv = process.env): Composer | null {
+export function composerFromEnv(env: Record<string, string | undefined> = process.env): Composer | null {
   const key = env.ANTHROPIC_API_KEY?.trim();
   return key ? new HaikuComposer(key) : null;
 }
