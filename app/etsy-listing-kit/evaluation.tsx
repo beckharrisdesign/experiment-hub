@@ -314,8 +314,16 @@ export default function EvaluationSection({ mode, initialUrl }: { mode: 'landing
   const [url, setUrl] = useState(initialUrl ?? '');
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
   const [buyError, setBuyError] = useState<string | null>(null);
+  // Which surface the failed buy started from — the message renders THERE,
+  // not up by the form (a kit-card click must not error off-screen).
+  const [buyErrorAt, setBuyErrorAt] = useState<'hero' | 'report'>('hero');
   const [buying, setBuying] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
+  const buyErrorRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (buyError) buyErrorRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, [buyError]);
 
   const check = useCallback(
     async (targetUrl: string) => {
@@ -369,6 +377,7 @@ export default function EvaluationSection({ mode, initialUrl }: { mode: 'landing
   const buyKit = useCallback(async (listingId: number, placement: string) => {
     setBuying(true);
     setBuyError(null);
+    setBuyErrorAt(placement === 'hero_skip' ? 'hero' : 'report');
     track('kit_cta_click', { placement, listing_id: listingId });
     track('checkout_started', { listing_id: listingId, placement });
     trackFormSubmit();
@@ -401,6 +410,7 @@ export default function EvaluationSection({ mode, initialUrl }: { mode: 'landing
   const heroSkip = useCallback(() => {
     const parsed = parseEtsyUrl(url);
     if (parsed.kind !== 'listing') {
+      setBuyErrorAt('hero');
       setBuyError('Paste your listing’s link first — the kit is built from it.');
       return;
     }
@@ -451,8 +461,8 @@ export default function EvaluationSection({ mode, initialUrl }: { mode: 'landing
             {phase.reason}
           </p>
         )}
-        {buyError && (
-          <p className={styles.error} role="alert">
+        {buyError && buyErrorAt === 'hero' && (
+          <p className={styles.error} role="alert" ref={buyErrorRef}>
             {buyError}
           </p>
         )}
@@ -499,6 +509,11 @@ export default function EvaluationSection({ mode, initialUrl }: { mode: 'landing
             />
           ))}
           <KitOffer state={evaluation.state} onBuyKit={onBuyKit} />
+          {buyError && buyErrorAt === 'report' && (
+            <p className={styles.error} role="alert" ref={buyErrorRef}>
+              {buyError} Nothing was charged.
+            </p>
+          )}
         </div>
       )}
     </>
