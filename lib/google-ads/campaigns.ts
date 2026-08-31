@@ -161,7 +161,7 @@ export async function createCampaign(
     ),
   ];
 
-  const response = (await customer.mutateResources(operations)) as {
+  const response = (await customer.mutateResources(operations)) as unknown as {
     mutate_operation_responses?: Array<Record<string, { resource_name?: string }>>;
   };
   const created = (response.mutate_operation_responses ?? []).flatMap((op) =>

@@ -74,7 +74,7 @@ describe("client factory (spec 1.1, 1.2)", () => {
   it("names the missing key and points at the runbook", () => {
     stubEnv({ ...FULL_ENV, GOOGLE_ADS_DEVELOPER_TOKEN: "" });
     expect(() => getGoogleAdsCustomer()).toThrow(
-      /GOOGLE_ADS_DEVELOPER_TOKEN.*GOOGLE_ADS_SETUP\.md/s,
+      /GOOGLE_ADS_DEVELOPER_TOKEN.*GOOGLE_ADS_SETUP\.md/,
     );
   });
 
@@ -90,7 +90,7 @@ describe("client factory (spec 1.1, 1.2)", () => {
   it("names both customer-id keys when neither is set", () => {
     stubEnv({ ...FULL_ENV, GOOGLE_ADS_TEST_CUSTOMER_ID: "" });
     expect(() => resolveCustomerId()).toThrow(
-      /GOOGLE_ADS_CUSTOMER_ID.*GOOGLE_ADS_TEST_CUSTOMER_ID/s,
+      /GOOGLE_ADS_CUSTOMER_ID.*GOOGLE_ADS_TEST_CUSTOMER_ID/,
     );
   });
 });
