@@ -68,11 +68,16 @@ Evaluation scores are computed by the same Tier A/B rubric defined in the `etsy-
 
 ### Requirement: The evaluation funnel is measurable
 
-Evaluation activity is instrumented so the next ad burst can read evaluation-starts through pack conversions.
+Evaluation activity is instrumented so the next ad burst can read evaluation-starts through pack conversions. The first-pass event set (E1–E8, with P0/P1 priorities, fire points, and prop lists) is specced visually on Figma page `02.27` — the violet pins on the flow frames and the instrumentation legend beside the URL map are the working reference for apply; implementations follow that legend, not a re-derivation.
 
-**Fails until:** evaluation-start, evaluation-complete, and pack-offer-click events are visible in analytics from a real page session.
+**Fails until:** the P0 chain (landing_view with utm/gclid capture → evaluation_started → evaluation_completed → kit_cta_click → checkout_started → payment_completed) is visible in analytics from a real page session.
 
 #### Scenario: Evaluation events fire without PII
 
 - **WHEN** a visitor submits a URL and views their evaluation
-- **THEN** evaluation-start and evaluation-complete events are recorded (with listing id, never buyer or account data), and clicking the in-flow pack offer records a pack-offer-click event
+- **THEN** evaluation-start and evaluation-complete events are recorded (with listing id, never buyer or account data), and clicking any in-flow kit offer records a kit-CTA event
+
+#### Scenario: Kit clicks say which surface sold the kit
+
+- **WHEN** a visitor clicks a kit CTA anywhere in the flow (hero skip link, report offer card, a card's kit box, the alt-text cross-sell)
+- **THEN** one kit_cta_click event is recorded whose placement property names the surface — so the next ad burst can read which placement converts, not just that something did
