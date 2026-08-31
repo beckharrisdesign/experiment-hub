@@ -22,6 +22,13 @@ function ResultInner() {
   // didn't run (kitText unavailable) — the two render differently below.
   const [kitText, setKitText] = useState<KitText | null>(null);
   const [isListingKit, setIsListingKit] = useState(false);
+  const [listingTitle, setListingTitle] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+  // E8 (02.27 legend): does paste-ready deliver? Copy actions are the signal.
+  const copyBlock = async (block: string, text: string) => {
+    track('copy_clicked', { block });
+    try { await navigator.clipboard.writeText(text); setCopied(block); } catch { /* clipboard unavailable */ }
+  };
   const [error, setError] = useState<string | null>(null);
   // Landed-on-result → fulfilled. This is the post-payment wait the buyer feels.
   const arrivedAt = useRef<number>(performance.now());
@@ -34,7 +41,8 @@ function ResultInner() {
       if (!res.ok) throw new Error(json.error || 'Lookup failed');
       setStatus(json.status);
       if (json.images) setImages(json.images);
-      if ('kitText' in json) { setIsListingKit(true); setKitText(json.kitText); }
+      if ('kitText' in json || json.isListingKit) { setIsListingKit(true); setKitText(json.kitText ?? null); }
+      if (json.listingTitle) setListingTitle(json.listingTitle);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load your order.');
     }
@@ -97,7 +105,17 @@ function ResultInner() {
           <>
             <h1 className={styles.h1}>Putting your set together…</h1>
             <p className={styles.sub}>
-              Payment confirmed. This usually takes under a minute — the page will update itself. Feel free to close it; we&rsquo;ll email your link.
+              {isListingKit ? (
+                <>
+                  Payment confirmed. We&rsquo;re building your kit
+                  {listingTitle ? <> from <strong>{listingTitle}</strong></> : null} — reading the listing,
+                  writing its brief, re-editing your photos, and putting together your cards, title, tags, and
+                  alt text. Usually under a minute; the page updates itself. Feel free to close it — we&rsquo;ll
+                  email your link.
+                </>
+              ) : (
+                <>Payment confirmed. This usually takes under a minute — the page will update itself. Feel free to close it; we&rsquo;ll email your link.</>
+              )}
             </p>
           </>
         )}
@@ -133,16 +151,26 @@ function ResultInner() {
                 <div className={styles.identTitle}>Your title — paste into Shop Manager</div>
                 <p style={{ margin: '6px 0 4px' }}>{kitText.suggestedTitle}</p>
                 <div className={styles.gridLabel}>{kitText.suggestedTitle.length} / 140 characters</div>
+                <button type="button" className={styles.againBtn} onClick={() => copyBlock('title', kitText.suggestedTitle)}>
+                  {copied === 'title' ? 'Copied' : 'Copy title'}
+                </button>
               </div>
               <div className={styles.identCard}>
                 <div className={styles.identTitle}>{kitText.tags.length} tags</div>
                 <p style={{ margin: '6px 0 4px' }}>{kitText.tags.join(', ')}</p>
+                <button type="button" className={styles.againBtn} onClick={() => copyBlock('tags', kitText.tags.join(', '))}>
+                  {copied === 'tags' ? 'Copied' : 'Copy all tags'}
+                </button>
               </div>
               <div className={styles.identCard}>
                 <div className={styles.identTitle}>Alt text, one per image</div>
                 {kitText.altTexts.map((a) => (
                   <p key={a.rank} style={{ margin: '6px 0 0' }}>{a.rank}. {a.alt}</p>
                 ))}
+                <button type="button" className={styles.againBtn}
+                        onClick={() => copyBlock('alt', kitText.altTexts.map((a) => `${a.rank}. ${a.alt}`).join('\n'))}>
+                  {copied === 'alt' ? 'Copied' : 'Copy all alt text'}
+                </button>
               </div>
             </>
           ) : (

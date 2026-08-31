@@ -198,7 +198,7 @@ export async function POST(request: NextRequest) {
         { status: 404 },
       );
     }
-    const evaluation = evaluateListing(raw);
+    const evaluation = evaluateListing(raw, { textDeliverables: Boolean(process.env.ANTHROPIC_API_KEY) });
     const result = { kind: 'evaluation', evaluation };
     cache.set(parsed.listingId, { at: Date.now(), result });
     persistEvaluation(evaluation);
