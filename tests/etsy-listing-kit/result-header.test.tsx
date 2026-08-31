@@ -55,9 +55,9 @@ describe('Result page — #361 make-another CTA', () => {
 
   it('offers a route to start a new set once the order is delivered', async () => {
     render(<Result />);
-    const cta = await screen.findByRole('link', { name: /make another set/i });
+    const cta = await screen.findByRole('link', { name: /check another listing/i });
     expect(cta).toHaveAttribute('href', '/etsy-listing-kit');
-    expect(screen.getByText(/got another design\?/i)).toBeInTheDocument();
+    expect(screen.getByText(/got another listing\?/i)).toBeInTheDocument();
   });
 
   it('keeps the paid download as the primary action', async () => {
@@ -76,6 +76,6 @@ describe('Result page — #361 make-another CTA', () => {
     await waitFor(() =>
       expect(screen.getByRole('heading', { name: /putting your set together/i })).toBeInTheDocument(),
     );
-    expect(screen.queryByRole('link', { name: /make another set/i })).toBeNull();
+    expect(screen.queryByRole('link', { name: /check another listing/i })).toBeNull();
   });
 });

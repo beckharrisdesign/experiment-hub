@@ -185,12 +185,9 @@ export default function EtsyListingKitLanding() {
       <EvaluationSection mode="landing" />
 
       <section ref={packRef} className={styles.hero} id="kit">
-        <h2 className={styles.previewHead}>The listing kit</h2>
+        <h2 className={styles.previewHead}>The original image pack</h2>
         <p className={styles.sub}>
-          Upload the design behind your listing and get Etsy-ready images — styled, sized, and yours in minutes.
-        </p>
-        <p className={styles.identSub}>
-          Currently styled for design-based listings — new scene styles are on the way.
+          Have a design file instead of a listing? Upload it and get six styled, Etsy-ready images in minutes.
         </p>
       </section>
 

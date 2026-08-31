@@ -96,9 +96,9 @@ function ResultInner() {
           </>
         ) : ready ? (
           <>
-            <h1 className={styles.h1}>All set — your photos are ready</h1>
+            <h1 className={styles.h1}>{isListingKit ? 'All set — your kit is ready' : 'All set — your photos are ready'}</h1>
             <p className={styles.sub}>
-              All six, clean and full-size, ready to download. A copy of this link is in your inbox too. Re-download anytime for 7 days.
+              Clean and full-size, ready to download. A copy of this link is in your inbox too. Re-download anytime for 7 days.
             </p>
           </>
         ) : (
@@ -188,13 +188,13 @@ function ResultInner() {
       {ready && (
         <section className={styles.againWrap}>
           <hr className={styles.againRule} />
-          <p className={styles.againLead}>Got another design?</p>
+          <p className={styles.againLead}>Got another listing?</p>
           <p className={styles.againSub}>
-            Same six photos, same $3 — takes about a minute.
+            Check it free. Same kit, same $3 — takes about a minute.
           </p>
           <Link href="/etsy-listing-kit" className={styles.againBtn}
                 onClick={() => track('restart_clicked', { from: 'result_cta' })}>
-            Make another set
+            Check another listing
           </Link>
         </section>
       )}
