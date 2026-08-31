@@ -42,6 +42,33 @@ export async function createOrder(design: Buffer, mime: string, o: NewOrder): Pr
   return id;
 }
 
+/**
+ * Create an order for the evaluated listing (3.4b) — no upload, no input file.
+ * The listing id is the fulfillment input; the title is stored for display
+ * and email without a refetch. Requires migration 014 (listing_id column).
+ */
+export async function createListingOrder(listingId: number, listingTitle: string, o: NewOrder): Promise<string> {
+  const db = createAdminSupabaseClient();
+  if (!db) throw new Error('Supabase not configured');
+  const a = o.attribution ?? {};
+  const { data, error } = await db
+    .from('elk_orders')
+    .insert({
+      experiment_id: EXPERIMENT_ID,
+      status: 'created',
+      listing_id: listingId,
+      listing_title: listingTitle,
+      amount_total: o.amountTotal,
+      currency: o.currency,
+      utm_source: a.utm_source, utm_medium: a.utm_medium, utm_campaign: a.utm_campaign,
+      utm_content: a.utm_content, utm_term: a.utm_term, click_id: a.click_id, landing_path: a.landing_path,
+    })
+    .select('id')
+    .single();
+  if (error || !data) throw new Error(`createListingOrder failed: ${error?.message}`);
+  return data.id as string;
+}
+
 export async function attachCheckoutSession(orderId: string, sessionId: string) {
   const db = createAdminSupabaseClient();
   if (!db) throw new Error('Supabase not configured');

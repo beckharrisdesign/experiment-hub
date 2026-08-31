@@ -31,7 +31,7 @@
 - [ ] 3.3 Character-block title evidence + numbered photo slots SHIPPED; REMAINING: per-photo quality/resolution chips on the improve card
 - [ ] 3.4 Flow per approved Figma 02.27 (URL map panel is the routing reference; supersedes the old "fix flow re-cut" framing — the evaluation exits into purchase, not upload). Shipped already: checking spinner, shop-link confirm, unusable-URL error. Remaining, in order:
   - [ ] 3.4a `/check?listing=<id>` route — the hero form lands there; canonicalizes pasted URLs; hosts confirm/error states; serves the eval cache within TTL
-  - [ ] 3.4b Checkout seeded from the scrape — `POST /api/checkout { listing_id }`, checkout view renders the listing identity + deliverables + price; no upload anywhere on the path
+  - [x] 3.4b Checkout seeded from the scrape — `POST /api/checkout { listing_id }`, checkout view renders the listing identity + deliverables + price; no upload anywhere on the path
   - [ ] 3.4c `/result` GENERATING state — brief trust block, progress list, images appearing; polls `/api/order`; refresh-safe; flips to the fulfilled set (slot strip: their photos + the kit's ten)
   - [ ] 3.4d Persistent header/footer chrome across all five states, per 02.27
 - [ ] 3.5 Generator rework per approved Figma 02.26 + design decisions 27/30 (build order below; the six embroidery-hoop compositions retire from this path when 3.4b lands). INTERIM (founder-approved honesty patch, 2026-08-30): production copy promises six images with everything else COMING SOON until this lands:
@@ -39,7 +39,7 @@
   - [x] 3.5b Palette sampler — dominant saturated color(s) from the listing's photos (the "on brand" mechanic); terracotta fallback when photos are too muted to sample
   - [x] 3.5c Scene ladder — ten 2000px images from listing photos + brief + palette: re-edits first (square, tone, detail-crop), data cards only when fields exist, backfill with photo treatments; plus the reusable template file with dashed slots
   - [x] 3.5d Composer interface — suggested title / 13 tags / per-photo alt text; deterministic stub for tests (keyless), Claude Haiku implementation grounded in brief + photos for production; missing `ANTHROPIC_API_KEY` degrades honestly (images + template ship; text deliverables report unavailable)
-  - [ ] 3.5e Fulfillment rewire — webhook path generates from the order's `listing_id` snapshot instead of an uploaded design; result page + email carry the kit's ten + template + text deliverables
+  - [x] 3.5e Fulfillment rewire — webhook path generates from the order's `listing_id` snapshot instead of an uploaded design; result page + email carry the kit's ten + template + text deliverables
 - [ ] 3.6 De-niche pass (PARTIAL: landing hero/header/metadata done; REMAINING: result page + emails sweep)
 - [x] 3.7 Analytics events (evaluation_started/completed/failed, pack_offer_click added to the FunnelEvent union) + breakpoint CSS (citations stack under 1100, mobile scale at 600)
 - [ ] 3.9 First-pass instrumentation per the approved legend on Figma 02.27 (violet pins mark fire points — implement from that legend, not from memory): P0 = utm/gclid capture into landing_view props · kit_cta_click extending pack_offer_click with placement (hero_skip / report_offer / kit_box / alt_card) · checkout_started carrying listing_id · payment_completed wiring untouched (Ads Sign-up + transaction_id dedupe is why /result keeps its URL). P1 = generation_completed server event (duration_ms, scene_count, wording_thin) · copy_clicked (block: title / tags / alt / zip) on the result page

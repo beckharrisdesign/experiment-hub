@@ -6,6 +6,9 @@
 import { createAdminSupabaseClient } from './supabase-admin';
 import { downloadInput, storeOutput } from './orders';
 import { generatePack } from './generator';
+import { fetchListingRaw, fetchListingPhotos } from './listing-fetch';
+import { generateListingKit, buildManifest } from './kit-fulfillment';
+import { composerFromEnv } from './composer';
 import { sendResultEmail } from './email';
 import { trackPurchaseServer } from './analytics';
 
@@ -23,17 +26,33 @@ export async function fulfillOrder(orderId: string): Promise<{ alreadyDone: bool
   if (order.status === 'fulfilled' && order.output_ref) {
     return { alreadyDone: true, outputRef: order.output_ref }; // idempotent no-op
   }
-  if (!order.input_ref) throw new Error(`order ${orderId} has no input to fulfill`);
+  if (!order.listing_id && !order.input_ref) throw new Error(`order ${orderId} has no input to fulfill`);
 
   await db.from('elk_orders').update({ status: 'processing', updated_at: new Date().toISOString() }).eq('id', orderId);
 
   try {
-    const design = await downloadInput(order.input_ref);
-    const pack = await generatePack(design);
-    for (const img of pack) {
-      await storeOutput(orderId, `${img.id}.jpg`, img.clean, 'image/jpeg');
+    if (order.listing_id) {
+      // Evaluation-seeded order (3.5e): the kit is built FROM the listing —
+      // ten scene-ladder images + template + grounded text deliverables
+      // (or text marked unavailable when no composer is configured).
+      const listing = await fetchListingRaw(Number(order.listing_id));
+      if (!listing) throw new Error(`listing ${order.listing_id} unreadable at fulfillment`);
+      const photos = await fetchListingPhotos(listing);
+      if (photos.length === 0) throw new Error(`listing ${order.listing_id} has no fetchable photos`);
+      const kit = await generateListingKit(listing, photos, composerFromEnv());
+      for (const img of [...kit.images, kit.template]) {
+        await storeOutput(orderId, `${img.id}.jpg`, img.buffer, 'image/jpeg');
+      }
+      await storeOutput(orderId, 'manifest.json', Buffer.from(JSON.stringify(buildManifest(kit))), 'application/json');
+    } else {
+      // Upload-era order: the six-scene generator, unchanged.
+      const design = await downloadInput(order.input_ref);
+      const pack = await generatePack(design);
+      for (const img of pack) {
+        await storeOutput(orderId, `${img.id}.jpg`, img.clean, 'image/jpeg');
+      }
     }
-    const outputRef = `${orderId}/`; // folder of 6 clean JPGs
+    const outputRef = `${orderId}/`; // folder of clean JPGs (+ manifest for listing kits)
     await db.from('elk_orders')
       .update({ status: 'fulfilled', output_ref: outputRef, fulfilled_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq('id', orderId);

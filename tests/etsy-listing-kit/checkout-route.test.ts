@@ -1,17 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock external deps so the route logic is exercised without Stripe/Supabase.
-const { create, createOrder, attachCheckoutSession } = vi.hoisted(() => ({
+const { create, createOrder, createListingOrder, attachCheckoutSession, fetchListingRaw } = vi.hoisted(() => ({
   create: vi.fn(),
   createOrder: vi.fn(),
+  createListingOrder: vi.fn(),
   attachCheckoutSession: vi.fn(),
+  fetchListingRaw: vi.fn(),
 }));
 
 vi.mock('@/lib/etsy-listing-kit/stripe', () => ({
   stripe: { checkout: { sessions: { create } } },
   isLiveMode: () => false,
 }));
-vi.mock('@/lib/etsy-listing-kit/orders', () => ({ createOrder, attachCheckoutSession }));
+vi.mock('@/lib/etsy-listing-kit/orders', () => ({ createOrder, createListingOrder, attachCheckoutSession }));
+vi.mock('@/lib/etsy-listing-kit/listing-fetch', () => ({ fetchListingRaw }));
 
 import { POST } from '@/app/etsy-listing-kit/api/checkout/route';
 
@@ -64,5 +67,61 @@ describe('POST /etsy-listing-kit/api/checkout', () => {
     const res = await POST(req(new FormData()));
     expect(res.status).toBe(400);
     expect(create).not.toHaveBeenCalled();
+  });
+});
+
+// 3.4b — the evaluation-seeded path: JSON body, no upload anywhere.
+function jsonReq(body: unknown) {
+  return {
+    json: async () => body,
+    headers: new Headers({ origin: 'http://localhost', 'content-type': 'application/json' }),
+    nextUrl: { origin: 'http://localhost' },
+  } as never;
+}
+
+describe('POST /etsy-listing-kit/api/checkout (listing path)', () => {
+  beforeEach(() => {
+    createListingOrder.mockReset().mockResolvedValue('ord_L1');
+    fetchListingRaw.mockReset().mockResolvedValue({
+      listing_id: 4522917501,
+      title: 'Custom engraved pet keychain',
+      images: [{ rank: 1, url_570xN: 'https://cdn/x.jpg' }],
+    });
+  });
+
+  it('validates the listing, creates a listing order, returns the Stripe url', async () => {
+    const res = await POST(jsonReq({ listing_id: 4522917501, click_id: 'gclid1' }));
+    expect(res.status).toBe(200);
+    expect((await res.json()).url).toBe('https://stripe.test/cs_123');
+    expect(fetchListingRaw).toHaveBeenCalledWith(4522917501);
+    expect(createListingOrder).toHaveBeenCalledWith(
+      4522917501,
+      'Custom engraved pet keychain',
+      expect.objectContaining({ attribution: expect.objectContaining({ click_id: 'gclid1' }) }),
+    );
+    expect(createOrder).not.toHaveBeenCalled(); // no upload order on this path
+    const args = create.mock.calls[0][0];
+    expect(args.line_items[0].price_data.product_data.description).toBe('Custom engraved pet keychain');
+    expect(attachCheckoutSession).toHaveBeenCalledWith('ord_L1', 'cs_123');
+  });
+
+  it('404s when the listing is unreadable, creating nothing', async () => {
+    fetchListingRaw.mockResolvedValue(null);
+    const res = await POST(jsonReq({ listing_id: 1 }));
+    expect(res.status).toBe(404);
+    expect(createListingOrder).not.toHaveBeenCalled();
+  });
+
+  it('422s a photoless listing — there is nothing to build a kit from', async () => {
+    fetchListingRaw.mockResolvedValue({ listing_id: 1, title: 'x', images: [] });
+    const res = await POST(jsonReq({ listing_id: 1 }));
+    expect(res.status).toBe(422);
+    expect(createListingOrder).not.toHaveBeenCalled();
+  });
+
+  it('400s a missing/invalid listing_id', async () => {
+    expect((await POST(jsonReq({}))).status).toBe(400);
+    expect((await POST(jsonReq({ listing_id: 'nope' }))).status).toBe(400);
+    expect(fetchListingRaw).not.toHaveBeenCalled();
   });
 });

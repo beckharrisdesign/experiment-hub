@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getOrder, signedOutputUrl } from '../../../../lib/etsy-listing-kit/orders';
+import { getOrder, signedOutputUrl, downloadOutput } from '../../../../lib/etsy-listing-kit/orders';
 import { PACK_ITEMS, DOWNLOAD_TTL_DAYS } from '../../../../lib/etsy-listing-kit/config';
+import type { KitManifest } from '../../../../lib/etsy-listing-kit/kit-fulfillment';
+
+/** Listing-kit orders store a manifest beside the images; upload-era orders don't. */
+async function readManifest(orderId: string): Promise<KitManifest | null> {
+  try {
+    return JSON.parse((await downloadOutput(`${orderId}/manifest.json`)).toString()) as KitManifest;
+  } catch {
+    return null;
+  }
+}
 
 export const runtime = 'nodejs';
 
@@ -25,6 +35,19 @@ export async function GET(request: NextRequest) {
   }
 
   const ttl = DOWNLOAD_TTL_DAYS * 86400;
+  const manifest = order.listing_id ? await readManifest(orderId) : null;
+  if (manifest) {
+    const sign = (file: string) => signedOutputUrl(`${orderId}/${file}`, ttl);
+    const images = await Promise.all(
+      [...manifest.images, manifest.template].map(async (item) => ({
+        id: item.id,
+        label: item.label,
+        url: await sign(item.file),
+      })),
+    );
+    // kitText is null when no composer ran — the page says unavailable, honestly.
+    return NextResponse.json({ status, images, kitText: manifest.kitText, listingTitle: order.listing_title ?? null });
+  }
   const images = await Promise.all(
     PACK_ITEMS.map(async (item) => ({
       id: item.id,

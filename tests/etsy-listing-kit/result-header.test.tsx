@@ -64,7 +64,7 @@ describe('Result page — #361 make-another CTA', () => {
     render(<Result />);
     // Both routes exist, but the zip download is the one the buyer paid for —
     // if this ever regresses to a single CTA, the wrong one must not survive.
-    const download = await screen.findByRole('link', { name: /download all 6/i });
+    const download = await screen.findByRole('link', { name: /download everything/i });
     expect(download).toHaveAttribute('href', expect.stringContaining('/api/download'));
   });
 
