@@ -66,6 +66,17 @@ Evaluation scores are computed by the same Tier A/B rubric defined in the `etsy-
 - **WHEN** identical listing data is scored via the ELK evaluation and via the labs scorecard path
 - **THEN** every Tier A verdict and the Tier B percentage match exactly
 
+### Requirement: An evaluation has its own URL
+
+A check lives at `/check?listing=<id>` — shareable, bookmarkable, and returnable — rather than rendering only inline on the landing page. The route canonicalizes pasted listing URLs (tracking clutter tolerated) to the listing id, hosts the shop-link confirm and unusable-URL states, and honors the per-listing evaluation cache TTL. It is the only new page route in the flow (URL map, Figma 02.27).
+
+**Fails until:** submitting the hero form lands on `/check?listing=<id>`, revisiting that URL re-renders the evaluation (cache-served within TTL), and the confirm/error states render there.
+
+#### Scenario: A check can be returned to
+
+- **WHEN** a visitor revisits a `/check?listing=<id>` URL they evaluated earlier
+- **THEN** the evaluation renders again for that listing — from the server cache within the TTL, re-fetched after it — without re-pasting anything
+
 ### Requirement: The evaluation funnel is measurable
 
 Evaluation activity is instrumented so the next ad burst can read evaluation-starts through pack conversions. The first-pass event set (E1–E8, with P0/P1 priorities, fire points, and prop lists) is specced visually on Figma page `02.27` — the violet pins on the flow frames and the instrumentation legend beside the URL map are the working reference for apply; implementations follow that legend, not a re-derivation.
