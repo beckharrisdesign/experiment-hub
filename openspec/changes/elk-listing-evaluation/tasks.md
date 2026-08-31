@@ -37,7 +37,7 @@
 - [ ] 3.5 Generator rework per approved Figma 02.26 + design decisions 27/30 (build order below; the six embroidery-hoop compositions retire from this path when 3.4b lands). INTERIM (founder-approved honesty patch, 2026-08-30): production copy promises six images with everything else COMING SOON until this lands:
   - [x] 3.5a Brief module — deterministic verbatim extraction from title/description/tags/alt text + API facts, every phrase carrying its source field; wording-thin flag when phrases run out
   - [x] 3.5b Palette sampler — dominant saturated color(s) from the listing's photos (the "on brand" mechanic); terracotta fallback when photos are too muted to sample
-  - [ ] 3.5c Scene ladder — ten 2000px images from listing photos + brief + palette: re-edits first (square, tone, detail-crop), data cards only when fields exist, backfill with photo treatments; plus the reusable template file with dashed slots
+  - [x] 3.5c Scene ladder — ten 2000px images from listing photos + brief + palette: re-edits first (square, tone, detail-crop), data cards only when fields exist, backfill with photo treatments; plus the reusable template file with dashed slots
   - [x] 3.5d Composer interface — suggested title / 13 tags / per-photo alt text; deterministic stub for tests (keyless), Claude Haiku implementation grounded in brief + photos for production; missing `ANTHROPIC_API_KEY` degrades honestly (images + template ship; text deliverables report unavailable)
   - [ ] 3.5e Fulfillment rewire — webhook path generates from the order's `listing_id` snapshot instead of an uploaded design; result page + email carry the kit's ten + template + text deliverables
 - [ ] 3.6 De-niche pass (PARTIAL: landing hero/header/metadata done; REMAINING: result page + emails sweep)
