@@ -15,7 +15,7 @@ literals); `.env.example` is the registry of record. See `docs/SECRETS_RUNBOOK.m
 
 ## 1. Manager account + developer token (start here — the review is the long pole)
 
-1. Create a free **Google Ads Manager (MCC) account**: ads.google.com → Tools → Manager accounts (use the same Google login that owns 671-160-6591).
+1. Create a free **Google Ads Manager (MCC) account** at <https://ads.google.com/home/tools/manager-accounts/> → "Create a manager account" (use the same Google login that owns 671-160-6591; pick "manage my own accounts"). There is no path to this from inside a regular Ads account's Tools menu — it is a standalone signup page.
 2. From the MCC, **link the existing account 671-160-6591** (Accounts → Link existing account → it accepts the invite from inside the regular Ads account).
 3. MCC → Admin/Tools → **API Center** → copy the **developer token** → vault field `developer token`. It works against **test accounts immediately**; live accounts need step 4.
 4. In the same API Center, **apply for Basic access** (short form). Describe the use case plainly: internal tooling for managing our own small campaigns — create/pause/budget/report; no third-party accounts, low request volume. Approval typically takes days; nothing else in this runbook waits on it.
