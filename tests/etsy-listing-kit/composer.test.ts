@@ -3,7 +3,9 @@ import { buildBrief, isTraceable, type BriefInput } from '@/lib/etsy-listing-kit
 import {
   DeterministicComposer,
   HaikuComposer,
+  OpenAIComposer,
   composerFromEnv,
+  composerConfigured,
   validateKitText,
   TITLE_MAX,
   TAG_MAX,
@@ -41,11 +43,53 @@ describe('DeterministicComposer (keyless test double)', () => {
 describe('composerFromEnv', () => {
   it('returns null without a key — text deliverables go unavailable, never junk', () => {
     expect(composerFromEnv({})).toBeNull();
-    expect(composerFromEnv({ ANTHROPIC_API_KEY: '  ' })).toBeNull();
+    expect(composerFromEnv({ ANTHROPIC_API_KEY: '  ', OPENAI_API_KEY: '' })).toBeNull();
+    expect(composerConfigured({})).toBe(false);
   });
 
-  it('returns the Haiku composer when the key is set', () => {
+  it('prefers the OpenAI key — the vault\u2019s one product-completions key (founder, 2026-08-31)', () => {
+    expect(composerFromEnv({ OPENAI_API_KEY: 'sk-o' })).toBeInstanceOf(OpenAIComposer);
+    expect(composerFromEnv({ OPENAI_API_KEY: 'sk-o', ANTHROPIC_API_KEY: 'sk-a' })).toBeInstanceOf(OpenAIComposer);
+    expect(composerConfigured({ OPENAI_API_KEY: 'sk-o' })).toBe(true);
+  });
+
+  it('falls back to the Haiku composer when only that key is set', () => {
     expect(composerFromEnv({ ANTHROPIC_API_KEY: 'sk-test' })).toBeInstanceOf(HaikuComposer);
+  });
+});
+
+describe('OpenAIComposer', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  const stubChat = (content: string, ok = true, status = 200) =>
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok,
+      status,
+      json: async () => ({ choices: [{ message: { content } }] }),
+    })));
+
+  it('parses and shape-validates the model output', async () => {
+    stubChat(JSON.stringify({
+      suggestedTitle: 'Custom Engraved Pet Keychain, Made to Order',
+      tags: ['pet keychain'],
+      altTexts: [{ rank: 1, alt: 'A keychain' }, { rank: 2, alt: 'A keychain on a bag' }],
+    }));
+    const text = await new OpenAIComposer('sk-test').compose({ brief: keychainBrief, photos: photos(2) });
+    expect(validateKitText(text, 2)).toHaveLength(0);
+  });
+
+  it('refuses malformed output instead of shipping it', async () => {
+    stubChat(JSON.stringify({ suggestedTitle: '', tags: [], altTexts: [] }));
+    await expect(
+      new OpenAIComposer('sk-test').compose({ brief: keychainBrief, photos: photos(2) }),
+    ).rejects.toThrow(/invalid output/);
+  });
+
+  it('surfaces API failures as errors, not silent junk', async () => {
+    stubChat('', false, 500);
+    await expect(
+      new OpenAIComposer('sk-test').compose({ brief: keychainBrief, photos: photos(2) }),
+    ).rejects.toThrow(/500/);
   });
 });
 

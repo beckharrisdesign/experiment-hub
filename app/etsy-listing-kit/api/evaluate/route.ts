@@ -8,6 +8,7 @@ import {
   type RawApiListing,
 } from '../../../../lib/etsy-listing-kit/evaluate';
 import { createAdminSupabaseClient } from '../../../../lib/etsy-listing-kit/supabase-admin';
+import { composerConfigured } from '../../../../lib/etsy-listing-kit/composer';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -198,7 +199,7 @@ export async function POST(request: NextRequest) {
         { status: 404 },
       );
     }
-    const evaluation = evaluateListing(raw, { textDeliverables: Boolean(process.env.ANTHROPIC_API_KEY) });
+    const evaluation = evaluateListing(raw, { textDeliverables: composerConfigured() });
     const result = { kind: 'evaluation', evaluation };
     cache.set(parsed.listingId, { at: Date.now(), result });
     persistEvaluation(evaluation);
