@@ -40,7 +40,7 @@ function shell(body: string): string {
     <tr><td style="background:${SURFACE};border-bottom:1px solid ${BORDER};padding:18px 28px">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
         <td style="font-family:${SERIF};font-weight:700;font-size:18px;color:${INK};letter-spacing:-0.01em">Etsy Listing Kit</td>
-        <td align="right" style="font-family:${SANS};font-size:12px;color:${MUTED}">One design &rarr; 6 Etsy-ready images</td>
+        <td align="right" style="font-family:${SANS};font-size:12px;color:${MUTED}">Free listing check &middot; $3 kit</td>
       </tr></table>
     </td></tr>
     <tr><td style="height:3px;background:${ACCENT};line-height:3px;font-size:0">&nbsp;</td></tr>
@@ -58,25 +58,47 @@ function shell(body: string): string {
 </body></html>`;
 }
 
-export function resultEmailHtml(downloadUrl: string): string {
+/**
+ * Which kit this order delivered — copy differs (spec 1.14: no embroidery
+ * framing; decision 30: text deliverables may be absent, say so plainly).
+ */
+export type ResultEmailInfo =
+  | { kind: 'listing-kit'; textIncluded: boolean }
+  | { kind: 'upload-pack' };
+
+const UPLOAD_SET = 'Six 2000px square JPGs, styled scenes made from your design. Sized for Etsy, no watermark.';
+
+function setDescription(info: ResultEmailInfo): string {
+  if (info.kind === 'upload-pack') return UPLOAD_SET;
+  return info.textIncluded
+    ? 'Ten 2000px images plus a reusable template in your listing\u2019s own palette \u2014 and your suggested title, 13 tags, and alt text, paste-ready for Shop Manager.'
+    : 'Ten 2000px images plus a reusable template in your listing\u2019s own palette. Your title, tags, and alt text aren\u2019t included this time \u2014 reply to this email and we\u2019ll sort it.';
+}
+
+export function resultEmailHtml(downloadUrl: string, info: ResultEmailInfo = { kind: 'upload-pack' }): string {
+  const headline = info.kind === 'listing-kit' ? 'All set &mdash; your kit is ready' : 'All set &mdash; your photos are ready';
+  const sub = info.kind === 'listing-kit'
+    ? 'Everything is built from your listing and ready to download. This link works for 7 days.'
+    : 'Your Etsy listing images are ready to download, clean and full-size. This link works for 7 days.';
+  const cta = info.kind === 'listing-kit' ? 'Open your kit &rarr;' : 'Download your images &rarr;';
   return shell(`
     <tr><td style="padding:32px 28px 8px">
-      <h1 style="margin:0 0 10px;font-family:${SERIF};font-size:26px;line-height:1.25;color:${INK}">All set &mdash; your photos are ready</h1>
+      <h1 style="margin:0 0 10px;font-family:${SERIF};font-size:26px;line-height:1.25;color:${INK}">${headline}</h1>
       <p style="margin:0 0 20px;font-family:${SANS};font-size:15px;line-height:1.55;color:${MUTED}">
-        All six of your Etsy listing images are ready to download, clean and full-size. This link works for 7 days.
+        ${sub}
       </p>
       <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px">
         <tr><td style="background:${PRIMARY};border-radius:10px">
-          <a href="${downloadUrl}" style="display:inline-block;padding:13px 26px;font-family:${SANS};font-size:15px;font-weight:600;color:#ffffff;text-decoration:none">Download your 6 images &rarr;</a>
+          <a href="${downloadUrl}" style="display:inline-block;padding:13px 26px;font-family:${SANS};font-size:15px;font-weight:600;color:#ffffff;text-decoration:none">${cta}</a>
         </td></tr>
       </table>
     </td></tr>
     <tr><td style="padding:0 28px 28px">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CREAM};border:1px solid ${ACCENT_TINT};border-radius:12px">
         <tr><td style="padding:16px 18px">
-          <p style="margin:0 0 8px;font-family:${SANS};font-size:11px;font-weight:600;letter-spacing:0.08em;color:${ACCENT_INK}">WHAT&rsquo;S IN YOUR SET</p>
+          <p style="margin:0 0 8px;font-family:${SANS};font-size:11px;font-weight:600;letter-spacing:0.08em;color:${ACCENT_INK}">WHAT&rsquo;S IN YOUR ${info.kind === 'listing-kit' ? 'KIT' : 'SET'}</p>
           <p style="margin:0;font-family:${SANS};font-size:13px;line-height:1.6;color:${MUTED}">
-            Six 2000px square JPGs &mdash; hoop on linen, styled photo, in-hoop, terracotta, floss flat-lay and a stitched preview. Sized for Etsy, no watermark.
+            ${setDescription(info)}
           </p>
         </td></tr>
       </table>
@@ -88,15 +110,16 @@ export function resultEmailHtml(downloadUrl: string): string {
     </td></tr>`);
 }
 
-export function resultEmailText(downloadUrl: string): string {
-  return `ETSY LISTING KIT — one design → 6 Etsy-ready images
+export function resultEmailText(downloadUrl: string, info: ResultEmailInfo = { kind: 'upload-pack' }): string {
+  const headline = info.kind === 'listing-kit' ? 'All set — your kit is ready' : 'All set — your photos are ready';
+  return `ETSY LISTING KIT — free listing check · $3 kit
 
-All set — your photos are ready
+${headline}
 
-All six of your Etsy listing images are ready to download (clean, full-size). This link works for 7 days:
+Everything is ready to download. This link works for 7 days:
 ${downloadUrl}
 
-What's in your set: six 2000px square JPGs — hoop on linen, styled photo, in-hoop, terracotta, floss flat-lay and a stitched preview. Sized for Etsy, no watermark.
+What's included: ${setDescription(info)}
 
 Drop them straight into your Etsy listing — already sized right. Need anything? Just reply to this email.
 
@@ -162,6 +185,7 @@ export function sendRefundEmail(to: string): Promise<EmailResult> {
 }
 
 /** Send the "your images are ready" email. Never throws — returns a result. */
-export function sendResultEmail(to: string, downloadUrl: string): Promise<EmailResult> {
-  return send(to, 'Your Etsy listing images are ready', resultEmailHtml(downloadUrl), resultEmailText(downloadUrl));
+export function sendResultEmail(to: string, downloadUrl: string, info: ResultEmailInfo = { kind: 'upload-pack' }): Promise<EmailResult> {
+  const subject = info.kind === 'listing-kit' ? 'Your Etsy Listing Kit is ready' : 'Your Etsy listing images are ready';
+  return send(to, subject, resultEmailHtml(downloadUrl, info), resultEmailText(downloadUrl, info));
 }

@@ -40,10 +40,10 @@
   - [x] 3.5c Scene ladder — ten 2000px images from listing photos + brief + palette: re-edits first (square, tone, detail-crop), data cards only when fields exist, backfill with photo treatments; plus the reusable template file with dashed slots
   - [x] 3.5d Composer interface — suggested title / 13 tags / per-photo alt text; deterministic stub for tests (keyless), Claude Haiku implementation grounded in brief + photos for production; missing `ANTHROPIC_API_KEY` degrades honestly (images + template ship; text deliverables report unavailable)
   - [x] 3.5e Fulfillment rewire — webhook path generates from the order's `listing_id` snapshot instead of an uploaded design; result page + email carry the kit's ten + template + text deliverables
-- [ ] 3.6 De-niche pass (PARTIAL: landing hero/header/metadata done; REMAINING: result page + emails sweep)
+- [x] 3.6 De-niche pass — landing, result page, emails, and metadata all swept; upload section relabeled as the original image pack
 - [x] 3.7 Analytics events (evaluation_started/completed/failed, pack_offer_click added to the FunnelEvent union) + breakpoint CSS (citations stack under 1100, mobile scale at 600)
 - [x] 3.9 First-pass instrumentation per the approved legend on Figma 02.27 (violet pins mark fire points — implement from that legend, not from memory): P0 = utm/gclid capture into landing_view props · kit_cta_click extending pack_offer_click with placement (hero_skip / report_offer / kit_box / alt_card) · checkout_started carrying listing_id · payment_completed wiring untouched (Ads Sign-up + transaction_id dedupe is why /result keeps its URL). P1 = generation_completed server event (duration_ms, scene_count, wording_thin) · copy_clicked (block: title / tags / alt / zip) on the result page
-- [ ] 3.8 Copy/layout standards enforced: opportunity framing, no em-dash after tallies, captions under visuals, CTAs on their own line centered, 8pt spacing — promote to `rules/design-guidelines.mdc`
+- [x] 3.8 Copy/layout standards enforced: opportunity framing, no em-dash after tallies, captions under visuals, CTAs on their own line centered, 8pt spacing — promote to `rules/design-guidelines.mdc`
 
 ## 4. QA
 

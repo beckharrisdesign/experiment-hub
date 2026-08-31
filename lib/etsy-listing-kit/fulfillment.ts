@@ -9,7 +9,7 @@ import { generatePack } from './generator';
 import { fetchListingRaw, fetchListingPhotos } from './listing-fetch';
 import { generateListingKit, buildManifest } from './kit-fulfillment';
 import { composerFromEnv } from './composer';
-import { sendResultEmail } from './email';
+import { sendResultEmail, type ResultEmailInfo } from './email';
 import { trackPurchaseServer, trackServerEvent } from './analytics';
 
 function siteUrl(): string {
@@ -30,6 +30,7 @@ export async function fulfillOrder(orderId: string): Promise<{ alreadyDone: bool
 
   await db.from('elk_orders').update({ status: 'processing', updated_at: new Date().toISOString() }).eq('id', orderId);
 
+  let emailInfo: ResultEmailInfo = { kind: 'upload-pack' };
   try {
     if (order.listing_id) {
       // Evaluation-seeded order (3.5e): the kit is built FROM the listing —
@@ -41,6 +42,7 @@ export async function fulfillOrder(orderId: string): Promise<{ alreadyDone: bool
       const photos = await fetchListingPhotos(listing);
       if (photos.length === 0) throw new Error(`listing ${order.listing_id} has no fetchable photos`);
       const kit = await generateListingKit(listing, photos, composerFromEnv());
+      emailInfo = { kind: 'listing-kit', textIncluded: kit.kitText !== null };
       for (const img of [...kit.images, kit.template]) {
         await storeOutput(orderId, `${img.id}.jpg`, img.buffer, 'image/jpeg');
       }
@@ -73,7 +75,7 @@ export async function fulfillOrder(orderId: string): Promise<{ alreadyDone: bool
     // either: the reason is logged and stored so a missing email is diagnosable.
     if (order.customer_email && !order.email_message_id) {
       const url = `${siteUrl()}/etsy-listing-kit/result?order=${orderId}`;
-      const email = await sendResultEmail(order.customer_email, url);
+      const email = await sendResultEmail(order.customer_email, url, emailInfo);
       const now = new Date().toISOString();
       if (email.sent) {
         await db.from('elk_orders')
