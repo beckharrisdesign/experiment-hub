@@ -7,7 +7,11 @@ delivery lessons): `docs/AD_CAMPAIGN_GOOGLE.md`.
 
 **The live Ads account is 671-160-6591** (runs `etsy-listing-kit-test1`; note
 it is partly repurposed from SwiftSketchAI — not every conversion action in it
-belongs to ELK).
+belongs to ELK). **The MCC is "Beck Harris Design", 963-853-9296** — created
+and linked 2026-08-31. To enter it: click the account avatar (top right) →
+pick "Beck Harris Design · Manager" in the account list; the picker at
+ads.google.com/nav/selectaccount works too. (A second, abandoned manager
+970-951-1282 sits at "Setup in progress" — deletable from that same menu.)
 
 Secrets discipline throughout: values land in the **BHD Labs vault, item
 "Google Ads API"**; `.env.local` gets `op://` references only (never
@@ -15,10 +19,10 @@ literals); `.env.example` is the registry of record. See `docs/SECRETS_RUNBOOK.m
 
 ## 1. Manager account + developer token (start here — the review is the long pole)
 
-1. Create a free **Google Ads Manager (MCC) account**: ads.google.com → Tools → Manager accounts (use the same Google login that owns 671-160-6591).
-2. From the MCC, **link the existing account 671-160-6591** (Accounts → Link existing account → it accepts the invite from inside the regular Ads account).
-3. MCC → Admin/Tools → **API Center** → copy the **developer token** → vault field `developer token`. It works against **test accounts immediately**; live accounts need step 4.
-4. In the same API Center, **apply for Basic access** (short form). Describe the use case plainly: internal tooling for managing our own small campaigns — create/pause/budget/report; no third-party accounts, low request volume. Approval typically takes days; nothing else in this runbook waits on it.
+1. Create a free **Google Ads Manager (MCC) account** at <https://ads.google.com/home/tools/manager-accounts/> → "Create a manager account" (use the same Google login that owns 671-160-6591; pick "manage my own accounts"). There is no path to this from inside a regular Ads account's Tools menu — it is a standalone signup page.
+2. From the MCC, **link the existing account 671-160-6591**: left-nav **Accounts** icon → **Sub-account settings** → blue **+** → **Link existing account** → enter the customer ID → Send request. Then **accept the invitation from inside the regular Ads account** (notification/email) — the link is pending until accepted.
+3. MCC → **Admin → API Center**. There is no token until you ask for one: the first visit shows the **API Access form** (API contact email, company name/website, terms). Submitting it generates the **developer token** immediately at **Explorer Access** (2026 name for the test-accounts-only tier) → reveal with **View token** → vault field `developer token`. Live accounts need step 4. *(Done 2026-08-31: token exists; Developer Details filed as "Venture Validation and Development".)*
+4. In the API Center, expand the **Access level** row and click **"Apply for Basic Access"** (external form). Describe the use case plainly: internal tooling for managing our own small campaigns — create/pause/budget/report; no third-party accounts, low request volume. Approval typically takes days; nothing else in this runbook waits on it.
 5. While that processes, create a **test manager account** and a **test client account** under it (API Center links to the flow; test accounts are marked with a red "Test account" banner). Record the test client's ID → vault field `test customer id`, and the **test MCC's** ID → used as `login customer id` while developing against test (see §4).
 
 ## 2. Cloud console: API + OAuth client
