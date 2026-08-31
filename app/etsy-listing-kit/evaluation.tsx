@@ -98,8 +98,42 @@ function Citation({ rec }: { rec: Recommendation }) {
 function Evidence({ rec }: { rec: Recommendation }) {
   switch (rec.key) {
     case 'images_open':
-    case 'images_improve':
+    case 'refresh_photos':
       return <PhotoSlots photos={(rec.evidence.photos as PhotoEvidence[]) ?? []} />;
+    case 'images_improve': {
+      // 02.18: per-photo resolution chips — objectively measurable from the
+      // API's image dimensions; the number is the evidence.
+      const photos = (rec.evidence.photos as PhotoEvidence[]) ?? [];
+      return (
+        <div className={styles.altRow}>
+          {photos.map((p, i) => (
+            <div key={i} className={styles.altCol}>
+              {p.url ? (
+                <img src={p.url} alt={p.altText ?? `Photo ${i + 1}`} className={styles.altThumb} />
+              ) : (
+                <div className={styles.altThumb} />
+              )}
+              {p.shortestSide !== null && (
+                <span className={p.belowRecommended ? styles.altChipOff : styles.altChipOn}>
+                  {p.belowRecommended ? `${p.shortestSide}px` : `${p.shortestSide}px ✓`}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    case 'refresh_tags': {
+      const tags = (rec.evidence.tags as string[]) ?? [];
+      return (
+        <div className={styles.altRow}>
+          {tags.map((t, i) => (
+            <span key={i} className={styles.altChipOn}>{t}</span>
+          ))}
+        </div>
+      );
+    }
+    case 'refresh_title':
     case 'title':
       return (
         <CharacterBlocks
@@ -178,7 +212,7 @@ function ReportCard({
         <div className={styles.evidence}>
           <Evidence rec={rec} />
           <p className={styles.evCaption}>{rec.caption}</p>
-          {rec.key === 'title' && sampleTitle && (
+          {(rec.key === 'title' || rec.key === 'refresh_title') && sampleTitle && (
             <div className={styles.sampleBox}>
               <span className={styles.sampleLabel}>WHAT THE KIT WOULD SUGGEST</span>
               <p className={styles.sampleTitle}>&ldquo;{sampleTitle}&rdquo;</p>
@@ -188,7 +222,7 @@ function ReportCard({
         </div>
         <Citation rec={rec} />
       </div>
-      {rec.key !== 'video' && !(rec.key === 'title' && sampleTitle) && (
+      {rec.key !== 'video' && !((rec.key === 'title' || rec.key === 'refresh_title') && sampleTitle) && (
         <div className={styles.kitBox}>
           <span className={styles.sampleLabel}>WHAT&rsquo;S IN THE KIT</span>
           <p className={`${styles.kitText} ${rec.kit.comingSoon ? styles.kitTeaseText : ''}`}>{rec.kit.text}</p>

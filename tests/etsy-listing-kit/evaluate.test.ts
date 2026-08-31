@@ -128,9 +128,30 @@ describe('evaluateListing — floral (partially built)', () => {
 describe('evaluateListing — fully built listing', () => {
   const result = evaluateListing(full);
 
-  it('does not invent gaps', () => {
+  it('does not invent gaps — recommendations become testing/refresh (decision 14)', () => {
     expect(result.state).toBe('full');
-    expect(result.recommendations.filter((r) => r.key !== 'video')).toHaveLength(0);
+    const keys = result.recommendations.map((r) => r.key);
+    // no gap card survives on a fully built listing
+    for (const gap of ['images_open', 'images_improve', 'title', 'alt_text', 'tags']) {
+      expect(keys).not.toContain(gap);
+    }
+    expect(keys.filter((k) => k !== 'video')).toEqual(['refresh_photos', 'refresh_title', 'refresh_tags']);
+  });
+
+  it('refresh cards keep the evidence-and-citation contract', () => {
+    for (const rec of result.recommendations.filter((r) => r.key.startsWith('refresh_'))) {
+      expect(rec.citation).not.toBeNull();
+      expect(rec.caption.length).toBeGreaterThan(0);
+      expect(rec.kit.text.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('text-deliverable refresh cards gate on the composer like gap cards do', () => {
+    const withText = evaluateListing(full, { textDeliverables: true });
+    const title = withText.recommendations.find((r) => r.key === 'refresh_title');
+    expect(title?.kit.comingSoon).toBeUndefined();
+    const without = result.recommendations.find((r) => r.key === 'refresh_title');
+    expect(without?.kit.comingSoon).toBe(true);
   });
 });
 
