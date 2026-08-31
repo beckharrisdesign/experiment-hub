@@ -10,7 +10,7 @@ import { fetchListingRaw, fetchListingPhotos } from './listing-fetch';
 import { generateListingKit, buildManifest } from './kit-fulfillment';
 import { composerFromEnv } from './composer';
 import { sendResultEmail } from './email';
-import { trackPurchaseServer } from './analytics';
+import { trackPurchaseServer, trackServerEvent } from './analytics';
 
 function siteUrl(): string {
   const base = process.env.ELK_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
@@ -35,6 +35,7 @@ export async function fulfillOrder(orderId: string): Promise<{ alreadyDone: bool
       // Evaluation-seeded order (3.5e): the kit is built FROM the listing —
       // ten scene-ladder images + template + grounded text deliverables
       // (or text marked unavailable when no composer is configured).
+      const startedAt = Date.now();
       const listing = await fetchListingRaw(Number(order.listing_id));
       if (!listing) throw new Error(`listing ${order.listing_id} unreadable at fulfillment`);
       const photos = await fetchListingPhotos(listing);
@@ -44,6 +45,13 @@ export async function fulfillOrder(orderId: string): Promise<{ alreadyDone: bool
         await storeOutput(orderId, `${img.id}.jpg`, img.buffer, 'image/jpeg');
       }
       await storeOutput(orderId, 'manifest.json', Buffer.from(JSON.stringify(buildManifest(kit))), 'application/json');
+      // E7 (02.27 legend): the "about a minute" promise, measured.
+      await trackServerEvent(orderId, 'generation_completed', {
+        duration_ms: Date.now() - startedAt,
+        scene_count: kit.images.length,
+        wording_thin: kit.brief.wordingThin,
+        text_available: kit.kitText !== null,
+      });
     } else {
       // Upload-era order: the six-scene generator, unchanged.
       const design = await downloadInput(order.input_ref);

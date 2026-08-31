@@ -10,13 +10,15 @@
  * sentence-case card headlines, CTAs centered on their own line.
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './elk.module.css';
-import { track } from '../../lib/etsy-listing-kit/analytics';
-import type {
-  EvaluationResult,
-  Recommendation,
-  PhotoEvidence,
+import { track, trackFormSubmit, attributionFromLocation } from '../../lib/etsy-listing-kit/analytics';
+import {
+  parseEtsyUrl,
+  type EvaluationResult,
+  type Recommendation,
+  type PhotoEvidence,
 } from '../../lib/etsy-listing-kit/evaluate';
 
 interface ShopSuggestion {
@@ -155,12 +157,12 @@ function ReportCard({
   rec,
   rank,
   sampleTitle,
-  onSkipToKit,
+  onBuyKit,
 }: {
   rec: Recommendation;
   rank: number;
   sampleTitle: string | null;
-  onSkipToKit: () => void;
+  onBuyKit: (placement: string) => void;
 }) {
   return (
     <article className={styles.repCard}>
@@ -191,7 +193,7 @@ function ReportCard({
           <span className={styles.sampleLabel}>WHAT&rsquo;S IN THE KIT</span>
           <p className={`${styles.kitText} ${rec.kit.comingSoon ? styles.kitTeaseText : ''}`}>{rec.kit.text}</p>
           {!rec.kit.comingSoon && (
-            <button type="button" className={styles.againBtn} onClick={onSkipToKit}>
+            <button type="button" className={styles.againBtn} onClick={() => onBuyKit('kit_box')}>
               Buy the whole kit now
             </button>
           )}
@@ -268,7 +270,7 @@ function CurrentStateCard({ evaluation }: { evaluation: EvaluationResult }) {
   );
 }
 
-function KitOffer({ state, onSkipToKit }: { state: 'gaps' | 'full'; onSkipToKit: () => void }) {
+function KitOffer({ state, onBuyKit }: { state: 'gaps' | 'full'; onBuyKit: (placement: string) => void }) {
   return (
     <section className={styles.kitOffer} aria-label="The full listing kit">
       <span className={styles.tag}>THE FULL LISTING KIT</span>
@@ -276,11 +278,7 @@ function KitOffer({ state, onSkipToKit }: { state: 'gaps' | 'full'; onSkipToKit:
         {state === 'full' ? 'A fresh set to test against your current one' : 'Your images, done for you'}
       </h3>
       <div className={styles.kitList}>
-        <span>• Six Etsy-ready images, made from your design</span>
-        <span className={styles.kitTeaseRow}>
-          <span className={styles.kitTeaseText}>• A ten-image set with a reusable template</span>
-          <span className={styles.chipMuted}>COMING SOON</span>
-        </span>
+        <span>• Ten Etsy-ready images and a reusable template, built from your listing</span>
         <span className={styles.kitTeaseRow}>
           <span className={styles.kitTeaseText}>• A suggested title, 13 tags, and alt text for every photo</span>
           <span className={styles.chipMuted}>COMING SOON</span>
@@ -292,7 +290,7 @@ function KitOffer({ state, onSkipToKit }: { state: 'gaps' | 'full'; onSkipToKit:
       </div>
       <span className={styles.kitPrice}>$3</span>
       <div className={styles.ctaRow}>
-        <button type="button" className={styles.primaryWide} onClick={onSkipToKit}>
+        <button type="button" className={styles.primaryWide} onClick={() => onBuyKit('report_offer')}>
           Build my listing kit
         </button>
       </div>
@@ -303,9 +301,20 @@ function KitOffer({ state, onSkipToKit }: { state: 'gaps' | 'full'; onSkipToKit:
   );
 }
 
-export default function EvaluationSection({ onGoToKit }: { onGoToKit: () => void }) {
-  const [url, setUrl] = useState('');
+/**
+ * mode 'landing': the hero form only — submitting navigates to /check so the
+ * evaluation has its own shareable URL (3.4a); the buy button is the
+ * hero_skip placement and needs the same listing link (02.27: even "skip the
+ * check" builds the kit FROM a listing — there is no upload on this path).
+ * mode 'check': runs the check (auto-run from the URL param), renders the
+ * report, and canonicalizes the address bar to ?listing=<id>.
+ */
+export default function EvaluationSection({ mode, initialUrl }: { mode: 'landing' | 'check'; initialUrl?: string }) {
+  const router = useRouter();
+  const [url, setUrl] = useState(initialUrl ?? '');
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
+  const [buyError, setBuyError] = useState<string | null>(null);
+  const [buying, setBuying] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
 
   const check = useCallback(
@@ -327,6 +336,8 @@ export default function EvaluationSection({ onGoToKit }: { onGoToKit: () => void
             state: json.evaluation.state,
             recommended_in_use: json.evaluation.recommendedInUse,
           });
+          // Canonical, shareable URL for this check (3.4a).
+          router.replace(`/etsy-listing-kit/check?listing=${json.evaluation.listingId}`, { scroll: false });
           requestAnimationFrame(() => resultRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }));
         } else if (json.kind === 'shop_suggestion') {
           setPhase({ kind: 'suggestion', suggestion: json.suggestion });
@@ -339,15 +350,70 @@ export default function EvaluationSection({ onGoToKit }: { onGoToKit: () => void
         track('evaluation_failed', { reason: 'network' });
       }
     },
-    [],
+    [router],
   );
 
-  const skipToKit = useCallback(() => {
-    track('pack_offer_click');
-    onGoToKit();
-  }, [onGoToKit]);
+  // /check arrives with the listing in the URL — run it without a re-paste.
+  const autoRan = useRef(false);
+  useEffect(() => {
+    if (mode === 'check' && initialUrl && !autoRan.current) {
+      autoRan.current = true;
+      void check(initialUrl);
+    }
+  }, [mode, initialUrl, check]);
+
+  /**
+   * E4/E5 (02.27 legend): kit_cta_click with its placement, then straight to
+   * listing checkout — no upload, no anchor scroll (#433).
+   */
+  const buyKit = useCallback(async (listingId: number, placement: string) => {
+    setBuying(true);
+    setBuyError(null);
+    track('kit_cta_click', { placement, listing_id: listingId });
+    track('checkout_started', { listing_id: listingId, placement });
+    trackFormSubmit();
+    try {
+      const res = await fetch('/etsy-listing-kit/api/checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ listing_id: listingId, ...attributionFromLocation() }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.url) throw new Error(json.error || 'Could not start checkout.');
+      window.location.href = json.url;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Could not start checkout.';
+      track('checkout_failed', { reason: message });
+      setBuyError(message);
+      setBuying(false);
+    }
+  }, []);
+
+  const submit = useCallback(() => {
+    if (mode === 'landing') {
+      // The check lives at its own URL — shareable, returnable (3.4a).
+      router.push(`/etsy-listing-kit/check?url=${encodeURIComponent(url)}`);
+      return;
+    }
+    void check(url);
+  }, [mode, url, check, router]);
+
+  const heroSkip = useCallback(() => {
+    const parsed = parseEtsyUrl(url);
+    if (parsed.kind !== 'listing') {
+      setBuyError('Paste your listing’s link first — the kit is built from it.');
+      return;
+    }
+    void buyKit(parsed.listingId, 'hero_skip');
+  }, [url, buyKit]);
 
   const evaluation = phase.kind === 'result' ? phase.evaluation : null;
+  const onBuyKit = useCallback(
+    (placement: string) => {
+      if (evaluation) void buyKit(evaluation.listingId, placement);
+    },
+    [evaluation, buyKit],
+  );
 
   return (
     <>
@@ -355,7 +421,7 @@ export default function EvaluationSection({ onGoToKit }: { onGoToKit: () => void
         className={styles.urlForm}
         onSubmit={(e) => {
           e.preventDefault();
-          void check(url);
+          submit();
         }}
       >
         <input
@@ -376,13 +442,18 @@ export default function EvaluationSection({ onGoToKit }: { onGoToKit: () => void
               'Check my listing'
             )}
           </button>
-          <button type="button" className={styles.againBtn} onClick={skipToKit}>
-            Buy the whole kit now
+          <button type="button" className={styles.againBtn} onClick={heroSkip} disabled={buying}>
+            {buying ? 'Starting checkout…' : 'Buy the whole kit now'}
           </button>
         </div>
         {phase.kind === 'invalid' && (
           <p className={styles.error} role="alert">
             {phase.reason}
+          </p>
+        )}
+        {buyError && (
+          <p className={styles.error} role="alert">
+            {buyError}
           </p>
         )}
       </form>
@@ -424,10 +495,10 @@ export default function EvaluationSection({ onGoToKit }: { onGoToKit: () => void
               rec={rec}
               rank={i + 1}
               sampleTitle={evaluation.sampleTitle}
-              onSkipToKit={skipToKit}
+              onBuyKit={onBuyKit}
             />
           ))}
-          <KitOffer state={evaluation.state} onSkipToKit={skipToKit} />
+          <KitOffer state={evaluation.state} onBuyKit={onBuyKit} />
         </div>
       )}
     </>

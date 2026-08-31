@@ -2,6 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Landing from '@/app/etsy-listing-kit/page';
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 // jsdom implements neither; the component uses both (#336 feedback behavior).
 const scrollIntoView = vi.fn();
 let reducedMotion = false;

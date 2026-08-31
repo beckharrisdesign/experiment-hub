@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './elk.module.css';
 import EvaluationSection from './evaluation';
 import { PRICE_CENTS, UPLOAD } from '../../lib/etsy-listing-kit/config';
-import { track, trackFormSubmit } from '../../lib/etsy-listing-kit/analytics';
+import { track, trackFormSubmit, attributionFromLocation } from '../../lib/etsy-listing-kit/analytics';
 import { validateUpload, uploadMaxMb } from '../../lib/etsy-listing-kit/upload';
 
 const priceLabel = `$${(PRICE_CENTS / 100).toFixed(PRICE_CENTS % 100 ? 2 : 0)}`;
@@ -46,9 +46,10 @@ export default function EtsyListingKitLanding() {
     previewHeadRef.current?.focus({ preventScroll: true });
   }, [previews]);
 
-  // Funnel: landing view + cancel-return detection.
+  // Funnel: landing view + cancel-return detection. E1 (02.27 legend):
+  // utm/gclid ride the event — CAC attribution starts here or nowhere.
   useEffect(() => {
-    track('landing_view');
+    track('landing_view', attributionFromLocation());
     if (new URLSearchParams(window.location.search).get('canceled')) {
       setCanceled(true);
       track('payment_cancelled');
@@ -181,11 +182,7 @@ export default function EtsyListingKitLanding() {
         </p>
       </section>
 
-      <EvaluationSection
-        onGoToKit={() => {
-          packRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
-        }}
-      />
+      <EvaluationSection mode="landing" />
 
       <section ref={packRef} className={styles.hero} id="kit">
         <h2 className={styles.previewHead}>The listing kit</h2>

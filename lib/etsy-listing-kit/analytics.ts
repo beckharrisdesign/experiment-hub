@@ -56,13 +56,36 @@ export type FunnelEvent =
   | 'evaluation_started'
   | 'evaluation_completed'
   | 'evaluation_failed'
-  | 'pack_offer_click';
+  /** Superseded by kit_cta_click (Figma 02.27 legend, E4) — kept for history. */
+  | 'pack_offer_click'
+  // First-pass instrumentation per the approved 02.27 legend (task 3.9):
+  | 'kit_cta_click' // E4 — props.placement: hero_skip | report_offer | kit_box
+  | 'generation_completed' // E7 — server-side; duration_ms, scene_count, wording_thin
+  | 'copy_clicked'; // E8 — props.block: title | tags | alt
 
 type EventProps = Record<string, string | number | boolean | undefined>;
 
 /** Client-side funnel event — delegates to the hub GA helper (safe no-op if GA off). */
 export function track(event: FunnelEvent, props: EventProps = {}): void {
   trackEvent(event, { experiment_id: EXPERIMENT_ID, ...props });
+}
+
+/**
+ * Ad attribution read from the current location (E1 capture + checkout
+ * pass-through). One reader so landing_view props and checkout payloads
+ * can never drift apart.
+ */
+export function attributionFromLocation(): Record<string, string | undefined> {
+  if (typeof window === 'undefined') return {};
+  const q = new URLSearchParams(window.location.search);
+  const out: Record<string, string | undefined> = {};
+  for (const k of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']) {
+    const v = q.get(k); if (v) out[k] = v;
+  }
+  const clickId = q.get('gclid') || q.get('fbclid');
+  if (clickId) out.click_id = clickId;
+  out.landing_path = window.location.pathname;
+  return out;
 }
 
 /**
@@ -121,6 +144,28 @@ export async function trackPurchaseServer(order: { id: string; amount_total?: nu
             items: [{ item_id: EXPERIMENT_ID, item_name: 'Etsy Listing Kit — 6 images', price: value, quantity: 1 }],
           },
         }],
+      }),
+    });
+  } catch {
+    // analytics must never break fulfillment
+  }
+}
+
+/**
+ * Server-side funnel event via Measurement Protocol (E7 generation_completed
+ * — the 02.27 legend's product-health number: the "about a minute" promise,
+ * measured). Same no-op/never-throw posture as trackPurchaseServer.
+ */
+export async function trackServerEvent(clientId: string, event: FunnelEvent, params: EventProps): Promise<void> {
+  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
+  const apiSecret = process.env.GA_API_SECRET;
+  if (!measurementId || !apiSecret) return;
+  try {
+    await fetch(`https://www.google-analytics.com/mp/collect?measurement_id=${measurementId}&api_secret=${apiSecret}`, {
+      method: 'POST',
+      body: JSON.stringify({
+        client_id: clientId,
+        events: [{ name: event, params: { experiment_id: EXPERIMENT_ID, ...params } }],
       }),
     });
   } catch {

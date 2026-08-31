@@ -31,6 +31,11 @@ export async function GET(request: NextRequest) {
 
   const status = order.status as string;
   if (status !== 'fulfilled' || !order.output_ref) {
+    // Listing-kit orders identify themselves pre-fulfillment so the result
+    // page can render the GENERATING state (3.4c) with the listing's name.
+    if (order.listing_id) {
+      return NextResponse.json({ status, isListingKit: true, listingTitle: order.listing_title ?? null });
+    }
     return NextResponse.json({ status });
   }
 
