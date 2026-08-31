@@ -93,6 +93,44 @@ describe('OpenAIComposer', () => {
   });
 });
 
+describe('title floor (founder note 2026-08-31: 58/140 was a non-suggestion)', () => {
+  afterEach(() => vi.unstubAllGlobals());
+  const LONG = 'Custom Engraved Pet Keychain, Personalized Wooden Dog Portrait Charm, Made to Order Gift for Pet Lovers, Handmade Memorial Keyring';
+  const SHORT = 'Custom Engraved Pet Keychain Gift';
+  const payload = (title: string) => JSON.stringify({
+    suggestedTitle: title,
+    tags: ['pet keychain'],
+    altTexts: [{ rank: 1, alt: 'A keychain' }, { rank: 2, alt: 'On a bag' }],
+  });
+
+  it('retries once with a correction when the title comes back short', async () => {
+    const calls: string[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (_url, init: RequestInit) => {
+      calls.push(String(init.body));
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ choices: [{ message: { content: payload(calls.length === 1 ? SHORT : LONG) } }] }),
+      };
+    }));
+    const text = await new OpenAIComposer('sk-test').compose({ brief: keychainBrief, photos: photos(2) });
+    expect(calls).toHaveLength(2);
+    expect(calls[1]).toContain('must be 120 to 140 characters');
+    expect(text.suggestedTitle).toBe(LONG);
+  });
+
+  it('refuses a suggestion no fuller than the current title, even after retry', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ choices: [{ message: { content: payload('Pet keychain') } }] }),
+    })));
+    await expect(
+      new OpenAIComposer('sk-test').compose({ brief: keychainBrief, photos: photos(2) }),
+    ).rejects.toThrow(/no fuller than the current title/);
+  });
+});
+
 describe('HaikuComposer', () => {
   afterEach(() => vi.unstubAllGlobals());
 

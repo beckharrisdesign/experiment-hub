@@ -50,7 +50,7 @@ function shell(body: string): string {
         <a href="${SITE}" style="color:${PRIMARY};text-decoration:none;font-weight:600">${SITE_LABEL}</a> &middot; by Beck Harris Design
       </p>
       <p style="margin:0;font-family:${SANS};font-size:11px;line-height:1.5;color:${FAINT}">
-        You&rsquo;re receiving this because you bought a listing kit. This is a one-time order email &mdash; no list, no newsletter.
+        You&rsquo;re receiving this because you bought a listing kit. This is a one-time order email. No list, no newsletter.
       </p>
     </td></tr>
   </table>
@@ -76,7 +76,7 @@ function setDescription(info: ResultEmailInfo): string {
 }
 
 export function resultEmailHtml(downloadUrl: string, info: ResultEmailInfo = { kind: 'upload-pack' }): string {
-  const headline = info.kind === 'listing-kit' ? 'All set &mdash; your kit is ready' : 'All set &mdash; your photos are ready';
+  const headline = info.kind === 'listing-kit' ? 'Your kit is ready' : 'Your photos are ready';
   const sub = info.kind === 'listing-kit'
     ? 'Everything is built from your listing and ready to download. This link works for 7 days.'
     : 'Your Etsy listing images are ready to download, clean and full-size. This link works for 7 days.';
@@ -105,14 +105,14 @@ export function resultEmailHtml(downloadUrl: string, info: ResultEmailInfo = { k
     </td></tr>
     <tr><td style="padding:0 28px 28px">
       <p style="margin:0;font-family:${SANS};font-size:13px;line-height:1.6;color:${MUTED}">
-        Drop them straight into your Etsy listing &mdash; they&rsquo;re already the right size. Need anything? Just reply to this email.
+        Drop them straight into your Etsy listing; they&rsquo;re already the right size. Need anything? Just reply to this email.
       </p>
     </td></tr>`);
 }
 
 export function resultEmailText(downloadUrl: string, info: ResultEmailInfo = { kind: 'upload-pack' }): string {
-  const headline = info.kind === 'listing-kit' ? 'All set — your kit is ready' : 'All set — your photos are ready';
-  return `ETSY LISTING KIT — free listing check · $3 kit
+  const headline = info.kind === 'listing-kit' ? 'Your kit is ready' : 'Your photos are ready';
+  return `ETSY LISTING KIT · free listing check · $3 kit
 
 ${headline}
 
@@ -121,16 +121,16 @@ ${downloadUrl}
 
 What's included: ${setDescription(info)}
 
-Drop them straight into your Etsy listing — already sized right. Need anything? Just reply to this email.
+Drop them straight into your Etsy listing; they're already sized right. Need anything? Just reply to this email.
 
 ${SITE_LABEL} · by Beck Harris Design
-You're receiving this because you bought a listing kit — a one-time order email, no list.`;
+You're receiving this because you bought a listing kit. A one-time order email, no list.`;
 }
 
 export function refundEmailHtml(): string {
   return shell(`
     <tr><td style="padding:32px 28px 28px">
-      <h1 style="margin:0 0 10px;font-family:${SERIF};font-size:24px;line-height:1.3;color:${INK}">Something went wrong &mdash; and we&rsquo;ve refunded you</h1>
+      <h1 style="margin:0 0 10px;font-family:${SERIF};font-size:24px;line-height:1.3;color:${INK}">Something went wrong, and we&rsquo;ve refunded you</h1>
       <p style="margin:0;font-family:${SANS};font-size:15px;line-height:1.55;color:${MUTED}">
         Your payment went through, but we hit a snag generating your images and couldn&rsquo;t complete the order. We&rsquo;ve <strong style="color:${INK}">automatically refunded you in full</strong> &mdash; nothing for you to do. Sorry for the trouble. Reply to this email if you&rsquo;d like to try again and we&rsquo;ll help.
       </p>
@@ -140,7 +140,7 @@ export function refundEmailHtml(): string {
 export function refundEmailText(): string {
   return `ETSY LISTING KIT
 
-Something went wrong — and we've refunded you
+Something went wrong, and we've refunded you
 
 Your payment went through, but we hit a snag generating your images and couldn't complete the order. We've automatically refunded you in full — no action needed. Sorry for the trouble; reply to this email if you'd like to try again and we'll help.
 
@@ -181,7 +181,7 @@ async function send(to: string, subject: string, html: string, text: string): Pr
 
 /** Send the "we refunded you" email. Never throws — returns a result. */
 export function sendRefundEmail(to: string): Promise<EmailResult> {
-  return send(to, 'Your Etsy Listing Kit order — refunded', refundEmailHtml(), refundEmailText());
+  return send(to, 'Your Etsy Listing Kit order: refunded', refundEmailHtml(), refundEmailText());
 }
 
 /** Send the "your images are ready" email. Never throws — returns a result. */

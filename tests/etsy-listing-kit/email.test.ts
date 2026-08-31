@@ -6,7 +6,7 @@ describe('email content', () => {
     const url = 'https://example.com/etsy-listing-kit/result?order=abc';
     expect(resultEmailHtml(url)).toContain(url);
     expect(resultEmailText(url)).toContain(url);
-    expect(resultEmailHtml(url)).toContain('your photos are ready');
+    expect(resultEmailHtml(url)).toContain('photos are ready');
   });
 
   it('carries the funnel branding so buyers recognise the sender', () => {

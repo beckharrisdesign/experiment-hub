@@ -37,7 +37,7 @@ function CheckInner() {
       <section className={styles.hero}>
         <h1 className={styles.h1}>Here&rsquo;s where this listing stands.</h1>
         <p className={styles.sub}>
-          Read from the public listing — we never touch your shop.{' '}
+          Read from the public listing. We never touch your shop.{' '}
           <Link href="/etsy-listing-kit" className={styles.logoLink}>
             Check another listing
           </Link>

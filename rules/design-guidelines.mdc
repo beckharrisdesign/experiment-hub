@@ -96,7 +96,7 @@ The hub uses Tailwind's default `md` and `lg` breakpoints as the canonical mobil
 Established across Figma 02.x iterations on `elk-listing-evaluation` (design.md decisions 14, 21, 22, 26); they apply to every product surface from here on:
 
 - **Opportunity framing** — recommendation copy states what's available, not what's missing ("Take advantage of your 18 open image slots", never "You're missing 18 photos"). The facts stay plainly stated beneath; the voice invites.
-- **No em-dash additions after a tally** — a numeric fact ends its sentence; commentary starts a new one. "112 characters free. Room for more." — never "112 characters free — room for more."
+- **Em dashes sparingly, everywhere** (founder, 2026-08-31: overuse reads as AI-written) — default to a period, comma, or colon; an em dash needs to earn its place. The original tally rule stands as the hard case: a numeric fact ends its sentence, commentary starts a new one ("112 characters free. Room for more."). LLM-generated product copy (titles, alt text) must contain none.
 - **Captions never run beside visuals** — no sentence to the right of a stacked object; evidence reads visual-then-words, top to bottom, full column width.
 - **CTA buttons sit on their own line, centered** — a CTA never shares a line with other content. (Mobile full-width buttons satisfy this by construction.)
 - **8pt spacing scale** — pad and gap on the MVDS 8pt scale; one spacing token per repeated grid (e.g. thumbnail gaps identical across sections).

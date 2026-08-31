@@ -85,20 +85,20 @@ function ResultInner() {
         {error ? (
           <>
             <h1 className={styles.h1}>We hit a snag</h1>
-            <p className={styles.sub}>{error} If you paid, your download link is also in your email — or reply to your receipt and we&rsquo;ll sort it.</p>
+            <p className={styles.sub}>{error} If you paid, your download link is also in your email, or reply to your receipt and we&rsquo;ll sort it.</p>
           </>
         ) : covered ? (
           <>
-            <h1 className={styles.h1}>Something went wrong — you&rsquo;re covered</h1>
+            <h1 className={styles.h1}>Something went wrong, and you&rsquo;re covered</h1>
             <p className={styles.sub}>
-              Your payment went through, but we hit a snag building your images and couldn&rsquo;t finish. We&rsquo;ve automatically refunded you in full — nothing for you to do. Reply to your receipt if you&rsquo;d like to try again.
+              Your payment went through, but we hit a snag building your images and couldn&rsquo;t finish. We&rsquo;ve automatically refunded you in full; nothing for you to do. Reply to your receipt if you&rsquo;d like to try again.
             </p>
           </>
         ) : ready ? (
           <>
-            <h1 className={styles.h1}>{isListingKit ? 'All set — your kit is ready' : 'All set — your photos are ready'}</h1>
+            <h1 className={styles.h1}>{isListingKit ? 'Your kit is ready' : 'Your photos are ready'}</h1>
             <p className={styles.sub}>
-              Clean and full-size, ready to download. A copy of this link is in your inbox too. Re-download anytime for 7 days.
+              Everything is ready to download. The link is in your inbox too and works for 7 days.
             </p>
           </>
         ) : (
@@ -108,13 +108,13 @@ function ResultInner() {
               {isListingKit ? (
                 <>
                   Payment confirmed. We&rsquo;re building your kit
-                  {listingTitle ? <> from <strong>{listingTitle}</strong></> : null} — reading the listing,
+                  {listingTitle ? <> from <strong>{listingTitle}</strong></> : null}: reading the listing,
                   writing its brief, re-editing your photos, and putting together your cards, title, tags, and
-                  alt text. Usually under a minute; the page updates itself. Feel free to close it — we&rsquo;ll
+                  alt text. Usually under a minute; the page updates itself. Feel free to close it; we&rsquo;ll
                   email your link.
                 </>
               ) : (
-                <>Payment confirmed. This usually takes under a minute — the page will update itself. Feel free to close it; we&rsquo;ll email your link.</>
+                <>Payment confirmed. This usually takes under a minute. The page will update itself. Feel free to close it; we&rsquo;ll email your link.</>
               )}
             </p>
           </>
@@ -148,7 +148,7 @@ function ResultInner() {
           {kitText ? (
             <>
               <div className={styles.identCard}>
-                <div className={styles.identTitle}>Your title — paste into Shop Manager</div>
+                <div className={styles.identTitle}>Your title, ready for Shop Manager</div>
                 <p style={{ margin: '6px 0 4px' }}>{kitText.suggestedTitle}</p>
                 <div className={styles.gridLabel}>{kitText.suggestedTitle.length} / 140 characters</div>
                 <button type="button" className={styles.againBtn} onClick={() => copyBlock('title', kitText.suggestedTitle)}>
@@ -177,7 +177,7 @@ function ResultInner() {
             <div className={styles.identCard}>
               <div className={styles.identTitle}>Title, tags &amp; alt text</div>
               <p style={{ margin: '6px 0 4px' }}>
-                These aren&rsquo;t available for this order — your images and template are all here,
+                These aren&rsquo;t available for this order. Your images and template are all here,
                 and we&rsquo;re on the hook for the text. Reply to your email and we&rsquo;ll sort it.
               </p>
             </div>
@@ -190,7 +190,7 @@ function ResultInner() {
           <hr className={styles.againRule} />
           <p className={styles.againLead}>Got another listing?</p>
           <p className={styles.againSub}>
-            Check it free. Same kit, same $3 — takes about a minute.
+            Check it free. Same kit, same $3, about a minute.
           </p>
           <Link href="/etsy-listing-kit" className={styles.againBtn}
                 onClick={() => track('restart_clicked', { from: 'result_cta' })}>
