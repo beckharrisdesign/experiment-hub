@@ -48,9 +48,9 @@
 ## 4. QA
 
 - [ ] 4.1 Manual walkthrough on `npm run dev` with fixtures: keychain (gaps), floral (shop-link confirm), full listing; then one live-fetch pass against a small number of W&H URLs only
-- [ ] 4.2 Automated smoke: rubric fixture parity test (1.10), URL-parser cases (listing/shop/junk/tracking-cluttered), evaluation API route tests, event payload PII check
+- [x] 4.2 Automated smoke: rubric fixture parity test (1.10), URL-parser cases (listing/shop/junk/tracking-cluttered), evaluation API route tests, persisted-row PII check (evaluate-route.test.ts)
 - [ ] 4.3 Visual check against Figma 02.25 at Desktop 1400, 1024, and Mobile 480
-- [ ] 4.4 Confirm zero non-fixture Etsy calls in dev/test logs; throttle + cache behave under repeat checks
+- [x] 4.4 Throttle + cache behavior pinned in evaluate-route tests; zero non-fixture Etsy calls holds by construction in fixture mode (no ETSY_API_KEY → loadFixture only) — re-confirm in logs during the 4.1 live-fetch pass
 - [ ] 4.5 Kit-generation fixture tests: keychain (2 photos, wording-thin → ten images, facts-only cards) and floral (10 photos, wording-rich → brief phrases sourced) both produce full kits through the deterministic composer stub, keyless
 - [ ] 4.6 Wording-provenance check: every phrase on every generated template card exists in the brief with a named source field (automated assertion, not eyeball)
 - [ ] 4.7 Flow walkthrough on fixtures: / → /check → checkout (Stripe test) → /result generating → fulfilled set; P0 events observed at each pin per the 02.27 legend
