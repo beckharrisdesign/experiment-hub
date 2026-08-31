@@ -116,6 +116,16 @@ CHROMATIC_PROJECT_TOKEN|op://BHD Labs/Chromatic/project token|gh-repo:beckharris
 VERCEL_TOKEN|op://BHD Labs/Vercel/token|gh
 VERCEL_ORG_ID|op://BHD Labs/Vercel/org id|gh
 VERCEL_PROJECT_ID|op://BHD Labs/Vercel/project id|gh
+# Google Ads (google-ads-automation): consumed ONLY locally via op run for
+# now — no Vercel/Actions surface reads them, so no live rows yet. When a
+# deployed consumer appears, uncomment with the right targets. Registry:
+# .env.example; setup: docs/GOOGLE_ADS_SETUP.md.
+# GOOGLE_ADS_DEVELOPER_TOKEN|op://BHD Labs/Google Ads API/developer token|<target when deployed>
+# GOOGLE_ADS_CLIENT_ID|op://BHD Labs/Google Ads API/client id|<target when deployed>
+# GOOGLE_ADS_CLIENT_SECRET|op://BHD Labs/Google Ads API/client secret|<target when deployed>
+# GOOGLE_ADS_REFRESH_TOKEN|op://BHD Labs/Google Ads API/refresh token|<target when deployed>
+# GOOGLE_ADS_LOGIN_CUSTOMER_ID|op://BHD Labs/Google Ads API/login customer id|<target when deployed>
+# GOOGLE_ADS_CUSTOMER_ID|op://BHD Labs/Google Ads API/customer id|<target when deployed>
 EOF
 )
 
