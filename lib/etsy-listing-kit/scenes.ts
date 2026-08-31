@@ -59,6 +59,57 @@ export interface KitScenes {
 
 export const KIT_IMAGE_COUNT = 10;
 
+export interface ScenePlanEntry {
+  id: string;
+  label: string;
+  /** What the image shows, for alt-text composition (design note 2026-08-31:
+   * alt text annotates the DELIVERED kit images, not the source photos). */
+  altContext: string;
+  /** Render hints (internal): which photo/crop this entry uses, when photo-derived. */
+  photoIndex?: number;
+  recipeIndex?: number;
+}
+
+/**
+ * The ladder's plan, computable without rendering: which ten images a listing
+ * gets, in order. generateKitScenes() follows this exact plan, so alt text
+ * composed against it always matches the delivered set.
+ */
+export function planKitScenes(input: {
+  photoCount: number;
+  photoAlts?: (string | null)[];
+  hasFacts: boolean;
+  shopName?: string;
+}): ScenePlanEntry[] {
+  const alt = (i: number) => {
+    const a = input.photoAlts?.[i]?.trim();
+    return a ? ` Source photo shows: ${a}.` : '';
+  };
+  const plan: ScenePlanEntry[] = [];
+  for (let i = 0; i < input.photoCount && plan.length < KIT_IMAGE_COUNT - 2; i++) {
+    plan.push({ id: `recut-${i + 1}`, label: `Photo ${i + 1}, refreshed`, altContext: `Refreshed re-edit of the listing's photo ${i + 1}.${alt(i)}`, photoIndex: i });
+  }
+  for (let i = 0; i < input.photoCount && plan.length < KIT_IMAGE_COUNT - 2; i++) {
+    plan.push({ id: `detail-${i + 1}`, label: `Photo ${i + 1}, ${CROP_RECIPES[0].name}`, altContext: `Close detail crop of the listing's photo ${i + 1}.${alt(i)}`, photoIndex: i, recipeIndex: 0 });
+  }
+  const cards: ScenePlanEntry[] = [
+    { id: 'title-card', label: 'Title card', altContext: 'Text card showing the listing title on a brand-color background with an arch-framed product photo.' },
+    ...(input.hasFacts ? [{ id: 'details-card', label: 'Details card', altContext: 'Text card listing the price, made-to-order note, shipping time, and stock.' }] : []),
+    ...(input.photoCount >= 2 ? [{ id: 'collage', label: 'Photo collage', altContext: 'Collage of two listing photos side by side under the listing title.' }] : []),
+    ...(input.shopName ? [{ id: 'closing-card', label: 'Shop card', altContext: `Sign-off card with an arch-framed product photo and the shop name ${input.shopName}.` }] : []),
+  ];
+  plan.push(...cards.slice(0, KIT_IMAGE_COUNT - plan.length));
+  let recipe = 1, photo = 0;
+  while (plan.length < KIT_IMAGE_COUNT) {
+    const r = CROP_RECIPES[recipe % CROP_RECIPES.length];
+    const n = (photo % input.photoCount) + 1;
+    plan.push({ id: `treatment-${plan.length + 1}`, label: `Photo ${n}, ${r.name}`, altContext: `Alternate crop of the listing's photo ${n}.${alt(n - 1)}`, photoIndex: n - 1, recipeIndex: recipe % CROP_RECIPES.length });
+    photo += 1;
+    if (photo % input.photoCount === 0) recipe += 1;
+  }
+  return plan.slice(0, KIT_IMAGE_COUNT);
+}
+
 const svg = (s: string) => Buffer.from(s);
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
@@ -248,43 +299,27 @@ async function templateCard(input: SceneInput): Promise<KitImage> {
 export async function generateKitScenes(input: SceneInput): Promise<KitScenes> {
   if (input.photos.length === 0) throw new Error('scene ladder needs at least one listing photo');
   const headline = input.headline?.trim() || input.brief.what.text;
+  const plan = planKitScenes({
+    photoCount: input.photos.length,
+    hasFacts: input.brief.facts.length > 0,
+    shopName: input.shopName,
+  });
+
   const images: KitImage[] = [];
-
-  // Rule 1 — every photo re-cut, then a detail crop per photo (sharpest first)
-  for (let i = 0; i < input.photos.length && images.length < KIT_IMAGE_COUNT - 2; i++) {
-    images.push({ id: `recut-${i + 1}`, label: `Photo ${i + 1}, refreshed`, buffer: await recut(input.photos[i]), copy: [] });
-  }
-  for (let i = 0; i < input.photos.length && images.length < KIT_IMAGE_COUNT - 2; i++) {
-    images.push({
-      id: `detail-${i + 1}`,
-      label: `Photo ${i + 1}, ${CROP_RECIPES[0].name}`,
-      buffer: await recut(input.photos[i], CROP_RECIPES[0].region),
-      copy: [],
-    });
-  }
-
-  // Rule 2 — data cards, gated on their fields
-  const cards = [
-    await titleCard(input, headline),
-    await detailsCard(input),
-    await collageCard(input),
-    await closingCard(input),
-  ].filter((c): c is KitImage => c !== null);
-  images.push(...cards.slice(0, KIT_IMAGE_COUNT - images.length));
-
-  // Rule 3 — backfill with further photo treatments until ten
-  let recipe = 1, photo = 0;
-  while (images.length < KIT_IMAGE_COUNT) {
-    const r = CROP_RECIPES[recipe % CROP_RECIPES.length];
-    images.push({
-      id: `treatment-${images.length + 1}`,
-      label: `Photo ${(photo % input.photos.length) + 1}, ${r.name}`,
-      buffer: await recut(input.photos[photo % input.photos.length], r.region),
-      copy: [],
-    });
-    photo += 1;
-    if (photo % input.photos.length === 0) recipe += 1;
+  for (const step of plan) {
+    if (step.photoIndex !== undefined) {
+      const region = step.recipeIndex !== undefined ? CROP_RECIPES[step.recipeIndex].region : undefined;
+      images.push({ id: step.id, label: step.label, buffer: await recut(input.photos[step.photoIndex], region), copy: [] });
+      continue;
+    }
+    const card =
+      step.id === 'title-card' ? await titleCard(input, headline)
+      : step.id === 'details-card' ? await detailsCard(input)
+      : step.id === 'collage' ? await collageCard(input)
+      : await closingCard(input);
+    if (!card) throw new Error(`scene plan/render drift: ${step.id} planned but not renderable`);
+    images.push(card);
   }
 
-  return { images: images.slice(0, KIT_IMAGE_COUNT), template: await templateCard(input) };
+  return { images, template: await templateCard(input) };
 }

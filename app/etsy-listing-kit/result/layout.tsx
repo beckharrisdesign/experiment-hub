@@ -9,7 +9,7 @@ import type { Metadata } from "next";
  * images — it must never end up in a search index.
  */
 export const metadata: Metadata = {
-  title: "Your listing images — Etsy Listing Kit",
+  title: "Your listing images · Etsy Listing Kit",
   description: "Download your six Etsy-ready listing images.",
   robots: { index: false, follow: false },
 };
