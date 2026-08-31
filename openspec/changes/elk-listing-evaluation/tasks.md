@@ -27,8 +27,8 @@
 ## 3. Implementation
 
 - [x] 3.1 Evaluation surface per Figma 02.25 lineage: 1024 content column, current-state card (tinted verdict panels, truthful "N of 10", "% in use", FIELDS grid, explainer), report cards in fixed order, RECOMMENDATION eyebrows, "What's in the kit" boxes, kit offer with COMING SOON tease + centered CTA — verified live on dev against the keychain fixture
-- [ ] 3.2 Card variants (PARTIAL: open-slots vs improve-existing switch + empty-tags card + full-state heading/kit reframe shipped; REMAINING: the fully-built state's test/refresh recommendation cards, and resolution chips on the improve-existing card UI)
-- [ ] 3.3 Character-block title evidence + numbered photo slots SHIPPED; REMAINING: per-photo quality/resolution chips on the improve card
+- [x] 3.2 Card variants (open-slots vs improve-existing switch, empty-tags card, full-state heading/kit reframe, the fully-built state's test/refresh recommendation cards, and resolution chips on the improve-existing card UI)
+- [x] 3.3 Character-block title evidence + numbered photo slots + per-photo resolution chips on the improve card
 - [ ] 3.4 Flow per approved Figma 02.27 (URL map panel is the routing reference; supersedes the old "fix flow re-cut" framing — the evaluation exits into purchase, not upload). Shipped already: checking spinner, shop-link confirm, unusable-URL error. Remaining, in order:
   - [x] 3.4a `/check?listing=<id>` route — the hero form lands there; canonicalizes pasted URLs; hosts confirm/error states; serves the eval cache within TTL
   - [x] 3.4b Checkout seeded from the scrape — `POST /api/checkout { listing_id }`, checkout view renders the listing identity + deliverables + price; no upload anywhere on the path

@@ -129,7 +129,10 @@ export interface PhotoEvidence {
 }
 
 export interface Recommendation {
-  key: 'images_open' | 'images_improve' | 'title' | 'alt_text' | 'tags' | 'video';
+  key:
+    | 'images_open' | 'images_improve' | 'title' | 'alt_text' | 'tags' | 'video'
+    // Fully-built state (design decision 14): testing/refresh, never invented gaps.
+    | 'refresh_photos' | 'refresh_title' | 'refresh_tags';
   headline: string;
   chip: { label: string; tone: 'accent' | 'muted' };
   /** Card-specific evidence payload; the UI switches on `key`. */
@@ -310,6 +313,50 @@ export interface EvaluationResult {
 }
 
 /**
+ * Fully-populated listings get opportunities, not invented gaps (design
+ * decision 14, Figma 02.13): a B-set of photos to test, a title variation to
+ * A/B, and seasonal rotation through the 13 tags. Facts stay true; the kit
+ * reframes as "a fresh set to test against your current one".
+ */
+function buildRefreshRecommendations(raw: RawApiListing, textOk: boolean): Recommendation[] {
+  const photos = photoEvidence(raw);
+  const titleLen = (raw.title ?? '').length;
+  return [
+    {
+      key: 'refresh_photos',
+      headline: 'Test a fresh set against your current photos.',
+      chip: { label: 'KEEP IT FRESH', tone: 'accent' },
+      evidence: { photos, slotCount: SCORECARD_DEFAULTS.photos },
+      caption: `All ${photos.length} slots are earning their keep. A second set lets you test which photos actually sell harder.`,
+      citation: withChecked('photos'),
+      kit: { text: 'A fresh ten-image set to test against your current one, plus the template to make more.' },
+    },
+    {
+      key: 'refresh_title',
+      headline: 'Try a title variation against this one.',
+      chip: { label: 'WORTH A TEST', tone: 'accent' },
+      evidence: { title: raw.title ?? '', headroom: 0 },
+      caption: `${titleLen} of 140 characters working. A variation tells you which framing buyers click.`,
+      citation: withChecked('title_length'),
+      kit: textOk
+        ? { text: 'A title variation to test, written from your listing.' }
+        : { text: 'A title variation to test, written from your listing. Coming soon.', comingSoon: true },
+    },
+    {
+      key: 'refresh_tags',
+      headline: 'Rotate seasonal keywords through your 13 tags.',
+      chip: { label: 'SEASONAL', tone: 'accent' },
+      evidence: { tags: raw.tags ?? [] },
+      caption: 'All 13 in use. A seasonal rotation keeps them matched to what buyers are searching for right now.',
+      citation: withChecked('tags'),
+      kit: textOk
+        ? { text: 'Thirteen tags re-drawn for the season, from your listing and Etsy\u2019s guidance.' }
+        : { text: 'Thirteen tags re-drawn for the season, from your listing and Etsy\u2019s guidance. Coming soon.', comingSoon: true },
+    },
+  ];
+}
+
+/**
  * `opts.textDeliverables`: whether the composer is configured (route passes
  * Boolean(ANTHROPIC_API_KEY)). Kit copy for title/tags/alt flips between
  * shipped and coming-soon on it — the report never promises what fulfillment
@@ -318,9 +365,14 @@ export interface EvaluationResult {
 export function evaluateListing(raw: RawApiListing, opts: { textDeliverables?: boolean } = {}): EvaluationResult {
   const scored = scoreListing(raw);
   const requiredFields = requiredFieldChecklist(raw);
-  const recommendations = buildRecommendations(raw, scored, opts.textDeliverables ?? false);
+  let recommendations = buildRecommendations(raw, scored, opts.textDeliverables ?? false);
   const state: 'gaps' | 'full' =
     recommendations.filter((r) => r.key !== 'video').length === 0 ? 'full' : 'gaps';
+  if (state === 'full') {
+    // Video (if recommended) stays last — fixed order survives the reframe.
+    const video = recommendations.filter((r) => r.key === 'video');
+    recommendations = [...buildRefreshRecommendations(raw, opts.textDeliverables ?? false), ...video];
+  }
 
   return {
     listingId: raw.listing_id,
