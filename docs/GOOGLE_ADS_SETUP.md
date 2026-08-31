@@ -21,7 +21,7 @@ literals); `.env.example` is the registry of record. See `docs/SECRETS_RUNBOOK.m
 
 1. Create a free **Google Ads Manager (MCC) account** at <https://ads.google.com/home/tools/manager-accounts/> → "Create a manager account" (use the same Google login that owns 671-160-6591; pick "manage my own accounts"). There is no path to this from inside a regular Ads account's Tools menu — it is a standalone signup page.
 2. From the MCC, **link the existing account 671-160-6591**: left-nav **Accounts** icon → **Sub-account settings** → blue **+** → **Link existing account** → enter the customer ID → Send request. Then **accept the invitation from inside the regular Ads account** (notification/email) — the link is pending until accepted.
-3. MCC → **Admin → API Center**. There is no token until you ask for one: the first visit shows the **API Access form** (API contact email, company name/website, terms). Submitting it generates the **developer token** immediately at **Explorer Access** (2026 name for the test-accounts-only tier) → reveal with **View token** → vault field `developer token`. Live accounts need step 4. *(Done 2026-08-31: token exists; Developer Details filed as "Venture Validation and Development".)*
+3. MCC → **Admin → API Center**. There is no token until you ask for one: the first visit shows the **API Access form** (API contact email, company name/website, terms). Submitting it generates the **developer token** immediately at **Explorer Access** (2026 name for the test-accounts-only tier) → reveal with **View token** → vault item "Google Ads API", built-in `credential` field (API-Credential template, same pattern as the OpenAI item). Live accounts need step 4. *(Done 2026-08-31: token in the vault; Basic Access application submitted the same day; Developer Details filed as "Venture Validation and Development".)*
 4. In the API Center, expand the **Access level** row and click **"Apply for Basic Access"** (external form). Describe the use case plainly: internal tooling for managing our own small campaigns — create/pause/budget/report; no third-party accounts, low request volume. Approval typically takes days; nothing else in this runbook waits on it.
 5. While that processes, create a **test manager account** and a **test client account** under it (API Center links to the flow; test accounts are marked with a red "Test account" banner). Record the test client's ID → vault field `test customer id`, and the **test MCC's** ID → used as `login customer id` while developing against test (see §4).
 
@@ -48,7 +48,7 @@ Prerequisite: `.env.local` already carries the `GOOGLE_ADS_CLIENT_ID` /
 ## 4. Wire `.env.local`
 
 ```
-GOOGLE_ADS_DEVELOPER_TOKEN="op://BHD Labs/Google Ads API/developer token"
+GOOGLE_ADS_DEVELOPER_TOKEN="op://BHD Labs/Google Ads API/credential"
 GOOGLE_ADS_CLIENT_ID="op://BHD Labs/Google Ads API/client id"
 GOOGLE_ADS_CLIENT_SECRET="op://BHD Labs/Google Ads API/client secret"
 GOOGLE_ADS_REFRESH_TOKEN="op://BHD Labs/Google Ads API/refresh token"
