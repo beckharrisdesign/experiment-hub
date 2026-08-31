@@ -8,7 +8,9 @@ import { refundFailedOrder } from '../../../../lib/etsy-listing-kit/refund';
 import { decideWebhookAction } from '../../../../lib/etsy-listing-kit/webhook-logic';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+// Listing-kit generation measured ~45s for a two-photo listing (images +
+// grounded text + CDN fetches); a 10-photo listing needs real headroom.
+export const maxDuration = 300;
 
 /**
  * POST /etsy-listing-kit/api/webhook — Stripe payment source of truth.
