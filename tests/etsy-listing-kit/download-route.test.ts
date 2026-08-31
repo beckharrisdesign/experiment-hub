@@ -42,7 +42,7 @@ describe('GET /etsy-listing-kit/api/download', () => {
     expect(res.headers.get('content-disposition')).toContain('.zip');
     const buf = Buffer.from(await res.arrayBuffer());
     expect(buf.readUInt32LE(0)).toBe(0x04034b50); // local file header — valid zip
-    const imageCalls = downloadOutput.mock.calls.filter(([p]: [string]) => !p.endsWith('manifest.json'));
+    const imageCalls = downloadOutput.mock.calls.filter((call) => !String(call[0]).endsWith('manifest.json'));
     expect(imageCalls).toHaveLength(6);
   });
 
@@ -65,7 +65,7 @@ describe('GET /etsy-listing-kit/api/download', () => {
     const buf = Buffer.from(await res.arrayBuffer());
     expect(buf.readUInt32LE(0)).toBe(0x04034b50);
     // 10 images + template fetched; the text file is built, not downloaded
-    const imageCalls = downloadOutput.mock.calls.filter(([p]: [string]) => !p.endsWith('manifest.json'));
+    const imageCalls = downloadOutput.mock.calls.filter((call) => !String(call[0]).endsWith('manifest.json'));
     expect(imageCalls).toHaveLength(11);
     expect(buf.toString('latin1')).toContain('title-tags-alt-text.txt');
     expect(buf.toString('latin1')).toContain('SUGGESTED TITLE');
