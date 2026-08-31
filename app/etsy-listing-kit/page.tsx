@@ -170,7 +170,7 @@ export default function EtsyListingKitLanding() {
 
       {canceled && (
         <div className={styles.banner} role="status">
-          No charge — your work&rsquo;s still here. Re-add your design below whenever you&rsquo;re ready.
+          No charge, and your work&rsquo;s still here. Re-add your design below whenever you&rsquo;re ready.
         </div>
       )}
 
@@ -178,7 +178,7 @@ export default function EtsyListingKitLanding() {
         <span className={styles.eyebrow}>FOR ETSY SELLERS</span>
         <h1 className={styles.h1}>Is your listing actually finished?</h1>
         <p className={styles.sub}>
-          Paste your listing&rsquo;s link and get an honest read against Etsy&rsquo;s own standard — free, in seconds.
+          Paste your listing&rsquo;s link and get an honest read against Etsy&rsquo;s own standard. Free, in seconds.
         </p>
       </section>
 
@@ -205,7 +205,7 @@ export default function EtsyListingKitLanding() {
             <div className={styles.thumbRow}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={preview} alt="Your uploaded design" className={styles.thumb} />
-              <span className={styles.fileName}>{file?.name} — looks good. Next: preview your pack.</span>
+              <span className={styles.fileName}>{file?.name} looks good. Next: preview your pack.</span>
             </div>
           ) : (
             <>
@@ -245,7 +245,7 @@ export default function EtsyListingKitLanding() {
       {previews && (
         <section className={styles.previewSection} ref={previewsRef}>
           <div>
-            <h2 className={styles.previewHead} ref={previewHeadRef} tabIndex={-1}>Here&rsquo;s your set — take a look</h2>
+            <h2 className={styles.previewHead} ref={previewHeadRef} tabIndex={-1}>Here&rsquo;s your set. Take a look</h2>
             <p className={styles.previewSub}>
               These are just previews (that&rsquo;s the watermark). Pay once and the clean, full-size six are yours to keep.
             </p>
@@ -282,7 +282,7 @@ export default function EtsyListingKitLanding() {
 
       <div className={styles.trust}>
         <span>✓ See a full preview before you pay</span>
-        <span>✓ {priceLabel} one-time — no subscription</span>
+        <span>✓ {priceLabel} one-time, no subscription</span>
         <span>✓ Instant download + email</span>
       </div>
     </main>

@@ -329,7 +329,7 @@ function KitOffer({ state, onBuyKit }: { state: 'gaps' | 'full'; onBuyKit: (plac
         </button>
       </div>
       <span className={styles.panelFoot}>
-        Everything is yours to paste into Shop Manager — we never touch your shop.
+        Everything is yours to paste into Shop Manager. We never touch your shop.
       </span>
     </section>
   );
@@ -445,7 +445,7 @@ export default function EvaluationSection({ mode, initialUrl }: { mode: 'landing
     const parsed = parseEtsyUrl(url);
     if (parsed.kind !== 'listing') {
       setBuyErrorAt('hero');
-      setBuyError('Paste your listing’s link first — the kit is built from it.');
+      setBuyError('Paste your listing’s link first. The kit is built from it.');
       return;
     }
     void buyKit(parsed.listingId, 'hero_skip');
@@ -504,7 +504,7 @@ export default function EvaluationSection({ mode, initialUrl }: { mode: 'landing
 
       {phase.kind === 'suggestion' && (
         <div className={styles.evalColumn}>
-          <p className={styles.evCaption}>That&rsquo;s a shop link — here&rsquo;s the listing that shop features:</p>
+          <p className={styles.evCaption}>That&rsquo;s a shop link. Here&rsquo;s the listing that shop features:</p>
           <div className={styles.suggestCard}>
             {phase.suggestion.imageUrl ? (
               <img src={phase.suggestion.imageUrl} alt="" className={styles.altThumb} />
@@ -531,7 +531,7 @@ export default function EvaluationSection({ mode, initialUrl }: { mode: 'landing
         <div className={styles.evalColumn} ref={resultRef}>
           <CurrentStateCard evaluation={evaluation} />
           {evaluation.state === 'full' && (
-            <h2 className={styles.oppsHead}>Nothing to fill — now make it work harder</h2>
+            <h2 className={styles.oppsHead}>Nothing to fill. Now make it work harder</h2>
           )}
           {evaluation.recommendations.map((rec, i) => (
             <ReportCard

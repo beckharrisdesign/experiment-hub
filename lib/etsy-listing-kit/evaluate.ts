@@ -34,13 +34,13 @@ export function parseEtsyUrl(input: string): ParsedEtsyUrl {
   try {
     url = new URL(trimmed.includes('://') ? trimmed : `https://${trimmed}`);
   } catch {
-    return { kind: 'invalid', reason: 'That doesn’t look like a link — paste the listing’s full URL.' };
+    return { kind: 'invalid', reason: 'That doesn’t look like a link. Paste the listing’s full URL.' };
   }
 
   if (!/(^|\.)etsy\.com$/i.test(url.hostname)) {
     return {
       kind: 'invalid',
-      reason: 'That’s not an Etsy link — paste a listing’s URL from your shop (it has /listing/ in it). Nothing was scored.',
+      reason: 'That’s not an Etsy link. Paste a listing’s URL from your shop (it has /listing/ in it). Nothing was scored.',
     };
   }
 
@@ -54,7 +54,7 @@ export function parseEtsyUrl(input: string): ParsedEtsyUrl {
 
   return {
     kind: 'invalid',
-    reason: 'That’s an Etsy link, but not a listing — paste one listing’s URL (it has /listing/ in it). Nothing was scored.',
+    reason: 'That’s an Etsy link, but not a listing. Paste one listing’s URL (it has /listing/ in it). Nothing was scored.',
   };
 }
 
@@ -178,7 +178,7 @@ export function buildRecommendations(raw: RawApiListing, scored: ScoredListing, 
       headline: 'Take advantage of your open image slots.',
       chip: { label: 'BIGGEST LIFT', tone: 'accent' },
       evidence: { photos, slotCount },
-      caption: `These are the ${photos.length === 1 ? 'photo buyers see' : `${photos.length} photos buyers see`} today — with ${openSlots} more ${openSlots === 1 ? 'chance' : 'chances'} to show this piece off.`,
+      caption: `These are the ${photos.length === 1 ? 'photo buyers see' : `${photos.length} photos buyers see`} today, with ${openSlots} more ${openSlots === 1 ? 'chance' : 'chances'} to show this piece off.`,
       citation: withChecked('photos'),
       kit: {
         // Founder copy, Figma 02.24 — shipped by the scene ladder (3.5c/e).
@@ -194,7 +194,7 @@ export function buildRecommendations(raw: RawApiListing, scored: ScoredListing, 
       caption: `All ${photos.length} slots are in use, but ${weakPhotos} ${weakPhotos === 1 ? 'photo measures' : 'photos measure'} under Etsy’s recommended ${RECOMMENDED_PX}px. Full isn’t the same as working.`,
       citation: withChecked('photo_quality'),
       kit: {
-        text: 'Ten refreshed images at 2000px — your best shots re-edited, the weak ones replaced — plus a template for you to make more.',
+        text: 'Ten refreshed images at 2000px, your best shots re-edited and the weak ones replaced, plus a template for you to make more.',
       },
     });
   }
@@ -227,7 +227,7 @@ export function buildRecommendations(raw: RawApiListing, scored: ScoredListing, 
       caption: 'A line or two of alt text opens these photos to visually-impaired shoppers and image search.',
       citation: withChecked('alt_text'),
       kit: textOk
-        ? { text: 'Alt text written for every photo — the ones you have and the ten it adds.' }
+        ? { text: 'Alt text written for every image in the kit, ready to paste when you upload them.' }
         : { text: 'Alt text written for every photo. Coming soon.', comingSoon: true },
     });
   }
@@ -257,7 +257,7 @@ export function buildRecommendations(raw: RawApiListing, scored: ScoredListing, 
       headline: 'A video slot is waiting when you’re ready.',
       chip: { label: 'COMING SOON', tone: 'muted' },
       evidence: { videoCount },
-      caption: 'Your video slot is open — Etsy counts video among its four core SEO elements. The kit doesn’t cut videos quite yet; we’ll tee this one up soon.',
+      caption: 'Your video slot is open, and Etsy counts video among its four core SEO elements. The kit doesn’t cut videos quite yet; we’ll tee this one up soon.',
       citation: withChecked('video'),
       kit: { text: 'A listing video, cut from your photos. Coming soon.', comingSoon: true },
     });

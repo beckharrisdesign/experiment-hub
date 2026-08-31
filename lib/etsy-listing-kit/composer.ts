@@ -99,23 +99,22 @@ export class OpenAIComposer implements Composer {
   constructor(private apiKey: string) {}
 
   async compose(input: ComposeInput): Promise<KitText> {
+    return composeWithTitleFloor((correction) => this.request(input, correction), input);
+  }
+
+  private async request(input: ComposeInput, correction?: string): Promise<KitText> {
+    const messages = [
+      { role: 'system', content: SYSTEM },
+      { role: 'user', content: userContent(input) },
+      ...(correction ? [{ role: 'user', content: correction }] : []),
+    ];
     const response = await fetch(OPENAI_URL, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
         authorization: `Bearer ${this.apiKey}`,
       },
-      body: JSON.stringify({
-        model: OPENAI_MODEL,
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: SYSTEM },
-          {
-            role: 'user',
-            content: `LISTING BRIEF:\n${JSON.stringify(input.brief, null, 2)}\n\nPHOTOS:\n${JSON.stringify(input.photos)}`,
-          },
-        ],
-      }),
+      body: JSON.stringify({ model: OPENAI_MODEL, response_format: { type: 'json_object' }, messages }),
     });
     if (!response.ok) throw new Error(`composer: OpenAI API ${response.status}`);
     const body = (await response.json()) as { choices?: { message?: { content?: string } }[] };
@@ -136,12 +135,44 @@ export class OpenAIComposer implements Composer {
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-haiku-4-5-20251001';
 
-const SYSTEM = `You write Etsy listing text. You are given a LISTING BRIEF extracted verbatim from a real listing. Ground every word in it: never claim a material, size, quality, or feature the brief does not state. Respond with ONLY a JSON object: {"suggestedTitle": string (<=140 chars, keyword-rich, natural), "tags": string[] (exactly up to 13, each <=20 chars, lowercase), "altTexts": [{"rank": number, "alt": string}] (one per photo, describing what the photo context says is pictured)}.`;
+const SYSTEM = `You write Etsy listing text. You are given a LISTING BRIEF extracted verbatim from a real listing, and a list of KIT IMAGES being delivered. Ground every word in the brief: never claim a material, size, quality, or feature the brief does not state. Never use em dashes anywhere. Respond with ONLY a JSON object: {"suggestedTitle": string, "tags": string[] (up to 13, each <=20 chars, lowercase), "altTexts": [{"rank": number, "alt": string}] (one per KIT IMAGE, in order, describing what that image's context says it shows)}. The suggestedTitle MUST be 120 to 140 characters, substantially fuller than the listing's current title: front-load what the item is, then buyer-relevant phrases from the brief (occasion, recipient, format), comma-separated, natural to read.`;
+
+export const TITLE_TARGET_MIN = 120;
+
+/** One corrective retry when the model under-fills the title, then a hard
+ * floor: a "suggestion" shorter than the current title is a downgrade and
+ * ships as unavailable instead (founder note, 2026-08-31). */
+export async function composeWithTitleFloor(
+  requestOnce: (correction?: string) => Promise<KitText>,
+  input: ComposeInput,
+): Promise<KitText> {
+  let text = await requestOnce();
+  if (text.suggestedTitle.length < TITLE_TARGET_MIN) {
+    text = await requestOnce(
+      `Your suggestedTitle was ${text.suggestedTitle.length} characters. It must be ${TITLE_TARGET_MIN} to ${TITLE_MAX} characters. Expand it using only phrases grounded in the brief. Return the full JSON object again.`,
+    );
+  }
+  if (text.suggestedTitle.length <= input.brief.what.text.length) {
+    throw new Error(
+      `composer: suggested title (${text.suggestedTitle.length} chars) is no fuller than the current title (${input.brief.what.text.length} chars)`,
+    );
+  }
+  return text;
+}
+
+function userContent(input: ComposeInput): string {
+  return `LISTING BRIEF:\n${JSON.stringify(input.brief, null, 2)}\n\nCURRENT TITLE LENGTH: ${input.brief.what.text.length} characters\n\nKIT IMAGES (write one altText per entry, rank = position):\n${JSON.stringify(input.photos)}`;
+}
 
 export class HaikuComposer implements Composer {
   constructor(private apiKey: string) {}
 
   async compose(input: ComposeInput): Promise<KitText> {
+    return composeWithTitleFloor((correction) => this.request(input, correction), input);
+  }
+
+  private async request(input: ComposeInput, correction?: string): Promise<KitText> {
+    const content = correction ? `${userContent(input)}\n\n${correction}` : userContent(input);
     const response = await fetch(ANTHROPIC_URL, {
       method: 'POST',
       headers: {
@@ -153,10 +184,7 @@ export class HaikuComposer implements Composer {
         model: MODEL,
         max_tokens: 1024,
         system: SYSTEM,
-        messages: [{
-          role: 'user',
-          content: `LISTING BRIEF:\n${JSON.stringify(input.brief, null, 2)}\n\nPHOTOS:\n${JSON.stringify(input.photos)}`,
-        }],
+        messages: [{ role: 'user', content }],
       }),
     });
     if (!response.ok) throw new Error(`composer: Anthropic API ${response.status}`);

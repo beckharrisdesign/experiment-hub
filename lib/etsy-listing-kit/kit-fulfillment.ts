@@ -10,7 +10,7 @@
 
 import { buildBrief, type ListingBrief } from './brief';
 import { samplePalette } from './palette';
-import { generateKitScenes, type KitImage } from './scenes';
+import { generateKitScenes, planKitScenes, type KitImage } from './scenes';
 import type { Composer, KitText } from './composer';
 import type { FetchedListing } from './listing-fetch';
 
@@ -44,14 +44,19 @@ export async function generateListingKit(
 
   let kitText: KitText | null = null;
   if (composer) {
-    const photoContext = (listing.images ?? []).map((img) => ({
-      rank: img.rank,
-      context: img.alt_text?.trim() ?? '',
-    }));
+    // Alt text annotates the DELIVERED kit images, not the source photos
+    // (founder note, 2026-08-31) — compose against the ladder's plan.
+    const plan = planKitScenes({
+      photoCount: photos.length,
+      photoAlts: (listing.images ?? []).map((img) => img.alt_text ?? null),
+      hasFacts: brief.facts.length > 0,
+      shopName,
+    });
+    const kitImageContext = plan.map((step, i) => ({ rank: i + 1, context: step.altContext }));
     // Composer failure degrades to unavailable rather than sinking the order —
     // the buyer still gets images + template, and the miss is diagnosable.
     try {
-      kitText = await composer.compose({ brief, photos: photoContext });
+      kitText = await composer.compose({ brief, photos: kitImageContext });
     } catch (err) {
       console.error(`[elk kit] composer failed for listing ${brief.listingId}:`, err);
       kitText = null;

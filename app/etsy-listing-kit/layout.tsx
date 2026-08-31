@@ -15,11 +15,11 @@ import { ELK_GOOGLE_ADS_ID } from "@/lib/analytics/ga";
  * it lives here. Surface tagging for analytics is in lib/analytics/ga.ts.
  */
 export const metadata: Metadata = {
-  title: "Etsy Listing Kit — check your listing free, get it Etsy-ready",
+  title: "Etsy Listing Kit: check your listing free, get it Etsy-ready",
   description:
-    "Paste your Etsy listing's link for a free, honest read against Etsy's own standard — then fix the gaps with the $3 listing kit. No subscription.",
+    "Paste your Etsy listing's link for a free, honest read against Etsy's own standard, then fix the gaps with the $3 listing kit. No subscription.",
   openGraph: {
-    title: "Etsy Listing Kit — check your listing free, get it Etsy-ready",
+    title: "Etsy Listing Kit: check your listing free, get it Etsy-ready",
     description:
       "Is your listing actually finished? A free check against Etsy's own standard, and a $3 kit to fix the gaps.",
     type: "website",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Etsy Listing Kit — check your listing free, get it Etsy-ready",
+    title: "Etsy Listing Kit: check your listing free, get it Etsy-ready",
     description:
       "Is your listing actually finished? A free check against Etsy's own standard, and a $3 kit to fix the gaps.",
   },
