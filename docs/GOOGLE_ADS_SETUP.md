@@ -88,7 +88,7 @@ below — until then, everything defaults to the test account.
 
 1. Confirm the approval email / API Center status shows **Basic access**.
 2. Set vault `customer id` = 671-160-6591 and `login customer id` = the real MCC; add the `GOOGLE_ADS_CUSTOMER_ID` reference to `.env.local`.
-3. Re-run the walkthrough **read-only verbs first** (`listCampaigns`, `getPerformance`) before any mutate — per tasks.md §4.3.
+3. Re-run the walkthrough **read-only verbs first** (`listCampaigns`, `getPerformance`) before any mutate — per `openspec/changes/google-ads-automation/tasks.md` §4.3.
 
 ## Module contract (what these keys feed)
 
