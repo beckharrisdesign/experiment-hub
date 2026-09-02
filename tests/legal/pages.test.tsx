@@ -1,10 +1,14 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import PrivacyPolicyPage from "@/app/policy/page";
 import TermsPage from "@/app/terms/page";
 
+const { pathnameState } = vi.hoisted(() => ({
+  pathnameState: { current: "/" },
+}));
+
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/policy",
+  usePathname: () => pathnameState.current,
 }));
 
 // ---------------------------------------------------------------------------
@@ -12,6 +16,10 @@ vi.mock("next/navigation", () => ({
 // ---------------------------------------------------------------------------
 
 describe("Privacy policy page", () => {
+  beforeEach(() => {
+    pathnameState.current = "/policy";
+  });
+
   it("renders the title and a last-updated date", () => {
     render(<PrivacyPolicyPage />);
     expect(
@@ -45,6 +53,10 @@ describe("Privacy policy page", () => {
 // ---------------------------------------------------------------------------
 
 describe("Terms of service page", () => {
+  beforeEach(() => {
+    pathnameState.current = "/terms";
+  });
+
   it("renders the title and a last-updated date", () => {
     render(<TermsPage />);
     expect(
