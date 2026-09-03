@@ -73,9 +73,16 @@ styleguide — it exists in a database, it is required to be machine-enforced,
 and it can break a build. Principles are agnostic of the user and the
 discipline: the same principle constrains the token layer, the components,
 the Figma mirror, and the docs, instead of each discipline keeping its own
-paraphrase. And they're extensible — other users of the tool can add their
-own. *[gap — Katy: has anyone besides you authored a principle yet, or is
-extensibility still a promise?]*
+paraphrase. And the set isn't limited to rules I invented: I brought in
+Nielsen Norman's usability principles — all ten of Nielsen's heuristics sit
+in the principles manifest as external records with their provenance
+attached. The manifest is honest about what they are: they're not
+machine-checkable, "and pretending otherwise would be the failure mode this
+manifest exists to avoid" — so instead of faking a lint rule, they feed the
+discovery eval rubric, where judgment gets applied as judgment. Other users
+authoring their own principles is the design intent; so far the second
+author is Nielsen Norman. *[inference — the enforced/guiding split is the
+manifest's own framing; confirm it matches how you'd tell it]*
 
 The repo's history shows how early this hardened: by day two there were
 house rules and a token-level WCAG AA contrast gate; by day five, a
