@@ -8,7 +8,7 @@ description: >-
   beckharrisdesign.com. Use when the user wants a case study, portfolio
   write-up, or long-form story arguing the judgment behind a project.
   Trigger phrases: "write a case study", "portfolio piece", "case study
-  for", "write up the mvds/etsy/&lt;project&gt; effort".
+  for", "write up the mvds/etsy/<project> effort".
 ---
 
 # Case Study
@@ -58,9 +58,9 @@ and did it hold up."
 - Never address Katy inside the artifact; questions for her go in chat.
 - Never restate her drafting instructions in the doc.
 - Mark every inference as an inference until she confirms it.
-- Match the destination's render (`feedback_drafts_mirror_production`):
-  ask where it will be published before polishing layout, and draft in
-  that shape.
+- Drafts mirror production: never show a draft in a form that won't ship.
+  Ask where the piece will be published before polishing layout, and draft
+  in that shape — or state the delta up top.
 
 ## The loop
 
