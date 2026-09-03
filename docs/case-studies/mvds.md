@@ -9,35 +9,45 @@
 
 In twelve weeks I built and shipped a design system solo — ten components,
 a token layer, four releases on public npm, and a Figma library that mirrors
-the code automatically. The unusual part isn't the speed. It's the direction:
-in MVDS, code is the single source of truth and Figma is the mirror — a
-one-way, code → Figma sync. I'm a product designer. I built the arrow
-pointing the way most designers would call backwards, because I was designing
-for a team where most of the hands on the code aren't human. *[inference —
-"agent-first" framing is from the repo description; the personal reasoning
-behind it is a gap]*
+the code automatically. But MVDS isn't really a component library. It's an
+answer to a split every product team lives with: one library of dev, one
+library of Figma, one of features — three artifacts describing the same
+product, none guaranteed to match. MVDS unifies them at a different level:
+the principle. Principles live in a database, they are required to be
+machine-enforced, and they can break a build.
 
 ## The problem
 
-*[gap — Katy: what was breaking before MVDS? What did starting a new
-experiment look like in May 2026, and what specifically hurt?]*
+Every team maintains the same design system three times and calls it one.
 
-*[inference, from the README's own words: every new experiment started from
-scratch, and systems that start with strong principles lose them — drift is
-the enemy the whole repo is organized against. The word "drift" appears in
-the repo description, the enforcement docs, and the CI job names.]*
+On the design side, designers had to make Figmas from scratch each time, or
+maintain high-fidelity syncs by hand — and that hand translation had a
+subtler cost: they accidentally proposed too much, because redrawing the
+system meant re-deciding it. On the engineering side, engineers had to infer
+a lot from high-fidelity prototypes, even good ones, and the component
+library they maintained didn't necessarily match anything in Figma. Each
+discipline kept its own copy of the truth, and the copies drifted — silently,
+in both directions.
+
+I've worn both of those hats, plus the founder one. As a solo founder I
+can't afford to keep wearing all of them — I need to offload some of those
+hats into systems, so I can focus on my main job. MVDS is the evolution of
+that thinking: instead of one library for dev, one for Figma, one for
+features, define the principles as a unified thing and make everything else
+a projection of them.
 
 ## Constraints
 
-- **One person.** No design-system team, no governance meetings — anything
-  that required a human to remember a rule was already broken. *[inference]*
+- **One person, many hats.** No design-system team, no governance meetings.
+  A hat I can't offload into a system is a hat I'm still wearing — so any
+  rule that required a human to remember it was already broken.
 - **Figma Pro, not Enterprise.** No Enterprise-only API surface; the sync had
   to work within a Pro plan, which is part of why it's one-way and
   re-runnable rather than bidirectional.
-- **Agent collaborators.** The system's daily users are coding agents working
-  in experiment repos. A rule that lives in a PDF styleguide is invisible to
-  them; a rule that lives in a lint gate is law. *[inference from
-  "agent-first" + the machine-enforcement pattern]*
+- **Agent collaborators.** The system's daily users include coding agents
+  working in experiment repos. A rule that lives in a PDF styleguide is
+  invisible to them; a rule that lives in a gate is law. *[inference from
+  "agent-first" in the repo description + the machine-enforcement pattern]*
 
 ## Decision 1 — Code is the source of truth; Figma is the mirror
 
@@ -52,12 +62,22 @@ and becomes a published artifact of it. For a designer that's a real loss —
 you give up the place you think best. *[gap — Katy: did that trade hurt in
 practice? Where do you actually do the design thinking now?]*
 
-## Decision 2 — Enforce principles, don't document them
+## Decision 2 — Principles are data, and they can break the build
 
-By day two the repo had house rules and a token-level WCAG AA contrast gate;
-by day five, a manifest-driven principle-enforcement engine. Rules in MVDS
-are named, machine-checked things — `step-on-color-gradations`,
-`step-on-type-ramp` — that fail CI, not paragraphs that fail readers.
+This is the unification move. A principle in MVDS is not a paragraph in a
+styleguide — it exists in a database, it is required to be machine-enforced,
+and it can break a build. Principles are agnostic of the user and the
+discipline: the same principle constrains the token layer, the components,
+the Figma mirror, and the docs, instead of each discipline keeping its own
+paraphrase. And they're extensible — other users of the tool can add their
+own. *[gap — Katy: has anyone besides you authored a principle yet, or is
+extensibility still a promise?]*
+
+The repo's history shows how early this hardened: by day two there were
+house rules and a token-level WCAG AA contrast gate; by day five, a
+manifest-driven principle-enforcement engine. Rules in MVDS are named,
+machine-checked things — `step-on-color-gradations`, `step-on-type-ramp` —
+that fail CI, not paragraphs that fail readers.
 
 The most telling check is `consumer-path`: CI installs the *published*
 package into a starter app with no auth and no `.npmrc`, deliberately
