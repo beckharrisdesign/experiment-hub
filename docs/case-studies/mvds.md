@@ -57,10 +57,14 @@ translate, drift accumulates in the gap. I inverted it. One CSS file —
 generator. Component manifests plus a drift guard keep the Figma library
 honest, and every sync is recorded as a commit.
 
-The trade-off: Figma stops being an authoring surface for the system itself
-and becomes a published artifact of it. For a designer that's a real loss —
-you give up the place you think best. *[gap — Katy: did that trade hurt in
-practice? Where do you actually do the design thinking now?]*
+The trade-off turned out to be a repositioning, not a loss. It doesn't keep
+me from using Figma — it just keeps me using Figma at the start of a spec
+change. Figma is where a change begins: exploration, composition, the
+thinking. What it stopped being is the system of record I maintain by hand
+afterward. The library mirror is generated; the explorations bind to that
+published library instead of hand-mirroring its values, so the place I
+think best stays a thinking surface instead of becoming a maintenance
+burden.
 
 ## Decision 2 — Principles are data, and they can break the build
 
