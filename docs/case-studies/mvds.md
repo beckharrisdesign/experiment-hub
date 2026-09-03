@@ -154,8 +154,17 @@ worth more than a simpler toolchain.
   been patched manually? PR #72 "repair Label/Textarea/Blockquote after
   v0.3.0" suggests at least one repair pass.]*
 
-*[gap — Katy: what's the result you actually care about? Time-to-first-
-screen on a new experiment? Something you can feel rather than count?]*
+Those are the countable results. The one I actually started wanting was for
+myself: to be able to take off my design hat and my dev hat in order to
+focus on the founder hat. That's what the numbers above measure from the
+outside — every gate, sync, and published release is a piece of a hat I no
+longer have to wear by hand.
+
+But the outcome that occurred to me along the way is bigger than my own
+workflow: MVDS is a system for teams to have a shared documentation and
+delivery system for complex existing systems. The three-copies problem it
+started from — one library of dev, one of Figma, one of features — was
+never only a solo-founder problem.
 
 ## Reflection
 
