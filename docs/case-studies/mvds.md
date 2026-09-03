@@ -168,8 +168,10 @@ never only a solo-founder problem.
 
 ## Reflection
 
-*[gap — Katy: what would you do differently? The trail can't answer this
-one at all.]*
+The thing I'd change isn't in the codebase. I only recently recruited some
+trusted friends to be early users and give feedback — I would do that
+earlier. The machine feedback loop was running by day two; the human one is
+the newest part of the system.
 
 ---
 
