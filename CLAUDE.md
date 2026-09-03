@@ -40,6 +40,7 @@ that you already have one.
 - `rules/vitest-conventions.mdc` — test conventions
 - `rules/prd-template.mdc` — experiment PRD format
 - `rules/market-research-template.mdc` — market research format
+- `rules/scoring-criteria.mdc` — experiment scoring rubric (market research, experiments.json)
 - `rules/openspec-workflow.mdc` — OpenSpec vs experiment PRDs
 - `rules/bhd-experiment.mdc` — BHD schema phase artifacts (file-triggered)
 
