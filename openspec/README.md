@@ -39,4 +39,4 @@ flowchart LR
 
 **Workflow:** See [`rules/openspec-workflow.mdc`](../rules/openspec-workflow.mdc).
 
-**Artifacts in chat:** Every `/opsx:*` turn that writes under `openspec/changes/` must end with a `## Artifacts` block—clickable repo-relative markdown links derived from CLI JSON (`outputPath`, `contextFiles`, `openspec status --json`), not hardcoded filenames. See [`skills/openspec-artifacts-output.md`](../skills/openspec-artifacts-output.md).
+**Artifacts in chat:** Every `/opsx:*` turn that writes under `openspec/changes/` must end with a `## Artifacts` block—clickable repo-relative markdown links derived from CLI JSON (`outputPath`, `contextFiles`, `openspec status --json`), not hardcoded filenames. See [`skills/openspec-artifacts-output/SKILL.md`](../skills/openspec-artifacts-output/SKILL.md).

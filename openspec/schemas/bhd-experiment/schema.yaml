@@ -141,4 +141,4 @@ apply:
     with schema experiment-hub-lite (e.g. openspec/changes/<slug>-build/) and run /opsx:apply there.
     Link child proposal.md to this change's explore.md / propose.md.
 
-    Read `skills/openspec-apply-change.md` for schema-specific behavior.
+    Read `skills/openspec-apply-change/SKILL.md` for schema-specific behavior.
