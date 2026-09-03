@@ -149,10 +149,10 @@ worth more than a simpler toolchain.
   layout primitives shadcn deliberately doesn't ship.
 - Consumed in production by the experiment hub; installable by anyone via
   `npm install @beckharrisdesign/mvds`.
-- A public, view-only Figma library that has never been hand-edited ahead
-  of its code. *[inference — verify: has the Figma mirror ever drifted or
-  been patched manually? PR #72 "repair Label/Textarea/Blockquote after
-  v0.3.0" suggests at least one repair pass.]*
+- A public, view-only Figma library generated from the code. It has needed
+  repair passes — the trail records one after v0.3.0 — but every repair
+  moves the mirror back toward the code; nothing is ever authored in Figma
+  ahead of it.
 
 Those are the countable results. The one I actually started wanting was for
 myself: to be able to take off my design hat and my dev hat in order to
