@@ -53,6 +53,7 @@ discovers (flat `skills/<name>.md` files are ignored).
 - OpenSpec: `skills/openspec-*/SKILL.md` — see `openspec/README.md`
 - Figma: `npm run skills:sync` → `skills/figma/`
 - Triage: `skills/issue-triage/SKILL.md` — P0–P4 rubric, light retitling, cluster identification across open issues
+- Case studies: `skills/case-study/SKILL.md` — portfolio-form write-ups (argument, not log); drafts under `docs/case-studies/`
 - Linked repos: `skills/linked-repo-session/SKILL.md` — GitHub MCP is the standard access path for linked-repo code from hub sessions; primer format; opt-in local clones
 
 ## Hooks (Claude Code only)
