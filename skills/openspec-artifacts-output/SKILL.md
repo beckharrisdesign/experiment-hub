@@ -1,6 +1,6 @@
 ---
 name: openspec-artifacts-output
-description: Shared rules for ## Artifacts markdown links at the end of every /opsx:* turn. Loaded by openspec-propose, apply, archive, and explore skills.
+description: "Shared rules for the '## Artifacts' markdown links block at the end of every /opsx:* turn. Loaded by openspec-propose, apply, archive, and explore skills."
 ---
 
 # OpenSpec Artifacts output (shared)

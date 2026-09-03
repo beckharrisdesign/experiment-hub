@@ -23,7 +23,7 @@ The two retrospective agents both recommended shipping these as a scaffold chang
 
 Seven edits, grouped by target file. Each is drafted as ready-to-place text in the reviewers' reports; apply-time work is inserting them in the right section.
 
-**`skills/openspec-propose.md`** (lite gate, step 4):
+**`skills/openspec-propose/SKILL.md`** (lite gate, step 4):
 1. **Multi-agent proposal review (recommended for lite):** after drafting `proposal.md` and before specs, run strategist/@experiment-creator + @design-advisor + @prd-writer in parallel; hold the gate until *all* return; fold their edits into one revised proposal. This is where scope-splits and untestable criteria surface cheapest. Add a guardrail cross-reference to the backfill rule below.
 
 **`rules/principles.mdc`** (solo-founder practices):
@@ -48,7 +48,7 @@ Seven edits, grouped by target file. Each is drafted as ready-to-place text in t
 
 ## Impact
 
-- `skills/openspec-propose.md`, `rules/principles.mdc`, `rules/openspec-workflow.mdc`, `rules/figma.mdc`, `rules/design-guidelines.mdc`
+- `skills/openspec-propose/SKILL.md`, `rules/principles.mdc`, `rules/openspec-workflow.mdc`, `rules/figma.mdc`, `rules/design-guidelines.mdc`
 - No code, no tests, no runtime behavior change. Review = reading the edits in context.
 - Operational note (no scaffold fix, but recorded): background review agents can fail mid-run on API-credit exhaustion, silently dropping a reviewer — a "confirm all N reviewers returned" check belongs in the multi-agent review step so a partial review can't masquerade as complete.
 
