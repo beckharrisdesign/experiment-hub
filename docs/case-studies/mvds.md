@@ -102,15 +102,19 @@ version]*
 
 ## Decision 3 — Minimum viable, enforced honestly
 
-MVDS says no more often than yes. When the color system was rebuilt in
-August, five authored gradation steps per brand replaced eleven derived
+The biggest refusal came first, and it was of my own plan. I didn't want a
+thousand components — I started out thinking I would just theme shadcn. But
+the shadcn Figma library has 12,000 elements. That's not sustainable — not
+for one person, and not for a system whose promise is that every element it
+carries is synced, gated, and true. So MVDS adopts shadcn components one at
+a time, tunes them, and mirrors only what it adopts.
+
+The same refusal repeats at every scale. When the color system was rebuilt
+in August, five authored gradation steps per brand replaced eleven derived
 ones — because nothing consumed the eleven. The Dropzone component "ends at
 'files selected'" — transport and previews stay app concerns. The component
 inventory is ten controls, chosen because that's what a first screen needs
 with zero custom work.
-
-*[gap — Katy: was there a component or feature you wanted and refused
-yourself? The "no" with the best story belongs here.]*
 
 ## Decision 4 — Distribution is part of the design
 
