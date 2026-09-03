@@ -13,8 +13,8 @@ the code automatically. But MVDS isn't really a component library. It's an
 answer to a split every product team lives with: one library of dev, one
 library of Figma, one of features — three artifacts describing the same
 product, none guaranteed to match. MVDS unifies them at a different level:
-the principle. Principles live in a database, they are required to be
-machine-enforced, and they can break a build.
+the principle. Principles live in a database, they are machine-enforced
+where possible, and an enforced principle can break a build.
 
 ## The problem
 
@@ -69,8 +69,8 @@ burden.
 ## Decision 2 — Principles are data, and they can break the build
 
 This is the unification move. A principle in MVDS is not a paragraph in a
-styleguide — it exists in a database, it is required to be machine-enforced,
-and it can break a build. Principles are agnostic of the user and the
+styleguide — it exists in a database, it is machine-enforced where possible,
+and an enforced principle can break a build. Principles are agnostic of the user and the
 discipline: the same principle constrains the token layer, the components,
 the Figma mirror, and the docs, instead of each discipline keeping its own
 paraphrase. And the set isn't limited to rules I invented: I brought in
@@ -81,8 +81,7 @@ machine-checkable, "and pretending otherwise would be the failure mode this
 manifest exists to avoid" — so instead of faking a lint rule, they feed the
 discovery eval rubric, where judgment gets applied as judgment. Other users
 authoring their own principles is the design intent; so far the second
-author is Nielsen Norman. *[inference — the enforced/guiding split is the
-manifest's own framing; confirm it matches how you'd tell it]*
+author is Nielsen Norman.
 
 The repo's history shows how early this hardened: by day two there were
 house rules and a token-level WCAG AA contrast gate; by day five, a
