@@ -66,7 +66,7 @@ page (spec: Figma review precedes Notion embed).
 | --- | --- |
 | Primary file URL | <https://www.figma.com/design/e3DpnGzFqQVZfwHzpt6Huu> ("MVDS case study", Beck Harris Design team) |
 | As-is frame(s) | Page `01 … — as-is`, frame `As-is — Notion draft (reconstructed 2026-09-04)` (node 1:3) — the page's brain-dump state, properties noted empty |
-| Proposed frame(s) | Page `02 … — imagery` (node 1:23, first pass, kept intact); page `02.1 … — imagery, 16:9 crops` (board 7:3) — each capture in a 620×349 crop window, uncropped image movable inside, per Katy's common-aspect-ratio rule; **current: page `02.2 … — full draft in context`** (frame 8:3) — the complete proposed case-study content laid out Notion-style with the 16:9 images and the slot-2 brief placed in their sections |
+| Proposed frame(s) | Page `02 … — imagery` (node 1:23, first pass, kept intact); page `02.1 … — imagery, 16:9 crops` (board 7:3) — each capture in a 620×349 crop window, uncropped image movable inside, per Katy's common-aspect-ratio rule; page `02.2 … — full draft in context` (frame 8:3) — the content Notion-style; **current: page `02.3 … — portfolio render`** (frame 10:3) — the same content mimicking beckharrisdesign.com's live frontend (teal `#143639` / aqua `#ADDFE3`, Playfair Display headings, Roboto 18 body, header + pill CTA, breadcrumb), structured as the site's deep-dive pages are: Challenge / Approach / Outcome — the same triad as the Notion page's case-study properties, which validates the property mapping |
 | Libraries / version | None bound — frames hold captures, not compositions; MVDS Core stays untouched |
 | Code Connect | N/A — no components |
 | Breakpoints | Captures at L·1024 desktop (BHD Content Types); no responsive pass — Notion owns the page layout |
