@@ -32,7 +32,16 @@
   `tasks.md`; every image slot on the Notion page is filled or carries a
   production brief; the piece's numbers stay pinned to checkable receipts;
   the Notion page's case-study properties and body reflect the current
-  draft (Published stays NO — that switch is Katy's); and
+  draft, with each pre-existing brain-dump element either folded in or
+  replaced per the inventory below (Published stays NO — that switch is
+  Katy's); **each panel voice re-reviews the near-final piece and approves
+  how its own discipline is represented** — strategist the business logic,
+  PRD writer the problem/scope/measures, designer the craft evidence, UX
+  writer the language, historian the receipts; **Katy's own acceptance
+  reads: the case study showcases how she thinks about systems and
+  platforms without sounding narcissistic or droning on and on** — checked
+  concretely as a tone pass (first person confident, zero self-praise
+  adjectives) and a length budget the design decides; and
   `skills/case-study/SKILL.md` describes the full loop as run here: mine →
   draft → interview → voice-panel review → verified fixes → gated
   iteration → sourced imagery → content reviewed in Notion/Figma, never
@@ -77,6 +86,42 @@ all further content iteration happens on the Notion page.
   Notion/Figma, not markdown).
 - **Tracking** — each panel finding's resolution is recorded in this
   change's `tasks.md`, not in a separate reviews file.
+
+## Existing page inventory (brain-dump elements to fold in or replace)
+
+Logged from the live page 2026-09-04 so each has an explicit fate at apply
+time — folded into the new draft, or replaced by it. None are deleted
+without their content being carried or superseded:
+
+1. "Problem: Vibe coding is great and all, but the basic foundations are
+   harder to backfill the longer you go." — *fold in: problem section,
+   Katy's verbatim voice.*
+2. "Problem: Design systems are component rich and opinion scarce." —
+   *fold in: strongest one-line framing of the gap; candidate TLDR
+   material.*
+3. "Hypothesis: There's foundational DNA of a system that could and should
+   be in the wet cement from day 1 …" — *fold in: problem/constraints; the
+   gray-area list (accessibility, app chrome, deep-linkable states) is
+   concrete evidence the draft currently lacks.*
+4. "Hypothesis: principles should be able to fail a build." — *fold in:
+   Decision 2's thesis, in her original hypothesis form.*
+5. "Founder intent: I think with all these hats, but when I'm experimenting
+   I want to wear the founder hat first and foremost. Externalize some of
+   my own zero-to-one processes …" — *fold in: constraints/outcome, aligns
+   with the hats framing already in the draft.*
+6. MVDS description paragraph ("built for both human and agentic founders
+   …") — *replace: superseded by the hook.*
+7. Six-element checklist columns (Principles / Token layer / Figma library /
+   Component library / OpenSpec schemas / Skills) — *replace with the
+   iterated piece's structure; the six elements survive as content.*
+8. "Its designed to be environment agnostic - pull the npm package into
+   your build from Claude, Cursor, Figma, etc. …" — *fold in: Decision 4
+   (distribution).*
+9. "Using schema and skills to do heuristics in flight, even self
+   referentially." — *fold in: Decision 2 / eval-gate material.*
+10. Existing screenshot image + "View a real file generated" embed —
+    *keep: real artifacts; slot into the imagery plan (design decides
+    placement).*
 
 ## Capabilities
 
