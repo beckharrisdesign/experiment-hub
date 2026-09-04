@@ -95,10 +95,15 @@ skipping `npm ci` — "or we would no longer be reproducing a stranger's
 machine" — and asserts the emitted CSS proves the token layer landed. The
 system doesn't claim it works for strangers; it proves it on every release.
 
-The trade-off: authoring a rule costs 10× writing a guideline, so the rule
-set stays small — and things the gates don't cover have no protection at
-all. *[inference — trade-off is mine; needs her confirmation or her own
-version]*
+The economics here run the opposite way from what people assume. It's more
+expensive NOT to check a rule than to check it — programmatically, or even
+manually. From there, it's more expensive to realign to a rule the further
+into dev you are than to bake the rule in from the start. And the most
+expensive failure sits at the end of that gradient: you've put something
+out in the world, it doesn't get the traction you want, and you have no
+data points to determine what the root cause is or what to iterate on
+next. Every gate the build runs is a data point that failure won't be
+missing.
 
 ## Decision 3 — Minimum viable, enforced honestly
 
