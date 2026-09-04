@@ -95,4 +95,6 @@ five APPROVEs:
   their sources show.
 
 Open before Published (Katy): the three-copies diagram (brief on-page),
-the Slug decision, optional closing-caption jargon soften.
+optional closing-caption jargon soften. Slug RESOLVED 2026-09-04: set to
+`mvds-case-study` per Katy — live URL will be
+https://beckharrisdesign.com/mvds-case-study.
