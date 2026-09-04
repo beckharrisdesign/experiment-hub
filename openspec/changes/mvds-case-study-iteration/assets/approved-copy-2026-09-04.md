@@ -90,8 +90,8 @@ Container, and Stack.
 
 Properties use the bullet-list form the other case studies use (e.g. the
 Trill deep-dive), which the site renders as the three-column callout; the
-page body carries the same triad as a native three-column block
-(updated 2026-09-04 per Katy).
+page body carries the same triad as three columns wrapped in a callout
+block (gray), matching the house structure (updated 2026-09-04 per Katy).
 
 | Property | Value |
 | --- | --- |
