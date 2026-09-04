@@ -125,9 +125,20 @@ live gate statuses (honest ones — they show red when red), a validated
 install path, and a public Figma mirror whose share link is itself gated by
 a live GET check in CI.
 
-*[inference: this was the moment MVDS stopped being an internal tool and
-became a portfolio-grade public artifact — gap: was that the intent, or did
-public npm solve a practical problem first?]*
+The honest sequence: at first, going public solved an immediate need — the
+v0.3.0 migration notes are entirely about deleting auth tokens and `.npmrc`
+lines that GitHub Packages required of every consumer. But it has become a
+core part of how I work, and I've started sharing it and talking about it.
+Being a public npm package means the landing page, the README, and the
+other artifacts are already out there — publishing honestly created the
+public story, rather than the other way around.
+
+And that's where the sharing conversation keeps landing: MVDS gets at a
+core need in design, which is to orchestrate the design process in a way
+that allows us to still use our skills — but at different inflection
+points. The one-way sync doesn't remove the designer's hand; it moves it
+to the start of a spec change, where composition happens, and lets the
+system carry the fidelity from there.
 
 ## The dogfood loop
 
