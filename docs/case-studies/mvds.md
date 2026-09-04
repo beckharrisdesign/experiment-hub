@@ -195,10 +195,12 @@ outside — every gate, sync, and published release is a piece of a hat I no
 longer have to wear by hand.
 
 But the outcome that occurred to me along the way is bigger than my own
-workflow: MVDS is a system for teams to have a shared documentation and
-delivery system for complex existing systems. The three-copies problem it
-started from — one library of dev, one of Figma, one of features — was
-never only a solo-founder problem.
+workflow. The three-copies problem MVDS started from — one library of dev,
+one of Figma, one of features — was never only a solo-founder problem,
+which means what I built may be a shared documentation and delivery system
+for teams working on complex existing systems. That's not a result yet;
+it's the hypothesis this work has earned the right to test, and the early
+users I've recruited are the first step of that test.
 
 ## Reflection
 

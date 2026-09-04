@@ -203,11 +203,11 @@ five days not four for the drift guard. Corrected in `mvds-combined.md`,
 
 **Where the voices converge (Katy's call, in rough priority):**
 
-1. **The teams claim outruns the evidence — 3 of 5 voices.** Strategist, PRD
-   Writer, and (implicitly) Designer all flag "MVDS is a system for teams"
-   and "every team maintains the same design system three times" as
-   universal claims on n=1. Shared recommendation: keep the insight, reframe
-   as the hypothesis the work has earned the right to test.
+1. **The teams claim outruns the evidence — 3 of 5 voices.** *(Applied with
+   Katy's approval 2026-09-04: the Outcome now frames teams as "the
+   hypothesis this work has earned the right to test," with the recruited
+   early users as its first step. The problem section's "every team" opener
+   was not changed — still open if desired.)*
 2. **The enforcement economics need one receipt — 2 voices.** *(Answered by
    Katy 2026-09-04 and folded in: the gates catch constantly — contrast,
    type alignment, tone, manifest sync — and the honest measure is that
