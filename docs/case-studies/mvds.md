@@ -1,9 +1,8 @@
 # MVDS: a design system that can't drift
 
-> **Draft.** Marks like *[inference]* flag claims the evidence trail suggests
-> but Katy hasn't confirmed; *[gap — Katy]* marks what only she can supply.
-> Working dates and sources are in the staging table at the end. All of this
-> is stripped at publish time.
+> **Draft.** Interview complete — all inference marks and gaps have been
+> resolved with Katy's account. Working dates and sources are in the staging
+> table at the end; this note and the table are stripped at publish time.
 
 ## Hook
 
@@ -44,10 +43,14 @@ a projection of them.
 - **Figma Pro, not Enterprise.** No Enterprise-only API surface; the sync had
   to work within a Pro plan, which is part of why it's one-way and
   re-runnable rather than bidirectional.
-- **Agent collaborators.** The system's daily users include coding agents
-  working in experiment repos. A rule that lives in a PDF styleguide is
-  invisible to them; a rule that lives in a gate is law. *[inference from
-  "agent-first" in the repo description + the machine-enforcement pattern]*
+- **The designer isn't always in the room.** Historically, designers lacked
+  coding skills, so they documented what they wanted in Figma files or text
+  documents — and even now that AI can parse and ingest those artifacts, the
+  underlying principles are often missed or forgotten as work moves through
+  product orgs. Some product orgs now operate with no designer, or even no
+  product person. MVDS's daily users include coding agents working in
+  experiment repos. Enforcing principles programmatically where possible
+  gives an org guardrails even when the designer isn't there.
 
 ## Decision 1 — Code is the source of truth; Figma is the mirror
 
