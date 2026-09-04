@@ -35,8 +35,11 @@
   hand): subject, source, intent
 - [x] 2.6 Page `02 MVDS case study · mvds-case-study-iteration — imagery`:
   board node 1:23 — seven captures + brief card + slot-8 note
-- [ ] 2.7 **STOP — Katy reviews page 02 and gives the go per image**
-  (revisions land on 02.1, 02.2, … — never edit 02 in place)
+- [x] 2.7 Katy reviewed the boards through four iterations (02 → 02.4:
+  16:9 crops, Notion context, portfolio render, bg fix + her copy edits +
+  callout bar) and approved 2026-09-04 ("I made copy edits - lets not
+  lose them. But otherwise, approved."). Approved copy snapshotted to
+  `assets/approved-copy-2026-09-04.md`.
 
 ## 3. Notion — populate the draft page
 
