@@ -37,6 +37,10 @@ thinking: instead of one library for dev, one for Figma, one for features,
 define the principles as a unified thing and make everything else a
 projection of them.
 
+None of this removes the designer. The point is to orchestrate the design
+process so we still use our skills — just at different inflection points.
+Every decision below is a version of that move.
+
 > **notion (BHD Labs row):** "Solo founders need a minimally viable design
 > system — an MVDS — that contains core set of components and design
 > principles to put solid foundations into the wet cement of their
