@@ -18,19 +18,23 @@
 - [ ] 1.7 Tone pass on the near-final draft — zero self-praise adjectives
   outside quoted evidence; body within the 2,000-word budget
 
-## 2. Figma — as-is and imagery pages
+## 2. Figma — as-is and imagery pages (done at the design gate, 2026-09-04)
 
-- [ ] 2.1 Create the "MVDS case study" Figma file; record its URL here
-- [ ] 2.2 Page `01 MVDS case study · mvds-case-study-iteration — as-is`:
-  capture of the current Notion draft (brain-dump state), for the record
-- [ ] 2.3 Capture the five live slots serially (design table slots 1, 4,
-  6, 7, and the slot-3 Figma-mirror attempt), 1024px desktop, provenance
-  noted per capture
-- [ ] 2.4 Attempt slot 5 (gradation specimen); on failure write its brief
-- [ ] 2.5 Write the slot-2 brief (three-copies diagram — Katy's hand):
-  subject, source, intent
-- [ ] 2.6 Page `02 MVDS case study · mvds-case-study-iteration — imagery`:
-  all captures + brief placeholders laid out per section
+- [x] 2.1 Create the "MVDS case study" Figma file — 
+  https://www.figma.com/design/e3DpnGzFqQVZfwHzpt6Huu
+- [x] 2.2 Page `01 MVDS case study · mvds-case-study-iteration — as-is`:
+  reconstruction of the current Notion draft (brain-dump state, properties
+  noted empty), node 1:3
+- [x] 2.3 Captured the live slots serially at 1024px with provenance
+  captions: landing hero, gates, install, hub surface (redirected to
+  `/sign-in` — itself MVDS-built), MVDS Core mirror (Figma API render),
+  plus the bonus principles grid
+- [x] 2.4 Slot 5 captured — public Storybook `foundations-color--palette`
+  (no fallback brief needed)
+- [x] 2.5 Slot-2 brief card on the board (three-copies diagram — Katy's
+  hand): subject, source, intent
+- [x] 2.6 Page `02 MVDS case study · mvds-case-study-iteration — imagery`:
+  board node 1:23 — seven captures + brief card + slot-8 note
 - [ ] 2.7 **STOP — Katy reviews page 02 and gives the go per image**
   (revisions land on 02.1, 02.2, … — never edit 02 in place)
 

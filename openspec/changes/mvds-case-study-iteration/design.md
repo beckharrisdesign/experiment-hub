@@ -58,20 +58,19 @@ Body order (seed fates from the proposal inventory in parentheses):
 
 ## Visual design / Figma
 
-This change's user-visible surface is the Notion page; the Figma work *is*
-the change's imagery deliverable, so the as-is + proposed pair is produced
-as the first apply step (gated by spec: no Notion embed before Katy's go on
-the numbered page).
+The as-is + proposed pair is part of this design gate and is **built**
+(2026-09-04). No Notion embed happens before Katy's go on the numbered
+page (spec: Figma review precedes Notion embed).
 
 | Item | Value |
 | --- | --- |
-| Primary file URL | New file **"MVDS case study"**, created at apply step 1 (URL recorded in tasks.md when created) |
-| As-is frame(s) | `01 MVDS case study · mvds-case-study-iteration — as-is` — capture of the current Notion draft (brain-dump state) |
-| Proposed frame(s) | `02 MVDS case study · mvds-case-study-iteration — imagery` — the eight image slots below, laid out per section |
+| Primary file URL | <https://www.figma.com/design/e3DpnGzFqQVZfwHzpt6Huu> ("MVDS case study", Beck Harris Design team) |
+| As-is frame(s) | Page `01 … — as-is`, frame `As-is — Notion draft (reconstructed 2026-09-04)` (node 1:3) — the page's brain-dump state, properties noted empty |
+| Proposed frame(s) | Page `02 … — imagery`, frame `Imagery review board` (node 1:23) — seven captures with provenance captions, the slot-2 brief card, the slot-8 note |
 | Libraries / version | None bound — frames hold captures, not compositions; MVDS Core stays untouched |
 | Code Connect | N/A — no components |
 | Breakpoints | Captures at L·1024 desktop (BHD Content Types); no responsive pass — Notion owns the page layout |
-| Status | Pending — created at apply, reviewed before any embed |
+| Status | Built 2026-09-04 — awaiting Katy's review of page 02 |
 
 ### Image slots
 
@@ -81,9 +80,9 @@ the numbered page).
 | 2 | Problem | Three-copies diagram (dev/Figma/features splitting → principle unifying) | **brief for Katy** — her diagram, her hand |
 | 3 | Decision 1 | MVDS Core public mirror — components/variables view | capture (Figma MCP screenshot); fallback: brief |
 | 4 | Decision 2 | Landing gate statuses / "How we enforce" | capture (Playwright) |
-| 5 | Decision 3 | Gradation specimen (1–5 steps, both modes) | capture (Storybook/landing if exposed); fallback: brief |
+| 5 | Decision 3 | Gradation specimen (1–5 steps, roles as contract) | **captured** — public Storybook story `foundations-color--palette` |
 | 6 | Decision 4 | Install path / consumer-path proof on landing | capture (Playwright) |
-| 7 | Dogfood | Hub production surface consuming MVDS (pdf-metadata-viewer) | capture (Playwright, prod hub) |
+| 7 | Dogfood | Hub production surface consuming MVDS (pdf-metadata-viewer) | **captured** — auth gate redirected to `/sign-in`, itself an MVDS surface; caption must say so |
 | 8 | Decision 1 or Dogfood | Existing page screenshot + "real file generated" embed (seed #10) | keep in place |
 
 Every capture records URL + date as provenance; every fallback brief names
