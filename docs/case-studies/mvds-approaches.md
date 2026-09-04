@@ -31,11 +31,29 @@ all?"** The best quote in that part of the story was sitting in a change folder,
 and the interview never surfaced it because the interviewer didn't know to ask.
 A case study is bounded by what its author thinks to dig up.
 
-## B. History band — specimen draft
+## B. History band — what exists, and a specimen curation pass
 
-*Draft specimen only — mvds has no experiment row in the hub, so there is
-nothing to stage this to; creating one is a separate decision. Chapters follow
-the experiment-narrative form: milestone sentence, voices, links.*
+**Correction (2026-09-04):** an earlier version of this document claimed mvds
+had no experiment row in the hub. Wrong — the claim was checked against the
+repo-local sources (`data/experiments.json`, `experiments/`), but mvds is a
+remote repo, and remote-repo experiments live in Notion. The MVDS row is in
+the BHD Labs Database (Status: Validating, Public, PI 4 / SI 2 / BI 2), and it
+already has a live History band: **67 approved entries**, one per PR,
+generator-drafted in a single run on 2026-07-23. Each carries a milestone
+sentence, a PR receipt, and a real event date — and a blank body, no voices,
+no why.
+
+That existing band is its own data point about this approach. It proves the
+generator half (coverage at near-zero cost: 67 entries nobody hand-wrote) and
+the staleness half simultaneously: the band froze the day it was drafted.
+Nothing after 2026-07-23 exists in it — no v0.3.0, no v0.4.0, no OpenSpec era
+— because a drafting run is a snapshot, not a subscription.
+
+*The specimen below is therefore not a first band but a curation pass over an
+existing one: chapter-grain entries in the Best Day Ever exemplar form
+(milestone carrying the why, voice-attributed sources, links) that would sit
+alongside or supersede runs of PR-grain entries. Staging anything to Notion is
+a separate, explicitly-OK'd step.*
 
 **Jun 4–9, 2026** — Went from empty repo to a tagged v0.1.0 in five days, with
 the enforcement posture already set: a WCAG AA contrast gate on day two, a
@@ -160,14 +178,14 @@ stepped-scales (mvds)                                  ARCHIVED · 4 days
 
 | | A. Case study | B. History band | C. Change frame |
 | --- | --- | --- | --- |
-| Grain | The whole effort | Milestones | One change |
+| Grain | The whole effort | Milestones (PR-grain generated, chapter-grain curated) | One change |
 | Audience | Outside readers (portfolio) | Outside readers (hub) | The builder, mid-flight |
-| Human input | High — interview reshaped the spine 7 times | Medium — mine + interview per chapter | None after the process exists |
-| Freshness | Stale on publish | Append-only; ages well | Assembled on read; never stale |
-| Honesty mechanism | Inference marks + interview | Voice attribution + numbers inline | Computed: drift, evidence kinds, silences |
-| Coverage on mvds | All 13 weeks | All 13 weeks | Last 2 weeks (10 changes) |
+| Human input | High — interview reshaped the spine 7 times | Generated: none. Curated: mine + interview per chapter | None after the process exists |
+| Freshness | Stale on publish | As fresh as the last drafting run — mvds's froze 2026-07-23 | Assembled on read; never stale |
+| Honesty mechanism | Inference marks + interview | Voice attribution + numbers inline (curated); receipts only (generated) | Computed: drift, evidence kinds, silences |
+| Coverage on mvds | All 13 weeks | Live: Jun 4 – Jul 23, 67 entries. Specimen chapters: all 13 weeks | Last 2 weeks (10 changes) |
 | Best at | Judgment and trade-offs | Trajectory and shape | Decision moments + "what's true now" |
-| Blind spot | What the interviewer doesn't ask | No argument, only sequence | Everything before OpenSpec; no narrative |
+| Blind spot | What the interviewer doesn't ask | No argument; a band without voices reads as a changelog | Everything before OpenSpec; no narrative |
 
 ## The finding
 
@@ -185,3 +203,9 @@ recent — the founding decisions, the ones the case study leans hardest on,
 survive only in Katy's memory and the shapes git happens to hold. The earlier
 the record starts, the less the eventual story depends on what an interviewer
 thinks to ask.
+
+mvds's live band adds the middle stage's own lesson: the generator ran once
+and produced 67 receipts — real coverage, honestly dated — but coverage
+without voice reads as a changelog, and a snapshot without re-runs goes quiet
+exactly when the project doesn't. The band's two most story-rich months are
+the two it doesn't have.
