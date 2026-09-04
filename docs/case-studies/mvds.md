@@ -6,9 +6,9 @@
 
 ## Hook
 
-In twelve weeks I built and shipped a design system solo — ten components,
-a token layer, four releases on public npm, and a Figma library that mirrors
-the code automatically. But MVDS isn't really a component library. It's an
+In thirteen weeks I built and shipped a design system solo — ten components,
+a token layer, a public npm package with provenance, and a Figma library that
+mirrors the code automatically. But MVDS isn't really a component library. It's an
 answer to a split every product team lives with: one library of dev, one
 library of Figma, one of features — three artifacts describing the same
 product, none guaranteed to match. MVDS unifies them at a different level:
@@ -165,8 +165,9 @@ worth more than a simpler toolchain.
 
 ## Outcome
 
-- Four releases (v0.1.0 → v0.4.0) between June 9 and August 23, 2026;
-  107 merged PRs by September 2.
+- Three tagged releases (v0.1.0 → v0.4.0 — the 0.2.0 version shipped in the
+  changelog but was never tagged) between June 9 and August 23, 2026; 104
+  merged PRs by September 2.
 - Ten controls, a form-pattern layer, content blocks, and eight spatial/
   layout primitives shadcn deliberately doesn't ship.
 - Consumed in production by the experiment hub; installable by anyone via
@@ -216,5 +217,7 @@ the newest part of the system.
 | 2026-08-25–09-02 | OpenSpec + eval gate adopted in-repo; site voice refresh (#98–107) | PR list |
 
 Numbers used in prose: 12 weeks (Jun 4 – Aug 23 tag; 13 to last PR),
-107 merged PRs, 10 controls, 4 releases, 5-vs-11 gradation steps
+104 merged PRs (verified via gh 2026-09-04; 107 is the top PR number, 3
+closed unmerged), 10 controls, 3 tagged releases (0.2.0 untagged),
+5-vs-11 gradation steps
 (CHANGELOG 0.4.0), 8 layout primitives (README Foundations list).

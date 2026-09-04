@@ -8,9 +8,9 @@
 
 ## Hook
 
-In twelve weeks I built and shipped a design system solo — ten components, a
-token layer, four releases on public npm, and a Figma library that mirrors the
-code automatically. But MVDS isn't really a component library. It's an answer
+In thirteen weeks I built and shipped a design system solo — ten components,
+a token layer, a public npm package with provenance, and a Figma library that
+mirrors the code automatically. But MVDS isn't really a component library. It's an answer
 to a split every product team lives with: one library of dev, one library of
 Figma, one of features — three artifacts describing the same product, none
 guaranteed to match. MVDS unifies them at a different level: the principle.
@@ -78,7 +78,7 @@ published library instead of hand-mirroring its values, so the place I think
 best stays a thinking surface instead of becoming a maintenance burden.
 
 > **Jun 9, 2026 · gh:** component manifests + a drift guard for the
-> code→Figma sync land four days into the repo's life ([PR #24](https://github.com/beckharrisdesign/mvds/pull/24));
+> code→Figma sync land five days into the repo's life ([PR #24](https://github.com/beckharrisdesign/mvds/pull/24));
 > every later sync is a recorded commit (#27, #33–35, #52, #61–62, #87).
 > The mirror has needed repair passes — [#72](https://github.com/beckharrisdesign/mvds/pull/72)
 > after v0.3.0 — but every repair moves it back toward the code; nothing is
@@ -217,7 +217,8 @@ simpler toolchain.
 
 ## Outcome
 
-- Four releases (v0.1.0 → v0.4.0) between June 9 and August 23, 2026; 107
+- Three tagged releases (v0.1.0 → v0.4.0 — the 0.2.0 version shipped in the
+  changelog but was never tagged) between June 9 and August 23, 2026; 104
   merged PRs by September 2.
 - Ten controls, a form-pattern layer, content blocks, and eight spatial/
   layout primitives shadcn deliberately doesn't ship.

@@ -169,7 +169,8 @@ stepped-scales (mvds)                                  ARCHIVED · 4 days
 - **Coverage stops where the process starts.** mvds has 10 OpenSpec changes,
   all from 2026-08-21 onward — the last 2 of its 13 weeks. Everything the case
   study's first three decisions cover (the founding refusal, the sync, public
-  npm) predates the record: 75 of 107 PRs are invisible to this approach.
+  npm) predates the record: 73 of 104 merged PRs are invisible to this
+approach.
 - **No arc.** Change-grain answers "what's going on with this change" for the
   person mid-flight. It cannot say why MVDS exists, what it refused, or what it
   became — the questions A exists to answer and B gestures at.
