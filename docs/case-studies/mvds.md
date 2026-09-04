@@ -119,7 +119,10 @@ a time, tunes them, and mirrors only what it adopts.
 
 The same refusal repeats at every scale. When the color system was rebuilt
 in August, five authored gradation steps per brand replaced eleven derived
-ones — because nothing consumed the eleven. The Dropzone component "ends at
+ones — because nothing consumed the eleven. The change record holds the
+moment it turned: mid design review, I asked "but why are we deriving the
+ramp at all?" — the ramp's value was never the formula, it was the
+discipline of stepping. The Dropzone component "ends at
 'files selected'" — transport and previews stay app concerns. The component
 inventory is ten controls, chosen because that's what a first screen needs
 with zero custom work.
