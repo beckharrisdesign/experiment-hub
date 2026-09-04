@@ -69,8 +69,10 @@ Method proven on the MVDS case study (change `mvds-case-study-iteration`,
    visible region repositions without re-capturing. Captures run serially
    (8GB machine).
 7. **Populate the Notion page** (after her approval): re-fetch
-   immediately before writing; fill the four properties; insert the
-   approved body with a summary callout of the triad at the top; images
+   immediately before writing; fill the four properties in the
+   bullet-list form the existing case studies use (the site renders them
+   as the three-column callout); insert the approved body with the triad
+   as a native three-column block at the top; images
    uploaded as Notion attachments (never hotlinks); pre-existing content
    moves under a "Working notes" divider — folded in or superseded, never
    silently deleted.

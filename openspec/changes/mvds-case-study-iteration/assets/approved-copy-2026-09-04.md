@@ -88,12 +88,17 @@ Container, and Stack.
 
 ## Notion property mapping
 
+Properties use the bullet-list form the other case studies use (e.g. the
+Trill deep-dive), which the site renders as the three-column callout; the
+page body carries the same triad as a native three-column block
+(updated 2026-09-04 per Katy).
+
 | Property | Value |
 | --- | --- |
 | TLDR | Design systems are component rich and opinion scarce. |
-| Challenge | Every team maintains the same design system three times and calls it one. |
-| Approach | Code as the source of truth / Principles as blocking tests / Distribution by design |
-| Outcome | Three tagged releases and 104 merged PRs in thirteen weeks. Consumed in production as a standalone tool. |
+| Challenge | • Every team maintains the same design system three times and calls it one. |
+| Approach | • Code as the source of truth • Principles as blocking tests • Distribution by design |
+| Outcome | • Three tagged releases and 104 merged PRs in thirteen weeks • Consumed in production as a standalone tool |
 
 ## Superseded during the gate (recorded, not lost)
 
