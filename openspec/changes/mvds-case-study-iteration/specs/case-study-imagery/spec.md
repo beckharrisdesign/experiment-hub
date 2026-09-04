@@ -36,13 +36,25 @@ The case study SHALL contain no decorative or unsourced imagery.
 ### Requirement: Imagery is reviewed in Figma before embedding
 
 Candidate imagery lands on a numbered page in a Figma file for review, per
-`rules/figma.mdc`, before any image embeds in the Notion draft.
+`rules/figma.mdc`, before any image embeds in the Notion draft. Review
+pages are findable by name alone: every page carries the iteration number,
+the case-study name, and the change slug —
+`NN.n <case-study name> · <change-slug> — <pass>`, e.g.
+`02.1 MVDS case study · mvds-case-study-iteration — imagery`.
 
-The imagery pass SHALL NOT edit a previously reviewed Figma page in place;
-each revision round gets a new numbered page.
+The imagery pass SHALL NOT edit a previously reviewed Figma page in place —
+each revision round gets a new numbered page — and every review page's name
+SHALL include both the case-study name and the change slug.
 
 #### Scenario: Figma review precedes Notion embed
 
 - **WHEN** captured imagery is ready for the case study
 - **THEN** it appears on a numbered Figma page first, and embeds in Notion
   only after Katy's explicit go on that page.
+
+#### Scenario: Review pages are findable by name
+
+- **WHEN** a review page is created for this change
+- **THEN** its name carries the iteration number, the case-study name, and
+  the change slug, so the page traces to both the piece and the OpenSpec
+  change without opening it.
