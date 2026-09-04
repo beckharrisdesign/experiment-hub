@@ -18,7 +18,11 @@ the drafting conversation.
 **Fails until:** No image slot on the Notion page is unexplained — each is
 a real capture with provenance or a briefed placeholder.
 
-The case study SHALL contain no decorative or unsourced imagery.
+The case study SHALL contain no decorative or unsourced imagery, and its
+images SHALL share a common aspect ratio (16:9 default) unless a specific
+image genuinely requires its own — each presented as a fixed-ratio crop
+window over the uncropped capture, so the visible region can be
+repositioned without re-capturing.
 
 #### Scenario: Captured image carries provenance
 
