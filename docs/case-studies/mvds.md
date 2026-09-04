@@ -108,6 +108,17 @@ data points to determine what the root cause is or what to iterate on
 next. Every gate the build runs is a data point that failure won't be
 missing.
 
+And the gates catch things constantly — contrast failures, typography out
+of alignment, aggressive tone, the design manifest out of sync with the
+code manifest. But the honest measure of the system isn't a dramatic save I
+can narrate. It's that most catches are now below my radar: they happen in
+subagent logs, get collapsed in the view my LLM surfaces as I work, or run
+in CI and get resolved automatically. When something feels out of whack,
+all I have to say is "check the principles" and the focus loops back
+through. That's the win — I can trust it's happening without having to be
+conscious of it. A hat you still have to watch is a hat you're still
+wearing.
+
 ## Decision 3 — Minimum viable, enforced honestly
 
 The biggest refusal came first, and it was of my own plan. I didn't want a

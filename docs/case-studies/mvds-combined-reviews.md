@@ -208,11 +208,12 @@ five days not four for the drift guard. Corrected in `mvds-combined.md`,
    and "every team maintains the same design system three times" as
    universal claims on n=1. Shared recommendation: keep the insight, reframe
    as the hypothesis the work has earned the right to test.
-2. **The enforcement economics need one receipt — 2 voices.** "More
-   expensive NOT to check" is the load-bearing claim and no gate is ever
-   shown catching anything. One caught regression, or one pre-gate drift
-   incident, converts belief to evidence. (Open question for Katy — the
-   trail may hold one.)
+2. **The enforcement economics need one receipt — 2 voices.** *(Answered by
+   Katy 2026-09-04 and folded in: the gates catch constantly — contrast,
+   type alignment, tone, manifest sync — and the honest measure is that
+   catches happen below her radar, in subagent logs and CI, resolved
+   automatically. "I can trust it's happening without having to be conscious
+   of it.")*
 3. **Show the design eye, not just the discipline — Designer + UX Writer.**
    The craft appears only as CI rule names; the piece's only visual is a
    link. One composed screen, or a paragraph on why five gradation steps and

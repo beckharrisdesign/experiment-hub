@@ -99,7 +99,8 @@ heuristics sit in the principles manifest as external records with their
 provenance attached. The manifest is honest about what they are: they're not
 machine-checkable, "and pretending otherwise would be the failure mode this
 manifest exists to avoid" — so instead of faking a lint rule, they feed the
-discovery eval rubric, where judgment gets applied as judgment. Other users
+discovery eval rubric — the scored review every new idea passes through —
+where judgment gets applied as judgment. Other users
 authoring their own principles is the design intent; so far the second
 author is Nielsen Norman.
 
@@ -111,6 +112,16 @@ expensive failure sits at the end of that gradient: you've put something out
 in the world, it doesn't get the traction you want, and you have no data
 points to determine what the root cause is or what to iterate on next. Every
 gate the build runs is a data point that failure won't be missing.
+
+And the gates catch things constantly — contrast failures, typography out of
+alignment, aggressive tone, the design manifest out of sync with the code
+manifest. But the honest measure of the system isn't a dramatic save I can
+narrate. It's that most catches are now below my radar: they happen in
+subagent logs, get collapsed in the view my LLM surfaces as I work, or run
+in CI and get resolved automatically. When something feels out of whack, all
+I have to say is "check the principles" and the focus loops back through.
+That's the win — I can trust it's happening without having to be conscious
+of it. A hat you still have to watch is a hat you're still wearing.
 
 > **Jun 5–8, 2026 · gh:** a token-level WCAG AA contrast gate on day two
 > ([#10](https://github.com/beckharrisdesign/mvds/pull/10)); the
@@ -137,8 +148,8 @@ a time, tunes them, and mirrors only what it adopts.
 
 The same refusal repeats at every scale. When the color system was rebuilt in
 August, five authored gradation steps per brand replaced eleven derived ones
-— because nothing consumed the eleven. The change record holds the moment it
-turned, verbatim:
+— because nothing consumed the eleven. The change record preserved the moment
+it turned — my own words, captured verbatim mid design review:
 
 > "so what I'm thinking is that typography size, and perhaps even color
 > gradations (1-5) are a design principle to add just like we think of
@@ -146,8 +157,8 @@ turned, verbatim:
 > because its a systematic way of making the ui feel 'done' or 'organized'
 > or 'trustworthy'. … but why are we deriving the ramp at all?"
 >
-> — the `stepped-scales` Human anchor, scoped-theming design review,
-> 2026-08-21
+> — design review, 2026-08-21
+> ([change record](https://github.com/beckharrisdesign/mvds/blob/main/openspec/changes/archive/2026-08-25-stepped-scales/proposal.md))
 
 The ramp's value was never the formula; it was the discipline of stepping.
 The Dropzone component "ends at 'files selected'" — transport and previews
@@ -166,9 +177,10 @@ that's what a first screen needs with zero custom work.
 
 ## Decision 4 — Distribution is part of the design
 
-In July, MVDS moved from GitHub Packages to public npm with OIDC trusted
-publishing and provenance attestation — a stranger installs it with no auth
-and no config. The landing page became a shareable proof of the system: live
+In July, MVDS moved from GitHub Packages to public npm with trusted
+publishing and provenance attestation — the registry can prove each release
+came from the repo's own CI, and a stranger installs it with no auth and no
+config. The landing page became a shareable proof of the system: live
 gate statuses (honest ones — they show red when red), a validated install
 path, and a public Figma mirror whose share link is itself gated by a live
 GET check in CI.
@@ -249,8 +261,9 @@ earlier. The machine feedback loop was running by day two; the human one is
 the newest part of the system.
 
 The record itself carries the same lesson at a different scale. MVDS adopted
-OpenSpec in week 11 of 13, so its best-documented decisions are its most
-recent — the founding decisions, the ones this piece leans hardest on,
+OpenSpec — the workflow that records each change's intent, gates, and
+verbatim founder reasoning — in week 11 of 13, so its best-documented
+decisions are its most recent — the founding decisions, the ones this piece leans hardest on,
 survive in memory and the shapes git happens to hold, while `stepped-scales`
 preserved its own turning point verbatim. The earlier the record starts, the
 less the story depends on what anyone remembers to ask.
