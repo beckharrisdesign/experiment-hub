@@ -71,6 +71,19 @@
       "cwd": "."
     },
     {
+      "name": "hub-dec2025-snapshot",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3789"
+      ],
+      "port": 3789,
+      "cwd": ".dec2025-snapshot"
+    },
+    {
       "name": "experiment-hub (no 1Password)",
       "runtimeExecutable": "npx",
       "runtimeArgs": [
