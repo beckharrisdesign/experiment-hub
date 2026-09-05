@@ -71,17 +71,17 @@
       "cwd": "."
     },
     {
-      "name": "hub-dec2025-snapshot",
+      "name": "hub-may2026-openspec-snapshot",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
         "dev",
         "--",
         "-p",
-        "3789"
+        "3790"
       ],
-      "port": 3789,
-      "cwd": ".dec2025-snapshot"
+      "port": 3790,
+      "cwd": ".may2026-snapshot"
     },
     {
       "name": "experiment-hub (no 1Password)",
