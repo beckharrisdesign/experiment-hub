@@ -125,6 +125,15 @@ export default function SvgToStitchPage() {
 
   const plan = result && "ok" in result ? result.ok.plan : null;
 
+  // Which thread color is highlighted in the preview (index into plan.colors).
+  // A new plan means new colors, so the selection resets with it.
+  const [selectedColor, setSelectedColor] = useState<number | null>(null);
+  const [prevPlan, setPrevPlan] = useState(plan);
+  if (plan !== prevPlan) {
+    setPrevPlan(plan);
+    setSelectedColor(null);
+  }
+
   return (
     <main>
       <Section py={24} innerSize="lg">
@@ -226,9 +235,32 @@ export default function SvgToStitchPage() {
                       <CardTitle>Sew order</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <Stack gap={8}>
+                      <Stack gap={4}>
                         {plan.colors.map((color, i) => (
-                          <Inline key={`${color}-${i}`} gap={8} align="center">
+                          <button
+                            key={`${color}-${i}`}
+                            type="button"
+                            aria-pressed={selectedColor === i}
+                            onClick={() =>
+                              setSelectedColor(selectedColor === i ? null : i)
+                            }
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              width: "100%",
+                              padding: "4px 6px",
+                              borderRadius: 6,
+                              border: "none",
+                              background: "transparent",
+                              cursor: "pointer",
+                              textAlign: "left",
+                              boxShadow:
+                                selectedColor === i
+                                  ? "0 0 0 2px var(--ring)"
+                                  : undefined,
+                            }}
+                          >
                             <CardDescription>{i + 1}.</CardDescription>
                             <span
                               aria-hidden
@@ -242,7 +274,7 @@ export default function SvgToStitchPage() {
                               }}
                             />
                             <CardDescription>{color}</CardDescription>
-                          </Inline>
+                          </button>
                         ))}
                       </Stack>
                     </CardContent>
@@ -299,7 +331,7 @@ export default function SvgToStitchPage() {
                     <Spacer />
                     {plan && (
                       <CardDescription>
-                        dashed = jump · fills stitch as outlines
+                        dashed = jump · click a color to highlight it
                       </CardDescription>
                     )}
                   </Inline>
@@ -325,7 +357,11 @@ export default function SvgToStitchPage() {
                     }}
                   >
                     {plan ? (
-                      <StitchPreview plan={plan} />
+                      <StitchPreview
+                        plan={plan}
+                        selectedColor={selectedColor}
+                        onSelectColor={setSelectedColor}
+                      />
                     ) : (
                       <Stack
                         align="center"
