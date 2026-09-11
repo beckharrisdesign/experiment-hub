@@ -80,7 +80,7 @@ export function StitchPreview({ plan }: { plan: StitchPlan }) {
   return (
     <svg
       viewBox={viewBox}
-      className="h-full w-full"
+      style={{ width: "100%", height: "100%" }}
       role="img"
       aria-label="Stitch path preview"
       preserveAspectRatio="xMidYMid meet"
@@ -91,7 +91,7 @@ export function StitchPreview({ plan }: { plan: StitchPlan }) {
             key={i}
             points={segment.points}
             fill="none"
-            stroke="#6e7681"
+            stroke="var(--muted-foreground)"
             strokeWidth={3}
             strokeDasharray="8 8"
             vectorEffect="non-scaling-stroke"
