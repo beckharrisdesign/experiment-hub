@@ -11,6 +11,27 @@ export type { Point };
 export interface ColoredPolyline {
   color: string; // normalized #rrggbb
   points: Point[];
+  /** Document-order index of the source element (set by extractGeometry). */
+  order?: number;
+}
+
+/**
+ * One element's filled region: every subpath ring, transformed, sharing one
+ * fill color. Kept together so the even-odd rule can carve holes (a letter
+ * O's inner ring) out of the hatch instead of filling them.
+ */
+export interface FillRegion {
+  color: string; // normalized #rrggbb
+  rings: Point[][];
+  /** Document-order index of the source element. */
+  order: number;
+  /** True when the same element also stitches a stroke outline. */
+  hasStroke: boolean;
+}
+
+export interface ExtractedGeometry {
+  strokes: ColoredPolyline[];
+  fills: FillRegion[];
 }
 
 // Row-major 2x3 affine matrix [a c e; b d f], matching SVG's matrix(a b c d e f).
@@ -130,14 +151,18 @@ function inheritPaint(el: Element, inherited: InheritedPaint): InheritedPaint {
   };
 }
 
-// The one thread color a shape stitches in. Follows SVG paint defaults:
-// stroke defaults to none, fill defaults to black — so stroke (when painted)
-// wins, else fill, and only fill:none with no stroke means nothing to stitch.
-function shapeColor(paint: InheritedPaint): string | null {
-  const stroke =
-    paint.stroke !== null && paint.stroke !== "none" ? paint.stroke : null;
-  const fill = paint.fill === "none" ? null : (paint.fill ?? "#000000");
-  return stroke ?? fill;
+// Resolved paints following SVG defaults: stroke defaults to none, fill
+// defaults to black. A painted stroke stitches as an outline run; a painted
+// fill stitches as a filled region (or, in outline mode, its boundary).
+function resolvedPaints(paint: InheritedPaint): {
+  stroke: string | null;
+  fill: string | null;
+} {
+  return {
+    stroke:
+      paint.stroke !== null && paint.stroke !== "none" ? paint.stroke : null,
+    fill: paint.fill === "none" ? null : (paint.fill ?? "#000000"),
+  };
 }
 
 function isHidden(el: Element): boolean {
@@ -270,7 +295,7 @@ function walk(
   matrix: Matrix,
   inherited: InheritedPaint,
   tolerance: number,
-  out: ColoredPolyline[],
+  out: ExtractedGeometry,
 ): void {
   const tag = el.tagName.toLowerCase();
   if (SKIP_TAGS.has(tag)) return;
@@ -280,11 +305,33 @@ function walk(
   const paint = inheritPaint(el, inherited);
 
   if (SHAPE_TAGS.has(tag)) {
-    const color = shapeColor(paint);
-    if (color === null) return; // fill:none + no stroke — nothing visible to stitch
-    for (const polyline of shapePolylines(el, tolerance)) {
-      const points = polyline.map((p) => apply(m, p));
-      if (points.length > 1) out.push({ color, points });
+    const { stroke, fill } = resolvedPaints(paint);
+    if (stroke === null && fill === null) return; // nothing visible to stitch
+    const order = out.strokes.length + out.fills.length;
+    const polylines = shapePolylines(el, tolerance).map((polyline) =>
+      polyline.map((p) => apply(m, p)),
+    );
+    if (stroke !== null) {
+      for (const points of polylines) {
+        if (points.length > 1) {
+          out.strokes.push({ color: stroke, points, order });
+        }
+      }
+    }
+    if (fill !== null) {
+      // Every subpath goes in as a ring, degenerate ones included (a bare
+      // 2-point path, a `line` with only a fill). Fill mode validates rings
+      // and drops zero-area geometry there; the legacy outline view keeps
+      // stitching these as it always did.
+      const rings = polylines.filter((points) => points.length > 1);
+      if (rings.length > 0) {
+        out.fills.push({
+          color: fill,
+          rings,
+          order,
+          hasStroke: stroke !== null,
+        });
+      }
     }
     return;
   }
@@ -295,23 +342,45 @@ function walk(
 }
 
 /**
- * Extract colored polylines (in SVG user units, y-down) from an SVG document.
- * `tolerance` is the max flattening deviation in user units. The root <svg>'s
- * own transform, stroke, and fill participate like any other ancestor's.
+ * Extract stitchable geometry (in SVG user units, y-down) from an SVG
+ * document: stroked outlines and filled regions, separately. `tolerance` is
+ * the max flattening deviation in user units. The root <svg>'s own
+ * transform, stroke, and fill participate like any other ancestor's.
  */
-export function extractPolylines(
+export function extractGeometry(
   doc: Document,
   tolerance: number,
-): ColoredPolyline[] {
+): ExtractedGeometry {
   const root = doc.documentElement;
   if (!root || root.tagName.toLowerCase() !== "svg") {
     throw new Error("not an SVG document");
   }
-  const out: ColoredPolyline[] = [];
+  const out: ExtractedGeometry = { strokes: [], fills: [] };
   const rootMatrix = parseTransform(root.getAttribute("transform"));
   const rootPaint = inheritPaint(root, { stroke: null, fill: null });
   for (const child of Array.from(root.children)) {
     walk(child, rootMatrix, rootPaint, tolerance, out);
   }
   return out;
+}
+
+/**
+ * Legacy view of the geometry: every filled region flattened to its boundary
+ * outline (the converter's original outline-only behavior). Fill regions on
+ * elements that also carry a stroke are dropped here, matching the old
+ * stroke-over-fill precedence.
+ */
+export function extractPolylines(
+  doc: Document,
+  tolerance: number,
+): ColoredPolyline[] {
+  const { strokes, fills } = extractGeometry(doc, tolerance);
+  const out: ColoredPolyline[] = [...strokes];
+  for (const fill of fills) {
+    if (fill.hasStroke) continue; // old behavior: stroke wins outright
+    for (const points of fill.rings) {
+      out.push({ color: fill.color, points, order: fill.order });
+    }
+  }
+  return out.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
