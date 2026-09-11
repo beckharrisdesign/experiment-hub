@@ -8,6 +8,7 @@ interface Segment {
   color: string;
   colorIndex: number; // index into plan.colors; -1 for jumps
   jump: boolean;
+  underlay: boolean; // recessed rendering — sewn beneath the top stitching
   points: string; // SVG polyline points attribute
 }
 
@@ -82,6 +83,7 @@ export default function StitchPreview({
     const segments: Segment[] = [];
     let colorIndex = 0;
     let run: Array<{ x: number; y: number }> = [];
+    let runUnderlay = false;
     let position: { x: number; y: number } | null = null;
     let minX = Infinity;
     let minY = Infinity;
@@ -94,6 +96,7 @@ export default function StitchPreview({
           color: plan.colors[colorIndex] ?? "#000000",
           colorIndex,
           jump: false,
+          underlay: runUnderlay,
           points: run.map((p) => `${p.x},${p.y}`).join(" "),
         });
       }
@@ -107,11 +110,15 @@ export default function StitchPreview({
       maxX = Math.max(maxX, p.x);
       maxY = Math.max(maxY, p.y);
       switch (entry.kind) {
-        case "stitch":
+        case "stitch": {
+          const underlay = entry.underlay ?? false;
+          if (run.length > 0 && underlay !== runUnderlay) flushRun();
           if (run.length === 0 && position) run.push(position);
+          runUnderlay = underlay;
           run.push(p);
           position = p;
           break;
+        }
         case "jump":
           flushRun();
           if (position) {
@@ -119,6 +126,7 @@ export default function StitchPreview({
               color: "",
               colorIndex: -1,
               jump: true,
+              underlay: false,
               points: `${position.x},${position.y} ${p.x},${p.y}`,
             });
           }
@@ -335,26 +343,39 @@ export default function StitchPreview({
               points={segment.points}
               fill="none"
               stroke="var(--muted-foreground)"
-              strokeWidth={3}
-              strokeDasharray="8 8"
+              strokeWidth={1.5}
+              strokeDasharray="6 6"
               vectorEffect="non-scaling-stroke"
-              strokeOpacity={selectedColor !== null ? 0.15 : 0.6}
+              strokeOpacity={selectedColor !== null ? 0.1 : 0.35}
               pointerEvents="none"
             />
           ) : (
             <g key={i}>
               {/* Screen-sized strokes: without non-scaling-stroke the
                   viewBox-unit widths balloon to hundreds of pixels at 64×
-                  zoom and obscure the stitch path. */}
+                  zoom and obscure the stitch path. Underlay draws recessed —
+                  on fabric it sits beneath the top stitching. */}
               <polyline
                 points={segment.points}
                 fill="none"
                 stroke={segment.color}
-                strokeWidth={selectedColor === segment.colorIndex ? 4 : 2.5}
+                strokeWidth={
+                  segment.underlay
+                    ? 1
+                    : selectedColor === segment.colorIndex
+                      ? 4
+                      : 2.5
+                }
                 vectorEffect="non-scaling-stroke"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeOpacity={dimmed(segment.colorIndex) ? 0.12 : 1}
+                strokeOpacity={
+                  dimmed(segment.colorIndex)
+                    ? 0.12
+                    : segment.underlay
+                      ? 0.35
+                      : 1
+                }
                 pointerEvents="none"
               />
               {/* Invisible fat twin so thin runs are still clickable. */}

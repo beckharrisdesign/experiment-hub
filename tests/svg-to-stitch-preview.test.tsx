@@ -132,6 +132,42 @@ describe("StitchPreview selection", () => {
   });
 });
 
+describe("StitchPreview underlay rendering", () => {
+  it("splits contiguous stitching where the underlay flag changes and renders it recessed", () => {
+    // Two contiguous runs (no jump between them): underlay first, then the
+    // top fill continuing from the same position.
+    const plan = {
+      entries: [
+        { kind: "stitch" as const, x: 0, y: 0, underlay: true },
+        { kind: "stitch" as const, x: 100, y: 0, underlay: true },
+        { kind: "stitch" as const, x: 200, y: 0 },
+        { kind: "stitch" as const, x: 300, y: 0 },
+        { kind: "end" as const, x: 300, y: 0 },
+      ],
+      colors: ["#e11d48"],
+      stats: {
+        stitches: 4,
+        jumps: 0,
+        colorChanges: 0,
+        widthMm: 30,
+        heightMm: 0,
+      },
+    };
+    const { container } = render(<StitchPreview plan={plan} />);
+    const painted = [...container.querySelectorAll("polyline")].filter(
+      (p) => p.getAttribute("stroke") === "#e11d48",
+    );
+    expect(painted).toHaveLength(2);
+    const recessed = painted.filter(
+      (p) => p.getAttribute("stroke-opacity") === "0.35",
+    );
+    const top = painted.filter((p) => p.getAttribute("stroke-opacity") === "1");
+    expect(recessed).toHaveLength(1);
+    expect(top).toHaveLength(1);
+    expect(recessed[0].getAttribute("stroke-width")).toBe("1");
+  });
+});
+
 describe("StitchPreview pan and zoom", () => {
   it("zoom in shrinks the viewBox; Fit restores it", () => {
     const { container } = render(<StitchPreview plan={twoColorPlan()} />);

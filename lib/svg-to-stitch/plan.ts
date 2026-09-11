@@ -13,11 +13,15 @@ export interface PlanEntry {
   // Absolute position in 0.1mm units, y-up, design centered at the origin.
   x: number;
   y: number;
+  /** True on stitches of underlay runs — the preview draws them recessed. */
+  underlay?: boolean;
 }
 
 export interface ColorBlock {
   color: string;
   polylines: Point[][];
+  /** Per-run underlay flags, parallel to `polylines`; absent = all top. */
+  underlay?: boolean[];
 }
 
 export interface StitchPlanOptions {
@@ -48,14 +52,15 @@ export interface StitchPlan {
 export function groupByColor(polylines: ColoredPolyline[]): ColorBlock[] {
   const blocks: ColorBlock[] = [];
   const byColor = new Map<string, ColorBlock>();
-  for (const { color, points } of polylines) {
+  for (const { color, points, underlay } of polylines) {
     let block = byColor.get(color);
     if (!block) {
-      block = { color, polylines: [] };
+      block = { color, polylines: [], underlay: [] };
       byColor.set(color, block);
       blocks.push(block);
     }
     block.polylines.push(points);
+    block.underlay!.push(underlay ?? false);
   }
   return blocks;
 }
@@ -129,7 +134,9 @@ export function buildPlan(
 
   for (let b = 0; b < blocks.length; b++) {
     const block = blocks[b];
-    const runs = block.polylines.filter((p) => p.length > 1);
+    const runs = block.polylines
+      .map((points, i) => ({ points, underlay: block.underlay?.[i] ?? false }))
+      .filter((r) => r.points.length > 1);
     if (runs.length === 0) continue;
     if (colors.length > 0) {
       entries.push({ kind: "color", x: position.x, y: position.y });
@@ -138,12 +145,15 @@ export function buildPlan(
     colors.push(block.color);
 
     for (const run of runs) {
+      const underlay = run.underlay || undefined;
       // Scale to machine units first so stitch length is a physical measure,
       // then resample and round to integer 0.1mm steps.
-      const machineRun = resample(run.map(toMachine), stepUnits).map((p) => ({
-        x: Math.round(p.x),
-        y: Math.round(p.y),
-      }));
+      const machineRun = resample(run.points.map(toMachine), stepUnits).map(
+        (p) => ({
+          x: Math.round(p.x),
+          y: Math.round(p.y),
+        }),
+      );
       const start = machineRun[0];
       if (start.x !== position.x || start.y !== position.y) {
         entries.push({ kind: "jump", x: start.x, y: start.y });
@@ -151,12 +161,12 @@ export function buildPlan(
       }
       // First stitch anchors the needle at the run start even after a jump.
       let last = start;
-      entries.push({ kind: "stitch", x: start.x, y: start.y });
+      entries.push({ kind: "stitch", x: start.x, y: start.y, underlay });
       stitches++;
       for (let i = 1; i < machineRun.length; i++) {
         const p = machineRun[i];
         if (p.x === last.x && p.y === last.y) continue; // dedupe sub-unit steps
-        entries.push({ kind: "stitch", x: p.x, y: p.y });
+        entries.push({ kind: "stitch", x: p.x, y: p.y, underlay });
         stitches++;
         last = p;
       }

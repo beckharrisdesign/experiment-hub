@@ -140,6 +140,7 @@ export function convertSvg(
             color: region.color,
             points: run,
             order: region.order,
+            underlay: true,
           });
         }
       }
