@@ -146,14 +146,15 @@ function buildColumns(segments: RowSegment[]): RowSegment[][] {
 }
 
 /**
- * Stitch one column serpentine: rows alternate direction, needle points laid
- * at the stitch length with a 4-phase per-row offset (classic tatami stagger).
- *
- * Each row starts at whichever end sits nearest the previous row's end, and
- * when even that connector would exceed one stitch length — a region edge
- * running nearly parallel to the rows, like the top bar of a letter — the
- * run breaks instead: the plan sews a jump there, never a long thread
- * across fabric outside the shape. Returns one or more runs per column.
+ * Stitch one column's rows with needle points laid at the stitch length and
+ * a 4-phase per-row offset (classic tatami stagger). Each row is entered at
+ * whichever end sits nearest the previous row's end — usually serpentine
+ * alternation, but a row that shifts across the previous endpoint can sew
+ * the same direction twice. When even the nearest entry would need a
+ * connector longer than one stitch — a region edge running nearly parallel
+ * to the rows, like the top bar of a letter — the run breaks instead: the
+ * plan sews a jump there, never a long thread across fabric outside the
+ * shape. Returns one or more runs per column.
  */
 function stitchColumn(column: RowSegment[], opts: HatchOptions): Point[][] {
   const runs: Point[][] = [];
@@ -191,7 +192,9 @@ function stitchColumn(column: RowSegment[], opts: HatchOptions): Point[][] {
 
 /**
  * Fill the region bounded by `rings` (even-odd) with tatami rows.
- * Returns one polyline per serpentine column, in ring coordinates.
+ * Returns the stitch runs in ring coordinates — usually one per serpentine
+ * column, but a column splits into several runs wherever a safe connector
+ * doesn't exist (the plan jumps between runs).
  */
 export function hatchFill(rings: Point[][], opts: HatchOptions): Point[][] {
   // Guard the loop increments: hatchFill is exported, and a zero or negative

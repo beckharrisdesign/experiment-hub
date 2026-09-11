@@ -138,6 +138,10 @@ describe("hatchFill", () => {
       spacing: 1,
       stitchLength: 2,
     });
+    // The taper must actually split into separate runs (the plan jumps
+    // between them) — short intermediate stitches along the same bad
+    // connector would satisfy the length check alone.
+    expect(runs.length).toBeGreaterThan(1);
     const limit = Math.hypot(2, 1) + 1e-6; // one stitch + one row of travel
     for (const run of runs) {
       for (let i = 1; i < run.length; i++) {
@@ -174,6 +178,10 @@ describe("hatchFill", () => {
         spacing: 1,
         stitchLength: 2.5,
       });
+      // The glyph must actually produce fill coverage at every angle —
+      // an empty result would make the invariant loop below vacuous.
+      expect(runs.length).toBeGreaterThan(0);
+      expect(runs.flat().length).toBeGreaterThan(50);
       const limit = Math.hypot(2.5, 1) + 1e-6;
       for (const run of runs) {
         for (let i = 1; i < run.length; i++) {
