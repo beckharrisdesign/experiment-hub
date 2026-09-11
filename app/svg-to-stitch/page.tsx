@@ -4,7 +4,6 @@ import { useCallback, useMemo, useState } from "react";
 import {
   Badge,
   Button,
-  Callout,
   CardDescription,
   Field,
   Inline,
@@ -440,13 +439,6 @@ export default function SvgToStitchPage() {
                 Download EXP
               </Button>
             </Stack>
-
-            <Callout>
-              Wilcom&apos;s EMB format is proprietary with no public spec, so no
-              converter can write it directly. DST is the universal machine
-              format. EXP covers Melco. Both open in Wilcom and Hatch, which can
-              save EMB from there.
-            </Callout>
           </Stack>
         </div>
       ) : (
