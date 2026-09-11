@@ -384,12 +384,15 @@ export default function StitchPreview({
         style={{
           position: "absolute",
           bottom: 8,
-          left: 8,
+          right: 8,
           fontSize: 11,
           color: "var(--muted-foreground)",
           pointerEvents: "none",
+          textAlign: "right",
         }}
       >
+        dashed = jump · click a color to highlight
+        <br />
         scroll to zoom · drag to pan · double-click to fit
       </span>
     </div>
