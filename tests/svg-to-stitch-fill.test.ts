@@ -195,6 +195,79 @@ describe("hatchFill", () => {
     }
   });
 
+  it("culls sliver segments and single-poke runs", () => {
+    // A region far narrower than half the stitch geometry produces only
+    // needle-poke slivers — the optimizer drops them entirely (the shape's
+    // boundary run still sews it).
+    expect(
+      hatchFill([rect(0, 0, 0.2, 10)], {
+        angleDeg: 0,
+        spacing: 1,
+        stitchLength: 2,
+      }),
+    ).toEqual([]);
+  });
+
+  it("orders runs nearest-neighbor instead of scanline discovery order", () => {
+    // Three separate strips: sewing must proceed strip to strip, not hop
+    // back and forth. Gaps between strips are outside the region, so the
+    // runs stay separate (three runs), just sensibly ordered.
+    const strips = [rect(0, 0, 4, 20), rect(10, 0, 4, 20), rect(20, 0, 4, 20)];
+    const runs = hatchFill(strips, {
+      angleDeg: 90, // rows run vertically, one column per strip
+      spacing: 2,
+      stitchLength: 3,
+    });
+    expect(runs.length).toBe(3);
+    // Monotonic strip-to-strip progression (either direction) — never
+    // strip 1 → 3 → 2.
+    const centroids = runs.map(
+      (run) => run.reduce((s, p) => s + p.x, 0) / run.length,
+    );
+    const ascending = [...centroids].sort((a, b) => a - b);
+    const descending = [...ascending].reverse();
+    expect([ascending, descending]).toContainEqual(centroids);
+  });
+
+  it("merges runs across short in-region gaps instead of jumping", () => {
+    // U shape: the bottom band connects to each arm inside the region, so
+    // the arms chain onto it with stitched connectors; only the wide gap
+    // across the top of the U stays a separate run.
+    const u = [
+      [
+        { x: 0, y: 0 },
+        { x: 30, y: 0 },
+        { x: 30, y: 32 },
+        { x: 20, y: 32 },
+        { x: 20, y: 8 },
+        { x: 10, y: 8 },
+        { x: 10, y: 32 },
+        { x: 0, y: 32 },
+        { x: 0, y: 0 },
+      ],
+    ];
+    const runs = hatchFill(u, { angleDeg: 0, spacing: 4, stitchLength: 4 });
+    // Bottom band chains onto the left arm with a stitched connector at the
+    // corner; the right arm stays a separate run (the gap across the U's
+    // mouth is out of region).
+    expect(runs.length).toBe(2);
+    // Nothing may cross the notch (x 10..20, y 8..32).
+    for (const run of runs) {
+      for (let i = 1; i < run.length; i++) {
+        const mid = {
+          x: (run[i - 1].x + run[i].x) / 2,
+          y: (run[i - 1].y + run[i].y) / 2,
+        };
+        const inNotch =
+          mid.x > 10 + 1e-6 &&
+          mid.x < 20 - 1e-6 &&
+          mid.y > 8 + 1e-6 &&
+          mid.y < 32 - 1e-6;
+        expect(inNotch).toBe(false);
+      }
+    }
+  });
+
   it("rejects non-positive spacing and stitch length instead of hanging", () => {
     const rings = [rect(0, 0, 10, 10)];
     expect(() =>
@@ -351,6 +424,29 @@ describe("convertSvg fill mode", () => {
         fillAngleDeg: Number.NaN,
       }),
     ).toThrow(/fill angle/);
+  });
+
+  it("flags underlay stitches in the plan for recessed preview rendering", () => {
+    const withUnderlay = convertSvg(FILLED_SQUARE, {
+      targetWidthMm: 100,
+      stitchLengthMm: 2.5,
+      fillUnderlay: true,
+    });
+    const kinds = new Set(
+      withUnderlay.plan.entries
+        .filter((e) => e.kind === "stitch")
+        .map((e) => e.underlay ?? false),
+    );
+    expect(kinds).toEqual(new Set([true, false]));
+
+    const without = convertSvg(FILLED_SQUARE, {
+      targetWidthMm: 100,
+      stitchLengthMm: 2.5,
+      fillUnderlay: false,
+    });
+    expect(
+      without.plan.entries.some((e) => e.kind === "stitch" && e.underlay),
+    ).toBe(false);
   });
 
   it("DST stitch count in the header matches the filled plan", () => {

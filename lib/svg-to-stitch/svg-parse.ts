@@ -13,6 +13,8 @@ export interface ColoredPolyline {
   points: Point[];
   /** Document-order index of the source element (set by extractGeometry). */
   order?: number;
+  /** True for fill-underlay runs — sewn beneath the visible top stitching. */
+  underlay?: boolean;
 }
 
 /**

@@ -58,11 +58,10 @@ export function closeRings(rings: Point[][]): Point[][] {
  * Scanline the rings at the hatch angle and return the covered intervals of
  * every row, even-odd rule (so holes — inner rings — are left unstitched).
  */
-function scanRows(rings: Point[][], opts: HatchOptions): RowSegment[] {
-  const a = (-opts.angleDeg * Math.PI) / 180;
-  const cos = Math.cos(a);
-  const sin = Math.sin(a);
-  const rotated = rings.map((ring) => ring.map((p) => rotate(p, cos, sin)));
+function scanRows(rotated: Point[][], opts: HatchOptions): RowSegment[] {
+  // A segment shorter than this is a lone needle poke that still costs a
+  // run and a jump — digitizers cull them.
+  const minSeg = Math.min(opts.spacing, opts.stitchLength) / 2;
 
   let minY = Infinity;
   let maxY = -Infinity;
@@ -93,12 +92,105 @@ function scanRows(rings: Point[][], opts: HatchOptions): RowSegment[] {
     }
     xs.sort((m, n) => m - n);
     for (let i = 0; i + 1 < xs.length; i += 2) {
-      if (xs[i + 1] - xs[i] > 1e-9) {
+      if (xs[i + 1] - xs[i] > minSeg) {
         segments.push({ y, x0: xs[i], x1: xs[i + 1], row });
       }
     }
   }
   return segments;
+}
+
+/** Even-odd point-in-region test over closed rings. */
+function insideRegion(p: Point, rings: Point[][]): boolean {
+  let inside = false;
+  for (const ring of rings) {
+    for (let i = 0; i < ring.length - 1; i++) {
+      const a = ring[i];
+      const b = ring[i + 1];
+      if (a.y <= p.y === b.y <= p.y) continue;
+      const x = a.x + ((p.y - a.y) * (b.x - a.x)) / (b.y - a.y);
+      if (x > p.x) inside = !inside;
+    }
+  }
+  return inside;
+}
+
+/**
+ * Sequence the runs for sewing economy: greedy nearest-neighbor ordering
+ * (reversing a run when its far end is closer), then merge consecutive runs
+ * whose gap is at most one stitch AND stays inside the region — the needle
+ * stitches over instead of jumping. Scattered scanline order is what turns
+ * a detailed fill into confetti: hundreds of long jumps criss-crossing the
+ * design, and a trim at every one on a real machine.
+ */
+function orderAndMerge(
+  runs: Point[][],
+  rings: Point[][],
+  opts: HatchOptions,
+): Point[][] {
+  if (runs.length <= 1) return runs;
+
+  const remaining = new Set(runs.map((_, i) => i));
+  const ordered: Point[][] = [];
+  let current = runs[0];
+  remaining.delete(0);
+  ordered.push(current);
+  while (remaining.size > 0) {
+    const end = current[current.length - 1];
+    let best = -1;
+    let bestDist = Infinity;
+    let bestReversed = false;
+    for (const i of remaining) {
+      const run = runs[i];
+      const toStart = Math.hypot(run[0].x - end.x, run[0].y - end.y);
+      const toEnd = Math.hypot(
+        run[run.length - 1].x - end.x,
+        run[run.length - 1].y - end.y,
+      );
+      if (toStart < bestDist) {
+        bestDist = toStart;
+        best = i;
+        bestReversed = false;
+      }
+      if (toEnd < bestDist) {
+        bestDist = toEnd;
+        best = i;
+        bestReversed = true;
+      }
+    }
+    remaining.delete(best);
+    current = bestReversed ? [...runs[best]].reverse() : runs[best];
+    ordered.push(current);
+  }
+
+  const merged: Point[][] = [];
+  let acc = ordered[0];
+  for (let i = 1; i < ordered.length; i++) {
+    const next = ordered[i];
+    const end = acc[acc.length - 1];
+    const gap = Math.hypot(next[0].x - end.x, next[0].y - end.y);
+    const mid = { x: (next[0].x + end.x) / 2, y: (next[0].y + end.y) / 2 };
+    if (gap <= opts.stitchLength && insideRegion(mid, rings)) {
+      acc = [...acc, ...next];
+    } else {
+      merged.push(acc);
+      acc = next;
+    }
+  }
+  merged.push(acc);
+
+  // Post-merge cull: a run still shorter than one stitch after merging is
+  // an isolated needle poke costing two trims — the region's boundary run
+  // covers that sliver anyway.
+  return merged.filter((run) => pathLength(run) >= opts.stitchLength);
+}
+
+function pathLength(run: Point[]): number {
+  let len = 0;
+  for (let i = 1; i < run.length; i++) {
+    len += Math.hypot(run[i].x - run[i - 1].x, run[i].y - run[i - 1].y);
+  }
+  return len;
 }
 
 /**
@@ -210,14 +302,19 @@ export function hatchFill(rings: Point[][], opts: HatchOptions): Point[][] {
   }
   const closed = closeRings(rings);
   if (closed.length === 0) return [];
-  const segments = scanRows(closed, opts);
-  const columns = buildColumns(segments);
 
   const a = (opts.angleDeg * Math.PI) / 180;
   const cos = Math.cos(a);
   const sin = Math.sin(a);
-  return columns
+  // Work in row-aligned space: rotate the rings once, and rotate the
+  // finished runs back at the end.
+  const rotated = closed.map((ring) => ring.map((p) => rotate(p, cos, -sin)));
+  const segments = scanRows(rotated, opts);
+  const columns = buildColumns(segments);
+  const runs = columns
     .flatMap((column) => stitchColumn(column, opts))
-    .filter((run) => run.length > 1)
-    .map((run) => run.map((p) => rotate(p, cos, sin)));
+    .filter((run) => run.length > 1);
+  return orderAndMerge(runs, rotated, opts).map((run) =>
+    run.map((p) => rotate(p, cos, sin)),
+  );
 }
