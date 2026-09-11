@@ -69,6 +69,43 @@ describe("StitchPreview selection", () => {
     expect(onSelectColor).toHaveBeenLastCalledWith(null);
   });
 
+  it("a slow drag of tiny moves still counts as a drag, not a click", () => {
+    const onSelectColor = vi.fn();
+    const { container } = render(
+      <StitchPreview plan={twoColorPlan()} onSelectColor={onSelectColor} />,
+    );
+    const svg = container.querySelector("svg")!;
+    fireEvent.pointerDown(svg, { pointerId: 1, clientX: 0, clientY: 0 });
+    for (let x = 1; x <= 6; x++) {
+      fireEvent.pointerMove(svg, { pointerId: 1, clientX: x, clientY: 0 });
+    }
+    fireEvent.pointerUp(svg, { pointerId: 1, clientX: 6, clientY: 0 });
+    expect(onSelectColor).not.toHaveBeenCalled();
+  });
+
+  it("sub-threshold jitter still counts as a click", () => {
+    const onSelectColor = vi.fn();
+    const { container } = render(
+      <StitchPreview plan={twoColorPlan()} onSelectColor={onSelectColor} />,
+    );
+    const hit = container.querySelector('[data-color-index="0"]')!;
+    fireEvent.pointerDown(hit, { pointerId: 1, clientX: 0, clientY: 0 });
+    fireEvent.pointerMove(hit, { pointerId: 1, clientX: 3, clientY: 0 });
+    fireEvent.pointerUp(hit, { pointerId: 1, clientX: 3, clientY: 0 });
+    expect(onSelectColor).toHaveBeenLastCalledWith(0);
+  });
+
+  it("a canceled pointer never selects", () => {
+    const onSelectColor = vi.fn();
+    const { container } = render(
+      <StitchPreview plan={twoColorPlan()} onSelectColor={onSelectColor} />,
+    );
+    const hit = container.querySelector('[data-color-index="0"]')!;
+    fireEvent.pointerDown(hit, { pointerId: 1, clientX: 0, clientY: 0 });
+    fireEvent.pointerCancel(hit, { pointerId: 1, clientX: 0, clientY: 0 });
+    expect(onSelectColor).not.toHaveBeenCalled();
+  });
+
   it("a drag does not change the selection", () => {
     const onSelectColor = vi.fn();
     const { container } = render(
@@ -134,6 +171,21 @@ describe("StitchPreview pan and zoom", () => {
     const [ax, ay] = after.split(" ").map(Number);
     expect(ax).toBeGreaterThan(bx);
     expect(ay).toBeGreaterThan(by);
+  });
+
+  it("pinch with two pointers zooms by the distance ratio", () => {
+    const { container } = render(<StitchPreview plan={twoColorPlan()} />);
+    const svg = container.querySelector("svg")!;
+    const initialW = Number(svg.getAttribute("viewBox")!.split(" ")[2]);
+    fireEvent.pointerDown(svg, { pointerId: 1, clientX: 100, clientY: 100 });
+    fireEvent.pointerDown(svg, { pointerId: 2, clientX: 200, clientY: 100 });
+    // Spread the second finger: distance 100 → 300 should zoom in ~3×.
+    fireEvent.pointerMove(svg, { pointerId: 2, clientX: 400, clientY: 100 });
+    const pinchedW = Number(svg.getAttribute("viewBox")!.split(" ")[2]);
+    expect(pinchedW).toBeLessThan(initialW);
+    expect(pinchedW).toBeCloseTo(initialW / 3, 5);
+    fireEvent.pointerUp(svg, { pointerId: 2, clientX: 400, clientY: 100 });
+    fireEvent.pointerUp(svg, { pointerId: 1, clientX: 100, clientY: 100 });
   });
 
   it("double-click refits the view", () => {

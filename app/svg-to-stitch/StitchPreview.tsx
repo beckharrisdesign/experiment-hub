@@ -29,6 +29,13 @@ const MAX_ZOOM_IN = 64; // view width can shrink to base/64
 const MAX_ZOOM_OUT = 4; // and grow to base*4
 const DRAG_THRESHOLD_PX = 4; // under this, a pointer gesture counts as a click
 
+// The viewer is touch-first on tablets at the machine, so overlay controls
+// keep a 44×44px minimum hit area.
+const ZOOM_BUTTON_STYLE: React.CSSProperties = {
+  minWidth: 44,
+  minHeight: 44,
+};
+
 function clampView(view: Box, base: Box): Box {
   const w = Math.min(
     Math.max(view.w, base.w / MAX_ZOOM_IN),
@@ -152,7 +159,10 @@ export default function StitchPreview({
   // Gesture bookkeeping lives in refs: it changes on every pointer event and
   // must not re-render.
   const gesture = useRef({
-    pointers: new Map<number, { x: number; y: number }>(),
+    pointers: new Map<
+      number,
+      { x: number; y: number; downX: number; downY: number }
+    >(),
     moved: false,
     pinchDist: 0,
   });
@@ -199,7 +209,12 @@ export default function StitchPreview({
 
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
     const g = gesture.current;
-    g.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    g.pointers.set(e.pointerId, {
+      x: e.clientX,
+      y: e.clientY,
+      downX: e.clientX,
+      downY: e.clientY,
+    });
     if (g.pointers.size === 1) g.moved = false;
     if (g.pointers.size === 2) {
       const [a, b] = [...g.pointers.values()];
@@ -214,9 +229,13 @@ export default function StitchPreview({
     const g = gesture.current;
     const prev = g.pointers.get(e.pointerId);
     if (!prev) return;
-    const curr = { x: e.clientX, y: e.clientY };
+    const curr = { ...prev, x: e.clientX, y: e.clientY };
     g.pointers.set(e.pointerId, curr);
-    if (Math.hypot(curr.x - prev.x, curr.y - prev.y) > DRAG_THRESHOLD_PX / 2) {
+    // Click vs drag by total displacement from where this pointer went down,
+    // so a slow drag of tiny moves still counts as a drag.
+    if (
+      Math.hypot(curr.x - curr.downX, curr.y - curr.downY) > DRAG_THRESHOLD_PX
+    ) {
       g.moved = true;
     }
 
@@ -249,12 +268,19 @@ export default function StitchPreview({
     }
   };
 
-  const onPointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+  // A canceled pointer (interrupted touch, palm rejection) is never a click:
+  // clean up the gesture without running the selection path.
+  const onPointerCancel = (e: React.PointerEvent<SVGSVGElement>) => {
     const g = gesture.current;
-    const wasOnly = g.pointers.size === 1;
     g.pointers.delete(e.pointerId);
     if (g.pointers.size < 2) g.pinchDist = 0;
     if (g.pointers.size === 0) setDragging(false);
+  };
+
+  const onPointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    const g = gesture.current;
+    const wasOnly = g.pointers.size === 1;
+    onPointerCancel(e);
 
     // Selection happens here, not in onClick: pointer capture retargets
     // click events to the svg, so a click handler on the polylines would
@@ -299,7 +325,7 @@ export default function StitchPreview({
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        onPointerCancel={onPointerCancel}
         onDoubleClick={() => setView(base)}
       >
         {segments.map((segment, i) =>
@@ -317,11 +343,15 @@ export default function StitchPreview({
             />
           ) : (
             <g key={i}>
+              {/* Screen-sized strokes: without non-scaling-stroke the
+                  viewBox-unit widths balloon to hundreds of pixels at 64×
+                  zoom and obscure the stitch path. */}
               <polyline
                 points={segment.points}
                 fill="none"
                 stroke={segment.color}
-                strokeWidth={selectedColor === segment.colorIndex ? 6 : 4}
+                strokeWidth={selectedColor === segment.colorIndex ? 4 : 2.5}
+                vectorEffect="non-scaling-stroke"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeOpacity={dimmed(segment.colorIndex) ? 0.12 : 1}
@@ -332,7 +362,8 @@ export default function StitchPreview({
                 points={segment.points}
                 fill="none"
                 stroke="transparent"
-                strokeWidth={16}
+                strokeWidth={14}
+                vectorEffect="non-scaling-stroke"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 pointerEvents="stroke"
@@ -358,6 +389,7 @@ export default function StitchPreview({
           variant="secondary"
           size="sm"
           aria-label="Zoom in"
+          style={ZOOM_BUTTON_STYLE}
           onClick={() => zoomFromCenter(1 / 1.5)}
         >
           +
@@ -366,6 +398,7 @@ export default function StitchPreview({
           variant="secondary"
           size="sm"
           aria-label="Zoom out"
+          style={ZOOM_BUTTON_STYLE}
           onClick={() => zoomFromCenter(1.5)}
         >
           −
@@ -374,6 +407,7 @@ export default function StitchPreview({
           variant="secondary"
           size="sm"
           aria-label="Fit design"
+          style={ZOOM_BUTTON_STYLE}
           onClick={() => setView(base)}
         >
           Fit

@@ -309,24 +309,18 @@ export default function SvgToStitchPage() {
               <Stack gap={4}>
                 <PanelHeading>Sew order</PanelHeading>
                 {plan.colors.map((color, i) => (
-                  <button
+                  <Button
                     key={`${color}-${i}`}
-                    type="button"
+                    variant="ghost"
                     aria-pressed={selectedColor === i}
                     onClick={() =>
                       setSelectedColor(selectedColor === i ? null : i)
                     }
                     style={{
-                      display: "flex",
-                      alignItems: "center",
+                      justifyContent: "flex-start",
                       gap: 8,
                       width: "100%",
-                      padding: "4px 6px",
-                      borderRadius: 6,
-                      border: "none",
-                      background: "transparent",
-                      cursor: "pointer",
-                      textAlign: "left",
+                      minHeight: 44,
                       boxShadow:
                         selectedColor === i
                           ? "0 0 0 2px var(--ring)"
@@ -346,7 +340,7 @@ export default function SvgToStitchPage() {
                       }}
                     />
                     <CardDescription>{color}</CardDescription>
-                  </button>
+                  </Button>
                 ))}
               </Stack>
             )}
