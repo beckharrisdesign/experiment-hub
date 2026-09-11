@@ -28,7 +28,7 @@
   {
     "id": "seed-finder",
     "name": "Seed Finder",
-    "statement": "The seed search that knows your garden—and your hardiness zone.",
+    "statement": "The seed search that knows your garden\u2014and your hardiness zone.",
     "type": "commercial",
     "directory": "experiments/seed-finder",
     "documentationId": "doc-seed-finder",
@@ -141,7 +141,7 @@
   {
     "id": "garden-guide-generator",
     "name": "Garden Guide Generator",
-    "statement": "Native plants and seeds for where you live—personalized, printable, practical.",
+    "statement": "Native plants and seeds for where you live\u2014personalized, printable, practical.",
     "type": "commercial",
     "directory": "experiments/garden-guide-generator",
     "documentationId": "doc-garden-guide",
@@ -192,7 +192,7 @@
   {
     "id": "the-illuminator",
     "name": "The Illuminator",
-    "statement": "Turn any photo into an embroidery pattern—AI does the hard part, you stitch.",
+    "statement": "Turn any photo into an embroidery pattern\u2014AI does the hard part, you stitch.",
     "type": "commercial",
     "directory": "experiments/the-illuminator",
     "documentationId": "doc-illuminator",
@@ -218,7 +218,7 @@
   {
     "id": "ai-event-landing-zone",
     "name": "Landing Zone",
-    "statement": "Drop everything — we'll handle the calendar.",
+    "statement": "Drop everything \u2014 we'll handle the calendar.",
     "type": "commercial",
     "directory": "experiments/ai-event-landing-zone",
     "documentationId": "doc-ai-event-landing-zone",
@@ -311,7 +311,7 @@
   {
     "id": "snap-issue",
     "name": "Snap Issue",
-    "statement": "Draw a viewport rectangle, crop the screenshot, create a GitHub issue—one gesture.",
+    "statement": "Draw a viewport rectangle, crop the screenshot, create a GitHub issue\u2014one gesture.",
     "type": "tool",
     "directory": "experiments/snap-issue",
     "documentationId": "",
@@ -330,7 +330,7 @@
   {
     "id": "pomodoro-maker",
     "name": "Pomodoro Maker",
-    "statement": "A minimal, joyful Pomodoro timer for solo makers—custom rhythms without subscription noise.",
+    "statement": "A minimal, joyful Pomodoro timer for solo makers\u2014custom rhythms without subscription noise.",
     "type": "commercial",
     "directory": "experiments/pomodoro-maker",
     "documentationId": "doc-pomodoro-maker",
@@ -349,7 +349,7 @@
   },
   {
     "id": "etsy-notion-sync",
-    "name": "Etsy → Notion Sync",
+    "name": "Etsy \u2192 Notion Sync",
     "statement": "Read-only Etsy v3 capture with append-only history, mirrored one-way into Notion.",
     "type": "tool",
     "directory": "experiments/etsy-notion-sync",
@@ -415,7 +415,7 @@
   {
     "id": "generative-sandbox",
     "name": "Generative Sandbox",
-    "statement": "A sandbox for when the inspiration strikes — stack transforms, keep the recipe.",
+    "statement": "A sandbox for when the inspiration strikes \u2014 stack transforms, keep the recipe.",
     "type": "tool",
     "directory": "experiments/generative-sandbox",
     "documentationId": "",
@@ -429,6 +429,25 @@
       "modules",
       "utility",
       "sandbox"
+    ]
+  },
+  {
+    "id": "svg-to-stitch",
+    "name": "SVG to Stitch",
+    "statement": "Drop an SVG, download machine-ready embroidery files. Running-stitch DST and EXP, converted in the browser.",
+    "type": "tool",
+    "directory": "experiments/svg-to-stitch",
+    "documentationId": "doc-svg-to-stitch",
+    "prototypeId": "proto-svg-to-stitch",
+    "status": "Active",
+    "createdDate": "2026-09-11",
+    "lastModified": "2026-09-11",
+    "tags": [
+      "embroidery",
+      "svg",
+      "file-converter",
+      "fabrication",
+      "client-side"
     ]
   }
 ]
