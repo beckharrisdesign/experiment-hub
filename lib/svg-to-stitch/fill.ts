@@ -123,44 +123,76 @@ function insideRegion(p: Point, rings: Point[][]): boolean {
  * a detailed fill into confetti: hundreds of long jumps criss-crossing the
  * design, and a trim at every one on a real machine.
  */
+// Above this many runs, greedy nearest-neighbor's O(R²) scan could block
+// the browser; such pathological fills keep scanline order, which is
+// already roughly spatial.
+const MAX_NN_RUNS = 4000;
+
+/**
+ * Every sampled point of the connector from `a` to `b` must lie inside the
+ * region — a midpoint alone can miss a chord that exits through a thin
+ * notch or hole slot and re-enters.
+ */
+function connectorInside(
+  a: Point,
+  b: Point,
+  rings: Point[][],
+  opts: HatchOptions,
+): boolean {
+  const gap = Math.hypot(b.x - a.x, b.y - a.y);
+  const step = Math.min(opts.spacing, opts.stitchLength) / 2;
+  const samples = Math.min(8, Math.max(1, Math.ceil(gap / step)));
+  for (let s = 1; s <= samples; s++) {
+    const t = s / (samples + 1);
+    const p = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+    if (!insideRegion(p, rings)) return false;
+  }
+  return true;
+}
+
 function orderAndMerge(
   runs: Point[][],
   rings: Point[][],
   opts: HatchOptions,
 ): Point[][] {
-  if (runs.length <= 1) return runs;
+  if (runs.length === 0) return runs;
 
-  const remaining = new Set(runs.map((_, i) => i));
-  const ordered: Point[][] = [];
-  let current = runs[0];
-  remaining.delete(0);
-  ordered.push(current);
-  while (remaining.size > 0) {
-    const end = current[current.length - 1];
-    let best = -1;
-    let bestDist = Infinity;
-    let bestReversed = false;
-    for (const i of remaining) {
-      const run = runs[i];
-      const toStart = Math.hypot(run[0].x - end.x, run[0].y - end.y);
-      const toEnd = Math.hypot(
-        run[run.length - 1].x - end.x,
-        run[run.length - 1].y - end.y,
-      );
-      if (toStart < bestDist) {
-        bestDist = toStart;
-        best = i;
-        bestReversed = false;
-      }
-      if (toEnd < bestDist) {
-        bestDist = toEnd;
-        best = i;
-        bestReversed = true;
-      }
-    }
-    remaining.delete(best);
-    current = bestReversed ? [...runs[best]].reverse() : runs[best];
+  let ordered: Point[][];
+  if (runs.length === 1 || runs.length > MAX_NN_RUNS) {
+    ordered = runs;
+  } else {
+    const remaining = new Set(runs.map((_, i) => i));
+    ordered = [];
+    let current = runs[0];
+    remaining.delete(0);
     ordered.push(current);
+    while (remaining.size > 0) {
+      const end = current[current.length - 1];
+      let best = -1;
+      let bestDist = Infinity;
+      let bestReversed = false;
+      for (const i of remaining) {
+        const run = runs[i];
+        const toStart = Math.hypot(run[0].x - end.x, run[0].y - end.y);
+        const toEnd = Math.hypot(
+          run[run.length - 1].x - end.x,
+          run[run.length - 1].y - end.y,
+        );
+        if (toStart < bestDist) {
+          bestDist = toStart;
+          best = i;
+          bestReversed = false;
+        }
+        if (toEnd < bestDist) {
+          bestDist = toEnd;
+          best = i;
+          bestReversed = true;
+        }
+      }
+      remaining.delete(best);
+      current = bestReversed ? [...runs[best]].reverse() : runs[best];
+      ordered.push(current);
+    }
   }
 
   const merged: Point[][] = [];
@@ -169,8 +201,10 @@ function orderAndMerge(
     const next = ordered[i];
     const end = acc[acc.length - 1];
     const gap = Math.hypot(next[0].x - end.x, next[0].y - end.y);
-    const mid = { x: (next[0].x + end.x) / 2, y: (next[0].y + end.y) / 2 };
-    if (gap <= opts.stitchLength && insideRegion(mid, rings)) {
+    if (
+      gap <= opts.stitchLength &&
+      connectorInside(end, next[0], rings, opts)
+    ) {
       acc = [...acc, ...next];
     } else {
       merged.push(acc);
@@ -181,7 +215,7 @@ function orderAndMerge(
 
   // Post-merge cull: a run still shorter than one stitch after merging is
   // an isolated needle poke costing two trims — the region's boundary run
-  // covers that sliver anyway.
+  // covers that sliver anyway. Applies to single-run regions too.
   return merged.filter((run) => pathLength(run) >= opts.stitchLength);
 }
 

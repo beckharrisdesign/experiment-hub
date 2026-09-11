@@ -209,24 +209,35 @@ describe("hatchFill", () => {
   });
 
   it("orders runs nearest-neighbor instead of scanline discovery order", () => {
-    // Three separate strips: sewing must proceed strip to strip, not hop
-    // back and forth. Gaps between strips are outside the region, so the
-    // runs stay separate (three runs), just sensibly ordered.
-    const strips = [rect(0, 0, 4, 20), rect(10, 0, 4, 20), rect(20, 0, 4, 20)];
+    // Outer strips span the full height; the middle strip starts lower, so
+    // scanline discovery finds left, right, middle — a naive order that
+    // hops across the middle. Nearest-neighbor must sew left, middle,
+    // right (gaps stay jumps: out of region).
+    const strips = [rect(0, 0, 4, 20), rect(10, 10, 4, 10), rect(20, 0, 4, 20)];
     const runs = hatchFill(strips, {
-      angleDeg: 90, // rows run vertically, one column per strip
+      angleDeg: 0,
       spacing: 2,
       stitchLength: 3,
     });
     expect(runs.length).toBe(3);
-    // Monotonic strip-to-strip progression (either direction) — never
-    // strip 1 → 3 → 2.
     const centroids = runs.map(
       (run) => run.reduce((s, p) => s + p.x, 0) / run.length,
     );
-    const ascending = [...centroids].sort((a, b) => a - b);
-    const descending = [...ascending].reverse();
-    expect([ascending, descending]).toContainEqual(centroids);
+    expect(centroids[0]).toBeLessThan(centroids[1]);
+    expect(centroids[1]).toBeLessThan(centroids[2]);
+  });
+
+  it("culls a single-run region shorter than one stitch", () => {
+    // One row, 1.2 units of thread — passes the scan-time sliver filter
+    // but is still a lone needle poke, so the post-merge cull drops it
+    // even though there is nothing to order or merge.
+    expect(
+      hatchFill([rect(0, 0, 1.2, 0.9)], {
+        angleDeg: 0,
+        spacing: 1,
+        stitchLength: 2,
+      }),
+    ).toEqual([]);
   });
 
   it("merges runs across short in-region gaps instead of jumping", () => {
