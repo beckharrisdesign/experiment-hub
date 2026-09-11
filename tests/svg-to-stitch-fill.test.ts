@@ -122,6 +122,71 @@ describe("hatchFill", () => {
     }
   });
 
+  it("breaks the run instead of stitching across a fast taper", () => {
+    // Right triangle: each row is ~10 shorter than the last, so the
+    // serpentine's return connector would otherwise cross empty fabric
+    // beside the hypotenuse (the "threads into empty space" artifact on
+    // letter-shaped fills).
+    const triangle = [
+      { x: 0, y: 0 },
+      { x: 30, y: 0 },
+      { x: 0, y: 3 },
+      { x: 0, y: 0 },
+    ];
+    const runs = hatchFill([triangle], {
+      angleDeg: 0,
+      spacing: 1,
+      stitchLength: 2,
+    });
+    const limit = Math.hypot(2, 1) + 1e-6; // one stitch + one row of travel
+    for (const run of runs) {
+      for (let i = 1; i < run.length; i++) {
+        const d = Math.hypot(run[i].x - run[i - 1].x, run[i].y - run[i - 1].y);
+        expect(d).toBeLessThanOrEqual(limit);
+      }
+    }
+  });
+
+  it("keeps every stitched segment short on glyph-like geometry", () => {
+    // A letter "A": two diagonal legs, a crossbar, and a counter (hole).
+    const letterA = [
+      [
+        { x: 0, y: 60 },
+        { x: 20, y: 0 },
+        { x: 30, y: 0 },
+        { x: 50, y: 60 },
+        { x: 40, y: 60 },
+        { x: 36, y: 48 },
+        { x: 14, y: 48 },
+        { x: 10, y: 60 },
+        { x: 0, y: 60 },
+      ],
+      [
+        { x: 17, y: 38 },
+        { x: 33, y: 38 },
+        { x: 25, y: 14 },
+        { x: 17, y: 38 },
+      ],
+    ];
+    for (const angle of [0, 45, 90]) {
+      const runs = hatchFill(letterA, {
+        angleDeg: angle,
+        spacing: 1,
+        stitchLength: 2.5,
+      });
+      const limit = Math.hypot(2.5, 1) + 1e-6;
+      for (const run of runs) {
+        for (let i = 1; i < run.length; i++) {
+          const d = Math.hypot(
+            run[i].x - run[i - 1].x,
+            run[i].y - run[i - 1].y,
+          );
+          expect(d).toBeLessThanOrEqual(limit);
+        }
+      }
+    }
+  });
+
   it("rejects non-positive spacing and stitch length instead of hanging", () => {
     const rings = [rect(0, 0, 10, 10)];
     expect(() =>
