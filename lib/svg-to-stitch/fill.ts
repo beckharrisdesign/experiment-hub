@@ -102,45 +102,45 @@ function scanRows(rings: Point[][], opts: HatchOptions): RowSegment[] {
 }
 
 /**
- * Group row segments into columns: a segment continues the column whose
- * previous-row segment it overlaps in x. Concave regions and holes split
- * into multiple columns, each sewn as one serpentine block.
+ * Group row segments into columns, each sewn as one serpentine block. A
+ * column continues only through a 1:1 overlap between consecutive rows: the
+ * moment the interval topology changes — a hole opens (one segment overlaps
+ * two), holes merge (two overlap one), or overlap is lost — the column ends
+ * and fresh columns start. Anything looser lets the serpentine connector
+ * stitch straight across an excluded interval.
  */
 function buildColumns(segments: RowSegment[]): RowSegment[][] {
-  const columns: RowSegment[][] = [];
-  const open: RowSegment[][] = [];
-  let currentRow = -1;
-  const claimed = new Set<RowSegment[]>();
+  const byRow = new Map<number, RowSegment[]>();
+  for (const seg of segments) {
+    byRow.set(seg.row, [...(byRow.get(seg.row) ?? []), seg]);
+  }
 
-  for (let i = 0; i <= segments.length; i++) {
-    const seg = segments[i];
-    if (!seg || seg.row !== currentRow) {
-      // Row boundary: columns that got no segment this row are finished.
-      if (currentRow >= 0) {
-        for (let c = open.length - 1; c >= 0; c--) {
-          if (!claimed.has(open[c])) open.splice(c, 1);
-        }
-        claimed.clear();
+  const columns: RowSegment[][] = [];
+  let open: RowSegment[][] = [];
+  const rows = [...byRow.keys()].sort((a, b) => a - b);
+  for (const row of rows) {
+    const segs = byRow.get(row)!;
+    const overlap = (col: RowSegment[], seg: RowSegment) => {
+      const last = col[col.length - 1];
+      return last.row === row - 1 && seg.x0 < last.x1 && last.x0 < seg.x1;
+    };
+    const colMatches = open.map((col) => segs.filter((s) => overlap(col, s)));
+    const segMatches = segs.map((s) => open.filter((col) => overlap(col, s)));
+
+    const next: RowSegment[][] = [];
+    for (const seg of segs) {
+      const mine = segMatches[segs.indexOf(seg)];
+      const col = mine.length === 1 ? mine[0] : null;
+      if (col && colMatches[open.indexOf(col)].length === 1) {
+        col.push(seg);
+        next.push(col);
+      } else {
+        const fresh = [seg];
+        columns.push(fresh);
+        next.push(fresh);
       }
-      if (!seg) break;
-      currentRow = seg.row;
     }
-    const last = (col: RowSegment[]) => col[col.length - 1];
-    const overlaps = (col: RowSegment[]) =>
-      !claimed.has(col) &&
-      last(col).row === seg.row - 1 &&
-      seg.x0 < last(col).x1 &&
-      last(col).x0 < seg.x1;
-    const col = open.find(overlaps);
-    if (col) {
-      col.push(seg);
-      claimed.add(col);
-    } else {
-      const fresh = [seg];
-      open.push(fresh);
-      columns.push(fresh);
-      claimed.add(fresh);
-    }
+    open = next;
   }
   return columns;
 }
@@ -177,6 +177,17 @@ function stitchColumn(column: RowSegment[], opts: HatchOptions): Point[] {
  * Returns one polyline per serpentine column, in ring coordinates.
  */
 export function hatchFill(rings: Point[][], opts: HatchOptions): Point[][] {
+  // Guard the loop increments: hatchFill is exported, and a zero or negative
+  // spacing/stitch length would spin scanRows/stitchColumn forever.
+  if (!Number.isFinite(opts.spacing) || opts.spacing <= 0) {
+    throw new Error("hatch spacing must be a positive number");
+  }
+  if (!Number.isFinite(opts.stitchLength) || opts.stitchLength <= 0) {
+    throw new Error("hatch stitch length must be a positive number");
+  }
+  if (!Number.isFinite(opts.angleDeg)) {
+    throw new Error("hatch angle must be a number of degrees");
+  }
   const closed = closeRings(rings);
   if (closed.length === 0) return [];
   const segments = scanRows(closed, opts);

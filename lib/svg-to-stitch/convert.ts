@@ -78,6 +78,11 @@ export function convertSvg(
     throw new Error("stitch length must be between 1 and 7 mm");
   }
   const fillMode = options.fillMode ?? "fill";
+  if (fillMode !== "fill" && fillMode !== "outline") {
+    // Runtime callers aren't bound by the TypeScript union; fail loudly
+    // instead of silently treating junk as fill mode.
+    throw new Error('fill mode must be "fill" or "outline"');
+  }
   const fillAngleDeg = options.fillAngleDeg ?? 45;
   const fillSpacingMm = options.fillSpacingMm ?? 0.4;
   const fillUnderlay = options.fillUnderlay ?? true;
@@ -113,12 +118,20 @@ export function convertSvg(
     // scaling buildPlan applies (the fill runs stay inside the boundary
     // rings, so they never change the design's bounding box).
     const unitsPerMm = extent / options.targetWidthMm;
-    polylines = [...geometry.strokes];
+    // A stroke sews after its own element's fill so the border stays the
+    // crisp top edge instead of being buried under the fill; the half-step
+    // keeps it ahead of the next element.
+    polylines = geometry.strokes.map((s) => ({
+      ...s,
+      order: (s.order ?? 0) + 0.5,
+    }));
     for (const region of geometry.fills) {
+      // Only validated rings hatch or outline: a region whose every ring is
+      // degenerate (zero area) stitches nothing in fill mode.
       const rings = closeRings(region.rings);
-      const boundary = rings.length > 0 ? rings : region.rings;
+      if (rings.length === 0) continue;
       if (fillUnderlay) {
-        for (const run of hatchFill(region.rings, {
+        for (const run of hatchFill(rings, {
           angleDeg: fillAngleDeg + 90,
           spacing: UNDERLAY_SPACING_MM * unitsPerMm,
           stitchLength: options.stitchLengthMm * unitsPerMm,
@@ -130,7 +143,7 @@ export function convertSvg(
           });
         }
       }
-      for (const run of hatchFill(region.rings, {
+      for (const run of hatchFill(rings, {
         angleDeg: fillAngleDeg,
         spacing: fillSpacingMm * unitsPerMm,
         stitchLength: options.stitchLengthMm * unitsPerMm,
@@ -142,14 +155,12 @@ export function convertSvg(
         });
       }
       // Edge run last so it crisps the fill's boundary on top.
-      for (const ring of boundary) {
-        if (ring.length > 1) {
-          polylines.push({
-            color: region.color,
-            points: ring,
-            order: region.order,
-          });
-        }
+      for (const ring of rings) {
+        polylines.push({
+          color: region.color,
+          points: ring,
+          order: region.order,
+        });
       }
     }
     polylines.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));

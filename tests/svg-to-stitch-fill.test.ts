@@ -97,6 +97,44 @@ describe("hatchFill", () => {
     expect(Math.abs(pts[0].y - pts[1].y)).toBeGreaterThan(0.1);
   });
 
+  it("never stitches a connector across a hole that opens between rows", () => {
+    // Outer 30×30 square; hole spanning x 8..22 that starts mid-row-gap, so
+    // one full-width row is followed by a split row. A naive column match
+    // would serpentine from the full row's end straight across the hole.
+    const runs = hatchFill([rect(0, 0, 30, 30), rect(8, 10.5, 14, 9)], {
+      angleDeg: 0,
+      spacing: 2,
+      stitchLength: 1.5,
+    });
+    for (const run of runs) {
+      for (let i = 1; i < run.length; i++) {
+        const mid = {
+          x: (run[i - 1].x + run[i].x) / 2,
+          y: (run[i - 1].y + run[i].y) / 2,
+        };
+        const inHole =
+          mid.x > 8 + 1e-6 &&
+          mid.x < 22 - 1e-6 &&
+          mid.y > 10.5 + 1e-6 &&
+          mid.y < 19.5 - 1e-6;
+        expect(inHole).toBe(false);
+      }
+    }
+  });
+
+  it("rejects non-positive spacing and stitch length instead of hanging", () => {
+    const rings = [rect(0, 0, 10, 10)];
+    expect(() =>
+      hatchFill(rings, { angleDeg: 0, spacing: 0, stitchLength: 2 }),
+    ).toThrow(/spacing/);
+    expect(() =>
+      hatchFill(rings, { angleDeg: 0, spacing: 1, stitchLength: -1 }),
+    ).toThrow(/stitch length/);
+    expect(() =>
+      hatchFill(rings, { angleDeg: Number.NaN, spacing: 1, stitchLength: 2 }),
+    ).toThrow(/angle/);
+  });
+
   it("returns nothing for degenerate rings", () => {
     expect(
       hatchFill(
@@ -175,9 +213,36 @@ describe("convertSvg fill mode", () => {
       targetWidthMm: 100,
       stitchLengthMm: 2.5,
     });
-    expect(new Set(result.plan.colors)).toEqual(
-      new Set(["#e11d48", "#000000"]),
-    );
+    // Fill first, stroke after — the border must sew on top of the fill.
+    expect(result.plan.colors).toEqual(["#e11d48", "#000000"]);
+  });
+
+  it("rejects an unknown fillMode at runtime", () => {
+    expect(() =>
+      convertSvg(FILLED_SQUARE, {
+        targetWidthMm: 100,
+        stitchLengthMm: 2.5,
+        fillMode: "bogus" as "fill",
+      }),
+    ).toThrow(/fill mode/);
+  });
+
+  it("drops zero-area fills in fill mode but keeps them in outline mode", () => {
+    const degenerate = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+      <path d="M2 2 L18 18" fill="#e11d48"/>
+    </svg>`;
+    // Fill mode: a zero-area fill stitches nothing at all.
+    expect(() =>
+      convertSvg(degenerate, { targetWidthMm: 100, stitchLengthMm: 2.5 }),
+    ).toThrow(/no stitchable/i);
+    // Outline mode keeps the legacy behavior: the path stitches as a line.
+    const outline = convertSvg(degenerate, {
+      targetWidthMm: 100,
+      stitchLengthMm: 2.5,
+      fillMode: "outline",
+    });
+    expect(outline.plan.stats.stitches).toBeGreaterThan(0);
+    expect(outline.plan.colors).toEqual(["#e11d48"]);
   });
 
   it("keeps holes empty end to end", () => {

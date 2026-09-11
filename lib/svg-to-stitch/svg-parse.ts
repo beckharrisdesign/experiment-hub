@@ -290,10 +290,6 @@ const SHAPE_TAGS = new Set([
   "polygon",
 ]);
 
-// A `line` can never enclose area; everything else can (SVG closes fill
-// subpaths implicitly, so even an open path or polyline fills).
-const UNFILLABLE_TAGS = new Set(["line"]);
-
 function walk(
   el: Element,
   matrix: Matrix,
@@ -322,8 +318,12 @@ function walk(
         }
       }
     }
-    if (fill !== null && !UNFILLABLE_TAGS.has(tag)) {
-      const rings = polylines.filter((points) => points.length > 2);
+    if (fill !== null) {
+      // Every subpath goes in as a ring, degenerate ones included (a bare
+      // 2-point path, a `line` with only a fill). Fill mode validates rings
+      // and drops zero-area geometry there; the legacy outline view keeps
+      // stitching these as it always did.
+      const rings = polylines.filter((points) => points.length > 1);
       if (rings.length > 0) {
         out.fills.push({
           color: fill,
@@ -331,14 +331,6 @@ function walk(
           order,
           hasStroke: stroke !== null,
         });
-      } else if (stroke === null) {
-        // Degenerate fill (a bare 2-point path): keep it visible as an
-        // outline run rather than dropping the geometry entirely.
-        for (const points of polylines) {
-          if (points.length > 1) {
-            out.strokes.push({ color: fill, points, order });
-          }
-        }
       }
     }
     return;
