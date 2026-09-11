@@ -3,6 +3,7 @@
 // transforms applied and a resolved color per element. Runs against the real
 // DOM in the browser and jsdom in tests — no server-only dependencies.
 
+import { parseColor } from "./color";
 import { parsePathData, type Point } from "./path-data";
 
 export type { Point };
@@ -94,42 +95,6 @@ export function parseTransform(value: string | null): Matrix {
   return m;
 }
 
-const NAMED_COLORS: Record<string, string> = {
-  black: "#000000",
-  white: "#ffffff",
-  red: "#ff0000",
-  green: "#008000",
-  blue: "#0000ff",
-  yellow: "#ffff00",
-  orange: "#ffa500",
-  purple: "#800080",
-  pink: "#ffc0cb",
-  gray: "#808080",
-  grey: "#808080",
-  brown: "#a52a2a",
-  navy: "#000080",
-  teal: "#008080",
-  gold: "#ffd700",
-  silver: "#c0c0c0",
-};
-
-export function normalizeColor(raw: string): string {
-  const value = raw.trim().toLowerCase();
-  if (value.startsWith("#")) {
-    if (value.length === 4) {
-      return `#${value[1]}${value[1]}${value[2]}${value[2]}${value[3]}${value[3]}`;
-    }
-    return value.slice(0, 7);
-  }
-  const rgb = value.match(/^rgb\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)\s*\)$/);
-  if (rgb) {
-    const hex = (n: string) =>
-      Math.min(255, parseInt(n, 10)).toString(16).padStart(2, "0");
-    return `#${hex(rgb[1])}${hex(rgb[2])}${hex(rgb[3])}`;
-  }
-  return NAMED_COLORS[value] ?? "#000000";
-}
-
 function styleProperty(el: Element, name: string): string | null {
   const style = el.getAttribute("style");
   if (style) {
@@ -139,17 +104,48 @@ function styleProperty(el: Element, name: string): string | null {
   return el.getAttribute(name);
 }
 
-// Stroke wins over fill: an outline converter stitches along edges, and a
-// stroked element's visible thread color is its stroke. Returns "none" for
-// explicitly invisible elements; null means unspecified (inherit, defaulting
-// to black at the shape).
-function resolveColor(el: Element, inherited: string | null): string | null {
-  const stroke = styleProperty(el, "stroke");
-  const fill = styleProperty(el, "fill");
-  if (stroke && stroke !== "none") return normalizeColor(stroke);
-  if (fill && fill !== "none") return normalizeColor(fill);
-  if (fill === "none" && (!stroke || stroke === "none")) return "none";
-  return inherited;
+// Stroke and fill inherit independently in SVG, so they are carried
+// separately — collapsing them would lose an ancestor's stroke the moment a
+// child sets only a fill.
+interface InheritedPaint {
+  stroke: string | null; // "#rrggbb" | "none" | null (unset)
+  fill: string | null;
+}
+
+// An element's own stroke/fill, resolved to a flat color. url() paints
+// (gradients, patterns) can't map to one thread color, so they fall back to
+// black — documented behavior; other unresolvable values (currentColor, var())
+// act as unset and inherit.
+function ownPaint(el: Element, name: "stroke" | "fill"): string | null {
+  const raw = styleProperty(el, name);
+  if (raw === null) return null;
+  if (raw.trim().toLowerCase().startsWith("url(")) return "#000000";
+  return parseColor(raw);
+}
+
+function inheritPaint(el: Element, inherited: InheritedPaint): InheritedPaint {
+  return {
+    stroke: ownPaint(el, "stroke") ?? inherited.stroke,
+    fill: ownPaint(el, "fill") ?? inherited.fill,
+  };
+}
+
+// The one thread color a shape stitches in. Follows SVG paint defaults:
+// stroke defaults to none, fill defaults to black — so stroke (when painted)
+// wins, else fill, and only fill:none with no stroke means nothing to stitch.
+function shapeColor(paint: InheritedPaint): string | null {
+  const stroke =
+    paint.stroke !== null && paint.stroke !== "none" ? paint.stroke : null;
+  const fill = paint.fill === "none" ? null : (paint.fill ?? "#000000");
+  return stroke ?? fill;
+}
+
+function isHidden(el: Element): boolean {
+  if (styleProperty(el, "display") === "none") return true;
+  const visibility = styleProperty(el, "visibility");
+  if (visibility === "hidden" || visibility === "collapse") return true;
+  const opacity = styleProperty(el, "opacity");
+  return opacity !== null && parseFloat(opacity) === 0;
 }
 
 function parsePoints(value: string | null): Point[] {
@@ -272,34 +268,36 @@ const SHAPE_TAGS = new Set([
 function walk(
   el: Element,
   matrix: Matrix,
-  inheritedColor: string | null,
+  inherited: InheritedPaint,
   tolerance: number,
   out: ColoredPolyline[],
 ): void {
   const tag = el.tagName.toLowerCase();
   if (SKIP_TAGS.has(tag)) return;
-  if (styleProperty(el, "display") === "none") return;
+  if (isHidden(el)) return;
 
   const m = multiply(matrix, parseTransform(el.getAttribute("transform")));
-  const color = resolveColor(el, inheritedColor);
+  const paint = inheritPaint(el, inherited);
 
   if (SHAPE_TAGS.has(tag)) {
-    if (color === "none") return; // fill:none + no stroke — nothing visible to stitch
+    const color = shapeColor(paint);
+    if (color === null) return; // fill:none + no stroke — nothing visible to stitch
     for (const polyline of shapePolylines(el, tolerance)) {
       const points = polyline.map((p) => apply(m, p));
-      if (points.length > 1) out.push({ color: color ?? "#000000", points });
+      if (points.length > 1) out.push({ color, points });
     }
     return;
   }
 
   for (const child of Array.from(el.children)) {
-    walk(child, m, color, tolerance, out);
+    walk(child, m, paint, tolerance, out);
   }
 }
 
 /**
  * Extract colored polylines (in SVG user units, y-down) from an SVG document.
- * `tolerance` is the max flattening deviation in user units.
+ * `tolerance` is the max flattening deviation in user units. The root <svg>'s
+ * own transform, stroke, and fill participate like any other ancestor's.
  */
 export function extractPolylines(
   doc: Document,
@@ -310,8 +308,10 @@ export function extractPolylines(
     throw new Error("not an SVG document");
   }
   const out: ColoredPolyline[] = [];
+  const rootMatrix = parseTransform(root.getAttribute("transform"));
+  const rootPaint = inheritPaint(root, { stroke: null, fill: null });
   for (const child of Array.from(root.children)) {
-    walk(child, IDENTITY, null, tolerance, out);
+    walk(child, rootMatrix, rootPaint, tolerance, out);
   }
   return out;
 }

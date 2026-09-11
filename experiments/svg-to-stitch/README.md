@@ -26,7 +26,8 @@ EMB is Wilcom's **proprietary** format with no public specification — no third
 - **Outlines only** — filled shapes stitch as their outline. No satin columns or tatami fills yet.
 - No tie-in/tie-off lock stitches.
 - No underlay, pull compensation, or density logic — this preps geometry; it is not a digitizer.
-- Gradients/patterns resolve to black; `use`/`symbol` references are skipped.
+- Colors: hex, `rgb()`/`hsl()`, and the full CSS named set resolve to thread colors; `transparent`/zero-alpha paint is skipped. Gradient/pattern (`url()`) paint resolves to black; `use`/`symbol` references are skipped; `currentColor`/`var()` inherit or fall back to black.
+- `display:none`, `visibility:hidden`, and `opacity="0"` geometry is skipped.
 
 ## Possible next steps
 

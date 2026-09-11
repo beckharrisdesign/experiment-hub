@@ -25,7 +25,7 @@ import {
   Stack,
 } from "@beckharrisdesign/mvds";
 import { convertSvg, type ConvertResult } from "@/lib/svg-to-stitch/convert";
-import { StitchPreview } from "./StitchPreview";
+import StitchPreview from "./StitchPreview";
 
 interface Source {
   name: string;
@@ -47,6 +47,25 @@ const STITCH_OPTIONS = [1.5, 2, 2.5, 3, 3.5, 4];
 
 function baseName(fileName: string): string {
   return fileName.replace(/\.svg$/i, "");
+}
+
+// Settings errors are already written for people; parser internals are not.
+// Map those to recovery guidance instead of leaking token positions.
+function friendlyError(message: string): string {
+  if (
+    /malformed path data|unsupported path command|invalid arc flag/i.test(
+      message,
+    )
+  ) {
+    return "Couldn't read a path in this SVG. Try re-exporting it as a plain SVG from your design tool.";
+  }
+  if (/could not parse|not an SVG/i.test(message)) {
+    return "That file doesn't look like an SVG. Export as plain SVG and try again.";
+  }
+  if (/no stitchable geometry/i.test(message)) {
+    return "No stitchable outlines found. Make sure the SVG has visible paths or shapes (not just images or text).";
+  }
+  return message;
 }
 
 function download(bytes: Uint8Array, fileName: string) {
@@ -96,7 +115,11 @@ export default function SvgToStitchPage() {
         }),
       };
     } catch (e) {
-      return { error: e instanceof Error ? e.message : "conversion failed" };
+      return {
+        error: friendlyError(
+          e instanceof Error ? e.message : "conversion failed",
+        ),
+      };
     }
   }, [source, widthMm, stitchMm]);
 

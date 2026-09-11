@@ -32,10 +32,20 @@ export function convertSvg(
   svgText: string,
   options: ConvertOptions = DEFAULT_OPTIONS,
 ): ConvertResult {
-  if (options.targetWidthMm < 10 || options.targetWidthMm > 400) {
+  // Number.isFinite first: every comparison with NaN is false, so a bare
+  // range check would wave NaN straight through into the scaling math.
+  if (
+    !Number.isFinite(options.targetWidthMm) ||
+    options.targetWidthMm < 10 ||
+    options.targetWidthMm > 400
+  ) {
     throw new Error("target width must be between 10 and 400 mm");
   }
-  if (options.stitchLengthMm < 1 || options.stitchLengthMm > 7) {
+  if (
+    !Number.isFinite(options.stitchLengthMm) ||
+    options.stitchLengthMm < 1 ||
+    options.stitchLengthMm > 7
+  ) {
     throw new Error("stitch length must be between 1 and 7 mm");
   }
 

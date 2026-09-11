@@ -9,12 +9,16 @@ interface Segment {
   points: string; // SVG polyline points attribute
 }
 
+interface StitchPreviewProps {
+  plan: StitchPlan;
+}
+
 /**
  * Renders the stitch plan as the needle would sew it: one polyline per run,
  * dashed gray lines for jumps. Machine coordinates are y-up, so y flips back
  * for screen display.
  */
-export function StitchPreview({ plan }: { plan: StitchPlan }) {
+export default function StitchPreview({ plan }: StitchPreviewProps) {
   const { segments, viewBox } = useMemo(() => {
     const segments: Segment[] = [];
     let colorIndex = 0;

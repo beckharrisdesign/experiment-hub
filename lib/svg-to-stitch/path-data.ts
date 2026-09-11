@@ -12,14 +12,17 @@ const COMMAND_RE =
 
 interface Token {
   cmd?: string;
-  num?: number;
+  // Numbers keep their raw text: arc flags may be packed against the next
+  // value ("A 5 5 0 0110 0" means flags 0,1 then x=10), so the parser must be
+  // able to split a numeric token after the fact.
+  raw?: string;
 }
 
 function tokenize(d: string): Token[] {
   const tokens: Token[] = [];
   for (const match of d.matchAll(COMMAND_RE)) {
     if (match[1]) tokens.push({ cmd: match[1] });
-    else tokens.push({ num: parseFloat(match[2]!) });
+    else tokens.push({ raw: match[2]! });
   }
   return tokens;
 }
@@ -173,11 +176,23 @@ export function parsePathData(d: string, tolerance: number): Point[][] {
 
   const read = (): number => {
     const t = tokens[i++];
-    if (!t || t.num === undefined)
+    if (!t || t.raw === undefined)
       throw new Error(`malformed path data near token ${i}`);
-    return t.num;
+    return parseFloat(t.raw);
   };
-  const flag = (): boolean => read() !== 0;
+  // Arc flags are single characters 0/1 and may be packed against the value
+  // that follows ("0110" = flags 0,1 then 10): consume one char, and leave any
+  // remainder in place as the next numeric token.
+  const flag = (): boolean => {
+    const t = tokens[i];
+    if (!t || t.raw === undefined)
+      throw new Error(`malformed path data near token ${i}`);
+    const ch = t.raw[0];
+    if (ch !== "0" && ch !== "1") throw new Error(`invalid arc flag: ${t.raw}`);
+    if (t.raw.length > 1) tokens[i] = { raw: t.raw.slice(1) };
+    else i++;
+    return ch === "1";
+  };
 
   const beginSubpath = (p: Point) => {
     if (current.length > 1) subpaths.push(current);

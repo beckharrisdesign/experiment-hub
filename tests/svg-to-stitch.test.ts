@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { parsePathData } from "@/lib/svg-to-stitch/path-data";
+import { parseColor } from "@/lib/svg-to-stitch/color";
 import {
   extractPolylines,
-  normalizeColor,
   parseTransform,
 } from "@/lib/svg-to-stitch/svg-parse";
 import { buildPlan, groupByColor, resample } from "@/lib/svg-to-stitch/plan";
@@ -63,6 +63,20 @@ describe("parsePathData", () => {
     const [poly] = parsePathData("M 0 0 10 0 10 10", 0.1);
     expect(poly).toHaveLength(3);
   });
+
+  it("parses compact arc flags packed against the next value", () => {
+    // "0110 0" = large-arc 0, sweep 1, then x=10 y=0 — flags are single
+    // characters and need no separator in valid SVG path data.
+    const spaced = parsePathData("M 0 0 A 5 5 0 0 1 10 0", 0.05);
+    const compact = parsePathData("M 0 0 A 5 5 0 0110 0", 0.05);
+    expect(compact).toEqual(spaced);
+  });
+
+  it("rejects invalid arc flags", () => {
+    expect(() => parsePathData("M 0 0 A 5 5 0 2 1 10 0", 0.05)).toThrow(
+      /invalid arc flag/,
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -110,6 +124,39 @@ describe("extractPolylines", () => {
     expect(extractPolylines(doc, 0.1)).toHaveLength(0);
   });
 
+  it("skips transparent, hidden, and zero-opacity geometry", () => {
+    const doc = parseSvg(
+      `<svg xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 0 L5 5" fill="transparent" />
+        <path d="M0 0 L5 5" visibility="hidden" fill="red" />
+        <path d="M0 0 L5 5" opacity="0" fill="red" />
+      </svg>`,
+    );
+    expect(extractPolylines(doc, 0.1)).toHaveLength(0);
+  });
+
+  it("inherits an ancestor stroke past a child's fill", () => {
+    // Stroke and fill inherit independently: the g's stroke must win over the
+    // child's own fill under the stroke-over-fill rule.
+    const doc = parseSvg(
+      `<svg xmlns="http://www.w3.org/2000/svg">
+        <g stroke="red"><path d="M0 0 L5 5" fill="blue" /></g>
+      </svg>`,
+    );
+    expect(extractPolylines(doc, 0.1)[0].color).toBe("#ff0000");
+  });
+
+  it("applies the root svg's own transform and paint", () => {
+    const doc = parseSvg(
+      `<svg xmlns="http://www.w3.org/2000/svg" transform="translate(100, 0)" stroke="lime">
+        <path d="M0 0 L5 0" fill="none" />
+      </svg>`,
+    );
+    const [line] = extractPolylines(doc, 0.1);
+    expect(line.points[0]).toEqual({ x: 100, y: 0 });
+    expect(line.color).toBe("#00ff00");
+  });
+
   it("approximates circles as closed polylines", () => {
     const doc = parseSvg(
       `<svg xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="5" fill="red"/></svg>`,
@@ -125,7 +172,7 @@ describe("extractPolylines", () => {
   });
 });
 
-describe("parseTransform / normalizeColor", () => {
+describe("parseTransform / parseColor", () => {
   it("composes transform lists left to right", () => {
     const m = parseTransform("translate(10, 0) scale(2)");
     // (1,1) -> scale -> (2,2) -> translate -> (12,2)
@@ -134,9 +181,23 @@ describe("parseTransform / normalizeColor", () => {
   });
 
   it("normalizes color syntaxes", () => {
-    expect(normalizeColor("#ABC")).toBe("#aabbcc");
-    expect(normalizeColor("rgb(255, 0, 128)")).toBe("#ff0080");
-    expect(normalizeColor("navy")).toBe("#000080");
+    expect(parseColor("#ABC")).toBe("#aabbcc");
+    expect(parseColor("rgb(255, 0, 128)")).toBe("#ff0080");
+    expect(parseColor("navy")).toBe("#000080");
+    expect(parseColor("lightblue")).toBe("#add8e6");
+    expect(parseColor("rebeccapurple")).toBe("#663399");
+    expect(parseColor("hsl(120, 100%, 25%)")).toBe("#008000");
+  });
+
+  it("treats transparent and zero-alpha paint as none", () => {
+    expect(parseColor("transparent")).toBe("none");
+    expect(parseColor("rgba(255, 0, 0, 0)")).toBe("none");
+    expect(parseColor("#ff000000")).toBe("none");
+  });
+
+  it("returns null for unresolvable paint", () => {
+    expect(parseColor("currentColor")).toBeNull();
+    expect(parseColor("var(--thread)")).toBeNull();
   });
 });
 
@@ -502,6 +563,15 @@ describe("convertSvg", () => {
     ).toThrow(/target width/);
     expect(() =>
       convertSvg(SAMPLE, { targetWidthMm: 100, stitchLengthMm: 0.2 }),
+    ).toThrow(/stitch length/);
+  });
+
+  it("rejects non-finite options", () => {
+    expect(() =>
+      convertSvg(SAMPLE, { targetWidthMm: NaN, stitchLengthMm: 2.5 }),
+    ).toThrow(/target width/);
+    expect(() =>
+      convertSvg(SAMPLE, { targetWidthMm: 100, stitchLengthMm: Infinity }),
     ).toThrow(/stitch length/);
   });
 });
