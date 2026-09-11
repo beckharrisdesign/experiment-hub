@@ -5,17 +5,9 @@ import {
   Badge,
   Button,
   Callout,
-  Card,
-  CardContent,
   CardDescription,
-  CardHeader,
-  CardTitle,
-  Col,
   Field,
-  Grid,
   Inline,
-  MediaFrame,
-  Section,
   Select,
   SelectContent,
   SelectItem,
@@ -89,11 +81,28 @@ function StatRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function PanelHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      style={{
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+        color: "var(--muted-foreground)",
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
 export default function SvgToStitchPage() {
   const [source, setSource] = useState<Source | null>(null);
   const [widthMm, setWidthMm] = useState(100);
   const [stitchMm, setStitchMm] = useState(2.5);
   const [dragOver, setDragOver] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(true);
 
   const loadFile = useCallback(async (file: File) => {
     const text = await file.text();
@@ -125,229 +134,261 @@ export default function SvgToStitchPage() {
 
   const plan = result && "ok" in result ? result.ok.plan : null;
 
+  // Which thread color is highlighted in the preview (index into plan.colors).
+  // A new plan means new colors, so the selection resets with it.
+  const [selectedColor, setSelectedColor] = useState<number | null>(null);
+  const [prevPlan, setPrevPlan] = useState(plan);
+  if (plan !== prevPlan) {
+    setPrevPlan(plan);
+    setSelectedColor(null);
+  }
+
   return (
-    <main>
-      <Section py={24} innerSize="lg">
-        <Stack gap={24}>
-          <Inline gap={8} align="center" wrap>
-            <h1>SVG to Stitch</h1>
-            {source && <Badge variant="muted">{source.name}</Badge>}
-            <Spacer />
-            <label style={{ cursor: "pointer" }}>
-              <input
-                type="file"
-                accept=".svg,image/svg+xml"
-                className="sr-only"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void loadFile(file);
-                  e.target.value = "";
-                }}
-              />
-              <Button variant="secondary" size="sm" asChild>
-                <span>{source ? "Replace SVG" : "Add SVG"}</span>
+    <main
+      style={{
+        position: "relative",
+        height: "100dvh",
+        overflow: "hidden",
+      }}
+    >
+      {/* Canvas layer — the whole viewport is the preview / drop zone. */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          boxShadow: dragOver ? "inset 0 0 0 2px var(--ring)" : undefined,
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          const file = e.dataTransfer.files?.[0];
+          if (file) void loadFile(file);
+        }}
+      >
+        {plan ? (
+          <StitchPreview
+            plan={plan}
+            selectedColor={selectedColor}
+            onSelectColor={setSelectedColor}
+          />
+        ) : (
+          <Stack align="center" justify="center" style={{ height: "100%" }}>
+            <CardDescription>
+              Drop an SVG anywhere (or use Add SVG) to see its stitch path.
+            </CardDescription>
+            <CardDescription>
+              Everything runs in your browser. Nothing is uploaded.
+            </CardDescription>
+          </Stack>
+        )}
+      </div>
+
+      {/* Left panel — hugs the side, floats over the canvas. */}
+      {panelOpen ? (
+        <div
+          style={{
+            position: "absolute",
+            top: 12,
+            left: 12,
+            bottom: 12,
+            width: 300,
+            maxWidth: "calc(100vw - 24px)",
+            overflowY: "auto",
+            background: "var(--card)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+            padding: 16,
+          }}
+        >
+          <Stack gap={16}>
+            <Inline gap={8} align="center">
+              <h1 style={{ fontSize: 18, margin: 0 }}>SVG to Stitch</h1>
+              <Spacer />
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label="Hide panel"
+                onClick={() => setPanelOpen(false)}
+              >
+                ⟨
               </Button>
-            </label>
-          </Inline>
+            </Inline>
 
-          <Grid cols={{ base: 1, md: 12 }} gap={24}>
-            <Col span={{ base: 1, md: 4 }}>
-              <Stack gap={16}>
-                <Field
-                  label="Design size"
-                  help="Larger side of the design. Check your hoop before going big."
-                >
-                  <Select
-                    value={String(widthMm)}
-                    onValueChange={(v) => setWidthMm(Number(v))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SIZE_OPTIONS.map((o) => (
-                        <SelectItem key={o.value} value={String(o.value)}>
-                          {o.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
+            <Inline gap={8} align="center" wrap>
+              {source && <Badge variant="muted">{source.name}</Badge>}
+              <label style={{ cursor: "pointer" }}>
+                <input
+                  type="file"
+                  accept=".svg,image/svg+xml"
+                  className="sr-only"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void loadFile(file);
+                    e.target.value = "";
+                  }}
+                />
+                <Button variant="secondary" size="sm" asChild>
+                  <span>{source ? "Replace SVG" : "Add SVG"}</span>
+                </Button>
+              </label>
+            </Inline>
 
-                <Field
-                  label="Stitch length"
-                  help="2.5 mm is a solid default running stitch. Shorter follows curves tighter."
-                >
-                  <Select
-                    value={String(stitchMm)}
-                    onValueChange={(v) => setStitchMm(Number(v))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STITCH_OPTIONS.map((v) => (
-                        <SelectItem key={v} value={String(v)}>
-                          {v} mm
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
+            {result && "error" in result && (
+              <Badge variant="destructive" style={{ whiteSpace: "normal" }}>
+                {result.error}
+              </Badge>
+            )}
 
-                {plan && (
-                  <Card size="sm">
-                    <CardContent>
-                      <Stack gap={8}>
-                        <StatRow
-                          label="Stitches"
-                          value={plan.stats.stitches.toLocaleString()}
-                        />
-                        <StatRow
-                          label="Jumps"
-                          value={String(plan.stats.jumps)}
-                        />
-                        <StatRow
-                          label="Thread colors"
-                          value={String(plan.colors.length)}
-                        />
-                        <StatRow
-                          label="Size"
-                          value={`${plan.stats.widthMm.toFixed(0)} × ${plan.stats.heightMm.toFixed(0)} mm`}
-                        />
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                )}
+            <Field
+              label="Design size"
+              help="Larger side of the design. Check your hoop before going big."
+            >
+              <Select
+                value={String(widthMm)}
+                onValueChange={(v) => setWidthMm(Number(v))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SIZE_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={String(o.value)}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
 
-                {plan && plan.colors.length > 0 && (
-                  <Card size="sm">
-                    <CardHeader>
-                      <CardTitle>Sew order</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Stack gap={8}>
-                        {plan.colors.map((color, i) => (
-                          <Inline key={`${color}-${i}`} gap={8} align="center">
-                            <CardDescription>{i + 1}.</CardDescription>
-                            <span
-                              aria-hidden
-                              style={{
-                                display: "inline-block",
-                                width: 12,
-                                height: 12,
-                                borderRadius: 3,
-                                backgroundColor: color,
-                                border: "1px solid var(--border)",
-                              }}
-                            />
-                            <CardDescription>{color}</CardDescription>
-                          </Inline>
-                        ))}
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                )}
+            <Field
+              label="Stitch length"
+              help="2.5 mm is a solid default running stitch. Shorter follows curves tighter."
+            >
+              <Select
+                value={String(stitchMm)}
+                onValueChange={(v) => setStitchMm(Number(v))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STITCH_OPTIONS.map((v) => (
+                    <SelectItem key={v} value={String(v)}>
+                      {v} mm
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
 
-                <Stack gap={8}>
-                  <Button
-                    disabled={!plan}
-                    onClick={() =>
-                      result && "ok" in result && source
-                        ? download(
-                            result.ok.dst,
-                            `${baseName(source.name)}.dst`,
-                          )
-                        : undefined
-                    }
-                  >
-                    Download DST
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    disabled={!plan}
-                    onClick={() =>
-                      result && "ok" in result && source
-                        ? download(
-                            result.ok.exp,
-                            `${baseName(source.name)}.exp`,
-                          )
-                        : undefined
-                    }
-                  >
-                    Download EXP
-                  </Button>
-                </Stack>
-
-                <Callout>
-                  Wilcom&apos;s EMB format is proprietary with no public spec,
-                  so no converter can write it directly. DST is the universal
-                  machine format. EXP covers Melco. Both open in Wilcom and
-                  Hatch, which can save EMB from there.
-                </Callout>
+            {plan && (
+              <Stack gap={8}>
+                <PanelHeading>Design</PanelHeading>
+                <StatRow
+                  label="Stitches"
+                  value={plan.stats.stitches.toLocaleString()}
+                />
+                <StatRow label="Jumps" value={String(plan.stats.jumps)} />
+                <StatRow
+                  label="Thread colors"
+                  value={String(plan.colors.length)}
+                />
+                <StatRow
+                  label="Size"
+                  value={`${plan.stats.widthMm.toFixed(0)} × ${plan.stats.heightMm.toFixed(0)} mm`}
+                />
               </Stack>
-            </Col>
+            )}
 
-            <Col span={{ base: 1, md: 8 }}>
-              <Card>
-                <CardHeader>
-                  <Inline gap={8} align="center" wrap>
-                    <CardTitle>Stitch preview</CardTitle>
-                    {result && "error" in result && (
-                      <Badge variant="destructive">{result.error}</Badge>
-                    )}
-                    <Spacer />
-                    {plan && (
-                      <CardDescription>
-                        dashed = jump · fills stitch as outlines
-                      </CardDescription>
-                    )}
-                  </Inline>
-                </CardHeader>
-                <CardContent>
-                  <MediaFrame
-                    ratio="video"
-                    style={
-                      dragOver
-                        ? { boxShadow: "0 0 0 2px var(--ring)" }
-                        : undefined
+            {plan && plan.colors.length > 0 && (
+              <Stack gap={4}>
+                <PanelHeading>Sew order</PanelHeading>
+                {plan.colors.map((color, i) => (
+                  <Button
+                    key={`${color}-${i}`}
+                    variant="ghost"
+                    aria-pressed={selectedColor === i}
+                    onClick={() =>
+                      setSelectedColor(selectedColor === i ? null : i)
                     }
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setDragOver(true);
-                    }}
-                    onDragLeave={() => setDragOver(false)}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setDragOver(false);
-                      const file = e.dataTransfer.files?.[0];
-                      if (file) void loadFile(file);
+                    style={{
+                      justifyContent: "flex-start",
+                      gap: 8,
+                      width: "100%",
+                      minHeight: 44,
+                      boxShadow:
+                        selectedColor === i
+                          ? "0 0 0 2px var(--ring)"
+                          : undefined,
                     }}
                   >
-                    {plan ? (
-                      <StitchPreview plan={plan} />
-                    ) : (
-                      <Stack
-                        align="center"
-                        justify="center"
-                        style={{ height: "100%" }}
-                      >
-                        <CardDescription>
-                          Drop an SVG here (or use Add SVG) to see its stitch
-                          path.
-                        </CardDescription>
-                        <CardDescription>
-                          Everything runs in your browser. Nothing is uploaded.
-                        </CardDescription>
-                      </Stack>
-                    )}
-                  </MediaFrame>
-                </CardContent>
-              </Card>
-            </Col>
-          </Grid>
-        </Stack>
-      </Section>
+                    <CardDescription>{i + 1}.</CardDescription>
+                    <span
+                      aria-hidden
+                      style={{
+                        display: "inline-block",
+                        width: 12,
+                        height: 12,
+                        borderRadius: 3,
+                        backgroundColor: color,
+                        border: "1px solid var(--border)",
+                      }}
+                    />
+                    <CardDescription>{color}</CardDescription>
+                  </Button>
+                ))}
+              </Stack>
+            )}
+
+            <Stack gap={8}>
+              <Button
+                disabled={!plan}
+                onClick={() =>
+                  result && "ok" in result && source
+                    ? download(result.ok.dst, `${baseName(source.name)}.dst`)
+                    : undefined
+                }
+              >
+                Download DST
+              </Button>
+              <Button
+                variant="secondary"
+                disabled={!plan}
+                onClick={() =>
+                  result && "ok" in result && source
+                    ? download(result.ok.exp, `${baseName(source.name)}.exp`)
+                    : undefined
+                }
+              >
+                Download EXP
+              </Button>
+            </Stack>
+
+            <Callout>
+              Wilcom&apos;s EMB format is proprietary with no public spec, so no
+              converter can write it directly. DST is the universal machine
+              format. EXP covers Melco. Both open in Wilcom and Hatch, which can
+              save EMB from there.
+            </Callout>
+          </Stack>
+        </div>
+      ) : (
+        <div style={{ position: "absolute", top: 12, left: 12 }}>
+          <Button
+            variant="secondary"
+            size="sm"
+            aria-label="Show panel"
+            onClick={() => setPanelOpen(true)}
+          >
+            ⟩ Menu
+          </Button>
+        </div>
+      )}
     </main>
   );
 }
