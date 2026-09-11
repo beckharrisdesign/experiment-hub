@@ -3,7 +3,13 @@
 // client-side in the browser (and under jsdom in tests) — no server round
 // trip, files never leave the machine.
 
-import { extractPolylines } from "./svg-parse";
+import {
+  extractGeometry,
+  extractPolylines,
+  type ColoredPolyline,
+  type ExtractedGeometry,
+} from "./svg-parse";
+import { hatchFill, closeRings } from "./fill";
 import { buildPlan, groupByColor, type StitchPlan } from "./plan";
 import { encodeDst } from "./dst";
 import { encodeExp } from "./exp";
@@ -15,6 +21,21 @@ export interface ConvertOptions {
   stitchLengthMm: number;
   /** Design name embedded in the DST header. */
   designName?: string;
+  /**
+   * How filled shapes stitch: "fill" (default) hatches their interior with
+   * tatami rows; "outline" traces only their boundary — the converter's
+   * original behavior.
+   */
+  fillMode?: "fill" | "outline";
+  /** Tatami row direction in degrees (default 45). */
+  fillAngleDeg?: number;
+  /** Distance between tatami rows in mm (default 0.4). */
+  fillSpacingMm?: number;
+  /**
+   * Sew a sparse perpendicular underlay pass beneath each fill (default
+   * true) — it stabilizes the fabric so the top stitching doesn't pucker.
+   */
+  fillUnderlay?: boolean;
 }
 
 export interface ConvertResult {
@@ -26,7 +47,15 @@ export interface ConvertResult {
 export const DEFAULT_OPTIONS: ConvertOptions = {
   targetWidthMm: 100,
   stitchLengthMm: 2.5,
+  fillMode: "fill",
+  fillAngleDeg: 45,
+  fillSpacingMm: 0.4,
+  fillUnderlay: true,
 };
+
+// Underlay: rows perpendicular to the top stitching, spaced far apart — a
+// scaffold, not coverage.
+const UNDERLAY_SPACING_MM = 2;
 
 export function convertSvg(
   svgText: string,
@@ -48,6 +77,20 @@ export function convertSvg(
   ) {
     throw new Error("stitch length must be between 1 and 7 mm");
   }
+  const fillMode = options.fillMode ?? "fill";
+  const fillAngleDeg = options.fillAngleDeg ?? 45;
+  const fillSpacingMm = options.fillSpacingMm ?? 0.4;
+  const fillUnderlay = options.fillUnderlay ?? true;
+  if (!Number.isFinite(fillAngleDeg)) {
+    throw new Error("fill angle must be a number of degrees");
+  }
+  if (
+    !Number.isFinite(fillSpacingMm) ||
+    fillSpacingMm < 0.2 ||
+    fillSpacingMm > 2
+  ) {
+    throw new Error("fill spacing must be between 0.2 and 2 mm");
+  }
 
   const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
   if (doc.querySelector("parsererror")) {
@@ -57,10 +100,60 @@ export function convertSvg(
   // Flattening tolerance: 0.05mm at the final output size, expressed in user
   // units. Two passes because the user-unit extent isn't known until after a
   // first parse; the initial coarse pass only measures.
-  const coarse = extractPolylines(doc, 1);
+  const coarse = extractGeometry(doc, 1);
   const extent = measure(coarse);
   const tolerance = (extent / (options.targetWidthMm * 10)) * 0.5;
-  const polylines = extractPolylines(doc, Math.max(tolerance, 1e-6));
+
+  let polylines: ColoredPolyline[];
+  if (fillMode === "outline") {
+    polylines = extractPolylines(doc, Math.max(tolerance, 1e-6));
+  } else {
+    const geometry = extractGeometry(doc, Math.max(tolerance, 1e-6));
+    // Physical mm expressed in SVG user units, via the same larger-side
+    // scaling buildPlan applies (the fill runs stay inside the boundary
+    // rings, so they never change the design's bounding box).
+    const unitsPerMm = extent / options.targetWidthMm;
+    polylines = [...geometry.strokes];
+    for (const region of geometry.fills) {
+      const rings = closeRings(region.rings);
+      const boundary = rings.length > 0 ? rings : region.rings;
+      if (fillUnderlay) {
+        for (const run of hatchFill(region.rings, {
+          angleDeg: fillAngleDeg + 90,
+          spacing: UNDERLAY_SPACING_MM * unitsPerMm,
+          stitchLength: options.stitchLengthMm * unitsPerMm,
+        })) {
+          polylines.push({
+            color: region.color,
+            points: run,
+            order: region.order,
+          });
+        }
+      }
+      for (const run of hatchFill(region.rings, {
+        angleDeg: fillAngleDeg,
+        spacing: fillSpacingMm * unitsPerMm,
+        stitchLength: options.stitchLengthMm * unitsPerMm,
+      })) {
+        polylines.push({
+          color: region.color,
+          points: run,
+          order: region.order,
+        });
+      }
+      // Edge run last so it crisps the fill's boundary on top.
+      for (const ring of boundary) {
+        if (ring.length > 1) {
+          polylines.push({
+            color: region.color,
+            points: ring,
+            order: region.order,
+          });
+        }
+      }
+    }
+    polylines.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }
 
   const plan = buildPlan(groupByColor(polylines), options);
   return {
@@ -70,19 +163,21 @@ export function convertSvg(
   };
 }
 
-function measure(polylines: ReturnType<typeof extractPolylines>): number {
+function measure(geometry: ExtractedGeometry): number {
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
-  for (const { points } of polylines) {
+  const scan = (points: { x: number; y: number }[]) => {
     for (const p of points) {
       minX = Math.min(minX, p.x);
       minY = Math.min(minY, p.y);
       maxX = Math.max(maxX, p.x);
       maxY = Math.max(maxY, p.y);
     }
-  }
+  };
+  for (const { points } of geometry.strokes) scan(points);
+  for (const { rings } of geometry.fills) for (const ring of rings) scan(ring);
   const span = Math.max(maxX - minX, maxY - minY);
   if (!Number.isFinite(span) || span <= 0) {
     throw new Error("no stitchable geometry found in the SVG");

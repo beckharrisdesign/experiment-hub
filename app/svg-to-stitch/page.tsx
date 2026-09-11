@@ -36,6 +36,8 @@ const SIZE_OPTIONS = [
 ];
 
 const STITCH_OPTIONS = [1.5, 2, 2.5, 3, 3.5, 4];
+const FILL_ANGLE_OPTIONS = [0, 30, 45, 60, 90, 135];
+const FILL_SPACING_OPTIONS = [0.35, 0.4, 0.5, 0.6, 0.8];
 
 function baseName(fileName: string): string {
   return fileName.replace(/\.svg$/i, "");
@@ -101,6 +103,9 @@ export default function SvgToStitchPage() {
   const [source, setSource] = useState<Source | null>(null);
   const [widthMm, setWidthMm] = useState(100);
   const [stitchMm, setStitchMm] = useState(2.5);
+  const [fillMode, setFillMode] = useState<"fill" | "outline">("fill");
+  const [fillAngle, setFillAngle] = useState(45);
+  const [fillSpacing, setFillSpacing] = useState(0.4);
   const [dragOver, setDragOver] = useState(false);
   const [panelOpen, setPanelOpen] = useState(true);
 
@@ -120,6 +125,9 @@ export default function SvgToStitchPage() {
         ok: convertSvg(source.text, {
           targetWidthMm: widthMm,
           stitchLengthMm: stitchMm,
+          fillMode,
+          fillAngleDeg: fillAngle,
+          fillSpacingMm: fillSpacing,
           designName: baseName(source.name).toUpperCase(),
         }),
       };
@@ -130,7 +138,7 @@ export default function SvgToStitchPage() {
         ),
       };
     }
-  }, [source, widthMm, stitchMm]);
+  }, [source, widthMm, stitchMm, fillMode, fillAngle, fillSpacing]);
 
   const plan = result && "ok" in result ? result.ok.plan : null;
 
@@ -285,6 +293,70 @@ export default function SvgToStitchPage() {
                 </SelectContent>
               </Select>
             </Field>
+
+            <Field
+              label="Filled shapes"
+              help="Fill covers each filled shape with tatami rows plus underlay. Outline traces only the edge."
+            >
+              <Select
+                value={fillMode}
+                onValueChange={(v) => setFillMode(v as "fill" | "outline")}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fill">Tatami fill</SelectItem>
+                  <SelectItem value="outline">Outline only</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+
+            {fillMode === "fill" && (
+              <>
+                <Field
+                  label="Fill angle"
+                  help="Direction the fill rows run. 45° hides pull best."
+                >
+                  <Select
+                    value={String(fillAngle)}
+                    onValueChange={(v) => setFillAngle(Number(v))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FILL_ANGLE_OPTIONS.map((v) => (
+                        <SelectItem key={v} value={String(v)}>
+                          {v}°
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+
+                <Field
+                  label="Fill density"
+                  help="Row spacing. 0.4 mm is standard coverage; wider is lighter and faster."
+                >
+                  <Select
+                    value={String(fillSpacing)}
+                    onValueChange={(v) => setFillSpacing(Number(v))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FILL_SPACING_OPTIONS.map((v) => (
+                        <SelectItem key={v} value={String(v)}>
+                          {v} mm
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </>
+            )}
 
             {plan && (
               <Stack gap={8}>
