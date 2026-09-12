@@ -139,6 +139,44 @@ describe("stroke width extraction", () => {
     const { strokes } = extractGeometry(doc, 0.1);
     expect(strokes[0].strokeWidth).toBeCloseTo(1, 6);
   });
+
+  it("resolves absolute CSS units at 96 px per inch", () => {
+    const doc = parseSvg(
+      `<svg xmlns="http://www.w3.org/2000/svg">
+        <line x1="0" y1="0" x2="10" y2="0" stroke="#000" stroke-width="2mm" />
+        <line x1="0" y1="5" x2="10" y2="5" stroke="#000" stroke-width="12pt" />
+      </svg>`,
+    );
+    const { strokes } = extractGeometry(doc, 0.1);
+    expect(strokes[0].strokeWidth).toBeCloseTo((2 * 96) / 25.4, 6);
+    expect(strokes[1].strokeWidth).toBeCloseTo(16, 6);
+  });
+
+  it("treats percentages and malformed values as unset, not misread numbers", () => {
+    const doc = parseSvg(
+      `<svg xmlns="http://www.w3.org/2000/svg">
+        <line x1="0" y1="0" x2="10" y2="0" stroke="#000" stroke-width="50%" />
+        <line x1="0" y1="5" x2="10" y2="5" stroke="#000" stroke-width="4foo" />
+      </svg>`,
+    );
+    const { strokes } = extractGeometry(doc, 0.1);
+    // Both fall back to the SVG initial value of 1 user unit.
+    expect(strokes[0].strokeWidth).toBeCloseTo(1, 6);
+    expect(strokes[1].strokeWidth).toBeCloseTo(1, 6);
+  });
+
+  it("drops a stroke with stroke-width 0 — the spec paints nothing", () => {
+    const doc = parseSvg(
+      `<svg xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="10" height="10" fill="#112233"
+              stroke="#000" stroke-width="0" />
+      </svg>`,
+    );
+    const { strokes, fills } = extractGeometry(doc, 0.1);
+    expect(strokes).toHaveLength(0);
+    // With no visible stroke, the fill is not treated as stroke-covered.
+    expect(fills[0].hasStroke).toBe(false);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -197,6 +235,23 @@ describe("convertSvg satin strokes", () => {
     expect(() =>
       convertSvg(SATIN_LINE, { ...OPTS, satinDensityMm: 0.05 }),
     ).toThrow(/satin density/);
+  });
+
+  it("anchors mm scaling to the source geometry, letting satin borders overhang", () => {
+    // Circle centerline diameter 100 units at 50 mm → 2 units per mm; the
+    // 8-unit (4 mm) satin border pokes 2 mm past the artwork on each side.
+    const badge = `<svg xmlns="http://www.w3.org/2000/svg">
+      <circle cx="60" cy="60" r="50" fill="none" stroke="#e8b73a" stroke-width="8" />
+    </svg>`;
+    const { plan } = convertSvg(badge, OPTS);
+    // Anchored scale: the stitched design measures target + overhang (54 mm),
+    // instead of the rails silently shrinking the whole design to 50 mm and
+    // the satin below its chosen width with it.
+    expect(plan.stats.widthMm).toBeCloseTo(54, 0);
+    expect(plan.stats.heightMm).toBeCloseTo(54, 0);
+    // And the zigzag spans stay a true 4 mm (40 machine units).
+    expect(maxStitchSegment(plan)).toBeGreaterThanOrEqual(40);
+    expect(maxStitchSegment(plan)).toBeLessThanOrEqual(45);
   });
 
   it("still encodes DST/EXP with satin stitches present", () => {

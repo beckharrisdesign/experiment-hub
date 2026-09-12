@@ -35,6 +35,15 @@ export interface StitchPlanOptions {
   targetWidthMm: number;
   /** Nominal running-stitch length in mm. */
   stitchLengthMm: number;
+  /**
+   * Bounds (user units) that the mm scaling is anchored to. When set, the
+   * scale and centering derive from these instead of the runs' own extent —
+   * the converter passes its source-geometry bounds so satin rails that
+   * poke past the artwork edge (half a border's width) overhang the target
+   * size like real stroke paint, rather than silently shrinking the design
+   * and every physical measure computed from the shared scale.
+   */
+  sourceBounds?: { minX: number; minY: number; maxX: number; maxY: number };
 }
 
 export interface StitchPlan {
@@ -115,16 +124,21 @@ export function buildPlan(
   }
   const srcWidth = maxX - minX;
   const srcHeight = maxY - minY;
-  const srcSpan = Math.max(srcWidth, srcHeight);
-  if (srcSpan < 1e-9) {
-    throw new Error("SVG geometry has zero extent");
-  }
 
   // Scale so the design's larger side fits the target width; a tall skinny
   // design should not blow past hoop height just because "width" is the knob.
-  const scale = (options.targetWidthMm * 10) / srcSpan;
-  const cx = (minX + maxX) / 2;
-  const cy = (minY + maxY) / 2;
+  // Anchor to the caller's source bounds when given (see StitchPlanOptions).
+  const anchor = options.sourceBounds ?? { minX, minY, maxX, maxY };
+  const anchorSpan = Math.max(
+    anchor.maxX - anchor.minX,
+    anchor.maxY - anchor.minY,
+  );
+  if (anchorSpan < 1e-9) {
+    throw new Error("SVG geometry has zero extent");
+  }
+  const scale = (options.targetWidthMm * 10) / anchorSpan;
+  const cx = (anchor.minX + anchor.maxX) / 2;
+  const cy = (anchor.minY + anchor.maxY) / 2;
   // y flips: SVG is y-down, embroidery formats are y-up.
   const toMachine = (p: Point): Point => ({
     x: (p.x - cx) * scale,

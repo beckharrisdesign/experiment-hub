@@ -11,7 +11,12 @@ import {
 } from "./svg-parse";
 import { hatchFill, closeRings } from "./fill";
 import { satinZigzag } from "./satin";
-import { buildPlan, groupByColor, type StitchPlan } from "./plan";
+import {
+  buildPlan,
+  groupByColor,
+  type StitchPlan,
+  type StitchPlanOptions,
+} from "./plan";
 import { encodeDst } from "./dst";
 import { encodeExp } from "./exp";
 
@@ -133,18 +138,25 @@ export function convertSvg(
   // units. Two passes because the user-unit extent isn't known until after a
   // first parse; the initial coarse pass only measures.
   const coarse = extractGeometry(doc, 1);
-  const extent = measure(coarse);
+  const extent = measure(coarse).span;
   const tolerance = (extent / (options.targetWidthMm * 10)) * 0.5;
 
   let polylines: ColoredPolyline[];
+  let sourceBounds: StitchPlanOptions["sourceBounds"];
   if (fillMode === "outline") {
     polylines = extractPolylines(doc, Math.max(tolerance, 1e-6));
   } else {
     const geometry = extractGeometry(doc, Math.max(tolerance, 1e-6));
-    // Physical mm expressed in SVG user units, via the same larger-side
-    // scaling buildPlan applies (the fill runs stay inside the boundary
-    // rings, so they never change the design's bounding box).
-    const unitsPerMm = extent / options.targetWidthMm;
+    // One scale, shared with buildPlan: physical mm anchored to the source
+    // geometry's bounds (fine pass — the coarse extent can differ slightly).
+    // Fill runs stay inside their boundary rings, but satin rails poke half
+    // a stroke width past the artwork edge; anchoring the scale here keeps
+    // every mm measure (satin width, density, the 1–10 mm gate) exact and
+    // lets the border overhang the target size like real stroke paint,
+    // instead of the overhang silently shrinking the whole design.
+    const bounds = measure(geometry);
+    sourceBounds = bounds;
+    const unitsPerMm = bounds.span / options.targetWidthMm;
     // A stroke sews after its own element's fill so the border stays the
     // crisp top edge instead of being buried under the fill; the half-step
     // keeps it ahead of the next element. Strokes wide enough to read as
@@ -220,7 +232,7 @@ export function convertSvg(
     polylines.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
-  const plan = buildPlan(groupByColor(polylines), options);
+  const plan = buildPlan(groupByColor(polylines), { ...options, sourceBounds });
   return {
     plan,
     dst: encodeDst(plan, options.designName ?? "DESIGN"),
@@ -228,7 +240,13 @@ export function convertSvg(
   };
 }
 
-function measure(geometry: ExtractedGeometry): number {
+function measure(geometry: ExtractedGeometry): {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+  span: number;
+} {
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
@@ -247,5 +265,5 @@ function measure(geometry: ExtractedGeometry): number {
   if (!Number.isFinite(span) || span <= 0) {
     throw new Error("no stitchable geometry found in the SVG");
   }
-  return span;
+  return { minX, minY, maxX, maxY, span };
 }

@@ -157,14 +157,30 @@ function ownPaint(el: Element, name: "stroke" | "fill"): string | null {
   return parseColor(raw);
 }
 
-// stroke-width accepts a bare number or a px length; other units are rare in
-// exported artwork and parseFloat's numeric prefix is close enough. Invalid
-// or negative values act as unset and inherit, matching CSS behavior.
+// stroke-width is a CSS length: a bare number is user units, and absolute
+// units convert at CSS's 96px-per-inch. Percentages, font-relative units,
+// and malformed values act as unset and inherit — never as a misread number
+// that could flip a stroke across the satin threshold.
+const STROKE_WIDTH_RE =
+  /^([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)(px|mm|cm|in|pt|pc)?$/i;
+const UNIT_TO_USER: Record<string, number> = {
+  px: 1,
+  mm: 96 / 25.4,
+  cm: 96 / 2.54,
+  in: 96,
+  pt: 96 / 72,
+  pc: 16,
+};
+
 function ownStrokeWidth(el: Element): number | null {
   const raw = styleProperty(el, "stroke-width");
   if (raw === null) return null;
-  const parsed = parseFloat(raw);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  const match = raw.trim().match(STROKE_WIDTH_RE);
+  if (!match) return null;
+  const value =
+    parseFloat(match[1]) *
+    (match[2] ? UNIT_TO_USER[match[2].toLowerCase()] : 1);
+  return value >= 0 ? value : null;
 }
 
 function inheritPaint(el: Element, inherited: InheritedPaint): InheritedPaint {
@@ -338,18 +354,20 @@ function walk(
 
   if (SHAPE_TAGS.has(tag)) {
     const { stroke, fill } = resolvedPaints(paint);
-    if (stroke === null && fill === null) return; // nothing visible to stitch
+    // SVG's initial stroke-width is 1 user unit; the transform scales it
+    // like any other geometry. Width 0 paints nothing per the spec, so the
+    // stroke drops out entirely instead of stitching a phantom line.
+    const strokeWidth = (paint.strokeWidth ?? 1) * matrixScale(m);
+    const strokeVisible = stroke !== null && strokeWidth > 0;
+    if (!strokeVisible && fill === null) return; // nothing visible to stitch
     const order = out.strokes.length + out.fills.length;
     const polylines = shapePolylines(el, tolerance).map((polyline) =>
       polyline.map((p) => apply(m, p)),
     );
-    if (stroke !== null) {
-      // SVG's initial stroke-width is 1 user unit; the transform scales it
-      // like any other geometry.
-      const strokeWidth = (paint.strokeWidth ?? 1) * matrixScale(m);
+    if (strokeVisible) {
       for (const points of polylines) {
         if (points.length > 1) {
-          out.strokes.push({ color: stroke, points, order, strokeWidth });
+          out.strokes.push({ color: stroke!, points, order, strokeWidth });
         }
       }
     }
@@ -364,7 +382,7 @@ function walk(
           color: fill,
           rings,
           order,
-          hasStroke: stroke !== null,
+          hasStroke: strokeVisible,
         });
       }
     }
