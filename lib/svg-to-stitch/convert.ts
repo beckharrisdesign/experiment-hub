@@ -10,7 +10,13 @@ import {
   type ExtractedGeometry,
 } from "./svg-parse";
 import { hatchFill, closeRings } from "./fill";
-import { buildPlan, groupByColor, type StitchPlan } from "./plan";
+import { satinZigzag } from "./satin";
+import {
+  buildPlan,
+  groupByColor,
+  type StitchPlan,
+  type StitchPlanOptions,
+} from "./plan";
 import { encodeDst } from "./dst";
 import { encodeExp } from "./exp";
 
@@ -36,6 +42,15 @@ export interface ConvertOptions {
    * true) — it stabilizes the fabric so the top stitching doesn't pucker.
    */
   fillUnderlay?: boolean;
+  /**
+   * Sew strokes whose rendered width lands in the satin range (1–10 mm at
+   * the output size) as satin columns instead of a single running line
+   * (default true; fill mode only). Thinner strokes always run; wider ones
+   * would leave loose thread and also fall back to a running line.
+   */
+  satinStrokes?: boolean;
+  /** Thread pitch along a satin column in mm (default 0.4). */
+  satinDensityMm?: number;
 }
 
 export interface ConvertResult {
@@ -51,11 +66,19 @@ export const DEFAULT_OPTIONS: ConvertOptions = {
   fillAngleDeg: 45,
   fillSpacingMm: 0.4,
   fillUnderlay: true,
+  satinStrokes: true,
+  satinDensityMm: 0.4,
 };
 
 // Underlay: rows perpendicular to the top stitching, spaced far apart — a
 // scaffold, not coverage.
 const UNDERLAY_SPACING_MM = 2;
+
+// Satin range: below 1 mm the zigzag collapses into a fat running stitch;
+// above 10 mm the long floats snag and pull — real digitizers split such
+// columns or switch to fill, so we fall back to the running line instead.
+const SATIN_MIN_WIDTH_MM = 1;
+const SATIN_MAX_WIDTH_MM = 10;
 
 export function convertSvg(
   svgText: string,
@@ -96,6 +119,15 @@ export function convertSvg(
   ) {
     throw new Error("fill spacing must be between 0.2 and 2 mm");
   }
+  const satinStrokes = options.satinStrokes ?? true;
+  const satinDensityMm = options.satinDensityMm ?? 0.4;
+  if (
+    !Number.isFinite(satinDensityMm) ||
+    satinDensityMm < 0.2 ||
+    satinDensityMm > 2
+  ) {
+    throw new Error("satin density must be between 0.2 and 2 mm");
+  }
 
   const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
   if (doc.querySelector("parsererror")) {
@@ -106,25 +138,58 @@ export function convertSvg(
   // units. Two passes because the user-unit extent isn't known until after a
   // first parse; the initial coarse pass only measures.
   const coarse = extractGeometry(doc, 1);
-  const extent = measure(coarse);
+  const extent = measure(coarse).span;
   const tolerance = (extent / (options.targetWidthMm * 10)) * 0.5;
 
   let polylines: ColoredPolyline[];
+  let sourceBounds: StitchPlanOptions["sourceBounds"];
   if (fillMode === "outline") {
     polylines = extractPolylines(doc, Math.max(tolerance, 1e-6));
   } else {
     const geometry = extractGeometry(doc, Math.max(tolerance, 1e-6));
-    // Physical mm expressed in SVG user units, via the same larger-side
-    // scaling buildPlan applies (the fill runs stay inside the boundary
-    // rings, so they never change the design's bounding box).
-    const unitsPerMm = extent / options.targetWidthMm;
+    // One scale, shared with buildPlan: physical mm anchored to the source
+    // geometry's bounds (fine pass — the coarse extent can differ slightly).
+    // Fill runs stay inside their boundary rings, but satin rails poke half
+    // a stroke width past the artwork edge; anchoring the scale here keeps
+    // every mm measure (satin width, density, the 1–10 mm gate) exact and
+    // lets the border overhang the target size like real stroke paint,
+    // instead of the overhang silently shrinking the whole design.
+    const bounds = measure(geometry);
+    sourceBounds = bounds;
+    const unitsPerMm = bounds.span / options.targetWidthMm;
     // A stroke sews after its own element's fill so the border stays the
     // crisp top edge instead of being buried under the fill; the half-step
-    // keeps it ahead of the next element.
-    polylines = geometry.strokes.map((s) => ({
-      ...s,
-      order: (s.order ?? 0) + 0.5,
-    }));
+    // keeps it ahead of the next element. Strokes wide enough to read as
+    // borders or lettering (the satin range at output size) sew as satin
+    // columns: a center running stitch to anchor the fabric, then the
+    // zigzag over it. Everything else stays a running line.
+    polylines = [];
+    for (const s of geometry.strokes) {
+      const order = (s.order ?? 0) + 0.5;
+      const widthMm = (s.strokeWidth ?? 0) / unitsPerMm;
+      let zigzag: typeof s.points = [];
+      if (
+        satinStrokes &&
+        widthMm >= SATIN_MIN_WIDTH_MM &&
+        widthMm <= SATIN_MAX_WIDTH_MM
+      ) {
+        zigzag = satinZigzag(s.points, {
+          width: s.strokeWidth!,
+          density: satinDensityMm * unitsPerMm,
+        });
+      }
+      if (zigzag.length > 1) {
+        polylines.push({
+          color: s.color,
+          points: s.points,
+          order,
+          underlay: true,
+        });
+        polylines.push({ color: s.color, points: zigzag, order, satin: true });
+      } else {
+        polylines.push({ ...s, order });
+      }
+    }
     for (const region of geometry.fills) {
       // Only validated rings hatch or outline: a region whose every ring is
       // degenerate (zero area) stitches nothing in fill mode.
@@ -167,7 +232,7 @@ export function convertSvg(
     polylines.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
-  const plan = buildPlan(groupByColor(polylines), options);
+  const plan = buildPlan(groupByColor(polylines), { ...options, sourceBounds });
   return {
     plan,
     dst: encodeDst(plan, options.designName ?? "DESIGN"),
@@ -175,7 +240,13 @@ export function convertSvg(
   };
 }
 
-function measure(geometry: ExtractedGeometry): number {
+function measure(geometry: ExtractedGeometry): {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+  span: number;
+} {
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
@@ -194,5 +265,5 @@ function measure(geometry: ExtractedGeometry): number {
   if (!Number.isFinite(span) || span <= 0) {
     throw new Error("no stitchable geometry found in the SVG");
   }
-  return span;
+  return { minX, minY, maxX, maxY, span };
 }

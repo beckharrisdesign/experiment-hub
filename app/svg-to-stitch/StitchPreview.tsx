@@ -354,18 +354,16 @@ export default function StitchPreview({
               {/* Screen-sized strokes: without non-scaling-stroke the
                   viewBox-unit widths balloon to hundreds of pixels at 64×
                   zoom and obscure the stitch path. Underlay draws recessed —
-                  on fabric it sits beneath the top stitching. */}
+                  on fabric it sits beneath the top stitching. Selection
+                  never changes stroke width: on dense fills and satin the
+                  fattened strokes overlap into a solid blob and misstate
+                  thread coverage — dimming the other colors is the whole
+                  highlight. */}
               <polyline
                 points={segment.points}
                 fill="none"
                 stroke={segment.color}
-                strokeWidth={
-                  segment.underlay
-                    ? 1
-                    : selectedColor === segment.colorIndex
-                      ? 4
-                      : 2.5
-                }
+                strokeWidth={segment.underlay ? 1 : 2.5}
                 vectorEffect="non-scaling-stroke"
                 strokeLinecap="round"
                 strokeLinejoin="round"

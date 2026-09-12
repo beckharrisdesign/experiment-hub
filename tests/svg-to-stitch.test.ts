@@ -539,10 +539,14 @@ describe("convertSvg", () => {
   </svg>`;
 
   it("produces a plan and both file formats", () => {
+    // satinStrokes off: with satin, border strokes overhang the target size
+    // (covered in the satin suite); this test pins the original fit-to-target
+    // sizing of running-stitch conversion.
     const result = convertSvg(SAMPLE, {
       targetWidthMm: 120,
       stitchLengthMm: 2.5,
       designName: "SAMPLE",
+      satinStrokes: false,
     });
     expect(result.plan.colors).toEqual(["#1f6feb", "#f85149", "#3fb950"]);
     expect(result.plan.stats.colorChanges).toBe(2);
