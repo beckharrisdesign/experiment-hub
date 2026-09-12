@@ -9,6 +9,7 @@ import {
   type ExtractedGeometry,
 } from "./svg-parse";
 import { hatchFill, satinFill, closeRings } from "./fill";
+import { ribbonSatin } from "./ribbon";
 import { satinZigzag } from "./satin";
 import {
   buildPlan,
@@ -216,15 +217,23 @@ export function convertSvg(
       if (rings.length === 0) continue;
       // Narrow regions sew as two-rail satin between their own edges —
       // no tatami, no perpendicular underlay, no boundary run (the rails
-      // are the boundary). Regions that don't qualify fall through to
-      // the tatami path unchanged.
+      // are the boundary). Straight-ish shapes go through the cheap
+      // fixed-axis pass; curved ribbons (flattened strokes, circle
+      // borders) through boundary pairing. Regions that qualify for
+      // neither fall through to the tatami path unchanged.
       if (satinFills) {
-        const satin = satinFill(rings, {
-          spacing: satinDensityMm * unitsPerMm,
-          maxWidth: SATIN_MAX_WIDTH_MM * unitsPerMm,
-          minMedianWidth: SATIN_MIN_WIDTH_MM * unitsPerMm,
-          stitchLength: options.stitchLengthMm * unitsPerMm,
-        });
+        const satin =
+          satinFill(rings, {
+            spacing: satinDensityMm * unitsPerMm,
+            maxWidth: SATIN_MAX_WIDTH_MM * unitsPerMm,
+            minMedianWidth: SATIN_MIN_WIDTH_MM * unitsPerMm,
+            stitchLength: options.stitchLengthMm * unitsPerMm,
+          }) ??
+          ribbonSatin(rings, {
+            density: satinDensityMm * unitsPerMm,
+            maxWidth: SATIN_MAX_WIDTH_MM * unitsPerMm,
+            minMedianWidth: SATIN_MIN_WIDTH_MM * unitsPerMm,
+          });
         if (satin) {
           if (fillUnderlay) {
             for (const center of satin.centers) {
