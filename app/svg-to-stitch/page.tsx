@@ -16,12 +16,12 @@ import {
   Stack,
 } from "@beckharrisdesign/mvds";
 import { convertSvg, type ConvertResult } from "@/lib/svg-to-stitch/convert";
+import { readMachineFile } from "@/lib/svg-to-stitch/read";
 import StitchPreview from "./StitchPreview";
 
-interface Source {
-  name: string;
-  text: string;
-}
+type Source =
+  | { name: string; kind: "svg"; text: string }
+  | { name: string; kind: "machine"; format: "dst" | "exp"; bytes: Uint8Array };
 
 const SIZE_OPTIONS = [
   { value: 50, label: "50 mm — small patch" },
@@ -40,7 +40,7 @@ const FILL_ANGLE_OPTIONS = [0, 30, 45, 60, 90, 135];
 const FILL_SPACING_OPTIONS = [0.35, 0.4, 0.5, 0.6, 0.8];
 
 function baseName(fileName: string): string {
-  return fileName.replace(/\.svg$/i, "");
+  return fileName.replace(/\.(svg|dst|exp)$/i, "");
 }
 
 // Settings errors are already written for people; parser internals are not.
@@ -58,6 +58,12 @@ function friendlyError(message: string): string {
   }
   if (/no stitchable geometry/i.test(message)) {
     return "No stitchable outlines found. Make sure the SVG has visible paths or shapes (not just images or text).";
+  }
+  if (/not a DST file/i.test(message)) {
+    return "That file doesn't look like a DST. Make sure it's a Tajima .dst machine file.";
+  }
+  if (/no stitches found/i.test(message)) {
+    return "Couldn't find any stitches in this file. It may be a different format renamed to .dst or .exp.";
   }
   return message;
 }
@@ -112,17 +118,38 @@ export default function SvgToStitchPage() {
   const [panelOpen, setPanelOpen] = useState(true);
 
   const loadFile = useCallback(async (file: File) => {
-    const text = await file.text();
-    setSource({ name: file.name, text });
+    const machine = /\.(dst|exp)$/i.exec(file.name);
+    if (machine) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      setSource({
+        name: file.name,
+        kind: "machine",
+        format: machine[1].toLowerCase() as "dst" | "exp",
+        bytes,
+      });
+    } else {
+      const text = await file.text();
+      setSource({ name: file.name, kind: "svg", text });
+    }
   }, []);
 
   // Conversion is pure and fast (milliseconds for typical SVGs), so it just
   // recomputes on every settings change — no server, files never upload.
+  // A machine file is already a finished plan: it decodes once and ignores
+  // the conversion settings entirely.
   const result = useMemo<
     { ok: ConvertResult } | { error: string } | null
   >(() => {
     if (!source) return null;
     try {
+      if (source.kind === "machine") {
+        const opened = readMachineFile(
+          source.format,
+          source.bytes,
+          baseName(source.name).toUpperCase(),
+        );
+        return { ok: { plan: opened.plan, dst: opened.dst, exp: opened.exp } };
+      }
       return {
         ok: convertSvg(source.text, {
           targetWidthMm: widthMm,
@@ -150,6 +177,8 @@ export default function SvgToStitchPage() {
     fillSpacing,
     satinStrokes,
   ]);
+
+  const isMachine = source?.kind === "machine";
 
   const plan = result && "ok" in result ? result.ok.plan : null;
 
@@ -198,7 +227,8 @@ export default function SvgToStitchPage() {
         ) : (
           <Stack align="center" justify="center" style={{ height: "100%" }}>
             <CardDescription>
-              Drop an SVG anywhere (or use Add SVG) to see its stitch path.
+              Drop an SVG to convert it — or a DST/EXP machine file to preview
+              exactly what it will sew.
             </CardDescription>
             <CardDescription>
               Everything runs in your browser. Nothing is uploaded.
@@ -243,7 +273,7 @@ export default function SvgToStitchPage() {
               <label style={{ cursor: "pointer" }}>
                 <input
                   type="file"
-                  accept=".svg,image/svg+xml"
+                  accept=".svg,image/svg+xml,.dst,.exp"
                   className="sr-only"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
@@ -252,7 +282,7 @@ export default function SvgToStitchPage() {
                   }}
                 />
                 <Button variant="secondary" size="sm" asChild>
-                  <span>{source ? "Replace SVG" : "Add SVG"}</span>
+                  <span>{source ? "Replace file" : "Add file"}</span>
                 </Button>
               </label>
             </Inline>
@@ -263,83 +293,31 @@ export default function SvgToStitchPage() {
               </Badge>
             )}
 
-            <Field
-              label="Design size"
-              help="Larger side of the design. Check your hoop before going big."
-            >
-              <Select
-                value={String(widthMm)}
-                onValueChange={(v) => setWidthMm(Number(v))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SIZE_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={String(o.value)}>
-                      {o.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
+            {isMachine && plan && (
+              <CardDescription style={{ whiteSpace: "normal" }}>
+                Machine file — previewing exactly what it sews. Size and
+                stitches come from the file; thread colors are placeholders
+                (DST/EXP files don&apos;t store them).
+              </CardDescription>
+            )}
 
-            <Field
-              label="Stitch length"
-              help="2.5 mm is a solid default running stitch. Shorter follows curves tighter."
-            >
-              <Select
-                value={String(stitchMm)}
-                onValueChange={(v) => setStitchMm(Number(v))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STITCH_OPTIONS.map((v) => (
-                    <SelectItem key={v} value={String(v)}>
-                      {v} mm
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <Field
-              label="Filled shapes"
-              help="Fill covers each filled shape with tatami rows plus underlay. Outline traces only the edge."
-            >
-              <Select
-                value={fillMode}
-                onValueChange={(v) => setFillMode(v as "fill" | "outline")}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fill">Tatami fill</SelectItem>
-                  <SelectItem value="outline">Outline only</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-
-            {fillMode === "fill" && (
+            {!isMachine && (
               <>
                 <Field
-                  label="Fill angle"
-                  help="Direction the fill rows run. 45° hides pull best."
+                  label="Design size"
+                  help="Larger side of the design. Check your hoop before going big."
                 >
                   <Select
-                    value={String(fillAngle)}
-                    onValueChange={(v) => setFillAngle(Number(v))}
+                    value={String(widthMm)}
+                    onValueChange={(v) => setWidthMm(Number(v))}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {FILL_ANGLE_OPTIONS.map((v) => (
-                        <SelectItem key={v} value={String(v)}>
-                          {v}°
+                      {SIZE_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={String(o.value)}>
+                          {o.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -347,18 +325,18 @@ export default function SvgToStitchPage() {
                 </Field>
 
                 <Field
-                  label="Fill density"
-                  help="Row spacing. 0.4 mm is standard coverage; wider is lighter and faster."
+                  label="Stitch length"
+                  help="2.5 mm is a solid default running stitch. Shorter follows curves tighter."
                 >
                   <Select
-                    value={String(fillSpacing)}
-                    onValueChange={(v) => setFillSpacing(Number(v))}
+                    value={String(stitchMm)}
+                    onValueChange={(v) => setStitchMm(Number(v))}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {FILL_SPACING_OPTIONS.map((v) => (
+                      {STITCH_OPTIONS.map((v) => (
                         <SelectItem key={v} value={String(v)}>
                           {v} mm
                         </SelectItem>
@@ -368,24 +346,88 @@ export default function SvgToStitchPage() {
                 </Field>
 
                 <Field
-                  label="Strokes"
-                  help="Satin covers strokes 1–10 mm wide with a smooth zigzag — borders and lettering. Thinner strokes always sew as a running line."
+                  label="Filled shapes"
+                  help="Fill covers each filled shape with tatami rows plus underlay. Outline traces only the edge."
                 >
                   <Select
-                    value={satinStrokes ? "satin" : "running"}
-                    onValueChange={(v) => setSatinStrokes(v === "satin")}
+                    value={fillMode}
+                    onValueChange={(v) => setFillMode(v as "fill" | "outline")}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="satin">Satin (1–10 mm)</SelectItem>
-                      <SelectItem value="running">
-                        Running stitch only
-                      </SelectItem>
+                      <SelectItem value="fill">Tatami fill</SelectItem>
+                      <SelectItem value="outline">Outline only</SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>
+
+                {fillMode === "fill" && (
+                  <>
+                    <Field
+                      label="Fill angle"
+                      help="Direction the fill rows run. 45° hides pull best."
+                    >
+                      <Select
+                        value={String(fillAngle)}
+                        onValueChange={(v) => setFillAngle(Number(v))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FILL_ANGLE_OPTIONS.map((v) => (
+                            <SelectItem key={v} value={String(v)}>
+                              {v}°
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+
+                    <Field
+                      label="Fill density"
+                      help="Row spacing. 0.4 mm is standard coverage; wider is lighter and faster."
+                    >
+                      <Select
+                        value={String(fillSpacing)}
+                        onValueChange={(v) => setFillSpacing(Number(v))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FILL_SPACING_OPTIONS.map((v) => (
+                            <SelectItem key={v} value={String(v)}>
+                              {v} mm
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+
+                    <Field
+                      label="Strokes"
+                      help="Satin covers strokes 1–10 mm wide with a smooth zigzag — borders and lettering. Thinner strokes always sew as a running line."
+                    >
+                      <Select
+                        value={satinStrokes ? "satin" : "running"}
+                        onValueChange={(v) => setSatinStrokes(v === "satin")}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="satin">Satin (1–10 mm)</SelectItem>
+                          <SelectItem value="running">
+                            Running stitch only
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  </>
+                )}
               </>
             )}
 
