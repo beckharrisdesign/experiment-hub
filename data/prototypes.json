@@ -148,18 +148,18 @@
   },
   {
     "id": "proto-svg-to-stitch",
-    "title": "SVG to Stitch",
-    "description": "Hub route converting SVG outlines to DST/EXP embroidery files entirely client-side, with a stitch-path preview",
+    "title": "Stitch Check",
+    "description": "Hub route converting SVG artwork to DST/EXP embroidery files entirely client-side - tatami fills with underlay, an optimizer, and an interactive pan/zoom stitch preview",
     "linkPath": "app/svg-to-stitch",
     "experimentId": "svg-to-stitch",
     "status": "Active",
     "createdDate": "2026-09-11",
-    "lastModified": "2026-09-11",
+    "lastModified": "2026-09-12",
     "tags": [
       "embroidery",
-      "svg",
+      "craft",
       "file-converter",
-      "fabrication",
+      "previewer",
       "client-side"
     ]
   }

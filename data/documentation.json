@@ -94,16 +94,16 @@
   },
   {
     "id": "doc-svg-to-stitch",
-    "title": "SVG to Stitch Documentation",
-    "content": "Documentation for the SVG to Stitch converter experiment",
+    "title": "Stitch Check Documentation",
+    "content": "Documentation for Stitch Check - a browser file converter and previewer for machine embroiderers, grown from the SVG to Stitch tool",
     "experimentId": "svg-to-stitch",
     "createdDate": "2026-09-11",
-    "lastModified": "2026-09-11",
+    "lastModified": "2026-09-12",
     "tags": [
       "embroidery",
-      "svg",
+      "craft",
       "file-converter",
-      "fabrication",
+      "previewer",
       "client-side"
     ]
   }

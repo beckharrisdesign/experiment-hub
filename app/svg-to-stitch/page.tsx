@@ -216,7 +216,7 @@ export default function SvgToStitchPage() {
         >
           <Stack gap={16}>
             <Inline gap={8} align="center">
-              <h1 style={{ fontSize: 18, margin: 0 }}>SVG to Stitch</h1>
+              <h1 style={{ fontSize: 18, margin: 0 }}>Stitch Check</h1>
               <Spacer />
               <Button
                 variant="ghost"
