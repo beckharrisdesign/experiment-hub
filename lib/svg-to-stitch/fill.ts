@@ -316,6 +316,154 @@ function stitchColumn(column: RowSegment[], opts: HatchOptions): Point[][] {
   return runs;
 }
 
+// ---------------------------------------------------------------------------
+// Two-rail satin fill
+// ---------------------------------------------------------------------------
+
+export interface SatinFillOptions {
+  /** Thread pitch along the column (row spacing), in ring units. */
+  spacing: number;
+  /** Widest allowed traverse — beyond this the floats snag; region fails. */
+  maxWidth: number;
+  /** Median row width the region must reach to read as a satin column. */
+  minMedianWidth: number;
+  /** Running-stitch length (only used for scanline dust culling). */
+  stitchLength: number;
+  /** Candidate column axes to try, in degrees. */
+  angles?: number[];
+}
+
+// The satin axis runs along the shape, so rows must run across it — the
+// first angles tried are the ones block letterforms and bars want.
+const SATIN_FILL_ANGLES = [0, 90, 45, 135, 30, 60, 120, 150];
+
+export interface SatinFillResult {
+  /** Zigzag runs of exact penetrations — the plan must not resample them. */
+  runs: Point[][];
+  /** Column centerlines (row midpoints) for a center-run underlay. */
+  centers: Point[][];
+}
+
+/** Greedy nearest-neighbor ordering with reversal; no merging or culling —
+ * satin runs are never dropped for being short, a single traverse is real. */
+function orderRuns(runs: Point[][]): Point[][] {
+  const remaining = [...runs];
+  const ordered: Point[][] = [];
+  let pos: Point | null = null;
+  while (remaining.length > 0) {
+    let best = 0;
+    let bestDist = Infinity;
+    let bestReversed = false;
+    for (let i = 0; i < remaining.length; i++) {
+      const run = remaining[i];
+      const d0: number = pos
+        ? Math.hypot(run[0].x - pos.x, run[0].y - pos.y)
+        : 0;
+      const d1: number = pos
+        ? Math.hypot(
+            run[run.length - 1].x - pos.x,
+            run[run.length - 1].y - pos.y,
+          )
+        : 0;
+      const d = Math.min(d0, d1);
+      if (d < bestDist) {
+        bestDist = d;
+        best = i;
+        bestReversed = d1 < d0;
+      }
+      if (!pos) break;
+    }
+    const [run] = remaining.splice(best, 1);
+    const oriented: Point[] = bestReversed ? [...run].reverse() : run;
+    ordered.push(oriented);
+    pos = oriented[oriented.length - 1];
+  }
+  return ordered;
+}
+
+/**
+ * Try to sew a filled region as two-rail satin: scan the region at the
+ * thread pitch, and if — at some axis — every row spans no more than the
+ * satin maximum, each row becomes one full-width traverse between the
+ * region's own opposing edges (the "rails"), penetrations alternating ends.
+ * Width tapers with the shape for free, because every row is exactly as
+ * wide as the region is there — the effect commercial digitizers get from
+ * two-rail satin columns (a horn narrowing to its tip).
+ *
+ * Branching shapes decompose via the same column detection tatami uses, one
+ * satin section per column. Returns null when no candidate axis keeps every
+ * row within the satin range (a wide or curved region) — the caller falls
+ * back to tatami.
+ */
+export function satinFill(
+  rings: Point[][],
+  opts: SatinFillOptions,
+): SatinFillResult | null {
+  if (!Number.isFinite(opts.spacing) || opts.spacing <= 0) {
+    throw new Error("satin spacing must be a positive number");
+  }
+  const closed = closeRings(rings);
+  if (closed.length === 0) return null;
+
+  const scanOpts = { spacing: opts.spacing, stitchLength: opts.stitchLength };
+  let best: {
+    segments: RowSegment[];
+    cos: number;
+    sin: number;
+    meanWidth: number;
+  } | null = null;
+
+  for (const angleDeg of opts.angles ?? SATIN_FILL_ANGLES) {
+    const a = (angleDeg * Math.PI) / 180;
+    const cos = Math.cos(a);
+    const sin = Math.sin(a);
+    const rotated = closed.map((ring) => ring.map((p) => rotate(p, cos, -sin)));
+    const segments = scanRows(rotated, { ...scanOpts, angleDeg });
+    if (segments.length < 2) continue;
+    const widths = segments.map((s) => s.x1 - s.x0);
+    if (widths.some((w) => w > opts.maxWidth)) continue;
+    const sorted = [...widths].sort((m, n) => m - n);
+    if (sorted[Math.floor(sorted.length / 2)] < opts.minMedianWidth) continue;
+    const meanWidth = widths.reduce((sum, w) => sum + w, 0) / widths.length;
+    // Prefer the axis with the narrowest traverses — that's the one running
+    // along the shape instead of across it.
+    if (!best || meanWidth < best.meanWidth) {
+      best = { segments, cos, sin, meanWidth };
+    }
+  }
+  if (!best) return null;
+
+  const runs: Point[][] = [];
+  const centers: Point[][] = [];
+  for (const column of buildColumns(best.segments)) {
+    if (column.length === 1) {
+      // A lone row still sews one traverse across the shape.
+      const seg = column[0];
+      runs.push([
+        { x: seg.x0, y: seg.y },
+        { x: seg.x1, y: seg.y },
+      ]);
+      // No centerline underlay for a single traverse — nothing to anchor.
+      continue;
+    }
+    // One penetration per row, strictly alternating rails — consecutive
+    // penetrations cross the column diagonally, which is the satin surface.
+    const run = column.map((seg, i) => ({
+      x: i % 2 === 0 ? seg.x0 : seg.x1,
+      y: seg.y,
+    }));
+    runs.push(run);
+    centers.push(column.map((seg) => ({ x: (seg.x0 + seg.x1) / 2, y: seg.y })));
+  }
+
+  const unrotate = (run: Point[]) =>
+    run.map((p) => rotate(p, best!.cos, best!.sin));
+  return {
+    runs: orderRuns(runs).map(unrotate),
+    centers: centers.map(unrotate),
+  };
+}
+
 /**
  * Fill the region bounded by `rings` (even-odd) with tatami rows.
  * Returns the stitch runs in ring coordinates — usually one per serpentine

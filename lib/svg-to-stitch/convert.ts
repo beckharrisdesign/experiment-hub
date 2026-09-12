@@ -9,7 +9,7 @@ import {
   type ColoredPolyline,
   type ExtractedGeometry,
 } from "./svg-parse";
-import { hatchFill, closeRings } from "./fill";
+import { hatchFill, satinFill, closeRings } from "./fill";
 import { satinZigzag } from "./satin";
 import {
   buildPlan,
@@ -51,6 +51,13 @@ export interface ConvertOptions {
   satinStrokes?: boolean;
   /** Thread pitch along a satin column in mm (default 0.4). */
   satinDensityMm?: number;
+  /**
+   * Sew narrow filled shapes (bars, block letters — every traverse within
+   * the satin range at output size) as two-rail satin between their own
+   * edges, tapering with the shape, instead of tatami (default true; fill
+   * mode only). Wide or curved regions always fall back to tatami.
+   */
+  satinFills?: boolean;
 }
 
 export interface ConvertResult {
@@ -68,6 +75,7 @@ export const DEFAULT_OPTIONS: ConvertOptions = {
   fillUnderlay: true,
   satinStrokes: true,
   satinDensityMm: 0.4,
+  satinFills: true,
 };
 
 // Underlay: rows perpendicular to the top stitching, spaced far apart — a
@@ -120,6 +128,7 @@ export function convertSvg(
     throw new Error("fill spacing must be between 0.2 and 2 mm");
   }
   const satinStrokes = options.satinStrokes ?? true;
+  const satinFills = options.satinFills ?? true;
   const satinDensityMm = options.satinDensityMm ?? 0.4;
   if (
     !Number.isFinite(satinDensityMm) ||
@@ -195,6 +204,40 @@ export function convertSvg(
       // degenerate (zero area) stitches nothing in fill mode.
       const rings = closeRings(region.rings);
       if (rings.length === 0) continue;
+      // Narrow regions sew as two-rail satin between their own edges —
+      // no tatami, no perpendicular underlay, no boundary run (the rails
+      // are the boundary). Regions that don't qualify fall through to
+      // the tatami path unchanged.
+      if (satinFills) {
+        const satin = satinFill(rings, {
+          spacing: satinDensityMm * unitsPerMm,
+          maxWidth: SATIN_MAX_WIDTH_MM * unitsPerMm,
+          minMedianWidth: SATIN_MIN_WIDTH_MM * unitsPerMm,
+          stitchLength: options.stitchLengthMm * unitsPerMm,
+        });
+        if (satin) {
+          if (fillUnderlay) {
+            for (const center of satin.centers) {
+              if (center.length < 2) continue;
+              polylines.push({
+                color: region.color,
+                points: center,
+                order: region.order,
+                underlay: true,
+              });
+            }
+          }
+          for (const run of satin.runs) {
+            polylines.push({
+              color: region.color,
+              points: run,
+              order: region.order,
+              satin: true,
+            });
+          }
+          continue;
+        }
+      }
       if (fillUnderlay) {
         for (const run of hatchFill(rings, {
           angleDeg: fillAngleDeg + 90,

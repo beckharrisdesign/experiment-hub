@@ -114,6 +114,7 @@ export default function SvgToStitchPage() {
   const [fillAngle, setFillAngle] = useState(45);
   const [fillSpacing, setFillSpacing] = useState(0.4);
   const [satinStrokes, setSatinStrokes] = useState(true);
+  const [satinFills, setSatinFills] = useState(true);
   const [dragOver, setDragOver] = useState(false);
   const [panelOpen, setPanelOpen] = useState(true);
 
@@ -158,6 +159,7 @@ export default function SvgToStitchPage() {
           fillAngleDeg: fillAngle,
           fillSpacingMm: fillSpacing,
           satinStrokes,
+          satinFills,
           designName: baseName(source.name).toUpperCase(),
         }),
       };
@@ -176,6 +178,7 @@ export default function SvgToStitchPage() {
     fillAngle,
     fillSpacing,
     satinStrokes,
+    satinFills,
   ]);
 
   const isMachine = source?.kind === "machine";
@@ -422,6 +425,26 @@ export default function SvgToStitchPage() {
                           <SelectItem value="satin">Satin (1–10 mm)</SelectItem>
                           <SelectItem value="running">
                             Running stitch only
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+
+                    <Field
+                      label="Narrow fills"
+                      help="Filled shapes that read as bars or letters (up to 10 mm across) sew as satin between their own edges, tapering with the shape. Wide or curved shapes always get tatami."
+                    >
+                      <Select
+                        value={satinFills ? "satin" : "tatami"}
+                        onValueChange={(v) => setSatinFills(v === "satin")}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="satin">Satin (auto)</SelectItem>
+                          <SelectItem value="tatami">
+                            Tatami everywhere
                           </SelectItem>
                         </SelectContent>
                       </Select>
