@@ -1,7 +1,8 @@
 # Stitch authoring principles
 
-**Status: draft for founder review — 2026-09-12.** The founding decision
-this document records:
+**Status: adopted — 2026-09-12** (principles and the four decisions below
+approved by the founder in session). The founding decision this document
+records:
 
 > "I don't want my code to try and figure it out backwards - I'd rather be
 > able to use much more powerful editing software and have my tools
@@ -80,15 +81,16 @@ do now — the heuristics are good and staying. The difference is that a
 *prepped* file is deterministic: resize it, re-export it, and every shape
 sews the way its tag says, no surprises.
 
-## Open decisions (founder to settle)
+## Decisions (settled 2026-09-12)
 
-1. **Tag syntax blessing** — is `st-` + kebab parameters the right
-   ergonomics for how you actually name layers in Figma?
-2. **Physical size declaration** — stays a panel choice (current), or can
-   the artwork declare it (`st-size-63-5` on the root frame) with the
-   panel as override?
-3. **Satin over-range behavior** — a shape tagged `st-satin` that's wider
-   than 10 mm somewhere: error loudly, or split/fall back quietly?
-4. **Brush definitions** — built-in library only at first, or should a
-   Figma component *be* the brush definition (the motif drawn once,
-   referenced by name)?
+1. **Tag syntax:** `st-` + kebab parameters, as specified above.
+2. **Physical size:** panel only — artwork stays proportional, output
+   size is chosen per conversion. No size tags.
+3. **Satin over-range:** error loudly. A shape tagged `st-satin` that
+   exceeds the 10 mm range anywhere is flagged in the preview and not
+   guessed at — the fix happens in the design tool. Purest form of "the
+   preview never lies".
+4. **Brushes:** built-in library first (cross, tick, chain, dot, and the
+   rest of the founder's stitch-brush explorations), referenced by name
+   (`st-brush-cross`). Figma-component-defined brushes are a later
+   evolution, not v1.
