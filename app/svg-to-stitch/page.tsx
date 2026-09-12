@@ -380,24 +380,6 @@ export default function SvgToStitchPage() {
 
             {!isMachine && (
               <>
-                <Field label="Design size">
-                  <Select
-                    value={String(widthMm)}
-                    onValueChange={(v) => setWidthMm(Number(v))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SIZE_OPTIONS.map((o) => (
-                        <SelectItem key={o.value} value={String(o.value)}>
-                          {o.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-
                 <SwitchRow
                   label="Fill shapes"
                   checked={fillMode === "fill"}
@@ -524,7 +506,29 @@ export default function SvgToStitchPage() {
               </Stack>
             )}
 
+            {/* Machine-file concerns live together: physical size and the
+                files it produces. Preview controls stay above. */}
             <Stack gap={8}>
+              <PanelHeading>Export</PanelHeading>
+              {!isMachine && (
+                <Field label="Design size">
+                  <Select
+                    value={String(widthMm)}
+                    onValueChange={(v) => setWidthMm(Number(v))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SIZE_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={String(o.value)}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
               <Button
                 disabled={!plan}
                 onClick={() =>
