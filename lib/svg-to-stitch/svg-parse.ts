@@ -15,6 +15,16 @@ export interface ColoredPolyline {
   order?: number;
   /** True for fill-underlay runs — sewn beneath the visible top stitching. */
   underlay?: boolean;
+  /**
+   * Rendered stroke width in user units (transform-scaled), set on stroke
+   * outlines — it decides whether the stroke sews as satin or running stitch.
+   */
+  strokeWidth?: number;
+  /**
+   * True when `points` are exact needle penetrations (a satin zigzag) that
+   * the plan must sew verbatim instead of resampling to stitch length.
+   */
+  satin?: boolean;
 }
 
 /**
@@ -129,10 +139,11 @@ function styleProperty(el: Element, name: string): string | null {
 
 // Stroke and fill inherit independently in SVG, so they are carried
 // separately — collapsing them would lose an ancestor's stroke the moment a
-// child sets only a fill.
+// child sets only a fill. stroke-width inherits the same way.
 interface InheritedPaint {
   stroke: string | null; // "#rrggbb" | "none" | null (unset)
   fill: string | null;
+  strokeWidth: number | null; // pre-transform user units; null = unset
 }
 
 // An element's own stroke/fill, resolved to a flat color. url() paints
@@ -146,11 +157,30 @@ function ownPaint(el: Element, name: "stroke" | "fill"): string | null {
   return parseColor(raw);
 }
 
+// stroke-width accepts a bare number or a px length; other units are rare in
+// exported artwork and parseFloat's numeric prefix is close enough. Invalid
+// or negative values act as unset and inherit, matching CSS behavior.
+function ownStrokeWidth(el: Element): number | null {
+  const raw = styleProperty(el, "stroke-width");
+  if (raw === null) return null;
+  const parsed = parseFloat(raw);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+
 function inheritPaint(el: Element, inherited: InheritedPaint): InheritedPaint {
   return {
     stroke: ownPaint(el, "stroke") ?? inherited.stroke,
     fill: ownPaint(el, "fill") ?? inherited.fill,
+    strokeWidth: ownStrokeWidth(el) ?? inherited.strokeWidth,
   };
+}
+
+// Average scale factor of an affine matrix (sqrt of the area scale) — how a
+// transform changes a stroke's rendered width. Exact for uniform scale and
+// rotation; splits the difference on non-uniform scale, where SVG stroke
+// rendering itself has no single width either.
+function matrixScale(m: Matrix): number {
+  return Math.sqrt(Math.abs(m[0] * m[3] - m[1] * m[2]));
 }
 
 // Resolved paints following SVG defaults: stroke defaults to none, fill
@@ -314,9 +344,12 @@ function walk(
       polyline.map((p) => apply(m, p)),
     );
     if (stroke !== null) {
+      // SVG's initial stroke-width is 1 user unit; the transform scales it
+      // like any other geometry.
+      const strokeWidth = (paint.strokeWidth ?? 1) * matrixScale(m);
       for (const points of polylines) {
         if (points.length > 1) {
-          out.strokes.push({ color: stroke, points, order });
+          out.strokes.push({ color: stroke, points, order, strokeWidth });
         }
       }
     }
@@ -359,7 +392,11 @@ export function extractGeometry(
   }
   const out: ExtractedGeometry = { strokes: [], fills: [] };
   const rootMatrix = parseTransform(root.getAttribute("transform"));
-  const rootPaint = inheritPaint(root, { stroke: null, fill: null });
+  const rootPaint = inheritPaint(root, {
+    stroke: null,
+    fill: null,
+    strokeWidth: null,
+  });
   for (const child of Array.from(root.children)) {
     walk(child, rootMatrix, rootPaint, tolerance, out);
   }

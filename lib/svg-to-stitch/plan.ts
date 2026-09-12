@@ -22,6 +22,12 @@ export interface ColorBlock {
   polylines: Point[][];
   /** Per-run underlay flags, parallel to `polylines`; absent = all top. */
   underlay?: boolean[];
+  /**
+   * Per-run satin flags, parallel to `polylines`. A satin run's points are
+   * exact needle penetrations — buildPlan sews them verbatim instead of
+   * resampling, because a mid-column penetration breaks the satin surface.
+   */
+  satin?: boolean[];
 }
 
 export interface StitchPlanOptions {
@@ -52,15 +58,16 @@ export interface StitchPlan {
 export function groupByColor(polylines: ColoredPolyline[]): ColorBlock[] {
   const blocks: ColorBlock[] = [];
   const byColor = new Map<string, ColorBlock>();
-  for (const { color, points, underlay } of polylines) {
+  for (const { color, points, underlay, satin } of polylines) {
     let block = byColor.get(color);
     if (!block) {
-      block = { color, polylines: [], underlay: [] };
+      block = { color, polylines: [], underlay: [], satin: [] };
       byColor.set(color, block);
       blocks.push(block);
     }
     block.polylines.push(points);
     block.underlay!.push(underlay ?? false);
+    block.satin!.push(satin ?? false);
   }
   return blocks;
 }
@@ -135,7 +142,11 @@ export function buildPlan(
   for (let b = 0; b < blocks.length; b++) {
     const block = blocks[b];
     const runs = block.polylines
-      .map((points, i) => ({ points, underlay: block.underlay?.[i] ?? false }))
+      .map((points, i) => ({
+        points,
+        underlay: block.underlay?.[i] ?? false,
+        satin: block.satin?.[i] ?? false,
+      }))
       .filter((r) => r.points.length > 1);
     if (runs.length === 0) continue;
     if (colors.length > 0) {
@@ -147,8 +158,10 @@ export function buildPlan(
     for (const run of runs) {
       const underlay = run.underlay || undefined;
       // Scale to machine units first so stitch length is a physical measure,
-      // then resample and round to integer 0.1mm steps.
-      const machineRun = resample(run.points.map(toMachine), stepUnits).map(
+      // then resample and round to integer 0.1mm steps. Satin runs skip the
+      // resample: their points are already the exact penetrations.
+      const scaled = run.points.map(toMachine);
+      const machineRun = (run.satin ? scaled : resample(scaled, stepUnits)).map(
         (p) => ({
           x: Math.round(p.x),
           y: Math.round(p.y),

@@ -107,6 +107,7 @@ export default function SvgToStitchPage() {
   const [fillMode, setFillMode] = useState<"fill" | "outline">("fill");
   const [fillAngle, setFillAngle] = useState(45);
   const [fillSpacing, setFillSpacing] = useState(0.4);
+  const [satinStrokes, setSatinStrokes] = useState(true);
   const [dragOver, setDragOver] = useState(false);
   const [panelOpen, setPanelOpen] = useState(true);
 
@@ -129,6 +130,7 @@ export default function SvgToStitchPage() {
           fillMode,
           fillAngleDeg: fillAngle,
           fillSpacingMm: fillSpacing,
+          satinStrokes,
           designName: baseName(source.name).toUpperCase(),
         }),
       };
@@ -139,7 +141,15 @@ export default function SvgToStitchPage() {
         ),
       };
     }
-  }, [source, widthMm, stitchMm, fillMode, fillAngle, fillSpacing]);
+  }, [
+    source,
+    widthMm,
+    stitchMm,
+    fillMode,
+    fillAngle,
+    fillSpacing,
+    satinStrokes,
+  ]);
 
   const plan = result && "ok" in result ? result.ok.plan : null;
 
@@ -353,6 +363,26 @@ export default function SvgToStitchPage() {
                           {v} mm
                         </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+
+                <Field
+                  label="Strokes"
+                  help="Satin covers strokes 1–10 mm wide with a smooth zigzag — borders and lettering. Thinner strokes always sew as a running line."
+                >
+                  <Select
+                    value={satinStrokes ? "satin" : "running"}
+                    onValueChange={(v) => setSatinStrokes(v === "satin")}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="satin">Satin (1–10 mm)</SelectItem>
+                      <SelectItem value="running">
+                        Running stitch only
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>
