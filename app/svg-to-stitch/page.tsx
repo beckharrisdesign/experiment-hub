@@ -38,6 +38,29 @@ const SIZE_OPTIONS = [
 // Running-stitch length is fixed at the solid 2.5 mm default: the panel
 // only carries choices whose effect shows up in the design readout.
 const STITCH_LENGTH_MM = 2.5;
+
+// Fabric swatches the stitches preview on. Black is the most common thread
+// color there is — on the app's near-black canvas a black-thread design is
+// invisible, so Auto picks whichever swatch contrasts with the file.
+const FABRIC_OPTIONS = [
+  { value: "auto", label: "Auto" },
+  { value: "#1a1a1c", label: "Charcoal" },
+  { value: "#ebe2d0", label: "Natural" },
+  { value: "#f7f5f0", label: "White" },
+];
+const DARK_FABRIC = "#1a1a1c";
+const LIGHT_FABRIC = "#ebe2d0";
+
+function threadLuminance(hex: string): number {
+  const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+  if (!m) return 1;
+  return (
+    (0.2126 * parseInt(m[1], 16) +
+      0.7152 * parseInt(m[2], 16) +
+      0.0722 * parseInt(m[3], 16)) /
+    255
+  );
+}
 const FILL_ANGLE_OPTIONS = [0, 30, 45, 60, 90, 135];
 const FILL_SPACING_OPTIONS = [0.35, 0.4, 0.5, 0.6, 0.8];
 
@@ -119,6 +142,7 @@ export default function SvgToStitchPage() {
   const [fillSpacing, setFillSpacing] = useState(0.4);
   const [satinStrokes, setSatinStrokes] = useState(true);
   const [satinFills, setSatinFills] = useState(true);
+  const [fabric, setFabric] = useState("auto");
   const [dragOver, setDragOver] = useState(false);
   const [panelOpen, setPanelOpen] = useState(true);
 
@@ -188,6 +212,16 @@ export default function SvgToStitchPage() {
 
   const plan = result && "ok" in result ? result.ok.plan : null;
 
+  // Auto fabric: if the design's typical thread is dark, preview on light
+  // fabric, and vice versa — so black-thread line art is never invisible.
+  const effectiveFabric = useMemo(() => {
+    if (fabric !== "auto") return fabric;
+    if (!plan || plan.colors.length === 0) return undefined;
+    const lums = plan.colors.map(threadLuminance).sort((a, b) => a - b);
+    const median = lums[Math.floor(lums.length / 2)];
+    return median < 0.35 ? LIGHT_FABRIC : DARK_FABRIC;
+  }, [fabric, plan]);
+
   // Which thread color is highlighted in the preview (index into plan.colors).
   // A new plan means new colors, so the selection resets with it.
   const [selectedColor, setSelectedColor] = useState<number | null>(null);
@@ -229,6 +263,7 @@ export default function SvgToStitchPage() {
             plan={plan}
             selectedColor={selectedColor}
             onSelectColor={setSelectedColor}
+            fabric={effectiveFabric}
           />
         ) : (
           <Stack align="center" justify="center" style={{ height: "100%" }}>
@@ -305,6 +340,26 @@ export default function SvgToStitchPage() {
                 stitches come from the file; thread colors are placeholders
                 (DST/EXP files don&apos;t store them).
               </CardDescription>
+            )}
+
+            {plan && (
+              <Field
+                label="Fabric"
+                help="What the stitches preview on. Auto contrasts with the design's thread colors — dark thread shows on light fabric."
+              >
+                <Select value={fabric} onValueChange={setFabric}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FABRIC_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
             )}
 
             {!isMachine && (

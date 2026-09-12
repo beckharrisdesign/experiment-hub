@@ -24,6 +24,12 @@ interface StitchPreviewProps {
   /** Highlighted thread color (index into plan.colors), null for none. */
   selectedColor?: number | null;
   onSelectColor?: (index: number | null) => void;
+  /**
+   * Fabric color painted behind the stitches. Dark threads on the app's
+   * near-black canvas are invisible (black is the most common thread
+   * color there is), so the caller picks a fabric with contrast.
+   */
+  fabric?: string;
 }
 
 const MAX_ZOOM_IN = 64; // view width can shrink to base/64
@@ -76,6 +82,7 @@ export default function StitchPreview({
   plan,
   selectedColor = null,
   onSelectColor,
+  fabric,
 }: StitchPreviewProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -326,6 +333,7 @@ export default function StitchPreview({
           touchAction: "none",
           cursor: dragging ? "grabbing" : "grab",
           display: "block",
+          background: fabric,
         }}
         role="img"
         aria-label="Stitch path preview"
