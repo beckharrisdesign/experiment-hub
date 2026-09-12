@@ -231,6 +231,24 @@ describe("convertSvg satin strokes", () => {
     expect(maxStitchSegment(plan)).toBeLessThanOrEqual(26);
   });
 
+  it("sews satin strokes in outline mode too", () => {
+    const { plan } = convertSvg(SATIN_LINE, { ...OPTS, fillMode: "outline" });
+    expect(maxStitchSegment(plan)).toBeGreaterThanOrEqual(38);
+    expect(plan.stats.satinRuns).toBe(1);
+  });
+
+  it("reports satin sections in the stats so the controls have a readout", () => {
+    expect(convertSvg(SATIN_LINE, OPTS).plan.stats.satinRuns).toBe(1);
+    expect(
+      convertSvg(SATIN_LINE, { ...OPTS, satinStrokes: false }).plan.stats
+        .satinRuns,
+    ).toBe(0);
+    // A stroke below the satin range reads 0 — the "why did nothing
+    // change" answer surfaced as a number.
+    const thin = SATIN_LINE.replace('stroke-width="8"', 'stroke-width="1"');
+    expect(convertSvg(thin, OPTS).plan.stats.satinRuns).toBe(0);
+  });
+
   it("validates satin density", () => {
     expect(() =>
       convertSvg(SATIN_LINE, { ...OPTS, satinDensityMm: 0.05 }),

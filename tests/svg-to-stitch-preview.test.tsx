@@ -149,6 +149,7 @@ describe("StitchPreview underlay rendering", () => {
         stitches: 4,
         jumps: 0,
         colorChanges: 0,
+        satinRuns: 0,
         widthMm: 30,
         heightMm: 0,
       },

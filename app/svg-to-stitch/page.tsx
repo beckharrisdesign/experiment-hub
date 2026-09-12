@@ -345,6 +345,26 @@ export default function SvgToStitchPage() {
                   </Select>
                 </Field>
 
+                <Field
+                  label="Strokes"
+                  help="Satin covers strokes 1–10 mm wide with a smooth zigzag — borders and lettering. Thinner strokes always sew as a running line. The Satin sections stat below shows how many took effect."
+                >
+                  <Select
+                    value={satinStrokes ? "satin" : "running"}
+                    onValueChange={(v) => setSatinStrokes(v === "satin")}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="satin">Satin (1–10 mm)</SelectItem>
+                      <SelectItem value="running">
+                        Running stitch only
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+
                 {fillMode === "fill" && (
                   <>
                     <Field
@@ -390,26 +410,6 @@ export default function SvgToStitchPage() {
                     </Field>
 
                     <Field
-                      label="Strokes"
-                      help="Satin covers strokes 1–10 mm wide with a smooth zigzag — borders and lettering. Thinner strokes always sew as a running line."
-                    >
-                      <Select
-                        value={satinStrokes ? "satin" : "running"}
-                        onValueChange={(v) => setSatinStrokes(v === "satin")}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="satin">Satin (1–10 mm)</SelectItem>
-                          <SelectItem value="running">
-                            Running stitch only
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-
-                    <Field
                       label="Narrow fills"
                       help="Filled shapes that read as bars or letters (up to 10 mm across) sew as satin between their own edges, tapering with the shape. Wide or curved shapes always get tatami."
                     >
@@ -441,6 +441,14 @@ export default function SvgToStitchPage() {
                   value={plan.stats.stitches.toLocaleString()}
                 />
                 <StatRow label="Jumps" value={String(plan.stats.jumps)} />
+                {/* Machine formats don't mark satin, so the count would
+                    always read 0 there — misleading, not informative. */}
+                {!isMachine && (
+                  <StatRow
+                    label="Satin sections"
+                    value={String(plan.stats.satinRuns)}
+                  />
+                )}
                 <StatRow
                   label="Thread colors"
                   value={String(plan.colors.length)}

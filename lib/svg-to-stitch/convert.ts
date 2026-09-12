@@ -5,7 +5,6 @@
 
 import {
   extractGeometry,
-  extractPolylines,
   type ColoredPolyline,
   type ExtractedGeometry,
 } from "./svg-parse";
@@ -150,55 +149,66 @@ export function convertSvg(
   const extent = measure(coarse).span;
   const tolerance = (extent / (options.targetWidthMm * 10)) * 0.5;
 
-  let polylines: ColoredPolyline[];
-  let sourceBounds: StitchPlanOptions["sourceBounds"];
+  const geometry = extractGeometry(doc, Math.max(tolerance, 1e-6));
+  // One scale, shared with buildPlan: physical mm anchored to the source
+  // geometry's bounds (fine pass — the coarse extent can differ slightly).
+  // Fill runs stay inside their boundary rings, but satin rails poke half
+  // a stroke width past the artwork edge; anchoring the scale here keeps
+  // every mm measure (satin width, density, the 1–10 mm gate) exact and
+  // lets the border overhang the target size like real stroke paint,
+  // instead of the overhang silently shrinking the whole design.
+  const bounds = measure(geometry);
+  const sourceBounds: StitchPlanOptions["sourceBounds"] = bounds;
+  const unitsPerMm = bounds.span / options.targetWidthMm;
+
+  // A stroke wide enough to read as a border or lettering (the satin range
+  // at output size) sews as a satin column — a center running stitch to
+  // anchor the fabric, then the zigzag over it. Everything else stays a
+  // running line. Strokes are satin candidates in both modes: outline mode
+  // strips fills to their boundaries, not strokes of their satin.
+  const strokeRuns = (s: ColoredPolyline, order: number): void => {
+    const widthMm = (s.strokeWidth ?? 0) / unitsPerMm;
+    let zigzag: typeof s.points = [];
+    if (
+      satinStrokes &&
+      widthMm >= SATIN_MIN_WIDTH_MM &&
+      widthMm <= SATIN_MAX_WIDTH_MM
+    ) {
+      zigzag = satinZigzag(s.points, {
+        width: s.strokeWidth!,
+        density: satinDensityMm * unitsPerMm,
+      });
+    }
+    if (zigzag.length > 1) {
+      polylines.push({
+        color: s.color,
+        points: s.points,
+        order,
+        underlay: true,
+      });
+      polylines.push({ color: s.color, points: zigzag, order, satin: true });
+    } else {
+      polylines.push({ ...s, order });
+    }
+  };
+
+  const polylines: ColoredPolyline[] = [];
   if (fillMode === "outline") {
-    polylines = extractPolylines(doc, Math.max(tolerance, 1e-6));
-  } else {
-    const geometry = extractGeometry(doc, Math.max(tolerance, 1e-6));
-    // One scale, shared with buildPlan: physical mm anchored to the source
-    // geometry's bounds (fine pass — the coarse extent can differ slightly).
-    // Fill runs stay inside their boundary rings, but satin rails poke half
-    // a stroke width past the artwork edge; anchoring the scale here keeps
-    // every mm measure (satin width, density, the 1–10 mm gate) exact and
-    // lets the border overhang the target size like real stroke paint,
-    // instead of the overhang silently shrinking the whole design.
-    const bounds = measure(geometry);
-    sourceBounds = bounds;
-    const unitsPerMm = bounds.span / options.targetWidthMm;
-    // A stroke sews after its own element's fill so the border stays the
-    // crisp top edge instead of being buried under the fill; the half-step
-    // keeps it ahead of the next element. Strokes wide enough to read as
-    // borders or lettering (the satin range at output size) sew as satin
-    // columns: a center running stitch to anchor the fabric, then the
-    // zigzag over it. Everything else stays a running line.
-    polylines = [];
-    for (const s of geometry.strokes) {
-      const order = (s.order ?? 0) + 0.5;
-      const widthMm = (s.strokeWidth ?? 0) / unitsPerMm;
-      let zigzag: typeof s.points = [];
-      if (
-        satinStrokes &&
-        widthMm >= SATIN_MIN_WIDTH_MM &&
-        widthMm <= SATIN_MAX_WIDTH_MM
-      ) {
-        zigzag = satinZigzag(s.points, {
-          width: s.strokeWidth!,
-          density: satinDensityMm * unitsPerMm,
-        });
-      }
-      if (zigzag.length > 1) {
-        polylines.push({
-          color: s.color,
-          points: s.points,
-          order,
-          underlay: true,
-        });
-        polylines.push({ color: s.color, points: zigzag, order, satin: true });
-      } else {
-        polylines.push({ ...s, order });
+    // Legacy outline view: strokes as drawn, filled regions flattened to
+    // their boundary rings, stroke-over-fill precedence, document order.
+    for (const s of geometry.strokes) strokeRuns(s, s.order ?? 0);
+    for (const fill of geometry.fills) {
+      if (fill.hasStroke) continue;
+      for (const points of fill.rings) {
+        polylines.push({ color: fill.color, points, order: fill.order });
       }
     }
+    polylines.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  } else {
+    // A stroke sews after its own element's fill so the border stays the
+    // crisp top edge instead of being buried under the fill; the half-step
+    // keeps it ahead of the next element.
+    for (const s of geometry.strokes) strokeRuns(s, (s.order ?? 0) + 0.5);
     for (const region of geometry.fills) {
       // Only validated rings hatch or outline: a region whose every ring is
       // degenerate (zero area) stitches nothing in fill mode.
