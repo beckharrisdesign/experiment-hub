@@ -345,8 +345,12 @@ export interface SatinFillResult {
 }
 
 /** Greedy nearest-neighbor ordering with reversal; no merging or culling —
- * satin runs are never dropped for being short, a single traverse is real. */
+ * satin runs are never dropped for being short, a single traverse is real.
+ * Same O(R²) shape as the tatami ordering, so the same guard: past
+ * MAX_NN_RUNS columns the scanline order stands rather than blocking the
+ * browser. */
 function orderRuns(runs: Point[][]): Point[][] {
+  if (runs.length > MAX_NN_RUNS) return runs;
   const remaining = [...runs];
   const ordered: Point[][] = [];
   let pos: Point | null = null;
@@ -392,15 +396,27 @@ function orderRuns(runs: Point[][]): Point[][] {
  *
  * Branching shapes decompose via the same column detection tatami uses, one
  * satin section per column. Returns null when no candidate axis keeps every
- * row within the satin range (a wide or curved region) — the caller falls
- * back to tatami.
+ * row within the satin range — typically a wide region, or one that curves
+ * or branches past what any single axis can hold — and the caller falls
+ * back (to the curved ribbon pass, then tatami).
  */
 export function satinFill(
   rings: Point[][],
   opts: SatinFillOptions,
 ): SatinFillResult | null {
+  // NaN thresholds make every comparison false and would let junk qualify
+  // silently, so all numeric options are guarded like hatchFill's.
   if (!Number.isFinite(opts.spacing) || opts.spacing <= 0) {
     throw new Error("satin spacing must be a positive number");
+  }
+  if (!Number.isFinite(opts.maxWidth) || opts.maxWidth <= 0) {
+    throw new Error("satin max width must be a positive number");
+  }
+  if (!Number.isFinite(opts.minMedianWidth) || opts.minMedianWidth < 0) {
+    throw new Error("satin minimum median width must be a number");
+  }
+  if (!Number.isFinite(opts.stitchLength) || opts.stitchLength <= 0) {
+    throw new Error("satin stitch length must be a positive number");
   }
   const closed = closeRings(rings);
   if (closed.length === 0) return null;

@@ -119,20 +119,27 @@ export function decodeDst(bytes: Uint8Array): DecodedDesign {
   if (bytes.length < 512 + 3) {
     throw new Error("not a DST file (missing 512-byte header)");
   }
-  let designName: string | undefined;
+  // Every DST header opens with the LA: design-name field — requiring it
+  // keeps arbitrary 512+ byte files from silently "previewing" as noise.
   const label = String.fromCharCode(...bytes.slice(0, 3));
-  if (label === "LA:") {
-    designName = String.fromCharCode(...bytes.slice(3, 19)).trim() || undefined;
+  if (label !== "LA:") {
+    throw new Error("not a DST file (header does not start with LA:)");
   }
+  const designName =
+    String.fromCharCode(...bytes.slice(3, 19)).trim() || undefined;
 
   const entries: PlanEntry[] = [];
   let x = 0;
   let y = 0;
+  let terminated = false;
   for (let i = 512; i + 2 < bytes.length; i += 3) {
     const b0 = bytes[i];
     const b1 = bytes[i + 1];
     const b2 = bytes[i + 2];
-    if (b2 === 0xf3) break; // end record
+    if (b2 === 0xf3) {
+      terminated = true;
+      break;
+    }
     const [dx, dy] = dstDeltas(b0, b1, b2);
     x += dx;
     y += dy;
@@ -143,6 +150,11 @@ export function decodeDst(bytes: Uint8Array): DecodedDesign {
     } else {
       entries.push({ kind: "stitch", x, y });
     }
+  }
+  if (!terminated) {
+    // Without the end record the file is cut off — better to say so than
+    // to preview (and re-encode) a design missing its tail.
+    throw new Error("truncated DST file (missing end record)");
   }
   return { plan: finishPlan(entries), designName };
 }
@@ -157,6 +169,12 @@ function int8(v: number): number {
  * prefix, 0x80 end. Unknown escapes are skipped.
  */
 export function decodeExp(bytes: Uint8Array): DecodedDesign {
+  // Records are always byte pairs (moves and escapes alike), so an odd
+  // length means the file is cut mid-record — reject it rather than
+  // silently dropping the final record from the preview and downloads.
+  if (bytes.length % 2 !== 0) {
+    throw new Error("truncated EXP file (incomplete final record)");
+  }
   const entries: PlanEntry[] = [];
   let x = 0;
   let y = 0;

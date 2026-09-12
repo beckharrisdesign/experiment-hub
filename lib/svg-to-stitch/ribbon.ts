@@ -240,6 +240,12 @@ export function ribbonSatin(
   if (!Number.isFinite(opts.density) || opts.density <= 0) {
     throw new Error("ribbon density must be a positive number");
   }
+  if (!Number.isFinite(opts.maxWidth) || opts.maxWidth <= 0) {
+    throw new Error("ribbon max width must be a positive number");
+  }
+  if (!Number.isFinite(opts.minMedianWidth) || opts.minMedianWidth < 0) {
+    throw new Error("ribbon minimum median width must be a number");
+  }
   if (rings.length === 0 || rings.length > 2) return null;
 
   const perimeter = rings[0].reduce(

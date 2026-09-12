@@ -45,17 +45,19 @@ export interface ConvertOptions {
   /**
    * Sew strokes whose rendered width lands in the satin range (1–10 mm at
    * the output size) as satin columns instead of a single running line
-   * (default true; fill mode only). Thinner strokes always run; wider ones
-   * would leave loose thread and also fall back to a running line.
+   * (default true; applies in both fill and outline modes). Thinner
+   * strokes always run; wider ones would leave loose thread and also fall
+   * back to a running line.
    */
   satinStrokes?: boolean;
   /** Thread pitch along a satin column in mm (default 0.4). */
   satinDensityMm?: number;
   /**
-   * Sew narrow filled shapes (bars, block letters — every traverse within
-   * the satin range at output size) as two-rail satin between their own
-   * edges, tapering with the shape, instead of tatami (default true; fill
-   * mode only). Wide or curved regions always fall back to tatami.
+   * Sew narrow filled shapes — bars, block letters, and curved ribbons
+   * like flattened strokes and circle borders, wherever every traverse
+   * fits the satin range at output size — as two-rail satin between their
+   * own edges, tapering with the shape, instead of tatami (default true;
+   * fill mode only). Regions that don't qualify fall back to tatami.
    */
   satinFills?: boolean;
 }

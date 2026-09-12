@@ -20,6 +20,16 @@ function samplePlan(): StitchPlan {
   return convertSvg(SAMPLE, { targetWidthMm: 50, stitchLengthMm: 2.5 }).plan;
 }
 
+/** A minimal valid DST: LA: header padded to 512 bytes, then raw records. */
+function withDstHeader(records: number[]): Uint8Array {
+  const bytes = new Uint8Array(512 + records.length);
+  const header = "LA:FIXTURE         \r";
+  for (let i = 0; i < header.length; i++) bytes[i] = header.charCodeAt(i);
+  bytes.fill(0x20, header.length, 512);
+  bytes.set(records, 512);
+  return bytes;
+}
+
 function stitchPoints(plan: StitchPlan): Array<[number, number]> {
   // +0 folds IEEE −0 (from the y-flip in the plan's coordinate transform)
   // into +0 — the byte formats only carry deltas, so −0 cannot round-trip.
@@ -54,10 +64,49 @@ describe("decodeDst", () => {
     expect(() => decodeDst(new Uint8Array(100))).toThrow(/not a DST file/);
   });
 
+  it("rejects a 512+ byte file whose header is not a DST header", () => {
+    expect(() => decodeDst(new Uint8Array(600))).toThrow(/not a DST file/);
+  });
+
   it("rejects a header with no stitch records", () => {
-    const empty = new Uint8Array(515);
-    empty[514] = 0xf3;
+    const empty = withDstHeader([0x00, 0x00, 0xf3]);
     expect(() => decodeDst(empty)).toThrow(/no stitches/);
+  });
+
+  it("rejects a truncated DST missing its end record", () => {
+    const whole = encodeDst(samplePlan(), "SAMPLE");
+    const cut = whole.slice(0, whole.length - 3); // drop the 0xF3 record
+    expect(() => decodeDst(cut)).toThrow(/truncated DST/);
+  });
+
+  it("decodes hand-built byte records independent of our encoder", () => {
+    // Fixture bytes straight from the Tajima record table: stitch +1/+1,
+    // stitch +9/-27, a jump, a color change, then the end record.
+    const design = withDstHeader([
+      0b10000001,
+      0b00000000,
+      0b00000011, // dx +1, dy +1, stitch
+      0b00000100,
+      0b00010000,
+      0b00000011, // dx +9, dy -27, stitch
+      0b00000001,
+      0b00000000,
+      0b10000011, // dx +1, jump
+      0b00000000,
+      0b00000000,
+      0b11000011, // color change
+      0b00000000,
+      0b00000000,
+      0b11110011, // end
+    ]);
+    const { plan } = decodeDst(design);
+    const stitches = plan.entries.filter((e) => e.kind === "stitch");
+    expect(stitches.map((e) => [e.x, e.y])).toEqual([
+      [1, 1],
+      [10, -26],
+    ]);
+    expect(plan.stats.jumps).toBe(1);
+    expect(plan.stats.colorChanges).toBe(1);
   });
 });
 
@@ -82,6 +131,40 @@ describe("decodeExp", () => {
 
   it("rejects an empty file", () => {
     expect(() => decodeExp(new Uint8Array(0))).toThrow(/no stitches/);
+  });
+
+  it("rejects an odd-length EXP cut mid-record", () => {
+    expect(() => decodeExp(new Uint8Array([5, 5, 3]))).toThrow(/truncated EXP/);
+  });
+
+  it("decodes hand-built byte records independent of our encoder", () => {
+    // Signed byte moves, a jump escape, a color stop, and the end marker.
+    const design = new Uint8Array([
+      5,
+      250, // dx +5, dy -6 stitch
+      0x80,
+      0x04,
+      10,
+      0, // jump +10/0
+      0x80,
+      0x01, // color stop
+      3,
+      3, // stitch +3/+3
+      0x80,
+      0x80, // end
+      9,
+      9, // beyond the end marker — must be ignored
+    ]);
+    const { plan } = decodeExp(design);
+    const stitches = plan.entries.filter((e) => e.kind === "stitch");
+    // Deltas accumulate: (5,-6), then the jump lands at (15,-6), then the
+    // +3/+3 stitch at (18,-3).
+    expect(stitches.map((e) => [e.x, e.y])).toEqual([
+      [5, -6],
+      [18, -3],
+    ]);
+    expect(plan.stats.jumps).toBe(1);
+    expect(plan.stats.colorChanges).toBe(1);
   });
 });
 

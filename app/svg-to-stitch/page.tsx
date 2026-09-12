@@ -64,6 +64,9 @@ function friendlyError(message: string): string {
   if (/not a DST file/i.test(message)) {
     return "That file doesn't look like a DST. Make sure it's a Tajima .dst machine file.";
   }
+  if (/truncated (DST|EXP) file/i.test(message)) {
+    return "This file looks cut off — the end of the design is missing. Try re-downloading or re-exporting it.";
+  }
   if (/no stitches found/i.test(message)) {
     return "Couldn't find any stitches in this file. It may be a different format renamed to .dst or .exp.";
   }
@@ -329,7 +332,7 @@ export default function SvgToStitchPage() {
 
                 <Field
                   label="Filled shapes"
-                  help="Fill covers each filled shape with tatami rows plus underlay. Outline traces only the edge."
+                  help="Fill covers each filled shape — tatami rows plus underlay, or satin where Narrow fills applies. Outline traces only the edge."
                 >
                   <Select
                     value={fillMode}
@@ -411,7 +414,7 @@ export default function SvgToStitchPage() {
 
                     <Field
                       label="Narrow fills"
-                      help="Filled shapes that read as bars or letters (up to 10 mm across) sew as satin between their own edges, tapering with the shape. Wide or curved shapes always get tatami."
+                      help="Filled shapes up to 10 mm across — bars, block letters, curved ribbons and borders — sew as satin between their own edges, tapering with the shape. Shapes that don't qualify fall back to tatami."
                     >
                       <Select
                         value={satinFills ? "satin" : "tatami"}
