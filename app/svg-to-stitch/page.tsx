@@ -7,6 +7,7 @@ import {
   CardDescription,
   Field,
   Inline,
+  Label,
   Select,
   SelectContent,
   SelectItem,
@@ -14,6 +15,7 @@ import {
   SelectValue,
   Spacer,
   Stack,
+  Switch,
 } from "@beckharrisdesign/mvds";
 import { convertSvg, type ConvertResult } from "@/lib/svg-to-stitch/convert";
 import { readMachineFile } from "@/lib/svg-to-stitch/read";
@@ -105,6 +107,25 @@ function download(bytes: Uint8Array, fileName: string) {
   a.download = fileName;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function SwitchRow({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  const id = `switch-${label.replace(/\W+/g, "-").toLowerCase()}`;
+  return (
+    <Inline gap={8} align="center" style={{ minHeight: 32 }}>
+      <Label htmlFor={id}>{label}</Label>
+      <Spacer />
+      <Switch id={id} checked={checked} onCheckedChange={onChange} />
+    </Inline>
+  );
 }
 
 function StatRow({ label, value }: { label: string; value: string }) {
@@ -336,17 +357,12 @@ export default function SvgToStitchPage() {
 
             {isMachine && plan && (
               <CardDescription style={{ whiteSpace: "normal" }}>
-                Machine file — previewing exactly what it sews. Size and
-                stitches come from the file; thread colors are placeholders
-                (DST/EXP files don&apos;t store them).
+                Machine file — thread colors are placeholders.
               </CardDescription>
             )}
 
             {plan && (
-              <Field
-                label="Fabric"
-                help="What the stitches preview on. Auto contrasts with the design's thread colors — dark thread shows on light fabric."
-              >
+              <Field label="Fabric">
                 <Select value={fabric} onValueChange={setFabric}>
                   <SelectTrigger>
                     <SelectValue />
@@ -364,10 +380,7 @@ export default function SvgToStitchPage() {
 
             {!isMachine && (
               <>
-                <Field
-                  label="Design size"
-                  help="Larger side of the design. Check your hoop before going big."
-                >
+                <Field label="Design size">
                   <Select
                     value={String(widthMm)}
                     onValueChange={(v) => setWidthMm(Number(v))}
@@ -385,50 +398,26 @@ export default function SvgToStitchPage() {
                   </Select>
                 </Field>
 
-                <Field
-                  label="Filled shapes"
-                  help="Fill covers each filled shape — tatami rows plus underlay, or satin where Narrow fills applies. Outline traces only the edge."
-                >
-                  <Select
-                    value={fillMode}
-                    onValueChange={(v) => setFillMode(v as "fill" | "outline")}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="fill">Tatami fill</SelectItem>
-                      <SelectItem value="outline">Outline only</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Field>
-
-                <Field
-                  label="Strokes"
-                  help="Satin covers strokes 1–10 mm wide with a smooth zigzag — borders and lettering. Thinner strokes always sew as a running line. The Satin sections stat below shows how many took effect."
-                >
-                  <Select
-                    value={satinStrokes ? "satin" : "running"}
-                    onValueChange={(v) => setSatinStrokes(v === "satin")}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="satin">Satin (1–10 mm)</SelectItem>
-                      <SelectItem value="running">
-                        Running stitch only
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Field>
+                <SwitchRow
+                  label="Fill shapes"
+                  checked={fillMode === "fill"}
+                  onChange={(on) => setFillMode(on ? "fill" : "outline")}
+                />
+                <SwitchRow
+                  label="Satin strokes (1–10 mm)"
+                  checked={satinStrokes}
+                  onChange={setSatinStrokes}
+                />
 
                 {fillMode === "fill" && (
                   <>
-                    <Field
-                      label="Fill angle"
-                      help="Direction the fill rows run. 45° hides pull best."
-                    >
+                    <SwitchRow
+                      label="Satin narrow fills"
+                      checked={satinFills}
+                      onChange={setSatinFills}
+                    />
+
+                    <Field label="Fill angle">
                       <Select
                         value={String(fillAngle)}
                         onValueChange={(v) => setFillAngle(Number(v))}
@@ -446,10 +435,7 @@ export default function SvgToStitchPage() {
                       </Select>
                     </Field>
 
-                    <Field
-                      label="Fill density"
-                      help="Row spacing. 0.4 mm is standard coverage; wider is lighter and faster."
-                    >
+                    <Field label="Fill density">
                       <Select
                         value={String(fillSpacing)}
                         onValueChange={(v) => setFillSpacing(Number(v))}
@@ -463,26 +449,6 @@ export default function SvgToStitchPage() {
                               {v} mm
                             </SelectItem>
                           ))}
-                        </SelectContent>
-                      </Select>
-                    </Field>
-
-                    <Field
-                      label="Narrow fills"
-                      help="Filled shapes up to 10 mm across — bars, block letters, curved ribbons and borders — sew as satin between their own edges, tapering with the shape. Shapes that don't qualify fall back to tatami."
-                    >
-                      <Select
-                        value={satinFills ? "satin" : "tatami"}
-                        onValueChange={(v) => setSatinFills(v === "satin")}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="satin">Satin (auto)</SelectItem>
-                          <SelectItem value="tatami">
-                            Tatami everywhere
-                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </Field>
