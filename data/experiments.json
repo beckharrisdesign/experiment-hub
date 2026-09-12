@@ -433,20 +433,20 @@
   },
   {
     "id": "svg-to-stitch",
-    "name": "SVG to Stitch",
-    "statement": "Drop an SVG, download machine-ready embroidery files. Running-stitch DST and EXP, converted in the browser.",
-    "type": "tool",
+    "name": "Stitch Check",
+    "statement": "Convert and preview embroidery files in the browser so stitchers trust a design before sewing it.",
+    "type": "commercial",
     "directory": "experiments/svg-to-stitch",
     "documentationId": "doc-svg-to-stitch",
     "prototypeId": "proto-svg-to-stitch",
     "status": "Active",
     "createdDate": "2026-09-11",
-    "lastModified": "2026-09-11",
+    "lastModified": "2026-09-12",
     "tags": [
       "embroidery",
-      "svg",
+      "craft",
       "file-converter",
-      "fabrication",
+      "previewer",
       "client-side"
     ]
   }
