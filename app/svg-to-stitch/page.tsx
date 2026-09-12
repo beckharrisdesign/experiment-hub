@@ -7,6 +7,7 @@ import {
   CardDescription,
   Field,
   Inline,
+  Label,
   Select,
   SelectContent,
   SelectItem,
@@ -14,14 +15,15 @@ import {
   SelectValue,
   Spacer,
   Stack,
+  Switch,
 } from "@beckharrisdesign/mvds";
 import { convertSvg, type ConvertResult } from "@/lib/svg-to-stitch/convert";
+import { readMachineFile } from "@/lib/svg-to-stitch/read";
 import StitchPreview from "./StitchPreview";
 
-interface Source {
-  name: string;
-  text: string;
-}
+type Source =
+  | { name: string; kind: "svg"; text: string }
+  | { name: string; kind: "machine"; format: "dst" | "exp"; bytes: Uint8Array };
 
 const SIZE_OPTIONS = [
   { value: 50, label: "50 mm — small patch" },
@@ -35,12 +37,37 @@ const SIZE_OPTIONS = [
   { value: 300, label: "300 mm" },
 ];
 
-const STITCH_OPTIONS = [1.5, 2, 2.5, 3, 3.5, 4];
+// Running-stitch length is fixed at the solid 2.5 mm default: the panel
+// only carries choices whose effect shows up in the design readout.
+const STITCH_LENGTH_MM = 2.5;
+
+// Fabric swatches the stitches preview on. Black is the most common thread
+// color there is — on the app's near-black canvas a black-thread design is
+// invisible, so Auto picks whichever swatch contrasts with the file.
+const FABRIC_OPTIONS = [
+  { value: "auto", label: "Auto" },
+  { value: "#1a1a1c", label: "Charcoal" },
+  { value: "#ebe2d0", label: "Natural" },
+  { value: "#f7f5f0", label: "White" },
+];
+const DARK_FABRIC = "#1a1a1c";
+const LIGHT_FABRIC = "#ebe2d0";
+
+function threadLuminance(hex: string): number {
+  const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+  if (!m) return 1;
+  return (
+    (0.2126 * parseInt(m[1], 16) +
+      0.7152 * parseInt(m[2], 16) +
+      0.0722 * parseInt(m[3], 16)) /
+    255
+  );
+}
 const FILL_ANGLE_OPTIONS = [0, 30, 45, 60, 90, 135];
 const FILL_SPACING_OPTIONS = [0.35, 0.4, 0.5, 0.6, 0.8];
 
 function baseName(fileName: string): string {
-  return fileName.replace(/\.svg$/i, "");
+  return fileName.replace(/\.(svg|dst|exp)$/i, "");
 }
 
 // Settings errors are already written for people; parser internals are not.
@@ -59,6 +86,15 @@ function friendlyError(message: string): string {
   if (/no stitchable geometry/i.test(message)) {
     return "No stitchable outlines found. Make sure the SVG has visible paths or shapes (not just images or text).";
   }
+  if (/not a DST file/i.test(message)) {
+    return "That file doesn't look like a DST. Make sure it's a Tajima .dst machine file.";
+  }
+  if (/truncated (DST|EXP) file/i.test(message)) {
+    return "This file looks cut off — the end of the design is missing. Try re-downloading or re-exporting it.";
+  }
+  if (/no stitches found/i.test(message)) {
+    return "Couldn't find any stitches in this file. It may be a different format renamed to .dst or .exp.";
+  }
   return message;
 }
 
@@ -71,6 +107,25 @@ function download(bytes: Uint8Array, fileName: string) {
   a.download = fileName;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function SwitchRow({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  const id = `switch-${label.replace(/\W+/g, "-").toLowerCase()}`;
+  return (
+    <Inline gap={8} align="center" style={{ minHeight: 32 }}>
+      <Label htmlFor={id}>{label}</Label>
+      <Spacer />
+      <Switch id={id} checked={checked} onCheckedChange={onChange} />
+    </Inline>
+  );
 }
 
 function StatRow({ label, value }: { label: string; value: string }) {
@@ -103,34 +158,57 @@ export default function SvgToStitchPage() {
   const [source, setSource] = useState<Source | null>(null);
   // Default to the standard 2.5 in patch (63.5 mm).
   const [widthMm, setWidthMm] = useState(63.5);
-  const [stitchMm, setStitchMm] = useState(2.5);
   const [fillMode, setFillMode] = useState<"fill" | "outline">("fill");
   const [fillAngle, setFillAngle] = useState(45);
   const [fillSpacing, setFillSpacing] = useState(0.4);
   const [satinStrokes, setSatinStrokes] = useState(true);
+  const [satinFills, setSatinFills] = useState(true);
+  const [fabric, setFabric] = useState("auto");
   const [dragOver, setDragOver] = useState(false);
   const [panelOpen, setPanelOpen] = useState(true);
 
   const loadFile = useCallback(async (file: File) => {
-    const text = await file.text();
-    setSource({ name: file.name, text });
+    const machine = /\.(dst|exp)$/i.exec(file.name);
+    if (machine) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      setSource({
+        name: file.name,
+        kind: "machine",
+        format: machine[1].toLowerCase() as "dst" | "exp",
+        bytes,
+      });
+    } else {
+      const text = await file.text();
+      setSource({ name: file.name, kind: "svg", text });
+    }
   }, []);
 
   // Conversion is pure and fast (milliseconds for typical SVGs), so it just
   // recomputes on every settings change — no server, files never upload.
+  // A machine file is already a finished plan: it decodes once and ignores
+  // the conversion settings entirely.
   const result = useMemo<
     { ok: ConvertResult } | { error: string } | null
   >(() => {
     if (!source) return null;
     try {
+      if (source.kind === "machine") {
+        const opened = readMachineFile(
+          source.format,
+          source.bytes,
+          baseName(source.name).toUpperCase(),
+        );
+        return { ok: { plan: opened.plan, dst: opened.dst, exp: opened.exp } };
+      }
       return {
         ok: convertSvg(source.text, {
           targetWidthMm: widthMm,
-          stitchLengthMm: stitchMm,
+          stitchLengthMm: STITCH_LENGTH_MM,
           fillMode,
           fillAngleDeg: fillAngle,
           fillSpacingMm: fillSpacing,
           satinStrokes,
+          satinFills,
           designName: baseName(source.name).toUpperCase(),
         }),
       };
@@ -144,14 +222,26 @@ export default function SvgToStitchPage() {
   }, [
     source,
     widthMm,
-    stitchMm,
     fillMode,
     fillAngle,
     fillSpacing,
     satinStrokes,
+    satinFills,
   ]);
 
+  const isMachine = source?.kind === "machine";
+
   const plan = result && "ok" in result ? result.ok.plan : null;
+
+  // Auto fabric: if the design's typical thread is dark, preview on light
+  // fabric, and vice versa — so black-thread line art is never invisible.
+  const effectiveFabric = useMemo(() => {
+    if (fabric !== "auto") return fabric;
+    if (!plan || plan.colors.length === 0) return undefined;
+    const lums = plan.colors.map(threadLuminance).sort((a, b) => a - b);
+    const median = lums[Math.floor(lums.length / 2)];
+    return median < 0.35 ? LIGHT_FABRIC : DARK_FABRIC;
+  }, [fabric, plan]);
 
   // Which thread color is highlighted in the preview (index into plan.colors).
   // A new plan means new colors, so the selection resets with it.
@@ -194,11 +284,13 @@ export default function SvgToStitchPage() {
             plan={plan}
             selectedColor={selectedColor}
             onSelectColor={setSelectedColor}
+            fabric={effectiveFabric}
           />
         ) : (
           <Stack align="center" justify="center" style={{ height: "100%" }}>
             <CardDescription>
-              Drop an SVG anywhere (or use Add SVG) to see its stitch path.
+              Drop an SVG to convert it — or a DST/EXP machine file to preview
+              exactly what it will sew.
             </CardDescription>
             <CardDescription>
               Everything runs in your browser. Nothing is uploaded.
@@ -243,7 +335,7 @@ export default function SvgToStitchPage() {
               <label style={{ cursor: "pointer" }}>
                 <input
                   type="file"
-                  accept=".svg,image/svg+xml"
+                  accept=".svg,image/svg+xml,.dst,.exp"
                   className="sr-only"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
@@ -252,7 +344,7 @@ export default function SvgToStitchPage() {
                   }}
                 />
                 <Button variant="secondary" size="sm" asChild>
-                  <span>{source ? "Replace SVG" : "Add SVG"}</span>
+                  <span>{source ? "Replace file" : "Add file"}</span>
                 </Button>
               </label>
             </Inline>
@@ -263,72 +355,51 @@ export default function SvgToStitchPage() {
               </Badge>
             )}
 
-            <Field
-              label="Design size"
-              help="Larger side of the design. Check your hoop before going big."
-            >
-              <Select
-                value={String(widthMm)}
-                onValueChange={(v) => setWidthMm(Number(v))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SIZE_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={String(o.value)}>
-                      {o.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
+            {isMachine && plan && (
+              <CardDescription style={{ whiteSpace: "normal" }}>
+                Machine file — thread colors are placeholders.
+              </CardDescription>
+            )}
 
-            <Field
-              label="Stitch length"
-              help="2.5 mm is a solid default running stitch. Shorter follows curves tighter."
-            >
-              <Select
-                value={String(stitchMm)}
-                onValueChange={(v) => setStitchMm(Number(v))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STITCH_OPTIONS.map((v) => (
-                    <SelectItem key={v} value={String(v)}>
-                      {v} mm
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
+            {plan && (
+              <Field label="Fabric">
+                <Select value={fabric} onValueChange={setFabric}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FABRIC_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            )}
 
-            <Field
-              label="Filled shapes"
-              help="Fill covers each filled shape with tatami rows plus underlay. Outline traces only the edge."
-            >
-              <Select
-                value={fillMode}
-                onValueChange={(v) => setFillMode(v as "fill" | "outline")}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fill">Tatami fill</SelectItem>
-                  <SelectItem value="outline">Outline only</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-
-            {fillMode === "fill" && (
+            {!isMachine && (
               <>
-                <Field
-                  label="Fill angle"
-                  help="Direction the fill rows run. 45° hides pull best."
-                >
+                {/* Everything stays visible — controls read as on/off, and
+                    dependents (the fill knobs) sit directly under the
+                    toggle that governs them. */}
+                <SwitchRow
+                  label="Fill shapes"
+                  checked={fillMode === "fill"}
+                  onChange={(on) => setFillMode(on ? "fill" : "outline")}
+                />
+                <SwitchRow
+                  label="Satin narrow fills"
+                  checked={satinFills}
+                  onChange={setSatinFills}
+                />
+                <SwitchRow
+                  label="Satin strokes (min 0.5 mm)"
+                  checked={satinStrokes}
+                  onChange={setSatinStrokes}
+                />
+
+                <Field label="Fill angle">
                   <Select
                     value={String(fillAngle)}
                     onValueChange={(v) => setFillAngle(Number(v))}
@@ -346,10 +417,7 @@ export default function SvgToStitchPage() {
                   </Select>
                 </Field>
 
-                <Field
-                  label="Fill density"
-                  help="Row spacing. 0.4 mm is standard coverage; wider is lighter and faster."
-                >
+                <Field label="Fill density">
                   <Select
                     value={String(fillSpacing)}
                     onValueChange={(v) => setFillSpacing(Number(v))}
@@ -366,26 +434,6 @@ export default function SvgToStitchPage() {
                     </SelectContent>
                   </Select>
                 </Field>
-
-                <Field
-                  label="Strokes"
-                  help="Satin covers strokes 1–10 mm wide with a smooth zigzag — borders and lettering. Thinner strokes always sew as a running line."
-                >
-                  <Select
-                    value={satinStrokes ? "satin" : "running"}
-                    onValueChange={(v) => setSatinStrokes(v === "satin")}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="satin">Satin (1–10 mm)</SelectItem>
-                      <SelectItem value="running">
-                        Running stitch only
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Field>
               </>
             )}
 
@@ -397,6 +445,14 @@ export default function SvgToStitchPage() {
                   value={plan.stats.stitches.toLocaleString()}
                 />
                 <StatRow label="Jumps" value={String(plan.stats.jumps)} />
+                {/* Machine formats don't mark satin, so the count would
+                    always read 0 there — misleading, not informative. */}
+                {!isMachine && (
+                  <StatRow
+                    label="Satin sections"
+                    value={String(plan.stats.satinRuns)}
+                  />
+                )}
                 <StatRow
                   label="Thread colors"
                   value={String(plan.colors.length)}
@@ -448,7 +504,29 @@ export default function SvgToStitchPage() {
               </Stack>
             )}
 
+            {/* Machine-file concerns live together: physical size and the
+                files it produces. Preview controls stay above. */}
             <Stack gap={8}>
+              <PanelHeading>Export</PanelHeading>
+              {!isMachine && (
+                <Field label="Design size">
+                  <Select
+                    value={String(widthMm)}
+                    onValueChange={(v) => setWidthMm(Number(v))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SIZE_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={String(o.value)}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
               <Button
                 disabled={!plan}
                 onClick={() =>

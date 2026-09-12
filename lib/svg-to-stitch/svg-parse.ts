@@ -8,6 +8,48 @@ import { parsePathData, type Point } from "./path-data";
 
 export type { Point };
 
+/**
+ * A stitch directive declared in the design file via an `st-` layer-name
+ * tag (see experiments/svg-to-stitch/docs/stitch-authoring.md). Figma
+ * exports layer names as `id` attributes when "Include ID" is on,
+ * sanitizing spaces to underscores — tags parse either spelling.
+ */
+export interface StitchDirective {
+  type: "run" | "satin" | "tatami" | "skip";
+  /** Explicit satin width, mm (w20 = 2.0 mm). */
+  widthMm?: number;
+  /** Tatami angle, degrees (a30). */
+  angleDeg?: number;
+  /** Row/thread pitch, mm (d4 = 0.4 mm). */
+  densityMm?: number;
+  /** The source layer name, for loud error messages. */
+  label: string;
+}
+
+const DIRECTIVE_RE = /^st-(run|satin|tatami|skip)$/;
+
+/** Parse an element's own stitch directive from its id, if any. */
+function ownDirective(el: Element): StitchDirective | null {
+  const id = el.getAttribute("id");
+  if (!id || !id.includes("st-")) return null;
+  const tokens = id.split(/[\s_]+/);
+  let type: StitchDirective["type"] | null = null;
+  for (const token of tokens) {
+    const m = DIRECTIVE_RE.exec(token);
+    if (m) type = m[1] as StitchDirective["type"];
+  }
+  if (!type) return null;
+  const directive: StitchDirective = { type, label: id.replace(/_/g, " ") };
+  for (const token of tokens) {
+    let m;
+    if ((m = /^w(\d+)$/.exec(token))) directive.widthMm = Number(m[1]) / 10;
+    else if ((m = /^a(\d+)$/.exec(token))) directive.angleDeg = Number(m[1]);
+    else if ((m = /^d(\d+)$/.exec(token)))
+      directive.densityMm = Number(m[1]) / 10;
+  }
+  return directive;
+}
+
 export interface ColoredPolyline {
   color: string; // normalized #rrggbb
   points: Point[];
@@ -25,6 +67,8 @@ export interface ColoredPolyline {
    * the plan must sew verbatim instead of resampling to stitch length.
    */
   satin?: boolean;
+  /** Stitch directive declared in the file (own or inherited). */
+  directive?: StitchDirective;
 }
 
 /**
@@ -39,6 +83,8 @@ export interface FillRegion {
   order: number;
   /** True when the same element also stitches a stroke outline. */
   hasStroke: boolean;
+  /** Stitch directive declared in the file (own or inherited). */
+  directive?: StitchDirective;
 }
 
 export interface ExtractedGeometry {
@@ -338,12 +384,24 @@ const SHAPE_TAGS = new Set([
   "polygon",
 ]);
 
+// Reference-resolution context for <use>: the document's id map, plus a
+// stack guarding against reference cycles (a use inside the subtree it
+// references would otherwise recurse forever).
+interface WalkContext {
+  byId: Map<string, Element>;
+  useStack: Set<Element>;
+}
+
+const MAX_USE_DEPTH = 24;
+
 function walk(
   el: Element,
   matrix: Matrix,
   inherited: InheritedPaint,
   tolerance: number,
   out: ExtractedGeometry,
+  ctx: WalkContext,
+  inheritedDirective: StitchDirective | null = null,
 ): void {
   const tag = el.tagName.toLowerCase();
   if (SKIP_TAGS.has(tag)) return;
@@ -351,6 +409,45 @@ function walk(
 
   const m = multiply(matrix, parseTransform(el.getAttribute("transform")));
   const paint = inheritPaint(el, inherited);
+  const directive = ownDirective(el) ?? inheritedDirective;
+  // st-skip prunes the whole subtree — guides and annotations don't sew.
+  if (directive?.type === "skip") return;
+
+  if (tag === "use") {
+    // Figma dedupes repeated artwork (component instances, "-Nup" repeats)
+    // into <defs> + <use> — without resolving these, such an export parses
+    // to zero geometry. The referenced element renders as if pasted here,
+    // translated by the use's x/y, inheriting this paint context.
+    const href = el.getAttribute("href") ?? el.getAttribute("xlink:href");
+    if (!href || !href.startsWith("#")) return;
+    const target = ctx.byId.get(href.slice(1));
+    if (
+      !target ||
+      ctx.useStack.has(target) ||
+      ctx.useStack.size >= MAX_USE_DEPTH
+    ) {
+      return;
+    }
+    const placed = multiply(m, [1, 0, 0, 1, num(el, "x"), num(el, "y")]);
+    ctx.useStack.add(target);
+    const targetTag = target.tagName.toLowerCase();
+    if (targetTag === "symbol" || targetTag === "svg") {
+      // A symbol renders its children (the symbol wrapper itself is never
+      // rendered directly; its viewBox fitting is not modeled here).
+      const tm = multiply(
+        placed,
+        parseTransform(target.getAttribute("transform")),
+      );
+      const tp = inheritPaint(target, paint);
+      for (const child of Array.from(target.children)) {
+        walk(child, tm, tp, tolerance, out, ctx, directive);
+      }
+    } else {
+      walk(target, placed, paint, tolerance, out, ctx, directive);
+    }
+    ctx.useStack.delete(target);
+    return;
+  }
 
   if (SHAPE_TAGS.has(tag)) {
     const { stroke, fill } = resolvedPaints(paint);
@@ -367,7 +464,13 @@ function walk(
     if (strokeVisible) {
       for (const points of polylines) {
         if (points.length > 1) {
-          out.strokes.push({ color: stroke!, points, order, strokeWidth });
+          out.strokes.push({
+            color: stroke!,
+            points,
+            order,
+            strokeWidth,
+            directive: directive ?? undefined,
+          });
         }
       }
     }
@@ -383,6 +486,7 @@ function walk(
           rings,
           order,
           hasStroke: strokeVisible,
+          directive: directive ?? undefined,
         });
       }
     }
@@ -390,7 +494,7 @@ function walk(
   }
 
   for (const child of Array.from(el.children)) {
-    walk(child, m, paint, tolerance, out);
+    walk(child, m, paint, tolerance, out, ctx, directive);
   }
 }
 
@@ -415,8 +519,16 @@ export function extractGeometry(
     fill: null,
     strokeWidth: null,
   });
+  // Id map for <use> resolution — built over the whole document so
+  // referenced artwork parked inside <defs>/<symbol> is reachable.
+  const byId = new Map<string, Element>();
+  for (const el of Array.from(doc.querySelectorAll("[id]"))) {
+    const id = el.getAttribute("id");
+    if (id && !byId.has(id)) byId.set(id, el);
+  }
+  const ctx: WalkContext = { byId, useStack: new Set() };
   for (const child of Array.from(root.children)) {
-    walk(child, rootMatrix, rootPaint, tolerance, out);
+    walk(child, rootMatrix, rootPaint, tolerance, out, ctx);
   }
   return out;
 }

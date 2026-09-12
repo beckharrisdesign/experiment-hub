@@ -53,6 +53,13 @@ export interface StitchPlan {
     stitches: number;
     jumps: number;
     colorChanges: number;
+    /**
+     * Runs sewn as satin (zigzag columns). Surfaced so the satin controls
+     * have a visible readout — 0 tells the user their file has nothing in
+     * the satin range. Decoded machine files report 0 (the formats don't
+     * say which stitches are satin).
+     */
+    satinRuns: number;
     widthMm: number;
     heightMm: number;
   };
@@ -151,6 +158,7 @@ export function buildPlan(
   let stitches = 0;
   let jumps = 0;
   let colorChanges = 0;
+  let satinRuns = 0;
   let position: Point = { x: 0, y: 0 };
 
   for (let b = 0; b < blocks.length; b++) {
@@ -171,6 +179,7 @@ export function buildPlan(
 
     for (const run of runs) {
       const underlay = run.underlay || undefined;
+      if (run.satin) satinRuns++;
       // Scale to machine units first so stitch length is a physical measure,
       // then resample and round to integer 0.1mm steps. Satin runs skip the
       // resample: their points are already the exact penetrations.
@@ -210,6 +219,7 @@ export function buildPlan(
       stitches,
       jumps,
       colorChanges,
+      satinRuns,
       widthMm: (srcWidth * scale) / 10,
       heightMm: (srcHeight * scale) / 10,
     },

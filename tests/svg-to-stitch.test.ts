@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { parsePathData } from "@/lib/svg-to-stitch/path-data";
 import { parseColor } from "@/lib/svg-to-stitch/color";
 import {
+  extractGeometry,
   extractPolylines,
   parseTransform,
 } from "@/lib/svg-to-stitch/svg-parse";
@@ -169,6 +170,74 @@ describe("extractPolylines", () => {
     for (const p of circle.points) {
       expect(Math.hypot(p.x - 10, p.y - 10)).toBeCloseTo(5, 1);
     }
+  });
+});
+
+describe("<use> resolution", () => {
+  it("renders artwork parked in <defs> via use, translated and painted", () => {
+    // The structure Figma exports for repeated artwork: geometry deduped
+    // into defs, placed with <use>.
+    const doc = parseSvg(
+      `<svg xmlns="http://www.w3.org/2000/svg">
+        <defs><path id="leaf" d="M 0 0 L 10 0" /></defs>
+        <use href="#leaf" x="5" y="7" stroke="#ff0000" />
+      </svg>`,
+    );
+    const { strokes } = extractGeometry(doc, 0.1);
+    expect(strokes).toHaveLength(1);
+    expect(strokes[0].color).toBe("#ff0000");
+    expect(strokes[0].points[0]).toEqual({ x: 5, y: 7 });
+    expect(strokes[0].points[1]).toEqual({ x: 15, y: 7 });
+  });
+
+  it("supports the xlink:href spelling", () => {
+    const doc = parseSvg(
+      `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <defs><path id="m" d="M 0 0 L 4 0" /></defs>
+        <use xlink:href="#m" stroke="#000" />
+      </svg>`,
+    );
+    expect(extractGeometry(doc, 0.1).strokes).toHaveLength(1);
+  });
+
+  it("places multiple copies — the repeated-motif case", () => {
+    const doc = parseSvg(
+      `<svg xmlns="http://www.w3.org/2000/svg" stroke="#123456">
+        <defs><g id="flower"><line x1="0" y1="0" x2="6" y2="0"/><line x1="3" y1="-3" x2="3" y2="3"/></g></defs>
+        <use href="#flower" x="0" y="0" />
+        <use href="#flower" x="20" y="0" />
+        <use href="#flower" x="40" y="0" />
+      </svg>`,
+    );
+    const { strokes } = extractGeometry(doc, 0.1);
+    expect(strokes).toHaveLength(6);
+    expect(new Set(strokes.map((s) => s.points[0].x))).toEqual(
+      new Set([0, 3, 20, 23, 40, 43]),
+    );
+  });
+
+  it("renders a symbol's children via use", () => {
+    const doc = parseSvg(
+      `<svg xmlns="http://www.w3.org/2000/svg">
+        <symbol id="s"><line x1="0" y1="0" x2="8" y2="0" stroke="#0000ff"/></symbol>
+        <use href="#s" x="2" y="2" />
+      </svg>`,
+    );
+    const { strokes } = extractGeometry(doc, 0.1);
+    expect(strokes).toHaveLength(1);
+    expect(strokes[0].points[0]).toEqual({ x: 2, y: 2 });
+  });
+
+  it("guards against reference cycles instead of recursing forever", () => {
+    const doc = parseSvg(
+      `<svg xmlns="http://www.w3.org/2000/svg">
+        <g id="a"><line x1="0" y1="0" x2="5" y2="0" stroke="#000"/><use href="#a"/></g>
+      </svg>`,
+    );
+    // Terminates; the direct line renders once plus no infinite copies.
+    const { strokes } = extractGeometry(doc, 0.1);
+    expect(strokes.length).toBeGreaterThanOrEqual(1);
+    expect(strokes.length).toBeLessThan(10);
   });
 });
 
