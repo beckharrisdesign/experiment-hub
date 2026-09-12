@@ -25,6 +25,7 @@ interface Source {
 
 const SIZE_OPTIONS = [
   { value: 50, label: "50 mm — small patch" },
+  { value: 63.5, label: "63.5 mm — 2.5 in patch" },
   { value: 80, label: "80 mm" },
   { value: 100, label: "100 mm — 4×4 in hoop" },
   { value: 130, label: "130 mm — 5×7 in hoop" },
@@ -100,7 +101,8 @@ function PanelHeading({ children }: { children: React.ReactNode }) {
 
 export default function SvgToStitchPage() {
   const [source, setSource] = useState<Source | null>(null);
-  const [widthMm, setWidthMm] = useState(100);
+  // Default to the standard 2.5 in patch (63.5 mm).
+  const [widthMm, setWidthMm] = useState(63.5);
   const [stitchMm, setStitchMm] = useState(2.5);
   const [fillMode, setFillMode] = useState<"fill" | "outline">("fill");
   const [fillAngle, setFillAngle] = useState(45);

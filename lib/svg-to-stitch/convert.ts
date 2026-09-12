@@ -45,7 +45,7 @@ export interface ConvertResult {
 }
 
 export const DEFAULT_OPTIONS: ConvertOptions = {
-  targetWidthMm: 100,
+  targetWidthMm: 63.5, // the standard 2.5 in patch
   stitchLengthMm: 2.5,
   fillMode: "fill",
   fillAngleDeg: 45,
