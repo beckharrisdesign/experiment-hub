@@ -380,10 +380,18 @@ export default function SvgToStitchPage() {
 
             {!isMachine && (
               <>
+                {/* Everything stays visible — controls read as on/off, and
+                    dependents (the fill knobs) sit directly under the
+                    toggle that governs them. */}
                 <SwitchRow
                   label="Fill shapes"
                   checked={fillMode === "fill"}
                   onChange={(on) => setFillMode(on ? "fill" : "outline")}
+                />
+                <SwitchRow
+                  label="Satin narrow fills"
+                  checked={satinFills}
+                  onChange={setSatinFills}
                 />
                 <SwitchRow
                   label="Satin strokes (1–10 mm)"
@@ -391,51 +399,41 @@ export default function SvgToStitchPage() {
                   onChange={setSatinStrokes}
                 />
 
-                {fillMode === "fill" && (
-                  <>
-                    <SwitchRow
-                      label="Satin narrow fills"
-                      checked={satinFills}
-                      onChange={setSatinFills}
-                    />
+                <Field label="Fill angle">
+                  <Select
+                    value={String(fillAngle)}
+                    onValueChange={(v) => setFillAngle(Number(v))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FILL_ANGLE_OPTIONS.map((v) => (
+                        <SelectItem key={v} value={String(v)}>
+                          {v}°
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
 
-                    <Field label="Fill angle">
-                      <Select
-                        value={String(fillAngle)}
-                        onValueChange={(v) => setFillAngle(Number(v))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {FILL_ANGLE_OPTIONS.map((v) => (
-                            <SelectItem key={v} value={String(v)}>
-                              {v}°
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </Field>
-
-                    <Field label="Fill density">
-                      <Select
-                        value={String(fillSpacing)}
-                        onValueChange={(v) => setFillSpacing(Number(v))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {FILL_SPACING_OPTIONS.map((v) => (
-                            <SelectItem key={v} value={String(v)}>
-                              {v} mm
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                  </>
-                )}
+                <Field label="Fill density">
+                  <Select
+                    value={String(fillSpacing)}
+                    onValueChange={(v) => setFillSpacing(Number(v))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FILL_SPACING_OPTIONS.map((v) => (
+                        <SelectItem key={v} value={String(v)}>
+                          {v} mm
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
               </>
             )}
 

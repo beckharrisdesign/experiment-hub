@@ -90,6 +90,10 @@ const UNDERLAY_SPACING_MM = 2;
 const SATIN_MIN_WIDTH_MM = 1;
 const SATIN_MAX_WIDTH_MM = 10;
 
+// A stroke tagged st-satin with no w parameter and a hairline width sews at
+// this width — the spec's documented default for un-sized satin tags.
+const TAG_SATIN_DEFAULT_WIDTH_MM = 2;
+
 export function convertSvg(
   svgText: string,
   options: ConvertOptions = DEFAULT_OPTIONS,
@@ -169,17 +173,53 @@ export function convertSvg(
   // anchor the fabric, then the zigzag over it. Everything else stays a
   // running line. Strokes are satin candidates in both modes: outline mode
   // strips fills to their boundaries, not strokes of their satin.
-  const strokeRuns = (s: ColoredPolyline, order: number): void => {
-    const widthMm = (s.strokeWidth ?? 0) / unitsPerMm;
-    let zigzag: typeof s.points = [];
+  // Tag parameters obey the same physical bounds as the panel knobs —
+  // out-of-range declarations error loudly rather than sewing a surprise.
+  const checkTagDensity = (tag?: { densityMm?: number; label: string }) => {
     if (
+      tag?.densityMm !== undefined &&
+      (tag.densityMm < 0.2 || tag.densityMm > 2)
+    ) {
+      throw new Error(
+        `"${tag.label}" declares a density of ${tag.densityMm} mm — it must be between 0.2 and 2 mm.`,
+      );
+    }
+  };
+
+  const strokeRuns = (s: ColoredPolyline, order: number): void => {
+    const tag = s.directive;
+    checkTagDensity(tag);
+    if (tag?.type === "run") {
+      // Declared running stitch — never satined, whatever its width.
+      polylines.push({ ...s, order });
+      return;
+    }
+    const widthMm = (s.strokeWidth ?? 0) / unitsPerMm;
+    let satinWidthMm: number | null = null;
+    if (tag?.type === "satin") {
+      // Declared satin: the tag's width wins; a hairline with no w
+      // parameter uses the spec default. Over-range is a loud error per
+      // the authoring principles — never silently narrowed.
+      satinWidthMm =
+        tag.widthMm ??
+        (widthMm >= SATIN_MIN_WIDTH_MM ? widthMm : TAG_SATIN_DEFAULT_WIDTH_MM);
+      if (satinWidthMm > SATIN_MAX_WIDTH_MM) {
+        throw new Error(
+          `"${tag.label}" is tagged st-satin at ${satinWidthMm} mm — satin tops out at ${SATIN_MAX_WIDTH_MM} mm. Narrow it or split it in the design tool.`,
+        );
+      }
+    } else if (
       satinStrokes &&
       widthMm >= SATIN_MIN_WIDTH_MM &&
       widthMm <= SATIN_MAX_WIDTH_MM
     ) {
+      satinWidthMm = widthMm;
+    }
+    let zigzag: typeof s.points = [];
+    if (satinWidthMm !== null) {
       zigzag = satinZigzag(s.points, {
-        width: s.strokeWidth!,
-        density: satinDensityMm * unitsPerMm,
+        width: satinWidthMm * unitsPerMm,
+        density: (tag?.densityMm ?? satinDensityMm) * unitsPerMm,
       });
     }
     if (zigzag.length > 1) {
@@ -217,25 +257,48 @@ export function convertSvg(
       // degenerate (zero area) stitches nothing in fill mode.
       const rings = closeRings(region.rings);
       if (rings.length === 0) continue;
+      const tag = region.directive;
+      checkTagDensity(tag);
+      if (tag?.type === "run") {
+        // Declared outline: sew only the boundary rings.
+        for (const ring of rings) {
+          polylines.push({
+            color: region.color,
+            points: ring,
+            order: region.order,
+          });
+        }
+        continue;
+      }
+      // Tag parameters override the panel's fill knobs for this region.
+      const tatamiAngle = tag?.angleDeg ?? fillAngleDeg;
+      const tatamiSpacing = tag?.densityMm ?? fillSpacingMm;
       // Narrow regions sew as two-rail satin between their own edges —
       // no tatami, no perpendicular underlay, no boundary run (the rails
       // are the boundary). Straight-ish shapes go through the cheap
       // fixed-axis pass; curved ribbons (flattened strokes, circle
       // borders) through boundary pairing. Regions that qualify for
-      // neither fall through to the tatami path unchanged.
-      if (satinFills) {
+      // neither fall through to the tatami path — except a declared
+      // st-satin, which errors loudly instead of being guessed at.
+      if (tag?.type === "satin" || (satinFills && tag?.type !== "tatami")) {
+        const density = (tag?.densityMm ?? satinDensityMm) * unitsPerMm;
         const satin =
           satinFill(rings, {
-            spacing: satinDensityMm * unitsPerMm,
+            spacing: density,
             maxWidth: SATIN_MAX_WIDTH_MM * unitsPerMm,
             minMedianWidth: SATIN_MIN_WIDTH_MM * unitsPerMm,
             stitchLength: options.stitchLengthMm * unitsPerMm,
           }) ??
           ribbonSatin(rings, {
-            density: satinDensityMm * unitsPerMm,
+            density,
             maxWidth: SATIN_MAX_WIDTH_MM * unitsPerMm,
             minMedianWidth: SATIN_MIN_WIDTH_MM * unitsPerMm,
           });
+        if (!satin && tag?.type === "satin") {
+          throw new Error(
+            `"${tag.label}" is tagged st-satin, but the shape doesn't read as a satin column within ${SATIN_MAX_WIDTH_MM} mm. Split it in the design tool, or tag it st-tatami.`,
+          );
+        }
         if (satin) {
           if (fillUnderlay) {
             for (const center of satin.centers) {
@@ -261,7 +324,7 @@ export function convertSvg(
       }
       if (fillUnderlay) {
         for (const run of hatchFill(rings, {
-          angleDeg: fillAngleDeg + 90,
+          angleDeg: tatamiAngle + 90,
           spacing: UNDERLAY_SPACING_MM * unitsPerMm,
           stitchLength: options.stitchLengthMm * unitsPerMm,
         })) {
@@ -274,8 +337,8 @@ export function convertSvg(
         }
       }
       for (const run of hatchFill(rings, {
-        angleDeg: fillAngleDeg,
-        spacing: fillSpacingMm * unitsPerMm,
+        angleDeg: tatamiAngle,
+        spacing: tatamiSpacing * unitsPerMm,
         stitchLength: options.stitchLengthMm * unitsPerMm,
       })) {
         polylines.push({

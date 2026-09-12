@@ -63,10 +63,18 @@ Rules:
 
 - The tag may appear anywhere in the name; the rest of the name is yours.
 - A tag on a **group** applies to every untagged child (children may
-  override).
+  override). `st-skip` prunes its whole subtree — guides don't sew.
 - Parameters are optional; omitted ones use the panel defaults, so the
   panel remains the global knob and tags are the per-shape override.
+- `st-satin` on a stroke thinner than 1 mm with no `w` parameter sews at
+  the documented default of **2 mm**.
 - Unknown tags are reported in the preview, never silently ignored.
+
+**Implemented today:** `st-run`, `st-satin` (`w`, `d`), `st-tatami`
+(`a`, `d`), `st-skip`, group inheritance, loud errors for over-range
+satin and out-of-range densities. Still to come: `st-bean`,
+`st-brush-*`, declared-vs-inferred labeling in the preview, and
+reporting of unknown tags.
 
 ## What this replaces, and when
 
