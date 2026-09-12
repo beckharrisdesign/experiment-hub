@@ -338,12 +338,23 @@ const SHAPE_TAGS = new Set([
   "polygon",
 ]);
 
+// Reference-resolution context for <use>: the document's id map, plus a
+// stack guarding against reference cycles (a use inside the subtree it
+// references would otherwise recurse forever).
+interface WalkContext {
+  byId: Map<string, Element>;
+  useStack: Set<Element>;
+}
+
+const MAX_USE_DEPTH = 24;
+
 function walk(
   el: Element,
   matrix: Matrix,
   inherited: InheritedPaint,
   tolerance: number,
   out: ExtractedGeometry,
+  ctx: WalkContext,
 ): void {
   const tag = el.tagName.toLowerCase();
   if (SKIP_TAGS.has(tag)) return;
@@ -351,6 +362,42 @@ function walk(
 
   const m = multiply(matrix, parseTransform(el.getAttribute("transform")));
   const paint = inheritPaint(el, inherited);
+
+  if (tag === "use") {
+    // Figma dedupes repeated artwork (component instances, "-Nup" repeats)
+    // into <defs> + <use> — without resolving these, such an export parses
+    // to zero geometry. The referenced element renders as if pasted here,
+    // translated by the use's x/y, inheriting this paint context.
+    const href = el.getAttribute("href") ?? el.getAttribute("xlink:href");
+    if (!href || !href.startsWith("#")) return;
+    const target = ctx.byId.get(href.slice(1));
+    if (
+      !target ||
+      ctx.useStack.has(target) ||
+      ctx.useStack.size >= MAX_USE_DEPTH
+    ) {
+      return;
+    }
+    const placed = multiply(m, [1, 0, 0, 1, num(el, "x"), num(el, "y")]);
+    ctx.useStack.add(target);
+    const targetTag = target.tagName.toLowerCase();
+    if (targetTag === "symbol" || targetTag === "svg") {
+      // A symbol renders its children (the symbol wrapper itself is never
+      // rendered directly; its viewBox fitting is not modeled here).
+      const tm = multiply(
+        placed,
+        parseTransform(target.getAttribute("transform")),
+      );
+      const tp = inheritPaint(target, paint);
+      for (const child of Array.from(target.children)) {
+        walk(child, tm, tp, tolerance, out, ctx);
+      }
+    } else {
+      walk(target, placed, paint, tolerance, out, ctx);
+    }
+    ctx.useStack.delete(target);
+    return;
+  }
 
   if (SHAPE_TAGS.has(tag)) {
     const { stroke, fill } = resolvedPaints(paint);
@@ -390,7 +437,7 @@ function walk(
   }
 
   for (const child of Array.from(el.children)) {
-    walk(child, m, paint, tolerance, out);
+    walk(child, m, paint, tolerance, out, ctx);
   }
 }
 
@@ -415,8 +462,16 @@ export function extractGeometry(
     fill: null,
     strokeWidth: null,
   });
+  // Id map for <use> resolution — built over the whole document so
+  // referenced artwork parked inside <defs>/<symbol> is reachable.
+  const byId = new Map<string, Element>();
+  for (const el of Array.from(doc.querySelectorAll("[id]"))) {
+    const id = el.getAttribute("id");
+    if (id && !byId.has(id)) byId.set(id, el);
+  }
+  const ctx: WalkContext = { byId, useStack: new Set() };
   for (const child of Array.from(root.children)) {
-    walk(child, rootMatrix, rootPaint, tolerance, out);
+    walk(child, rootMatrix, rootPaint, tolerance, out, ctx);
   }
   return out;
 }
