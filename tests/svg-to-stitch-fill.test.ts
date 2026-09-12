@@ -374,6 +374,11 @@ describe("convertSvg fill mode", () => {
     expect(result.plan.colors).toEqual(["#e11d48", "#000000"]);
   });
 
+  it("defaults to the 2.5 in patch size when no options are passed", () => {
+    const result = convertSvg(FILLED_SQUARE);
+    expect(result.plan.stats.widthMm).toBeCloseTo(63.5, 0);
+  });
+
   it("rejects an unknown fillMode at runtime", () => {
     expect(() =>
       convertSvg(FILLED_SQUARE, {
