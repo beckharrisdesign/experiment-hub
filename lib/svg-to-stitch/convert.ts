@@ -43,11 +43,12 @@ export interface ConvertOptions {
    */
   fillUnderlay?: boolean;
   /**
-   * Sew strokes whose rendered width lands in the satin range (1–10 mm at
-   * the output size) as satin columns instead of a single running line
-   * (default true; applies in both fill and outline modes). Thinner
-   * strokes always run; wider ones would leave loose thread and also fall
-   * back to a running line.
+   * Sew strokes as satin columns instead of a single running line
+   * (default true; applies in both fill and outline modes). Width is the
+   * stroke's rendered width at output size, floored at 0.5 mm so
+   * design-tool hairlines still read as thread; strokes over 10 mm keep
+   * the running line (loose floats snag). st-run pins a stroke to
+   * running stitch regardless.
    */
   satinStrokes?: boolean;
   /** Thread pitch along a satin column in mm (default 0.4). */
@@ -93,6 +94,11 @@ const SATIN_MAX_WIDTH_MM = 10;
 // A stroke tagged st-satin with no w parameter and a hairline width sews at
 // this width — the spec's documented default for un-sized satin tags.
 const TAG_SATIN_DEFAULT_WIDTH_MM = 2;
+
+// With satin strokes on, every untagged stroke satins at least this wide —
+// design-tool hairlines get a real thread presence without any prep, and
+// the founder moves fast on un-prepped exports. st-run opts a stroke out.
+const MIN_SATIN_STROKE_MM = 0.5;
 
 export function convertSvg(
   svgText: string,
@@ -208,12 +214,11 @@ export function convertSvg(
           `"${tag.label}" is tagged st-satin at ${satinWidthMm} mm — satin tops out at ${SATIN_MAX_WIDTH_MM} mm. Narrow it or split it in the design tool.`,
         );
       }
-    } else if (
-      satinStrokes &&
-      widthMm >= SATIN_MIN_WIDTH_MM &&
-      widthMm <= SATIN_MAX_WIDTH_MM
-    ) {
-      satinWidthMm = widthMm;
+    } else if (satinStrokes && widthMm <= SATIN_MAX_WIDTH_MM) {
+      // Untagged strokes: satin at their rendered width, floored so
+      // hairlines still read as thread. Over-range strokes keep the
+      // running line (loose floats would snag).
+      satinWidthMm = Math.max(widthMm, MIN_SATIN_STROKE_MM);
     }
     let zigzag: typeof s.points = [];
     if (satinWidthMm !== null) {

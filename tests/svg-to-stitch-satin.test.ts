@@ -213,11 +213,15 @@ describe("convertSvg satin strokes", () => {
     }
   });
 
-  it("keeps thin strokes as plain running stitch", () => {
-    const thin = SATIN_LINE.replace('stroke-width="8"', 'stroke-width="1"');
-    // 1 unit = 0.5 mm — under the satin minimum.
+  it("floors hairline strokes to 0.5 mm satin", () => {
+    // 0.1 units = 0.05 mm — a design-tool hairline. With satin strokes on
+    // it still reads as thread at the 0.5 mm floor instead of vanishing
+    // into a running line.
+    const thin = SATIN_LINE.replace('stroke-width="8"', 'stroke-width="0.1"');
     const { plan } = convertSvg(thin, OPTS);
-    expect(maxStitchSegment(plan)).toBeLessThanOrEqual(26);
+    expect(plan.stats.satinRuns).toBe(1);
+    const off = convertSvg(thin, { ...OPTS, satinStrokes: false }).plan;
+    expect(off.stats.satinRuns).toBe(0);
   });
 
   it("falls back to running stitch above the 10 mm satin maximum", () => {
@@ -243,10 +247,10 @@ describe("convertSvg satin strokes", () => {
       convertSvg(SATIN_LINE, { ...OPTS, satinStrokes: false }).plan.stats
         .satinRuns,
     ).toBe(0);
-    // A stroke below the satin range reads 0 — the "why did nothing
-    // change" answer surfaced as a number.
-    const thin = SATIN_LINE.replace('stroke-width="8"', 'stroke-width="1"');
-    expect(convertSvg(thin, OPTS).plan.stats.satinRuns).toBe(0);
+    // Over the 10 mm maximum reads 0 — the "why did nothing change"
+    // answer surfaced as a number.
+    const wide = SATIN_LINE.replace('stroke-width="8"', 'stroke-width="30"');
+    expect(convertSvg(wide, OPTS).plan.stats.satinRuns).toBe(0);
   });
 
   it("validates satin density", () => {

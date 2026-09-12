@@ -78,8 +78,10 @@ reporting of unknown tags.
 
 ## What this replaces, and when
 
-Today's pipeline infers: stroke width in 1–10 mm → satin; narrow fill →
-satin (fixed-axis, then ribbon pairing); everything else → tatami.
+Today's pipeline infers: strokes → satin at their rendered width, floored
+at 0.5 mm so design-tool hairlines still read as thread (over 10 mm falls
+back to a running line); narrow fill → satin (fixed-axis, then ribbon
+pairing); everything else → tatami.
 Under this contract that whole decision tree becomes the **untagged
 fallback**, and the preview labels its output "inferred". Tagged shapes
 bypass it entirely.

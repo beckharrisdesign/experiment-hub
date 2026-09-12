@@ -118,6 +118,26 @@ describe("StitchPreview selection", () => {
     expect(onSelectColor).not.toHaveBeenCalled();
   });
 
+  it("marks needle penetrations on painted runs, not jumps", () => {
+    const { container } = render(<StitchPreview plan={twoColorPlan()} />);
+    // Top stitching only — underlay draws recessed without markers.
+    const painted = [...container.querySelectorAll("polyline")].filter(
+      (p) =>
+        p.getAttribute("stroke")?.startsWith("#") &&
+        p.getAttribute("stroke-width") === "2.5",
+    );
+    expect(painted.length).toBeGreaterThan(0);
+    for (const p of painted) {
+      expect(p.getAttribute("marker-mid")).toBe("url(#penetration)");
+    }
+    const jumps = [...container.querySelectorAll("polyline")].filter(
+      (p) => p.getAttribute("stroke-dasharray") === "6 6",
+    );
+    for (const j of jumps) {
+      expect(j.getAttribute("marker-mid")).toBeNull();
+    }
+  });
+
   it("dims the runs of unselected colors", () => {
     const { container } = render(
       <StitchPreview plan={twoColorPlan()} selectedColor={0} />,

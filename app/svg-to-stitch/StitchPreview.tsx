@@ -344,6 +344,22 @@ export default function StitchPreview({
         onPointerCancel={onPointerCancel}
         onDoubleClick={() => setView(base)}
       >
+        {/* Needle penetration dots at every vertex, sized in real machine
+            units (r=0.7 → a 0.14 mm hole): invisible at fit zoom, visible
+            stitching as you zoom in — the texture that separates thread
+            from vector art. */}
+        <defs>
+          <marker
+            id="penetration"
+            markerWidth="2"
+            markerHeight="2"
+            refX="1"
+            refY="1"
+            markerUnits="userSpaceOnUse"
+          >
+            <circle cx="1" cy="1" r="0.7" fill="rgba(0, 0, 0, 0.35)" />
+          </marker>
+        </defs>
         {segments.map((segment, i) =>
           segment.jump ? (
             <polyline
@@ -381,6 +397,21 @@ export default function StitchPreview({
                     : segment.underlay
                       ? 0.35
                       : 1
+                }
+                markerStart={
+                  segment.underlay || dimmed(segment.colorIndex)
+                    ? undefined
+                    : "url(#penetration)"
+                }
+                markerMid={
+                  segment.underlay || dimmed(segment.colorIndex)
+                    ? undefined
+                    : "url(#penetration)"
+                }
+                markerEnd={
+                  segment.underlay || dimmed(segment.colorIndex)
+                    ? undefined
+                    : "url(#penetration)"
                 }
                 pointerEvents="none"
               />

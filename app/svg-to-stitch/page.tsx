@@ -394,7 +394,7 @@ export default function SvgToStitchPage() {
                   onChange={setSatinFills}
                 />
                 <SwitchRow
-                  label="Satin strokes (1–10 mm)"
+                  label="Satin strokes (min 0.5 mm)"
                   checked={satinStrokes}
                   onChange={setSatinStrokes}
                 />
