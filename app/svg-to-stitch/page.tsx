@@ -35,7 +35,9 @@ const SIZE_OPTIONS = [
   { value: 300, label: "300 mm" },
 ];
 
-const STITCH_OPTIONS = [1.5, 2, 2.5, 3, 3.5, 4];
+// Running-stitch length is fixed at the solid 2.5 mm default: the panel
+// only carries choices whose effect shows up in the design readout.
+const STITCH_LENGTH_MM = 2.5;
 const FILL_ANGLE_OPTIONS = [0, 30, 45, 60, 90, 135];
 const FILL_SPACING_OPTIONS = [0.35, 0.4, 0.5, 0.6, 0.8];
 
@@ -109,7 +111,6 @@ export default function SvgToStitchPage() {
   const [source, setSource] = useState<Source | null>(null);
   // Default to the standard 2.5 in patch (63.5 mm).
   const [widthMm, setWidthMm] = useState(63.5);
-  const [stitchMm, setStitchMm] = useState(2.5);
   const [fillMode, setFillMode] = useState<"fill" | "outline">("fill");
   const [fillAngle, setFillAngle] = useState(45);
   const [fillSpacing, setFillSpacing] = useState(0.4);
@@ -154,7 +155,7 @@ export default function SvgToStitchPage() {
       return {
         ok: convertSvg(source.text, {
           targetWidthMm: widthMm,
-          stitchLengthMm: stitchMm,
+          stitchLengthMm: STITCH_LENGTH_MM,
           fillMode,
           fillAngleDeg: fillAngle,
           fillSpacingMm: fillSpacing,
@@ -173,7 +174,6 @@ export default function SvgToStitchPage() {
   }, [
     source,
     widthMm,
-    stitchMm,
     fillMode,
     fillAngle,
     fillSpacing,
@@ -321,27 +321,6 @@ export default function SvgToStitchPage() {
                       {SIZE_OPTIONS.map((o) => (
                         <SelectItem key={o.value} value={String(o.value)}>
                           {o.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-
-                <Field
-                  label="Stitch length"
-                  help="2.5 mm is a solid default running stitch. Shorter follows curves tighter."
-                >
-                  <Select
-                    value={String(stitchMm)}
-                    onValueChange={(v) => setStitchMm(Number(v))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STITCH_OPTIONS.map((v) => (
-                        <SelectItem key={v} value={String(v)}>
-                          {v} mm
                         </SelectItem>
                       ))}
                     </SelectContent>
