@@ -38,6 +38,13 @@ Stitchers will use (and may pay for) a converter + previewer that shows how
 a file will actually sew — stitches, colors, size, sew order, trims —
 before they waste stabilizer, thread, and hooping time.
 
+## Authoring contract
+
+Stitch decisions belong in the design file, not in reverse-inference —
+see [docs/stitch-authoring.md](docs/stitch-authoring.md) for the
+principles and the `st-` layer-name tag spec (draft). Heuristics remain
+as the fallback for un-prepped files.
+
 ## Not yet built (the "previewer" half and beyond)
 
 - **Reading machine files** — opening an existing DST for preview (today the
