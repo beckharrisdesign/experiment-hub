@@ -63,7 +63,7 @@ readouts up top, DESIGN stats, SEW ORDER, EXPORT at the bottom).
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Primary file URL    | <https://www.figma.com/design/aiw0eWYOYS413Mbi0ATJMG> ("svg-to-stitch — stitch-brushes")                                                                                                                                                     |
 | As-is frame(s)      | `01 Current state` → Stitch Check panel (node `3:46`) — shipped panel reconstructed from `app/svg-to-stitch/page.tsx`: chips, Fabric, three switches, fill selects, DESIGN stats, SEW ORDER, EXPORT                                          |
-| Proposed frame(s)   | `02 Proposed` → `Panel — proposed (Brush runs readout)` (node `4:2`, adds the **Brush runs** stat row after Satin sections) and `Brush library — built-in motifs` (node `4:73`, the six motifs as stroke drawings: cross, tick, chain, dot, bird, bean, each labeled `st-brush-<name>`) |
+| Proposed frame(s)   | `02 Proposed` → `Panel — proposed (Brush runs readout)` (node `4:2`, founder-edited: reorder + one-row Fabric dropdown) and `Brush library — built-in motifs` (node `4:73`). **Iteration `02.1 Proposed`** → `Panel — proposed v2` (node `6:3`): founder's reorder throughout, ALL dropdowns as the founder's one-row pattern (label left, select right), and SEW ORDER rows carry per-color stitch composition (motif glyphs + stitch count, e.g. `✕ 9 · ╱ 4 · 1,274 sts`) |
 | Libraries / version | MVDS Core (library key in `rules/figma.mdc`) — Badge (`variant=neutral` stats, `variant=muted` chips), Switch, Label imported by component key (`importComponentByKeyAsync`), per `rules/figma.mdc`                                          |
 | Code Connect        | No new mappings — the new row reuses the existing StatRow/Badge pattern; no new components introduced                                                                                                                                        |
 | Breakpoints         | S · 480px mobile / L · 1024px desktop (BHD Content Types) — the panel is the fixed 300px rail at both breakpoints, one row taller, so one frame covers S and L; see `rules/design-guidelines.mdc`                                            |
@@ -87,6 +87,14 @@ readouts up top, DESIGN stats, SEW ORDER, EXPORT at the bottom).
   the legend exists so approval is a visual act, not a code read.
 - **Errors reuse the banner.** Unknown brush / bad pitch flow through
   `friendlyError` with the layer name — no new error surface.
+- **Iteration 02.1 (founder feedback, 2026-09-13).** All dropdowns use
+  the founder's one-row pattern (label left, select right — her Fabric
+  edit at node `4:7`); the panel follows her reorder (Design size with
+  the file, toggles, Fabric, SEW ORDER above DESIGN, fill controls with
+  Size, EXPORT last); SEW ORDER color rows gain per-color stitch
+  composition — motif glyphs and stitch count per thread color — since
+  the plan's color blocks already know which runs are brush, satin, or
+  running. Pending founder reaction in `02.1 Proposed`.
 
 ## Risks / Trade-offs
 
