@@ -21,7 +21,7 @@ export interface SatinOptions {
   density: number;
 }
 
-interface Sample {
+export interface Sample {
   pos: Point;
   /** Unit tangent of the centerline at this sample. */
   tangent: Point;
@@ -31,8 +31,11 @@ interface Sample {
  * Resample a polyline at (nearly) uniform arc-length steps, endpoints
  * included. Steps are stretched/shrunk so the last sample lands exactly on
  * the path end instead of leaving a cramped final stitch.
+ *
+ * Exported for the brush engine: brushes walk the same arc-length samples
+ * satin does, stamping a motif per step instead of a zigzag pair.
  */
-function sampleCenterline(points: Point[], step: number): Sample[] {
+export function sampleCenterline(points: Point[], step: number): Sample[] {
   // Segment lengths, skipping zero-length segments outright so tangents are
   // always well defined.
   const segs: { a: Point; b: Point; len: number; tangent: Point }[] = [];

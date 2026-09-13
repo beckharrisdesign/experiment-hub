@@ -5,7 +5,6 @@ import {
   Badge,
   Button,
   CardDescription,
-  Field,
   Inline,
   Label,
   Select,
@@ -127,6 +126,35 @@ function SwitchRow({
     </Inline>
   );
 }
+
+// One-row select fields — label left, control right — per the founder's
+// dropdown pattern in the stitch-brushes design (Figma 02.1 Proposed).
+function SelectRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Inline gap={8} align="center" style={{ minHeight: 32 }}>
+      <Label>{label}</Label>
+      <Spacer />
+      {children}
+    </Inline>
+  );
+}
+
+// Sew-order glyphs for the built-in brush motifs, so each thread color's
+// row can say what kind of stitching it carries at a glance.
+const BRUSH_GLYPHS: Record<string, string> = {
+  cross: "✕",
+  tick: "╱",
+  chain: "◯",
+  dot: "●",
+  bird: "∨",
+  bean: "▬",
+};
 
 function StatRow({ label, value }: { label: string; value: string }) {
   return (
@@ -361,10 +389,32 @@ export default function SvgToStitchPage() {
               </CardDescription>
             )}
 
+            {/* Document settings first — what am I making — then the
+                stitch toggles. Order follows the founder's 02.1 layout. */}
+            {!isMachine && (
+              <SelectRow label="Design size">
+                <Select
+                  value={String(widthMm)}
+                  onValueChange={(v) => setWidthMm(Number(v))}
+                >
+                  <SelectTrigger style={{ width: "auto" }}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SIZE_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={String(o.value)}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </SelectRow>
+            )}
+
             {plan && (
-              <Field label="Fabric">
+              <SelectRow label="Fabric">
                 <Select value={fabric} onValueChange={setFabric}>
-                  <SelectTrigger>
+                  <SelectTrigger style={{ width: "auto", minWidth: 110 }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -375,14 +425,12 @@ export default function SvgToStitchPage() {
                     ))}
                   </SelectContent>
                 </Select>
-              </Field>
+              </SelectRow>
             )}
 
             {!isMachine && (
               <>
-                {/* Everything stays visible — controls read as on/off, and
-                    dependents (the fill knobs) sit directly under the
-                    toggle that governs them. */}
+                {/* Everything stays visible — controls read as on/off. */}
                 <SwitchRow
                   label="Fill shapes"
                   checked={fillMode === "fill"}
@@ -398,43 +446,71 @@ export default function SvgToStitchPage() {
                   checked={satinStrokes}
                   onChange={setSatinStrokes}
                 />
-
-                <Field label="Fill angle">
-                  <Select
-                    value={String(fillAngle)}
-                    onValueChange={(v) => setFillAngle(Number(v))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FILL_ANGLE_OPTIONS.map((v) => (
-                        <SelectItem key={v} value={String(v)}>
-                          {v}°
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-
-                <Field label="Fill density">
-                  <Select
-                    value={String(fillSpacing)}
-                    onValueChange={(v) => setFillSpacing(Number(v))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FILL_SPACING_OPTIONS.map((v) => (
-                        <SelectItem key={v} value={String(v)}>
-                          {v} mm
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
               </>
+            )}
+
+            {plan && plan.colors.length > 0 && (
+              <Stack gap={4}>
+                <PanelHeading>Sew order</PanelHeading>
+                {plan.colors.map((color, i) => {
+                  // Per-color stitch composition: which brush motifs sew in
+                  // this thread, plus its stitch count. Machine files carry
+                  // no run kinds, so their rows stay plain.
+                  const cs = plan.colorStats?.[i];
+                  const composition = cs
+                    ? [
+                        ...cs.brushes.map(
+                          (b) => `${BRUSH_GLYPHS[b.name] ?? b.name} ${b.runs}`,
+                        ),
+                        `${cs.stitches.toLocaleString()} sts`,
+                      ].join(" · ")
+                    : null;
+                  return (
+                    <Button
+                      key={`${color}-${i}`}
+                      variant="ghost"
+                      aria-pressed={selectedColor === i}
+                      onClick={() =>
+                        setSelectedColor(selectedColor === i ? null : i)
+                      }
+                      style={{
+                        justifyContent: "flex-start",
+                        gap: 8,
+                        width: "100%",
+                        minHeight: 44,
+                        boxShadow:
+                          selectedColor === i
+                            ? "0 0 0 2px var(--ring)"
+                            : undefined,
+                      }}
+                    >
+                      <CardDescription>{i + 1}.</CardDescription>
+                      <span
+                        aria-hidden
+                        style={{
+                          display: "inline-block",
+                          width: 12,
+                          height: 12,
+                          borderRadius: 3,
+                          backgroundColor: color,
+                          border: "1px solid var(--border)",
+                        }}
+                      />
+                      <CardDescription>{color}</CardDescription>
+                      {composition && (
+                        <>
+                          <Spacer />
+                          <CardDescription
+                            style={{ fontSize: 12, whiteSpace: "nowrap" }}
+                          >
+                            {composition}
+                          </CardDescription>
+                        </>
+                      )}
+                    </Button>
+                  );
+                })}
+              </Stack>
             )}
 
             {plan && (
@@ -445,88 +521,79 @@ export default function SvgToStitchPage() {
                   value={plan.stats.stitches.toLocaleString()}
                 />
                 <StatRow label="Jumps" value={String(plan.stats.jumps)} />
-                {/* Machine formats don't mark satin, so the count would
-                    always read 0 there — misleading, not informative. */}
+                {/* Machine formats don't mark satin or brushes, so those
+                    counts would always read 0 there — misleading, not
+                    informative. */}
                 {!isMachine && (
                   <StatRow
                     label="Satin sections"
                     value={String(plan.stats.satinRuns)}
                   />
                 )}
+                {!isMachine && (
+                  <StatRow
+                    label="Brush runs"
+                    value={String(plan.stats.brushRuns)}
+                  />
+                )}
                 <StatRow
                   label="Thread colors"
                   value={String(plan.colors.length)}
                 />
-                <StatRow
-                  label="Size"
-                  value={`${plan.stats.widthMm.toFixed(0)} × ${plan.stats.heightMm.toFixed(0)} mm`}
-                />
               </Stack>
             )}
 
-            {plan && plan.colors.length > 0 && (
-              <Stack gap={4}>
-                <PanelHeading>Sew order</PanelHeading>
-                {plan.colors.map((color, i) => (
-                  <Button
-                    key={`${color}-${i}`}
-                    variant="ghost"
-                    aria-pressed={selectedColor === i}
-                    onClick={() =>
-                      setSelectedColor(selectedColor === i ? null : i)
-                    }
-                    style={{
-                      justifyContent: "flex-start",
-                      gap: 8,
-                      width: "100%",
-                      minHeight: 44,
-                      boxShadow:
-                        selectedColor === i
-                          ? "0 0 0 2px var(--ring)"
-                          : undefined,
-                    }}
-                  >
-                    <CardDescription>{i + 1}.</CardDescription>
-                    <span
-                      aria-hidden
-                      style={{
-                        display: "inline-block",
-                        width: 12,
-                        height: 12,
-                        borderRadius: 3,
-                        backgroundColor: color,
-                        border: "1px solid var(--border)",
-                      }}
-                    />
-                    <CardDescription>{color}</CardDescription>
-                  </Button>
-                ))}
-              </Stack>
-            )}
-
-            {/* Machine-file concerns live together: physical size and the
-                files it produces. Preview controls stay above. */}
-            <Stack gap={8}>
-              <PanelHeading>Export</PanelHeading>
-              {!isMachine && (
-                <Field label="Design size">
+            {!isMachine && (
+              <>
+                <SelectRow label="Fill angle">
                   <Select
-                    value={String(widthMm)}
-                    onValueChange={(v) => setWidthMm(Number(v))}
+                    value={String(fillAngle)}
+                    onValueChange={(v) => setFillAngle(Number(v))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger style={{ width: "auto" }}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {SIZE_OPTIONS.map((o) => (
-                        <SelectItem key={o.value} value={String(o.value)}>
-                          {o.label}
+                      {FILL_ANGLE_OPTIONS.map((v) => (
+                        <SelectItem key={v} value={String(v)}>
+                          {v}°
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                </Field>
-              )}
+                </SelectRow>
+
+                <SelectRow label="Fill density">
+                  <Select
+                    value={String(fillSpacing)}
+                    onValueChange={(v) => setFillSpacing(Number(v))}
+                  >
+                    <SelectTrigger style={{ width: "auto" }}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FILL_SPACING_OPTIONS.map((v) => (
+                        <SelectItem key={v} value={String(v)}>
+                          {v} mm
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </SelectRow>
+              </>
+            )}
+
+            {plan && (
+              <StatRow
+                label="Size"
+                value={`${plan.stats.widthMm.toFixed(0)} × ${plan.stats.heightMm.toFixed(0)} mm`}
+              />
+            )}
+
+            {/* Export last — Design size moved up with the document
+                settings per the founder's 02.1 layout. */}
+            <Stack gap={8}>
+              <PanelHeading>Export</PanelHeading>
               <Button
                 disabled={!plan}
                 onClick={() =>

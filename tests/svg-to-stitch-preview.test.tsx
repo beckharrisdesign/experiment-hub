@@ -170,6 +170,7 @@ describe("StitchPreview underlay rendering", () => {
         jumps: 0,
         colorChanges: 0,
         satinRuns: 0,
+        brushRuns: 0,
         widthMm: 30,
         heightMm: 0,
       },
