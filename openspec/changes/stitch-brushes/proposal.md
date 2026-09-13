@@ -14,6 +14,13 @@
 >
 > "lets do stitch brushes! but with openspec the right way this time" —
 > founder, 2026-09-13
+>
+> "and I want to make it clear when I'm designing for hand stitching,
+> machine stitching, or a machine doing a proof of hand style
+> stitching." — founder, 2026-09-13
+>
+> "But I want to stay within industry standards even when proposing
+> hand stitching." — founder, 2026-09-13
 
 Founding record: `experiments/svg-to-stitch/docs/intent.md`; authoring
 contract: `experiments/svg-to-stitch/docs/stitch-authoring.md`.
@@ -49,6 +56,14 @@ explorations define the aesthetic target: decorative stitches that read
 as hand-worked thread. Brushes are the generalization that turns the
 converter into a digitizer: running stitch and satin become the two
 simplest members of a family the designer can extend by name.
+
+Of the founder's three design targets — hand stitching, machine
+stitching, and a machine proofing hand-style stitching — brushes are
+the third: the machine executing hand-stitch aesthetics, so a hand-look
+pattern can be imagined, proofed, and sold with confidence. Hand-style
+is an aesthetic, never a format deviation: every brush emits standard
+DST/EXP penetrations within machine stitch-length bounds, the same
+industry constraints the rest of the converter obeys.
 
 ## What changes
 
