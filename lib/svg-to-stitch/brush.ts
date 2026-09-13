@@ -19,12 +19,17 @@ export const BRUSH_MAX_PITCH_MM = 10;
 /**
  * One motif template. `stamp` returns penetration offsets for a single
  * motif instance as [u, v] pairs in mm: u along the path tangent, v along
- * the left normal. Motifs whose geometry must link stamp-to-stamp (bean,
- * chain) take the pitch so consecutive stamps meet.
+ * the left normal.
  *
- * Template extents are kept small enough that, at the 10 mm max pitch, no
- * thread segment — inside a stamp or bridging to the next — exceeds the
- * 12.1 mm machine bound.
+ * The machine can't lift thread between stamps, so the connector from one
+ * motif to the next is a real stitch. Templates therefore enter and exit
+ * on the path centerline at ±pitch/2: one stamp's exit lands exactly on
+ * the next stamp's entry (the shared point dedupes), connectors hug the
+ * baseline, and the motifs read as discrete symbols instead of smearing
+ * into a zigzag band. Motif sizes scale with the pitch (capped) so the
+ * gaps between symbols survive at any spacing, and no thread segment —
+ * inside a stamp or bridging to the next — exceeds the 12.1 mm machine
+ * bound at the 10 mm max pitch.
  */
 interface BrushDef {
   defaultPitchMm: number;
@@ -36,23 +41,36 @@ interface BrushDef {
  * stitch-brush explorations. Reachable by `st-brush-<name>` layer tags.
  */
 export const BRUSHES: Record<string, BrushDef> = {
-  // X pairs: two crossing diagonals per stamp.
+  // X pairs: two crossing diagonals per stamp, joined across the top the
+  // way hand cross-stitch rows carry their thread.
   cross: {
     defaultPitchMm: 3,
-    stamp: () => [
-      [-1.4, -1.4],
-      [1.4, 1.4],
-      [1.4, -1.4],
-      [-1.4, 1.4],
-    ],
+    stamp: (pitchMm) => {
+      const s = Math.min(pitchMm * 0.38, 1.4);
+      const h = pitchMm / 2;
+      return [
+        [-h, 0],
+        [-s, -s],
+        [s, s],
+        [-s, s],
+        [s, -s],
+        [h, 0],
+      ];
+    },
   },
   // Angled ticks: one 45° slash per stamp.
   tick: {
     defaultPitchMm: 2.5,
-    stamp: () => [
-      [-1.1, -1.1],
-      [1.1, 1.1],
-    ],
+    stamp: (pitchMm) => {
+      const t = Math.min(pitchMm * 0.35, 1.1);
+      const h = pitchMm / 2;
+      return [
+        [-h, 0],
+        [-t, -t],
+        [t, t],
+        [h, 0],
+      ];
+    },
   },
   // Linked loops: an ellipse per stamp, long enough to overlap the next.
   chain: {
@@ -68,24 +86,37 @@ export const BRUSHES: Record<string, BrushDef> = {
       return pts;
     },
   },
-  // Compact dot clusters: a tiny knot of short stitches.
+  // Compact dots: a short segment sewn three times reads as a bold dot.
   dot: {
     defaultPitchMm: 2,
-    stamp: () => [
-      [-0.4, 0],
-      [0.4, 0],
-      [0, -0.4],
-      [0, 0.4],
-    ],
+    stamp: (pitchMm) => {
+      const h = pitchMm / 2;
+      return [
+        [-h, 0],
+        [-0.4, 0],
+        [0.4, 0],
+        [-0.4, 0],
+        [0.4, 0],
+        [h, 0],
+      ];
+    },
   },
-  // Bird tracks: a chevron with its tip on the path, toes trailing.
+  // Bird tracks: a V straddling the path — toes to one side, tip to the
+  // other — one track per stamp.
   bird: {
     defaultPitchMm: 3,
-    stamp: () => [
-      [-1.2, -1.3],
-      [0, 0],
-      [-1.2, 1.3],
-    ],
+    stamp: (pitchMm) => {
+      const w = Math.min(pitchMm * 0.32, 1.2);
+      const c = Math.min(pitchMm * 0.42, 1.3);
+      const h = pitchMm / 2;
+      return [
+        [-h, 0],
+        [-w, c],
+        [0, -c],
+        [w, c],
+        [h, 0],
+      ];
+    },
   },
   // Bean stitch: each pitch-long segment sewn three times (out, back, out).
   bean: {

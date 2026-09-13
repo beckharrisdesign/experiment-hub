@@ -102,10 +102,12 @@ describe("brush engine — output stays within machine bounds", () => {
   });
 
   it("penetrations are exact — never resampled to stitch length", () => {
-    // Cross at 10 mm pitch on a 50 mm line: 6 stamps × 4 penetrations.
-    // Stitch-length resampling would multiply the count and break the X.
+    // Cross at 10 mm pitch on a 50 mm line: 6 stamps × 6 penetrations,
+    // minus the 5 stamp joints where one stamp's on-path exit is the next
+    // stamp's entry. Stitch-length resampling would multiply the count
+    // and break the X.
     const { plan } = convertSvg(LINE("st-brush-cross_p100"), OPTS);
-    expect(plan.stats.stitches).toBe(24);
+    expect(plan.stats.stitches).toBe(31);
   });
 
   it("decoded machine files report zero brush runs", () => {
@@ -143,11 +145,11 @@ describe("brush engine — unknown brush errors loudly", () => {
 
 describe("brush library — six motifs sew on straight and curved paths", () => {
   const PENETRATIONS_PER_STAMP: Record<string, number> = {
-    cross: 4,
-    tick: 2,
+    cross: 6,
+    tick: 4,
     chain: 9,
-    dot: 4,
-    bird: 3,
+    dot: 6,
+    bird: 5,
     bean: 4,
   };
 
