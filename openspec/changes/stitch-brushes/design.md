@@ -89,12 +89,14 @@ readouts up top, DESIGN stats, SEW ORDER, EXPORT at the bottom).
   `friendlyError` with the layer name — no new error surface.
 - **Iteration 02.1 (founder feedback, 2026-09-13).** All dropdowns use
   the founder's one-row pattern (label left, select right — her Fabric
-  edit at node `4:7`); the panel follows her reorder (Design size with
-  the file, toggles, Fabric, SEW ORDER above DESIGN, fill controls with
-  Size, EXPORT last); SEW ORDER color rows gain per-color stitch
+  edit at node `4:7`); SEW ORDER color rows gain per-color stitch
   composition — motif glyphs and stitch count per thread color — since
   the plan's color blocks already know which runs are brush, satin, or
-  running. Pending founder reaction in `02.1 Proposed`.
+  running. Final panel order (founder-edited in place on node `6:3`):
+  title + file chips → **Design size, Fabric** (document settings) →
+  the three stitch toggles → **SEW ORDER** (per-color stitch rows) →
+  **DESIGN** stats (incl. Brush runs) → Fill angle, Fill density, Size →
+  **EXPORT** + downloads.
 
 ## Risks / Trade-offs
 
