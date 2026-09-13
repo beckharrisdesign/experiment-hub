@@ -10,9 +10,10 @@ proofing hand-style stitching, within industry standards.
 
 ### Requirement: Motifs follow the path frame
 
-A path routed to a brush sews as the brush's repeating motif, stamped
-along the path at the declared pitch and oriented by the path's local
-direction, so the motif follows curves the way hand stitching would.
+The system SHALL sew a path routed to a brush as the brush's repeating
+motif, stamped along the path at the declared pitch and oriented by the
+path's local direction, so the motif follows curves the way hand
+stitching would.
 
 **Fails until:** a curved path tagged with a brush produces penetrations
 whose motif orientation rotates with the path tangent.
@@ -26,12 +27,13 @@ whose motif orientation rotates with the path tangent.
 
 ### Requirement: Brush output stays within machine bounds
 
-Brush runs are ordinary machine stitching: exact penetrations the plan
-sews verbatim, every thread segment within machine limits, encoded to
-DST/EXP like any other run.
+The system SHALL emit brush runs as ordinary machine stitching: exact
+penetrations the plan sews verbatim, every thread segment within
+machine limits, encoded to DST/EXP like any other run.
 
-**Fails until:** a brush run round-trips through `buildPlan` and
-`encodeDst` with no resampling and no segment over the machine bound.
+**Fails until:** a brush run round-trips through `buildPlan`,
+`encodeDst`, and `encodeExp` with no resampling and no segment over the
+machine bound.
 
 #### Scenario: Brush output stays within machine bounds
 
@@ -42,8 +44,12 @@ DST/EXP like any other run.
 
 ### Requirement: Unknown brush errors loudly
 
-A tag naming a brush that does not exist fails the conversion with a
-message naming the layer, never a silent fallback.
+The system SHALL fail the conversion with a message naming the layer —
+never a silent fallback — when a tag names a brush that is not in the
+library or declares a pitch outside the supported range. The supported
+pitch range is 1.0–10.0 mm inclusive (`p10`–`p100`); each motif's
+default pitch is declared by the library and recorded in the authoring
+contract.
 
 #### Scenario: Unknown brush errors loudly
 

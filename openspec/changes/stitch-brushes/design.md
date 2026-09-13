@@ -64,10 +64,10 @@ readouts up top, DESIGN stats, SEW ORDER, EXPORT at the bottom).
 | Primary file URL    | <https://www.figma.com/design/aiw0eWYOYS413Mbi0ATJMG> ("svg-to-stitch — stitch-brushes")                                                                                                                                                     |
 | As-is frame(s)      | `01 Current state` → Stitch Check panel (node `3:46`) — shipped panel reconstructed from `app/svg-to-stitch/page.tsx`: chips, Fabric, three switches, fill selects, DESIGN stats, SEW ORDER, EXPORT                                          |
 | Proposed frame(s)   | `02 Proposed` → `Panel — proposed (Brush runs readout)` (node `4:2`, adds the **Brush runs** stat row after Satin sections) and `Brush library — built-in motifs` (node `4:73`, the six motifs as stroke drawings: cross, tick, chain, dot, bird, bean, each labeled `st-brush-<name>`) |
-| Libraries / version | MVDS Core (library key in `rules/figma.mdc`) — Badge (`variant=neutral` stats, `variant=muted` chips), Switch, Label imported by component key (`importComponentByKeyAsync`; works without library subscription)                             |
+| Libraries / version | MVDS Core (library key in `rules/figma.mdc`) — Badge (`variant=neutral` stats, `variant=muted` chips), Switch, Label imported by component key (`importComponentByKeyAsync`), per `rules/figma.mdc`                                          |
 | Code Connect        | No new mappings — the new row reuses the existing StatRow/Badge pattern; no new components introduced                                                                                                                                        |
-| Breakpoints         | S · 480px mobile / L · 1024px desktop (BHD Content Types) — panel stays the fixed 300px rail, one row taller; see `rules/design-guidelines.mdc`                                                                                              |
-| Status              | Built 2026-09-13 (pages `00 Components` / `01 Current state` / `02 Proposed`); awaiting founder approval                                                                                                                                     |
+| Breakpoints         | S · 480px mobile / L · 1024px desktop (BHD Content Types) — the panel is the fixed 300px rail at both breakpoints, one row taller, so one frame covers S and L; see `rules/design-guidelines.mdc`                                            |
+| Status              | Built 2026-09-13 (pages `00 Components` / `01 Current state` / `02 Proposed`); approved by founder 2026-09-13 — design gate cleared before tasks                                                                                             |
 
 ## Decisions
 

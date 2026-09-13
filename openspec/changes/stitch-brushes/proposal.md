@@ -89,8 +89,10 @@ industry constraints the rest of the converter obeys.
 
 ### Modified Capabilities
 
-- (none — satin, tatami, and tag parsing gain no new behavior; the tag
-  grammar already reserves `st-brush-*`)
+- (none at the spec level — satin and tatami gain no new behavior. The
+  tag parser in `svg-parse.ts` IS extended: its directive grammar today
+  recognizes only `run|satin|tatami|skip`, so task 3.3 adds
+  `st-brush-<name>` and its `p<n>` parameter, per Impact)
 
 ## Impact
 
