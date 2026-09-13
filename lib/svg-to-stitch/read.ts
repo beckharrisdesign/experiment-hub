@@ -73,8 +73,9 @@ function finishPlan(entries: PlanEntry[]): StitchPlan {
       stitches,
       jumps,
       colorChanges,
-      // Machine formats don't mark satin — only penetrations. Unknown here.
+      // Machine formats don't mark satin or brushes — only penetrations.
       satinRuns: 0,
+      brushRuns: 0,
       widthMm: (maxX - minX) / 10,
       heightMm: (maxY - minY) / 10,
     },

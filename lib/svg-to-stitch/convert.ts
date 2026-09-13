@@ -12,6 +12,13 @@ import { hatchFill, satinFill, closeRings } from "./fill";
 import { ribbonSatin } from "./ribbon";
 import { satinZigzag } from "./satin";
 import {
+  brushRun,
+  BRUSHES,
+  BRUSH_NAMES,
+  BRUSH_MIN_PITCH_MM,
+  BRUSH_MAX_PITCH_MM,
+} from "./brush";
+import {
   buildPlan,
   groupByColor,
   type StitchPlan,
@@ -192,12 +199,53 @@ export function convertSvg(
     }
   };
 
+  // A brush tag's parameters obey the spec's declared pitch range; unknown
+  // names and out-of-range pitches error loudly with the layer name, never
+  // a silent fallback to running stitch.
+  const resolveBrush = (tag: {
+    brushName?: string;
+    pitchMm?: number;
+    label: string;
+  }): { name: string; pitchMm: number } => {
+    const name = tag.brushName ?? "";
+    const def = BRUSHES[name];
+    if (!def) {
+      throw new Error(
+        `"${tag.label}" names the brush "st-brush-${name}", which isn't in the library. Built-in brushes: ${BRUSH_NAMES.join(", ")}.`,
+      );
+    }
+    const pitchMm = tag.pitchMm ?? def.defaultPitchMm;
+    if (pitchMm < BRUSH_MIN_PITCH_MM || pitchMm > BRUSH_MAX_PITCH_MM) {
+      throw new Error(
+        `"${tag.label}" declares a pitch of ${pitchMm} mm — brushes support ${BRUSH_MIN_PITCH_MM} to ${BRUSH_MAX_PITCH_MM} mm.`,
+      );
+    }
+    return { name, pitchMm };
+  };
+
   const strokeRuns = (s: ColoredPolyline, order: number): void => {
     const tag = s.directive;
     checkTagDensity(tag);
     if (tag?.type === "run") {
       // Declared running stitch — never satined, whatever its width.
       polylines.push({ ...s, order });
+      return;
+    }
+    if (tag?.type === "brush") {
+      const { name, pitchMm } = resolveBrush(tag);
+      const stamped = brushRun(s.points, { name, pitchMm, unitsPerMm });
+      if (stamped.length > 1) {
+        polylines.push({
+          color: s.color,
+          points: stamped,
+          order,
+          brush: name,
+        });
+      } else {
+        // Degenerate path (single point) — running stitch, same fallback
+        // contract as satin on a degenerate centerline.
+        polylines.push({ ...s, order });
+      }
       return;
     }
     const widthMm = (s.strokeWidth ?? 0) / unitsPerMm;
@@ -264,6 +312,12 @@ export function convertSvg(
       if (rings.length === 0) continue;
       const tag = region.directive;
       checkTagDensity(tag);
+      if (tag?.type === "brush") {
+        // v1 scope: brushes sew paths and strokes, never fill interiors.
+        throw new Error(
+          `"${tag.label}" is a filled shape tagged st-brush — brushes apply to strokes and open paths, not fills. Remove the fill or tag it st-run/st-satin/st-tatami.`,
+        );
+      }
       if (tag?.type === "run") {
         // Declared outline: sew only the boundary rings.
         for (const ring of rings) {

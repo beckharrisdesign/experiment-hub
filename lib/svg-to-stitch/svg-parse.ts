@@ -15,18 +15,27 @@ export type { Point };
  * sanitizing spaces to underscores — tags parse either spelling.
  */
 export interface StitchDirective {
-  type: "run" | "satin" | "tatami" | "skip";
+  type: "run" | "satin" | "tatami" | "skip" | "brush";
   /** Explicit satin width, mm (w20 = 2.0 mm). */
   widthMm?: number;
   /** Tatami angle, degrees (a30). */
   angleDeg?: number;
   /** Row/thread pitch, mm (d4 = 0.4 mm). */
   densityMm?: number;
+  /**
+   * Brush name from an `st-brush-<name>` tag. The parser records any name;
+   * the converter validates it against the library and errors loudly for
+   * unknown brushes — never a silent fallback.
+   */
+  brushName?: string;
+  /** Brush motif pitch, mm (p25 = 2.5 mm). */
+  pitchMm?: number;
   /** The source layer name, for loud error messages. */
   label: string;
 }
 
 const DIRECTIVE_RE = /^st-(run|satin|tatami|skip)$/;
+const BRUSH_RE = /^st-brush-([a-z][a-z0-9-]*)$/;
 
 /** Parse an element's own stitch directive from its id, if any. */
 function ownDirective(el: Element): StitchDirective | null {
@@ -34,18 +43,30 @@ function ownDirective(el: Element): StitchDirective | null {
   if (!id || !id.includes("st-")) return null;
   const tokens = id.split(/[\s_]+/);
   let type: StitchDirective["type"] | null = null;
+  let brushName: string | undefined;
   for (const token of tokens) {
     const m = DIRECTIVE_RE.exec(token);
-    if (m) type = m[1] as StitchDirective["type"];
+    if (m) {
+      type = m[1] as StitchDirective["type"];
+      brushName = undefined;
+    }
+    const b = BRUSH_RE.exec(token);
+    if (b) {
+      type = "brush";
+      brushName = b[1];
+    }
   }
   if (!type) return null;
   const directive: StitchDirective = { type, label: id.replace(/_/g, " ") };
+  if (brushName !== undefined) directive.brushName = brushName;
   for (const token of tokens) {
     let m;
     if ((m = /^w(\d+)$/.exec(token))) directive.widthMm = Number(m[1]) / 10;
     else if ((m = /^a(\d+)$/.exec(token))) directive.angleDeg = Number(m[1]);
     else if ((m = /^d(\d+)$/.exec(token)))
       directive.densityMm = Number(m[1]) / 10;
+    else if ((m = /^p(\d+)$/.exec(token)))
+      directive.pitchMm = Number(m[1]) / 10;
   }
   return directive;
 }
@@ -67,6 +88,13 @@ export interface ColoredPolyline {
    * the plan must sew verbatim instead of resampling to stitch length.
    */
   satin?: boolean;
+  /**
+   * Set when `points` are a brush run's exact penetrations — same
+   * verbatim-sewing contract as `satin`, but counted separately so the
+   * Brush runs readout never inflates Satin sections. Carries the library
+   * brush name for the per-color sew-order composition.
+   */
+  brush?: string;
   /** Stitch directive declared in the file (own or inherited). */
   directive?: StitchDirective;
 }

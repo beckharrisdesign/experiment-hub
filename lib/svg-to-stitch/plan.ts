@@ -28,6 +28,12 @@ export interface ColorBlock {
    * resampling, because a mid-column penetration breaks the satin surface.
    */
   satin?: boolean[];
+  /**
+   * Per-run brush names, parallel to `polylines` (undefined = not a brush
+   * run). Brush runs share satin's verbatim-sewing contract but are
+   * counted separately, so Brush runs and Satin sections stay distinct.
+   */
+  brush?: (string | undefined)[];
 }
 
 export interface StitchPlanOptions {
@@ -60,9 +66,25 @@ export interface StitchPlan {
      * say which stitches are satin).
      */
     satinRuns: number;
+    /**
+     * Runs stamped by a brush motif — one per tagged path routed to a
+     * brush, the same unit Satin sections uses. Decoded machine files
+     * report 0 (the formats carry only penetrations).
+     */
+    brushRuns: number;
     widthMm: number;
     heightMm: number;
   };
+  /**
+   * Per-color-block composition for the sew-order readout: stitch count
+   * plus which brush motifs sew in that thread color. Absent on decoded
+   * machine files (the formats don't say what kind of stitching runs are).
+   */
+  colorStats?: {
+    stitches: number;
+    satinRuns: number;
+    brushes: { name: string; runs: number }[];
+  }[];
 }
 
 /**
@@ -74,16 +96,17 @@ export interface StitchPlan {
 export function groupByColor(polylines: ColoredPolyline[]): ColorBlock[] {
   const blocks: ColorBlock[] = [];
   const byColor = new Map<string, ColorBlock>();
-  for (const { color, points, underlay, satin } of polylines) {
+  for (const { color, points, underlay, satin, brush } of polylines) {
     let block = byColor.get(color);
     if (!block) {
-      block = { color, polylines: [], underlay: [], satin: [] };
+      block = { color, polylines: [], underlay: [], satin: [], brush: [] };
       byColor.set(color, block);
       blocks.push(block);
     }
     block.polylines.push(points);
     block.underlay!.push(underlay ?? false);
     block.satin!.push(satin ?? false);
+    block.brush!.push(brush);
   }
   return blocks;
 }
@@ -159,6 +182,8 @@ export function buildPlan(
   let jumps = 0;
   let colorChanges = 0;
   let satinRuns = 0;
+  let brushRuns = 0;
+  const colorStats: NonNullable<StitchPlan["colorStats"]> = [];
   let position: Point = { x: 0, y: 0 };
 
   for (let b = 0; b < blocks.length; b++) {
@@ -168,6 +193,7 @@ export function buildPlan(
         points,
         underlay: block.underlay?.[i] ?? false,
         satin: block.satin?.[i] ?? false,
+        brush: block.brush?.[i],
       }))
       .filter((r) => r.points.length > 1);
     if (runs.length === 0) continue;
@@ -176,15 +202,26 @@ export function buildPlan(
       colorChanges++;
     }
     colors.push(block.color);
+    let blockStitches = 0;
+    let blockSatin = 0;
+    const blockBrushes = new Map<string, number>();
 
     for (const run of runs) {
       const underlay = run.underlay || undefined;
-      if (run.satin) satinRuns++;
+      if (run.satin) {
+        satinRuns++;
+        blockSatin++;
+      }
+      if (run.brush !== undefined) {
+        brushRuns++;
+        blockBrushes.set(run.brush, (blockBrushes.get(run.brush) ?? 0) + 1);
+      }
       // Scale to machine units first so stitch length is a physical measure,
-      // then resample and round to integer 0.1mm steps. Satin runs skip the
-      // resample: their points are already the exact penetrations.
+      // then resample and round to integer 0.1mm steps. Satin and brush runs
+      // skip the resample: their points are already the exact penetrations.
+      const exact = run.satin || run.brush !== undefined;
       const scaled = run.points.map(toMachine);
-      const machineRun = (run.satin ? scaled : resample(scaled, stepUnits)).map(
+      const machineRun = (exact ? scaled : resample(scaled, stepUnits)).map(
         (p) => ({
           x: Math.round(p.x),
           y: Math.round(p.y),
@@ -199,15 +236,26 @@ export function buildPlan(
       let last = start;
       entries.push({ kind: "stitch", x: start.x, y: start.y, underlay });
       stitches++;
+      blockStitches++;
       for (let i = 1; i < machineRun.length; i++) {
         const p = machineRun[i];
         if (p.x === last.x && p.y === last.y) continue; // dedupe sub-unit steps
         entries.push({ kind: "stitch", x: p.x, y: p.y, underlay });
         stitches++;
+        blockStitches++;
         last = p;
       }
       position = last;
     }
+
+    colorStats.push({
+      stitches: blockStitches,
+      satinRuns: blockSatin,
+      brushes: Array.from(blockBrushes, ([name, count]) => ({
+        name,
+        runs: count,
+      })),
+    });
   }
 
   entries.push({ kind: "end", x: position.x, y: position.y });
@@ -220,8 +268,10 @@ export function buildPlan(
       jumps,
       colorChanges,
       satinRuns,
+      brushRuns,
       widthMm: (srcWidth * scale) / 10,
       heightMm: (srcHeight * scale) / 10,
     },
+    colorStats,
   };
 }

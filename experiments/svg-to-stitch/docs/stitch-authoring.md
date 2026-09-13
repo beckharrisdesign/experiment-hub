@@ -53,8 +53,21 @@ A tag names the stitch type, optionally followed by parameters:
 | `st-bean` | bean stitch (each segment ×3) | `l25` |
 | `st-satin` | two-rail satin (stroke width or ribbon rails) | `d4` density ×0.1 (0.4 mm) |
 | `st-tatami` | tatami fill | `a45` angle °, `d4` density ×0.1 |
-| `st-brush-<name>` | motif brush along the path (future) | `p20` pitch ×0.1 |
+| `st-brush-<name>` | motif brush stamped along the path | `p25` pitch ×0.1 (2.5 mm) |
 | `st-skip` | not sewn — guides, annotations, hoop marks | — |
+
+Built-in brushes (from the founder's Figma stitch-brush explorations),
+each stamped in the path's local tangent/normal frame so motifs follow
+curves like hand stitching. Pitch range 1.0–10.0 mm (`p10`–`p100`):
+
+| Brush | Motif | Default pitch |
+| --- | --- | --- |
+| `st-brush-cross` | ✕ cross-stitch pairs | 3.0 mm |
+| `st-brush-tick` | ╱ angled ticks | 2.5 mm |
+| `st-brush-chain` | ◯ linked loops | 3.0 mm |
+| `st-brush-dot` | ● compact dot clusters | 2.0 mm |
+| `st-brush-bird` | ∨ bird tracks | 3.0 mm |
+| `st-brush-bean` | ▬ tripled bean segments | 2.5 mm |
 
 Examples as Figma layer names: `heart st-satin`, `veins st-run l20`,
 `background st-tatami a30`, `hoop guide st-skip`.
@@ -71,9 +84,13 @@ Rules:
 - Unknown tags are reported in the preview, never silently ignored.
 
 **Implemented today:** `st-run`, `st-satin` (`w`, `d`), `st-tatami`
-(`a`, `d`), `st-skip`, group inheritance, loud errors for over-range
-satin and out-of-range densities. Still to come: `st-bean`,
-`st-brush-*`, declared-vs-inferred labeling in the preview, and
+(`a`, `d`), `st-skip`, `st-brush-<name>` (`p`) with the six built-in
+motifs above (strokes and open paths only — a filled shape tagged
+st-brush errors loudly), group inheritance, the per-color sew-order
+composition readout, and loud errors for over-range satin, out-of-range
+densities, unknown brush names, and out-of-range pitches. Still to
+come: `st-bean` as a standalone tag (the bean motif ships as
+`st-brush-bean`), declared-vs-inferred labeling in the preview, and
 reporting of unknown tags.
 
 ## What this replaces, and when
