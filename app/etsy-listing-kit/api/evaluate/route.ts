@@ -204,7 +204,10 @@ export async function POST(request: NextRequest) {
     cache.set(parsed.listingId, { at: Date.now(), result });
     persistEvaluation(evaluation);
     return NextResponse.json(result);
-  } catch {
+  } catch (err) {
+    // A silent 502 cost a diagnosis step on 2026-08-31 (bad ETSY_API_KEY read
+    // as "listing unreadable") — the reason must reach the function logs.
+    console.error(`[elk evaluate] listing ${parsed.listingId} fetch failed:`, err);
     return NextResponse.json(
       { kind: 'invalid', reason: 'We couldn’t read that listing right now. Nothing was scored.' },
       { status: 502 },
