@@ -2,6 +2,11 @@
 
 ## Human anchor
 
+> "I want to be able to move between vectors and lines in machine files
+> to preview images of the same artwork. It helps me imagine what it
+> will become, or do QA on the paths before I put it in my store." —
+> founder, 2026-09-13
+>
 > "that, but with a longer term goal in mind of replicating more complex
 > custom strokes like these [Figma stitch-brush explorations] and
 > successfully rendering line only patterns like these" — founder,
@@ -15,13 +20,16 @@ contract: `experiments/svg-to-stitch/docs/stitch-authoring.md`.
 
 ## Outcomes
 
-- **Who:** Stitchers (the founder first) who design line art in Figma and
-  want decorative machine stitches — not just running lines — when it
-  converts in Stitch Check.
-- **Job:** Draw a path, name its layer `st-brush-<name>`, export, drop in
-  Stitch Check, and see that path sewn as the named decorative motif —
-  crosses, ticks, chain, dots, bird-tracks, bean — following the path's
-  curves at a declared pitch.
+- **Who:** Stitchers (the founder first) who design line art in Figma,
+  sell the resulting machine files, and want decorative machine stitches
+  — not just running lines — when the artwork converts in Stitch Check.
+- **Job:** Move between the vector artwork and the machine-file stitch
+  view of the same design: draw a path, name its layer
+  `st-brush-<name>`, export, drop in Stitch Check, and see that path
+  sewn as the named decorative motif — crosses, ticks, chain, dots,
+  bird-tracks, bean — following the path's curves at a declared pitch —
+  to imagine what it will become and to QA the paths before the file
+  goes in the store.
 - **Done when:** The six built-in brushes from the founder's Figma
   explorations sew correctly along straight and curved paths; the
   redwork-style line-only pattern designs render as decorative stitching
