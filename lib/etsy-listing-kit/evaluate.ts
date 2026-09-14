@@ -259,9 +259,10 @@ export function buildRecommendations(raw: RawApiListing, scored: ScoredListing, 
       evidence: { styles: styleValues, used: styleCount, max: d.styles },
       caption: `${styleCount} of ${d.styles} style slots in use. Style is another filter buyers use to find pieces that match their aesthetic.`,
       citation: withChecked('styles'),
-      kit: textOk
-        ? { text: 'Two style values matched to your listing, ready to pick in Shop Manager.' }
-        : { text: 'Two style values matched to your listing, ready to pick in Shop Manager. Coming soon.', comingSoon: true },
+      // Unlike title/tags/alt, the composer doesn't produce style values yet
+      // (composer.ts emits suggestedTitle/tags/altTexts only), so this stays
+      // coming-soon regardless of textOk — decision 30's honest degradation.
+      kit: { text: 'Two style values matched to your listing, ready to pick in Shop Manager. Coming soon.', comingSoon: true },
     });
   }
 

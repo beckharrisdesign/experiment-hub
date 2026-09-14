@@ -83,7 +83,7 @@ describe('evaluateListing — keychain (the gap-heavy real listing)', () => {
     const stylesRec = result.recommendations.find((r) => r.key === 'styles');
     expect(stylesRec?.chip.label).toBe('QUICK WIN');
     expect(stylesRec?.evidence).toEqual({ styles: [], used: 0, max: 2 });
-    expect(stylesRec?.kit.comingSoon).toBe(true); // text deliverable, gated like tags
+    expect(stylesRec?.kit.comingSoon).toBe(true); // composer doesn't produce styles yet
   });
 
   it('frames the open-slots caption around the 20-slot cap', () => {
@@ -180,9 +180,9 @@ describe('evaluateListing — styles card edge cases', () => {
     expect(bothStyles.recommendations.map((r) => r.key)).not.toContain('styles');
   });
 
-  it('ships the kit copy when the composer is configured', () => {
+  it('stays coming-soon even when the composer is configured — no styles deliverable exists yet', () => {
     const withText = evaluateListing(keychain, { textDeliverables: true });
-    expect(withText.recommendations.find((r) => r.key === 'styles')?.kit.comingSoon).toBeUndefined();
+    expect(withText.recommendations.find((r) => r.key === 'styles')?.kit.comingSoon).toBe(true);
   });
 });
 
