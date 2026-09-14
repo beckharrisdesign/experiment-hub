@@ -23,7 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import {
-  parseArgs, orderGallery, resumePlan, buildImagesPatch, shouldSkipRow,
+  parseArgs, orderGallery, resumePlan, buildImagesPatch, shouldSkipRow, ROLE_ORDER,
 } from './notion-gallery-sync-lib.mjs';
 
 const DRIVE_ROOT =
@@ -33,6 +33,7 @@ const NOTION_VERSION = '2022-06-28';
 const MAX_BYTES = 4.5 * 1024 * 1024; // stay safely under Notion's 5MB single-part cap
 const PACING_MS = 350; // Notion allows ~3 requests/second
 const MAX_RETRIES = 5;
+const REQUEST_TIMEOUT_MS = 120_000; // a 2000px PNG on a slow uplink, with margin
 
 let opts;
 try {
@@ -55,7 +56,16 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function notionFetch(url, init) {
   for (let attempt = 0; ; attempt++) {
     await sleep(PACING_MS);
-    const resp = await fetch(url, init);
+    let resp;
+    try {
+      resp = await fetch(url, { ...init, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
+    } catch (err) {
+      if (attempt < MAX_RETRIES) {
+        console.warn(`   request ${err.name === 'TimeoutError' ? 'timed out' : 'failed'} — retrying (${attempt + 1}/${MAX_RETRIES})`);
+        continue;
+      }
+      throw err;
+    }
     if (resp.status === 429 && attempt < MAX_RETRIES) {
       const after = Number(resp.headers.get('retry-after')) || 2 ** attempt;
       console.warn(`   429 — waiting ${after}s (attempt ${attempt + 1}/${MAX_RETRIES})`);
@@ -133,7 +143,10 @@ for (const row of rows) {
   if (opts.sku && sku !== opts.sku) continue;
   const dir = path.join(DRIVE_ROOT, sku);
   if (!fs.existsSync(dir)) continue;
-  const entries = orderGallery(fs.readdirSync(dir), sku);
+  const all = orderGallery(fs.readdirSync(dir), sku);
+  const entries = all.filter((e) => ROLE_ORDER.includes(e.role));
+  const extras = all.length - entries.length;
+  if (extras > 0) console.log(`      (${extras} non-gallery files in ${sku} ignored: wip/finish/etc)`);
   if (entries.length === 0) continue;
   const title = row.properties?.['Short Title']?.rich_text?.[0]?.plain_text
     ?? row.properties?.Name?.title?.[0]?.plain_text ?? sku;
@@ -149,7 +162,9 @@ for (const row of rows) {
   try {
     const uploaded = [];
     for (const entry of toUpload) {
+      process.stdout.write(`   reading ${entry.name} (Drive may stream it down first)...\n`);
       const payload = await bytesFor(dir, entry);
+      process.stdout.write(`   uploading ${payload.name} (${(payload.buf.length / 1e6).toFixed(1)}MB)...\n`);
       uploaded.push({ id: await uploadFile(payload), name: payload.name });
       // Re-patch after EVERY upload so a mid-row failure loses nothing.
       await notionJson(`/pages/${row.id}`, {
