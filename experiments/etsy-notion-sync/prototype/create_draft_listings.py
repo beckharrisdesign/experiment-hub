@@ -83,6 +83,7 @@ def create_drafts(payload, shop_id, headers, post=requests.post, sleep=time.slee
             "when_made": template["when_made"],
             "is_supply": "true" if template["is_supply"] else "false",
             "type": template["type"],
+            **({"styles": ",".join(e["styles"])} if e.get("styles") else {}),
         }
         try:
             resp = post(url, headers=headers, data=data, timeout=30)

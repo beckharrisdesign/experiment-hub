@@ -141,3 +141,26 @@ def test_create_counts_personalization_failure():
     p["listings"][0]["personalization"] = {"instructions": "x", "is_required": False, "char_count_max": 40}
     created, failed = cdl.create_drafts(p, "5568941", {}, post=post, sleep=lambda s: None)
     assert (created, failed) == ([], 1)
+
+
+def test_create_sends_styles_when_present():
+    seen = []
+
+    def post(url, headers=None, data=None, timeout=None):
+        seen.append(data)
+        return draft_post(url, headers, data, timeout)
+
+    p = payload()
+    p["listings"][0]["styles"] = ["Minimalist", "Cottagecore"]
+    created, failed = cdl.create_drafts(p, "5568941", {}, post=post, sleep=lambda s: None)
+    assert (len(created), failed) == (1, 0)
+    assert seen[0]["styles"] == "Minimalist,Cottagecore"
+
+
+def test_shipped_payload_has_styles_and_alt_pack():
+    path = os.path.join(os.path.dirname(__file__), "..", "holiday_drafts_2026.json")
+    p = json.load(open(path))
+    assert all(len(e.get("styles", [])) == 2 for e in p["listings"])
+    alt = json.load(open(os.path.join(os.path.dirname(__file__), "..", "holiday_alt_text_2026.json")))
+    assert len(alt) == 9
+    assert all(len(v) >= 2 for v in alt.values())

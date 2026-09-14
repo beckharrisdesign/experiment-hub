@@ -1,5 +1,5 @@
 {
-  "comment": "Approved holiday draft copy (docs/ETSY_HOLIDAY_DRAFTS_2026.md; 4 classic singles + 4 personalizable globes + Christmas Classics bundle per Katy 2026-09-14; bundle files = 2 merged multi-page PDFs). Created as DRAFTS via create_draft_listings.py.",
+  "comment": "Approved holiday draft copy (docs/ETSY_HOLIDAY_DRAFTS_2026.md; 4 classic singles + 4 personalizable globes + Christmas Classics bundle; listing-kit rubric folds: Hand keyword, styles pairs, alt pack staged). Created as DRAFTS via create_draft_listings.py.",
   "template": {
     "taxonomy_id": 88,
     "who_made": "i_did",
@@ -29,12 +29,16 @@
       ],
       "description": "Stitch a classic Christmas bow with this beginner-friendly hand embroidery pattern — a clean, modern line design of a looped ribbon bow with long trailing tails, perfect for cozy December evenings and simple, relaxing stitching. Hang it as holiday hoop art, add it to your seasonal gift corner, or stitch it onto linens for the season.\n\nWhat you'll receive (digital download)\n- 2 high-resolution PDF embroidery patterns (black-and-white line art), sized for 6 inch and 8 inch round hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Use your favorite colors and basic stitches to make the bow your own — traditional red, or whatever suits your holiday palette.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue).\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the design to fabric.\n- Start stitching!\n\nStitching more than one? All four classic motifs — bow, candy canes, nutcracker, and poinsettia — come together in the Christmas Classics set in our shop: four patterns for less than the price of three.",
       "price": 6.0,
-      "quantity": 50
+      "quantity": 50,
+      "styles": [
+        "Minimalist",
+        "Cottagecore"
+      ]
     },
     {
       "name": "Christmas Candy Canes",
       "sku_note": "BHD-HLD-002",
-      "title": "Candy Cane Hand Embroidery Pattern PDF, Christmas Hoop Art with Bow and Holly, Beginner Holiday Craft, 6 and 8 Inch Hoops",
+      "title": "Candy Cane Hand Embroidery Pattern PDF, Christmas Hoop Art with Bow and Holly, Beginner Holiday Craft, Festive Decor, 6 and 8 Inch Hoops",
       "tags": [
         "candy cane",
         "candy cane pattern",
@@ -52,7 +56,11 @@
       ],
       "description": "Stitch a pair of crossed candy canes tied with a bow and holly leaves — a cheerful, beginner-friendly hand embroidery pattern in clean black line art, made for festive evenings and easy, satisfying stitching. A classic Christmas motif that looks wonderful in a kitchen, entryway, or above the cocoa station.\n\nWhat you'll receive (digital download)\n- 2 high-resolution PDF embroidery patterns (black-and-white line art), sized for 6 inch and 8 inch round hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Stripe the canes in red and white, or play with your own colors — the line art takes any palette.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue).\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the design to fabric.\n- Start stitching!\n\nStitching more than one? All four classic motifs — bow, candy canes, nutcracker, and poinsettia — come together in the Christmas Classics set in our shop: four patterns for less than the price of three.",
       "price": 6.0,
-      "quantity": 50
+      "quantity": 50,
+      "styles": [
+        "Minimalist",
+        "Cottagecore"
+      ]
     },
     {
       "name": "Christmas Nutcracker",
@@ -75,12 +83,16 @@
       ],
       "description": "Stitch a classic nutcracker — tall zigzag-banded hat, buttoned jacket, boots, and one raised arm — in this beginner-friendly hand embroidery pattern drawn in clean black line art. A traditional Christmas character with heirloom charm, perfect for slow December stitching.\n\nWhat you'll receive (digital download)\n- 2 high-resolution PDF embroidery patterns (black-and-white line art), sized for 6 inch and 8 inch round hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Dress your nutcracker in traditional reds and golds, or pick a palette to match your holiday decor.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue).\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the design to fabric.\n- Start stitching!\n\nStitching more than one? All four classic motifs — bow, candy canes, nutcracker, and poinsettia — come together in the Christmas Classics set in our shop: four patterns for less than the price of three.",
       "price": 6.0,
-      "quantity": 50
+      "quantity": 50,
+      "styles": [
+        "Minimalist",
+        "Cottagecore"
+      ]
     },
     {
       "name": "Christmas Poinsettia",
       "sku_note": "BHD-HLD-004",
-      "title": "Poinsettia Hand Embroidery Pattern PDF, Christmas Flower Hoop Art, Beginner Friendly Festive Decor Craft, 6 and 8 Inch Hoops",
+      "title": "Poinsettia Hand Embroidery Pattern PDF, Christmas Flower Hoop Art, Beginner Friendly Festive Decor Craft, 6 and 8 Inch Hoops, Download",
       "tags": [
         "poinsettia",
         "poinsettia pattern",
@@ -98,12 +110,16 @@
       ],
       "description": "Stitch a layered, pointed-petal poinsettia — the Christmas flower — in this beginner-friendly hand embroidery pattern drawn in clean black line art. A botanical take on holiday decor that pairs beautifully with the shop's other floral hoop designs, and stitches up calmly on a winter evening.\n\nWhat you'll receive (digital download)\n- 2 high-resolution PDF embroidery patterns (black-and-white line art), sized for 6 inch and 8 inch round hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Classic red and green, winter white, or something unexpected — the petals take any palette.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue).\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the design to fabric.\n- Start stitching!\n\nStitching more than one? All four classic motifs — bow, candy canes, nutcracker, and poinsettia — come together in the Christmas Classics set in our shop: four patterns for less than the price of three.",
       "price": 6.0,
-      "quantity": 50
+      "quantity": 50,
+      "styles": [
+        "Minimalist",
+        "Cottagecore"
+      ]
     },
     {
       "name": "Personalized Snowman Snow Globe",
       "sku_note": "BHD-XMS-001 · $8 · personalizable",
-      "title": "Personalized Snowman Snow Globe Embroidery Pattern PDF, Custom Text Christmas Hoop Art, Beginner Keepsake Stitching, 6 and 8 Inch",
+      "title": "Personalized Snowman Snow Globe Hand Embroidery Pattern PDF, Custom Text Christmas Hoop Art, Beginner Keepsake Stitching, 6 and 8 Inch",
       "tags": [
         "snowman snow globe",
         "snowman embroidery",
@@ -122,6 +138,10 @@
       "description": "Stitch a cheerful snowman inside his own snow globe — black line art with falling-snow dots and dashed \"fa la la la\" lettering arcing around the globe — and make it yours: the text beneath the globe is customizable.\n\nMake it your own\n- As shown, the design reads \"CHRISTMAS 2026\" — ready to stitch as a keepsake of this season.\n- Or add your own text at purchase (a year, a name, or a short message — up to 40 characters) in the personalization box, and I'll prepare a custom pattern just for you.\n- Personalized files are delivered through Etsy within 2 business days.\n\nWhat you'll receive (digital download)\n- 2 high-resolution PDF embroidery patterns (black-and-white line art), sized for 6 inch and 8 inch round hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Snowy whites and winter blues, or your own palette — the line art takes any colors.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue), adding your custom text if you'd like it.\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the design to fabric.\n- Start stitching!\n\nCollect the village: the penguin, Christmas tree, and snowy house snow globes are also in the shop — each one personalizable.",
       "price": 8.0,
       "quantity": 50,
+      "styles": [
+        "Whimsical",
+        "Cottagecore"
+      ],
       "personalization": {
         "instructions": "Optional custom text for beneath the globe (a year, name, or short message, up to 40 characters). Leave blank for the design as shown: CHRISTMAS 2026.",
         "is_required": false,
@@ -131,7 +151,7 @@
     {
       "name": "Personalized Penguin Snow Globe",
       "sku_note": "BHD-HLD-006 · $8 · personalizable",
-      "title": "Personalized Penguin Snow Globe Embroidery Pattern PDF, Custom Text Christmas Hoop Art, Cute Holiday Keepsake, 6 and 8 Inch Hoops",
+      "title": "Personalized Penguin Snow Globe Hand Embroidery Pattern PDF, Custom Text Christmas Hoop Art, Cute Holiday Keepsake, 6 and 8 Inch Hoops",
       "tags": [
         "penguin snow globe",
         "penguin embroidery",
@@ -150,6 +170,10 @@
       "description": "Stitch a little penguin tucked inside a snow globe — clean black line art with dashed \"fa la la la\" lettering around the globe — and make it yours: the text beneath the globe is customizable.\n\nMake it your own\n- As shown, the design reads \"CHRISTMAS 2026\" — ready to stitch as a keepsake of this season.\n- Or add your own text at purchase (a year, a name, or a short message — up to 40 characters) in the personalization box, and I'll prepare a custom pattern just for you.\n- Personalized files are delivered through Etsy within 2 business days.\n\nWhat you'll receive (digital download)\n- 2 high-resolution PDF embroidery patterns (black-and-white line art), sized for 6 inch and 8 inch round hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Classic black and white with an orange beak, or any palette that makes you smile.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue), adding your custom text if you'd like it.\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the design to fabric.\n- Start stitching!\n\nCollect the village: the snowman, Christmas tree, and snowy house snow globes are also in the shop — each one personalizable.",
       "price": 8.0,
       "quantity": 50,
+      "styles": [
+        "Whimsical",
+        "Cottagecore"
+      ],
       "personalization": {
         "instructions": "Optional custom text for beneath the globe (a year, name, or short message, up to 40 characters). Leave blank for the design as shown: CHRISTMAS 2026.",
         "is_required": false,
@@ -159,7 +183,7 @@
     {
       "name": "Personalized Christmas Tree Snow Globe",
       "sku_note": "BHD-HLD-007 · $8 · personalizable",
-      "title": "Personalized Christmas Tree Snow Globe Embroidery Pattern PDF, Custom Text Festive Hoop Art, Holiday Keepsake, 6 and 8 Inch Hoops",
+      "title": "Personalized Christmas Tree Snow Globe Hand Embroidery Pattern PDF, Custom Text Festive Hoop Art, Holiday Keepsake, 6 and 8 Inch Hoops",
       "tags": [
         "christmas tree globe",
         "christmas tree art",
@@ -178,6 +202,10 @@
       "description": "Stitch a Christmas tree standing in a swirl of snow inside its globe — black line art with scattered snow dots and dashed \"fa la la\" lettering around it — and make it yours: the text beneath the globe is customizable.\n\nMake it your own\n- As shown, the design reads \"CHRISTMAS 2026\" — ready to stitch as a keepsake of this season.\n- Or add your own text at purchase (a year, a name, or a short message — up to 40 characters) in the personalization box, and I'll prepare a custom pattern just for you.\n- Personalized files are delivered through Etsy within 2 business days.\n\nWhat you'll receive (digital download)\n- 2 high-resolution PDF embroidery patterns (black-and-white line art), sized for 6 inch and 8 inch round hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Evergreen and gold, or an unexpected palette — the tree takes any decoration you stitch on it.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue), adding your custom text if you'd like it.\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the design to fabric.\n- Start stitching!\n\nCollect the village: the snowman, penguin, and snowy house snow globes are also in the shop — each one personalizable.",
       "price": 8.0,
       "quantity": 50,
+      "styles": [
+        "Whimsical",
+        "Cottagecore"
+      ],
       "personalization": {
         "instructions": "Optional custom text for beneath the globe (a year, name, or short message, up to 40 characters). Leave blank for the design as shown: CHRISTMAS 2026.",
         "is_required": false,
@@ -187,7 +215,7 @@
     {
       "name": "Personalized Snowy House Snow Globe",
       "sku_note": "BHD-HLD-005 · $8 · personalizable",
-      "title": "Personalized Snowy House Snow Globe Embroidery Pattern PDF, Custom Text Christmas Village Hoop Art, Keepsake, 6 and 8 Inch Hoops",
+      "title": "Personalized Snowy House Snow Globe Hand Embroidery Pattern PDF, Custom Text Christmas Village Hoop Art, Keepsake, 6 and 8 Inch Hoops",
       "tags": [
         "snowy house globe",
         "christmas house",
@@ -206,6 +234,10 @@
       "description": "Stitch a snug little house under falling snow inside its own globe — black line art with a small tree beside it and dashed \"fa la la la…\" lettering arcing around the globe — and make it yours: the text beneath the globe is customizable. Lovely for a first-home Christmas or a family keepsake.\n\nMake it your own\n- As shown, the design reads \"CHRISTMAS 2026\" — ready to stitch as a keepsake of this season.\n- Or add your own text at purchase (a family name, a year, or a short message — up to 40 characters) in the personalization box, and I'll prepare a custom pattern just for you.\n- Personalized files are delivered through Etsy within 2 business days.\n\nWhat you'll receive (digital download)\n- 2 high-resolution PDF embroidery patterns (black-and-white line art), sized for 6 inch and 8 inch round hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Warm window-glow yellows and snowy whites, or whatever feels like home.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue), adding your custom text if you'd like it.\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the design to fabric.\n- Start stitching!\n\nCollect the village: the snowman, penguin, and Christmas tree snow globes are also in the shop — each one personalizable.",
       "price": 8.0,
       "quantity": 50,
+      "styles": [
+        "Whimsical",
+        "Cottagecore"
+      ],
       "personalization": {
         "instructions": "Optional custom text for beneath the globe (a year, name, or short message, up to 40 characters). Leave blank for the design as shown: CHRISTMAS 2026.",
         "is_required": false,
@@ -233,7 +265,11 @@
       ],
       "description": "Four classic Christmas motifs in one beginner-friendly set: a looped ribbon bow, crossed candy canes with holly, a traditional nutcracker, and a layered poinsettia — each drawn in clean black line art for calm, festive stitching. Stitch them as a coordinated wall arrangement, or spread them through December as an advent stitch-along.\n\nWhat you'll receive (digital download)\n- 2 high-resolution multi-page PDF embroidery patterns (black-and-white line art): one with all four designs sized for 6 inch hoops, one with all four sized for 8 inch hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Stitch the set in one palette for a matching wall arrangement, or give each motif its own colors.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue).\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the designs to fabric.\n- Start stitching!\n\nPrefer to start with just one? Each classic motif is also available individually in the shop — the set gives you all four for less than the price of three. And for a custom touch, our personalizable snow globe patterns take your own name, year, or message.",
       "price": 15.0,
-      "quantity": 50
+      "quantity": 50,
+      "styles": [
+        "Minimalist",
+        "Cottagecore"
+      ]
     }
   ]
 }
