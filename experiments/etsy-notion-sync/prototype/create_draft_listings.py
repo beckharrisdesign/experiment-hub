@@ -100,8 +100,30 @@ def create_drafts(payload, shop_id, headers, post=requests.post, sleep=time.slee
             log.error("UNEXPECTED response for %s: state=%s — verify listing %s in Shop Manager",
                       e["name"], body.get("state"), body.get("listing_id"))
             continue
-        created.append((e["name"], body["listing_id"]))
-        log.info("created draft %s -> listing %s", e["name"], body["listing_id"])
+        lid = body["listing_id"]
+        pers = e.get("personalization")
+        if pers:
+            purl = "{}/v3/application/shops/{}/listings/{}/personalization".format(API_BASE, shop_id, lid)
+            pdata = {
+                "is_personalizable": "true",
+                "personalization_is_required": "true" if pers.get("is_required") else "false",
+                "personalization_char_count_max": pers.get("char_count_max", 40),
+                "personalization_instructions": pers["instructions"],
+            }
+            try:
+                presp = post(purl, headers=headers, data=pdata, timeout=30)
+            except requests.RequestException as exc:
+                failed += 1
+                log.error("PERSONALIZATION FAILED on %s (listing %s): %s — set it in Shop Manager", e["name"], lid, exc)
+                continue
+            if presp.status_code not in (200, 201):
+                failed += 1
+                log.error("PERSONALIZATION FAILED on %s (listing %s): HTTP %s %s — set it in Shop Manager",
+                          e["name"], lid, presp.status_code, presp.text[:200])
+                continue
+        created.append((e["name"], lid))
+        log.info("created draft %s -> listing %s%s", e["name"], lid,
+                 " (personalization set)" if pers else "")
         sleep(WRITE_PACING_SECONDS)
     return created, failed
 

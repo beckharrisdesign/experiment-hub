@@ -108,3 +108,36 @@ def test_shipped_payload_validates():
     p = json.load(open(path))
     assert len(p["listings"]) == 9
     assert cdl.validate(p) == []
+
+
+def test_create_sets_personalization_when_present():
+    calls = []
+
+    def post(url, headers=None, data=None, timeout=None):
+        calls.append((url, data))
+        if url.endswith("/personalization"):
+            return FakeResponse(200, {"is_personalizable": True})
+        return draft_post(url, headers, data, timeout)
+
+    p = payload()
+    p["listings"][0]["personalization"] = {
+        "instructions": "Optional custom text", "is_required": False, "char_count_max": 40}
+    created, failed = cdl.create_drafts(p, "5568941", {}, post=post, sleep=lambda s: None)
+    assert (len(created), failed) == (1, 0)
+    purl, pdata = calls[1]
+    assert purl.endswith("/listings/42/personalization")
+    assert pdata["is_personalizable"] == "true"
+    assert pdata["personalization_is_required"] == "false"
+    assert pdata["personalization_char_count_max"] == 40
+
+
+def test_create_counts_personalization_failure():
+    def post(url, headers=None, data=None, timeout=None):
+        if url.endswith("/personalization"):
+            return FakeResponse(500, text="boom")
+        return draft_post(url, headers, data, timeout)
+
+    p = payload()
+    p["listings"][0]["personalization"] = {"instructions": "x", "is_required": False, "char_count_max": 40}
+    created, failed = cdl.create_drafts(p, "5568941", {}, post=post, sleep=lambda s: None)
+    assert (created, failed) == ([], 1)
