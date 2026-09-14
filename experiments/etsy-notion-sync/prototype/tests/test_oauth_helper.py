@@ -32,7 +32,7 @@ def test_build_auth_url_carries_pkce_and_state():
         "response_type": "code",
         "client_id": "key123",
         "redirect_uri": "http://localhost:8181/callback",
-        "scope": "listings_r",
+        "scope": "listings_r listings_w",
         "state": "st4te",
         "code_challenge": "ch4llenge",
         "code_challenge_method": "S256",

@@ -18,7 +18,7 @@ Etsy's API Terms of Use prohibit screen-scraping or sidestepping the API. This d
 - `GET /v3/application/shops/{shop_id}/listings` (`getListingsByShop`) — shop-level listing list, paginated, filterable by `state`, supports `includes=Shipping,Images,Shop,User,Translations,Inventory,Videos,Personalization,BuyerPrice` for the widest single-call field coverage.
 - `GET /v3/application/listings/{listing_id}` (`getListing`) — single listing with full schema (title, description, rich_description, timestamps, quantity, tags, materials, shipping profile, taxonomy, pricing, views, favorers, personalization, buyer_price, etc.)
 - `GET /v3/application/listings/{listing_id}/inventory` (`getListingInventory`) — per-variation/offering-level detail: products, price_on_property, quantity_on_property, sku_on_property, readiness_state_on_property.
-- Auth: `x-api-key` header + OAuth bearer token, scope `listings_r`.
+- Auth: `x-api-key` header + OAuth bearer token, scope `listings_r listings_w` (the capture client performs GET-only calls; write scope is reserved for listing-edit tooling).
 - Rate limits: per-key QPS + rolling 24-hour QPD; `x-remaining-today` / `x-remaining-this-second` response headers show live quota; on `429`, obey `retry-after`.
 
 ## Requirement: capture every available field, and stay forward-compatible

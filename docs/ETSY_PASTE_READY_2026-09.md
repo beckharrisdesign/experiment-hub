@@ -65,6 +65,8 @@ wooden wick candle, coconut soy candle, frosted glass candle, crackling candle, 
 
 ## P2 — Fall leaves seasonal refresh
 
+> **Reconciled with #470:** apply now (seasonal exception, excluded from measurement) — but keep `medieval needlework` in place of the weakest seasonal tag; it earned a real search visit (Sep 14).
+
 ### [Fall leaves 4415032102](https://www.etsy.com/your/shops/me/listing-editor/edit/4415032102)
 
 ⚠️ Current tags include residue from the geometry listings — `modern geometric`, `medieval needlework`, `sacred geometry diy` — which dilute this listing's seasonal relevance. The set below replaces all 13.
@@ -81,6 +83,8 @@ fall embroidery, autumn hoop art, fall leaves pattern, autumn pdf pattern, cozy 
 ---
 
 ## P4 — Title stretches on the traffic magnets (tags stay as they are)
+
+> ⚠️ **HOLD — do not paste during the experiment window (#470):** four of five are protected until the day-30 readout; 4466789627's retitle ships with its treatment copy instead.
 
 ### [Leaf mandala 4415035303](https://www.etsy.com/your/shops/me/listing-editor/edit/4415035303) (131, was 101)
 ```

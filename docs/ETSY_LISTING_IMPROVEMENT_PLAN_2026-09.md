@@ -20,6 +20,8 @@ All five POD listings have **0 of 13 tags** and short brand-first titles. Zero t
 
 ## P2 — Fall leaves seasonal push (this week; the window is now)
 
+> **Reconciled with the tag-positioning experiment (#470):** fall leaves is a documented seasonal exception — moved out of the protected group, edit allowed now, excluded from experiment measurement. One change to the paste-ready set: keep `medieval needlework` (it earned one of the shop's six search visits, Sep 14 Search Analytics).
+
 ☐ [Fall leaves 4415032102](https://www.etsy.com/your/shops/me/listing-editor/edit/4415032102) — the shop's one seasonal listing, only +10 views in 30 days. Lengthen the title from 110 toward 120–140 with autumn search terms; swap a few evergreen tags for seasonal ones (fall decor, autumn embroidery kit, thanksgiving hoop art, cozy fall craft); confirm the strongest scene photo is the main image. Alt text is 0 of 12 here (see P3).
 
 ## P3 — Alt-text check on the three top earners (possible regression)
@@ -31,6 +33,8 @@ The August pass recorded main-image alt text on all listings; today's API read s
 3. ☐ [Wreath of diamonds 4415081378](https://www.etsy.com/your/shops/me/listing-editor/edit/4415081378)
 
 ## P4 — Titles to 120–140 on the traffic magnets
+
+> ⚠️ **HOLD until the experiment's day-30 readout (#470):** four of these five are protected listings; retitling them mid-window invalidates the comparison. This becomes the first rollout act if positioning wins. (4466789627 is in the treatment group — its retitle ships with the treatment copy instead.)
 
 Current titles run 76–110 characters — free keyword space unused. Do the five listings that already earn views first:
 
