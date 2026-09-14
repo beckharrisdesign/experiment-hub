@@ -48,7 +48,7 @@ loaded.
 
 Credential setup:
 
-- **Etsy** — one-time OAuth 2.0 flow (scope `listings_r`), automated by the helper:
+- **Etsy** — one-time OAuth 2.0 flow (scope `listings_r listings_w` — the capture/sync client itself stays GET-only), automated by the helper:
   1. In the [Etsy developer portal](https://www.etsy.com/developers/your-apps),
      copy your Seller App's **keystring** into `ETSY_API_KEY` and its
      **shared secret** into `ETSY_SHARED_SECRET` in `.env` (Etsy requires both
