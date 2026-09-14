@@ -48,7 +48,9 @@ Read (directional — $0.25 total spend): a clean CTR gradient. Specific descrip
 ## Groups
 
 **Protected — no changes, listings *or* their ads settings, until day 30 (top traffic, don't disturb):**
-4415035303 (leaf mandala), 4466080258, 4466076995, 4415032102 (fall leaves), 4417250225 (starburst). The mandala's low-CTR generic ad keywords ("embroidery patterns" 2.6%) stay untouched during the window — pruning them would change the winner's traffic mid-experiment.
+4415035303 (leaf mandala), 4466080258, 4466076995, 4417250225 (starburst). The mandala's low-CTR generic ad keywords ("embroidery patterns" 2.6%) stay untouched during the window — pruning them would change the winner's traffic mid-experiment.
+
+**Seasonal exception — 4415032102 (fall leaves):** was protected, moved out per the September plan's P2 — its seasonal window (fall search terms) expires before the experiment closes, and September sales beat experimental purity. Gets the paste-ready seasonal refresh now and is **excluded from measurement**. One edit to the paste-ready set: it drops "medieval needlework" as dilution, but Search Analytics (Sep 14) shows that exact tag earned one of the shop's six search visits — keep it, swapping out the weakest proposed seasonal tag.
 
 **Treatment — retitle + retag per the copy rules (6):**
 
@@ -73,6 +75,18 @@ Read (directional — $0.25 total spend): a clean CTR gradient. Specific descrip
 - Ads panel: toggle "digital products" off as not relevant on 4414949521 (28 impressions, 0 clicks, no buyers there).
 - 4417249682 skill-level contradiction: fix *after* day 30 — it's unassigned and shouldn't accumulate mid-window edits.
 
+## Reconciliation with the September plan (PR #471)
+
+The 2026-09-08 session produced `docs/ETSY_LISTING_IMPROVEMENT_PLAN_2026-09.md` + `ETSY_PASTE_READY_2026-09.md` (rescued in PR #471). How each item lands here:
+
+| Sept item | Resolution |
+|---|---|
+| P1 — tag the five Grandma listings | Absorbed into hygiene; **use the paste-ready copy verbatim** (five complete title+tag sets exist) |
+| P2 — fall leaves seasonal push | Fall leaves becomes the seasonal exception above: edit now, excluded from measurement (keep "medieval needlework" — see note) |
+| P3 — alt-text regression on top 3 | Allowed during the window on all three (leaf mandala, fall leaves, wreath of diamonds): it repairs an August regression, applies to protected and treatment alike, and is logged here rather than treated as a variable |
+| P4 — lengthen titles on the traffic magnets | **Deferred to day 30** for the protected four — retitling the winners mid-window would destroy the control anchor; it becomes the first rollout act if positioning wins. Treatment listing 4466789627 gets its 120–140 title via its treatment copy anyway |
+| P5 — one video per week | **Deferred to after day 30** — videos boost search placement, and adding them unevenly mid-window would contaminate the comparison |
+
 ## Measurement
 
 Two channels, both anchored to the day edits land:
@@ -91,7 +105,7 @@ Two channels, both anchored to the day edits land:
 ## Steps
 
 1. ☐ Approve groups and plan
-2. ☐ Draft exact title + 13 tags for each treatment listing + Grandma listings + mandala-shadow retitle (one review doc, approve before anything touches Etsy)
+2. ☐ Draft exact title + 13 tags for each treatment listing + fall-leaves seasonal tweak + mandala-shadow retitle (one review doc, approve before anything touches Etsy; Grandma listings reuse the PR #471 paste-ready copy as-is)
 3. ☐ Apply approved copy in Etsy Shop Manager (edit links in the treatment table above)
 4. ☐ Toggle "digital products" off as not relevant in the ads panel for [4414949521](https://www.etsy.com/your/shops/me/listing-editor/edit/4414949521)
 5. ☐ Delete one duplicate draft bundle ([4522856685](https://www.etsy.com/your/shops/me/listing-editor/edit/4522856685) or [4522923804](https://www.etsy.com/your/shops/me/listing-editor/edit/4522923804))
