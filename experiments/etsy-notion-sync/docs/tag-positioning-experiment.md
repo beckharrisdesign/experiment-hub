@@ -26,7 +26,7 @@ Read (directional — $0.25 total spend): a clean CTR gradient. Specific descrip
 
 ## Copy rules (every treatment edit follows these)
 
-1. **Title formula:** `Hand Embroidery Pattern PDF — [unique descriptor] — [positioning phrase]`. Lead with the searched shape; "digital" leads nowhere — no one searched it.
+1. **Title formula:** `[Unique descriptor] Hand Embroidery Pattern PDF, [positioning phrase], [hoop sizes]`. The listing's own descriptor leads — identical prefixes across listings would recreate the near-duplicate-title problem — with the searched phrase shape ("hand embroidery pattern pdf") immediately after it; "digital" appears nowhere — no one searched it.
 2. **One unique primary descriptor per listing** (geometric wheel, leaf fan, diamond wreath…) — no descriptor reused across listings.
 3. **Format words inside title phrases only** ("pattern pdf", "pdf download") — never as standalone tags. Strip "digital products", "digital product", "instant download", "printable pdf" from treatment tag sets.
 4. **No tag appears on more than one treatment listing's set** unless it's a deliberate shared foundation ("hand embroidery pattern" class); the cloned wellness cluster gets broken up.
