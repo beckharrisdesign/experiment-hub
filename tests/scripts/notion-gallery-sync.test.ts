@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-// @ts-expect-error — plain-mjs lib, typed by its tests
 import {
   parseArgs, orderGallery, resumePlan, buildImagesPatch, shouldSkipRow, roleOf,
 } from '../../scripts/notion-gallery-sync-lib.mjs';
