@@ -13,8 +13,11 @@ import sharp from 'sharp';
 
 const ROOT =
   '/Users/katybharris/Library/CloudStorage/GoogleDrive-katy@beckharrisdesign.com/My Drive/W+H Listings/W+H Listings';
+const skuIdx = process.argv.indexOf('--sku');
+const SKU = skuIdx > -1 ? process.argv[skuIdx + 1] : 'WH-UN-B-STAGING';
+if (skuIdx > -1 && (!SKU || SKU.startsWith('-'))) { console.error('--sku requires a SKU operand'); process.exit(1); }
 const CLASSICS = ['WH-UN-S-0DF4', 'WH-UN-S-CA7C', 'WH-UN-S-EA23', 'WH-UN-S-EBE2']; // bow, candy, nutcracker, poinsettia
-const OUT = path.join(ROOT, '_staging', 'christmas-classics-bundle');
+const OUT = skuIdx > -1 ? path.join(ROOT, SKU) : path.join(ROOT, '_staging', SKU);
 const PX = 2000;
 
 fs.mkdirSync(OUT, { recursive: true });
@@ -33,12 +36,12 @@ async function grid(role, outName) {
   console.log('composed', outName);
 }
 
-await grid('hero', 'Listing-christmas-classics-hero.png'.replace('.png', '.jpg'));
-await grid('content-center', 'Listing-christmas-classics-content-center.jpg');
+await grid('hero', `Listing-${SKU}-hero.jpg`);
+await grid('content-center', `Listing-${SKU}-content-center.jpg`);
 
 for (let i = 0; i < CLASSICS.length; i++) {
   const src = path.join(ROOT, CLASSICS[i], `Listing-${CLASSICS[i]}-hero.png`);
-  const dest = path.join(OUT, `Listing-christmas-classics-detail-${i + 1}.jpg`);
+  const dest = path.join(OUT, `Listing-${SKU}-detail-${i + 1}.jpg`);
   await sharp(src).jpeg({ quality: 90 }).toFile(dest);
   console.log('composed', path.basename(dest));
 }

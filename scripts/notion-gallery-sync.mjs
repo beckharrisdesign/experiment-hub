@@ -4,13 +4,17 @@
  * the Notion Listing Inventory rows (the shop's source of truth).
  *
  * For every Listing Inventory row whose SKU has a gallery folder in Drive,
- * uploads the folder's role-named PNGs to Notion (File Upload API) and sets
- * the row's "Images" files property to the complete set (Hero preview is
- * left untouched). Files over the size cap are recompressed to JPEG first.
+ * uploads the folder's role-named images to Notion (File Upload API) and
+ * keeps the row's "Images" files property up to date (Hero preview is left
+ * untouched). Files over the size cap are recompressed to JPEG first.
  *
  * Dry-run by default; --apply uploads. --sku WH-UN-S-XXXX limits to one row.
- * Idempotent-ish: rows whose Images already hold >= the folder's file count
- * are skipped (rerun after a partial failure continues where it left off).
+ * Resume is per FILE: the Images property is re-patched after every
+ * successful upload, and reruns skip files already attached (matched by
+ * filename stem, since compression renames .png to .jpg).
+ *
+ * All Notion calls share bounded 429/Retry-After handling plus pacing, so
+ * a long run degrades to slow, not to failed rows.
  *
  * Env: NOTION_TOKEN, NOTION_INVENTORY_DB_ID. Run from Katy's own terminal
  * (op-injected creds — see .env.example and CLAUDE.md Secrets).
@@ -18,25 +22,25 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
+import {
+  parseArgs, orderGallery, resumePlan, buildImagesPatch, shouldSkipRow,
+} from './notion-gallery-sync-lib.mjs';
 
 const DRIVE_ROOT =
   '/Users/katybharris/Library/CloudStorage/GoogleDrive-katy@beckharrisdesign.com/My Drive/W+H Listings/W+H Listings';
 const NOTION = 'https://api.notion.com/v1';
 const NOTION_VERSION = '2022-06-28';
 const MAX_BYTES = 4.5 * 1024 * 1024; // stay safely under Notion's 5MB single-part cap
+const PACING_MS = 350; // Notion allows ~3 requests/second
+const MAX_RETRIES = 5;
 
-// Gallery role order = Etsy slot order (hero first).
-const ROLE_ORDER = [
-  'hero', 'lifestyle', 'scale', 'transferring', 'content-tl', 'content-center',
-  'content-bl', 'content-suggestions-4up', 'badge', 'faq-1', 'faq-2', 'faq-3',
-  'endcap', 'color-options', 'detail-1', 'detail-2', 'detail-3', 'detail-4',
-];
-
-const apply = process.argv.includes('--apply');
-const skuArg = (() => {
-  const i = process.argv.indexOf('--sku');
-  return i > -1 ? process.argv[i + 1] : null;
-})();
+let opts;
+try {
+  opts = parseArgs(process.argv.slice(2));
+} catch (err) {
+  console.error(err.message);
+  process.exit(1);
+}
 
 const token = process.env.NOTION_TOKEN;
 const dbId = process.env.NOTION_INVENTORY_DB_ID;
@@ -45,15 +49,35 @@ if (!token || !dbId) {
   process.exit(1);
 }
 
-const headers = {
-  Authorization: `Bearer ${token}`,
-  'Notion-Version': NOTION_VERSION,
-  'Content-Type': 'application/json',
-};
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function notion(pathname, init = {}) {
-  const resp = await fetch(`${NOTION}${pathname}`, { headers, ...init });
-  if (!resp.ok) throw new Error(`${init.method ?? 'GET'} ${pathname} -> ${resp.status}: ${(await resp.text()).slice(0, 300)}`);
+/** Shared fetch: pacing + bounded 429/Retry-After retries for EVERY Notion call. */
+async function notionFetch(url, init) {
+  for (let attempt = 0; ; attempt++) {
+    await sleep(PACING_MS);
+    const resp = await fetch(url, init);
+    if (resp.status === 429 && attempt < MAX_RETRIES) {
+      const after = Number(resp.headers.get('retry-after')) || 2 ** attempt;
+      console.warn(`   429 — waiting ${after}s (attempt ${attempt + 1}/${MAX_RETRIES})`);
+      await sleep(after * 1000);
+      continue;
+    }
+    return resp;
+  }
+}
+
+async function notionJson(pathname, init = {}) {
+  const resp = await notionFetch(`${NOTION}${pathname}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Notion-Version': NOTION_VERSION,
+      'Content-Type': 'application/json',
+    },
+    ...init,
+  });
+  if (!resp.ok) {
+    throw new Error(`${init.method ?? 'GET'} ${pathname} -> ${resp.status}: ${(await resp.text()).slice(0, 300)}`);
+  }
   return resp.json();
 }
 
@@ -62,7 +86,7 @@ async function allRows() {
   let cursor;
   do {
     const body = { page_size: 100, ...(cursor ? { start_cursor: cursor } : {}) };
-    const page = await notion(`/databases/${dbId}/query`, { method: 'POST', body: JSON.stringify(body) });
+    const page = await notionJson(`/databases/${dbId}/query`, { method: 'POST', body: JSON.stringify(body) });
     rows.push(...page.results);
     cursor = page.has_more ? page.next_cursor : undefined;
   } while (cursor);
@@ -77,34 +101,23 @@ function skuFor(row) {
   return `WH-UN-S-${last4}`;
 }
 
-function galleryFiles(sku) {
-  const dir = path.join(DRIVE_ROOT, sku);
-  if (!fs.existsSync(dir)) return null;
-  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.png'));
-  const roleOf = (f) => f.replace(new RegExp(`^Listing-${sku}-`), '').replace(/\.png$/, '');
-  files.sort((a, b) => {
-    const ia = ROLE_ORDER.indexOf(roleOf(a));
-    const ib = ROLE_ORDER.indexOf(roleOf(b));
-    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-  });
-  return files.map((f) => ({ role: roleOf(f), file: path.join(dir, f), name: f }));
-}
-
-async function bytesFor(entry) {
-  const raw = fs.readFileSync(entry.file);
-  if (raw.length <= MAX_BYTES) return { buf: raw, name: entry.name, type: 'image/png' };
+async function bytesFor(dir, entry) {
+  const raw = fs.readFileSync(path.join(dir, entry.name));
+  if (raw.length <= MAX_BYTES) {
+    return { buf: raw, name: entry.name, type: entry.name.match(/\.png$/i) ? 'image/png' : 'image/jpeg' };
+  }
   const jpg = await sharp(raw).jpeg({ quality: 88 }).toBuffer();
-  return { buf: jpg, name: entry.name.replace(/\.png$/, '.jpg'), type: 'image/jpeg' };
+  return { buf: jpg, name: entry.name.replace(/\.(png|jpe?g)$/i, '.jpg'), type: 'image/jpeg' };
 }
 
 async function uploadFile({ buf, name, type }) {
-  const created = await notion('/file_uploads', {
+  const created = await notionJson('/file_uploads', {
     method: 'POST',
     body: JSON.stringify({ filename: name, content_type: type }),
   });
   const form = new FormData();
   form.append('file', new Blob([buf], { type }), name);
-  const resp = await fetch(`${NOTION}/file_uploads/${created.id}/send`, {
+  const resp = await notionFetch(`${NOTION}/file_uploads/${created.id}/send`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Notion-Version': NOTION_VERSION },
     body: form,
@@ -117,40 +130,40 @@ const rows = await allRows();
 let done = 0, skipped = 0, failed = 0;
 for (const row of rows) {
   const sku = skuFor(row);
-  if (skuArg && sku !== skuArg) continue;
-  const entries = galleryFiles(sku);
+  if (opts.sku && sku !== opts.sku) continue;
+  const dir = path.join(DRIVE_ROOT, sku);
+  if (!fs.existsSync(dir)) continue;
+  const entries = orderGallery(fs.readdirSync(dir), sku);
+  if (entries.length === 0) continue;
   const title = row.properties?.['Short Title']?.rich_text?.[0]?.plain_text
     ?? row.properties?.Name?.title?.[0]?.plain_text ?? sku;
-  if (!entries || entries.length === 0) { continue; }
-  const existing = row.properties?.Images?.files?.length ?? 0;
-  if (existing >= entries.length) {
-    console.log(`SKIP  ${sku} ${title} — Images already has ${existing} (folder has ${entries.length})`);
+  const existing = row.properties?.Images?.files ?? [];
+  if (shouldSkipRow(existing.length, entries.length)) {
+    console.log(`SKIP  ${sku} ${title} — Images already has ${existing.length} (folder has ${entries.length})`);
     skipped++;
     continue;
   }
-  console.log(`${apply ? 'SYNC ' : 'PLAN '} ${sku} ${title} — ${entries.length} images (${entries.map((e) => e.role).join(', ')})`);
-  if (!apply) continue;
+  const { keep, toUpload } = resumePlan(existing, entries);
+  console.log(`${opts.apply ? 'SYNC ' : 'PLAN '} ${sku} ${title} — ${toUpload.length} to upload, ${keep.length} already attached (${entries.map((e) => e.role).join(', ')})`);
+  if (!opts.apply) continue;
   try {
-    const ids = [];
-    for (const entry of entries) {
-      const payload = await bytesFor(entry);
-      ids.push({ id: await uploadFile(payload), name: payload.name });
-      process.stdout.write(`   uploaded ${payload.name}\n`);
+    const uploaded = [];
+    for (const entry of toUpload) {
+      const payload = await bytesFor(dir, entry);
+      uploaded.push({ id: await uploadFile(payload), name: payload.name });
+      // Re-patch after EVERY upload so a mid-row failure loses nothing.
+      await notionJson(`/pages/${row.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(buildImagesPatch(keep, uploaded)),
+      });
+      process.stdout.write(`   attached ${payload.name}\n`);
     }
-    await notion(`/pages/${row.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({
-        properties: {
-          Images: { files: ids.map((u) => ({ type: 'file_upload', file_upload: { id: u.id }, name: u.name })) },
-        },
-      }),
-    });
     done++;
-    console.log(`   OK — ${ids.length} images attached`);
+    console.log(`   OK — ${keep.length + uploaded.length} images on the row`);
   } catch (err) {
     failed++;
-    console.error(`   FAILED ${sku}: ${err.message}`);
+    console.error(`   FAILED ${sku}: ${err.message} (rerun resumes from the next file)`);
   }
 }
-console.log(`\n${apply ? 'Synced' : 'Planned'}: ${done || '-'} rows${apply ? `, ${failed} failed` : ''}, ${skipped} skipped.` +
-  (apply ? '' : ' Rerun with --apply to upload.'));
+console.log(`\n${opts.apply ? 'Synced' : 'Planned'}: ${done || '-'} rows${opts.apply ? `, ${failed} failed` : ''}, ${skipped} skipped.` +
+  (opts.apply ? '' : ' Rerun with --apply to upload.'));
