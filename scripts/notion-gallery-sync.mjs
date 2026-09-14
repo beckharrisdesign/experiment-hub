@@ -23,7 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import {
-  parseArgs, orderGallery, resumePlan, buildImagesPatch, shouldSkipRow, ROLE_ORDER,
+  parseArgs, orderGallery, resumePlan, buildImagesPatch, ROLE_ORDER,
 } from './notion-gallery-sync-lib.mjs';
 
 const DRIVE_ROOT =
@@ -54,14 +54,14 @@ if (!token || !dbId) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** Shared fetch: pacing + bounded 429/Retry-After retries for EVERY Notion call. */
-async function notionFetch(url, init) {
+async function notionFetch(url, init, { retryOnTimeout = true } = {}) {
   for (let attempt = 0; ; attempt++) {
     await sleep(PACING_MS);
     let resp;
     try {
       resp = await fetch(url, { ...init, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
     } catch (err) {
-      if (attempt < MAX_RETRIES) {
+      if (retryOnTimeout && attempt < MAX_RETRIES) {
         console.warn(`   request ${err.name === 'TimeoutError' ? 'timed out' : 'failed'} — retrying (${attempt + 1}/${MAX_RETRIES})`);
         continue;
       }
@@ -147,11 +147,13 @@ async function uploadFile({ buf, name, type }) {
   });
   const form = new FormData();
   form.append('file', new Blob([buf], { type }), name);
+  // No timeout replay here: /send is not idempotent. A timeout fails this
+  // file; the rerun creates a fresh upload object and the orphan expires.
   const resp = await notionFetch(`${NOTION}/file_uploads/${created.id}/send`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Notion-Version': NOTION_VERSION },
     body: form,
-  });
+  }, { retryOnTimeout: false });
   if (!resp.ok) throw new Error(`file upload send ${name} -> ${resp.status}: ${(await resp.text()).slice(0, 200)}`);
   return created.id;
 }
@@ -171,12 +173,12 @@ for (const row of rows) {
   const title = row.properties?.['Short Title']?.rich_text?.[0]?.plain_text
     ?? row.properties?.Name?.title?.[0]?.plain_text ?? sku;
   const existing = row.properties?.Images?.files ?? [];
-  if (shouldSkipRow(existing.length, entries.length)) {
-    console.log(`SKIP  ${sku} ${title} — Images already has ${existing.length} (folder has ${entries.length})`);
+  const { keep, toUpload } = resumePlan(existing, entries);
+  if (toUpload.length === 0) {
+    console.log(`SKIP  ${sku} ${title} — all ${entries.length} gallery files already attached`);
     skipped++;
     continue;
   }
-  const { keep, toUpload } = resumePlan(existing, entries);
   console.log(`${opts.apply ? 'SYNC ' : 'PLAN '} ${sku} ${title} — ${toUpload.length} to upload, ${keep.length} already attached (${entries.map((e) => e.role).join(', ')})`);
   if (!opts.apply) continue;
   try {
