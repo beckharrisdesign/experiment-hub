@@ -106,5 +106,5 @@ def test_create_counts_failures_and_continues():
 def test_shipped_payload_validates():
     path = os.path.join(os.path.dirname(__file__), "..", "holiday_drafts_2026.json")
     p = json.load(open(path))
-    assert len(p["listings"]) == 5
+    assert len(p["listings"]) == 9
     assert cdl.validate(p) == []

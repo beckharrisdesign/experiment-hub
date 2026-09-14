@@ -1,5 +1,5 @@
 {
-  "comment": "Approved holiday draft copy (docs/ETSY_HOLIDAY_DRAFTS_2026.md, approved 2026-09-14; bundle files = 2 merged multi-page PDFs per Etsy's 5-file cap). Created as DRAFTS via create_draft_listings.py; template fields applied by the script.",
+  "comment": "Approved holiday draft copy (docs/ETSY_HOLIDAY_DRAFTS_2026.md; 8 singles + bundle per Katy 2026-09-14; bundle files = 2 merged multi-page PDFs). Created as DRAFTS via create_draft_listings.py.",
   "template": {
     "taxonomy_id": 88,
     "who_made": "i_did",
@@ -101,25 +101,117 @@
       "quantity": 50
     },
     {
+      "name": "Snowman Snow Globe",
+      "sku_note": "BHD-XMS-001",
+      "title": "Snowman Snow Globe Hand Embroidery Pattern PDF, Christmas Hoop Art for Beginners, Cozy Holiday Stitching, 6 and 8 Inch Hoops",
+      "tags": [
+        "snowman snow globe",
+        "snowman embroidery",
+        "snow globe",
+        "snowman pattern",
+        "snowman hoop art",
+        "christmas snowman",
+        "snowman decor",
+        "snowman craft",
+        "let it snow craft",
+        "snowman wall art",
+        "kids christmas craft",
+        "winter wonderland",
+        "frosty decor"
+      ],
+      "description": "Stitch a cheerful snowman inside his own snow globe — black line art with falling-snow dots, dashed \"fa la la la\" lettering arcing around the globe, and \"CHRISTMAS 2026\" beneath (the year text is part of the design, making it a keepsake for this season). A beginner-friendly hand embroidery pattern made for cozy December evenings.\n\nWhat you'll receive (digital download)\n- 2 high-resolution PDF embroidery patterns (black-and-white line art), sized for 6 inch and 8 inch round hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Snowy whites and winter blues, or your own palette — the line art takes any colors.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue).\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the design to fabric.\n- Start stitching!\n\nLove the whole village? All four snow globe designs — snowman, penguin, Christmas tree, and snowy house — are available together as the Snow Globe Christmas Set in our shop: four patterns for less than the price of three singles.",
+      "price": 6.0,
+      "quantity": 50
+    },
+    {
+      "name": "Penguin Snow Globe",
+      "sku_note": "BHD-HLD-006",
+      "title": "Penguin Snow Globe Hand Embroidery Pattern PDF, Cute Christmas Hoop Art, Beginner Friendly Winter Stitching, 6 and 8 Inch Hoops",
+      "tags": [
+        "penguin snow globe",
+        "penguin embroidery",
+        "penguin pattern",
+        "penguin hoop art",
+        "christmas penguin",
+        "penguin decor",
+        "penguin gift",
+        "penguin lover gift",
+        "cute penguin art",
+        "winter penguin",
+        "arctic embroidery",
+        "penguin wall art",
+        "penguin craft"
+      ],
+      "description": "Stitch a little penguin tucked inside a snow globe — clean black line art with dashed \"fa la la la\" lettering around the globe and \"CHRISTMAS 2026\" beneath (the year text is part of the design, making it a keepsake for this season). A beginner-friendly hand embroidery pattern with maximum charm per stitch.\n\nWhat you'll receive (digital download)\n- 2 high-resolution PDF embroidery patterns (black-and-white line art), sized for 6 inch and 8 inch round hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Classic black and white with an orange beak, or any palette that makes you smile.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue).\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the design to fabric.\n- Start stitching!\n\nLove the whole village? All four snow globe designs — snowman, penguin, Christmas tree, and snowy house — are available together as the Snow Globe Christmas Set in our shop: four patterns for less than the price of three singles.",
+      "price": 6.0,
+      "quantity": 50
+    },
+    {
+      "name": "Christmas Tree Snow Globe",
+      "sku_note": "BHD-HLD-007",
+      "title": "Christmas Tree Snow Globe Hand Embroidery Pattern PDF, Festive Hoop Art for Beginners, Holiday Evening Craft, 6 and 8 Inch Hoops",
+      "tags": [
+        "christmas tree globe",
+        "christmas tree art",
+        "tree embroidery",
+        "o christmas tree",
+        "evergreen pattern",
+        "pine tree craft",
+        "tree hoop art",
+        "holiday tree decor",
+        "christmas tree pdf",
+        "snowy tree pattern",
+        "tannenbaum",
+        "festive tree art",
+        "snow globe pattern"
+      ],
+      "description": "Stitch a Christmas tree standing in a swirl of snow inside its globe — black line art with scattered snow dots, dashed \"fa la la\" lettering around it, and \"CHRISTMAS 2026\" beneath (the year text is part of the design, making it a keepsake for this season). A beginner-friendly hand embroidery pattern for festive evenings.\n\nWhat you'll receive (digital download)\n- 2 high-resolution PDF embroidery patterns (black-and-white line art), sized for 6 inch and 8 inch round hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Evergreen and gold, or an unexpected palette — the tree takes any decoration you stitch on it.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue).\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the design to fabric.\n- Start stitching!\n\nLove the whole village? All four snow globe designs — snowman, penguin, Christmas tree, and snowy house — are available together as the Snow Globe Christmas Set in our shop: four patterns for less than the price of three singles.",
+      "price": 6.0,
+      "quantity": 50
+    },
+    {
+      "name": "Snowy House Snow Globe",
+      "sku_note": "BHD-HLD-005",
+      "title": "Snowy House Snow Globe Hand Embroidery Pattern PDF, Christmas Village Hoop Art, Beginner Holiday Stitching, 6 and 8 Inch Hoops",
+      "tags": [
+        "snowy house globe",
+        "christmas house",
+        "house embroidery",
+        "winter house art",
+        "cozy cottage craft",
+        "snow globe hoop art",
+        "christmas village",
+        "holiday house decor",
+        "winter cottage",
+        "house pattern pdf",
+        "snowy village art",
+        "new home christmas",
+        "cozy christmas home"
+      ],
+      "description": "Stitch a snug little house under falling snow inside its own globe — black line art with a small tree beside it, dashed \"fa la la la…\" lettering arcing around the globe, and \"CHRISTMAS 2026\" beneath (the year text is part of the design, making it a keepsake for this season). A beginner-friendly hand embroidery pattern with cozy-village energy — lovely for a first-home Christmas.\n\nWhat you'll receive (digital download)\n- 2 high-resolution PDF embroidery patterns (black-and-white line art), sized for 6 inch and 8 inch round hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Warm window-glow yellows and snowy whites, or whatever feels like home.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue).\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the design to fabric.\n- Start stitching!\n\nLove the whole village? All four snow globe designs — snowman, penguin, Christmas tree, and snowy house — are available together as the Snow Globe Christmas Set in our shop: four patterns for less than the price of three singles.",
+      "price": 6.0,
+      "quantity": 50
+    },
+    {
       "name": "Snow Globe Christmas Set (bundle of 4)",
       "sku_note": "BHD-HLD-005/006/007 + BHD-XMS-001",
       "title": "Snow Globe Christmas Embroidery Pattern Set, 4 Hand Embroidery PDF Designs, Snowman Penguin Tree House, Beginner Holiday Bundle",
       "tags": [
-        "snow globe",
-        "snow globe pattern",
         "christmas bundle",
         "embroidery set",
-        "snowman embroidery",
-        "penguin embroidery",
-        "christmas tree art",
         "holiday pattern set",
-        "snow globe hoop art",
-        "christmas 2026",
-        "winter embroidery",
+        "snow globe set",
+        "christmas gift set",
+        "pattern bundle",
+        "matching hoop set",
+        "advent stitching",
         "fa la la",
-        "advent stitching"
+        "christmas 2026",
+        "stitch along set",
+        "holiday wall set",
+        "winter craft set"
       ],
-      "description": "Stitch a whole snow-globe village with this set of four beginner-friendly hand embroidery patterns — a snowman, a penguin, a Christmas tree, and a snowy house, each drawn in clean black line art inside its own snow globe, surrounded by dashed \"fa la la la\" lettering with \"CHRISTMAS 2026\" beneath. Please note: the 2026 year text is part of each design, which makes these a keepsake set for this year's season.\n\nWhat you'll receive (digital download)\n- 2 high-resolution multi-page PDF embroidery patterns (black-and-white line art): one with all four designs sized for 6 inch hoops, one with all four sized for 8 inch hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Stitch the set in one palette for a matching wall arrangement, or give each globe its own colors.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue).\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the designs to fabric.\n- Start stitching!\n\nFour coordinated globes make a striking holiday wall set, a memorable 2026 keepsake, or an advent-season stitch-along — one globe per week of December.",
+      "description": "Stitch a whole snow-globe village with this set of four beginner-friendly hand embroidery patterns — a snowman, a penguin, a Christmas tree, and a snowy house, each drawn in clean black line art inside its own snow globe, surrounded by dashed \"fa la la la\" lettering with \"CHRISTMAS 2026\" beneath. Please note: the 2026 year text is part of each design, which makes these a keepsake set for this year's season.\n\nWhat you'll receive (digital download)\n- 2 high-resolution multi-page PDF embroidery patterns (black-and-white line art): one with all four designs sized for 6 inch hoops, one with all four sized for 8 inch hoops.\n- Printable designs you can trace or transfer to your favorite fabric.\n- Digital files only; no physical item will be shipped.\n\nSkill level\n- Great for beginners and up who enjoy easy, relaxing embroidery patterns.\n- Stitch the set in one palette for a matching wall arrangement, or give each globe its own colors.\n\nHow it works\n- Purchase this listing from WatermarkandHue on Etsy (etsy.com/shop/WatermarkandHue).\n- Download your PDF embroidery patterns from your Etsy account.\n- Print or transfer the designs to fabric.\n- Start stitching!\n\nFour coordinated globes make a striking holiday wall set, a memorable 2026 keepsake, or an advent-season stitch-along — one globe per week of December. Prefer to start with just one? Each globe is also available individually in the shop — the set gives you all four for less than the price of three.",
       "price": 15.0,
       "quantity": 50
     }
