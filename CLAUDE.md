@@ -23,6 +23,10 @@ a key added once is available everywhere and survives a worktree being recycled.
 no values. **Check it before hunting for a credential**; the answer is usually
 that you already have one.
 
+Vault-only keys (`op://BHD Labs/…`) resolve via the 1Password CLI only from
+Katy's own terminal — agent-spawned shells fail closed. The wrapper-script
+pattern is documented at the top of `.env.example`'s vault section.
+
 ## Rules
 
 **Always-applied (no file trigger):**
