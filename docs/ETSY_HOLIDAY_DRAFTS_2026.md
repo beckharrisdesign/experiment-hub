@@ -18,7 +18,7 @@
 
 ## 1. Christmas Bow — BHD-HLD-001
 
-**Title** (127):
+**Title** (128):
 ```
 Christmas Bow Hand Embroidery Pattern PDF, Holiday Hoop Art for Beginners, Cozy December Stitching, 6 and 8 Inch Hoops, Download
 ```
@@ -146,7 +146,7 @@ This poinsettia makes elegant Christmas wall art, a lovely hostess gift, and a s
 
 ## 5. Snow Globe Christmas Set (bundle of 4) — BHD-HLD-005/006/007 + BHD-XMS-001
 
-**Title** (126):
+**Title** (127):
 ```
 Snow Globe Christmas Embroidery Pattern Set, 4 Hand Embroidery PDF Designs, Snowman Penguin Tree House, Beginner Holiday Bundle
 ```
@@ -159,7 +159,7 @@ snow globe, snow globe pattern, christmas bundle, embroidery set, snowman embroi
 Stitch a whole snow-globe village with this set of four beginner-friendly hand embroidery patterns — a snowman, a penguin, a Christmas tree, and a snowy house, each drawn in clean black line art inside its own snow globe, surrounded by dashed "fa la la la" lettering with "CHRISTMAS 2026" beneath. Please note: the 2026 year text is part of each design, which makes these a keepsake set for this year's season.
 
 What you'll receive (digital download)
-- 4 snow globe designs, each as 2 high-resolution PDF embroidery patterns (black-and-white line art) sized for 6 inch and 8 inch round hoops — 8 printable PDFs in all.
+- 2 high-resolution multi-page PDF embroidery patterns (black-and-white line art): one with all four designs sized for 6 inch hoops, one with all four sized for 8 inch hoops.
 - Printable designs you can trace or transfer to your favorite fabric.
 - Digital files only; no physical item will be shipped.
 
@@ -183,6 +183,6 @@ Four coordinated globes make a striking holiday wall set, a memorable 2026 keeps
 1. ☐ Verify each preview render against its motif (names mislead — render beside the component)
 2. ☐ Generate listing images through the listing-kit scene system per component
 3. ☐ Upload images (`uploadListingImage` — remember rank is an INSERT, verify placement)
-4. ☐ Upload the PDF deliverables (`uploadListingFile`; bundle gets all 8)
+4. ☐ Upload the PDF deliverables (`uploadListingFile`; Etsy caps digital listings at 5 files — the bundle ships as 2 merged multi-page PDFs, one per hoop size, built from the 8 per-design deliverables)
 5. ☐ Set listing SKUs (BHD-HLD-00x pattern) and link the Notion Inventory rows
 6. ☐ Activate from Shop Manager after visual review
