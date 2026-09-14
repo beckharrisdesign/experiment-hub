@@ -34,6 +34,7 @@ const MAX_BYTES = 4.5 * 1024 * 1024; // stay safely under Notion's 5MB single-pa
 const PACING_MS = 350; // Notion allows ~3 requests/second
 const MAX_RETRIES = 5;
 const REQUEST_TIMEOUT_MS = 120_000; // a 2000px PNG on a slow uplink, with margin
+const READ_TIMEOUT_MS = 90_000; // Drive streams cloud-only files on first read
 
 let opts;
 try {
@@ -111,8 +112,27 @@ function skuFor(row) {
   return `WH-UN-S-${last4}`;
 }
 
+/** Abortable Drive read: the CloudStorage mount streams cloud-only files on
+ * first access and can take minutes per file (or stall). Bounded retries,
+ * then the caller skips the file so the run finishes and a rerun resumes.
+ * Bulk-downloading first (Finder: right-click the folder > Make Available
+ * Offline) makes every read instant. */
+async function readWithTimeout(file) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fs.promises.readFile(file, { signal: AbortSignal.timeout(READ_TIMEOUT_MS) });
+    } catch (err) {
+      if (err.name === 'AbortError' && attempt < 2) {
+        console.warn(`   Drive read timed out — retrying (${attempt + 1}/2)`);
+        continue;
+      }
+      throw new Error(`Drive did not materialize ${path.basename(file)} — make the folder Available Offline and rerun`);
+    }
+  }
+}
+
 async function bytesFor(dir, entry) {
-  const raw = fs.readFileSync(path.join(dir, entry.name));
+  const raw = await readWithTimeout(path.join(dir, entry.name));
   if (raw.length <= MAX_BYTES) {
     return { buf: raw, name: entry.name, type: entry.name.match(/\.png$/i) ? 'image/png' : 'image/jpeg' };
   }
@@ -163,7 +183,14 @@ for (const row of rows) {
     const uploaded = [];
     for (const entry of toUpload) {
       process.stdout.write(`   reading ${entry.name} (Drive may stream it down first)...\n`);
-      const payload = await bytesFor(dir, entry);
+      let payload;
+      try {
+        payload = await bytesFor(dir, entry);
+      } catch (err) {
+        failed++;
+        console.error(`   SKIPPED ${entry.name}: ${err.message}`);
+        continue;
+      }
       process.stdout.write(`   uploading ${payload.name} (${(payload.buf.length / 1e6).toFixed(1)}MB)...\n`);
       uploaded.push({ id: await uploadFile(payload), name: payload.name });
       // Re-patch after EVERY upload so a mid-row failure loses nothing.
