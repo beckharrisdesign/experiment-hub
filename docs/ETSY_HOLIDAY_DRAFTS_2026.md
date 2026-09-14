@@ -11,6 +11,7 @@
 | is_supply / type | true / download |
 | quantity | 50 |
 | price | $6.00 classic singles · $8.00 personalizable globes · $15.00 bundle |
+| styles | 2 per listing (scorecard criterion): classics + bundle = Minimalist, Cottagecore; globes = Whimsical, Cottagecore |
 | personalization (globes only) | optional, ≤40 chars, set via `updateListingPersonalization`; custom PDF delivered within 2 business days (SLA is Katy's to confirm) |
 
 **For activation (not the draft):** listing images via the staged galleries (verify each hero against its motif first), then the PDF deliverables via `uploadListingFile`.
@@ -51,9 +52,9 @@ Stitching more than one? All four classic motifs — bow, candy canes, nutcracke
 
 ## 2. Christmas Candy Canes — BHD-HLD-002
 
-**Title** (121):
+**Title** (136):
 ```
-Candy Cane Hand Embroidery Pattern PDF, Christmas Hoop Art with Bow and Holly, Beginner Holiday Craft, 6 and 8 Inch Hoops
+Candy Cane Hand Embroidery Pattern PDF, Christmas Hoop Art with Bow and Holly, Beginner Holiday Craft, Festive Decor, 6 and 8 Inch Hoops
 ```
 **Tags:**
 ```
@@ -115,9 +116,9 @@ Stitching more than one? All four classic motifs — bow, candy canes, nutcracke
 
 ## 4. Christmas Poinsettia — BHD-HLD-004
 
-**Title** (124):
+**Title** (134):
 ```
-Poinsettia Hand Embroidery Pattern PDF, Christmas Flower Hoop Art, Beginner Friendly Festive Decor Craft, 6 and 8 Inch Hoops
+Poinsettia Hand Embroidery Pattern PDF, Christmas Flower Hoop Art, Beginner Friendly Festive Decor Craft, 6 and 8 Inch Hoops, Download
 ```
 **Tags:**
 ```
@@ -147,9 +148,9 @@ Stitching more than one? All four classic motifs — bow, candy canes, nutcracke
 
 ## 5. Personalized Snowman Snow Globe — BHD-XMS-001 · $8 · personalizable
 
-**Title** (129):
+**Title** (134):
 ```
-Personalized Snowman Snow Globe Embroidery Pattern PDF, Custom Text Christmas Hoop Art, Beginner Keepsake Stitching, 6 and 8 Inch
+Personalized Snowman Snow Globe Hand Embroidery Pattern PDF, Custom Text Christmas Hoop Art, Beginner Keepsake Stitching, 6 and 8 Inch
 ```
 **Tags:**
 ```
@@ -184,9 +185,9 @@ Collect the village: the penguin, Christmas tree, and snowy house snow globes ar
 
 ## 6. Personalized Penguin Snow Globe — BHD-HLD-006 · $8 · personalizable
 
-**Title** (129):
+**Title** (134):
 ```
-Personalized Penguin Snow Globe Embroidery Pattern PDF, Custom Text Christmas Hoop Art, Cute Holiday Keepsake, 6 and 8 Inch Hoops
+Personalized Penguin Snow Globe Hand Embroidery Pattern PDF, Custom Text Christmas Hoop Art, Cute Holiday Keepsake, 6 and 8 Inch Hoops
 ```
 **Tags:**
 ```
@@ -221,9 +222,9 @@ Collect the village: the snowman, Christmas tree, and snowy house snow globes ar
 
 ## 7. Personalized Christmas Tree Snow Globe — BHD-HLD-007 · $8 · personalizable
 
-**Title** (129):
+**Title** (134):
 ```
-Personalized Christmas Tree Snow Globe Embroidery Pattern PDF, Custom Text Festive Hoop Art, Holiday Keepsake, 6 and 8 Inch Hoops
+Personalized Christmas Tree Snow Globe Hand Embroidery Pattern PDF, Custom Text Festive Hoop Art, Holiday Keepsake, 6 and 8 Inch Hoops
 ```
 **Tags:**
 ```
@@ -258,9 +259,9 @@ Collect the village: the snowman, penguin, and snowy house snow globes are also 
 
 ## 8. Personalized Snowy House Snow Globe — BHD-HLD-005 · $8 · personalizable
 
-**Title** (128):
+**Title** (133):
 ```
-Personalized Snowy House Snow Globe Embroidery Pattern PDF, Custom Text Christmas Village Hoop Art, Keepsake, 6 and 8 Inch Hoops
+Personalized Snowy House Snow Globe Hand Embroidery Pattern PDF, Custom Text Christmas Village Hoop Art, Keepsake, 6 and 8 Inch Hoops
 ```
 **Tags:**
 ```
@@ -327,12 +328,142 @@ Prefer to start with just one? Each classic motif is also available individually
 
 ---
 
+## Alt-text pack (apply AFTER image upload — uploads wipe alt)
+
+*One line per gallery role, generated from each component's visual description. Machine-readable copy lives in `experiments/etsy-notion-sync/prototype/holiday_alt_text_2026.json` for the image-upload tooling; these are the same lines, paste-ready.*
+
+### Christmas Bow
+
+- `hero`: Hand embroidery pattern: a black outline Christmas bow with looped sides and long trailing tails, centered on pale fabric in a round wooden hoop
+- `lifestyle`: Embroidery hoop with a black outline Christmas bow with looped sides and long trailing tails, styled in a cozy home setting
+- `scale`: A black outline Christmas bow with looped sides and long trailing tails embroidery pattern shown at scale in a hoop with a size reference
+- `transferring`: A black outline Christmas bow with looped sides and long trailing tails pattern being traced onto fabric for transfer
+- `badge`: WatermarkandHue shop badge for the Christmas bow embroidery pattern
+- `content-tl`: Close-up detail of a black outline Christmas bow with looped sides and long trailing tails, upper section of the design
+- `content-bl`: Close-up detail of a black outline Christmas bow with looped sides and long trailing tails, lower section of the design
+- `content-center`: Close-up detail of a black outline Christmas bow with looped sides and long trailing tails, center of the design
+- `content-suggestions-4up`: Four styling and color suggestions for the Christmas bow pattern
+- `faq-1`: FAQ card: what you receive with the Christmas bow digital download
+- `faq-2`: FAQ card: how to print and transfer the Christmas bow pattern
+- `faq-3`: FAQ card: hoop sizes and skill level for the Christmas bow pattern
+
+### Christmas Candy Canes
+
+- `hero`: Hand embroidery pattern: two crossed candy canes with a bow and holly leaves in black line art, centered on pale fabric in a round wooden hoop
+- `lifestyle`: Embroidery hoop with two crossed candy canes with a bow and holly leaves in black line art, styled in a cozy home setting
+- `scale`: Two crossed candy canes with a bow and holly leaves in black line art embroidery pattern shown at scale in a hoop with a size reference
+- `transferring`: Two crossed candy canes with a bow and holly leaves in black line art pattern being traced onto fabric for transfer
+- `badge`: WatermarkandHue shop badge for the candy cane embroidery pattern
+- `content-tl`: Close-up detail of two crossed candy canes with a bow and holly leaves in black line art, upper section of the design
+- `content-bl`: Close-up detail of two crossed candy canes with a bow and holly leaves in black line art, lower section of the design
+- `content-center`: Close-up detail of two crossed candy canes with a bow and holly leaves in black line art, center of the design
+- `content-suggestions-4up`: Four styling and color suggestions for the candy cane pattern
+- `faq-1`: FAQ card: what you receive with the candy cane digital download
+- `faq-2`: FAQ card: how to print and transfer the candy cane pattern
+- `faq-3`: FAQ card: hoop sizes and skill level for the candy cane pattern
+
+### Christmas Nutcracker
+
+- `hero`: Hand embroidery pattern: a black line art nutcracker with a tall banded hat and buttoned jacket, centered on pale fabric in a round wooden hoop
+- `lifestyle`: Embroidery hoop with a black line art nutcracker with a tall banded hat and buttoned jacket, styled in a cozy home setting
+- `scale`: A black line art nutcracker with a tall banded hat and buttoned jacket embroidery pattern shown at scale in a hoop with a size reference
+- `transferring`: A black line art nutcracker with a tall banded hat and buttoned jacket pattern being traced onto fabric for transfer
+- `badge`: WatermarkandHue shop badge for the nutcracker embroidery pattern
+- `content-tl`: Close-up detail of a black line art nutcracker with a tall banded hat and buttoned jacket, upper section of the design
+- `content-bl`: Close-up detail of a black line art nutcracker with a tall banded hat and buttoned jacket, lower section of the design
+- `content-center`: Close-up detail of a black line art nutcracker with a tall banded hat and buttoned jacket, center of the design
+- `content-suggestions-4up`: Four styling and color suggestions for the nutcracker pattern
+- `faq-1`: FAQ card: what you receive with the nutcracker digital download
+- `faq-2`: FAQ card: how to print and transfer the nutcracker pattern
+- `faq-3`: FAQ card: hoop sizes and skill level for the nutcracker pattern
+
+### Christmas Poinsettia
+
+- `hero`: Hand embroidery pattern: a layered pointed-petal poinsettia flower in black line art, centered on pale fabric in a round wooden hoop
+- `lifestyle`: Embroidery hoop with a layered pointed-petal poinsettia flower in black line art, styled in a cozy home setting
+- `scale`: A layered pointed-petal poinsettia flower in black line art embroidery pattern shown at scale in a hoop with a size reference
+- `transferring`: A layered pointed-petal poinsettia flower in black line art pattern being traced onto fabric for transfer
+- `badge`: WatermarkandHue shop badge for the poinsettia embroidery pattern
+- `content-tl`: Close-up detail of a layered pointed-petal poinsettia flower in black line art, upper section of the design
+- `content-bl`: Close-up detail of a layered pointed-petal poinsettia flower in black line art, lower section of the design
+- `content-center`: Close-up detail of a layered pointed-petal poinsettia flower in black line art, center of the design
+- `content-suggestions-4up`: Four styling and color suggestions for the poinsettia pattern
+- `faq-1`: FAQ card: what you receive with the poinsettia digital download
+- `faq-2`: FAQ card: how to print and transfer the poinsettia pattern
+- `faq-3`: FAQ card: hoop sizes and skill level for the poinsettia pattern
+
+### Personalized Snowman Snow Globe
+
+- `hero`: Hand embroidery pattern: a snowman inside a snow globe with falling snow dots and fa la la lettering, centered on pale fabric in a round wooden hoop
+- `lifestyle`: Embroidery hoop with a snowman inside a snow globe with falling snow dots and fa la la lettering, styled in a cozy home setting
+- `scale`: A snowman inside a snow globe with falling snow dots and fa la la lettering embroidery pattern shown at scale in a hoop with a size reference
+- `transferring`: A snowman inside a snow globe with falling snow dots and fa la la lettering pattern being traced onto fabric for transfer
+- `badge`: WatermarkandHue shop badge for the snowman snow globe embroidery pattern
+- `content-tl`: Close-up detail of a snowman inside a snow globe with falling snow dots and fa la la lettering, upper section of the design
+- `content-bl`: Close-up detail of a snowman inside a snow globe with falling snow dots and fa la la lettering, lower section of the design
+- `content-center`: Close-up detail of a snowman inside a snow globe with falling snow dots and fa la la lettering, center of the design
+- `content-suggestions-4up`: Four styling and color suggestions for the snowman snow globe pattern
+- `faq-1`: FAQ card: what you receive with the snowman snow globe digital download
+- `faq-2`: FAQ card: how to print and transfer the snowman snow globe pattern
+- `faq-3`: FAQ card: hoop sizes and skill level for the snowman snow globe pattern
+
+### Personalized Penguin Snow Globe
+
+- `hero`: Hand embroidery pattern: a penguin inside a snow globe with fa la la lettering, centered on pale fabric in a round wooden hoop
+- `lifestyle`: Embroidery hoop with a penguin inside a snow globe with fa la la lettering, styled in a cozy home setting
+- `scale`: A penguin inside a snow globe with fa la la lettering embroidery pattern shown at scale in a hoop with a size reference
+- `transferring`: A penguin inside a snow globe with fa la la lettering pattern being traced onto fabric for transfer
+- `badge`: WatermarkandHue shop badge for the penguin snow globe embroidery pattern
+- `content-tl`: Close-up detail of a penguin inside a snow globe with fa la la lettering, upper section of the design
+- `content-bl`: Close-up detail of a penguin inside a snow globe with fa la la lettering, lower section of the design
+- `content-center`: Close-up detail of a penguin inside a snow globe with fa la la lettering, center of the design
+- `content-suggestions-4up`: Four styling and color suggestions for the penguin snow globe pattern
+- `faq-1`: FAQ card: what you receive with the penguin snow globe digital download
+- `faq-2`: FAQ card: how to print and transfer the penguin snow globe pattern
+- `faq-3`: FAQ card: hoop sizes and skill level for the penguin snow globe pattern
+
+### Personalized Christmas Tree Snow Globe
+
+- `hero`: Hand embroidery pattern: a Christmas tree inside a snow globe with scattered snow dots, centered on pale fabric in a round wooden hoop
+- `lifestyle`: Embroidery hoop with a Christmas tree inside a snow globe with scattered snow dots, styled in a cozy home setting
+- `scale`: A Christmas tree inside a snow globe with scattered snow dots embroidery pattern shown at scale in a hoop with a size reference
+- `transferring`: A Christmas tree inside a snow globe with scattered snow dots pattern being traced onto fabric for transfer
+- `badge`: WatermarkandHue shop badge for the Christmas tree snow globe embroidery pattern
+- `content-tl`: Close-up detail of a Christmas tree inside a snow globe with scattered snow dots, upper section of the design
+- `content-bl`: Close-up detail of a Christmas tree inside a snow globe with scattered snow dots, lower section of the design
+- `content-center`: Close-up detail of a Christmas tree inside a snow globe with scattered snow dots, center of the design
+- `content-suggestions-4up`: Four styling and color suggestions for the Christmas tree snow globe pattern
+- `faq-1`: FAQ card: what you receive with the Christmas tree snow globe digital download
+- `faq-2`: FAQ card: how to print and transfer the Christmas tree snow globe pattern
+- `faq-3`: FAQ card: hoop sizes and skill level for the Christmas tree snow globe pattern
+
+### Personalized Snowy House Snow Globe
+
+- `hero`: Hand embroidery pattern: a snowy house inside a snow globe with a small tree beside it, centered on pale fabric in a round wooden hoop
+- `lifestyle`: Embroidery hoop with a snowy house inside a snow globe with a small tree beside it, styled in a cozy home setting
+- `scale`: A snowy house inside a snow globe with a small tree beside it embroidery pattern shown at scale in a hoop with a size reference
+- `transferring`: A snowy house inside a snow globe with a small tree beside it pattern being traced onto fabric for transfer
+- `badge`: WatermarkandHue shop badge for the snowy house snow globe embroidery pattern
+- `content-tl`: Close-up detail of a snowy house inside a snow globe with a small tree beside it, upper section of the design
+- `content-bl`: Close-up detail of a snowy house inside a snow globe with a small tree beside it, lower section of the design
+- `content-center`: Close-up detail of a snowy house inside a snow globe with a small tree beside it, center of the design
+- `content-suggestions-4up`: Four styling and color suggestions for the snowy house snow globe pattern
+- `faq-1`: FAQ card: what you receive with the snowy house snow globe digital download
+- `faq-2`: FAQ card: how to print and transfer the snowy house snow globe pattern
+- `faq-3`: FAQ card: hoop sizes and skill level for the snowy house snow globe pattern
+
+### Christmas Classics Set (bundle of 4)
+
+- `hero`: Hand embroidery pattern set: four classic Christmas motifs — bow, candy canes, nutcracker, and poinsettia — in black line art
+- `grid`: Four embroidery hoops showing the bow, candy cane, nutcracker, and poinsettia patterns together
+
 ## After the drafts exist (activation checklist)
 
 1. ☐ Verify each hero render against its motif (names mislead — render beside the component)
-2. ☐ Set personalization on the four globe drafts via `updateListingPersonalization` (optional, ≤40 chars — the creator script handles this)
+2. ☐ Verify styles (2 per listing) and the globes' personalization in Shop Manager — both are set by the creator script
 3. ☐ Confirm the 2-business-day custom-file SLA (drafted default — change it in the descriptions if it doesn't fit your week)
-4. ☐ Upload listing images from the staged galleries (`uploadListingImage` — rank is an INSERT, verify placement)
-5. ☐ Upload the PDF deliverables (`uploadListingFile`; Etsy caps digital listings at 5 files — the Classics bundle ships as 2 merged multi-page PDFs, one per hoop size, built from the 8 per-design deliverables)
-6. ☐ Set listing SKUs (BHD-HLD-00x pattern) and stamp Etsy Listing IDs into the staged Listing Inventory rows (bundle gets one new Bundle row)
-7. ☐ Activate from Shop Manager after visual review
+4. ☐ Upload listing images from the staged galleries (`uploadListingImage` — rank is an INSERT, verify placement; 12 of 20 slots per listing — matches the shop's house standard, 8 slots stay open for a future second scene set)
+5. ☐ Apply the alt-text pack above to every uploaded image (uploads wipe alt — apply after)
+6. ☐ Upload the PDF deliverables (`uploadListingFile`; Etsy caps digital listings at 5 files — the Classics bundle ships as 2 merged multi-page PDFs, one per hoop size, built from the 8 per-design deliverables)
+7. ☐ Set listing SKUs (BHD-HLD-00x pattern) and stamp Etsy Listing IDs into the staged Listing Inventory rows (bundle gets one new Bundle row)
+8. ☐ Activate from Shop Manager after visual review
