@@ -77,7 +77,7 @@ Read (directional — $0.25 total spend): a clean CTR gradient. Specific descrip
 
 Two channels, both anchored to the day edits land:
 
-**Organic (automatic):** the daily sync snapshots title, tags, views, favorites — intervention date and every delta recorded with no new code. 30-day window, day-14 sanity check. Compare treatment vs control mean views/30d and favorites; confirm protected listings didn't dip.
+**Organic (automatic):** the daily sync snapshots title, tags, views, favorites — intervention date and every delta recorded with no new code. Etsy's `views` and `num_favorers` are **cumulative counters**, so every metric here is a window delta, never a raw total: for each listing, `views_delta = views(day 30) − views(day 0)` computed from `etsy_listing_snapshots` (per listing, max of the day's snapshots), where day 0 is the day edits land and day 30 closes the window; favorites likewise. Compare treatment vs control mean `views_delta`; day-14 sanity check uses the same subtraction; confirm protected listings' deltas didn't dip vs their baseline-30d deltas.
 
 **Ads (manual bookends):** at day 30, re-capture the same panels — the 7 baseline rows above plus each treatment listing's panel. Look for (a) targeted keywords shifting from generic terms toward each listing's new specific descriptor, and (b) CTR on treatment listings' keywords moving off 0%. Also re-export Search Analytics (Shop Manager → Stats → Search analytics) for the organic term list.
 

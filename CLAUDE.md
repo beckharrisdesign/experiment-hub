@@ -23,13 +23,9 @@ a key added once is available everywhere and survives a worktree being recycled.
 no values. **Check it before hunting for a credential**; the answer is usually
 that you already have one.
 
-Vault-only keys (`op://BHD Labs/…` in the registry) come via the 1Password CLI —
-but `op` only authenticates from Katy's own terminal: the app integration
-authorizes per calling app, and agent-spawned shells fail with "No accounts
-configured". For a script that needs vault secrets, wrap the `op read` calls in
-a small runner (secrets → env vars, print results only, never values), hand
-Katy one fenced `bash` command to run in her terminal, and read the output back
-from there.
+Vault-only keys (`op://BHD Labs/…`) resolve via the 1Password CLI only from
+Katy's own terminal — agent-spawned shells fail closed. The wrapper-script
+pattern is documented at the top of `.env.example`'s vault section.
 
 ## Rules
 
