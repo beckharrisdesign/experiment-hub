@@ -26,7 +26,9 @@ import {
   parseArgs, orderGallery, resumePlan, buildImagesPatch, ROLE_ORDER,
 } from './notion-gallery-sync-lib.mjs';
 
-const DRIVE_ROOT =
+// GALLERY_ROOT overrides the Drive mount — e.g. a locally unzipped copy of
+// the W+H Listings folder when DriveFS won't materialize files.
+const DRIVE_ROOT = process.env.GALLERY_ROOT ||
   '/Users/katybharris/Library/CloudStorage/GoogleDrive-katy@beckharrisdesign.com/My Drive/W+H Listings/W+H Listings';
 const NOTION = 'https://api.notion.com/v1';
 const NOTION_VERSION = '2022-06-28';
