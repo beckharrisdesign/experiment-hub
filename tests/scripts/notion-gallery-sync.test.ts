@@ -59,3 +59,18 @@ describe('shouldSkipRow', () => {
     expect(shouldSkipRow(0, 0)).toBe(false);
   });
 });
+
+describe('skip decision via resumePlan (scratch attachments cannot hide gaps)', () => {
+  it('still uploads a missing role when unrelated attachments inflate the count', () => {
+    const existing = [
+      { name: 'Listing-X-hero.jpg', type: 'file', file: { url: 'u' } },
+      { name: 'Listing-X-wip-01.png', type: 'file', file: { url: 'u' } },
+    ];
+    const entries = [
+      { role: 'hero', name: 'Listing-X-hero.png' },
+      { role: 'scale', name: 'Listing-X-scale.png' },
+    ];
+    const plan = resumePlan(existing, entries);
+    expect(plan.toUpload.map((e: { role: string }) => e.role)).toEqual(['scale']);
+  });
+});
