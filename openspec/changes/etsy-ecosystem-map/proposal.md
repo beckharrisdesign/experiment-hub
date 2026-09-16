@@ -19,6 +19,8 @@ The ecosystem grew faster than its own record. In one week it gained write tooli
 
 `docs/ETSY_ECOSYSTEM_MAP_2026-09.md` (the September snapshot: 12 sections from Figma design through sync, evaluation, sweeps, and the in-flight Stitch Check line) graduates from a dated document into a living capability with requirements — what the map must always answer, who updates it when a surface changes, and how the fragment layers get codified. The standards layer (W&H shop design system: image principles + content principles, the MVDS-expressed instance) becomes its own named capability with a codification path.
 
+**Distilled data model — designed for the automated future, not the manual present.** Every intelligence pull (eRank, Search Analytics, ads panels, revenue, future sources) distills into one source-agnostic shape: what was measured, about which subject (shop / listing / tag / competitor), when, by which source, with what limits — plus the findings prose. Today Katy's manual captures fill that shape by hand (`docs/pulls/` notes, first instance: eRank 2026-09-15); as pulls become structured exports or API calls, scripts fill the same shape and nothing downstream changes. The capture ritual is an implementation detail; the model is the contract that monthly reviews, experiment readouts, and any future tooling consume.
+
 ## Measurement
 
 **Primary — ecosystem completeness**, two instruments:
