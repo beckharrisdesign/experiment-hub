@@ -70,7 +70,7 @@
   "comment_files": "PDF deliverables: each listing ships its component's 6in and 8in printables. Globes use the '-wishes' variant (the as-shown design with CHRISTMAS 2026 text, per the listing copy); 'holiday-globe-snowman-plain' is the blank-banner master for fulfilling custom personalization orders and is NOT uploaded.",
   "shop_sections": {
     "comment": "Etsy allows ONE section per listing. Fill in the numeric ids from Shop Manager (the id is in the URL when you open a section), then run scripts/run-assign-sections.sh.",
-    "Holiday": null,
-    "Personalized": null
+    "Holiday": 60384454,
+    "Personalized": 60384456
   }
 }
