@@ -234,7 +234,7 @@ describe("brush tags in outline mode", () => {
     for (const fillMode of ["fill", "outline"] as const) {
       expect(() =>
         convertSvg(BRUSHED_FILL, { ...OPTS, fillMode }),
-      ).toThrow(/badge st-brush-cross.*filled shape tagged st-brush/s);
+      ).toThrow(/badge st-brush-cross[\s\S]*filled shape tagged st-brush/);
     }
   });
 
