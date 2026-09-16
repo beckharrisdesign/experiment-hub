@@ -2,12 +2,12 @@
 
 *Every surface that comes together in a Watermark & Hue component or listing: where each lives, what feeds it, and what it feeds. Snapshot of live state at the bottom.*
 
-*Diagram mirrors FigJam board `ln6p2z1vppiTdqDPNVdoOZ`, page v5 — the board is the primary review surface.*
+*Diagram mirrors FigJam board `ln6p2z1vppiTdqDPNVdoOZ`, page v5 — the board is the primary review surface. The shop appears twice by design: one WatermarkandHue shop, drawn as a read view (feeding sync + evaluation) and a write view (receiving the gated tooling) so the loop reads left-to-right without crossing connectors.*
 
 ```mermaid
 flowchart LR
     subgraph dataMeasure ["Data and measurement, one domain"]
-        etsyData(("Etsy shop"))
+        etsyData(("Etsy shop, read view"))
         supabase[("Durable store: Supabase, UI-light by design")]
         bookends[/"Manual bookends: Search Analytics, ads, statements"/]
         external[/"External: eRank, Marmalead, Google Ads"/]
@@ -47,7 +47,7 @@ flowchart LR
         uploadImages[["Upload images + alt"]]
     end
 
-    etsyMain(("Etsy shop"))
+    etsyMain(("Etsy shop, write view"))
     stitch["Stitch Check, in flight"]
 
     base -.->|"Image principles as components"| templates
@@ -87,7 +87,7 @@ flowchart LR
 
 ## 1. Design system layer — role, not vendor (today: Figma)
 
-Not "design in Figma" — the **design system layer**: visual principles, assets, content principles, and styles as one domain, with Figma as its current home. MVDS is the base plus Etsy-specific extensions. The layer holds where artwork is born *and* where the **listing gallery template system lives** — the galleries are instances of a Figma component library, not ad-hoc renders; the code-side generator consumes this library's exports. The content principles (copy rules, house style, alt-text templates) belong to this layer too: Writing (§5) is the drafting activity, this layer owns the rules that govern it.
+Not "design in Figma" — the **design system layer**: visual principles, assets, content principles, and styles as one domain, with Figma as its current home. MVDS is the base plus Etsy-specific extensions. The layer holds where artwork is born *and* where the **listing gallery template system lives** — the 12-role galleries in Drive are exports of `Layouts` instances composed in Figma, not ad-hoc renders. That Figma→Drive workflow is distinct from the code-side generators (`lib/etsy-listing-kit/generator.ts`'s 6-scene pack, `scenes.ts`'s 10-image ladder), which are a separate production path over the same template photography; the map keeps both traceable rather than crediting one with the other's output. The content principles (copy rules, house style, alt-text templates) belong to this layer too: Writing (§5) is the drafting activity, this layer owns the rules that govern it.
 
 | Surface | Where | Role |
 |---|---|---|
