@@ -55,7 +55,7 @@ Closing all three roughly doubles the completeness number, which is the ecosyste
 These are here only so they aren't forgotten; none of them touch the experiment.
 
 - ☐ Attach the bundle's gallery images in Notion: its gallery sits at Drive `_staging/WH-UN-B-STAGING` but the sync looks for the SKU folder (`WH-UN-S-C3DD`), so it never matches. Rename/move the folder, update `holiday_listing_ids.json`, rerun the gallery sync. The images are already correct on Etsy.
-- ☐ Assign the 9 holiday listings to **Holiday** / **Personalized** once those section ids exist (`scripts/run-assign-sections.sh`).
+- ✅ ~~Assign the 9 holiday listings to Holiday / Personalized~~ — done 2026-09-16 (Holiday 60384454, Personalized 60384456).
 - ☐ Fill the four partial gallery folders (WH-UN-S-3453 / -8779 / -CA26 / -DF8E) — each has the six photo-derived roles and is missing its six template-card roles.
 - ☐ Label the 9 external eRank audit shops in [the eRank pull](pulls/2026-09-15-erank.md).
 

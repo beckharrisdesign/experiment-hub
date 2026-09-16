@@ -210,5 +210,6 @@ Not yet wired into the listing pipeline, but pointed straight at it. **Stitch Ch
 | Notion ID stamping | ✅ Done 2026-09-16 — 8 staged rows stamped by hand, then a manual sync matched all 8 in place (no duplicates) and created the bundle row |
 | Manual sync | ✅ Ran 2026-09-16 — 22 updates, 1 create; all 9 holiday listings carry live Etsy data (`scripts/run-sync-now.sh`) |
 | Duplicate Garden Markers drafts | ✅ Deleted 2026-09-16 — and the sync no longer resurfaces them: deleted listings now drop out of the latest-capture filter (`conflicts: 0`) |
+| Shop sections | ✅ All 36 active listings categorized 2026-09-16 — Holiday 60384454 (5), Personalized 60384456 (4), patterns 21751592 (21), Grandma Hobbies 59859093 (6); zero uncategorized |
 | Next release | 🗓 **[2026-10-15](ETSY_RELEASE_2026-10-15.md)** — day 30 of the experiment; catalog re-sectioning, P4/P5, and the completeness sweep accumulate there rather than disturbing the running window |
 | PR #478 | ✅ Merged — runners and hardened tooling on main |
