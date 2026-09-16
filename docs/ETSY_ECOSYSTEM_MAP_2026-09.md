@@ -201,9 +201,10 @@ Not yet wired into the listing pipeline, but pointed straight at it. **Stitch Ch
 |---|---|
 | Notion galleries | ✅ Complete — 38 rows, full 12-role sets |
 | Holiday drafts | ✅ 9 created on Etsy (text + styles) |
-| Globe personalization | ☐ Repair pending (`--personalize-ids` command ready) |
-| Draft images on Etsy | ☐ Uploader built + tested; run pending |
+| Globe personalization | ✅ Set on all 4 globes 2026-09-16 |
+| Draft images on Etsy | ✅ 102 images uploaded with alt text 2026-09-16 — 8 listings × 12 roles + bundle × 6, ranks verified 1..n on every listing |
 | Experiment running | ✅ Intervention applied and verified — all 13 listings match the approved copy exactly in the 2026-09-15 snapshot (titles 13/13, tag sets 13/13); write bounded to 09-14 11:31 UTC → 09-15 10:52 UTC. Day 0 = the 09-15 snapshot; day 14 = 2026-09-29, day 30 = 2026-10-15 |
-| PDF files on drafts | ☐ Not started (bundle needs 2 merged PDFs first) |
+| Bundle PDFs | ✅ Built 2026-09-16 — `Printable-christmas-classics-set-{6in,8in}.pdf`, 4 pages each, page order and hoop size verified by render (`scripts/merge-bundle-pdfs.py`) |
+| PDF files on drafts | ☐ Upload pending — `uploadListingFile`, 8 singles + the 2 bundle PDFs |
 | Notion ID stamping | ☐ Pending — write the 9 draft ids into staged rows before their next-sync auto-create |
 | PR #478 | ✅ Merged — runners and hardened tooling on main |
