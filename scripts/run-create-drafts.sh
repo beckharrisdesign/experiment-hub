@@ -18,4 +18,4 @@ export ETSY_SHARED_SECRET="$(op read 'op://BHD Labs/Etsy/shared secret')"
 export ETSY_SHOP_ID="$(op read 'op://BHD Labs/Etsy/shop id')"
 export SUPABASE_URL="https://ulqdjuiffpazzixnwwso.supabase.co"
 export SUPABASE_SERVICE_ROLE_KEY="$(op read 'op://BHD Labs/Supabase experiment-hub/service role key')"
-exec ./.venv/bin/python create_draft_listings.py --apply
+exec ./.venv/bin/python create_draft_listings.py --apply "$@"

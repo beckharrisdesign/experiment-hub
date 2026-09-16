@@ -59,6 +59,34 @@ def validate(payload):
     return errors
 
 
+
+
+def personalization_body(pers):
+    """updateListingPersonalization wants a JSON personalization_questions
+    array (one text_input question here), not flat listing fields."""
+    return {
+        "personalization_questions": [{
+            "question_text": "Custom text for your pattern",
+            "instructions": pers["instructions"],
+            "question_type": "text_input",
+            "required": bool(pers.get("is_required")),
+            "max_allowed_characters": pers.get("char_count_max", 40),
+        }],
+    }
+
+
+def set_personalization(shop_id, lid, pers, headers, post=requests.post):
+    """Returns an error string, or None on success."""
+    purl = "{}/v3/application/shops/{}/listings/{}/personalization".format(API_BASE, shop_id, lid)
+    jheaders = dict(headers, **{"Content-Type": "application/json"})
+    try:
+        presp = post(purl, headers=jheaders, json=personalization_body(pers), timeout=30)
+    except requests.RequestException as exc:
+        return str(exc)
+    if presp.status_code not in (200, 201):
+        return "HTTP {} {}".format(presp.status_code, presp.text[:200])
+    return None
+
 def create_drafts(payload, shop_id, headers, post=requests.post, sleep=time.sleep):
     """POST each draft; verify the response is a draft echoing the sent title.
 
@@ -104,23 +132,10 @@ def create_drafts(payload, shop_id, headers, post=requests.post, sleep=time.slee
         lid = body["listing_id"]
         pers = e.get("personalization")
         if pers:
-            purl = "{}/v3/application/shops/{}/listings/{}/personalization".format(API_BASE, shop_id, lid)
-            pdata = {
-                "is_personalizable": "true",
-                "personalization_is_required": "true" if pers.get("is_required") else "false",
-                "personalization_char_count_max": pers.get("char_count_max", 40),
-                "personalization_instructions": pers["instructions"],
-            }
-            try:
-                presp = post(purl, headers=headers, data=pdata, timeout=30)
-            except requests.RequestException as exc:
+            err = set_personalization(shop_id, lid, pers, headers, post=post)
+            if err:
                 failed += 1
-                log.error("PERSONALIZATION FAILED on %s (listing %s): %s — set it in Shop Manager", e["name"], lid, exc)
-                continue
-            if presp.status_code not in (200, 201):
-                failed += 1
-                log.error("PERSONALIZATION FAILED on %s (listing %s): HTTP %s %s — set it in Shop Manager",
-                          e["name"], lid, presp.status_code, presp.text[:200])
+                log.error("PERSONALIZATION FAILED on %s (listing %s): %s — set it in Shop Manager", e["name"], lid, err)
                 continue
         created.append((e["name"], lid))
         log.info("created draft %s -> listing %s%s", e["name"], lid,
@@ -135,6 +150,9 @@ def main():
     parser.add_argument("--payload", default="holiday_drafts_2026.json")
     parser.add_argument("--apply", action="store_true",
                         help="create the drafts after typing 'create' at the prompt (default: dry run)")
+    parser.add_argument("--personalize-ids",
+                        help="repair mode: comma-separated listing ids to receive personalization, "
+                             "zipped in order with the payload's personalizable entries; creates NO drafts")
     args = parser.parse_args()
 
     load_env()
@@ -154,6 +172,34 @@ def main():
         for e in errors:
             log.error(e)
         raise SystemExit("payload failed validation — nothing was sent to Etsy")
+
+    if args.personalize_ids:
+        ids = [int(x) for x in args.personalize_ids.split(",") if x.strip()]
+        pers_entries = [e for e in payload["listings"] if e.get("personalization")]
+        if len(ids) != len(pers_entries):
+            raise SystemExit("{} ids given but payload has {} personalizable listings".format(
+                len(ids), len(pers_entries)))
+        for e, lid in zip(pers_entries, ids):
+            print("  {} -> listing {}".format(e["name"], lid))
+        answer = input("Type 'personalize' to set personalization on these {} listings: ".format(len(ids)))
+        if answer.strip().lower() != "personalize":
+            raise SystemExit("aborted — nothing written")
+        from scheduled_run import refresh_tokens_from_store as _r
+        from store_supabase import SupabaseStore as _S
+        _backend = _S(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_ROLE_KEY"])
+        _token = _r(_backend, api_key)
+        _headers = {"x-api-key": "{}:{}".format(api_key, shared_secret),
+                    "Authorization": "Bearer {}".format(_token)}
+        bad = 0
+        for e, lid in zip(pers_entries, ids):
+            err = set_personalization(shop_id, lid, e["personalization"], _headers)
+            if err:
+                bad += 1
+                log.error("FAILED %s (listing %s): %s", e["name"], lid, err)
+            else:
+                log.info("personalization set on %s (listing %s)", e["name"], lid)
+            time.sleep(WRITE_PACING_SECONDS)
+        raise SystemExit("{} of {} failed".format(bad, len(ids)) if bad else None)
 
     print("\nPlan — {} DRAFT listings (invisible to buyers until activated):\n".format(len(payload["listings"])))
     for e in payload["listings"]:
