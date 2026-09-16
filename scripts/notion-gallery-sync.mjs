@@ -23,16 +23,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import {
-  parseArgs, orderGallery, resumePlan, buildImagesPatch, shouldSkipRow,
+  parseArgs, orderGallery, resumePlan, buildImagesPatch, ROLE_ORDER,
 } from './notion-gallery-sync-lib.mjs';
 
-const DRIVE_ROOT =
+// GALLERY_ROOT overrides the Drive mount — e.g. a locally unzipped copy of
+// the W+H Listings folder when DriveFS won't materialize files.
+const DRIVE_ROOT = process.env.GALLERY_ROOT ||
   '/Users/katybharris/Library/CloudStorage/GoogleDrive-katy@beckharrisdesign.com/My Drive/W+H Listings/W+H Listings';
 const NOTION = 'https://api.notion.com/v1';
 const NOTION_VERSION = '2022-06-28';
 const MAX_BYTES = 4.5 * 1024 * 1024; // stay safely under Notion's 5MB single-part cap
 const PACING_MS = 350; // Notion allows ~3 requests/second
 const MAX_RETRIES = 5;
+const REQUEST_TIMEOUT_MS = 120_000; // a 2000px PNG on a slow uplink, with margin
+const READ_TIMEOUT_MS = 90_000; // Drive streams cloud-only files on first read
 
 let opts;
 try {
@@ -52,10 +56,19 @@ if (!token || !dbId) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** Shared fetch: pacing + bounded 429/Retry-After retries for EVERY Notion call. */
-async function notionFetch(url, init) {
+async function notionFetch(url, init, { retryOnTimeout = true } = {}) {
   for (let attempt = 0; ; attempt++) {
     await sleep(PACING_MS);
-    const resp = await fetch(url, init);
+    let resp;
+    try {
+      resp = await fetch(url, { ...init, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
+    } catch (err) {
+      if (retryOnTimeout && attempt < MAX_RETRIES) {
+        console.warn(`   request ${err.name === 'TimeoutError' ? 'timed out' : 'failed'} — retrying (${attempt + 1}/${MAX_RETRIES})`);
+        continue;
+      }
+      throw err;
+    }
     if (resp.status === 429 && attempt < MAX_RETRIES) {
       const after = Number(resp.headers.get('retry-after')) || 2 ** attempt;
       console.warn(`   429 — waiting ${after}s (attempt ${attempt + 1}/${MAX_RETRIES})`);
@@ -101,8 +114,27 @@ function skuFor(row) {
   return `WH-UN-S-${last4}`;
 }
 
+/** Abortable Drive read: the CloudStorage mount streams cloud-only files on
+ * first access and can take minutes per file (or stall). Bounded retries,
+ * then the caller skips the file so the run finishes and a rerun resumes.
+ * Bulk-downloading first (Finder: right-click the folder > Make Available
+ * Offline) makes every read instant. */
+async function readWithTimeout(file) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fs.promises.readFile(file, { signal: AbortSignal.timeout(READ_TIMEOUT_MS) });
+    } catch (err) {
+      if (err.name === 'AbortError' && attempt < 2) {
+        console.warn(`   Drive read timed out — retrying (${attempt + 1}/2)`);
+        continue;
+      }
+      throw new Error(`Drive did not materialize ${path.basename(file)} — make the folder Available Offline and rerun`);
+    }
+  }
+}
+
 async function bytesFor(dir, entry) {
-  const raw = fs.readFileSync(path.join(dir, entry.name));
+  const raw = await readWithTimeout(path.join(dir, entry.name));
   if (raw.length <= MAX_BYTES) {
     return { buf: raw, name: entry.name, type: entry.name.match(/\.png$/i) ? 'image/png' : 'image/jpeg' };
   }
@@ -117,11 +149,13 @@ async function uploadFile({ buf, name, type }) {
   });
   const form = new FormData();
   form.append('file', new Blob([buf], { type }), name);
+  // No timeout replay here: /send is not idempotent. A timeout fails this
+  // file; the rerun creates a fresh upload object and the orphan expires.
   const resp = await notionFetch(`${NOTION}/file_uploads/${created.id}/send`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Notion-Version': NOTION_VERSION },
     body: form,
-  });
+  }, { retryOnTimeout: false });
   if (!resp.ok) throw new Error(`file upload send ${name} -> ${resp.status}: ${(await resp.text()).slice(0, 200)}`);
   return created.id;
 }
@@ -133,23 +167,35 @@ for (const row of rows) {
   if (opts.sku && sku !== opts.sku) continue;
   const dir = path.join(DRIVE_ROOT, sku);
   if (!fs.existsSync(dir)) continue;
-  const entries = orderGallery(fs.readdirSync(dir), sku);
+  const all = orderGallery(fs.readdirSync(dir), sku);
+  const entries = all.filter((e) => ROLE_ORDER.includes(e.role));
+  const extras = all.length - entries.length;
+  if (extras > 0) console.log(`      (${extras} non-gallery files in ${sku} ignored: wip/finish/etc)`);
   if (entries.length === 0) continue;
   const title = row.properties?.['Short Title']?.rich_text?.[0]?.plain_text
     ?? row.properties?.Name?.title?.[0]?.plain_text ?? sku;
   const existing = row.properties?.Images?.files ?? [];
-  if (shouldSkipRow(existing.length, entries.length)) {
-    console.log(`SKIP  ${sku} ${title} — Images already has ${existing.length} (folder has ${entries.length})`);
+  const { keep, toUpload } = resumePlan(existing, entries);
+  if (toUpload.length === 0) {
+    console.log(`SKIP  ${sku} ${title} — all ${entries.length} gallery files already attached`);
     skipped++;
     continue;
   }
-  const { keep, toUpload } = resumePlan(existing, entries);
   console.log(`${opts.apply ? 'SYNC ' : 'PLAN '} ${sku} ${title} — ${toUpload.length} to upload, ${keep.length} already attached (${entries.map((e) => e.role).join(', ')})`);
   if (!opts.apply) continue;
   try {
     const uploaded = [];
     for (const entry of toUpload) {
-      const payload = await bytesFor(dir, entry);
+      process.stdout.write(`   reading ${entry.name} (Drive may stream it down first)...\n`);
+      let payload;
+      try {
+        payload = await bytesFor(dir, entry);
+      } catch (err) {
+        failed++;
+        console.error(`   SKIPPED ${entry.name}: ${err.message}`);
+        continue;
+      }
+      process.stdout.write(`   uploading ${payload.name} (${(payload.buf.length / 1e6).toFixed(1)}MB)...\n`);
       uploaded.push({ id: await uploadFile(payload), name: payload.name });
       // Re-patch after EVERY upload so a mid-row failure loses nothing.
       await notionJson(`/pages/${row.id}`, {
