@@ -199,6 +199,17 @@ export function convertSvg(
     }
   };
 
+  // Brushes sew strokes and open paths, never fill interiors (v1 scope).
+  // The rejection lives here, not in one branch, so `fillMode: "outline"`
+  // can't quietly flatten a brushed fill into an ordinary boundary run —
+  // the authoring contract promises loud errors, never a silent fallback.
+  const rejectBrushOnFill = (tag?: { type: string; label: string }): void => {
+    if (tag?.type !== "brush") return;
+    throw new Error(
+      `"${tag.label}" is a filled shape tagged st-brush — brushes apply to strokes and open paths, not fills. Remove the fill or tag it st-run/st-satin/st-tatami.`,
+    );
+  };
+
   // A brush tag's parameters obey the spec's declared pitch range; unknown
   // names and out-of-range pitches error loudly with the layer name, never
   // a silent fallback to running stitch.
@@ -294,6 +305,10 @@ export function convertSvg(
     // their boundary rings, stroke-over-fill precedence, document order.
     for (const s of geometry.strokes) strokeRuns(s, s.order ?? 0);
     for (const fill of geometry.fills) {
+      // Validate before skipping stroked regions, so a tag is judged the
+      // same way in both fill modes rather than depending on a panel switch.
+      checkTagDensity(fill.directive);
+      rejectBrushOnFill(fill.directive);
       if (fill.hasStroke) continue;
       for (const points of fill.rings) {
         polylines.push({ color: fill.color, points, order: fill.order });
@@ -312,12 +327,7 @@ export function convertSvg(
       if (rings.length === 0) continue;
       const tag = region.directive;
       checkTagDensity(tag);
-      if (tag?.type === "brush") {
-        // v1 scope: brushes sew paths and strokes, never fill interiors.
-        throw new Error(
-          `"${tag.label}" is a filled shape tagged st-brush — brushes apply to strokes and open paths, not fills. Remove the fill or tag it st-run/st-satin/st-tatami.`,
-        );
-      }
+      rejectBrushOnFill(tag);
       if (tag?.type === "run") {
         // Declared outline: sew only the boundary rings.
         for (const ring of rings) {

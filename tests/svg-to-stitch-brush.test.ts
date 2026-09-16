@@ -216,3 +216,33 @@ describe("redwork line-only patterns render end to end", () => {
     expect(decodeDst(dst).plan.stats.stitches).toBe(plan.stats.stitches);
   });
 });
+
+describe("brush tags in outline mode", () => {
+  // "Fill shapes" off switches the converter to the legacy outline view.
+  // A tag is a declaration, so it has to be judged the same way in both
+  // modes — otherwise a panel switch silently downgrades a brushed fill
+  // to a plain boundary run, which the authoring contract forbids.
+  const BRUSHED_FILL = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+      <path id="badge_st-brush-cross" d="M20 24 L180 24 L180 40 L20 40 Z" fill="#e34446"/>
+    </svg>`;
+
+  const DENSE_FILL = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+      <rect id="bar_st-tatami_d1" x="20" y="20" width="160" height="60" fill="#0f8452"/>
+    </svg>`;
+
+  it("rejects a brushed fill in outline mode, as it does in fill mode", () => {
+    for (const fillMode of ["fill", "outline"] as const) {
+      expect(() =>
+        convertSvg(BRUSHED_FILL, { ...OPTS, fillMode }),
+      ).toThrow(/badge st-brush-cross[\s\S]*filled shape tagged st-brush/);
+    }
+  });
+
+  it("validates tag density in outline mode, as it does in fill mode", () => {
+    for (const fillMode of ["fill", "outline"] as const) {
+      expect(() => convertSvg(DENSE_FILL, { ...OPTS, fillMode })).toThrow(
+        /density of 0.1 mm/,
+      );
+    }
+  });
+});
