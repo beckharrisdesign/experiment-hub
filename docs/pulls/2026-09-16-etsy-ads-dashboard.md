@@ -1,6 +1,6 @@
 # Data pull — Etsy Ads dashboard, captured 2026-09-16
 
-**Provenance:** Katy's screencapture of Shop Manager → Advertising, 2026-09-16 09:50. Source PDF to `Drive: W+H Listings/W+H Data Pulls/2026-09-16-etsy-ads/` per convention (screencapture — the manual end of the pull spectrum; no export or API exists for this surface).
+**Provenance:** Katy's screencapture of Shop Manager → Advertising, 2026-09-16 09:50. Source PDF archived as `Drive: W+H Listings/W+H Data Pulls/2026-09-16-etsy-ads-dashboard.pdf` (screencapture — the manual end of the pull spectrum; no export or API exists for this surface).
 
 ## Distilled
 

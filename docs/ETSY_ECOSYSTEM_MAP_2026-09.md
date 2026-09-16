@@ -105,7 +105,7 @@ Three tiers, split by how the data arrives:
 
 The middle tier is why experiment protocols carry explicit "capture the panel" checklist steps: those numbers cannot be pulled programmatically, so the ritual **is** the pipeline. Anything wanting automated revenue or search-term data needs either a `transactions_r` re-auth (orders) or stays impossible (Search Analytics, eRank).
 
-**Where pulls land (the convention):** heavy source files (PDF screencaptures, big exports) go to Drive — `W+H Listings/W+H Data Pulls/YYYY-MM-DD-<source>/` — never git. Each pull gets a dated findings note in `docs/pulls/YYYY-MM-DD-<source>.md`: provenance (what was captured, when, from where), a file inventory pointing at the Drive folder, and the distilled takeaways. CSVs small enough to diff may ride along in the pull folder in git. Monthly reviews and experiment readouts cite pull notes, not raw files.
+**Where pulls land (the convention):** heavy source files (PDF screencaptures, big exports) go to Drive — `W+H Listings/W+H Data Pulls/` as flat files named `YYYY-MM-DD-<source>-<what>.<ext>` — never git, never subfolders. Each pull gets a dated findings note in `docs/pulls/YYYY-MM-DD-<source>.md`: provenance (what was captured, when, from where), a file inventory pointing at the Drive folder, and the distilled takeaways. CSVs small enough to diff may ride along in the pull folder in git. Monthly reviews and experiment readouts cite pull notes, not raw files.
 
 ## 12. In flight — digitizing & pattern previewing (Stitch Check)
 

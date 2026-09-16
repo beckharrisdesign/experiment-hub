@@ -1,6 +1,6 @@
 # Data pull — Etsy monthly statements, Dec 2025 – Sep 2026
 
-**Provenance:** Katy's Shop Manager statement exports, pulled 2026-09-16. Structured CSVs — the first pull that already fits the automated future: a script distilled these, no hand-reading. Raw files archived alongside this note (`2026-09-16-etsy-statements/`, 10 files, tiny).
+**Provenance:** Katy's Shop Manager statement exports, pulled 2026-09-16. Structured CSVs — the first pull that already fits the automated future: a script distilled these, no hand-reading. Raw files archived alongside this note as `2026-09-16-etsy-statement-YYYY-MM.csv` (10 files, tiny); Drive mirror in `W+H Data Pulls/` under the same names.
 
 ## Distilled — monthly P&L
 
