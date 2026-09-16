@@ -195,7 +195,7 @@ The middle tier is why experiment protocols carry explicit "capture the panel" c
 
 Not yet wired into the listing pipeline, but pointed straight at it. **Stitch Check** (`experiments/svg-to-stitch/`, grown from the SVG to Stitch quick tool, reframed commercial 2026-09-11) converts and previews embroidery files in the browser: `lib/svg-to-stitch/` (converter, satin columns for 1–10mm strokes, two-rail satin fills, stitch brushes, DST/EXP machine formats), live client-side route at `/svg-to-stitch`, machine-file previewer with pan/zoom, 72 tests. The eventual seams into this map: the same component SVGs (Drive/Figma) become **machine-file deliverables** alongside the printable PDFs — a new product line per component — and the previewer becomes both a listing asset (show buyers real stitch-out fidelity) and a QA gate before a pattern ships. The "previewer half and beyond" is explicitly not done; treat it as a future deliverable type in the Components DB checklist, not a current one.
 
-## Live state — 2026-09-16
+## Live state — verified 2026-09-16
 
 | Piece | State |
 |---|---|
@@ -203,7 +203,7 @@ Not yet wired into the listing pipeline, but pointed straight at it. **Stitch Ch
 | Holiday drafts | ✅ 9 created on Etsy (text + styles) |
 | Globe personalization | ☐ Repair pending (`--personalize-ids` command ready) |
 | Draft images on Etsy | ☐ Uploader built + tested; run pending |
-| Experiment day 0 | ☐ Copy apply not yet confirmed run |
+| Experiment running | ✅ Intervention applied and verified — all 13 listings match the approved copy exactly in the 2026-09-15 snapshot (titles 13/13, tag sets 13/13); write bounded to 09-14 11:31 UTC → 09-15 10:52 UTC. Day 0 = the 09-15 snapshot; day 14 = 2026-09-29, day 30 = 2026-10-15 |
 | PDF files on drafts | ☐ Not started (bundle needs 2 merged PDFs first) |
 | Notion ID stamping | ☐ Pending — write the 9 draft ids into staged rows before their next-sync auto-create |
 | PR #478 | ✅ Merged — runners and hardened tooling on main |
