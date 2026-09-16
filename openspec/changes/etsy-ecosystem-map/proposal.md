@@ -29,7 +29,7 @@ The ecosystem grew faster than its own record. In one week it gained write tooli
 **Recorded, not targeted — the shop health ledger** (one line each per monthly review, observations only):
 
 - **Engagement rate — favorites per view** (automatic, from the sync): the closest instrumentable thing to "click rate on listings." True impression→click rate exists only for the paid slice via manual ads panels; organic impressions have no API. Views themselves (clicks into a listing) are the tag experiment's own metric and stay owned there.
-- **Net Etsy revenue + month-over-month change** (manual, Shop Manager): at current volume (2–3 sales/month) MoM deltas are noise, and revenue has no API path (`transactions_r` not granted). Targeting it would contradict the anchor.
+- **Net Etsy revenue + month-over-month change** (Katy's monthly Shop Manager pull — easy, and a CSV drop folds straight into the review): recorded because watching the money honestly matters; not targeted because at current volume (2–3 sales/month) MoM deltas are noise and targeting it would contradict the anchor. No API path today (`transactions_r` not granted); the manual pull is the pipeline, and that's fine.
 - **ROAS**: joins the ledger only when attributed orders exist; today it is not mature enough to record.
 
 ## Capabilities
