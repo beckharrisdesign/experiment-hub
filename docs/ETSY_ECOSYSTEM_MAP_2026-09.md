@@ -39,15 +39,15 @@ flowchart TD
 
 `Watermark & Hue / Components` (data source `c71245a1…`). One row per component: **Component SKU** (`BHD-<line>-<n>-<slug>`), collection tags, **deliverables checklist** (svg-master, printable-6in/8in) with a ready flag, **visual description** (the alt-text raw material), preview render, provenance notes (Figma node + Drive path), and a relation to its Listing Inventory row. This is the source of truth for *products*.
 
-## 3. Files — Drive (beckharrisdesign account; the letterharris mount is a stale copy)
+## 3. Local file store — role, not vendor (today: Google Drive, beckharrisdesign account; the letterharris mount is a stale copy)
 
 - `W+H Listings/W+H Components/<slug>/` — master SVGs, PDF deliverables.
 - `W+H Listings/W+H Listings/<SKU>/` — the listing galleries: 37 SKU folders of role-named images (hero, lifestyle, scale, transferring, content-tl/center/bl, suggestions-4up, badge, faq-1..3); 33 complete, 4 with only the six photo-derived roles (WH-UN-S-3453/-8779/-CA26/-DF8E). `_staging/WH-UN-B-STAGING/` holds the composed Classics bundle set.
 - Generation code: `lib/etsy-listing-kit/generator.ts` (6-scene pack from one design, W&H template photography in `assets/mockups/`), `scenes.ts` (10-image data-card ladder), `scripts/compose-classics-bundle.mjs` (bundle recompositions).
 
-## 4. Listing staging — Notion Listing Inventory
+## 4. Content editing layer — role, not vendor (today: Notion Listing Inventory)
 
-`Watermark & Hue / Listing Inventory` (data source `5326f9f7…`, DB `389a8c23…`). One row per listing, live or future: SKU formula (page-id last-4), Status, gallery flags and roles, Hero preview, **Images** (full 12-role galleries as of 2026-09-16 — 38 rows, synced by `scripts/notion-gallery-sync.mjs` + `scripts/run-gallery-sync.sh`), Etsy Listing ID/Title/URL (empty until live; filled by the sync once a listing exists). The authoring surface — phase 2's "edit in Notion, push to Etsy" starts here.
+`Watermark & Hue / Listing Inventory` (data source `5326f9f7…`, DB `389a8c23…`). One row per listing, live or future: SKU formula (page-id last-4), Status, gallery flags and roles, Hero preview, **Images** (full 12-role galleries as of 2026-09-16 — 38 rows, synced by `scripts/notion-gallery-sync.mjs` + `scripts/run-gallery-sync.sh`), Etsy Listing ID/Title/URL (empty until live; filled by the sync once a listing exists). The authoring surface — an easy frontend for previewing and tweaking listings, images, and tags, deliberately *not* just a database view; phase 2's "edit here, push to Etsy" starts from this layer. Notion is the current implementation of the role, not the point.
 
 ## 5. Writing — evidence-driven copy
 
@@ -69,13 +69,13 @@ All in `experiments/etsy-notion-sync/prototype/`, manual-only, dry-run by defaul
 
 Credentials: Etsy OAuth token in Supabase custody (`etsy_tokens`, `listings_r listings_w` since 2026-09-14), app keys in the BHD Labs vault, injected by the runners via `op` from Katy's terminal only.
 
-## 7. Sync — Etsy → Supabase → Notion (phase 1, one-directional)
+## 7. Sync + durable store — Etsy → Supabase → editing layer (phase 1, one-directional)
 
-Daily GitHub Action (`etsy-notion-sync.yml`): `capture.py` snapshots every listing (all states) into `etsy_listing_snapshots` / `etsy_runs` (Supabase `ulqdjuiffpazzixnwwso`), then `sync_notion.py` mirrors price, inventory, title, tags, views, favorites and more into Listing Inventory, posting a change comment on each edited page. Duplicate-SKU conflict guard; admin panel row in the hub. This is also the **experiment measurement instrument**: window deltas of the cumulative counters.
+Daily GitHub Action (`etsy-notion-sync.yml`): `capture.py` snapshots every listing (all states) into `etsy_listing_snapshots` / `etsy_runs` (Supabase `ulqdjuiffpazzixnwwso`), then `sync_notion.py` mirrors price, inventory, title, tags, views, favorites and more into Listing Inventory, posting a change comment on each edited page. Duplicate-SKU conflict guard; admin panel row in the hub. This is also the **experiment measurement instrument**: window deltas of the cumulative counters. Supabase is the hardcore source of truth — snapshots, analytics-grade history — intentionally UI-light; the editing layer above it is where humans look.
 
-## 8. Evaluation — one rubric, two surfaces
+## 8. Evaluation — the layer that outlived its experiment
 
-`lib/etsy-scorecard.ts` holds the shared rubric (Tier A required fields; Tier B completeness: 20 photos, 13 tags, 40–140 title, 160+ description, alt text, video, styles). The **ELK evaluation surface** (`lib/etsy-listing-kit/evaluate.ts`, live in prod) renders it as recommendations; the labs scorecard and the September audits consume the same functions. Known gap: the surface grades styles but never recommends them (task chip open).
+ELK-the-experiment fizzled fast, but the evaluation layer it produced keeps earning: `lib/etsy-scorecard.ts` holds the shared rubric (Tier A required fields; Tier B completeness: 20 photos, 13 tags, 40–140 title, 160+ description, alt text, video, styles). The **ELK evaluation surface** (`lib/etsy-listing-kit/evaluate.ts`, live in prod) renders it as recommendations; the labs scorecard and the September audits consume the same functions. Known gap: the surface grades styles but never recommends them (task chip open).
 
 ## 9. Experiments & sweeps — the periodic loop
 
@@ -91,11 +91,11 @@ The map's missing governing layer. The standards demonstrably exist but live sca
 - **Image principles**: scene-ladder composition rules (`lib/etsy-listing-kit/scenes.ts`), the W&H listing reference composition language (`generator.ts`), template photography (`assets/mockups/`), `palette.ts`, and judgment captured only in session memory (scene contrast lessons, thumbnail sibling problems).
 - **Content principles**: the six copy rules (descriptor-first titles, searched phrase shape, no standalone format tags, one skill level, unique tag sets, wellness-as-positioning), the house-style description skeleton, the alt-text role templates.
 
-These are two chapters of one shop design system — the natural second consumer of **MVDS** (the meta-format for expressing a brand system; currently paused, remote repo, Notion-only narrative). Codifying it would also unlock a *brand-adherence tier* in the evaluation rubric, which today checks completeness only. Status: fragments; codification not started.
+These are two chapters of one shop design system — **MVDS as the base, plus whatever extended design systems Etsy specifically needs** (listing-image scene language, marketplace copy conventions) layered on it. Codifying it would also unlock a *brand-adherence tier* in the evaluation rubric, which today checks completeness only. Status: fragments; codification not started.
 
 ## 11. Data & market intelligence
 
-Three tiers, split by how the data arrives:
+Two sides of one coin with §7–8 (Katy, FigJam review 2026-09-16): the intelligence tiers feed in, the durable store and evaluation read out — one data-and-measurement domain, drawn as two sections only for legibility. Three tiers, split by how the data arrives:
 
 | Tier | Sources | Cadence | Access |
 |---|---|---|---|
