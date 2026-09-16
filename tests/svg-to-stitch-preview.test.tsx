@@ -347,6 +347,13 @@ describe("SewOrder rows", () => {
       whiteSpace: "nowrap",
       flexShrink: "0",
     });
+    // Wrapping is only half of it: the button size preset pins the height at
+    // 32px, so without height:auto a wrapped motif line spills out of the row
+    // and over the next one. jsdom has no layout to measure, so assert the
+    // property that buys the growth.
+    expect(
+      screen.getByTestId("sew-order-motifs-0").closest("button"),
+    ).toHaveStyle({ height: "auto" });
   });
 
   it("shows a stitch count with no motif line when a color has no brushes", () => {
