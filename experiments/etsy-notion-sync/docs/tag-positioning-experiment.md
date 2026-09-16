@@ -89,6 +89,8 @@ The 2026-09-08 session produced `docs/ETSY_LISTING_IMPROVEMENT_PLAN_2026-09.md` 
 
 ## Measurement
 
+> **Day 0 is 2026-09-15 — confirmed from the data, not from memory.** All 13 listings carry their new titles in the 2026-09-15 snapshot and the old ones in 2026-09-14, so the edits landed between those two daily runs. **Day 14 falls on 2026-09-29; day 30 on 2026-10-15.** Shop-wide baseline at day 0: 337 views, 24 favorites across 27 active listings.
+
 Two channels, both anchored to the day edits land:
 
 **Organic (automatic):** the daily sync snapshots title, tags, views, favorites — intervention date and every delta recorded with no new code. Etsy's `views` and `num_favorers` are **cumulative counters**, so every metric here is a window delta, never a raw total: for each listing, `views_delta = views(day 30) − views(day 0)` computed from `etsy_listing_snapshots` (per listing, max of the day's snapshots), where day 0 is the day edits land and day 30 closes the window; favorites likewise. Compare treatment vs control mean `views_delta`; day-14 sanity check uses the same subtraction; confirm protected listings' deltas didn't dip vs their baseline-30d deltas.
@@ -106,9 +108,9 @@ Two channels, both anchored to the day edits land:
 
 1. ☐ Approve groups and plan
 2. ☐ Draft exact title + 13 tags for each treatment listing + fall-leaves seasonal tweak + mandala-shadow retitle (one review doc, approve before anything touches Etsy; Grandma listings reuse the PR #471 paste-ready copy as-is)
-3. ☐ Apply approved copy in Etsy Shop Manager (edit links in the treatment table above)
+3. ✅ Applied 2026-09-15 — all 13 listings retitled (verified: new titles in the 9/15 snapshot, old titles in 9/14). This is day 0.
 4. ☐ Toggle "digital products" off as not relevant in the ads panel for [4414949521](https://www.etsy.com/your/shops/me/listing-editor/edit/4414949521)
 5. ☐ Delete one duplicate draft bundle ([4522856685](https://www.etsy.com/your/shops/me/listing-editor/edit/4522856685) or [4522923804](https://www.etsy.com/your/shops/me/listing-editor/edit/4522923804))
 6. ✅ Baselines captured 2026-09-14 — Search Analytics terms + 7 ad-panel rows (tables above)
-7. ☐ Wait — sync measures daily; day-14 sanity check
-8. ☐ Day 30: re-capture ad panels + Search Analytics, run treatment-vs-control comparison, call the verdict
+7. ☐ Wait — sync measures daily; day-14 sanity check due 2026-09-29
+8. ☐ Day 30 (2026-10-15): re-capture ad panels + Search Analytics, run treatment-vs-control comparison, call the verdict
