@@ -8,6 +8,11 @@
 >
 > "I'd love to figure out how to apply different stitches to a path, or
 > decide whether that path is a fill or a line." — founder, 2026-09-16
+>
+> "lets just hide them for now -- ultimately I want to be able to
+> control angle, stitch, density, etc, from the path groupings here"
+> — founder, 2026-09-16, on the remaining fill parameters, pointing at
+> the sew-order list
 
 Founding record: `experiments/svg-to-stitch/docs/intent.md`; authoring
 contract: `experiments/svg-to-stitch/docs/stitch-authoring.md`.
@@ -26,11 +31,13 @@ contract: `experiments/svg-to-stitch/docs/stitch-authoring.md`.
   and the only way to change one shape's stitch is to say so in the
   design file.
 - **Not doing:** Changing the heuristics themselves — the untagged
-  fallback keeps today's behaviour exactly. Removing **Fill angle**,
-  **Fill density** or **Fabric**: the first two are parameters that
-  `a`/`d` tags already override per shape, which the authoring contract
-  endorses, and the third is a preview backdrop, not a stitch rule. No
-  in-app per-object stitch picker — that is its own change.
+  fallback keeps today's behaviour exactly. **Fill angle** and **Fill
+  density** are _hidden_, not deleted: the converter keeps both options
+  at today's defaults and `a`/`d` tags keep overriding them per shape,
+  so nothing about the output changes and the controls can come back
+  without re-deriving anything. **Fabric** stays visible — it is a
+  preview backdrop, not a stitch rule. Building the per-group controls
+  described below is its own change, not this one.
 
 ## Why
 
@@ -54,16 +61,24 @@ names the destination: the heuristic decision tree "becomes the
 Every switch already has an exact per-shape equivalent, so nothing is
 lost that the design file cannot say better:
 
-| Switch | Its global effect | What replaces it |
-| --- | --- | --- |
-| **Fill shapes** (off) | every fill flattened to its boundary | `st-run` on a fill |
+| Switch                 | Its global effect                         | What replaces it         |
+| ---------------------- | ----------------------------------------- | ------------------------ |
+| **Fill shapes** (off)  | every fill flattened to its boundary      | `st-run` on a fill       |
 | **Satin narrow fills** | narrow fills satin vs tatami, all at once | `st-satin` / `st-tatami` |
-| **Satin strokes** | every stroke ≤10 mm satin | `st-satin` / `st-run` |
+| **Satin strokes**      | every stroke ≤10 mm satin                 | `st-satin` / `st-run`    |
 
-The honest cost: auditioning a *bought* SVG you cannot easily tag gets
+The honest cost: auditioning a _bought_ SVG you cannot easily tag gets
 harder, because flipping one toggle was the quick way to see it another
 way. That is the trade the anchor accepts — the file becomes the record,
 and a conversion becomes reproducible from the file alone.
+
+**Where this is heading.** The founder's destination for angle, stitch
+type and density is the sew-order list — per colour block, in the panel,
+next to the thread it affects — not a global row at the top. This change
+does not build that. It clears the surface of the controls that would
+contradict it, and leaves the parameters defaulted and tag-overridable
+until the per-group design exists. That is why they are hidden rather
+than deleted.
 
 ## What changes
 
@@ -75,6 +90,9 @@ and a conversion becomes reproducible from the file alone.
 - Untagged shapes keep exactly today's default behaviour — fills hatch,
   narrow fills try satin first, strokes ≤10 mm satin — now documented as
   the fallback rather than as switch positions.
+- **Fill angle** and **Fill density** leave the panel too, but only as
+  controls: the options stay, defaulted to 45° and 0.4 mm. A file that
+  wants something else says so with `a`/`d`.
 - The authoring contract's "What this replaces, and when" section moves
   from future tense to present.
 
@@ -95,7 +113,8 @@ and a conversion becomes reproducible from the file alone.
 ## Impact
 
 - `app/svg-to-stitch/page.tsx`: three `Switch` rows and their state
-  removed; **Fill angle**, **Fill density**, **Fabric** stay.
+  removed; the **Fill angle** and **Fill density** selects hidden, their
+  values kept as the converter defaults; **Fabric** unchanged.
 - `lib/svg-to-stitch/convert.ts`: `fillMode`, `satinFills`,
   `satinStrokes` options dropped; the `fillMode === "outline"` branch
   deleted; `rejectBrushOnFill` and `checkTagDensity` collapse back to a
