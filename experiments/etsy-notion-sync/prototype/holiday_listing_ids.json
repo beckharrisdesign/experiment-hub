@@ -2,14 +2,75 @@
   "comment": "Draft listing ids from the 2026-09-16 create run, mapped to their gallery folders (Drive mount) and alt-text pack keys.",
   "gallery_root": "/Users/katybharris/Library/CloudStorage/GoogleDrive-katy@beckharrisdesign.com/My Drive/W+H Listings/W+H Listings",
   "listings": [
-    {"name": "Christmas Bow", "listing_id": 4576478333, "folder": "WH-UN-S-0DF4"},
-    {"name": "Christmas Candy Canes", "listing_id": 4576478347, "folder": "WH-UN-S-CA7C"},
-    {"name": "Christmas Nutcracker", "listing_id": 4576496720, "folder": "WH-UN-S-EA23"},
-    {"name": "Christmas Poinsettia", "listing_id": 4576478365, "folder": "WH-UN-S-EBE2"},
-    {"name": "Personalized Snowman Snow Globe", "listing_id": 4576478385, "folder": "WH-UN-S-9293"},
-    {"name": "Personalized Penguin Snow Globe", "listing_id": 4576496750, "folder": "WH-UN-S-8723"},
-    {"name": "Personalized Christmas Tree Snow Globe", "listing_id": 4576478401, "folder": "WH-UN-S-04D6"},
-    {"name": "Personalized Snowy House Snow Globe", "listing_id": 4576478415, "folder": "WH-UN-S-E5CA"},
-    {"name": "Christmas Classics Set (bundle of 4)", "listing_id": 4576496782, "folder": "_staging/WH-UN-B-STAGING"}
-  ]
+    {
+      "name": "Christmas Bow",
+      "listing_id": 4576478333,
+      "folder": "WH-UN-S-0DF4",
+      "component": "christmas-bow",
+      "section": "Holiday"
+    },
+    {
+      "name": "Christmas Candy Canes",
+      "listing_id": 4576478347,
+      "folder": "WH-UN-S-CA7C",
+      "component": "christmas-candy-canes",
+      "section": "Holiday"
+    },
+    {
+      "name": "Christmas Nutcracker",
+      "listing_id": 4576496720,
+      "folder": "WH-UN-S-EA23",
+      "component": "christmas-nutcracker",
+      "section": "Holiday"
+    },
+    {
+      "name": "Christmas Poinsettia",
+      "listing_id": 4576478365,
+      "folder": "WH-UN-S-EBE2",
+      "component": "christmas-poinsettia",
+      "section": "Holiday"
+    },
+    {
+      "name": "Personalized Snowman Snow Globe",
+      "listing_id": 4576478385,
+      "folder": "WH-UN-S-9293",
+      "component": "holiday-globe-snowman-wishes",
+      "section": "Personalized"
+    },
+    {
+      "name": "Personalized Penguin Snow Globe",
+      "listing_id": 4576496750,
+      "folder": "WH-UN-S-8723",
+      "component": "holiday-globe-penguin-wishes",
+      "section": "Personalized"
+    },
+    {
+      "name": "Personalized Christmas Tree Snow Globe",
+      "listing_id": 4576478401,
+      "folder": "WH-UN-S-04D6",
+      "component": "holiday-globe-tree-wishes",
+      "section": "Personalized"
+    },
+    {
+      "name": "Personalized Snowy House Snow Globe",
+      "listing_id": 4576478415,
+      "folder": "WH-UN-S-E5CA",
+      "component": "holiday-globe-house-wishes",
+      "section": "Personalized"
+    },
+    {
+      "name": "Christmas Classics Set (bundle of 4)",
+      "listing_id": 4576496782,
+      "folder": "_staging/WH-UN-B-STAGING",
+      "component": "christmas-classics-set",
+      "section": "Holiday"
+    }
+  ],
+  "components_root": "/Users/katybharris/Library/CloudStorage/GoogleDrive-katy@beckharrisdesign.com/My Drive/W+H Listings/W+H Components",
+  "comment_files": "PDF deliverables: each listing ships its component's 6in and 8in printables. Globes use the '-wishes' variant (the as-shown design with CHRISTMAS 2026 text, per the listing copy); 'holiday-globe-snowman-plain' is the blank-banner master for fulfilling custom personalization orders and is NOT uploaded.",
+  "shop_sections": {
+    "comment": "Etsy allows ONE section per listing. Fill in the numeric ids from Shop Manager (the id is in the URL when you open a section), then run scripts/run-assign-sections.sh.",
+    "Holiday": 60384454,
+    "Personalized": 60384456
+  }
 }

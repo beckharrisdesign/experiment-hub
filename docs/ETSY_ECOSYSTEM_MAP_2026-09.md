@@ -176,6 +176,7 @@ Run in one sitting; it is what keeps §Live state true and the [shop health ledg
 5. ☐ **Append one ledger row** — completeness, engagement, net revenue, MoM change, each with provenance. Observations only; no line acquires a target.
 6. ☐ **Check the map's seams** — did any PR since the last review add, move, or remove a surface without updating the map? If the map changed structurally, a new FigJam version page exists and this doc matches it.
 7. ☐ **Record the check** — note the review date and what changed in the live-state table.
+8. ☐ **Feed the open release** — anything the review surfaces that shouldn't ship immediately goes into the current release doc (today: [2026-10-15](ETSY_RELEASE_2026-10-15.md)) rather than into a loose list.
 
 ## 11. Data & market intelligence
 
@@ -200,10 +201,15 @@ Not yet wired into the listing pipeline, but pointed straight at it. **Stitch Ch
 | Piece | State |
 |---|---|
 | Notion galleries | ✅ Complete — 38 rows, full 12-role sets |
-| Holiday drafts | ✅ 9 created on Etsy (text + styles) |
-| Globe personalization | ☐ Repair pending (`--personalize-ids` command ready) |
-| Draft images on Etsy | ☐ Uploader built + tested; run pending |
+| Holiday batch | ✅ **All 9 LIVE on Etsy 2026-09-16** — 4 classics $6, 4 personalizable globes $8, Classics Set bundle $15; every listing verified with full gallery, both PDFs, and personalization where expected |
+| Globe personalization | ✅ Set on all 4 globes 2026-09-16 |
+| Draft images on Etsy | ✅ 102 images uploaded with alt text 2026-09-16 — 8 listings × 12 roles + bundle × 6, ranks verified 1..n on every listing |
 | Experiment running | ✅ Intervention applied and verified — all 13 listings match the approved copy exactly in the 2026-09-15 snapshot (titles 13/13, tag sets 13/13); write bounded to 09-14 11:31 UTC → 09-15 10:52 UTC. Day 0 = the 09-15 snapshot; day 14 = 2026-09-29, day 30 = 2026-10-15 |
-| PDF files on drafts | ☐ Not started (bundle needs 2 merged PDFs first) |
-| Notion ID stamping | ☐ Pending — write the 9 draft ids into staged rows before their next-sync auto-create |
+| Bundle PDFs | ✅ Built 2026-09-16 — `Printable-christmas-classics-set-{6in,8in}.pdf`, 4 pages each, page order and hoop size verified by render (`scripts/merge-bundle-pdfs.py`) |
+| PDF files on drafts | ✅ All 18 on Etsy 2026-09-16 — verified by name against each listing (16 singles + 2 bundle) |
+| Notion ID stamping | ✅ Done 2026-09-16 — 8 staged rows stamped by hand, then a manual sync matched all 8 in place (no duplicates) and created the bundle row |
+| Manual sync | ✅ Ran 2026-09-16 — 22 updates, 1 create; all 9 holiday listings carry live Etsy data (`scripts/run-sync-now.sh`) |
+| Duplicate Garden Markers drafts | ✅ Deleted 2026-09-16 — and the sync no longer resurfaces them: deleted listings now drop out of the latest-capture filter (`conflicts: 0`) |
+| Shop sections | ✅ All 36 active listings categorized 2026-09-16 — Holiday 60384454 (5), Personalized 60384456 (4), patterns 21751592 (21), Grandma Hobbies 59859093 (6); zero uncategorized |
+| Next release | 🗓 **[2026-10-15](ETSY_RELEASE_2026-10-15.md)** — day 30 of the experiment; catalog re-sectioning, P4/P5, and the completeness sweep accumulate there rather than disturbing the running window |
 | PR #478 | ✅ Merged — runners and hardened tooling on main |

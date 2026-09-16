@@ -1,5 +1,8 @@
 # Holiday draft listings — 2026
 
+> **All 9 listings went live 2026-09-16.** Verified on Etsy: full galleries with alt text, both hoop-size PDFs on every listing, personalization active on all 4 snow globes. Re-check any time with `bash scripts/run-batch-status.sh`.
+
+
 *Everything a draft needs for the eight ready Christmas components, structured as **4 classic singles + 4 personalizable snow globes + 1 Christmas Classics bundle**. The classic singles cross-sell the well-priced bundle ($15 for four patterns: less than the price of three singles). The globes' baked-in text is the product: each is offered as a customizable pattern — the buyer's own year, name, or short message replaces the as-shown "fa la la / CHRISTMAS 2026" — at a $8 custom premium. Titles follow the descriptor-first formula; tags: 13 per set, ≤20 chars, no tag repeated across these nine listings. Descriptions mirror the shop's live house style. Matches the Listing Inventory staging (8 Single rows; the bundle gets one new Bundle row when drafts are stamped back).*
 
 ## Shared template (from the sibling pattern listings)
@@ -464,6 +467,6 @@ Prefer to start with just one? Each classic motif is also available individually
 3. ☐ Confirm the 2-business-day custom-file SLA (drafted default — change it in the descriptions if it doesn't fit your week)
 4. ☐ Upload listing images from the staged galleries (`uploadListingImage` — rank is an INSERT, verify placement; 12 of 20 slots per listing — matches the shop's house standard, 8 slots stay open for a future second scene set)
 5. ☐ Apply the alt-text pack above to every uploaded image (uploads wipe alt — apply after)
-6. ☐ Upload the PDF deliverables (`uploadListingFile`; Etsy caps digital listings at 5 files — the Classics bundle ships as 2 merged multi-page PDFs, one per hoop size, built from the 8 per-design deliverables)
+6. ✅ PDF deliverables uploaded 2026-09-16 — all 18 verified by name on their listings (`scripts/run-upload-files.sh`; bundle PDFs built via `scripts/merge-bundle-pdfs.py`; Etsy caps digital listings at 5 files — the Classics bundle ships as 2 merged multi-page PDFs, one per hoop size, built from the 8 per-design deliverables)
 7. ☐ Set listing SKUs (BHD-HLD-00x pattern) and stamp Etsy Listing IDs into the staged Listing Inventory rows (bundle gets one new Bundle row)
 8. ☐ Activate from Shop Manager after visual review

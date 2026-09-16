@@ -122,4 +122,5 @@ Two channels, both anchored to the day edits land:
 5. ☐ Delete one duplicate draft bundle ([4522856685](https://www.etsy.com/your/shops/me/listing-editor/edit/4522856685) or [4522923804](https://www.etsy.com/your/shops/me/listing-editor/edit/4522923804))
 6. ✅ Baselines captured 2026-09-14 — Search Analytics terms + 7 ad-panel rows (tables above)
 7. ☐ Wait — sync measures daily; day-14 sanity check due 2026-09-29
-8. ☐ Day 30 (2026-10-15): re-capture ad panels + Search Analytics, run treatment-vs-control comparison, call the verdict
+8. ☐ Day 30 (2026-10-15): re-capture ad panels + Search Analytics, run treatment-vs-control comparison, call the verdict.
+   This date is the **[2026-10-15 release](../../../docs/ETSY_RELEASE_2026-10-15.md)** — the readout gates everything else in it, including the catalog re-sectioning and the P4/P5 deferrals. Take the readout first.
