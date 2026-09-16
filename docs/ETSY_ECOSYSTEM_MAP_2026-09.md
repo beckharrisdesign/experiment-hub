@@ -1,6 +1,8 @@
-# Etsy ecosystem map — September 2026
+# Etsy ecosystem map
 
-*Every surface that comes together in a Watermark & Hue component or listing: where each lives, what feeds it, and what it feeds. Snapshot of live state at the bottom.*
+*Every surface that comes together in a Watermark & Hue component or listing: where each lives, what feeds it, and what it feeds. Live state at the bottom.*
+
+> **Established September 2026 — living document, not a snapshot.** The `_2026-09` in the filename records when the map was established, not how long it is valid; it stays put so links keep working. The map is kept true by the monthly review ritual (§10a), and the FigJam board carries the version history.
 
 *Diagram mirrors FigJam board `ln6p2z1vppiTdqDPNVdoOZ`, page v5 — the board is the primary review surface. The storefront appears twice by design: one WatermarkandHue shop, drawn as a read view (feeding sync + evaluation) and the storefront proper (receiving publishing) so the loop reads left-to-right without crossing connectors.*
 
@@ -89,6 +91,13 @@ flowchart LR
 
 Not "design in Figma" — the **design system layer**: visual principles, assets, content principles, and styles as one domain, with Figma as its current home. MVDS is the base plus Etsy-specific extensions. The layer holds where artwork is born *and* where the **listing gallery template system lives** — the 12-role galleries in Drive are exports of `Layouts` instances composed in Figma, not ad-hoc renders. That Figma→Drive workflow is distinct from the code-side generators (`lib/etsy-listing-kit/generator.ts`'s 6-scene pack, `scenes.ts`'s 10-image ladder), which are a separate production path over the same template photography; the map keeps both traceable rather than crediting one with the other's output. The content principles (copy rules, house style, alt-text templates) belong to this layer too: Authorship (§5) is the drafting activity, this layer owns the rules that govern it.
 
+**The written chapters** — codified 2026-09-16, the governing layer §10 used to call missing:
+
+- [Image principles](shop-design-system/image-principles.md) — 10 principles: role-named layouts, slot discipline, sampled color, no fabricated copy, thumbnail distinguishability, composed bundles.
+- [Content principles](shop-design-system/content-principles.md) — 13 principles: the title formula, tag discipline, description skeleton, alt-text templates, copy-never-retyped.
+
+Each principle is a met/not-met statement carrying the artifact that justifies it. Drafting copy or generating images? Open the chapter that governs it before you start.
+
 | Surface | Where | Role |
 |---|---|---|
 | Source art files | `2026 Xmas Cut Files` (Yojq1pGSXTFi5iZkowpMaa) and siblings | Raw designs; "Mode A external ingest" clones SVGs out without touching the source |
@@ -115,8 +124,8 @@ Not "design in Figma" — the **design system layer**: visual principles, assets
 ## 5. Authorship — evidence-driven copy
 
 - **Evidence**: Etsy Search Analytics exports, ads keyword panels, and the sync's own traffic data (views/favorites deltas) — all baselined in `experiments/etsy-notion-sync/docs/tag-positioning-experiment.md`.
-- **Rules**: descriptor-first titles carrying "hand embroidery pattern pdf", 13 unique ≤20-char tags, no standalone format tags, one skill level, wellness/gift as positioning phrase.
-- **Copy documents**: `docs/tag-experiment-copy.md` (13 experiment listings), `docs/ETSY_HOLIDAY_DRAFTS_2026.md` (9 holiday listings + alt-text pack), `docs/ETSY_PASTE_READY_2026-09.md` (September plan copy).
+- **Rules**: [content principles](shop-design-system/content-principles.md) — descriptor-first titles carrying "hand embroidery pattern pdf", 13 unique ≤20-char tags, no standalone format tags, one skill level, wellness/gift as positioning phrase. The design system (§1) owns these; Authorship applies them.
+- **Copy documents**: `experiments/etsy-notion-sync/docs/tag-experiment-copy.md` (13 experiment listings), `docs/ETSY_HOLIDAY_DRAFTS_2026.md` (9 holiday listings + alt-text pack), `docs/ETSY_PASTE_READY_2026-09.md` (September plan copy).
 - **Machine form**: `prototype/listing_copy_2026-09.json`, `holiday_drafts_2026.json`, `holiday_alt_text_2026.json`, `holiday_listing_ids.json` — payloads the write tooling consumes, regenerated from the docs so copy is never retyped.
 - **Review surface**: the "W&H Holiday Batch" artifact — an Etsy-anatomy card deck for approving a batch before anything ships.
 
@@ -147,14 +156,26 @@ ELK-the-experiment fizzled fast, but the evaluation layer it produced keeps earn
 - **Seasonal pushes**: fall-leaves refresh now; holiday batch for the October–December window; Easter collections staged for spring.
 - Open backlog: trends view (#283), 4 partial galleries' template-card roles, listing videos, ornament photography.
 
-## 10. Standards — the W&H shop design system (exists in fragments, not yet codified)
+## 10. Standards — the W&H shop design system (codified 2026-09-16)
 
-The written form of §1's design system layer. The layer is on the map (v5) with its seams drawn; the *chapters* are what's not yet codified — the standards demonstrably exist but live scattered:
+The written form of §1's design system layer, in two chapters — **MVDS as the base, plus the extended design systems Etsy specifically needs** (listing-image scene language, marketplace copy conventions) layered on it and marked as extensions:
 
-- **Image principles**: the `Layouts` component set on the W+H Listing Generator's `Garden Components` page (§1) — the composition language's live embodiment, 12 gallery-role variants on a slot architecture; plus scene-ladder composition rules (`lib/etsy-listing-kit/scenes.ts`), the W&H listing reference composition language (`generator.ts`), template photography (`assets/mockups/`), `palette.ts`, and judgment captured only in session memory (scene contrast lessons, thumbnail sibling problems). Codification starts *from* the component set, not from scratch.
-- **Content principles**: the six copy rules (descriptor-first titles, searched phrase shape, no standalone format tags, one skill level, unique tag sets, wellness-as-positioning), the house-style description skeleton, the alt-text role templates.
+- **[Image principles](shop-design-system/image-principles.md)** — 10 principles codified *from* the `Layouts` component set on the `Garden Components` page, with receipts into `scenes.ts`, `generator.ts`, `palette.ts`, the Drive galleries, and dated session lessons (scene contrast, thumbnail siblings).
+- **[Content principles](shop-design-system/content-principles.md)** — 13 principles from the six copy rules, the house-style description skeleton, the alt-text role templates, and the evidence pulls that justify them.
 
-These are two chapters of one shop design system — **MVDS as the base, plus whatever extended design systems Etsy specifically needs** (listing-image scene language, marketplace copy conventions) layered on it. Codifying it would also unlock a *brand-adherence tier* in the evaluation rubric, which today checks completeness only. Status: fragments; codification not started.
+Every principle is a met/not-met statement carrying its receipt; a principle whose receipt stops existing is deleted rather than kept on inertia. This is also the form a **brand-adherence tier** in the evaluation rubric would consume — the rubric checks completeness only today, and that tier stays out of scope until the chapters have been used on a real batch.
+
+## 10a. The monthly review ritual
+
+Run in one sitting; it is what keeps §Live state true and the [shop health ledger](ETSY_SHOP_HEALTH_LEDGER.md) honest.
+
+1. ☐ **Audit live state** — walk every row of the table below; confirm it still holds or correct it. Zero stale rows is the standard.
+2. ☐ **Refresh the pulls** — capture anything new (Search Analytics, ads panels, eRank, statements), flat-named into Drive's `W+H Data Pulls/`, with a distilled note in `docs/pulls/`.
+3. ☐ **Compute completeness and engagement** — mean Tier-B percentage and favorites÷views across active listings, from the latest snapshot per listing (`etsy_listing_snapshots`; criteria in `lib/etsy-scorecard.ts`).
+4. ☐ **Pull revenue** — the Shop Manager statement export, distilled into its pull note.
+5. ☐ **Append one ledger row** — completeness, engagement, net revenue, MoM change, each with provenance. Observations only; no line acquires a target.
+6. ☐ **Check the map's seams** — did any PR since the last review add, move, or remove a surface without updating the map? If the map changed structurally, a new FigJam version page exists and this doc matches it.
+7. ☐ **Record the check** — note the review date and what changed in the live-state table.
 
 ## 11. Data & market intelligence
 
