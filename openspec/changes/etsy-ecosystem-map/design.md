@@ -4,13 +4,15 @@
 
 The proposal and specs are approved (PR #479). Two capabilities: `ecosystem-map` (the living map, FigJam board first with the doc in lockstep) and `shop-design-system` (two chapters codified from fragments, every principle carrying its receipt, checkable yes/no). This change ships no tooling — its "UI" is the map itself: the FigJam board and `docs/ETSY_ECOSYSTEM_MAP_2026-09.md`.
 
-One thing changed between spec approval and this design: Katy surfaced the W+H Listing Generator's `Garden Components` page, which shows Figma's real footprint is bigger than the map drew it. The `Layouts` component set (12 variants — Basic, Badge, Content Center/Bottom Left/Top Left, Recos 4up/2up/Hoop, Transferring patterns, FAQ 1–3) maps ≈1:1 onto the 12 gallery roles; each variant exposes `Slot-Background` / `Slot-BaseArtwork` plus shared Watermark, Banner, and Logo components. The Plant Markers/Sayings libraries on the same page show the system spans full-shop product lines, and `staging/<SKU>/` frames assemble bundle galleries from these components. The galleries synced to Notion are instances of this library, not ad-hoc renders. Per the map spec's own rule (a surface reframed updates the map in the same change), this design carries that map update.
+Two things changed between spec approval and this design. First, Katy surfaced the W+H Listing Generator's `Garden Components` page, which shows Figma's real footprint is bigger than the map drew it. The `Layouts` component set (12 variants — Basic, Badge, Content Center/Bottom Left/Top Left, Recos 4up/2up/Hoop, Transferring patterns, FAQ 1–3) maps ≈1:1 onto the 12 gallery roles; each variant exposes `Slot-Background` / `Slot-BaseArtwork` plus shared Watermark, Banner, and Logo components. The Plant Markers/Sayings libraries on the same page show the system spans full-shop product lines, and `staging/<SKU>/` frames assemble bundle galleries from these components. The galleries synced to Notion are instances of this library, not ad-hoc renders. Per the map spec's own rule (a surface reframed updates the map in the same change), this design carries that map update (board v4).
+
+Second, Katy's sticky on v4 caught the deeper reframe: "We're labelling tools not roles again. This is the Design System layer — and includes visual, assets, content, styles, etc. So lets pull the Content layer over here, and stop labelling sections with tool names." Ingested as **v5**: the section is the *design system layer* role (Figma demoted to "today", like Drive and Notion before it), the MVDS-base standards node moves inside it, and the content principles move in alongside visual and assets — Writing keeps the drafting activity while the design system owns the rules that govern it.
 
 ## Goals / Non-Goals
 
 **Goals:**
 
-- The map's v4 iteration shows Figma as two roles — artwork birth *and* the listing template system / design-system home — on both surfaces (board page v4, doc §1 + mermaid), keeping the lockstep requirement true from day one.
+- The map's current iteration (v5) names the design system layer as a role — MVDS base, visual + assets + content principles + styles, Figma as today's vendor — on both surfaces (board page v5, doc §1 + mermaid), keeping the lockstep requirement true from day one.
 - Name the homes and skeletons for everything the specs require: the two design-system chapters, the monthly-review ritual, and the shop health ledger — so tasks can be a checklist, not a design exercise.
 - The image-principles chapter codifies *from* the `Layouts` component set (its receipt), never re-deriving composition rules from prose memory.
 
@@ -47,8 +49,8 @@ This change's visual surface is the FigJam board, not a hub screen — the as-is
 | Item               | Value |
 | ------------------ | ----- |
 | Primary file URL   | https://www.figma.com/board/ln6p2z1vppiTdqDPNVdoOZ |
-| As-is frame(s)     | Page `v3 — 2026-09-16 — loop untangled (superseded)` — Figma flattened to one "Design in Figma" pair |
-| Proposed frame(s)  | Page `v4 — 2026-09-16 — Figma footprint surfaced (CURRENT)` — Figma domain split into Source art files / Listing template system (Layouts set, 12 role variants + slots) / Full-shop libraries, with the standards seam "Image principles live here as components" |
+| As-is frame(s)     | Pages `v3 — loop untangled` (Figma flattened to one node) and `v4 — Figma footprint surfaced` (split into three surfaces, but still tool-labelled; carries Katy's sticky + reply) — both superseded |
+| Proposed frame(s)  | Page `v5 — 2026-09-16 — design system layer named (CURRENT)` — the section is the *Design system layer* role (today: Figma): MVDS base + source art/assets + Listing template system (Layouts set, 12 role variants + slots) + full-shop libraries + content principles, with seams "Image principles as components" and "Governs" → copy drafting |
 | Libraries / version| FigJam living-diagram conventions (Index TOC, CURRENT banner, archive banners); component receipts cite `ZZusgWsPM4Fz8YuhKxnD4R` Garden Components (node 2041:55504, Layouts set 2041:55505) |
 | Code Connect       | N/A — no code surface |
 | Breakpoints        | N/A — FigJam canvas, not a responsive screen |
@@ -56,7 +58,7 @@ This change's visual surface is the FigJam board, not a hub screen — the as-is
 
 ## Decisions
 
-1. **Figma is drawn as two roles, not one node.** Source art (Xmas Cut Files, Embroidery Components) and the listing template system (Layouts set + slots + staging frames) get separate nodes, with full-shop libraries alongside. Receipt: the Garden Components page itself — the 12 variants name the 12 gallery roles.
+1. **The map draws a *design system layer*, not a Figma box.** The role owns visual principles, assets, content principles, and styles as one domain, MVDS at its base, Figma as today's vendor. Inside it: source art (Xmas Cut Files, Embroidery Components), the listing template system (Layouts set + slots + staging frames), full-shop libraries, and the content principles. Receipts: the Garden Components page (the 12 variants name the 12 gallery roles) and Katy's v4 sticky ("stop labelling sections with tool names").
 2. **The image-principles chapter starts from the component set.** Each principle cites the Layouts variant or slot that embodies it, then the code that consumes it (`scenes.ts`, `generator.ts`, `palette.ts`), then dated session lessons. A principle with no surviving artifact behind it is dropped — this is how "every principle carries its receipt" stays honest.
 3. **Chapters live at `docs/shop-design-system/`, one file each.** Two files keep "image" and "content" independently linkable ("one link away" scenario) while remaining one findable set. MVDS is the expressed base; Etsy extensions are marked as such inline.
 4. **Checkability is a format rule:** every principle is written as a statement a reviewer can mark met/not-met against a real listing, followed by its receipt line. No principle ships as advice-prose.

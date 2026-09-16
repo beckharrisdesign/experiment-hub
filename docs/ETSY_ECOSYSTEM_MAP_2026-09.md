@@ -2,12 +2,10 @@
 
 *Every surface that comes together in a Watermark & Hue component or listing: where each lives, what feeds it, and what it feeds. Snapshot of live state at the bottom.*
 
-*Diagram mirrors FigJam board `ln6p2z1vppiTdqDPNVdoOZ`, page v4 — the board is the primary review surface.*
+*Diagram mirrors FigJam board `ln6p2z1vppiTdqDPNVdoOZ`, page v5 — the board is the primary review surface.*
 
 ```mermaid
 flowchart LR
-    standards["Standards: MVDS + Etsy-specific extensions"]
-
     subgraph dataMeasure ["Data and measurement, one domain"]
         etsyData(("Etsy shop"))
         supabase[("Durable store: Supabase, UI-light by design")]
@@ -19,10 +17,12 @@ flowchart LR
         sweeps{{"Improvement sweeps"}}
     end
 
-    subgraph design ["Design in Figma"]
-        figmaFiles["Source art files"]
+    subgraph designSystem ["Design system layer, today Figma"]
+        base["MVDS base + Etsy-specific extensions"]
+        figmaFiles["Source art + asset files"]
         templates["Listing template system: Layouts set, 12 gallery-role variants + slots"]
         sayings["Full-shop libraries: Plant Markers sayings"]
+        contentPrinciples["Content principles: copy rules, house style, alt-text templates"]
     end
 
     subgraph localstore ["Local file store, today Google Drive"]
@@ -37,7 +37,7 @@ flowchart LR
 
     subgraph writing ["Writing"]
         pullNotes["Distilled pull notes"]
-        copy["Copy rules + payloads"]
+        copy["Copy drafting + payloads"]
         review["Batch review deck"]
     end
 
@@ -50,9 +50,10 @@ flowchart LR
     etsyMain(("Etsy shop"))
     stitch["Stitch Check, in flight"]
 
-    standards -.->|"Image principles live here as components"| templates
-    standards -.-> copy
-    standards -.->|"Future brand tier"| evaluation
+    base -.->|"Image principles as components"| templates
+    base -.-> contentPrinciples
+    base -.->|"Future brand tier"| evaluation
+    contentPrinciples -.->|"Governs"| copy
     etsyData -->|"Daily sync"| supabase
     etsyData -.->|"Reads listing"| evaluation
     supabase --> experiments
@@ -84,9 +85,9 @@ flowchart LR
     stitch -.->|"Machine files, later"| compFiles
 ```
 
-## 1. Design — Figma (component birth *and* the listing template system)
+## 1. Design system layer — role, not vendor (today: Figma)
 
-Figma holds two distinct roles that the map used to flatten into one: it is where artwork is born, and it is where the **listing gallery template system lives**. The galleries are instances of a Figma component library, not ad-hoc renders — the code-side generator consumes this library's exports.
+Not "design in Figma" — the **design system layer**: visual principles, assets, content principles, and styles as one domain, with Figma as its current home. MVDS is the base plus Etsy-specific extensions. The layer holds where artwork is born *and* where the **listing gallery template system lives** — the galleries are instances of a Figma component library, not ad-hoc renders; the code-side generator consumes this library's exports. The content principles (copy rules, house style, alt-text templates) belong to this layer too: Writing (§5) is the drafting activity, this layer owns the rules that govern it.
 
 | Surface | Where | Role |
 |---|---|---|
@@ -148,7 +149,7 @@ ELK-the-experiment fizzled fast, but the evaluation layer it produced keeps earn
 
 ## 10. Standards — the W&H shop design system (exists in fragments, not yet codified)
 
-The map's missing governing layer. The standards demonstrably exist but live scattered:
+The written form of §1's design system layer. The layer is on the map (v5) with its seams drawn; the *chapters* are what's not yet codified — the standards demonstrably exist but live scattered:
 
 - **Image principles**: the `Layouts` component set on the W+H Listing Generator's `Garden Components` page (§1) — the composition language's live embodiment, 12 gallery-role variants on a slot architecture; plus scene-ladder composition rules (`lib/etsy-listing-kit/scenes.ts`), the W&H listing reference composition language (`generator.ts`), template photography (`assets/mockups/`), `palette.ts`, and judgment captured only in session memory (scene contrast lessons, thumbnail sibling problems). Codification starts *from* the component set, not from scratch.
 - **Content principles**: the six copy rules (descriptor-first titles, searched phrase shape, no standalone format tags, one skill level, unique tag sets, wellness-as-positioning), the house-style description skeleton, the alt-text role templates.
