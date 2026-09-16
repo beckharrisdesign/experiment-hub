@@ -1,5 +1,8 @@
 # Holiday draft listings — 2026
 
+> **All 9 listings went live 2026-09-16.** Verified on Etsy: full galleries with alt text, both hoop-size PDFs on every listing, personalization active on all 4 snow globes. Re-check any time with `bash scripts/run-batch-status.sh`.
+
+
 *Everything a draft needs for the eight ready Christmas components, structured as **4 classic singles + 4 personalizable snow globes + 1 Christmas Classics bundle**. The classic singles cross-sell the well-priced bundle ($15 for four patterns: less than the price of three singles). The globes' baked-in text is the product: each is offered as a customizable pattern — the buyer's own year, name, or short message replaces the as-shown "fa la la / CHRISTMAS 2026" — at a $8 custom premium. Titles follow the descriptor-first formula; tags: 13 per set, ≤20 chars, no tag repeated across these nine listings. Descriptions mirror the shop's live house style. Matches the Listing Inventory staging (8 Single rows; the bundle gets one new Bundle row when drafts are stamped back).*
 
 ## Shared template (from the sibling pattern listings)

@@ -200,7 +200,7 @@ Not yet wired into the listing pipeline, but pointed straight at it. **Stitch Ch
 | Piece | State |
 |---|---|
 | Notion galleries | ✅ Complete — 38 rows, full 12-role sets |
-| Holiday drafts | ✅ 9 created on Etsy (text + styles) |
+| Holiday batch | ✅ **All 9 LIVE on Etsy 2026-09-16** — 4 classics $6, 4 personalizable globes $8, Classics Set bundle $15; every listing verified with full gallery, both PDFs, and personalization where expected |
 | Globe personalization | ✅ Set on all 4 globes 2026-09-16 |
 | Draft images on Etsy | ✅ 102 images uploaded with alt text 2026-09-16 — 8 listings × 12 roles + bundle × 6, ranks verified 1..n on every listing |
 | Experiment running | ✅ Intervention applied and verified — all 13 listings match the approved copy exactly in the 2026-09-15 snapshot (titles 13/13, tag sets 13/13); write bounded to 09-14 11:31 UTC → 09-15 10:52 UTC. Day 0 = the 09-15 snapshot; day 14 = 2026-09-29, day 30 = 2026-10-15 |
