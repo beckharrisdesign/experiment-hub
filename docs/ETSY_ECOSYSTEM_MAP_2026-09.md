@@ -10,6 +10,10 @@ flowchart TD
     G --> GF[Drive: W+H Listings/SKU folders<br/>12-role galleries, 37 SKUs]
     CR --> LI[Notion: Listing Inventory<br/>staging + source of truth]
     GF -->|notion-gallery-sync| LI
+    DS[Standards: W&H shop design system<br/>image + content principles, MVDS format] -.-> F
+    DS -.-> W
+    DS -.->|future brand tier| X
+    INT[Intelligence: Shop Manager stats, Etsy Ads,<br/>eRank, Marmalead, Google Ads] --> EV
     EV[Evidence: Search Analytics,<br/>ads panels, sync traffic data] --> W[Writing: copy rules, paste-ready docs,<br/>payload JSONs, review artifact]
     LI --> W
     W --> ET[Etsy write tooling<br/>apply copy · create drafts · upload images]
@@ -80,7 +84,28 @@ Daily GitHub Action (`etsy-notion-sync.yml`): `capture.py` snapshots every listi
 - **Seasonal pushes**: fall-leaves refresh now; holiday batch for the October–December window; Easter collections staged for spring.
 - Open backlog: trends view (#283), 4 partial galleries' template-card roles, listing videos, ornament photography.
 
-## 10. In flight — digitizing & pattern previewing (Stitch Check)
+## 10. Standards — the W&H shop design system (exists in fragments, not yet codified)
+
+The map's missing governing layer. The standards demonstrably exist but live scattered:
+
+- **Image principles**: scene-ladder composition rules (`lib/etsy-listing-kit/scenes.ts`), the W&H listing reference composition language (`generator.ts`), template photography (`assets/mockups/`), `palette.ts`, and judgment captured only in session memory (scene contrast lessons, thumbnail sibling problems).
+- **Content principles**: the six copy rules (descriptor-first titles, searched phrase shape, no standalone format tags, one skill level, unique tag sets, wellness-as-positioning), the house-style description skeleton, the alt-text role templates.
+
+These are two chapters of one shop design system — the natural second consumer of **MVDS** (the meta-format for expressing a brand system; currently paused, remote repo, Notion-only narrative). Codifying it would also unlock a *brand-adherence tier* in the evaluation rubric, which today checks completeness only. Status: fragments; codification not started.
+
+## 11. Data & market intelligence
+
+Three tiers, split by how the data arrives:
+
+| Tier | Sources | Cadence | Access |
+|---|---|---|---|
+| **Instrumented (automatic)** | Supabase snapshots — views, favorites, quantity/sales inference, title/tag change history | Daily, via the sync | Full API |
+| **Manual bookends (human capture ritual)** | Etsy Search Analytics (organic search terms), Shop Manager Stats (traffic source mix), Etsy Ads keyword panels (impressions/CTR/ROAS), real order data | Day-0/day-30 experiment captures, monthly reviews | **No API** — Shop Manager only; the OAuth token also lacks `transactions_r`, so revenue stays manual |
+| **External tools** | eRank (superstar keywords — no API, set by hand), Marmalead (Etsy SEO research), Google Ads (bhd-experiment-hub project, Basic access; read-only pulls feed the monthly review) | Ad-hoc / per review | Manual exports; Google Ads scriptable read-only |
+
+The middle tier is why experiment protocols carry explicit "capture the panel" checklist steps: those numbers cannot be pulled programmatically, so the ritual **is** the pipeline. Anything wanting automated revenue or search-term data needs either a `transactions_r` re-auth (orders) or stays impossible (Search Analytics, eRank).
+
+## 12. In flight — digitizing & pattern previewing (Stitch Check)
 
 Not yet wired into the listing pipeline, but pointed straight at it. **Stitch Check** (`experiments/svg-to-stitch/`, grown from the SVG to Stitch quick tool, reframed commercial 2026-09-11) converts and previews embroidery files in the browser: `lib/svg-to-stitch/` (converter, satin columns for 1–10mm strokes, two-rail satin fills, stitch brushes, DST/EXP machine formats), live client-side route at `/svg-to-stitch`, machine-file previewer with pan/zoom, 72 tests. The eventual seams into this map: the same component SVGs (Drive/Figma) become **machine-file deliverables** alongside the printable PDFs — a new product line per component — and the previewer becomes both a listing asset (show buyers real stitch-out fidelity) and a QA gate before a pattern ships. The "previewer half and beyond" is explicitly not done; treat it as a future deliverable type in the Components DB checklist, not a current one.
 
