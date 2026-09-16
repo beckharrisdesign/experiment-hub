@@ -464,6 +464,6 @@ Prefer to start with just one? Each classic motif is also available individually
 3. ☐ Confirm the 2-business-day custom-file SLA (drafted default — change it in the descriptions if it doesn't fit your week)
 4. ☐ Upload listing images from the staged galleries (`uploadListingImage` — rank is an INSERT, verify placement; 12 of 20 slots per listing — matches the shop's house standard, 8 slots stay open for a future second scene set)
 5. ☐ Apply the alt-text pack above to every uploaded image (uploads wipe alt — apply after)
-6. ☐ Upload the PDF deliverables (`uploadListingFile`; bundle PDFs built 2026-09-16 via `scripts/merge-bundle-pdfs.py`; Etsy caps digital listings at 5 files — the Classics bundle ships as 2 merged multi-page PDFs, one per hoop size, built from the 8 per-design deliverables)
+6. ✅ PDF deliverables uploaded 2026-09-16 — all 18 verified by name on their listings (`scripts/run-upload-files.sh`; bundle PDFs built via `scripts/merge-bundle-pdfs.py`; Etsy caps digital listings at 5 files — the Classics bundle ships as 2 merged multi-page PDFs, one per hoop size, built from the 8 per-design deliverables)
 7. ☐ Set listing SKUs (BHD-HLD-00x pattern) and stamp Etsy Listing IDs into the staged Listing Inventory rows (bundle gets one new Bundle row)
 8. ☐ Activate from Shop Manager after visual review
