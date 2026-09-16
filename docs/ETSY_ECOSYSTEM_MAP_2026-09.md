@@ -2,38 +2,100 @@
 
 *Every surface that comes together in a Watermark & Hue component or listing: where each lives, what feeds it, and what it feeds. Snapshot of live state at the bottom.*
 
+*Diagram mirrors FigJam board `ln6p2z1vppiTdqDPNVdoOZ`, page v4 — the board is the primary review surface.*
+
 ```mermaid
-flowchart TD
-    F[Figma design files<br/>Xmas Cut Files · Embroidery Components · W+H Listing Generator] --> D[Drive: W+H Components<br/>Component SVGs + PDF deliverables]
-    F --> G[Gallery generation<br/>listing-kit scenes + Aug pass]
-    D --> CR[Notion: Components DB<br/>SKU, collections, deliverables, descriptions]
-    G --> GF[Drive: W+H Listings/SKU folders<br/>12-role galleries, 37 SKUs]
-    CR --> LI[Notion: Listing Inventory<br/>staging + source of truth]
-    GF -->|notion-gallery-sync| LI
-    DS[Standards: W&H shop design system<br/>image + content principles, MVDS format] -.-> F
-    DS -.-> W
-    DS -.->|future brand tier| X
-    INT[Intelligence: Shop Manager stats, Etsy Ads,<br/>eRank, Marmalead, Google Ads] --> EV
-    EV[Evidence: Search Analytics,<br/>ads panels, sync traffic data] --> W[Writing: copy rules, paste-ready docs,<br/>payload JSONs, review artifact]
-    LI --> W
-    W --> ET[Etsy write tooling<br/>apply copy · create drafts · upload images]
-    ET --> E[Etsy: WatermarkandHue]
-    E -->|daily scheduled sync| S[Supabase: snapshots + runs]
-    S -->|sync_notion + change comments| LI
-    S --> X[Experiments & evaluation<br/>tag A/B · ELK scorecard]
-    X --> SW[Improvement sweeps<br/>monthly review, P1–P5 plans, day-30 readouts]
-    SW --> W
-    SW --> F
-    ST[In flight: Stitch Check<br/>digitizing + machine-file preview] -.->|future deliverable type| D
+flowchart LR
+    standards["Standards: MVDS + Etsy-specific extensions"]
+
+    subgraph dataMeasure ["Data and measurement, one domain"]
+        etsyData(("Etsy shop"))
+        supabase[("Durable store: Supabase, UI-light by design")]
+        bookends[/"Manual bookends: Search Analytics, ads, statements"/]
+        external[/"External: eRank, Marmalead, Google Ads"/]
+        pulls[("Data pulls, Drive flat files")]
+        experiments["Tag positioning A/B"]
+        evaluation["Evaluation rubric, outlived ELK"]
+        sweeps{{"Improvement sweeps"}}
+    end
+
+    subgraph design ["Design in Figma"]
+        figmaFiles["Source art files"]
+        templates["Listing template system: Layouts set, 12 gallery-role variants + slots"]
+        sayings["Full-shop libraries: Plant Markers sayings"]
+    end
+
+    subgraph localstore ["Local file store, today Google Drive"]
+        compFiles[("Component SVGs + PDFs")]
+        galleries[("Gallery folders")]
+    end
+
+    subgraph editing ["Content editing layer, today Notion"]
+        compDb[("Components registry")]
+        listInv[("Listing preview + tweak surface")]
+    end
+
+    subgraph writing ["Writing"]
+        pullNotes["Distilled pull notes"]
+        copy["Copy rules + payloads"]
+        review["Batch review deck"]
+    end
+
+    subgraph tooling ["Gated Etsy write tooling"]
+        applyCopy[["Apply copy"]]
+        createDrafts[["Create drafts"]]
+        uploadImages[["Upload images + alt"]]
+    end
+
+    etsyMain(("Etsy shop"))
+    stitch["Stitch Check, in flight"]
+
+    standards -.->|"Image principles live here as components"| templates
+    standards -.-> copy
+    standards -.->|"Future brand tier"| evaluation
+    etsyData -->|"Daily sync"| supabase
+    etsyData -.->|"Reads listing"| evaluation
+    supabase --> experiments
+    bookends -->|"Capture ritual"| pulls
+    external -->|"Capture ritual"| pulls
+    experiments --> sweeps
+    evaluation --> sweeps
+    sweeps -->|"New designs"| figmaFiles
+    sweeps -->|"Next copy round"| copy
+    supabase -->|"Instrumented data"| pullNotes
+    pulls -->|"Distill to model"| pullNotes
+    supabase -->|"Mirror + comments"| listInv
+    figmaFiles -->|"SVG ingest"| compFiles
+    figmaFiles -->|"Artwork into slots"| templates
+    templates -->|"Exports + bundle staging frames"| galleries
+    sayings -->|"Full-shop product art"| compFiles
+    compFiles -->|"Filed"| compDb
+    compDb --- listInv
+    galleries -->|"Gallery sync"| listInv
+    listInv --> copy
+    pullNotes --> copy
+    copy --> review
+    review -->|"Approved"| createDrafts
+    copy --> applyCopy
+    galleries --> uploadImages
+    applyCopy --> etsyMain
+    createDrafts --> etsyMain
+    uploadImages --> etsyMain
+    stitch -.->|"Machine files, later"| compFiles
 ```
 
-## 1. Design — Figma (component birth)
+## 1. Design — Figma (component birth *and* the listing template system)
+
+Figma holds two distinct roles that the map used to flatten into one: it is where artwork is born, and it is where the **listing gallery template system lives**. The galleries are instances of a Figma component library, not ad-hoc renders — the code-side generator consumes this library's exports.
 
 | Surface | Where | Role |
 |---|---|---|
 | Source art files | `2026 Xmas Cut Files` (Yojq1pGSXTFi5iZkowpMaa) and siblings | Raw designs; "Mode A external ingest" clones SVGs out without touching the source |
 | Embroidery Components file | Collection rows (e.g. Holiday row 136:24455) | The design-side registry — each component filed under a collection |
-| W+H Listing Generator | ZZusgWsPM4Fz8YuhKxnD4R, `Embroidery Base Patterns` page | 2000×2000 exports that feed the mockup generator |
+| W+H Listing Generator — base patterns | ZZusgWsPM4Fz8YuhKxnD4R, `Embroidery Base Patterns` page | 2000×2000 exports that feed the mockup generator |
+| W+H Listing Generator — `Layouts` component set | Same file, `Garden Components` page (node 2041:55504, set 2041:55505) | **The gallery template system**: 12 variants (Basic, Badge, Content Center/Bottom Left/Top Left, Recos 4up/2up/Hoop, Transferring patterns, FAQ 1–3) mapping ≈1:1 to the 12 gallery roles, each exposing `Slot-Background` / `Slot-BaseArtwork` plus shared Watermark, Banner, and Logo components |
+| Full-shop libraries | Same page — Plant Markers/Sayings frames (Affirmations, Snark, Vegetables, Herbs) | The design system spans product lines beyond embroidery |
+| Staging frames | Same page, `staging/<SKU>/` frames (e.g. WH-UN-B-7584) | Bundle galleries assembled from Layouts instances before export |
 
 ## 2. Component registry — Notion Components DB
 
@@ -88,7 +150,7 @@ ELK-the-experiment fizzled fast, but the evaluation layer it produced keeps earn
 
 The map's missing governing layer. The standards demonstrably exist but live scattered:
 
-- **Image principles**: scene-ladder composition rules (`lib/etsy-listing-kit/scenes.ts`), the W&H listing reference composition language (`generator.ts`), template photography (`assets/mockups/`), `palette.ts`, and judgment captured only in session memory (scene contrast lessons, thumbnail sibling problems).
+- **Image principles**: the `Layouts` component set on the W+H Listing Generator's `Garden Components` page (§1) — the composition language's live embodiment, 12 gallery-role variants on a slot architecture; plus scene-ladder composition rules (`lib/etsy-listing-kit/scenes.ts`), the W&H listing reference composition language (`generator.ts`), template photography (`assets/mockups/`), `palette.ts`, and judgment captured only in session memory (scene contrast lessons, thumbnail sibling problems). Codification starts *from* the component set, not from scratch.
 - **Content principles**: the six copy rules (descriptor-first titles, searched phrase shape, no standalone format tags, one skill level, unique tag sets, wellness-as-positioning), the house-style description skeleton, the alt-text role templates.
 
 These are two chapters of one shop design system — **MVDS as the base, plus whatever extended design systems Etsy specifically needs** (listing-image scene language, marketplace copy conventions) layered on it. Codifying it would also unlock a *brand-adherence tier* in the evaluation rubric, which today checks completeness only. Status: fragments; codification not started.
@@ -122,4 +184,4 @@ Not yet wired into the listing pipeline, but pointed straight at it. **Stitch Ch
 | Experiment day 0 | ☐ Copy apply not yet confirmed run |
 | PDF files on drafts | ☐ Not started (bundle needs 2 merged PDFs first) |
 | Notion ID stamping | ☐ Pending — write the 9 draft ids into staged rows before their next-sync auto-create |
-| PR #478 | ☐ Open — carries all the runners and hardened tooling |
+| PR #478 | ✅ Merged — runners and hardened tooling on main |
