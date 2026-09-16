@@ -19,7 +19,12 @@
       offending value in the error banner, never a silent fallback
       — verified 2026-09-16: a brush tag on a filled shape (the shape a
       Figma stroke becomes when it is outlined on export) fails with
-      `"st-brush-cross" is a filled shape tagged st-brush`
+      `"st-brush-cross" is a filled shape tagged st-brush`. Review of
+      PR #485 surfaced a hole in this: the `fillMode: "outline"` branch
+      validated no fill directives at all, so with **Fill shapes** off a
+      brushed fill was silently flattened to a boundary run and an
+      out-of-range density passed unchecked. Both now error in either
+      mode, covered by `tests/svg-to-stitch-brush.test.ts`
 - [ ] 1.4 **Six motifs sew on straight and curved paths** — user can tag
       `st-brush-cross`, `-tick`, `-chain`, `-dot`, `-bird`, or `-bean` and
       recognize each motif from the Figma explorations in the preview, on

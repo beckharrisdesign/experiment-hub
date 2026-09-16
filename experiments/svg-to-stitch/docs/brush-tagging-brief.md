@@ -32,9 +32,13 @@ Cover all of this, so one export walks the whole feature:
 - **At least one shape left untagged**, so the heuristic fallback still
   shows up in the same file
 
-Give each brushed path its own stroke colour. The app lists sew order by
-thread colour, so same-coloured paths merge into one row and the
-per-motif counts become impossible to read.
+Giving each brushed path its own stroke colour makes the walkthrough
+easier to read, though it isn't required. The app lists sew order by
+thread colour and each row already breaks down its motifs — two crosses
+and a chain in one thread read as `✕ 2 · ◯ 1 · 412 sts`. Separate
+colours just make it obvious which path produced which motif. Don't
+invent thread colours the design doesn't want; every extra colour is a
+real thread change on the machine.
 
 ## What breaks it
 
@@ -48,7 +52,12 @@ path into a filled shape, its brush tag hits exactly that error. So on
 any layer carrying a brush tag: centred stroke, no "Outline stroke", no
 boolean operations, no masks, no effects, no dashes.
 
-**Names must be unique.** Duplicates collide in the export.
+**Keep the tag a whole word.** Duplicate layer names are fine — Figma
+suffixes them and the parser splits on underscores, so
+`st-brush-cross_2` still sews a cross. What fails is a suffix that fuses
+to the brush name: `st-brush-cross2` and `st-brush-cross-2` both error
+with "isn't in the library", because the brush name is read to the end
+of the token.
 
 ## Export
 
@@ -64,12 +73,20 @@ Check the export before handing it over:
 grep -o 'id="[^"]*st-[^"]*"' design.svg
 ```
 
-Every tagged layer should be listed. Then confirm no brushed path got
-outlined — this count must equal the number of brush tags, not zero:
+Every tagged layer should be listed, group tags included.
+
+For the flattening check, grep only answers for paths that carry a brush
+tag in their own `id` — it can't see a path that inherits its tag from a
+group, and it ignores `rect`, `circle` and the other shapes. So treat a
+`fill=` on a directly-tagged path as a definite problem:
 
 ```bash
-grep -o '<path[^>]*st-brush-[^>]*>' design.svg | grep -c 'stroke='
+grep -o '<path[^>]*st-brush-[^>]*fill="#[^>]*>' design.svg
 ```
+
+Anything it prints has been outlined. Silence doesn't clear the export,
+though — the real check is converting the file, which fails loudly and
+names the offending layer whichever way the tag was inherited.
 
 ## Hand back
 
