@@ -2,12 +2,12 @@
 
 *Every surface that comes together in a Watermark & Hue component or listing: where each lives, what feeds it, and what it feeds. Snapshot of live state at the bottom.*
 
-*Diagram mirrors FigJam board `ln6p2z1vppiTdqDPNVdoOZ`, page v5 — the board is the primary review surface. The shop appears twice by design: one WatermarkandHue shop, drawn as a read view (feeding sync + evaluation) and a write view (receiving the gated tooling) so the loop reads left-to-right without crossing connectors.*
+*Diagram mirrors FigJam board `ln6p2z1vppiTdqDPNVdoOZ`, page v5 — the board is the primary review surface. The storefront appears twice by design: one WatermarkandHue shop, drawn as a read view (feeding sync + evaluation) and the storefront proper (receiving publishing) so the loop reads left-to-right without crossing connectors.*
 
 ```mermaid
 flowchart LR
-    subgraph dataMeasure ["Data and measurement, one domain"]
-        etsyData(("Etsy shop, read view"))
+    subgraph dataMeasure ["Data and measurement"]
+        etsyData(("Storefront (read view)"))
         supabase[("Durable store: Supabase, UI-light by design")]
         bookends[/"Manual bookends: Search Analytics, ads, statements"/]
         external[/"External: eRank, Marmalead, Google Ads"/]
@@ -17,7 +17,7 @@ flowchart LR
         sweeps{{"Improvement sweeps"}}
     end
 
-    subgraph designSystem ["Design system layer, today Figma"]
+    subgraph designSystem ["Design system"]
         base["MVDS base + Etsy-specific extensions"]
         figmaFiles["Source art + asset files"]
         templates["Listing template system: Layouts set, 12 gallery-role variants + slots"]
@@ -25,29 +25,29 @@ flowchart LR
         contentPrinciples["Content principles: copy rules, house style, alt-text templates"]
     end
 
-    subgraph localstore ["Local file store, today Google Drive"]
+    subgraph localstore ["Local storage"]
         compFiles[("Component SVGs + PDFs")]
         galleries[("Gallery folders")]
     end
 
-    subgraph editing ["Content editing layer, today Notion"]
-        compDb[("Components registry")]
+    subgraph editing ["Content + Inventory"]
+        compDb[("Product (component) registry")]
         listInv[("Listing preview + tweak surface")]
     end
 
-    subgraph writing ["Writing"]
+    subgraph writing ["Authorship"]
         pullNotes["Distilled pull notes"]
         copy["Copy drafting + payloads"]
         review["Batch review deck"]
     end
 
-    subgraph tooling ["Gated Etsy write tooling"]
+    subgraph tooling ["Publishing"]
         applyCopy[["Apply copy"]]
         createDrafts[["Create drafts"]]
         uploadImages[["Upload images + alt"]]
     end
 
-    etsyMain(("Etsy shop, write view"))
+    etsyMain(("Storefront"))
     stitch["Stitch Check, in flight"]
 
     base -.->|"Image principles as components"| templates
@@ -85,9 +85,9 @@ flowchart LR
     stitch -.->|"Machine files, later"| compFiles
 ```
 
-## 1. Design system layer — role, not vendor (today: Figma)
+## 1. Design system (today: Figma)
 
-Not "design in Figma" — the **design system layer**: visual principles, assets, content principles, and styles as one domain, with Figma as its current home. MVDS is the base plus Etsy-specific extensions. The layer holds where artwork is born *and* where the **listing gallery template system lives** — the 12-role galleries in Drive are exports of `Layouts` instances composed in Figma, not ad-hoc renders. That Figma→Drive workflow is distinct from the code-side generators (`lib/etsy-listing-kit/generator.ts`'s 6-scene pack, `scenes.ts`'s 10-image ladder), which are a separate production path over the same template photography; the map keeps both traceable rather than crediting one with the other's output. The content principles (copy rules, house style, alt-text templates) belong to this layer too: Writing (§5) is the drafting activity, this layer owns the rules that govern it.
+Not "design in Figma" — the **design system layer**: visual principles, assets, content principles, and styles as one domain, with Figma as its current home. MVDS is the base plus Etsy-specific extensions. The layer holds where artwork is born *and* where the **listing gallery template system lives** — the 12-role galleries in Drive are exports of `Layouts` instances composed in Figma, not ad-hoc renders. That Figma→Drive workflow is distinct from the code-side generators (`lib/etsy-listing-kit/generator.ts`'s 6-scene pack, `scenes.ts`'s 10-image ladder), which are a separate production path over the same template photography; the map keeps both traceable rather than crediting one with the other's output. The content principles (copy rules, house style, alt-text templates) belong to this layer too: Authorship (§5) is the drafting activity, this layer owns the rules that govern it.
 
 | Surface | Where | Role |
 |---|---|---|
@@ -98,21 +98,21 @@ Not "design in Figma" — the **design system layer**: visual principles, assets
 | Full-shop libraries | Same page — Plant Markers/Sayings frames (Affirmations, Snark, Vegetables, Herbs) | The design system spans product lines beyond embroidery |
 | Staging frames | Same page, `staging/<SKU>/` frames (e.g. WH-UN-B-7584) | Bundle galleries assembled from Layouts instances before export |
 
-## 2. Component registry — Notion Components DB
+## 2. Product (component) registry — Notion Components DB
 
 `Watermark & Hue / Components` (data source `c71245a1…`). One row per component: **Component SKU** (`BHD-<line>-<n>-<slug>`), collection tags, **deliverables checklist** (svg-master, printable-6in/8in) with a ready flag, **visual description** (the alt-text raw material), preview render, provenance notes (Figma node + Drive path), and a relation to its Listing Inventory row. This is the source of truth for *products*.
 
-## 3. Local file store — role, not vendor (today: Google Drive, beckharrisdesign account; the letterharris mount is a stale copy)
+## 3. Local storage (today: Google Drive, beckharrisdesign account; the letterharris mount is a stale copy)
 
 - `W+H Listings/W+H Components/<slug>/` — master SVGs, PDF deliverables.
 - `W+H Listings/W+H Listings/<SKU>/` — the listing galleries: 37 SKU folders of role-named images (hero, lifestyle, scale, transferring, content-tl/center/bl, suggestions-4up, badge, faq-1..3); 33 complete, 4 with only the six photo-derived roles (WH-UN-S-3453/-8779/-CA26/-DF8E). `_staging/WH-UN-B-STAGING/` holds the composed Classics bundle set.
 - Generation code: `lib/etsy-listing-kit/generator.ts` (6-scene pack from one design, W&H template photography in `assets/mockups/`), `scenes.ts` (10-image data-card ladder), `scripts/compose-classics-bundle.mjs` (bundle recompositions).
 
-## 4. Content editing layer — role, not vendor (today: Notion Listing Inventory)
+## 4. Content + Inventory (today: Notion Listing Inventory)
 
 `Watermark & Hue / Listing Inventory` (data source `5326f9f7…`, DB `389a8c23…`). One row per listing, live or future: SKU formula (page-id last-4), Status, gallery flags and roles, Hero preview, **Images** (full 12-role galleries as of 2026-09-16 — 38 rows, synced by `scripts/notion-gallery-sync.mjs` + `scripts/run-gallery-sync.sh`), Etsy Listing ID/Title/URL (empty until live; filled by the sync once a listing exists). The authoring surface — an easy frontend for previewing and tweaking listings, images, and tags, deliberately *not* just a database view; phase 2's "edit here, push to Etsy" starts from this layer. Notion is the current implementation of the role, not the point.
 
-## 5. Writing — evidence-driven copy
+## 5. Authorship — evidence-driven copy
 
 - **Evidence**: Etsy Search Analytics exports, ads keyword panels, and the sync's own traffic data (views/favorites deltas) — all baselined in `experiments/etsy-notion-sync/docs/tag-positioning-experiment.md`.
 - **Rules**: descriptor-first titles carrying "hand embroidery pattern pdf", 13 unique ≤20-char tags, no standalone format tags, one skill level, wellness/gift as positioning phrase.
@@ -120,7 +120,7 @@ Not "design in Figma" — the **design system layer**: visual principles, assets
 - **Machine form**: `prototype/listing_copy_2026-09.json`, `holiday_drafts_2026.json`, `holiday_alt_text_2026.json`, `holiday_listing_ids.json` — payloads the write tooling consumes, regenerated from the docs so copy is never retyped.
 - **Review surface**: the "W&H Holiday Batch" artifact — an Etsy-anatomy card deck for approving a batch before anything ships.
 
-## 6. Etsy write tooling — the gated exception to one-directional sync
+## 6. Publishing — gated Etsy write tooling, the exception to one-directional sync
 
 All in `experiments/etsy-notion-sync/prototype/`, manual-only, dry-run by default, interactive confirmation, protected/control listings hard-refused (SPEC.md guardrail 5 documents this as the sole write path; capture/sync stays GET-only):
 
