@@ -176,6 +176,7 @@ Run in one sitting; it is what keeps §Live state true and the [shop health ledg
 5. ☐ **Append one ledger row** — completeness, engagement, net revenue, MoM change, each with provenance. Observations only; no line acquires a target.
 6. ☐ **Check the map's seams** — did any PR since the last review add, move, or remove a surface without updating the map? If the map changed structurally, a new FigJam version page exists and this doc matches it.
 7. ☐ **Record the check** — note the review date and what changed in the live-state table.
+8. ☐ **Feed the open release** — anything the review surfaces that shouldn't ship immediately goes into the current release doc (today: [2026-10-15](ETSY_RELEASE_2026-10-15.md)) rather than into a loose list.
 
 ## 11. Data & market intelligence
 
@@ -209,4 +210,5 @@ Not yet wired into the listing pipeline, but pointed straight at it. **Stitch Ch
 | Notion ID stamping | ✅ Done 2026-09-16 — 8 staged rows stamped by hand, then a manual sync matched all 8 in place (no duplicates) and created the bundle row |
 | Manual sync | ✅ Ran 2026-09-16 — 22 updates, 1 create; all 9 holiday listings carry live Etsy data (`scripts/run-sync-now.sh`) |
 | Duplicate Garden Markers drafts | ✅ Deleted 2026-09-16 — and the sync no longer resurfaces them: deleted listings now drop out of the latest-capture filter (`conflicts: 0`) |
+| Next release | 🗓 **[2026-10-15](ETSY_RELEASE_2026-10-15.md)** — day 30 of the experiment; catalog re-sectioning, P4/P5, and the completeness sweep accumulate there rather than disturbing the running window |
 | PR #478 | ✅ Merged — runners and hardened tooling on main |
