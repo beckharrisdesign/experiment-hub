@@ -4,7 +4,7 @@
 
 The proposal and specs are approved (PR #479). Two capabilities: `ecosystem-map` (the living map, FigJam board first with the doc in lockstep) and `shop-design-system` (two chapters codified from fragments, every principle carrying its receipt, checkable yes/no). This change ships no tooling — its "UI" is the map itself: the FigJam board and `docs/ETSY_ECOSYSTEM_MAP_2026-09.md`.
 
-Two things changed between spec approval and this design. First, Katy surfaced the W+H Listing Generator's `Garden Components` page, which shows Figma's real footprint is bigger than the map drew it. The `Layouts` component set (12 variants — Basic, Badge, Content Center/Bottom Left/Top Left, Recos 4up/2up/Hoop, Transferring patterns, FAQ 1–3) maps ≈1:1 onto the 12 gallery roles; each variant exposes `Slot-Background` / `Slot-BaseArtwork` plus shared Watermark, Banner, and Logo components. The Plant Markers/Sayings libraries on the same page show the system spans full-shop product lines, and `staging/<SKU>/` frames assemble bundle galleries from these components. The galleries synced to Notion are instances of this library, not ad-hoc renders. Per the map spec's own rule (a surface reframed updates the map in the same change), this design carries that map update (board v4).
+Two things changed between spec approval and this design. First, Katy surfaced the W+H Listing Generator's `Garden Components` page, which shows Figma's real footprint is bigger than the map drew it. The `Layouts` component set (12 variants — Basic, Badge, Content Center/Bottom Left/Top Left, Recos 4up/2up/Hoop, Transferring patterns, FAQ 1–3) maps ≈1:1 onto the 12 gallery roles; each variant exposes `Slot-Background` / `Slot-BaseArtwork` plus shared Watermark, Banner, and Logo components. The Plant Markers/Sayings libraries on the same page show the system spans full-shop product lines, and `staging/<SKU>/` frames assemble bundle galleries from these components. The galleries synced to Notion are instances of this library, not ad-hoc renders. Per the map spec's own rule (a surface reframed updates the map in the same change), this design carries that map update (board v4, superseded by v5 below).
 
 Second, Katy's sticky on v4 caught the deeper reframe: "We're labelling tools not roles again. This is the Design System layer — and includes visual, assets, content, styles, etc. So lets pull the Content layer over here, and stop labelling sections with tool names." Ingested as **v5**: the section is the *design system* role (Figma demoted to "today", like Drive and Notion before it), the MVDS-base standards node moves inside it, and the content principles move in alongside visual and assets — the authorship domain keeps the drafting activity while the design system owns the rules that govern it. Katy then made a manual naming-and-layout pass on v5 that finished the de-vendoring: sections are **Design system / Local storage / Content + Inventory / Authorship / Publishing / Data and measurement**, and even Etsy became **Storefront** (read view + storefront proper). The doc and this artifact use that vocabulary; it is the map's canonical language going forward.
 
@@ -34,7 +34,7 @@ Second, Katy's sticky on v4 caught the deeper reframe: "We're labelling tools no
 
 ```
 docs/
-  ETSY_ECOSYSTEM_MAP_2026-09.md      # prose mirror of the board (exists; v4 in this change)
+  ETSY_ECOSYSTEM_MAP_2026-09.md      # prose mirror of the board (exists; v5 in this change)
   ETSY_SHOP_HEALTH_LEDGER.md         # append-only ledger, one row per line per month (new)
   shop-design-system/
     image-principles.md              # chapter 1 (new)
@@ -54,7 +54,7 @@ This change's visual surface is the FigJam board, not a hub screen — the as-is
 | Libraries / version| FigJam living-diagram conventions per `rules/figma.mdc` — every iteration gets a NEW version page (never edit a built page in place), Index TOC newest-first with hyperlinks, CURRENT banner on the top page, archive banners linking back to current. Component receipts cite `ZZusgWsPM4Fz8YuhKxnD4R` Garden Components (page node 2041:55504, Layouts set 2041:55505) |
 | Code Connect       | N/A — no code surface |
 | Breakpoints        | N/A — FigJam canvas, not a responsive screen |
-| Status             | v4 built and live on the board; awaiting Katy's review with this design |
+| Status             | v5 built and live on the board; design approved and merged in #481 |
 
 ## Decisions
 
