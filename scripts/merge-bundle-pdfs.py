@@ -105,22 +105,49 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    for size, inputs, out, expected_pages in plans:
-        writer = PdfWriter()
-        for p in inputs:
-            for page in PdfReader(str(p)).pages:
-                writer.add_page(page)
-        tmp = out.with_suffix(".pdf.tmp")
-        with open(tmp, "wb") as fh:
-            writer.write(fh)
-        os.replace(tmp, out)
 
-        # Verify what landed, not what we intended to write.
-        actual = len(PdfReader(str(out)).pages)
-        status = "OK" if actual == expected_pages else f"MISMATCH (expected {expected_pages})"
-        print(f"WROTE {out.name} — {actual} pages, {out.stat().st_size:,} bytes -> {status}")
-        if actual != expected_pages:
-            return 1
+    # Build and verify every size into a temp file first. Nothing replaces a
+    # real deliverable until all of them are known good: a half-built bundle
+    # is worse than none (the missing half is invisible on the listing), and
+    # a verification failure must never leave a bad file installed — with
+    # --force that would destroy a deliverable that was previously valid.
+    staged: list[tuple[Path, Path, int, int]] = []  # (tmp, out, pages, bytes)
+    try:
+        for size, inputs, out, expected_pages in plans:
+            writer = PdfWriter()
+            for p in inputs:
+                for page in PdfReader(str(p)).pages:
+                    writer.add_page(page)
+            tmp = out.with_suffix(".pdf.tmp")
+            with open(tmp, "wb") as fh:
+                writer.write(fh)
+
+            # Verify the staged bytes, not the writer's intent.
+            try:
+                actual = len(PdfReader(str(tmp)).pages)
+            except Exception as exc:
+                print(f"ERROR staged {tmp.name} is unreadable: {exc}", file=sys.stderr)
+                raise
+            if actual != expected_pages:
+                print(
+                    f"ERROR staged {tmp.name}: {actual} pages, expected {expected_pages}",
+                    file=sys.stderr,
+                )
+                raise RuntimeError("page count mismatch")
+            staged.append((tmp, out, actual, tmp.stat().st_size))
+            print(f"STAGED {out.name} — {actual} pages, {tmp.stat().st_size:,} bytes -> verified")
+    except Exception:
+        for tmp, _out, _pages, _size in staged:
+            tmp.unlink(missing_ok=True)
+        # The failing size's own temp file may exist but never reached `staged`.
+        for _size, _inputs, out, _pages in plans:
+            out.with_suffix(".pdf.tmp").unlink(missing_ok=True)
+        print("Nothing was written — existing deliverables are untouched.", file=sys.stderr)
+        return 1
+
+    for tmp, out, pages, size_bytes in staged:
+        os.replace(tmp, out)
+        print(f"WROTE {out.name} — {pages} pages, {size_bytes:,} bytes")
 
     print("\nBundle PDFs built. Next: upload them to the bundle listing.")
     return 0
