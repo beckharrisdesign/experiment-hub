@@ -12,7 +12,7 @@ See [proposal.md](../../changes/archive/2026-09-16-etsy-ecosystem-map/proposal.m
 
 ### Requirement: The map lives as a versioned FigJam board, first, with the doc in lockstep
 
-The visual map is the front door: a single canonical FigJam board (`ln6p2z1vppiTdqDPNVdoOZ`) whose Index page links every iteration, newest first, with the current version calloutted and every archived page bannered back to the current one — and the repo doc (`docs/ETSY_ECOSYSTEM_MAP_*.md`) says the same things in prose.
+The visual map is the front door: a single canonical FigJam board (`ln6p2z1vppiTdqDPNVdoOZ`) whose Index page links every iteration, newest first, with the current version called out and every archived page bannered back to the current one — and the repo doc (`docs/ETSY_ECOSYSTEM_MAP_*.md`) says the same things in prose.
 
 **Fails until:** the board and doc disagree on any surface, seam, or layer, or the board's Index/callout/archive conventions lapse.
 
