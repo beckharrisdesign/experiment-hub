@@ -1,0 +1,86 @@
+# Tasks: retire-umbrella-switches
+
+## 1. User outcomes (from spec scenarios)
+
+- [ ] 1.1 **Panel carries no all-or-nothing stitch control** — user opens
+      the converter and finds no **Fill shapes**, **Satin narrow fills**
+      or **Satin strokes** switch; **Fabric** remains
+- [ ] 1.2 **Un-prepped art converts unchanged** — user converts an SVG
+      with no `st-` tags and gets the plan it produces today
+- [ ] 1.3 **Stitch type is reproducible from the file alone** — user
+      converts the same file in two sessions with the panel left
+      differently and gets the same stitch count, colour blocks and sew
+      order
+- [ ] 1.4 **A tagged fill overrides the hidden defaults** — user tags a
+      fill `st-tatami a0 d8` and it sews at 0° and 0.8 mm while untagged
+      regions sew at 45° and 0.4 mm
+- [ ] 1.5 **A fill tagged st-run sews its outline** — user tags a filled
+      shape `st-run` and only its boundary rings sew, with no interior
+      hatching
+- [ ] 1.6 **Margin inside the frame survives** — user tags a frame
+      `patch st-size w635` with an inset motif and the design converts
+      63.5 mm overall with the inset intact, not the motif scaled up to
+      fill it
+- [ ] 1.7 **A nested size sizes its own subtree** — user nests
+      `st-size w200` inside a frame tagged `st-size w635` and the design
+      stays 63.5 mm while that group sews 20 mm
+- [ ] 1.8 **A bare group cannot declare a size** — user tags a group that
+      exports with neither a clip nor a background and the conversion
+      fails, naming the layer
+- [ ] 1.9 **Bought art still converts** — user converts an SVG with no
+      `st-size` and no physical units and gets 63.5 mm, as today
+- [ ] 1.10 **An impossible size is refused** — user tags `st-size w5000`
+      and the conversion fails, naming the layer and the value
+
+## 2. Prototype shell
+
+- [ ] 2.1 No new shell — the surface is the existing converter at
+      `app/svg-to-stitch/` (dev: `npm run dev`, tests: `npm test`).
+      Confirm the page builds unchanged before removal work starts
+
+## 3. Implementation
+
+- [ ] 3.1 `app/svg-to-stitch/page.tsx` — remove the three `Switch` rows
+      and their state, and the **Design size**, **Fill angle** and **Fill
+      density** selects. **Fabric** and every readout stay
+- [ ] 3.2 `lib/svg-to-stitch/convert.ts` — drop the `fillMode`,
+      `satinFills` and `satinStrokes` options and delete the
+      `fillMode === "outline"` branch; `rejectBrushOnFill` and
+      `checkTagDensity` collapse back to one call site each. Keep the
+      fill angle and spacing defaults at 45° and 0.4 mm
+- [ ] 3.3 `lib/svg-to-stitch/svg-parse.ts` — add `st-size` to the
+      directive grammar, reusing the existing `w` parameter (mm ×10).
+      Resolve it **outermost-first**, against the innermost-wins rule the
+      other directives use — see the callout in the spec
+- [ ] 3.4 `lib/svg-to-stitch/svg-parse.ts` — read a tagged element's box:
+      the root `<svg>`'s `width`/`height`/`viewBox`, or a referenced clip
+      rect. `clippath` is currently in `SKIP_TAGS`, so a group has no
+      readable box today. Apply the existing CSS length parser (it
+      already carries an `mm` factor) so `width="63.5mm"` is honoured
+- [ ] 3.5 `lib/svg-to-stitch/convert.ts` — scale from the declared box
+      rather than the artwork bounds when a size is declared, preserving
+      margin; fall back to `bounds.span / 63.5` when nothing is declared.
+      Error loudly for an unmeasurable element and for a size outside
+      10–400 mm
+- [ ] 3.6 `experiments/svg-to-stitch/docs/stitch-authoring.md` — add
+      `st-size` to the tag table, rewrite the untagged fallback from
+      future tense to shipped behaviour, and **reverse decision 2**,
+      which currently reads "Physical size: panel only … No size tags".
+      Record the cascade as the model the vocabulary follows
+- [ ] 3.7 `experiments/svg-to-stitch/README.md` — panel description
+
+## 4. QA
+
+- [ ] 4.1 Manual walkthrough (ingest → tweak → download): convert a
+      tagged design and an untagged one, confirm the panel offers no
+      stitch control, that a declared size comes out at that size with
+      its margin, and that DST and EXP still download
+- [ ] 4.2 Automated smoke (vitest): a `document-declared-size` suite —
+      declared size, nested size, unmeasurable element, undeclared
+      fallback, out-of-range — plus coverage that untagged conversion is
+      byte-identical to today's default-panel output. Retire the
+      outline-mode regressions in `tests/svg-to-stitch-brush.test.ts`
+      with the mode they guard. Full `npm test` stays green
+- [ ] 4.3 Founder review of the Figma rounds before implementation: `02`
+      through `03.5` are all open, and `03.5` changes the sew order in a
+      way this change does not build
