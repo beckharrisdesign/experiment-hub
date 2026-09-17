@@ -38,8 +38,8 @@ Reduction is sort and filter only. There is no second screen and no row detail v
 | --- | --- |
 | Primary file URL | <https://www.figma.com/design/pezlHOEjgdF1MUtYj7Jzbt> |
 | As-is frame(s) | `01 Current state` → **`As-is · No hub surface`** (`23:17`) — the access path today: ten CSVs in `docs/pulls/`, and one file's raw contents showing the same keyword split across four of them. Reconstructed from the repo, not from a running page, because no page exists. |
-| Proposed frame(s) | `02.1 Proposed — table rules` → **`Proposed · Desktop 1024 — table rules`** (`11:20`) and **`Proposed · Mobile 480`** (`23:52`). Round 01 lived on `02 Proposed`; see *Round history* below. |
-| Libraries / version | `MVDS Core` (`lk-d54f86bc…`), subscribed to the file · `@beckharrisdesign/mvds@0.3.0` in code. Tokens collection set to the **Dark** mode explicitly on every frame. |
+| Proposed frame(s) | **`02.2 Proposed — light mode, content-width columns`** → **`Proposed · Desktop 1024`** (`27:14`) and **`Proposed · Mobile 480`** (`27:95`) — current. Superseded: `02.1` (table rules, dark), `02 Proposed` (round 01); see *Round history*. |
+| Libraries / version | `MVDS Core` (`lk-d54f86bc…`), subscribed to the file · `@beckharrisdesign/mvds@0.3.0` in code. Tokens collection set to the **Light** mode explicitly on every frame. |
 | Code Connect | No mappings to update — this change adds no new shared component. The table is route-local. |
 | Breakpoints | S · 480px and L · 1024px, both drawn. Between them the table holds its behaviour; it does not reflow into cards. |
 | Status | Rounds 01 and 02.1 built and token-bound. Awaiting approval of this document. |
@@ -54,7 +54,11 @@ Reduction is sort and filter only. There is no second screen and no row detail v
 
 **The 12px floor is a layout constraint, not a styling detail.** The MVDS type ramp is 12 / 14 / 16 / 18 / 20 / 24. A dense table cannot be shrunk into the system — it has to be laid out at the system's smallest sizes, which widens columns and heightens rows. Every early sketch assumed 9–11px and had to be redrawn.
 
-**Table rules, standing.** Cells nowrap. One type size throughout the body. The keyword column absorbs remaining width; every other column is fixed. No colour coding until asked.
+**Table rules, standing.** Cells nowrap. **One type size throughout the table, header row included** — not one size for the body and another for headers. Small columns take only the width their widest value needs; the keyword column absorbs everything left over. No colour coding until asked.
+
+**Light mode.** The surface is Light, set explicitly on every frame — MVDS defaults to Light but an unset frame inherits rather than declares, and the mode has to be stated for the same reason the Dark version did.
+
+**Column widths are measured, not guessed.** Each small column is sized to its own widest value; the gutter is a spacing token. In code this is `width: 1%` plus `white-space: nowrap` on the small columns, with the keyword cell taking the remainder — the browser does the measuring the same way.
 
 **Nowrap survives mobile by scrolling, not reflowing.** At 480 the table scrolls horizontally with the keyword column pinned. Reflowing into stacked cards would break the nowrap rule and make scanning worse, which is the thing a table is for.
 
@@ -70,4 +74,6 @@ Reduction is sort and filter only. There is no second screen and no row detail v
 
 **Generated data can go stale against the archive.** If a CSV lands without the ingest run, the table silently lags. Mitigated by the corpus being written by the same command that lands files — divergence requires bypassing the documented path.
 
-**Dark mode is set explicitly per frame.** MVDS's default mode is Light, so a frame that forgets the override renders light tokens. This bit once already: paint fallbacks stored black under bound variables, and text rendered black-on-black wherever a binding did not resolve. Fallbacks are now each variable's own Dark value.
+**Mode is set explicitly per frame, and fallbacks must match it.** Paint fallbacks are stored under each bound variable, so a frame built for one mode and switched to another renders the wrong fallback wherever a binding does not resolve. This has now bitten in both directions — black-on-black in Dark, and it would be white-on-white in Light. Every mode switch rebuilds all fills; 112 were repainted moving 02.1 to 02.2.
+
+**One type size means the header row too.** Round 02.1 claimed a single size and shipped 12px headers over 14px cells. Audited now rather than asserted: 43 desktop cells and 21 mobile cells all resolve to 14, with no unbound sizes.
