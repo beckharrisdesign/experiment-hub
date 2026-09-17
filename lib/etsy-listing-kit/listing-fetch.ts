@@ -40,12 +40,34 @@ async function loadFixture(listingId: number): Promise<FetchedListing | null> {
   return JSON.parse(await readFile(p, 'utf8')) as FetchedListing;
 }
 
+/**
+ * Etsy has required `keystring:shared_secret` in `x-api-key` since 2026-02-09 —
+ * the keystring alone 403s on public v3 endpoints. `ETSY_API_KEY` holds the
+ * keystring by itself, matching `api_key` in the Python sync client
+ * (`experiments/etsy-notion-sync/prototype/etsy_api.py`), and the two are joined
+ * here at the header rather than being pre-joined in the environment, so the
+ * variable means the same thing on both sides of the repo.
+ *
+ * Throws rather than sending a value that would 403: a named error reaches the
+ * logs, an anonymous 403 does not.
+ */
+export function etsyApiKeyHeader(): string {
+  const keystring = process.env.ETSY_API_KEY;
+  const sharedSecret = process.env.ETSY_SHARED_SECRET;
+  if (!keystring) throw new Error('ETSY_API_KEY is not set');
+  if (!sharedSecret) {
+    throw new Error(
+      'ETSY_SHARED_SECRET is not set — Etsy requires "keystring:shared_secret" in x-api-key since 2026-02-09',
+    );
+  }
+  return `${keystring}:${sharedSecret}`;
+}
+
 export async function fetchListingRaw(listingId: number): Promise<FetchedListing | null> {
   if (fixturesEnabled()) return loadFixture(listingId);
-  const key = process.env.ETSY_API_KEY!;
   const res = await fetch(
     `https://api.etsy.com/v3/application/listings/${listingId}?includes=Images,Videos`,
-    { headers: { 'x-api-key': key } },
+    { headers: { 'x-api-key': etsyApiKeyHeader() } },
   );
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Etsy API ${res.status}`);

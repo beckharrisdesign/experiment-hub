@@ -23,11 +23,42 @@ hand in a Figma file, check whether MVDS already has it.
 | `libraryKey` | `lk-d54f86bcaf4bb7bd9ea1556e2af83e2ab93c839679852e05d720854cc1dedbfe8362b1503e1dbfc284ccb763a50cd240b2e52bd0af8904cf2ac7ffaaa8c09687` |
 | Code | `@beckharrisdesign/mvds` — public on npmjs, repo `beckharrisdesign/mvds` |
 
-**Always scope searches to the library key.** An unscoped
-`search_design_system` query for "Button" returns ~20 results across three
-libraries — `MVDS Core`, `BHD Labs / shadcn`, and `Simple Seed Organizer` — and
-MVDS Core is **not** first. Picking off the top of that list silently sources
-components from a stale kit that nothing in the hub uses:
+**MVDS Core ships these 19 components** (verified against the library file
+2026-09-17 — check here before concluding something is missing):
+
+`Badge` · `Blockquote` · `Button` · `Callout` · `Card` · `Checkbox` ·
+`Chrome` · `Dropzone` · `Field` · `Hero` · `Input` · `Label` · `Layer` ·
+`MediaFrame` · `RadioGroupItem` · `Section` · `Select` · `Switch` ·
+`Textarea`
+
+**Search ranks MVDS below the stale kit, and multi-word queries lose it
+entirely.** A query for `Select` returns MVDS Core's *fourth*, behind three
+`BHD Labs / shadcn` Selects; a query for `"Select dropdown Label Card"`
+returned no MVDS results at all and led an agent to conclude — wrongly, and
+then to write it down — that MVDS had no Select. **Search one component name
+at a time, and read `libraryName` on every row rather than taking the top
+hit.**
+
+**`includeLibraryKeys` does not work through the MCP client** (the array
+parameter is rejected: *"expected array, received string"*). Until that is
+fixed, scope by reading `libraryName`, or list the library's components
+directly, which is authoritative:
+
+```
+use_figma(
+  fileKey: "C20nU0mROzk3Zr0I9BELJF",       // MVDS Core itself
+  code: `const page = figma.root.children.find((p) => p.name.trim() === "Components");
+         await figma.setCurrentPageAsync(page);
+         return page.findAllWithCriteria({ types: ["COMPONENT_SET"] }).map((n) => n.name);`
+)
+```
+
+**Never conclude a component is missing from a search result.** Confirm
+against the roster above or the file itself. The cost of getting this wrong
+is hand-building something the system already has — or sourcing from the kit
+below.
+
+The intended scoping call, for when the client supports it:
 
 ```
 search_design_system(
@@ -48,8 +79,22 @@ component in Figma — fix `src/components/**` in the mvds repo and re-sync.
 
 **Availability is per file.** A library existing is not the same as a library
 being usable: `get_libraries` reports what a given file has *subscribed*, not what
-exists. If MVDS Core does not appear for a new change's file, it has to be added
-to that file in the Figma UI (a founder action) before anything can be imported.
+exists. A **newly created** change file starts with nothing subscribed — MVDS Core
+will not even appear in `libraries_available_to_add`, which lists only community
+kits. It has to be turned on in the Figma UI, and only Katy can do it.
+
+**Ask at file-creation time, not after you hit the wall.** The moment you call
+`create_new_file` for a change, call `get_libraries` on the new key; if MVDS Core
+is missing, give Katy this one-liner *before* doing any other Figma work, so the
+subscription happens while she is already in the tool:
+
+> Open <https://www.figma.com/design/hHAppz4A23qMoLQFTo8QAc> → **Assets** panel →
+> the library icon (top right of the panel) → toggle **MVDS Core** on.
+> (Replace the URL with the new file's own.)
+
+Then re-run `get_libraries` and confirm `MVDS Core` shows with `source: "team"`
+before importing anything. Do not build bespoke chrome as a workaround — the
+design gate requires proposed frames built on MVDS.
 
 **Layout primitives are deliberately absent.** `Stack`, `Inline` and `Container`
 have no Figma counterparts because they carry no visual treatment — auto-layout is
@@ -70,9 +115,73 @@ For changes under `openspec/changes/<id>/`, every **`design.md` MUST include a �
 - **Frames/components in scope**
 - Whether **Code Connect** mappings need updates (`figma-code-connect` skill)
 
-### File page/frame naming convention (REQUIRED)
+### When the first round happens
 
-Every OpenSpec Figma file uses **numbered pages** and treats each proposal iteration as a distinct page — never edit or append to an existing proposal page in place:
+**A UI change gets its first Figma round before or alongside the proposal**,
+not at `design.md`. This applies to changes created **after 2026-09-17**;
+anything already in flight keeps the sequence it was built on, and its
+`02 Proposed` may legitimately be empty because the first iteration belonged
+to `design.md`. Do not renumber an existing change to match. Scope written blind is scope you re-author after every
+drawing; the round is what makes the proposal arguable. Keep it rough — shape
+and composition. The detailed as-is + proposed pair, breakpoints and the Visual
+design table still belong to `design.md`, which **continues** the numbering
+rather than starting it.
+
+**Which editor.** Pick by the question the change is asking, not by fidelity.
+
+- A change about a **flow, sequence, structure or set of relationships** gets a
+  **FigJam board** (`figma.com/board/...`). A board cannot produce something
+  polished enough to be mistaken for an approval-ready design — the constraint is
+  the point this early — and it subscribes no libraries, so there is no MVDS step
+  before you can think.
+- A change about a **surface** — a panel, page, component or layout — gets a rough
+  frame in a **design file** (`figma.com/design/...`). "What does this look like
+  once X is gone" is not a question a board can answer.
+
+Some changes need both. When they do, the numbering runs continuously **across**
+the files and the `design.md` Visual design table names each one and says which
+rounds live where.
+
+### File title convention (REQUIRED)
+
+**The change ID leads, and nothing precedes it.** A Figma file or board is titled
+with the change's directory name under `openspec/changes/`, verbatim:
+
+- `retire-umbrella-switches`
+- `etsy-ecosystem-map`
+
+No shared prefix — not `OpenSpec — …`, not `Change: …`. A common leading token is
+what makes a Recents list unscannable and defeats typeahead: everything sorts and
+reads the same, and the one word that identifies the file is pushed past where the
+title truncates. Whether it is a board or a design file is already carried by
+Figma's own icon, so the title does not repeat it.
+
+Two extensions:
+
+- **A change with two files in the same editor** disambiguates with a trailing
+  role: `retire-umbrella-switches — panel`, `retire-umbrella-switches — flow`.
+- **A board not scoped to one change** (a living diagram) takes its subject in the
+  same kebab-case, matching the spec or doc it mirrors — `etsy-ecosystem-map` for
+  `openspec/specs/ecosystem-map/`.
+
+The payoff is that the Figma title, the change directory, and the spec name are the
+same string, so moving between them needs no lookup table.
+
+**Get it right at creation — you cannot fix it later.** The title is settable only
+through `create_new_file`'s `fileName` parameter. `figma.root.name` is not writable
+(`use_figma` fails with *"Setting the document name is currently not supported"*),
+and it reads back as `"Document"` on every file, so an agent can neither rename a
+file nor audit what existing files are called. A mistitled file has to be renamed
+by hand in the Figma UI. Pass the change ID as `fileName` on the `create_new_file`
+call itself.
+
+### File naming convention (REQUIRED)
+
+One rule holds in both editors: **every proposal iteration gets its own numbered
+container, and an already-built round is never edited in place.** What the
+container *is* depends on the editor — a design file has pages, a board does not.
+
+**Design files — numbered pages:**
 
 - `00 Components` — imported DS components + local "hub tokens" variable collection.
 - `01 Current state` — the as-is frame(s), reconstructed from code or captured from the running app.
@@ -80,7 +189,57 @@ Every OpenSpec Figma file uses **numbered pages** and treats each proposal itera
 - `02.1`, `02.2`, … — **each subsequent proposal iteration is a NEW numbered page** (`02.1 Proposed — <what changed>`), so prior iterations stay intact for comparison. **Never** overwrite or append frames on an already-built/approved proposal page.
 - Name frames within a page by treatment + breakpoint, e.g. `Proposed · Desktop 1024`, `Proposed · Mobile 480`.
 
+**FigJam boards — numbered pages too.** Boards have real pages (`figma.createPage()`
+works there; the ecosystem-map board `ln6p2z1vppiTdqDPNVdoOZ` carries five). The
+convention is the same one, with the same names — `01 Current state`, `02 Proposed`,
+`02.1 Proposed — <what changed>`. Two page rules have no board counterpart and are
+simply absent: no `00 Components`, because a board subscribes no libraries, and no
+per-breakpoint frame naming, because a board is not a surface.
+
+**Pages separate rounds; sections organise content inside one round.** Don't reach
+for a section when the thing you have is a new iteration — that is a page.
+
+### Living-diagram conventions (boards that outlive one change)
+
+A board that keeps being revised — an ecosystem map, a process flow, any standing
+picture — carries four extras beyond the page-per-iteration rule. These are the
+conventions `openspec/specs/ecosystem-map/spec.md` already requires, written down
+here because that spec cites this file for them:
+
+- **Version pages, not round numbers.** `v5 — 2026-09-16 — design system layer named (current)`:
+  version, date, what changed, then `(current)` on the live page and `(superseded)`
+  on every earlier one. Lower case, as the ecosystem-map board has them.
+- **An `Index` page**, first in the page list, naming every iteration newest-first
+  as hyperlinks, with the current version called out.
+- **A current banner** on the live page.
+- **Archive banners** on superseded pages, linking back to the current one.
+
+Same invariant underneath: a new page per iteration, never edit a built page in
+place. What differs is only the vocabulary — a change's rounds are numbered
+`01`/`02`/`02.1`, a living diagram's are `v1`…`vN`.
+
 Record the exact page names + frame node IDs in the `design.md` Visual design table, and restate this file convention there (as `stop-the-leaks/design.md` does).
+
+**Board equivalent.** A board round goes in the same table. A board page has pages
+but no frames, so record **page name + page node ID + the anchor section's node ID**
+— the form `etsy-ecosystem-map/design.md` already uses:
+
+> Page `v5 — 2026-09-16 — design system layer named (current)` (node `24:2`, anchor section `25:31`)
+
+Two columns have no board counterpart and are filled `N/A` **with the reason**, not
+left blank:
+
+| Column | On a board |
+| --- | --- |
+| Breakpoints | `N/A — FigJam canvas, not a responsive screen` |
+| Code Connect | `N/A — no code surface` |
+
+**Library / version is not N/A on a board** — it names the conventions the board
+follows (`FigJam living-diagram conventions per rules/figma.mdc`), plus any
+component receipts the board cites.
+
+A change with both files gets a row per file, so the series stays auditable end to
+end.
 
 Map kit variables to **`tailwind.config.ts`** tokens; treat MCP-exported layout as reference, not literals (see Project-specific rules above).
 

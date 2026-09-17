@@ -9,6 +9,7 @@ policies, so nothing else can reach them. Append-only is also enforced at
 the database level by triggers (migration: etsy_sync_runtime_tables).
 """
 import json
+import logging
 from datetime import datetime, timedelta, timezone
 
 import requests
@@ -20,8 +21,47 @@ TOKENS = "etsy_tokens"
 LATEST_VIEW = "etsy_latest_listing_snapshots"
 
 
+log = logging.getLogger("store_supabase")
+
+
 class SupabaseStoreError(RuntimeError):
     pass
+
+
+def latest_from_current_capture(rows):
+    """Latest snapshot per listing, limited to the most recent capture.
+
+    The `etsy_latest_listing_snapshots` view is "newest row per listing across
+    all history", which has no idea whether a listing still exists. A listing
+    deleted on Etsy keeps its final snapshot forever, so without this filter
+    the sync goes on treating it as live — re-raising its SKU conflicts every
+    run and leaving its stale data eligible to be written into Notion.
+
+    A capture stamps every listing it sees with one timestamp, so "not at the
+    newest timestamp" means "not in the latest capture". Dropping those is the
+    safe direction: a partial capture makes the sync skip rows rather than
+    write stale values, and the next full capture restores them. The count is
+    logged so a partial capture is visible rather than silent.
+    """
+    if not rows:
+        return {}
+    newest = max(row["captured_at"] for row in rows)
+    latest, dropped = {}, 0
+    for row in rows:
+        if row["captured_at"] != newest:
+            dropped += 1
+            continue
+        parsed = row["parsed"]
+        latest[row["listing_id"]] = {
+            "sku": row["sku"],
+            "parsed": parsed if isinstance(parsed, dict) else json.loads(parsed),
+            "captured_at": row["captured_at"],
+        }
+    if dropped:
+        log.info(
+            "Ignoring %s listing(s) absent from the latest capture (%s) — "
+            "deleted on Etsy, or a partial capture run.", dropped, newest)
+    return latest
 
 
 class SupabaseStore:
@@ -115,14 +155,7 @@ class SupabaseStore:
             "select": "listing_id,sku,parsed,captured_at",
             "endpoint": "eq.{}".format(endpoint),
         })
-        return {
-            row["listing_id"]: {
-                "sku": row["sku"],
-                "parsed": row["parsed"] if isinstance(row["parsed"], dict) else json.loads(row["parsed"]),
-                "captured_at": row["captured_at"],
-            }
-            for row in rows
-        }
+        return latest_from_current_capture(rows)
 
     def start_run(self, started_at, trigger_source="scheduled"):
         created = self._post(RUNS, {

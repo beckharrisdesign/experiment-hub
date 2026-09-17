@@ -1,12 +1,17 @@
 [
   {
     "id": "doc-etsy-notion-sync",
-    "title": "Etsy → Notion Sync Documentation",
+    "title": "Etsy \u2192 Notion Sync Documentation",
     "content": "Spec (docs/SPEC.md) and PRD (docs/PRD.md) for the read-only Etsy v3 historical capture + one-way Notion inventory sync.",
     "experimentId": "etsy-notion-sync",
     "createdDate": "2026-07-15",
     "lastModified": "2026-07-15",
-    "tags": ["etsy", "notion", "api-v3", "tool"]
+    "tags": [
+      "etsy",
+      "notion",
+      "api-v3",
+      "tool"
+    ]
   },
   {
     "id": "doc-pomodoro-maker",
@@ -15,7 +20,11 @@
     "experimentId": "pomodoro-maker",
     "createdDate": "2026-05-20",
     "lastModified": "2026-05-20",
-    "tags": ["productivity", "pomodoro", "bhd"]
+    "tags": [
+      "productivity",
+      "pomodoro",
+      "bhd"
+    ]
   },
   {
     "id": "doc-pbn-research",
@@ -24,7 +33,12 @@
     "experimentId": "pbn-research",
     "createdDate": "2026-04-18",
     "lastModified": "2026-04-18",
-    "tags": ["pbn", "research", "notebook", "personal"]
+    "tags": [
+      "pbn",
+      "research",
+      "notebook",
+      "personal"
+    ]
   },
   {
     "id": "doc-web-to-figma-grabber",
@@ -33,7 +47,12 @@
     "experimentId": "web-to-figma-grabber",
     "createdDate": "2026-04-05",
     "lastModified": "2026-04-05",
-    "tags": ["figma", "chrome-extension", "design-tools", "automation"]
+    "tags": [
+      "figma",
+      "chrome-extension",
+      "design-tools",
+      "automation"
+    ]
   },
   {
     "id": "doc-etsy-embroidery",
@@ -42,7 +61,10 @@
     "experimentId": "etsy-embroidery-pattern-manager",
     "createdDate": "2024-11-01",
     "lastModified": "2024-12-16",
-    "tags": ["etsy", "documentation"]
+    "tags": [
+      "etsy",
+      "documentation"
+    ]
   },
   {
     "id": "doc-seed-finder",
@@ -51,7 +73,10 @@
     "experimentId": "seed-finder",
     "createdDate": "2024-11-01",
     "lastModified": "2024-12-16",
-    "tags": ["gardening", "documentation"]
+    "tags": [
+      "gardening",
+      "documentation"
+    ]
   },
   {
     "id": "doc-pdf-metadata-viewer",
@@ -60,6 +85,26 @@
     "experimentId": "pdf-metadata-viewer",
     "createdDate": "2026-01-10",
     "lastModified": "2026-08-05",
-    "tags": ["pdf", "metadata", "notion", "documentation"]
+    "tags": [
+      "pdf",
+      "metadata",
+      "notion",
+      "documentation"
+    ]
+  },
+  {
+    "id": "doc-svg-to-stitch",
+    "title": "Stitch Check Documentation",
+    "content": "Documentation for Stitch Check - a browser file converter and previewer for machine embroiderers, grown from the SVG to Stitch tool",
+    "experimentId": "svg-to-stitch",
+    "createdDate": "2026-09-11",
+    "lastModified": "2026-09-12",
+    "tags": [
+      "embroidery",
+      "craft",
+      "file-converter",
+      "previewer",
+      "client-side"
+    ]
   }
 ]

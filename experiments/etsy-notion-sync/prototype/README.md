@@ -48,7 +48,7 @@ loaded.
 
 Credential setup:
 
-- **Etsy** — one-time OAuth 2.0 flow (scope `listings_r`), automated by the helper:
+- **Etsy** — one-time OAuth 2.0 flow (scope `listings_r listings_w` — the capture/sync client itself stays GET-only), automated by the helper:
   1. In the [Etsy developer portal](https://www.etsy.com/developers/your-apps),
      copy your Seller App's **keystring** into `ETSY_API_KEY` and its
      **shared secret** into `ETSY_SHARED_SECRET` in `.env` (Etsy requires both
@@ -187,7 +187,7 @@ default to `STORE_BACKEND=sqlite` (`data/etsy_history.sqlite3`).
 
 ## Guardrails recap
 
-- Etsy client is GET-only; there is no code path that writes to Etsy.
+- Etsy client (`etsy_api.py`) is GET-only; capture and sync have no code path that writes to Etsy. The sole writer is `apply_listing_copy.py` — manual-only, dry-run by default, interactive confirmation, protected/control listings refused.
 - `DRY_RUN=true` is the default for the Notion step.
 - Quota headers are read on every response; the run pauses below
   `QUOTA_SAFETY_FLOOR` (default 10%) and resumes next cycle.

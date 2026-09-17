@@ -1,0 +1,468 @@
+// Top-level conversion: SVG text in, stitch plan + encoded DST/EXP out.
+// Pure TypeScript over the DOM's XML parser, so the whole pipeline runs
+// client-side in the browser (and under jsdom in tests) — no server round
+// trip, files never leave the machine.
+
+import {
+  extractGeometry,
+  findDeclaredSize,
+  type ColoredPolyline,
+  type ExtractedGeometry,
+} from "./svg-parse";
+import { hatchFill, satinFill, closeRings } from "./fill";
+import { ribbonSatin } from "./ribbon";
+import { satinZigzag } from "./satin";
+import {
+  brushRun,
+  BRUSHES,
+  BRUSH_NAMES,
+  BRUSH_MIN_PITCH_MM,
+  BRUSH_MAX_PITCH_MM,
+} from "./brush";
+import {
+  buildPlan,
+  groupByColor,
+  type StitchPlan,
+  type StitchPlanOptions,
+} from "./plan";
+import { encodeDst } from "./dst";
+import { encodeExp } from "./exp";
+
+export interface ConvertOptions {
+  /**
+   * Fallback physical width in mm, used only when the design declares no
+   * size of its own. A declared `st-size`, or real physical units on the
+   * root, wins over this.
+   */
+  targetWidthMm: number;
+  /** Nominal running-stitch length in mm. */
+  stitchLengthMm: number;
+  /** Design name embedded in the DST header. */
+  designName?: string;
+  /** Tatami row direction in degrees (default 45). */
+  fillAngleDeg?: number;
+  /** Distance between tatami rows in mm (default 0.4). */
+  fillSpacingMm?: number;
+  /**
+   * Sew a sparse perpendicular underlay pass beneath each fill (default
+   * true) — it stabilizes the fabric so the top stitching doesn't pucker.
+   */
+  fillUnderlay?: boolean;
+  /** Thread pitch along a satin column in mm (default 0.4). */
+  satinDensityMm?: number;
+}
+
+export interface ConvertResult {
+  plan: StitchPlan;
+  dst: Uint8Array;
+  exp: Uint8Array;
+  /**
+   * How the design's physical size was arrived at, so the readout can speak
+   * the system the file was authored in.
+   */
+  size: {
+    widthMm: number;
+    heightMm: number;
+    unit: "mm" | "in";
+    declared: boolean;
+  };
+}
+
+export const DEFAULT_OPTIONS: ConvertOptions = {
+  targetWidthMm: 63.5, // the standard 2.5 in patch
+  stitchLengthMm: 2.5,
+  fillAngleDeg: 45,
+  fillSpacingMm: 0.4,
+  fillUnderlay: true,
+  satinDensityMm: 0.4,
+};
+
+// Underlay: rows perpendicular to the top stitching, spaced far apart — a
+// scaffold, not coverage.
+const UNDERLAY_SPACING_MM = 2;
+
+// Satin range: below 1 mm the zigzag collapses into a fat running stitch;
+// above 10 mm the long floats snag and pull — real digitizers split such
+// columns or switch to fill, so we fall back to the running line instead.
+const SATIN_MIN_WIDTH_MM = 1;
+const SATIN_MAX_WIDTH_MM = 10;
+
+// A stroke tagged st-satin with no w parameter and a hairline width sews at
+// this width — the spec's documented default for un-sized satin tags.
+const TAG_SATIN_DEFAULT_WIDTH_MM = 2;
+
+// With satin strokes on, every untagged stroke satins at least this wide —
+// design-tool hairlines get a real thread presence without any prep, and
+// the founder moves fast on un-prepped exports. st-run opts a stroke out.
+const MIN_SATIN_STROKE_MM = 0.5;
+
+export function convertSvg(
+  svgText: string,
+  options: ConvertOptions = DEFAULT_OPTIONS,
+): ConvertResult {
+  // Number.isFinite first: every comparison with NaN is false, so a bare
+  // range check would wave NaN straight through into the scaling math.
+  if (
+    !Number.isFinite(options.targetWidthMm) ||
+    options.targetWidthMm < 10 ||
+    options.targetWidthMm > 400
+  ) {
+    throw new Error("target width must be between 10 and 400 mm");
+  }
+  if (
+    !Number.isFinite(options.stitchLengthMm) ||
+    options.stitchLengthMm < 1 ||
+    options.stitchLengthMm > 7
+  ) {
+    throw new Error("stitch length must be between 1 and 7 mm");
+  }
+  const fillAngleDeg = options.fillAngleDeg ?? 45;
+  const fillSpacingMm = options.fillSpacingMm ?? 0.4;
+  const fillUnderlay = options.fillUnderlay ?? true;
+  if (!Number.isFinite(fillAngleDeg)) {
+    throw new Error("fill angle must be a number of degrees");
+  }
+  if (
+    !Number.isFinite(fillSpacingMm) ||
+    fillSpacingMm < 0.2 ||
+    fillSpacingMm > 2
+  ) {
+    throw new Error("fill spacing must be between 0.2 and 2 mm");
+  }
+  const satinDensityMm = options.satinDensityMm ?? 0.4;
+  if (
+    !Number.isFinite(satinDensityMm) ||
+    satinDensityMm < 0.2 ||
+    satinDensityMm > 2
+  ) {
+    throw new Error("satin density must be between 0.2 and 2 mm");
+  }
+
+  const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
+  if (doc.querySelector("parsererror")) {
+    throw new Error("could not parse the file as SVG");
+  }
+
+  // Flattening tolerance: 0.05mm at the final output size, expressed in user
+  // units. Two passes because the user-unit extent isn't known until after a
+  // first parse; the initial coarse pass only measures.
+  const coarse = extractGeometry(doc, 1);
+  const extent = measure(coarse).span;
+  const tolerance = (extent / (options.targetWidthMm * 10)) * 0.5;
+
+  const geometry = extractGeometry(doc, Math.max(tolerance, 1e-6));
+  // One scale, shared with buildPlan: physical mm anchored to the source
+  // geometry's bounds (fine pass — the coarse extent can differ slightly).
+  // Fill runs stay inside their boundary rings, but satin rails poke half
+  // a stroke width past the artwork edge; anchoring the scale here keeps
+  // every mm measure (satin width, density, the 1–10 mm gate) exact and
+  // lets the border overhang the target size like real stroke paint,
+  // instead of the overhang silently shrinking the whole design.
+  const bounds = measure(geometry);
+
+  // Physical size comes from the document when it declares one: the tagged
+  // element's own box is the design's extent, so margin drawn around the
+  // artwork survives instead of being scaled away. Height follows that box's
+  // aspect — the file decides its proportions, not the tool.
+  const declared = findDeclaredSize(doc);
+  if (declared) {
+    if (declared.widthMm < 10 || declared.widthMm > 400) {
+      throw new Error(
+        `"${declared.label}" declares a size of ${declared.widthMm} mm — the supported range is 10 to 400 mm.`,
+      );
+    }
+  }
+  const boxWidth = declared ? declared.box.maxX - declared.box.minX : 0;
+  const boxHeight = declared ? declared.box.maxY - declared.box.minY : 0;
+  const sourceBounds: StitchPlanOptions["sourceBounds"] = declared
+    ? declared.box
+    : bounds;
+  const unitsPerMm = declared
+    ? boxWidth / declared.widthMm
+    : bounds.span / options.targetWidthMm;
+  const size = {
+    widthMm: declared ? declared.widthMm : options.targetWidthMm,
+    heightMm: declared
+      ? boxHeight / unitsPerMm
+      : (bounds.maxY - bounds.minY) / unitsPerMm,
+    unit: declared ? declared.unit : ("mm" as const),
+    declared: Boolean(declared),
+  };
+
+  // A stroke wide enough to read as a border or lettering (the satin range
+  // at output size) sews as a satin column — a center running stitch to
+  // anchor the fabric, then the zigzag over it. Everything else stays a
+  // running line. Strokes are satin candidates in both modes: outline mode
+  // strips fills to their boundaries, not strokes of their satin.
+  // Tag parameters obey the same physical bounds as the panel knobs —
+  // out-of-range declarations error loudly rather than sewing a surprise.
+  const checkTagDensity = (tag?: { densityMm?: number; label: string }) => {
+    if (
+      tag?.densityMm !== undefined &&
+      (tag.densityMm < 0.2 || tag.densityMm > 2)
+    ) {
+      throw new Error(
+        `"${tag.label}" declares a density of ${tag.densityMm} mm — it must be between 0.2 and 2 mm.`,
+      );
+    }
+  };
+
+  // Brushes sew strokes and open paths, never fill interiors (v1 scope).
+  // The rejection lives here, not in one branch, so `fillMode: "outline"`
+  // can't quietly flatten a brushed fill into an ordinary boundary run —
+  // the authoring contract promises loud errors, never a silent fallback.
+  const rejectBrushOnFill = (tag?: { type: string; label: string }): void => {
+    if (tag?.type !== "brush") return;
+    throw new Error(
+      `"${tag.label}" is a filled shape tagged st-brush — brushes apply to strokes and open paths, not fills. Remove the fill or tag it st-run/st-satin/st-tatami.`,
+    );
+  };
+
+  // A brush tag's parameters obey the spec's declared pitch range; unknown
+  // names and out-of-range pitches error loudly with the layer name, never
+  // a silent fallback to running stitch.
+  const resolveBrush = (tag: {
+    brushName?: string;
+    pitchMm?: number;
+    label: string;
+  }): { name: string; pitchMm: number } => {
+    const name = tag.brushName ?? "";
+    const def = BRUSHES[name];
+    if (!def) {
+      throw new Error(
+        `"${tag.label}" names the brush "st-brush-${name}", which isn't in the library. Built-in brushes: ${BRUSH_NAMES.join(", ")}.`,
+      );
+    }
+    const pitchMm = tag.pitchMm ?? def.defaultPitchMm;
+    if (pitchMm < BRUSH_MIN_PITCH_MM || pitchMm > BRUSH_MAX_PITCH_MM) {
+      throw new Error(
+        `"${tag.label}" declares a pitch of ${pitchMm} mm — brushes support ${BRUSH_MIN_PITCH_MM} to ${BRUSH_MAX_PITCH_MM} mm.`,
+      );
+    }
+    return { name, pitchMm };
+  };
+
+  const strokeRuns = (s: ColoredPolyline, order: number): void => {
+    const tag = s.directive;
+    checkTagDensity(tag);
+    if (tag?.type === "run") {
+      // Declared running stitch — never satined, whatever its width.
+      polylines.push({ ...s, order });
+      return;
+    }
+    if (tag?.type === "brush") {
+      const { name, pitchMm } = resolveBrush(tag);
+      const stamped = brushRun(s.points, { name, pitchMm, unitsPerMm });
+      if (stamped.length > 1) {
+        polylines.push({
+          color: s.color,
+          points: stamped,
+          order,
+          brush: name,
+        });
+      } else {
+        // Degenerate path (single point) — running stitch, same fallback
+        // contract as satin on a degenerate centerline.
+        polylines.push({ ...s, order });
+      }
+      return;
+    }
+    const widthMm = (s.strokeWidth ?? 0) / unitsPerMm;
+    let satinWidthMm: number | null = null;
+    if (tag?.type === "satin") {
+      // Declared satin: the tag's width wins; a hairline with no w
+      // parameter uses the spec default. Over-range is a loud error per
+      // the authoring principles — never silently narrowed.
+      satinWidthMm =
+        tag.widthMm ??
+        (widthMm >= SATIN_MIN_WIDTH_MM ? widthMm : TAG_SATIN_DEFAULT_WIDTH_MM);
+      if (satinWidthMm > SATIN_MAX_WIDTH_MM) {
+        throw new Error(
+          `"${tag.label}" is tagged st-satin at ${satinWidthMm} mm — satin tops out at ${SATIN_MAX_WIDTH_MM} mm. Narrow it or split it in the design tool.`,
+        );
+      }
+    } else if (widthMm <= SATIN_MAX_WIDTH_MM) {
+      // Untagged strokes: satin at their rendered width, floored so
+      // hairlines still read as thread. Over-range strokes keep the
+      // running line (loose floats would snag).
+      satinWidthMm = Math.max(widthMm, MIN_SATIN_STROKE_MM);
+    }
+    let zigzag: typeof s.points = [];
+    if (satinWidthMm !== null) {
+      zigzag = satinZigzag(s.points, {
+        width: satinWidthMm * unitsPerMm,
+        density: (tag?.densityMm ?? satinDensityMm) * unitsPerMm,
+      });
+    }
+    if (zigzag.length > 1) {
+      polylines.push({
+        color: s.color,
+        points: s.points,
+        order,
+        underlay: true,
+      });
+      polylines.push({ color: s.color, points: zigzag, order, satin: true });
+    } else {
+      polylines.push({ ...s, order });
+    }
+  };
+
+  const polylines: ColoredPolyline[] = [];
+  {
+    // A stroke sews after its own element's fill so the border stays the
+    // crisp top edge instead of being buried under the fill; the half-step
+    // keeps it ahead of the next element.
+    for (const s of geometry.strokes) strokeRuns(s, (s.order ?? 0) + 0.5);
+    for (const region of geometry.fills) {
+      // Only validated rings hatch or outline: a region whose every ring is
+      // degenerate (zero area) stitches nothing in fill mode.
+      const rings = closeRings(region.rings);
+      if (rings.length === 0) continue;
+      const tag = region.directive;
+      checkTagDensity(tag);
+      rejectBrushOnFill(tag);
+      if (tag?.type === "run") {
+        // Declared outline: sew only the boundary rings.
+        for (const ring of rings) {
+          polylines.push({
+            color: region.color,
+            points: ring,
+            order: region.order,
+          });
+        }
+        continue;
+      }
+      // Tag parameters override the panel's fill knobs for this region.
+      const tatamiAngle = tag?.angleDeg ?? fillAngleDeg;
+      const tatamiSpacing = tag?.densityMm ?? fillSpacingMm;
+      // Narrow regions sew as two-rail satin between their own edges —
+      // no tatami, no perpendicular underlay, no boundary run (the rails
+      // are the boundary). Straight-ish shapes go through the cheap
+      // fixed-axis pass; curved ribbons (flattened strokes, circle
+      // borders) through boundary pairing. Regions that qualify for
+      // neither fall through to the tatami path — except a declared
+      // st-satin, which errors loudly instead of being guessed at.
+      if (tag?.type === "satin" || tag?.type !== "tatami") {
+        const density = (tag?.densityMm ?? satinDensityMm) * unitsPerMm;
+        const satin =
+          satinFill(rings, {
+            spacing: density,
+            maxWidth: SATIN_MAX_WIDTH_MM * unitsPerMm,
+            minMedianWidth: SATIN_MIN_WIDTH_MM * unitsPerMm,
+            stitchLength: options.stitchLengthMm * unitsPerMm,
+          }) ??
+          ribbonSatin(rings, {
+            density,
+            maxWidth: SATIN_MAX_WIDTH_MM * unitsPerMm,
+            minMedianWidth: SATIN_MIN_WIDTH_MM * unitsPerMm,
+          });
+        if (!satin && tag?.type === "satin") {
+          throw new Error(
+            `"${tag.label}" is tagged st-satin, but the shape doesn't read as a satin column within ${SATIN_MAX_WIDTH_MM} mm. Split it in the design tool, or tag it st-tatami.`,
+          );
+        }
+        if (satin) {
+          if (fillUnderlay) {
+            for (const center of satin.centers) {
+              if (center.length < 2) continue;
+              polylines.push({
+                color: region.color,
+                points: center,
+                order: region.order,
+                underlay: true,
+              });
+            }
+          }
+          for (const run of satin.runs) {
+            polylines.push({
+              color: region.color,
+              points: run,
+              order: region.order,
+              satin: true,
+            });
+          }
+          continue;
+        }
+      }
+      if (fillUnderlay) {
+        for (const run of hatchFill(rings, {
+          angleDeg: tatamiAngle + 90,
+          spacing: UNDERLAY_SPACING_MM * unitsPerMm,
+          stitchLength: options.stitchLengthMm * unitsPerMm,
+        })) {
+          polylines.push({
+            color: region.color,
+            points: run,
+            order: region.order,
+            underlay: true,
+          });
+        }
+      }
+      for (const run of hatchFill(rings, {
+        angleDeg: tatamiAngle,
+        spacing: tatamiSpacing * unitsPerMm,
+        stitchLength: options.stitchLengthMm * unitsPerMm,
+      })) {
+        polylines.push({
+          color: region.color,
+          points: run,
+          order: region.order,
+        });
+      }
+      // Edge run last so it crisps the fill's boundary on top.
+      for (const ring of rings) {
+        polylines.push({
+          color: region.color,
+          points: ring,
+          order: region.order,
+        });
+      }
+    }
+    polylines.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }
+
+  // buildPlan scales the design's *larger* side to targetWidthMm, so a
+  // declared size has to hand it that side — passing the declared width
+  // would sew a tall design short.
+  const plan = buildPlan(groupByColor(polylines), {
+    ...options,
+    targetWidthMm: declared
+      ? Math.max(size.widthMm, size.heightMm)
+      : options.targetWidthMm,
+    sourceBounds,
+  });
+  return {
+    plan,
+    dst: encodeDst(plan, options.designName ?? "DESIGN"),
+    exp: encodeExp(plan),
+    size,
+  };
+}
+
+function measure(geometry: ExtractedGeometry): {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+  span: number;
+} {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  const scan = (points: { x: number; y: number }[]) => {
+    for (const p of points) {
+      minX = Math.min(minX, p.x);
+      minY = Math.min(minY, p.y);
+      maxX = Math.max(maxX, p.x);
+      maxY = Math.max(maxY, p.y);
+    }
+  };
+  for (const { points } of geometry.strokes) scan(points);
+  for (const { rings } of geometry.fills) for (const ring of rings) scan(ring);
+  const span = Math.max(maxX - minX, maxY - minY);
+  if (!Number.isFinite(span) || span <= 0) {
+    throw new Error("no stitchable geometry found in the SVG");
+  }
+  return { minX, minY, maxX, maxY, span };
+}

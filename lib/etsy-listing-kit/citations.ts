@@ -81,6 +81,14 @@ export const CITATIONS: Citation[] = [
     lastCheckedAt: '2026-08-30',
     verifiedVerbatim: false,
   },
+  {
+    criterion: 'styles',
+    quote: 'Each attribute you add acts like a tag and helps match you with shoppers’ searches.',
+    sourceTitle: 'Etsy Seller Handbook, “Keywords 101: Everything You Need to Know”',
+    sourceUrl: 'https://www.etsy.com/seller-handbook/article/382774281517',
+    lastCheckedAt: '2026-09-14',
+    verifiedVerbatim: false,
+  },
 ];
 
 export function citationFor(criterion: string): Citation | undefined {
