@@ -50,9 +50,9 @@ Each opens on its own and should fail with a message naming the layer.
 | `07-density-out-of-range.svg` | 0.1 mm density is outside 0.2–2 mm                                                       |
 | `08-size-in-inches.svg`       | **not an error** — converts at 3.5 in, and **Size** should read inches, not millimetres  |
 
-## Not covered
+## One size per file
 
-**Nested `st-size`.** The spec says a nested declaration sizes its own
-subtree; only the outermost one is honoured today, and a nested one is
-ignored rather than applied. There is no fixture because there is nothing
-to look at yet — see task 1.7.
+A second `st-size` nested inside the first is **refused**, naming both
+layers — see `errors/09-nested-size.svg`. Sizing a subtree was considered
+and waived: one frame per patch is the real use, and ignoring the inner
+tag would hand back a plausible design at the wrong scale.

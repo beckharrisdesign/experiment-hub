@@ -721,9 +721,17 @@ export function findDeclaredSize(doc: Document): DeclaredSize | null {
 
   let found: DeclaredSize | null = null;
   const visit = (el: Element, matrix: Matrix) => {
-    if (found) return; // outermost wins — stop at the first one down any path
     const m = multiply(matrix, parseTransform(el.getAttribute("transform")));
     const declared = ownSize(el);
+    if (found && declared) {
+      // Sizing a subtree is not supported. Ignoring the inner tag would hand
+      // back a plausible design at the wrong scale, which is the silent
+      // fallback this whole contract exists to remove.
+      throw new Error(
+        `"${declared.label}" declares a size inside "${found.label}", which already declares one. Only one st-size per file — nesting them is not supported.`,
+      );
+    }
+    if (found) return;
     if (declared) {
       const box = elementBox(el, m, byId);
       if (!box) {
@@ -732,7 +740,6 @@ export function findDeclaredSize(doc: Document): DeclaredSize | null {
         );
       }
       found = { ...declared, box };
-      return;
     }
     for (const child of Array.from(el.children)) visit(child, m);
   };

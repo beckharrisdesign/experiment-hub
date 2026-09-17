@@ -48,6 +48,18 @@ describe("document-declared size", () => {
     expect(size.heightMm).toBeCloseTo(38.1, 0);
   });
 
+  it("refuses a nested size rather than ignoring it", () => {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" id="patch st-size w635" viewBox="0 0 200 200">
+       <g id="inner st-size w200">
+         <path d="M50 100 L150 100" stroke="#b6114c" stroke-width="1"/>
+       </g>
+     </svg>`;
+    expect(() => convertSvg(svg, OPTS)).toThrow(
+      /nesting them is not supported/,
+    );
+    expect(() => convertSvg(svg, OPTS)).toThrow(/inner st-size w200/);
+  });
+
   it("inches and millimetres agree", () => {
     const metric = convertSvg(INSET("patch st-size w889"), OPTS).size;
     const imperial = convertSvg(INSET("patch st-size in350"), OPTS).size;

@@ -21,13 +21,12 @@
       `patch st-size w635` with an inset motif and the design converts
       63.5 mm overall with the inset intact, not the motif scaled up to
       fill it
-- [~] 1.7 **A nested size sizes its own subtree** — **not implemented.**
-  The outermost declaration sets the document extent (and a nested one is
-  ignored rather than applied to its subtree). Per-subtree scaling needs
-  a transform applied during geometry extraction; deferred, see below — user nests
-  `st-size w200` inside a frame tagged `st-size w635` and the design
-  stays 63.5 mm while that group sews 20 mm — only the first half holds
-  today
+- [x] 1.7 **One size per file** — **waived and re-specified 2026-09-17**
+      (founder: "waive it and cut the promise"). Sizing a nested subtree is
+      not built; a second `st-size` is now refused by name instead of being
+      silently ignored, which would have handed back a plausible design at
+      the wrong scale. Spec, proposal and fixtures updated to match, with
+      `errors/09-nested-size.svg` covering it
 - [x] 1.8 **A bare group cannot declare a size** — user tags a group that
       exports with neither a clip nor a background and the conversion
       fails, naming the layer
