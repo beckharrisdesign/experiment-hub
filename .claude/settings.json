@@ -9,7 +9,10 @@
       "mcp__Figma__get_libraries",
       "mcp__Figma__search_design_system",
       "mcp__Figma__whoami",
-      "mcp__Supabase__list_projects"
+      "mcp__Supabase__list_projects",
+      "mcp__Figma__use_figma",
+      "mcp__Supabase__execute_sql",
+      "Bash(python3:*)"
     ]
   },
   "hooks": {
