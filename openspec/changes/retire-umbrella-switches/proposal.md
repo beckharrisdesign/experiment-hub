@@ -60,6 +60,14 @@ arguing, and the switch won quietly. The authoring contract already
 names the destination: the heuristic decision tree "becomes the
 **untagged fallback** … Tagged shapes bypass it entirely."
 
+**Nothing here is a new capability.** Every replacement already ships and
+is tested. What the change produces is a guarantee and a deletion: stitch
+type becomes a property of the file rather than of panel state, and
+outline mode — the one render path that still overrides an explicit
+declaration — goes away.
+
+![What decides a shape's stitch, today versus after](assets/decision-flow.png)
+
 Every switch already has an exact per-shape equivalent, so nothing is
 lost that the design file cannot say better:
 

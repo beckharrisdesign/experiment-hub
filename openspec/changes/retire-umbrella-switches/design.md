@@ -41,6 +41,10 @@ by roughly its own height.
 
 Nothing moves, nothing is renamed, nothing changes place. Five rows leave.
 
+The logic behind the panel simplifies in the same direction — see the
+decision flow in `proposal.md`, built on Figma page `03 Decision flow`
+(node `11:3`).
+
 ## Visual design / Figma
 
 | Item                | Value                                                                                                                                                                                                                                             |
