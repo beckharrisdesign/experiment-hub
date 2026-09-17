@@ -56,7 +56,7 @@ Figma page `03 Decision flow` (node `13:9`), committed at `assets/decision-flow.
 | Local variables     | `hub tokens` collection on `00 Components` — 11 colours converted from the oklch declarations in `app/globals.css`; panel and text fills are bound to them rather than hardcoded                                                                  |
 | Code Connect        | No mappings to update — no component is added, changed or renamed                                                                                                                                                                                 |
 | Breakpoints         | S · 480px / L · 1024px. One frame per state is sufficient: the panel is `width: 300; maxWidth: calc(100vw - 24px)`, so at 480px it is still 300px wide and renders identically. Only below 324px would it clamp, which is off the supported range |
-| Status              | Built 2026-09-17 — **not approved**; three open proposal rounds                                                                                                                                                                                   |
+| Status              | **Approved 2026-09-17** — founder: "figma is approved". Round `03.6` is the approved surface; earlier rounds stay for comparison and are not edited                                                                                               |
 
 **File convention** (per `rules/figma.mdc`): numbered pages, and each
 later proposal iteration becomes a **new** page — `02.1 Proposed — <what
@@ -303,7 +303,7 @@ in the published Figma library, so `search_design_system` finds no MVDS
 law; Figma is a generated mirror", the fix is to publish them through the
 MVDS sync rather than to keep redrawing a Select in every change file.
 
-**Nothing in the file is approved.** `02`, `02.1`, `03.1`, `03.2`, `03.3`,
+**Approved round: `03.6`.** Earlier rounds stay intact for comparison and are never edited in place; any further change goes on `03.7`. `02`, `02.1`, `03.1`, `03.2`, `03.3`,
 `03.4` and `03.5` are all open rounds.
 
 ## Risks / Trade-offs

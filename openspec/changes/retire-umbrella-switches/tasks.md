@@ -81,6 +81,11 @@
       byte-identical to today's default-panel output. Retire the
       outline-mode regressions in `tests/svg-to-stitch-brush.test.ts`
       with the mode they guard. Full `npm test` stays green
-- [ ] 4.3 Founder review of the Figma rounds before implementation: `02`
-      through `03.5` are all open, and `03.5` changes the sew order in a
-      way this change does not build
+- [x] 4.3 Founder review of the Figma rounds before implementation —
+      **approved 2026-09-17** ("figma is approved"). Round `03.6` is the
+      approved surface: no umbrella switches, no fill parameters, no size
+      control; File, Fabric and Size on one 150 px value column with Size
+      as a readout; MVDS `Button` instances and MVDS spacing, radius and
+      type tokens throughout. The reorderable sew-order _behaviour_ shown
+      in `03.5`/`03.6` is a separate change — this one ships the panel,
+      not the dragging
