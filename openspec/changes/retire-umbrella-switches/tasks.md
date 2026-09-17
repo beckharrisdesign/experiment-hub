@@ -75,7 +75,8 @@
 
 ## 4. QA
 
-- [ ] 4.1 Manual walkthrough (ingest → tweak → download) — material is
+- [x] 4.1 Manual walkthrough (ingest → tweak → download) — **passed
+      2026-09-17**, founder: "sticker sheet looks good". Material is
       ready: `experiments/svg-to-stitch/fixtures/sticker-sheet.svg` covers
       every promise in one file, with `fixtures/errors/` for the loud
       failures (they cannot share a file, since one error aborts the whole
