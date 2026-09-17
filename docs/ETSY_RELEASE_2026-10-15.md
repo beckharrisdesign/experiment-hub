@@ -14,6 +14,7 @@
 - ☐ Compute `views(day 30) − views(day 14 baseline)` per listing from `etsy_listing_snapshots`; compare treatment vs control mean.
 - ☐ Call the verdict against the rule: **positioning wins** if treatment mean ≥ 2× control, or ≥ 2 treatment listings reach 10+ views/30d; **flat** if both stay ~0–2 views and ads keep serving generic terms.
 - ☐ Record the readout as a pull note in `docs/pulls/`.
+- ☐ Score the verdict against the two external instruments that disagree with our first-party data — [eRank](pulls/2026-09-15-erank.md) and [Etsy’s dismissed title suggestions](pulls/2026-09-17-etsy-title-suggestions.md). Both point generic-and-high-volume; our click data points specific. The readout is what adjudicates, so say which won.
 
 Everything after this point assumes the readout is taken. Do not start them first — each one destroys the thing being measured.
 
@@ -39,6 +40,7 @@ The 21 pattern listings share one section (`21751592`), which is the shop's whol
 - ☐ **P5 — one video per week.** Videos lift search placement, so adding them unevenly mid-window biases whichever arm gets them. Only 1 of 27 active listings has a video.
 - ☐ **Fix 4417249682's skill-level contradiction** — tags carry "advanced embroidery", "intermediate pattern" and "beginner pattern" at once, against content principle 7.
 - ☐ **Prune the protected listings' generic ad keywords** — the mandala's "embroidery patterns" converts at 2.6%; pruning it mid-window would change the winner's traffic.
+- ✅ ~~**Etsy’s own dashboard title suggestions**~~ — the 2026-09-17 batch flagged all nine holiday listings; screenshotted and dismissed the same day, no titles changed. Captured as a pull note: [2026-09-17-etsy-title-suggestions](pulls/2026-09-17-etsy-title-suggestions.md). **Standing rule for the next batch:** on a protected, treatment, control or unassigned listing, hold until the readout — accepting one overwrites the intervention being measured. On any listing, run it past the [copy rules](../experiments/etsy-notion-sync/docs/tag-positioning-experiment.md#copy-rules-every-treatment-edit-follows-these) first, and screenshot before dismissing.
 
 ## 4. Completeness sweep — the three systematic zeros
 
