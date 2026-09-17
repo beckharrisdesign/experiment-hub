@@ -29,7 +29,7 @@ artifacts:
 
       Why it sits here: design is in dialogue with the proposal. Writing scope blind and drawing it afterwards means every design round sends you back to re-author a document that was written without seeing the thing — which is how iteration numbering and scope drift out of sync. Rounds are numbered continuously from this first one, so `design.md` records the series rather than starting it.
 
-      **Applies to changes created after this rule landed (2026-09-17).** A change already in flight keeps the sequence it was built on — several document `02 Proposed` as intentionally empty because under the old order the first iteration belonged to `design.md`, and `pdf-metadata-viewer-cloud` says so in as many words. Do **not** retro-fit those: rewriting an existing Figma history to satisfy a rule that landed afterwards is the exact churn this change exists to stop. Leave their numbering alone and gate them at `design.md` as planned.
+      **Applies to changes created after this rule landed (2026-09-17)** — the editor choice, the file title and the round numbering alike. A change already in flight keeps both the title and the sequence it was built on — several document `02 Proposed` as intentionally empty because under the old order the first iteration belonged to `design.md`, and `pdf-metadata-viewer-cloud` says so in as many words. Do **not** retro-fit those: rewriting an existing Figma history to satisfy a rule that landed afterwards is the exact churn this change exists to stop. Leave their numbering alone and gate them at `design.md` as planned.
 
       **Stop rule:** After writing proposal.md, stop and wait for explicit user approval before creating specs, design, or tasks.
 
