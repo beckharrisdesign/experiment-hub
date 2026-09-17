@@ -39,6 +39,7 @@ The 21 pattern listings share one section (`21751592`), which is the shop's whol
 - ☐ **P5 — one video per week.** Videos lift search placement, so adding them unevenly mid-window biases whichever arm gets them. Only 1 of 27 active listings has a video.
 - ☐ **Fix 4417249682's skill-level contradiction** — tags carry "advanced embroidery", "intermediate pattern" and "beginner pattern" at once, against content principle 7.
 - ☐ **Prune the protected listings' generic ad keywords** — the mandala's "embroidery patterns" converts at 2.6%; pruning it mid-window would change the winner's traffic.
+- ☐ **Etsy’s own dashboard title suggestions** — Shop Manager surfaces suggested retitles on listings inside the window. They are held, not judged, until the readout: accepting one on a protected, treatment, control or unassigned listing overwrites the intervention being measured. They also optimise for keyword coverage rather than positioning, so each one still has to clear the [copy rules](../experiments/etsy-notion-sync/docs/tag-positioning-experiment.md#copy-rules-every-treatment-edit-follows-these) — rule 1 (unique descriptor leads) and rule 3 (no standalone format tags) — before it is taken. Capture them now; at day 30 they double as a free check on whether generic advice pointed anywhere near what actually won. The holiday batch, new listings and the five Grandma Hobbies listings are outside the measurement and can take suggestions any time.
 
 ## 4. Completeness sweep — the three systematic zeros
 
