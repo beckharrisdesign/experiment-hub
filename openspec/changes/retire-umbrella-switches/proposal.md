@@ -73,7 +73,12 @@ still overrides an explicit declaration — goes away.
 no document size at all today: `bounds.span / targetWidthMm` scales the
 drawn artwork to fill whatever the panel says, discarding the file's own
 dimensions and any margin around the design. Declaring size in the file
-is the one capability being built here.
+is the one capability being built here. It is also the only part that
+changes existing output: a design with margin around it is scaled up to
+fill the target today, and will sew smaller inside its declared frame
+once the frame is what gets measured. That is the intent — a 2.5 in patch
+with an inset motif is a patch, not a motif — but it is a real behaviour
+change for any file that already relies on the fit.
 
 ![What decides a shape's stitch, today versus after](assets/decision-flow.png)
 
@@ -118,6 +123,13 @@ than deleted.
   (`width="63.5mm"`) are honoured where a tool emits them. An untagged
   file keeps the 63.5 mm default as its documented fallback, so
   un-prepped art still converts.
+- **The tagged element is the size it is tagged to be**, not the ink
+  inside it: a motif inset in a frame stays inset, and the layout rules
+  the design tool applies inside that container still govern where the
+  artwork sits. Where sizes are declared at several levels the
+  **outermost** wins — the reverse of every other tag, where a child
+  overrides its group, because size is a property of the document rather
+  than a style of a shape.
 - Size needs no replacement control: the **DESIGN** section already
   reports the output size, which is the right treatment once size is an
   outcome of the file rather than an input to the tool.
@@ -148,8 +160,11 @@ than deleted.
   removed; the **Fill angle**, **Fill density** and **Design size**
   selects removed from the panel; **Fabric** unchanged.
 - `lib/svg-to-stitch/svg-parse.ts`: `st-size` added to the directive
-  grammar; the existing CSS length parser (which already carries an `mm`
-  factor for `stroke-width`) applied to the root `width`/`height`.
+  grammar, resolved outermost-first; the existing CSS length parser
+  (which already carries an `mm` factor for `stroke-width`) applied to
+  the root `width`/`height`. `clippath` comes out of `SKIP_TAGS` far
+  enough to read a tagged element's box — today a group has none, so only
+  the root `<svg>` is measurable.
 - `lib/svg-to-stitch/convert.ts`: `targetWidthMm` becomes a default
   rather than a caller's choice, overridden by a declared size.
 - `lib/svg-to-stitch/convert.ts`: `fillMode`, `satinFills`,
