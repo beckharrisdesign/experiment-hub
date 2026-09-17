@@ -1,3 +1,15 @@
+---
+source: erank
+surface: keywords
+captured: 2026-09-17
+tier: external
+scope: market
+measures: [demand]
+subjects: [patterns, holiday, grandma-hobbies]
+half_life: 90d
+answers: >-
+  Marketwide demand and difficulty for terms W&H does not use. Contains trend spikes that decay far faster than the stated half-life — see the guardrail section.
+---
 # Data pull — eRank Keyword Tool, 10 seeds, captured 2026-09-17
 
 **Provenance:** eRank Keyword Tool exports, 2026-09-17, five seeds from Katy's own thought experiments: `paint by numbers`, `halloween`, `pokemon`, `poster`, `wall art`. Raw files kept alongside as `2026-09-17-erank-keywords-<seed>.csv` (65 rows total, small enough to keep in-repo). Archive copies flat in `Drive: W+H Listings/W+H Data Pulls/`.

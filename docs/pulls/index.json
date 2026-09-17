@@ -1,0 +1,153 @@
+{
+  "generated": "2026-09-17",
+  "pulls": [
+    {
+      "note": "2026-09-17-erank-keywords.md",
+      "captured": "2026-09-17",
+      "source": "erank",
+      "surface": "keywords",
+      "tier": "external",
+      "scope": "market",
+      "measures": [
+        "demand"
+      ],
+      "subjects": [
+        "patterns",
+        "holiday",
+        "grandma-hobbies"
+      ],
+      "half_life": "90d",
+      "status": "fresh",
+      "answers": "Marketwide demand and difficulty for terms W&H does not use. Contains trend spikes that decay far faster than the stated half-life \u2014 see the guardrail section.",
+      "raw_files": [
+        "2026-09-17-erank-keywords-embroidery-designs.csv",
+        "2026-09-17-erank-keywords-embroidery-font.csv",
+        "2026-09-17-erank-keywords-embroidery-fonts.csv",
+        "2026-09-17-erank-keywords-font-bundle.csv",
+        "2026-09-17-erank-keywords-halloween.csv",
+        "2026-09-17-erank-keywords-paint-by-numbers.csv",
+        "2026-09-17-erank-keywords-pokemon.csv",
+        "2026-09-17-erank-keywords-poster.csv",
+        "2026-09-17-erank-keywords-procreate-brushes.csv",
+        "2026-09-17-erank-keywords-wall-art.csv"
+      ],
+      "current": true,
+      "series_index": 1,
+      "series_length": 1
+    },
+    {
+      "note": "2026-09-17-erank-spotted-on-etsy.md",
+      "captured": "2026-09-17",
+      "source": "erank",
+      "surface": "spotted-on-etsy",
+      "tier": "external",
+      "scope": "shop",
+      "measures": [
+        "position"
+      ],
+      "subjects": [
+        "patterns",
+        "holiday",
+        "grandma-hobbies"
+      ],
+      "half_life": "14d",
+      "status": "fresh",
+      "answers": "Where W&H listings actually rank in Etsy search, by term. Positions move fast \u2014 re-pull before citing.",
+      "raw_files": [
+        "2026-09-17-erank-spotted-on-etsy.csv"
+      ],
+      "current": true,
+      "series_index": 1,
+      "series_length": 1
+    },
+    {
+      "note": "2026-09-17-etsy-title-suggestions.md",
+      "captured": "2026-09-17",
+      "source": "etsy",
+      "surface": "title-suggestions",
+      "tier": "bookend",
+      "scope": "shop",
+      "measures": [
+        "content"
+      ],
+      "subjects": [
+        "holiday"
+      ],
+      "half_life": "90d",
+      "status": "fresh",
+      "answers": "What Etsy's own dashboard proposed as listing titles, and why it was declined.",
+      "raw_files": [],
+      "current": true,
+      "series_index": 1,
+      "series_length": 1
+    },
+    {
+      "note": "2026-09-16-etsy-ads-dashboard.md",
+      "captured": "2026-09-16",
+      "source": "etsy",
+      "surface": "ads-dashboard",
+      "tier": "bookend",
+      "scope": "shop",
+      "measures": [
+        "spend",
+        "conversion"
+      ],
+      "subjects": [
+        "all"
+      ],
+      "half_life": "30d",
+      "status": "fresh",
+      "answers": "What the ad programme cost and returned at campaign level, and which keywords Etsy served.",
+      "raw_files": [],
+      "current": true,
+      "series_index": 1,
+      "series_length": 1
+    },
+    {
+      "note": "2026-09-16-etsy-statements.md",
+      "captured": "2026-09-16",
+      "source": "etsy",
+      "surface": "statements",
+      "tier": "bookend",
+      "scope": "shop",
+      "measures": [
+        "conversion",
+        "spend"
+      ],
+      "subjects": [
+        "all"
+      ],
+      "half_life": "permanent",
+      "status": "permanent",
+      "answers": "Actual money in and out, month by month. Historical fact; does not decay.",
+      "raw_files": [],
+      "current": true,
+      "series_index": 1,
+      "series_length": 1
+    },
+    {
+      "note": "2026-09-15-erank.md",
+      "captured": "2026-09-15",
+      "source": "erank",
+      "surface": "tag-report",
+      "tier": "external",
+      "scope": "market",
+      "measures": [
+        "demand",
+        "competition"
+      ],
+      "subjects": [
+        "all"
+      ],
+      "half_life": "180d",
+      "status": "fresh",
+      "answers": "What marketwide search volume and difficulty sit behind the tags W&H already uses, and which competitor shops were audited alongside.",
+      "raw_files": [
+        "2026-09-15-erank-tag-report.csv"
+      ],
+      "current": true,
+      "series_index": 1,
+      "series_length": 1
+    }
+  ]
+}

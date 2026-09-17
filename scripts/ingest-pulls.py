@@ -25,10 +25,11 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import re
 import shutil
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -75,6 +76,25 @@ def classify(name: str) -> tuple[str, str, str] | None:
     if m:
         return "etsy", slug(m.group(1)), ""
 
+    # Other sources in the ecosystem map's intelligence tiers (§11), plus the
+    # shapes their exports actually arrive in. Extend here as sources are added
+    # -- an unrecognised file is reported, never guessed at.
+    for pattern, source in (
+        (r"(?i)^(google[_\s]*ads|adwords)", "google-ads"),
+        (r"(?i)^(google[_\s]*analytics|ga4)", "google-analytics"),
+        (r"(?i)^marmalead", "marmalead"),
+        (r"(?i)^pinterest", "pinterest"),
+        (r"(?i)^(search[_\s]*analytics|searchterms)", "etsy"),
+        (r"(?i)^shop[_\s]*manager", "etsy"),
+        (r"(?i)^notion", "notion"),
+        (r"(?i)^supabase", "supabase"),
+    ):
+        m = re.match(pattern + r"[_\s-]*(.*)$", stem)
+        if m:
+            rest = slug(m.group(m.lastindex or 1)) if m.lastindex else ""
+            tail = slug(stem[m.end(1):]) if m.lastindex else ""
+            return source, (tail or "export"), ""
+
     return None
 
 
@@ -85,6 +105,119 @@ def sha(path: Path) -> str:
 def target_name(d: date, source: str, surface: str, variant: str, ext: str) -> str:
     parts = [d.isoformat(), source, surface] + ([variant] if variant else [])
     return "-".join(parts) + ext
+
+
+HALF_LIFE_DAYS = {"14d": 14, "30d": 30, "90d": 90, "180d": 180, "365d": 365}
+
+
+def read_front_matter(path: Path) -> dict:
+    """Minimal front-matter reader: scalars, [a, b] lists, and `>-` blocks.
+
+    Deliberately not a YAML parser -- the schema in docs/pulls/README.md is
+    fixed and small, and a dependency here would have to be installed on every
+    machine that lands a pull.
+    """
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---\n"):
+        return {}
+    body = text.split("---\n", 2)[1]
+    out: dict[str, object] = {}
+    key = None
+    for line in body.splitlines():
+        if key and line.startswith("  "):
+            out[key] = f"{out[key]} {line.strip()}".strip()
+            continue
+        key = None
+        m = re.match(r"^([a-z_]+):\s*(.*)$", line)
+        if not m:
+            continue
+        k, v = m.group(1), m.group(2).strip()
+        if v in (">-", ">", "|"):
+            out[k], key = "", k
+        elif v.startswith("["):
+            out[k] = [x.strip() for x in v.strip("[]").split(",") if x.strip()]
+        else:
+            out[k] = v
+    return out
+
+
+def staleness(captured: str, half_life: str, today: date) -> str:
+    """'fresh' / 'aging' / 'stale' / 'permanent' -- how far past its half-life."""
+    if half_life == "permanent":
+        return "permanent"
+    days = HALF_LIFE_DAYS.get(half_life)
+    if not days:
+        return "unknown"
+    try:
+        age = (today - date.fromisoformat(captured)).days
+    except ValueError:
+        return "unknown"
+    if age <= days:
+        return "fresh"
+    return "aging" if age <= days * 2 else "stale"
+
+
+def build_manifest(today: date | None = None) -> list[dict]:
+    today = today or date.today()
+    out = []
+    for f in sorted(PULLS.glob("*.md")):
+        if f.name == "README.md":
+            continue
+        fm = read_front_matter(f)
+        if not fm:
+            continue
+        captured = str(fm.get("captured", ""))
+        half_life = str(fm.get("half_life", ""))
+        raw = sorted(
+            g.name for g in PULLS.iterdir()
+            if g.suffix.lower() in (".csv", ".tsv") and g.name.startswith(captured)
+            and f"-{fm.get('source','')}-{fm.get('surface','')}" in g.name
+        )
+        out.append({
+            "note": f.name,
+            "captured": captured,
+            "source": fm.get("source", ""),
+            "surface": fm.get("surface", ""),
+            "tier": fm.get("tier", ""),
+            "scope": fm.get("scope", ""),
+            "measures": fm.get("measures", []),
+            "subjects": fm.get("subjects", []),
+            "half_life": half_life,
+            "status": staleness(captured, half_life, today),
+            "answers": fm.get("answers", ""),
+            "raw_files": raw,
+        })
+    out.sort(key=lambda r: r["captured"], reverse=True)
+
+    # Repeat pulls of the same surface form a series: the newest is current and
+    # the rest are superseded. Without this, a stale pull and the fresh one that
+    # replaced it look alike to anything reading the index, and the whole point
+    # of keeping both is being able to diff them.
+    seen: dict[tuple[str, str], int] = {}
+    for r in out:
+        key = (r["source"], r["surface"])
+        n = seen.get(key, 0) + 1
+        seen[key] = n
+        r["current"] = n == 1
+        r["series_index"] = n
+    for r in out:
+        key = (r["source"], r["surface"])
+        r["series_length"] = seen[key]
+        if not r["current"]:
+            newer = [x["note"] for x in out
+                     if (x["source"], x["surface"]) == key and x["current"]]
+            r["superseded_by"] = newer[0] if newer else ""
+            r["status"] = "superseded"
+    return out
+
+
+def write_manifest() -> int:
+    rows = build_manifest()
+    (PULLS / "index.json").write_text(
+        json.dumps({"generated": date.today().isoformat(), "pulls": rows}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return len(rows)
 
 
 def build_index() -> str:
@@ -106,12 +239,28 @@ def build_index() -> str:
         else:
             entry["files"].append(Path(rest).stem)
 
-    out = ["| Date | Note | Raw files |", "| --- | --- | --- |"]
-    for day in sorted(rows, reverse=True):
-        e = rows[day]
-        notes = "<br>".join(e["notes"]) or "—"
-        files = f"{len(e['files'])} × `.csv`" if e["files"] else "— *(Drive only)*"
-        out.append(f"| {day} | {notes} | {files} |")
+    by_note = {r["note"]: r for r in build_manifest()}
+    out = [
+        "| Captured | Pull | Measures | Scope | Raw | Status |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    for r in sorted(by_note.values(), key=lambda r: (r["captured"], r["note"]), reverse=True):
+        title = ""
+        for line in (PULLS / r["note"]).read_text(encoding="utf-8").splitlines():
+            if line.startswith("# "):
+                title = line[2:].strip().replace("Data pull — ", "")
+                break
+        measures = ", ".join(f"`{m}`" for m in r["measures"]) or "—"
+        raw = f"{len(r['raw_files'])} × csv" if r["raw_files"] else "— *(Drive)*"
+        badge = {"fresh": "🟢 fresh", "aging": "🟡 aging", "stale": "🔴 stale",
+                 "permanent": "⚪ permanent",
+                 "superseded": "⏹ superseded"}.get(r["status"], r["status"])
+        if r.get("series_length", 1) > 1:
+            badge += f" · {r['series_index']}/{r['series_length']}"
+        out.append(
+            f"| {r['captured']} | [{title or r['note']}]({r['note']}) | {measures} "
+            f"| `{r['scope']}` | {raw} | {badge} |"
+        )
     return "\n".join(out)
 
 
@@ -183,7 +332,9 @@ def main() -> int:
         print("dry run -- nothing copied. Re-run with --apply.")
         return 0
 
-    print("index refreshed" if write_index() else "index markers missing in docs/pulls/README.md")
+    n = write_manifest()
+    print(f"index refreshed ({n} pulls in index.json)" if write_index()
+          else "index markers missing in docs/pulls/README.md")
     if landed:
         print("\nNext: write or extend the dated note in docs/pulls/, then commit.")
     return 0

@@ -1,3 +1,15 @@
+---
+source: erank
+surface: spotted-on-etsy
+captured: 2026-09-17
+tier: external
+scope: shop
+measures: [position]
+subjects: [patterns, holiday, grandma-hobbies]
+half_life: 14d
+answers: >-
+  Where W&H listings actually rank in Etsy search, by term. Positions move fast — re-pull before citing.
+---
 # Data pull — eRank "Spotted on Etsy", captured 2026-09-17
 
 **Provenance:** eRank Monitor export, 2026-09-17. Raw file kept alongside this note as `2026-09-17-erank-spotted-on-etsy.csv` (12 rows, small enough to keep in-repo like the tag report). Archive a copy flat in `Drive: W+H Listings/W+H Data Pulls/`.

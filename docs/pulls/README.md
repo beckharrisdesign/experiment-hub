@@ -1,6 +1,13 @@
 # Data pulls — the landing zone
 
-Every manual capture of shop data lands here under one naming rule, so a pull taken months apart is still findable, diffable and citable. Monthly reviews and experiment readouts cite **pull notes**, never raw files.
+Every capture of data or reporting **about the shop** lands here — whatever tool it came from. eRank and Etsy are simply what exists so far; Google Ads, Marmalead, Pinterest, Search Analytics and Shop Manager exports belong here on the same terms, and so does anything a future tool produces.
+
+Two jobs, and the second is the harder one:
+
+1. **Land it** under a naming rule, so a pull taken months apart is still findable and diffable.
+2. **Classify it**, so it can be *called upon* — when a listing is being rewritten or a new product considered, the question is "what do we know about demand for this?", not "which file was that in?"
+
+Monthly reviews and experiment readouts cite **pull notes**, never raw files.
 
 ## The rule
 
@@ -42,6 +49,77 @@ Either way the pull note records the provenance, so a file in Drive is still dis
 
 State confounds in the note, not in your head. Several of these captures look like findings and are export artifacts; the note is the only place that distinction survives.
 
+## Classification — how a pull gets found later
+
+Every note opens with front-matter. This is what makes the archive queryable instead of merely tidy.
+
+```yaml
+---
+source: erank                    # the tool it came from
+surface: spotted-on-etsy         # which export within that tool
+captured: 2026-09-17             # when
+tier: external                   # instrumented | bookend | external
+scope: shop                      # shop | market | competitor
+measures: [position]             # what question it answers (below)
+subjects: [patterns, holiday]    # which product lines it bears on
+half_life: 14d                   # when it starts misleading
+answers: >-
+  One line: what this pull can be asked.
+---
+```
+
+### `measures` — the axis that matters
+
+The ecosystem's instruments disagree with each other, and most of the confusion this shop has run into came from reading one as though it were another. A #1 ranking is not traffic; marketwide demand is not fit; impressions are not buyers.
+
+| Value | Answers | Instruments so far |
+|---|---|---|
+| `demand` | How many people search for this at all? | eRank tag report, eRank Keyword Tool |
+| `position` | Where do we rank? | eRank Spotted on Etsy |
+| `traffic` | Who actually arrived? | Search Analytics, sync snapshots |
+| `conversion` | Who bought? | Statements, order exports |
+| `spend` | What did it cost? | Ads dashboard, statements |
+| `content` | What do our listings say? | Snapshots, title suggestions, copy payloads |
+| `quality` | How complete are they? | Shop health ledger, ELK rubric |
+| `competition` | What is everyone else doing? | eRank competitor audits |
+
+### `tier` — how the data arrives
+
+Mirrors [the ecosystem map §11](../ETSY_ECOSYSTEM_MAP_2026-09.md): `instrumented` (automatic, via the sync), `bookend` (manual capture ritual — no API exists), `external` (third-party tools). The tier tells you whether a pull can be refreshed on demand or has to be re-captured by hand.
+
+### `half_life` — when a pull starts lying
+
+**The one that protects you.** Data does not age uniformly, and citing a stale pull is worse than having none:
+
+| Half-life | Kind | Why |
+|---|---|---|
+| `permanent` | Statements, orders | Historical fact. Never decays. |
+| `180d` | Established keyword demand | Search volume for a stable term moves slowly. |
+| `90d` | Keyword research, dashboard suggestions | Directional for a season. |
+| `30d` | Ads panels, traffic mix | A month's spend tells you little about the next. |
+| `14d` | Rankings | Positions move constantly. |
+
+The index marks each pull 🟢 fresh (within its half-life), 🟡 aging (up to 2×), or 🔴 stale beyond that. **Stale is not "delete" — it is "re-pull before citing, and keep the old one to diff against."**
+
+> A half-life is a default, not a guarantee. A pull can contain rows that rot much faster than its own setting — the Keyword Tool pull is `90d` but holds trend spikes that will not survive a month. Where that is true the note says so, and the note wins.
+
+### Repeat pulls of the same surface
+
+Pull the same export again and the two form a **series**. The newest is `current`; the older flips to `⏹ superseded` and records which note replaced it. Both stay — the delta between them is usually worth more than either alone, which is the whole reason for keeping a dated archive rather than overwriting a file.
+
+Nothing extra to do: land the new export, write its note, re-run the script.
+
+## Calling it up
+
+`index.json` is generated beside this README — one record per pull with all of the above plus `current`, `status` and its raw files. It is the machine-readable entry point: read it first to find which pulls bear on a question, then read those notes.
+
+Rules of thumb when using it:
+
+- **Filter by `measures`, not by source.** "What do we know about demand?" spans eRank and Etsy both.
+- **Check `status` before citing.** A 🔴 stale or ⏹ superseded pull is context, not evidence.
+- **Prefer `scope: shop` over `scope: market` for decisions about existing listings**, and the reverse when considering something new. The two disagree on this shop, repeatedly and on purpose.
+- **Read the note, not the CSV.** The distillation carries the confounds; the raw rows do not.
+
 ## Landing new exports
 
 From Katy's own machine, where the downloads are:
@@ -53,16 +131,21 @@ python3 scripts/ingest-pulls.py ~/Downloads --apply  # copy + refresh the invent
 
 It derives the canonical name from the export's own filename (`eRank - Keyword Tool - halloween.csv` → `erank` / `keywords` / `halloween`), takes the capture date from the file's modification time, and **compares by content hash** — so eRank's `_1`/`_2` re-download suffixes don't create duplicates and re-running is safe. Anything it can't classify is listed as `UNKNOWN` and left alone; name it by hand or add a rule to `classify()`.
 
-Then write the note and commit. The script never writes notes — the distillation is the point of the pull, and it isn't automatable.
+New sources only need a rule in `classify()` when their filenames are unrecognised; until then they land by hand under the same naming rule and behave identically everywhere else.
+
+Then write the note **with its front-matter** and re-run with `--apply` to refresh `index.json` and the inventory. The script never writes notes — the distillation is the point of a pull, and it is not automatable.
 
 ## Inventory
 
 <!-- inventory:start -->
-| Date | Note | Raw files |
-| --- | --- | --- |
-| 2026-09-17 | [Data pull — eRank Keyword Tool, 10 seeds, captured 2026-09-17](2026-09-17-erank-keywords.md)<br>[Data pull — eRank "Spotted on Etsy", captured 2026-09-17](2026-09-17-erank-spotted-on-etsy.md)<br>[Data pull — Etsy dashboard title suggestions, captured 2026-09-17](2026-09-17-etsy-title-suggestions.md) | 11 × `.csv` |
-| 2026-09-16 | [Data pull — Etsy Ads dashboard, captured 2026-09-16](2026-09-16-etsy-ads-dashboard.md)<br>[Data pull — Etsy monthly statements, Dec 2025 – Sep 2026](2026-09-16-etsy-statements.md) | 10 × `.csv` |
-| 2026-09-15 | [Data pull — eRank, 2026-09-15](2026-09-15-erank.md) | 1 × `.csv` |
+| Captured | Pull | Measures | Scope | Raw | Status |
+| --- | --- | --- | --- | --- | --- |
+| 2026-09-17 | [Etsy dashboard title suggestions, captured 2026-09-17](2026-09-17-etsy-title-suggestions.md) | `content` | `shop` | — *(Drive)* | 🟢 fresh |
+| 2026-09-17 | [eRank "Spotted on Etsy", captured 2026-09-17](2026-09-17-erank-spotted-on-etsy.md) | `position` | `shop` | 1 × csv | 🟢 fresh |
+| 2026-09-17 | [eRank Keyword Tool, 10 seeds, captured 2026-09-17](2026-09-17-erank-keywords.md) | `demand` | `market` | 10 × csv | 🟢 fresh |
+| 2026-09-16 | [Etsy monthly statements, Dec 2025 – Sep 2026](2026-09-16-etsy-statements.md) | `conversion`, `spend` | `shop` | — *(Drive)* | ⚪ permanent |
+| 2026-09-16 | [Etsy Ads dashboard, captured 2026-09-16](2026-09-16-etsy-ads-dashboard.md) | `spend`, `conversion` | `shop` | — *(Drive)* | 🟢 fresh |
+| 2026-09-15 | [eRank, 2026-09-15](2026-09-15-erank.md) | `demand`, `competition` | `market` | 1 × csv | 🟢 fresh |
 <!-- inventory:end -->
 
-*Generated by `scripts/ingest-pulls.py --apply`. Don't hand-edit between the markers.*
+*Generated by `scripts/ingest-pulls.py --apply`, alongside `index.json`. Don't hand-edit between the markers.*
