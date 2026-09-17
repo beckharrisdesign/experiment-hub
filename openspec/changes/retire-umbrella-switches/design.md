@@ -64,10 +64,11 @@ changed>` — never an edit to an existing one.
 
 **Iterations on this change:**
 
-| Page                                               | Round | What it holds                                                                                                          |
-| -------------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
-| `02 Proposed`                                      | v1    | The first proposal, built by reading the JSX — wrong on composition (rows that wrap, chevrons, stacked export buttons) |
-| `02.1 Proposed — rebuilt from measured production` | v2    | The same removals, drawn from geometry measured off the running app                                                    |
+| Page                                               | Round | What it holds                                                                                                                                                                                            |
+| -------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `02 Proposed`                                      | v1    | The first proposal, built by reading the JSX — wrong on composition (rows that wrap, chevrons, stacked export buttons)                                                                                   |
+| `02.1 Proposed — rebuilt from measured production` | v2    | The same removals, drawn from geometry measured off the running app — **this is what this change ships**                                                                                                 |
+| `02.2 Proposed — size declared in the document`    | v3    | Also drops **Design size**, after the founder settled that the document declares physical size (`st-size`, mm ×10). Depends on a separate change; shown so the destination is visible while reviewing v2 |
 
 The convention was briefly broken: when v1 was rejected, its page was
 cleared and rebuilt in place instead of a new page being added. That is
@@ -124,6 +125,22 @@ scroll). The frame reproduces the bug rather than quietly fixing it.
    duplicate, not a second design.
 4. **No new components.** Everything in the proposed frame already
    exists; the change is subtraction.
+
+### Where this lands
+
+`02.2` is not in scope here, but it is worth seeing while reviewing
+`02.1`, because it shows what the panel becomes once size is declared in
+the file too: 968 px → 728 px → 655 px.
+
+![Panel with no legacy controls](assets/proposed-v3-no-size-control.png)
+
+Everything left is either a fact read from the file — sew order, design
+stats, size — or a preview control that changes nothing about the
+stitches (**Fabric**). The panel stops being a place where stitch
+decisions are made and becomes a readout with an export button. Size
+needs no new affordance: the **DESIGN** section already reports it, which
+is the right treatment once it is an outcome of the document rather than
+an input to the tool.
 
 ## Risks / Trade-offs
 
