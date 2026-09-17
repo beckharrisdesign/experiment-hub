@@ -158,6 +158,21 @@ Every OpenSpec Figma file uses **numbered pages** and treats each proposal itera
 
 Record the exact page names + frame node IDs in the `design.md` Visual design table, and restate this file convention there (as `stop-the-leaks/design.md` does).
 
+**Board equivalent.** A FigJam round is recorded on the same table, substituting
+what a board actually has: **section name + section node ID** in place of page
+name + frame node ID, and the board URL (`figma.com/board/...`) as the file URL.
+Three columns have no board counterpart and are filled `N/A` with the reason, not
+left blank:
+
+| Column | On a board |
+| --- | --- |
+| Library / version | `N/A — boards subscribe no libraries` (that is why the round is cheap) |
+| Breakpoints | `N/A — not a surface` |
+| Code Connect | `N/A` |
+
+A change with both files gets a row per file, so the series stays auditable end to
+end.
+
 Map kit variables to **`tailwind.config.ts`** tokens; treat MCP-exported layout as reference, not literals (see Project-specific rules above).
 
 ## Component annotation
