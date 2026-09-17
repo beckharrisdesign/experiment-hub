@@ -70,6 +70,8 @@ changed>` — never an edit to an existing one.
 | `02.1 Proposed — rebuilt from measured production`             | v2         | The same removals, drawn from geometry measured off the running app                                                                                                                                                                                              |
 | `03.1 Proposed — size declared in the document`                | v3         | Also removes **Design size**, after the founder settled that the document declares physical size (`st-size`, mm ×10). Numbering continues past `03`, which holds the decision-flow diagram                                                                       |
 | `03.2 Proposed — file row on the input pattern, brand buttons` | v4, latest | Founder edits to the file picker carried forward: the filename reads as an input and **Replace** as a button, both on the label-and-control pattern the other rows use. The primary button treatment adopts the brand green, captured as a `brand-primary` token |
+| `03.3 Proposed — one row pattern, matched control widths`      | v5         | File collapses to a single row and **Replace** is widened to the select's 110 px. Superseded within the same review                                                                                                                                              |
+| `03.4 Proposed — file as a select, one row pattern throughout` | v6, latest | The file row becomes a select, so every key/value row is the same object. Founder: "what if file is also a dropdown? so that the key values are expressed in similar pattern and thus their spacing is consistent"                                               |
 
 The convention was briefly broken: when v1 was rejected, its page was
 cleared and rebuilt in place instead of a new page being added. That is
@@ -154,43 +156,43 @@ scroll). The frame reproduces the bug rather than quietly fixing it.
    already has both. Naming the model here means the follow-on change
    implements a stated principle rather than reopening the argument.
 
-### Latest round — `03.2`
+### Latest round — `03.4`
 
-`03.1` moved size into scope: 968 px → 728 px → 655 px. `03.2` then
-reworks the file picker and the button treatment, from founder edits made
-directly on `03.1`.
+`03.2` was rejected as choppy, and measuring said why: three different
+left edges for text and two controls of different widths sitting in
+adjacent rows.
 
-![Panel with the file row on the input pattern](assets/proposed-03-2-panel.png)
+|                                 | Left edge | Width   |
+| ------------------------------- | --------- | ------- |
+| `File`, `Fabric`, `SEW ORDER`   | 17        | —       |
+| filename, inside a padded field | **25**    | 172     |
+| sew-order row text              | **33**    | —       |
+| **Replace** button              | —         | **86**  |
+| **Fabric** select               | —         | **110** |
 
-The file row now takes the same shape as every other field — a label,
-then its control — with the filename rendered as an input and **Replace**
-as a solid button, rather than a badge sitting beside a quiet one. The
-primary button treatment takes the brand green (`#0a7e3a`), captured as a
-`brand-primary` variable in the `hub tokens` collection so it is a token
-and not a literal. Secondary (**Download EXP**) is untouched.
+`03.3` collapsed the file row to one line and matched the widths. `03.4`
+went further on the founder's suggestion and made the file row a select,
+so every key/value row is literally the same object rather than three
+near-misses.
 
-Two things flagged rather than assumed:
+![Panel with the file row as a select](assets/proposed-03-4-panel.png)
 
-- **Two primaries.** **Replace** and **Download DST** are both brand
-  green now. Replace is a utility; the download is the point of the
-  tool. One of them probably wants to be secondary.
-- **Replace is shortened** from "Replace file" so it fits beside the
-  filename. If the full label matters, that row wraps instead.
+`File` and `Fabric` now share a label at 17, a control right edge at 283
+and a height of 32. The brand green is left to **Download DST** alone,
+which also settles the two-primaries question `03.2` raised — Replace is
+no longer a competing primary because it is no longer a button.
 
-The composition before those edits, with size newly out of the panel:
+**One thing to resolve before this is built.** A select promises a list.
+The file control has one action behind it — open a file dialog — so
+unless the menu carries something real, like recent files, it is a button
+wearing a chevron. Three ways out: give it recent files (the app has no
+persistence today, so that is its own work), keep the chevron and accept
+that it opens a dialog, or drop the chevron and let it read as a value
+that happens to be clickable. `03.3` is the version that does not make
+the promise, and is kept for that comparison.
 
-![Panel with no legacy controls](assets/proposed-03-1-panel.png)
-
-Everything left is either a fact read from the file — sew order, design
-stats, size — or a preview control that changes nothing about the
-stitches (**Fabric**). The panel stops being a place where decisions are
-made and becomes a readout with an export button. Size needs no new
-affordance: the **DESIGN** section already reports it, which is the right
-treatment once it is an outcome of the document rather than an input to
-the tool.
-
-**Nothing in the file is approved.** `02 Proposed`, `02.1`, `03.1` and
-`03.2` are all open rounds.
+**Nothing in the file is approved.** `02`, `02.1`, `03.1`, `03.2`, `03.3`
+and `03.4` are all open rounds.
 
 ## Risks / Trade-offs
 
