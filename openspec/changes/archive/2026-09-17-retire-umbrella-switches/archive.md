@@ -1,6 +1,6 @@
 # Archive — retire-umbrella-switches
 
-**Archived:** 2026-09-17 · **Created:** 2026-09-16 · **Tasks:** 20/20
+**Archived:** 2026-09-17 · **Created:** 2026-09-16 · **Tasks:** 21/21
 **Outcome:** SHIPPED
 
 The converter panel lost every control that changed the sewn output, and
