@@ -23,11 +23,42 @@ hand in a Figma file, check whether MVDS already has it.
 | `libraryKey` | `lk-d54f86bcaf4bb7bd9ea1556e2af83e2ab93c839679852e05d720854cc1dedbfe8362b1503e1dbfc284ccb763a50cd240b2e52bd0af8904cf2ac7ffaaa8c09687` |
 | Code | `@beckharrisdesign/mvds` — public on npmjs, repo `beckharrisdesign/mvds` |
 
-**Always scope searches to the library key.** An unscoped
-`search_design_system` query for "Button" returns ~20 results across three
-libraries — `MVDS Core`, `BHD Labs / shadcn`, and `Simple Seed Organizer` — and
-MVDS Core is **not** first. Picking off the top of that list silently sources
-components from a stale kit that nothing in the hub uses:
+**MVDS Core ships these 19 components** (verified against the library file
+2026-09-17 — check here before concluding something is missing):
+
+`Badge` · `Blockquote` · `Button` · `Callout` · `Card` · `Checkbox` ·
+`Chrome` · `Dropzone` · `Field` · `Hero` · `Input` · `Label` · `Layer` ·
+`MediaFrame` · `RadioGroupItem` · `Section` · `Select` · `Switch` ·
+`Textarea`
+
+**Search ranks MVDS below the stale kit, and multi-word queries lose it
+entirely.** A query for `Select` returns MVDS Core's *fourth*, behind three
+`BHD Labs / shadcn` Selects; a query for `"Select dropdown Label Card"`
+returned no MVDS results at all and led an agent to conclude — wrongly, and
+then to write it down — that MVDS had no Select. **Search one component name
+at a time, and read `libraryName` on every row rather than taking the top
+hit.**
+
+**`includeLibraryKeys` does not work through the MCP client** (the array
+parameter is rejected: *"expected array, received string"*). Until that is
+fixed, scope by reading `libraryName`, or list the library's components
+directly, which is authoritative:
+
+```
+use_figma(
+  fileKey: "C20nU0mROzk3Zr0I9BELJF",       // MVDS Core itself
+  code: `const page = figma.root.children.find((p) => p.name.trim() === "Components");
+         await figma.setCurrentPageAsync(page);
+         return page.findAllWithCriteria({ types: ["COMPONENT_SET"] }).map((n) => n.name);`
+)
+```
+
+**Never conclude a component is missing from a search result.** Confirm
+against the roster above or the file itself. The cost of getting this wrong
+is hand-building something the system already has — or sourcing from the kit
+below.
+
+The intended scoping call, for when the client supports it:
 
 ```
 search_design_system(

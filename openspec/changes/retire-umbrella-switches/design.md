@@ -294,14 +294,24 @@ be bound by hand afterwards.
 |text-caption-size`. The two radii that were reading off the spacing
   scale now read `Sizing/radius-md`.
 
-**A gap this exposed, worth fixing at the source.** The app imports
-`Select`, `Label`, `CardDescription`, `Inline`, `Stack` and `Spacer` from
-`@beckharrisdesign/mvds` — they exist in the system. They are simply not
-in the published Figma library, so `search_design_system` finds no MVDS
-`Select` and a designer either hand-builds one or takes the
-`BHD Labs / shadcn` copy that `rules/figma.mdc` forbids. Since "code is
-law; Figma is a generated mirror", the fix is to publish them through the
-MVDS sync rather than to keep redrawing a Select in every change file.
+**A correction.** This section previously claimed MVDS Core did not publish
+`Select`, `Label` or `Card`, and that the fix was to sync them from the
+package. **That was wrong.** All three are published — MVDS Core ships 19
+components. What actually happened is a discovery failure:
+`search_design_system` ranks MVDS Core _below_ `BHD Labs / shadcn`, and the
+multi-word query used here (`"Select dropdown Label Card"`) returned no MVDS
+rows at all. A single-word `Select` query returns MVDS Core's fourth, behind
+three shadcn Selects.
+
+The rule's prescribed fix — `includeLibraryKeys` — is rejected by the MCP
+client ("expected array, received string"), so scoping has to be done by
+reading `libraryName` on each row, or by listing the library file's
+components directly. `rules/figma.mdc` now carries the full roster so the
+question can be answered without searching at all.
+
+The hand-built Select in rounds `02`–`03.6` is therefore a genuine mistake,
+not a workaround for a missing component. Implementation should instance
+MVDS `Select`.
 
 **Approved round: `03.6`.** Earlier rounds stay intact for comparison and are never edited in place; any further change goes on `03.7`. `02`, `02.1`, `03.1`, `03.2`, `03.3`,
 `03.4` and `03.5` are all open rounds.
