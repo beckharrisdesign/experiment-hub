@@ -251,7 +251,11 @@ def build_index() -> str:
                 title = line[2:].strip().replace("Data pull — ", "")
                 break
         measures = ", ".join(f"`{m}`" for m in r["measures"]) or "—"
-        raw = f"{len(r['raw_files'])} × csv" if r["raw_files"] else "— *(Drive)*"
+        # Label by the suffixes actually present: the ingest loop accepts .tsv
+        # as well as .csv, so a hardcoded "csv" would misreport a TSV landing.
+        exts = sorted({Path(f).suffix.lstrip(".") for f in r["raw_files"]})
+        raw = (f"{len(r['raw_files'])} × {'/'.join(exts)}" if r["raw_files"]
+               else "— *(Drive)*")
         badge = {"fresh": "🟢 fresh", "aging": "🟡 aging", "stale": "🔴 stale",
                  "permanent": "⚪ permanent",
                  "superseded": "⏹ superseded"}.get(r["status"], r["status"])

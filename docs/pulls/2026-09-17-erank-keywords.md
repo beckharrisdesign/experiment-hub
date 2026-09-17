@@ -12,11 +12,13 @@ answers: >-
 ---
 # Data pull — eRank Keyword Tool, 10 seeds, captured 2026-09-17
 
-**Provenance:** eRank Keyword Tool exports, 2026-09-17, five seeds from Katy's own thought experiments: `paint by numbers`, `halloween`, `pokemon`, `poster`, `wall art`. Raw files kept alongside as `2026-09-17-erank-keywords-<seed>.csv` (65 rows total, small enough to keep in-repo). Archive copies flat in `Drive: W+H Listings/W+H Data Pulls/`.
+**Provenance:** eRank Keyword Tool exports, 2026-09-17, ten seeds from Katy’s own thought experiments, captured in two batches the same day. **Batch 1, adjacent markets:** `paint by numbers`, `halloween`, `pokemon`, `poster`, `wall art` (65 rows). **Batch 2, the shop’s own category:** `embroidery designs`, `embroidery fonts`, `embroidery font`, `font bundle`, `procreate brushes` (18 rows). **83 data rows across ten CSVs**, kept alongside as `2026-09-17-erank-keywords-<seed>.csv` — small enough to keep in-repo. Archive copies flat in `Drive: W+H Listings/W+H Data Pulls/`.
+
+**Batch 2 is the important one**, and §0 is the finding of the whole capture.
 
 **What surface this is:** eRank's **third** instrument, and the first that is *marketwide and outside the shop's own vocabulary*. [The tag report](2026-09-15-erank.md) scores tags W&H already uses; [Spotted on Etsy](2026-09-17-erank-spotted-on-etsy.md) reports where W&H listings rank. This one reports demand for terms the shop has never touched. Read it as market reconnaissance, not as a to-do list — most of these rows describe products W&H does not make.
 
-> **Known gap:** these five seeds were exported ad hoc and more exports exist in Katy's Downloads that have never reached the record. Only what is in this directory counts as captured.
+> **Known gap:** these ten seeds were exported ad hoc and more exports exist in Katy’s Downloads that have never reached the record. Only what is in this directory counts as captured.
 
 ## 0. The category finding — read this before the rest
 
@@ -47,7 +49,7 @@ That single hypothesis would explain every unexplained result in the ecosystem a
 ## 1. The guardrail
 
 
-**Of the ten lowest-KD terms across all five files, all ten are trademarks.**
+**Of the ten lowest-KD terms across all ten files, all ten are trademarks.** (Every one scores KD ≤ 9; the lowest in batch 2 is `kpop demon hunters` at 11, so adding those five seeds did not displace any of them.)
 
 | Term | Avg searches | KD | Rights holder |
 |---|---|---|---|
@@ -171,9 +173,9 @@ Placed against the shop's own numbers, this capture confirms the demand reading 
 
 ## 6. Standing read
 
-**The first five seeds answer the wrong question.** `paint by numbers`, `pokemon`, `poster` and `wall art` describe markets W&H does not serve; they report where Etsy demand lives — largely fandom, licensed and trend territory — which is useful context and not a plan.
+**Four of the five batch-1 seeds answer the wrong question.** `paint by numbers`, `pokemon`, `poster` and `wall art` describe markets W&H does not serve; they report where Etsy demand lives — largely fandom, licensed and trend territory — which is useful context and not a plan. `halloween` is the exception and the reason batch 1 was not wasted — it is the one seed pointing at a product the shop could actually ship, per §3.2.
 
-**The second five ask the right question and return an uncomfortable answer**, or possibly an export artifact. Either way the shop cannot proceed on a guess: §4 batch A resolves it for the cost of one more export session, and it gates the Oct 15 rollout decision as much as the experiment readout does.
+**The batch-2 seeds ask the right question and return an uncomfortable answer**, or possibly an export artifact. Either way the shop cannot proceed on a guess: §4 batch A resolves it for the cost of one more export session, and it gates the Oct 15 rollout decision as much as the experiment readout does.
 
 Nothing here justifies a mid-window change. The tag experiment still closes 2026-10-15 on its own terms, and §3.1's tagging work is limited to the holiday and Grandma listings until then.
 
