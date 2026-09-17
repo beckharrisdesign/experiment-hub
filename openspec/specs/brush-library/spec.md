@@ -6,23 +6,34 @@ The six built-in motifs — `cross`, `tick`, `chain`, `dot`, `bird`, `bean` — 
 
 ## Requirements
 
-### Requirement: Six motifs sew on straight and curved paths
+### Requirement: Six named motifs sew along straight and curved paths
 
 The built-in library SHALL ship `cross`, `tick`, `chain`, `dot`,
-`bird`, and `bean`, each with a declared default pitch and each
-visually recognizable as its Figma exploration along both straight and
-curved paths.
+`bird`, and `bean`, each with a declared default pitch, each stamping
+its own penetration template at that pitch and rotating into the local
+path direction along straight and curved paths alike.
 
 **Fails until:** each named brush converts a straight and a curved test
-path into penetrations matching its motif geometry.
+path into penetrations at its declared pitch, oriented to the path.
 
 #### Scenario: Six motifs sew on straight and curved paths
 
 - **WHEN** a stroke is tagged `st-brush-cross`, `st-brush-tick`,
   `st-brush-chain`, `st-brush-dot`, `st-brush-bird`, or `st-brush-bean`
-- **THEN** the path sews as that motif — X pairs, angled ticks, linked
-  loops, compact dot clusters, V tracks, or tripled bean segments — at
-  the declared pitch, on straight and curved paths alike
+- **THEN** the path sews that brush's template at the declared pitch,
+  each stamp rotated to the path's direction, on straight and curved
+  paths alike
+
+> **Recognizability is not claimed here, and is not yet met.** The
+> intent is that each motif reads as its Figma exploration — X pairs,
+> angled ticks, linked loops, dot clusters, V tracks, tripled beans. As
+> shipped, only `cross` and `chain` do: `tick` and `bird` render as
+> zigzags separable only by frequency, and `dot` and `bean` as a plain
+> line, because the travel between stamps is itself stitched. Accepted
+> by the founder on 2026-09-17 as an aesthetic pass for a later change,
+> judged against `experiments/svg-to-stitch/fixtures/motif-reference.svg`.
+> This requirement covers the placement and rotation that did ship, so
+> the spec does not assert behaviour the library does not have.
 
 ### Requirement: Tag routing with pitch and readout
 
