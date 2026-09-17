@@ -1,5 +1,11 @@
 # Telling the mvds story three ways
 
+> **Frozen — method record.** Kept as the evidence behind
+> `skills/case-study/SKILL.md`; this is a record of how the method was proven,
+> not case-study content. The live case study is the Notion page
+> [BHD Labs: Building an opinionated design system that doesn’t drift](https://app.notion.com/p/3ceb908d7b3780c58a14d6166a6287f8).
+> Frozen 2026-09-04 by change `mvds-case-study-iteration`.
+
 Three approaches to the same body of work, each tried against real mvds data so
 they can be compared on evidence rather than in the abstract:
 

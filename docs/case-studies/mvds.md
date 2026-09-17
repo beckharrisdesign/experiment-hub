@@ -1,8 +1,12 @@
 # MVDS: a design system that can't drift
 
-> **Draft.** Interview complete — all inference marks and gaps have been
-> resolved with Katy's account. Working dates and sources are in the staging
-> table at the end; this note and the table are stripped at publish time.
+> **Frozen — superseded by Notion.** Kept as the record of how this case study
+> was built, not as a thing to edit. The live case study is the Notion page
+> [BHD Labs: Building an opinionated design system that doesn’t drift](https://app.notion.com/p/3ceb908d7b3780c58a14d6166a6287f8),
+> which is the only surface that gets edited — see `skills/case-study/SKILL.md`
+> → **Surfaces**. Editing here will not reach the page, and the two have already
+> diverged (the page carries a different title). Frozen 2026-09-04 by change
+> `mvds-case-study-iteration`.
 
 ## Hook
 

@@ -1,5 +1,11 @@
 # Panel reviews — mvds-combined.md
 
+> **Frozen — method record.** Kept as the evidence behind
+> `skills/case-study/SKILL.md`; this is a record of how the method was proven,
+> not case-study content. The live case study is the Notion page
+> [BHD Labs: Building an opinionated design system that doesn’t drift](https://app.notion.com/p/3ceb908d7b3780c58a14d6166a6287f8).
+> Frozen 2026-09-04 by change `mvds-case-study-iteration`.
+
 Five Voices reviewed [mvds-combined.md](mvds-combined.md) (2026-09-04), each
 grounded in the corresponding skill's rubric. Verbatim reviews below;
 synthesis at the end.

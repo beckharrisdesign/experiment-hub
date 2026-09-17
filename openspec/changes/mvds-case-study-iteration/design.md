@@ -14,6 +14,9 @@ encodes the process as the `case-study` skill.
 
 **Goals:**
 
+- **Delivery surface:** [BHD Labs: Building an opinionated design system that
+  doesn’t drift](https://app.notion.com/p/3ceb908d7b3780c58a14d6166a6287f8)
+  (BHD Database). Recorded here because no artifact linked it.
 - The Notion page is the single content draft: properties filled, body
   restructured, seed elements folded in or replaced per the proposal
   inventory.
@@ -70,7 +73,7 @@ page (spec: Figma review precedes Notion embed).
 | Libraries / version | None bound — frames hold captures, not compositions; MVDS Core stays untouched |
 | Code Connect | N/A — no components |
 | Breakpoints | Captures at L·1024 desktop (BHD Content Types); no responsive pass — Notion owns the page layout |
-| Status | Built 2026-09-04 — awaiting Katy's review of page 02 |
+| Status | Built 2026-09-04; **design gate approved** — Katy's copy edits folded into page `02.4` and snapshotted to `assets/approved-copy-2026-09-04.md`. Apply complete through QA; only task 5.4 (her top-to-bottom read of the Notion page) remains |
 
 ### Image slots
 
