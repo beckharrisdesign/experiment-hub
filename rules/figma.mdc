@@ -175,6 +175,14 @@ file nor audit what existing files are called. A mistitled file has to be rename
 by hand in the Figma UI. Pass the change ID as `fileName` on the `create_new_file`
 call itself.
 
+**Applies to files created after 2026-09-17.** An existing file keeps the title it
+has — `MVDS case study` and the rest stay as they are. Do not rename them, for the
+same reason the round-numbering rule is not retro-fitted: churn in an existing
+history to satisfy a rule that landed afterwards is the cost this convention exists
+to avoid, and here it cannot even be automated (see above), so a sweep would be
+hand-editing every file for no reader's benefit. A pre-existing title is not a
+defect to fix when you happen to open the file.
+
 ### File naming convention (REQUIRED)
 
 One rule holds in both editors: **every proposal iteration gets its own numbered
