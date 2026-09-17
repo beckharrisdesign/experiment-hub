@@ -1,3 +1,15 @@
+---
+source: etsy
+surface: title-suggestions
+captured: 2026-09-17
+tier: bookend
+scope: shop
+measures: [content]
+subjects: [holiday]
+half_life: 90d
+answers: >-
+  What Etsy's own dashboard proposed as listing titles, and why it was declined.
+---
 # Data pull — Etsy dashboard title suggestions, captured 2026-09-17
 
 **Provenance:** Katy's screencapture of Shop Manager's suggested-titles panel, 2026-09-17. All nine holiday listings were flagged in one batch. **Screenshotted, then dismissed — no titles were changed.** Archive the source image flat in `Drive: W+H Listings/W+H Data Pulls/` as `2026-09-17-etsy-title-suggestions.png` to match the other pulls; the nine pairs are transcribed below so the readout does not depend on the image surviving.

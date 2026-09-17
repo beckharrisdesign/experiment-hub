@@ -1,3 +1,15 @@
+---
+source: etsy
+surface: ads-dashboard
+captured: 2026-09-16
+tier: bookend
+scope: shop
+measures: [spend, conversion]
+subjects: [all]
+half_life: 30d
+answers: >-
+  What the ad programme cost and returned at campaign level, and which keywords Etsy served.
+---
 # Data pull — Etsy Ads dashboard, captured 2026-09-16
 
 **Provenance:** Katy's screencapture of Shop Manager → Advertising, 2026-09-16 09:50. Source PDF archived as `Drive: W+H Listings/W+H Data Pulls/2026-09-16-etsy-ads-dashboard.pdf` (screencapture — the manual end of the pull spectrum; no export or API exists for this surface).

@@ -143,3 +143,9 @@ experiments/pdf-metadata-viewer/prototype/pdfs/*
 # A tracked copy invites hand edits, and a hand-edited manifest makes the
 # change pages' drift band lie.
 data/change-history.json
+
+# Python bytecode. The Python subtrees (etsy-notion-sync/prototype, pbn-research)
+# ignore this locally, but scripts/ has .py files too and had no coverage — a
+# stray .pyc staged itself the first time one was run from the repo root.
+__pycache__/
+*.pyc
