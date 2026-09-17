@@ -18,6 +18,7 @@ import {
 import { convertSvg, type ConvertResult } from "@/lib/svg-to-stitch/convert";
 import { readMachineFile } from "@/lib/svg-to-stitch/read";
 import StitchPreview from "./StitchPreview";
+import SewOrder from "./SewOrder";
 
 type Source =
   | { name: string; kind: "svg"; text: string }
@@ -129,17 +130,6 @@ function SelectRow({
     </Inline>
   );
 }
-
-// Sew-order glyphs for the built-in brush motifs, so each thread color's
-// row can say what kind of stitching it carries at a glance.
-const BRUSH_GLYPHS: Record<string, string> = {
-  cross: "✕",
-  tick: "╱",
-  chain: "◯",
-  dot: "●",
-  bird: "∨",
-  bean: "▬",
-};
 
 function StatRow({ label, value }: { label: string; value: string }) {
   return (
@@ -390,64 +380,11 @@ export default function SvgToStitchPage() {
             {plan && plan.colors.length > 0 && (
               <Stack gap={4}>
                 <PanelHeading>Sew order</PanelHeading>
-                {plan.colors.map((color, i) => {
-                  // Per-color stitch composition: which brush motifs sew in
-                  // this thread, plus its stitch count. Machine files carry
-                  // no run kinds, so their rows stay plain.
-                  const cs = plan.colorStats?.[i];
-                  const composition = cs
-                    ? [
-                        ...cs.brushes.map(
-                          (b) => `${BRUSH_GLYPHS[b.name] ?? b.name} ${b.runs}`,
-                        ),
-                        `${cs.stitches.toLocaleString()} sts`,
-                      ].join(" · ")
-                    : null;
-                  return (
-                    <Button
-                      key={`${color}-${i}`}
-                      variant="ghost"
-                      aria-pressed={selectedColor === i}
-                      onClick={() =>
-                        setSelectedColor(selectedColor === i ? null : i)
-                      }
-                      style={{
-                        justifyContent: "flex-start",
-                        gap: 8,
-                        width: "100%",
-                        minHeight: 44,
-                        boxShadow:
-                          selectedColor === i
-                            ? "0 0 0 2px var(--ring)"
-                            : undefined,
-                      }}
-                    >
-                      <CardDescription>{i + 1}.</CardDescription>
-                      <span
-                        aria-hidden
-                        style={{
-                          display: "inline-block",
-                          width: 12,
-                          height: 12,
-                          borderRadius: 3,
-                          backgroundColor: color,
-                          border: "1px solid var(--border)",
-                        }}
-                      />
-                      <CardDescription>{color}</CardDescription>
-                      {composition && (
-                        <>
-                          <Spacer />
-                          <CardDescription
-                            style={{ fontSize: 12, whiteSpace: "nowrap" }}
-                          >
-                            {composition}
-                          </CardDescription>
-                        </>
-                      )}
-                    </Button>
-                  );
-                })}
+                <SewOrder
+                  plan={plan}
+                  selectedColor={selectedColor}
+                  onSelectColor={setSelectedColor}
+                />
               </Stack>
             )}
 
