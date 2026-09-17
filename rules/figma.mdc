@@ -48,8 +48,22 @@ component in Figma — fix `src/components/**` in the mvds repo and re-sync.
 
 **Availability is per file.** A library existing is not the same as a library
 being usable: `get_libraries` reports what a given file has *subscribed*, not what
-exists. If MVDS Core does not appear for a new change's file, it has to be added
-to that file in the Figma UI (a founder action) before anything can be imported.
+exists. A **newly created** change file starts with nothing subscribed — MVDS Core
+will not even appear in `libraries_available_to_add`, which lists only community
+kits. It has to be turned on in the Figma UI, and only Katy can do it.
+
+**Ask at file-creation time, not after you hit the wall.** The moment you call
+`create_new_file` for a change, call `get_libraries` on the new key; if MVDS Core
+is missing, give Katy this one-liner *before* doing any other Figma work, so the
+subscription happens while she is already in the tool:
+
+> Open <https://www.figma.com/design/hHAppz4A23qMoLQFTo8QAc> → **Assets** panel →
+> the library icon (top right of the panel) → toggle **MVDS Core** on.
+> (Replace the URL with the new file's own.)
+
+Then re-run `get_libraries` and confirm `MVDS Core` shows with `source: "team"`
+before importing anything. Do not build bespoke chrome as a workaround — the
+design gate requires proposed frames built on MVDS.
 
 **Layout primitives are deliberately absent.** `Stack`, `Inline` and `Container`
 have no Figma counterparts because they carry no visual treatment — auto-layout is
