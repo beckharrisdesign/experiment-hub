@@ -37,28 +37,30 @@ artwork inside it SHALL keep its relative position and scale.
 - **AND** the layout rules the design tool applies inside that container
   still govern where the artwork sits — the converter re-fits nothing
 
-### Requirement: The outermost declaration wins
+### Requirement: Size cascades like CSS
 
-When sizes are declared at more than one level, the outer one is the
-document's size.
+An outer declaration sets the document's size; an inner one sizes its own
+subtree inside it.
 
-**Fails until:** a tagged frame containing a differently tagged child
-converts at the outer frame's declared size.
+**Fails until:** a frame tagged 63.5 mm containing a group tagged 20 mm
+converts 63.5 mm overall with that group sewing 20 mm wide.
 
-Where more than one ancestor of a shape declares `st-size`, the
-**outermost** declaration SHALL apply.
+The outermost `st-size` SHALL set the converted design's physical extent.
+A nested `st-size` SHALL size its own subtree within that extent, and
+SHALL NOT change the document's overall size.
 
-#### Scenario: A nested size does not shrink the document
+#### Scenario: A nested size sizes its own subtree
 
 - **WHEN** a frame tagged `st-size w635` contains a group tagged
   `st-size w200`
-- **THEN** the design converts at 63.5 mm
+- **THEN** the design converts 63.5 mm wide overall
+- **AND** that group's box sews 20 mm wide, scaled within the frame
+  rather than redefining it
 
-> This inverts the rest of the tag grammar, where a child overrides the
-> group it sits in (`ownDirective(el) ?? inheritedDirective`). Size is a
-> property of the document, not a style of a shape, so the outer frame is
-> authoritative. An implementer following the existing pattern will get
-> this backwards.
+> This is the CSS model, not a special rule: the outer element is the
+> containing block, and a child's own declaration applies to the child.
+> Size is therefore consistent with the rest of the tag grammar rather
+> than an exception to it.
 
 ### Requirement: An unmeasurable declaration errors loudly
 

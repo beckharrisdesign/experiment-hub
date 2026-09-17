@@ -126,10 +126,10 @@ than deleted.
 - **The tagged element is the size it is tagged to be**, not the ink
   inside it: a motif inset in a frame stays inset, and the layout rules
   the design tool applies inside that container still govern where the
-  artwork sits. Where sizes are declared at several levels the
-  **outermost** wins — the reverse of every other tag, where a child
-  overrides its group, because size is a property of the document rather
-  than a style of a shape.
+  artwork sits. Nesting follows **the CSS model** — the outer element is
+  the containing block and sets the document's extent, while a nested
+  declaration sizes its own subtree within it. Size is therefore
+  consistent with the rest of the grammar rather than an exception.
 - Size needs no replacement control: the **DESIGN** section already
   reports the output size, which is the right treatment once size is an
   outcome of the file rather than an input to the tool.
