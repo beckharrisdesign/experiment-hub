@@ -42,8 +42,8 @@ by roughly its own height.
 Nothing moves, nothing is renamed, nothing changes place. Five rows leave.
 
 The logic behind the panel simplifies in the same direction — see the
-decision flow in `proposal.md`, built on Figma page `03 Decision flow`
-(node `11:3`).
+decision flow in `proposal.md`, committed at
+`assets/decision-flow.png` (its Figma page has since been cleared).
 
 ## Visual design / Figma
 
@@ -223,6 +223,41 @@ starts from a stated model rather than a screenshot:
 
 The last one is the design problem worth solving early: reordering is
 easy to build and easy to make quietly expensive on the machine.
+
+### The system `03.5` settled on
+
+Read back from the founder's own edits rather than proposed to her:
+
+- **A value column.** Every key/value row puts its control at x=133,
+  150 px wide, right edge 283. **File**, **Fabric** and **Size** now line
+  up exactly — the widths that were 110 against 150 are gone.
+- **Size is a readout, not a control.** It sits in the value column as
+  plain text where the other two carry selects. That is the correct
+  consequence of the document declaring size: there is nothing to pick.
+- **Size moved up**, out of the stats and in with **File** and
+  **Fabric** — the three document facts, together, above the stitching.
+- **Radii tightened**: panel 12 → 8, selects 10 → 6, layer cards 6.
+- **Layer rows** at `4/16/4/16`, so their text sits at the same 16 px
+  inset as the card padding elsewhere.
+
+![The panel after the founder's edits](assets/proposed-03-5-panel.png)
+
+Three things that came out of reading it back:
+
+1. **The size readout is in inches — `3.5in x 3.5in` — while the tag is
+   millimetres (`st-size w635`, mm ×10).** Both are defensible: mm ×10
+   matches every other parameter in the grammar, and inches are the
+   working unit for patches. But the spec does not say what the readout
+   displays, and this is the first time the two units have appeared
+   together. It needs settling before implementation, and it may want
+   `st-size` to accept an inch form.
+2. **It is square — 3.5 × 3.5 — where the old readout was `67 × 63 mm`.**
+   That is the declared-frame semantic made visible: the frame is the
+   size, so a square frame reads square even when the artwork inside is
+   not. Worth keeping as the example precisely because it shows the
+   change in behaviour.
+3. **Button radius is now the outlier**: 10, where the panel and stat
+   cards are 8 and selects and layer cards are 6.
 
 **Nothing in the file is approved.** `02`, `02.1`, `03.1`, `03.2`, `03.3`,
 `03.4` and `03.5` are all open rounds.
