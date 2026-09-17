@@ -46,13 +46,17 @@ Reduction is sort and filter only. There is no second screen and no row detail v
 
 **Round history.** Round 01 was built on `02 Proposed`, then edited in place across several passes before the page-per-iteration rule was applied — so `02 Proposed` is now empty and round 01's pre-table-rules state was not preserved. Recorded rather than reconstructed: rebuilding a history to satisfy a rule applied late is the churn that rule exists to prevent. From 02.1 onward each iteration takes its own page.
 
-**Token binding is audited, not asserted.** A pass over the desktop frame reports every fill, stroke, spacing value, font size and radius that is not bound to an MVDS variable. It returns empty across 99 nodes. MVDS component internals are excluded — they own their own tokens.
+**Token binding is audited, not asserted.** A pass reports every fill, stroke, spacing value, font size and radius not bound to an MVDS variable, and every text node not carrying a published MVDS text style. Both return empty. MVDS component internals are excluded — they own their own tokens and styles.
 
 ## Decisions
 
 **MVDS, not shadcn — and MVDS ships no Table.** `@beckharrisdesign/mvds@0.3.0` is already load-bearing (`globals.css` imports its stylesheet; several routes use its components). It exports `Badge, Button, Card*, Checkbox, Container, Field, Grid, Inline, Label, Layer, MediaFrame, RadioGroup, Section, Select*, Spacer, Stack, Switch, Textarea` — no Table. So the table is semantic `<table>` markup on MVDS tokens, with MVDS components around it: `Select` for filters, `Badge` for status. This is the one primitive the system does not ship, not a licence for bespoke chrome.
 
-**The 12px floor is a layout constraint, not a styling detail.** The MVDS type ramp is 12 / 14 / 16 / 18 / 20 / 24. A dense table cannot be shrunk into the system — it has to be laid out at the system's smallest sizes, which widens columns and heightens rows. Every early sketch assumed 9–11px and had to be redrawn.
+**Type comes from MVDS published text styles, not from size variables.** Binding `fontSize` to `Typography/text-small-size` sets a number and leaves family, weight, line-height and tracking hand-set — which is what the earlier rounds did, and it is not the same as using the system. The frames now carry the published styles: `Type/Heading 3` (24/1.2/600/-0.01em), `Type/Caption` (12/1.4/500/0.01em) for labels, `Type/Small` (14/1.5/400) for every table cell. Audited: 45 desktop and 27 mobile text nodes, **zero unstyled**.
+
+**The 12px floor is a layout constraint, not a styling detail.** The ramp is Caption 12 / Small 14 / Body 16 / Body Large 18 / H4 20 / H3 24. A dense table cannot be shrunk into the system — it is laid out at the system's smallest sizes, which widens columns and heightens rows. Every early sketch assumed 9–11px and had to be redrawn.
+
+**MVDS has no 14px emphasis style, and the table wants one.** `Type/Small` is 400 only; the next weight up is `Type/Caption` at 500, but that is 12px and breaks the one-size rule. So the keyword column and the header row are now regular weight — visible in round 02.2, where the keyword lost the bold it had at 02.1. Three ways out: accept flat weight, use colour or a rule for hierarchy instead, or **add a `Type/Small Strong` to MVDS**. The third is the one that fixes it for every future table, and it is a change to the design system rather than to this surface. Flagged here rather than worked around with a local override, which would put us straight back to not using the system.
 
 **Table rules, standing.** Cells nowrap. **One type size throughout the table, header row included** — not one size for the body and another for headers. Small columns take only the width their widest value needs; the keyword column absorbs everything left over. No colour coding until asked.
 
