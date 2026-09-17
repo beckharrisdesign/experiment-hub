@@ -126,6 +126,33 @@ scroll). The frame reproduces the bug rather than quietly fixing it.
    duplicate, not a second design.
 4. **No new components.** Everything in the proposed frame already
    exists; the change is subtraction.
+5. **The tag vocabulary is a cascade.** The founder's framing, and the
+   model the rest of this change should be read against: "as someone who
+   understands cascading and inheritance, I want this to feel like a
+   similar system." Concretely, `st-` tags map onto CSS like this —
+
+   | CSS              | Here                                               | State                                                                                                                                    |
+   | ---------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+   | Inheritance      | a tag on a group applies to its descendants        | works today                                                                                                                              |
+   | Override         | a child restating a tag replaces the inherited one | works today                                                                                                                              |
+   | **Extend**       | a child changing one parameter keeps the rest      | **missing** — `ownDirective` returns `null` without a type token, so a child tagged only `d8` is discarded and inherits the parent whole |
+   | Containing block | the outer `st-size` bounds a nested one            | specified in `document-declared-size`                                                                                                    |
+   | Initial value    | the documented untagged fallback                   | specified in `untagged-fallback`                                                                                                         |
+
+   Two of the five already hold, two are specified by this change, and
+   the missing one — per-property extend — is the piece that would change
+   how every existing tag resolves.
+
+   The spelling stays utility-class shaped (`st-satin w20`, a token plus
+   terse modifiers, per the founder's earlier Tailwind reading); the
+   _resolution_ is the cascade. Those are different axes and both are
+   intended.
+
+6. **Extend ships separately.** Per-property merging across `a`, `d`,
+   `w`, `l` and `p` touches every directive and needs its own tests, and
+   the lite schema caps a change at two new capabilities — this one
+   already has both. Naming the model here means the follow-on change
+   implements a stated principle rather than reopening the argument.
 
 ### Latest round — `03.2`
 

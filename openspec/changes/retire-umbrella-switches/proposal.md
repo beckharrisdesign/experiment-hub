@@ -129,7 +129,11 @@ than deleted.
   artwork sits. Nesting follows **the CSS model** — the outer element is
   the containing block and sets the document's extent, while a nested
   declaration sizes its own subtree within it. Size is therefore
-  consistent with the rest of the grammar rather than an exception.
+  consistent with the rest of the grammar rather than an exception. The `st-` vocabulary is meant
+  to read as a cascade — inheritance down the tree, a child's own
+  declaration winning for itself, and the untagged fallback as the
+  initial value. See design.md decision 5 for the full mapping and the
+  one piece (per-property extend) that ships separately.
 - Size needs no replacement control: the **DESIGN** section already
   reports the output size, which is the right treatment once size is an
   outcome of the file rather than an input to the tool.
