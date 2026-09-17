@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Expect: "badge st-brush-cross" is a filled shape tagged st-brush.
+       This is what a Figma stroke becomes when it exports outlined. -->
+  <path id="badge_st-brush-cross" d="M20 24 L180 24 L180 40 L20 40 Z" fill="#bc213c"/>
+</svg>

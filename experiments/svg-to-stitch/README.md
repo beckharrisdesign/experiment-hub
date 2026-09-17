@@ -28,9 +28,13 @@ buy machine files online — and don't trust a file until they've sewn it.
 4. **Interactive preview**: full-viewport canvas with pan/zoom (wheel, pinch,
    buttons), click-to-highlight per thread color synced with the sew-order
    panel, recessed underlay rendering, and quiet dashed jumps.
-5. Encodes and downloads **DST** (Tajima) and **EXP** (Melco). Defaults to
-   the standard 2.5 in patch size. Everything runs in the browser; files
-   never upload anywhere.
+5. Encodes and downloads **DST** (Tajima) and **EXP** (Melco). Everything
+   runs in the browser; files never upload anywhere.
+6. **The design file decides.** The panel carries no stitch controls — only
+   a fabric backdrop for the preview. Stitch type comes from `st-` layer
+   tags or the documented fallback, and physical size from an `st-size`
+   tag (millimetres or inches), falling back to the 2.5 in patch. The same
+   file converts the same way in any session.
 
 ## Hypothesis
 
@@ -61,7 +65,7 @@ formats, and Wilcom/Hatch import them and can save EMB.
 
 ## History
 
-- **2026-09-11** — born as *SVG to Stitch*, a personal outline-only converter
+- **2026-09-11** — born as _SVG to Stitch_, a personal outline-only converter
   tool (PR #459), explicitly unscored.
 - **2026-09-11** — same day: interactive preview + full-viewport layout
   (#460), tatami fills (#461), letterform artifact fix (#462), fill optimizer

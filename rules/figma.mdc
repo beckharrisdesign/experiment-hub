@@ -23,11 +23,42 @@ hand in a Figma file, check whether MVDS already has it.
 | `libraryKey` | `lk-d54f86bcaf4bb7bd9ea1556e2af83e2ab93c839679852e05d720854cc1dedbfe8362b1503e1dbfc284ccb763a50cd240b2e52bd0af8904cf2ac7ffaaa8c09687` |
 | Code | `@beckharrisdesign/mvds` — public on npmjs, repo `beckharrisdesign/mvds` |
 
-**Always scope searches to the library key.** An unscoped
-`search_design_system` query for "Button" returns ~20 results across three
-libraries — `MVDS Core`, `BHD Labs / shadcn`, and `Simple Seed Organizer` — and
-MVDS Core is **not** first. Picking off the top of that list silently sources
-components from a stale kit that nothing in the hub uses:
+**MVDS Core ships these 19 components** (verified against the library file
+2026-09-17 — check here before concluding something is missing):
+
+`Badge` · `Blockquote` · `Button` · `Callout` · `Card` · `Checkbox` ·
+`Chrome` · `Dropzone` · `Field` · `Hero` · `Input` · `Label` · `Layer` ·
+`MediaFrame` · `RadioGroupItem` · `Section` · `Select` · `Switch` ·
+`Textarea`
+
+**Search ranks MVDS below the stale kit, and multi-word queries lose it
+entirely.** A query for `Select` returns MVDS Core's *fourth*, behind three
+`BHD Labs / shadcn` Selects; a query for `"Select dropdown Label Card"`
+returned no MVDS results at all and led an agent to conclude — wrongly, and
+then to write it down — that MVDS had no Select. **Search one component name
+at a time, and read `libraryName` on every row rather than taking the top
+hit.**
+
+**`includeLibraryKeys` does not work through the MCP client** (the array
+parameter is rejected: *"expected array, received string"*). Until that is
+fixed, scope by reading `libraryName`, or list the library's components
+directly, which is authoritative:
+
+```
+use_figma(
+  fileKey: "C20nU0mROzk3Zr0I9BELJF",       // MVDS Core itself
+  code: `const page = figma.root.children.find((p) => p.name.trim() === "Components");
+         await figma.setCurrentPageAsync(page);
+         return page.findAllWithCriteria({ types: ["COMPONENT_SET"] }).map((n) => n.name);`
+)
+```
+
+**Never conclude a component is missing from a search result.** Confirm
+against the roster above or the file itself. The cost of getting this wrong
+is hand-building something the system already has — or sourcing from the kit
+below.
+
+The intended scoping call, for when the client supports it:
 
 ```
 search_design_system(
@@ -48,8 +79,22 @@ component in Figma — fix `src/components/**` in the mvds repo and re-sync.
 
 **Availability is per file.** A library existing is not the same as a library
 being usable: `get_libraries` reports what a given file has *subscribed*, not what
-exists. If MVDS Core does not appear for a new change's file, it has to be added
-to that file in the Figma UI (a founder action) before anything can be imported.
+exists. A **newly created** change file starts with nothing subscribed — MVDS Core
+will not even appear in `libraries_available_to_add`, which lists only community
+kits. It has to be turned on in the Figma UI, and only Katy can do it.
+
+**Ask at file-creation time, not after you hit the wall.** The moment you call
+`create_new_file` for a change, call `get_libraries` on the new key; if MVDS Core
+is missing, give Katy this one-liner *before* doing any other Figma work, so the
+subscription happens while she is already in the tool:
+
+> Open <https://www.figma.com/design/hHAppz4A23qMoLQFTo8QAc> → **Assets** panel →
+> the library icon (top right of the panel) → toggle **MVDS Core** on.
+> (Replace the URL with the new file's own.)
+
+Then re-run `get_libraries` and confirm `MVDS Core` shows with `source: "team"`
+before importing anything. Do not build bespoke chrome as a workaround — the
+design gate requires proposed frames built on MVDS.
 
 **Layout primitives are deliberately absent.** `Stack`, `Inline` and `Container`
 have no Figma counterparts because they carry no visual treatment — auto-layout is
@@ -69,6 +114,18 @@ For changes under `openspec/changes/<id>/`, every **`design.md` MUST include a �
 - **Published libraries** used — normally `MVDS Core` (see above). If a change uses anything else, say which and why
 - **Frames/components in scope**
 - Whether **Code Connect** mappings need updates (`figma-code-connect` skill)
+
+### When the first round happens
+
+**A UI change gets its first Figma round before or alongside the proposal**,
+not at `design.md`. This applies to changes created **after 2026-09-17**;
+anything already in flight keeps the sequence it was built on, and its
+`02 Proposed` may legitimately be empty because the first iteration belonged
+to `design.md`. Do not renumber an existing change to match. Scope written blind is scope you re-author after every
+drawing; the round is what makes the proposal arguable. Keep it rough — shape
+and composition. The detailed as-is + proposed pair, breakpoints and the Visual
+design table still belong to `design.md`, which **continues** the numbering
+rather than starting it.
 
 ### File page/frame naming convention (REQUIRED)
 

@@ -220,8 +220,6 @@ describe("convertSvg satin strokes", () => {
     const thin = SATIN_LINE.replace('stroke-width="8"', 'stroke-width="0.1"');
     const { plan } = convertSvg(thin, OPTS);
     expect(plan.stats.satinRuns).toBe(1);
-    const off = convertSvg(thin, { ...OPTS, satinStrokes: false }).plan;
-    expect(off.stats.satinRuns).toBe(0);
   });
 
   it("falls back to running stitch above the 10 mm satin maximum", () => {
@@ -230,23 +228,8 @@ describe("convertSvg satin strokes", () => {
     expect(maxStitchSegment(plan)).toBeLessThanOrEqual(26);
   });
 
-  it("honors satinStrokes: false", () => {
-    const { plan } = convertSvg(SATIN_LINE, { ...OPTS, satinStrokes: false });
-    expect(maxStitchSegment(plan)).toBeLessThanOrEqual(26);
-  });
-
-  it("sews satin strokes in outline mode too", () => {
-    const { plan } = convertSvg(SATIN_LINE, { ...OPTS, fillMode: "outline" });
-    expect(maxStitchSegment(plan)).toBeGreaterThanOrEqual(38);
-    expect(plan.stats.satinRuns).toBe(1);
-  });
-
   it("reports satin sections in the stats so the controls have a readout", () => {
     expect(convertSvg(SATIN_LINE, OPTS).plan.stats.satinRuns).toBe(1);
-    expect(
-      convertSvg(SATIN_LINE, { ...OPTS, satinStrokes: false }).plan.stats
-        .satinRuns,
-    ).toBe(0);
     // Over the 10 mm maximum reads 0 — the "why did nothing change"
     // answer surfaced as a number.
     const wide = SATIN_LINE.replace('stroke-width="8"', 'stroke-width="30"');

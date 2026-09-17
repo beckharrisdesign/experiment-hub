@@ -145,12 +145,6 @@ describe("convertSvg satin fills", () => {
     expect(maxStitchSegment(plan)).toBeLessThanOrEqual(23);
   });
 
-  it("honors satinFills: false with tatami", () => {
-    const { plan } = convertSvg(BAR, { ...CONVERT, satinFills: false });
-    // Tatami rows run along the 2 mm bar: stitches capped at stitch length.
-    expect(maxStitchSegment(plan)).toBeLessThanOrEqual(26);
-  });
-
   it("keeps wide regions on tatami even with satin fills enabled", () => {
     const wide = `<svg xmlns="http://www.w3.org/2000/svg">
       <rect x="0" y="0" width="100" height="60" fill="#204080" />
