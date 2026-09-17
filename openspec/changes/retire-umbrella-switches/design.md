@@ -56,7 +56,7 @@ decision flow in `proposal.md`, built on Figma page `03 Decision flow`
 | Local variables     | `hub tokens` collection on `00 Components` — 11 colours converted from the oklch declarations in `app/globals.css`; panel and text fills are bound to them rather than hardcoded                                                                  |
 | Code Connect        | No mappings to update — no component is added, changed or renamed                                                                                                                                                                                 |
 | Breakpoints         | S · 480px / L · 1024px. One frame per state is sufficient: the panel is `width: 300; maxWidth: calc(100vw - 24px)`, so at 480px it is still 300px wide and renders identically. Only below 324px would it clamp, which is off the supported range |
-| Status              | Built 2026-09-17 (pages `00 Components` / `01 Current state` / `02 Proposed`) — awaiting founder approval                                                                                                                                         |
+| Status              | Built 2026-09-17 — **not approved**; three open proposal rounds                                                                                                                                                                                   |
 
 **File convention** (per `rules/figma.mdc`): numbered pages, and each
 later proposal iteration becomes a **new** page — `02.1 Proposed — <what
@@ -126,21 +126,23 @@ scroll). The frame reproduces the bug rather than quietly fixing it.
 4. **No new components.** Everything in the proposed frame already
    exists; the change is subtraction.
 
-### Where this lands
+### Latest round — `03.1`
 
-`02.2` is not in scope here, but it is worth seeing while reviewing
-`02.1`, because it shows what the panel becomes once size is declared in
-the file too: 968 px → 728 px → 655 px.
+Size moved into scope, so `03.1` is the current proposal, not a preview
+of a later one: 968 px → 728 px → 655 px.
 
-![Panel with no legacy controls](assets/proposed-v3-no-size-control.png)
+![Panel with no legacy controls](assets/proposed-03-1-panel.png)
 
 Everything left is either a fact read from the file — sew order, design
 stats, size — or a preview control that changes nothing about the
-stitches (**Fabric**). The panel stops being a place where stitch
-decisions are made and becomes a readout with an export button. Size
-needs no new affordance: the **DESIGN** section already reports it, which
-is the right treatment once it is an outcome of the document rather than
-an input to the tool.
+stitches (**Fabric**). The panel stops being a place where decisions are
+made and becomes a readout with an export button. Size needs no new
+affordance: the **DESIGN** section already reports it, which is the right
+treatment once it is an outcome of the document rather than an input to
+the tool.
+
+**Nothing in the file is approved.** `02 Proposed`, `02.1` and `03.1` are
+all open rounds.
 
 ## Risks / Trade-offs
 

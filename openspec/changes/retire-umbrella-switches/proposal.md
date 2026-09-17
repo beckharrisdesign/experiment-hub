@@ -13,6 +13,11 @@
 > control angle, stitch, density, etc, from the path groupings here"
 > — founder, 2026-09-16, on the remaining fill parameters, pointing at
 > the sew-order list
+>
+> "so this now allows me to make decisions on the size issue - lets let
+> document dictate size not the tool. we might think about the ability
+> to translate or resize from the tool but not today." — founder,
+> 2026-09-17
 
 Founding record: `experiments/svg-to-stitch/docs/intent.md`; authoring
 contract: `experiments/svg-to-stitch/docs/stitch-authoring.md`.
@@ -25,13 +30,11 @@ contract: `experiments/svg-to-stitch/docs/stitch-authoring.md`.
 - **Job:** Drop a prepped SVG in and get the stitches the design asks
   for, without having to notice, remember, or re-set three global
   toggles that can silently contradict every tag in the file.
-- **Done when:** The panel carries no all-or-nothing stitch switch. At a
-  given design size, a file sews the same stitches however the panel was
-  last left; an untagged shape sews by the documented fallback, and the
-  only way to change one shape's stitch type is to say so in the design
-  file. Physical size stays a per-conversion panel choice — the contract
-  settled that deliberately ("No size tags") — and **Fabric** changes
-  only the preview backdrop.
+- **Done when:** The panel carries no control that changes the sewn
+  output. A file converts to the same plan however the panel was last
+  left: stitch type comes from its tags or the documented fallback, and
+  physical size comes from an `st-size` tag or the documented default.
+  **Fabric** remains, and changes only the preview backdrop.
 - **Not doing:** Changing the heuristics themselves — the untagged
   fallback keeps today's behaviour exactly. **Fill angle** and **Fill
   density** are _hidden_, not deleted: the converter keeps both options
@@ -60,11 +63,17 @@ arguing, and the switch won quietly. The authoring contract already
 names the destination: the heuristic decision tree "becomes the
 **untagged fallback** … Tagged shapes bypass it entirely."
 
-**Nothing here is a new capability.** Every replacement already ships and
-is tested. What the change produces is a guarantee and a deletion: stitch
-type becomes a property of the file rather than of panel state, and
-outline mode — the one render path that still overrides an explicit
-declaration — goes away.
+**Most of this is not new capability.** Every stitch-type replacement
+already ships and is tested, so removing the switches produces a
+guarantee and a deletion: stitch type becomes a property of the file
+rather than of panel state, and outline mode — the one render path that
+still overrides an explicit declaration — goes away.
+
+**Size is the exception, and it is genuinely new.** The converter reads
+no document size at all today: `bounds.span / targetWidthMm` scales the
+drawn artwork to fill whatever the panel says, discarding the file's own
+dimensions and any margin around the design. Declaring size in the file
+is the one capability being built here.
 
 ![What decides a shape's stitch, today versus after](assets/decision-flow.png)
 
@@ -103,6 +112,15 @@ than deleted.
 - **Fill angle** and **Fill density** leave the panel too, but only as
   controls: the options stay, defaulted to 45° and 0.4 mm. A file that
   wants something else says so with `a`/`d`.
+- **Design size** leaves the panel. Physical size is declared in the file
+  by an `st-size` tag carrying a `w` parameter in mm ×10 —
+  `patch st-size w635` is 63.5 mm — and real SVG physical units
+  (`width="63.5mm"`) are honoured where a tool emits them. An untagged
+  file keeps the 63.5 mm default as its documented fallback, so
+  un-prepped art still converts.
+- Size needs no replacement control: the **DESIGN** section already
+  reports the output size, which is the right treatment once size is an
+  outcome of the file rather than an input to the tool.
 - The authoring contract's "What this replaces, and when" section moves
   from future tense to present.
 
@@ -113,6 +131,10 @@ than deleted.
 - `untagged-fallback`: the documented rule for a shape that declares
   nothing — what a bought or un-prepped file sews, stated once, with no
   global control able to change it.
+- `document-declared-size`: physical size read from the design file —
+  an `st-size` tag, or real SVG physical units — instead of chosen in
+  the panel. This one is new behaviour, not a renaming of existing
+  behaviour.
 
 ### Modified Capabilities
 
@@ -123,8 +145,13 @@ than deleted.
 ## Impact
 
 - `app/svg-to-stitch/page.tsx`: three `Switch` rows and their state
-  removed; the **Fill angle** and **Fill density** selects hidden, their
-  values kept as the converter defaults; **Fabric** unchanged.
+  removed; the **Fill angle**, **Fill density** and **Design size**
+  selects removed from the panel; **Fabric** unchanged.
+- `lib/svg-to-stitch/svg-parse.ts`: `st-size` added to the directive
+  grammar; the existing CSS length parser (which already carries an `mm`
+  factor for `stroke-width`) applied to the root `width`/`height`.
+- `lib/svg-to-stitch/convert.ts`: `targetWidthMm` becomes a default
+  rather than a caller's choice, overridden by a declared size.
 - `lib/svg-to-stitch/convert.ts`: `fillMode`, `satinFills`,
   `satinStrokes` options dropped; the `fillMode === "outline"` branch
   deleted; `rejectBrushOnFill` and `checkTagDensity` collapse back to a

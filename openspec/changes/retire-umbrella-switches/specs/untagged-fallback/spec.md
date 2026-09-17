@@ -8,11 +8,11 @@
 - **Job:** Drop a prepped SVG in and get the stitches the design asks
   for, without having to notice, remember, or re-set global toggles that
   can silently contradict every tag in the file.
-- **Done when:** The panel carries no all-or-nothing stitch switch; at a
-  given design size a file sews the same stitches however the panel was
-  last left, and the only way to change one shape's stitch type is to
-  say so in the design file. Size stays a per-conversion panel choice
-  and **Fabric** is preview-only.
+- **Done when:** The panel carries no all-or-nothing stitch switch; a
+  file sews the same stitches however the panel was last left, and the
+  only way to change one shape's stitch type is to say so in the design
+  file. **Fabric** is preview-only. Physical size is covered by
+  `document-declared-size`.
 - **Not doing:** Changing the heuristics themselves; deleting the fill
   parameters (they are hidden, still tag-overridable); building the
   per-colour-block controls that replace them later.
@@ -57,21 +57,20 @@ strokes at or under 10 mm sew as satin.
 
 Changing one shape's stitch type means saying so in the file.
 
-**Fails until:** the same file, converted at the same design size from
-two different panel states, produces the same stitch plan.
+**Fails until:** the same file, converted from two different panel
+states, produces the same stitch plan.
 
 A declared tag SHALL determine that shape's stitch type, and no panel
 control SHALL change the stitch type of any shape.
 
 #### Scenario: Stitch type is reproducible from the file alone
 
-- **WHEN** the same SVG is converted twice at the same design size, in
-  two sessions with the panel otherwise left in different states
+- **WHEN** the same SVG is converted twice, in two sessions with the
+  panel left in different states
 - **THEN** both conversions produce the same stitch count, colour blocks
   and sew order
-- **AND** changing **Design size** still rescales the output, and
-  changing **Fabric** still changes only the preview backdrop — neither
-  alters which stitch any shape sews
+- **AND** the only panel control left, **Fabric**, changes the preview
+  backdrop and nothing about the stitches
 
 ### Requirement: Fill parameters stay declarable
 
