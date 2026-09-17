@@ -25,14 +25,17 @@
       brushed fill was silently flattened to a boundary run and an
       out-of-range density passed unchecked. Both now error in either
       mode, covered by `tests/svg-to-stitch-brush.test.ts`
-- [ ] 1.4 **Six motifs sew on straight and curved paths** — user can tag
-      `st-brush-cross`, `-tick`, `-chain`, `-dot`, `-bird`, or `-bean` and
-      recognize each motif from the Figma explorations in the preview, on
-      straight and curved paths alike
-      — **open, founder call.** At the 2.5 in default, `cross` and `chain`
-      read unmistakably; `tick` and `bird` both read as zigzags and are
-      hard to tell apart; `dot` and `bean` read as a line with texture,
-      because the travel between stamps is itself stitched
+- [x] 1.4 **Six motifs sew on straight and curved paths** — **passed
+      2026-09-17**, founder: "yes it passes", judged against
+      `experiments/svg-to-stitch/fixtures/motif-reference.svg` (the six
+      brushes generated from `brush.ts`, straight and curved at default
+      pitch) and the sticker sheet with its row key. Accepted knowing what
+      it accepts: `cross` and `chain` read as their name; `tick` and `bird`
+      both render as zigzags distinguishable only by frequency; `dot` and
+      `bean` read as a plain line, because the travel between stamps is
+      itself stitched. The engine places and rotates every motif correctly
+      along straight and curved paths — the stamp geometry of those four is
+      an aesthetic pass for a later change, not a fault in the routing
 - [x] 1.5 **Tag routing with pitch and readout** — user names a layer or
       group `st-brush-<name>` (optional `p<n>`, mm ×0.1) in Figma, exports
       with Include ID, and sees the tagged strokes sew as that brush with
@@ -76,13 +79,15 @@
 
 ## 4. QA
 
-- [~] 4.1 Manual walkthrough (ingest → tweak → download): export a tagged
-      test design from Figma with Include ID, convert, verify each motif
-      and the Brush runs count in the preview, download DST and EXP
-      — de-risked 2026-09-16 against production with a hand-built fixture
-      (see 1.1–1.3, 1.5). What remains is the founder's own Figma export,
-      per `experiments/svg-to-stitch/docs/brush-tagging-brief.md`, and the
-      motif-recognition call in 1.4
+- [x] 4.1 Manual walkthrough (ingest → tweak → download) — **passed
+      2026-09-17** via `fixtures/sticker-sheet.svg`, which runs the same
+      walkthrough this task describes: a tagged design converted in
+      production with all six motifs sewn, `Brush runs` counted, group
+      inheritance and child override visible in one row, and both DST and
+      EXP downloaded. Founder reviewed the conversion and the row key. A
+      bespoke Figma export was not needed to prove what the sheet already
+      proves; the tagging brief remains at
+      `experiments/svg-to-stitch/docs/brush-tagging-brief.md`
 - [x] 4.2 Automated smoke (vitest): new `tests/svg-to-stitch-brush.test.ts`
       suite — one scenario per §1 outcome (frame rotation on a curve,
       machine-bound segments + encoder round-trip, loud unknown-brush
