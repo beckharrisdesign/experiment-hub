@@ -24,6 +24,23 @@ describe("document-declared size", () => {
     expect(plan.stats.widthMm).toBeLessThan(36);
   });
 
+  it("the declared size actually scales the plan, not just the readout", () => {
+    // Regression: the scale reached the stitch maths but not buildPlan, so a
+    // 100 mm design sewed at the 63.5 mm fallback while reporting 100 mm.
+    const { plan } = convertSvg(INSET("patch st-size w1000"), OPTS);
+    // The motif spans half of a 100 mm frame.
+    expect(plan.stats.widthMm).toBeGreaterThan(45);
+    expect(plan.stats.widthMm).toBeLessThan(56);
+  });
+
+  it("scales a tall design by its larger side", () => {
+    // buildPlan fits the larger side, so a declared width must hand it the
+    // height when the design is taller than it is wide.
+    const { size } = convertSvg(INSET("patch st-size w635", 400), OPTS);
+    expect(size.widthMm).toBeCloseTo(63.5, 1);
+    expect(size.heightMm).toBeCloseTo(127, 0);
+  });
+
   it("a non-square frame stays non-square", () => {
     const { size } = convertSvg(INSET("patch st-size w635", 120), OPTS);
     expect(size.widthMm).toBeCloseTo(63.5, 1);

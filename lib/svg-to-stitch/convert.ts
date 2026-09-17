@@ -421,7 +421,16 @@ export function convertSvg(
     polylines.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
-  const plan = buildPlan(groupByColor(polylines), { ...options, sourceBounds });
+  // buildPlan scales the design's *larger* side to targetWidthMm, so a
+  // declared size has to hand it that side — passing the declared width
+  // would sew a tall design short.
+  const plan = buildPlan(groupByColor(polylines), {
+    ...options,
+    targetWidthMm: declared
+      ? Math.max(size.widthMm, size.heightMm)
+      : options.targetWidthMm,
+    sourceBounds,
+  });
   return {
     plan,
     dst: encodeDst(plan, options.designName ?? "DESIGN"),

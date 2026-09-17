@@ -75,10 +75,13 @@
 
 ## 4. QA
 
-- [ ] 4.1 Manual walkthrough (ingest → tweak → download): convert a
-      tagged design and an untagged one, confirm the panel offers no
-      stitch control, that a declared size comes out at that size with
-      its margin, and that DST and EXP still download
+- [ ] 4.1 Manual walkthrough (ingest → tweak → download) — material is
+      ready: `experiments/svg-to-stitch/fixtures/sticker-sheet.svg` covers
+      every promise in one file, with `fixtures/errors/` for the loud
+      failures (they cannot share a file, since one error aborts the whole
+      conversion). Expectations per specimen are in
+      `fixtures/README.md`; `tests/svg-to-stitch-fixtures.test.ts` runs
+      them all so they cannot rot between walkthroughs
 - [x] 4.2 Automated smoke (vitest): a `document-declared-size` suite —
       declared size, nested size, unmeasurable element, undeclared
       fallback, out-of-range — plus coverage that untagged conversion is

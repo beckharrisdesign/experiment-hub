@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="patch_st-size_in350" viewBox="0 0 200 200" fill="none">
+  <!-- Not an error: converts at 3.5 in, and the Size readout should say
+       inches rather than millimetres. -->
+  <path d="M50 60 L150 60" stroke="#bc213c" stroke-width="1"/>
+  <rect x="50" y="90" width="100" height="40" fill="#0f8452"/>
+</svg>
