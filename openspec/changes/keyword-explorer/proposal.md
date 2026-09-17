@@ -65,15 +65,17 @@ Katy worked directly on the frame. Recording it here so the next round does not 
 
 | Removed | Note |
 |---|---|
-| The *“Curated subset — not a census”* caveat banner | The banner is gone; **the rule it stated is not.** The filtered-subset semantics stay in the `keyword-corpus` capability, where they constrain what may be computed. A banner was one way to surface it and Katy cut it; the constraint does not depend on that treatment. |
-| The footer summary line (*“83 rows · 10 seeds · 1 capture…”*) | Cut. |
-| The *Scope notes* block | Cut — written as annotation, and the proposal is the right home for it, which is where it now lives. |
+| The *“Curated subset — not a census”* caveat banner | Katy: *“no the rule stays, I just don't need all the verbose slop.”* The **rule is unchanged** and stays in `keyword-corpus`; what went was the paragraph of explanation on the surface. If it needs to show at all, it shows short. |
+| The footer summary line | Cut. |
+| The *Scope notes* block | Cut — annotation belongs in this document, not on the frame. |
 
 **What survives:** header, filter bar (seed / capture / status / search), and the table. The column rename to `FOUND VIA (QUERY)` and the KD colour bands both held.
 
 **Added by her feedback:** colour coding per column value, computed columns, no pagination — all folded into *What changes* above.
 
-**On the `Found via` column:** “seeds” was my coinage, not vocabulary from the data, and it did not read. Each CSV is named for the query typed into eRank (`eRank - Keyword Tool - halloween.csv`); the column says which of those queries surfaced a keyword and the tag-occurrence count reported *there*, which differs per query for the same keyword. Katy: *“an interesting idea — I might change how it appears, but the concept is one I'd keep around.”* So the relationship is kept and the presentation is open; `Found via` is a placeholder, not a proposal. **If that line was about a different idea, say which and I will move the note.**
+**On the `Found via` column:** “seeds” was my coinage, not vocabulary from the data, so it didn't read. Each CSV is named for the query typed into eRank; the column says which query surfaced a keyword and the tag-occurrence count *there*, which differs per query. Concept kept, presentation open — `Found via` is a placeholder.
+
+**Copy on the surface stays short.** The rules this corpus enforces live in the capability, not in paragraphs on screen. Where something must be said in the UI, it gets a line.
 
 **Process, going forward:** feedback iterates *this document*. Round 02 gets drawn once there is something new to argue with, not once per comment — round 01 took three passes, which is two more than it should have.
 
