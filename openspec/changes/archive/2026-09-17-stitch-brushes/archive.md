@@ -1,6 +1,6 @@
 # Archive — stitch-brushes
 
-**Archived:** 2026-09-17 · **Created:** 2026-09-13 · **Tasks:** 18/18
+**Archived:** 2026-09-17 · **Created:** 2026-09-13 · **Tasks:** 15/15
 **Outcome:** SHIPPED
 
 Decorative motif brushes sew along a path in its own tangent frame, reachable
