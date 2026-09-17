@@ -43,7 +43,7 @@ Nothing moves, nothing is renamed, nothing changes place. Five rows leave.
 
 The logic behind the panel simplifies in the same direction — see the
 decision flow in `proposal.md`, committed at
-`assets/decision-flow.png` (its Figma page has since been cleared).
+Figma page `03 Decision flow` (node `13:9`), committed at `assets/decision-flow.png`.
 
 ## Visual design / Figma
 
@@ -73,6 +73,7 @@ changed>` — never an edit to an existing one.
 | `03.3 Proposed — one row pattern, matched control widths`      | v5         | File collapses to a single row and **Replace** is widened to the select's 110 px. Superseded within the same review                                                                                                                                              |
 | `03.4 Proposed — file as a select, one row pattern throughout` | v6, latest | The file row becomes a select, so every key/value row is the same object. Founder: "what if file is also a dropdown? so that the key values are expressed in similar pattern and thus their spacing is consistent"                                               |
 | `03.5 Proposed — sew order rows are reorderable stitch layers` | v7, latest | Founder edits carried forward (rows as filled cards, heading and index numbers gone) and the sew order split so each colour-and-stitch pair is its own reorderable row                                                                                           |
+| `03.6 Proposed — rebuilt on MVDS components and tokens`        | v8, latest | Same composition, sourced properly: MVDS `Button` instances replace the hand-built ones, and 45 spacing, radius and type values are bound to MVDS variables instead of literals                                                                                  |
 
 The convention was briefly broken: when v1 was rejected, its page was
 cleared and rebuilt in place instead of a new page being added. That is
@@ -242,22 +243,65 @@ Read back from the founder's own edits rather than proposed to her:
 
 ![The panel after the founder's edits](assets/proposed-03-5-panel.png)
 
-Three things that came out of reading it back:
+**The spacing and radius are tokens, not literals.** The founder bound
+MVDS library variables across 18 nodes:
 
-1. **The size readout is in inches — `3.5in x 3.5in` — while the tag is
-   millimetres (`st-size w635`, mm ×10).** Both are defensible: mm ×10
-   matches every other parameter in the grammar, and inches are the
-   working unit for patches. But the spec does not say what the readout
-   displays, and this is the first time the two units have appeared
-   together. It needs settling before implementation, and it may want
-   `st-size` to accept an inch form.
-2. **It is square — 3.5 × 3.5 — where the old readout was `67 × 63 mm`.**
-   That is the declared-frame semantic made visible: the frame is the
-   size, so a square frame reads square even when the artwork inside is
-   not. Worth keeping as the example precisely because it shows the
-   change in behaviour.
-3. **Button radius is now the outlier**: 10, where the panel and stat
-   cards are 8 and selects and layer cards are 6.
+| Property                                               | Token                                              |
+| ------------------------------------------------------ | -------------------------------------------------- |
+| Panel padding and gap, layer row side padding          | `Scales / Spacing/space-16`                        |
+| Card padding, badge padding, Size row vertical padding | `Scales / Spacing/space-8`                         |
+| Sew-order gap, layer row vertical padding, badge gap   | `Scales / Spacing/space-4`                         |
+| Select and layer card radius                           | `Tokens / Sizing/radius-sm`                        |
+| Size row radius                                        | `Tokens / Sizing/radius-md`                        |
+| Badge label                                            | `Tokens / Typography/font-sans`, `text-small-size` |
+
+Implementation should reach for the matching Tailwind scale rather than
+re-deriving pixel values from these frames.
+
+Two things to carry into implementation, and one to tidy:
+
+1. **Both unit systems are supported.** Founder: "we still use imperial
+   but the world uses mm - I want both systems supported." So `st-size`
+   accepts a metric and an imperial form, and real SVG physical units
+   (`mm`, `cm`, `in`, `pt`) are honoured — the parser already carries
+   those factors. Specified in `document-declared-size`.
+2. **Height comes from the document, not the tool.** The `3.5in x 3.5in`
+   readout is square because that frame is square; "not everything is
+   square and the svg should dictate it not the tool." The declared width
+   sets the scale and the tagged element's own aspect sets the height.
+   The readout reports both dimensions.
+3. **Radius is bound to a spacing token in two places** — the panel and
+   the `Design` card use `Scales / Spacing/space-8` for their corner
+   radius where everything else uses `Tokens / Sizing/radius-*`. Same
+   rendered value, wrong scale to be reading from.
+
+### Sourcing from the system — `03.6`
+
+Founder: "this is what MVDS means - it should use ALL the parts of MVDS,
+tokens, spacing, live components etc. Otherwise I have to go and fix it
+and I don't want to." Fair: rounds `02`–`03.5` imported only `Badge` and
+`Switch` and hand-built everything else, which is why the tokens had to
+be bound by hand afterwards.
+
+![Panel rebuilt on MVDS components and tokens](assets/proposed-03-6-panel.png)
+
+- **Buttons are MVDS `Button` instances** — `variant=default` for
+  Download DST (with the brand fill as an instance override),
+  `variant=secondary` for Download EXP, `variant=ghost` for collapse. No
+  hand-built button frames remain.
+- **45 values rebound** to `Scales / Spacing/space-4|8|16`,
+  `Tokens / Sizing/radius-sm|md` and `Tokens / Typography/text-small-size
+|text-caption-size`. The two radii that were reading off the spacing
+  scale now read `Sizing/radius-md`.
+
+**A gap this exposed, worth fixing at the source.** The app imports
+`Select`, `Label`, `CardDescription`, `Inline`, `Stack` and `Spacer` from
+`@beckharrisdesign/mvds` — they exist in the system. They are simply not
+in the published Figma library, so `search_design_system` finds no MVDS
+`Select` and a designer either hand-builds one or takes the
+`BHD Labs / shadcn` copy that `rules/figma.mdc` forbids. Since "code is
+law; Figma is a generated mirror", the fix is to publish them through the
+MVDS sync rather than to keep redrawing a Select in every change file.
 
 **Nothing in the file is approved.** `02`, `02.1`, `03.1`, `03.2`, `03.3`,
 `03.4` and `03.5` are all open rounds.

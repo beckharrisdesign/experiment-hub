@@ -19,14 +19,16 @@
 ### Requirement: The tagged element is the declared size
 
 The layer carrying the tag is the thing being measured — not the ink
-inside it.
+inside it — and its own proportions set the rest.
 
 **Fails until:** a tagged frame with an inset motif converts to the
-declared width with the inset preserved, rather than the motif scaled up
-to fill it.
+declared width with the inset preserved, and a non-square frame reports
+both of its dimensions.
 
-The tagged element's own box SHALL be the declared physical width, and
-artwork inside it SHALL keep its relative position and scale.
+The tagged element's own box SHALL be the declared physical width;
+artwork inside it SHALL keep its relative position and scale; and the
+converted height SHALL follow that element's aspect ratio rather than any
+value the tool supplies.
 
 #### Scenario: Margin inside the frame survives
 
@@ -36,6 +38,41 @@ artwork inside it SHALL keep its relative position and scale.
   sewing about 31.75 mm and the surrounding margin intact
 - **AND** the layout rules the design tool applies inside that container
   still govern where the artwork sits — the converter re-fits nothing
+
+#### Scenario: A non-square frame stays non-square
+
+- **WHEN** a user tags a 200×120 frame with a declared width
+- **THEN** the converted design keeps that 5:3 proportion and the size
+  readout reports both dimensions, not one
+
+### Requirement: Both unit systems are declarable
+
+A design says its size in whichever system its maker works in.
+
+**Fails until:** the same physical size declared in inches and in
+millimetres converts identically.
+
+`st-size` SHALL accept a metric form (`w<n>`, mm ×10) and an imperial
+form (`in<n>`, inches ×100), and real SVG physical units (`mm`, `cm`,
+`in`, `pt`) SHALL be honoured on a tagged root. Declaring both forms on
+one element SHALL fail, naming the layer.
+
+#### Scenario: Inches and millimetres agree
+
+- **WHEN** one file declares `st-size in350` and another declares
+  `st-size w889` for the same artwork
+- **THEN** both convert to the same physical size, 3.5 in / 88.9 mm
+
+#### Scenario: The readout speaks the declared system
+
+- **WHEN** a design declares its size in inches
+- **THEN** the **Size** readout reports inches; a design declared in
+  millimetres, or declaring nothing, reports millimetres
+
+> Founder, 2026-09-17: "we still use imperial but the world uses mm - I
+> want both systems supported." The tool offers no unit control — this
+> change is removing controls — so the file's own system is what the
+> readout follows.
 
 ### Requirement: Size cascades like CSS
 
@@ -62,16 +99,18 @@ SHALL NOT change the document's overall size.
 > Size is therefore consistent with the rest of the tag grammar rather
 > than an exception to it.
 
-### Requirement: An unmeasurable declaration errors loudly
+### Requirement: A declaration that cannot be honoured errors loudly
 
-A tag on something with no box is refused rather than guessed at.
+A size the converter cannot measure, or the machine cannot sew, is
+refused by name rather than guessed at.
 
-**Fails until:** tagging a bare group with no clip and no background
-fails the conversion by name.
+**Fails until:** tagging a bare group, and tagging a size outside
+10–400 mm, each fail the conversion naming the layer.
 
-Where the tagged element has no determinable box, the conversion SHALL
-fail, naming the layer, rather than silently falling back to the artwork
-bounds.
+Where the tagged element has no determinable box, or the declared size
+falls outside the supported 10–400 mm range, the conversion SHALL fail,
+naming the layer and the offending value, rather than falling back to the
+artwork bounds or clamping.
 
 #### Scenario: A bare group cannot declare a size
 
@@ -79,6 +118,12 @@ bounds.
   background rect
 - **THEN** the conversion fails, naming the layer, and says the frame
   needs to clip its contents for its size to be readable
+
+#### Scenario: An impossible size is refused
+
+- **WHEN** a user tags a layer `st-size w5000` (500 mm) and converts it
+- **THEN** the conversion fails, the banner names the layer and the
+  value, and nothing is silently resized
 
 > Today `svg-parse.ts` lists `clippath` in `SKIP_TAGS`, so a group's box
 > is invisible; only the root `<svg>` carries `width`/`height`/`viewBox`.
@@ -101,19 +146,3 @@ default, scaled from the artwork bounds as it is today.
 - **WHEN** a user converts an SVG with no `st-size` tag and no physical
   units
 - **THEN** it converts at 63.5 mm, exactly as it does today
-
-### Requirement: Out-of-range sizes error loudly
-
-A size the machine cannot sew is refused by name, not quietly clamped.
-
-**Fails until:** a declared size outside 10–400 mm names the offending
-layer in the error banner.
-
-A declared size outside the supported 10–400 mm range SHALL fail the
-conversion, naming the layer and the value.
-
-#### Scenario: An impossible size is refused
-
-- **WHEN** a user tags a layer `st-size w5000` (500 mm) and converts it
-- **THEN** the conversion fails, the banner names the layer and the
-  value, and nothing is silently resized
