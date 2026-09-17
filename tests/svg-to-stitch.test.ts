@@ -608,19 +608,21 @@ describe("convertSvg", () => {
   </svg>`;
 
   it("produces a plan and both file formats", () => {
-    // satinStrokes off: with satin, border strokes overhang the target size
-    // (covered in the satin suite); this test pins the original fit-to-target
-    // sizing of running-stitch conversion.
+    // Satin strokes are no longer optional, so a border stroke overhangs the
+    // target width by half its rendered width on each side — the documented
+    // behaviour, so that thread lands where the paint did. The design
+    // therefore measures a little over the fallback width rather than exactly
+    // on it.
     const result = convertSvg(SAMPLE, {
       targetWidthMm: 120,
       stitchLengthMm: 2.5,
       designName: "SAMPLE",
-      satinStrokes: false,
     });
     expect(result.plan.colors).toEqual(["#1f6feb", "#f85149", "#3fb950"]);
     expect(result.plan.stats.colorChanges).toBe(2);
     expect(result.plan.stats.stitches).toBeGreaterThan(50);
-    expect(result.plan.stats.widthMm).toBeCloseTo(120, 0);
+    expect(result.plan.stats.widthMm).toBeGreaterThanOrEqual(120);
+    expect(result.plan.stats.widthMm).toBeLessThan(123);
     expect(result.dst.length).toBeGreaterThan(512);
     expect((result.dst.length - 512) % 3).toBe(0);
     expect(result.exp.length).toBeGreaterThan(0);

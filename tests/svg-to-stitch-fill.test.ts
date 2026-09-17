@@ -316,33 +316,15 @@ describe("convertSvg fill mode", () => {
     <rect x="10" y="10" width="80" height="80" fill="#e11d48"/>
   </svg>`;
 
-  it("fills a filled shape instead of just outlining it", () => {
+  it("hatches a filled shape rather than tracing its boundary", () => {
     const fill = convertSvg(FILLED_SQUARE, {
       targetWidthMm: 100,
       stitchLengthMm: 2.5,
     });
-    const outline = convertSvg(FILLED_SQUARE, {
-      targetWidthMm: 100,
-      stitchLengthMm: 2.5,
-      fillMode: "outline",
-    });
     // An 80mm square at 0.4mm spacing needs ~200 rows of ~80mm — thousands
     // of stitches, versus ~130 for the boundary alone.
-    expect(fill.plan.stats.stitches).toBeGreaterThan(
-      outline.plan.stats.stitches * 20,
-    );
+    expect(fill.plan.stats.stitches).toBeGreaterThan(2000);
     expect(fill.plan.colors).toEqual(["#e11d48"]);
-  });
-
-  it("outline mode reproduces the original outline-only behavior", () => {
-    const outline = convertSvg(FILLED_SQUARE, {
-      targetWidthMm: 100,
-      stitchLengthMm: 2.5,
-      fillMode: "outline",
-    });
-    // Boundary of an 80mm square at 2.5mm — a couple hundred stitches at
-    // most (resampling keeps corners), and no fill rows.
-    expect(outline.plan.stats.stitches).toBeLessThan(250);
   });
 
   it("underlay adds a sparse pass beneath the fill", () => {
@@ -379,32 +361,13 @@ describe("convertSvg fill mode", () => {
     expect(result.plan.stats.widthMm).toBeCloseTo(63.5, 0);
   });
 
-  it("rejects an unknown fillMode at runtime", () => {
-    expect(() =>
-      convertSvg(FILLED_SQUARE, {
-        targetWidthMm: 100,
-        stitchLengthMm: 2.5,
-        fillMode: "bogus" as "fill",
-      }),
-    ).toThrow(/fill mode/);
-  });
-
-  it("drops zero-area fills in fill mode but keeps them in outline mode", () => {
+  it("drops zero-area fills", () => {
     const degenerate = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
       <path d="M2 2 L18 18" fill="#e11d48"/>
     </svg>`;
-    // Fill mode: a zero-area fill stitches nothing at all.
     expect(() =>
       convertSvg(degenerate, { targetWidthMm: 100, stitchLengthMm: 2.5 }),
     ).toThrow(/no stitchable/i);
-    // Outline mode keeps the legacy behavior: the path stitches as a line.
-    const outline = convertSvg(degenerate, {
-      targetWidthMm: 100,
-      stitchLengthMm: 2.5,
-      fillMode: "outline",
-    });
-    expect(outline.plan.stats.stitches).toBeGreaterThan(0);
-    expect(outline.plan.colors).toEqual(["#e11d48"]);
   });
 
   it("keeps holes empty end to end", () => {
