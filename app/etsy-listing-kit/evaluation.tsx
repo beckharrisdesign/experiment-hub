@@ -160,6 +160,7 @@ function Evidence({ rec }: { rec: Recommendation }) {
         </div>
       );
     }
+    case 'styles':
     case 'tags': {
       const used = Number(rec.evidence.used ?? 0);
       const max = Number(rec.evidence.max ?? 13);

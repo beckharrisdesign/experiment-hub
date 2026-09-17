@@ -74,7 +74,16 @@ describe('evaluateListing — keychain (the gap-heavy real listing)', () => {
     expect(keys).toContain('title');
     expect(keys).toContain('alt_text');
     expect(keys).toContain('tags'); // 0 tags — the case the real data surfaced
+    expect(keys).toContain('styles'); // 0 styles — every live W&H listing has this gap
+    expect(keys.indexOf('styles')).toBe(keys.indexOf('tags') + 1); // styles sits beside tags
     expect(keys).not.toContain('images_improve'); // one image card, never both
+  });
+
+  it('grades the empty style slots with evidence and the QUICK WIN chip', () => {
+    const stylesRec = result.recommendations.find((r) => r.key === 'styles');
+    expect(stylesRec?.chip.label).toBe('QUICK WIN');
+    expect(stylesRec?.evidence).toEqual({ styles: [], used: 0, max: 2 });
+    expect(stylesRec?.kit.comingSoon).toBe(true); // composer doesn't produce styles yet
   });
 
   it('frames the open-slots caption around the 20-slot cap', () => {
@@ -132,7 +141,7 @@ describe('evaluateListing — fully built listing', () => {
     expect(result.state).toBe('full');
     const keys = result.recommendations.map((r) => r.key);
     // no gap card survives on a fully built listing
-    for (const gap of ['images_open', 'images_improve', 'title', 'alt_text', 'tags']) {
+    for (const gap of ['images_open', 'images_improve', 'title', 'alt_text', 'tags', 'styles']) {
       expect(keys).not.toContain(gap);
     }
     expect(keys.filter((k) => k !== 'video')).toEqual(['refresh_photos', 'refresh_title', 'refresh_tags']);
@@ -152,6 +161,28 @@ describe('evaluateListing — fully built listing', () => {
     expect(title?.kit.comingSoon).toBeUndefined();
     const without = result.recommendations.find((r) => r.key === 'refresh_title');
     expect(without?.kit.comingSoon).toBe(true);
+  });
+});
+
+describe('evaluateListing — styles card edge cases', () => {
+  it('still recommends when one of the two style slots is filled', () => {
+    const oneStyle = evaluateListing({ ...keychain, style: ['Boho'] });
+    const rec = oneStyle.recommendations.find((r) => r.key === 'styles');
+    expect(rec).toBeDefined();
+    expect(rec?.evidence).toEqual({ styles: ['Boho'], used: 1, max: 2 });
+    expect(rec?.headline).not.toBe(
+      evaluateListing(keychain).recommendations.find((r) => r.key === 'styles')?.headline,
+    );
+  });
+
+  it('drops the card once both style slots are in use', () => {
+    const bothStyles = evaluateListing({ ...keychain, style: ['Boho', 'Cottagecore'] });
+    expect(bothStyles.recommendations.map((r) => r.key)).not.toContain('styles');
+  });
+
+  it('stays coming-soon even when the composer is configured — no styles deliverable exists yet', () => {
+    const withText = evaluateListing(keychain, { textDeliverables: true });
+    expect(withText.recommendations.find((r) => r.key === 'styles')?.kit.comingSoon).toBe(true);
   });
 });
 

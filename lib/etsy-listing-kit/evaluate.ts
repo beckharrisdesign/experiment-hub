@@ -130,7 +130,7 @@ export interface PhotoEvidence {
 
 export interface Recommendation {
   key:
-    | 'images_open' | 'images_improve' | 'title' | 'alt_text' | 'tags' | 'video'
+    | 'images_open' | 'images_improve' | 'title' | 'alt_text' | 'tags' | 'styles' | 'video'
     // Fully-built state (design decision 14): testing/refresh, never invented gaps.
     | 'refresh_photos' | 'refresh_title' | 'refresh_tags';
   headline: string;
@@ -245,6 +245,24 @@ export function buildRecommendations(raw: RawApiListing, scored: ScoredListing, 
       kit: textOk
         ? { text: 'Thirteen suggested tags, drawn from your listing and Etsy’s guidance.' }
         : { text: 'Thirteen suggested tags, drawn from your listing and Etsy’s guidance. Coming soon.', comingSoon: true },
+    });
+  }
+
+  // Styles — kept beside tags: both are search inputs with a hard slot cap.
+  const styleValues = raw.style ?? [];
+  const styleCount = styleValues.length;
+  if (styleCount < d.styles) {
+    recs.push({
+      key: 'styles',
+      headline: styleCount === 0 ? 'Your two style slots are both still open.' : 'Put your second style slot to work.',
+      chip: { label: 'QUICK WIN', tone: 'accent' },
+      evidence: { styles: styleValues, used: styleCount, max: d.styles },
+      caption: `${styleCount} of ${d.styles} style slots in use. Style is another filter buyers use to find pieces that match their aesthetic.`,
+      citation: withChecked('styles'),
+      // Unlike title/tags/alt, the composer doesn't produce style values yet
+      // (composer.ts emits suggestedTitle/tags/altTexts only), so this stays
+      // coming-soon regardless of textOk — decision 30's honest degradation.
+      kit: { text: 'Two style values matched to your listing, ready to pick in Shop Manager. Coming soon.', comingSoon: true },
     });
   }
 
