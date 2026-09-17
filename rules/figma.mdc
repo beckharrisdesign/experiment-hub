@@ -87,7 +87,10 @@ For changes under `openspec/changes/<id>/`, every **`design.md` MUST include a â
 ### When the first round happens
 
 **A UI change gets its first Figma round before or alongside the proposal**,
-not at `design.md`. Scope written blind is scope you re-author after every
+not at `design.md`. This applies to changes created **after 2026-09-17**;
+anything already in flight keeps the sequence it was built on, and its
+`02 Proposed` may legitimately be empty because the first iteration belonged
+to `design.md`. Do not renumber an existing change to match. Scope written blind is scope you re-author after every
 drawing; the round is what makes the proposal arguable. Keep it rough â€” shape
 and composition. The detailed as-is + proposed pair, breakpoints and the Visual
 design table still belong to `design.md`, which **continues** the numbering
