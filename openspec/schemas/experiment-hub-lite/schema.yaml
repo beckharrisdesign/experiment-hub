@@ -16,7 +16,14 @@ artifacts:
 
       **Lite constraints:** Max 2 new capabilities (kebab-case). Omit Evidence and Proceed attestation (those belong in full `experiment-hub`). If `experiments/<slug>/docs/PRD.md` exists, link it under Optional links instead of duplicating TAM or business case.
 
-      **Figma round (UI changes — required here, not deferred to design.md):** Any change that alters UI gets a **first round in Figma before or alongside the proposal**, not after it. Create the change's Figma file, put a rough round on `02 Proposed`, and link the file and that page from the proposal. Rough is the point: shape and composition, enough to argue with. The detailed as-is + proposed pair, breakpoints and the Visual design table still belong to `design.md` — this is the round that makes the proposal's scope real, not a replacement for it.
+      **Figma round (UI changes — required here, not deferred to design.md):** Any change that alters UI gets a **first round before or alongside the proposal**, not after it. Rough is the point: shape and composition, enough to argue with. The detailed as-is + proposed pair, breakpoints and the Visual design table still belong to `design.md` — this is the round that makes the proposal's scope real, not a replacement for it.
+
+      **Pick the editor by the question the proposal is asking, not by fidelity.** "Figma file" is ambiguous — a FigJam board is one too — so choose deliberately:
+
+      - **FigJam board** (`figma.com/board/...`) when the change is about a **flow, sequence, structure or set of relationships**: what happens in what order, what is in and out of scope, how the pieces connect. A board cannot produce something polished enough to be mistaken for an approval-ready design, which is exactly what you want this early, and it subscribes no libraries — so there is no MVDS step standing between you and thinking.
+      - **Design file** (`figma.com/design/...`) when the change is about a **surface**: a panel, page, component or layout. "What does this look like once X is gone" is not a question a board can answer. `retire-umbrella-switches` is the worked example — three switches leaving a panel is a surface question, and a board would have been the wrong tool.
+
+      Either way it is `02 Proposed` in the change's own file of that type, linked from the proposal by file URL and page (or section) name. A change may legitimately end up with both — a board that argued the shape, a design file that drew the surface. When it does, the numbering runs continuously **across** the files and `design.md`'s Visual design table names every file in the series, saying which rounds live where.
 
       Why it sits here: design is in dialogue with the proposal. Writing scope blind and drawing it afterwards means every design round sends you back to re-author a document that was written without seeing the thing — which is how iteration numbering and scope drift out of sync. Rounds are numbered continuously from this first one, so `design.md` records the series rather than starting it.
 

@@ -127,6 +127,21 @@ and composition. The detailed as-is + proposed pair, breakpoints and the Visual
 design table still belong to `design.md`, which **continues** the numbering
 rather than starting it.
 
+**Which editor.** Pick by the question the change is asking, not by fidelity.
+
+- A change about a **flow, sequence, structure or set of relationships** gets a
+  **FigJam board** (`figma.com/board/...`). A board cannot produce something
+  polished enough to be mistaken for an approval-ready design — the constraint is
+  the point this early — and it subscribes no libraries, so there is no MVDS step
+  before you can think.
+- A change about a **surface** — a panel, page, component or layout — gets a rough
+  frame in a **design file** (`figma.com/design/...`). "What does this look like
+  once X is gone" is not a question a board can answer.
+
+Some changes need both. When they do, the numbering runs continuously **across**
+the files and the `design.md` Visual design table names each one and says which
+rounds live where.
+
 ### File page/frame naming convention (REQUIRED)
 
 Every OpenSpec Figma file uses **numbered pages** and treats each proposal iteration as a distinct page — never edit or append to an existing proposal page in place:
@@ -136,6 +151,10 @@ Every OpenSpec Figma file uses **numbered pages** and treats each proposal itera
 - `02 Proposed` — the first proposed iteration.
 - `02.1`, `02.2`, … — **each subsequent proposal iteration is a NEW numbered page** (`02.1 Proposed — <what changed>`), so prior iterations stay intact for comparison. **Never** overwrite or append frames on an already-built/approved proposal page.
 - Name frames within a page by treatment + breakpoint, e.g. `Proposed · Desktop 1024`, `Proposed · Mobile 480`.
+- **FigJam boards have no pages** — a board is one canvas. Use **named sections** in
+  place of numbered pages (`01 Current state`, `02 Proposed`, `02.1 Proposed — <what
+  changed>`), one section per iteration. The rule is unchanged: never overwrite or
+  append to a round that has already been built.
 
 Record the exact page names + frame node IDs in the `design.md` Visual design table, and restate this file convention there (as `stop-the-leaks/design.md` does).
 
