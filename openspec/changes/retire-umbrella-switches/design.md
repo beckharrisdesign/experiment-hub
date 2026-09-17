@@ -58,14 +58,19 @@ Nothing moves, nothing is renamed, nothing changes place. Five rows leave.
 later proposal iteration becomes a **new** page — `02.1 Proposed — <what
 changed>` — never an edit to an existing one.
 
-**This change broke that convention once.** When the first frames were
-rejected, `02 Proposed` was cleared and rebuilt in place instead of a
-`02.1` page being added, so the v1 iteration no longer exists as frames.
-The page has since been renamed `02.1 Proposed — rebuilt from measured
-production` and carries an on-canvas note saying so. v1 survives only as
-the capture committed in this change's `assets/` at the first design
-commit (`ff0b798`), and in Figma version history. The next round is
-`02.2`, on a new page.
+**Iterations on this change:**
+
+| Page                                               | Round | What it holds                                                                                                          |
+| -------------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
+| `02 Proposed`                                      | v1    | The first proposal, built by reading the JSX — wrong on composition (rows that wrap, chevrons, stacked export buttons) |
+| `02.1 Proposed — rebuilt from measured production` | v2    | The same removals, drawn from geometry measured off the running app                                                    |
+
+The convention was briefly broken: when v1 was rejected, its page was
+cleared and rebuilt in place instead of a new page being added. That is
+corrected — `02` and `02.1` both exist and can be compared — but page
+`02` is a faithful reconstruction of the first round from its original
+build script, not the untouched original frames. Later rounds go on
+`02.2`, `02.3`, each a new page.
 
 ### Fidelity check
 
