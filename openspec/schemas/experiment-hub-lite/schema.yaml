@@ -14,7 +14,13 @@ artifacts:
 
       **Outcomes (required):** Fill Who / Job / Done when / Not doing before Why.
 
-      **Lite constraints:** Max 2 new capabilities (kebab-case). Omit Evidence, Proceed attestation, and Visual board (those belong in full `experiment-hub` or design.md). If `experiments/<slug>/docs/PRD.md` exists, link it under Optional links instead of duplicating TAM or business case.
+      **Lite constraints:** Max 2 new capabilities (kebab-case). Omit Evidence and Proceed attestation (those belong in full `experiment-hub`). If `experiments/<slug>/docs/PRD.md` exists, link it under Optional links instead of duplicating TAM or business case.
+
+      **Figma round (UI changes — required here, not deferred to design.md):** Any change that alters UI gets a **first round in Figma before or alongside the proposal**, not after it. Create the change's Figma file, put a rough round on `02 Proposed`, and link the file and that page from the proposal. Rough is the point: shape and composition, enough to argue with. The detailed as-is + proposed pair, breakpoints and the Visual design table still belong to `design.md` — this is the round that makes the proposal's scope real, not a replacement for it.
+
+      Why it sits here: design is in dialogue with the proposal. Writing scope blind and drawing it afterwards means every design round sends you back to re-author a document that was written without seeing the thing — which is how iteration numbering and scope drift out of sync. Rounds are numbered continuously from this first one, so `design.md` records the series rather than starting it.
+
+      **Applies to changes created after this rule landed (2026-09-17).** A change already in flight keeps the sequence it was built on — several document `02 Proposed` as intentionally empty because under the old order the first iteration belonged to `design.md`, and `pdf-metadata-viewer-cloud` says so in as many words. Do **not** retro-fit those: rewriting an existing Figma history to satisfy a rule that landed afterwards is the exact churn this change exists to stop. Leave their numbering alone and gate them at `design.md` as planned.
 
       **Stop rule:** After writing proposal.md, stop and wait for explicit user approval before creating specs, design, or tasks.
 
@@ -46,7 +52,7 @@ artifacts:
     instruction: |
       Before writing, read `skills/design-advisor/SKILL.md` and `rules/figma.mdc`; apply checklist thinking to this artifact only (full design report only if user asks).
 
-      **Figma gate (UI changes — REQUIRED, not skippable):** Any change that adds or alters UI MUST produce a Figma **as-is + proposed** pair before design.md is approved — the same treatment `openspec/changes/stop-the-leaks/design.md` used:
+      **Figma gate (UI changes — REQUIRED, not skippable):** Builds on the round already made at proposal time — continue the numbering, never restart it. Any change that adds or alters UI MUST produce a Figma **as-is + proposed** pair before design.md is approved — the same treatment `openspec/changes/stop-the-leaks/design.md` used:
         1. **As-is frame** — the current surface reconstructed from code (or captured from the running page via `generate_figma_design`); flag any non-code-derivable values as reference per `rules/figma.mdc`.
         2. **Proposed frame(s)** — the changed surface, built on the hub design system (MVDS + `tailwind.config.ts` / `globals.css` tokens), not bespoke chrome.
       Then fill the Visual design / Figma table with the real **file URL**, **as-is + proposed frame names**, **library/version**, breakpoints (BHD Content Types S=480px / L=1024px), and any Code Connect note. "Reuses existing components" is NOT grounds to skip — reused components still get placed in a proposed frame.
