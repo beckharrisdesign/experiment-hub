@@ -72,6 +72,7 @@ changed>` — never an edit to an existing one.
 | `03.2 Proposed — file row on the input pattern, brand buttons` | v4, latest | Founder edits to the file picker carried forward: the filename reads as an input and **Replace** as a button, both on the label-and-control pattern the other rows use. The primary button treatment adopts the brand green, captured as a `brand-primary` token |
 | `03.3 Proposed — one row pattern, matched control widths`      | v5         | File collapses to a single row and **Replace** is widened to the select's 110 px. Superseded within the same review                                                                                                                                              |
 | `03.4 Proposed — file as a select, one row pattern throughout` | v6, latest | The file row becomes a select, so every key/value row is the same object. Founder: "what if file is also a dropdown? so that the key values are expressed in similar pattern and thus their spacing is consistent"                                               |
+| `03.5 Proposed — sew order rows are reorderable stitch layers` | v7, latest | Founder edits carried forward (rows as filled cards, heading and index numbers gone) and the sew order split so each colour-and-stitch pair is its own reorderable row                                                                                           |
 
 The convention was briefly broken: when v1 was rejected, its page was
 cleared and rebuilt in place instead of a new page being added. That is
@@ -191,8 +192,40 @@ that it opens a dialog, or drop the chevron and let it read as a value
 that happens to be clickable. `03.3` is the version that does not make
 the promise, and is kept for that comparison.
 
-**Nothing in the file is approved.** `02`, `02.1`, `03.1`, `03.2`, `03.3`
-and `03.4` are all open rounds.
+### Sew order rows are stitch layers — `03.5`
+
+Founder direction, and a model rather than a styling pass: "treating each
+of these stitch layers as elements that we can reorder. any combo of
+color and stitch is its own row (so we'd have three reds in this
+example)."
+
+![Sew order split into stitch layers](assets/proposed-03-5-panel.png)
+
+A thread carrying three kinds of stitching is three rows, not one summary
+line — which also retires the composition string (`✕ 2 · ╱ 2 · ◯ 2 ·
+1,274 sts`) that was overflowing its row, and with it the clipping bug
+tracked separately. The founder's card treatment is kept: filled rows, no
+section heading, no index numbers, because these read as objects rather
+than as a numbered list.
+
+**This is not in this change.** The lite schema caps a change at two
+capabilities and both are used. Three things are recorded so the next one
+starts from a stated model rather than a screenshot:
+
+- A row is one colour paired with one stitch type. The same thread
+  appears as often as it carries distinct stitch types.
+- Row order **is** sew order. Dragging changes what the machine does, not
+  how the panel reads.
+- Separating two rows of the same colour adds a thread change the file
+  did not ask for. Adjacent same-colour rows still sew as one block, so
+  the panel has to make that cost visible rather than let a drag silently
+  add a trim.
+
+The last one is the design problem worth solving early: reordering is
+easy to build and easy to make quietly expensive on the machine.
+
+**Nothing in the file is approved.** `02`, `02.1`, `03.1`, `03.2`, `03.3`,
+`03.4` and `03.5` are all open rounds.
 
 ## Risks / Trade-offs
 
