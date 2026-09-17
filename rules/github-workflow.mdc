@@ -14,7 +14,7 @@ globs:
 ## Pull requests
 
 - **Always open a PR** when a feature, fix, or test task is complete. Use the **GitHub CLI** (`gh`) — e.g. `gh pr create`.
-- **OpenSpec `/opsx:apply`:** Commit/push/PR timing lives in the active schema’s `apply.instruction` (see `openspec/schemas/*/schema.yaml`) and `skills/openspec-apply-change.md` step 8 — not duplicated here.
+- **OpenSpec `/opsx:apply`:** Commit/push/PR timing lives in the active schema’s `apply.instruction` (see `openspec/schemas/*/schema.yaml`) and `skills/openspec-apply-change/SKILL.md` step 8 — not duplicated here.
 - **One PR per logical unit of work.** Don't bundle unrelated changes.
 - **Never merge or approve the PR.** User reviews CI checks and the Vercel preview, and always makes the final merge decision. Agents must not run `gh pr merge` or approve reviews.
 - **Never have two PRs open for the same work item.** If a PR exists for the current task, push additional fixes to that branch rather than opening a new PR. Keep iterating on the existing PR until all checks pass.
@@ -27,17 +27,19 @@ globs:
 - **Founder intent carries her words and reasons only.** Findings, diagnosis, and what the investigation turned up belong in `## Summary` or `## Notes`. Once the section is explaining what *you* discovered, it has stopped being founder intent — this is the failure mode to watch for, because the analysis is usually the part you most want to write down.
 - **Embed proposed-design screenshots for UI changes.** When a change has a Figma proposed frame (see `rules/figma.mdc`), include the screenshot(s) **inline in the PR body**, not just a Figma link. Because Figma's screenshot URLs are short-lived and branch-relative URLs break when the branch is deleted on merge, commit the PNG into the change's assets (`openspec/changes/<id>/assets/proposed-*.png`) and reference it by **commit-SHA** raw URL so it survives merge: `![…](https://raw.githubusercontent.com/<owner>/<repo>/<commit-sha>/openspec/changes/<id>/assets/<file>.png)`. Capture with the Figma MCP `get_screenshot` (curl the short-lived URL to the asset path), commit, then build the body against that commit's SHA.
 
-### Single ready-for-review PR until merge (default)
+### Single PR until merge (default) — draft first, ready gates review
 
 - Prefer **one active branch + one PR** per ongoing effort. Keep **adding commits to that branch** and **updating the same PR** until user approves and merges. Avoid opening many parallel branches/PRs for follow-ups in the same workstream.
-- Open PRs **ready for review, not draft**, so the automated Copilot review kicks off immediately (`gh pr create` without `--draft`). If a PR was opened as a draft, mark it ready (`gh pr ready`).
+- Open PRs **as drafts** (`gh pr create --draft`; remote Claude sessions always do). **Marking a PR "Ready for review" is the founder's signal that Copilot review should run** — automatic review must not fire on drafts.
+  - This depends on a GitHub setting agents cannot change from the repo: wherever *Automatic Copilot code review* is enabled (repo Settings → Copilot → Code review, a ruleset under Settings → Rules → Rulesets, or the founder's personal Copilot settings), **"Review draft pull requests" must be unchecked** and "Review new pushes" left off. If a review ever posts on a draft, that toggle regressed — flag it instead of adapting to it. (Each draft review burns Copilot premium requests; this is how a month's quota disappeared once.)
 - Start a **new** branch + PR only after the previous one is merged, or when the work is **clearly unrelated** (different experiment, different product surface).
 - Push additional commits to the same branch to refresh the existing PR.
 
 ### Copilot review loop
 
-- After opening a PR (or pushing substantive new commits to one), **wait for Copilot's automated review** and check for its comments before ending the task — it usually posts within a few minutes (`gh api repos/OWNER/REPO/pulls/NUMBER/comments`).
-- **Address every actionable comment**: push fixes to the same branch, then **reply to each comment** saying what changed — or why no change was needed. Never leave a Copilot comment unanswered.
+- Copilot reviews **once, when the PR is marked ready** (new pushes are not auto-reviewed). After the founder marks it ready, **wait for the automated review** and check for its comments before ending the task — it usually posts within a few minutes (`gh api repos/OWNER/REPO/pulls/NUMBER/comments`).
+- **Address every actionable comment**: push fixes to the same branch, then **reply to each comment** saying what changed — or why no change was needed. Never leave a Copilot comment unanswered, and resolve each thread once addressed (the "All review threads resolved" check gates on it).
+- A re-review of later pushes is manual: re-request Copilot from the PR's Reviewers panel only when the founder wants one — it spends premium requests.
 - If a session finds an open PR with unanswered Copilot comments from an earlier session, address them the same way.
 - The user still reviews and makes the final merge decision.
 

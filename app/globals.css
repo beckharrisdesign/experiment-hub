@@ -113,19 +113,21 @@
 }
 
 /* ---------------------------------------------------------------------------
- * Executive Function Assessment Suite — MVDS defaults, not the hub skin.
+ * Plain-MVDS routes — MVDS defaults, not the hub skin.
  *
  * The block above repaints MVDS's semantic tokens in the hub's greens. That is
- * right for the hub, but the assessment suite is a separate instrument and is
- * meant to look like plain MVDS. Custom properties inherit, so re-declaring
- * them on the route's wrapper restores the design system's own dark palette
- * for that subtree and nothing else.
+ * right for the hub, but some routes are separate instruments and are meant to
+ * look like plain MVDS (the assessment suite via `.efa-theme`; standalone
+ * tools via `.mvds-theme`, e.g. /svg-to-stitch). Custom properties inherit, so
+ * re-declaring them on the route's wrapper restores the design system's own
+ * dark palette for that subtree and nothing else.
  *
  * Values are MVDS 0.3.0's `.dark` block verbatim. --color-border is relinked to
  * var(--border) because the hub's @theme pins it to a literal green, which
  * would otherwise survive into this scope.
  * ------------------------------------------------------------------------ */
-.efa-theme {
+.efa-theme,
+.mvds-theme {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -161,7 +163,9 @@
  * Fraunces, and MVDS's CardTitle renders a div carrying that utility, so both
  * have to be undone here or card titles stay serif while page titles do not. */
 .efa-theme :is(h1, h2, h3, h4, h5, h6),
-.efa-theme .font-heading {
+.efa-theme .font-heading,
+.mvds-theme :is(h1, h2, h3, h4, h5, h6),
+.mvds-theme .font-heading {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   font-variation-settings: normal;
 }

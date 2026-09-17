@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="sticker_sheet_st-size_w1000" viewBox="0 0 400 560" fill="none">
+  <!-- Declared 100 mm wide on the root's own box. Artwork is inset 40 units
+       on every side, so a correct conversion keeps that margin: the sheet
+       measures 100 mm while the stitching spans about 80 mm. -->
+
+  <!-- st-skip: a hoop guide that must never sew. -->
+  <rect id="hoop_guide_st-skip" x="20" y="20" width="360" height="520" stroke="#ff0000" stroke-width="2"/>
+
+  <!-- 1. Declared running stitch, 2.5 mm — stays a line despite being satin-width. -->
+  <path id="row1_run_st-run_l25" d="M40 60 L360 60" stroke="#bc213c" stroke-width="3"/>
+
+  <!-- 2. Declared satin on a hairline — sews a 2.0 mm column. -->
+  <path id="row2_satin_st-satin_w20" d="M40 100 L360 100" stroke="#0f8452" stroke-width="0.2"/>
+
+  <!-- 3. Declared tatami, 0 degrees at 0.8 mm. -->
+  <rect id="row3_tatami_st-tatami_a0_d8" x="40" y="130" width="150" height="40" fill="#38639f"/>
+
+  <!-- 4. Declared outline: a filled shape that sews only its boundary. -->
+  <rect id="row4_outline_st-run" x="210" y="130" width="150" height="40" fill="#d6962d"/>
+
+  <!-- 5-10. The six built-in brushes: three straight, three curved. -->
+  <path id="row5_st-brush-cross" d="M40 200 L360 200" stroke="#72357c" stroke-width="1"/>
+  <path id="row6_st-brush-tick" d="M40 235 C 120 205, 280 265, 360 235" stroke="#bc213c" stroke-width="1"/>
+  <path id="row7_st-brush-chain" d="M40 275 C 120 305, 280 245, 360 275" stroke="#0f8452" stroke-width="1"/>
+  <path id="row8_st-brush-dot" d="M40 310 L360 310" stroke="#38639f" stroke-width="1"/>
+  <path id="row9_st-brush-bird" d="M40 345 C 120 375, 280 315, 360 345" stroke="#d6962d" stroke-width="1"/>
+  <path id="row10_st-brush-bean" d="M40 380 L360 380" stroke="#72357c" stroke-width="1"/>
+
+  <!-- 11. Group inheritance with a child override: the first child inherits
+       tick from the group, the second declares chain for itself. -->
+  <g id="row11_group_st-brush-tick" stroke="#bc213c" stroke-width="1">
+    <path d="M40 415 L190 415"/>
+    <path id="child_override_st-brush-chain" d="M210 415 L360 415"/>
+  </g>
+
+  <!-- 12. Untagged narrow stroke — the fallback satins it. -->
+  <path id="row12_untagged_stroke" d="M40 450 L360 450" stroke="#0f8452" stroke-width="4"/>
+
+  <!-- 13. Untagged wide fill — the fallback hatches it as tatami. -->
+  <rect id="row13_untagged_wide_fill" x="40" y="475" width="150" height="45" fill="#38639f"/>
+
+  <!-- 14. Untagged narrow fill — the fallback sews it as two-rail satin. -->
+  <rect id="row14_untagged_narrow_fill" x="210" y="475" width="150" height="6" fill="#d6962d"/>
+</svg>

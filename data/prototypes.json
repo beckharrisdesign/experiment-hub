@@ -99,7 +99,7 @@
   {
     "id": "proto-snap-issue",
     "title": "Snap Issue",
-    "description": "MV3 extension: viewport rectangle → cropped capture → GitHub issue + local PNG",
+    "description": "MV3 extension: viewport rectangle \u2192 cropped capture \u2192 GitHub issue + local PNG",
     "linkPath": "experiments/snap-issue/extension",
     "experimentId": "snap-issue",
     "status": "Active",
@@ -144,6 +144,23 @@
       "modules",
       "sharp",
       "sandbox"
+    ]
+  },
+  {
+    "id": "proto-svg-to-stitch",
+    "title": "Stitch Check",
+    "description": "Hub route converting SVG artwork to DST/EXP embroidery files entirely client-side - tatami fills with underlay, an optimizer, and an interactive pan/zoom stitch preview",
+    "linkPath": "app/svg-to-stitch",
+    "experimentId": "svg-to-stitch",
+    "status": "Active",
+    "createdDate": "2026-09-11",
+    "lastModified": "2026-09-12",
+    "tags": [
+      "embroidery",
+      "craft",
+      "file-converter",
+      "previewer",
+      "client-side"
     ]
   }
 ]

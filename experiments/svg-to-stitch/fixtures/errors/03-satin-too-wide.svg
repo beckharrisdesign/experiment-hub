@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Expect: satin tops out at 10 mm — narrow it or split it. -->
+  <path id="fat_border_st-satin_w150" d="M20 40 L180 40" stroke="#0f8452" stroke-width="1"/>
+</svg>

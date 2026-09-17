@@ -31,7 +31,7 @@ from env import load_env
 AUTH_URL = "https://www.etsy.com/oauth/connect"
 TOKEN_URL = "https://api.etsy.com/v3/public/oauth/token"
 SHOPS_URL = "https://openapi.etsy.com/v3/application/users/{user_id}/shops"
-SCOPE = "listings_r"
+SCOPE = "listings_r listings_w"
 DEFAULT_PORT = 8181
 
 log = logging.getLogger("oauth_helper")
