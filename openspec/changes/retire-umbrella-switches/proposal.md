@@ -25,11 +25,13 @@ contract: `experiments/svg-to-stitch/docs/stitch-authoring.md`.
 - **Job:** Drop a prepped SVG in and get the stitches the design asks
   for, without having to notice, remember, or re-set three global
   toggles that can silently contradict every tag in the file.
-- **Done when:** The panel carries no all-or-nothing stitch switch. A
-  design converts identically whether it was just opened or the panel
-  was fiddled with; an untagged shape sews by the documented fallback,
-  and the only way to change one shape's stitch is to say so in the
-  design file.
+- **Done when:** The panel carries no all-or-nothing stitch switch. At a
+  given design size, a file sews the same stitches however the panel was
+  last left; an untagged shape sews by the documented fallback, and the
+  only way to change one shape's stitch type is to say so in the design
+  file. Physical size stays a per-conversion panel choice — the contract
+  settled that deliberately ("No size tags") — and **Fabric** changes
+  only the preview backdrop.
 - **Not doing:** Changing the heuristics themselves — the untagged
   fallback keeps today's behaviour exactly. **Fill angle** and **Fill
   density** are _hidden_, not deleted: the converter keeps both options
