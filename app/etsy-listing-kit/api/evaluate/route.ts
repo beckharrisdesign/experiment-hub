@@ -9,6 +9,7 @@ import {
 } from '../../../../lib/etsy-listing-kit/evaluate';
 import { createAdminSupabaseClient } from '../../../../lib/etsy-listing-kit/supabase-admin';
 import { composerConfigured } from '../../../../lib/etsy-listing-kit/composer';
+import { etsyApiKeyHeader } from '../../../../lib/etsy-listing-kit/listing-fetch';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -64,10 +65,9 @@ async function loadFixture(listingId: number): Promise<RawApiListing | null> {
 
 async function fetchListing(listingId: number): Promise<RawApiListing | null> {
   if (fixturesEnabled()) return loadFixture(listingId);
-  const key = process.env.ETSY_API_KEY!;
   const res = await fetch(
     `https://api.etsy.com/v3/application/listings/${listingId}?includes=Images,Videos`,
-    { headers: { 'x-api-key': key } },
+    { headers: { 'x-api-key': etsyApiKeyHeader() } },
   );
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Etsy API ${res.status}`);
@@ -93,8 +93,7 @@ async function suggestFromShop(shopSlug: string): Promise<ShopSuggestion | null>
       shopName: shopSlug,
     };
   }
-  const key = process.env.ETSY_API_KEY!;
-  const headers = { 'x-api-key': key };
+  const headers = { 'x-api-key': etsyApiKeyHeader() };
   const shopRes = await fetch(
     `https://api.etsy.com/v3/application/shops?shop_name=${encodeURIComponent(shopSlug)}&limit=1`,
     { headers },
@@ -204,7 +203,10 @@ export async function POST(request: NextRequest) {
     cache.set(parsed.listingId, { at: Date.now(), result });
     persistEvaluation(evaluation);
     return NextResponse.json(result);
-  } catch {
+  } catch (err) {
+    // A silent 502 cost a diagnosis step on 2026-08-31 (bad ETSY_API_KEY read
+    // as "listing unreadable") — the reason must reach the function logs.
+    console.error(`[elk evaluate] listing ${parsed.listingId} fetch failed:`, err);
     return NextResponse.json(
       { kind: 'invalid', reason: 'We couldn’t read that listing right now. Nothing was scored.' },
       { status: 502 },
