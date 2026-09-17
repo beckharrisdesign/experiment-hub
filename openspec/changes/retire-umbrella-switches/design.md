@@ -47,7 +47,7 @@ Nothing moves, nothing is renamed, nothing changes place. Five rows leave.
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Primary file URL    | <https://www.figma.com/design/hHAppz4A23qMoLQFTo8QAc> ("svg-to-stitch — retire-umbrella-switches")                                                                                                                                                |
 | As-is frame(s)      | `01 Current state` → `Current state · Desktop 1024` (node `8:123`), panel `8:12` — the shipped panel rebuilt from geometry measured off the running page, not from reading the JSX                                                                |
-| Proposed frame(s)   | `02 Proposed` → `Proposed · Desktop 1024` (node `8:131`), panel `8:132` — cloned from the as-is so the only difference is the five removed rows                                                                                                   |
+| Proposed frame(s)   | `02.1 Proposed — rebuilt from measured production` → `Proposed v2 · Desktop 1024` (node `8:131`), panel `8:132` — cloned from the as-is so the only difference is the five removed rows                                                           |
 | Libraries / version | **MVDS Core** (library key in `rules/figma.mdc`) — `Badge` and `Switch` imported by key, the same two instances the `stitch-brushes` panel used. MVDS's `Tokens` collection is pinned to its **Dark** mode on each panel, matching `.mvds-theme`  |
 | Local variables     | `hub tokens` collection on `00 Components` — 11 colours converted from the oklch declarations in `app/globals.css`; panel and text fills are bound to them rather than hardcoded                                                                  |
 | Code Connect        | No mappings to update — no component is added, changed or renamed                                                                                                                                                                                 |
@@ -56,7 +56,16 @@ Nothing moves, nothing is renamed, nothing changes place. Five rows leave.
 
 **File convention** (per `rules/figma.mdc`): numbered pages, and each
 later proposal iteration becomes a **new** page — `02.1 Proposed — <what
-changed>` — never an edit to an approved page.
+changed>` — never an edit to an existing one.
+
+**This change broke that convention once.** When the first frames were
+rejected, `02 Proposed` was cleared and rebuilt in place instead of a
+`02.1` page being added, so the v1 iteration no longer exists as frames.
+The page has since been renamed `02.1 Proposed — rebuilt from measured
+production` and carries an on-canvas note saying so. v1 survives only as
+the capture committed in this change's `assets/` at the first design
+commit (`ff0b798`), and in Figma version history. The next round is
+`02.2`, on a new page.
 
 ### Fidelity check
 
