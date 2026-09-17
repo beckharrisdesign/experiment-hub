@@ -38,13 +38,24 @@ Reduction is sort and filter only. There is no second screen and no row detail v
 | --- | --- |
 | Primary file URL | <https://www.figma.com/design/pezlHOEjgdF1MUtYj7Jzbt> |
 | As-is frame(s) | `01 Current state` → **`As-is · No hub surface`** (`23:17`) — the access path today: ten CSVs in `docs/pulls/`, and one file's raw contents showing the same keyword split across four of them. Reconstructed from the repo, not from a running page, because no page exists. |
-| Proposed frame(s) | **`02.2 Proposed — light mode, content-width columns`** → **`Proposed · Desktop 1024`** (`27:14`) and **`Proposed · Mobile 480`** (`27:95`) — current. Superseded: `02.1` (table rules, dark), `02 Proposed` (round 01); see *Round history*. |
+| Proposed frame(s) | **`02.3 Proposed — MVDS text styles`** → **`Proposed · Desktop 1024`** (`27:14`) and **`Proposed · Mobile 480`** (`27:95`) — current. Earlier rounds intact for comparison: `02.2` (light mode, content-width columns), `02.1` (table rules, dark), `02 Proposed` (round 01). |
 | Libraries / version | `MVDS Core` (`lk-d54f86bc…`), subscribed to the file · `@beckharrisdesign/mvds@0.3.0` in code. Tokens collection set to the **Light** mode explicitly on every frame. |
 | Code Connect | No mappings to update — this change adds no new shared component. The table is route-local. |
 | Breakpoints | S · 480px and L · 1024px, both drawn. Between them the table holds its behaviour; it does not reflow into cards. |
 | Status | Rounds 01 and 02.1 built and token-bound. Awaiting approval of this document. |
 
-**Round history.** Round 01 was built on `02 Proposed`, then edited in place across several passes before the page-per-iteration rule was applied — so `02 Proposed` is now empty and round 01's pre-table-rules state was not preserved. Recorded rather than reconstructed: rebuilding a history to satisfy a rule applied late is the churn that rule exists to prevent. From 02.1 onward each iteration takes its own page.
+**Round history.**
+
+| Page | Change |
+|---|---|
+| `02 Proposed` | Round 01 — **empty**; see below |
+| `02.1 Proposed — table rules` | nowrap, one body size, no colour coding, keyword absorbs width (dark) |
+| `02.2 Proposed — light mode, content-width columns` | Light mode, small columns measured to content, token gutter |
+| `02.3 Proposed — MVDS text styles` | published `Type/*` styles replace hand-set fonts — **current** |
+
+Two rounds were edited in place before the page-per-iteration rule took hold, and the fix differed each time. Round 01's pre-table-rules state was **not recoverable**, so `02 Proposed` stands empty and is recorded rather than reconstructed. Round 02.2 **was** recoverable — its steps are deterministic — so it was rebuilt from 02.1 and the text styles moved to their own page. Verified afterwards that no style leaked backwards: the six styled nodes remaining on 02.2 are all MVDS instance internals, which own their own styles.
+
+One change per page, from here.
 
 **Token binding is audited, not asserted.** A pass reports every fill, stroke, spacing value, font size and radius not bound to an MVDS variable, and every text node not carrying a published MVDS text style. Both return empty. MVDS component internals are excluded — they own their own tokens and styles.
 
