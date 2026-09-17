@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="patch_st-size_w635" viewBox="0 0 200 200" fill="none">
+  <!-- Expect: names both layers and says nesting is not supported.
+       One st-size per file. -->
+  <g id="inner_st-size_w200">
+    <path d="M50 100 L150 100" stroke="#bc213c" stroke-width="1"/>
+  </g>
+</svg>

@@ -126,10 +126,10 @@ than deleted.
 - **The tagged element is the size it is tagged to be**, not the ink
   inside it: a motif inset in a frame stays inset, and the layout rules
   the design tool applies inside that container still govern where the
-  artwork sits. Nesting follows **the CSS model** — the outer element is
-  the containing block and sets the document's extent, while a nested
-  declaration sizes its own subtree within it. Size is therefore
-  consistent with the rest of the grammar rather than an exception. The `st-` vocabulary is meant
+  artwork sits. One `st-size` per file: a second one nested
+  inside the first is refused by name rather than ignored. (The CSS
+  containing-block reading — a nested declaration sizing its own subtree —
+  was waived on 2026-09-17; see the spec.) The `st-` vocabulary is meant
   to read as a cascade — inheritance down the tree, a child's own
   declaration winning for itself, and the untagged fallback as the
   initial value. See design.md decision 5 for the full mapping and the

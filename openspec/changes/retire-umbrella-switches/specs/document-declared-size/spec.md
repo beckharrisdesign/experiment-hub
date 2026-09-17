@@ -13,6 +13,7 @@
   today's default.
 - **Not doing:** Translating or resizing artwork from the tool — parked
   by the founder, "not today". No size inferred from bare user units.
+  Nested sizes — one `st-size` per file; a second one is refused.
 
 ## ADDED Requirements
 
@@ -74,30 +75,31 @@ one element SHALL fail, naming the layer.
 > change is removing controls — so the file's own system is what the
 > readout follows.
 
-### Requirement: Size cascades like CSS
+### Requirement: One size per file
 
-An outer declaration sets the document's size; an inner one sizes its own
-subtree inside it.
+A design declares its size once.
 
-**Fails until:** a frame tagged 63.5 mm containing a group tagged 20 mm
-converts 63.5 mm overall with that group sewing 20 mm wide.
+**Fails until:** a second `st-size` anywhere in the file fails the
+conversion, naming both layers.
 
-The outermost `st-size` SHALL set the converted design's physical extent.
-A nested `st-size` SHALL size its own subtree within that extent, and
-SHALL NOT change the document's overall size.
+Exactly one `st-size` SHALL apply to a file. A second declaration nested
+inside the first SHALL fail the conversion, naming both layers.
 
-#### Scenario: A nested size sizes its own subtree
+#### Scenario: A nested size is refused
 
 - **WHEN** a frame tagged `st-size w635` contains a group tagged
   `st-size w200`
-- **THEN** the design converts 63.5 mm wide overall
-- **AND** that group's box sews 20 mm wide, scaled within the frame
-  rather than redefining it
+- **THEN** the conversion fails, naming both layers, and says nesting is
+  not supported
 
-> This is the CSS model, not a special rule: the outer element is the
-> containing block, and a child's own declaration applies to the child.
-> Size is therefore consistent with the rest of the tag grammar rather
-> than an exception to it.
+> Originally specified as the CSS containing-block model: the outer
+> element sets the document extent while a nested declaration sizes its
+> own subtree. The subtree half was **waived on 2026-09-17** — it was
+> written while reasoning about the model rather than from a need, and
+> one frame per patch is the actual use. Refusing the nested tag is the
+> honest form of that cut: ignoring it would hand back a plausible design
+> at the wrong scale, which is the silent fallback this contract exists
+> to remove. If a real use appears, it comes back as its own change.
 
 ### Requirement: A declaration that cannot be honoured errors loudly
 

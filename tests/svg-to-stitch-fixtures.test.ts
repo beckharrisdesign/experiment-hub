@@ -49,6 +49,7 @@ describe("failure fixtures", () => {
     "05-size-out-of-range.svg": /10 to 400 mm/,
     "06-both-unit-systems.svg": /both a metric and an imperial size/,
     "07-density-out-of-range.svg": /density of 0.1 mm/,
+    "09-nested-size.svg": /nesting them is not supported/,
   };
 
   for (const [file, message] of Object.entries(EXPECTED)) {
