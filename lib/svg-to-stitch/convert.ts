@@ -5,6 +5,7 @@
 
 import {
   extractGeometry,
+  findDeclaredSize,
   type ColoredPolyline,
   type ExtractedGeometry,
 } from "./svg-parse";
@@ -28,18 +29,16 @@ import { encodeDst } from "./dst";
 import { encodeExp } from "./exp";
 
 export interface ConvertOptions {
-  /** Physical size of the design's larger side, in mm. */
+  /**
+   * Fallback physical width in mm, used only when the design declares no
+   * size of its own. A declared `st-size`, or real physical units on the
+   * root, wins over this.
+   */
   targetWidthMm: number;
   /** Nominal running-stitch length in mm. */
   stitchLengthMm: number;
   /** Design name embedded in the DST header. */
   designName?: string;
-  /**
-   * How filled shapes stitch: "fill" (default) hatches their interior with
-   * tatami rows; "outline" traces only their boundary — the converter's
-   * original behavior.
-   */
-  fillMode?: "fill" | "outline";
   /** Tatami row direction in degrees (default 45). */
   fillAngleDeg?: number;
   /** Distance between tatami rows in mm (default 0.4). */
@@ -49,43 +48,33 @@ export interface ConvertOptions {
    * true) — it stabilizes the fabric so the top stitching doesn't pucker.
    */
   fillUnderlay?: boolean;
-  /**
-   * Sew strokes as satin columns instead of a single running line
-   * (default true; applies in both fill and outline modes). Width is the
-   * stroke's rendered width at output size, floored at 0.5 mm so
-   * design-tool hairlines still read as thread; strokes over 10 mm keep
-   * the running line (loose floats snag). st-run pins a stroke to
-   * running stitch regardless.
-   */
-  satinStrokes?: boolean;
   /** Thread pitch along a satin column in mm (default 0.4). */
   satinDensityMm?: number;
-  /**
-   * Sew narrow filled shapes — bars, block letters, and curved ribbons
-   * like flattened strokes and circle borders, wherever every traverse
-   * fits the satin range at output size — as two-rail satin between their
-   * own edges, tapering with the shape, instead of tatami (default true;
-   * fill mode only). Regions that don't qualify fall back to tatami.
-   */
-  satinFills?: boolean;
 }
 
 export interface ConvertResult {
   plan: StitchPlan;
   dst: Uint8Array;
   exp: Uint8Array;
+  /**
+   * How the design's physical size was arrived at, so the readout can speak
+   * the system the file was authored in.
+   */
+  size: {
+    widthMm: number;
+    heightMm: number;
+    unit: "mm" | "in";
+    declared: boolean;
+  };
 }
 
 export const DEFAULT_OPTIONS: ConvertOptions = {
   targetWidthMm: 63.5, // the standard 2.5 in patch
   stitchLengthMm: 2.5,
-  fillMode: "fill",
   fillAngleDeg: 45,
   fillSpacingMm: 0.4,
   fillUnderlay: true,
-  satinStrokes: true,
   satinDensityMm: 0.4,
-  satinFills: true,
 };
 
 // Underlay: rows perpendicular to the top stitching, spaced far apart — a
@@ -127,12 +116,6 @@ export function convertSvg(
   ) {
     throw new Error("stitch length must be between 1 and 7 mm");
   }
-  const fillMode = options.fillMode ?? "fill";
-  if (fillMode !== "fill" && fillMode !== "outline") {
-    // Runtime callers aren't bound by the TypeScript union; fail loudly
-    // instead of silently treating junk as fill mode.
-    throw new Error('fill mode must be "fill" or "outline"');
-  }
   const fillAngleDeg = options.fillAngleDeg ?? 45;
   const fillSpacingMm = options.fillSpacingMm ?? 0.4;
   const fillUnderlay = options.fillUnderlay ?? true;
@@ -146,8 +129,6 @@ export function convertSvg(
   ) {
     throw new Error("fill spacing must be between 0.2 and 2 mm");
   }
-  const satinStrokes = options.satinStrokes ?? true;
-  const satinFills = options.satinFills ?? true;
   const satinDensityMm = options.satinDensityMm ?? 0.4;
   if (
     !Number.isFinite(satinDensityMm) ||
@@ -178,8 +159,35 @@ export function convertSvg(
   // lets the border overhang the target size like real stroke paint,
   // instead of the overhang silently shrinking the whole design.
   const bounds = measure(geometry);
-  const sourceBounds: StitchPlanOptions["sourceBounds"] = bounds;
-  const unitsPerMm = bounds.span / options.targetWidthMm;
+
+  // Physical size comes from the document when it declares one: the tagged
+  // element's own box is the design's extent, so margin drawn around the
+  // artwork survives instead of being scaled away. Height follows that box's
+  // aspect — the file decides its proportions, not the tool.
+  const declared = findDeclaredSize(doc);
+  if (declared) {
+    if (declared.widthMm < 10 || declared.widthMm > 400) {
+      throw new Error(
+        `"${declared.label}" declares a size of ${declared.widthMm} mm — the supported range is 10 to 400 mm.`,
+      );
+    }
+  }
+  const boxWidth = declared ? declared.box.maxX - declared.box.minX : 0;
+  const boxHeight = declared ? declared.box.maxY - declared.box.minY : 0;
+  const sourceBounds: StitchPlanOptions["sourceBounds"] = declared
+    ? declared.box
+    : bounds;
+  const unitsPerMm = declared
+    ? boxWidth / declared.widthMm
+    : bounds.span / options.targetWidthMm;
+  const size = {
+    widthMm: declared ? declared.widthMm : options.targetWidthMm,
+    heightMm: declared
+      ? boxHeight / unitsPerMm
+      : (bounds.maxY - bounds.minY) / unitsPerMm,
+    unit: declared ? declared.unit : ("mm" as const),
+    declared: Boolean(declared),
+  };
 
   // A stroke wide enough to read as a border or lettering (the satin range
   // at output size) sews as a satin column — a center running stitch to
@@ -273,7 +281,7 @@ export function convertSvg(
           `"${tag.label}" is tagged st-satin at ${satinWidthMm} mm — satin tops out at ${SATIN_MAX_WIDTH_MM} mm. Narrow it or split it in the design tool.`,
         );
       }
-    } else if (satinStrokes && widthMm <= SATIN_MAX_WIDTH_MM) {
+    } else if (widthMm <= SATIN_MAX_WIDTH_MM) {
       // Untagged strokes: satin at their rendered width, floored so
       // hairlines still read as thread. Over-range strokes keep the
       // running line (loose floats would snag).
@@ -300,22 +308,7 @@ export function convertSvg(
   };
 
   const polylines: ColoredPolyline[] = [];
-  if (fillMode === "outline") {
-    // Legacy outline view: strokes as drawn, filled regions flattened to
-    // their boundary rings, stroke-over-fill precedence, document order.
-    for (const s of geometry.strokes) strokeRuns(s, s.order ?? 0);
-    for (const fill of geometry.fills) {
-      // Validate before skipping stroked regions, so a tag is judged the
-      // same way in both fill modes rather than depending on a panel switch.
-      checkTagDensity(fill.directive);
-      rejectBrushOnFill(fill.directive);
-      if (fill.hasStroke) continue;
-      for (const points of fill.rings) {
-        polylines.push({ color: fill.color, points, order: fill.order });
-      }
-    }
-    polylines.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  } else {
+  {
     // A stroke sews after its own element's fill so the border stays the
     // crisp top edge instead of being buried under the fill; the half-step
     // keeps it ahead of the next element.
@@ -349,7 +342,7 @@ export function convertSvg(
       // borders) through boundary pairing. Regions that qualify for
       // neither fall through to the tatami path — except a declared
       // st-satin, which errors loudly instead of being guessed at.
-      if (tag?.type === "satin" || (satinFills && tag?.type !== "tatami")) {
+      if (tag?.type === "satin" || tag?.type !== "tatami") {
         const density = (tag?.densityMm ?? satinDensityMm) * unitsPerMm;
         const satin =
           satinFill(rings, {
@@ -428,11 +421,21 @@ export function convertSvg(
     polylines.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
-  const plan = buildPlan(groupByColor(polylines), { ...options, sourceBounds });
+  // buildPlan scales the design's *larger* side to targetWidthMm, so a
+  // declared size has to hand it that side — passing the declared width
+  // would sew a tall design short.
+  const plan = buildPlan(groupByColor(polylines), {
+    ...options,
+    targetWidthMm: declared
+      ? Math.max(size.widthMm, size.heightMm)
+      : options.targetWidthMm,
+    sourceBounds,
+  });
   return {
     plan,
     dst: encodeDst(plan, options.designName ?? "DESIGN"),
     exp: encodeExp(plan),
+    size,
   };
 }
 

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Expect: the group has no readable box — turn on clip content, or move
+       the tag to the frame that does. -->
+  <g id="frame_st-size_w635">
+    <path d="M50 100 L150 100" stroke="#38639f" stroke-width="1"/>
+  </g>
+</svg>

@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="patch_st-size_w635_in350" viewBox="0 0 200 200" fill="none">
+  <!-- Expect: declares both a metric and an imperial size — use one. -->
+  <path d="M50 100 L150 100" stroke="#72357c" stroke-width="1"/>
+</svg>
