@@ -34,10 +34,10 @@ palette, deliberately not the hub skin (`app/svg-to-stitch/layout.tsx`).
 
 Unchanged in shape, shorter in practice. The panel reads top to bottom:
 file → design size → fabric → sew order → design stats → export. Removing
-the switch cluster and the two fill selects takes the panel from 1053 px
-to 813 px tall, which lifts **SEW ORDER** — the part a stitcher actually
-reads before sewing — roughly 145 px up the panel, above the fold on a
-short window.
+the switch cluster and the two fill selects takes the panel from 968 px
+to 728 px tall. The three switch rows sit above **SEW ORDER**, so it
+lifts 144 px — the part a stitcher actually reads before sewing moves up
+by roughly its own height.
 
 Nothing moves, nothing is renamed, nothing changes place. Five rows leave.
 
@@ -46,8 +46,8 @@ Nothing moves, nothing is renamed, nothing changes place. Five rows leave.
 | Item                | Value                                                                                                                                                                                                                                             |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Primary file URL    | <https://www.figma.com/design/hHAppz4A23qMoLQFTo8QAc> ("svg-to-stitch — retire-umbrella-switches")                                                                                                                                                |
-| As-is frame(s)      | `01 Current state` → `Current state · Desktop 1024` (node `4:165`), panel `4:60` — the shipped panel reconstructed from `app/svg-to-stitch/page.tsx`                                                                                              |
-| Proposed frame(s)   | `02 Proposed` → `Proposed · Desktop 1024` (node `5:2`), panel `5:3` — cloned from the as-is so the only difference is the five removed rows                                                                                                       |
+| As-is frame(s)      | `01 Current state` → `Current state · Desktop 1024` (node `8:123`), panel `8:12` — the shipped panel rebuilt from geometry measured off the running page, not from reading the JSX                                                                |
+| Proposed frame(s)   | `02 Proposed` → `Proposed · Desktop 1024` (node `8:131`), panel `8:132` — cloned from the as-is so the only difference is the five removed rows                                                                                                   |
 | Libraries / version | **MVDS Core** (library key in `rules/figma.mdc`) — `Badge` and `Switch` imported by key, the same two instances the `stitch-brushes` panel used. MVDS's `Tokens` collection is pinned to its **Dark** mode on each panel, matching `.mvds-theme`  |
 | Local variables     | `hub tokens` collection on `00 Components` — 11 colours converted from the oklch declarations in `app/globals.css`; panel and text fills are bound to them rather than hardcoded                                                                  |
 | Code Connect        | No mappings to update — no component is added, changed or renamed                                                                                                                                                                                 |
@@ -60,11 +60,38 @@ changed>` — never an edit to an approved page.
 
 ### Fidelity check
 
-The as-is frame was verified against production rather than assumed. The
-file badge reads `#262626` on `#fafafa` and the checked switch is a
-`#e5e5e5` track with a `#0a0a0a` knob — computed-style values read off
-`labs.beckharrisdesign.com/svg-to-stitch`, which is what caught the
-imported instances resolving MVDS's **Light** mode on import.
+The first as-is frame was rejected by the founder — "this figma doesn't
+match the current ui — especially the key value pairs with dropdowns or
+toggles". It had been built by reading the JSX, which got the
+composition wrong. The rebuild measures the running page instead:
+element boxes, font sizes, radii and computed colours pulled off
+`labs.beckharrisdesign.com/svg-to-stitch`, then reproduced.
+
+What reading the code missed, and measuring caught:
+
+| Element             | Assumed                      | Actual                                                          |
+| ------------------- | ---------------------------- | --------------------------------------------------------------- |
+| **Design size** row | label left, control right    | **wraps** — label on its own line, 199 px select beneath        |
+| Select trigger      | small pill, no affordance    | 32 px tall, radius 10, white @ 4.5%, **chevron** right          |
+| Sew-order rows      | text rows                    | full-width 44 px buttons, radius 10, 16 px side padding         |
+| Export buttons      | side by side, both secondary | **full width, stacked**; DST the light primary, EXP secondary   |
+| Labels              | 13 px regular                | 14 px medium (`Label`); stats 14 px regular (`CardDescription`) |
+| Stat badges         | solid fill                   | neutral at **15%** alpha                                        |
+
+`SelectRow` is `Inline … wrap`, so whether a row wraps depends on whether
+its label and control fit in 266 px — which is why **Design size** wraps
+and **Fabric** does not. That is emergent behaviour that reading the
+component could not have revealed.
+
+The imported MVDS `Badge` and `Switch` also resolved the library's
+**Light** mode on import — the switch rendered a dark track where
+production renders a light one. Both panels now pin `Tokens` to **Dark**:
+file badge `#262626` on `#fafafa`, checked switch `#e5e5e5` track with a
+`#0a0a0a` knob, matching the measured values.
+
+The clipped composition on sew-order row 1 is **not** a drawing error —
+production clips it the same way (`whiteSpace: nowrap`, no horizontal
+scroll). The frame reproduces the bug rather than quietly fixing it.
 
 ## Decisions
 
