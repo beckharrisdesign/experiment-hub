@@ -581,3 +581,178 @@ export function extractPolylines(
   }
   return out.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
+
+// ---------------------------------------------------------------------------
+// Declared physical size
+//
+// Size is its own channel, not a StitchDirective type: it describes the
+// document, not how a shape sews, so it must not enter the stitch cascade
+// where it could shadow a shape's own tag. It resolves **outermost-first** —
+// the outer element is the containing block, per the CSS model the tag
+// vocabulary follows.
+// ---------------------------------------------------------------------------
+
+/** A size declared in the design file, with the box it was declared on. */
+export interface DeclaredSize {
+  /** Physical width of the tagged element's box, in mm. */
+  widthMm: number;
+  /** The system it was written in, so the readout can speak it back. */
+  unit: "mm" | "in";
+  /** The tagged element's box in user units — the design's extent. */
+  box: { minX: number; minY: number; maxX: number; maxY: number };
+  /** Source layer name, for error messages. */
+  label: string;
+}
+
+const SIZE_RE = /^st-size$/;
+const MM_PARAM_RE = /^w(\d+)$/;
+const IN_PARAM_RE = /^in(\d+)$/;
+
+/** Parse an `st-size` declaration off an element's id, if it carries one. */
+function ownSize(el: Element): { widthMm: number; unit: "mm" | "in"; label: string } | null {
+  const id = el.getAttribute("id");
+  if (!id || !id.includes("st-size")) return null;
+  const tokens = id.split(/[\s_]+/);
+  if (!tokens.some((t) => SIZE_RE.test(t))) return null;
+  const label = id.replace(/_/g, " ");
+  let mm: number | null = null;
+  let inches: number | null = null;
+  for (const token of tokens) {
+    const m = MM_PARAM_RE.exec(token);
+    if (m) mm = Number(m[1]) / 10;
+    const i = IN_PARAM_RE.exec(token);
+    if (i) inches = (Number(i[1]) / 100) * 25.4;
+  }
+  if (mm !== null && inches !== null) {
+    throw new Error(
+      `"${label}" declares both a metric and an imperial size — use one of w (mm ×10) or in (inches ×100), not both.`,
+    );
+  }
+  if (mm !== null) return { widthMm: mm, unit: "mm", label };
+  if (inches !== null) return { widthMm: inches, unit: "in", label };
+  throw new Error(
+    `"${label}" is tagged st-size but declares no width — add w<n> for millimetres ×10 (w635 = 63.5 mm) or in<n> for inches ×100 (in350 = 3.5 in).`,
+  );
+}
+
+/** A CSS length in user units, honouring physical units. Null when unusable. */
+function lengthToUser(raw: string | null): number | null {
+  if (!raw) return null;
+  const m = raw.trim().match(STROKE_WIDTH_RE);
+  if (!m) return null;
+  const value = parseFloat(m[1]) * (m[2] ? UNIT_TO_USER[m[2].toLowerCase()] : 1);
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+/** Physical width in mm from a root `width` carrying a real unit, if any. */
+function rootPhysicalWidthMm(root: Element): { widthMm: number; unit: "mm" | "in" } | null {
+  const raw = root.getAttribute("width");
+  if (!raw) return null;
+  const m = raw.trim().match(STROKE_WIDTH_RE);
+  if (!m || !m[2]) return null; // bare numbers are user units, not a declaration
+  const unit = m[2].toLowerCase();
+  const inUser = parseFloat(m[1]) * UNIT_TO_USER[unit];
+  return { widthMm: (inUser / UNIT_TO_USER.mm) * 1, unit: unit === "in" ? "in" : "mm" };
+}
+
+/** The box of an element, in user units, or null when it has none to read. */
+function elementBox(
+  el: Element,
+  matrix: Matrix,
+  byId: Map<string, Element>,
+): { minX: number; minY: number; maxX: number; maxY: number } | null {
+  const tag = el.tagName.toLowerCase();
+  if (tag === "svg") {
+    const viewBox = el.getAttribute("viewBox");
+    if (viewBox) {
+      const parts = viewBox.trim().split(/[\s,]+/).map(Number);
+      if (parts.length === 4 && parts.every((n) => Number.isFinite(n))) {
+        return { minX: parts[0], minY: parts[1], maxX: parts[0] + parts[2], maxY: parts[1] + parts[3] };
+      }
+    }
+    const w = lengthToUser(el.getAttribute("width"));
+    const h = lengthToUser(el.getAttribute("height"));
+    if (w && h) return { minX: 0, minY: 0, maxX: w, maxY: h };
+    return null;
+  }
+  // A frame that clips its contents carries its box as a clipPath rect —
+  // the only place a group's own size survives a Figma export.
+  const clip = el.getAttribute("clip-path");
+  const ref = clip && /^url\(#(.+)\)$/.exec(clip.trim());
+  if (ref) {
+    const clipEl = byId.get(ref[1]);
+    const rect = clipEl && clipEl.querySelector("rect");
+    if (rect) {
+      const x = Number(rect.getAttribute("x") ?? 0);
+      const y = Number(rect.getAttribute("y") ?? 0);
+      const w = Number(rect.getAttribute("width"));
+      const h = Number(rect.getAttribute("height"));
+      if ([x, y, w, h].every((n) => Number.isFinite(n)) && w > 0 && h > 0) {
+        const corners: Point[] = [
+          apply(matrix, { x, y }),
+          apply(matrix, { x: x + w, y }),
+          apply(matrix, { x, y: y + h }),
+          apply(matrix, { x: x + w, y: y + h }),
+        ];
+        return {
+          minX: Math.min(...corners.map((p) => p.x)),
+          minY: Math.min(...corners.map((p) => p.y)),
+          maxX: Math.max(...corners.map((p) => p.x)),
+          maxY: Math.max(...corners.map((p) => p.y)),
+        };
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Find the document's declared size: the outermost `st-size` tag, or a root
+ * carrying real physical units. Returns null when nothing is declared.
+ */
+export function findDeclaredSize(doc: Document): DeclaredSize | null {
+  const root = doc.documentElement;
+  if (!root) return null;
+  const byId = new Map<string, Element>();
+  for (const el of Array.from(doc.querySelectorAll("[id]"))) {
+    const id = el.getAttribute("id");
+    if (id && !byId.has(id)) byId.set(id, el);
+  }
+
+  let found: DeclaredSize | null = null;
+  const visit = (el: Element, matrix: Matrix) => {
+    const m = multiply(matrix, parseTransform(el.getAttribute("transform")));
+    const declared = ownSize(el);
+    if (found && declared) {
+      // Sizing a subtree is not supported. Ignoring the inner tag would hand
+      // back a plausible design at the wrong scale, which is the silent
+      // fallback this whole contract exists to remove.
+      throw new Error(
+        `"${declared.label}" declares a size inside "${found.label}", which already declares one. Only one st-size per file — nesting them is not supported.`,
+      );
+    }
+    if (found) return;
+    if (declared) {
+      const box = elementBox(el, m, byId);
+      if (!box) {
+        throw new Error(
+          `"${declared.label}" declares a size, but its box cannot be read. A group only carries one when it clips its contents — turn on clip content, or move the tag to the frame that does.`,
+        );
+      }
+      found = { ...declared, box };
+    }
+    for (const child of Array.from(el.children)) visit(child, m);
+  };
+  visit(root, IDENTITY);
+
+  if (found) return found;
+
+  // No tag: honour real physical units on the root, which SVG supports
+  // natively even though design tools rarely emit them.
+  const physical = rootPhysicalWidthMm(root);
+  if (physical) {
+    const box = elementBox(root, IDENTITY, byId);
+    if (box) return { ...physical, box, label: "svg root" };
+  }
+  return null;
+}

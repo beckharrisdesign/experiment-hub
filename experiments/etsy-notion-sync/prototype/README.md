@@ -187,7 +187,7 @@ default to `STORE_BACKEND=sqlite` (`data/etsy_history.sqlite3`).
 
 ## Guardrails recap
 
-- Etsy client is GET-only; there is no code path that writes to Etsy.
+- Etsy client (`etsy_api.py`) is GET-only; capture and sync have no code path that writes to Etsy. The sole writer is `apply_listing_copy.py` — manual-only, dry-run by default, interactive confirmation, protected/control listings refused.
 - `DRY_RUN=true` is the default for the Notion step.
 - Quota headers are read on every response; the run pauses below
   `QUOTA_SAFETY_FLOOR` (default 10%) and resumes next cycle.

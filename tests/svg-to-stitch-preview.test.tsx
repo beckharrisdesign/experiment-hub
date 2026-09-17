@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import StitchPreview from "@/app/svg-to-stitch/StitchPreview";
+import SewOrder, { motifBreakdown } from "@/app/svg-to-stitch/SewOrder";
 import { convertSvg } from "@/lib/svg-to-stitch/convert";
 
 // Two thread colors: a red line then a blue line.
@@ -256,5 +257,136 @@ describe("StitchPreview pan and zoom", () => {
     expect(svg.getAttribute("viewBox")).not.toBe(initial);
     fireEvent.doubleClick(svg);
     expect(svg.getAttribute("viewBox")).toBe(initial);
+  });
+});
+
+// One thread color carrying every brush in the library — the case that used
+// to overflow the sew-order row and clip the stitch count off the panel.
+// Ids avoid a leading "p<n>" token: the tag parser reads that as a pitch.
+const ALL_BRUSHES = [
+  "cross",
+  "cross",
+  "tick",
+  "tick",
+  "chain",
+  "chain",
+  "dot",
+  "bird",
+  "bean",
+];
+const SIX_BRUSH_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+${ALL_BRUSHES.map(
+  (b, i) =>
+    `  <line id="run${i}_st-brush-${b}" x1="0" y1="${i * 10 + 5}" x2="100" y2="${
+      i * 10 + 5
+    }" stroke="#204080" stroke-width="1" fill="none"/>`,
+).join("\n")}
+</svg>`;
+
+function sixBrushPlan() {
+  return convertSvg(SIX_BRUSH_SVG, {
+    targetWidthMm: 100,
+    stitchLengthMm: 2.5,
+  }).plan;
+}
+
+describe("sew-order motif breakdown", () => {
+  it("never lets a glyph separate from its run count", () => {
+    const text = motifBreakdown([
+      { name: "cross", runs: 2 },
+      { name: "bean", runs: 1 },
+    ]);
+    // Non-breaking space between glyph and count, so a wrap can't split them.
+    expect(text).toContain("\u00a02");
+    expect(text).not.toContain("✕ 2");
+    expect(text).toBe("✕\u00a02\u00a0· ▬\u00a01");
+  });
+
+  it("keeps each separator on the line of the motif it follows", () => {
+    const text = motifBreakdown([
+      { name: "cross", runs: 1 },
+      { name: "tick", runs: 1 },
+    ]);
+    // The only break opportunity is after the separator, never before it.
+    expect(text.split(" ")).toEqual(["✕\u00a01\u00a0·", "╱\u00a01"]);
+  });
+
+  it("falls back to the brush name when there is no glyph for it", () => {
+    expect(motifBreakdown([{ name: "loop", runs: 3 }])).toBe("loop\u00a03");
+  });
+});
+
+describe("SewOrder rows", () => {
+  it("keeps the stitch count out of the motif list when a thread carries every brush", () => {
+    const plan = sixBrushPlan();
+    render(<SewOrder plan={plan} />);
+
+    const motifs = screen.getByTestId("sew-order-motifs-0");
+    const stitches = screen.getByTestId("sew-order-stitches-0");
+
+    // All six motifs are listed...
+    expect(motifs).toHaveTextContent("✕ 2 · ╱ 2 · ◯ 2 · ● 1 · ∨ 1 · ▬ 1");
+    // ...and the stitch count is its own element on the row's first line,
+    // not the tail of the list that used to get clipped.
+    expect(stitches).toHaveTextContent(
+      `${plan.colorStats![0].stitches.toLocaleString()} sts`,
+    );
+    expect(motifs).not.toContainElement(stitches);
+    expect(motifs.textContent).not.toMatch(/sts/);
+  });
+
+  it("lets the motif line wrap instead of overflowing the panel", () => {
+    render(<SewOrder plan={sixBrushPlan()} />);
+    // The button preset sets whitespace-nowrap on its whole subtree, so the
+    // motif line has to opt back out or it clips again.
+    expect(screen.getByTestId("sew-order-motifs-0")).toHaveStyle({
+      whiteSpace: "normal",
+    });
+    // The stitch count is the one thing that must never wrap or shrink.
+    expect(screen.getByTestId("sew-order-stitches-0")).toHaveStyle({
+      whiteSpace: "nowrap",
+      flexShrink: "0",
+    });
+    // Wrapping is only half of it: the button size preset pins the height at
+    // 32px, so without height:auto a wrapped motif line spills out of the row
+    // and over the next one. jsdom has no layout to measure, so assert the
+    // property that buys the growth.
+    expect(
+      screen.getByTestId("sew-order-motifs-0").closest("button"),
+    ).toHaveStyle({ height: "auto" });
+  });
+
+  it("shows a stitch count with no motif line when a color has no brushes", () => {
+    render(<SewOrder plan={twoColorPlan()} />);
+    expect(screen.getByTestId("sew-order-stitches-0")).toBeInTheDocument();
+    expect(screen.queryByTestId("sew-order-motifs-0")).toBeNull();
+  });
+
+  it("stays plain for machine files, which carry no per-color stats", () => {
+    const plan = { ...twoColorPlan(), colorStats: undefined };
+    render(<SewOrder plan={plan} />);
+    expect(screen.getByText("#ff0000")).toBeInTheDocument();
+    expect(screen.queryByTestId("sew-order-stitches-0")).toBeNull();
+    expect(screen.queryByTestId("sew-order-motifs-0")).toBeNull();
+  });
+
+  it("toggles the selected color when a row is clicked", () => {
+    const onSelectColor = vi.fn();
+    const { rerender } = render(
+      <SewOrder plan={twoColorPlan()} onSelectColor={onSelectColor} />,
+    );
+    const rows = screen.getAllByRole("button");
+    fireEvent.click(rows[1]);
+    expect(onSelectColor).toHaveBeenLastCalledWith(1);
+
+    rerender(
+      <SewOrder
+        plan={twoColorPlan()}
+        selectedColor={1}
+        onSelectColor={onSelectColor}
+      />,
+    );
+    fireEvent.click(screen.getAllByRole("button")[1]);
+    expect(onSelectColor).toHaveBeenLastCalledWith(null);
   });
 });

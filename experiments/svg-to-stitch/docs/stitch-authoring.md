@@ -8,7 +8,7 @@ records:
 > able to use much more powerful editing software and have my tools
 > interpret that standard format properly." (founder)
 
-Stitch Check should read *declared intent* from the design file, the way
+Stitch Check should read _declared intent_ from the design file, the way
 LightBurn reads layer colors as machine operations. Guessing stitch types
 from geometry is a courtesy for un-prepped files, never the architecture.
 
@@ -25,7 +25,7 @@ from geometry is a courtesy for un-prepped files, never the architecture.
 3. **Only channels that survive export.** A directive is useless if the
    exporter strips it. The contract uses what Figma reliably writes into
    SVG: **layer names** (exported as `id` when "Include ID" is on),
-   geometry, stroke width, and document order. Colors are *never*
+   geometry, stroke width, and document order. Colors are _never_
    directives — color means thread color, period (unlike the laser
    workflow, where color is free to mean an operation).
 4. **Stitch decisions are physical.** Densities, widths, and lengths are
@@ -35,7 +35,7 @@ from geometry is a courtesy for un-prepped files, never the architecture.
    the layer stack reads. No reordering magic beyond same-color grouping,
    which the preview must always show.
 6. **The preview never lies.** Every shape shows which rule produced its
-   stitches — *declared* or *inferred* — so a prepped file is verifiably
+   stitches — _declared_ or _inferred_ — so a prepped file is verifiably
    deterministic and an un-prepped one is honestly labeled.
 
 ## The directive channel: layer-name tags
@@ -47,33 +47,45 @@ Anything without a tag falls back to today's heuristics.
 
 A tag names the stitch type, optionally followed by parameters:
 
-| Tag | Sews as | Parameters (mm unless noted) |
-| --- | --- | --- |
-| `st-run` | running stitch along the path | `l25` stitch length ×0.1 (2.5 mm) |
-| `st-bean` | bean stitch (each segment ×3) | `l25` |
-| `st-satin` | two-rail satin (stroke width or ribbon rails) | `d4` density ×0.1 (0.4 mm) |
-| `st-tatami` | tatami fill | `a45` angle °, `d4` density ×0.1 |
-| `st-brush-<name>` | motif brush stamped along the path | `p25` pitch ×0.1 (2.5 mm) |
-| `st-skip` | not sewn — guides, annotations, hoop marks | — |
+| Tag               | Sews as                                                               | Parameters (mm unless noted)                             |
+| ----------------- | --------------------------------------------------------------------- | -------------------------------------------------------- |
+| `st-run`          | running stitch along the path                                         | `l25` stitch length ×0.1 (2.5 mm)                        |
+| `st-bean`         | bean stitch (each segment ×3)                                         | `l25`                                                    |
+| `st-satin`        | two-rail satin (stroke width or ribbon rails)                         | `d4` density ×0.1 (0.4 mm)                               |
+| `st-tatami`       | tatami fill                                                           | `a45` angle °, `d4` density ×0.1                         |
+| `st-brush-<name>` | motif brush stamped along the path                                    | `p25` pitch ×0.1 (2.5 mm)                                |
+| `st-size`         | declares the design's physical size (on the tagged element's own box) | `w635` mm ×10 (63.5 mm), or `in350` inches ×100 (3.5 in) |
+| `st-skip`         | not sewn — guides, annotations, hoop marks                            | —                                                        |
 
 Built-in brushes (from the founder's Figma stitch-brush explorations),
 each stamped in the path's local tangent/normal frame so motifs follow
 curves like hand stitching. Pitch range 1.0–10.0 mm (`p10`–`p100`):
 
-| Brush | Motif | Default pitch |
-| --- | --- | --- |
-| `st-brush-cross` | ✕ cross-stitch pairs | 3.0 mm |
-| `st-brush-tick` | ╱ angled ticks | 2.5 mm |
-| `st-brush-chain` | ◯ linked loops | 3.0 mm |
-| `st-brush-dot` | ● compact dot clusters | 2.0 mm |
-| `st-brush-bird` | ∨ bird tracks | 3.0 mm |
-| `st-brush-bean` | ▬ tripled bean segments | 2.5 mm |
+| Brush            | Motif                   | Default pitch |
+| ---------------- | ----------------------- | ------------- |
+| `st-brush-cross` | ✕ cross-stitch pairs    | 3.0 mm        |
+| `st-brush-tick`  | ╱ angled ticks          | 2.5 mm        |
+| `st-brush-chain` | ◯ linked loops          | 3.0 mm        |
+| `st-brush-dot`   | ● compact dot clusters  | 2.0 mm        |
+| `st-brush-bird`  | ∨ bird tracks           | 3.0 mm        |
+| `st-brush-bean`  | ▬ tripled bean segments | 2.5 mm        |
 
 Examples as Figma layer names: `heart st-satin`, `veins st-run l20`,
 `background st-tatami a30`, `hoop guide st-skip`.
 
 Rules:
 
+- **The vocabulary is a cascade.** Tags inherit down the tree and a child's
+  own declaration wins for itself, as in CSS. The untagged fallback below is
+  the initial value. (Per-property _extend_ — a child changing one parameter
+  and keeping the rest — is not implemented yet; a child must restate the
+  whole tag.)
+- **`st-size` measures the tagged element, not the artwork.** A motif inset
+  in a frame stays inset: the frame's own box is the declared size, and the
+  height follows that box's proportions. The outermost declaration is the
+  document's size — the outer element is the containing block. A group only
+  has a readable box when it clips its contents; tagging one that doesn't
+  fails loudly rather than guessing from the artwork bounds.
 - The tag may appear anywhere in the name; the rest of the name is yours.
 - A tag on a **group** applies to every untagged child (children may
   override). `st-skip` prunes its whole subtree — guides don't sew.
@@ -93,26 +105,33 @@ come: `st-bean` as a standalone tag (the bean motif ships as
 `st-brush-bean`), declared-vs-inferred labeling in the preview, and
 reporting of unknown tags.
 
-## What this replaces, and when
+## The untagged fallback
 
-Today's pipeline infers: strokes → satin at their rendered width, floored
+A file that declares nothing sews by these rules — the cascade's initial
+value, and the only behaviour the panel used to let you override: strokes → satin at their rendered width, floored
 at 0.5 mm so design-tool hairlines still read as thread (over 10 mm falls
 back to a running line); narrow fill → satin (fixed-axis, then ribbon
 pairing); everything else → tatami.
-Under this contract that whole decision tree becomes the **untagged
-fallback**, and the preview labels its output "inferred". Tagged shapes
-bypass it entirely.
+That decision tree **is** the untagged fallback. Tagged shapes bypass it
+entirely, and nothing in the panel can change it: the three switches that
+used to (**Fill shapes**, **Satin narrow fills**, **Satin strokes**) were
+removed, along with the **Fill angle**, **Fill density** and **Design size**
+controls. A conversion is now reproducible from the file alone.
 
 Un-prepped files (bought art, quick tests) keep working exactly as they
 do now — the heuristics are good and staying. The difference is that a
-*prepped* file is deterministic: resize it, re-export it, and every shape
+_prepped_ file is deterministic: resize it, re-export it, and every shape
 sews the way its tag says, no surprises.
 
 ## Decisions (settled 2026-09-12)
 
 1. **Tag syntax:** `st-` + kebab parameters, as specified above.
-2. **Physical size:** panel only — artwork stays proportional, output
-   size is chosen per conversion. No size tags.
+2. **Physical size:** ~~panel only — artwork stays proportional, output
+   size is chosen per conversion. No size tags.~~ **Reversed 2026-09-17**
+   (founder: "lets let document dictate size not the tool"). Size is
+   declared in the file with `st-size`, in millimetres or inches, or by
+   real SVG physical units on the root. An undeclared file keeps the
+   63.5 mm default. Translating or resizing from the tool stays parked.
 3. **Satin over-range:** error loudly. A shape tagged `st-satin` that
    exceeds the 10 mm range anywhere is flagged in the preview and not
    guessed at — the fix happens in the design tool. Purest form of "the

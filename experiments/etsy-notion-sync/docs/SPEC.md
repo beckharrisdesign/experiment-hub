@@ -1,13 +1,13 @@
 # Spec: Etsy → Notion Inventory Sync + Historical Data Capture (v2)
 
 > Authored by Katy (2026-07-15). This is the build contract for the experiment.
-> Direction is one-way Etsy → Notion only; the system never writes to Etsy.
+> Direction is one-way Etsy → Notion only; the capture/sync system never writes to Etsy. The sole write path is the separately-gated, manual-only listing-edit writer (`apply_listing_copy.py`), which is not part of any scheduled run.
 
 Confirmed one more useful endpoint detail: Etsy also exposes `GET /v3/application/listings/{listing_id}/inventory` (`getListingInventory`), which returns per-variation data (`products`, `price_on_property`, `quantity_on_property`, `sku_on_property`, `readiness_state_on_property`) — this is the deepest level of field data Etsy exposes for a listing, so the spec below has the capture layer pull this too, not just the top-level listing fields.
 
 ## Goal
 
-Build a lightweight, scheduled system with two responsibilities: (1) keep a Notion "Inventory" database in sync with live Etsy shop listings (as before), and (2) capture a full, versioned historical record of shop data over time so the seller can do time-based analysis (price changes, stock depletion, view/favorite trends, listing lifecycle, etc.). Etsy is the source of truth; the system only ever reads from Etsy and writes to its own data store plus Notion. It never writes back to Etsy.
+Build a lightweight, scheduled system with two responsibilities: (1) keep a Notion "Inventory" database in sync with live Etsy shop listings (as before), and (2) capture a full, versioned historical record of shop data over time so the seller can do time-based analysis (price changes, stock depletion, view/favorite trends, listing lifecycle, etc.). Etsy is the source of truth; the capture/sync system only ever reads from Etsy and writes to its own data store plus Notion — it never writes back to Etsy. Listing edits happen only through the separately-gated manual writer (`apply_listing_copy.py`), never from capture or sync.
 
 ## Why this approach
 
@@ -64,7 +64,7 @@ Etsy's API Terms of Use prohibit screen-scraping or sidestepping the API. This d
 2. **Credentials only via environment variables**: `ETSY_API_KEY`, `ETSY_OAUTH_TOKEN`, `ETSY_SHOP_ID`, `NOTION_TOKEN`, `NOTION_INVENTORY_DB_ID`.
 3. **Respect rate limits explicitly**: read `x-remaining-today` / `x-remaining-this-second` on every response; if remaining quota drops below a safety threshold (e.g. 10%), pause the run and resume next scheduled cycle rather than push through; always honor `429` + `retry-after`.
 4. **Gentle pacing** between paginated calls (e.g. 200ms), since this is a scheduled batch job, not a poller.
-5. **One-directional only**: never call any Etsy write/update/delete endpoint from this system.
+5. **One-directional capture/sync**: capture.py, sync_notion.py and etsy_api.py never call any Etsy write/update/delete endpoint. The one exception is `apply_listing_copy.py` — a manual-only, interactively confirmed listing-edit writer that is never scheduled and refuses the experiment's protected/control listings.
 6. **Full audit logging** per run: endpoint called, records fetched, new fields detected, Notion diffs applied, and quota remaining at end of run.
 7. **Idempotent Notion sync step**: re-running with no upstream changes produces zero Notion writes (the historical capture step, being append-only, will still write a new "no change" snapshot each run — that's expected and desired for ancestry).
 

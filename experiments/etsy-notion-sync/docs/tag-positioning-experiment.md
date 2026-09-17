@@ -89,9 +89,20 @@ The 2026-09-08 session produced `docs/ETSY_LISTING_IMPROVEMENT_PLAN_2026-09.md` 
 
 ## Measurement
 
+> **The intervention is applied and verified — dates below are derived from snapshots, not memory.**
+>
+> **What was verified:** for all 13 listings, both the title **and** the 13-tag set in the `2026-09-15` snapshot match `prototype/listing_copy_2026-09.json` exactly — 13/13 titles and 13/13 tag sets, compared as sorted sets. The intervention is title + tags together, and both landed.
+>
+> **When:** the write is bounded, not timestamped. The last pre-intervention snapshot is **2026-09-14 11:31 UTC** (old copy) and the first post-intervention snapshot is **2026-09-15 10:52 UTC** (new copy), so the edits were made somewhere inside that ~23-hour window. Etsy's API exposes no write timestamp we captured, so:
+>
+> - **Baseline (the per-listing subtrahend): the 2026-09-14 snapshot** — the last clean pre-intervention observation of each listing's cumulative counters.
+> - **Day 0 (first post-intervention observation): the 2026-09-15 snapshot.** Windows are counted from here: **day 14 = 2026-09-29, day 30 = 2026-10-15.**
+>
+> **Reference aggregate (not the metric):** at the 2026-09-15 snapshot the shop stood at 337 views and 24 favorites across 27 active listings. This is context for the ledger, *not* the subtraction — the metric below is strictly per-listing, and a shop-wide total can never serve as a per-listing baseline.
+
 Two channels, both anchored to the day edits land:
 
-**Organic (automatic):** the daily sync snapshots title, tags, views, favorites — intervention date and every delta recorded with no new code. Etsy's `views` and `num_favorers` are **cumulative counters**, so every metric here is a window delta, never a raw total: for each listing, `views_delta = views(day 30) − views(day 0)` computed from `etsy_listing_snapshots` (per listing, max of the day's snapshots), where day 0 is the day edits land and day 30 closes the window; favorites likewise. Compare treatment vs control mean `views_delta`; day-14 sanity check uses the same subtraction; confirm protected listings' deltas didn't dip vs their baseline-30d deltas.
+**Organic (automatic):** the daily sync snapshots title, tags, views, favorites — intervention date and every delta recorded with no new code. Etsy's `views` and `num_favorers` are **cumulative counters**, so every metric here is a window delta, never a raw total: for each listing, `views_delta = views(day 30) − views(day 0)` computed from `etsy_listing_snapshots` (per listing, max of the day's snapshots), where day 0 is the 2026-09-15 snapshot (first post-intervention) and its pre-intervention subtrahend is the 2026-09-14 snapshot; day 30 closes the window on 2026-10-15; favorites likewise. Compare treatment vs control mean `views_delta`; day-14 sanity check uses the same subtraction; confirm protected listings' deltas didn't dip vs their baseline-30d deltas.
 
 **Ads (manual bookends):** at day 30, re-capture the same panels — the 7 baseline rows above plus each treatment listing's panel. Look for (a) targeted keywords shifting from generic terms toward each listing's new specific descriptor, and (b) CTR on treatment listings' keywords moving off 0%. Also re-export Search Analytics (Shop Manager → Stats → Search analytics) for the organic term list.
 
@@ -104,11 +115,12 @@ Two channels, both anchored to the day edits land:
 
 ## Steps
 
-1. ☐ Approve groups and plan
-2. ☐ Draft exact title + 13 tags for each treatment listing + fall-leaves seasonal tweak + mandala-shadow retitle (one review doc, approve before anything touches Etsy; Grandma listings reuse the PR #471 paste-ready copy as-is)
-3. ☐ Apply approved copy in Etsy Shop Manager (edit links in the treatment table above)
+1. ✅ Groups and plan approved 2026-09-14 (merged in #470)
+2. ✅ Copy drafted and approved 2026-09-14 — `tag-experiment-copy.md` (this directory) merged in #472, machine form in `prototype/listing_copy_2026-09.json` (13 listings: 6 treatment, fall-leaves seasonal, mandala-shadow retitle, 5 Grandma hygiene)
+3. ✅ Applied in the window 2026-09-14 11:31 UTC → 2026-09-15 10:52 UTC — verified: all 13 listings match the approved payload exactly in the 9/15 snapshot, titles 13/13 and tag sets 13/13. First post-intervention snapshot (day 0) = 2026-09-15.
 4. ☐ Toggle "digital products" off as not relevant in the ads panel for [4414949521](https://www.etsy.com/your/shops/me/listing-editor/edit/4414949521)
 5. ☐ Delete one duplicate draft bundle ([4522856685](https://www.etsy.com/your/shops/me/listing-editor/edit/4522856685) or [4522923804](https://www.etsy.com/your/shops/me/listing-editor/edit/4522923804))
 6. ✅ Baselines captured 2026-09-14 — Search Analytics terms + 7 ad-panel rows (tables above)
-7. ☐ Wait — sync measures daily; day-14 sanity check
-8. ☐ Day 30: re-capture ad panels + Search Analytics, run treatment-vs-control comparison, call the verdict
+7. ☐ Wait — sync measures daily; day-14 sanity check due 2026-09-29
+8. ☐ Day 30 (2026-10-15): re-capture ad panels + Search Analytics, run treatment-vs-control comparison, call the verdict.
+   This date is the **[2026-10-15 release](../../../docs/ETSY_RELEASE_2026-10-15.md)** — the readout gates everything else in it, including the catalog re-sectioning and the P4/P5 deferrals. Take the readout first.

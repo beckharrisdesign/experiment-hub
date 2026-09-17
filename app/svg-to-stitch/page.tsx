@@ -14,31 +14,38 @@ import {
   SelectValue,
   Spacer,
   Stack,
-  Switch,
 } from "@beckharrisdesign/mvds";
 import { convertSvg, type ConvertResult } from "@/lib/svg-to-stitch/convert";
 import { readMachineFile } from "@/lib/svg-to-stitch/read";
 import StitchPreview from "./StitchPreview";
+import SewOrder from "./SewOrder";
 
 type Source =
   | { name: string; kind: "svg"; text: string }
   | { name: string; kind: "machine"; format: "dst" | "exp"; bytes: Uint8Array };
 
-const SIZE_OPTIONS = [
-  { value: 50, label: "50 mm — small patch" },
-  { value: 63.5, label: "63.5 mm — 2.5 in patch" },
-  { value: 80, label: "80 mm" },
-  { value: 100, label: "100 mm — 4×4 in hoop" },
-  { value: 130, label: "130 mm — 5×7 in hoop" },
-  { value: 160, label: "160 mm — 6×10 in hoop" },
-  { value: 200, label: "200 mm — 8×8 in hoop" },
-  { value: 260, label: "260 mm" },
-  { value: 300, label: "300 mm" },
-];
-
 // Running-stitch length is fixed at the solid 2.5 mm default: the panel
 // only carries choices whose effect shows up in the design readout.
 const STITCH_LENGTH_MM = 2.5;
+
+// Used only when the design declares no size of its own — the standard patch.
+const DEFAULT_WIDTH_MM = 63.5;
+
+// The readout answers in the system the file was authored in: a design drawn
+// in inches reads back in inches. The tool offers no unit control, because the
+// file is what decides.
+function formatSize(size: {
+  widthMm: number;
+  heightMm: number;
+  unit: "mm" | "in";
+}): string {
+  if (size.unit === "in") {
+    const w = size.widthMm / 25.4;
+    const h = size.heightMm / 25.4;
+    return `${w.toFixed(2).replace(/\.?0+$/, "")} × ${h.toFixed(2).replace(/\.?0+$/, "")} in`;
+  }
+  return `${size.widthMm.toFixed(0)} × ${size.heightMm.toFixed(0)} mm`;
+}
 
 // Fabric swatches the stitches preview on. Black is the most common thread
 // color there is — on the app's near-black canvas a black-thread design is
@@ -62,8 +69,6 @@ function threadLuminance(hex: string): number {
     255
   );
 }
-const FILL_ANGLE_OPTIONS = [0, 30, 45, 60, 90, 135];
-const FILL_SPACING_OPTIONS = [0.35, 0.4, 0.5, 0.6, 0.8];
 
 function baseName(fileName: string): string {
   return fileName.replace(/\.(svg|dst|exp)$/i, "");
@@ -108,25 +113,6 @@ function download(bytes: Uint8Array, fileName: string) {
   URL.revokeObjectURL(url);
 }
 
-function SwitchRow({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-}) {
-  const id = `switch-${label.replace(/\W+/g, "-").toLowerCase()}`;
-  return (
-    <Inline gap={8} align="center" style={{ minHeight: 32 }}>
-      <Label htmlFor={id}>{label}</Label>
-      <Spacer />
-      <Switch id={id} checked={checked} onCheckedChange={onChange} />
-    </Inline>
-  );
-}
-
 // One-row select fields — label left, control right — per the founder's
 // dropdown pattern in the stitch-brushes design (Figma 02.1 Proposed).
 function SelectRow({
@@ -144,17 +130,6 @@ function SelectRow({
     </Inline>
   );
 }
-
-// Sew-order glyphs for the built-in brush motifs, so each thread color's
-// row can say what kind of stitching it carries at a glance.
-const BRUSH_GLYPHS: Record<string, string> = {
-  cross: "✕",
-  tick: "╱",
-  chain: "◯",
-  dot: "●",
-  bird: "∨",
-  bean: "▬",
-};
 
 function StatRow({ label, value }: { label: string; value: string }) {
   return (
@@ -185,12 +160,6 @@ function PanelHeading({ children }: { children: React.ReactNode }) {
 export default function SvgToStitchPage() {
   const [source, setSource] = useState<Source | null>(null);
   // Default to the standard 2.5 in patch (63.5 mm).
-  const [widthMm, setWidthMm] = useState(63.5);
-  const [fillMode, setFillMode] = useState<"fill" | "outline">("fill");
-  const [fillAngle, setFillAngle] = useState(45);
-  const [fillSpacing, setFillSpacing] = useState(0.4);
-  const [satinStrokes, setSatinStrokes] = useState(true);
-  const [satinFills, setSatinFills] = useState(true);
   const [fabric, setFabric] = useState("auto");
   const [dragOver, setDragOver] = useState(false);
   const [panelOpen, setPanelOpen] = useState(true);
@@ -226,17 +195,24 @@ export default function SvgToStitchPage() {
           source.bytes,
           baseName(source.name).toUpperCase(),
         );
-        return { ok: { plan: opened.plan, dst: opened.dst, exp: opened.exp } };
+        return {
+          ok: {
+            plan: opened.plan,
+            dst: opened.dst,
+            exp: opened.exp,
+            size: {
+              widthMm: opened.plan.stats.widthMm,
+              heightMm: opened.plan.stats.heightMm,
+              unit: "mm" as const,
+              declared: false,
+            },
+          },
+        };
       }
       return {
         ok: convertSvg(source.text, {
-          targetWidthMm: widthMm,
+          targetWidthMm: DEFAULT_WIDTH_MM,
           stitchLengthMm: STITCH_LENGTH_MM,
-          fillMode,
-          fillAngleDeg: fillAngle,
-          fillSpacingMm: fillSpacing,
-          satinStrokes,
-          satinFills,
           designName: baseName(source.name).toUpperCase(),
         }),
       };
@@ -247,15 +223,7 @@ export default function SvgToStitchPage() {
         ),
       };
     }
-  }, [
-    source,
-    widthMm,
-    fillMode,
-    fillAngle,
-    fillSpacing,
-    satinStrokes,
-    satinFills,
-  ]);
+  }, [source]);
 
   const isMachine = source?.kind === "machine";
 
@@ -389,28 +357,9 @@ export default function SvgToStitchPage() {
               </CardDescription>
             )}
 
-            {/* Document settings first — what am I making — then the
-                stitch toggles. Order follows the founder's 02.1 layout. */}
-            {!isMachine && (
-              <SelectRow label="Design size">
-                <Select
-                  value={String(widthMm)}
-                  onValueChange={(v) => setWidthMm(Number(v))}
-                >
-                  <SelectTrigger style={{ width: "auto" }}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SIZE_OPTIONS.map((o) => (
-                      <SelectItem key={o.value} value={String(o.value)}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </SelectRow>
-            )}
-
+            {/* Size is declared in the design file, not chosen here, so the
+                panel carries only Fabric — a preview backdrop that changes no
+                stitches. */}
             {plan && (
               <SelectRow label="Fabric">
                 <Select value={fabric} onValueChange={setFabric}>
@@ -428,88 +377,14 @@ export default function SvgToStitchPage() {
               </SelectRow>
             )}
 
-            {!isMachine && (
-              <>
-                {/* Everything stays visible — controls read as on/off. */}
-                <SwitchRow
-                  label="Fill shapes"
-                  checked={fillMode === "fill"}
-                  onChange={(on) => setFillMode(on ? "fill" : "outline")}
-                />
-                <SwitchRow
-                  label="Satin narrow fills"
-                  checked={satinFills}
-                  onChange={setSatinFills}
-                />
-                <SwitchRow
-                  label="Satin strokes (min 0.5 mm)"
-                  checked={satinStrokes}
-                  onChange={setSatinStrokes}
-                />
-              </>
-            )}
-
             {plan && plan.colors.length > 0 && (
               <Stack gap={4}>
                 <PanelHeading>Sew order</PanelHeading>
-                {plan.colors.map((color, i) => {
-                  // Per-color stitch composition: which brush motifs sew in
-                  // this thread, plus its stitch count. Machine files carry
-                  // no run kinds, so their rows stay plain.
-                  const cs = plan.colorStats?.[i];
-                  const composition = cs
-                    ? [
-                        ...cs.brushes.map(
-                          (b) => `${BRUSH_GLYPHS[b.name] ?? b.name} ${b.runs}`,
-                        ),
-                        `${cs.stitches.toLocaleString()} sts`,
-                      ].join(" · ")
-                    : null;
-                  return (
-                    <Button
-                      key={`${color}-${i}`}
-                      variant="ghost"
-                      aria-pressed={selectedColor === i}
-                      onClick={() =>
-                        setSelectedColor(selectedColor === i ? null : i)
-                      }
-                      style={{
-                        justifyContent: "flex-start",
-                        gap: 8,
-                        width: "100%",
-                        minHeight: 44,
-                        boxShadow:
-                          selectedColor === i
-                            ? "0 0 0 2px var(--ring)"
-                            : undefined,
-                      }}
-                    >
-                      <CardDescription>{i + 1}.</CardDescription>
-                      <span
-                        aria-hidden
-                        style={{
-                          display: "inline-block",
-                          width: 12,
-                          height: 12,
-                          borderRadius: 3,
-                          backgroundColor: color,
-                          border: "1px solid var(--border)",
-                        }}
-                      />
-                      <CardDescription>{color}</CardDescription>
-                      {composition && (
-                        <>
-                          <Spacer />
-                          <CardDescription
-                            style={{ fontSize: 12, whiteSpace: "nowrap" }}
-                          >
-                            {composition}
-                          </CardDescription>
-                        </>
-                      )}
-                    </Button>
-                  );
-                })}
+                <SewOrder
+                  plan={plan}
+                  selectedColor={selectedColor}
+                  onSelectColor={setSelectedColor}
+                />
               </Stack>
             )}
 
@@ -543,51 +418,8 @@ export default function SvgToStitchPage() {
               </Stack>
             )}
 
-            {!isMachine && (
-              <>
-                <SelectRow label="Fill angle">
-                  <Select
-                    value={String(fillAngle)}
-                    onValueChange={(v) => setFillAngle(Number(v))}
-                  >
-                    <SelectTrigger style={{ width: "auto" }}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FILL_ANGLE_OPTIONS.map((v) => (
-                        <SelectItem key={v} value={String(v)}>
-                          {v}°
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </SelectRow>
-
-                <SelectRow label="Fill density">
-                  <Select
-                    value={String(fillSpacing)}
-                    onValueChange={(v) => setFillSpacing(Number(v))}
-                  >
-                    <SelectTrigger style={{ width: "auto" }}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FILL_SPACING_OPTIONS.map((v) => (
-                        <SelectItem key={v} value={String(v)}>
-                          {v} mm
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </SelectRow>
-              </>
-            )}
-
-            {plan && (
-              <StatRow
-                label="Size"
-                value={`${plan.stats.widthMm.toFixed(0)} × ${plan.stats.heightMm.toFixed(0)} mm`}
-              />
+            {result && "ok" in result && (
+              <StatRow label="Size" value={formatSize(result.ok.size)} />
             )}
 
             {/* Export last — Design size moved up with the document
