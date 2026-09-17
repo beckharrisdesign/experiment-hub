@@ -64,11 +64,12 @@ changed>` — never an edit to an existing one.
 
 **Iterations on this change:**
 
-| Page                                               | Round | What it holds                                                                                                                                                                                            |
-| -------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `02 Proposed`                                      | v1    | The first proposal, built by reading the JSX — wrong on composition (rows that wrap, chevrons, stacked export buttons)                                                                                   |
-| `02.1 Proposed — rebuilt from measured production` | v2    | The same removals, drawn from geometry measured off the running app — **this is what this change ships**                                                                                                 |
-| `02.2 Proposed — size declared in the document`    | v3    | Also drops **Design size**, after the founder settled that the document declares physical size (`st-size`, mm ×10). Depends on a separate change; shown so the destination is visible while reviewing v2 |
+| Page                                                           | Round      | What it holds                                                                                                                                                                                                                                                    |
+| -------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `02 Proposed`                                                  | v1         | The first proposal, built by reading the JSX — wrong on composition (rows that wrap, chevrons, stacked export buttons)                                                                                                                                           |
+| `02.1 Proposed — rebuilt from measured production`             | v2         | The same removals, drawn from geometry measured off the running app                                                                                                                                                                                              |
+| `03.1 Proposed — size declared in the document`                | v3         | Also removes **Design size**, after the founder settled that the document declares physical size (`st-size`, mm ×10). Numbering continues past `03`, which holds the decision-flow diagram                                                                       |
+| `03.2 Proposed — file row on the input pattern, brand buttons` | v4, latest | Founder edits to the file picker carried forward: the filename reads as an input and **Replace** as a button, both on the label-and-control pattern the other rows use. The primary button treatment adopts the brand green, captured as a `brand-primary` token |
 
 The convention was briefly broken: when v1 was rejected, its page was
 cleared and rebuilt in place instead of a new page being added. That is
@@ -126,10 +127,30 @@ scroll). The frame reproduces the bug rather than quietly fixing it.
 4. **No new components.** Everything in the proposed frame already
    exists; the change is subtraction.
 
-### Latest round — `03.1`
+### Latest round — `03.2`
 
-Size moved into scope, so `03.1` is the current proposal, not a preview
-of a later one: 968 px → 728 px → 655 px.
+`03.1` moved size into scope: 968 px → 728 px → 655 px. `03.2` then
+reworks the file picker and the button treatment, from founder edits made
+directly on `03.1`.
+
+![Panel with the file row on the input pattern](assets/proposed-03-2-panel.png)
+
+The file row now takes the same shape as every other field — a label,
+then its control — with the filename rendered as an input and **Replace**
+as a solid button, rather than a badge sitting beside a quiet one. The
+primary button treatment takes the brand green (`#0a7e3a`), captured as a
+`brand-primary` variable in the `hub tokens` collection so it is a token
+and not a literal. Secondary (**Download EXP**) is untouched.
+
+Two things flagged rather than assumed:
+
+- **Two primaries.** **Replace** and **Download DST** are both brand
+  green now. Replace is a utility; the download is the point of the
+  tool. One of them probably wants to be secondary.
+- **Replace is shortened** from "Replace file" so it fits beside the
+  filename. If the full label matters, that row wraps instead.
+
+The composition before those edits, with size newly out of the panel:
 
 ![Panel with no legacy controls](assets/proposed-03-1-panel.png)
 
@@ -141,8 +162,8 @@ affordance: the **DESIGN** section already reports it, which is the right
 treatment once it is an outcome of the document rather than an input to
 the tool.
 
-**Nothing in the file is approved.** `02 Proposed`, `02.1` and `03.1` are
-all open rounds.
+**Nothing in the file is approved.** `02 Proposed`, `02.1`, `03.1` and
+`03.2` are all open rounds.
 
 ## Risks / Trade-offs
 
