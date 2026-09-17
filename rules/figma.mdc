@@ -142,6 +142,39 @@ Some changes need both. When they do, the numbering runs continuously **across**
 the files and the `design.md` Visual design table names each one and says which
 rounds live where.
 
+### File title convention (REQUIRED)
+
+**The change ID leads, and nothing precedes it.** A Figma file or board is titled
+with the change's directory name under `openspec/changes/`, verbatim:
+
+- `retire-umbrella-switches`
+- `etsy-ecosystem-map`
+
+No shared prefix — not `OpenSpec — …`, not `Change: …`. A common leading token is
+what makes a Recents list unscannable and defeats typeahead: everything sorts and
+reads the same, and the one word that identifies the file is pushed past where the
+title truncates. Whether it is a board or a design file is already carried by
+Figma's own icon, so the title does not repeat it.
+
+Two extensions:
+
+- **A change with two files in the same editor** disambiguates with a trailing
+  role: `retire-umbrella-switches — panel`, `retire-umbrella-switches — flow`.
+- **A board not scoped to one change** (a living diagram) takes its subject in the
+  same kebab-case, matching the spec or doc it mirrors — `etsy-ecosystem-map` for
+  `openspec/specs/ecosystem-map/`.
+
+The payoff is that the Figma title, the change directory, and the spec name are the
+same string, so moving between them needs no lookup table.
+
+**Get it right at creation — you cannot fix it later.** The title is settable only
+through `create_new_file`'s `fileName` parameter. `figma.root.name` is not writable
+(`use_figma` fails with *"Setting the document name is currently not supported"*),
+and it reads back as `"Document"` on every file, so an agent can neither rename a
+file nor audit what existing files are called. A mistitled file has to be renamed
+by hand in the Figma UI. Pass the change ID as `fileName` on the `create_new_file`
+call itself.
+
 ### File naming convention (REQUIRED)
 
 One rule holds in both editors: **every proposal iteration gets its own numbered
@@ -173,11 +206,12 @@ picture — carries four extras beyond the page-per-iteration rule. These are th
 conventions `openspec/specs/ecosystem-map/spec.md` already requires, written down
 here because that spec cites this file for them:
 
-- **Version pages, not round numbers.** `v5 — 2026-09-16 — design system layer named (CURRENT)`:
-  version, date, what changed, and `(CURRENT)` on the live one.
-- **An `Index` page** listing every iteration newest-first, as hyperlinks, with the
-  current version called out.
-- **A CURRENT banner** on the live page.
+- **Version pages, not round numbers.** `v5 — 2026-09-16 — design system layer named (current)`:
+  version, date, what changed, then `(current)` on the live page and `(superseded)`
+  on every earlier one. Lower case, as the ecosystem-map board has them.
+- **An `Index` page**, first in the page list, naming every iteration newest-first
+  as hyperlinks, with the current version called out.
+- **A current banner** on the live page.
 - **Archive banners** on superseded pages, linking back to the current one.
 
 Same invariant underneath: a new page per iteration, never edit a built page in
@@ -190,7 +224,7 @@ Record the exact page names + frame node IDs in the `design.md` Visual design ta
 but no frames, so record **page name + page node ID + the anchor section's node ID**
 — the form `etsy-ecosystem-map/design.md` already uses:
 
-> Page `v5 — 2026-09-16 — design system layer named (CURRENT)` (node `24:2`, anchor section `25:31`)
+> Page `v5 — 2026-09-16 — design system layer named (current)` (node `24:2`, anchor section `25:31`)
 
 Two columns have no board counterpart and are filled `N/A` **with the reason**, not
 left blank:
