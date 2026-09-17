@@ -11,7 +11,7 @@
 - **Who:** Katy, at the two moments the pull archive exists to serve — rewriting a listing, and deciding whether a product is worth making.
 - **Job:** See every keyword observation the shop has ever captured as one table she can sort and filter on any field, and tell at a glance which observations are current and which are stale.
 - **Done when:** every keyword CSV in `docs/pulls/` renders as one table; sort and filter work on every field; dropping a re-pull of the same seed months later adds its rows with no hand-editing and the table shows which observation supersedes which; and the hand-filtered nature of the exports is visible on the surface, so a missing keyword is never read as absence of demand.
-- **Not doing:** charts, scoring, recommendations, or anything that writes back to Etsy. No ingestion of the non-keyword pulls (rankings, statements, ads) into this table — they have different grains and belong to their own surfaces. No replacement for the pull notes: the table holds rows, the notes hold the reasoning.
+- **Not doing:** **pagination** — the whole corpus sits on one scrolling surface and sort/filter are the reduction. Also no charts, scoring, recommendations, or anything that writes back to Etsy. No ingestion of the non-keyword pulls (rankings, statements, ads) into this table — they have different grains and belong to their own surfaces. No replacement for the pull notes: the table holds rows, the notes hold the reasoning.
 
 ## Why
 
@@ -31,7 +31,11 @@ The re-pull case makes this worse rather than better. Ten CSVs are tractable by 
 
 **The corpus is explicitly a curated subset.** Katy's exports are filtered by hand to drop obviously overcrowded keywords, so the archive is not a census and the table must not imply one. Concretely: nothing computes "disappeared" or "fell to zero"; a keyword's coverage reads as *seen in 2 of 3 captures*, not as a gap; and the surface says the corpus is filtered at capture time. A keyword absent from a later pull is unexplained, not extinct — and a table that quietly treats those as the same thing would manufacture exactly the false conclusions this archive exists to prevent.
 
-**A hub route** renders it with sort and filter on every field.
+**Colour coding per column value.** Each numeric column bands its own value against MVDS semantic tokens — KD at ≤20 / 21–50 / >50 on `success` · `neutral` · `destructive`, and the same treatment for searches (volume), competition (crowding) and tag occurrences (saturation). Tokens rather than decoration, so a colour means something. The thresholds themselves are `design.md`'s problem.
+
+**Computed columns.** Fields derived from the corpus rather than read from a CSV, added as questions come up: Δ against the previous capture, searches ÷ competition, coverage (*seen in 2 of 3 captures*), and a **trademark flag** — roughly half the rows captured so far were unusable on trademark grounds, so surfacing it is worth a column rather than a footnote.
+
+**A hub route** renders it with sort and filter on every field, and no pagination.
 
 ## Capabilities
 
@@ -52,6 +56,26 @@ None. `docs/pulls/` conventions, `index.json` and the pull notes are unchanged; 
 - **The real implementation constraint:** MVDS 0.3.0 exports `Badge, Button, Card*, Checkbox, Container, Field, Grid, Inline, Label, Layer, MediaFrame, RadioGroup, Section, Select*, Spacer, Stack, Switch, Textarea` plus token constants — and **no Table**. So the table itself is semantic `<table>` markup on MVDS tokens, with MVDS components carrying everything around it (`Select` for the filters, `Badge` for staleness, `Field`/`Checkbox` for controls). That is not bespoke chrome; it is the one primitive the system does not ship. Whether the sort/filter *logic* uses a headless library is a smaller question for `design.md` — headless means no competing styling, so it does not reopen the design-system decision.
 - **Figma round 01 is built, and token-bound.** `keyword-explorer` (`pezlHOEjgdF1MUtYj7Jzbt`), page `02 Proposed`, frame `Proposed · Desktop 1024` (node `11:20`). The frame carries an **explicit MVDS `Dark` mode** and every value resolves through a variable: audited at 99 nodes — 63 fills, 3 strokes, 51 spacing values, 53 font sizes and 3 radii, **zero literals**. `01 Current state` is intentionally empty: there is no existing surface, the current state is opening ten CSVs by hand.
 - **What the binding pass corrected, and what it tells `design.md`:** the first build used hardcoded hub hex, invented type sizes (9/10/11/13px) and off-scale spacing (10/12/20/28). MVDS publishes three collections — `Tokens` (colour, radius, `Typography/text-*-size`), `Scales` (`Spacing/space-4…48`, breakpoints) and `Customize Here`. Its type ramp is **12 / 14 / 16 / 18 / 20 / 24**, so nothing below 12px exists: a dense table cannot be shrunk into the system, it has to be laid out at the system's smallest sizes. That is a layout constraint on the real surface, not a Figma detail, and it is why the columns are wider and the rows taller than the first attempt assumed.
+
+## Round 01 feedback — what changed and what stays deleted
+
+Katy worked directly on the frame. Recording it here so the next round does not re-add what she removed, and so the proposal rather than the Figma file stays the record.
+
+**Removed from the frame — do not reinstate:**
+
+| Removed | Note |
+|---|---|
+| The *“Curated subset — not a census”* caveat banner | The banner is gone; **the rule it stated is not.** The filtered-subset semantics stay in the `keyword-corpus` capability, where they constrain what may be computed. A banner was one way to surface it and Katy cut it; the constraint does not depend on that treatment. |
+| The footer summary line (*“83 rows · 10 seeds · 1 capture…”*) | Cut. |
+| The *Scope notes* block | Cut — written as annotation, and the proposal is the right home for it, which is where it now lives. |
+
+**What survives:** header, filter bar (seed / capture / status / search), and the table. The column rename to `FOUND VIA (QUERY)` and the KD colour bands both held.
+
+**Added by her feedback:** colour coding per column value, computed columns, no pagination — all folded into *What changes* above.
+
+**On the `Found via` column:** “seeds” was my coinage, not vocabulary from the data, and it did not read. Each CSV is named for the query typed into eRank (`eRank - Keyword Tool - halloween.csv`); the column says which of those queries surfaced a keyword and the tag-occurrence count reported *there*, which differs per query for the same keyword. Katy: *“an interesting idea — I might change how it appears, but the concept is one I'd keep around.”* So the relationship is kept and the presentation is open; `Found via` is a placeholder, not a proposal. **If that line was about a different idea, say which and I will move the note.**
+
+**Process, going forward:** feedback iterates *this document*. Round 02 gets drawn once there is something new to argue with, not once per comment — round 01 took three passes, which is two more than it should have.
 
 ## Optional links
 
