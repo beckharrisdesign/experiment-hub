@@ -192,6 +192,27 @@ function chooseRangeColumn(label: string) {
 }
 
 describe("KeywordTable — range filter", () => {
+  it("clears the bound when the range column changes, rather than carrying it over", () => {
+    // Bounds are per-column, not global state: switching from Ranked >= 8
+    // straight to Targeting must not silently apply that same bound to a
+    // column Katy never set a range on.
+    render(<KeywordTable rows={ROWS} />);
+    chooseRangeColumn("Ranked");
+    fireEvent.change(screen.getByLabelText("Range filter minimum"), {
+      target: { value: "8" },
+    });
+    expect(keywordOrder()).not.toContain("calm stitching"); // ranked 1, fails >= 8
+
+    chooseRangeColumn("Targeting");
+    expect(screen.getByLabelText("Range filter minimum")).toHaveValue(null);
+    const visible = keywordOrder();
+    // calm stitching has no Targeting value at all — if the stale >= 8 bound
+    // carried over, it would stay excluded; with the bound properly cleared,
+    // every row is visible again (no min/max set).
+    expect(visible).toContain("calm stitching");
+    expect(visible).toHaveLength(ROWS.length);
+  });
+
   it("narrows to rows within a minimum bound on Ranked", () => {
     render(<KeywordTable rows={ROWS} />);
     chooseRangeColumn("Ranked");

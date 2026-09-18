@@ -53,15 +53,18 @@ interface LatestSnapshotRow {
 
 /**
  * Per-server-instance cache, same posture as `app/etsy-listing-kit/api/evaluate/route.ts`'s
- * cache/throttle: `/keyword-explorer` is `force-dynamic` (design.md § Decisions
- * — Targeting must reflect the current tags on every request), so every
- * anonymous page load would otherwise trigger its own service-role Supabase
- * read with no guard against a crawler or a burst of refreshes. A short TTL
- * keeps that load bounded without meaningfully compromising "current" —
- * listing tags don't change on a sub-minute cadence, and this is still far
- * fresher than the corpus's own `ingest-pulls.py --apply` cadence. On
- * serverless this is per-warm-instance, not a global guarantee — acceptable
- * insurance, same caveat as the precedent it follows.
+ * cache/throttle: `/keyword-explorer` is `force-dynamic` (design.md § Decisions)
+ * so this read can't be baked in at build time — but that alone gives no
+ * upper bound on read *frequency*, and every anonymous page load would
+ * otherwise trigger its own service-role Supabase read with no guard against
+ * a crawler or a burst of refreshes. This cache is the frequency bound: up to
+ * 60 seconds of staleness traded for that protection (a real, documented
+ * trade-off — design.md § Risks/Trade-offs — not a claim that Targeting is
+ * live on every single request). Listing tags don't change on a sub-minute
+ * cadence in practice, and this is still far fresher than the corpus's own
+ * `ingest-pulls.py --apply` cadence. On serverless this is per-warm-instance,
+ * not a global guarantee — acceptable insurance, same caveat as the
+ * precedent it follows.
  *
  * `inFlight` coalesces concurrent callers onto the same read: the cache is
  * only populated *after* an awaited Supabase call completes, so without this,

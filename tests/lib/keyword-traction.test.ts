@@ -133,9 +133,10 @@ describe("withTargeting", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
-  // mockReset() above only touches the Supabase mock — without this, the
-  // console.error spy stays installed after this describe block finishes
-  // and can silence real errors in later suites sharing the same worker.
+  // clearAllMocks() above only clears call history, not the mocked
+  // implementation — the console.error spy would stay installed (still
+  // silencing real errors) after this describe block finishes without this
+  // separate restoreAllMocks() call.
   afterEach(() => {
     vi.restoreAllMocks();
   });

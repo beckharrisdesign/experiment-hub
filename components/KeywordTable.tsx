@@ -309,9 +309,14 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
             keyword filter's un-wrapped <input> rather than a new pattern. */}
         <Select
           value={rangeColumn}
-          onValueChange={(value) =>
-            setRangeColumn(value === NO_RANGE ? NO_RANGE : (value as RangeKey))
-          }
+          onValueChange={(value) => {
+            setRangeColumn(value === NO_RANGE ? NO_RANGE : (value as RangeKey));
+            // Bounds are per-column, not global: without this, switching
+            // from Ranked >= 10 straight to Targeting would silently keep
+            // applying >= 10 to Targeting, a filter Katy never set on it.
+            setRangeMin("");
+            setRangeMax("");
+          }}
         >
           <SelectTrigger
             size="sm"

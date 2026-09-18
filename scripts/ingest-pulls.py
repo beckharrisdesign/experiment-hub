@@ -402,6 +402,20 @@ def build_ranked_index(pulls: Path | None = None) -> dict[str, dict]:
     term, keeping the best (lowest) position seen for that listing across
     every archived pull -- a listing's position moving between captures is
     real signal, and the more favorable observation is the one worth keeping.
+
+    The dedup key is the exported "Shop/Listing" text -- in practice the
+    listing's full title (confirmed against the real archived CSVs; eRank's
+    Spotted on Etsy export carries no numeric listing ID). This is a known,
+    accepted limitation, not an oversight: a listing retitled between pulls
+    would read as two separate matches, and two distinct listings that happen
+    to share an identical title would incorrectly collapse into one. Neither
+    is fixable from this data source alone -- resolving a stable identity
+    would mean joining against the Etsy API by search term/position per pull,
+    well beyond this join's scope. Title collisions are the same order of
+    unlikely as two W&H listings sharing an exact title today, and a
+    retitle-driven "duplicate" is still a real listing that really ranked --
+    strictly worse than the pre-dedup behavior (every re-pull duplicating
+    every still-ranking listing), not a regression from it.
     """
     by_term: dict[str, dict[str, dict]] = {}
     for _capture, path in spotted_on_etsy_csvs(pulls):
