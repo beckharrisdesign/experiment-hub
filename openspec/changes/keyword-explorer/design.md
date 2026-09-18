@@ -23,7 +23,7 @@ Round 01 was drawn at proposal time per the schema; round 02.1 carries the table
 
 ## User flow / IA
 
-New route at `/keyword-explorer`, in the hub's existing `Sidebar` + `main` layout.
+**Root route: `labs.beckharrisdesign.com/keyword-explorer`**, in the hub's existing `Sidebar` + `main` layout. Top level, not nested under `/experiments/<slug>` — Katy, 2026-09-18: *"lets surface it at root … and it might end up an experiment but not today."*
 
 1. Land on the full corpus, sorted by searches descending, latest capture current.
 2. Reduce with the filter row — query, capture, status — or free-text on keyword.
@@ -68,6 +68,12 @@ One change per page, from here.
 **The 12px floor is a layout constraint, not a styling detail.** The ramp is Caption 12 / Small 14 / Body 16 / Body Large 18 / H4 20 / H3 24. A dense table cannot be shrunk into the system — it is laid out at the system's smallest sizes, which widens columns and heightens rows. Every early sketch assumed 9–11px and had to be redrawn.
 
 **MVDS has no 14px emphasis style, and the table wants one.** `Type/Small` is 400 only; the next weight up is `Type/Caption` at 500, but that is 12px and breaks the one-size rule. So the keyword column and the header row are now regular weight — visible in round 02.2, where the keyword lost the bold it had at 02.1. Three ways out: accept flat weight, use colour or a rule for hierarchy instead, or **add a `Type/Small Strong` to MVDS**. The third is the one that fixes it for every future table, and it is a change to the design system rather than to this surface. Flagged here rather than worked around with a local override, which would put us straight back to not using the system.
+
+**A root route today, an experiment later if it earns it.** `/keyword-explorer` sits at the top level beside `/prototypes` and `/documentation`, not under `/experiments/<slug>`. It is a tool Katy uses while writing listings, not a thing being tested — and `rules/openspec-workflow.mdc` already routes it as hub platform work. Three consequences worth naming before `tasks`:
+
+- **The sidebar's `navItems` is keyed by `ContentType`** (`"experiments" | "prototypes" | "documentation"`, `types/index.ts:114`). A linked nav entry means widening that union; the alternative is shipping the route unlinked and reachable by URL only. **Decided: widen it.** A surface nobody can find from the nav is a surface that gets rebuilt in six months by someone who forgot it exists.
+- **`scripts/site-map/routes.js` holds `STATIC_ROUTES`** and the route needs an entry there, or the Figma site map silently omits it.
+- **Promotion stays cheap.** If it later becomes an experiment, what moves is the route and a `data/experiments.json` entry — the corpus, the ingest step and the table component are untouched, because none of them know where they are mounted. Nothing here is built to make that migration easier; it is simply not made harder.
 
 **Table rules, standing.** Cells nowrap. **One type size throughout the table, header row included** — not one size for the body and another for headers. Small columns take only the width their widest value needs; the keyword column absorbs everything left over. No colour coding until asked.
 
