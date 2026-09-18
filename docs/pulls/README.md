@@ -142,7 +142,7 @@ Then write the note **with its front-matter** and re-run with `--apply` to refre
 | --- | --- | --- | --- | --- | --- |
 | 2026-09-17 | [Etsy dashboard title suggestions, captured 2026-09-17](2026-09-17-etsy-title-suggestions.md) | `content` | `shop` | — *(Drive)* | 🟢 fresh |
 | 2026-09-17 | [eRank "Spotted on Etsy", captured 2026-09-17](2026-09-17-erank-spotted-on-etsy.md) | `position` | `shop` | 1 × csv | 🟢 fresh |
-| 2026-09-17 | [eRank Keyword Tool, 10 seeds, captured 2026-09-17](2026-09-17-erank-keywords.md) | `demand` | `market` | 10 × csv | 🟢 fresh |
+| 2026-09-17 | [eRank Keyword Tool, 10 seeds, captured 2026-09-17](2026-09-17-erank-keywords.md) | `demand` | `market` | 27 × csv | 🟢 fresh |
 | 2026-09-16 | [Etsy monthly statements, Dec 2025 – Sep 2026](2026-09-16-etsy-statements.md) | `conversion`, `spend` | `shop` | — *(Drive)* | ⚪ permanent |
 | 2026-09-16 | [Etsy Ads dashboard, captured 2026-09-16](2026-09-16-etsy-ads-dashboard.md) | `spend`, `conversion` | `shop` | — *(Drive)* | 🟢 fresh |
 | 2026-09-15 | [eRank, 2026-09-15](2026-09-15-erank.md) | `demand`, `competition` | `market` | 1 × csv | 🟢 fresh |

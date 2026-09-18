@@ -5,16 +5,33 @@
       "date": "2026-09-17",
       "source": "erank",
       "queries": [
+        "alocasia",
+        "boo basket",
+        "car magnets",
+        "cottagecore stitch",
+        "cozy embroidery",
+        "cutecore",
         "embroidery designs",
         "embroidery font",
         "embroidery fonts",
+        "fall host gift",
         "font bundle",
+        "frankenstein",
+        "gift for embroidery",
+        "gift for knitter",
         "halloween",
+        "homedecor",
+        "needle minder",
         "paint by numbers",
         "pokemon",
         "poster",
         "procreate brushes",
-        "wall art"
+        "spooky embroidery designs",
+        "stamps procreate",
+        "tarot deck",
+        "wall art",
+        "werewolf",
+        "yarn bowl"
       ]
     }
   ],
@@ -43,6 +60,44 @@
       }
     },
     {
+      "keyword": "vtuber model",
+      "capture": "2026-09-17",
+      "searches": 20373,
+      "competition": 13367,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "homedecor",
+      "capture": "2026-09-17",
+      "searches": 16896,
+      "competition": 27152,
+      "kd": 10,
+      "found_via": [
+        {
+          "query": "homedecor",
+          "tag_occurrences": 69
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "minecraft",
       "capture": "2026-09-17",
       "searches": 13347,
@@ -56,6 +111,29 @@
         {
           "query": "pokemon",
           "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "tarot deck",
+      "capture": "2026-09-17",
+      "searches": 10476,
+      "competition": 29067,
+      "kd": 22,
+      "found_via": [
+        {
+          "query": "fall host gift",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "tarot deck",
+          "tag_occurrences": 43
         }
       ],
       "current": true,
@@ -92,7 +170,49 @@
       "kd": 24,
       "found_via": [
         {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        },
+        {
           "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "mtg",
+      "capture": "2026-09-17",
+      "searches": 8910,
+      "competition": 44426,
+      "kd": 35,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "hello kitty",
+      "capture": "2026-09-17",
+      "searches": 8558,
+      "competition": 38321,
+      "kd": 33,
+      "found_via": [
+        {
+          "query": "cutecore",
           "tag_occurrences": 1
         }
       ],
@@ -130,6 +250,14 @@
       "kd": 19,
       "found_via": [
         {
+          "query": "boo basket",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        },
+        {
           "query": "paint by numbers",
           "tag_occurrences": 1
         }
@@ -155,6 +283,44 @@
         {
           "query": "font bundle",
           "tag_occurrences": 51
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "kitchenanddining",
+      "capture": "2026-09-17",
+      "searches": 6888,
+      "competition": 72,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "homedecor",
+          "tag_occurrences": 6
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "homeware",
+      "capture": "2026-09-17",
+      "searches": 6168,
+      "competition": 8273,
+      "kd": 6,
+      "found_via": [
+        {
+          "query": "homedecor",
+          "tag_occurrences": 3
         }
       ],
       "current": true,
@@ -203,6 +369,67 @@
       }
     },
     {
+      "keyword": "sanrio",
+      "capture": "2026-09-17",
+      "searches": 5804,
+      "competition": 23109,
+      "kd": 30,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "desk organizer",
+      "capture": "2026-09-17",
+      "searches": 5263,
+      "competition": 43915,
+      "kd": 46,
+      "found_via": [
+        {
+          "query": "yarn bowl",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "cutecore",
+      "capture": "2026-09-17",
+      "searches": 5098,
+      "competition": 5467,
+      "kd": 2,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 46
+        },
+        {
+          "query": "homedecor",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "dice bag",
       "capture": "2026-09-17",
       "searches": 5093,
@@ -212,6 +439,29 @@
         {
           "query": "pokemon",
           "tag_occurrences": 1
+        },
+        {
+          "query": "yarn bowl",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "do it yourself",
+      "capture": "2026-09-17",
+      "searches": 5066,
+      "competition": 44548,
+      "kd": 47,
+      "found_via": [
+        {
+          "query": "cozy embroidery",
+          "tag_occurrences": 3
         }
       ],
       "current": true,
@@ -241,6 +491,105 @@
       }
     },
     {
+      "keyword": "alocasia",
+      "capture": "2026-09-17",
+      "searches": 4981,
+      "competition": 5576,
+      "kd": 2,
+      "found_via": [
+        {
+          "query": "alocasia",
+          "tag_occurrences": 56
+        },
+        {
+          "query": "stamps procreate",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "bad bunny",
+      "capture": "2026-09-17",
+      "searches": 4978,
+      "competition": 10596,
+      "kd": 16,
+      "found_via": [
+        {
+          "query": "needle minder",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "deck box",
+      "capture": "2026-09-17",
+      "searches": 4887,
+      "competition": 13823,
+      "kd": 23,
+      "found_via": [
+        {
+          "query": "tarot deck",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "plant stand",
+      "capture": "2026-09-17",
+      "searches": 4846,
+      "competition": 21557,
+      "kd": 32,
+      "found_via": [
+        {
+          "query": "homedecor",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "squishy",
+      "capture": "2026-09-17",
+      "searches": 4840,
+      "competition": 11262,
+      "kd": 18,
+      "found_via": [
+        {
+          "query": "boo basket",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "macrame wall hanging",
       "capture": "2026-09-17",
       "searches": 4571,
@@ -248,7 +597,137 @@
       "kd": 32,
       "found_via": [
         {
+          "query": "homedecor",
+          "tag_occurrences": 2
+        },
+        {
           "query": "wall art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "dead by daylight",
+      "capture": "2026-09-17",
+      "searches": 4388,
+      "competition": 4276,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "gyaru",
+      "capture": "2026-09-17",
+      "searches": 4307,
+      "competition": 3540,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "supernatural",
+      "capture": "2026-09-17",
+      "searches": 4191,
+      "competition": 24907,
+      "kd": 39,
+      "found_via": [
+        {
+          "query": "werewolf",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "fall host gift",
+      "capture": "2026-09-17",
+      "searches": 4188,
+      "competition": 8423,
+      "kd": 15,
+      "found_via": [
+        {
+          "query": "boo basket",
+          "tag_occurrences": 2
+        },
+        {
+          "query": "fall host gift",
+          "tag_occurrences": 91
+        },
+        {
+          "query": "spooky embroidery designs",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "capybara",
+      "capture": "2026-09-17",
+      "searches": 4146,
+      "competition": 35191,
+      "kd": 46,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 3
+        },
+        {
+          "query": "needle minder",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "250th anniversary",
+      "capture": "2026-09-17",
+      "searches": 4131,
+      "competition": 5010,
+      "kd": 4,
+      "found_via": [
+        {
+          "query": "homedecor",
           "tag_occurrences": 1
         }
       ],
@@ -329,6 +808,63 @@
       }
     },
     {
+      "keyword": "playmat",
+      "capture": "2026-09-17",
+      "searches": 3911,
+      "competition": 22512,
+      "kd": 38,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "begonia",
+      "capture": "2026-09-17",
+      "searches": 3892,
+      "competition": 6064,
+      "kd": 10,
+      "found_via": [
+        {
+          "query": "alocasia",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "twilight",
+      "capture": "2026-09-17",
+      "searches": 3849,
+      "competition": 36687,
+      "kd": 49,
+      "found_via": [
+        {
+          "query": "werewolf",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "procreate brushes",
       "capture": "2026-09-17",
       "searches": 3785,
@@ -336,7 +872,80 @@
       "kd": 55,
       "found_via": [
         {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        },
+        {
           "query": "font bundle",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "stamps procreate",
+          "tag_occurrences": 51
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "pastel goth",
+      "capture": "2026-09-17",
+      "searches": 3751,
+      "competition": 49647,
+      "kd": 56,
+      "found_via": [
+        {
+          "query": "cottagecore stitch",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "cutecore",
+          "tag_occurrences": 9
+        },
+        {
+          "query": "fall host gift",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "studio ghibli",
+      "capture": "2026-09-17",
+      "searches": 3619,
+      "competition": 15536,
+      "kd": 32,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "lamp shade",
+      "capture": "2026-09-17",
+      "searches": 3604,
+      "competition": 36387,
+      "kd": 50,
+      "found_via": [
+        {
+          "query": "homedecor",
           "tag_occurrences": 1
         }
       ],
@@ -367,6 +976,71 @@
       }
     },
     {
+      "keyword": "anthurium",
+      "capture": "2026-09-17",
+      "searches": 3538,
+      "competition": 6488,
+      "kd": 13,
+      "found_via": [
+        {
+          "query": "alocasia",
+          "tag_occurrences": 4
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "custom cutting board",
+      "capture": "2026-09-17",
+      "searches": 3520,
+      "competition": 43661,
+      "kd": 55,
+      "found_via": [
+        {
+          "query": "fall host gift",
+          "tag_occurrences": 3
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "boo basket",
+      "capture": "2026-09-17",
+      "searches": 3480,
+      "competition": 16100,
+      "kd": 33,
+      "found_via": [
+        {
+          "query": "boo basket",
+          "tag_occurrences": 49
+        },
+        {
+          "query": "fall host gift",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "frankenstein",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "pokeball",
       "capture": "2026-09-17",
       "searches": 3450,
@@ -376,6 +1050,25 @@
         {
           "query": "pokemon",
           "tag_occurrences": 6
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "fuck ice",
+      "capture": "2026-09-17",
+      "searches": 3438,
+      "competition": 11800,
+      "kd": 27,
+      "found_via": [
+        {
+          "query": "car magnets",
+          "tag_occurrences": 1
         }
       ],
       "current": true,
@@ -405,6 +1098,44 @@
       }
     },
     {
+      "keyword": "ghostface",
+      "capture": "2026-09-17",
+      "searches": 3385,
+      "competition": 9331,
+      "kd": 22,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "mtg playmat",
+      "capture": "2026-09-17",
+      "searches": 3321,
+      "competition": 7995,
+      "kd": 19,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "sylveon",
       "capture": "2026-09-17",
       "searches": 3298,
@@ -414,6 +1145,33 @@
         {
           "query": "pokemon",
           "tag_occurrences": 4
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "werewolf",
+      "capture": "2026-09-17",
+      "searches": 3283,
+      "competition": 21661,
+      "kd": 41,
+      "found_via": [
+        {
+          "query": "car magnets",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "frankenstein",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "werewolf",
+          "tag_occurrences": 32
         }
       ],
       "current": true,
@@ -443,6 +1201,52 @@
       }
     },
     {
+      "keyword": "needle minder",
+      "capture": "2026-09-17",
+      "searches": 3246,
+      "competition": 29016,
+      "kd": 48,
+      "found_via": [
+        {
+          "query": "cottagecore stitch",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "needle minder",
+          "tag_occurrences": 80
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "yarn bowl",
+      "capture": "2026-09-17",
+      "searches": 3214,
+      "competition": 4140,
+      "kd": 5,
+      "found_via": [
+        {
+          "query": "gift for knitter",
+          "tag_occurrences": 3
+        },
+        {
+          "query": "yarn bowl",
+          "tag_occurrences": 53
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "superman",
       "capture": "2026-09-17",
       "searches": 3212,
@@ -452,6 +1256,67 @@
         {
           "query": "pokemon",
           "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "noah kahan",
+      "capture": "2026-09-17",
+      "searches": 3194,
+      "competition": 606,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "car magnets",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "pendulum",
+      "capture": "2026-09-17",
+      "searches": 3163,
+      "competition": 17504,
+      "kd": 37,
+      "found_via": [
+        {
+          "query": "tarot deck",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "hoya",
+      "capture": "2026-09-17",
+      "searches": 3151,
+      "competition": 12431,
+      "kd": 30,
+      "found_via": [
+        {
+          "query": "alocasia",
+          "tag_occurrences": 4
+        },
+        {
+          "query": "homedecor",
+          "tag_occurrences": 2
         }
       ],
       "current": true,
@@ -488,8 +1353,39 @@
       "kd": 31,
       "found_via": [
         {
+          "query": "cozy embroidery",
+          "tag_occurrences": 2
+        },
+        {
           "query": "embroidery designs",
           "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "best selling items",
+      "capture": "2026-09-17",
+      "searches": 3122,
+      "competition": 20631,
+      "kd": 41,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "fall host gift",
+          "tag_occurrences": 3
+        },
+        {
+          "query": "homedecor",
+          "tag_occurrences": 2
         }
       ],
       "current": true,
@@ -523,6 +1419,82 @@
       }
     },
     {
+      "keyword": "occupational therapy",
+      "capture": "2026-09-17",
+      "searches": 3108,
+      "competition": 33454,
+      "kd": 52,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "wreath sash",
+      "capture": "2026-09-17",
+      "searches": 3030,
+      "competition": 8310,
+      "kd": 22,
+      "found_via": [
+        {
+          "query": "fall host gift",
+          "tag_occurrences": 3
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "hanging planter",
+      "capture": "2026-09-17",
+      "searches": 2998,
+      "competition": 12902,
+      "kd": 32,
+      "found_via": [
+        {
+          "query": "homedecor",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "goblincore",
+      "capture": "2026-09-17",
+      "searches": 2992,
+      "competition": 42728,
+      "kd": 58,
+      "found_via": [
+        {
+          "query": "homedecor",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "ghibli",
       "capture": "2026-09-17",
       "searches": 2952,
@@ -530,8 +1502,31 @@
       "kd": 44,
       "found_via": [
         {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        },
+        {
           "query": "procreate brushes",
           "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "custom socks",
+      "capture": "2026-09-17",
+      "searches": 2949,
+      "competition": 25647,
+      "kd": 47,
+      "found_via": [
+        {
+          "query": "boo basket",
+          "tag_occurrences": 1
         }
       ],
       "current": true,
@@ -561,6 +1556,48 @@
       }
     },
     {
+      "keyword": "frankenstein",
+      "capture": "2026-09-17",
+      "searches": 2895,
+      "competition": 40301,
+      "kd": 57,
+      "found_via": [
+        {
+          "query": "frankenstein",
+          "tag_occurrences": 27
+        },
+        {
+          "query": "gift for embroidery",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "weirdcore",
+      "capture": "2026-09-17",
+      "searches": 2876,
+      "competition": 31687,
+      "kd": 52,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 4
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "pokemon card",
       "capture": "2026-09-17",
       "searches": 2837,
@@ -580,6 +1617,25 @@
       }
     },
     {
+      "keyword": "cat crochet pattern",
+      "capture": "2026-09-17",
+      "searches": 2793,
+      "competition": 19089,
+      "kd": 42,
+      "found_via": [
+        {
+          "query": "yarn bowl",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "paint by number",
       "capture": "2026-09-17",
       "searches": 2764,
@@ -589,6 +1645,44 @@
         {
           "query": "paint by numbers",
           "tag_occurrences": 20
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "magnetic bookmark",
+      "capture": "2026-09-17",
+      "searches": 2743,
+      "competition": 21782,
+      "kd": 45,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "dried flower bouquet",
+      "capture": "2026-09-17",
+      "searches": 2699,
+      "competition": 15682,
+      "kd": 38,
+      "found_via": [
+        {
+          "query": "homedecor",
+          "tag_occurrences": 1
         }
       ],
       "current": true,
@@ -675,6 +1769,25 @@
       }
     },
     {
+      "keyword": "pussy",
+      "capture": "2026-09-17",
+      "searches": 2591,
+      "competition": 12972,
+      "kd": 35,
+      "found_via": [
+        {
+          "query": "needle minder",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "diaper bag",
       "capture": "2026-09-17",
       "searches": 2588,
@@ -683,6 +1796,48 @@
       "found_via": [
         {
           "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "ceramic travel mug",
+      "capture": "2026-09-17",
+      "searches": 2586,
+      "competition": 32129,
+      "kd": 55,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "philodendron",
+      "capture": "2026-09-17",
+      "searches": 2564,
+      "competition": 15541,
+      "kd": 39,
+      "found_via": [
+        {
+          "query": "alocasia",
+          "tag_occurrences": 16
+        },
+        {
+          "query": "stamps procreate",
           "tag_occurrences": 1
         }
       ],
@@ -703,6 +1858,101 @@
         {
           "query": "pokemon",
           "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "plush keychain",
+      "capture": "2026-09-17",
+      "searches": 2543,
+      "competition": 15047,
+      "kd": 39,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "custom magnet",
+      "capture": "2026-09-17",
+      "searches": 2542,
+      "competition": 45589,
+      "kd": 63,
+      "found_via": [
+        {
+          "query": "car magnets",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "jumping spider",
+      "capture": "2026-09-17",
+      "searches": 2524,
+      "competition": 5688,
+      "kd": 18,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "wall planter",
+      "capture": "2026-09-17",
+      "searches": 2518,
+      "competition": 14329,
+      "kd": 38,
+      "found_via": [
+        {
+          "query": "homedecor",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "america 250",
+      "capture": "2026-09-17",
+      "searches": 2512,
+      "competition": 9367,
+      "kd": 29,
+      "found_via": [
+        {
+          "query": "needle minder",
+          "tag_occurrences": 3
         }
       ],
       "current": true,
@@ -770,6 +2020,25 @@
       }
     },
     {
+      "keyword": "car magnet",
+      "capture": "2026-09-17",
+      "searches": 2475,
+      "competition": 46559,
+      "kd": 64,
+      "found_via": [
+        {
+          "query": "car magnets",
+          "tag_occurrences": 40
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "embroidery font",
       "capture": "2026-09-17",
       "searches": 2475,
@@ -801,12 +2070,115 @@
       }
     },
     {
+      "keyword": "cryptid",
+      "capture": "2026-09-17",
+      "searches": 2467,
+      "competition": 42764,
+      "kd": 62,
+      "found_via": [
+        {
+          "query": "werewolf",
+          "tag_occurrences": 3
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "personalizedgift",
+      "capture": "2026-09-17",
+      "searches": 2446,
+      "competition": 5113,
+      "kd": 16,
+      "found_via": [
+        {
+          "query": "fall host gift",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "care package",
+      "capture": "2026-09-17",
+      "searches": 2440,
+      "competition": 47244,
+      "kd": 64,
+      "found_via": [
+        {
+          "query": "boo basket",
+          "tag_occurrences": 5
+        },
+        {
+          "query": "fall host gift",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "showgirl",
+      "capture": "2026-09-17",
+      "searches": 2440,
+      "competition": 30294,
+      "kd": 55,
+      "found_via": [
+        {
+          "query": "car magnets",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "etsy sellers",
+      "capture": "2026-09-17",
+      "searches": 2425,
+      "competition": 25956,
+      "kd": 51,
+      "found_via": [
+        {
+          "query": "homedecor",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "halloween badge reel",
       "capture": "2026-09-17",
       "searches": 2413,
       "competition": 23585,
       "kd": 50,
       "found_via": [
+        {
+          "query": "boo basket",
+          "tag_occurrences": 1
+        },
         {
           "query": "halloween",
           "tag_occurrences": 0
@@ -826,6 +2198,10 @@
       "competition": 12827,
       "kd": 36,
       "found_via": [
+        {
+          "query": "homedecor",
+          "tag_occurrences": 1
+        },
         {
           "query": "wall art",
           "tag_occurrences": 0
@@ -858,6 +2234,63 @@
       }
     },
     {
+      "keyword": "diamond painting",
+      "capture": "2026-09-17",
+      "searches": 2350,
+      "competition": 38138,
+      "kd": 61,
+      "found_via": [
+        {
+          "query": "needle minder",
+          "tag_occurrences": 5
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "monstera albo",
+      "capture": "2026-09-17",
+      "searches": 2332,
+      "competition": 4561,
+      "kd": 15,
+      "found_via": [
+        {
+          "query": "alocasia",
+          "tag_occurrences": 8
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "sourdough starter",
+      "capture": "2026-09-17",
+      "searches": 2330,
+      "competition": 9455,
+      "kd": 30,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "sconce",
       "capture": "2026-09-17",
       "searches": 2295,
@@ -867,6 +2300,48 @@
         {
           "query": "wall art",
           "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "car magnets",
+      "capture": "2026-09-17",
+      "searches": 2293,
+      "competition": 47528,
+      "kd": 66,
+      "found_via": [
+        {
+          "query": "car magnets",
+          "tag_occurrences": 17
+        },
+        {
+          "query": "werewolf",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "stitch markers",
+      "capture": "2026-09-17",
+      "searches": 2293,
+      "competition": 23039,
+      "kd": 50,
+      "found_via": [
+        {
+          "query": "gift for knitter",
+          "tag_occurrences": 4
         }
       ],
       "current": true,
@@ -896,6 +2371,101 @@
       }
     },
     {
+      "keyword": "kilim rug",
+      "capture": "2026-09-17",
+      "searches": 2247,
+      "competition": 39547,
+      "kd": 62,
+      "found_via": [
+        {
+          "query": "homedecor",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "cat tower",
+      "capture": "2026-09-17",
+      "searches": 2230,
+      "competition": 2578,
+      "kd": 3,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 3
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "aquarius gift",
+      "capture": "2026-09-17",
+      "searches": 2219,
+      "competition": 14975,
+      "kd": 41,
+      "found_via": [
+        {
+          "query": "stamps procreate",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "client gifts",
+      "capture": "2026-09-17",
+      "searches": 2212,
+      "competition": 28667,
+      "kd": 56,
+      "found_via": [
+        {
+          "query": "fall host gift",
+          "tag_occurrences": 8
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "fairy lights",
+      "capture": "2026-09-17",
+      "searches": 2205,
+      "competition": 12606,
+      "kd": 38,
+      "found_via": [
+        {
+          "query": "homedecor",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "procreate stamps",
       "capture": "2026-09-17",
       "searches": 2168,
@@ -903,12 +2473,210 @@
       "kd": 63,
       "found_via": [
         {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        },
+        {
           "query": "font bundle",
           "tag_occurrences": 1
         },
         {
           "query": "procreate brushes",
           "tag_occurrences": 40
+        },
+        {
+          "query": "stamps procreate",
+          "tag_occurrences": 52
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "tarot card deck",
+      "capture": "2026-09-17",
+      "searches": 2165,
+      "competition": 24532,
+      "kd": 53,
+      "found_via": [
+        {
+          "query": "tarot deck",
+          "tag_occurrences": 20
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "oracle cards",
+      "capture": "2026-09-17",
+      "searches": 2164,
+      "competition": 27934,
+      "kd": 56,
+      "found_via": [
+        {
+          "query": "tarot deck",
+          "tag_occurrences": 12
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "ralph lauren",
+      "capture": "2026-09-17",
+      "searches": 2163,
+      "competition": 31208,
+      "kd": 58,
+      "found_via": [
+        {
+          "query": "cozy embroidery",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "bumper magnet",
+      "capture": "2026-09-17",
+      "searches": 2133,
+      "competition": 23982,
+      "kd": 53,
+      "found_via": [
+        {
+          "query": "car magnets",
+          "tag_occurrences": 11
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "cloth napkins",
+      "capture": "2026-09-17",
+      "searches": 2133,
+      "competition": 26899,
+      "kd": 55,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "tarot decks",
+      "capture": "2026-09-17",
+      "searches": 2111,
+      "competition": 28312,
+      "kd": 56,
+      "found_via": [
+        {
+          "query": "tarot deck",
+          "tag_occurrences": 7
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "custom photo magnet",
+      "capture": "2026-09-17",
+      "searches": 2099,
+      "competition": 10208,
+      "kd": 34,
+      "found_via": [
+        {
+          "query": "car magnets",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "blind box",
+      "capture": "2026-09-17",
+      "searches": 2093,
+      "competition": 6669,
+      "kd": 25,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "chunky knit blanket",
+      "capture": "2026-09-17",
+      "searches": 2066,
+      "competition": 11699,
+      "kd": 38,
+      "found_via": [
+        {
+          "query": "homedecor",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "agere",
+      "capture": "2026-09-17",
+      "searches": 2053,
+      "competition": 1118,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 1
         }
       ],
       "current": true,
@@ -945,6 +2713,10 @@
       "kd": 58,
       "found_via": [
         {
+          "query": "cutecore",
+          "tag_occurrences": 2
+        },
+        {
           "query": "wall art",
           "tag_occurrences": 0
         }
@@ -966,6 +2738,25 @@
         {
           "query": "pokemon",
           "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "textile wall art",
+      "capture": "2026-09-17",
+      "searches": 2016,
+      "competition": 43213,
+      "kd": 67,
+      "found_via": [
+        {
+          "query": "cutecore",
+          "tag_occurrences": 2
         }
       ],
       "current": true,
