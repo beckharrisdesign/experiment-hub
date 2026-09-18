@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import Sidebar from "@/components/Sidebar";
 import KeywordTable from "@/components/KeywordTable";
 import { loadKeywordCorpus } from "@/lib/keyword-corpus";
-import { computeTargeting } from "@/lib/keyword-traction";
-import { getLatestListingSnapshots } from "@/lib/etsy-sync";
-import type { KeywordRow } from "@/types";
+import { withTargeting } from "@/lib/keyword-traction";
 
 export const metadata: Metadata = {
   title: "Keyword Explorer — BHD Labs",
@@ -23,30 +21,6 @@ export const metadata: Metadata = {
  * (app/page.tsx, app/documentation/page.tsx, app/changes/page.tsx, …).
  */
 export const dynamic = "force-dynamic";
-
-/**
- * Targeting reads live listing tags, so a Supabase hiccup (or missing env
- * vars in a preview deploy) must degrade that one column, not the page.
- * Failure reads identically to "no match" — every row's `targeting` stays
- * `null` — and is logged server-side only (design.md § Decisions: no banner,
- * no partial-page error state).
- */
-export async function withTargeting(rows: KeywordRow[]): Promise<KeywordRow[]> {
-  try {
-    const snapshots = await getLatestListingSnapshots();
-    const targeting = computeTargeting(
-      rows.map((r) => r.keyword),
-      snapshots,
-    );
-    return rows.map((row) => ({
-      ...row,
-      targeting: targeting.get(row.keyword) ?? null,
-    }));
-  } catch (error) {
-    console.error("keyword-explorer: Targeting read failed", error);
-    return rows;
-  }
-}
 
 /**
  * A root route, not an experiment — today.

@@ -7,6 +7,7 @@ import {
   coverageLabel,
   demandRatio,
   loadKeywordCorpus,
+  toRankedMatch,
   totalTagOccurrences,
 } from "@/lib/keyword-corpus";
 
@@ -105,6 +106,29 @@ function readKeywordCsvViaScript(csvPath: string): {
         "spec = importlib.util.spec_from_file_location('ip', 'scripts/ingest-pulls.py')",
         "m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)",
         `print(json.dumps(m.read_keyword_csv(pathlib.Path(${JSON.stringify(csvPath)}))))`,
+      ].join("\n"),
+    ],
+    { cwd: REPO, encoding: "utf8" },
+  );
+  return JSON.parse(out);
+}
+
+/** Same idea as `readKeywordCsvViaScript`, for the Spotted on Etsy parser. */
+function readSpottedOnEtsyCsvViaScript(csvPath: string): {
+  search_term: string;
+  listing: string;
+  page: number;
+  position: number;
+}[] {
+  const out = execFileSync(
+    "python3",
+    [
+      "-c",
+      [
+        "import importlib.util, json, pathlib, sys",
+        "spec = importlib.util.spec_from_file_location('ip', 'scripts/ingest-pulls.py')",
+        "m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)",
+        `print(json.dumps(m.read_spotted_on_etsy_csv(pathlib.Path(${JSON.stringify(csvPath)}))))`,
       ].join("\n"),
     ],
     { cwd: REPO, encoding: "utf8" },
@@ -281,15 +305,21 @@ describe("a repeat capture extends the series", () => {
 });
 
 describe("Ranked: joined from erank-spotted-on-etsy, against a fixture", () => {
-  // A synthetic keyword export alongside the real Spotted on Etsy archive, in
-  // a temp dir so the real (currently non-overlapping) corpus is untouched.
-  // "snow globe" is a real Spotted on Etsy search term with two ranking
-  // listings (positions 8 and 38) — chosen specifically to exercise the
-  // best-of-many-matches rule, not invented data.
+  // Fully synthetic Spotted on Etsy export, not a copy of the real archived
+  // CSV: depending on live docs/pulls content would make this test brittle
+  // against a future re-pull changing "snow globe"'s real positions, or the
+  // file simply being renamed/superseded — the same class of brittleness
+  // already fixed elsewhere in this file. Every value here is owned by the
+  // test.
   const dir = mkdtempSync(path.join(tmpdir(), "kw-ranked-"));
-  copyFileSync(
-    path.join(PULLS, "2026-09-17-erank-spotted-on-etsy.csv"),
+  writeFileSync(
     path.join(dir, "2026-09-17-erank-spotted-on-etsy.csv"),
+    [
+      '"Shop/Listing","Search Term","Page","Position","Spotted By"',
+      '"Listing A","snow globe",2,38,"eRank Monitor"',
+      '"Listing B","snow globe",2,8,"eRank Monitor"',
+    ].join("\n"),
+    "utf8",
   );
   writeFileSync(
     path.join(dir, "2026-09-17-erank-keywords-test.csv"),
@@ -319,6 +349,77 @@ describe("Ranked: joined from erank-spotted-on-etsy, against a fixture", () => {
 
   it("leaves ranked null, never 0, for a keyword with no Spotted on Etsy match", () => {
     expect(unmatched.ranked).toBeNull();
+  });
+});
+
+describe("read_spotted_on_etsy_csv row-keeping, against a hand-built fixture", () => {
+  // The blank/non-positive guard exists specifically to protect the
+  // blank-never-zero invariant (a Copilot-round fix on this same PR) — a
+  // fixture that never exercises it would let a regression back in silently.
+  const dir = mkdtempSync(path.join(tmpdir(), "kw-spotted-fixture-"));
+  const fixture = path.join(
+    dir,
+    "2026-09-17-erank-spotted-on-etsy-fixturetest.csv",
+  );
+  writeFileSync(
+    fixture,
+    [
+      '"Shop/Listing","Search Term","Page","Position","Spotted By"',
+      '"Good listing","good term",1,7,"eRank Monitor"',
+      '"Blank position","blank position term",1,,"eRank Monitor"',
+      '"Blank page","blank page term",,5,"eRank Monitor"',
+      '"Zero position","zero position term",1,0,"eRank Monitor"',
+    ].join("\n"),
+    "utf8",
+  );
+
+  const rows = readSpottedOnEtsyCsvViaScript(fixture);
+
+  it("keeps a fully-numeric row", () => {
+    expect(rows.map((r) => r.search_term)).toContain("good term");
+  });
+
+  it("drops a row with a blank Position rather than defaulting it to 0", () => {
+    expect(rows.map((r) => r.search_term)).not.toContain("blank position term");
+  });
+
+  it("drops a row with a blank Page rather than defaulting it to 0", () => {
+    expect(rows.map((r) => r.search_term)).not.toContain("blank page term");
+  });
+
+  it("drops a row with a non-positive Position", () => {
+    expect(rows.map((r) => r.search_term)).not.toContain("zero position term");
+  });
+
+  it("keeps exactly the one valid row, no more and no fewer", () => {
+    expect(rows.map((r) => r.search_term)).toEqual(["good term"]);
+  });
+});
+
+describe("toRankedMatch — snake_case to camelCase at the loader boundary", () => {
+  // The checked-in corpus is all `ranked: null` today, so loadKeywordCorpus()
+  // alone never exercises the non-null branch of this mapping. Tested
+  // directly against a hand-built non-null raw row so a typo'd field or a
+  // dropped match can't hide behind an all-null corpus staying green.
+  it("maps every field through for a non-null match, dropping nothing", () => {
+    const result = toRankedMatch({
+      best: 8,
+      matches: [
+        { listing: "Listing A", page: 2, position: 38 },
+        { listing: "Listing B", page: 2, position: 8 },
+      ],
+    });
+    expect(result).toEqual({
+      best: 8,
+      matches: [
+        { listing: "Listing A", page: 2, position: 38 },
+        { listing: "Listing B", page: 2, position: 8 },
+      ],
+    });
+  });
+
+  it("passes null through as null", () => {
+    expect(toRankedMatch(null)).toBeNull();
   });
 });
 

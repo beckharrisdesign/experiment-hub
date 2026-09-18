@@ -1,5 +1,6 @@
 import type { RawListing } from "@/lib/etsy-scorecard";
-import type { TargetingMatch } from "@/types";
+import { getLatestListingSnapshots } from "@/lib/etsy-sync";
+import type { KeywordRow, TargetingMatch } from "@/types";
 
 /**
  * Which of a listing's (up to 13) tag slots each corpus keyword occupies,
@@ -46,4 +47,37 @@ export function computeTargeting(
     result.set(keyword, { best, matches });
   }
   return result;
+}
+
+/**
+ * Merges live Targeting onto corpus rows, degrading to blank (not stale or
+ * thrown) on a Supabase failure.
+ *
+ * Lives here rather than in `app/keyword-explorer/page.tsx`: a Next.js
+ * `page.tsx` is type-checked as a route module and may only export the
+ * default component plus recognised segment config (`metadata`, `dynamic`,
+ * …) — an arbitrary named export there fails Next's generated route-type
+ * check even though `tsc`/`vitest` are both clean on it.
+ *
+ * The catch path explicitly sets every row's `targeting` to `null` rather
+ * than returning `rows` unchanged — if a future caller ever passes rows that
+ * already carry a real Targeting value (e.g. a second merge, a cache), a
+ * failed read must still degrade to blank, not silently keep stale live
+ * data.
+ */
+export async function withTargeting(rows: KeywordRow[]): Promise<KeywordRow[]> {
+  try {
+    const snapshots = await getLatestListingSnapshots();
+    const targeting = computeTargeting(
+      rows.map((r) => r.keyword),
+      snapshots,
+    );
+    return rows.map((row) => ({
+      ...row,
+      targeting: targeting.get(row.keyword) ?? null,
+    }));
+  } catch (error) {
+    console.error("keyword-explorer: Targeting read failed", error);
+    return rows.map((row) => ({ ...row, targeting: null }));
+  }
 }

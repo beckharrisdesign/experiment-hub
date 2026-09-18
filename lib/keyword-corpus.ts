@@ -43,11 +43,19 @@ interface RawCorpus {
   rows?: RawRow[];
 }
 
-function toRankedMatch(raw: RawRankedMatch | null): RankedMatch | null {
-  if (!raw) return null;
+/**
+ * Exported so the snake_case -> camelCase mapping is directly testable at
+ * the loader boundary — the checked-in corpus is currently all `ranked:
+ * null`, so a bug in this mapping (a typo'd field, a dropped match) would
+ * otherwise stay invisible until a real pull overlaps the corpus.
+ */
+export function toRankedMatch(
+  input: RawRankedMatch | null,
+): RankedMatch | null {
+  if (!input) return null;
   return {
-    best: raw.best,
-    matches: raw.matches.map((m) => ({
+    best: input.best,
+    matches: input.matches.map((m) => ({
       listing: m.listing,
       page: m.page,
       position: m.position,

@@ -1,6 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { computeTargeting } from "@/lib/keyword-traction";
 import type { RawListing } from "@/lib/etsy-scorecard";
+import type { KeywordRow } from "@/types";
+
+const { mockGetLatestListingSnapshots } = vi.hoisted(() => ({
+  mockGetLatestListingSnapshots: vi.fn(),
+}));
+
+vi.mock("@/lib/etsy-sync", () => ({
+  getLatestListingSnapshots: mockGetLatestListingSnapshots,
+}));
 
 function listing(
   id: number,
@@ -93,5 +102,77 @@ describe("computeTargeting", () => {
       best: 1,
       matches: [{ listingId: 2, slot: 1 }],
     });
+  });
+});
+
+function keywordRow(overrides: Partial<KeywordRow>): KeywordRow {
+  return {
+    keyword: "snow globe",
+    capture: "2026-09-17",
+    searches: 210,
+    competition: 180,
+    kd: 22,
+    foundVia: [],
+    current: true,
+    supersededBy: null,
+    coverage: { seen: 1, of: 1 },
+    ranked: null,
+    targeting: null,
+    ...overrides,
+  };
+}
+
+describe("withTargeting", () => {
+  beforeEach(() => {
+    mockGetLatestListingSnapshots.mockReset();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  it("merges a real Targeting match onto the matching row", async () => {
+    const { withTargeting } = await import("@/lib/keyword-traction");
+    mockGetLatestListingSnapshots.mockResolvedValue([
+      { listing_id: 1, tags: ["snow globe"], state: "active" },
+    ]);
+
+    const [result] = await withTargeting([keywordRow({})]);
+    expect(result.targeting).toEqual({
+      best: 1,
+      matches: [{ listingId: 1, slot: 1 }],
+    });
+  });
+
+  it("degrades to blank Targeting for every row when the Supabase read fails, without throwing", async () => {
+    const { withTargeting } = await import("@/lib/keyword-traction");
+    mockGetLatestListingSnapshots.mockRejectedValue(
+      new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set"),
+    );
+
+    const rows = [
+      keywordRow({ keyword: "snow globe" }),
+      keywordRow({ keyword: "gift" }),
+    ];
+    const result = await withTargeting(rows);
+
+    expect(result).toHaveLength(2);
+    expect(result.every((r) => r.targeting === null)).toBe(true);
+    expect(console.error).toHaveBeenCalled();
+  });
+
+  it("degrades to blank on failure even if the input rows already carried a real Targeting value", async () => {
+    // Defensive, not reachable through today's single call site (the page
+    // always passes freshly-loaded rows with targeting: null) — but
+    // withTargeting is now an importable lib function, and its contract
+    // must hold regardless of what a future caller passes in: a failed
+    // read is never allowed to leave stale live data on the row.
+    const { withTargeting } = await import("@/lib/keyword-traction");
+    mockGetLatestListingSnapshots.mockRejectedValue(new Error("boom"));
+
+    const staleRow = keywordRow({
+      keyword: "snow globe",
+      targeting: { best: 1, matches: [{ listingId: 1, slot: 1 }] },
+    });
+    const [result] = await withTargeting([staleRow]);
+
+    expect(result.targeting).toBeNull();
   });
 });

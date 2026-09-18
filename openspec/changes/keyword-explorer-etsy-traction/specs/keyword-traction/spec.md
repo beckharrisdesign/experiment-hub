@@ -25,7 +25,7 @@ Each keyword row shows the best (lowest) Etsy search position any W&H listing ho
 #### Scenario: A keyword with no ranking match shows a blank cell
 
 - **WHEN** no `erank-spotted-on-etsy` term matches a corpus keyword's text
-- **THEN** the Ranked cell is blank, never `0` or any other placeholder value
+- **THEN** the Ranked cell is blank — a non-numeric placeholder glyph (e.g. an em dash, matching the table's existing convention on `Searches / comp.` when competition is zero) is fine; the literal number `0` is not
 
 ### Requirement: Targeting is a numeric column sourced from live listing tags
 
@@ -82,9 +82,9 @@ The table's visible columns are Keyword, Searches, Competition, KD, Found via, S
 
 ### Requirement: A traction value with no match is visually and semantically distinct from a zero value
 
-Ranked and Targeting must never let "no observed traction" be read as "confirmed absence of traction" or as a real `0`.
+Ranked and Targeting must never let "no observed traction" be read as "confirmed absence of traction" or as a real `0`. A non-numeric placeholder (an em dash, matching this table's existing convention for `Searches / comp.` when competition is zero) satisfies this; the requirement is on the underlying value and every read of it — sort order, data export, equality checks — never on whether the cell renders a glyph at all.
 
-**Fails until:** a blank Ranked or Targeting cell renders as, sorts as, or is exported/read as the number `0`.
+**Fails until:** a blank Ranked or Targeting cell's *value* renders as, sorts as, or is exported/read as the number `0`.
 
 #### Scenario: Blank cells sort after populated ones, not as zero
 
