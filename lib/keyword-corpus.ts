@@ -97,28 +97,6 @@ export function loadKeywordCorpus(): KeywordCorpus {
   };
 }
 
-/** Total tag occurrences across the queries that surfaced a keyword.
- *
- * A convenience for sorting only. It is deliberately NOT presented as "the"
- * tag-occurrence number for a keyword — the per-query counts are the data, and
- * the table shows them individually.
- *
- * Takes only `foundVia` (a structural subset of `KeywordRow`), not the whole
- * row — so it works for `KeywordTableRow` too, without depending on the
- * `ranked`/`targeting` shape either type happens to carry.
- */
-export function totalTagOccurrences(row: Pick<KeywordRow, "foundVia">): number {
-  return row.foundVia.reduce((sum, hit) => sum + hit.tagOccurrences, 0);
-}
-
-/** Searches per unit of competition. Higher is a less crowded opportunity. */
-export function demandRatio(
-  row: Pick<KeywordRow, "searches" | "competition">,
-): number | null {
-  if (!row.competition) return null;
-  return row.searches / row.competition;
-}
-
 /**
  * Coverage as a label, never as a trend.
  *

@@ -126,6 +126,24 @@ describe("getLatestListingSnapshots — results", () => {
     const result = await getLatestListingSnapshots();
     expect(result).toEqual([{ listing_id: 1, title: "current" }]);
   });
+
+  it("returns no rows when every row's captured_at is null, rather than matching them all", async () => {
+    // The newest-captured_at reduction stays null when nothing has a
+    // timestamp to compare — `row.captured_at === newest` would then equal
+    // `row.captured_at === null`, matching every row in the batch and
+    // defeating the "latest capture only" filter entirely. An unidentifiable
+    // latest capture must resolve to nothing, not to everything.
+    mockEq.mockResolvedValue({
+      data: [
+        { raw_response: { listing_id: 1, title: "one" }, captured_at: null },
+        { raw_response: { listing_id: 2, title: "two" }, captured_at: null },
+      ],
+      error: null,
+    });
+
+    const result = await getLatestListingSnapshots();
+    expect(result).toEqual([]);
+  });
 });
 
 // ---------------------------------------------------------------------------

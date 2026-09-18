@@ -5,11 +5,10 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import {
   coverageLabel,
-  demandRatio,
   loadKeywordCorpus,
   toRankedMatch,
-  totalTagOccurrences,
 } from "@/lib/keyword-corpus";
+import { demandRatio, totalTagOccurrences } from "@/lib/keyword-metrics";
 
 const REPO = path.resolve(__dirname, "..");
 const PULLS = path.join(REPO, "docs", "pulls");
@@ -482,7 +481,7 @@ describe("corpus loader", () => {
 
   it("returns null rather than Infinity when competition is zero", () => {
     // demandRatio only needs searches/competition — narrowed from the full
-    // KeywordRow so it also accepts KeywordTableRow (lib/keyword-corpus.ts).
+    // KeywordRow so it also accepts KeywordTableRow (lib/keyword-metrics.ts).
     expect(demandRatio({ searches: 10, competition: 0 })).toBeNull();
   });
 });

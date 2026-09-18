@@ -84,6 +84,12 @@ export async function getLatestListingSnapshots(): Promise<RawListing[]> {
     if (!row.captured_at) return max;
     return !max || row.captured_at > max ? row.captured_at : max;
   }, null);
+  // If every row's captured_at is null (or there are no rows at all), newest
+  // stays null — and `row.captured_at === newest` would then match every
+  // null-timestamp row, passing all of them through as "current" instead of
+  // none. An all-null batch means the capture can't be identified as latest,
+  // so it must resolve to no rows, not to all rows.
+  if (newest === null) return [];
   return rows
     .filter((row) => row.captured_at === newest)
     .map((row) => row.raw_response)

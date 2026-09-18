@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@beckharrisdesign/mvds";
 import type { KeywordTableRow } from "@/types";
-import { demandRatio, totalTagOccurrences } from "@/lib/keyword-corpus";
+import { demandRatio, totalTagOccurrences } from "@/lib/keyword-metrics";
 
 type SortKey =
   | "keyword"
