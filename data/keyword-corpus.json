@@ -7,10 +7,18 @@
       "queries": [
         "alocasia",
         "boo basket",
+        "budget spreadsheet",
         "car magnets",
+        "christmas embroidery",
+        "christmas pattern",
+        "christmas wall art",
+        "client gifts",
         "cottagecore stitch",
         "cozy embroidery",
+        "craft kits for adults",
         "cutecore",
+        "digital products",
+        "do it yourself",
         "embroidery designs",
         "embroidery font",
         "embroidery fonts",
@@ -19,13 +27,18 @@
         "frankenstein",
         "gift for embroidery",
         "gift for knitter",
+        "gingerbread ornament",
         "halloween",
+        "holiday hoop art",
         "homedecor",
+        "nativity set",
         "needle minder",
         "paint by numbers",
         "pokemon",
         "poster",
         "procreate brushes",
+        "school name embroidery design",
+        "spooky embroidery design",
         "spooky embroidery designs",
         "stamps procreate",
         "tarot deck",
@@ -205,6 +218,25 @@
       }
     },
     {
+      "keyword": "miffy",
+      "capture": "2026-09-17",
+      "searches": 8900,
+      "competition": 3598,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "digital products",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "hello kitty",
       "capture": "2026-09-17",
       "searches": 8558,
@@ -213,6 +245,10 @@
       "found_via": [
         {
           "query": "cutecore",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "do it yourself",
           "tag_occurrences": 1
         }
       ],
@@ -233,6 +269,25 @@
         {
           "query": "pokemon",
           "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "grinch",
+      "capture": "2026-09-17",
+      "searches": 8231,
+      "competition": 128612,
+      "kd": 60,
+      "found_via": [
+        {
+          "query": "christmas wall art",
+          "tag_occurrences": 1
         }
       ],
       "current": true,
@@ -312,6 +367,25 @@
       }
     },
     {
+      "keyword": "anime phone case",
+      "capture": "2026-09-17",
+      "searches": 6703,
+      "competition": 15088,
+      "kd": 18,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "homeware",
       "capture": "2026-09-17",
       "searches": 6168,
@@ -340,6 +414,25 @@
         {
           "query": "pokemon",
           "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "witch hat",
+      "capture": "2026-09-17",
+      "searches": 6017,
+      "competition": 79330,
+      "kd": 56,
+      "found_via": [
+        {
+          "query": "spooky embroidery design",
+          "tag_occurrences": 3
         }
       ],
       "current": true,
@@ -388,6 +481,44 @@
       }
     },
     {
+      "keyword": "axolotl",
+      "capture": "2026-09-17",
+      "searches": 5485,
+      "competition": 26556,
+      "kd": 34,
+      "found_via": [
+        {
+          "query": "do it yourself",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "winter door decor",
+      "capture": "2026-09-17",
+      "searches": 5437,
+      "competition": 81080,
+      "kd": 59,
+      "found_via": [
+        {
+          "query": "christmas wall art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "desk organizer",
       "capture": "2026-09-17",
       "searches": 5263,
@@ -397,6 +528,44 @@
         {
           "query": "yarn bowl",
           "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "adhd planner",
+      "capture": "2026-09-17",
+      "searches": 5227,
+      "competition": 36504,
+      "kd": 42,
+      "found_via": [
+        {
+          "query": "digital products",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "wall clock",
+      "capture": "2026-09-17",
+      "searches": 5183,
+      "competition": 71417,
+      "kd": 57,
+      "found_via": [
+        {
+          "query": "christmas wall art",
+          "tag_occurrences": 1
         }
       ],
       "current": true,
@@ -460,8 +629,20 @@
       "kd": 47,
       "found_via": [
         {
+          "query": "christmas pattern",
+          "tag_occurrences": 2
+        },
+        {
           "query": "cozy embroidery",
           "tag_occurrences": 3
+        },
+        {
+          "query": "craft kits for adults",
+          "tag_occurrences": 6
+        },
+        {
+          "query": "do it yourself",
+          "tag_occurrences": 65
         }
       ],
       "current": true,
@@ -590,12 +771,35 @@
       }
     },
     {
+      "keyword": "highland cow",
+      "capture": "2026-09-17",
+      "searches": 4661,
+      "competition": 136713,
+      "kd": 73,
+      "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "macrame wall hanging",
       "capture": "2026-09-17",
       "searches": 4571,
       "competition": 20372,
       "kd": 32,
       "found_via": [
+        {
+          "query": "craft kits for adults",
+          "tag_occurrences": 3
+        },
         {
           "query": "homedecor",
           "tag_occurrences": 2
@@ -632,6 +836,25 @@
       }
     },
     {
+      "keyword": "wedding website",
+      "capture": "2026-09-17",
+      "searches": 4388,
+      "competition": 8785,
+      "kd": 15,
+      "found_via": [
+        {
+          "query": "digital products",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "gyaru",
       "capture": "2026-09-17",
       "searches": 4307,
@@ -640,6 +863,25 @@
       "found_via": [
         {
           "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "budget spreadsheet",
+      "capture": "2026-09-17",
+      "searches": 4258,
+      "competition": 22571,
+      "kd": 36,
+      "found_via": [
+        {
+          "query": "digital products",
           "tag_occurrences": 1
         }
       ],
@@ -678,6 +920,10 @@
       "found_via": [
         {
           "query": "boo basket",
+          "tag_occurrences": 2
+        },
+        {
+          "query": "client gifts",
           "tag_occurrences": 2
         },
         {
@@ -758,6 +1004,44 @@
       }
     },
     {
+      "keyword": "custom matchbooks",
+      "capture": "2026-09-17",
+      "searches": 4038,
+      "competition": 5824,
+      "kd": 8,
+      "found_via": [
+        {
+          "query": "do it yourself",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "excel",
+      "capture": "2026-09-17",
+      "searches": 3972,
+      "competition": 47991,
+      "kd": 54,
+      "found_via": [
+        {
+          "query": "budget spreadsheet",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "seating chart",
       "capture": "2026-09-17",
       "searches": 3953,
@@ -777,12 +1061,35 @@
       }
     },
     {
+      "keyword": "business card holder",
+      "capture": "2026-09-17",
+      "searches": 3944,
+      "competition": 21627,
+      "kd": 37,
+      "found_via": [
+        {
+          "query": "client gifts",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "embroidery fonts",
       "capture": "2026-09-17",
       "searches": 3928,
       "competition": 46786,
       "kd": 54,
       "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 1
+        },
         {
           "query": "embroidery designs",
           "tag_occurrences": 4
@@ -798,6 +1105,10 @@
         {
           "query": "font bundle",
           "tag_occurrences": 7
+        },
+        {
+          "query": "holiday hoop art",
+          "tag_occurrences": 1
         }
       ],
       "current": true,
@@ -854,6 +1165,25 @@
       "found_via": [
         {
           "query": "werewolf",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "baby name sign",
+      "capture": "2026-09-17",
+      "searches": 3825,
+      "competition": 69628,
+      "kd": 63,
+      "found_via": [
+        {
+          "query": "holiday hoop art",
           "tag_occurrences": 1
         }
       ],
@@ -1380,6 +1710,10 @@
           "tag_occurrences": 1
         },
         {
+          "query": "digital products",
+          "tag_occurrences": 2
+        },
+        {
           "query": "fall host gift",
           "tag_occurrences": 3
         },
@@ -1643,6 +1977,10 @@
       "kd": 46,
       "found_via": [
         {
+          "query": "craft kits for adults",
+          "tag_occurrences": 2
+        },
+        {
           "query": "paint by numbers",
           "tag_occurrences": 20
         }
@@ -1702,6 +2040,25 @@
         {
           "query": "halloween",
           "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "cat earrings",
+      "capture": "2026-09-17",
+      "searches": 2626,
+      "competition": 36480,
+      "kd": 57,
+      "found_via": [
+        {
+          "query": "do it yourself",
+          "tag_occurrences": 1
         }
       ],
       "current": true,
@@ -2008,6 +2365,10 @@
       "kd": 40,
       "found_via": [
         {
+          "query": "craft kits for adults",
+          "tag_occurrences": 3
+        },
+        {
           "query": "paint by numbers",
           "tag_occurrences": 83
         }
@@ -2046,6 +2407,10 @@
       "kd": 64,
       "found_via": [
         {
+          "query": "christmas embroidery",
+          "tag_occurrences": 2
+        },
+        {
           "query": "embroidery designs",
           "tag_occurrences": 6
         },
@@ -2060,6 +2425,10 @@
         {
           "query": "font bundle",
           "tag_occurrences": 12
+        },
+        {
+          "query": "school name embroidery design",
+          "tag_occurrences": 1
         }
       ],
       "current": true,
@@ -2117,6 +2486,10 @@
         {
           "query": "boo basket",
           "tag_occurrences": 5
+        },
+        {
+          "query": "client gifts",
+          "tag_occurrences": 2
         },
         {
           "query": "fall host gift",
@@ -2215,6 +2588,29 @@
       }
     },
     {
+      "keyword": "google sheets",
+      "capture": "2026-09-17",
+      "searches": 2389,
+      "competition": 48309,
+      "kd": 65,
+      "found_via": [
+        {
+          "query": "budget spreadsheet",
+          "tag_occurrences": 13
+        },
+        {
+          "query": "digital products",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "anime figure",
       "capture": "2026-09-17",
       "searches": 2352,
@@ -2241,8 +2637,31 @@
       "kd": 61,
       "found_via": [
         {
+          "query": "craft kits for adults",
+          "tag_occurrences": 1
+        },
+        {
           "query": "needle minder",
           "tag_occurrences": 5
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "debt payoff tracker",
+      "capture": "2026-09-17",
+      "searches": 2346,
+      "competition": 6874,
+      "kd": 23,
+      "found_via": [
+        {
+          "query": "budget spreadsheet",
+          "tag_occurrences": 8
         }
       ],
       "current": true,
@@ -2280,6 +2699,25 @@
       "found_via": [
         {
           "query": "cutecore",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "taylor swift shirt",
+      "capture": "2026-09-17",
+      "searches": 2311,
+      "competition": 13461,
+      "kd": 38,
+      "found_via": [
+        {
+          "query": "digital products",
           "tag_occurrences": 1
         }
       ],
@@ -2428,12 +2866,35 @@
       }
     },
     {
+      "keyword": "crochet keychain",
+      "capture": "2026-09-17",
+      "searches": 2219,
+      "competition": 36666,
+      "kd": 61,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "client gifts",
       "capture": "2026-09-17",
       "searches": 2212,
       "competition": 28667,
       "kd": 56,
       "found_via": [
+        {
+          "query": "client gifts",
+          "tag_occurrences": 16
+        },
         {
           "query": "fall host gift",
           "tag_occurrences": 8
@@ -2456,6 +2917,48 @@
         {
           "query": "homedecor",
           "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "fitness planner",
+      "capture": "2026-09-17",
+      "searches": 2198,
+      "competition": 43073,
+      "kd": 65,
+      "found_via": [
+        {
+          "query": "digital products",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "gingerbread ornament",
+      "capture": "2026-09-17",
+      "searches": 2168,
+      "competition": 43397,
+      "kd": 65,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 2
+        },
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 99
         }
       ],
       "current": true,
@@ -2579,6 +3082,10 @@
       "competition": 26899,
       "kd": 55,
       "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        },
         {
           "query": "cutecore",
           "tag_occurrences": 1
@@ -2786,12 +3293,35 @@
       }
     },
     {
+      "keyword": "glasses holder",
+      "capture": "2026-09-17",
+      "searches": 2010,
+      "competition": 23171,
+      "kd": 53,
+      "found_via": [
+        {
+          "query": "digital products",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "elf on the shelf",
       "capture": "2026-09-17",
       "searches": 1957,
       "competition": 16705,
       "kd": 47,
       "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        },
         {
           "query": "pokemon",
           "tag_occurrences": 1
@@ -2814,6 +3344,25 @@
         {
           "query": "halloween",
           "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "67 ornament",
+      "capture": "2026-09-17",
+      "searches": 1896,
+      "competition": 12181,
+      "kd": 40,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
         }
       ],
       "current": true,
@@ -3113,6 +3662,25 @@
       }
     },
     {
+      "keyword": "string lights",
+      "capture": "2026-09-17",
+      "searches": 1556,
+      "competition": 15067,
+      "kd": 49,
+      "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "piplup",
       "capture": "2026-09-17",
       "searches": 1542,
@@ -3122,6 +3690,25 @@
         {
           "query": "pokemon",
           "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "christmas embroidery designs",
+      "capture": "2026-09-17",
+      "searches": 1541,
+      "competition": 41020,
+      "kd": 71,
+      "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 0
         }
       ],
       "current": true,
@@ -3198,6 +3785,1846 @@
         {
           "query": "pokemon",
           "tag_occurrences": 3
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "caricature",
+      "capture": "2026-09-17",
+      "searches": 1423,
+      "competition": 40359,
+      "kd": 73,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "crochet cat pattern",
+      "capture": "2026-09-17",
+      "searches": 1422,
+      "competition": 19035,
+      "kd": 56,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "schnauzer",
+      "capture": "2026-09-17",
+      "searches": 1418,
+      "competition": 19219,
+      "kd": 57,
+      "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "engaged ornament",
+      "capture": "2026-09-17",
+      "searches": 1414,
+      "competition": 41807,
+      "kd": 74,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "realtor closing gift",
+      "capture": "2026-09-17",
+      "searches": 1386,
+      "competition": 36611,
+      "kd": 71,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "fruit of the spirit",
+      "capture": "2026-09-17",
+      "searches": 1336,
+      "competition": 14637,
+      "kd": 52,
+      "found_via": [
+        {
+          "query": "christmas wall art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "monogram phone case",
+      "capture": "2026-09-17",
+      "searches": 1334,
+      "competition": 10754,
+      "kd": 45,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "mini cross stitch pattern",
+      "capture": "2026-09-17",
+      "searches": 1321,
+      "competition": 26331,
+      "kd": 65,
+      "found_via": [
+        {
+          "query": "holiday hoop art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "fused glass art",
+      "capture": "2026-09-17",
+      "searches": 1227,
+      "competition": 30312,
+      "kd": 70,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "mini cross stitch",
+      "capture": "2026-09-17",
+      "searches": 1207,
+      "competition": 30092,
+      "kd": 70,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "border collie",
+      "capture": "2026-09-17",
+      "searches": 1203,
+      "competition": 17018,
+      "kd": 58,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "stick and stitch",
+      "capture": "2026-09-17",
+      "searches": 1166,
+      "competition": 9591,
+      "kd": 46,
+      "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 4
+        },
+        {
+          "query": "holiday hoop art",
+          "tag_occurrences": 7
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "nativity set",
+      "capture": "2026-09-17",
+      "searches": 1158,
+      "competition": 21388,
+      "kd": 63,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "nativity set",
+          "tag_occurrences": 42
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "newly engaged gift",
+      "capture": "2026-09-17",
+      "searches": 1041,
+      "competition": 27244,
+      "kd": 71,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "stocking name tags",
+      "capture": "2026-09-17",
+      "searches": 1012,
+      "competition": 17447,
+      "kd": 62,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "nurse ornament",
+      "capture": "2026-09-17",
+      "searches": 998,
+      "competition": 19183,
+      "kd": 64,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "tree skirt",
+      "capture": "2026-09-17",
+      "searches": 954,
+      "competition": 20238,
+      "kd": 66,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "bx font",
+      "capture": "2026-09-17",
+      "searches": 892,
+      "competition": 15297,
+      "kd": 62,
+      "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "snarky cross stitch",
+      "capture": "2026-09-17",
+      "searches": 853,
+      "competition": 10839,
+      "kd": 55,
+      "found_via": [
+        {
+          "query": "spooky embroidery design",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "montessori baby toys",
+      "capture": "2026-09-17",
+      "searches": 812,
+      "competition": 13602,
+      "kd": 61,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "nativity sets",
+      "capture": "2026-09-17",
+      "searches": 810,
+      "competition": 19121,
+      "kd": 69,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 4
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "star of bethlehem",
+      "capture": "2026-09-17",
+      "searches": 703,
+      "competition": 6923,
+      "kd": 50,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "stocking name tag",
+      "capture": "2026-09-17",
+      "searches": 644,
+      "competition": 17416,
+      "kd": 72,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "ultrasound ornament",
+      "capture": "2026-09-17",
+      "searches": 505,
+      "competition": 2075,
+      "kd": 31,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "gingerbread svg",
+      "capture": "2026-09-17",
+      "searches": 483,
+      "competition": 12536,
+      "kd": 71,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 7
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "nutcracker ornament",
+      "capture": "2026-09-17",
+      "searches": 451,
+      "competition": 13479,
+      "kd": 74,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "dmc color chart",
+      "capture": "2026-09-17",
+      "searches": 405,
+      "competition": 5520,
+      "kd": 57,
+      "found_via": [
+        {
+          "query": "holiday hoop art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "candy cane svg",
+      "capture": "2026-09-17",
+      "searches": 393,
+      "competition": 5617,
+      "kd": 58,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 2
+        },
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "bisque nativity set",
+      "capture": "2026-09-17",
+      "searches": 353,
+      "competition": 405,
+      "kd": 3,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "primitive snowman",
+      "capture": "2026-09-17",
+      "searches": 317,
+      "competition": 9048,
+      "kd": 73,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "christmas lingerie",
+      "capture": "2026-09-17",
+      "searches": 306,
+      "competition": 5230,
+      "kd": 62,
+      "found_via": [
+        {
+          "query": "christmas wall art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "st joseph",
+      "capture": "2026-09-17",
+      "searches": 304,
+      "competition": 6630,
+      "kd": 67,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "christmas embroidery font",
+      "capture": "2026-09-17",
+      "searches": 294,
+      "competition": 4856,
+      "kd": 61,
+      "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "tree topper star",
+      "capture": "2026-09-17",
+      "searches": 256,
+      "competition": 2588,
+      "kd": 50,
+      "found_via": [
+        {
+          "query": "holiday hoop art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "tree skirt pattern",
+      "capture": "2026-09-17",
+      "searches": 237,
+      "competition": 3352,
+      "kd": 58,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "big brother ornament",
+      "capture": "2026-09-17",
+      "searches": 205,
+      "competition": 1955,
+      "kd": 49,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "big sister ornament",
+      "capture": "2026-09-17",
+      "searches": 204,
+      "competition": 2773,
+      "kd": 57,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "plaid phone case",
+      "capture": "2026-09-17",
+      "searches": 201,
+      "competition": 5065,
+      "kd": 70,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "snowman phone case",
+      "capture": "2026-09-17",
+      "searches": 172,
+      "competition": 1474,
+      "kd": 47,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "crochet nativity",
+      "capture": "2026-09-17",
+      "searches": 146,
+      "competition": 881,
+      "kd": 39,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 15
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "ugly sweater svg",
+      "capture": "2026-09-17",
+      "searches": 141,
+      "competition": 3896,
+      "kd": 72,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "clay figures",
+      "capture": "2026-09-17",
+      "searches": 139,
+      "competition": 3590,
+      "kd": 71,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "killing eve",
+      "capture": "2026-09-17",
+      "searches": 129,
+      "competition": 417,
+      "kd": 25,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "nightmare before christmas wall art",
+      "capture": "2026-09-17",
+      "searches": 127,
+      "competition": 2699,
+      "kd": 66,
+      "found_via": [
+        {
+          "query": "christmas wall art",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "christmaspattern",
+      "capture": "2026-09-17",
+      "searches": 126,
+      "competition": 140,
+      "kd": 2,
+      "found_via": [
+        {
+          "query": "holiday hoop art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "acrylic nativity set",
+      "capture": "2026-09-17",
+      "searches": 121,
+      "competition": 39,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "believe rhinestone christmas pattern",
+      "capture": "2026-09-17",
+      "searches": 119,
+      "competition": 18,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "christmas pattern procreate",
+      "capture": "2026-09-17",
+      "searches": 118,
+      "competition": 627,
+      "kd": 36,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "mjs off the hook",
+      "capture": "2026-09-17",
+      "searches": 105,
+      "competition": 411,
+      "kd": 30,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "primitive santa doll",
+      "capture": "2026-09-17",
+      "searches": 103,
+      "competition": 1146,
+      "kd": 52,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "digitizing service",
+      "capture": "2026-09-17",
+      "searches": 100,
+      "competition": 1828,
+      "kd": 63,
+      "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "meowy christmas embroidery",
+      "capture": "2026-09-17",
+      "searches": 98,
+      "competition": 189,
+      "kd": 14,
+      "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "outdoor nativity set",
+      "capture": "2026-09-17",
+      "searches": 98,
+      "competition": 388,
+      "kd": 30,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "family christmas embroidery design",
+      "capture": "2026-09-17",
+      "searches": 97,
+      "competition": 1656,
+      "kd": 62,
+      "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "christmas embroidery designs for towels",
+      "capture": "2026-09-17",
+      "searches": 96,
+      "competition": 864,
+      "kd": 48,
+      "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "he is risen easter nativity set",
+      "capture": "2026-09-17",
+      "searches": 96,
+      "competition": 65,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "weihnachts",
+      "capture": "2026-09-17",
+      "searches": 93,
+      "competition": 689,
+      "kd": 43,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "spooky dst",
+      "capture": "2026-09-17",
+      "searches": 86,
+      "competition": 603,
+      "kd": 42,
+      "found_via": [
+        {
+          "query": "spooky embroidery design",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "antiquewhiteart",
+      "capture": "2026-09-17",
+      "searches": 51,
+      "competition": 1452,
+      "kd": 73,
+      "found_via": [
+        {
+          "query": "christmas wall art",
+          "tag_occurrences": 3
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "catholic crochet",
+      "capture": "2026-09-17",
+      "searches": 43,
+      "competition": 528,
+      "kd": 54,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "crochet advent",
+      "capture": "2026-09-17",
+      "searches": 43,
+      "competition": 748,
+      "kd": 62,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "fontanini nativity set",
+      "capture": "2026-09-17",
+      "searches": 43,
+      "competition": 412,
+      "kd": 49,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "happy new year 2027",
+      "capture": "2026-09-17",
+      "searches": 43,
+      "competition": 164,
+      "kd": 29,
+      "found_via": [
+        {
+          "query": "christmas wall art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "embroiderypattern",
+      "capture": "2026-09-17",
+      "searches": 34,
+      "competition": 354,
+      "kd": 51,
+      "found_via": [
+        {
+          "query": "holiday hoop art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "cookie jar ornament",
+      "capture": "2026-09-17",
+      "searches": 31,
+      "competition": 380,
+      "kd": 54,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "we three kings",
+      "capture": "2026-09-17",
+      "searches": 29,
+      "competition": 614,
+      "kd": 66,
+      "found_via": [
+        {
+          "query": "christmas wall art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "crochet nativity set",
+      "capture": "2026-09-17",
+      "searches": 19,
+      "competition": 257,
+      "kd": 57,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 6
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "12 inch nativity set",
+      "capture": "2026-09-17",
+      "searches": 18,
+      "competition": 48,
+      "kd": 21,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "nativity set hawaii",
+      "capture": "2026-09-17",
+      "searches": 13,
+      "competition": 2,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "snoopy christmas embroidery design",
+      "capture": "2026-09-17",
+      "searches": 13,
+      "competition": 43,
+      "kd": 26,
+      "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "stained glass nativity set",
+      "capture": "2026-09-17",
+      "searches": 11,
+      "competition": 106,
+      "kd": 49,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "nativity set molds",
+      "capture": "2026-09-17",
+      "searches": 9,
+      "competition": 228,
+      "kd": 70,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "12 days of christmas embroidery design",
+      "capture": "2026-09-17",
+      "searches": 6,
+      "competition": 120,
+      "kd": 65,
+      "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "nutcrackerembroidery",
+      "capture": "2026-09-17",
+      "searches": 5,
+      "competition": 2,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "christmas embroidery",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "ethnic nativity set",
+      "capture": "2026-09-17",
+      "searches": 4,
+      "competition": 44,
+      "kd": 52,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "african american nativity set",
+      "capture": "2026-09-17",
+      "searches": 3,
+      "competition": 30,
+      "kd": 50,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "norwegian nativity set",
+      "capture": "2026-09-17",
+      "searches": 3,
+      "competition": 1,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "soapstone nativity set",
+      "capture": "2026-09-17",
+      "searches": 3,
+      "competition": 22,
+      "kd": 43,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "elegant nativity set",
+      "capture": "2026-09-17",
+      "searches": 2,
+      "competition": 45,
+      "kd": 68,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "gnome nativity set",
+      "capture": "2026-09-17",
+      "searches": 2,
+      "competition": 35,
+      "kd": 62,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "injured ornament",
+      "capture": "2026-09-17",
+      "searches": 2,
+      "competition": 57,
+      "kd": 73,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "large outdoor nativity set",
+      "capture": "2026-09-17",
+      "searches": 2,
+      "competition": 56,
+      "kd": 72,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "swedish nativity set",
+      "capture": "2026-09-17",
+      "searches": 2,
+      "competition": 7,
+      "kd": 27,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "cowboy nativity set",
+      "capture": "2026-09-17",
+      "searches": 1,
+      "competition": 11,
+      "kd": 52,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "fondos navidad",
+      "capture": "2026-09-17",
+      "searches": 1,
+      "competition": 14,
+      "kd": 57,
+      "found_via": [
+        {
+          "query": "christmas pattern",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "funny nativity set",
+      "capture": "2026-09-17",
+      "searches": 1,
+      "competition": 24,
+      "kd": 69,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "gingerbread nativity set",
+      "capture": "2026-09-17",
+      "searches": 1,
+      "competition": 23,
+      "kd": 68,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "irish nativity set",
+      "capture": "2026-09-17",
+      "searches": 1,
+      "competition": 7,
+      "kd": 42,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "nativity set buttons",
+      "capture": "2026-09-17",
+      "searches": 1,
+      "competition": 24,
+      "kd": 69,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "nativity set unusual",
+      "capture": "2026-09-17",
+      "searches": 1,
+      "competition": 14,
+      "kd": 57,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "outdoor nativity set life size",
+      "capture": "2026-09-17",
+      "searches": 1,
+      "competition": 2,
+      "kd": 15,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "paint your own nativity set",
+      "capture": "2026-09-17",
+      "searches": 1,
+      "competition": 27,
+      "kd": 72,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "pregnant gingerbread ornament",
+      "capture": "2026-09-17",
+      "searches": 1,
+      "competition": 16,
+      "kd": 60,
+      "found_via": [
+        {
+          "query": "gingerbread ornament",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "tamar nahir",
+      "capture": "2026-09-17",
+      "searches": 1,
+      "competition": 13,
+      "kd": 56,
+      "found_via": [
+        {
+          "query": "holiday hoop art",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "turkish nativity set",
+      "capture": "2026-09-17",
+      "searches": 1,
+      "competition": 1,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "nativity set",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "holiday hoop art",
+      "capture": "2026-09-17",
+      "searches": 0,
+      "competition": 2236,
+      "kd": 0,
+      "found_via": [
+        {
+          "query": "holiday hoop art",
+          "tag_occurrences": 0
         }
       ],
       "current": true,
