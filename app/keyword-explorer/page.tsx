@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Sidebar from "@/components/Sidebar";
 import KeywordTable from "@/components/KeywordTable";
 import { loadKeywordCorpus } from "@/lib/keyword-corpus";
 
@@ -23,10 +22,9 @@ export default function KeywordExplorerPage() {
   const captures = corpus.captures.length;
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="ml-64 flex-1 p-8">
-        <div className="flex flex-col gap-6">
+    <div className="min-h-screen">
+      <main className="w-full p-8">
+        <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6">
           <header className="flex flex-col gap-2">
             <h2 className="text-2xl font-semibold text-text-primary">
               Keyword Explorer
