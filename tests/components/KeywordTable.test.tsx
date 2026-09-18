@@ -83,7 +83,10 @@ const ROWS: KeywordTableRow[] = [
 
 function bodyRows() {
   const body = screen.getAllByRole("rowgroup")[1];
-  return within(body).getAllByRole("row");
+  // queryAllByRole, not getAllByRole: the empty-result tests render a
+  // genuinely empty <tbody>, where getAllByRole would throw instead of
+  // returning [].
+  return within(body).queryAllByRole("row");
 }
 
 function keywordOrder(): string[] {
@@ -135,9 +138,21 @@ describe("KeywordTable — Ranked and Targeting columns", () => {
 
     fireEvent.click(header); // first click: desc
     expect(new Set(keywordOrder().slice(-2))).toEqual(blanks);
+    // Populated values, not just blank placement: a comparator that sorted
+    // numerically backwards would still pass a blanks-only assertion.
+    expect(keywordOrder().slice(0, 3)).toEqual([
+      "unrelated thing", // ranked 15
+      "snow globe", // ranked 8
+      "calm stitching", // ranked 1
+    ]);
 
     fireEvent.click(header); // second click: asc
     expect(new Set(keywordOrder().slice(-2))).toEqual(blanks);
+    expect(keywordOrder().slice(0, 3)).toEqual([
+      "calm stitching", // ranked 1
+      "snow globe", // ranked 8
+      "unrelated thing", // ranked 15
+    ]);
   });
 
   it("sorts blank Targeting rows after populated ones, in either direction", () => {
@@ -150,9 +165,19 @@ describe("KeywordTable — Ranked and Targeting columns", () => {
 
     fireEvent.click(header); // first click: desc
     expect(new Set(keywordOrder().slice(-2))).toEqual(blanks);
+    expect(keywordOrder().slice(0, 3)).toEqual([
+      "unrelated thing", // targeting 8
+      "wooden wick candle", // targeting 5
+      "snow globe", // targeting 3
+    ]);
 
     fireEvent.click(header); // second click: asc
     expect(new Set(keywordOrder().slice(-2))).toEqual(blanks);
+    expect(keywordOrder().slice(0, 3)).toEqual([
+      "snow globe", // targeting 3
+      "wooden wick candle", // targeting 5
+      "unrelated thing", // targeting 8
+    ]);
   });
 });
 
@@ -278,5 +303,33 @@ describe("KeywordTable — range filter", () => {
     expect(visible).toContain("wooden wick candle"); // 15/6 = 2.5, passes >= 2
     expect(visible).not.toContain("snow globe"); // 210/180 ≈ 1.17, fails >= 2
     expect(visible).not.toContain("unrelated thing"); // competition 0 -> ratio null, excluded by a min bound
+  });
+
+  it("explains a range-emptied result as the range's own doing, not the archive's", () => {
+    // A zero-row range result is a direct, known consequence of the bound
+    // Katy set — the generic "archive is hand-filtered" copy (which explains
+    // a *keyword* filter turning up nothing) would misattribute the cause if
+    // it showed here too.
+    render(<KeywordTable rows={ROWS} />);
+    chooseRangeColumn("Ranked");
+    fireEvent.change(screen.getByLabelText("Range filter minimum"), {
+      target: { value: "1000" },
+    });
+
+    expect(bodyRows()).toHaveLength(0);
+    expect(
+      screen.getByText(/no rows fall within this range/i),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/hand-filtered at/i)).not.toBeInTheDocument();
+  });
+
+  it("keeps the archive-omission copy when the emptied result has no active range filter", () => {
+    render(<KeywordTable rows={ROWS} />);
+    fireEvent.change(screen.getByLabelText("Filter keywords"), {
+      target: { value: "no such keyword anywhere" },
+    });
+
+    expect(bodyRows()).toHaveLength(0);
+    expect(screen.getByText(/hand-filtered at/i)).toBeInTheDocument();
   });
 });

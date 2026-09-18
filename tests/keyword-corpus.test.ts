@@ -356,6 +356,65 @@ describe("Ranked: joined from erank-spotted-on-etsy, against a fixture", () => {
   });
 });
 
+describe("Ranked: a re-pull of the same term/listing does not duplicate the match", () => {
+  // Repeat captures are an intentional part of this archive (proposal.md §
+  // Why), but RankedListingMatch carries no capture identifier — so two
+  // Spotted on Etsy exports observing the same listing for the same term
+  // must collapse to one match, not grow `matches` by one entry per re-pull.
+  // "Listing A" appears in both captures at different positions (38, then a
+  // later re-pull sees it improve to 8); "Listing B" appears only in the
+  // second capture, proving a genuinely new listing still gets its own entry.
+  const dir = mkdtempSync(path.join(tmpdir(), "kw-ranked-repull-"));
+  writeFileSync(
+    path.join(dir, "2026-09-17-erank-spotted-on-etsy.csv"),
+    [
+      '"Shop/Listing","Search Term","Page","Position","Spotted By"',
+      '"Listing A","snow globe",2,38,"eRank Monitor"',
+    ].join("\n"),
+    "utf8",
+  );
+  writeFileSync(
+    path.join(dir, "2026-12-01-erank-spotted-on-etsy.csv"),
+    [
+      '"Shop/Listing","Search Term","Page","Position","Spotted By"',
+      '"Listing A","snow globe",1,8,"eRank Monitor"',
+      '"Listing B","snow globe",2,15,"eRank Monitor"',
+    ].join("\n"),
+    "utf8",
+  );
+  writeFileSync(
+    path.join(dir, "2026-09-17-erank-keywords-test.csv"),
+    [
+      '"Keywords","Average Searches","Competition","KD","Tag Occurrences"',
+      '"snow globe",210,180,"22","5"',
+    ].join("\n"),
+    "utf8",
+  );
+
+  const corpus = buildCorpusViaScript(dir);
+  const matched = corpus.rows.find((r) => r.keyword === "snow globe")!;
+
+  it("keeps one match per distinct listing, not one per observation", () => {
+    // Two captures observed "Listing A"; without dedup this would be 3.
+    expect(matched.ranked!.matches).toHaveLength(2);
+    expect(matched.ranked!.matches.map((m) => m.listing).sort()).toEqual([
+      "Listing A",
+      "Listing B",
+    ]);
+  });
+
+  it("keeps the better (lower) position when the same listing recurs across captures", () => {
+    const listingA = matched.ranked!.matches.find(
+      (m) => m.listing === "Listing A",
+    )!;
+    expect(listingA.position).toBe(8);
+  });
+
+  it("computes best across the deduped listings, not the raw observation count", () => {
+    expect(matched.ranked!.best).toBe(8);
+  });
+});
+
 describe("read_spotted_on_etsy_csv row-keeping, against a hand-built fixture", () => {
   // The blank/non-positive guard exists specifically to protect the
   // blank-never-zero invariant (a Copilot-round fix on this same PR) — a

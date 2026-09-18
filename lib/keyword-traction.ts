@@ -7,8 +7,9 @@ import type { KeywordRow, KeywordTableRow, TargetingMatch } from "@/types";
  * across every currently-active listing snapshot.
  *
  * Pure — no I/O, no Supabase — so it is unit-testable without a database,
- * mirroring `lib/etsy-scorecard.ts`. The caller (the Keyword Explorer page)
- * owns fetching `snapshots` via `getLatestListingSnapshots()`.
+ * mirroring `lib/etsy-scorecard.ts`. `withTargeting()` below is the I/O
+ * wrapper: it owns fetching `snapshots` via `getLatestListingSnapshots()`
+ * and calls this function with the result.
  *
  * Exact match only, case-insensitive, against a listing's `tags` array — not
  * its title. A tag slot number means nothing for a title hit, so title is out

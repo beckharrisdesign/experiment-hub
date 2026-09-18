@@ -388,22 +388,39 @@ def build_ranked_index(pulls: Path | None = None) -> dict[str, dict]:
     """keyword.lower() -> {best, matches} across every archived Spotted on Etsy
     export, matched against corpus keywords case-insensitive exact.
 
-    A term ranked by more than one listing keeps every match; `best` is the
-    lowest (best) position among them, which is what "sort by rank" means --
-    the full list stays reachable rather than being averaged or dropped.
+    A term ranked by more than one listing keeps one match per distinct
+    listing; `best` is the lowest (best) position among them, which is what
+    "sort by rank" means -- the full list stays reachable rather than being
+    averaged or dropped.
+
+    Repeat pulls are an intentional part of this archive (proposal.md § Why),
+    but a listing's own `RankedListingMatch` carries no capture identifier --
+    so re-pulling the same term/listing must not just append another copy of
+    it, or `matches` would grow a duplicate entry every time the same listing
+    is re-observed, with the promised "every ranking listing" detail actually
+    showing the same listing more than once. Deduped by listing name per
+    term, keeping the best (lowest) position seen for that listing across
+    every archived pull -- a listing's position moving between captures is
+    real signal, and the more favorable observation is the one worth keeping.
     """
-    by_term: dict[str, list[dict]] = {}
+    by_term: dict[str, dict[str, dict]] = {}
     for _capture, path in spotted_on_etsy_csvs(pulls):
         for r in read_spotted_on_etsy_csv(path):
             key = r["search_term"].lower()
-            by_term.setdefault(key, []).append({
-                "listing": r["listing"],
-                "page": r["page"],
-                "position": r["position"],
-            })
+            by_listing = by_term.setdefault(key, {})
+            existing = by_listing.get(r["listing"])
+            if existing is None or r["position"] < existing["position"]:
+                by_listing[r["listing"]] = {
+                    "listing": r["listing"],
+                    "page": r["page"],
+                    "position": r["position"],
+                }
 
     return {
-        term: {"best": min(m["position"] for m in matches), "matches": matches}
+        term: {
+            "best": min(m["position"] for m in matches.values()),
+            "matches": list(matches.values()),
+        }
         for term, matches in by_term.items()
     }
 

@@ -442,9 +442,21 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
 
         {visible.length === 0 && (
           <p className="px-3 py-6 text-sm text-text-muted">
-            No rows match these filters. The archive is hand-filtered at capture
-            time, so a keyword you expected may simply never have been exported
-            — that is unexplained, not evidence it lost demand.
+            {rangeColumn === NO_RANGE ? (
+              <>
+                No rows match these filters. The archive is hand-filtered at
+                capture time, so a keyword you expected may simply never have
+                been exported — that is unexplained, not evidence it lost
+                demand.
+              </>
+            ) : (
+              // A range filter producing zero rows is a direct, known
+              // consequence of the bound Katy set — the archive-omission
+              // explanation above doesn't apply and would be misleading here.
+              <>
+                No rows fall within this range. Widen or clear it to see more.
+              </>
+            )}
           </p>
         )}
       </div>

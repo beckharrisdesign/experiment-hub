@@ -62,13 +62,21 @@ interface LatestSnapshotRow {
  * fresher than the corpus's own `ingest-pulls.py --apply` cadence. On
  * serverless this is per-warm-instance, not a global guarantee — acceptable
  * insurance, same caveat as the precedent it follows.
+ *
+ * `inFlight` coalesces concurrent callers onto the same read: the cache is
+ * only populated *after* an awaited Supabase call completes, so without this,
+ * every request that lands while the first read is still in flight (the
+ * exact burst this cache exists to absorb) would see no cache yet and start
+ * its own duplicate query, defeating the TTL for the case that matters most.
  */
 const SNAPSHOT_CACHE_TTL_MS = 60 * 1000;
 let snapshotCache: { at: number; result: RawListing[] } | null = null;
+let snapshotFetchInFlight: Promise<RawListing[]> | null = null;
 
-/** Test-only: clears the cache so each test exercises a real read. */
+/** Test-only: clears the cache and any in-flight read so each test exercises a real one. */
 export function resetLatestListingSnapshotsCacheForTests(): void {
   snapshotCache = null;
+  snapshotFetchInFlight = null;
 }
 
 /**
@@ -95,36 +103,54 @@ export async function getLatestListingSnapshots(): Promise<RawListing[]> {
   if (snapshotCache && Date.now() - snapshotCache.at < SNAPSHOT_CACHE_TTL_MS) {
     return snapshotCache.result;
   }
+  if (snapshotFetchInFlight) {
+    return snapshotFetchInFlight;
+  }
 
-  const { data, error } = await getServiceClient()
-    .from("etsy_latest_listing_snapshots")
-    .select("raw_response,captured_at")
-    .eq("endpoint", LISTINGS_ENDPOINT);
-  if (error) {
-    throw new Error(`Failed to load etsy listing snapshots: ${error.message}`);
-  }
-  const rows = (data ?? []) as LatestSnapshotRow[];
-  const newest = rows.reduce<string | null>((max, row) => {
-    if (!row.captured_at) return max;
-    return !max || row.captured_at > max ? row.captured_at : max;
-  }, null);
-  // If every row's captured_at is null (or there are no rows at all), newest
-  // stays null — and `row.captured_at === newest` would then match every
-  // null-timestamp row, passing all of them through as "current" instead of
-  // none. An all-null batch means the capture can't be identified as latest,
-  // so it must resolve to no rows, not to all rows.
-  if (newest === null) {
-    snapshotCache = { at: Date.now(), result: [] };
-    return [];
-  }
-  const result = rows
-    .filter((row) => row.captured_at === newest)
-    .map((row) => row.raw_response)
-    .filter(
-      (raw): raw is RawListing => !!raw && typeof raw.listing_id === "number",
-    );
-  snapshotCache = { at: Date.now(), result };
-  return result;
+  snapshotFetchInFlight = (async () => {
+    try {
+      const { data, error } = await getServiceClient()
+        .from("etsy_latest_listing_snapshots")
+        .select("raw_response,captured_at")
+        .eq("endpoint", LISTINGS_ENDPOINT);
+      if (error) {
+        throw new Error(
+          `Failed to load etsy listing snapshots: ${error.message}`,
+        );
+      }
+      const rows = (data ?? []) as LatestSnapshotRow[];
+      const newest = rows.reduce<string | null>((max, row) => {
+        if (!row.captured_at) return max;
+        return !max || row.captured_at > max ? row.captured_at : max;
+      }, null);
+      // If every row's captured_at is null (or there are no rows at all),
+      // newest stays null — and `row.captured_at === newest` would then
+      // match every null-timestamp row, passing all of them through as
+      // "current" instead of none. An all-null batch means the capture can't
+      // be identified as latest, so it must resolve to no rows, not to all
+      // rows.
+      if (newest === null) {
+        snapshotCache = { at: Date.now(), result: [] };
+        return [];
+      }
+      const result = rows
+        .filter((row) => row.captured_at === newest)
+        .map((row) => row.raw_response)
+        .filter(
+          (raw): raw is RawListing =>
+            !!raw && typeof raw.listing_id === "number",
+        );
+      snapshotCache = { at: Date.now(), result };
+      return result;
+    } finally {
+      // Cleared whether the read succeeded or threw: a failure must not
+      // leave later callers permanently coalesced onto a dead promise, and
+      // must not be cached either (see the failure-mode tests) — the next
+      // call, concurrent or not, gets a real retry.
+      snapshotFetchInFlight = null;
+    }
+  })();
+  return snapshotFetchInFlight;
 }
 
 const WORKFLOW_FILE = "etsy-notion-sync.yml";

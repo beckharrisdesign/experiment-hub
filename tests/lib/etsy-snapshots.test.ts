@@ -176,6 +176,35 @@ describe("getLatestListingSnapshots — cache", () => {
     expect(mockEq).toHaveBeenCalledTimes(1);
   });
 
+  it("coalesces concurrent calls onto a single in-flight read", async () => {
+    // The cache is only populated after the awaited Supabase call resolves,
+    // so without in-flight coalescing, requests arriving while the first
+    // read is still pending would each see no cache yet and start their own
+    // duplicate query — exactly the burst this cache exists to absorb.
+    let resolveRead!: (value: { data: unknown; error: null }) => void;
+    mockEq.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveRead = resolve;
+      }),
+    );
+
+    const calls = Promise.all([
+      getLatestListingSnapshots(),
+      getLatestListingSnapshots(),
+      getLatestListingSnapshots(),
+    ]);
+    resolveRead({
+      data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
+      error: null,
+    });
+    const results = await calls;
+
+    for (const result of results) {
+      expect(result).toEqual([{ listing_id: 1 }]);
+    }
+    expect(mockEq).toHaveBeenCalledTimes(1);
+  });
+
   it("reads Supabase again once the cache is cleared", async () => {
     mockEq.mockResolvedValue({
       data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
