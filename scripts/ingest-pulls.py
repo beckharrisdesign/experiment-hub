@@ -283,6 +283,140 @@ def write_index() -> bool:
     return True
 
 
+# --- keyword corpus -------------------------------------------------------
+#
+# The index classifies each PULL. This classifies each ROW inside the keyword
+# pulls, so a keyword can be compared across queries and across captures
+# without opening ten CSVs by hand.
+
+KEYWORD_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-erank-keywords-(.+)\.csv$")
+
+
+def keyword_csvs(pulls: Path | None = None) -> list[tuple[str, str, Path]]:
+    """(capture_date, query, path) for every archived eRank keyword export.
+
+    The query is recovered from the filename, where slug() turned spaces into
+    dashes at landing time. A genuinely hyphenated query would come back
+    de-hyphenated; no export so far has one, and the alternative is a second
+    source of truth for something the filename already carries.
+    """
+    pulls = pulls or PULLS
+    out = []
+    for f in sorted(pulls.glob("*.csv")):
+        m = KEYWORD_RE.match(f.name)
+        if m:
+            out.append((m.group(1), m.group(2).replace("-", " "), f))
+    return out
+
+
+def read_keyword_csv(path: Path) -> list[dict]:
+    """Rows from one export. Tolerates the BOM eRank writes."""
+    import csv
+
+    with path.open(encoding="utf-8-sig", newline="") as fh:
+        rows = []
+        for r in csv.DictReader(fh):
+            kw = (r.get("Keywords") or "").strip()
+            if not kw:
+                continue
+            try:
+                rows.append({
+                    "keyword": kw,
+                    "searches": int(str(r.get("Average Searches", "0")).replace(",", "") or 0),
+                    "competition": int(str(r.get("Competition", "0")).replace(",", "") or 0),
+                    "kd": int(str(r.get("KD", "0")).replace(",", "") or 0),
+                    "tag_occurrences": int(str(r.get("Tag Occurrences", "0")).replace(",", "") or 0),
+                })
+            except ValueError:
+                # A malformed row is dropped rather than coerced to zero: a
+                # fabricated 0 would read as "no demand", which is exactly the
+                # inference this corpus exists to prevent.
+                continue
+    return rows
+
+
+def build_corpus(pulls: Path | None = None) -> dict:
+    files = keyword_csvs(pulls)
+    captures: dict[str, set[str]] = {}
+    # (capture, keyword) -> row under construction
+    acc: dict[tuple[str, str], dict] = {}
+
+    for capture, query, path in files:
+        captures.setdefault(capture, set()).add(query)
+        for r in read_keyword_csv(path):
+            key = (capture, r["keyword"])
+            row = acc.get(key)
+            if row is None:
+                # Searches, competition and KD are keyword-scoped: they agree
+                # across every query in a capture, so they are carried once.
+                row = {
+                    "keyword": r["keyword"],
+                    "capture": capture,
+                    "searches": r["searches"],
+                    "competition": r["competition"],
+                    "kd": r["kd"],
+                    "found_via": [],
+                }
+                acc[key] = row
+            # Tag occurrences are query-scoped and do NOT agree: `embroidery
+            # font` read 6, 81, 80 and 12 under four queries on 2026-09-17.
+            # Each count stays beside the query that produced it; merging them
+            # would invent a number the export never gave.
+            row["found_via"].append(
+                {"query": query, "tag_occurrences": r["tag_occurrences"]}
+            )
+
+    ordered_captures = sorted(captures)
+    total_captures = len(ordered_captures)
+
+    # Coverage counts the captures a keyword WAS observed in. No row is
+    # emitted for a capture where a keyword is absent, and nothing here derives
+    # a decline, a removal or a zero from that absence: the exports are
+    # hand-filtered, so a gap is unexplained, not evidence.
+    seen_in: dict[str, int] = {}
+    for (_capture, keyword) in acc:
+        seen_in[keyword] = seen_in.get(keyword, 0) + 1
+
+    # A repeat capture of the same keyword extends the series: the newest
+    # observation is current, earlier ones are superseded but stay readable.
+    newest: dict[str, str] = {}
+    for (capture, keyword) in acc:
+        if keyword not in newest or capture > newest[keyword]:
+            newest[keyword] = capture
+
+    rows = []
+    for (capture, keyword), row in acc.items():
+        row["found_via"].sort(key=lambda h: h["query"])
+        current = capture == newest[keyword]
+        row["current"] = current
+        row["superseded_by"] = None if current else newest[keyword]
+        row["coverage"] = {"seen": seen_in[keyword], "of": total_captures}
+        rows.append(row)
+
+    rows.sort(key=lambda r: (-r["searches"], r["keyword"], r["capture"]))
+
+    return {
+        "generated_at": date.today().isoformat(),
+        "captures": [
+            {
+                "date": c,
+                "source": "erank",
+                "queries": sorted(captures[c]),
+            }
+            for c in ordered_captures
+        ],
+        "rows": rows,
+    }
+
+
+def write_corpus() -> int:
+    corpus = build_corpus()
+    out = REPO / "data" / "keyword-corpus.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(corpus, indent=2) + "\n", encoding="utf-8")
+    return len(corpus["rows"])
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("source", nargs="?", default=str(Path.home() / "Downloads"))
@@ -339,6 +473,7 @@ def main() -> int:
     n = write_manifest()
     print(f"index refreshed ({n} pulls in index.json)" if write_index()
           else "index markers missing in docs/pulls/README.md")
+    print(f"keyword corpus refreshed ({write_corpus()} rows in data/keyword-corpus.json)")
     if landed:
         print("\nNext: write or extend the dated note in docs/pulls/, then commit.")
     return 0

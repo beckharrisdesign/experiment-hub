@@ -8,6 +8,11 @@ const navItems: { type: ContentType; label: string; href: string }[] = [
   { type: "experiments", label: "Experiments", href: "/" },
   { type: "prototypes", label: "Prototypes", href: "/prototypes" },
   { type: "documentation", label: "Documentation", href: "/documentation" },
+  {
+    type: "keyword-explorer",
+    label: "Keyword Explorer",
+    href: "/keyword-explorer",
+  },
 ];
 
 export default function Sidebar() {
