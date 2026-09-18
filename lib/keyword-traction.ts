@@ -94,10 +94,24 @@ export async function withTargeting(rows: KeywordRow[]): Promise<KeywordRow[]> {
  * payload for any visitor. `matches` (live listing IDs, tag slots, ranked
  * listing titles/positions) is never read by the table — only `.best` is —
  * so it stays server-side rather than shipping to the browser for no reason.
+ *
+ * Projects each field explicitly rather than `{ ...row, ranked: ..., targeting: ... }`
+ * (round 12 finding): `KeywordTableRow` is now an explicit allowlist, not an
+ * `Omit`, specifically so a spread here can't silently carry a future
+ * server-only `KeywordRow` field across this boundary — this function has to
+ * agree with that allowlist by construction, not by remembering to.
  */
 export function toTableRows(rows: KeywordRow[]): KeywordTableRow[] {
   return rows.map((row) => ({
-    ...row,
+    keyword: row.keyword,
+    capture: row.capture,
+    searches: row.searches,
+    competition: row.competition,
+    kd: row.kd,
+    foundVia: row.foundVia,
+    current: row.current,
+    supersededBy: row.supersededBy,
+    coverage: row.coverage,
     ranked: row.ranked?.best ?? null,
     targeting: row.targeting?.best ?? null,
   }));

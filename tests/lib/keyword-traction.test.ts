@@ -214,4 +214,18 @@ describe("toTableRows", () => {
     expect(result.ranked).toBeNull();
     expect(result.targeting).toBeNull();
   });
+
+  it("does not carry an unlisted field onto the public row, even if the input object has one", () => {
+    // KeywordTableRow (types/index.ts) is an explicit field allowlist, not
+    // Omit<KeywordRow, ...> — specifically so a future server-only KeywordRow
+    // field can't reach this public, unauthenticated route just because
+    // toTableRows() spread the whole row. Simulates that exact scenario: an
+    // input row carrying a field KeywordTableRow was never told about.
+    const rowWithExtra = {
+      ...keywordRow({}),
+      internalNote: "never meant for the browser",
+    };
+    const [result] = toTableRows([rowWithExtra]);
+    expect(result).not.toHaveProperty("internalNote");
+  });
 });

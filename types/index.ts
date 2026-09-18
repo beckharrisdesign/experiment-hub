@@ -220,11 +220,26 @@ export interface KeywordRow {
  * that data stays server-side, in `KeywordRow`, for a future detail
  * surface this change deliberately doesn't build (proposal.md § Not
  * doing).
+ *
+ * Deliberately an explicit field list, not `Omit<KeywordRow, "ranked" |
+ * "targeting">` (round 12 finding): `Omit` is a denylist — it inherits every
+ * other `KeywordRow` field automatically, so a server-only field added to
+ * `KeywordRow` in a future change would silently start flowing to this
+ * public client component's props too, with nothing here forcing whoever
+ * adds it to notice. An explicit allowlist means a new `KeywordRow` field
+ * simply doesn't exist on `KeywordTableRow` until someone deliberately adds
+ * it here — the safer failure mode for a public-route data boundary.
  */
-export interface KeywordTableRow extends Omit<
-  KeywordRow,
-  "ranked" | "targeting"
-> {
+export interface KeywordTableRow {
+  keyword: string;
+  capture: string;
+  searches: number;
+  competition: number;
+  kd: number;
+  foundVia: KeywordQueryHit[];
+  current: boolean;
+  supersededBy: string | null;
+  coverage: KeywordCoverage;
   ranked: number | null;
   targeting: number | null;
 }

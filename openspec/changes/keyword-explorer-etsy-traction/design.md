@@ -27,7 +27,7 @@ Unchanged from `keyword-explorer`: land on the full corpus sorted by Searches de
 
 1. **Filter row** gains one range-filter control: pick a numeric column, set a min and/or max, rows outside the bound drop out — combined with the existing keyword/capture/query filters.
 2. **Table columns**, left to right: **Keyword** (grows) · Searches · Competition · KD · **Ranked** · **Targeting** · Found via (query) · Searches / comp. Ranked and Targeting sit right after the three demand metrics they extend, ahead of the two lower-traffic columns — a reader scans "how much demand, am I already winning it" before "which query surfaced this, what's the ratio."
-3. Status, Capture and Coverage are gone from the row entirely in this view.
+3. Status, Capture and Coverage are gone from the visible *columns* — the underlying fields stay on the row (Capture and Status still back the existing Capture/Status filter dropdowns; see Decisions, below).
 
 ## Visual design / Figma
 
