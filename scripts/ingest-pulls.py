@@ -335,8 +335,113 @@ def read_keyword_csv(path: Path) -> list[dict]:
     return rows
 
 
+SPOTTED_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-erank-spotted-on-etsy(?:-.+)?\.csv$")
+
+
+def spotted_on_etsy_csvs(pulls: Path | None = None) -> list[tuple[str, Path]]:
+    """(capture_date, path) for every archived eRank "Spotted on Etsy" export."""
+    pulls = pulls or PULLS
+    out = []
+    for f in sorted(pulls.glob("*.csv")):
+        m = SPOTTED_RE.match(f.name)
+        if m:
+            out.append((m.group(1), f))
+    return out
+
+
+def read_spotted_on_etsy_csv(path: Path) -> list[dict]:
+    """Rows from one Spotted on Etsy export. Tolerates the BOM eRank writes."""
+    import csv
+
+    with path.open(encoding="utf-8-sig", newline="") as fh:
+        rows = []
+        for r in csv.DictReader(fh):
+            term = (r.get("Search Term") or "").strip()
+            listing = (r.get("Shop/Listing") or "").strip()
+            if not term or not listing:
+                continue
+            try:
+                # No `or 0` fallback: a blank cell must raise (empty string
+                # -> ValueError), not silently become the int 0. A ranking
+                # position of 0 would be indistinguishable from "no match" —
+                # exactly the fabricated-zero bug read_keyword_csv's own
+                # comment warns against, and the one this join's "blank,
+                # never 0" rule exists to prevent.
+                page = int(str(r.get("Page", "")).replace(",", ""))
+                position = int(str(r.get("Position", "")).replace(",", ""))
+            except ValueError:
+                continue
+            if page <= 0 or position <= 0:
+                # Real Etsy search positions and pages are always >= 1; a
+                # non-positive value is malformed, not a low rank.
+                continue
+            rows.append({
+                "search_term": term,
+                "listing": listing,
+                "page": page,
+                "position": position,
+            })
+    return rows
+
+
+def build_ranked_index(pulls: Path | None = None) -> dict[str, dict]:
+    """keyword.lower() -> {best, matches} across every archived Spotted on Etsy
+    export, matched against corpus keywords case-insensitive exact.
+
+    A term ranked by more than one listing keeps one match per distinct
+    listing; `best` is the lowest (best) position among them, which is what
+    "sort by rank" means -- the full list stays reachable rather than being
+    averaged or dropped.
+
+    Repeat pulls are an intentional part of this archive (proposal.md § Why),
+    but a listing's own `RankedListingMatch` carries no capture identifier --
+    so re-pulling the same term/listing must not just append another copy of
+    it, or `matches` would grow a duplicate entry every time the same listing
+    is re-observed, with the promised "every ranking listing" detail actually
+    showing the same listing more than once. Deduped by listing name per
+    term, keeping the best (lowest) position seen for that listing across
+    every archived pull -- a listing's position moving between captures is
+    real signal, and the more favorable observation is the one worth keeping.
+
+    The dedup key is the exported "Shop/Listing" text -- in practice the
+    listing's full title (confirmed against the real archived CSVs; eRank's
+    Spotted on Etsy export carries no numeric listing ID). This is a known,
+    accepted limitation, not an oversight: a listing retitled between pulls
+    would read as two separate matches, and two distinct listings that happen
+    to share an identical title would incorrectly collapse into one. Neither
+    is fixable from this data source alone -- resolving a stable identity
+    would mean joining against the Etsy API by search term/position per pull,
+    well beyond this join's scope. Title collisions are the same order of
+    unlikely as two W&H listings sharing an exact title today, and a
+    retitle-driven "duplicate" is still a real listing that really ranked --
+    strictly worse than the pre-dedup behavior (every re-pull duplicating
+    every still-ranking listing), not a regression from it.
+    """
+    by_term: dict[str, dict[str, dict]] = {}
+    for _capture, path in spotted_on_etsy_csvs(pulls):
+        for r in read_spotted_on_etsy_csv(path):
+            key = r["search_term"].lower()
+            by_listing = by_term.setdefault(key, {})
+            existing = by_listing.get(r["listing"])
+            if existing is None or r["position"] < existing["position"]:
+                by_listing[r["listing"]] = {
+                    "listing": r["listing"],
+                    "page": r["page"],
+                    "position": r["position"],
+                }
+
+    return {
+        term: {
+            "best": min(m["position"] for m in matches.values()),
+            "matches": list(matches.values()),
+        }
+        for term, matches in by_term.items()
+    }
+
+
 def build_corpus(pulls: Path | None = None) -> dict:
     files = keyword_csvs(pulls)
+    ranked_index = build_ranked_index(pulls)
     captures: dict[str, set[str]] = {}
     # (capture, keyword) -> row under construction
     acc: dict[tuple[str, str], dict] = {}
@@ -391,6 +496,11 @@ def build_corpus(pulls: Path | None = None) -> dict:
         row["current"] = current
         row["superseded_by"] = None if current else newest[keyword]
         row["coverage"] = {"seen": seen_in[keyword], "of": total_captures}
+        # Ranked is keyword-scoped, not capture-scoped: a real-world ranking
+        # observed once applies to the keyword regardless of which capture's
+        # row is being built. null (not a missing key, not a 0) when there is
+        # no Spotted on Etsy match.
+        row["ranked"] = ranked_index.get(keyword.lower())
         rows.append(row)
 
     rows.sort(key=lambda r: (-r["searches"], r["keyword"], r["capture"]))

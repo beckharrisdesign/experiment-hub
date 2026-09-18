@@ -1,4 +1,9 @@
-import type { KeywordCapture, KeywordCorpus, KeywordRow } from "@/types";
+import type {
+  KeywordCapture,
+  KeywordCorpus,
+  KeywordRow,
+  RankedMatch,
+} from "@/types";
 import raw from "@/data/keyword-corpus.json";
 
 /**
@@ -14,6 +19,11 @@ interface RawQueryHit {
   tag_occurrences: number;
 }
 
+interface RawRankedMatch {
+  best: number;
+  matches: { listing: string; page: number; position: number }[];
+}
+
 interface RawRow {
   keyword: string;
   capture: string;
@@ -24,12 +34,33 @@ interface RawRow {
   current: boolean;
   superseded_by: string | null;
   coverage: { seen: number; of: number };
+  ranked: RawRankedMatch | null;
 }
 
 interface RawCorpus {
   generated_at?: string | null;
   captures?: KeywordCapture[];
   rows?: RawRow[];
+}
+
+/**
+ * Exported so the snake_case -> camelCase mapping is directly testable at
+ * the loader boundary — the checked-in corpus is currently all `ranked:
+ * null`, so a bug in this mapping (a typo'd field, a dropped match) would
+ * otherwise stay invisible until a real pull overlaps the corpus.
+ */
+export function toRankedMatch(
+  input: RawRankedMatch | null,
+): RankedMatch | null {
+  if (!input) return null;
+  return {
+    best: input.best,
+    matches: input.matches.map((m) => ({
+      listing: m.listing,
+      page: m.page,
+      position: m.position,
+    })),
+  };
 }
 
 function toRow(row: RawRow): KeywordRow {
@@ -46,6 +77,10 @@ function toRow(row: RawRow): KeywordRow {
     current: row.current,
     supersededBy: row.superseded_by ?? null,
     coverage: row.coverage ?? { seen: 1, of: 1 },
+    ranked: toRankedMatch(row.ranked ?? null),
+    // Computed server-side against live listing snapshots — the static
+    // corpus carries no opinion on it. The page merges the real value in.
+    targeting: null,
   };
 }
 
@@ -60,22 +95,6 @@ export function loadKeywordCorpus(): KeywordCorpus {
     captures: corpus.captures ?? [],
     rows: (corpus.rows ?? []).map(toRow),
   };
-}
-
-/** Total tag occurrences across the queries that surfaced a keyword.
- *
- * A convenience for sorting only. It is deliberately NOT presented as "the"
- * tag-occurrence number for a keyword — the per-query counts are the data, and
- * the table shows them individually.
- */
-export function totalTagOccurrences(row: KeywordRow): number {
-  return row.foundVia.reduce((sum, hit) => sum + hit.tagOccurrences, 0);
-}
-
-/** Searches per unit of competition. Higher is a less crowded opportunity. */
-export function demandRatio(row: KeywordRow): number | null {
-  if (!row.competition) return null;
-  return row.searches / row.competition;
 }
 
 /**
