@@ -46,26 +46,132 @@ export async function getEtsySyncRuns(limit = 20): Promise<EtsySyncRun[]> {
  */
 const LISTINGS_ENDPOINT = "/v3/application/shops/{shop_id}/listings";
 
+interface LatestSnapshotRow {
+  raw_response: RawListing | null;
+  captured_at: string | null;
+}
+
 /**
- * Latest snapshot per listing, as raw Etsy JSON.
+ * The silent-degrade design (design.md § Decisions) only covers a rejected
+ * read — a *slow* one still blocks `withTargeting()`'s `await`, and with it
+ * the entire `/keyword-explorer` render, since the page awaits Targeting
+ * before showing anything (round 14 finding). Left well under the
+ * platform's own request timeout so this fires and degrades to blank
+ * Targeting before the whole function gets killed instead.
+ */
+const SNAPSHOT_FETCH_TIMEOUT_MS = 8 * 1000;
+
+/**
+ * Per-server-instance cache, same posture as `app/etsy-listing-kit/api/evaluate/route.ts`'s
+ * cache/throttle: `/keyword-explorer` is `force-dynamic` (design.md § Decisions)
+ * so this read can't be baked in at build time — but that alone gives no
+ * upper bound on read *frequency*, and every anonymous page load would
+ * otherwise trigger its own service-role Supabase read with no guard against
+ * a crawler or a burst of refreshes. This cache is the frequency bound: up to
+ * 60 seconds of staleness traded for that protection (a real, documented
+ * trade-off — design.md § Risks/Trade-offs — not a claim that Targeting is
+ * live on every single request). Listing tags don't change on a sub-minute
+ * cadence in practice, and this is still far fresher than the corpus's own
+ * `ingest-pulls.py --apply` cadence. On serverless this is per-warm-instance,
+ * not a global guarantee — acceptable insurance, same caveat as the
+ * precedent it follows.
+ *
+ * `inFlight` coalesces concurrent callers onto the same read: the cache is
+ * only populated *after* an awaited Supabase call completes, so without this,
+ * every request that lands while the first read is still in flight (the
+ * exact burst this cache exists to absorb) would see no cache yet and start
+ * its own duplicate query, defeating the TTL for the case that matters most.
+ */
+const SNAPSHOT_CACHE_TTL_MS = 60 * 1000;
+let snapshotCache: { at: number; result: RawListing[] } | null = null;
+let snapshotFetchInFlight: Promise<RawListing[]> | null = null;
+
+/** Test-only: clears the cache and any in-flight read so each test exercises a real one. */
+export function resetLatestListingSnapshotsCacheForTests(): void {
+  snapshotCache = null;
+  snapshotFetchInFlight = null;
+}
+
+/**
+ * Latest snapshot per listing, as raw Etsy JSON — restricted to the most
+ * recent capture run.
  *
  * Reads `etsy_latest_listing_snapshots` (the view already exposes
- * `raw_response`; only the Python client narrows its select to `parsed`).
+ * `raw_response` and `captured_at`; only the Python client narrows its
+ * select to `parsed`). That view is "newest row per listing across all
+ * history" and has no idea whether a listing still exists on Etsy — a
+ * listing deleted there keeps its final snapshot in the view forever. Rows
+ * whose `captured_at` isn't the newest in the batch are dropped here: that
+ * means "not in the latest capture" (deleted, deactivated, or a partial
+ * capture run), the same rule and reasoning as
+ * `experiments/etsy-notion-sync/prototype/store_supabase.py`'s
+ * `latest_from_current_capture`, kept consistent across the Python and TS
+ * sides of this pipeline rather than diverging.
+ *
  * Server-only — the service-role key is required and `raw_response` may carry
  * `user`/buyer fields via the `User` include, so callers must project to
  * scores before sending anything to the browser.
  */
-export async function getLatestListingSnapshots(): Promise<RawListing[]> {
+async function fetchLatestListingSnapshots(): Promise<RawListing[]> {
   const { data, error } = await getServiceClient()
     .from("etsy_latest_listing_snapshots")
-    .select("raw_response")
-    .eq("endpoint", LISTINGS_ENDPOINT);
+    .select("raw_response,captured_at")
+    .eq("endpoint", LISTINGS_ENDPOINT)
+    .abortSignal(AbortSignal.timeout(SNAPSHOT_FETCH_TIMEOUT_MS));
   if (error) {
     throw new Error(`Failed to load etsy listing snapshots: ${error.message}`);
   }
-  return (data ?? [])
-    .map((row) => (row as { raw_response: RawListing | null }).raw_response)
-    .filter((raw): raw is RawListing => !!raw && typeof raw.listing_id === "number");
+  const rows = (data ?? []) as LatestSnapshotRow[];
+  const newest = rows.reduce<string | null>((max, row) => {
+    if (!row.captured_at) return max;
+    return !max || row.captured_at > max ? row.captured_at : max;
+  }, null);
+  // If every row's captured_at is null (or there are no rows at all),
+  // newest stays null — and `row.captured_at === newest` would then
+  // match every null-timestamp row, passing all of them through as
+  // "current" instead of none. An all-null batch means the capture can't
+  // be identified as latest, so it must resolve to no rows, not to all
+  // rows.
+  if (newest === null) {
+    snapshotCache = { at: Date.now(), result: [] };
+    return [];
+  }
+  const result = rows
+    .filter((row) => row.captured_at === newest)
+    .map((row) => row.raw_response)
+    .filter(
+      (raw): raw is RawListing => !!raw && typeof raw.listing_id === "number",
+    );
+  snapshotCache = { at: Date.now(), result };
+  return result;
+}
+
+export async function getLatestListingSnapshots(): Promise<RawListing[]> {
+  if (snapshotCache && Date.now() - snapshotCache.at < SNAPSHOT_CACHE_TTL_MS) {
+    return snapshotCache.result;
+  }
+  if (snapshotFetchInFlight) {
+    return snapshotFetchInFlight;
+  }
+
+  // getServiceClient() (called inside fetchLatestListingSnapshots, before its
+  // first await) can throw synchronously — e.g. the missing-env-vars case
+  // below, a tested failure path. A `try/finally` *inside* an async function
+  // runs its `finally` as part of that same synchronous throw, which would
+  // fire before the `snapshotFetchInFlight = ...` assignment below even
+  // completes — clearing a value that then immediately gets overwritten with
+  // the rejected promise, permanently stuck. `.finally()` chained onto the
+  // returned promise instead always defers to a microtask, so it can only
+  // run after this synchronous assignment — regardless of whether the
+  // failure was synchronous or not. The identity check guards against
+  // clearing a newer in-flight promise in case of any future reentrancy.
+  const promise = fetchLatestListingSnapshots().finally(() => {
+    if (snapshotFetchInFlight === promise) {
+      snapshotFetchInFlight = null;
+    }
+  });
+  snapshotFetchInFlight = promise;
+  return promise;
 }
 
 const WORKFLOW_FILE = "etsy-notion-sync.yml";

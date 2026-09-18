@@ -6,10 +6,10 @@ import path from "node:path";
 import {
   bulkValueLabel,
   coverageLabel,
-  demandRatio,
   loadKeywordCorpus,
-  totalTagOccurrences,
+  toRankedMatch,
 } from "@/lib/keyword-corpus";
+import { demandRatio, totalTagOccurrences } from "@/lib/keyword-metrics";
 
 const REPO = path.resolve(__dirname, "..");
 const PULLS = path.join(REPO, "docs", "pulls");
@@ -57,6 +57,10 @@ function buildCorpusViaScript(pulls?: string): {
     current: boolean;
     superseded_by: string | null;
     coverage: { seen: number; of: number };
+    ranked: {
+      best: number;
+      matches: { listing: string; page: number; position: number }[];
+    } | null;
   }[];
 } {
   const arg = pulls ? `pathlib.Path(${JSON.stringify(pulls)})` : "None";
@@ -132,6 +136,29 @@ function readBulkKeywordsCsvViaScript(csvPath: string): RawBulkRow[] {
         "spec = importlib.util.spec_from_file_location('ip', 'scripts/ingest-pulls.py')",
         "m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)",
         `print(json.dumps(m.read_bulk_keywords_csv(pathlib.Path(${JSON.stringify(csvPath)}))))`,
+      ].join("\n"),
+    ],
+    { cwd: REPO, encoding: "utf8" },
+  );
+  return JSON.parse(out);
+}
+
+/** Same idea as `readKeywordCsvViaScript`, for the Spotted on Etsy parser. */
+function readSpottedOnEtsyCsvViaScript(csvPath: string): {
+  search_term: string;
+  listing: string;
+  page: number;
+  position: number;
+}[] {
+  const out = execFileSync(
+    "python3",
+    [
+      "-c",
+      [
+        "import importlib.util, json, pathlib, sys",
+        "spec = importlib.util.spec_from_file_location('ip', 'scripts/ingest-pulls.py')",
+        "m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)",
+        `print(json.dumps(m.read_spotted_on_etsy_csv(pathlib.Path(${JSON.stringify(csvPath)}))))`,
       ].join("\n"),
     ],
     { cwd: REPO, encoding: "utf8" },
@@ -475,6 +502,189 @@ describe("a repeat bulk capture extends the series", () => {
   });
 });
 
+describe("Ranked: joined from erank-spotted-on-etsy, against a fixture", () => {
+  // Fully synthetic Spotted on Etsy export, not a copy of the real archived
+  // CSV: depending on live docs/pulls content would make this test brittle
+  // against a future re-pull changing "snow globe"'s real positions, or the
+  // file simply being renamed/superseded — the same class of brittleness
+  // already fixed elsewhere in this file. Every value here is owned by the
+  // test.
+  //
+  // The Search Term casing ("Snow Globe") deliberately differs from the
+  // keyword CSV's ("snow globe") to actually exercise the join's
+  // case-insensitive match — same casing on both sides would pass this test
+  // even if the `.lower()` normalisation regressed.
+  const dir = mkdtempSync(path.join(tmpdir(), "kw-ranked-"));
+  writeFileSync(
+    path.join(dir, "2026-09-17-erank-spotted-on-etsy.csv"),
+    [
+      '"Shop/Listing","Search Term","Page","Position","Spotted By"',
+      '"Listing A","Snow Globe",2,38,"eRank Monitor"',
+      '"Listing B","Snow Globe",2,8,"eRank Monitor"',
+    ].join("\n"),
+    "utf8",
+  );
+  writeFileSync(
+    path.join(dir, "2026-09-17-erank-keywords-test.csv"),
+    [
+      '"Keywords","Average Searches","Competition","KD","Tag Occurrences"',
+      '"snow globe",210,180,"22","5"',
+      '"unrelated thing",10,5,"3","1"',
+    ].join("\n"),
+    "utf8",
+  );
+
+  const corpus = buildCorpusViaScript(dir);
+  const matched = corpus.rows.find((r) => r.keyword === "snow globe")!;
+  const unmatched = corpus.rows.find((r) => r.keyword === "unrelated thing")!;
+
+  it("attaches the best (lowest) position across every ranking listing", () => {
+    expect(matched.ranked).not.toBeNull();
+    expect(matched.ranked!.best).toBe(8);
+  });
+
+  it("retains every matching listing, not just the best one", () => {
+    expect(matched.ranked!.matches).toHaveLength(2);
+    expect(
+      matched.ranked!.matches.map((m) => m.position).sort((a, b) => a - b),
+    ).toEqual([8, 38]);
+  });
+
+  it("leaves ranked null, never 0, for a keyword with no Spotted on Etsy match", () => {
+    expect(unmatched.ranked).toBeNull();
+  });
+});
+
+describe("Ranked: a re-pull of the same term/listing does not duplicate the match", () => {
+  // Repeat captures are an intentional part of this archive (proposal.md §
+  // Why), but RankedListingMatch carries no capture identifier — so two
+  // Spotted on Etsy exports observing the same listing for the same term
+  // must collapse to one match, not grow `matches` by one entry per re-pull.
+  // "Listing A" appears in both captures at different positions (38, then a
+  // later re-pull sees it improve to 8); "Listing B" appears only in the
+  // second capture, proving a genuinely new listing still gets its own entry.
+  const dir = mkdtempSync(path.join(tmpdir(), "kw-ranked-repull-"));
+  writeFileSync(
+    path.join(dir, "2026-09-17-erank-spotted-on-etsy.csv"),
+    [
+      '"Shop/Listing","Search Term","Page","Position","Spotted By"',
+      '"Listing A","snow globe",2,38,"eRank Monitor"',
+    ].join("\n"),
+    "utf8",
+  );
+  writeFileSync(
+    path.join(dir, "2026-12-01-erank-spotted-on-etsy.csv"),
+    [
+      '"Shop/Listing","Search Term","Page","Position","Spotted By"',
+      '"Listing A","snow globe",1,8,"eRank Monitor"',
+      '"Listing B","snow globe",2,15,"eRank Monitor"',
+    ].join("\n"),
+    "utf8",
+  );
+  writeFileSync(
+    path.join(dir, "2026-09-17-erank-keywords-test.csv"),
+    [
+      '"Keywords","Average Searches","Competition","KD","Tag Occurrences"',
+      '"snow globe",210,180,"22","5"',
+    ].join("\n"),
+    "utf8",
+  );
+
+  const corpus = buildCorpusViaScript(dir);
+  const matched = corpus.rows.find((r) => r.keyword === "snow globe")!;
+
+  it("keeps one match per distinct listing, not one per observation", () => {
+    // Two captures observed "Listing A"; without dedup this would be 3.
+    expect(matched.ranked!.matches).toHaveLength(2);
+    expect(matched.ranked!.matches.map((m) => m.listing).sort()).toEqual([
+      "Listing A",
+      "Listing B",
+    ]);
+  });
+
+  it("keeps the better (lower) position when the same listing recurs across captures", () => {
+    const listingA = matched.ranked!.matches.find(
+      (m) => m.listing === "Listing A",
+    )!;
+    expect(listingA.position).toBe(8);
+  });
+
+  it("computes best across the deduped listings, not the raw observation count", () => {
+    expect(matched.ranked!.best).toBe(8);
+  });
+});
+
+describe("read_spotted_on_etsy_csv row-keeping, against a hand-built fixture", () => {
+  // The blank/non-positive guard exists specifically to protect the
+  // blank-never-zero invariant (a Copilot-round fix on this same PR) — a
+  // fixture that never exercises it would let a regression back in silently.
+  const dir = mkdtempSync(path.join(tmpdir(), "kw-spotted-fixture-"));
+  const fixture = path.join(
+    dir,
+    "2026-09-17-erank-spotted-on-etsy-fixturetest.csv",
+  );
+  writeFileSync(
+    fixture,
+    [
+      '"Shop/Listing","Search Term","Page","Position","Spotted By"',
+      '"Good listing","good term",1,7,"eRank Monitor"',
+      '"Blank position","blank position term",1,,"eRank Monitor"',
+      '"Blank page","blank page term",,5,"eRank Monitor"',
+      '"Zero position","zero position term",1,0,"eRank Monitor"',
+    ].join("\n"),
+    "utf8",
+  );
+
+  const rows = readSpottedOnEtsyCsvViaScript(fixture);
+
+  it("keeps a fully-numeric row", () => {
+    expect(rows.map((r) => r.search_term)).toContain("good term");
+  });
+
+  it("drops a row with a blank Position rather than defaulting it to 0", () => {
+    expect(rows.map((r) => r.search_term)).not.toContain("blank position term");
+  });
+
+  it("drops a row with a blank Page rather than defaulting it to 0", () => {
+    expect(rows.map((r) => r.search_term)).not.toContain("blank page term");
+  });
+
+  it("drops a row with a non-positive Position", () => {
+    expect(rows.map((r) => r.search_term)).not.toContain("zero position term");
+  });
+
+  it("keeps exactly the one valid row, no more and no fewer", () => {
+    expect(rows.map((r) => r.search_term)).toEqual(["good term"]);
+  });
+});
+
+describe("toRankedMatch — snake_case to camelCase at the loader boundary", () => {
+  // The checked-in corpus is all `ranked: null` today, so loadKeywordCorpus()
+  // alone never exercises the non-null branch of this mapping. Tested
+  // directly against a hand-built non-null raw row so a typo'd field or a
+  // dropped match can't hide behind an all-null corpus staying green.
+  it("maps every field through for a non-null match, dropping nothing", () => {
+    const result = toRankedMatch({
+      best: 8,
+      matches: [
+        { listing: "Listing A", page: 2, position: 38 },
+        { listing: "Listing B", page: 2, position: 8 },
+      ],
+    });
+    expect(result).toEqual({
+      best: 8,
+      matches: [
+        { listing: "Listing A", page: 2, position: 38 },
+        { listing: "Listing B", page: 2, position: 8 },
+      ],
+    });
+  });
+
+  it("passes null through as null", () => {
+    expect(toRankedMatch(null)).toBeNull();
+  });
+});
+
 describe("corpus loader", () => {
   const corpus = loadKeywordCorpus();
 
@@ -506,20 +716,31 @@ describe("corpus loader", () => {
     expect(coverageLabel(row)).toMatch(/^seen in \d+ of \d+$/);
   });
 
+  it("normalises ranked to null or a well-formed match, never a bare shape mismatch", () => {
+    // NOT "every row is null today": the archive overlaps the Spotted on
+    // Etsy pull series by design (proposal.md § Why) and a future re-pull is
+    // expected to give some row a real match — asserting the current
+    // (transient) all-null state would break on the very success condition
+    // this join exists for, repeating the exact brittleness #501 fixed in
+    // tests/keyword-corpus.test.ts's own history. The fixture-based describe
+    // block above proves the mapping works on data that does overlap; this
+    // checks the loader's normalisation holds for every row regardless of
+    // how many currently match.
+    for (const row of corpus.rows) {
+      if (row.ranked === null) continue;
+      expect(row.ranked.best).toBeGreaterThan(0);
+      expect(Array.isArray(row.ranked.matches)).toBe(true);
+      expect(row.ranked.matches.length).toBeGreaterThan(0);
+      expect(Math.min(...row.ranked.matches.map((m) => m.position))).toBe(
+        row.ranked.best,
+      );
+    }
+  });
+
   it("returns null rather than Infinity when competition is zero", () => {
-    expect(
-      demandRatio({
-        keyword: "x",
-        capture: "2026-09-17",
-        searches: 10,
-        competition: 0,
-        kd: 0,
-        foundVia: [],
-        current: true,
-        supersededBy: null,
-        coverage: { seen: 1, of: 1 },
-      }),
-    ).toBeNull();
+    // demandRatio only needs searches/competition — narrowed from the full
+    // KeywordRow so it also accepts KeywordTableRow (lib/keyword-metrics.ts).
+    expect(demandRatio({ searches: 10, competition: 0 })).toBeNull();
   });
 
   it("normalises bulk keyword rows into camelCase, alongside the main rows", () => {

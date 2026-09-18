@@ -1,18 +1,25 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-const { mockFrom, mockSelect, mockEq, mockCreateClient } = vi.hoisted(() => {
-  const mockEq = vi.fn();
-  const mockSelect = vi.fn(() => ({ eq: mockEq }));
-  const mockFrom = vi.fn(() => ({ select: mockSelect }));
-  const mockCreateClient = vi.fn(() => ({ from: mockFrom }));
-  return { mockFrom, mockSelect, mockEq, mockCreateClient };
-});
+const { mockFrom, mockSelect, mockEq, mockAbortSignal, mockCreateClient } =
+  vi.hoisted(() => {
+    const mockAbortSignal = vi.fn();
+    const mockEq = vi.fn((..._args: unknown[]) => ({
+      abortSignal: mockAbortSignal,
+    }));
+    const mockSelect = vi.fn(() => ({ eq: mockEq }));
+    const mockFrom = vi.fn(() => ({ select: mockSelect }));
+    const mockCreateClient = vi.fn(() => ({ from: mockFrom }));
+    return { mockFrom, mockSelect, mockEq, mockAbortSignal, mockCreateClient };
+  });
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: mockCreateClient,
 }));
 
-import { getLatestListingSnapshots } from "@/lib/etsy-sync";
+import {
+  getLatestListingSnapshots,
+  resetLatestListingSnapshotsCacheForTests,
+} from "@/lib/etsy-sync";
 
 /**
  * The endpoint is stored as the un-interpolated template. Matching it loosely
@@ -29,7 +36,11 @@ beforeEach(() => {
   mockCreateClient.mockReturnValue({ from: mockFrom });
   mockFrom.mockReturnValue({ select: mockSelect });
   mockSelect.mockReturnValue({ eq: mockEq });
-  mockEq.mockResolvedValue({ data: [], error: null });
+  mockEq.mockReturnValue({ abortSignal: mockAbortSignal });
+  mockAbortSignal.mockResolvedValue({ data: [], error: null });
+  // Without this, the module-scope TTL cache (lib/etsy-sync.ts) would serve
+  // an earlier test's result instead of calling the mock again.
+  resetLatestListingSnapshotsCacheForTests();
 });
 
 afterEach(() => {
@@ -42,11 +53,11 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe("getLatestListingSnapshots — query", () => {
-  it("reads raw_response from the latest-snapshot view", async () => {
+  it("reads raw_response and captured_at from the latest-snapshot view", async () => {
     await getLatestListingSnapshots();
 
     expect(mockFrom).toHaveBeenCalledWith("etsy_latest_listing_snapshots");
-    expect(mockSelect).toHaveBeenCalledWith("raw_response");
+    expect(mockSelect).toHaveBeenCalledWith("raw_response,captured_at");
   });
 
   it("matches the endpoint exactly rather than by pattern", async () => {
@@ -58,6 +69,17 @@ describe("getLatestListingSnapshots — query", () => {
     const [, value] = mockEq.mock.calls[0];
     expect(value).not.toContain("%");
   });
+
+  it("bounds the read with a timeout, so a hung Supabase request can't hang the whole page", async () => {
+    // Round 14 finding: the silent-degrade design only covers a *rejected*
+    // read (design.md § Decisions) — a slow one still blocks the page's
+    // `await withTargeting(...)` indefinitely without this.
+    await getLatestListingSnapshots();
+
+    expect(mockAbortSignal).toHaveBeenCalledTimes(1);
+    const [signal] = mockAbortSignal.mock.calls[0];
+    expect(signal).toBeInstanceOf(AbortSignal);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -65,11 +87,13 @@ describe("getLatestListingSnapshots — query", () => {
 // ---------------------------------------------------------------------------
 
 describe("getLatestListingSnapshots — results", () => {
-  it("unwraps raw_response from each row", async () => {
-    mockEq.mockResolvedValue({
+  const NEWEST = "2026-09-17T00:00:00Z";
+
+  it("unwraps raw_response from each row in the latest capture", async () => {
+    mockAbortSignal.mockResolvedValue({
       data: [
-        { raw_response: { listing_id: 1, title: "one" } },
-        { raw_response: { listing_id: 2, title: "two" } },
+        { raw_response: { listing_id: 1, title: "one" }, captured_at: NEWEST },
+        { raw_response: { listing_id: 2, title: "two" }, captured_at: NEWEST },
       ],
       error: null,
     });
@@ -82,11 +106,11 @@ describe("getLatestListingSnapshots — results", () => {
   });
 
   it("drops rows with a null or malformed raw_response", async () => {
-    mockEq.mockResolvedValue({
+    mockAbortSignal.mockResolvedValue({
       data: [
-        { raw_response: null },
-        { raw_response: { title: "no listing_id" } },
-        { raw_response: { listing_id: 3 } },
+        { raw_response: null, captured_at: NEWEST },
+        { raw_response: { title: "no listing_id" }, captured_at: NEWEST },
+        { raw_response: { listing_id: 3 }, captured_at: NEWEST },
       ],
       error: null,
     });
@@ -96,8 +120,191 @@ describe("getLatestListingSnapshots — results", () => {
   });
 
   it("returns an empty array when the view has no rows", async () => {
-    mockEq.mockResolvedValue({ data: null, error: null });
+    mockAbortSignal.mockResolvedValue({ data: null, error: null });
     await expect(getLatestListingSnapshots()).resolves.toEqual([]);
+  });
+
+  it("drops a listing whose snapshot isn't from the latest capture", async () => {
+    // The view is newest-row-per-listing across ALL history, not just the
+    // latest run — a listing Etsy stopped returning (deleted, deactivated)
+    // keeps its final snapshot there forever. Only rows stamped with the
+    // newest captured_at in the batch count as "current", mirroring
+    // experiments/etsy-notion-sync/prototype/store_supabase.py's
+    // latest_from_current_capture.
+    mockAbortSignal.mockResolvedValue({
+      data: [
+        {
+          raw_response: { listing_id: 1, title: "current" },
+          captured_at: NEWEST,
+        },
+        {
+          raw_response: { listing_id: 2, title: "stale, gone from Etsy" },
+          captured_at: "2026-01-01T00:00:00Z",
+        },
+      ],
+      error: null,
+    });
+
+    const result = await getLatestListingSnapshots();
+    expect(result).toEqual([{ listing_id: 1, title: "current" }]);
+  });
+
+  it("returns no rows when every row's captured_at is null, rather than matching them all", async () => {
+    // The newest-captured_at reduction stays null when nothing has a
+    // timestamp to compare — `row.captured_at === newest` would then equal
+    // `row.captured_at === null`, matching every row in the batch and
+    // defeating the "latest capture only" filter entirely. An unidentifiable
+    // latest capture must resolve to nothing, not to everything.
+    mockAbortSignal.mockResolvedValue({
+      data: [
+        { raw_response: { listing_id: 1, title: "one" }, captured_at: null },
+        { raw_response: { listing_id: 2, title: "two" }, captured_at: null },
+      ],
+      error: null,
+    });
+
+    const result = await getLatestListingSnapshots();
+    expect(result).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Cache
+// ---------------------------------------------------------------------------
+
+describe("getLatestListingSnapshots — cache", () => {
+  const NEWEST = "2026-09-17T00:00:00Z";
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("reads Supabase again once the TTL window has elapsed", async () => {
+    // Distinct from "reads Supabase again once the cache is cleared" below:
+    // that test proves the manual test-only reset works, not that the
+    // advertised TTL itself actually expires anything. Without this, a
+    // regression that made the cache permanent (e.g. a typo'd comparison)
+    // would pass every other test in this block.
+    mockAbortSignal.mockResolvedValue({
+      data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
+      error: null,
+    });
+
+    await getLatestListingSnapshots();
+    vi.advanceTimersByTime(60 * 1000 + 1);
+    await getLatestListingSnapshots();
+
+    expect(mockEq).toHaveBeenCalledTimes(2);
+  });
+
+  it("serves a second call from cache without reading Supabase again", async () => {
+    mockAbortSignal.mockResolvedValue({
+      data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
+      error: null,
+    });
+
+    const first = await getLatestListingSnapshots();
+    const second = await getLatestListingSnapshots();
+
+    expect(first).toEqual([{ listing_id: 1 }]);
+    expect(second).toEqual([{ listing_id: 1 }]);
+    // Guards against the finding this test exists for: a public,
+    // force-dynamic route with no cache would call this on every anonymous
+    // page load, multiplying Supabase reads under a crawl or refresh burst.
+    expect(mockEq).toHaveBeenCalledTimes(1);
+  });
+
+  it("coalesces concurrent calls onto a single in-flight read", async () => {
+    // The cache is only populated after the awaited Supabase call resolves,
+    // so without in-flight coalescing, requests arriving while the first
+    // read is still pending would each see no cache yet and start their own
+    // duplicate query — exactly the burst this cache exists to absorb.
+    let resolveRead!: (value: { data: unknown; error: null }) => void;
+    mockAbortSignal.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveRead = resolve;
+      }),
+    );
+
+    const calls = Promise.all([
+      getLatestListingSnapshots(),
+      getLatestListingSnapshots(),
+      getLatestListingSnapshots(),
+    ]);
+    resolveRead({
+      data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
+      error: null,
+    });
+    const results = await calls;
+
+    for (const result of results) {
+      expect(result).toEqual([{ listing_id: 1 }]);
+    }
+    expect(mockEq).toHaveBeenCalledTimes(1);
+  });
+
+  it("reads Supabase again once the cache is cleared", async () => {
+    mockAbortSignal.mockResolvedValue({
+      data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
+      error: null,
+    });
+
+    await getLatestListingSnapshots();
+    resetLatestListingSnapshotsCacheForTests();
+    await getLatestListingSnapshots();
+
+    expect(mockEq).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not cache a failed read", async () => {
+    // A cached error would keep failing silently for the TTL window even
+    // after Supabase recovers — the opposite of the silent-degrade design
+    // (design.md § Decisions), which expects the *next* request to succeed
+    // once the underlying read does.
+    mockAbortSignal.mockResolvedValueOnce({
+      data: null,
+      error: { message: "boom" },
+    });
+    mockAbortSignal.mockResolvedValueOnce({
+      data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
+      error: null,
+    });
+
+    await expect(getLatestListingSnapshots()).rejects.toThrow("boom");
+    const result = await getLatestListingSnapshots();
+
+    expect(result).toEqual([{ listing_id: 1 }]);
+    expect(mockEq).toHaveBeenCalledTimes(2);
+  });
+
+  it("retries normally after a failure that throws synchronously, before any await", async () => {
+    // getServiceClient() throws before fetchLatestListingSnapshots() reaches
+    // its first `await` when credentials are missing — a distinct failure
+    // shape from "does not cache a failed read" above (which fails inside
+    // the awaited Supabase call). A `try/finally` *inside* the async
+    // function would have its `finally` run as part of that same
+    // synchronous throw, before the outer `snapshotFetchInFlight =
+    // <promise>` assignment even completes — leaving the in-flight slot
+    // permanently stuck on a dead, rejected promise for every later call.
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "");
+
+    await expect(getLatestListingSnapshots()).rejects.toThrow(
+      "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set",
+    );
+
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test-service-key");
+    mockAbortSignal.mockResolvedValue({
+      data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
+      error: null,
+    });
+    const result = await getLatestListingSnapshots();
+
+    expect(result).toEqual([{ listing_id: 1 }]);
+    expect(mockEq).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -107,7 +314,10 @@ describe("getLatestListingSnapshots — results", () => {
 
 describe("getLatestListingSnapshots — failures", () => {
   it("throws when Supabase returns an error", async () => {
-    mockEq.mockResolvedValue({ data: null, error: { message: "boom" } });
+    mockAbortSignal.mockResolvedValue({
+      data: null,
+      error: { message: "boom" },
+    });
 
     await expect(getLatestListingSnapshots()).rejects.toThrow(
       "Failed to load etsy listing snapshots: boom",
@@ -120,5 +330,19 @@ describe("getLatestListingSnapshots — failures", () => {
     await expect(getLatestListingSnapshots()).rejects.toThrow(
       "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set",
     );
+  });
+
+  it("throws (and so still degrades Targeting to blank) when the read is aborted for taking too long", async () => {
+    // Simulates what postgrest-js does when its own AbortSignal fires: the
+    // fetch rejects with an AbortError, which propagates as a rejected
+    // query promise rather than a resolved {data, error} — confirmed against
+    // the installed @supabase/postgrest-js source, not assumed.
+    const abortError = new Error("The user aborted a request.");
+    abortError.name = "AbortError";
+    mockAbortSignal.mockRejectedValue(abortError);
+
+    await expect(getLatestListingSnapshots()).rejects.toMatchObject({
+      name: "AbortError",
+    });
   });
 });

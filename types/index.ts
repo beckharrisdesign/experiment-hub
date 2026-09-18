@@ -146,6 +146,43 @@ export interface KeywordCoverage {
   of: number;
 }
 
+/**
+ * One W&H listing ranking for a keyword's exact text, from an
+ * `erank-spotted-on-etsy` pull.
+ */
+export interface RankedListingMatch {
+  listing: string;
+  page: number;
+  position: number;
+}
+
+/**
+ * A keyword's real-world search ranking, collapsed to its best (lowest)
+ * position for sorting — with every matching listing retained underneath so
+ * the collapse doesn't discard data. `null` means no observed ranking, never
+ * a `0`: absence here is unexplained, not evidence of failing to rank.
+ */
+export interface RankedMatch {
+  best: number;
+  matches: RankedListingMatch[];
+}
+
+/** One current listing that carries a keyword as one of its tags. */
+export interface TargetingListingMatch {
+  listingId: number;
+  slot: number;
+}
+
+/**
+ * A keyword's presence in current listing tags, collapsed to the lowest
+ * (earliest) tag slot (1–13) for sorting — every matching listing retained
+ * underneath. `null` means not currently targeted, never a `0`.
+ */
+export interface TargetingMatch {
+  best: number;
+  matches: TargetingListingMatch[];
+}
+
 /** One keyword as observed in one capture. */
 export interface KeywordRow {
   keyword: string;
@@ -157,6 +194,54 @@ export interface KeywordRow {
   current: boolean;
   supersededBy: string | null;
   coverage: KeywordCoverage;
+  /** From the corpus, refreshed by `ingest-pulls.py --apply`. */
+  ranked: RankedMatch | null;
+  /**
+   * Computed server-side, per request, against live listing snapshots — not
+   * part of the static corpus. `null` means no match OR the Supabase
+   * read failed (design.md § Decisions — a failure degrades to "no data").
+   */
+  targeting: TargetingMatch | null;
+}
+
+/**
+ * `KeywordRow`, collapsed to what actually reaches `KeywordTable` — a client
+ * component on a public, unauthenticated route. `toTableRows()`
+ * (`lib/keyword-traction.ts`) is what performs this collapse; the page calls
+ * it right before rendering, so `KeywordTable` only ever receives
+ * `KeywordTableRow`, never a raw `KeywordRow`.
+ *
+ * Ranked and Targeting are collapsed to the sort value (`.best`) only; the
+ * full per-listing detail (`RankedMatch.matches` — listing titles, pages,
+ * positions; `TargetingMatch.matches` — live listing IDs and which of the
+ * 13 tag slots they occupy) never leaves the server. The table only ever
+ * renders the number, so there is no reason to serialize the shop's
+ * tag-placement detail into the RSC payload for any anonymous visitor —
+ * that data stays server-side, in `KeywordRow`, for a future detail
+ * surface this change deliberately doesn't build (proposal.md § Not
+ * doing).
+ *
+ * Deliberately an explicit field list, not `Omit<KeywordRow, "ranked" |
+ * "targeting">` (round 12 finding): `Omit` is a denylist — it inherits every
+ * other `KeywordRow` field automatically, so a server-only field added to
+ * `KeywordRow` in a future change would silently start flowing to this
+ * public client component's props too, with nothing here forcing whoever
+ * adds it to notice. An explicit allowlist means a new `KeywordRow` field
+ * simply doesn't exist on `KeywordTableRow` until someone deliberately adds
+ * it here — the safer failure mode for a public-route data boundary.
+ */
+export interface KeywordTableRow {
+  keyword: string;
+  capture: string;
+  searches: number;
+  competition: number;
+  kd: number;
+  foundVia: KeywordQueryHit[];
+  current: boolean;
+  supersededBy: string | null;
+  coverage: KeywordCoverage;
+  ranked: number | null;
+  targeting: number | null;
 }
 
 export interface KeywordCapture {
