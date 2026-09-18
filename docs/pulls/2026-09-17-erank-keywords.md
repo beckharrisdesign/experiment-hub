@@ -18,7 +18,7 @@ answers: >-
 
 **What surface this is:** eRank's **third** instrument, and the first that is *marketwide and outside the shop's own vocabulary*. [The tag report](2026-09-15-erank.md) scores tags W&H already uses; [Spotted on Etsy](2026-09-17-erank-spotted-on-etsy.md) reports where W&H listings rank. This one reports demand for terms the shop has never touched. Read it as market reconnaissance, not as a to-do list — most of these rows describe products W&H does not make.
 
-> **Known gap:** these ten seeds were exported ad hoc and more exports exist in Katy’s Downloads that have never reached the record. Only what is in this directory counts as captured.
+> **Archive has grown past this note; the analysis below has not.** The gap flagged here closed fast — the archive now holds **50 keyword seeds, 410 corpus rows**, landed across [#501](https://github.com/beckharrisdesign/experiment-hub/pull/501) in the days after this capture, including every seed §4 asked for. **§0 through §6 below are the analysis of the original ten only** and were not re-run against the larger archive — the specific numbers ("83 rows", "four rows", "ten CSVs") describe that first capture and would misstate the current one if read as totals. The current query list and row count are queryable live in `data/keyword-corpus.json` (via `/keyword-explorer` on the hub) rather than restated here by hand, since that number now changes every time a new pull lands. Re-running §4 batch A's actual verdict — hand vs. machine embroidery demand — against the grown archive is still open and still gates the 2026-10-15 readout.
 
 ## 0. The category finding — read this before the rest
 

@@ -24,7 +24,22 @@ if [[ -n "$(git status --porcelain)" ]]; then
   exit 1
 fi
 
-git fetch origin main >/dev/null 2>&1 || true
+if ! git fetch origin main >/dev/null 2>&1; then
+  echo "Could not fetch origin/main -- check your network and git remote, then re-run." >&2
+  exit 1
+fi
+
+# Also fetch the standing branch itself, not just main -- with an explicit
+# refspec, not `git fetch origin "$BRANCH"`. A plain `git clone` configures a
+# fetch refspec that mirrors every branch, but `--single-branch` (a common
+# choice for a small local checkout) narrows it to main only; under that
+# narrowing, `git fetch origin "$BRANCH"` populates FETCH_HEAD but never
+# writes `refs/remotes/origin/$BRANCH`, so the `origin/$BRANCH` checkout
+# below still fails with "is not a commit" even though `git ls-remote`
+# correctly reports the branch exists on the server. The explicit refspec
+# writes the ref directly regardless of how the clone was configured.
+# Allowed to fail -- the branch may genuinely not exist yet on a first run.
+git fetch origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH" >/dev/null 2>&1 || true
 
 # Reuse the branch if it already exists (local or remote), so a second run
 # the same week adds to the same PR instead of opening a new one each time.

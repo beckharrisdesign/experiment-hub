@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
-import { copyFileSync, mkdtempSync } from "node:fs";
+import { copyFileSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
@@ -73,6 +73,91 @@ function buildCorpusViaScript(pulls?: string): {
   );
   return JSON.parse(out);
 }
+
+/**
+ * Call `read_keyword_csv()` directly against a given file and return its
+ * parsed rows verbatim.
+ *
+ * Independent of `generatorKeptRowCount()` above: that helper proves the
+ * *archive-wide total* agrees with the generator, which would stay green
+ * even if a regression inside `read_keyword_csv()` dropped one row and kept
+ * an extra malformed one, netting the same count. This checks the mapping
+ * itself — known input rows in, known output rows out — against a small
+ * fixture built for the purpose, not the real archive.
+ */
+function readKeywordCsvViaScript(csvPath: string): {
+  keyword: string;
+  searches: number;
+  competition: number;
+  kd: number;
+  tag_occurrences: number;
+}[] {
+  const out = execFileSync(
+    "python3",
+    [
+      "-c",
+      [
+        "import importlib.util, json, pathlib, sys",
+        "spec = importlib.util.spec_from_file_location('ip', 'scripts/ingest-pulls.py')",
+        "m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)",
+        `print(json.dumps(m.read_keyword_csv(pathlib.Path(${JSON.stringify(csvPath)}))))`,
+      ].join("\n"),
+    ],
+    { cwd: REPO, encoding: "utf8" },
+  );
+  return JSON.parse(out);
+}
+
+describe("read_keyword_csv row-keeping, against a hand-built fixture", () => {
+  // Five rows chosen to exercise every branch of the drop rule directly,
+  // independent of whatever the real archive happens to contain today:
+  // two clean rows, a comma-formatted number, a row eRank couldn't score
+  // (Competition "-", KD empty — the christmas-embroidery.csv shape), and a
+  // row with no keyword at all.
+  const dir = mkdtempSync(path.join(tmpdir(), "kw-fixture-"));
+  const fixture = path.join(dir, "2026-09-17-erank-keywords-fixturetest.csv");
+  writeFileSync(
+    fixture,
+    [
+      '"Keywords","Average Searches","Competition","KD","Tag Occurrences"',
+      '"clean row one",100,200,"10","5"',
+      '"clean row two",300,400,"20","7"',
+      '"comma formatted",1234,"46,800","64","1"',
+      '"unscorable long tail",50,"-","","0"',
+      '"",10,20,"5","1"',
+    ].join("\n"),
+    "utf8",
+  );
+
+  const rows = readKeywordCsvViaScript(fixture);
+
+  it("keeps every fully-numeric row, dropping nothing that should survive", () => {
+    expect(rows.map((r) => r.keyword)).toContain("clean row one");
+    expect(rows.map((r) => r.keyword)).toContain("clean row two");
+  });
+
+  it("strips commas from thousands-formatted numbers rather than dropping the row", () => {
+    const row = rows.find((r) => r.keyword === "comma formatted");
+    expect(row).toBeDefined();
+    expect(row!.competition).toBe(46800);
+  });
+
+  it("drops a row eRank couldn't score, by value, not just by count", () => {
+    // The exact row-keeping decision, not an aggregate that could hide a
+    // compensating bug elsewhere in the parser.
+    expect(rows.map((r) => r.keyword)).not.toContain("unscorable long tail");
+  });
+
+  it("skips a row with no keyword", () => {
+    expect(rows.some((r) => r.keyword === "")).toBe(false);
+  });
+
+  it("keeps exactly the three rows the fixture says it should, no more and no fewer", () => {
+    expect(rows.map((r) => r.keyword).sort()).toEqual(
+      ["clean row one", "clean row two", "comma formatted"].sort(),
+    );
+  });
+});
 
 describe("keyword corpus generation", () => {
   const corpus = buildCorpusViaScript();
