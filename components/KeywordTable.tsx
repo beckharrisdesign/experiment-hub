@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@beckharrisdesign/mvds";
-import type { KeywordRow } from "@/types";
+import type { KeywordTableRow } from "@/types";
 import { demandRatio, totalTagOccurrences } from "@/lib/keyword-corpus";
 
 type SortKey =
@@ -74,7 +74,7 @@ const RANGE_COLUMNS: { key: RangeKey; label: string }[] = [
 ];
 
 /** `null` for Ranked/Targeting means no observed match — never `0`. */
-function rangeValue(row: KeywordRow, key: RangeKey): number | null {
+function rangeValue(row: KeywordTableRow, key: RangeKey): number | null {
   switch (key) {
     case "searches":
       return row.searches;
@@ -83,9 +83,9 @@ function rangeValue(row: KeywordRow, key: RangeKey): number | null {
     case "kd":
       return row.kd;
     case "ranked":
-      return row.ranked?.best ?? null;
+      return row.ranked;
     case "targeting":
-      return row.targeting?.best ?? null;
+      return row.targeting;
     case "ratio":
       return demandRatio(row);
   }
@@ -110,7 +110,7 @@ function passesRange(
   return true;
 }
 
-function sortValue(row: KeywordRow, key: SortKey): string | number {
+function sortValue(row: KeywordTableRow, key: SortKey): string | number {
   switch (key) {
     case "keyword":
       return row.keyword;
@@ -132,13 +132,13 @@ function sortValue(row: KeywordRow, key: SortKey): string | number {
   }
 }
 
-function formatRatio(row: KeywordRow): string {
+function formatRatio(row: KeywordTableRow): string {
   const ratio = demandRatio(row);
   if (ratio === null) return "—";
   return ratio.toFixed(3);
 }
 
-export default function KeywordTable({ rows }: { rows: KeywordRow[] }) {
+export default function KeywordTable({ rows }: { rows: KeywordTableRow[] }) {
   const [sortKey, setSortKey] = useState<SortKey>("searches");
   const [direction, setDirection] = useState<Direction>("desc");
   const [keywordFilter, setKeywordFilter] = useState("");
@@ -192,14 +192,8 @@ export default function KeywordTable({ rows }: { rows: KeywordRow[] }) {
 
     const sorted = [...filtered].sort((a, b) => {
       if (sortKey === "ranked" || sortKey === "targeting") {
-        const av =
-          sortKey === "ranked"
-            ? (a.ranked?.best ?? null)
-            : (a.targeting?.best ?? null);
-        const bv =
-          sortKey === "ranked"
-            ? (b.ranked?.best ?? null)
-            : (b.targeting?.best ?? null);
+        const av = sortKey === "ranked" ? a.ranked : a.targeting;
+        const bv = sortKey === "ranked" ? b.ranked : b.targeting;
         if (av === null && bv === null)
           return a.keyword.localeCompare(b.keyword);
         if (av === null) return 1;
@@ -326,9 +320,13 @@ export default function KeywordTable({ rows }: { rows: KeywordRow[] }) {
 
         {rangeColumn !== NO_RANGE && (
           <>
+            {/* Searches/comp. is the one fractional column (demandRatio
+                returns e.g. 1.522) — a plain numeric keypad on mobile has no
+                decimal separator, so it switches to decimal for that column
+                only. Every other range target is a whole number. */}
             <input
               type="number"
-              inputMode="numeric"
+              inputMode={rangeColumn === "ratio" ? "decimal" : "numeric"}
               value={rangeMin}
               onChange={(e) => setRangeMin(e.target.value)}
               placeholder="Min"
@@ -340,7 +338,7 @@ export default function KeywordTable({ rows }: { rows: KeywordRow[] }) {
             </span>
             <input
               type="number"
-              inputMode="numeric"
+              inputMode={rangeColumn === "ratio" ? "decimal" : "numeric"}
               value={rangeMax}
               onChange={(e) => setRangeMax(e.target.value)}
               placeholder="Max"
@@ -415,12 +413,12 @@ export default function KeywordTable({ rows }: { rows: KeywordRow[] }) {
                 {/* Best (lowest) position across every ranking listing; blank,
                     never 0, when there is no Spotted on Etsy match. */}
                 <td className="w-[1%] whitespace-nowrap px-3 py-2 text-right text-text-primary">
-                  {formatTraction(row.ranked?.best ?? null)}
+                  {formatTraction(row.ranked)}
                 </td>
                 {/* Lowest matching tag slot (1–13) across every current
                     listing; blank, never 0, when untargeted. */}
                 <td className="w-[1%] whitespace-nowrap px-3 py-2 text-right text-text-primary">
-                  {formatTraction(row.targeting?.best ?? null)}
+                  {formatTraction(row.targeting)}
                 </td>
                 {/* Tag occurrences stay per query. `embroidery font` read 6,
                     81, 80 and 12 under four queries on one day; one merged

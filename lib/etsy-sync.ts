@@ -46,11 +46,27 @@ export async function getEtsySyncRuns(limit = 20): Promise<EtsySyncRun[]> {
  */
 const LISTINGS_ENDPOINT = "/v3/application/shops/{shop_id}/listings";
 
+interface LatestSnapshotRow {
+  raw_response: RawListing | null;
+  captured_at: string | null;
+}
+
 /**
- * Latest snapshot per listing, as raw Etsy JSON.
+ * Latest snapshot per listing, as raw Etsy JSON — restricted to the most
+ * recent capture run.
  *
  * Reads `etsy_latest_listing_snapshots` (the view already exposes
- * `raw_response`; only the Python client narrows its select to `parsed`).
+ * `raw_response` and `captured_at`; only the Python client narrows its
+ * select to `parsed`). That view is "newest row per listing across all
+ * history" and has no idea whether a listing still exists on Etsy — a
+ * listing deleted there keeps its final snapshot in the view forever. Rows
+ * whose `captured_at` isn't the newest in the batch are dropped here: that
+ * means "not in the latest capture" (deleted, deactivated, or a partial
+ * capture run), the same rule and reasoning as
+ * `experiments/etsy-notion-sync/prototype/store_supabase.py`'s
+ * `latest_from_current_capture`, kept consistent across the Python and TS
+ * sides of this pipeline rather than diverging.
+ *
  * Server-only — the service-role key is required and `raw_response` may carry
  * `user`/buyer fields via the `User` include, so callers must project to
  * scores before sending anything to the browser.
@@ -58,14 +74,22 @@ const LISTINGS_ENDPOINT = "/v3/application/shops/{shop_id}/listings";
 export async function getLatestListingSnapshots(): Promise<RawListing[]> {
   const { data, error } = await getServiceClient()
     .from("etsy_latest_listing_snapshots")
-    .select("raw_response")
+    .select("raw_response,captured_at")
     .eq("endpoint", LISTINGS_ENDPOINT);
   if (error) {
     throw new Error(`Failed to load etsy listing snapshots: ${error.message}`);
   }
-  return (data ?? [])
-    .map((row) => (row as { raw_response: RawListing | null }).raw_response)
-    .filter((raw): raw is RawListing => !!raw && typeof raw.listing_id === "number");
+  const rows = (data ?? []) as LatestSnapshotRow[];
+  const newest = rows.reduce<string | null>((max, row) => {
+    if (!row.captured_at) return max;
+    return !max || row.captured_at > max ? row.captured_at : max;
+  }, null);
+  return rows
+    .filter((row) => row.captured_at === newest)
+    .map((row) => row.raw_response)
+    .filter(
+      (raw): raw is RawListing => !!raw && typeof raw.listing_id === "number",
+    );
 }
 
 const WORKFLOW_FILE = "etsy-notion-sync.yml";

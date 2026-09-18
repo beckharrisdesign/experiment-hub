@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { computeTargeting } from "@/lib/keyword-traction";
+import { computeTargeting, toTableRows } from "@/lib/keyword-traction";
 import type { RawListing } from "@/lib/etsy-scorecard";
 import type { KeywordRow } from "@/types";
 
@@ -173,6 +173,32 @@ describe("withTargeting", () => {
     });
     const [result] = await withTargeting([staleRow]);
 
+    expect(result.targeting).toBeNull();
+  });
+});
+
+describe("toTableRows", () => {
+  it("collapses ranked and targeting to .best, dropping matches entirely", () => {
+    const [result] = toTableRows([
+      keywordRow({
+        ranked: {
+          best: 8,
+          matches: [{ listing: "Listing A", page: 2, position: 8 }],
+        },
+        targeting: { best: 3, matches: [{ listingId: 1, slot: 3 }] },
+      }),
+    ]);
+    expect(result.ranked).toBe(8);
+    expect(result.targeting).toBe(3);
+    expect(result).not.toHaveProperty("ranked.matches");
+    expect(result).not.toHaveProperty("targeting.matches");
+  });
+
+  it("passes null through as null, not 0", () => {
+    const [result] = toTableRows([
+      keywordRow({ ranked: null, targeting: null }),
+    ]);
+    expect(result.ranked).toBeNull();
     expect(result.targeting).toBeNull();
   });
 });

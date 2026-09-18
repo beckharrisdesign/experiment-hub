@@ -42,11 +42,11 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe("getLatestListingSnapshots — query", () => {
-  it("reads raw_response from the latest-snapshot view", async () => {
+  it("reads raw_response and captured_at from the latest-snapshot view", async () => {
     await getLatestListingSnapshots();
 
     expect(mockFrom).toHaveBeenCalledWith("etsy_latest_listing_snapshots");
-    expect(mockSelect).toHaveBeenCalledWith("raw_response");
+    expect(mockSelect).toHaveBeenCalledWith("raw_response,captured_at");
   });
 
   it("matches the endpoint exactly rather than by pattern", async () => {
@@ -65,11 +65,13 @@ describe("getLatestListingSnapshots — query", () => {
 // ---------------------------------------------------------------------------
 
 describe("getLatestListingSnapshots — results", () => {
-  it("unwraps raw_response from each row", async () => {
+  const NEWEST = "2026-09-17T00:00:00Z";
+
+  it("unwraps raw_response from each row in the latest capture", async () => {
     mockEq.mockResolvedValue({
       data: [
-        { raw_response: { listing_id: 1, title: "one" } },
-        { raw_response: { listing_id: 2, title: "two" } },
+        { raw_response: { listing_id: 1, title: "one" }, captured_at: NEWEST },
+        { raw_response: { listing_id: 2, title: "two" }, captured_at: NEWEST },
       ],
       error: null,
     });
@@ -84,9 +86,9 @@ describe("getLatestListingSnapshots — results", () => {
   it("drops rows with a null or malformed raw_response", async () => {
     mockEq.mockResolvedValue({
       data: [
-        { raw_response: null },
-        { raw_response: { title: "no listing_id" } },
-        { raw_response: { listing_id: 3 } },
+        { raw_response: null, captured_at: NEWEST },
+        { raw_response: { title: "no listing_id" }, captured_at: NEWEST },
+        { raw_response: { listing_id: 3 }, captured_at: NEWEST },
       ],
       error: null,
     });
@@ -98,6 +100,31 @@ describe("getLatestListingSnapshots — results", () => {
   it("returns an empty array when the view has no rows", async () => {
     mockEq.mockResolvedValue({ data: null, error: null });
     await expect(getLatestListingSnapshots()).resolves.toEqual([]);
+  });
+
+  it("drops a listing whose snapshot isn't from the latest capture", async () => {
+    // The view is newest-row-per-listing across ALL history, not just the
+    // latest run — a listing Etsy stopped returning (deleted, deactivated)
+    // keeps its final snapshot there forever. Only rows stamped with the
+    // newest captured_at in the batch count as "current", mirroring
+    // experiments/etsy-notion-sync/prototype/store_supabase.py's
+    // latest_from_current_capture.
+    mockEq.mockResolvedValue({
+      data: [
+        {
+          raw_response: { listing_id: 1, title: "current" },
+          captured_at: NEWEST,
+        },
+        {
+          raw_response: { listing_id: 2, title: "stale, gone from Etsy" },
+          captured_at: "2026-01-01T00:00:00Z",
+        },
+      ],
+      error: null,
+    });
+
+    const result = await getLatestListingSnapshots();
+    expect(result).toEqual([{ listing_id: 1, title: "current" }]);
   });
 });
 

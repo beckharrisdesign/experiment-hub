@@ -1,6 +1,6 @@
 import type { RawListing } from "@/lib/etsy-scorecard";
 import { getLatestListingSnapshots } from "@/lib/etsy-sync";
-import type { KeywordRow, TargetingMatch } from "@/types";
+import type { KeywordRow, KeywordTableRow, TargetingMatch } from "@/types";
 
 /**
  * Which of a listing's (up to 13) tag slots each corpus keyword occupies,
@@ -14,12 +14,13 @@ import type { KeywordRow, TargetingMatch } from "@/types";
  * its title. A tag slot number means nothing for a title hit, so title is out
  * of scope for this signal (proposal.md § Not doing).
  *
- * `getLatestListingSnapshots()` returns the newest snapshot per listing
- * across all history — a listing pulled from Etsy (deleted, deactivated,
- * expired) keeps its last-known snapshot and tags there. Without filtering,
- * a keyword could read "targeted" long after the listing that carried it
- * stopped being live. Only `state === "active"` counts, matching the same
- * field's use elsewhere (`lib/etsy-listing-kit/evaluate.ts`).
+ * Two filters guard against a stale listing reading as "targeted":
+ * `getLatestListingSnapshots()` already restricts to the most recent capture
+ * run (a listing Etsy stopped returning at all is excluded there); the
+ * `state === "active"` check here catches the narrower case of a listing
+ * that *was* captured this run but isn't a live, sellable listing (draft,
+ * inactive, expired) — matching the same field's use elsewhere
+ * (`lib/etsy-listing-kit/evaluate.ts`).
  */
 export function computeTargeting(
   keywords: string[],
@@ -80,4 +81,23 @@ export async function withTargeting(rows: KeywordRow[]): Promise<KeywordRow[]> {
     console.error("keyword-explorer: Targeting read failed", error);
     return rows.map((row) => ({ ...row, targeting: null }));
   }
+}
+
+/**
+ * Collapses `ranked`/`targeting` from their full `{best, matches}` shape to
+ * `.best` alone — the boundary between server-side `KeywordRow` and the
+ * client-component `KeywordTableRow`.
+ *
+ * `KeywordTable` is a client component on a public, unauthenticated route,
+ * so whatever this function passes through gets serialized into the RSC
+ * payload for any visitor. `matches` (live listing IDs, tag slots, ranked
+ * listing titles/positions) is never read by the table — only `.best` is —
+ * so it stays server-side rather than shipping to the browser for no reason.
+ */
+export function toTableRows(rows: KeywordRow[]): KeywordTableRow[] {
+  return rows.map((row) => ({
+    ...row,
+    ranked: row.ranked?.best ?? null,
+    targeting: row.targeting?.best ?? null,
+  }));
 }

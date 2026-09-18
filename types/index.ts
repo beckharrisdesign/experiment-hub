@@ -198,11 +198,32 @@ export interface KeywordRow {
   ranked: RankedMatch | null;
   /**
    * Computed server-side, per request, against live listing snapshots — not
-   * part of the static corpus. Always present (never `undefined`) on a row
-   * that has reached `KeywordTable`; `null` means no match OR the Supabase
+   * part of the static corpus. `null` means no match OR the Supabase
    * read failed (design.md § Decisions — a failure degrades to "no data").
    */
   targeting: TargetingMatch | null;
+}
+
+/**
+ * `KeywordRow`, as passed into `KeywordTable` — a client component on a
+ * public, unauthenticated route.
+ *
+ * Ranked and Targeting are collapsed to the sort value (`.best`) only; the
+ * full per-listing detail (`RankedMatch.matches` — listing titles, pages,
+ * positions; `TargetingMatch.matches` — live listing IDs and which of the
+ * 13 tag slots they occupy) never leaves the server. The table only ever
+ * renders the number, so there is no reason to serialize the shop's
+ * tag-placement detail into the RSC payload for any anonymous visitor —
+ * that data stays server-side, in `KeywordRow`, for a future detail
+ * surface this change deliberately doesn't build (proposal.md § Not
+ * doing).
+ */
+export interface KeywordTableRow extends Omit<
+  KeywordRow,
+  "ranked" | "targeting"
+> {
+  ranked: number | null;
+  targeting: number | null;
 }
 
 export interface KeywordCapture {

@@ -1,7 +1,7 @@
 import { beforeAll, describe, it, expect } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import KeywordTable from "@/components/KeywordTable";
-import type { KeywordRow } from "@/types";
+import type { KeywordTableRow } from "@/types";
 
 // jsdom doesn't implement these, and Radix Select (under MVDS's `Select`)
 // calls them when an option is chosen — without a stub, "Range filter
@@ -13,7 +13,7 @@ beforeAll(() => {
   Element.prototype.releasePointerCapture ??= () => {};
 });
 
-function row(overrides: Partial<KeywordRow>): KeywordRow {
+function row(overrides: Partial<KeywordTableRow>): KeywordTableRow {
   return {
     keyword: "keyword",
     capture: "2026-09-17",
@@ -30,27 +30,23 @@ function row(overrides: Partial<KeywordRow>): KeywordRow {
   };
 }
 
-const ROWS: KeywordRow[] = [
-  row({
-    keyword: "snow globe",
-    searches: 210,
-    ranked: {
-      best: 8,
-      matches: [{ listing: "penguin", page: 2, position: 8 }],
-    },
-    targeting: { best: 3, matches: [{ listingId: 1, slot: 3 }] },
-  }),
-  row({
-    keyword: "calm stitching",
-    searches: 40,
-    ranked: { best: 1, matches: [{ listing: "geo", page: 1, position: 1 }] },
-    targeting: null,
-  }),
+// KeywordTable's props are already collapsed to the sort value (`.best`) —
+// the full per-listing detail never reaches this client component. See
+// lib/keyword-traction.ts::toTableRows and types/index.ts::KeywordTableRow.
+const ROWS: KeywordTableRow[] = [
+  row({ keyword: "snow globe", searches: 210, ranked: 8, targeting: 3 }),
+  row({ keyword: "calm stitching", searches: 40, ranked: 1, targeting: null }),
   row({
     keyword: "embroidery font",
     searches: 1400,
     ranked: null,
     targeting: null,
+  }),
+  row({
+    keyword: "wooden wick candle",
+    searches: 15,
+    ranked: null,
+    targeting: 5,
   }),
 ];
 
@@ -104,12 +100,28 @@ describe("KeywordTable — Ranked and Targeting columns", () => {
   it("sorts blank Ranked rows after populated ones, in either direction", () => {
     render(<KeywordTable rows={ROWS} />);
     const header = screen.getByRole("button", { name: /Ranked/ });
+    const blanks = new Set(["embroidery font", "wooden wick candle"]);
 
     fireEvent.click(header); // first click: desc
-    expect(keywordOrder().at(-1)).toBe("embroidery font");
+    expect(new Set(keywordOrder().slice(-2))).toEqual(blanks);
 
     fireEvent.click(header); // second click: asc
-    expect(keywordOrder().at(-1)).toBe("embroidery font");
+    expect(new Set(keywordOrder().slice(-2))).toEqual(blanks);
+  });
+
+  it("sorts blank Targeting rows after populated ones, in either direction", () => {
+    // A separate code path from Ranked (its own sortKey branch and its own
+    // rangeValue case) — asserted independently so a regression specific to
+    // Targeting can't hide behind the Ranked test passing.
+    render(<KeywordTable rows={ROWS} />);
+    const header = screen.getByRole("button", { name: /Targeting/ });
+    const blanks = new Set(["calm stitching", "embroidery font"]);
+
+    fireEvent.click(header); // first click: desc
+    expect(new Set(keywordOrder().slice(-2))).toEqual(blanks);
+
+    fireEvent.click(header); // second click: asc
+    expect(new Set(keywordOrder().slice(-2))).toEqual(blanks);
   });
 });
 
@@ -148,5 +160,33 @@ describe("KeywordTable — range filter", () => {
     expect(visible).toContain("calm stitching"); // ranked 1, passes <= 5
     expect(visible).not.toContain("snow globe"); // ranked 8, fails <= 5
     expect(visible).toContain("embroidery font"); // blank, not excluded by a max-only bound
+  });
+
+  it("narrows to rows within a minimum bound on Targeting", () => {
+    // Own describe-level case, not just Ranked — the range picker has a
+    // separate Targeting branch in rangeValue().
+    render(<KeywordTable rows={ROWS} />);
+    chooseRangeColumn("Targeting");
+    fireEvent.change(screen.getByLabelText("Range filter minimum"), {
+      target: { value: "4" },
+    });
+
+    const visible = keywordOrder();
+    expect(visible).toContain("wooden wick candle"); // targeting 5, passes >= 4
+    expect(visible).not.toContain("snow globe"); // targeting 3, fails >= 4
+    expect(visible).not.toContain("calm stitching"); // blank, excluded by a min bound
+  });
+
+  it("keeps blank rows when only a max bound is set on Targeting", () => {
+    render(<KeywordTable rows={ROWS} />);
+    chooseRangeColumn("Targeting");
+    fireEvent.change(screen.getByLabelText("Range filter maximum"), {
+      target: { value: "4" },
+    });
+
+    const visible = keywordOrder();
+    expect(visible).toContain("snow globe"); // targeting 3, passes <= 4
+    expect(visible).not.toContain("wooden wick candle"); // targeting 5, fails <= 4
+    expect(visible).toContain("calm stitching"); // blank, not excluded by a max-only bound
   });
 });

@@ -311,13 +311,18 @@ describe("Ranked: joined from erank-spotted-on-etsy, against a fixture", () => {
   // file simply being renamed/superseded — the same class of brittleness
   // already fixed elsewhere in this file. Every value here is owned by the
   // test.
+  //
+  // The Search Term casing ("Snow Globe") deliberately differs from the
+  // keyword CSV's ("snow globe") to actually exercise the join's
+  // case-insensitive match — same casing on both sides would pass this test
+  // even if the `.lower()` normalisation regressed.
   const dir = mkdtempSync(path.join(tmpdir(), "kw-ranked-"));
   writeFileSync(
     path.join(dir, "2026-09-17-erank-spotted-on-etsy.csv"),
     [
       '"Shop/Listing","Search Term","Page","Position","Spotted By"',
-      '"Listing A","snow globe",2,38,"eRank Monitor"',
-      '"Listing B","snow globe",2,8,"eRank Monitor"',
+      '"Listing A","Snow Globe",2,38,"eRank Monitor"',
+      '"Listing B","Snow Globe",2,8,"eRank Monitor"',
     ].join("\n"),
     "utf8",
   );
@@ -476,20 +481,8 @@ describe("corpus loader", () => {
   });
 
   it("returns null rather than Infinity when competition is zero", () => {
-    expect(
-      demandRatio({
-        keyword: "x",
-        capture: "2026-09-17",
-        searches: 10,
-        competition: 0,
-        kd: 0,
-        foundVia: [],
-        current: true,
-        supersededBy: null,
-        coverage: { seen: 1, of: 1 },
-        ranked: null,
-        targeting: null,
-      }),
-    ).toBeNull();
+    // demandRatio only needs searches/competition — narrowed from the full
+    // KeywordRow so it also accepts KeywordTableRow (lib/keyword-corpus.ts).
+    expect(demandRatio({ searches: 10, competition: 0 })).toBeNull();
   });
 });

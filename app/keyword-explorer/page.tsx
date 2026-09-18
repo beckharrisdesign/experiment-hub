@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Sidebar from "@/components/Sidebar";
 import KeywordTable from "@/components/KeywordTable";
 import { loadKeywordCorpus } from "@/lib/keyword-corpus";
-import { withTargeting } from "@/lib/keyword-traction";
+import { toTableRows, withTargeting } from "@/lib/keyword-traction";
 
 export const metadata: Metadata = {
   title: "Keyword Explorer — BHD Labs",
@@ -33,7 +33,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function KeywordExplorerPage() {
   const corpus = loadKeywordCorpus();
-  const rows = await withTargeting(corpus.rows);
+  const rows = toTableRows(await withTargeting(corpus.rows));
   const captures = corpus.captures.length;
 
   return (
