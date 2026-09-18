@@ -23,6 +23,7 @@
         "cutecore",
         "digital products",
         "do it yourself",
+        "earrings",
         "embroidery designs",
         "embroidery font",
         "embroidery fonts",
@@ -806,6 +807,25 @@
       }
     },
     {
+      "keyword": "titanium earrings",
+      "capture": "2026-09-17",
+      "searches": 5465,
+      "competition": 27899,
+      "kd": 35,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "winter door decor",
       "capture": "2026-09-17",
       "searches": 5437,
@@ -1155,6 +1175,25 @@
         {
           "query": "wall art",
           "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "flat back earrings",
+      "capture": "2026-09-17",
+      "searches": 4546,
+      "competition": 18824,
+      "kd": 31,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
         }
       ],
       "current": true,
@@ -2685,6 +2724,10 @@
         {
           "query": "do it yourself",
           "tag_occurrences": 1
+        },
+        {
+          "query": "earrings",
+          "tag_occurrences": 2
         }
       ],
       "current": true,
@@ -3064,6 +3107,25 @@
       }
     },
     {
+      "keyword": "moissanite earrings",
+      "capture": "2026-09-17",
+      "searches": 2485,
+      "competition": 20495,
+      "kd": 46,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "paint by numbers",
       "capture": "2026-09-17",
       "searches": 2481,
@@ -3222,6 +3284,25 @@
       "found_via": [
         {
           "query": "car magnets",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "something blue",
+      "capture": "2026-09-17",
+      "searches": 2429,
+      "competition": 36754,
+      "kd": 59,
+      "found_via": [
+        {
+          "query": "earrings",
           "tag_occurrences": 1
         }
       ],
@@ -3763,6 +3844,25 @@
       }
     },
     {
+      "keyword": "opal earrings",
+      "capture": "2026-09-17",
+      "searches": 2181,
+      "competition": 39155,
+      "kd": 63,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "mother of the groom gift",
       "capture": "2026-09-17",
       "searches": 2177,
@@ -4039,6 +4139,25 @@
         {
           "query": "cutecore",
           "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "sword earrings",
+      "capture": "2026-09-17",
+      "searches": 2079,
+      "competition": 3297,
+      "kd": 10,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
         }
       ],
       "current": true,
@@ -4437,6 +4556,25 @@
       }
     },
     {
+      "keyword": "emerald earrings",
+      "capture": "2026-09-17",
+      "searches": 1920,
+      "competition": 38203,
+      "kd": 65,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "50th birthday gift for women",
       "capture": "2026-09-17",
       "searches": 1909,
@@ -4483,6 +4621,44 @@
       "found_via": [
         {
           "query": "gift",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "sun earrings",
+      "capture": "2026-09-17",
+      "searches": 1887,
+      "competition": 20668,
+      "kd": 52,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "moss agate earrings",
+      "capture": "2026-09-17",
+      "searches": 1878,
+      "competition": 3135,
+      "kd": 11,
+      "found_via": [
+        {
+          "query": "earrings",
           "tag_occurrences": 0
         }
       ],
@@ -4551,6 +4727,25 @@
       }
     },
     {
+      "keyword": "flatback earrings",
+      "capture": "2026-09-17",
+      "searches": 1867,
+      "competition": 6234,
+      "kd": 26,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "big sister shirt",
       "capture": "2026-09-17",
       "searches": 1866,
@@ -4559,6 +4754,44 @@
       "found_via": [
         {
           "query": "shirt",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "jewelry organizer",
+      "capture": "2026-09-17",
+      "searches": 1853,
+      "competition": 35520,
+      "kd": 64,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 3
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "fish earrings",
+      "capture": "2026-09-17",
+      "searches": 1851,
+      "competition": 24851,
+      "kd": 56,
+      "found_via": [
+        {
+          "query": "earrings",
           "tag_occurrences": 0
         }
       ],
@@ -4655,6 +4888,44 @@
         {
           "query": "gift",
           "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "book earrings",
+      "capture": "2026-09-17",
+      "searches": 1803,
+      "competition": 11642,
+      "kd": 41,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "diwali",
+      "capture": "2026-09-17",
+      "searches": 1783,
+      "competition": 29301,
+      "kd": 61,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 2
         }
       ],
       "current": true,
@@ -4840,6 +5111,25 @@
       }
     },
     {
+      "keyword": "jade earrings",
+      "capture": "2026-09-17",
+      "searches": 1701,
+      "competition": 19892,
+      "kd": 53,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "mothman shirt",
       "capture": "2026-09-17",
       "searches": 1700,
@@ -4973,6 +5263,25 @@
       }
     },
     {
+      "keyword": "threader earrings",
+      "capture": "2026-09-17",
+      "searches": 1669,
+      "competition": 15844,
+      "kd": 49,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "corgi shirt",
       "capture": "2026-09-17",
       "searches": 1668,
@@ -5039,6 +5348,63 @@
         {
           "query": "shirt",
           "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "huggie hoop earrings",
+      "capture": "2026-09-17",
+      "searches": 1633,
+      "competition": 36667,
+      "kd": 68,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "waterproof earrings",
+      "capture": "2026-09-17",
+      "searches": 1633,
+      "competition": 5521,
+      "kd": 26,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "small hoop earrings",
+      "capture": "2026-09-17",
+      "searches": 1631,
+      "competition": 30743,
+      "kd": 64,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
         }
       ],
       "current": true,
@@ -5125,6 +5491,44 @@
       }
     },
     {
+      "keyword": "huggies",
+      "capture": "2026-09-17",
+      "searches": 1610,
+      "competition": 18618,
+      "kd": 53,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "bird earrings",
+      "capture": "2026-09-17",
+      "searches": 1608,
+      "competition": 25744,
+      "kd": 60,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "officiant gift",
       "capture": "2026-09-17",
       "searches": 1607,
@@ -5194,6 +5598,25 @@
         },
         {
           "query": "holiday care package",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "aquamarine earrings",
+      "capture": "2026-09-17",
+      "searches": 1595,
+      "competition": 15867,
+      "kd": 50,
+      "found_via": [
+        {
+          "query": "earrings",
           "tag_occurrences": 1
         }
       ],
@@ -5532,6 +5955,25 @@
       }
     },
     {
+      "keyword": "weird earrings",
+      "capture": "2026-09-17",
+      "searches": 1523,
+      "competition": 8606,
+      "kd": 38,
+      "found_via": [
+        {
+          "query": "earrings",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
       "keyword": "custom bootleg shirt",
       "capture": "2026-09-17",
       "searches": 1518,
@@ -5616,6 +6058,25 @@
       "found_via": [
         {
           "query": "gift",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "surgical steel earrings",
+      "capture": "2026-09-17",
+      "searches": 1505,
+      "competition": 20092,
+      "kd": 56,
+      "found_via": [
+        {
+          "query": "earrings",
           "tag_occurrences": 0
         }
       ],
