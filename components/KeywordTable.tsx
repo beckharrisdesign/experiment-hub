@@ -111,20 +111,45 @@ function passesRange(
   return true;
 }
 
-function sortValue(row: KeywordTableRow, key: SortKey): string | number {
+/** Sort keys whose value can be `null` (no data, never a fabricated 0) —
+ * handled by the comparator's null-safe branch below rather than by
+ * `sortValue`, which only ever needs to return a definite value. */
+const NULLABLE_NUMERIC_KEYS = new Set<SortKey>([
+  "searches",
+  "competition",
+  "kd",
+  "ranked",
+  "targeting",
+]);
+
+function nullableSortValue(row: KeywordTableRow, key: SortKey): number | null {
   switch (key) {
-    case "keyword":
-      return row.keyword;
     case "searches":
       return row.searches;
     case "competition":
       return row.competition;
     case "kd":
       return row.kd;
+    case "ranked":
+      return row.ranked;
+    case "targeting":
+      return row.targeting;
+    default:
+      return null;
+  }
+}
+
+function sortValue(row: KeywordTableRow, key: SortKey): string | number {
+  switch (key) {
+    case "keyword":
+      return row.keyword;
     case "tagOccurrences":
       return totalTagOccurrences(row);
     case "ratio":
       return demandRatio(row) ?? -1;
+    case "searches":
+    case "competition":
+    case "kd":
     case "ranked":
     case "targeting":
       // Handled separately in the sort comparator — blank always sorts last,
@@ -211,9 +236,9 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
           );
 
     const sorted = [...filtered].sort((a, b) => {
-      if (sortKey === "ranked" || sortKey === "targeting") {
-        const av = sortKey === "ranked" ? a.ranked : a.targeting;
-        const bv = sortKey === "ranked" ? b.ranked : b.targeting;
+      if (NULLABLE_NUMERIC_KEYS.has(sortKey)) {
+        const av = nullableSortValue(a, sortKey);
+        const bv = nullableSortValue(b, sortKey);
         if (av === null && bv === null)
           return a.keyword.localeCompare(b.keyword);
         if (av === null) return 1;
@@ -431,14 +456,17 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                 <td className="w-full whitespace-nowrap px-3 py-2 text-text-primary">
                   {row.keyword}
                 </td>
+                {/* Blank, never 0, on a row synthesized purely from a
+                    real-world Etsy ranking the Keyword Tool has never
+                    scored — see KeywordRow.searches's own comment. */}
                 <td className="w-[1%] whitespace-nowrap px-3 py-2 text-right text-text-primary">
-                  {row.searches.toLocaleString()}
+                  {formatTraction(row.searches)}
                 </td>
                 <td className="w-[1%] whitespace-nowrap px-3 py-2 text-right text-text-primary">
-                  {row.competition.toLocaleString()}
+                  {formatTraction(row.competition)}
                 </td>
                 <td className="w-[1%] whitespace-nowrap px-3 py-2 text-right text-text-primary">
-                  {row.kd}
+                  {formatTraction(row.kd)}
                 </td>
                 {/* Best (lowest) position across every ranking listing; blank,
                     never 0, when there is no Spotted on Etsy match. */}
