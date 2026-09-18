@@ -102,6 +102,39 @@ export function resetLatestListingSnapshotsCacheForTests(): void {
  * `user`/buyer fields via the `User` include, so callers must project to
  * scores before sending anything to the browser.
  */
+async function fetchLatestListingSnapshots(): Promise<RawListing[]> {
+  const { data, error } = await getServiceClient()
+    .from("etsy_latest_listing_snapshots")
+    .select("raw_response,captured_at")
+    .eq("endpoint", LISTINGS_ENDPOINT);
+  if (error) {
+    throw new Error(`Failed to load etsy listing snapshots: ${error.message}`);
+  }
+  const rows = (data ?? []) as LatestSnapshotRow[];
+  const newest = rows.reduce<string | null>((max, row) => {
+    if (!row.captured_at) return max;
+    return !max || row.captured_at > max ? row.captured_at : max;
+  }, null);
+  // If every row's captured_at is null (or there are no rows at all),
+  // newest stays null — and `row.captured_at === newest` would then
+  // match every null-timestamp row, passing all of them through as
+  // "current" instead of none. An all-null batch means the capture can't
+  // be identified as latest, so it must resolve to no rows, not to all
+  // rows.
+  if (newest === null) {
+    snapshotCache = { at: Date.now(), result: [] };
+    return [];
+  }
+  const result = rows
+    .filter((row) => row.captured_at === newest)
+    .map((row) => row.raw_response)
+    .filter(
+      (raw): raw is RawListing => !!raw && typeof raw.listing_id === "number",
+    );
+  snapshotCache = { at: Date.now(), result };
+  return result;
+}
+
 export async function getLatestListingSnapshots(): Promise<RawListing[]> {
   if (snapshotCache && Date.now() - snapshotCache.at < SNAPSHOT_CACHE_TTL_MS) {
     return snapshotCache.result;
@@ -110,50 +143,24 @@ export async function getLatestListingSnapshots(): Promise<RawListing[]> {
     return snapshotFetchInFlight;
   }
 
-  snapshotFetchInFlight = (async () => {
-    try {
-      const { data, error } = await getServiceClient()
-        .from("etsy_latest_listing_snapshots")
-        .select("raw_response,captured_at")
-        .eq("endpoint", LISTINGS_ENDPOINT);
-      if (error) {
-        throw new Error(
-          `Failed to load etsy listing snapshots: ${error.message}`,
-        );
-      }
-      const rows = (data ?? []) as LatestSnapshotRow[];
-      const newest = rows.reduce<string | null>((max, row) => {
-        if (!row.captured_at) return max;
-        return !max || row.captured_at > max ? row.captured_at : max;
-      }, null);
-      // If every row's captured_at is null (or there are no rows at all),
-      // newest stays null — and `row.captured_at === newest` would then
-      // match every null-timestamp row, passing all of them through as
-      // "current" instead of none. An all-null batch means the capture can't
-      // be identified as latest, so it must resolve to no rows, not to all
-      // rows.
-      if (newest === null) {
-        snapshotCache = { at: Date.now(), result: [] };
-        return [];
-      }
-      const result = rows
-        .filter((row) => row.captured_at === newest)
-        .map((row) => row.raw_response)
-        .filter(
-          (raw): raw is RawListing =>
-            !!raw && typeof raw.listing_id === "number",
-        );
-      snapshotCache = { at: Date.now(), result };
-      return result;
-    } finally {
-      // Cleared whether the read succeeded or threw: a failure must not
-      // leave later callers permanently coalesced onto a dead promise, and
-      // must not be cached either (see the failure-mode tests) — the next
-      // call, concurrent or not, gets a real retry.
+  // getServiceClient() (called inside fetchLatestListingSnapshots, before its
+  // first await) can throw synchronously — e.g. the missing-env-vars case
+  // below, a tested failure path. A `try/finally` *inside* an async function
+  // runs its `finally` as part of that same synchronous throw, which would
+  // fire before the `snapshotFetchInFlight = ...` assignment below even
+  // completes — clearing a value that then immediately gets overwritten with
+  // the rejected promise, permanently stuck. `.finally()` chained onto the
+  // returned promise instead always defers to a microtask, so it can only
+  // run after this synchronous assignment — regardless of whether the
+  // failure was synchronous or not. The identity check guards against
+  // clearing a newer in-flight promise in case of any future reentrancy.
+  const promise = fetchLatestListingSnapshots().finally(() => {
+    if (snapshotFetchInFlight === promise) {
       snapshotFetchInFlight = null;
     }
-  })();
-  return snapshotFetchInFlight;
+  });
+  snapshotFetchInFlight = promise;
+  return promise;
 }
 
 const WORKFLOW_FILE = "etsy-notion-sync.yml";

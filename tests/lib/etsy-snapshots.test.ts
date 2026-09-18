@@ -261,6 +261,32 @@ describe("getLatestListingSnapshots — cache", () => {
     expect(result).toEqual([{ listing_id: 1 }]);
     expect(mockEq).toHaveBeenCalledTimes(2);
   });
+
+  it("retries normally after a failure that throws synchronously, before any await", async () => {
+    // getServiceClient() throws before fetchLatestListingSnapshots() reaches
+    // its first `await` when credentials are missing — a distinct failure
+    // shape from "does not cache a failed read" above (which fails inside
+    // the awaited Supabase call). A `try/finally` *inside* the async
+    // function would have its `finally` run as part of that same
+    // synchronous throw, before the outer `snapshotFetchInFlight =
+    // <promise>` assignment even completes — leaving the in-flight slot
+    // permanently stuck on a dead, rejected promise for every later call.
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "");
+
+    await expect(getLatestListingSnapshots()).rejects.toThrow(
+      "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set",
+    );
+
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test-service-key");
+    mockEq.mockResolvedValue({
+      data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
+      error: null,
+    });
+    const result = await getLatestListingSnapshots();
+
+    expect(result).toEqual([{ listing_id: 1 }]);
+    expect(mockEq).toHaveBeenCalledTimes(1);
+  });
 });
 
 // ---------------------------------------------------------------------------
