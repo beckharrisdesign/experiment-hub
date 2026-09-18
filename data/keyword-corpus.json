@@ -1,0 +1,1420 @@
+{
+  "generated_at": "2026-09-18",
+  "captures": [
+    {
+      "date": "2026-09-17",
+      "source": "erank",
+      "queries": [
+        "embroidery designs",
+        "embroidery font",
+        "embroidery fonts",
+        "font bundle",
+        "halloween",
+        "paint by numbers",
+        "pokemon",
+        "poster",
+        "procreate brushes",
+        "wall art"
+      ]
+    }
+  ],
+  "rows": [
+    {
+      "keyword": "kpop demon hunters",
+      "capture": "2026-09-17",
+      "searches": 26982,
+      "competition": 45218,
+      "kd": 11,
+      "found_via": [
+        {
+          "query": "embroidery font",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "embroidery fonts",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "minecraft",
+      "capture": "2026-09-17",
+      "searches": 13347,
+      "competition": 16768,
+      "kd": 5,
+      "found_via": [
+        {
+          "query": "paint by numbers",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "kandi",
+      "capture": "2026-09-17",
+      "searches": 10269,
+      "competition": 21314,
+      "kd": 16,
+      "found_via": [
+        {
+          "query": "halloween",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "magic the gathering",
+      "capture": "2026-09-17",
+      "searches": 9980,
+      "competition": 29686,
+      "kd": 24,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "kirby",
+      "capture": "2026-09-17",
+      "searches": 8282,
+      "competition": 12668,
+      "kd": 9,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "mystery box",
+      "capture": "2026-09-17",
+      "searches": 7343,
+      "competition": 17279,
+      "kd": 19,
+      "found_via": [
+        {
+          "query": "paint by numbers",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "font bundle",
+      "capture": "2026-09-17",
+      "searches": 7329,
+      "competition": 32217,
+      "kd": 32,
+      "found_via": [
+        {
+          "query": "embroidery font",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "font bundle",
+          "tag_occurrences": 51
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "gengar",
+      "capture": "2026-09-17",
+      "searches": 6075,
+      "competition": 7138,
+      "kd": 4,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "halloween headpiece",
+      "capture": "2026-09-17",
+      "searches": 5819,
+      "competition": 13171,
+      "kd": 18,
+      "found_via": [
+        {
+          "query": "halloween",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "dice bag",
+      "capture": "2026-09-17",
+      "searches": 5093,
+      "competition": 15408,
+      "kd": 24,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "pokemon cards",
+      "capture": "2026-09-17",
+      "searches": 4982,
+      "competition": 36015,
+      "kd": 43,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 3
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "macrame wall hanging",
+      "capture": "2026-09-17",
+      "searches": 4571,
+      "competition": 20372,
+      "kd": 32,
+      "found_via": [
+        {
+          "query": "wall art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "pokemon binder",
+      "capture": "2026-09-17",
+      "searches": 4095,
+      "competition": 2918,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 5
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "seating chart",
+      "capture": "2026-09-17",
+      "searches": 3953,
+      "competition": 31624,
+      "kd": 45,
+      "found_via": [
+        {
+          "query": "poster",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "embroidery fonts",
+      "capture": "2026-09-17",
+      "searches": 3928,
+      "competition": 46786,
+      "kd": 54,
+      "found_via": [
+        {
+          "query": "embroidery designs",
+          "tag_occurrences": 4
+        },
+        {
+          "query": "embroidery font",
+          "tag_occurrences": 28
+        },
+        {
+          "query": "embroidery fonts",
+          "tag_occurrences": 29
+        },
+        {
+          "query": "font bundle",
+          "tag_occurrences": 7
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "procreate brushes",
+      "capture": "2026-09-17",
+      "searches": 3785,
+      "competition": 46772,
+      "kd": 55,
+      "found_via": [
+        {
+          "query": "font bundle",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "driftwood",
+      "capture": "2026-09-17",
+      "searches": 3568,
+      "competition": 29378,
+      "kd": 46,
+      "found_via": [
+        {
+          "query": "wall art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "pokeball",
+      "capture": "2026-09-17",
+      "searches": 3450,
+      "competition": 10258,
+      "kd": 24,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 6
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "eevee",
+      "capture": "2026-09-17",
+      "searches": 3437,
+      "competition": 11917,
+      "kd": 27,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 4
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "sylveon",
+      "capture": "2026-09-17",
+      "searches": 3298,
+      "competition": 2865,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 4
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "gameboy",
+      "capture": "2026-09-17",
+      "searches": 3278,
+      "competition": 12394,
+      "kd": 29,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "superman",
+      "capture": "2026-09-17",
+      "searches": 3212,
+      "competition": 15365,
+      "kd": 34,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "dog harness",
+      "capture": "2026-09-17",
+      "searches": 3145,
+      "competition": 13898,
+      "kd": 32,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "gilmore girls",
+      "capture": "2026-09-17",
+      "searches": 3134,
+      "competition": 13127,
+      "kd": 31,
+      "found_via": [
+        {
+          "query": "embroidery designs",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "pikachu",
+      "capture": "2026-09-17",
+      "searches": 3114,
+      "competition": 31081,
+      "kd": 50,
+      "found_via": [
+        {
+          "query": "embroidery designs",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "pokemon",
+          "tag_occurrences": 12
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "ghibli",
+      "capture": "2026-09-17",
+      "searches": 2952,
+      "competition": 21919,
+      "kd": 44,
+      "found_via": [
+        {
+          "query": "procreate brushes",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "mimikyu",
+      "capture": "2026-09-17",
+      "searches": 2927,
+      "competition": 1511,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "pokemon card",
+      "capture": "2026-09-17",
+      "searches": 2837,
+      "competition": 35999,
+      "kd": 55,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 4
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "paint by number",
+      "capture": "2026-09-17",
+      "searches": 2764,
+      "competition": 23154,
+      "kd": 46,
+      "found_via": [
+        {
+          "query": "paint by numbers",
+          "tag_occurrences": 20
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "baby halloween costume",
+      "capture": "2026-09-17",
+      "searches": 2671,
+      "competition": 36863,
+      "kd": 57,
+      "found_via": [
+        {
+          "query": "halloween",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "jester",
+      "capture": "2026-09-17",
+      "searches": 2621,
+      "competition": 13679,
+      "kd": 36,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "pokemon stickers",
+      "capture": "2026-09-17",
+      "searches": 2614,
+      "competition": 16842,
+      "kd": 40,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "mens wallet",
+      "capture": "2026-09-17",
+      "searches": 2593,
+      "competition": 30610,
+      "kd": 54,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "diaper bag",
+      "capture": "2026-09-17",
+      "searches": 2588,
+      "competition": 33290,
+      "kd": 55,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "bulbasaur",
+      "capture": "2026-09-17",
+      "searches": 2556,
+      "competition": 8054,
+      "kd": 25,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "custom pokemon card",
+      "capture": "2026-09-17",
+      "searches": 2493,
+      "competition": 9107,
+      "kd": 28,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "artisan keycap",
+      "capture": "2026-09-17",
+      "searches": 2488,
+      "competition": 5083,
+      "kd": 16,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "paint by numbers",
+      "capture": "2026-09-17",
+      "searches": 2481,
+      "competition": 15651,
+      "kd": 40,
+      "found_via": [
+        {
+          "query": "paint by numbers",
+          "tag_occurrences": 83
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "embroidery font",
+      "capture": "2026-09-17",
+      "searches": 2475,
+      "competition": 46800,
+      "kd": 64,
+      "found_via": [
+        {
+          "query": "embroidery designs",
+          "tag_occurrences": 6
+        },
+        {
+          "query": "embroidery font",
+          "tag_occurrences": 81
+        },
+        {
+          "query": "embroidery fonts",
+          "tag_occurrences": 80
+        },
+        {
+          "query": "font bundle",
+          "tag_occurrences": 12
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "halloween badge reel",
+      "capture": "2026-09-17",
+      "searches": 2413,
+      "competition": 23585,
+      "kd": 50,
+      "found_via": [
+        {
+          "query": "halloween",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "moss wall art",
+      "capture": "2026-09-17",
+      "searches": 2403,
+      "competition": 12827,
+      "kd": 36,
+      "found_via": [
+        {
+          "query": "wall art",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "anime figure",
+      "capture": "2026-09-17",
+      "searches": 2352,
+      "competition": 17404,
+      "kd": 43,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "sconce",
+      "capture": "2026-09-17",
+      "searches": 2295,
+      "competition": 27947,
+      "kd": 54,
+      "found_via": [
+        {
+          "query": "wall art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "lorcana",
+      "capture": "2026-09-17",
+      "searches": 2280,
+      "competition": 5449,
+      "kd": 19,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "procreate stamps",
+      "capture": "2026-09-17",
+      "searches": 2168,
+      "competition": 39863,
+      "kd": 63,
+      "found_via": [
+        {
+          "query": "font bundle",
+          "tag_occurrences": 1
+        },
+        {
+          "query": "procreate brushes",
+          "tag_occurrences": 40
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "hacky sack",
+      "capture": "2026-09-17",
+      "searches": 2038,
+      "competition": 281,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "wabi sabi wall art",
+      "capture": "2026-09-17",
+      "searches": 2038,
+      "competition": 28918,
+      "kd": 58,
+      "found_via": [
+        {
+          "query": "wall art",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "pokemon keychain",
+      "capture": "2026-09-17",
+      "searches": 2028,
+      "competition": 7052,
+      "kd": 27,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "sling bag",
+      "capture": "2026-09-17",
+      "searches": 2012,
+      "competition": 21116,
+      "kd": 51,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "elf on the shelf",
+      "capture": "2026-09-17",
+      "searches": 1957,
+      "competition": 16705,
+      "kd": 47,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "halloween nails",
+      "capture": "2026-09-17",
+      "searches": 1932,
+      "competition": 22780,
+      "kd": 54,
+      "found_via": [
+        {
+          "query": "halloween",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "halloween phone case",
+      "capture": "2026-09-17",
+      "searches": 1869,
+      "competition": 34137,
+      "kd": 63,
+      "found_via": [
+        {
+          "query": "halloween",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "porsche poster",
+      "capture": "2026-09-17",
+      "searches": 1846,
+      "competition": 8230,
+      "kd": 32,
+      "found_via": [
+        {
+          "query": "poster",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "halloween crochet pattern",
+      "capture": "2026-09-17",
+      "searches": 1818,
+      "competition": 37061,
+      "kd": 65,
+      "found_via": [
+        {
+          "query": "halloween",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "f1 poster",
+      "capture": "2026-09-17",
+      "searches": 1763,
+      "competition": 9074,
+      "kd": 36,
+      "found_via": [
+        {
+          "query": "poster",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "3 piece wall art",
+      "capture": "2026-09-17",
+      "searches": 1753,
+      "competition": 35046,
+      "kd": 65,
+      "found_via": [
+        {
+          "query": "wall art",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "haunted mansion",
+      "capture": "2026-09-17",
+      "searches": 1738,
+      "competition": 29186,
+      "kd": 61,
+      "found_via": [
+        {
+          "query": "paint by numbers",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "waifu",
+      "capture": "2026-09-17",
+      "searches": 1718,
+      "competition": 21930,
+      "kd": 55,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "masculine wall art",
+      "capture": "2026-09-17",
+      "searches": 1710,
+      "competition": 17083,
+      "kd": 50,
+      "found_via": [
+        {
+          "query": "poster",
+          "tag_occurrences": 2
+        },
+        {
+          "query": "wall art",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "bachelorette banner",
+      "capture": "2026-09-17",
+      "searches": 1674,
+      "competition": 27312,
+      "kd": 61,
+      "found_via": [
+        {
+          "query": "poster",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "porsche wall art",
+      "capture": "2026-09-17",
+      "searches": 1666,
+      "competition": 10324,
+      "kd": 40,
+      "found_via": [
+        {
+          "query": "wall art",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "card binder",
+      "capture": "2026-09-17",
+      "searches": 1618,
+      "competition": 15595,
+      "kd": 49,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 6
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "leafeon",
+      "capture": "2026-09-17",
+      "searches": 1618,
+      "competition": 2070,
+      "kd": 5,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "harley davidson",
+      "capture": "2026-09-17",
+      "searches": 1616,
+      "competition": 32430,
+      "kd": 65,
+      "found_via": [
+        {
+          "query": "wall art",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "la la land poster",
+      "capture": "2026-09-17",
+      "searches": 1588,
+      "competition": 250,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "poster",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "pokemon plush",
+      "capture": "2026-09-17",
+      "searches": 1582,
+      "competition": 4536,
+      "kd": 23,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "piplup",
+      "capture": "2026-09-17",
+      "searches": 1542,
+      "competition": 825,
+      "kd": 1,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 2
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "stress ball",
+      "capture": "2026-09-17",
+      "searches": 1539,
+      "competition": 4091,
+      "kd": 21,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 1
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "woven wall art",
+      "capture": "2026-09-17",
+      "searches": 1538,
+      "competition": 33855,
+      "kd": 67,
+      "found_via": [
+        {
+          "query": "wall art",
+          "tag_occurrences": 0
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "jw",
+      "capture": "2026-09-17",
+      "searches": 1510,
+      "competition": 33561,
+      "kd": 67,
+      "found_via": [
+        {
+          "query": "poster",
+          "tag_occurrences": 3
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    },
+    {
+      "keyword": "umbreon",
+      "capture": "2026-09-17",
+      "searches": 1502,
+      "competition": 4835,
+      "kd": 25,
+      "found_via": [
+        {
+          "query": "pokemon",
+          "tag_occurrences": 3
+        }
+      ],
+      "current": true,
+      "superseded_by": null,
+      "coverage": {
+        "seen": 1,
+        "of": 1
+      }
+    }
+  ]
+}

@@ -48,6 +48,17 @@ const STATIC_ROUTES = Object.freeze([
     optional: true,
     sortIndex: 70,
   },
+  {
+    id: "route:keyword-explorer",
+    path: "/keyword-explorer",
+    title: "Keyword Explorer",
+    group: "Hub",
+    pageType: "top-level",
+    parentId: "route:home",
+    depth: 1,
+    optional: false,
+    sortIndex: 80,
+  },
 ]);
 
 function slugify(text) {
@@ -131,9 +142,7 @@ function getLandingSlugs(rootDir) {
     .readdirSync(landingRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
-    .filter((slug) =>
-      fs.existsSync(path.join(landingRoot, slug, "index.html")),
-    )
+    .filter((slug) => fs.existsSync(path.join(landingRoot, slug, "index.html")))
     .sort((left, right) => left.localeCompare(right));
 }
 

@@ -111,7 +111,65 @@ export interface Documentation {
   tags: string[];
 }
 
-export type ContentType = "experiments" | "prototypes" | "documentation";
+export type ContentType =
+  | "experiments"
+  | "prototypes"
+  | "documentation"
+  | "keyword-explorer";
+
+/**
+ * One query that surfaced a keyword, with the tag-occurrence count it
+ * reported *there*.
+ *
+ * Tag occurrences are query-scoped and do not agree across queries: on
+ * 2026-09-17 `embroidery font` read 6, 81, 80 and 12 under four different
+ * queries while its searches, competition and KD were identical in all four.
+ * Averaging or picking one would invent a number the export never gave, so
+ * every count is kept beside the query that produced it.
+ */
+export interface KeywordQueryHit {
+  query: string;
+  tagOccurrences: number;
+}
+
+/**
+ * Coverage is *seen in N of M captures* — never a rate of decline.
+ *
+ * Katy's exports are hand-filtered to drop obviously overcrowded keywords, so
+ * the archive is not a census. A keyword absent from a later pull is
+ * unexplained, not extinct, and nothing downstream may read a gap as a fall in
+ * demand. This shape exists so that constraint is structural rather than a
+ * convention someone has to remember.
+ */
+export interface KeywordCoverage {
+  seen: number;
+  of: number;
+}
+
+/** One keyword as observed in one capture. */
+export interface KeywordRow {
+  keyword: string;
+  capture: string;
+  searches: number;
+  competition: number;
+  kd: number;
+  foundVia: KeywordQueryHit[];
+  current: boolean;
+  supersededBy: string | null;
+  coverage: KeywordCoverage;
+}
+
+export interface KeywordCapture {
+  date: string;
+  source: string;
+  queries: string[];
+}
+
+export interface KeywordCorpus {
+  generatedAt: string | null;
+  captures: KeywordCapture[];
+  rows: KeywordRow[];
+}
 
 export type PullRequestState = "open" | "closed" | "merged";
 

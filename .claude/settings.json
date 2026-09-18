@@ -2,7 +2,17 @@
   "permissions": {
     "allow": [
       "mcp__github__issue_write",
-      "mcp__github__add_issue_comment"
+      "mcp__github__add_issue_comment",
+      "mcp__github__pull_request_read",
+      "mcp__github__list_pull_requests",
+      "mcp__Figma__get_screenshot",
+      "mcp__Figma__get_libraries",
+      "mcp__Figma__search_design_system",
+      "mcp__Figma__whoami",
+      "mcp__Supabase__list_projects",
+      "mcp__Figma__use_figma",
+      "mcp__Supabase__execute_sql",
+      "Bash(python3:*)"
     ]
   },
   "hooks": {
