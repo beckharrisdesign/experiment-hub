@@ -12,7 +12,10 @@ vi.mock("@supabase/supabase-js", () => ({
   createClient: mockCreateClient,
 }));
 
-import { getLatestListingSnapshots } from "@/lib/etsy-sync";
+import {
+  getLatestListingSnapshots,
+  resetLatestListingSnapshotsCacheForTests,
+} from "@/lib/etsy-sync";
 
 /**
  * The endpoint is stored as the un-interpolated template. Matching it loosely
@@ -30,6 +33,9 @@ beforeEach(() => {
   mockFrom.mockReturnValue({ select: mockSelect });
   mockSelect.mockReturnValue({ eq: mockEq });
   mockEq.mockResolvedValue({ data: [], error: null });
+  // Without this, the module-scope TTL cache (lib/etsy-sync.ts) would serve
+  // an earlier test's result instead of calling the mock again.
+  resetLatestListingSnapshotsCacheForTests();
 });
 
 afterEach(() => {
@@ -143,6 +149,62 @@ describe("getLatestListingSnapshots — results", () => {
 
     const result = await getLatestListingSnapshots();
     expect(result).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Cache
+// ---------------------------------------------------------------------------
+
+describe("getLatestListingSnapshots — cache", () => {
+  const NEWEST = "2026-09-17T00:00:00Z";
+
+  it("serves a second call from cache without reading Supabase again", async () => {
+    mockEq.mockResolvedValue({
+      data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
+      error: null,
+    });
+
+    const first = await getLatestListingSnapshots();
+    const second = await getLatestListingSnapshots();
+
+    expect(first).toEqual([{ listing_id: 1 }]);
+    expect(second).toEqual([{ listing_id: 1 }]);
+    // Guards against the finding this test exists for: a public,
+    // force-dynamic route with no cache would call this on every anonymous
+    // page load, multiplying Supabase reads under a crawl or refresh burst.
+    expect(mockEq).toHaveBeenCalledTimes(1);
+  });
+
+  it("reads Supabase again once the cache is cleared", async () => {
+    mockEq.mockResolvedValue({
+      data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
+      error: null,
+    });
+
+    await getLatestListingSnapshots();
+    resetLatestListingSnapshotsCacheForTests();
+    await getLatestListingSnapshots();
+
+    expect(mockEq).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not cache a failed read", async () => {
+    // A cached error would keep failing silently for the TTL window even
+    // after Supabase recovers — the opposite of the silent-degrade design
+    // (design.md § Decisions), which expects the *next* request to succeed
+    // once the underlying read does.
+    mockEq.mockResolvedValueOnce({ data: null, error: { message: "boom" } });
+    mockEq.mockResolvedValueOnce({
+      data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
+      error: null,
+    });
+
+    await expect(getLatestListingSnapshots()).rejects.toThrow("boom");
+    const result = await getLatestListingSnapshots();
+
+    expect(result).toEqual([{ listing_id: 1 }]);
+    expect(mockEq).toHaveBeenCalledTimes(2);
   });
 });
 

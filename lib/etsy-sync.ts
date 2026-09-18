@@ -52,6 +52,26 @@ interface LatestSnapshotRow {
 }
 
 /**
+ * Per-server-instance cache, same posture as `app/etsy-listing-kit/api/evaluate/route.ts`'s
+ * cache/throttle: `/keyword-explorer` is `force-dynamic` (design.md § Decisions
+ * — Targeting must reflect the current tags on every request), so every
+ * anonymous page load would otherwise trigger its own service-role Supabase
+ * read with no guard against a crawler or a burst of refreshes. A short TTL
+ * keeps that load bounded without meaningfully compromising "current" —
+ * listing tags don't change on a sub-minute cadence, and this is still far
+ * fresher than the corpus's own `ingest-pulls.py --apply` cadence. On
+ * serverless this is per-warm-instance, not a global guarantee — acceptable
+ * insurance, same caveat as the precedent it follows.
+ */
+const SNAPSHOT_CACHE_TTL_MS = 60 * 1000;
+let snapshotCache: { at: number; result: RawListing[] } | null = null;
+
+/** Test-only: clears the cache so each test exercises a real read. */
+export function resetLatestListingSnapshotsCacheForTests(): void {
+  snapshotCache = null;
+}
+
+/**
  * Latest snapshot per listing, as raw Etsy JSON — restricted to the most
  * recent capture run.
  *
@@ -72,6 +92,10 @@ interface LatestSnapshotRow {
  * scores before sending anything to the browser.
  */
 export async function getLatestListingSnapshots(): Promise<RawListing[]> {
+  if (snapshotCache && Date.now() - snapshotCache.at < SNAPSHOT_CACHE_TTL_MS) {
+    return snapshotCache.result;
+  }
+
   const { data, error } = await getServiceClient()
     .from("etsy_latest_listing_snapshots")
     .select("raw_response,captured_at")
@@ -89,13 +113,18 @@ export async function getLatestListingSnapshots(): Promise<RawListing[]> {
   // null-timestamp row, passing all of them through as "current" instead of
   // none. An all-null batch means the capture can't be identified as latest,
   // so it must resolve to no rows, not to all rows.
-  if (newest === null) return [];
-  return rows
+  if (newest === null) {
+    snapshotCache = { at: Date.now(), result: [] };
+    return [];
+  }
+  const result = rows
     .filter((row) => row.captured_at === newest)
     .map((row) => row.raw_response)
     .filter(
       (raw): raw is RawListing => !!raw && typeof raw.listing_id === "number",
     );
+  snapshotCache = { at: Date.now(), result };
+  return result;
 }
 
 const WORKFLOW_FILE = "etsy-notion-sync.yml";

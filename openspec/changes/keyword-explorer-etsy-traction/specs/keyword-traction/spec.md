@@ -66,7 +66,7 @@ Katy can narrow the table to rows above or below a value on any numeric column, 
 
 ### Requirement: Status, Capture and Coverage are no longer visible table columns
 
-The table's visible columns are Keyword, Searches, Competition, KD, Found via, Searches/comp., Ranked and Targeting. Status, Capture and Coverage stop rendering as columns, and every field `keyword-corpus` already computes for them is unchanged.
+The table's visible columns, left to right, are Keyword, Searches, Competition, KD, Ranked, Targeting, Found via and Searches/comp. Status, Capture and Coverage stop rendering as columns, and every field `keyword-corpus` already computes for them is unchanged.
 
 **Fails until:** Status, Capture or Coverage still renders as a visible column, or any of the three stops being computed and stored on the row.
 
