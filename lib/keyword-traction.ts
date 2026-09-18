@@ -28,22 +28,26 @@ export function computeTargeting(
   snapshots: RawListing[],
 ): Map<string, TargetingMatch> {
   const active = snapshots.filter((listing) => listing.state === "active");
-  const bySlot = new Map<string, TargetingMatch["matches"]>();
+  // Keyed by normalized tag text, not by slot — a listing's own tag can
+  // recur at different slots across different listings, so the key has to
+  // be what a keyword is actually looked up by (its text), with the
+  // slot-per-listing detail living in the value.
+  const matchesByTag = new Map<string, TargetingMatch["matches"]>();
 
   for (const listing of active) {
     const tags = listing.tags ?? [];
     tags.forEach((tag, index) => {
       const key = tag.trim().toLowerCase();
       if (!key) return;
-      const existing = bySlot.get(key) ?? [];
+      const existing = matchesByTag.get(key) ?? [];
       existing.push({ listingId: listing.listing_id, slot: index + 1 });
-      bySlot.set(key, existing);
+      matchesByTag.set(key, existing);
     });
   }
 
   const result = new Map<string, TargetingMatch>();
   for (const keyword of keywords) {
-    const matches = bySlot.get(keyword.trim().toLowerCase());
+    const matches = matchesByTag.get(keyword.trim().toLowerCase());
     if (!matches || matches.length === 0) continue;
     const best = Math.min(...matches.map((m) => m.slot));
     result.set(keyword, { best, matches });
