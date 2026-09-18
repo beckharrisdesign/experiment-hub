@@ -31,7 +31,7 @@ The whole corpus is on one scrolling surface; sorting and filtering are the only
 
 Cells do not wrap, every cell uses one type size, the keyword column takes the remaining width, and no value is colour-coded until asked for.
 
-**Fails until:** a cell wraps, a second type size appears in the body, or a value is colour-coded.
+**Fails until:** a cell wraps, a second type size appears anywhere in the table — **header row included** — or a value is colour-coded.
 
 #### Scenario: Cells do not wrap and share one type size
 
