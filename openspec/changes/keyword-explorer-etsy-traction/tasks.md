@@ -76,3 +76,12 @@ A fresh review after round 6's fixes. Six more findings — one posted inline (t
 - [x] 7.6 **Consolidation, not a Copilot finding.** Added a direct unit test for the new `toTableRows()` (non-null collapse, null-stays-null) alongside `computeTargeting`'s and `withTargeting`'s tests. (`tests/lib/keyword-traction.test.ts`)
 
 Re-ran full suite + lint + typecheck after all of the above: `pnpm exec vitest run` → **1254 passed** / 49 skipped (same 2 pre-existing unrelated failures), `pnpm exec eslint .` → 0 errors, `pnpm exec tsc --noEmit` → clean.
+
+## 8. Copilot re-review round (2026-09-18, fourth pass)
+
+A fresh review after round 7. Two findings, both real, both small.
+
+- [x] 8.1 **Real repo-convention violation.** `rules/component-conventions.mdc` requires every component under `components/` to define a named `<ComponentName>Props` interface, not an inline destructured type — `KeywordTable`'s signature was `{ rows }: { rows: KeywordTableRow[] }`, an outlier against that documented rule. Fixed: added `interface KeywordTableProps { rows: KeywordTableRow[] }`. (`components/KeywordTable.tsx`)
+- [x] 8.2 **Real stale comment, introduced by round 7's own fix.** A test comment in `tests/lib/keyword-traction.test.ts` still explained `getLatestListingSnapshots()` as returning rows "across all history" — true before round 7.2, false after: that function now narrows to the latest capture itself. The test this comment sits on exercises a different, still-real guard (`computeTargeting`'s own `state === "active"` check, for a listing captured in the latest run but not live/sellable) — the comment now contradicted the code next to it. Fixed: reworded to describe what this specific test actually guards. (`tests/lib/keyword-traction.test.ts`)
+
+Re-ran full suite: `pnpm exec vitest run` → 1254 passed / 49 skipped (same 2 pre-existing unrelated failures), `pnpm exec eslint .` → 0 errors, `pnpm exec tsc --noEmit` → clean.

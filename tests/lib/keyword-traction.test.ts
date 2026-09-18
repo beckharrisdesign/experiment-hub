@@ -80,9 +80,10 @@ describe("computeTargeting", () => {
   });
 
   it("ignores a tag on a listing that is no longer active", () => {
-    // getLatestListingSnapshots() returns the newest snapshot per listing
-    // across all history, so a deleted/deactivated listing's last-known
-    // tags would otherwise keep reading as "targeted" forever.
+    // computeTargeting's own guard, separate from getLatestListingSnapshots()
+    // narrowing to the latest capture (lib/etsy-sync.ts): a listing can be
+    // present in that latest capture and still not be a live, sellable
+    // listing — draft, inactive, expired. Only state === "active" counts.
     const result = computeTargeting(
       ["snow globe"],
       [listing(1, ["snow globe"], "inactive")],

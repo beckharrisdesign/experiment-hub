@@ -138,7 +138,11 @@ function formatRatio(row: KeywordTableRow): string {
   return ratio.toFixed(3);
 }
 
-export default function KeywordTable({ rows }: { rows: KeywordTableRow[] }) {
+interface KeywordTableProps {
+  rows: KeywordTableRow[];
+}
+
+export default function KeywordTable({ rows }: KeywordTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>("searches");
   const [direction, setDirection] = useState<Direction>("desc");
   const [keywordFilter, setKeywordFilter] = useState("");
