@@ -3,52 +3,58 @@
 ## Human anchor
 
 > "can we cross reference the keywords against actual etsy keyword data? I know its sparse, but a badge or a flag or a column that shows where these keywords are also getting real world traction?"
+>
+> "what I'd want to know - whether I ranked with that keyword or I'm trying to rank with it by putting it in my listing."
 
 — Katy, 2026-09-18
 
 ## Outcomes
 
 - **Who:** Katy, reading the Keyword Explorer table while deciding whether a keyword is worth writing a listing for.
-- **Job:** See, per keyword row, whether the shop already has a real listing ranking on that exact term in Etsy search — not just eRank's estimated demand for it.
-- **Done when:** every corpus row whose keyword text matches a search term in the `erank-spotted-on-etsy` archive (case-insensitive, exact) carries a visible marker with the position(s), page(s) and listing(s) that rank there; a row with no match reads as plainly unmatched, not as an error or a zero; the match recomputes automatically the next time `ingest-pulls.py --apply` runs, so it grows as new Spotted on Etsy pulls land without touching this change again.
-- **Not doing:** fuzzy or partial matching (`"snow globe"` inside `"snow globe ornament"` is a judgment call this change does not make) — exact keyword text only. No back-filling Spotted on Etsy for keywords that lack it — the sparseness is the honest current state, not a bug. No new page or detail view; this is a marker on the existing table. No writing traction data back into `docs/pulls/` or the pull notes — this only reads the archive.
+- **Job:** See, per keyword row, two separate real-world facts eRank's demand estimate can't tell her: has a W&H listing ever **ranked** for this exact term in Etsy search, and is she currently **targeting** it — the keyword sitting in a live listing's title or tags right now, ranked or not.
+- **Done when:** every corpus row carries two independent markers. **Ranked** — sourced from the `erank-spotted-on-etsy` pull archive, with position(s), page(s) and listing(s). **Targeting** — sourced from the shop's live listing snapshots (title/tags), with which listing(s) carry it. Either marker can be true alone (ranked without still targeting it; targeting it with no observed rank yet) — that combination *is* the signal, not a detail to collapse away. A row with neither marker reads as plainly unmarked, not as an error or a zero. Both recompute automatically — Ranked the next time `ingest-pulls.py --apply` runs, Targeting on every page load against current listings — so both grow/shift on their own without touching this change again.
+- **Not doing:** fuzzy or partial matching for Ranked (`"snow globe"` inside `"snow globe ornament"` is a judgment call this change does not make) — exact keyword text only against `erank-spotted-on-etsy` search terms. No back-filling either signal for keywords that lack it — sparseness is the honest current state, not a bug. No new page or detail view; these are markers on the existing table. No writing anything back to `docs/pulls/`, the pull notes, or Etsy listings — this only reads both archives.
 
 ## Why
 
-Keyword Explorer answers one question — market demand, from eRank's Keyword Tool — and deliberately answers only that one (`keyword-corpus`'s whole design is refusing to blend measures that disagree, per `docs/pulls/README.md`'s `measures` axis). But Katy already runs a second instrument that answers a different question over a small, growing set of terms: `erank-spotted-on-etsy` captures where W&H listings actually **rank** in Etsy search, for the exact search terms eRank Monitor tracks.
+Keyword Explorer answers one question — market demand, from eRank's Keyword Tool — and deliberately answers only that one (`keyword-corpus`'s whole design is refusing to blend measures that disagree, per `docs/pulls/README.md`'s `measures` axis). But Katy runs two other instruments that answer two different questions over the same keywords, and her own framing keeps them apart on purpose: *"whether I ranked with that keyword or I'm trying to rank with it."*
 
-Those two archives currently share zero rows — 0 of 410 corpus keywords match any of the 12 `spotted-on-etsy` rows' 8 search terms, confirmed by direct comparison. That is expected: the corpus is generic market research seeds (`alocasia`, `christmas`, `embroidery-font`…), Spotted on Etsy is scoped to this shop's own listings and whatever terms eRank Monitor happens to be watching. But `spotted-on-etsy` is itself a pull series — repeat captures land under the same naming rule and accumulate (`docs/pulls/README.md` § Repeat pulls) — so the overlap is not fixed at zero, it is a number that grows every time that surface gets re-pulled. A keyword that reads as pure hypothesis today can start carrying "we already rank #17 for this" a month from now, with no code change required to surface it.
+**Ranked** comes from `erank-spotted-on-etsy`: where W&H listings actually rank in Etsy search, for the terms eRank Monitor tracks. Currently 12 rows / 8 terms, 0 of which match the 410-row corpus — confirmed by direct comparison. Expected: the corpus is generic market-research seeds (`alocasia`, `christmas`, `embroidery-font`…), Spotted on Etsy is scoped to this shop's own listings. But it's a pull series — repeat captures accumulate under the same naming rule (`docs/pulls/README.md` § Repeat pulls) — so the overlap grows every re-pull, with zero code changes needed to surface it.
 
-The alternative — a page/detail view Katy opens by hand — puts the burden back on cross-referencing two tables herself, which is exactly what `2026-09-17-erank-spotted-on-etsy.md`'s own distillation warns against conflating: position, demand and conversion are three different questions, easy to blur when read from memory instead of side by side.
+**Targeting** comes from live listing content, not a pull archive at all: `getLatestListingSnapshots()` (`lib/etsy-sync.ts`) already reads every current listing's `title`/`tags` from Supabase, service-role, server-side — the same read `etsy-zero-sales-funnel`'s scorecard page already ships in production. A keyword can be targeted without ranking yet (just added to a listing, too early to show up), or have ranked once without being targeted today (the term got edited out, as `2026-09-17-erank-spotted-on-etsy.md` §2 already documents happening to `calm stitching`). Collapsing those into one marker would erase exactly the distinction Katy asked for.
+
+The alternative — cross-referencing three tables by hand — is the status quo, and is what `2026-09-17-erank-spotted-on-etsy.md`'s own distillation warns against: position, demand and content are different questions, easy to blur when read from memory instead of side by side.
 
 ## What changes
 
-**A join step, computed at ingest time, not at render time.** `scripts/ingest-pulls.py`'s corpus build gains a pass that reads every `erank-spotted-on-etsy` CSV in `docs/pulls/`, matches each row's `Search Term` against `keyword-corpus.json` keywords (case-insensitive exact match), and attaches the matches to the corresponding keyword row. Regenerated by the same `--apply` run that already builds the corpus — one command stays the whole ritual, and a future Spotted on Etsy pull needs nothing more than landing it.
+**Ranked: a join computed at ingest time.** `scripts/ingest-pulls.py`'s corpus build gains a pass that reads every `erank-spotted-on-etsy` CSV in `docs/pulls/`, matches each row's `Search Term` against corpus keywords (case-insensitive exact), and attaches matches to the keyword row — regenerated by the same `--apply` run that already builds the corpus. A match carries every listing that ranks, not a collapsed "best position": the same term can have multiple W&H listings ranking at different positions (`snow globe`: two listings, positions 8 and 38), and flattening that would invent a number the source doesn't assert — the same reasoning `keyword-corpus` already applies to tag-occurrences disagreeing across queries.
 
-**A match carries every listing that ranks, not a collapsed number.** The same term can have multiple W&H listings ranking on it at different positions (`snow globe`: two listings, positions 8 and 38 in the current capture) — flattening that to "best position" would invent a number the source data doesn't assert, the same reasoning `keyword-corpus` already applies to tag-occurrences disagreeing across queries. Each match keeps listing, page, position and the capture date it came from.
+**Targeting: a live check against current listing content, computed at request time.** The Keyword Explorer page (currently a static import, per `keyword-explorer/design.md`'s "no runtime read to fail on Vercel") gains a server-side call to `getLatestListingSnapshots()`, checking each corpus keyword against every current listing's `title`/`tags`. This is the one piece of the surface that is no longer purely static — `design.md` decides the fetch/caching shape (request-time vs. a build-time/revalidated read) so a Supabase hiccup degrades the Targeting column, not the whole page.
 
-**A marker on the existing table, not a new surface.** Keyword Explorer's table gets a column (or badge in the keyword cell — `design.md`'s call) that is present only on rows with at least one match. Absence of the marker means "no observed ranking yet," explicitly not "this keyword has no demand" or "this keyword failed" — same honesty rule `keyword-corpus` already enforces for coverage.
+**Two independent markers on the existing table, not a new surface.** Ranked and Targeting render as separate markers (columns or badges — `design.md`'s call), each present only where true. Neither marker's absence means "no demand" or "failed" — same honesty rule `keyword-corpus` already enforces for coverage.
 
-**Sparse-by-default is the expected state, not a fallback to design around.** At today's data, 0 of 410 rows will carry the marker. The surface must read as correct and unremarkable at that count, not as broken or empty-state-worthy — this is real information (no observed real-world ranking yet for any of these keywords), and it will change on its own as more Spotted on Etsy pulls land.
+**Sparse-by-default is the expected state for Ranked, not a fallback to design around.** At today's data, 0 of 410 rows carry the Ranked marker; Targeting will show real coverage immediately since it reads current listings directly. Both must read as correct and unremarkable at whatever count they show, not as broken or empty-state-worthy.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `keyword-traction`: the join between `keyword-corpus` rows and the `erank-spotted-on-etsy` pull series — match rule, per-listing granularity, and the "absence is not a verdict" semantics that mirror `keyword-corpus`'s own filtered-subset rule.
+- `keyword-traction`: two independent signals joined onto `keyword-corpus` rows — **Ranked** (from the `erank-spotted-on-etsy` pull series, ingest-time) and **Targeting** (from live listing snapshots, request-time) — plus the "absence is not a verdict" semantics that mirror `keyword-corpus`'s own filtered-subset rule.
 
 ### Modified Capabilities
 
-- `keyword-explorer`: the table gains one column/marker sourced from `keyword-traction`. Sort/filter/row-grain/no-pagination rules are unchanged.
+- `keyword-explorer`: the table gains two markers sourced from `keyword-traction`, and the route gains a server-side data dependency it didn't have before (Targeting). Sort/filter/row-grain/no-pagination rules are unchanged.
 
 ## Impact
 
-- **New:** one ingest step (inside the existing `scripts/ingest-pulls.py --apply` run), a field on the corpus's keyword rows, one table column/marker.
+- **New:** one ingest step (inside the existing `scripts/ingest-pulls.py --apply` run) for Ranked; one server-side Supabase read (reusing `lib/etsy-sync.ts::getLatestListingSnapshots`, no new credential) for Targeting; two fields on the corpus's keyword rows; two table markers.
 - **Unchanged:** `keyword-corpus`'s demand data and its own rules, `docs/pulls/` conventions and `index.json`, every other hub surface.
-- **Data dependency, not a blocker:** this change ships useful (if sparse) at 12 rows / 8 terms today. It gets more valuable every time `erank-spotted-on-etsy` is re-pulled, with zero further code changes — that compounding return is the point, not a reason to wait for more data first.
+- **Architecture note for `design.md`:** Targeting is the first thing on this route that isn't a static import. The route stays a hub page, not an API route, but it can no longer claim zero runtime dependencies — `design.md` needs to decide what the page shows if the Supabase read fails or the env vars are absent (e.g. in a preview deploy), since that must degrade gracefully rather than take down a page that otherwise has everything it needs baked in.
+- **Data dependency, not a blocker:** Ranked ships useful (if sparse) at 12 rows / 8 terms today and grows with zero further code changes as `erank-spotted-on-etsy` is re-pulled. Targeting ships with real, current coverage from day one.
 
 ## Optional links
 
-- The two archives this joins: [`docs/pulls/README.md`](../../../docs/pulls/README.md) (landing zone + `measures` axis), [`2026-09-17-erank-spotted-on-etsy.md`](../../../docs/pulls/2026-09-17-erank-spotted-on-etsy.md) (the position data itself)
-- The capability this extends: [`openspec/changes/keyword-explorer/`](../keyword-explorer/) (not yet archived — proposal, design, tasks for the table this adds a column to)
+- The archives this joins: [`docs/pulls/README.md`](../../../docs/pulls/README.md) (landing zone + `measures` axis), [`2026-09-17-erank-spotted-on-etsy.md`](../../../docs/pulls/2026-09-17-erank-spotted-on-etsy.md) (Ranked source), [`lib/etsy-sync.ts`](../../../lib/etsy-sync.ts) (Targeting source, `getLatestListingSnapshots`)
+- The capability this extends: [`openspec/changes/keyword-explorer/`](../keyword-explorer/) (not yet archived — proposal, design, tasks for the table this adds markers to)
+- Precedent for the live Supabase read: [`openspec/changes/etsy-zero-sales-funnel/`](../etsy-zero-sales-funnel/) (scorecard page already reads `getLatestListingSnapshots()` server-side in production)
 - No `experiments/<slug>/` — hub platform work, per `rules/openspec-workflow.mdc` § Shared hub behavior.
