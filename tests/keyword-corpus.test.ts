@@ -4,6 +4,7 @@ import { copyFileSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
+  bulkValueLabel,
   coverageLabel,
   demandRatio,
   loadKeywordCorpus,
@@ -109,6 +110,60 @@ function readKeywordCsvViaScript(csvPath: string): {
   return JSON.parse(out);
 }
 
+interface RawBulkRow {
+  keyword: string;
+  avg_searches: number | null;
+  avg_searches_censored: boolean;
+  avg_clicks: number | null;
+  avg_clicks_censored: boolean;
+  avg_ctr: number | null;
+  avg_ctr_censored: boolean;
+  etsy_competition: number | null;
+  kd: number | null;
+}
+
+function readBulkKeywordsCsvViaScript(csvPath: string): RawBulkRow[] {
+  const out = execFileSync(
+    "python3",
+    [
+      "-c",
+      [
+        "import importlib.util, json, pathlib, sys",
+        "spec = importlib.util.spec_from_file_location('ip', 'scripts/ingest-pulls.py')",
+        "m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)",
+        `print(json.dumps(m.read_bulk_keywords_csv(pathlib.Path(${JSON.stringify(csvPath)}))))`,
+      ].join("\n"),
+    ],
+    { cwd: REPO, encoding: "utf8" },
+  );
+  return JSON.parse(out);
+}
+
+function buildBulkCorpusViaScript(pulls?: string): {
+  captures: { date: string; files: number }[];
+  rows: (RawBulkRow & {
+    capture: string;
+    current: boolean;
+    superseded_by: string | null;
+  })[];
+} {
+  const arg = pulls ? `pathlib.Path(${JSON.stringify(pulls)})` : "None";
+  const out = execFileSync(
+    "python3",
+    [
+      "-c",
+      [
+        "import importlib.util, json, pathlib",
+        "spec = importlib.util.spec_from_file_location('ip', 'scripts/ingest-pulls.py')",
+        "m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)",
+        `print(json.dumps(m.build_bulk_corpus(${arg})))`,
+      ].join("\n"),
+    ],
+    { cwd: REPO, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 },
+  );
+  return JSON.parse(out);
+}
+
 describe("read_keyword_csv row-keeping, against a hand-built fixture", () => {
   // Five rows chosen to exercise every branch of the drop rule directly,
   // independent of whatever the real archive happens to contain today:
@@ -156,6 +211,69 @@ describe("read_keyword_csv row-keeping, against a hand-built fixture", () => {
   it("keeps exactly the three rows the fixture says it should, no more and no fewer", () => {
     expect(rows.map((r) => r.keyword).sort()).toEqual(
       ["clean row one", "clean row two", "comma formatted"].sort(),
+    );
+  });
+});
+
+describe("read_bulk_keywords_csv, against a hand-built fixture", () => {
+  // Six rows chosen to exercise every value shape the Bulk Keywords export
+  // actually uses, none of which read_keyword_csv() ever sees: a clean
+  // number, a censored "< 20" (real signal, capped, not the same as
+  // unscored), "Unknown" (genuinely unscored), a percentage, a comma-
+  // formatted thousands number, and a blank Keyword Difficulty.
+  const dir = mkdtempSync(path.join(tmpdir(), "bulk-fixture-"));
+  const fixture = path.join(
+    dir,
+    "2026-09-18-erank-bulk-keywords-fixturetest.csv",
+  );
+  writeFileSync(
+    fixture,
+    [
+      '"Keywords","Avg Searches","Avg Clicks","Avg CTR","Etsy Competition","Keyword Difficulty"',
+      '"clean row",368,399,"108%","1,969,232","100"',
+      '"censored row","< 20","< 20","< 20%","37,062","100"',
+      '"unscored row","Unknown","Unknown","Unknown","Unknown",""',
+      '"",10,20,"5%","1,000","5"',
+    ].join("\n"),
+    "utf8",
+  );
+
+  const rows = readBulkKeywordsCsvViaScript(fixture);
+
+  it("parses a clean numeric row without censoring it", () => {
+    const row = rows.find((r) => r.keyword === "clean row")!;
+    expect(row).toBeDefined();
+    expect(row.avg_searches).toBe(368);
+    expect(row.avg_searches_censored).toBe(false);
+    expect(row.etsy_competition).toBe(1969232);
+    expect(row.avg_ctr).toBe(108);
+  });
+
+  it("keeps a censored '< 20' distinct from both a real number and unscored", () => {
+    const row = rows.find((r) => r.keyword === "censored row")!;
+    expect(row.avg_searches).toBe(20);
+    expect(row.avg_searches_censored).toBe(true);
+    expect(row.avg_ctr).toBe(20);
+    expect(row.avg_ctr_censored).toBe(true);
+  });
+
+  it("reads 'Unknown' and a blank Keyword Difficulty as null, never 0", () => {
+    const row = rows.find((r) => r.keyword === "unscored row")!;
+    expect(row.avg_searches).toBeNull();
+    expect(row.avg_searches_censored).toBe(false);
+    expect(row.etsy_competition).toBeNull();
+    expect(row.kd).toBeNull();
+  });
+
+  it("skips a row with no keyword", () => {
+    expect(rows.some((r) => r.keyword === "")).toBe(false);
+  });
+
+  it("keeps every row with a keyword, even one that is fully unscored", () => {
+    // Unlike read_keyword_csv(), which drops an unscorable row, a Bulk
+    // Keywords suggestion with no numbers is still a real related term.
+    expect(rows.map((r) => r.keyword).sort()).toEqual(
+      ["censored row", "clean row", "unscored row"].sort(),
     );
   });
 });
@@ -291,6 +409,72 @@ describe("a repeat capture extends the series", () => {
   });
 });
 
+describe("bulk keyword corpus, against the real archive", () => {
+  const bulk = buildBulkCorpusViaScript();
+
+  it("dedupes a keyword repeated across same-day Bulk Keywords exports", () => {
+    // The 2026-09-18 archive has six Bulk Keywords exports over overlapping
+    // seed lists; several terms (e.g. `embroidery wall art`) appear in more
+    // than one file. Each must land as exactly one row per capture day, not
+    // once per file it happened to appear in.
+    const byKeyword = new Map<string, number>();
+    for (const row of bulk.rows) {
+      const key = `${row.capture}:${row.keyword.toLowerCase()}`;
+      byKeyword.set(key, (byKeyword.get(key) ?? 0) + 1);
+    }
+    for (const count of byKeyword.values()) {
+      expect(count).toBe(1);
+    }
+  });
+
+  it("never coerces a censored or unscored value to 0", () => {
+    for (const row of bulk.rows) {
+      if (row.avg_searches === null) {
+        expect(row.avg_searches_censored).toBe(false);
+      }
+      if (row.avg_searches_censored) {
+        expect(row.avg_searches).not.toBe(0);
+        expect(row.avg_searches).not.toBeNull();
+      }
+    }
+  });
+
+  it("keeps every row with a keyword, including fully-unscored suggestions", () => {
+    expect(bulk.rows.length).toBeGreaterThan(0);
+    expect(bulk.rows.some((r) => r.avg_searches === null)).toBe(true);
+  });
+});
+
+describe("a repeat bulk capture extends the series", () => {
+  // A synthetic second capture of one Bulk Keywords export, built in a temp
+  // dir so the real archive is untouched — the same case the single-day
+  // real archive can't exercise yet.
+  const dir = mkdtempSync(path.join(tmpdir(), "bulk-repeat-"));
+  const source = path.join(PULLS, "2026-09-18-erank-bulk-keywords.csv");
+  copyFileSync(source, path.join(dir, "2026-09-18-erank-bulk-keywords.csv"));
+  copyFileSync(source, path.join(dir, "2026-12-01-erank-bulk-keywords.csv"));
+
+  const bulk = buildBulkCorpusViaScript(dir);
+  const rows = bulk.rows.filter((r) => r.keyword === "embroidery kits");
+
+  it("keeps both captures readable rather than overwriting", () => {
+    expect(rows).toHaveLength(2);
+    expect(rows.map((r) => r.capture).sort()).toEqual([
+      "2026-09-18",
+      "2026-12-01",
+    ]);
+  });
+
+  it("makes the newest current and points the older at it", () => {
+    const current = rows.find((r) => r.current)!;
+    const older = rows.find((r) => !r.current)!;
+    expect(current.capture).toBe("2026-12-01");
+    expect(current.superseded_by).toBeNull();
+    expect(older.capture).toBe("2026-09-18");
+    expect(older.superseded_by).toBe("2026-12-01");
+  });
+});
+
 describe("corpus loader", () => {
   const corpus = loadKeywordCorpus();
 
@@ -336,5 +520,41 @@ describe("corpus loader", () => {
         coverage: { seen: 1, of: 1 },
       }),
     ).toBeNull();
+  });
+
+  it("normalises bulk keyword rows into camelCase, alongside the main rows", () => {
+    expect(corpus.bulkKeywordRows.length).toBeGreaterThan(0);
+    const row = corpus.bulkKeywordRows.find(
+      (r) => r.keyword === "embroidery kits",
+    )!;
+    expect(row).toBeDefined();
+    expect(row.avgSearches).toBe(2918);
+    expect(row.avgSearchesCensored).toBe(false);
+    expect(row.current).toBe(true);
+    expect(row.supersededBy).toBeNull();
+  });
+
+  it("keeps a censored bulk row distinct from an unscored one", () => {
+    const censored = corpus.bulkKeywordRows.find((r) => r.avgSearchesCensored)!;
+    const unscored = corpus.bulkKeywordRows.find(
+      (r) => r.avgSearches === null,
+    )!;
+    expect(censored.avgSearches).not.toBeNull();
+    expect(censored.avgSearches).not.toBe(0);
+    expect(unscored.avgSearchesCensored).toBe(false);
+  });
+});
+
+describe("bulkValueLabel", () => {
+  it("renders an unscored value as an em dash, never 0", () => {
+    expect(bulkValueLabel(null, false)).toBe("—");
+  });
+
+  it("renders a censored value with a '<' prefix", () => {
+    expect(bulkValueLabel(20, true)).toBe("< 20");
+  });
+
+  it("renders a real value plainly, comma-formatted", () => {
+    expect(bulkValueLabel(2918, false)).toBe("2,918");
   });
 });

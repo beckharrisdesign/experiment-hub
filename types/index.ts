@@ -165,10 +165,38 @@ export interface KeywordCapture {
   queries: string[];
 }
 
+/**
+ * One keyword from an eRank Bulk Keywords export — a different instrument
+ * from the Keyword Tool above (related-term suggestions for a seed list, not
+ * a per-seed demand table), with a value shape the Keyword Tool never
+ * produces: a censored cap ("< 20") rather than a bare number or a blank.
+ *
+ * `null` means eRank never scored the field at all. A non-null value with
+ * its `*Censored` flag set means the true value is *below* that number, not
+ * equal to it — eRank capped it rather than reporting exactly. Neither is
+ * ever coerced to 0, for the same reason `KeywordCoverage` never derives a
+ * decline from an absence: a fabricated number would read as a real one.
+ */
+export interface BulkKeywordRow {
+  keyword: string;
+  capture: string;
+  avgSearches: number | null;
+  avgSearchesCensored: boolean;
+  avgClicks: number | null;
+  avgClicksCensored: boolean;
+  avgCtr: number | null;
+  avgCtrCensored: boolean;
+  etsyCompetition: number | null;
+  kd: number | null;
+  current: boolean;
+  supersededBy: string | null;
+}
+
 export interface KeywordCorpus {
   generatedAt: string | null;
   captures: KeywordCapture[];
   rows: KeywordRow[];
+  bulkKeywordRows: BulkKeywordRow[];
 }
 
 export type PullRequestState = "open" | "closed" | "merged";

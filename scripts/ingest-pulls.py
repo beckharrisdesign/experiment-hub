@@ -409,8 +409,146 @@ def build_corpus(pulls: Path | None = None) -> dict:
     }
 
 
+# --- bulk keyword corpus ---------------------------------------------------
+#
+# eRank's Bulk Keywords tool is a second, distinct instrument from the
+# Keyword Tool above: related-term suggestions for a seed list, not a
+# per-seed demand table. Its export has a different schema entirely
+# (Avg Searches/Avg Clicks/Avg CTR/Etsy Competition/Keyword Difficulty vs.
+# Average Searches/Competition/KD/Tag Occurrences) and, critically, a value
+# shape read_keyword_csv() never sees: "< 20" rather than a bare number or a
+# blank. That is real signal -- demand exists and is small -- not the same
+# as "Unknown" (eRank never scored it at all). Collapsing either into 0 would
+# repeat exactly the fabricated-zero mistake read_keyword_csv()'s own comment
+# warns against, so both are kept distinct below: `censored=True` means "the
+# true value is below this cap", a bare `None` means "not scored".
+
+BULK_KEYWORD_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-erank-bulk-keywords(?:-(.+))?\.csv$")
+
+
+def bulk_keyword_csvs(pulls: Path | None = None) -> list[tuple[str, str, Path]]:
+    """(capture_date, variant, path) for every archived eRank Bulk Keywords export."""
+    pulls = pulls or PULLS
+    out = []
+    for f in sorted(pulls.glob("*.csv")):
+        m = BULK_KEYWORD_RE.match(f.name)
+        if m:
+            out.append((m.group(1), m.group(2) or "", f))
+    return out
+
+
+def _num(text: str) -> int | float:
+    """int when the value is whole, otherwise float -- '100' reads as 100,
+    not 100.0, matching read_keyword_csv()'s plain ints."""
+    value = float(text)
+    return int(value) if value.is_integer() else value
+
+
+def parse_bulk_number(raw: str | None) -> tuple[int | float | None, bool]:
+    """(value, censored) for one Bulk Keywords cell.
+
+    '< 20' -> (20, True): a real, nonzero value eRank capped rather than
+    scored exactly. 'Unknown' or blank -> (None, False): not scored at all.
+    Otherwise the parsed number (commas and a trailing '%' stripped), False.
+    """
+    text = (raw or "").strip()
+    if not text or text.lower() == "unknown":
+        return None, False
+    m = re.match(r"^<\s*([\d,]+)\s*%?$", text)
+    if m:
+        return _num(m.group(1).replace(",", "")), True
+    try:
+        return _num(text.rstrip("%").replace(",", "")), False
+    except ValueError:
+        return None, False
+
+
+def read_bulk_keywords_csv(path: Path) -> list[dict]:
+    """Rows from one eRank Bulk Keywords export. Tolerates the BOM eRank writes.
+
+    Every row with a keyword is kept, including ones where every numeric
+    field is unscored -- the term itself, as one of eRank's related-keyword
+    suggestions, is the signal even before any number attaches to it.
+    """
+    import csv
+
+    with path.open(encoding="utf-8-sig", newline="") as fh:
+        rows = []
+        for r in csv.DictReader(fh):
+            kw = (r.get("Keywords") or "").strip()
+            if not kw:
+                continue
+            searches, searches_censored = parse_bulk_number(r.get("Avg Searches"))
+            clicks, clicks_censored = parse_bulk_number(r.get("Avg Clicks"))
+            ctr, ctr_censored = parse_bulk_number(r.get("Avg CTR"))
+            competition, _ = parse_bulk_number(r.get("Etsy Competition"))
+            kd, _ = parse_bulk_number(r.get("Keyword Difficulty"))
+            rows.append({
+                "keyword": kw,
+                "avg_searches": searches,
+                "avg_searches_censored": searches_censored,
+                "avg_clicks": clicks,
+                "avg_clicks_censored": clicks_censored,
+                "avg_ctr": ctr,
+                "avg_ctr_censored": ctr_censored,
+                "etsy_competition": competition,
+                "kd": kd,
+            })
+    return rows
+
+
+def build_bulk_corpus(pulls: Path | None = None) -> dict:
+    files = bulk_keyword_csvs(pulls)
+    captures: dict[str, int] = {}
+    # (capture, keyword.lower()) -> row under construction
+    acc: dict[tuple[str, str], dict] = {}
+
+    for capture, _variant, path in files:
+        captures[capture] = captures.get(capture, 0) + 1
+        for r in read_bulk_keywords_csv(path):
+            key = (capture, r["keyword"].lower())
+            if key in acc:
+                # Multiple Bulk Keywords batches landed the same day commonly
+                # share terms (they are related-suggestion exports over
+                # overlapping seed lists) -- first-seen wins rather than
+                # duplicating the row, matching keyword-tool's own row-per-
+                # keyword-per-capture shape.
+                continue
+            acc[key] = {**r, "capture": capture}
+
+    # A repeat capture of the same keyword extends the series, exactly as
+    # build_corpus() does for the Keyword Tool above.
+    newest: dict[str, str] = {}
+    for (capture, kw_lower) in acc:
+        if kw_lower not in newest or capture > newest[kw_lower]:
+            newest[kw_lower] = capture
+
+    rows = []
+    for (capture, kw_lower), row in acc.items():
+        current = capture == newest[kw_lower]
+        row["current"] = current
+        row["superseded_by"] = None if current else newest[kw_lower]
+        rows.append(row)
+
+    # Unscored (None) searches sort last within a direction, never as 0.
+    rows.sort(key=lambda r: (
+        r["avg_searches"] is None,
+        -(r["avg_searches"] or 0),
+        r["keyword"],
+    ))
+
+    return {
+        "captures": [
+            {"date": c, "source": "erank", "files": n}
+            for c, n in sorted(captures.items())
+        ],
+        "rows": rows,
+    }
+
+
 def write_corpus() -> int:
     corpus = build_corpus()
+    corpus["bulk_keywords"] = build_bulk_corpus()
     out = REPO / "data" / "keyword-corpus.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(corpus, indent=2) + "\n", encoding="utf-8")

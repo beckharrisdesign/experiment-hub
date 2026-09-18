@@ -32,9 +32,9 @@ answers: >-
 3. **Another trademark cluster, same shape as [§1 of the 2026-09-17 note](2026-09-17-erank-keywords.md#1-the-guardrail):** `book nook` alone surfaced `elden ring` (12,189, KD 1), `project hail mary` (10,808, KD 1), `dungeon crawler carl` (9,634, KD 1) and `magic the gathering` (9,980, KD 24); `cutecore` added `mtg` (8,910, KD 35) and `hello kitty` (8,558, KD 33); `paint by numbers` added `minecraft` (13,347, KD 5, already flagged 2026-09-17). Low KD against high volume keeps reading as legal exposure, not open opportunity, across every capture so far — not a one-off in the first batch.
 4. **`grandma hobbies` (1 row) barely returned anything** — only `yarn bowl` (3,214, KD 5) survived `read_keyword_csv()`'s drop rule. Either the seed is genuinely thin on eRank or most of its rows were unscorable long-tail (the same shape [the 2026-09-17 note's §0 caveat](2026-09-17-erank-keywords.md) flags for `procreate brushes`) — this export alone can't distinguish the two.
 
-## Not in this note: the Bulk Keywords file
+## Not in this note: the Bulk Keywords files
 
-A thirteenth file landed the same batch — `eRank - Bulk Keywords.csv` — from a different eRank export (**Bulk Keywords**, not **Keyword Tool**). Its columns don't match the Keyword Tool schema `read_keyword_csv()` expects, so `ingest-pulls.py` correctly lands it as its own surface (`docs/pulls/2026-09-18-erank-bulk-keywords.csv`) rather than folding it into this one — but it is **not** picked up by `keyword_csvs()` (which matches only `-erank-keywords-` filenames) and does not appear in `data/keyword-corpus.json`. See [its own note](2026-09-18-erank-bulk-keywords.md).
+Six more files landed the same day from a different eRank export (**Bulk Keywords**, not **Keyword Tool**) — one in this batch, five more in a follow-up batch. Their schema doesn't match `read_keyword_csv()`, so `ingest-pulls.py` correctly lands them as their own surface (`docs/pulls/2026-09-18-erank-bulk-keywords*.csv`) rather than folding them into this note — and, as of the follow-up batch, they're read by their own `read_bulk_keywords_csv()`/`build_bulk_corpus()` and do appear in `data/keyword-corpus.json`, as a separate `bulk_keywords.rows` array and its own table on `/keyword-explorer`. See [its own note](2026-09-18-erank-bulk-keywords.md) for what's in them.
 
 ## Standing read
 

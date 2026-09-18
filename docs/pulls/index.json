@@ -18,6 +18,11 @@
       "status": "fresh",
       "answers": "Related-term demand for an embroidery-adjacent seed set, from eRank's Bulk Keywords tool. Thin (14 rows, 9 with unquantified searches) and not part of the queryable corpus.",
       "raw_files": [
+        "2026-09-18-erank-bulk-keywords-2.csv",
+        "2026-09-18-erank-bulk-keywords-3.csv",
+        "2026-09-18-erank-bulk-keywords-4.csv",
+        "2026-09-18-erank-bulk-keywords-5.csv",
+        "2026-09-18-erank-bulk-keywords-6.csv",
         "2026-09-18-erank-bulk-keywords.csv"
       ],
       "current": true,

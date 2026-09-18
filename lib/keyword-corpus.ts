@@ -1,4 +1,9 @@
-import type { KeywordCapture, KeywordCorpus, KeywordRow } from "@/types";
+import type {
+  BulkKeywordRow,
+  KeywordCapture,
+  KeywordCorpus,
+  KeywordRow,
+} from "@/types";
 import raw from "@/data/keyword-corpus.json";
 
 /**
@@ -26,10 +31,26 @@ interface RawRow {
   coverage: { seen: number; of: number };
 }
 
+interface RawBulkRow {
+  keyword: string;
+  capture: string;
+  avg_searches: number | null;
+  avg_searches_censored: boolean;
+  avg_clicks: number | null;
+  avg_clicks_censored: boolean;
+  avg_ctr: number | null;
+  avg_ctr_censored: boolean;
+  etsy_competition: number | null;
+  kd: number | null;
+  current: boolean;
+  superseded_by: string | null;
+}
+
 interface RawCorpus {
   generated_at?: string | null;
   captures?: KeywordCapture[];
   rows?: RawRow[];
+  bulk_keywords?: { rows?: RawBulkRow[] };
 }
 
 function toRow(row: RawRow): KeywordRow {
@@ -49,6 +70,23 @@ function toRow(row: RawRow): KeywordRow {
   };
 }
 
+function toBulkRow(row: RawBulkRow): BulkKeywordRow {
+  return {
+    keyword: row.keyword,
+    capture: row.capture,
+    avgSearches: row.avg_searches,
+    avgSearchesCensored: row.avg_searches_censored,
+    avgClicks: row.avg_clicks,
+    avgClicksCensored: row.avg_clicks_censored,
+    avgCtr: row.avg_ctr,
+    avgCtrCensored: row.avg_ctr_censored,
+    etsyCompetition: row.etsy_competition,
+    kd: row.kd,
+    current: row.current,
+    supersededBy: row.superseded_by ?? null,
+  };
+}
+
 /**
  * Read at module scope from a static import — no runtime filesystem access, so
  * there is nothing here to fail on Vercel (tasks.md §3.6).
@@ -59,7 +97,22 @@ export function loadKeywordCorpus(): KeywordCorpus {
     generatedAt: corpus.generated_at ?? null,
     captures: corpus.captures ?? [],
     rows: (corpus.rows ?? []).map(toRow),
+    bulkKeywordRows: (corpus.bulk_keywords?.rows ?? []).map(toBulkRow),
   };
+}
+
+/**
+ * A Bulk Keywords cell as text: "—" when unscored, "< N" when eRank capped
+ * it rather than reporting an exact value, the plain number otherwise.
+ * Never renders 0 for either case — see `BulkKeywordRow`'s own doc comment.
+ */
+export function bulkValueLabel(
+  value: number | null,
+  censored: boolean,
+): string {
+  if (value === null) return "—";
+  const text = value.toLocaleString();
+  return censored ? `< ${text}` : text;
 }
 
 /** Total tag occurrences across the queries that surfaced a keyword.
