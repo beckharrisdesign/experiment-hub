@@ -2,6 +2,74 @@
   "generated": "2026-09-18",
   "pulls": [
     {
+      "note": "2026-09-18-erank-bulk-keywords.md",
+      "captured": "2026-09-18",
+      "source": "erank",
+      "surface": "bulk-keywords",
+      "tier": "external",
+      "scope": "market",
+      "measures": [
+        "demand"
+      ],
+      "subjects": [
+        "embroidery"
+      ],
+      "half_life": "90d",
+      "status": "fresh",
+      "answers": "Related-term demand for an embroidery-adjacent seed set, from eRank's Bulk Keywords tool. Thin (14 rows, 9 with unquantified searches) and not part of the queryable corpus.",
+      "raw_files": [
+        "2026-09-18-erank-bulk-keywords.csv"
+      ],
+      "current": true,
+      "series_index": 1,
+      "series_length": 1
+    },
+    {
+      "note": "2026-09-18-erank-keywords.md",
+      "captured": "2026-09-18",
+      "source": "erank",
+      "surface": "keywords",
+      "tier": "external",
+      "scope": "market",
+      "measures": [
+        "demand"
+      ],
+      "subjects": [
+        "dark-academia",
+        "tapestry",
+        "wall-art",
+        "embroidery-kits",
+        "cutecore",
+        "christmas",
+        "grandma-hobbies",
+        "pastel-goth",
+        "paint-by-numbers",
+        "medieval-tapestry",
+        "book-nook",
+        "christmas-pattern"
+      ],
+      "half_life": "90d",
+      "status": "fresh",
+      "answers": "Marketwide demand for 12 seeds \u2014 7 new, 5 re-pulls of existing seeds that supersede their 2026-09-17 rows at the individual-keyword level. Extends the corpus from 50 seeds / 410 rows to 61 seeds / 2,014 rows.",
+      "raw_files": [
+        "2026-09-18-erank-keywords-book-nook.csv",
+        "2026-09-18-erank-keywords-christmas-pattern.csv",
+        "2026-09-18-erank-keywords-christmas.csv",
+        "2026-09-18-erank-keywords-cutecore.csv",
+        "2026-09-18-erank-keywords-dark-academia.csv",
+        "2026-09-18-erank-keywords-embroidery-kits.csv",
+        "2026-09-18-erank-keywords-grandma-hobbies.csv",
+        "2026-09-18-erank-keywords-medieval-tapestry.csv",
+        "2026-09-18-erank-keywords-paint-by-numbers.csv",
+        "2026-09-18-erank-keywords-pastel-goth.csv",
+        "2026-09-18-erank-keywords-tapestry.csv",
+        "2026-09-18-erank-keywords-wall-art.csv"
+      ],
+      "current": true,
+      "series_index": 1,
+      "series_length": 2
+    },
+    {
       "note": "2026-09-17-erank-keywords.md",
       "captured": "2026-09-17",
       "source": "erank",
@@ -17,7 +85,7 @@
         "grandma-hobbies"
       ],
       "half_life": "90d",
-      "status": "fresh",
+      "status": "superseded",
       "answers": "Marketwide demand and difficulty for terms W&H does not use. Contains trend spikes that decay far faster than the stated half-life \u2014 see the guardrail section.",
       "raw_files": [
         "2026-09-17-erank-keywords-alocasia.csv",
@@ -71,9 +139,10 @@
         "2026-09-17-erank-keywords-winter-door-decor.csv",
         "2026-09-17-erank-keywords-yarn-bowl.csv"
       ],
-      "current": true,
-      "series_index": 1,
-      "series_length": 1
+      "current": false,
+      "series_index": 2,
+      "series_length": 2,
+      "superseded_by": "2026-09-18-erank-keywords.md"
     },
     {
       "note": "2026-09-17-erank-spotted-on-etsy.md",

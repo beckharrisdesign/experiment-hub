@@ -47,6 +47,7 @@ function generatorKeptRowCount(): number {
 
 /** Run the generator in-process and return the corpus it would write. */
 function buildCorpusViaScript(pulls?: string): {
+  captures: { date: string }[];
   rows: {
     keyword: string;
     capture: string;
@@ -217,9 +218,23 @@ describe("keyword corpus generation", () => {
     }
   });
 
-  it("marks a single capture as current with nothing superseded", () => {
-    expect(corpus.rows.every((r) => r.current)).toBe(true);
-    expect(corpus.rows.every((r) => r.superseded_by === null)).toBe(true);
+  it("marks current vs. superseded consistently, whatever the archive holds today", () => {
+    // Not a fixed count: the real archive grows, and a repeat pull of an
+    // existing seed (as of 2026-09-18, `wall art`) legitimately supersedes
+    // some earlier rows. What must always hold, independent of how many
+    // captures exist: a current row has no superseded_by, a superseded row
+    // always points to a strictly later capture than its own, and every row
+    // belongs to one of the archive's own captures.
+    const captureDates = corpus.captures.map((c) => c.date);
+    for (const row of corpus.rows) {
+      expect(captureDates).toContain(row.capture);
+      if (row.current) {
+        expect(row.superseded_by).toBeNull();
+      } else {
+        expect(row.superseded_by).not.toBeNull();
+        expect(row.superseded_by! > row.capture).toBe(true);
+      }
+    }
   });
 });
 
