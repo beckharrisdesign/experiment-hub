@@ -179,12 +179,17 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
     [rows],
   );
 
-  const visible = useMemo(() => {
+  const { visible, rangeIsCause } = useMemo(() => {
     const needle = keywordFilter.trim().toLowerCase();
     const min = rangeMin.trim() === "" ? null : Number(rangeMin);
     const max = rangeMax.trim() === "" ? null : Number(rangeMax);
 
-    const filtered = rows.filter((row) => {
+    // Split out from the range check on purpose: comparing counts with and
+    // without the range filter is how the empty-state message below tells
+    // "the range emptied this" from "a keyword/capture/query/status filter
+    // (or the archive itself) already had" — rangeBoundSet alone can't,
+    // since it doesn't know whether anything would have shown either way.
+    const withoutRange = rows.filter((row) => {
       if (needle && !row.keyword.toLowerCase().includes(needle)) return false;
       if (captureFilter !== ALL && row.capture !== captureFilter) return false;
       if (
@@ -195,12 +200,15 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
       }
       if (statusFilter === "current" && !row.current) return false;
       if (statusFilter === "superseded" && row.current) return false;
-      if (rangeColumn !== NO_RANGE) {
-        const value = rangeValue(row, rangeColumn);
-        if (!passesRange(value, min, max)) return false;
-      }
       return true;
     });
+
+    const filtered =
+      rangeColumn === NO_RANGE
+        ? withoutRange
+        : withoutRange.filter((row) =>
+            passesRange(rangeValue(row, rangeColumn), min, max),
+          );
 
     const sorted = [...filtered].sort((a, b) => {
       if (sortKey === "ranked" || sortKey === "targeting") {
@@ -224,7 +232,11 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
       return direction === "asc" ? order : -order;
     });
 
-    return sorted;
+    return {
+      visible: sorted,
+      rangeIsCause:
+        rangeBoundSet && withoutRange.length > 0 && filtered.length === 0,
+    };
   }, [
     rows,
     keywordFilter,
@@ -234,6 +246,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
     rangeColumn,
     rangeMin,
     rangeMax,
+    rangeBoundSet,
     sortKey,
     direction,
   ]);
@@ -455,7 +468,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
 
         {visible.length === 0 && (
           <p className="px-3 py-6 text-sm text-text-muted">
-            {!rangeBoundSet ? (
+            {!rangeIsCause ? (
               <>
                 No rows match these filters. The archive is hand-filtered at
                 capture time, so a keyword you expected may simply never have
@@ -463,13 +476,13 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                 demand.
               </>
             ) : (
-              // A range filter producing zero rows is a direct, known
-              // consequence of the bound Katy set — the archive-omission
-              // explanation above doesn't apply and would be misleading here.
-              // Selecting a range *column* alone isn't enough to reach this
-              // branch: a min or max must actually be set, or an unrelated
-              // filter emptying the table would show range-specific copy for
-              // a range that was never applied.
+              // rangeIsCause requires rows to have existed *before* the range
+              // filter and none to survive *after* it — not just a bound
+              // being set (round 9's fix) or a range column being merely
+              // picked (round 8's fix). Without that distinction, a
+              // keyword/capture/query/status filter that already emptied the
+              // table would still show this range-specific copy even though
+              // the range never had rows to exclude in the first place.
               <>
                 No rows fall within this range. Widen or clear it to see more.
               </>

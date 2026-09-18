@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * Targeting has to be live on every request, not baked in at build time.
+ * Targeting has to be evaluated at request time, not baked in at build time.
  * `getLatestListingSnapshots()` is a Supabase read, not a Next.js dynamic
  * API (`cookies()`, `headers()`, an uncached `fetch`), so without this the
  * segment is a static-rendering candidate — a build run without Supabase
@@ -19,6 +19,12 @@ export const metadata: Metadata = {
  * null` for every row and never refresh it. Matches the `force-dynamic`
  * convention already used by every other live-data page in this app
  * (app/page.tsx, app/documentation/page.tsx, app/changes/page.tsx, …).
+ *
+ * "Request time" is bounded, not literal: `getLatestListingSnapshots()`
+ * (`lib/etsy-sync.ts`) holds a 60-second per-server-instance cache, so
+ * Targeting can lag a live tag change by up to a minute. `force-dynamic`
+ * only rules out baking the value in at build time — it doesn't promise a
+ * fresh Supabase read on every single request, and isn't meant to.
  */
 export const dynamic = "force-dynamic";
 

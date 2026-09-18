@@ -326,6 +326,24 @@ describe("KeywordTable — range filter", () => {
     expect(visible).not.toContain("unrelated thing"); // competition 0 -> ratio null, excluded by a min bound
   });
 
+  it("switches both range inputs to a decimal keypad for the fractional Searches / comp. column", () => {
+    // Every other range target is a whole number (numeric keypad, no decimal
+    // separator on mobile) — only this column's bounds need inputMode
+    // "decimal", and previously nothing asserted that either input actually
+    // got it.
+    render(<KeywordTable rows={ROWS} />);
+    chooseRangeColumn("Searches / comp.");
+
+    expect(screen.getByLabelText("Range filter minimum")).toHaveAttribute(
+      "inputmode",
+      "decimal",
+    );
+    expect(screen.getByLabelText("Range filter maximum")).toHaveAttribute(
+      "inputmode",
+      "decimal",
+    );
+  });
+
   it("explains a range-emptied result as the range's own doing, not the archive's", () => {
     // A zero-row range result is a direct, known consequence of the bound
     // Katy set — the generic "archive is hand-filtered" copy (which explains
@@ -360,6 +378,31 @@ describe("KeywordTable — range filter", () => {
     // table here must not be blamed on the merely-selected range column.
     render(<KeywordTable rows={ROWS} />);
     chooseRangeColumn("Ranked");
+    fireEvent.change(screen.getByLabelText("Filter keywords"), {
+      target: { value: "no such keyword anywhere" },
+    });
+
+    expect(bodyRows()).toHaveLength(0);
+    expect(screen.getByText(/hand-filtered at/i)).toBeInTheDocument();
+    expect(
+      screen.queryByText(/no rows fall within this range/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps the archive-omission copy when an unrelated filter empties rows the range bound itself would have kept", () => {
+    // A real bound is set (min 5 on Ranked, which alone would still match
+    // "snow globe" and "unrelated thing") — but the keyword filter excludes
+    // everything first, so the range filter never had any rows to exclude in
+    // the first place. Blaming the range here would be misleading in the
+    // opposite direction from the round-8/9 fixes: not "no bound was ever
+    // set," but "the bound was never actually the reason."
+    render(<KeywordTable rows={ROWS} />);
+    chooseRangeColumn("Ranked");
+    fireEvent.change(screen.getByLabelText("Range filter minimum"), {
+      target: { value: "5" },
+    });
+    expect(keywordOrder()).toContain("snow globe"); // sanity: the bound alone doesn't empty the table
+
     fireEvent.change(screen.getByLabelText("Filter keywords"), {
       target: { value: "no such keyword anywhere" },
     });

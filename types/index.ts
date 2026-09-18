@@ -205,8 +205,11 @@ export interface KeywordRow {
 }
 
 /**
- * `KeywordRow`, as passed into `KeywordTable` — a client component on a
- * public, unauthenticated route.
+ * `KeywordRow`, collapsed to what actually reaches `KeywordTable` — a client
+ * component on a public, unauthenticated route. `toTableRows()`
+ * (`lib/keyword-traction.ts`) is what performs this collapse; the page calls
+ * it right before rendering, so `KeywordTable` only ever receives
+ * `KeywordTableRow`, never a raw `KeywordRow`.
  *
  * Ranked and Targeting are collapsed to the sort value (`.best`) only; the
  * full per-listing detail (`RankedMatch.matches` — listing titles, pages,
