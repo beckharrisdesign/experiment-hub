@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import {
-  Badge,
   Select,
   SelectContent,
   SelectItem,
@@ -10,26 +9,31 @@ import {
   SelectValue,
 } from "@beckharrisdesign/mvds";
 import type { KeywordRow } from "@/types";
-import {
-  coverageLabel,
-  demandRatio,
-  totalTagOccurrences,
-} from "@/lib/keyword-corpus";
+import { demandRatio, totalTagOccurrences } from "@/lib/keyword-corpus";
 
 type SortKey =
   | "keyword"
   | "searches"
   | "competition"
   | "kd"
+  | "ranked"
+  | "targeting"
   | "tagOccurrences"
-  | "ratio"
-  | "coverage"
-  | "capture"
-  | "status";
+  | "ratio";
+
+/** The numeric columns a range filter can target. A subset of SortKey. */
+type RangeKey =
+  | "searches"
+  | "competition"
+  | "kd"
+  | "ranked"
+  | "targeting"
+  | "ratio";
 
 type Direction = "asc" | "desc";
 
 const ALL = "__all__";
+const NO_RANGE = "__none__";
 
 /**
  * Column definitions.
@@ -38,6 +42,11 @@ const ALL = "__all__";
  * is measured to its own widest value via `w-[1%]` + `whitespace-nowrap`,
  * which is the CSS equivalent of what the Figma rounds do with hug-content
  * frames: the browser does the measuring.
+ *
+ * Status, Capture and Coverage are deliberately absent — hidden from the
+ * table per Katy, 2026-09-18 ("don't delete that data but I don't really
+ * need to see it in the main table"). The fields still exist on every row;
+ * nothing here reads or discards them.
  */
 const COLUMNS: {
   key: SortKey;
@@ -49,12 +58,57 @@ const COLUMNS: {
   { key: "searches", label: "Searches", numeric: true },
   { key: "competition", label: "Competition", numeric: true },
   { key: "kd", label: "KD", numeric: true },
+  { key: "ranked", label: "Ranked", numeric: true },
+  { key: "targeting", label: "Targeting", numeric: true },
   { key: "tagOccurrences", label: "Found via (query)" },
   { key: "ratio", label: "Searches / comp.", numeric: true },
-  { key: "coverage", label: "Coverage" },
-  { key: "capture", label: "Capture" },
-  { key: "status", label: "Status" },
 ];
+
+const RANGE_COLUMNS: { key: RangeKey; label: string }[] = [
+  { key: "searches", label: "Searches" },
+  { key: "competition", label: "Competition" },
+  { key: "kd", label: "KD" },
+  { key: "ranked", label: "Ranked" },
+  { key: "targeting", label: "Targeting" },
+  { key: "ratio", label: "Searches / comp." },
+];
+
+/** `null` for Ranked/Targeting means no observed match — never `0`. */
+function rangeValue(row: KeywordRow, key: RangeKey): number | null {
+  switch (key) {
+    case "searches":
+      return row.searches;
+    case "competition":
+      return row.competition;
+    case "kd":
+      return row.kd;
+    case "ranked":
+      return row.ranked?.best ?? null;
+    case "targeting":
+      return row.targeting?.best ?? null;
+    case "ratio":
+      return demandRatio(row);
+  }
+}
+
+/**
+ * A min bound asserts "at or above X" — a blank value can't confirm that, so
+ * it is excluded. A max-only bound asserts a ceiling only; a blank value
+ * contradicts nothing about a ceiling, so it stays included. This mirrors
+ * `keyword-corpus`'s "absence is not a verdict" rule rather than treating an
+ * unknown value as if it were 0.
+ */
+function passesRange(
+  value: number | null,
+  min: number | null,
+  max: number | null,
+): boolean {
+  if (min === null && max === null) return true;
+  if (value === null) return min === null;
+  if (min !== null && value < min) return false;
+  if (max !== null && value > max) return false;
+  return true;
+}
 
 function sortValue(row: KeywordRow, key: SortKey): string | number {
   switch (key) {
@@ -70,12 +124,11 @@ function sortValue(row: KeywordRow, key: SortKey): string | number {
       return totalTagOccurrences(row);
     case "ratio":
       return demandRatio(row) ?? -1;
-    case "coverage":
-      return row.coverage.of ? row.coverage.seen / row.coverage.of : 0;
-    case "capture":
-      return row.capture;
-    case "status":
-      return row.current ? 0 : 1;
+    case "ranked":
+    case "targeting":
+      // Handled separately in the sort comparator — blank always sorts last,
+      // in both directions, rather than as the lowest possible number.
+      return 0;
   }
 }
 
@@ -92,6 +145,11 @@ export default function KeywordTable({ rows }: { rows: KeywordRow[] }) {
   const [captureFilter, setCaptureFilter] = useState(ALL);
   const [queryFilter, setQueryFilter] = useState(ALL);
   const [statusFilter, setStatusFilter] = useState(ALL);
+  const [rangeColumn, setRangeColumn] = useState<RangeKey | typeof NO_RANGE>(
+    NO_RANGE,
+  );
+  const [rangeMin, setRangeMin] = useState("");
+  const [rangeMax, setRangeMax] = useState("");
 
   const captures = useMemo(
     () =>
@@ -111,6 +169,8 @@ export default function KeywordTable({ rows }: { rows: KeywordRow[] }) {
 
   const visible = useMemo(() => {
     const needle = keywordFilter.trim().toLowerCase();
+    const min = rangeMin.trim() === "" ? null : Number(rangeMin);
+    const max = rangeMax.trim() === "" ? null : Number(rangeMax);
 
     const filtered = rows.filter((row) => {
       if (needle && !row.keyword.toLowerCase().includes(needle)) return false;
@@ -123,10 +183,31 @@ export default function KeywordTable({ rows }: { rows: KeywordRow[] }) {
       }
       if (statusFilter === "current" && !row.current) return false;
       if (statusFilter === "superseded" && row.current) return false;
+      if (rangeColumn !== NO_RANGE) {
+        const value = rangeValue(row, rangeColumn);
+        if (!passesRange(value, min, max)) return false;
+      }
       return true;
     });
 
     const sorted = [...filtered].sort((a, b) => {
+      if (sortKey === "ranked" || sortKey === "targeting") {
+        const av =
+          sortKey === "ranked"
+            ? (a.ranked?.best ?? null)
+            : (a.targeting?.best ?? null);
+        const bv =
+          sortKey === "ranked"
+            ? (b.ranked?.best ?? null)
+            : (b.targeting?.best ?? null);
+        if (av === null && bv === null)
+          return a.keyword.localeCompare(b.keyword);
+        if (av === null) return 1;
+        if (bv === null) return -1;
+        const order = av - bv;
+        return direction === "asc" ? order : -order;
+      }
+
       const left = sortValue(a, sortKey);
       const right = sortValue(b, sortKey);
       if (left === right) return a.keyword.localeCompare(b.keyword);
@@ -144,6 +225,9 @@ export default function KeywordTable({ rows }: { rows: KeywordRow[] }) {
     captureFilter,
     queryFilter,
     statusFilter,
+    rangeColumn,
+    rangeMin,
+    rangeMax,
     sortKey,
     direction,
   ]);
@@ -155,6 +239,10 @@ export default function KeywordTable({ rows }: { rows: KeywordRow[] }) {
       setSortKey(key);
       setDirection(key === "keyword" ? "asc" : "desc");
     }
+  }
+
+  function formatTraction(value: number | null): string {
+    return value === null ? "—" : value.toLocaleString();
   }
 
   return (
@@ -209,6 +297,58 @@ export default function KeywordTable({ rows }: { rows: KeywordRow[] }) {
             <SelectItem value="superseded">Superseded</SelectItem>
           </SelectContent>
         </Select>
+
+        {/* Range filter: one active numeric column at a time (design.md §
+            Decisions) — a picker plus two plain number inputs, matching the
+            keyword filter's un-wrapped <input> rather than a new pattern. */}
+        <Select
+          value={rangeColumn}
+          onValueChange={(value) =>
+            setRangeColumn(value === NO_RANGE ? NO_RANGE : (value as RangeKey))
+          }
+        >
+          <SelectTrigger
+            size="sm"
+            className="w-44"
+            aria-label="Range filter column"
+          >
+            <SelectValue placeholder="Range filter" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={NO_RANGE}>No range filter</SelectItem>
+            {RANGE_COLUMNS.map((col) => (
+              <SelectItem key={col.key} value={col.key}>
+                {col.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {rangeColumn !== NO_RANGE && (
+          <>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={rangeMin}
+              onChange={(e) => setRangeMin(e.target.value)}
+              placeholder="Min"
+              aria-label="Range filter minimum"
+              className="h-9 w-20 rounded-md border border-border bg-background-primary px-2 text-sm text-text-primary placeholder:text-text-muted"
+            />
+            <span className="text-text-muted" aria-hidden>
+              –
+            </span>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={rangeMax}
+              onChange={(e) => setRangeMax(e.target.value)}
+              placeholder="Max"
+              aria-label="Range filter maximum"
+              className="h-9 w-20 rounded-md border border-border bg-background-primary px-2 text-sm text-text-primary placeholder:text-text-muted"
+            />
+          </>
+        )}
 
         <span className="ml-auto text-sm text-text-muted">
           {visible.length} of {rows.length}
@@ -272,6 +412,16 @@ export default function KeywordTable({ rows }: { rows: KeywordRow[] }) {
                 <td className="w-[1%] whitespace-nowrap px-3 py-2 text-right text-text-primary">
                   {row.kd}
                 </td>
+                {/* Best (lowest) position across every ranking listing; blank,
+                    never 0, when there is no Spotted on Etsy match. */}
+                <td className="w-[1%] whitespace-nowrap px-3 py-2 text-right text-text-primary">
+                  {formatTraction(row.ranked?.best ?? null)}
+                </td>
+                {/* Lowest matching tag slot (1–13) across every current
+                    listing; blank, never 0, when untargeted. */}
+                <td className="w-[1%] whitespace-nowrap px-3 py-2 text-right text-text-primary">
+                  {formatTraction(row.targeting?.best ?? null)}
+                </td>
                 {/* Tag occurrences stay per query. `embroidery font` read 6,
                     81, 80 and 12 under four queries on one day; one merged
                     number would be invented. */}
@@ -282,23 +432,6 @@ export default function KeywordTable({ rows }: { rows: KeywordRow[] }) {
                 </td>
                 <td className="w-[1%] whitespace-nowrap px-3 py-2 text-right text-text-primary">
                   {formatRatio(row)}
-                </td>
-                <td className="w-[1%] whitespace-nowrap px-3 py-2 text-text-primary">
-                  {coverageLabel(row)}
-                </td>
-                <td className="w-[1%] whitespace-nowrap px-3 py-2 text-text-primary">
-                  {row.capture}
-                </td>
-                {/* Status reads, it does not glow. The proposal's colour-band
-                    schema is recorded and deliberately unapplied, so both
-                    states use one neutral variant and the word carries the
-                    meaning. */}
-                <td className="w-[1%] whitespace-nowrap px-3 py-2">
-                  <Badge variant="outline">
-                    {row.current
-                      ? "current"
-                      : `superseded${row.supersededBy ? ` → ${row.supersededBy}` : ""}`}
-                  </Badge>
                 </td>
               </tr>
             ))}

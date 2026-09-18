@@ -146,6 +146,43 @@ export interface KeywordCoverage {
   of: number;
 }
 
+/**
+ * One W&H listing ranking for a keyword's exact text, from an
+ * `erank-spotted-on-etsy` pull.
+ */
+export interface RankedListingMatch {
+  listing: string;
+  page: number;
+  position: number;
+}
+
+/**
+ * A keyword's real-world search ranking, collapsed to its best (lowest)
+ * position for sorting — with every matching listing retained underneath so
+ * the collapse doesn't discard data. `null` means no observed ranking, never
+ * a `0`: absence here is unexplained, not evidence of failing to rank.
+ */
+export interface RankedMatch {
+  best: number;
+  matches: RankedListingMatch[];
+}
+
+/** One current listing that carries a keyword as one of its tags. */
+export interface TargetingListingMatch {
+  listingId: number;
+  slot: number;
+}
+
+/**
+ * A keyword's presence in current listing tags, collapsed to the lowest
+ * (earliest) tag slot (1–13) for sorting — every matching listing retained
+ * underneath. `null` means not currently targeted, never a `0`.
+ */
+export interface TargetingMatch {
+  best: number;
+  matches: TargetingListingMatch[];
+}
+
 /** One keyword as observed in one capture. */
 export interface KeywordRow {
   keyword: string;
@@ -157,6 +194,15 @@ export interface KeywordRow {
   current: boolean;
   supersededBy: string | null;
   coverage: KeywordCoverage;
+  /** From the corpus, refreshed by `ingest-pulls.py --apply`. */
+  ranked: RankedMatch | null;
+  /**
+   * Computed server-side, per request, against live listing snapshots — not
+   * part of the static corpus. Always present (never `undefined`) on a row
+   * that has reached `KeywordTable`; `null` means no match OR the Supabase
+   * read failed (design.md § Decisions — a failure degrades to "no data").
+   */
+  targeting: TargetingMatch | null;
 }
 
 export interface KeywordCapture {

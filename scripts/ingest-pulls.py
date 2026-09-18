@@ -335,8 +335,71 @@ def read_keyword_csv(path: Path) -> list[dict]:
     return rows
 
 
+SPOTTED_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-erank-spotted-on-etsy(?:-.+)?\.csv$")
+
+
+def spotted_on_etsy_csvs(pulls: Path | None = None) -> list[tuple[str, Path]]:
+    """(capture_date, path) for every archived eRank "Spotted on Etsy" export."""
+    pulls = pulls or PULLS
+    out = []
+    for f in sorted(pulls.glob("*.csv")):
+        m = SPOTTED_RE.match(f.name)
+        if m:
+            out.append((m.group(1), f))
+    return out
+
+
+def read_spotted_on_etsy_csv(path: Path) -> list[dict]:
+    """Rows from one Spotted on Etsy export. Tolerates the BOM eRank writes."""
+    import csv
+
+    with path.open(encoding="utf-8-sig", newline="") as fh:
+        rows = []
+        for r in csv.DictReader(fh):
+            term = (r.get("Search Term") or "").strip()
+            listing = (r.get("Shop/Listing") or "").strip()
+            if not term or not listing:
+                continue
+            try:
+                rows.append({
+                    "search_term": term,
+                    "listing": listing,
+                    "page": int(str(r.get("Page", "0")).replace(",", "") or 0),
+                    "position": int(str(r.get("Position", "0")).replace(",", "") or 0),
+                })
+            except ValueError:
+                # Same rule as read_keyword_csv: drop rather than fabricate.
+                continue
+    return rows
+
+
+def build_ranked_index(pulls: Path | None = None) -> dict[str, dict]:
+    """keyword.lower() -> {best, matches} across every archived Spotted on Etsy
+    export, matched against corpus keywords case-insensitive exact.
+
+    A term ranked by more than one listing keeps every match; `best` is the
+    lowest (best) position among them, which is what "sort by rank" means --
+    the full list stays reachable rather than being averaged or dropped.
+    """
+    by_term: dict[str, list[dict]] = {}
+    for _capture, path in spotted_on_etsy_csvs(pulls):
+        for r in read_spotted_on_etsy_csv(path):
+            key = r["search_term"].lower()
+            by_term.setdefault(key, []).append({
+                "listing": r["listing"],
+                "page": r["page"],
+                "position": r["position"],
+            })
+
+    return {
+        term: {"best": min(m["position"] for m in matches), "matches": matches}
+        for term, matches in by_term.items()
+    }
+
+
 def build_corpus(pulls: Path | None = None) -> dict:
     files = keyword_csvs(pulls)
+    ranked_index = build_ranked_index(pulls)
     captures: dict[str, set[str]] = {}
     # (capture, keyword) -> row under construction
     acc: dict[tuple[str, str], dict] = {}
@@ -391,6 +454,11 @@ def build_corpus(pulls: Path | None = None) -> dict:
         row["current"] = current
         row["superseded_by"] = None if current else newest[keyword]
         row["coverage"] = {"seen": seen_in[keyword], "of": total_captures}
+        # Ranked is keyword-scoped, not capture-scoped: a real-world ranking
+        # observed once applies to the keyword regardless of which capture's
+        # row is being built. null (not a missing key, not a 0) when there is
+        # no Spotted on Etsy match.
+        row["ranked"] = ranked_index.get(keyword.lower())
         rows.append(row)
 
     rows.sort(key=lambda r: (-r["searches"], r["keyword"], r["capture"]))

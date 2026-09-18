@@ -55,6 +55,10 @@ function buildCorpusViaScript(pulls?: string): {
     current: boolean;
     superseded_by: string | null;
     coverage: { seen: number; of: number };
+    ranked: {
+      best: number;
+      matches: { listing: string; page: number; position: number }[];
+    } | null;
   }[];
 } {
   const arg = pulls ? `pathlib.Path(${JSON.stringify(pulls)})` : "None";
@@ -276,6 +280,48 @@ describe("a repeat capture extends the series", () => {
   });
 });
 
+describe("Ranked: joined from erank-spotted-on-etsy, against a fixture", () => {
+  // A synthetic keyword export alongside the real Spotted on Etsy archive, in
+  // a temp dir so the real (currently non-overlapping) corpus is untouched.
+  // "snow globe" is a real Spotted on Etsy search term with two ranking
+  // listings (positions 8 and 38) — chosen specifically to exercise the
+  // best-of-many-matches rule, not invented data.
+  const dir = mkdtempSync(path.join(tmpdir(), "kw-ranked-"));
+  copyFileSync(
+    path.join(PULLS, "2026-09-17-erank-spotted-on-etsy.csv"),
+    path.join(dir, "2026-09-17-erank-spotted-on-etsy.csv"),
+  );
+  writeFileSync(
+    path.join(dir, "2026-09-17-erank-keywords-test.csv"),
+    [
+      '"Keywords","Average Searches","Competition","KD","Tag Occurrences"',
+      '"snow globe",210,180,"22","5"',
+      '"unrelated thing",10,5,"3","1"',
+    ].join("\n"),
+    "utf8",
+  );
+
+  const corpus = buildCorpusViaScript(dir);
+  const matched = corpus.rows.find((r) => r.keyword === "snow globe")!;
+  const unmatched = corpus.rows.find((r) => r.keyword === "unrelated thing")!;
+
+  it("attaches the best (lowest) position across every ranking listing", () => {
+    expect(matched.ranked).not.toBeNull();
+    expect(matched.ranked!.best).toBe(8);
+  });
+
+  it("retains every matching listing, not just the best one", () => {
+    expect(matched.ranked!.matches).toHaveLength(2);
+    expect(
+      matched.ranked!.matches.map((m) => m.position).sort((a, b) => a - b),
+    ).toEqual([8, 38]);
+  });
+
+  it("leaves ranked null, never 0, for a keyword with no Spotted on Etsy match", () => {
+    expect(unmatched.ranked).toBeNull();
+  });
+});
+
 describe("corpus loader", () => {
   const corpus = loadKeywordCorpus();
 
@@ -307,6 +353,15 @@ describe("corpus loader", () => {
     expect(coverageLabel(row)).toMatch(/^seen in \d+ of \d+$/);
   });
 
+  it("carries ranked as null for every row today, and would normalise it if present", () => {
+    // 0 of 410 corpus keywords currently match the (12-row) Spotted on Etsy
+    // archive — confirmed directly, not assumed. This is the expected,
+    // honest current state (proposal.md § Why), not a bug to work around in
+    // the test; the fixture-based describe block above proves the mapping
+    // itself works on data that does overlap.
+    expect(corpus.rows.every((r) => r.ranked === null)).toBe(true);
+  });
+
   it("returns null rather than Infinity when competition is zero", () => {
     expect(
       demandRatio({
@@ -319,6 +374,8 @@ describe("corpus loader", () => {
         current: true,
         supersededBy: null,
         coverage: { seen: 1, of: 1 },
+        ranked: null,
+        targeting: null,
       }),
     ).toBeNull();
   });

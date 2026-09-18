@@ -1,0 +1,145 @@
+import { beforeAll, describe, it, expect } from "vitest";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import KeywordTable from "@/components/KeywordTable";
+import type { KeywordRow } from "@/types";
+
+// jsdom doesn't implement these, and Radix Select (under MVDS's `Select`)
+// calls them when an option is chosen — without a stub, "Range filter
+// column" can never be set via a click, and every test in this file would
+// fail for a jsdom gap that has nothing to do with KeywordTable's own logic.
+beforeAll(() => {
+  Element.prototype.scrollIntoView ??= () => {};
+  Element.prototype.hasPointerCapture ??= () => false;
+  Element.prototype.releasePointerCapture ??= () => {};
+});
+
+function row(overrides: Partial<KeywordRow>): KeywordRow {
+  return {
+    keyword: "keyword",
+    capture: "2026-09-17",
+    searches: 100,
+    competition: 50,
+    kd: 10,
+    foundVia: [{ query: "test", tagOccurrences: 1 }],
+    current: true,
+    supersededBy: null,
+    coverage: { seen: 1, of: 1 },
+    ranked: null,
+    targeting: null,
+    ...overrides,
+  };
+}
+
+const ROWS: KeywordRow[] = [
+  row({
+    keyword: "snow globe",
+    searches: 210,
+    ranked: {
+      best: 8,
+      matches: [{ listing: "penguin", page: 2, position: 8 }],
+    },
+    targeting: { best: 3, matches: [{ listingId: 1, slot: 3 }] },
+  }),
+  row({
+    keyword: "calm stitching",
+    searches: 40,
+    ranked: { best: 1, matches: [{ listing: "geo", page: 1, position: 1 }] },
+    targeting: null,
+  }),
+  row({
+    keyword: "embroidery font",
+    searches: 1400,
+    ranked: null,
+    targeting: null,
+  }),
+];
+
+function bodyRows() {
+  const body = screen.getAllByRole("rowgroup")[1];
+  return within(body).getAllByRole("row");
+}
+
+function keywordOrder(): string[] {
+  return bodyRows().map(
+    (tr) => within(tr).getAllByRole("cell")[0].textContent ?? "",
+  );
+}
+
+describe("KeywordTable — Ranked and Targeting columns", () => {
+  it("renders numeric values, not badge text", () => {
+    render(<KeywordTable rows={ROWS} />);
+    const snowGlobeRow = bodyRows().find((tr) =>
+      within(tr).queryByText("snow globe"),
+    )!;
+    const cells = within(snowGlobeRow).getAllByRole("cell");
+    // Keyword, Searches, Competition, KD, Ranked, Targeting, Found via, Ratio
+    expect(cells[4].textContent).toBe("8");
+    expect(cells[5].textContent).toBe("3");
+  });
+
+  it("shows a blank dash, never 0, when there is no match", () => {
+    render(<KeywordTable rows={ROWS} />);
+    const fontRow = bodyRows().find((tr) =>
+      within(tr).queryByText("embroidery font"),
+    )!;
+    const cells = within(fontRow).getAllByRole("cell");
+    expect(cells[4].textContent).toBe("—");
+    expect(cells[5].textContent).toBe("—");
+  });
+
+  it("has no Status, Capture or Coverage column", () => {
+    render(<KeywordTable rows={ROWS} />);
+    expect(screen.queryByText("STATUS")).not.toBeInTheDocument();
+    expect(screen.queryByText("CAPTURE")).not.toBeInTheDocument();
+    expect(screen.queryByText("COVERAGE")).not.toBeInTheDocument();
+  });
+
+  it("sorts blank Ranked rows after populated ones, in either direction", () => {
+    render(<KeywordTable rows={ROWS} />);
+    const header = screen.getByRole("button", { name: /Ranked/ });
+
+    fireEvent.click(header); // first click: desc
+    expect(keywordOrder().at(-1)).toBe("embroidery font");
+
+    fireEvent.click(header); // second click: asc
+    expect(keywordOrder().at(-1)).toBe("embroidery font");
+  });
+});
+
+/**
+ * MVDS `Select` is Radix-based (`role="combobox"` trigger, portal-rendered
+ * `role="option"` items), not a native `<select>` — `fireEvent.change` is a
+ * no-op on it. Click-driven, matching how a person actually operates it.
+ */
+function chooseRangeColumn(label: string) {
+  fireEvent.click(screen.getByLabelText("Range filter column"));
+  fireEvent.click(screen.getByRole("option", { name: label }));
+}
+
+describe("KeywordTable — range filter", () => {
+  it("narrows to rows within a minimum bound on Ranked", () => {
+    render(<KeywordTable rows={ROWS} />);
+    chooseRangeColumn("Ranked");
+    fireEvent.change(screen.getByLabelText("Range filter minimum"), {
+      target: { value: "5" },
+    });
+
+    const visible = keywordOrder();
+    expect(visible).toContain("snow globe"); // ranked 8, passes >= 5
+    expect(visible).not.toContain("calm stitching"); // ranked 1, fails >= 5
+    expect(visible).not.toContain("embroidery font"); // blank, excluded by a min bound
+  });
+
+  it("keeps blank rows when only a max bound is set", () => {
+    render(<KeywordTable rows={ROWS} />);
+    chooseRangeColumn("Ranked");
+    fireEvent.change(screen.getByLabelText("Range filter maximum"), {
+      target: { value: "5" },
+    });
+
+    const visible = keywordOrder();
+    expect(visible).toContain("calm stitching"); // ranked 1, passes <= 5
+    expect(visible).not.toContain("snow globe"); // ranked 8, fails <= 5
+    expect(visible).toContain("embroidery font"); // blank, not excluded by a max-only bound
+  });
+});

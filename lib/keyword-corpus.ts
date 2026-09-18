@@ -1,4 +1,9 @@
-import type { KeywordCapture, KeywordCorpus, KeywordRow } from "@/types";
+import type {
+  KeywordCapture,
+  KeywordCorpus,
+  KeywordRow,
+  RankedMatch,
+} from "@/types";
 import raw from "@/data/keyword-corpus.json";
 
 /**
@@ -14,6 +19,11 @@ interface RawQueryHit {
   tag_occurrences: number;
 }
 
+interface RawRankedMatch {
+  best: number;
+  matches: { listing: string; page: number; position: number }[];
+}
+
 interface RawRow {
   keyword: string;
   capture: string;
@@ -24,12 +34,25 @@ interface RawRow {
   current: boolean;
   superseded_by: string | null;
   coverage: { seen: number; of: number };
+  ranked: RawRankedMatch | null;
 }
 
 interface RawCorpus {
   generated_at?: string | null;
   captures?: KeywordCapture[];
   rows?: RawRow[];
+}
+
+function toRankedMatch(raw: RawRankedMatch | null): RankedMatch | null {
+  if (!raw) return null;
+  return {
+    best: raw.best,
+    matches: raw.matches.map((m) => ({
+      listing: m.listing,
+      page: m.page,
+      position: m.position,
+    })),
+  };
 }
 
 function toRow(row: RawRow): KeywordRow {
@@ -46,6 +69,10 @@ function toRow(row: RawRow): KeywordRow {
     current: row.current,
     supersededBy: row.superseded_by ?? null,
     coverage: row.coverage ?? { seen: 1, of: 1 },
+    ranked: toRankedMatch(row.ranked ?? null),
+    // Computed server-side against live listing snapshots — the static
+    // corpus carries no opinion on it. The page merges the real value in.
+    targeting: null,
   };
 }
 
