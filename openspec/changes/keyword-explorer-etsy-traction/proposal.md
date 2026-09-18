@@ -60,7 +60,10 @@ The alternative — cross-referencing three tables by hand — is the status quo
 
 ## Optional links
 
-- Figma round 01 (rough — shape and composition, per `rules/figma.mdc` § When the first round happens): <https://www.figma.com/design/qN2BGnkJSbwAuD9aibhpZ3?node-id=2-72> — file `keyword-explorer-etsy-traction`, page `02 Proposed`, frame `Proposed · Desktop 1024`, node `2:72`. As-is comparison: page `01 Current state`, frame `As-is · Desktop 1024`, node `3:3` — reconstructed from the shipped `components/KeywordTable.tsx`, no Ranked/Targeting column exists there today.
+- Figma rounds (rough — shape and composition, per `rules/figma.mdc` § When the first round happens), file `keyword-explorer-etsy-traction` (`qN2BGnkJSbwAuD9aibhpZ3`):
+  - `01 Current state` → `As-is · Desktop 1024` (node `3:3`) — reconstructed from the shipped `components/KeywordTable.tsx`; no Ranked/Targeting column exists there today.
+  - `02 Proposed` → `Proposed · Desktop 1024` (node `2:72`) — round 01, **superseded**: Ranked/Targeting as MVDS `Badge` text (`"Ranked · pos 8"`). Left intact per the page-per-iteration rule, not the frame to review.
+  - `02.1 Proposed — numeric columns, range filters` → `Proposed · Desktop 1024` (node `4:4`) — **current**: <https://www.figma.com/design/qN2BGnkJSbwAuD9aibhpZ3?node-id=4-4>. Ranked/Targeting as plain right-aligned numbers (blank, not `0`, when absent), a range-filter chip (`Ranked ≤ 20`) added to the filter row, Status/Capture/Coverage dropped from the header.
 - The archives this joins: [`docs/pulls/README.md`](../../../docs/pulls/README.md) (landing zone + `measures` axis), [`2026-09-17-erank-spotted-on-etsy.md`](../../../docs/pulls/2026-09-17-erank-spotted-on-etsy.md) (Ranked source), [`lib/etsy-sync.ts`](../../../lib/etsy-sync.ts) (Targeting source, `getLatestListingSnapshots`)
 - The capability this extends: [`openspec/changes/keyword-explorer/`](../keyword-explorer/) (not yet archived — proposal, design, tasks for the table this adds markers to)
 - Precedent for the live Supabase read: [`openspec/changes/etsy-zero-sales-funnel/`](../etsy-zero-sales-funnel/) (scorecard page already reads `getLatestListingSnapshots()` server-side in production)
