@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { computeTargeting, toTableRows } from "@/lib/keyword-traction";
 import type { RawListing } from "@/lib/etsy-scorecard";
 import type { KeywordRow } from "@/types";
@@ -127,6 +127,13 @@ describe("withTargeting", () => {
   beforeEach(() => {
     mockGetLatestListingSnapshots.mockReset();
     vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  // mockReset() above only touches the Supabase mock — without this, the
+  // console.error spy stays installed after this describe block finishes
+  // and can silence real errors in later suites sharing the same worker.
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("merges a real Targeting match onto the matching row", async () => {

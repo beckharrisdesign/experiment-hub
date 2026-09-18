@@ -33,20 +33,51 @@ function row(overrides: Partial<KeywordTableRow>): KeywordTableRow {
 // KeywordTable's props are already collapsed to the sort value (`.best`) —
 // the full per-listing detail never reaches this client component. See
 // lib/keyword-traction.ts::toTableRows and types/index.ts::KeywordTableRow.
+//
+// competition/kd vary per row (not just searches/ranked/targeting) so the
+// range filter's Competition, KD and ratio branches — not just Ranked and
+// Targeting — have real values to narrow on. "unrelated thing" has
+// competition: 0 specifically to exercise the ratio column's null case.
 const ROWS: KeywordTableRow[] = [
-  row({ keyword: "snow globe", searches: 210, ranked: 8, targeting: 3 }),
-  row({ keyword: "calm stitching", searches: 40, ranked: 1, targeting: null }),
+  row({
+    keyword: "snow globe",
+    searches: 210,
+    competition: 180,
+    kd: 22,
+    ranked: 8,
+    targeting: 3,
+  }),
+  row({
+    keyword: "calm stitching",
+    searches: 40,
+    competition: 12,
+    kd: 9,
+    ranked: 1,
+    targeting: null,
+  }),
   row({
     keyword: "embroidery font",
     searches: 1400,
+    competition: 980,
+    kd: 61,
     ranked: null,
     targeting: null,
   }),
   row({
     keyword: "wooden wick candle",
     searches: 15,
+    competition: 6,
+    kd: 11,
     ranked: null,
     targeting: 5,
+  }),
+  row({
+    keyword: "unrelated thing",
+    searches: 5,
+    competition: 0,
+    kd: 0,
+    ranked: 15,
+    targeting: 8,
   }),
 ];
 
@@ -188,5 +219,64 @@ describe("KeywordTable — range filter", () => {
     expect(visible).toContain("snow globe"); // targeting 3, passes <= 4
     expect(visible).not.toContain("wooden wick candle"); // targeting 5, fails <= 4
     expect(visible).toContain("calm stitching"); // blank, not excluded by a max-only bound
+  });
+
+  // Representative coverage for the remaining numeric columns — Searches,
+  // Competition, KD and the fractional ratio — each a separate rangeValue()
+  // branch that could regress independently of Ranked/Targeting above.
+  it("narrows on Searches", () => {
+    render(<KeywordTable rows={ROWS} />);
+    chooseRangeColumn("Searches");
+    fireEvent.change(screen.getByLabelText("Range filter minimum"), {
+      target: { value: "100" },
+    });
+
+    const visible = keywordOrder();
+    expect(visible).toContain("snow globe"); // 210, passes >= 100
+    expect(visible).toContain("embroidery font"); // 1400, passes >= 100
+    expect(visible).not.toContain("calm stitching"); // 40, fails >= 100
+    expect(visible).not.toContain("wooden wick candle"); // 15, fails >= 100
+  });
+
+  it("narrows on Competition", () => {
+    render(<KeywordTable rows={ROWS} />);
+    chooseRangeColumn("Competition");
+    fireEvent.change(screen.getByLabelText("Range filter maximum"), {
+      target: { value: "50" },
+    });
+
+    const visible = keywordOrder();
+    expect(visible).toContain("calm stitching"); // 12, passes <= 50
+    expect(visible).toContain("wooden wick candle"); // 6, passes <= 50
+    expect(visible).not.toContain("snow globe"); // 180, fails <= 50
+    expect(visible).not.toContain("embroidery font"); // 980, fails <= 50
+  });
+
+  it("narrows on KD", () => {
+    render(<KeywordTable rows={ROWS} />);
+    chooseRangeColumn("KD");
+    fireEvent.change(screen.getByLabelText("Range filter minimum"), {
+      target: { value: "20" },
+    });
+
+    const visible = keywordOrder();
+    expect(visible).toContain("snow globe"); // kd 22, passes >= 20
+    expect(visible).toContain("embroidery font"); // kd 61, passes >= 20
+    expect(visible).not.toContain("calm stitching"); // kd 9, fails >= 20
+    expect(visible).not.toContain("wooden wick candle"); // kd 11, fails >= 20
+  });
+
+  it("narrows on Searches / comp., excluding the null (zero-competition) row from a min bound", () => {
+    render(<KeywordTable rows={ROWS} />);
+    chooseRangeColumn("Searches / comp.");
+    fireEvent.change(screen.getByLabelText("Range filter minimum"), {
+      target: { value: "2" },
+    });
+
+    const visible = keywordOrder();
+    expect(visible).toContain("calm stitching"); // 40/12 ≈ 3.33, passes >= 2
+    expect(visible).toContain("wooden wick candle"); // 15/6 = 2.5, passes >= 2
+    expect(visible).not.toContain("snow globe"); // 210/180 ≈ 1.17, fails >= 2
+    expect(visible).not.toContain("unrelated thing"); // competition 0 -> ratio null, excluded by a min bound
   });
 });
