@@ -88,10 +88,17 @@ describe("KeywordTable — Ranked and Targeting columns", () => {
   });
 
   it("has no Status, Capture or Coverage column", () => {
+    // Case-insensitive: headers render title-case ("Status"), so an exact
+    // uppercase match would pass even if the column were still there —
+    // this has to catch the actual rendered text, not a string nothing
+    // renders in the first place.
     render(<KeywordTable rows={ROWS} />);
-    expect(screen.queryByText("STATUS")).not.toBeInTheDocument();
-    expect(screen.queryByText("CAPTURE")).not.toBeInTheDocument();
-    expect(screen.queryByText("COVERAGE")).not.toBeInTheDocument();
+    const headers = screen
+      .getAllByRole("columnheader")
+      .map((th) => th.textContent?.toLowerCase() ?? "");
+    expect(headers.some((h) => h.includes("status"))).toBe(false);
+    expect(headers.some((h) => h.includes("capture"))).toBe(false);
+    expect(headers.some((h) => h.includes("coverage"))).toBe(false);
   });
 
   it("sorts blank Ranked rows after populated ones, in either direction", () => {

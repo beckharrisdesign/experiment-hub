@@ -361,15 +361,26 @@ def read_spotted_on_etsy_csv(path: Path) -> list[dict]:
             if not term or not listing:
                 continue
             try:
-                rows.append({
-                    "search_term": term,
-                    "listing": listing,
-                    "page": int(str(r.get("Page", "0")).replace(",", "") or 0),
-                    "position": int(str(r.get("Position", "0")).replace(",", "") or 0),
-                })
+                # No `or 0` fallback: a blank cell must raise (empty string
+                # -> ValueError), not silently become the int 0. A ranking
+                # position of 0 would be indistinguishable from "no match" —
+                # exactly the fabricated-zero bug read_keyword_csv's own
+                # comment warns against, and the one this join's "blank,
+                # never 0" rule exists to prevent.
+                page = int(str(r.get("Page", "")).replace(",", ""))
+                position = int(str(r.get("Position", "")).replace(",", ""))
             except ValueError:
-                # Same rule as read_keyword_csv: drop rather than fabricate.
                 continue
+            if page <= 0 or position <= 0:
+                # Real Etsy search positions and pages are always >= 1; a
+                # non-positive value is malformed, not a low rank.
+                continue
+            rows.append({
+                "search_term": term,
+                "listing": listing,
+                "page": page,
+                "position": position,
+            })
     return rows
 
 

@@ -353,13 +353,25 @@ describe("corpus loader", () => {
     expect(coverageLabel(row)).toMatch(/^seen in \d+ of \d+$/);
   });
 
-  it("carries ranked as null for every row today, and would normalise it if present", () => {
-    // 0 of 410 corpus keywords currently match the (12-row) Spotted on Etsy
-    // archive — confirmed directly, not assumed. This is the expected,
-    // honest current state (proposal.md § Why), not a bug to work around in
-    // the test; the fixture-based describe block above proves the mapping
-    // itself works on data that does overlap.
-    expect(corpus.rows.every((r) => r.ranked === null)).toBe(true);
+  it("normalises ranked to null or a well-formed match, never a bare shape mismatch", () => {
+    // NOT "every row is null today": the archive overlaps the Spotted on
+    // Etsy pull series by design (proposal.md § Why) and a future re-pull is
+    // expected to give some row a real match — asserting the current
+    // (transient) all-null state would break on the very success condition
+    // this join exists for, repeating the exact brittleness #501 fixed in
+    // tests/keyword-corpus.test.ts's own history. The fixture-based describe
+    // block above proves the mapping works on data that does overlap; this
+    // checks the loader's normalisation holds for every row regardless of
+    // how many currently match.
+    for (const row of corpus.rows) {
+      if (row.ranked === null) continue;
+      expect(row.ranked.best).toBeGreaterThan(0);
+      expect(Array.isArray(row.ranked.matches)).toBe(true);
+      expect(row.ranked.matches.length).toBeGreaterThan(0);
+      expect(Math.min(...row.ranked.matches.map((m) => m.position))).toBe(
+        row.ranked.best,
+      );
+    }
   });
 
   it("returns null rather than Infinity when competition is zero", () => {

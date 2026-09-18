@@ -3,7 +3,7 @@ import type { TargetingMatch } from "@/types";
 
 /**
  * Which of a listing's (up to 13) tag slots each corpus keyword occupies,
- * across every current listing snapshot.
+ * across every currently-active listing snapshot.
  *
  * Pure — no I/O, no Supabase — so it is unit-testable without a database,
  * mirroring `lib/etsy-scorecard.ts`. The caller (the Keyword Explorer page)
@@ -12,14 +12,22 @@ import type { TargetingMatch } from "@/types";
  * Exact match only, case-insensitive, against a listing's `tags` array — not
  * its title. A tag slot number means nothing for a title hit, so title is out
  * of scope for this signal (proposal.md § Not doing).
+ *
+ * `getLatestListingSnapshots()` returns the newest snapshot per listing
+ * across all history — a listing pulled from Etsy (deleted, deactivated,
+ * expired) keeps its last-known snapshot and tags there. Without filtering,
+ * a keyword could read "targeted" long after the listing that carried it
+ * stopped being live. Only `state === "active"` counts, matching the same
+ * field's use elsewhere (`lib/etsy-listing-kit/evaluate.ts`).
  */
 export function computeTargeting(
   keywords: string[],
   snapshots: RawListing[],
 ): Map<string, TargetingMatch> {
+  const active = snapshots.filter((listing) => listing.state === "active");
   const bySlot = new Map<string, TargetingMatch["matches"]>();
 
-  for (const listing of snapshots) {
+  for (const listing of active) {
     const tags = listing.tags ?? [];
     tags.forEach((tag, index) => {
       const key = tag.trim().toLowerCase();

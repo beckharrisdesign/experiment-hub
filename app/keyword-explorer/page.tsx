@@ -13,13 +13,25 @@ export const metadata: Metadata = {
 };
 
 /**
+ * Targeting has to be live on every request, not baked in at build time.
+ * `getLatestListingSnapshots()` is a Supabase read, not a Next.js dynamic
+ * API (`cookies()`, `headers()`, an uncached `fetch`), so without this the
+ * segment is a static-rendering candidate — a build run without Supabase
+ * credentials (or simply before a tag ever changes) would cache `targeting:
+ * null` for every row and never refresh it. Matches the `force-dynamic`
+ * convention already used by every other live-data page in this app
+ * (app/page.tsx, app/documentation/page.tsx, app/changes/page.tsx, …).
+ */
+export const dynamic = "force-dynamic";
+
+/**
  * Targeting reads live listing tags, so a Supabase hiccup (or missing env
  * vars in a preview deploy) must degrade that one column, not the page.
  * Failure reads identically to "no match" — every row's `targeting` stays
  * `null` — and is logged server-side only (design.md § Decisions: no banner,
  * no partial-page error state).
  */
-async function withTargeting(rows: KeywordRow[]): Promise<KeywordRow[]> {
+export async function withTargeting(rows: KeywordRow[]): Promise<KeywordRow[]> {
   try {
     const snapshots = await getLatestListingSnapshots();
     const targeting = computeTargeting(
