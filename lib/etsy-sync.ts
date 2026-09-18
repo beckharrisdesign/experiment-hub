@@ -52,6 +52,16 @@ interface LatestSnapshotRow {
 }
 
 /**
+ * The silent-degrade design (design.md § Decisions) only covers a rejected
+ * read — a *slow* one still blocks `withTargeting()`'s `await`, and with it
+ * the entire `/keyword-explorer` render, since the page awaits Targeting
+ * before showing anything (round 14 finding). Left well under the
+ * platform's own request timeout so this fires and degrades to blank
+ * Targeting before the whole function gets killed instead.
+ */
+const SNAPSHOT_FETCH_TIMEOUT_MS = 8 * 1000;
+
+/**
  * Per-server-instance cache, same posture as `app/etsy-listing-kit/api/evaluate/route.ts`'s
  * cache/throttle: `/keyword-explorer` is `force-dynamic` (design.md § Decisions)
  * so this read can't be baked in at build time — but that alone gives no
@@ -106,7 +116,8 @@ async function fetchLatestListingSnapshots(): Promise<RawListing[]> {
   const { data, error } = await getServiceClient()
     .from("etsy_latest_listing_snapshots")
     .select("raw_response,captured_at")
-    .eq("endpoint", LISTINGS_ENDPOINT);
+    .eq("endpoint", LISTINGS_ENDPOINT)
+    .abortSignal(AbortSignal.timeout(SNAPSHOT_FETCH_TIMEOUT_MS));
   if (error) {
     throw new Error(`Failed to load etsy listing snapshots: ${error.message}`);
   }

@@ -1,12 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-const { mockFrom, mockSelect, mockEq, mockCreateClient } = vi.hoisted(() => {
-  const mockEq = vi.fn();
-  const mockSelect = vi.fn(() => ({ eq: mockEq }));
-  const mockFrom = vi.fn(() => ({ select: mockSelect }));
-  const mockCreateClient = vi.fn(() => ({ from: mockFrom }));
-  return { mockFrom, mockSelect, mockEq, mockCreateClient };
-});
+const { mockFrom, mockSelect, mockEq, mockAbortSignal, mockCreateClient } =
+  vi.hoisted(() => {
+    const mockAbortSignal = vi.fn();
+    const mockEq = vi.fn((..._args: unknown[]) => ({
+      abortSignal: mockAbortSignal,
+    }));
+    const mockSelect = vi.fn(() => ({ eq: mockEq }));
+    const mockFrom = vi.fn(() => ({ select: mockSelect }));
+    const mockCreateClient = vi.fn(() => ({ from: mockFrom }));
+    return { mockFrom, mockSelect, mockEq, mockAbortSignal, mockCreateClient };
+  });
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: mockCreateClient,
@@ -32,7 +36,8 @@ beforeEach(() => {
   mockCreateClient.mockReturnValue({ from: mockFrom });
   mockFrom.mockReturnValue({ select: mockSelect });
   mockSelect.mockReturnValue({ eq: mockEq });
-  mockEq.mockResolvedValue({ data: [], error: null });
+  mockEq.mockReturnValue({ abortSignal: mockAbortSignal });
+  mockAbortSignal.mockResolvedValue({ data: [], error: null });
   // Without this, the module-scope TTL cache (lib/etsy-sync.ts) would serve
   // an earlier test's result instead of calling the mock again.
   resetLatestListingSnapshotsCacheForTests();
@@ -64,6 +69,17 @@ describe("getLatestListingSnapshots — query", () => {
     const [, value] = mockEq.mock.calls[0];
     expect(value).not.toContain("%");
   });
+
+  it("bounds the read with a timeout, so a hung Supabase request can't hang the whole page", async () => {
+    // Round 14 finding: the silent-degrade design only covers a *rejected*
+    // read (design.md § Decisions) — a slow one still blocks the page's
+    // `await withTargeting(...)` indefinitely without this.
+    await getLatestListingSnapshots();
+
+    expect(mockAbortSignal).toHaveBeenCalledTimes(1);
+    const [signal] = mockAbortSignal.mock.calls[0];
+    expect(signal).toBeInstanceOf(AbortSignal);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -74,7 +90,7 @@ describe("getLatestListingSnapshots — results", () => {
   const NEWEST = "2026-09-17T00:00:00Z";
 
   it("unwraps raw_response from each row in the latest capture", async () => {
-    mockEq.mockResolvedValue({
+    mockAbortSignal.mockResolvedValue({
       data: [
         { raw_response: { listing_id: 1, title: "one" }, captured_at: NEWEST },
         { raw_response: { listing_id: 2, title: "two" }, captured_at: NEWEST },
@@ -90,7 +106,7 @@ describe("getLatestListingSnapshots — results", () => {
   });
 
   it("drops rows with a null or malformed raw_response", async () => {
-    mockEq.mockResolvedValue({
+    mockAbortSignal.mockResolvedValue({
       data: [
         { raw_response: null, captured_at: NEWEST },
         { raw_response: { title: "no listing_id" }, captured_at: NEWEST },
@@ -104,7 +120,7 @@ describe("getLatestListingSnapshots — results", () => {
   });
 
   it("returns an empty array when the view has no rows", async () => {
-    mockEq.mockResolvedValue({ data: null, error: null });
+    mockAbortSignal.mockResolvedValue({ data: null, error: null });
     await expect(getLatestListingSnapshots()).resolves.toEqual([]);
   });
 
@@ -115,7 +131,7 @@ describe("getLatestListingSnapshots — results", () => {
     // newest captured_at in the batch count as "current", mirroring
     // experiments/etsy-notion-sync/prototype/store_supabase.py's
     // latest_from_current_capture.
-    mockEq.mockResolvedValue({
+    mockAbortSignal.mockResolvedValue({
       data: [
         {
           raw_response: { listing_id: 1, title: "current" },
@@ -139,7 +155,7 @@ describe("getLatestListingSnapshots — results", () => {
     // `row.captured_at === null`, matching every row in the batch and
     // defeating the "latest capture only" filter entirely. An unidentifiable
     // latest capture must resolve to nothing, not to everything.
-    mockEq.mockResolvedValue({
+    mockAbortSignal.mockResolvedValue({
       data: [
         { raw_response: { listing_id: 1, title: "one" }, captured_at: null },
         { raw_response: { listing_id: 2, title: "two" }, captured_at: null },
@@ -173,7 +189,7 @@ describe("getLatestListingSnapshots — cache", () => {
     // advertised TTL itself actually expires anything. Without this, a
     // regression that made the cache permanent (e.g. a typo'd comparison)
     // would pass every other test in this block.
-    mockEq.mockResolvedValue({
+    mockAbortSignal.mockResolvedValue({
       data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
       error: null,
     });
@@ -186,7 +202,7 @@ describe("getLatestListingSnapshots — cache", () => {
   });
 
   it("serves a second call from cache without reading Supabase again", async () => {
-    mockEq.mockResolvedValue({
+    mockAbortSignal.mockResolvedValue({
       data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
       error: null,
     });
@@ -208,7 +224,7 @@ describe("getLatestListingSnapshots — cache", () => {
     // read is still pending would each see no cache yet and start their own
     // duplicate query — exactly the burst this cache exists to absorb.
     let resolveRead!: (value: { data: unknown; error: null }) => void;
-    mockEq.mockReturnValueOnce(
+    mockAbortSignal.mockReturnValueOnce(
       new Promise((resolve) => {
         resolveRead = resolve;
       }),
@@ -232,7 +248,7 @@ describe("getLatestListingSnapshots — cache", () => {
   });
 
   it("reads Supabase again once the cache is cleared", async () => {
-    mockEq.mockResolvedValue({
+    mockAbortSignal.mockResolvedValue({
       data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
       error: null,
     });
@@ -249,8 +265,11 @@ describe("getLatestListingSnapshots — cache", () => {
     // after Supabase recovers — the opposite of the silent-degrade design
     // (design.md § Decisions), which expects the *next* request to succeed
     // once the underlying read does.
-    mockEq.mockResolvedValueOnce({ data: null, error: { message: "boom" } });
-    mockEq.mockResolvedValueOnce({
+    mockAbortSignal.mockResolvedValueOnce({
+      data: null,
+      error: { message: "boom" },
+    });
+    mockAbortSignal.mockResolvedValueOnce({
       data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
       error: null,
     });
@@ -278,7 +297,7 @@ describe("getLatestListingSnapshots — cache", () => {
     );
 
     vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test-service-key");
-    mockEq.mockResolvedValue({
+    mockAbortSignal.mockResolvedValue({
       data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
       error: null,
     });
@@ -295,7 +314,10 @@ describe("getLatestListingSnapshots — cache", () => {
 
 describe("getLatestListingSnapshots — failures", () => {
   it("throws when Supabase returns an error", async () => {
-    mockEq.mockResolvedValue({ data: null, error: { message: "boom" } });
+    mockAbortSignal.mockResolvedValue({
+      data: null,
+      error: { message: "boom" },
+    });
 
     await expect(getLatestListingSnapshots()).rejects.toThrow(
       "Failed to load etsy listing snapshots: boom",
@@ -308,5 +330,19 @@ describe("getLatestListingSnapshots — failures", () => {
     await expect(getLatestListingSnapshots()).rejects.toThrow(
       "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set",
     );
+  });
+
+  it("throws (and so still degrades Targeting to blank) when the read is aborted for taking too long", async () => {
+    // Simulates what postgrest-js does when its own AbortSignal fires: the
+    // fetch rejects with an AbortError, which propagates as a rejected
+    // query promise rather than a resolved {data, error} — confirmed against
+    // the installed @supabase/postgrest-js source, not assumed.
+    const abortError = new Error("The user aborted a request.");
+    abortError.name = "AbortError";
+    mockAbortSignal.mockRejectedValue(abortError);
+
+    await expect(getLatestListingSnapshots()).rejects.toMatchObject({
+      name: "AbortError",
+    });
   });
 });
