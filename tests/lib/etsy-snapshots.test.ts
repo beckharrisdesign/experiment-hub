@@ -159,6 +159,32 @@ describe("getLatestListingSnapshots — results", () => {
 describe("getLatestListingSnapshots — cache", () => {
   const NEWEST = "2026-09-17T00:00:00Z";
 
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("reads Supabase again once the TTL window has elapsed", async () => {
+    // Distinct from "reads Supabase again once the cache is cleared" below:
+    // that test proves the manual test-only reset works, not that the
+    // advertised TTL itself actually expires anything. Without this, a
+    // regression that made the cache permanent (e.g. a typo'd comparison)
+    // would pass every other test in this block.
+    mockEq.mockResolvedValue({
+      data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],
+      error: null,
+    });
+
+    await getLatestListingSnapshots();
+    vi.advanceTimersByTime(60 * 1000 + 1);
+    await getLatestListingSnapshots();
+
+    expect(mockEq).toHaveBeenCalledTimes(2);
+  });
+
   it("serves a second call from cache without reading Supabase again", async () => {
     mockEq.mockResolvedValue({
       data: [{ raw_response: { listing_id: 1 }, captured_at: NEWEST }],

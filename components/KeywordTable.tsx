@@ -45,8 +45,9 @@ const NO_RANGE = "__none__";
  *
  * Status, Capture and Coverage are deliberately absent — hidden from the
  * table per Katy, 2026-09-18 ("don't delete that data but I don't really
- * need to see it in the main table"). The fields still exist on every row;
- * nothing here reads or discards them.
+ * need to see it in the main table"). The fields still exist on every row and
+ * stay available to the existing Capture and Status filter controls below;
+ * only their own columns are gone from what actually renders here.
  */
 const COLUMNS: {
   key: SortKey;
@@ -154,6 +155,13 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
   );
   const [rangeMin, setRangeMin] = useState("");
   const [rangeMax, setRangeMax] = useState("");
+  // A range *column* being picked isn't itself an applied filter — only a
+  // non-empty min or max actually narrows anything (see passesRange, which
+  // treats both-blank as "no bound"). The empty-state copy below keys off
+  // this, not off rangeColumn alone.
+  const rangeBoundSet =
+    rangeColumn !== NO_RANGE &&
+    (rangeMin.trim() !== "" || rangeMax.trim() !== "");
 
   const captures = useMemo(
     () =>
@@ -442,7 +450,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
 
         {visible.length === 0 && (
           <p className="px-3 py-6 text-sm text-text-muted">
-            {rangeColumn === NO_RANGE ? (
+            {!rangeBoundSet ? (
               <>
                 No rows match these filters. The archive is hand-filtered at
                 capture time, so a keyword you expected may simply never have
@@ -453,6 +461,10 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
               // A range filter producing zero rows is a direct, known
               // consequence of the bound Katy set — the archive-omission
               // explanation above doesn't apply and would be misleading here.
+              // Selecting a range *column* alone isn't enough to reach this
+              // branch: a min or max must actually be set, or an unrelated
+              // filter emptying the table would show range-specific copy for
+              // a range that was never applied.
               <>
                 No rows fall within this range. Widen or clear it to see more.
               </>

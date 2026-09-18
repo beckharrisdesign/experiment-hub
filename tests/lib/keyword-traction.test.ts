@@ -125,7 +125,11 @@ function keywordRow(overrides: Partial<KeywordRow>): KeywordRow {
 
 describe("withTargeting", () => {
   beforeEach(() => {
-    mockGetLatestListingSnapshots.mockReset();
+    // Repo convention (rules/vitest-conventions.mdc): reset mocks in
+    // beforeEach via vi.clearAllMocks(), not a one-off mockReset() on a
+    // single mock — so any mock added to this module later can't leak call
+    // history between tests either.
+    vi.clearAllMocks();
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 

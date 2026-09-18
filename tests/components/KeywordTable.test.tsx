@@ -332,4 +332,21 @@ describe("KeywordTable — range filter", () => {
     expect(bodyRows()).toHaveLength(0);
     expect(screen.getByText(/hand-filtered at/i)).toBeInTheDocument();
   });
+
+  it("keeps the archive-omission copy when a range column is picked but no bound is set", () => {
+    // Picking a range column alone isn't an applied filter — passesRange
+    // treats both-blank min/max as "no bound." A keyword filter emptying the
+    // table here must not be blamed on the merely-selected range column.
+    render(<KeywordTable rows={ROWS} />);
+    chooseRangeColumn("Ranked");
+    fireEvent.change(screen.getByLabelText("Filter keywords"), {
+      target: { value: "no such keyword anywhere" },
+    });
+
+    expect(bodyRows()).toHaveLength(0);
+    expect(screen.getByText(/hand-filtered at/i)).toBeInTheDocument();
+    expect(
+      screen.queryByText(/no rows fall within this range/i),
+    ).not.toBeInTheDocument();
+  });
 });
