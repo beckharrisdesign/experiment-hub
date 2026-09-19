@@ -181,6 +181,65 @@ describe("KeywordTable — Ranked and Targeting columns", () => {
   });
 });
 
+describe("KeywordTable — a ranked-only row (no Keyword Tool data)", () => {
+  const RANKED_ONLY_ROWS: KeywordTableRow[] = [
+    ...ROWS,
+    row({
+      keyword: "wall art print",
+      searches: null,
+      competition: null,
+      kd: null,
+      foundVia: [],
+      ranked: 4,
+      targeting: null,
+    }),
+  ];
+
+  it("shows a blank dash, never 0, for Searches, Competition and KD", () => {
+    render(<KeywordTable rows={RANKED_ONLY_ROWS} />);
+    const wallArtRow = bodyRows().find((tr) =>
+      within(tr).queryByText("wall art print"),
+    )!;
+    const cells = within(wallArtRow).getAllByRole("cell");
+    // Keyword, Searches, Competition, KD, Ranked, Targeting, Found via, Ratio
+    expect(cells[1].textContent).toBe("—");
+    expect(cells[2].textContent).toBe("—");
+    expect(cells[3].textContent).toBe("—");
+    expect(cells[4].textContent).toBe("4");
+  });
+
+  it("sorts a null Searches value after every real one, in either direction", () => {
+    render(<KeywordTable rows={RANKED_ONLY_ROWS} />);
+    // Not by accessible name: "Searches" and "Searches / comp." both start
+    // with "Searches", and the active column's own arrow glyph varies with
+    // direction — a "/" is the one thing that tells them apart.
+    const header = screen
+      .getAllByRole("columnheader")
+      .find(
+        (th) =>
+          th.textContent?.startsWith("Searches") &&
+          !th.textContent.includes("/"),
+      )!
+      .querySelector("button")!;
+
+    // Searches is the default sort column (desc) — this is already sorted.
+    expect(keywordOrder().at(-1)).toBe("wall art print");
+
+    fireEvent.click(header); // asc
+    expect(keywordOrder().at(-1)).toBe("wall art print");
+  });
+
+  it("excludes a null-Searches row from a min-bound range filter", () => {
+    render(<KeywordTable rows={RANKED_ONLY_ROWS} />);
+    chooseRangeColumn("Searches");
+    fireEvent.change(screen.getByLabelText("Range filter minimum"), {
+      target: { value: "0" },
+    });
+
+    expect(keywordOrder()).not.toContain("wall art print");
+  });
+});
+
 /**
  * MVDS `Select` is Radix-based (`role="combobox"` trigger, portal-rendered
  * `role="option"` items), not a native `<select>` — `fireEvent.change` is a
