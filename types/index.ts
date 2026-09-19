@@ -187,14 +187,28 @@ export interface TargetingMatch {
 export interface KeywordRow {
   keyword: string;
   capture: string;
-  searches: number;
-  competition: number;
-  kd: number;
+  /**
+   * `null` on a row synthesized purely from a real-world Etsy ranking
+   * (`ranked` below) that eRank's Keyword Tool has never scored — never a
+   * fabricated `0`, which would read as "no demand" for a term that plainly
+   * has some, since W&H already ranks for it. See `ranked`'s own comment.
+   */
+  searches: number | null;
+  competition: number | null;
+  kd: number | null;
   foundVia: KeywordQueryHit[];
   current: boolean;
   supersededBy: string | null;
   coverage: KeywordCoverage;
-  /** From the corpus, refreshed by `ingest-pulls.py --apply`. */
+  /**
+   * From the corpus, refreshed by `ingest-pulls.py --apply`. Keyword-scoped,
+   * not capture-scoped, and can be non-null on a row with no demand data at
+   * all (`searches`/`competition`/`kd` all `null`) — `build_corpus()`
+   * synthesizes a row for a term Spotted on Etsy shows W&H already ranking
+   * for that the Keyword Tool has never scored, rather than dropping it for
+   * lack of somewhere to attach it (Katy, 2026-09-18: "add a row for the
+   * ranked keywords even if they don't have entries from the erank data").
+   */
   ranked: RankedMatch | null;
   /**
    * Computed server-side, per request, against live listing snapshots — not
@@ -233,9 +247,9 @@ export interface KeywordRow {
 export interface KeywordTableRow {
   keyword: string;
   capture: string;
-  searches: number;
-  competition: number;
-  kd: number;
+  searches: number | null;
+  competition: number | null;
+  kd: number | null;
   foundVia: KeywordQueryHit[];
   current: boolean;
   supersededBy: string | null;

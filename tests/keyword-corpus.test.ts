@@ -52,7 +52,9 @@ function buildCorpusViaScript(pulls?: string): {
   rows: {
     keyword: string;
     capture: string;
-    searches: number;
+    searches: number | null;
+    competition: number | null;
+    kd: number | null;
     found_via: { query: string; tag_occurrences: number }[];
     current: boolean;
     superseded_by: string | null;
@@ -352,9 +354,14 @@ describe("keyword corpus generation", () => {
   it("never emits a zero or negative from absence", () => {
     // The exports are hand-filtered, so a keyword missing from a query is
     // unexplained. Every tag-occurrence value present must come from a CSV
-    // cell; coverage must never exceed the capture count or drop below one.
+    // cell; coverage must never exceed the capture count.
+    //
+    // The floor is 1 -- except for a ranked-only row (searches null): one
+    // exists specifically *because* it was never in any Keyword Tool
+    // capture, so "seen in 0 of N" is the true count there, not an omission.
     for (const row of corpus.rows) {
-      expect(row.coverage.seen).toBeGreaterThanOrEqual(1);
+      const floor = row.searches === null ? 0 : 1;
+      expect(row.coverage.seen).toBeGreaterThanOrEqual(floor);
       expect(row.coverage.seen).toBeLessThanOrEqual(row.coverage.of);
       for (const hit of row.found_via) {
         expect(hit.tag_occurrences).toBeGreaterThanOrEqual(0);
@@ -555,6 +562,78 @@ describe("Ranked: joined from erank-spotted-on-etsy, against a fixture", () => {
   });
 });
 
+describe("Ranked: a term with no Keyword Tool row still gets its own row", () => {
+  // Katy, 2026-09-18: "add a row for the ranked keywords even if they don't
+  // have entries from the erank data." "wooden wick candle" appears only in
+  // the Spotted on Etsy fixture, never in the Keyword Tool one — the case
+  // that used to make a ranked term invisible entirely, for lack of a row to
+  // attach `ranked` to.
+  const dir = mkdtempSync(path.join(tmpdir(), "kw-ranked-only-"));
+  writeFileSync(
+    path.join(dir, "2026-09-17-erank-spotted-on-etsy.csv"),
+    [
+      '"Shop/Listing","Search Term","Page","Position","Spotted By"',
+      '"Listing A","Wooden Wick Candle",1,17,"eRank Monitor"',
+      '"Listing B","snow globe",2,8,"eRank Monitor"',
+    ].join("\n"),
+    "utf8",
+  );
+  writeFileSync(
+    path.join(dir, "2026-09-17-erank-keywords-test.csv"),
+    [
+      '"Keywords","Average Searches","Competition","KD","Tag Occurrences"',
+      '"snow globe",210,180,"22","5"',
+    ].join("\n"),
+    "utf8",
+  );
+
+  const corpus = buildCorpusViaScript(dir);
+  const row = corpus.rows.find((r) => r.keyword === "Wooden Wick Candle")!;
+
+  it("exists as a row, at all", () => {
+    expect(row).toBeDefined();
+  });
+
+  it("keeps the original casing from the Spotted on Etsy export, not the lowercase match key", () => {
+    expect(row.keyword).toBe("Wooden Wick Candle");
+  });
+
+  it("carries the real ranking, not a fabricated one", () => {
+    expect(row.ranked).not.toBeNull();
+    expect(row.ranked!.best).toBe(17);
+    expect(row.ranked!.matches).toHaveLength(1);
+  });
+
+  it("leaves searches, competition and KD null, never 0", () => {
+    // 0 would read as "no demand" for a term W&H demonstrably ranks for —
+    // exactly the fabricated-zero bug this archive exists to prevent.
+    expect(row.searches).toBeNull();
+    expect(row.competition).toBeNull();
+    expect(row.kd).toBeNull();
+  });
+
+  it("reports coverage as seen in 0 of the Keyword Tool captures, the true count", () => {
+    expect(row.coverage).toEqual({ seen: 0, of: 1 });
+  });
+
+  it("is current with no found_via queries, not a stray placeholder", () => {
+    expect(row.current).toBe(true);
+    expect(row.superseded_by).toBeNull();
+    expect(row.found_via).toEqual([]);
+  });
+
+  it("does not duplicate a term that IS in the Keyword Tool export", () => {
+    // "snow globe" is in both fixtures — it must stay the one, ordinary
+    // Keyword Tool row (with its real searches/competition/kd), not also
+    // spawn a second, ranked-only row for the same keyword.
+    const snowGlobeRows = corpus.rows.filter(
+      (r) => r.keyword.toLowerCase() === "snow globe",
+    );
+    expect(snowGlobeRows).toHaveLength(1);
+    expect(snowGlobeRows[0].searches).toBe(210);
+  });
+});
+
 describe("Ranked: a re-pull of the same term/listing does not duplicate the match", () => {
   // Repeat captures are an intentional part of this archive (proposal.md §
   // Why), but RankedListingMatch carries no capture identifier — so two
@@ -741,6 +820,10 @@ describe("corpus loader", () => {
     // demandRatio only needs searches/competition — narrowed from the full
     // KeywordRow so it also accepts KeywordTableRow (lib/keyword-metrics.ts).
     expect(demandRatio({ searches: 10, competition: 0 })).toBeNull();
+  });
+
+  it("returns null, not a crash, when searches is null (a ranked-only row)", () => {
+    expect(demandRatio({ searches: null, competition: 180 })).toBeNull();
   });
 
   it("normalises bulk keyword rows into camelCase, alongside the main rows", () => {
