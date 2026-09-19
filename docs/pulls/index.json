@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-18",
+  "generated": "2026-09-19",
   "pulls": [
     {
       "note": "2026-09-18-erank-bulk-keywords.md",
@@ -12,11 +12,12 @@
         "demand"
       ],
       "subjects": [
-        "embroidery"
+        "embroidery",
+        "embroidery-patterns"
       ],
       "half_life": "90d",
       "status": "fresh",
-      "answers": "Related-term demand for an embroidery-adjacent seed set, from eRank's Bulk Keywords tool. Thin (14 rows, 9 with unquantified searches) and not part of the queryable corpus.",
+      "answers": "Related-term demand across 99 embroidery-pattern-adjacent terms, from six eRank Bulk Keywords exports. Now part of the queryable corpus and its own table on /keyword-explorer, alongside (not merged into) the Keyword Tool rows.",
       "raw_files": [
         "2026-09-18-erank-bulk-keywords-2.csv",
         "2026-09-18-erank-bulk-keywords-3.csv",
@@ -168,6 +169,7 @@
       "status": "fresh",
       "answers": "Where W&H listings actually rank in Etsy search, by term. Positions move fast \u2014 re-pull before citing.",
       "raw_files": [
+        "2026-09-17-erank-spotted-on-etsy-2.csv",
         "2026-09-17-erank-spotted-on-etsy.csv"
       ],
       "current": true,
