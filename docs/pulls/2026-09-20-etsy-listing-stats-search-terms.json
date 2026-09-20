@@ -1,0 +1,95 @@
+{
+  "captured": "2026-09-20",
+  "source": "etsy",
+  "surface": "listing-stats",
+  "window": "this_year (Jan 1 - Sep 20, 2026)",
+  "channel": "etsy-retail",
+  "method": "Scraped from https://www.etsy.com/your/shops/me/stats/listings/<id> via authenticated browser. Etsy exposes no API for shop stats.",
+  "raw_note": "term_rows are captured VERBATIM from each table row's textContent, whitespace-collapsed only. Etsy renders each row twice (visible cells + an accessibility duplicate reading '<term>: <n>'), so the term text repeats within a row. Nothing here is corrected, deduplicated or spell-checked on purpose - 'paper embriodery template' is a real buyer's typo and is preserved as typed. The header row varies between listings: some tables are 2-column (Search terms | Visits), others 4-column (Search terms | Etsy | Google, etc. | Total visits). Parse downstream, not here.",
+  "listings": [
+    {
+      "listing_id": "4415035303",
+      "visits": 35, "items_sold": 1, "revenue_usd": 2.49,
+      "title": "Digital leaf mandala embroidery pattern — beginner-friendly design — PDF download for 6” and 8” hoops",
+      "term_rows": [
+        "Search terms EtsyGoogle, etc.Total visits",
+        "mandala embroidery pattern download 1–1 mandala embroidery pattern download: 1",
+        "embroidered kippah women 1–1 embroidered kippah women: 1",
+        "mandala embroidery design –11 mandala embroidery design: 1",
+        "hand embroidery pattern pdf –11 hand embroidery pattern pdf: 1"
+      ]
+    },
+    {
+      "listing_id": "4466080258",
+      "visits": 19, "items_sold": 1, "revenue_usd": 6.00,
+      "title": "Digital geometric embroidery pattern — beginner-friendly design — PDF download for 6” or 8” hoops",
+      "term_rows": [
+        "Search terms visits",
+        "modern minimalist embroidery pattern 1 modern minimalist embroidery pattern: 1",
+        "hand embroidery pdf geometric 1 hand embroidery pdf geometric: 1"
+      ]
+    },
+    {
+      "listing_id": "4466076995",
+      "visits": 14, "items_sold": 1, "revenue_usd": 6.00,
+      "title": "Digital geometric embroidery pattern — beginner-friendly hoop design — PDF download for calm stitching",
+      "term_rows": [
+        "Search terms visits",
+        "paper embriodery template 1 paper embriodery template: 1"
+      ]
+    },
+    {
+      "listing_id": "4415032102",
+      "visits": 13, "items_sold": 0, "revenue_usd": 0.00,
+      "title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
+      "term_rows": [
+        "Search terms visits",
+        "botanical embroidery design hand embroidery 1 botanical embroidery design hand embroidery: 1",
+        "medieval embroidery patterns 1 medieval embroidery patterns: 1"
+      ]
+    },
+    {
+      "listing_id": "4466082116",
+      "visits": 6, "items_sold": 0, "revenue_usd": 0.00,
+      "title": "Geometric Rosette Hand Embroidery Pattern PDF, Calming Boho Wall Art Hoop Decor, Beginner Friendly Design, 6 and 8 Inch Hoops",
+      "term_rows": [
+        "Search terms visits",
+        "geometric hand embroidery patterns 1 geometric hand embroidery patterns: 1"
+      ]
+    },
+    {
+      "listing_id": "4466799018",
+      "visits": 4, "items_sold": 0, "revenue_usd": 0.00,
+      "title": "Folk Leaf Circle Hand Embroidery Pattern PDF, Scandi Nature Hoop Art, Beginner Friendly Design, 6 and 8 Inch Hoops, Download",
+      "term_rows": [
+        "Search terms visits",
+        "mandala embroidery pattern 1 mandala embroidery pattern: 1"
+      ]
+    },
+    { "listing_id": "4466789627", "visits": 15, "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4414949521", "visits": 9,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4465357735", "visits": 8,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4417249682", "visits": 6,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4417250225", "visits": 5,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4465359686", "visits": 3,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4466797252", "visits": 2,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4466793009", "visits": 2,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4417250834", "visits": 2,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4415081378", "visits": 2,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4466795015", "visits": 1,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4466795496", "visits": 1,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4466078772", "visits": 1,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4465356349", "visits": 1,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4466791377", "visits": 1,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4555452273", "visits": 1,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] },
+    { "listing_id": "4576496782", "visits": 0,  "items_sold": 0, "revenue_usd": 0.00, "term_rows": ["Search terms"] }
+  ],
+  "not_recaptured": {
+    "note": "Captured in the first pass (visits + title only, in the sibling CSV) but NOT re-scraped for search terms in this pass. All read 0 visits, all listed 2026-09-16. Their search-terms tables are unverified rather than known-empty.",
+    "listing_ids": ["4522918821","4576496750","4576478401","4576478415","4576478385","4576478347","4576478333","4576496720","4576478365","4555452153","4555463292","4555463358","4555463082"]
+  },
+  "unreadable": {
+    "listing_id": "4522917501",
+    "note": "Stats page renders an empty document (main.innerText length 0) across repeated loads with a 3s wait. Cause unknown - possibly expired, draft or removed."
+  }
+}
