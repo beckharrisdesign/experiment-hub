@@ -108,14 +108,47 @@ export async function withTargeting(rows: KeywordRow[]): Promise<KeywordRow[]> {
 export function toTableRows(rows: KeywordRow[]): KeywordTableRow[] {
   return rows.map((row) => ({
     keyword: row.keyword,
-    capture: row.capture,
-    searches: row.searches,
-    competition: row.competition,
-    kd: row.kd,
-    foundVia: row.foundVia,
-    current: row.current,
-    supersededBy: row.supersededBy,
-    coverage: row.coverage,
+    capture: row.keywordTool?.capture ?? null,
+    // Each source is projected to its VALUES only — the capture metadata
+    // (`capture`/`current`/`supersededBy`) and `history` stay server-side.
+    // The table renders one collapsed row per keyword and deliberately says
+    // nothing about repeat captures (design.md decision 5), so shipping that
+    // metadata to a public client component would be payload for nothing.
+    keywordTool: row.keywordTool
+      ? {
+          searches: row.keywordTool.searches,
+          competition: row.keywordTool.competition,
+          kd: row.keywordTool.kd,
+          foundVia: row.keywordTool.foundVia,
+          coverage: row.keywordTool.coverage,
+        }
+      : null,
+    bulkKeywords: row.bulkKeywords
+      ? {
+          avgSearches: row.bulkKeywords.avgSearches,
+          avgSearchesCensored: row.bulkKeywords.avgSearchesCensored,
+          avgClicks: row.bulkKeywords.avgClicks,
+          avgClicksCensored: row.bulkKeywords.avgClicksCensored,
+          avgCtr: row.bulkKeywords.avgCtr,
+          avgCtrCensored: row.bulkKeywords.avgCtrCensored,
+          etsyCompetition: row.bulkKeywords.etsyCompetition,
+          kd: row.bulkKeywords.kd,
+        }
+      : null,
+    tagReport: row.tagReport
+      ? {
+          tagOccurrences: row.tagReport.tagOccurrences,
+          avgSearches: row.tagReport.avgSearches,
+          avgSearchesCensored: row.tagReport.avgSearchesCensored,
+          avgClicks: row.tagReport.avgClicks,
+          avgClicksCensored: row.tagReport.avgClicksCensored,
+          avgCtr: row.tagReport.avgCtr,
+          avgCtrCensored: row.tagReport.avgCtrCensored,
+          etsyCompetition: row.tagReport.etsyCompetition,
+          kd: row.tagReport.kd,
+          googleSearches: row.tagReport.googleSearches,
+        }
+      : null,
     ranked: row.ranked?.best ?? null,
     targeting: row.targeting?.best ?? null,
   }));

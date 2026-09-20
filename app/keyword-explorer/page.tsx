@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import BulkKeywordTable from "@/components/BulkKeywordTable";
 import KeywordTable from "@/components/KeywordTable";
 import { loadKeywordCorpus } from "@/lib/keyword-corpus";
 import { toTableRows, withTargeting } from "@/lib/keyword-traction";
@@ -40,7 +39,11 @@ export const dynamic = "force-dynamic";
 export default async function KeywordExplorerPage() {
   const corpus = loadKeywordCorpus();
   const rows = toTableRows(await withTargeting(corpus.rows));
-  const captures = corpus.captures.length;
+
+  // Five instruments reach the table: three eRank exports (Keyword Tool, Bulk
+  // Keywords, Tag Report) plus the two real-world traction joins (Ranked from
+  // Spotted on Etsy, Targeting from live listing snapshots).
+  const SOURCES = 5;
 
   return (
     <div className="min-h-screen">
@@ -51,32 +54,15 @@ export default async function KeywordExplorerPage() {
               Keyword Explorer
             </h2>
             <p className="text-sm text-text-secondary">
-              {corpus.rows.length} observations across {captures}{" "}
-              {captures === 1 ? "capture" : "captures"}. Sort or filter on any
-              column.
+              {/* Keywords, not observations: one row is one keyword now, and a
+                  keyword captured twice is a single row carrying its newest
+                  values (design.md decision 5). */}
+              {corpus.rows.length.toLocaleString()} keywords across {SOURCES}{" "}
+              sources. Sort or filter on any column.
             </p>
           </header>
 
           <KeywordTable rows={rows} />
-
-          {corpus.bulkKeywordRows.length > 0 && (
-            <section className="flex flex-col gap-2">
-              <header className="flex flex-col gap-1">
-                <h3 className="text-lg font-semibold text-text-primary">
-                  Bulk Keywords — related-term suggestions
-                </h3>
-                <p className="text-sm text-text-secondary">
-                  {corpus.bulkKeywordRows.length} terms from eRank&apos;s Bulk
-                  Keywords tool, a different instrument from the table above:
-                  related-term suggestions for a seed list, not a per-seed
-                  demand table. &ldquo;&lt; N&rdquo; means eRank capped the
-                  value rather than reporting it exactly; a dash means it was
-                  never scored at all — neither is 0.
-                </p>
-              </header>
-              <BulkKeywordTable rows={corpus.bulkKeywordRows} />
-            </section>
-          )}
         </div>
       </main>
     </div>

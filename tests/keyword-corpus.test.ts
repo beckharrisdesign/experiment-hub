@@ -773,11 +773,11 @@ describe("corpus loader", () => {
     // The original four counts must still be in there; later pulls may have
     // added more (see the generation describe block above), so this checks
     // containment rather than the exact set.
-    const counts = row.foundVia.map((h) => h.tagOccurrences);
+    const counts = row.keywordTool!.foundVia.map((h) => h.tagOccurrences);
     for (const expected of [6, 12, 80, 81]) {
       expect(counts).toContain(expected);
     }
-    expect(row.supersededBy).toBeNull();
+    expect(row.keywordTool!.supersededBy).toBeNull();
   });
 
   it("sums tag occurrences only as a sort key, keeping the parts", () => {
@@ -785,14 +785,17 @@ describe("corpus loader", () => {
     // The sum must always equal the sum of the parts on the row itself — a
     // self-consistency check, not a fixed total that would go stale every
     // time a new query surfaces this keyword.
-    const expectedSum = row.foundVia.reduce((n, h) => n + h.tagOccurrences, 0);
-    expect(totalTagOccurrences(row)).toBe(expectedSum);
-    expect(row.foundVia.length).toBeGreaterThanOrEqual(4);
+    const expectedSum = row.keywordTool!.foundVia.reduce(
+      (n, h) => n + h.tagOccurrences,
+      0,
+    );
+    expect(totalTagOccurrences(row.keywordTool)).toBe(expectedSum);
+    expect(row.keywordTool!.foundVia.length).toBeGreaterThanOrEqual(4);
   });
 
   it("reads coverage as a count, never as a trend", () => {
-    const row = corpus.rows[0];
-    expect(coverageLabel(row)).toMatch(/^seen in \d+ of \d+$/);
+    const row = corpus.rows.find((r) => r.keywordTool !== null)!;
+    expect(coverageLabel(row.keywordTool)).toMatch(/^seen in \d+ of \d+$/);
   });
 
   it("normalises ranked to null or a well-formed match, never a bare shape mismatch", () => {
@@ -826,26 +829,30 @@ describe("corpus loader", () => {
     expect(demandRatio({ searches: null, competition: 180 })).toBeNull();
   });
 
-  it("normalises bulk keyword rows into camelCase, alongside the main rows", () => {
-    expect(corpus.bulkKeywordRows.length).toBeGreaterThan(0);
-    const row = corpus.bulkKeywordRows.find(
-      (r) => r.keyword === "embroidery kits",
-    )!;
+  it("normalises Bulk Keywords onto the merged row, not a separate array", () => {
+    expect(corpus.rows.some((r) => r.bulkKeywords !== null)).toBe(true);
+    const row = corpus.rows.find((r) => r.keyword === "embroidery kits")!;
     expect(row).toBeDefined();
-    expect(row.avgSearches).toBe(2918);
-    expect(row.avgSearchesCensored).toBe(false);
-    expect(row.current).toBe(true);
-    expect(row.supersededBy).toBeNull();
+    // The same keyword carries Keyword Tool AND Bulk Keywords — the whole
+    // point of the merge, and impossible to assert before it.
+    expect(row.keywordTool).not.toBeNull();
+    expect(row.bulkKeywords).not.toBeNull();
+    expect(row.bulkKeywords!.avgSearches).toBe(2918);
+    expect(row.bulkKeywords!.avgSearchesCensored).toBe(false);
+    expect(row.bulkKeywords!.current).toBe(true);
+    expect(row.bulkKeywords!.supersededBy).toBeNull();
   });
 
-  it("keeps a censored bulk row distinct from an unscored one", () => {
-    const censored = corpus.bulkKeywordRows.find((r) => r.avgSearchesCensored)!;
-    const unscored = corpus.bulkKeywordRows.find(
-      (r) => r.avgSearches === null,
+  it("keeps a censored bulk value distinct from an unscored one", () => {
+    const censored = corpus.rows.find(
+      (r) => r.bulkKeywords?.avgSearchesCensored,
     )!;
-    expect(censored.avgSearches).not.toBeNull();
-    expect(censored.avgSearches).not.toBe(0);
-    expect(unscored.avgSearchesCensored).toBe(false);
+    const unscored = corpus.rows.find(
+      (r) => r.bulkKeywords !== null && r.bulkKeywords.avgSearches === null,
+    )!;
+    expect(censored.bulkKeywords!.avgSearches).not.toBeNull();
+    expect(censored.bulkKeywords!.avgSearches).not.toBe(0);
+    expect(unscored.bulkKeywords!.avgSearchesCensored).toBe(false);
   });
 });
 
