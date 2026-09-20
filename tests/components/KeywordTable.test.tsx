@@ -13,20 +13,47 @@ beforeAll(() => {
   Element.prototype.releasePointerCapture ??= () => {};
 });
 
-function row(overrides: Partial<KeywordTableRow>): KeywordTableRow {
+/**
+ * Flat spec for a row, expanded into the merged shape below.
+ *
+ * Kept flat on purpose: every Keyword Tool field a test cares about stays
+ * one key deep, so a fixture reads as the row a person would see rather than
+ * as the sub-object nesting the corpus happens to use. `noKeywordTool` builds
+ * the case the merge introduced — a keyword no eRank Keyword Tool export ever
+ * scored, which before this change could not exist as a row at all.
+ */
+interface RowSpec {
+  keyword?: string;
+  capture?: string | null;
+  searches?: number | null;
+  competition?: number | null;
+  kd?: number | null;
+  foundVia?: { query: string; tagOccurrences: number }[];
+  ranked?: number | null;
+  targeting?: number | null;
+  bulkKeywords?: KeywordTableRow["bulkKeywords"];
+  tagReport?: KeywordTableRow["tagReport"];
+  noKeywordTool?: boolean;
+}
+
+function row(overrides: RowSpec = {}): KeywordTableRow {
   return {
-    keyword: "keyword",
-    capture: "2026-09-17",
-    searches: 100,
-    competition: 50,
-    kd: 10,
-    foundVia: [{ query: "test", tagOccurrences: 1 }],
-    current: true,
-    supersededBy: null,
-    coverage: { seen: 1, of: 1 },
-    ranked: null,
-    targeting: null,
-    ...overrides,
+    keyword: overrides.keyword ?? "keyword",
+    capture: overrides.capture !== undefined ? overrides.capture : "2026-09-17",
+    keywordTool: overrides.noKeywordTool
+      ? null
+      : {
+          searches: overrides.searches !== undefined ? overrides.searches : 100,
+          competition:
+            overrides.competition !== undefined ? overrides.competition : 50,
+          kd: overrides.kd !== undefined ? overrides.kd : 10,
+          foundVia: overrides.foundVia ?? [{ query: "test", tagOccurrences: 1 }],
+          coverage: { seen: 1, of: 1 },
+        },
+    bulkKeywords: overrides.bulkKeywords ?? null,
+    tagReport: overrides.tagReport ?? null,
+    ranked: overrides.ranked ?? null,
+    targeting: overrides.targeting ?? null,
   };
 }
 
@@ -95,6 +122,56 @@ function keywordOrder(): string[] {
   );
 }
 
+/**
+ * Column positions, mirroring `COLUMNS` in `components/KeywordTable.tsx`.
+ *
+ * Named rather than inlined because the merge took the table from 8 columns
+ * to 20: a bare `cells[4]` silently became a different column, and twelve
+ * tests failed for one reason. The guard test below asserts these positions
+ * still hold, so a future column change breaks in one obvious place instead.
+ */
+const COL = {
+  keyword: 0,
+  searches: 1,
+  competition: 2,
+  kd: 3,
+  foundVia: 4,
+  ratio: 5,
+  ranked: 18,
+  targeting: 19,
+} as const;
+
+describe("KeywordTable — column layout", () => {
+  it("keeps the column positions the other tests index by", () => {
+    render(<KeywordTable rows={ROWS} />);
+    // Second header row — the first is the source-band row.
+    const headerRow = screen.getAllByRole("row")[1];
+    const headers = within(headerRow)
+      .getAllByRole("columnheader")
+      .map((th) => th.textContent?.replace(/[↑↓↕]/g, "").trim() ?? "");
+    expect(headers).toHaveLength(20);
+    expect(headers[COL.keyword]).toBe("Keyword");
+    expect(headers[COL.searches]).toBe("Searches");
+    expect(headers[COL.competition]).toBe("Competition");
+    expect(headers[COL.kd]).toBe("KD");
+    expect(headers[COL.foundVia]).toBe("Found via");
+    expect(headers[COL.ratio]).toBe("S / comp.");
+    expect(headers[COL.ranked]).toBe("Best pos.");
+    expect(headers[COL.targeting]).toBe("Tag slot");
+  });
+
+  it("names every source in a band above its own columns", () => {
+    render(<KeywordTable rows={ROWS} />);
+    const bandRow = screen.getAllByRole("row")[0];
+    const bands = within(bandRow)
+      .getAllByRole("columnheader")
+      .map((th) => th.textContent?.trim() ?? "");
+    expect(bands).toContain("eRank Keyword Tool");
+    expect(bands).toContain("eRank Bulk Keywords");
+    expect(bands).toContain("eRank Tag Report");
+  });
+});
+
 describe("KeywordTable — Ranked and Targeting columns", () => {
   it("renders numeric values, not badge text", () => {
     render(<KeywordTable rows={ROWS} />);
@@ -102,9 +179,8 @@ describe("KeywordTable — Ranked and Targeting columns", () => {
       within(tr).queryByText("snow globe"),
     )!;
     const cells = within(snowGlobeRow).getAllByRole("cell");
-    // Keyword, Searches, Competition, KD, Ranked, Targeting, Found via, Ratio
-    expect(cells[4].textContent).toBe("8");
-    expect(cells[5].textContent).toBe("3");
+    expect(cells[COL.ranked].textContent).toBe("8");
+    expect(cells[COL.targeting].textContent).toBe("3");
   });
 
   it("shows a blank dash, never 0, when there is no match", () => {
@@ -113,8 +189,8 @@ describe("KeywordTable — Ranked and Targeting columns", () => {
       within(tr).queryByText("embroidery font"),
     )!;
     const cells = within(fontRow).getAllByRole("cell");
-    expect(cells[4].textContent).toBe("—");
-    expect(cells[5].textContent).toBe("—");
+    expect(cells[COL.ranked].textContent).toBe("—");
+    expect(cells[COL.targeting].textContent).toBe("—");
   });
 
   it("has no Status, Capture or Coverage column", () => {
@@ -133,7 +209,7 @@ describe("KeywordTable — Ranked and Targeting columns", () => {
 
   it("sorts blank Ranked rows after populated ones, in either direction", () => {
     render(<KeywordTable rows={ROWS} />);
-    const header = screen.getByRole("button", { name: /Ranked/ });
+    const header = screen.getByRole("button", { name: /Best pos\./ });
     const blanks = new Set(["embroidery font", "wooden wick candle"]);
 
     fireEvent.click(header); // first click: desc
@@ -160,7 +236,7 @@ describe("KeywordTable — Ranked and Targeting columns", () => {
     // rangeValue case) — asserted independently so a regression specific to
     // Targeting can't hide behind the Ranked test passing.
     render(<KeywordTable rows={ROWS} />);
-    const header = screen.getByRole("button", { name: /Targeting/ });
+    const header = screen.getByRole("button", { name: /Tag slot/ });
     const blanks = new Set(["calm stitching", "embroidery font"]);
 
     fireEvent.click(header); // first click: desc
@@ -186,10 +262,11 @@ describe("KeywordTable — a ranked-only row (no Keyword Tool data)", () => {
     ...ROWS,
     row({
       keyword: "wall art print",
-      searches: null,
-      competition: null,
-      kd: null,
-      foundVia: [],
+      // Since the merge this is the truer fixture: the row exists because
+      // Ranked has the keyword, and the Keyword Tool sub-object is absent
+      // rather than present-with-null-fields.
+      noKeywordTool: true,
+      capture: null,
       ranked: 4,
       targeting: null,
     }),
@@ -201,11 +278,10 @@ describe("KeywordTable — a ranked-only row (no Keyword Tool data)", () => {
       within(tr).queryByText("wall art print"),
     )!;
     const cells = within(wallArtRow).getAllByRole("cell");
-    // Keyword, Searches, Competition, KD, Ranked, Targeting, Found via, Ratio
-    expect(cells[1].textContent).toBe("—");
-    expect(cells[2].textContent).toBe("—");
-    expect(cells[3].textContent).toBe("—");
-    expect(cells[4].textContent).toBe("4");
+    expect(cells[COL.searches].textContent).toBe("—");
+    expect(cells[COL.competition].textContent).toBe("—");
+    expect(cells[COL.kd].textContent).toBe("—");
+    expect(cells[COL.ranked].textContent).toBe("4");
   });
 
   it("sorts a null Searches value after every real one, in either direction", () => {
@@ -231,7 +307,7 @@ describe("KeywordTable — a ranked-only row (no Keyword Tool data)", () => {
 
   it("excludes a null-Searches row from a min-bound range filter", () => {
     render(<KeywordTable rows={RANKED_ONLY_ROWS} />);
-    chooseRangeColumn("Searches");
+    chooseRangeColumn("eRank Keyword Tool — Searches");
     fireEvent.change(screen.getByLabelText("Range filter minimum"), {
       target: { value: "0" },
     });
@@ -245,6 +321,14 @@ describe("KeywordTable — a ranked-only row (no Keyword Tool data)", () => {
  * `role="option"` items), not a native `<select>` — `fireEvent.change` is a
  * no-op on it. Click-driven, matching how a person actually operates it.
  */
+/**
+ * Picks a range column by its full option label.
+ *
+ * The picker is a flat list with no band above it, so each option spells out
+ * its source: "eRank Keyword Tool — KD". Call sites pass that whole string
+ * rather than a bare "KD", because since the merge three different columns
+ * are named KD and a bare label matches all three.
+ */
 function chooseRangeColumn(label: string) {
   fireEvent.click(screen.getByLabelText("Range filter column"));
   fireEvent.click(screen.getByRole("option", { name: label }));
@@ -256,13 +340,13 @@ describe("KeywordTable — range filter", () => {
     // straight to Targeting must not silently apply that same bound to a
     // column Katy never set a range on.
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Ranked");
+    chooseRangeColumn("Ranked — Best pos.");
     fireEvent.change(screen.getByLabelText("Range filter minimum"), {
       target: { value: "8" },
     });
     expect(keywordOrder()).not.toContain("calm stitching"); // ranked 1, fails >= 8
 
-    chooseRangeColumn("Targeting");
+    chooseRangeColumn("Targeting — Tag slot");
     expect(screen.getByLabelText("Range filter minimum")).toHaveValue(null);
     const visible = keywordOrder();
     // calm stitching has no Targeting value at all — if the stale >= 8 bound
@@ -274,7 +358,7 @@ describe("KeywordTable — range filter", () => {
 
   it("narrows to rows within a minimum bound on Ranked", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Ranked");
+    chooseRangeColumn("Ranked — Best pos.");
     fireEvent.change(screen.getByLabelText("Range filter minimum"), {
       target: { value: "5" },
     });
@@ -287,7 +371,7 @@ describe("KeywordTable — range filter", () => {
 
   it("keeps blank rows when only a max bound is set", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Ranked");
+    chooseRangeColumn("Ranked — Best pos.");
     fireEvent.change(screen.getByLabelText("Range filter maximum"), {
       target: { value: "5" },
     });
@@ -302,7 +386,7 @@ describe("KeywordTable — range filter", () => {
     // Own describe-level case, not just Ranked — the range picker has a
     // separate Targeting branch in rangeValue().
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Targeting");
+    chooseRangeColumn("Targeting — Tag slot");
     fireEvent.change(screen.getByLabelText("Range filter minimum"), {
       target: { value: "4" },
     });
@@ -315,7 +399,7 @@ describe("KeywordTable — range filter", () => {
 
   it("keeps blank rows when only a max bound is set on Targeting", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Targeting");
+    chooseRangeColumn("Targeting — Tag slot");
     fireEvent.change(screen.getByLabelText("Range filter maximum"), {
       target: { value: "4" },
     });
@@ -331,7 +415,7 @@ describe("KeywordTable — range filter", () => {
   // branch that could regress independently of Ranked/Targeting above.
   it("narrows on Searches", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Searches");
+    chooseRangeColumn("eRank Keyword Tool — Searches");
     fireEvent.change(screen.getByLabelText("Range filter minimum"), {
       target: { value: "100" },
     });
@@ -345,7 +429,7 @@ describe("KeywordTable — range filter", () => {
 
   it("narrows on Competition", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Competition");
+    chooseRangeColumn("eRank Keyword Tool — Competition");
     fireEvent.change(screen.getByLabelText("Range filter maximum"), {
       target: { value: "50" },
     });
@@ -359,7 +443,7 @@ describe("KeywordTable — range filter", () => {
 
   it("narrows on KD", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("KD");
+    chooseRangeColumn("eRank Keyword Tool — KD");
     fireEvent.change(screen.getByLabelText("Range filter minimum"), {
       target: { value: "20" },
     });
@@ -373,7 +457,7 @@ describe("KeywordTable — range filter", () => {
 
   it("narrows on Searches / comp., excluding the null (zero-competition) row from a min bound", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Searches / comp.");
+    chooseRangeColumn("eRank Keyword Tool — S / comp.");
     fireEvent.change(screen.getByLabelText("Range filter minimum"), {
       target: { value: "2" },
     });
@@ -391,7 +475,7 @@ describe("KeywordTable — range filter", () => {
     // "decimal", and previously nothing asserted that either input actually
     // got it.
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Searches / comp.");
+    chooseRangeColumn("eRank Keyword Tool — S / comp.");
 
     expect(screen.getByLabelText("Range filter minimum")).toHaveAttribute(
       "inputmode",
@@ -409,7 +493,7 @@ describe("KeywordTable — range filter", () => {
     // a *keyword* filter turning up nothing) would misattribute the cause if
     // it showed here too.
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Ranked");
+    chooseRangeColumn("Ranked — Best pos.");
     fireEvent.change(screen.getByLabelText("Range filter minimum"), {
       target: { value: "1000" },
     });
@@ -436,7 +520,7 @@ describe("KeywordTable — range filter", () => {
     // treats both-blank min/max as "no bound." A keyword filter emptying the
     // table here must not be blamed on the merely-selected range column.
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Ranked");
+    chooseRangeColumn("Ranked — Best pos.");
     fireEvent.change(screen.getByLabelText("Filter keywords"), {
       target: { value: "no such keyword anywhere" },
     });
@@ -456,7 +540,7 @@ describe("KeywordTable — range filter", () => {
     // opposite direction from the round-8/9 fixes: not "no bound was ever
     // set," but "the bound was never actually the reason."
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Ranked");
+    chooseRangeColumn("Ranked — Best pos.");
     fireEvent.change(screen.getByLabelText("Range filter minimum"), {
       target: { value: "5" },
     });
