@@ -56,5 +56,19 @@ Every apparent disagreement is **precision, not conflict**. `folk art embroidery
 - **New:** a merge step in `scripts/ingest-pulls.py`; an `erank` sub-object on the merged row; a `Reported by` column.
 - **Changed:** `KeywordRow` / `KeywordTableRow` lose `keywordTool` / `bulkKeywords` / `tagReport` in favour of one `erank`; the table drops ~7 columns.
 - **Unchanged:** Ranked, Targeting, Shop and Etsy Ads; the never-fabricate-a-zero rule; the verbatim-capture rule; compound filters, two-key sort, export and the scroll tools.
-- **Open before `design.md`:** whether `Reported by` shows full tool names or initials (`KT · B · T`) on a table already fighting for width; and whether a row should still be filterable by "has Tag Report data" once the band no longer shows which column came from where.
-- **Carried forward:** the MVDS Figma gate is still open from `keyword-captured-demand` (task 4.4). This change touches the same table, so one round on MVDS can satisfy both.
+- **Settled:** `Reported by` renders **initials** — `KT · B · T` — per Katy, 2026-09-20. On a table this wide, spelling out three tool names per row costs more than it explains, and the band already says eRank.
+- **Open before `design.md`:** whether a row should still be filterable by "has Tag Report data" once the band no longer shows which column came from where. The `Reported by` values make it *visible*; whether it stays *filterable* is a separate call.
+- **Carried forward:** the MVDS Figma gate is still open from `keyword-captured-demand` (task 4.4). Rounds for this change are drawn on that change's file at Katy's direction, so one MVDS toggle and one round can satisfy both.
+
+## Figma
+
+Drawn on the `keyword-captured-demand` file rather than a new one — Katy, 2026-09-20: *"lets use the figma from 508 to kick off 509."* This deviates from `rules/figma.mdc`'s file-per-change title convention, deliberately: both changes edit the same table, the round numbering continues unbroken, and the open MVDS gate needs enabling once rather than twice.
+
+| | |
+| --- | --- |
+| File | [`keyword-captured-demand`](https://www.figma.com/design/5zM3iearA5XFhHdjA0lV4D/keyword-captured-demand?node-id=4-3) — shared with #508 |
+| Round 02.2 | Page `02.2 Proposed — one eRank band` (`4:2`) → frame `Round 02.2 — one eRank band` (`4:3`) |
+| Contents | Before/after on the same six real rows. BEFORE: three bands, 17 columns, with the six duplicated columns marked. AFTER: one band, 10 columns, `Reported by` as initials. |
+| Library | **None — gate still open.** `get_libraries` on this file still returns an empty `libraries_added_to_file`; MVDS can only be enabled from the Figma UI. Drawn on `app/globals.css` tokens. |
+
+The BEFORE table is clipped at the frame's right edge, which is not a drawing error — it is the point. Seventeen eRank columns do not fit in 1,500px.
