@@ -28,9 +28,9 @@ interface RawRankedMatch {
 interface RawRow {
   keyword: string;
   capture: string;
-  searches: number;
-  competition: number;
-  kd: number;
+  searches: number | null;
+  competition: number | null;
+  kd: number | null;
   found_via: RawQueryHit[];
   current: boolean;
   superseded_by: string | null;

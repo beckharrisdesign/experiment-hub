@@ -141,9 +141,9 @@ Then write the note **with its front-matter** and re-run with `--apply` to refre
 | Captured | Pull | Measures | Scope | Raw | Status |
 | --- | --- | --- | --- | --- | --- |
 | 2026-09-18 | [eRank Keyword Tool, 12 seeds, captured 2026-09-18](2026-09-18-erank-keywords.md) | `demand` | `market` | 12 × csv | 🟢 fresh · 1/2 |
-| 2026-09-18 | [eRank Bulk Keywords, captured 2026-09-18](2026-09-18-erank-bulk-keywords.md) | `demand` | `market` | 6 × csv | 🟢 fresh |
+| 2026-09-18 | [eRank Bulk Keywords, 6 exports, captured 2026-09-18](2026-09-18-erank-bulk-keywords.md) | `demand` | `market` | 6 × csv | 🟢 fresh |
 | 2026-09-17 | [Etsy dashboard title suggestions, captured 2026-09-17](2026-09-17-etsy-title-suggestions.md) | `content` | `shop` | — *(Drive)* | 🟢 fresh |
-| 2026-09-17 | [eRank "Spotted on Etsy", captured 2026-09-17](2026-09-17-erank-spotted-on-etsy.md) | `position` | `shop` | 1 × csv | 🟢 fresh |
+| 2026-09-17 | [eRank "Spotted on Etsy", captured 2026-09-17](2026-09-17-erank-spotted-on-etsy.md) | `position` | `shop` | 2 × csv | 🟢 fresh |
 | 2026-09-17 | [eRank Keyword Tool, 10 seeds, captured 2026-09-17](2026-09-17-erank-keywords.md) | `demand` | `market` | 50 × csv | ⏹ superseded · 2/2 |
 | 2026-09-16 | [Etsy monthly statements, Dec 2025 – Sep 2026](2026-09-16-etsy-statements.md) | `conversion`, `spend` | `shop` | — *(Drive)* | ⚪ permanent |
 | 2026-09-16 | [Etsy Ads dashboard, captured 2026-09-16](2026-09-16-etsy-ads-dashboard.md) | `spend`, `conversion` | `shop` | — *(Drive)* | 🟢 fresh |

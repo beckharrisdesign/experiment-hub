@@ -25,10 +25,15 @@ export function totalTagOccurrences(row: Pick<KeywordRow, "foundVia">): number {
   return row.foundVia.reduce((sum, hit) => sum + hit.tagOccurrences, 0);
 }
 
-/** Searches per unit of competition. Higher is a less crowded opportunity. */
+/**
+ * Searches per unit of competition. Higher is a less crowded opportunity.
+ * `null` when either side is `null` (a ranked-only row with no Keyword Tool
+ * data at all) as well as when competition is 0 — neither case has a real
+ * ratio to report.
+ */
 export function demandRatio(
   row: Pick<KeywordRow, "searches" | "competition">,
 ): number | null {
-  if (!row.competition) return null;
+  if (row.searches === null || !row.competition) return null;
   return row.searches / row.competition;
 }

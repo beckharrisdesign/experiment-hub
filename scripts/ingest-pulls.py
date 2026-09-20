@@ -385,8 +385,15 @@ def read_spotted_on_etsy_csv(path: Path) -> list[dict]:
 
 
 def build_ranked_index(pulls: Path | None = None) -> dict[str, dict]:
-    """keyword.lower() -> {best, matches} across every archived Spotted on Etsy
-    export, matched against corpus keywords case-insensitive exact.
+    """keyword.lower() -> {best, matches, term, captures} across every archived
+    Spotted on Etsy export, matched against corpus keywords case-insensitive
+    exact.
+
+    `term` and `captures` (the original-cased search term, and every capture
+    date it was observed in) exist so `build_corpus()` can surface a ranked
+    term that never appeared in any Keyword Tool export as a row of its own,
+    rather than silently dropping it because there was nothing to attach it
+    to -- see the "ranked but no Keyword Tool row" section there.
 
     A term ranked by more than one listing keeps one match per distinct
     listing; `best` is the lowest (best) position among them, which is what
@@ -418,9 +425,13 @@ def build_ranked_index(pulls: Path | None = None) -> dict[str, dict]:
     every still-ranking listing), not a regression from it.
     """
     by_term: dict[str, dict[str, dict]] = {}
-    for _capture, path in spotted_on_etsy_csvs(pulls):
+    term_text: dict[str, str] = {}
+    term_captures: dict[str, set[str]] = {}
+    for capture, path in spotted_on_etsy_csvs(pulls):
         for r in read_spotted_on_etsy_csv(path):
             key = r["search_term"].lower()
+            term_text.setdefault(key, r["search_term"])
+            term_captures.setdefault(key, set()).add(capture)
             by_listing = by_term.setdefault(key, {})
             existing = by_listing.get(r["listing"])
             if existing is None or r["position"] < existing["position"]:
@@ -434,6 +445,8 @@ def build_ranked_index(pulls: Path | None = None) -> dict[str, dict]:
         term: {
             "best": min(m["position"] for m in matches.values()),
             "matches": list(matches.values()),
+            "term": term_text[term],
+            "captures": sorted(term_captures[term]),
         }
         for term, matches in by_term.items()
     }
@@ -489,7 +502,13 @@ def build_corpus(pulls: Path | None = None) -> dict:
         if keyword not in newest or capture > newest[keyword]:
             newest[keyword] = capture
 
+    def to_ranked(entry: dict | None) -> dict | None:
+        if entry is None:
+            return None
+        return {"best": entry["best"], "matches": entry["matches"]}
+
     rows = []
+    covered_keywords: set[str] = set()
     for (capture, keyword), row in acc.items():
         row["found_via"].sort(key=lambda h: h["query"])
         current = capture == newest[keyword]
@@ -500,10 +519,46 @@ def build_corpus(pulls: Path | None = None) -> dict:
         # observed once applies to the keyword regardless of which capture's
         # row is being built. null (not a missing key, not a 0) when there is
         # no Spotted on Etsy match.
-        row["ranked"] = ranked_index.get(keyword.lower())
+        row["ranked"] = to_ranked(ranked_index.get(keyword.lower()))
         rows.append(row)
+        covered_keywords.add(keyword.lower())
 
-    rows.sort(key=lambda r: (-r["searches"], r["keyword"], r["capture"]))
+    # A term W&H already ranks for on Etsy, but the Keyword Tool has never
+    # scored, has no row to attach `ranked` to above -- and was silently
+    # invisible until now. Katy, 2026-09-18: "add a row for the ranked
+    # keywords even if they don't have entries from the erank data." Every
+    # such term gets its own row instead: searches/competition/kd stay null
+    # (never a fabricated 0 -- there is no Keyword Tool export for this
+    # keyword to source a real number from), and coverage reads "seen in 0 of
+    # N" Keyword Tool captures, which is the true, non-fabricated count.
+    for key, entry in ranked_index.items():
+        if key in covered_keywords:
+            continue
+        rows.append({
+            "keyword": entry["term"],
+            "capture": max(entry["captures"]),
+            "searches": None,
+            "competition": None,
+            "kd": None,
+            "found_via": [],
+            "current": True,
+            "superseded_by": None,
+            "coverage": {"seen": 0, "of": total_captures},
+            "ranked": to_ranked(entry),
+        })
+
+    # A fabricated 0 would sort a null-searches row as if it were the lowest
+    # possible demand; instead every such row sorts after every scored one,
+    # in this fixed default order -- same "blank sorts last" rule the table's
+    # own Ranked/Targeting columns already apply.
+    rows.sort(
+        key=lambda r: (
+            r["searches"] is None,
+            -(r["searches"] or 0),
+            r["keyword"],
+            r["capture"],
+        )
+    )
 
     return {
         "generated_at": date.today().isoformat(),
