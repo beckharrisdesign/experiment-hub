@@ -40,10 +40,12 @@ export default async function KeywordExplorerPage() {
   const corpus = loadKeywordCorpus();
   const rows = toTableRows(await withTargeting(corpus.rows));
 
-  // Five instruments reach the table: three eRank exports (Keyword Tool, Bulk
-  // Keywords, Tag Report) plus the two real-world traction joins (Ranked from
-  // Spotted on Etsy, Targeting from live listing snapshots).
-  const SOURCES = 5;
+  // Seven instruments reach the table: three eRank exports (Keyword Tool,
+  // Bulk Keywords, Tag Report), two real-world traction joins (Ranked from
+  // Spotted on Etsy, Targeting from live listing snapshots), and two captured
+  // -demand sources scraped from Shop Manager (Shop search terms, Etsy Ads
+  // targeted keywords).
+  const SOURCES = 7;
 
   return (
     <div className="min-h-screen">

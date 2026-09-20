@@ -122,6 +122,8 @@ function keywordRow(overrides: Partial<KeywordRow>): KeywordRow {
     },
     bulkKeywords: null,
     tagReport: null,
+    shopSearch: null,
+    ads: null,
     ranked: null,
     targeting: null,
     ...overrides,

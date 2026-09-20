@@ -1,10 +1,12 @@
 import type {
+  AdsKeywordValues,
   BulkKeywordValues,
   KeywordCapture,
   KeywordCorpus,
   KeywordRow,
   KeywordToolValues,
   RankedMatch,
+  ShopSearchValues,
   TagReportValues,
 } from "@/types";
 import raw from "@/data/keyword-corpus.json";
@@ -57,8 +59,32 @@ interface RawTagReport extends RawBulk {
   google_searches: number | null;
 }
 
+interface RawShopSearch {
+  visits: number | null;
+  etsy_visits: number | null;
+  google_visits: number | null;
+  listing_id: string;
+  listing_title: string | null;
+  listing_visits: number | null;
+  listing_items_sold: number | null;
+  listing_revenue_usd: number | null;
+}
+
+interface RawAds {
+  views: number | null;
+  clicks: number | null;
+  click_rate_pct: number | null;
+  spend_usd: number | null;
+  revenue_usd: number | null;
+  orders: number | null;
+  roas: number | null;
+  listing_id: string;
+}
+
 interface RawRow {
   keyword: string;
+  shop_search: RawShopSearch | null;
+  ads: RawAds | null;
   keyword_tool: (RawKeywordTool & RawCapture & { history: (RawKeywordTool & { capture: string })[] }) | null;
   bulk_keywords: (RawBulk & RawCapture & { history: (RawBulk & { capture: string })[] }) | null;
   tag_report: (RawTagReport & RawCapture & { history: (RawTagReport & { capture: string })[] }) | null;
@@ -150,9 +176,39 @@ type RawCaptureCamel<TValues> = {
   history: (TValues & { capture: string })[];
 };
 
+function toShopSearch(r: RawShopSearch | null): ShopSearchValues | null {
+  if (!r) return null;
+  return {
+    visits: r.visits,
+    etsyVisits: r.etsy_visits,
+    googleVisits: r.google_visits,
+    listingId: r.listing_id,
+    listingTitle: r.listing_title,
+    listingVisits: r.listing_visits,
+    listingItemsSold: r.listing_items_sold,
+    listingRevenueUsd: r.listing_revenue_usd,
+  };
+}
+
+function toAds(r: RawAds | null): AdsKeywordValues | null {
+  if (!r) return null;
+  return {
+    views: r.views,
+    clicks: r.clicks,
+    clickRatePct: r.click_rate_pct,
+    spendUsd: r.spend_usd,
+    revenueUsd: r.revenue_usd,
+    orders: r.orders,
+    roas: r.roas,
+    listingId: r.listing_id,
+  };
+}
+
 function toRow(row: RawRow): KeywordRow {
   return {
     keyword: row.keyword,
+    shopSearch: toShopSearch(row.shop_search ?? null),
+    ads: toAds(row.ads ?? null),
     keywordTool: toSource(row.keyword_tool, toKeywordToolValues),
     bulkKeywords: toSource(row.bulk_keywords, toBulkValues),
     tagReport: toSource(row.tag_report, toTagReportValues),

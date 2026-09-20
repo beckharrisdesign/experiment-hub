@@ -149,6 +149,11 @@ export function toTableRows(rows: KeywordRow[]): KeywordTableRow[] {
           googleSearches: row.tagReport.googleSearches,
         }
       : null,
+    // Captured demand passes through whole: unlike ranked/targeting there is
+    // no per-listing detail to withhold — the listing it names is the shop's
+    // own public listing, and the table renders every field.
+    shopSearch: row.shopSearch,
+    ads: row.ads,
     ranked: row.ranked?.best ?? null,
     targeting: row.targeting?.best ?? null,
   }));

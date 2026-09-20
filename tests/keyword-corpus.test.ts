@@ -869,3 +869,100 @@ describe("bulkValueLabel", () => {
     expect(bulkValueLabel(2918, false)).toBe("2,918");
   });
 });
+
+describe("captured demand — shop search terms and ad keywords", () => {
+  const corpus = loadKeywordCorpus();
+  const find = (keyword: string) =>
+    corpus.rows.find((r) => r.keyword.toLowerCase() === keyword);
+
+  it("gives a captured term with no eRank data a row of its own", () => {
+    // Before the merge a term eRank had never scored could not exist as a
+    // row at all — there was nothing to attach it to.
+    const row = find("paper embriodery template")!;
+    expect(row).toBeDefined();
+    expect(row.keywordTool).toBeNull();
+    expect(row.bulkKeywords).toBeNull();
+    expect(row.shopSearch?.visits).toBe(1);
+  });
+
+  it("attaches a captured term eRank also knows to the existing row", () => {
+    const row = find("mandala embroidery pattern")!;
+    expect(row.bulkKeywords).not.toBeNull();
+    expect(row.shopSearch).not.toBeNull();
+    expect(
+      corpus.rows.filter(
+        (r) => r.keyword.toLowerCase() === "mandala embroidery pattern",
+      ),
+    ).toHaveLength(1);
+  });
+
+  it("parses the four-column shape, keeping the Etsy/Google split", () => {
+    // Only one listing renders this shape; every other renders two columns
+    // with no split. A parser assuming either one silently matches nothing
+    // on the other.
+    const row = find("mandala embroidery design")!;
+    expect(row.shopSearch?.visits).toBe(1);
+    expect(row.shopSearch?.googleVisits).toBe(1);
+    expect(row.shopSearch?.etsyVisits).toBeNull();
+  });
+
+  it("parses the two-column shape, leaving the split unreported", () => {
+    const row = find("hand embroidery pdf geometric")!;
+    expect(row.shopSearch?.visits).toBe(1);
+    // null is "not reported", not zero — this export carries no split at all.
+    expect(row.shopSearch?.etsyVisits).toBeNull();
+    expect(row.shopSearch?.googleVisits).toBeNull();
+  });
+
+  it("keeps a buyer's misspelling and does not merge it with the correction", () => {
+    expect(find("paper embriodery template")).toBeDefined();
+    expect(find("paper embroidery template")).toBeUndefined();
+  });
+
+  it("keeps singular and plural as separate rows", () => {
+    // 'hand embroidery pattern pdf' is a captured search term;
+    // 'hand embroidery patterns pdf' is an ad targeted keyword. Different
+    // strings from different sources, and merging them would invent a term
+    // neither reported.
+    const singular = find("hand embroidery pattern pdf")!;
+    const plural = find("hand embroidery patterns pdf")!;
+    expect(singular).toBeDefined();
+    expect(plural).toBeDefined();
+    expect(singular.shopSearch).not.toBeNull();
+    expect(plural.ads).not.toBeNull();
+  });
+
+  it("lands an ad keyword the listing's search terms never mention", () => {
+    const row = find("geometric embroidery pattern")!;
+    expect(row.ads?.views).toBe(5);
+    expect(row.shopSearch).toBeNull();
+  });
+
+  it("parses ad metrics by label, not by position", () => {
+    const row = find("mandala embroidery design")!;
+    expect(row.ads?.clicks).toBe(2);
+    expect(row.ads?.clickRatePct).toBe(40);
+    expect(row.ads?.spendUsd).toBe(0.1);
+    expect(row.ads?.views).toBe(5);
+  });
+
+  it("never lets an unreadable capture become a zero", () => {
+    // 4522917501's stats page renders empty and 4465357735's ad page returned
+    // nulls. Neither may appear anywhere as a measured zero.
+    const touched = corpus.rows.filter(
+      (r) =>
+        r.shopSearch?.listingId === "4522917501" ||
+        r.ads?.listingId === "4465357735",
+    );
+    expect(touched).toHaveLength(0);
+  });
+
+  it("carries the listing's outcome without attributing it to the term", () => {
+    const row = find("paper embriodery template")!;
+    // The term drove one visit; the listing sold one at $6. Both are present
+    // and the listing's numbers are named as the listing's.
+    expect(row.shopSearch?.visits).toBe(1);
+    expect(row.shopSearch?.listingItemsSold).toBe(1);
+    expect(row.shopSearch?.listingRevenueUsd).toBe(6);
+  });
+});
