@@ -183,32 +183,102 @@ export interface TargetingMatch {
   matches: TargetingListingMatch[];
 }
 
-/** One keyword as observed in one capture. */
-export interface KeywordRow {
-  keyword: string;
+/**
+ * Capture metadata every source sub-object carries.
+ *
+ * `history` holds every earlier capture of the same keyword for that source.
+ * A repeat capture collapses to the newest (design.md decision 5, settled
+ * 2026-09-20) — the earlier observations are kept here rather than discarded,
+ * and are deliberately not surfaced in the table.
+ */
+export interface KeywordSourceCapture<TValues> {
   capture: string;
+  current: boolean;
+  supersededBy: string | null;
+  history: (TValues & { capture: string })[];
+}
+
+/** eRank Keyword Tool: per-seed demand for a query. */
+export interface KeywordToolValues {
   /**
-   * `null` on a row synthesized purely from a real-world Etsy ranking
-   * (`ranked` below) that eRank's Keyword Tool has never scored — never a
-   * fabricated `0`, which would read as "no demand" for a term that plainly
-   * has some, since W&H already ranks for it. See `ranked`'s own comment.
+   * `null` means the Keyword Tool never scored this field — never a
+   * fabricated `0`, which would read as "measured, and it was none".
    */
   searches: number | null;
   competition: number | null;
   kd: number | null;
   foundVia: KeywordQueryHit[];
-  current: boolean;
-  supersededBy: string | null;
   coverage: KeywordCoverage;
+}
+
+/** eRank Bulk Keywords: related-term suggestions for a seed list. */
+export interface BulkKeywordValues {
   /**
-   * From the corpus, refreshed by `ingest-pulls.py --apply`. Keyword-scoped,
-   * not capture-scoped, and can be non-null on a row with no demand data at
-   * all (`searches`/`competition`/`kd` all `null`) — `build_corpus()`
-   * synthesizes a row for a term Spotted on Etsy shows W&H already ranking
-   * for that the Keyword Tool has never scored, rather than dropping it for
-   * lack of somewhere to attach it (Katy, 2026-09-18: "add a row for the
-   * ranked keywords even if they don't have entries from the erank data").
+   * `null` means eRank never scored the field at all. A non-null value with
+   * its `*Censored` flag set means the true value is *below* that number, not
+   * equal to it — eRank capped it rather than reporting exactly. Neither is
+   * ever coerced to 0.
    */
+  avgSearches: number | null;
+  avgSearchesCensored: boolean;
+  avgClicks: number | null;
+  avgClicksCensored: boolean;
+  avgCtr: number | null;
+  avgCtrCensored: boolean;
+  etsyCompetition: number | null;
+  kd: number | null;
+}
+
+/**
+ * eRank Tag Report: scores a tag W&H already uses on a live listing — a third
+ * instrument again, and the first to reach the page in this change.
+ *
+ * It encodes absence three ways: an empty cell, the literal string
+ * `Unknown`, and a censored `< 20`. The first two both arrive here as `null`
+ * and render identically (design.md decision, round 01) — only the censored
+ * case is distinguishable, via its `*Censored` flag, because a cap is a
+ * reported value rather than an absence.
+ */
+export interface TagReportValues {
+  tagOccurrences: number | null;
+  avgSearches: number | null;
+  avgSearchesCensored: boolean;
+  avgClicks: number | null;
+  avgClicksCensored: boolean;
+  avgCtr: number | null;
+  avgCtrCensored: boolean;
+  etsyCompetition: number | null;
+  kd: number | null;
+  googleSearches: number | null;
+}
+
+export type KeywordToolSource = KeywordToolValues &
+  KeywordSourceCapture<KeywordToolValues>;
+export type BulkKeywordSource = BulkKeywordValues &
+  KeywordSourceCapture<BulkKeywordValues>;
+export type TagReportSource = TagReportValues &
+  KeywordSourceCapture<TagReportValues>;
+
+/**
+ * One keyword, with every source that has data for it.
+ *
+ * One row per distinct keyword text, matched case-insensitive exact — no
+ * stemming and no fuzzy join, so `snow globe` and `snow globes` stay two
+ * rows. A source with no data for this keyword is `null`, never a zeroed-out
+ * sub-object: absence and a measured zero are different claims, and the whole
+ * corpus exists to keep them apart.
+ *
+ * A row exists if *any* source has the keyword, which is why a term W&H ranks
+ * for that eRank never scored still appears (`keywordTool: null`, `ranked`
+ * populated) — Katy, 2026-09-18: "add a row for the ranked keywords even if
+ * they don't have entries from the erank data."
+ */
+export interface KeywordRow {
+  keyword: string;
+  keywordTool: KeywordToolSource | null;
+  bulkKeywords: BulkKeywordSource | null;
+  tagReport: TagReportSource | null;
+  /** From the corpus. Keyword-scoped, not capture-scoped. */
   ranked: RankedMatch | null;
   /**
    * Computed server-side, per request, against live listing snapshots — not
@@ -246,14 +316,20 @@ export interface KeywordRow {
  */
 export interface KeywordTableRow {
   keyword: string;
-  capture: string;
-  searches: number | null;
-  competition: number | null;
-  kd: number | null;
-  foundVia: KeywordQueryHit[];
-  current: boolean;
-  supersededBy: string | null;
-  coverage: KeywordCoverage;
+  /**
+   * The newest Keyword Tool capture for this keyword, or `null` when no
+   * Keyword Tool data exists. A single scalar, deliberately not the whole
+   * capture record: the Capture filter needs it, and nothing else does.
+   *
+   * There is no `current` counterpart. Collapsing to the newest capture
+   * (design.md decision 5) makes every visible row current by construction,
+   * so a current/superseded filter would match everything — it was dropped
+   * rather than left on screen doing nothing.
+   */
+  capture: string | null;
+  keywordTool: KeywordToolValues | null;
+  bulkKeywords: BulkKeywordValues | null;
+  tagReport: TagReportValues | null;
   ranked: number | null;
   targeting: number | null;
 }
@@ -264,38 +340,10 @@ export interface KeywordCapture {
   queries: string[];
 }
 
-/**
- * One keyword from an eRank Bulk Keywords export — a different instrument
- * from the Keyword Tool above (related-term suggestions for a seed list, not
- * a per-seed demand table), with a value shape the Keyword Tool never
- * produces: a censored cap ("< 20") rather than a bare number or a blank.
- *
- * `null` means eRank never scored the field at all. A non-null value with
- * its `*Censored` flag set means the true value is *below* that number, not
- * equal to it — eRank capped it rather than reporting exactly. Neither is
- * ever coerced to 0, for the same reason `KeywordCoverage` never derives a
- * decline from an absence: a fabricated number would read as a real one.
- */
-export interface BulkKeywordRow {
-  keyword: string;
-  capture: string;
-  avgSearches: number | null;
-  avgSearchesCensored: boolean;
-  avgClicks: number | null;
-  avgClicksCensored: boolean;
-  avgCtr: number | null;
-  avgCtrCensored: boolean;
-  etsyCompetition: number | null;
-  kd: number | null;
-  current: boolean;
-  supersededBy: string | null;
-}
-
 export interface KeywordCorpus {
   generatedAt: string | null;
   captures: KeywordCapture[];
   rows: KeywordRow[];
-  bulkKeywordRows: BulkKeywordRow[];
 }
 
 export type PullRequestState = "open" | "closed" | "merged";

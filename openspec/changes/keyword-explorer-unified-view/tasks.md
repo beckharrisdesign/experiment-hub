@@ -72,7 +72,7 @@ One checkbox per spec scenario, in spec order. Titles match `specs/**/spec.md` 1
 
 **Open question — do not assume an answer**
 
-- [ ] 3.17 `current` / `supersededBy` is unresolved. 83 keywords carry more than one Keyword Tool capture, and the merged row shows one set of values. If implementation forces a choice about which capture wins or whether the row says so, **stop and take it back to `design.md`** rather than settling it in code.
+- [x] 3.17 `current` / `supersededBy` is unresolved. 83 keywords carry more than one Keyword Tool capture, and the merged row shows one set of values. If implementation forces a choice about which capture wins or whether the row says so, **stop and take it back to `design.md`** rather than settling it in code. — **Hit immediately: the row shape cannot be written without it.** Raised before any code; Katy chose newest-wins with earlier captures kept as `history` and no marker in the table. Recorded as `design.md` decision 5.
 
 ## 4. QA
 

@@ -711,9 +711,221 @@ def build_bulk_corpus(pulls: Path | None = None) -> dict:
     }
 
 
+# --- tag report corpus -----------------------------------------------------
+#
+# eRank's Tag Report is a third instrument again: it scores tags W&H already
+# uses on live listings, rather than answering a seed query (Keyword Tool) or
+# suggesting related terms (Bulk Keywords). Its export encodes absence three
+# ways -- an empty cell, the literal string "Unknown", and a censored "< 20" --
+# which parse_bulk_number() already handles correctly, so it is reused rather
+# than duplicated. Its header carries doubled spaces ("Avg. Clicks  (USA)"),
+# so headers are whitespace-normalised before lookup rather than matched
+# literally; a silent KeyError here would read as "eRank scored nothing".
+
+TAG_REPORT_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-erank-tag-report(?:-(.+))?\.csv$")
+
+
+def tag_report_csvs(pulls: Path | None = None) -> list[tuple[str, str, Path]]:
+    """(capture_date, variant, path) for every archived eRank Tag Report export."""
+    pulls = pulls or PULLS
+    out = []
+    for f in sorted(pulls.glob("*.csv")):
+        m = TAG_REPORT_RE.match(f.name)
+        if m:
+            out.append((m.group(1), m.group(2) or "", f))
+    return out
+
+
+def read_tag_report_csv(path: Path) -> list[dict]:
+    """Rows from one eRank Tag Report export. Tolerates the BOM eRank writes."""
+    import csv
+
+    def norm(name: str) -> str:
+        return re.sub(r"\s+", " ", (name or "").strip()).lower()
+
+    with path.open(encoding="utf-8-sig", newline="") as fh:
+        rows = []
+        for raw in csv.DictReader(fh):
+            r = {norm(k): v for k, v in raw.items() if k is not None}
+            tag = (r.get("tag") or "").strip()
+            if not tag:
+                continue
+            occurrences, _ = parse_bulk_number(r.get("tag occurrences"))
+            searches, searches_censored = parse_bulk_number(r.get("avg. searches (usa)"))
+            clicks, clicks_censored = parse_bulk_number(r.get("avg. clicks (usa)"))
+            ctr, ctr_censored = parse_bulk_number(r.get("avg. ctr (usa)"))
+            competition, _ = parse_bulk_number(r.get("etsy competition (usa)"))
+            kd, _ = parse_bulk_number(r.get("keyword difficulty (usa)"))
+            google, _ = parse_bulk_number(r.get("google searches"))
+            rows.append({
+                "keyword": tag,
+                "tag_occurrences": occurrences,
+                "avg_searches": searches,
+                "avg_searches_censored": searches_censored,
+                "avg_clicks": clicks,
+                "avg_clicks_censored": clicks_censored,
+                "avg_ctr": ctr,
+                "avg_ctr_censored": ctr_censored,
+                "etsy_competition": competition,
+                "kd": kd,
+                "google_searches": google,
+            })
+    return rows
+
+
+def build_tag_report_corpus(pulls: Path | None = None) -> dict:
+    """Newest-capture-wins rows keyed by tag, same shape rule as the others."""
+    acc: dict[tuple[str, str], dict] = {}
+    captures: dict[str, int] = {}
+
+    for capture, _variant, path in tag_report_csvs(pulls):
+        captures[capture] = captures.get(capture, 0) + 1
+        for r in read_tag_report_csv(path):
+            key = (capture, r["keyword"].lower())
+            if key in acc:
+                continue
+            acc[key] = {**r, "capture": capture}
+
+    newest: dict[str, str] = {}
+    for (capture, kw_lower) in acc:
+        if kw_lower not in newest or capture > newest[kw_lower]:
+            newest[kw_lower] = capture
+
+    rows = []
+    for (capture, kw_lower), row in acc.items():
+        current = capture == newest[kw_lower]
+        row["current"] = current
+        row["superseded_by"] = None if current else newest[kw_lower]
+        rows.append(row)
+
+    return {
+        "captures": [
+            {"date": c, "source": "erank", "files": n}
+            for c, n in sorted(captures.items())
+        ],
+        "rows": rows,
+    }
+
+
+# --- merged corpus ---------------------------------------------------------
+#
+# One row per distinct keyword text (case-insensitive exact match -- no
+# stemming, no fuzzy join), carrying an independently-nullable sub-object per
+# source. A source with no data for a keyword is an ABSENT sub-object, never a
+# zeroed-out one: a fabricated 0 reads as "measured, and it was none", which is
+# the single inference this whole corpus exists to prevent.
+#
+# A row exists if ANY source has the keyword. The ranked-only synthetic row
+# from #504 is therefore no longer a special case bolted on beside the join --
+# it falls out of that one rule, alongside bulk-only and tag-report-only rows.
+#
+# Repeat captures of one keyword collapse to the newest (design.md decision 5,
+# settled with Katy 2026-09-20). Earlier captures are kept in `history` on the
+# source's own sub-object rather than discarded, and `current`/`superseded_by`
+# keep exactly the meaning they carry today.
+
+
+def _collapse(rows: list[dict], fields: tuple[str, ...]) -> dict:
+    """Newest capture's values, with every earlier capture kept in `history`."""
+    ordered = sorted(rows, key=lambda r: r["capture"], reverse=True)
+    current, earlier = ordered[0], ordered[1:]
+    out = {f: current.get(f) for f in fields}
+    out["capture"] = current["capture"]
+    out["current"] = current.get("current", True)
+    out["superseded_by"] = current.get("superseded_by")
+    out["history"] = [
+        {**{f: r.get(f) for f in fields}, "capture": r["capture"]} for r in earlier
+    ]
+    return out
+
+
+KT_FIELDS = ("searches", "competition", "kd", "found_via", "coverage")
+BULK_FIELDS = (
+    "avg_searches", "avg_searches_censored", "avg_clicks", "avg_clicks_censored",
+    "avg_ctr", "avg_ctr_censored", "etsy_competition", "kd",
+)
+TAG_FIELDS = (
+    "tag_occurrences", "avg_searches", "avg_searches_censored",
+    "avg_clicks", "avg_clicks_censored", "avg_ctr", "avg_ctr_censored",
+    "etsy_competition", "kd", "google_searches",
+)
+
+
+def build_merged_corpus(pulls: Path | None = None) -> dict:
+    base = build_corpus(pulls)
+    bulk = build_bulk_corpus(pulls)
+    tags = build_tag_report_corpus(pulls)
+
+    merged: dict[str, dict] = {}
+
+    def slot(keyword: str) -> dict:
+        key = keyword.lower()
+        row = merged.get(key)
+        if row is None:
+            row = {
+                "keyword": keyword,
+                "keyword_tool": None,
+                "bulk_keywords": None,
+                "tag_report": None,
+                "ranked": None,
+                # Targeting is computed per request against live listing
+                # snapshots; the static corpus carries no opinion on it.
+            }
+            merged[key] = row
+        return row
+
+    grouped: dict[str, list[dict]] = {}
+    for r in base["rows"]:
+        grouped.setdefault(r["keyword"].lower(), []).append(r)
+
+    for kw_lower, rows in grouped.items():
+        newest_first = sorted(rows, key=lambda r: r["capture"], reverse=True)
+        head = newest_first[0]
+        row = slot(head["keyword"])
+        # `coverage.seen == 0` marks build_corpus()'s ranked-only synthetic
+        # row: a term Etsy ranks for that the Keyword Tool has never scored.
+        # It carries no Keyword Tool data, so it contributes no sub-object --
+        # only its `ranked` join, which is keyword-scoped anyway.
+        if head["coverage"]["seen"] > 0:
+            row["keyword_tool"] = _collapse(newest_first, KT_FIELDS)
+        row["ranked"] = head["ranked"]
+
+    def join(source_rows: list[dict], key: str, fields: tuple[str, ...]) -> None:
+        """Group a source's per-capture rows by keyword, then collapse each
+        group onto the merged row -- grouping first is what keeps `history`
+        intact for a keyword captured more than once."""
+        by_kw: dict[str, list[dict]] = {}
+        for r in source_rows:
+            by_kw.setdefault(r["keyword"].lower(), []).append(r)
+        for kw_lower, group in by_kw.items():
+            newest_first = sorted(group, key=lambda r: r["capture"], reverse=True)
+            row = merged.get(kw_lower) or slot(newest_first[0]["keyword"])
+            row[key] = _collapse(newest_first, fields)
+
+    join(bulk["rows"], "bulk_keywords", BULK_FIELDS)
+    join(tags["rows"], "tag_report", TAG_FIELDS)
+
+    rows = list(merged.values())
+
+    # Same "blank sorts last, never 0" default the table applies: a keyword the
+    # Keyword Tool never scored must not sort as if its demand were zero.
+    def searches_of(r: dict):
+        kt = r["keyword_tool"]
+        return kt["searches"] if kt else None
+
+    rows.sort(key=lambda r: (searches_of(r) is None, -(searches_of(r) or 0), r["keyword"]))
+
+    return {
+        "generated_at": date.today().isoformat(),
+        "captures": base["captures"],
+        "bulk_captures": bulk["captures"],
+        "tag_report_captures": tags["captures"],
+        "rows": rows,
+    }
+
+
 def write_corpus() -> int:
-    corpus = build_corpus()
-    corpus["bulk_keywords"] = build_bulk_corpus()
+    corpus = build_merged_corpus()
     out = REPO / "data" / "keyword-corpus.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(corpus, indent=2) + "\n", encoding="utf-8")

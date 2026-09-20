@@ -1,9 +1,11 @@
 import type {
-  BulkKeywordRow,
+  BulkKeywordValues,
   KeywordCapture,
   KeywordCorpus,
   KeywordRow,
+  KeywordToolValues,
   RankedMatch,
+  TagReportValues,
 } from "@/types";
 import raw from "@/data/keyword-corpus.json";
 
@@ -25,22 +27,21 @@ interface RawRankedMatch {
   matches: { listing: string; page: number; position: number }[];
 }
 
-interface RawRow {
-  keyword: string;
+interface RawCapture {
   capture: string;
+  current: boolean;
+  superseded_by: string | null;
+}
+
+interface RawKeywordTool {
   searches: number | null;
   competition: number | null;
   kd: number | null;
   found_via: RawQueryHit[];
-  current: boolean;
-  superseded_by: string | null;
   coverage: { seen: number; of: number };
-  ranked: RawRankedMatch | null;
 }
 
-interface RawBulkRow {
-  keyword: string;
-  capture: string;
+interface RawBulk {
   avg_searches: number | null;
   avg_searches_censored: boolean;
   avg_clicks: number | null;
@@ -49,22 +50,32 @@ interface RawBulkRow {
   avg_ctr_censored: boolean;
   etsy_competition: number | null;
   kd: number | null;
-  current: boolean;
-  superseded_by: string | null;
+}
+
+interface RawTagReport extends RawBulk {
+  tag_occurrences: number | null;
+  google_searches: number | null;
+}
+
+interface RawRow {
+  keyword: string;
+  keyword_tool: (RawKeywordTool & RawCapture & { history: (RawKeywordTool & { capture: string })[] }) | null;
+  bulk_keywords: (RawBulk & RawCapture & { history: (RawBulk & { capture: string })[] }) | null;
+  tag_report: (RawTagReport & RawCapture & { history: (RawTagReport & { capture: string })[] }) | null;
+  ranked: RawRankedMatch | null;
 }
 
 interface RawCorpus {
   generated_at?: string | null;
   captures?: KeywordCapture[];
   rows?: RawRow[];
-  bulk_keywords?: { rows?: RawBulkRow[] };
 }
 
 /**
  * Exported so the snake_case -> camelCase mapping is directly testable at
- * the loader boundary — the checked-in corpus is currently all `ranked:
- * null`, so a bug in this mapping (a typo'd field, a dropped match) would
- * otherwise stay invisible until a real pull overlaps the corpus.
+ * the loader boundary — a bug in this mapping (a typo'd field, a dropped
+ * match) would otherwise stay invisible until a real pull overlaps the
+ * corpus.
  */
 export function toRankedMatch(
   input: RawRankedMatch | null,
@@ -80,41 +91,75 @@ export function toRankedMatch(
   };
 }
 
-function toRow(row: RawRow): KeywordRow {
+function toKeywordToolValues(r: RawKeywordTool): KeywordToolValues {
   return {
-    keyword: row.keyword,
-    capture: row.capture,
-    searches: row.searches,
-    competition: row.competition,
-    kd: row.kd,
-    foundVia: (row.found_via ?? []).map((hit) => ({
+    searches: r.searches,
+    competition: r.competition,
+    kd: r.kd,
+    foundVia: (r.found_via ?? []).map((hit) => ({
       query: hit.query,
       tagOccurrences: hit.tag_occurrences,
     })),
-    current: row.current,
-    supersededBy: row.superseded_by ?? null,
-    coverage: row.coverage ?? { seen: 1, of: 1 },
+    coverage: r.coverage ?? { seen: 1, of: 1 },
+  };
+}
+
+function toBulkValues(r: RawBulk): BulkKeywordValues {
+  return {
+    avgSearches: r.avg_searches,
+    avgSearchesCensored: r.avg_searches_censored,
+    avgClicks: r.avg_clicks,
+    avgClicksCensored: r.avg_clicks_censored,
+    avgCtr: r.avg_ctr,
+    avgCtrCensored: r.avg_ctr_censored,
+    etsyCompetition: r.etsy_competition,
+    kd: r.kd,
+  };
+}
+
+function toTagReportValues(r: RawTagReport): TagReportValues {
+  return {
+    ...toBulkValues(r),
+    tagOccurrences: r.tag_occurrences,
+    googleSearches: r.google_searches,
+  };
+}
+
+/** Wraps a per-source values mapper with the shared capture metadata. */
+function toSource<TRaw, TValues>(
+  input: (TRaw & RawCapture & { history: (TRaw & { capture: string })[] }) | null,
+  values: (r: TRaw) => TValues,
+): (TValues & RawCaptureCamel<TValues>) | null {
+  if (!input) return null;
+  return {
+    ...values(input),
+    capture: input.capture,
+    current: input.current,
+    supersededBy: input.superseded_by ?? null,
+    history: (input.history ?? []).map((h) => ({
+      ...values(h),
+      capture: h.capture,
+    })),
+  };
+}
+
+type RawCaptureCamel<TValues> = {
+  capture: string;
+  current: boolean;
+  supersededBy: string | null;
+  history: (TValues & { capture: string })[];
+};
+
+function toRow(row: RawRow): KeywordRow {
+  return {
+    keyword: row.keyword,
+    keywordTool: toSource(row.keyword_tool, toKeywordToolValues),
+    bulkKeywords: toSource(row.bulk_keywords, toBulkValues),
+    tagReport: toSource(row.tag_report, toTagReportValues),
     ranked: toRankedMatch(row.ranked ?? null),
     // Computed server-side against live listing snapshots — the static
     // corpus carries no opinion on it. The page merges the real value in.
     targeting: null,
-  };
-}
-
-function toBulkRow(row: RawBulkRow): BulkKeywordRow {
-  return {
-    keyword: row.keyword,
-    capture: row.capture,
-    avgSearches: row.avg_searches,
-    avgSearchesCensored: row.avg_searches_censored,
-    avgClicks: row.avg_clicks,
-    avgClicksCensored: row.avg_clicks_censored,
-    avgCtr: row.avg_ctr,
-    avgCtrCensored: row.avg_ctr_censored,
-    etsyCompetition: row.etsy_competition,
-    kd: row.kd,
-    current: row.current,
-    supersededBy: row.superseded_by ?? null,
   };
 }
 
@@ -128,23 +173,15 @@ export function loadKeywordCorpus(): KeywordCorpus {
     generatedAt: corpus.generated_at ?? null,
     captures: corpus.captures ?? [],
     rows: (corpus.rows ?? []).map(toRow),
-    bulkKeywordRows: (corpus.bulk_keywords?.rows ?? []).map(toBulkRow),
   };
 }
 
 /**
- * A Bulk Keywords cell as text: "—" when unscored, "< N" when eRank capped
- * it rather than reporting an exact value, the plain number otherwise.
- * Never renders 0 for either case — see `BulkKeywordRow`'s own doc comment.
+ * Re-exported for server-side callers that already import it from here.
+ * It now lives in `lib/keyword-metrics.ts` so client components can use it
+ * without pulling this module's corpus JSON import into the browser bundle.
  */
-export function bulkValueLabel(
-  value: number | null,
-  censored: boolean,
-): string {
-  if (value === null) return "—";
-  const text = value.toLocaleString();
-  return censored ? `< ${text}` : text;
-}
+export { bulkValueLabel } from "@/lib/keyword-metrics";
 
 /**
  * Coverage as a label, never as a trend.
@@ -153,6 +190,7 @@ export function bulkValueLabel(
  * turns coverage into a delta, a percentage drop, or a "disappeared" flag: the
  * exports are hand-filtered, so absence is unexplained rather than evidence.
  */
-export function coverageLabel(row: KeywordRow): string {
-  return `seen in ${row.coverage.seen} of ${row.coverage.of}`;
+export function coverageLabel(source: KeywordToolValues | null): string {
+  if (!source) return "—";
+  return `seen in ${source.coverage.seen} of ${source.coverage.of}`;
 }
