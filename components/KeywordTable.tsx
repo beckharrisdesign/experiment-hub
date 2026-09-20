@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -30,15 +30,33 @@ const NO_RANGE = "__none__";
  * resolves that once per source; per-header prefixes would resolve it
  * nineteen times and cost ~200px of width for the same rows.
  */
-type GroupKey = "keyword" | "kt" | "bulk" | "tag" | "ranked" | "targeting";
+type GroupKey =
+  | "keyword"
+  | "kt"
+  | "bulk"
+  | "tag"
+  | "ranked"
+  | "targeting"
+  | "shop"
+  | "ads";
 
-const GROUPS: { key: GroupKey; label: string }[] = [
+/**
+ * `window` is rendered in the band label, not a footnote.
+ *
+ * Shop covers the year; Etsy Ads keyword data covers the last 30 days. A
+ * reader who misses that will divide one into the other and get a number
+ * that corresponds to no period at all, so the scope is written where the
+ * columns are read.
+ */
+const GROUPS: { key: GroupKey; label: string; window?: string }[] = [
   { key: "keyword", label: "" },
   { key: "kt", label: "eRank Keyword Tool" },
   { key: "bulk", label: "eRank Bulk Keywords" },
   { key: "tag", label: "eRank Tag Report" },
   { key: "ranked", label: "Ranked" },
   { key: "targeting", label: "Targeting" },
+  { key: "shop", label: "Shop — captured", window: "this year" },
+  { key: "ads", label: "Etsy Ads — targeted", window: "last 30 days" },
 ];
 
 /**
@@ -54,7 +72,6 @@ interface Column {
   label: string;
   group: GroupKey;
   numeric?: boolean;
-  grow?: boolean;
   /** Numeric value for sort + range. `null` means blank — never a `0`. */
   value?: (row: KeywordTableRow) => number | null;
   /**
@@ -79,7 +96,6 @@ const COLUMNS: Column[] = [
     key: "keyword",
     label: "Keyword",
     group: "keyword",
-    grow: true,
     text: (r) => r.keyword,
     render: (r) => r.keyword,
   },
@@ -273,16 +289,143 @@ const COLUMNS: Column[] = [
     value: (r) => r.targeting,
     render: (r) => num(r.targeting),
   },
+
+  // --- Shop: captured search terms (visits, i.e. arrivals) ---
+  {
+    key: "shop.visits",
+    label: "Visits",
+    group: "shop",
+    numeric: true,
+    value: (r) => r.shopSearch?.visits ?? null,
+    render: (r) => num(r.shopSearch?.visits ?? null),
+  },
+  {
+    key: "shop.etsy",
+    label: "Etsy",
+    group: "shop",
+    numeric: true,
+    value: (r) => r.shopSearch?.etsyVisits ?? null,
+    render: (r) => num(r.shopSearch?.etsyVisits ?? null),
+  },
+  {
+    key: "shop.google",
+    label: "Google",
+    group: "shop",
+    numeric: true,
+    value: (r) => r.shopSearch?.googleVisits ?? null,
+    render: (r) => num(r.shopSearch?.googleVisits ?? null),
+  },
+  {
+    key: "shop.listing",
+    label: "Listing",
+    group: "shop",
+    text: (r) => r.shopSearch?.listingTitle ?? "",
+    render: (r) => r.shopSearch?.listingTitle ?? "—",
+  },
+  {
+    // The listing's own numbers, not the term's. One visit from this term did
+    // not itself produce this revenue — see design.md decision on labelling.
+    key: "shop.sold",
+    label: "L. sold",
+    group: "shop",
+    numeric: true,
+    value: (r) => r.shopSearch?.listingItemsSold ?? null,
+    render: (r) => num(r.shopSearch?.listingItemsSold ?? null),
+  },
+  {
+    key: "shop.revenue",
+    label: "L. revenue",
+    group: "shop",
+    numeric: true,
+    value: (r) => r.shopSearch?.listingRevenueUsd ?? null,
+    render: (r) => {
+      const v = r.shopSearch?.listingRevenueUsd;
+      return v === null || v === undefined ? "—" : `$${v.toFixed(2)}`;
+    },
+  },
+
+  // --- Etsy Ads: targeted keywords (views, i.e. impressions) ---
+  {
+    key: "ads.views",
+    label: "Views",
+    group: "ads",
+    numeric: true,
+    value: (r) => r.ads?.views ?? null,
+    render: (r) => num(r.ads?.views ?? null),
+  },
+  {
+    key: "ads.clicks",
+    label: "Clicks",
+    group: "ads",
+    numeric: true,
+    value: (r) => r.ads?.clicks ?? null,
+    render: (r) => num(r.ads?.clicks ?? null),
+  },
+  {
+    key: "ads.ctr",
+    label: "Click rate",
+    group: "ads",
+    numeric: true,
+    value: (r) => r.ads?.clickRatePct ?? null,
+    render: (r) => {
+      const v = r.ads?.clickRatePct;
+      return v === null || v === undefined ? "—" : `${v}%`;
+    },
+  },
+  {
+    key: "ads.spend",
+    label: "Spend",
+    group: "ads",
+    numeric: true,
+    value: (r) => r.ads?.spendUsd ?? null,
+    render: (r) => {
+      const v = r.ads?.spendUsd;
+      return v === null || v === undefined ? "—" : `$${v.toFixed(2)}`;
+    },
+  },
+  {
+    key: "ads.revenue",
+    label: "Revenue",
+    group: "ads",
+    numeric: true,
+    value: (r) => r.ads?.revenueUsd ?? null,
+    render: (r) => {
+      const v = r.ads?.revenueUsd;
+      return v === null || v === undefined ? "—" : `$${v.toFixed(2)}`;
+    },
+  },
+  {
+    key: "ads.orders",
+    label: "Orders",
+    group: "ads",
+    numeric: true,
+    value: (r) => r.ads?.orders ?? null,
+    render: (r) => num(r.ads?.orders ?? null),
+  },
+  {
+    key: "ads.roas",
+    label: "ROAS",
+    group: "ads",
+    numeric: true,
+    value: (r) => r.ads?.roas ?? null,
+    render: (r) => num(r.ads?.roas ?? null),
+  },
 ];
 
 const RANGE_COLUMNS = COLUMNS.filter((c) => c.value);
 
-const SOURCE_FILTERS: { key: string; label: string; has: (row: KeywordTableRow) => boolean }[] = [
+const SOURCE_FILTERS: {
+  key: string;
+  label: string;
+  has: (row: KeywordTableRow) => boolean;
+}[] = [
   { key: "kt", label: "Keyword Tool", has: (r) => r.keywordTool !== null },
   { key: "bulk", label: "Bulk Keywords", has: (r) => r.bulkKeywords !== null },
   { key: "tag", label: "Tag Report", has: (r) => r.tagReport !== null },
   { key: "ranked", label: "Ranked", has: (r) => r.ranked !== null },
   { key: "targeting", label: "Targeting", has: (r) => r.targeting !== null },
+  { key: "shop", label: "Shop — captured", has: (r) => r.shopSearch !== null },
+  { key: "ads", label: "Etsy Ads", has: (r) => r.ads !== null },
 ];
 
 /**
@@ -304,28 +447,64 @@ function passesRange(
   return true;
 }
 
+/** One active numeric filter. Several are held at once and AND together. */
+interface RangeFilter {
+  id: number;
+  key: string;
+  min: string;
+  max: string;
+}
+
+/** One active sort key. At most two are held; the second breaks ties. */
+interface SortKey {
+  key: string;
+  direction: Direction;
+}
+
+const groupLabel = (key: GroupKey) =>
+  GROUPS.find((g) => g.key === key)?.label ?? "";
+
+/** `"eRank Keyword Tool — KD"`. The picker is flat, so the source has to be
+ *  spelled out: three different columns are named KD. */
+const qualified = (c: Column) =>
+  groupLabel(c.group) ? `${groupLabel(c.group)} — ${c.label}` : c.label;
+
+/**
+ * CSV escaping: quote everything and double any inner quote.
+ *
+ * Quoting unconditionally rather than only when a comma is present keeps a
+ * captured term's own punctuation, and any leading `<` from a censored value,
+ * from being reinterpreted by a spreadsheet.
+ */
+function csvCell(text: string): string {
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function buildCsv(rows: KeywordTableRow[]): string {
+  const header = COLUMNS.map((c) => csvCell(qualified(c))).join(",");
+  const body = rows.map((row) =>
+    COLUMNS.map((c) => csvCell(c.render(row))).join(","),
+  );
+  return [header, ...body].join("\n");
+}
+
 interface KeywordTableProps {
   rows: KeywordTableRow[];
 }
 
 export default function KeywordTable({ rows }: KeywordTableProps) {
-  const [sortKey, setSortKey] = useState("kt.searches");
-  const [direction, setDirection] = useState<Direction>("desc");
+  const [sorts, setSorts] = useState<SortKey[]>([
+    { key: "kt.searches", direction: "desc" },
+  ]);
   const [keywordFilter, setKeywordFilter] = useState("");
   const [captureFilter, setCaptureFilter] = useState(ALL);
   const [queryFilter, setQueryFilter] = useState(ALL);
   const [sourceFilter, setSourceFilter] = useState(ALL);
-  const [rangeColumn, setRangeColumn] = useState<string>(NO_RANGE);
-  const [rangeMin, setRangeMin] = useState("");
-  const [rangeMax, setRangeMax] = useState("");
-
-  // A range *column* being picked isn't itself an applied filter — only a
-  // non-empty min or max actually narrows anything (see passesRange, which
-  // treats both-blank as "no bound"). The empty-state copy below keys off
-  // this, not off rangeColumn alone.
-  const rangeBoundSet =
-    rangeColumn !== NO_RANGE &&
-    (rangeMin.trim() !== "" || rangeMax.trim() !== "");
+  const [filters, setFilters] = useState<RangeFilter[]>([]);
+  const [pendingColumn, setPendingColumn] = useState<string>(NO_RANGE);
+  const [frozen, setFrozen] = useState(false);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const nextId = useRef(1);
 
   const captures = useMemo(
     () =>
@@ -349,21 +528,14 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
     [rows],
   );
 
-  const activeColumn = useMemo(
-    () => COLUMNS.find((c) => c.key === rangeColumn),
-    [rangeColumn],
+  const boundFilters = filters.filter(
+    (f) => f.min.trim() !== "" || f.max.trim() !== "",
   );
 
   const { visible, rangeIsCause } = useMemo(() => {
     const needle = keywordFilter.trim().toLowerCase();
-    const min = rangeMin.trim() === "" ? null : Number(rangeMin);
-    const max = rangeMax.trim() === "" ? null : Number(rangeMax);
     const source = SOURCE_FILTERS.find((s) => s.key === sourceFilter);
 
-    // Split out from the range check on purpose: comparing counts with and
-    // without the range filter is how the empty-state message below tells
-    // "the range emptied this" from "a keyword/capture/query/source filter
-    // (or the archive itself) already had".
     const withoutRange = rows.filter((row) => {
       if (needle && !row.keyword.toLowerCase().includes(needle)) return false;
       if (captureFilter !== ALL && row.capture !== captureFilter) return false;
@@ -377,46 +549,64 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
       return true;
     });
 
-    const column = COLUMNS.find((c) => c.key === rangeColumn);
-    const filtered =
-      !column || !column.value
-        ? withoutRange
-        : withoutRange.filter((row) =>
-            passesRange(column.value!(row), min, max),
-          );
+    // Every bound filter must pass: they narrow together rather than
+    // replacing one another.
+    const filtered = withoutRange.filter((row) =>
+      filters.every((f) => {
+        const column = COLUMNS.find((c) => c.key === f.key);
+        if (!column?.value) return true;
+        const min = f.min.trim() === "" ? null : Number(f.min);
+        const max = f.max.trim() === "" ? null : Number(f.max);
+        return passesRange(column.value(row), min, max);
+      }),
+    );
 
-    const sortColumn = COLUMNS.find((c) => c.key === sortKey) ?? COLUMNS[0];
-    const sorted = [...filtered].sort((a, b) => {
-      if (sortColumn.value) {
-        const av = sortColumn.value(a);
-        const bv = sortColumn.value(b);
-        // Blank sorts last in BOTH directions — never as the lowest possible
-        // number, which is what a fabricated 0 would do.
-        if (av === null && bv === null) return a.keyword.localeCompare(b.keyword);
+    const compare = (
+      a: KeywordTableRow,
+      b: KeywordTableRow,
+      sort: SortKey,
+    ): number => {
+      const column = COLUMNS.find((c) => c.key === sort.key);
+      if (!column) return 0;
+      if (column.value) {
+        const av = column.value(a);
+        const bv = column.value(b);
+        // Blank sorts last in BOTH directions and at EVERY key position —
+        // never as the lowest possible number, which is what a fabricated 0
+        // would do.
+        if (av === null && bv === null) return 0;
         if (av === null) return 1;
         if (bv === null) return -1;
-        if (av === bv) return a.keyword.localeCompare(b.keyword);
-        return direction === "asc" ? av - bv : bv - av;
+        if (av === bv) return 0;
+        return sort.direction === "asc" ? av - bv : bv - av;
       }
-
-      if (sortColumn.sortNumber) {
-        const av = sortColumn.sortNumber(a);
-        const bv = sortColumn.sortNumber(b);
-        if (av === bv) return a.keyword.localeCompare(b.keyword);
-        return direction === "asc" ? av - bv : bv - av;
+      if (column.sortNumber) {
+        const av = column.sortNumber(a);
+        const bv = column.sortNumber(b);
+        if (av === bv) return 0;
+        return sort.direction === "asc" ? av - bv : bv - av;
       }
-
-      const left = sortColumn.text ? sortColumn.text(a) : a.keyword;
-      const right = sortColumn.text ? sortColumn.text(b) : b.keyword;
-      if (left === right) return a.keyword.localeCompare(b.keyword);
+      const left = column.text ? column.text(a) : a.keyword;
+      const right = column.text ? column.text(b) : b.keyword;
+      if (left === right) return 0;
       const order = left.localeCompare(right);
-      return direction === "asc" ? order : -order;
+      return sort.direction === "asc" ? order : -order;
+    };
+
+    const sorted = [...filtered].sort((a, b) => {
+      for (const sort of sorts) {
+        const order = compare(a, b, sort);
+        if (order !== 0) return order;
+      }
+      return a.keyword.localeCompare(b.keyword);
     });
 
     return {
       visible: sorted,
       rangeIsCause:
-        rangeBoundSet && withoutRange.length > 0 && filtered.length === 0,
+        boundFilters.length > 0 &&
+        withoutRange.length > 0 &&
+        filtered.length === 0,
     };
   }, [
     rows,
@@ -424,27 +614,92 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
     captureFilter,
     queryFilter,
     sourceFilter,
-    rangeColumn,
-    rangeMin,
-    rangeMax,
-    rangeBoundSet,
-    sortKey,
-    direction,
+    filters,
+    boundFilters.length,
+    sorts,
   ]);
 
+  /**
+   * Clicking a column makes it the PRIMARY key and demotes the previous
+   * primary to the tie-breaker; clicking the current primary cycles it
+   * desc -> asc -> removed.
+   *
+   * Prepending rather than appending matters: appending meant a single click
+   * on Ranked left the table still sorted by Searches, with Ranked only
+   * breaking ties — which looks broken, because the column you just clicked
+   * visibly does not order the table. Only two keys are kept; a third is
+   * unreadable in the control.
+   */
   function toggleSort(key: string) {
-    if (key === sortKey) {
-      setDirection((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortKey(key);
-      setDirection(key === "keyword" ? "asc" : "desc");
-    }
+    setSorts((current) => {
+      const index = current.findIndex((s) => s.key === key);
+      if (index !== 0) {
+        const rest = current.filter((s) => s.key !== key);
+        return [{ key, direction: "desc" as Direction }, ...rest].slice(0, 2);
+      }
+      const next = [...current];
+      if (next[0].direction === "desc") {
+        next[0] = { key, direction: "asc" };
+        return next;
+      }
+      next.shift();
+      return next;
+    });
   }
+
+  function addFilter(key: string) {
+    if (key === NO_RANGE) return;
+    setFilters((f) => [...f, { id: nextId.current++, key, min: "", max: "" }]);
+    setPendingColumn(NO_RANGE);
+  }
+
+  function updateFilter(id: number, patch: Partial<RangeFilter>) {
+    setFilters((f) => f.map((x) => (x.id === id ? { ...x, ...patch } : x)));
+  }
+
+  function removeFilter(id: number) {
+    setFilters((f) => f.filter((x) => x.id !== id));
+  }
+
+  function exportCsv() {
+    const blob = new Blob([buildCsv(visible)], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `keyword-explorer-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /** Scrolls a band into view. Never hides the others — a jump that hid
+   *  columns would be a column picker wearing a different name. */
+  function jumpTo(group: GroupKey) {
+    const container = scrollRef.current;
+    const target = container?.querySelector<HTMLElement>(
+      `[data-band="${group}"]`,
+    );
+    if (!container || !target) return;
+    container.scrollTo({
+      left: Math.max(target.offsetLeft - 16, 0),
+      behavior: "smooth",
+    });
+  }
+
+  const sortLabel =
+    sorts.length === 0
+      ? "none"
+      : sorts
+          .map((s) => {
+            const c = COLUMNS.find((x) => x.key === s.key);
+            return `${c ? c.label : s.key} ${s.direction === "asc" ? "↑" : "↓"}`;
+          })
+          .join(", then ");
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Filter row. Reduction is sort and filter only — there is no second
-          screen and no row detail view. */}
+      {/* Row 1 — narrowing, ordering, and getting the data out. */}
       <div className="flex flex-wrap items-center gap-3">
         <input
           type="search"
@@ -455,10 +710,6 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
           className="h-9 w-56 rounded-md border border-border bg-background-primary px-3 text-sm text-text-primary placeholder:text-text-muted"
         />
 
-        {/* With 258 of the archive's 287 Tag Report tags appearing in no other
-            source, an unfiltered table is mostly blank by construction.
-            Narrowing to one instrument is the cheapest way to make it dense on
-            demand without hiding anything by default (design.md decision 4). */}
         <Select value={sourceFilter} onValueChange={setSourceFilter}>
           <SelectTrigger size="sm" className="w-44" aria-label="Source">
             <SelectValue placeholder="Source" />
@@ -474,7 +725,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
         </Select>
 
         <Select value={captureFilter} onValueChange={setCaptureFilter}>
-          <SelectTrigger size="sm" className="w-44" aria-label="Capture">
+          <SelectTrigger size="sm" className="w-40" aria-label="Capture">
             <SelectValue placeholder="Capture" />
           </SelectTrigger>
           <SelectContent>
@@ -488,7 +739,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
         </Select>
 
         <Select value={queryFilter} onValueChange={setQueryFilter}>
-          <SelectTrigger size="sm" className="w-56" aria-label="Found via">
+          <SelectTrigger size="sm" className="w-52" aria-label="Found via">
             <SelectValue placeholder="Found via" />
           </SelectTrigger>
           <SelectContent>
@@ -501,81 +752,121 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
           </SelectContent>
         </Select>
 
-        {/* Range filter: one active numeric column at a time (design.md §
-            Decisions) — a picker plus two plain number inputs. */}
-        <Select
-          value={rangeColumn}
-          onValueChange={(value) => {
-            setRangeColumn(value);
-            // Bounds are per-column, not global: without this, switching from
-            // Ranked >= 10 straight to Targeting would silently keep applying
-            // >= 10 to Targeting, a filter Katy never set on it.
-            setRangeMin("");
-            setRangeMax("");
-          }}
-        >
-          <SelectTrigger
-            size="sm"
-            className="w-56"
-            aria-label="Range filter column"
-          >
-            <SelectValue placeholder="Range filter" />
+        <Select value={pendingColumn} onValueChange={addFilter}>
+          <SelectTrigger size="sm" className="w-52" aria-label="Add range filter">
+            <SelectValue placeholder="+ Add filter" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={NO_RANGE}>No range filter</SelectItem>
-            {RANGE_COLUMNS.map((col) => {
-              const group = GROUPS.find((g) => g.key === col.group);
-              // The picker is a flat list with no band above it, so here the
-              // source has to be spelled out — the same collision the table
-              // solves with a band solves nothing in a dropdown.
-              return (
-                <SelectItem key={col.key} value={col.key}>
-                  {group?.label ? `${group.label} — ${col.label}` : col.label}
-                </SelectItem>
-              );
-            })}
+            <SelectItem value={NO_RANGE}>+ Add filter</SelectItem>
+            {RANGE_COLUMNS.map((col) => (
+              <SelectItem key={col.key} value={col.key}>
+                {qualified(col)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
-        {rangeColumn !== NO_RANGE && (
-          <>
-            {/* S / comp. is the one fractional column (demandRatio returns
-                e.g. 1.522) — a plain numeric keypad on mobile has no decimal
-                separator, so it switches to decimal for that column only. */}
-            <input
-              type="number"
-              inputMode={rangeColumn === "kt.ratio" ? "decimal" : "numeric"}
-              value={rangeMin}
-              onChange={(e) => setRangeMin(e.target.value)}
-              placeholder="Min"
-              aria-label="Range filter minimum"
-              className="h-9 w-20 rounded-md border border-border bg-background-primary px-2 text-sm text-text-primary placeholder:text-text-muted"
-            />
-            <span className="text-text-muted" aria-hidden>
-              –
-            </span>
-            <input
-              type="number"
-              inputMode={rangeColumn === "kt.ratio" ? "decimal" : "numeric"}
-              value={rangeMax}
-              onChange={(e) => setRangeMax(e.target.value)}
-              placeholder="Max"
-              aria-label="Range filter maximum"
-              className="h-9 w-20 rounded-md border border-border bg-background-primary px-2 text-sm text-text-primary placeholder:text-text-muted"
-            />
-          </>
-        )}
+        <button
+          type="button"
+          onClick={exportCsv}
+          className="h-9 rounded-md border border-border bg-background-secondary px-3 text-sm text-text-primary transition-colors hover:text-text-secondary"
+        >
+          ⭳ Export CSV
+        </button>
 
         <span className="ml-auto text-sm text-text-muted">
           {visible.length} of {rows.length}
+          <span className="ml-3">Sort: {sortLabel}</span>
         </span>
       </div>
 
-      {/* One scrolling surface. At 480 the table scrolls horizontally rather
-          than reflowing into cards — reflowing would break the nowrap rule and
-          make scanning worse, which is the thing a table is for. */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
+      {/* Active filters. Each stays visible and individually removable —
+          adding one never clears another. */}
+      {filters.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          {filters.map((f) => {
+            const column = COLUMNS.find((c) => c.key === f.key);
+            return (
+              <span
+                key={f.id}
+                className="flex items-center gap-2 rounded-md border border-border bg-background-secondary px-2 py-1 text-xs text-text-primary"
+              >
+                <span className="text-text-secondary">
+                  {column ? qualified(column) : f.key}
+                </span>
+                <input
+                  type="number"
+                  inputMode={f.key === "kt.ratio" ? "decimal" : "numeric"}
+                  value={f.min}
+                  onChange={(e) => updateFilter(f.id, { min: e.target.value })}
+                  placeholder="Min"
+                  aria-label={`${column ? qualified(column) : f.key} minimum`}
+                  className="h-7 w-16 rounded border border-border bg-background-primary px-1 text-xs text-text-primary placeholder:text-text-muted"
+                />
+                <span className="text-text-muted" aria-hidden>
+                  –
+                </span>
+                <input
+                  type="number"
+                  inputMode={f.key === "kt.ratio" ? "decimal" : "numeric"}
+                  value={f.max}
+                  onChange={(e) => updateFilter(f.id, { max: e.target.value })}
+                  placeholder="Max"
+                  aria-label={`${column ? qualified(column) : f.key} maximum`}
+                  className="h-7 w-16 rounded border border-border bg-background-primary px-1 text-xs text-text-primary placeholder:text-text-muted"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeFilter(f.id)}
+                  aria-label={`Remove ${column ? qualified(column) : f.key} filter`}
+                  className="text-text-muted transition-colors hover:text-text-primary"
+                >
+                  ×
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Row 2 — moving around a table that is wider than the screen. */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs text-text-muted">Jump to band</span>
+        {GROUPS.filter((g) => g.label).map((g) => (
+          <button
+            key={g.key}
+            type="button"
+            onClick={() => jumpTo(g.key)}
+            className="rounded-md border border-border bg-background-secondary px-2 py-1 text-xs text-text-primary transition-colors hover:text-text-secondary"
+          >
+            {g.label}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => setFrozen((v) => !v)}
+          aria-pressed={frozen}
+          className={`ml-auto rounded-md border px-2 py-1 text-xs transition-colors ${
+            frozen
+              ? "border-accent-primary bg-accent-primary/20 text-text-secondary"
+              : "border-border bg-background-secondary text-text-primary"
+          }`}
+        >
+          ❄ Freeze keyword · {frozen ? "on" : "off"}
+        </button>
+      </div>
+
+      {/*
+        The scrollbar is forced visible rather than left to the platform:
+        macOS overlay bars fade out, so a 3,000px table looks exactly like a
+        1,000px one at rest and gives no sign that 20 more columns exist. The
+        thumb's width is the only honest indicator of how much is off-screen.
+      */}
+      <div
+        ref={scrollRef}
+        className="overflow-x-scroll [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-accent-primary/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-accent-primary/10"
+      >
+        <table className="w-auto min-w-full border-collapse text-sm">
           <thead>
             <tr>
               {GROUPS.map((group) => {
@@ -584,6 +875,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                 return (
                   <th
                     key={group.key}
+                    data-band={group.key}
                     scope="colgroup"
                     colSpan={span}
                     className="whitespace-nowrap px-3 pb-1 pt-2 text-left text-[11px] font-medium uppercase tracking-wide text-text-secondary"
@@ -591,6 +883,11 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                     {group.label ? (
                       <span className="block border-b-2 border-accent-primary/50 pb-1">
                         {group.label}
+                        {group.window && (
+                          <span className="ml-2 normal-case text-text-muted">
+                            ({group.window})
+                          </span>
+                        )}
                       </span>
                     ) : null}
                   </th>
@@ -598,20 +895,25 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
               })}
             </tr>
             <tr className="border-b border-border">
-              {COLUMNS.map((column) => {
-                const active = sortKey === column.key;
+              {COLUMNS.map((column, index) => {
+                const sort = sorts.find((s) => s.key === column.key);
+                const rank = sorts.findIndex((s) => s.key === column.key);
+                const sticky =
+                  frozen && index === 0
+                    ? "sticky left-0 z-20 bg-background-primary"
+                    : "";
                 return (
                   <th
                     key={column.key}
                     scope="col"
                     aria-sort={
-                      active
-                        ? direction === "asc"
+                      sort
+                        ? sort.direction === "asc"
                           ? "ascending"
                           : "descending"
                         : "none"
                     }
-                    className={`${column.grow ? "w-full" : "w-[1%]"} whitespace-nowrap px-3 py-2 font-normal ${
+                    className={`w-[1%] whitespace-nowrap px-3 py-2 font-normal ${sticky} ${
                       column.numeric ? "text-right" : "text-left"
                     }`}
                   >
@@ -622,7 +924,8 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                     >
                       {column.label}
                       <span aria-hidden className="ml-1 text-text-muted">
-                        {active ? (direction === "asc" ? "↑" : "↓") : "↕"}
+                        {sort ? (sort.direction === "asc" ? "↑" : "↓") : "↕"}
+                        {sorts.length > 1 && rank !== -1 ? rank + 1 : ""}
                       </span>
                     </button>
                   </th>
@@ -633,12 +936,14 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
           <tbody>
             {visible.map((row) => (
               <tr key={row.keyword} className="border-b border-border">
-                {COLUMNS.map((column) => (
+                {COLUMNS.map((column, index) => (
                   <td
                     key={column.key}
-                    className={`${column.grow ? "w-full" : "w-[1%]"} whitespace-nowrap px-3 py-2 text-text-primary ${
-                      column.numeric ? "text-right" : "text-left"
-                    }`}
+                    className={`w-[1%] whitespace-nowrap px-3 py-2 text-text-primary ${
+                      frozen && index === 0
+                        ? "sticky left-0 z-10 bg-background-primary"
+                        : ""
+                    } ${column.numeric ? "text-right" : "text-left"}`}
                   >
                     {column.render(row)}
                   </td>
@@ -658,21 +963,18 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                 demand.
               </>
             ) : (
-              <>
-                No rows fall within this range. Widen or clear it to see more.
-              </>
+              <>No rows fall within these ranges. Widen or remove one to see more.</>
             )}
           </p>
         )}
       </div>
 
-      {/* One note, covering all three censored sources. It used to live in the
-          Bulk Keywords section's own paragraph, back when Bulk Keywords was
-          the only instrument that censored (design.md decision 3). */}
       <p className="text-xs text-text-muted">
         “&lt; N” means eRank capped the value rather than reporting it exactly;
         a dash means it was never scored at all, or that this source has no row
-        for the keyword. Neither is 0.
+        for the keyword. Neither is 0. Shop counts <em>visits</em> (people who
+        arrived) and Etsy Ads counts <em>views</em> (impressions) over
+        different windows — they are never summed.
       </p>
     </div>
   );

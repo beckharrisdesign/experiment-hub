@@ -807,6 +807,161 @@ def build_tag_report_corpus(pulls: Path | None = None) -> dict:
     }
 
 
+# --- captured demand: shop search terms and ad keywords --------------------
+#
+# Two scraped surfaces, landed as JSON with their rows stored verbatim. Both
+# are parsed HERE rather than at capture time, so a parsing bug costs a
+# re-parse instead of another authenticated scrape -- which matters because
+# Etsy exposes no API for either and the pages are rolling windows that keep
+# no history.
+
+
+def _shop_term_row(raw: str) -> dict | None:
+    """One verbatim search-terms row -> {keyword, visits, etsy, google}.
+
+    Etsy renders each row twice: the visible cells, then an accessibility
+    duplicate reading "<term>: <n>". The repeated term is the only reliable
+    anchor, because the table has TWO shapes -- 2-column (Search terms |
+    Visits) and 4-column (Search terms | Etsy | Google, etc. | Total visits)
+    -- and a parser assuming either one silently matches nothing on the
+    other. That already happened once and cost 7 of 11 terms while reporting
+    success.
+
+    The 4-column shape concatenates its numbers with no separator ("1-1",
+    "-11"), which is ambiguous on its own: "-11" could be (-, 11) or
+    (-, 1, 1). The accessibility duplicate carries the TOTAL, so the total is
+    stripped from the end of the blob and what remains is the Etsy/Google
+    pair. Nothing is guessed.
+    """
+    text = re.sub(r"\s+", " ", raw or "").strip()
+    if not text or text.lower().startswith("search terms"):
+        return None
+    # "<term> <blob> <term>: <total>" -- the repeated term is matched with a
+    # BACKREFERENCE, not compared after the fact. With a lazy group the engine
+    # returns its shortest match first ("modern" for "modern minimalist ..."),
+    # so checking equality afterwards rejects a row the regex could have
+    # matched correctly one backtrack later. \1 makes the engine do that work.
+    m = re.match(r"^(.+?)\s+(\S+)\s+\1:\s*(\S+)$", text)
+    if not m:
+        return None
+    term, blob, total_raw = m.group(1), m.group(2), m.group(3)
+
+    def one(tok: str):
+        return None if tok in ("-", "–", "—") else _num(tok)
+
+    total = one(total_raw)
+    etsy = google = None
+    if blob != total_raw and blob.endswith(total_raw):
+        pair = blob[: -len(total_raw)]
+        if len(pair) >= 2:
+            etsy, google = one(pair[0]), one(pair[1:])
+        elif len(pair) == 1:
+            etsy = one(pair)
+    return {
+        "keyword": term,
+        "visits": total,
+        "etsy_visits": etsy,
+        "google_visits": google,
+    }
+
+
+def read_listing_stats_json(path: Path) -> list[dict]:
+    """Captured search terms, one record per (term, listing).
+
+    A listing carrying no term rows contributes nothing -- and a listing the
+    capture recorded as unreadable or not-re-scraped contributes nothing
+    either, rather than a zero. Absence of a measurement is not a measurement
+    of zero; that rule is the reason this whole corpus exists.
+    """
+    data = json.loads(path.read_text(encoding="utf-8"))
+    out = []
+    for listing in data.get("listings", []):
+        for raw in listing.get("term_rows", []):
+            row = _shop_term_row(raw)
+            if not row:
+                continue
+            out.append({
+                **row,
+                "listing_id": str(listing.get("listing_id")),
+                "listing_title": listing.get("title"),
+                "listing_visits": listing.get("visits"),
+                "listing_items_sold": listing.get("items_sold"),
+                "listing_revenue_usd": listing.get("revenue_usd"),
+                "capture": data.get("captured"),
+                "window": data.get("window"),
+            })
+    return out
+
+
+ADS_FIELDS = [
+    ("roas", r"ROAS([\d.]+)"),
+    ("orders", r"Orders([\d,]+)"),
+    ("spend_usd", r"Spend\$([\d,.]+)"),
+    ("revenue_usd", r"Revenue\$([\d,.]+)"),
+    ("clicks", r"Clicks([\d,]+)"),
+    ("click_rate_pct", r"Click rate([\d.]+)%"),
+    ("views", r"Views([\d,]+)"),
+]
+
+
+def _ads_keyword_row(raw: str) -> dict | None:
+    """One verbatim ad-keyword row -> a dict, matched BY LABEL.
+
+    Etsy renders these label-prefixed and unseparated:
+    "Targeted keyword<name>ROAS0Orders0Spend$0...Views5". Matching by label
+    rather than by position means a column Etsy adds, removes or reorders
+    cannot silently shift every value one cell to the left.
+    """
+    text = re.sub(r"\s+", " ", raw or "").strip()
+    if not text.startswith("Targeted keyword"):
+        return None
+    body = text[len("Targeted keyword"):]
+    name = re.split(r"ROAS[\d.]", body)[0].strip()
+    if not name or name.startswith("ROAS"):
+        return None
+    row = {"keyword": name}
+    for field, pattern in ADS_FIELDS:
+        m = re.search(pattern, body)
+        row[field] = _num(m.group(1).replace(",", "")) if m else None
+    return row
+
+
+def read_ads_keywords_json(path: Path) -> list[dict]:
+    """Ad targeted keywords, one record per (keyword, listing)."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    out = []
+    for listing in data.get("listings", []):
+        for raw in listing.get("keyword_rows", []):
+            row = _ads_keyword_row(raw)
+            if not row:
+                continue
+            out.append({
+                **row,
+                "listing_id": str(listing.get("listing_id")),
+                "listing_ad_views": listing.get("views"),
+                "listing_ad_spend_usd": listing.get("spend_usd"),
+                "listing_ad_roas": listing.get("roas"),
+                "capture": data.get("captured"),
+            })
+    return out
+
+
+LISTING_STATS_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-etsy-listing-stats-search-terms\.json$")
+ADS_KEYWORDS_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-etsy-ads-listing-keywords\.json$")
+
+
+def captured_demand(pulls: Path | None = None) -> tuple[list[dict], list[dict]]:
+    """(shop_terms, ad_keywords) across every archived capture."""
+    pulls = pulls or PULLS
+    shop, ads = [], []
+    for f in sorted(pulls.glob("*.json")):
+        if LISTING_STATS_RE.match(f.name):
+            shop.extend(read_listing_stats_json(f))
+        elif ADS_KEYWORDS_RE.match(f.name):
+            ads.extend(read_ads_keywords_json(f))
+    return shop, ads
+
+
 # --- merged corpus ---------------------------------------------------------
 #
 # One row per distinct keyword text (case-insensitive exact match -- no
@@ -904,6 +1059,26 @@ def build_merged_corpus(pulls: Path | None = None) -> dict:
 
     join(bulk["rows"], "bulk_keywords", BULK_FIELDS)
     join(tags["rows"], "tag_report", TAG_FIELDS)
+
+    # Captured demand. Unlike the eRank sources these are per (keyword,
+    # listing), so one keyword can legitimately appear against more than one
+    # listing. Every record is kept in `listings`; the row's own columns take
+    # the record with the most visits/views. Nothing is summed across
+    # listings -- Etsy reports a term's number per listing and adding them
+    # would invent a total it never gave.
+    shop_terms, ad_keywords = captured_demand(pulls)
+
+    def attach(records: list[dict], key: str, rank: str) -> None:
+        by_kw: dict[str, list[dict]] = {}
+        for r in records:
+            by_kw.setdefault(r["keyword"].strip().lower(), []).append(r)
+        for kw_lower, group in by_kw.items():
+            row = merged.get(kw_lower) or slot(group[0]["keyword"])
+            best = max(group, key=lambda r: (r.get(rank) or 0))
+            row[key] = {**best, "listings": group if len(group) > 1 else []}
+
+    attach(shop_terms, "shop_search", "visits")
+    attach(ad_keywords, "ads", "views")
 
     rows = list(merged.values())
 

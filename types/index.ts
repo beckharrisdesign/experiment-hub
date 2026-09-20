@@ -252,6 +252,48 @@ export interface TagReportValues {
   googleSearches: number | null;
 }
 
+/**
+ * A search term a buyer really typed, and the listing it reached.
+ *
+ * `visits` is Etsy's own number for that term on that listing — never
+ * divided, spread or summed across listings. `etsyVisits` / `googleVisits`
+ * are populated only where the export gave the split; most listings render a
+ * two-column table with no split at all, and `null` there means "not
+ * reported", not zero.
+ *
+ * The listing's own outcome travels with the term for convenience, but it
+ * belongs to the LISTING: one visit from a term did not itself produce
+ * `listingRevenueUsd`.
+ */
+export interface ShopSearchValues {
+  visits: number | null;
+  etsyVisits: number | null;
+  googleVisits: number | null;
+  listingId: string;
+  listingTitle: string | null;
+  listingVisits: number | null;
+  listingItemsSold: number | null;
+  listingRevenueUsd: number | null;
+}
+
+/**
+ * A keyword Etsy matched an ad to — whether or not anyone arrived.
+ *
+ * `views` are IMPRESSIONS, not visits, and must never be added to or
+ * rendered alongside `ShopSearchValues.visits` as though they were the same
+ * measure. Scoped to the last 30 days, while the Shop band covers the year.
+ */
+export interface AdsKeywordValues {
+  views: number | null;
+  clicks: number | null;
+  clickRatePct: number | null;
+  spendUsd: number | null;
+  revenueUsd: number | null;
+  orders: number | null;
+  roas: number | null;
+  listingId: string;
+}
+
 export type KeywordToolSource = KeywordToolValues &
   KeywordSourceCapture<KeywordToolValues>;
 export type BulkKeywordSource = BulkKeywordValues &
@@ -278,6 +320,10 @@ export interface KeywordRow {
   keywordTool: KeywordToolSource | null;
   bulkKeywords: BulkKeywordSource | null;
   tagReport: TagReportSource | null;
+  /** Captured demand — a term a buyer typed and the listing it reached. */
+  shopSearch: ShopSearchValues | null;
+  /** Etsy Ads — a keyword the ad was matched to. Impressions, not arrivals. */
+  ads: AdsKeywordValues | null;
   /** From the corpus. Keyword-scoped, not capture-scoped. */
   ranked: RankedMatch | null;
   /**
@@ -330,6 +376,8 @@ export interface KeywordTableRow {
   keywordTool: KeywordToolValues | null;
   bulkKeywords: BulkKeywordValues | null;
   tagReport: TagReportValues | null;
+  shopSearch: ShopSearchValues | null;
+  ads: AdsKeywordValues | null;
   ranked: number | null;
   targeting: number | null;
 }

@@ -6906,7 +6906,23 @@
         "superseded_by": null,
         "history": []
       },
-      "ranked": null
+      "ranked": null,
+      "ads": {
+        "keyword": "embroidery pattern",
+        "roas": 0,
+        "orders": 0,
+        "spend_usd": 0,
+        "revenue_usd": 0,
+        "clicks": 0,
+        "click_rate_pct": 0,
+        "views": 9,
+        "listing_id": "4415035303",
+        "listing_ad_views": 1232,
+        "listing_ad_spend_usd": 1.59,
+        "listing_ad_roas": 1.57,
+        "capture": "2026-09-20",
+        "listings": []
+      }
     },
     {
       "keyword": "plush keychain",
@@ -50970,7 +50986,23 @@
         "history": []
       },
       "tag_report": null,
-      "ranked": null
+      "ranked": null,
+      "ads": {
+        "keyword": "beginner embroidery pattern",
+        "roas": 0,
+        "orders": 0,
+        "spend_usd": 0,
+        "revenue_usd": 0,
+        "clicks": 0,
+        "click_rate_pct": 0,
+        "views": 6,
+        "listing_id": "4415035303",
+        "listing_ad_views": 1232,
+        "listing_ad_spend_usd": 1.59,
+        "listing_ad_roas": 1.57,
+        "capture": "2026-09-20",
+        "listings": []
+      }
     },
     {
       "keyword": "beginner floral embroidery pdf",
@@ -51339,6 +51371,27 @@
         "history": []
       },
       "ranked": null
+    },
+    {
+      "keyword": "botanical embroidery design hand embroidery",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "shop_search": {
+        "keyword": "botanical embroidery design hand embroidery",
+        "visits": 1,
+        "etsy_visits": null,
+        "google_visits": null,
+        "listing_id": "4415032102",
+        "listing_title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
+        "listing_visits": 13,
+        "listing_items_sold": 0,
+        "listing_revenue_usd": 0.0,
+        "capture": "2026-09-20",
+        "window": "this_year (Jan 1 - Sep 20, 2026)",
+        "listings": []
+      }
     },
     {
       "keyword": "botanical embroidery pattern",
@@ -52324,6 +52377,29 @@
       "ranked": null
     },
     {
+      "keyword": "cross stitch border",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "ads": {
+        "keyword": "cross stitch border",
+        "roas": 0,
+        "orders": 0,
+        "spend_usd": 0,
+        "revenue_usd": 0,
+        "clicks": 0,
+        "click_rate_pct": 0,
+        "views": 4,
+        "listing_id": "4414949521",
+        "listing_ad_views": 617,
+        "listing_ad_spend_usd": 0.9,
+        "listing_ad_roas": 0,
+        "capture": "2026-09-20",
+        "listings": []
+      }
+    },
+    {
       "keyword": "cross stitch designs",
       "keyword_tool": null,
       "bulk_keywords": null,
@@ -52561,7 +52637,23 @@
         "superseded_by": null,
         "history": []
       },
-      "ranked": null
+      "ranked": null,
+      "ads": {
+        "keyword": "digital products",
+        "roas": 0,
+        "orders": 0,
+        "spend_usd": 0,
+        "revenue_usd": 0,
+        "clicks": 0,
+        "click_rate_pct": 0,
+        "views": 22,
+        "listing_id": "4414949521",
+        "listing_ad_views": 617,
+        "listing_ad_spend_usd": 0.9,
+        "listing_ad_roas": 0,
+        "capture": "2026-09-20",
+        "listings": []
+      }
     },
     {
       "keyword": "diy embroidered gift",
@@ -52752,6 +52844,27 @@
       "ranked": null
     },
     {
+      "keyword": "embroidered kippah women",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "shop_search": {
+        "keyword": "embroidered kippah women",
+        "visits": 1,
+        "etsy_visits": 1,
+        "google_visits": null,
+        "listing_id": "4415035303",
+        "listing_title": "Digital leaf mandala embroidery pattern \u2014 beginner-friendly design \u2014 PDF download for 6\u201d and 8\u201d hoops",
+        "listing_visits": 35,
+        "listing_items_sold": 1,
+        "listing_revenue_usd": 2.49,
+        "capture": "2026-09-20",
+        "window": "this_year (Jan 1 - Sep 20, 2026)",
+        "listings": []
+      }
+    },
+    {
       "keyword": "embroidery decor pattern",
       "keyword_tool": null,
       "bulk_keywords": {
@@ -52791,7 +52904,23 @@
         "superseded_by": null,
         "history": []
       },
-      "ranked": null
+      "ranked": null,
+      "ads": {
+        "keyword": "embroidery designs",
+        "roas": 0,
+        "orders": 0,
+        "spend_usd": 0,
+        "revenue_usd": 0,
+        "clicks": 0,
+        "click_rate_pct": 0,
+        "views": 10,
+        "listing_id": "4415032102",
+        "listing_ad_views": 384,
+        "listing_ad_spend_usd": 1.16,
+        "listing_ad_roas": 0,
+        "capture": "2026-09-20",
+        "listings": []
+      }
     },
     {
       "keyword": "embroidery drawing",
@@ -52896,6 +53025,29 @@
       "ranked": null
     },
     {
+      "keyword": "embroidery patterns",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "ads": {
+        "keyword": "embroidery patterns",
+        "roas": 0,
+        "orders": 0,
+        "spend_usd": 0.04,
+        "revenue_usd": 0,
+        "clicks": 1,
+        "click_rate_pct": 2.6,
+        "views": 38,
+        "listing_id": "4415035303",
+        "listing_ad_views": 1232,
+        "listing_ad_spend_usd": 1.59,
+        "listing_ad_roas": 1.57,
+        "capture": "2026-09-20",
+        "listings": []
+      }
+    },
+    {
       "keyword": "embroidery patterns modern abstract directions",
       "keyword_tool": null,
       "bulk_keywords": {
@@ -52914,6 +53066,29 @@
       },
       "tag_report": null,
       "ranked": null
+    },
+    {
+      "keyword": "embroidery patterns pdf",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "ads": {
+        "keyword": "embroidery patterns pdf",
+        "roas": 0,
+        "orders": 0,
+        "spend_usd": 0,
+        "revenue_usd": 0,
+        "clicks": 0,
+        "click_rate_pct": 0,
+        "views": 9,
+        "listing_id": "4415035303",
+        "listing_ad_views": 1232,
+        "listing_ad_spend_usd": 1.59,
+        "listing_ad_roas": 1.57,
+        "capture": "2026-09-20",
+        "listings": []
+      }
     },
     {
       "keyword": "embroidery pdf",
@@ -54058,7 +54233,44 @@
         "history": []
       },
       "tag_report": null,
-      "ranked": null
+      "ranked": null,
+      "ads": {
+        "keyword": "geometric embroidery pattern",
+        "roas": 0,
+        "orders": 0,
+        "spend_usd": 0,
+        "revenue_usd": 0,
+        "clicks": 0,
+        "click_rate_pct": 0,
+        "views": 5,
+        "listing_id": "4466080258",
+        "listing_ad_views": 634,
+        "listing_ad_spend_usd": 0.85,
+        "listing_ad_roas": 14.12,
+        "capture": "2026-09-20",
+        "listings": []
+      }
+    },
+    {
+      "keyword": "geometric hand embroidery patterns",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "shop_search": {
+        "keyword": "geometric hand embroidery patterns",
+        "visits": 1,
+        "etsy_visits": null,
+        "google_visits": null,
+        "listing_id": "4466082116",
+        "listing_title": "Geometric Rosette Hand Embroidery Pattern PDF, Calming Boho Wall Art Hoop Decor, Beginner Friendly Design, 6 and 8 Inch Hoops",
+        "listing_visits": 6,
+        "listing_items_sold": 0,
+        "listing_revenue_usd": 0.0,
+        "capture": "2026-09-20",
+        "window": "this_year (Jan 1 - Sep 20, 2026)",
+        "listings": []
+      }
     },
     {
       "keyword": "geometric hoop art",
@@ -54508,6 +54720,29 @@
       "ranked": null
     },
     {
+      "keyword": "hand embroidery designs",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "ads": {
+        "keyword": "hand embroidery designs",
+        "roas": 0,
+        "orders": 0,
+        "spend_usd": 0.11,
+        "revenue_usd": 0,
+        "clicks": 1,
+        "click_rate_pct": 7.7,
+        "views": 13,
+        "listing_id": "4415035303",
+        "listing_ad_views": 1232,
+        "listing_ad_spend_usd": 1.59,
+        "listing_ad_roas": 1.57,
+        "capture": "2026-09-20",
+        "listings": []
+      }
+    },
+    {
       "keyword": "hand embroidery digital pattern",
       "keyword_tool": null,
       "bulk_keywords": {
@@ -54548,6 +54783,50 @@
       "ranked": null
     },
     {
+      "keyword": "hand embroidery pattern pdf",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "shop_search": {
+        "keyword": "hand embroidery pattern pdf",
+        "visits": 1,
+        "etsy_visits": null,
+        "google_visits": 1,
+        "listing_id": "4415035303",
+        "listing_title": "Digital leaf mandala embroidery pattern \u2014 beginner-friendly design \u2014 PDF download for 6\u201d and 8\u201d hoops",
+        "listing_visits": 35,
+        "listing_items_sold": 1,
+        "listing_revenue_usd": 2.49,
+        "capture": "2026-09-20",
+        "window": "this_year (Jan 1 - Sep 20, 2026)",
+        "listings": []
+      }
+    },
+    {
+      "keyword": "hand embroidery patterns",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "ads": {
+        "keyword": "hand embroidery patterns",
+        "roas": 0,
+        "orders": 0,
+        "spend_usd": 0,
+        "revenue_usd": 0,
+        "clicks": 0,
+        "click_rate_pct": 0,
+        "views": 7,
+        "listing_id": "4415035303",
+        "listing_ad_views": 1232,
+        "listing_ad_spend_usd": 1.59,
+        "listing_ad_roas": 1.57,
+        "capture": "2026-09-20",
+        "listings": []
+      }
+    },
+    {
       "keyword": "hand embroidery patterns cedar waxwing",
       "keyword_tool": null,
       "bulk_keywords": {
@@ -54566,6 +54845,50 @@
       },
       "tag_report": null,
       "ranked": null
+    },
+    {
+      "keyword": "hand embroidery patterns pdf",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "ads": {
+        "keyword": "hand embroidery patterns pdf",
+        "roas": 0,
+        "orders": 0,
+        "spend_usd": 0,
+        "revenue_usd": 0,
+        "clicks": 0,
+        "click_rate_pct": 0,
+        "views": 5,
+        "listing_id": "4415035303",
+        "listing_ad_views": 1232,
+        "listing_ad_spend_usd": 1.59,
+        "listing_ad_roas": 1.57,
+        "capture": "2026-09-20",
+        "listings": []
+      }
+    },
+    {
+      "keyword": "hand embroidery pdf geometric",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "shop_search": {
+        "keyword": "hand embroidery pdf geometric",
+        "visits": 1,
+        "etsy_visits": null,
+        "google_visits": null,
+        "listing_id": "4466080258",
+        "listing_title": "Digital geometric embroidery pattern \u2014 beginner-friendly design \u2014 PDF download for 6\u201d or 8\u201d hoops",
+        "listing_visits": 19,
+        "listing_items_sold": 1,
+        "listing_revenue_usd": 6.0,
+        "capture": "2026-09-20",
+        "window": "this_year (Jan 1 - Sep 20, 2026)",
+        "listings": []
+      }
     },
     {
       "keyword": "hand needlework",
@@ -55456,6 +55779,43 @@
       "ranked": null
     },
     {
+      "keyword": "mandala embroidery design",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "shop_search": {
+        "keyword": "mandala embroidery design",
+        "visits": 1,
+        "etsy_visits": null,
+        "google_visits": 1,
+        "listing_id": "4415035303",
+        "listing_title": "Digital leaf mandala embroidery pattern \u2014 beginner-friendly design \u2014 PDF download for 6\u201d and 8\u201d hoops",
+        "listing_visits": 35,
+        "listing_items_sold": 1,
+        "listing_revenue_usd": 2.49,
+        "capture": "2026-09-20",
+        "window": "this_year (Jan 1 - Sep 20, 2026)",
+        "listings": []
+      },
+      "ads": {
+        "keyword": "mandala embroidery design",
+        "roas": 0,
+        "orders": 0,
+        "spend_usd": 0.1,
+        "revenue_usd": 0,
+        "clicks": 2,
+        "click_rate_pct": 40,
+        "views": 5,
+        "listing_id": "4415035303",
+        "listing_ad_views": 1232,
+        "listing_ad_spend_usd": 1.59,
+        "listing_ad_roas": 1.57,
+        "capture": "2026-09-20",
+        "listings": []
+      }
+    },
+    {
       "keyword": "mandala embroidery pattern",
       "keyword_tool": null,
       "bulk_keywords": {
@@ -55473,7 +55833,58 @@
         "history": []
       },
       "tag_report": null,
-      "ranked": null
+      "ranked": null,
+      "shop_search": {
+        "keyword": "mandala embroidery pattern",
+        "visits": 1,
+        "etsy_visits": null,
+        "google_visits": null,
+        "listing_id": "4466799018",
+        "listing_title": "Folk Leaf Circle Hand Embroidery Pattern PDF, Scandi Nature Hoop Art, Beginner Friendly Design, 6 and 8 Inch Hoops, Download",
+        "listing_visits": 4,
+        "listing_items_sold": 0,
+        "listing_revenue_usd": 0.0,
+        "capture": "2026-09-20",
+        "window": "this_year (Jan 1 - Sep 20, 2026)",
+        "listings": []
+      },
+      "ads": {
+        "keyword": "mandala embroidery pattern",
+        "roas": 0,
+        "orders": 0,
+        "spend_usd": 0,
+        "revenue_usd": 0,
+        "clicks": 0,
+        "click_rate_pct": 0,
+        "views": 5,
+        "listing_id": "4415035303",
+        "listing_ad_views": 1232,
+        "listing_ad_spend_usd": 1.59,
+        "listing_ad_roas": 1.57,
+        "capture": "2026-09-20",
+        "listings": []
+      }
+    },
+    {
+      "keyword": "mandala embroidery pattern download",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "shop_search": {
+        "keyword": "mandala embroidery pattern download",
+        "visits": 1,
+        "etsy_visits": 1,
+        "google_visits": null,
+        "listing_id": "4415035303",
+        "listing_title": "Digital leaf mandala embroidery pattern \u2014 beginner-friendly design \u2014 PDF download for 6\u201d and 8\u201d hoops",
+        "listing_visits": 35,
+        "listing_items_sold": 1,
+        "listing_revenue_usd": 2.49,
+        "capture": "2026-09-20",
+        "window": "this_year (Jan 1 - Sep 20, 2026)",
+        "listings": []
+      }
     },
     {
       "keyword": "mandala hoop art",
@@ -55536,6 +55947,27 @@
       },
       "tag_report": null,
       "ranked": null
+    },
+    {
+      "keyword": "medieval embroidery patterns",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "shop_search": {
+        "keyword": "medieval embroidery patterns",
+        "visits": 1,
+        "etsy_visits": null,
+        "google_visits": null,
+        "listing_id": "4415032102",
+        "listing_title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
+        "listing_visits": 13,
+        "listing_items_sold": 0,
+        "listing_revenue_usd": 0.0,
+        "capture": "2026-09-20",
+        "window": "this_year (Jan 1 - Sep 20, 2026)",
+        "listings": []
+      }
     },
     {
       "keyword": "medieval needlework",
@@ -56060,6 +56492,27 @@
       "ranked": null
     },
     {
+      "keyword": "modern minimalist embroidery pattern",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "shop_search": {
+        "keyword": "modern minimalist embroidery pattern",
+        "visits": 1,
+        "etsy_visits": null,
+        "google_visits": null,
+        "listing_id": "4466080258",
+        "listing_title": "Digital geometric embroidery pattern \u2014 beginner-friendly design \u2014 PDF download for 6\u201d or 8\u201d hoops",
+        "listing_visits": 19,
+        "listing_items_sold": 1,
+        "listing_revenue_usd": 6.0,
+        "capture": "2026-09-20",
+        "window": "this_year (Jan 1 - Sep 20, 2026)",
+        "listings": []
+      }
+    },
+    {
       "keyword": "modern needlework",
       "keyword_tool": null,
       "bulk_keywords": null,
@@ -56382,6 +56835,27 @@
         "history": []
       },
       "ranked": null
+    },
+    {
+      "keyword": "paper embriodery template",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "shop_search": {
+        "keyword": "paper embriodery template",
+        "visits": 1,
+        "etsy_visits": null,
+        "google_visits": null,
+        "listing_id": "4466076995",
+        "listing_title": "Digital geometric embroidery pattern \u2014 beginner-friendly hoop design \u2014 PDF download for calm stitching",
+        "listing_visits": 14,
+        "listing_items_sold": 1,
+        "listing_revenue_usd": 6.0,
+        "capture": "2026-09-20",
+        "window": "this_year (Jan 1 - Sep 20, 2026)",
+        "listings": []
+      }
     },
     {
       "keyword": "pattern for stitchers",
@@ -57458,6 +57932,29 @@
         "history": []
       },
       "ranked": null
+    },
+    {
+      "keyword": "slow stitch patterns",
+      "keyword_tool": null,
+      "bulk_keywords": null,
+      "tag_report": null,
+      "ranked": null,
+      "ads": {
+        "keyword": "slow stitch patterns",
+        "roas": 0,
+        "orders": 0,
+        "spend_usd": 0,
+        "revenue_usd": 0,
+        "clicks": 0,
+        "click_rate_pct": 0,
+        "views": 7,
+        "listing_id": "4466789627",
+        "listing_ad_views": 382,
+        "listing_ad_spend_usd": 0.77,
+        "listing_ad_roas": 0,
+        "capture": "2026-09-20",
+        "listings": []
+      }
     },
     {
       "keyword": "slow stitching gift",
