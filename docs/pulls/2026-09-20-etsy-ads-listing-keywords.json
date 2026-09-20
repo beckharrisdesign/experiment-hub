@@ -1,0 +1,91 @@
+{
+  "captured": "2026-09-20",
+  "source": "etsy",
+  "surface": "ads-listing-keywords",
+  "method": "Scraped from https://www.etsy.com/your/shops/me/advertising/listings/<id> via authenticated browser. Etsy exposes no API for ads stats.",
+  "window_warning": "TWO WINDOWS ON ONE PAGE. The headline metrics (views/clicks/orders/revenue/spend/roas) are scoped 'This year (Jan - Sep 2026)'. The targeted-keyword table is scoped 'over the last 30 days'. They are NOT the same period and must never be divided into one another.",
+  "raw_note": "keyword_rows are captured VERBATIM from each table row's textContent, whitespace-collapsed, with only Etsy's repeated tooltip string ('Turn off keywords that aren't relevant...') and the trailing 'Relevant keyword' toggle label removed. Values stay label-prefixed exactly as Etsy renders them ('ROAS0Orders0Spend$0...'). Nothing is normalised, spell-corrected or merged.",
+  "distinct_from_listing_stats": "Ads counts VIEWS (impressions the ad was shown for). Listing stats counts VISITS (people who arrived). They are different metrics and the keyword lists answer different questions: a targeted keyword is what Etsy matched the ad to, whether or not anyone came; a search term is what a buyer typed and arrived on. 'geometric embroidery pattern' is targeted on 4466080258 and appears nowhere in that listing's search terms.",
+  "known_conflict": "Listing 4466080258 reports 2 orders / $12 here and 1 sold / $6.00 in the same-day listing-stats pull. Recorded, not reconciled — the definitions and windows differ and neither number is edited to agree with the other.",
+  "listings": [
+    {
+      "listing_id": "4415035303", "views": 1232, "clicks": 26, "orders": 1,
+      "revenue_usd": 2.49, "spend_usd": 1.59, "roas": 1.57,
+      "lifetime_ad_orders": 1, "lifetime_ad_revenue_usd": 2.49, "targeted_keyword_count": 9,
+      "keyword_rows": [
+        "Targeted keywordROASOrdersSpendRevenueClicksClick rateViews",
+        "Targeted keywordmandala embroidery patternROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views5",
+        "Targeted keywordmandala embroidery designROAS0Orders0Spend$0.10Revenue$0Clicks2Click rate40%Views5",
+        "Targeted keywordhand embroidery patterns pdfROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views5",
+        "Targeted keywordhand embroidery patternsROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views7",
+        "Targeted keywordhand embroidery designsROAS0Orders0Spend$0.11Revenue$0Clicks1Click rate7.7%Views13",
+        "Targeted keywordembroidery patterns pdfROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views9",
+        "Targeted keywordembroidery patternsROAS0Orders0Spend$0.04Revenue$0Clicks1Click rate2.6%Views38",
+        "Targeted keywordembroidery patternROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views9",
+        "Targeted keywordbeginner embroidery patternROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views6"
+      ]
+    },
+    {
+      "listing_id": "4466080258", "views": 634, "clicks": 8, "orders": 2,
+      "revenue_usd": 12.00, "spend_usd": 0.85, "roas": 14.12,
+      "lifetime_ad_orders": 2, "lifetime_ad_revenue_usd": 12.00, "targeted_keyword_count": 1,
+      "keyword_rows": [
+        "Targeted keywordROASOrdersSpendRevenueClicksClick rateViews",
+        "Targeted keywordgeometric embroidery patternROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views5"
+      ]
+    },
+    {
+      "listing_id": "4466789627", "views": 382, "clicks": 4, "orders": 0,
+      "revenue_usd": 0.00, "spend_usd": 0.77, "roas": 0,
+      "lifetime_ad_orders": 0, "lifetime_ad_revenue_usd": 0.00, "targeted_keyword_count": 1,
+      "keyword_rows": [
+        "Targeted keywordROASOrdersSpendRevenueClicksClick rateViews",
+        "Targeted keywordslow stitch patternsROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views7"
+      ]
+    },
+    {
+      "listing_id": "4415032102", "views": 384, "clicks": 8, "orders": 0,
+      "revenue_usd": 0.00, "spend_usd": 1.16, "roas": 0,
+      "lifetime_ad_orders": 0, "lifetime_ad_revenue_usd": 0.00, "targeted_keyword_count": 1,
+      "keyword_rows": [
+        "Targeted keywordROASOrdersSpendRevenueClicksClick rateViews",
+        "Targeted keywordembroidery designsROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views10"
+      ]
+    },
+    {
+      "listing_id": "4414949521", "views": 617, "clicks": 12, "orders": 0,
+      "revenue_usd": 0.00, "spend_usd": 0.90, "roas": 0,
+      "targeted_keyword_count": 2,
+      "keyword_rows": [
+        "Targeted keywordROASOrdersSpendRevenueClicksClick rateViews",
+        "Targeted keyworddigital productsROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views22",
+        "Targeted keywordcross stitch borderROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views4"
+      ]
+    },
+    {
+      "listing_id": "4466076995", "views": 246, "clicks": 3, "orders": 0,
+      "revenue_usd": 0.00, "spend_usd": 0.20, "roas": 0,
+      "targeted_keyword_count": 0, "keyword_rows": [],
+      "note": "Ad is running (246 views, 3 clicks, $0.20 spend) but Etsy renders no targeted-keyword table for it."
+    },
+    {
+      "listing_id": "4417249682", "views": 189, "clicks": 2, "orders": 0,
+      "revenue_usd": 0.00, "spend_usd": 0.18, "roas": 0,
+      "targeted_keyword_count": 0, "keyword_rows": []
+    },
+    {
+      "listing_id": "4466082116", "views": 93, "clicks": 3, "orders": 0,
+      "revenue_usd": 0.00, "spend_usd": 0.32, "roas": 0,
+      "targeted_keyword_count": 0, "keyword_rows": []
+    },
+    {
+      "listing_id": "4417250225", "views": 183, "clicks": 2, "orders": 0,
+      "revenue_usd": 0.00, "spend_usd": 0.13, "roas": 0,
+      "targeted_keyword_count": 0, "keyword_rows": []
+    }
+  ],
+  "unreadable": {
+    "listing_id": "4465357735",
+    "note": "Every headline metric returned null across a 4s wait — page did not render in time, or the listing has no ad. Recorded as unverified rather than as zero."
+  }
+}
