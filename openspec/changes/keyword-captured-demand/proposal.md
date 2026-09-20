@@ -39,6 +39,14 @@ That gap is the whole point of the archive. A keyword's estimated demand is a re
 
 **Width is not a problem to be solved here.** Katy, 2026-09-20: *"This is literally a Big Join. I don't want to edit down or hide columns right now."* The table is wide because it is showing everything, which is the point — hugging exists to waste no space, not to make the table narrow. Nothing is capped, truncated, hidden behind a toggle, or moved off the table. `Found via` stays the widest column by a wide margin, carrying strings such as `christmas embroidery (1), embroidery designs (4), embroidery font (28), embroidery fonts (29), font bundle (7), holiday hoop art (1)` in full. Horizontal scroll is the accepted cost of seeing every signal on one row.
 
+**Etsy Ads is a seventh source, not a restatement of the sixth.** Katy asked whether ad keywords show the same thing as the basic stats; checked against both exports on 2026-09-20, they do not. Basic stats count **visits** — people who arrived. Ads counts **views** — impressions the ad was shown for — plus clicks, click rate, spend, revenue and ROAS *per keyword*. Listing 4415035303 reads 35 visits and 4 search terms in one surface, and 1,232 views, 26 clicks and 9 targeted keywords in the other. The two keyword lists answer different questions: search terms are what a buyer typed and arrived on; targeted keywords are what Etsy matched the ad to, whether or not anyone came. `geometric embroidery pattern` is targeted on listing 4466080258 and appears nowhere in its search terms. Ads therefore lands as its own band with its own columns, and the two are never merged.
+
+**Two traps this source carries, recorded so a reader cannot fall into them.** The ad keyword table is scoped **"over the last 30 days"** while the headline metrics on the same page are **"This year"** — one screen, two windows, and a reader who assumes otherwise will divide numbers that do not belong to each other. And `hand embroidery pattern pdf` (basic stats) and `hand embroidery patterns pdf` (ads) are different strings; singular and plural stay separate rows, like `snow globe` and `snow globes` already do.
+
+**The whole table is exportable at any time.** Katy, 2026-09-20: *"Lets try to make sure we can export the whole table at any time."* A download that writes every column of the currently visible rows — filters and sort applied, nothing dropped for width — so the join can be read in a spreadsheet when the browser is the wrong tool. Export follows the same rules as the table: verbatim values, blanks stay blank, no fabricated zeros, and the misspelling stays misspelled.
+
+**Filtering and sorting compound across columns.** Today the table sorts by one column and range-filters one numeric column at a time — switching either discards the last. Both become additive: several filters narrow together, and a sort can carry more than one key so ties break on a second column rather than falling back to keyword order. This is what makes a twenty-plus column join usable: *"Tag Report scores it, we rank for it, and it drove a visit"* is three filters, and there is no way to ask it one column at a time.
+
 **Listing-level outcome is attached, and labelled as listing-level.** A term's row carries its listing's sales and revenue so the two are visible together, but those belong to the listing, not to the term — one visit from `paper embriodery template` did not itself generate $6.00. The spec names this distinction so the table cannot be read as an attribution claim.
 
 ## Capabilities
@@ -46,6 +54,7 @@ That gap is the whole point of the archive. A keyword's estimated demand is a re
 ### New Capabilities
 
 - `captured-demand`: real Etsy search terms, with the visits they drove and the listing they reached, joined onto the keyword row by the same exact-text rule as every other source — stored verbatim, never normalised, and never divided across listings.
+- `big-join-table`: the join stays readable as it widens — every column hugs, the keyword stays pinned while scrolling, filters and sorts compound across columns, and the whole table exports at any time.
 
 ### Modified Capabilities
 
@@ -58,10 +67,22 @@ That gap is the whole point of the archive. A keyword's estimated demand is a re
 - **Unchanged:** the `docs/pulls/` archive and its conventions; the exact-text matching rule; the never-fabricate-a-zero rule; every existing source's behaviour.
 - **Settled:** the Shop band shows everything it has — visits, the Etsy/Google split, the listing it reached, and that listing's sold and revenue. Nothing is dropped to save width, per the Big Join rule above.
 - **Open before `design.md`:** whether a captured term with no eRank data sorts into the table by default or needs the Source filter.
-- **Carried forward, and now load-bearing:** the Keyword column is not sticky, so scrolling right leaves rows unidentifiable (`keyword-explorer-unified-view` § tasks 4.3b). Since this change deliberately makes the table wider rather than narrower, that finding stops being cosmetic — a sticky Keyword column is the mitigation the Big Join rule implies, and it needs its own numbered Figma round.
+- **Pulled in, and now load-bearing:** the Keyword column is not sticky, so scrolling right leaves rows unidentifiable (`keyword-explorer-unified-view` § tasks 4.3b). Since this change deliberately makes the table wider rather than narrower, that finding stops being cosmetic and is adopted into this change's scope rather than left in an archived task list — a pinned Keyword column is what the Big Join rule requires to stay legible.
+- **Two capabilities, deliberately:** the lite schema caps a change at two new capabilities and this uses both. `captured-demand` is the data; `big-join-table` is what keeps the data readable. Splitting them would leave a change that adds a column group to a table already failing to stay legible at its current width.
 - **Related:** #507 landed the archive this change reads. A cadence for re-running the pull is deliberately out of scope — it is a process question, not a schema one, and this change works on one capture or twenty.
 
 ## Optional links
 
 - [`docs/pulls/2026-09-20-etsy-listing-stats.md`](../../../docs/pulls/2026-09-20-etsy-listing-stats.md) — the pull, its provenance and its parsing hazards
 - PR #507 — the landed archive
+
+## Figma
+
+| | |
+| --- | --- |
+| File | [`keyword-captured-demand`](https://www.figma.com/design/5zM3iearA5XFhHdjA0lV4D/keyword-captured-demand?node-id=1-3) — design file (a surface question: whether a deliberately-wide join stays readable) |
+| Round 01 | Page `02 Proposed` (`1:2`) → frame `Round 01 — Big Join` (`1:3`) |
+| Frame A | Seven bands, 33 columns, 3,072px, scrolled to start. Every column hugs; Keyword holds 210px instead of absorbing surplus. |
+| Frame B | Scrolled right into the Etsy Ads band with the Keyword column **pinned** — the frame that decides whether the width is survivable. At 3,072px you are ~2,000px from the left edge when reading ROAS. |
+| Toolbar | Three compound filters (AND), a two-key sort, and Export CSV. |
+| Library | None — deliberately low-fidelity, on `app/globals.css` tokens. MVDS binding and the as-is/proposed pair belong to `design.md`. |
