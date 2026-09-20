@@ -4,11 +4,19 @@ import KeywordTable from "@/components/KeywordTable";
 import type { KeywordTableRow } from "@/types";
 
 // jsdom doesn't implement these, and Radix Select (under MVDS's `Select`)
-// calls them when an option is chosen — without a stub, "Range filter
-// column" can never be set via a click, and every test in this file would
-// fail for a jsdom gap that has nothing to do with KeywordTable's own logic.
+// calls them when an option is chosen — without a stub, a filter can never
+// be added via a click, and every test in this file would fail for a jsdom
+// gap that has nothing to do with KeywordTable's own logic.
+//
+// `scrollTo` is the jump-to-band control's. Whether jsdom provides it varies
+// by version: it exists locally and does not in CI, which is exactly the
+// shape of bug that passes on a laptop and fails on a runner. Stubbed here
+// rather than guarded in the component, because a real browser always has it
+// and a defensive `typeof` check in product code would hide a genuine
+// failure to scroll.
 beforeAll(() => {
   Element.prototype.scrollIntoView ??= () => {};
+  Element.prototype.scrollTo ??= () => {};
   Element.prototype.hasPointerCapture ??= () => false;
   Element.prototype.releasePointerCapture ??= () => {};
 });
