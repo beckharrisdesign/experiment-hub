@@ -35,6 +35,10 @@ That gap is the whole point of the archive. A keyword's estimated demand is a re
 
 **Messiness is carried, not cleaned.** A captured term is stored as typed. `paper embriodery template` stays misspelled, and does not merge with `paper embroidery template`, because Etsy counts them separately and the misspelling is a real, low-competition term. The reader parses the archive's verbatim rows and must handle **both table shapes** the export uses — 2-column (`Search terms | Visits`) and 4-column (`Search terms | Etsy | Google, etc. | Total visits`). A parser that assumes one shape silently matches nothing on the other; that failure already happened once and cost 7 of 11 terms while reporting success.
 
+**Every column hugs its contents, and none wraps.** Katy, 2026-09-20: *"make each column hug its contents without wrapping so we can see as much as possible."* Today all columns but one already do — `w-[1%]` + `whitespace-nowrap` is the hug pattern — but `Keyword` carries `grow: true` → `w-full`, so it absorbs every pixel of surplus and pushes the rest of the table right. That special case goes; the `grow` flag is removed entirely rather than moved to another column. The `<table>` itself changes from `w-full` to `w-auto min-w-full`, so it sizes to its content but still fills the viewport when the content is narrower — with every column at `w-[1%]` and the table still forced to `w-full`, the browser would redistribute surplus proportionally and nothing would hug at all.
+
+**This narrows the table but does not fix its width**, and the proposal should not pretend otherwise. The 3,041px measured at the 1024 breakpoint is driven by `Found via`, whose cells hold long unwrapped strings such as `christmas embroidery (1), embroidery designs (4), embroidery font (28), embroidery fonts (29), font bundle (7), holiday hoop art (1)`. Hugging reclaims the surplus `Keyword` was absorbing; it does not shorten that column. Whether `Found via` should be capped, truncated or moved is a separate question this change deliberately leaves open.
+
 **Listing-level outcome is attached, and labelled as listing-level.** A term's row carries its listing's sales and revenue so the two are visible together, but those belong to the listing, not to the term — one visit from `paper embriodery template` did not itself generate $6.00. The spec names this distinction so the table cannot be read as an attribution claim.
 
 ## Capabilities
@@ -50,8 +54,10 @@ That gap is the whole point of the archive. A keyword's estimated demand is a re
 ## Impact
 
 - **New:** a listing-stats reader in `scripts/ingest-pulls.py`; a `shopSearch` sub-object on the merged row; one more column group on `KeywordTable`.
+- **Changed:** every column hugs its contents — the `grow` flag is removed from the column spec and the table moves from `w-full` to `w-auto min-w-full`.
 - **Unchanged:** the `docs/pulls/` archive and its conventions; the exact-text matching rule; the never-fabricate-a-zero rule; every existing source's behaviour.
-- **Open before `design.md`:** whether the Shop band shows visits only, or visits plus the listing's sold/revenue (four more columns on a table already at twenty); and whether a captured term with no eRank data sorts into the table by default or needs the Source filter.
+- **Open before `design.md`:** whether the Shop band shows visits only, or visits plus the listing's sold/revenue (four more columns on a table already at twenty); whether a captured term with no eRank data sorts into the table by default or needs the Source filter; and what to do about `Found via`, which hugging leaves as the table's widest column by a wide margin.
+- **Still open from the last change:** the Keyword column is not sticky, so scrolling right leaves rows unidentifiable (`keyword-explorer-unified-view` § tasks 4.3b). Hugging makes the table marginally narrower but does not remove the scroll, so that finding stands and a fix would need its own numbered Figma round.
 - **Related:** #507 landed the archive this change reads. A cadence for re-running the pull is deliberately out of scope — it is a process question, not a schema one, and this change works on one capture or twenty.
 
 ## Optional links
