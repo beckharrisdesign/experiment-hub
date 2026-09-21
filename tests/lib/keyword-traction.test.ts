@@ -16,7 +16,7 @@ function listing(
   tags: string[],
   state: string = "active",
 ): RawListing {
-  return { listing_id: id, tags, state };
+  return { listing_id: id, tags, state, title: `Listing ${id}` };
 }
 
 describe("computeTargeting", () => {
@@ -27,7 +27,7 @@ describe("computeTargeting", () => {
     );
     expect(result.get("snow globe")).toEqual({
       best: 2,
-      matches: [{ listingId: 1, slot: 2 }],
+      matches: [{ listingId: 1, slot: 2, title: "Listing 1" }],
     });
   });
 
@@ -72,8 +72,8 @@ describe("computeTargeting", () => {
     const result = computeTargeting(
       ["snow globe"],
       [
-        { listing_id: 1, tags: null, state: "active" },
-        { listing_id: 2, tags: undefined, state: "active" },
+        { listing_id: 1, tags: null, state: "active", title: "Listing 1" },
+        { listing_id: 2, tags: undefined, state: "active", title: "Listing 2" },
       ],
     );
     expect(result.size).toBe(0);
@@ -101,7 +101,7 @@ describe("computeTargeting", () => {
     );
     expect(result.get("snow globe")).toEqual({
       best: 1,
-      matches: [{ listingId: 2, slot: 1 }],
+      matches: [{ listingId: 2, slot: 1, title: "Listing 2" }],
     });
   });
 });
@@ -109,6 +109,20 @@ describe("computeTargeting", () => {
 function keywordRow(overrides: Partial<KeywordRow>): KeywordRow {
   return {
     keyword: "snow globe",
+    erank: {
+      searches: 210,
+      searchesCensored: false,
+      competition: 180,
+      kd: 22,
+      avgClicks: null,
+      avgClicksCensored: false,
+      avgCtr: null,
+      avgCtrCensored: false,
+      googleSearches: null,
+      tagOccurrences: null,
+      foundVia: [],
+      reportedBy: ["KT"],
+    },
     keywordTool: {
       searches: 210,
       competition: 180,
@@ -151,13 +165,13 @@ describe("withTargeting", () => {
   it("merges a real Targeting match onto the matching row", async () => {
     const { withTargeting } = await import("@/lib/keyword-traction");
     mockGetLatestListingSnapshots.mockResolvedValue([
-      { listing_id: 1, tags: ["snow globe"], state: "active" },
+      { listing_id: 1, tags: ["snow globe"], state: "active", title: "Listing 1" },
     ]);
 
     const [result] = await withTargeting([keywordRow({})]);
     expect(result.targeting).toEqual({
       best: 1,
-      matches: [{ listingId: 1, slot: 1 }],
+      matches: [{ listingId: 1, slot: 1, title: "Listing 1" }],
     });
   });
 
@@ -189,7 +203,7 @@ describe("withTargeting", () => {
 
     const staleRow = keywordRow({
       keyword: "snow globe",
-      targeting: { best: 1, matches: [{ listingId: 1, slot: 1 }] },
+      targeting: { best: 1, matches: [{ listingId: 1, slot: 1, title: "Listing 1" }] },
     });
     const [result] = await withTargeting([staleRow]);
 
@@ -205,7 +219,7 @@ describe("toTableRows", () => {
           best: 8,
           matches: [{ listing: "Listing A", page: 2, position: 8 }],
         },
-        targeting: { best: 3, matches: [{ listingId: 1, slot: 3 }] },
+        targeting: { best: 3, matches: [{ listingId: 1, slot: 3, title: "Listing 1" }] },
       }),
     ]);
     expect(result.ranked).toBe(8);

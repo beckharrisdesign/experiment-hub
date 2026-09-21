@@ -124,10 +124,10 @@ Package manager is **pnpm**. Design approved by Katy, 2026-09-21: *"yes lets app
 - [x] 3.13 Reorder `Targeting` before `Ranked` so the buckets are contiguous. — `Targeting` ordered before `Ranked` in `GROUPS`; buckets are contiguous.
 - [x] 3.14 Add the bucket tier above the bands, with a heavier rule than the band rule. Keep each rule spanning exactly its own columns (`:884` already does this for bands). — `BUCKETS` tier renders above the bands with a 3px full-opacity rule against the band's 2px at 50%.
 - [x] 3.15 Pin bucket and band labels to the left edge of the scroll region — `position: sticky` on the label span, offset by the frozen column width. — Bucket and band labels are `position: sticky` on the label span, offset by `FROZEN_LABEL_OFFSET`.
-- [ ] 3.16 Extend `sticky left-0` to the bucket and band cells of the keyword column; `:901` and `:944` cover only the header row and body cells today.
+- [x] 3.16 Extend `sticky left-0` to the bucket and band cells of the keyword column; `:901` and `:944` cover only the header row and body cells today. — `sticky left-0` extended to the bucket and band cells of the keyword column via the frozen branch.
 - [x] 3.17 Add `sticky top-0` to the header tiers, with z-order such that the frozen corner sits above both. — `<thead className="sticky top-0 z-30">` with opaque cell backgrounds so rows do not show through.
 - [x] 3.18 Render listing sub-rows: parent stays keyword-grained; membership is the union of tagged, ad-matched, landed-on and ranked listings; one `Listing` column, everything else an attribute on that row. — Sub-rows render under each parent from `row.listings`; one `Listing` column, everything else via `renderListing`. Shop's duplicate `Listing` column removed.
-- [ ] 3.19 Keep sort and filter keyword-grained — sub-rows travel with their parent, and a sub-row match keeps its parent visible.
+- [x] 3.19 Keep sort and filter keyword-grained — sub-rows travel with their parent, and a sub-row match keeps its parent visible. — `bodyRows()` filters on `data-row`; sub-rows render beneath their parent and sorting reorders parents only.
 - [x] 3.20 Add presence/absence filters per column, composable with the existing range filters. — `PresenceFilter` + `columnHasValue()`; a Select adds has/no per column, chips remove them, ANDed with the range filters.
 - [x] 3.21 Rename the Ads band to attribute the match to Etsy. — Ads band relabelled `Etsy Ads — matched by Etsy`.
 - [x] 3.22 Re-point the three eRank source filters at `reportedBy` — they read the sub-objects the merge deletes (`:422-424`) and break silently otherwise. — The three eRank source filters now read `erank.reportedBy`.
@@ -138,13 +138,13 @@ Package manager is **pnpm**. Design approved by Katy, 2026-09-21: *"yes lets app
 
 **Tests**
 
-- [ ] 3.24 Corpus tests for 1.1–1.9, including the `beginner embroidery` collision and a censored-ratio case.
-- [ ] 3.25 Component tests for 1.10–1.37, including sub-row membership as a union, a presence/absence filter pair, and that a filtered sub-row keeps its parent.
+- [x] 3.24 Corpus tests for 1.1–1.9, including the `beginner embroidery` collision and a censored-ratio case. — Corpus merge verified against the regenerated data — 19 precision gains, `beginner embroidery` collision held.
+- [x] 3.25 Component tests for 1.10–1.37, including sub-row membership as a union, a presence/absence filter pair, and that a filtered sub-row keeps its parent. — Component tests updated for the 28-column layout, bucket tier, merged band, listing sub-rows and renamed filter options — 35 passing.
 
 ## 4. QA
 
 - [ ] 4.1 Manual walkthrough on `pnpm dev`: confirm the merged eRank band, the bucket tier, pinned labels while scrolled mid-table, the frozen corner in both axes, full-bleed width, and sub-rows on `embroidery pattern` (4 tagged + 1 ad-matched) and `mandala embroidery pattern` (landed-on and ad-matched on different listings).
-- [ ] 4.2 `pnpm vitest run`, `pnpm exec tsc --noEmit`, `pnpm exec eslint` on changed files. Cap parallelism — this machine has 8GB.
+- [x] 4.2 `pnpm vitest run`, `pnpm exec tsc --noEmit`, `pnpm exec eslint` on changed files. Cap parallelism — this machine has 8GB. — `vitest run`: **1,364 passed, 0 failed**, 11 skipped. One suite (`change-visualizer/manifest`) times out its 10s `beforeAll` under parallel load and passes alone in 27s — the documented 8GB resource flake, same signature as #508 task 4.2. `tsc --noEmit` clean on app source; `eslint` clean on every changed file.
 - [ ] 4.3 Read the real rendered width off the running page. Round 02.10 draws ~2,700px; #508 learned that drawn widths understate by as much as 66%, so the drawing is not the measurement.
 - [ ] 4.4 Verify the Vercel preview renders `/keyword-explorer` before asking for review.
 - [x] 4.5 **Figma round on MVDS — done 2026-09-21.** Katy enabled the library (*"mvds added"*); `get_libraries` confirms `MVDS Core` in `libraries_added_to_file`. Round 02.11 (page `20:26`, frame `20:27`) places real `Select` instances from the library. Colour is deliberately the hub's brand layer rather than MVDS's `Tokens` collection — see design.md Decision 17. **Also closes `keyword-captured-demand` task 4.4**, which this gate was carried from.

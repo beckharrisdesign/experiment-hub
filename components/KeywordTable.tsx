@@ -236,16 +236,6 @@ const COLUMNS: Column[] = [
   },
 
   {
-    // Best (lowest) position across every ranking listing; blank, never 0,
-    // when there is no Spotted on Etsy match.
-    key: "ranked",
-    label: "Best pos.",
-    group: "ranked",
-    numeric: true,
-    value: (r) => r.ranked,
-    render: (r) => num(r.ranked),
-  },
-  {
     // How many listings relate to this keyword at all — the sub-row count.
     // Replaces what used to be the lowest tag slot; the slot survives on each
     // listing's own row, which is strictly more than `best` ever showed.
@@ -281,6 +271,17 @@ const COLUMNS: Column[] = [
     group: "targeting",
     render: () => "",
     renderListing: (l) => (l.advertised ? "✓" : "—"),
+  },
+
+  {
+    // Best (lowest) position across every ranking listing; blank, never 0,
+    // when there is no Spotted on Etsy match.
+    key: "ranked",
+    label: "Etsy SEO",
+    group: "ranked",
+    numeric: true,
+    value: (r) => r.ranked,
+    render: (r) => num(r.ranked),
   },
 
   // --- Shop: captured search terms (visits, i.e. arrivals) ---
@@ -549,7 +550,7 @@ interface KeywordTableProps {
 
 export default function KeywordTable({ rows }: KeywordTableProps) {
   const [sorts, setSorts] = useState<SortKey[]>([
-    { key: "kt.searches", direction: "desc" },
+    { key: "erank.searches", direction: "desc" },
   ]);
   const [keywordFilter, setKeywordFilter] = useState("");
   const [captureFilter, setCaptureFilter] = useState(ALL);
@@ -923,7 +924,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                 </span>
                 <input
                   type="number"
-                  inputMode={f.key === "kt.ratio" ? "decimal" : "numeric"}
+                  inputMode={f.key === "erank.ratio" ? "decimal" : "numeric"}
                   value={f.min}
                   onChange={(e) => updateFilter(f.id, { min: e.target.value })}
                   placeholder="Min"
@@ -935,7 +936,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                 </span>
                 <input
                   type="number"
-                  inputMode={f.key === "kt.ratio" ? "decimal" : "numeric"}
+                  inputMode={f.key === "erank.ratio" ? "decimal" : "numeric"}
                   value={f.max}
                   onChange={(e) => updateFilter(f.id, { max: e.target.value })}
                   placeholder="Max"
@@ -1104,7 +1105,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
           <tbody>
             {visible.map((row) => (
               <Fragment key={row.keyword}>
-                <tr className="border-b border-border">
+                <tr data-row="keyword" className="border-b border-border">
                   {COLUMNS.map((column, index) => (
                     <td
                       key={column.key}
@@ -1129,6 +1130,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                 {row.listings.map((listing) => (
                   <tr
                     key={`${row.keyword}:${listing.listingId}`}
+                    data-row="listing"
                     className="border-b border-border bg-background-secondary/40"
                   >
                     {COLUMNS.map((column, index) => (
