@@ -4,6 +4,8 @@
 
 **What was read:** [`/keyword-explorer`](https://labs.beckharrisdesign.com/keyword-explorer) as served on 2026-09-21 — 2,310 keyword rows and 383 listing sub-rows, joining eRank (Keyword Tool and Bulk Keywords pulled 2026-09-17/18, Tag Report 2026-09-15), *Spotted on Etsy* (2026-09-17), live listing tags (snapshot 2026-09-21), captured search terms (2026-09-20, this year) and the Etsy Ads keyword panel (2026-09-20, last 30 days). Pull notes: [eRank](pulls/2026-09-15-erank.md), [keywords](pulls/2026-09-17-erank-keywords.md), [bulk](pulls/2026-09-18-erank-bulk-keywords.md), [ranked](pulls/2026-09-17-erank-spotted-on-etsy.md), [listing stats](pulls/2026-09-20-etsy-listing-stats.md), [ads](pulls/2026-09-16-etsy-ads-dashboard.md).
 
+**What this read needs:** the pulls that would turn its estimates into evidence are listed in [§G](#g-data-this-read-needs), in the order they pay off. Re-pulling is tabled as manual; §G is the list for when it resumes, Etsy side first.
+
 **What this read is gated by:** the [tag positioning experiment](../experiments/etsy-notion-sync/docs/tag-positioning-experiment.md) is at day 6 of 30. Nothing here touches the 16 experiment listings before the readout; those items are filed in [the 2026-10-15 release](ETSY_RELEASE_2026-10-15.md). Editable-now items are marked.
 
 ---
@@ -143,9 +145,26 @@ An engraved ultrasound ornament is the same product with a different image; it i
 - **eRank has no row for ten of the eleven captured phrases.** Its Keyword Tool is seeded by hand and its Bulk and Tag tools score what they are given; the long tail buyers actually use is structurally invisible to it. This is the single most important caveat on section C.
 - **Lifetime views are not a comparison.** Section B lists them for orientation. The experiment's metric is window deltas from `etsy_listing_snapshots`, day 14 on 2026-09-29.
 
+## G. Data this read needs
+
+Ordered by what each pull unlocks, Etsy side first because those windows roll. Each row names the question it answers, the section it changes, the file it lands as under [the pulls convention](pulls/README.md), and whether the ingest can already read it. Nothing here is scheduled — re-pulling is tabled — but this is the list to take off the table from.
+
+| # | Pull | Answers | Changes | Lands as | Reader |
+|---|---|---|---|---|---|
+| 1 | **Etsy Shop Manager listing stats, custom window `2026-09-15` → capture date**, all 36 active listings including the 13 zero-visit ones skipped on 9/20 | Which search terms arrived *since day 0*, per listing — the treatment arm's captured demand, which today is one row (`geometric hand embroidery patterns`, 1 visit). Day-14 view deltas are already in `etsy_listing_snapshots`; the terms are not. | §A, and the 9/29 and 10/15 readouts | `YYYY-MM-DD-etsy-listing-stats-search-terms.json` (+ `-this-year.csv`); the URL takes `date_range=custom` | `read_listing_stats_json()` — exists |
+| 2 | **Etsy Search Analytics export** (Shop Manager → Stats → Search Analytics) | The organic terms Etsy itself attributes, shop-wide, with impressions and position — the one surface that shows terms that *impressed* but never got a visit, which the listing-stats scrape cannot. | §A; it is also the readout's own instrument (release §1) | `YYYY-MM-DD-etsy-search-analytics.csv` | **none yet** — the 9/14 capture was read by hand. A reader is a small change; the join rule is the same exact text. |
+| 3 | **Etsy Ads keyword panel, re-captured on 2026-09-29 and 2026-10-15** | The 9/20 capture's 30-day window is mostly pre-experiment. A day-14 capture is the first one that shows what Etsy matches the *treatment* titles to; today the Ads band has 14 rows and 12 of them are the mandala and Beginner floral. | §A ads; release §1 | `YYYY-MM-DD-etsy-ads-keywords.json` | `read_ads_keywords_json()` — exists |
+| 4 | **eRank Tag Report, re-pulled** | Scores the 108 live tags with no corpus row — the holiday nine and any tag changed since 9/15. Until this runs, §B's holiday rows say "unscored", not "weak". | §B holiday rows; §D holiday rewrites | `YYYY-MM-DD-erank-tag-report.csv` | `read_tag_report_csv()` — exists; supersedes the 9/15 rows, keeps them under `history` |
+| 5 | **eRank keyword history — monthly search volume for the tags on live listings** (the 316 Targeted rows, plus `calm stitching` and the 11 captured phrases) | Whether the treatment tags' `< 20` is permanent or seasonal; whether `calm stitching` ever had volume; whether `digital products` (31k) is rising or a plateau; whether `christmas embroidery` is already past its peak. Today every eRank number is one September reading. | §B (turns "Σ vol" into a trend), §C candidates, §E's biggest caveat | `YYYY-MM-DD-erank-keyword-history-<batch>.csv` — one row per keyword per month | **none yet.** The corpus keeps a *capture* series (re-pulls supersede), not a *monthly* series inside one export. A reader plus a `history[]` of month/volume on the eRank sub-object is the change; the table would show a sparkline or a 12-month delta column. Small, and the highest-value eRank pull in this list. |
+| 6 | **eRank Keyword Tool, seeded on the read's own candidates and captured phrases:** `stick and stitch`, `advent calendar`, `ultrasound ornament`, `needle minder`, `hand embroidery pdf`, `mandala embroidery` | The neighbourhood around each candidate — today each is a single row that another seed happened to surface. Also the one test of §E's caveat: does eRank see *anything* near the phrases buyers typed? | §C, §E | `YYYY-MM-DD-erank-keywords-<seed>.csv` | `read_keyword_csv()` — exists |
+| 7 | **eRank Spotted on Etsy, re-run** | Whether `calm stitching` still holds #1 after the treatment retitles, and whether any treatment term has entered the top 40. Already in release §1. | §A ranked | `YYYY-MM-DD-erank-spotted-on-etsy.csv` | `read_spotted_on_etsy_csv()` — exists |
+
+Two notes on the list. **Rows 1–3 are the time-sensitive ones** — Etsy's windows roll and the 30-day ad panel cannot be recovered later; 4–7 are eRank and can wait. **Rows 2 and 5 need a reader before they can join the table**; the others land in the existing ingest and appear on the next `ingest-pulls.py --apply`. If only one eRank pull is taken, take row 5: it is the only one that changes what kind of number the Observed bucket holds.
+
 ## F. Where each item went
 
 - Release 2026-10-15, §1 (readout): score the verdict against tag volume too — the treatment arm's tags carry near-zero eRank volume, so a treatment win is also an eRank miss.
 - Release 2026-10-15, §3 (deferred): Geometric 4466080258 tag rewrite.
 - Release 2026-10-15, §5 (not blocked): the five editable-now rewrites in section D; the ultrasound ornament variant; the Tag Report re-pull as the first pull when re-pulling resumes.
+- The pulls list (§G) is not filed anywhere else; it is the un-tabling list, and the two reader gaps (Search Analytics, keyword history) become a change when Katy decides to take those pulls.
 - Nothing added to the improvement plan; P1 (tag the Grandma Hobbies five) is done, and the plan's P4/P5 already live in the release doc.
