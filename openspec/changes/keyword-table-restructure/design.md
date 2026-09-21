@@ -77,14 +77,15 @@ Taken from `COLUMNS` in `components/KeywordTable.tsx`, not from the proposal's p
 | Round 02.6 | Page `02.6 Proposed — Observed / Targeted / Performance` (`14:2`), frames `14:3` / `14:273`. The table itself; still the reference for column content. |
 | Round 02.7 | Page `02.7 Proposed — frozen corner + full bleed` (`15:2`), frame `15:3`. Two viewport studies at 1440, mid-scroll in both axes — **A** as the current markup would behave, **B** with group labels pinned. |
 | Round 02.8 | Page `02.8 Proposed — listings inside Targeted` (`16:2`), frame `16:3`. 28 columns; Targeted holds the count, the listings and the advertised listing, line-delimited. **Line-delimited cells superseded by 02.9.** |
-| Round 02.9 *(current)* | Page `02.9 Proposed — sub-rows vs line breaks` (`17:2`), frame `17:3`. Focused study on one keyword: **A** line breaks, **B** listing sub-rows. |
+| Round 02.9 | Page `02.9 Proposed — sub-rows vs line breaks` (`17:2`), frame `17:3`. Focused study: **A** line breaks, **B** listing sub-rows. |
+| Round 02.10 *(current)* | Page `02.10 Proposed — one listing column` (`18:2`), frame `18:3`. The sub-row *is* the listing; every other listing fact is an attribute on that row. |
 | As-is frame | `Round 02.6 — Current state · 33 columns` (`14:3`), 3,325 × 374. Production as it stands: 33 columns, 7 bands, per-band rules, **no bucket tier**, and `Ranked` sitting before `Targeting`. |
 | Proposed frame | `Round 02.6 — Proposed · 26 columns, three buckets` (`14:273`), 2,754 × 422. Carries Decisions 8–11: alignment, Katy's header copy, the band rules, and the **Observed / Targeted / Performance** tier. |
 | Data | Not mocked. Six real rows rendered through the app's own formatting rules (`num`, `bulkValueLabel`, `demandRatio`) from `data/keyword-corpus.json`. `mandala embroidery pattern` is included specifically because it is one of the few rows carrying **both** Shop and Etsy Ads data, so those bands are populated rather than dashes in both frames. `folk art embroidery` shows the precision merge; `beginner embroidery` shows the Decision 2 collision. |
 | Libraries / version | **None — gate still open.** `get_libraries` on this file returns `libraries_added_to_file: []`, and MVDS is not among the libraries available to add, so it cannot be enabled from here at all. Drawn on `app/globals.css` tokens (`--color-background-primary` `#194b31`, `--color-background-secondary` `#113723`, `--color-text-primary` `#cff7d3`, `--color-text-muted` `#4d9a60`, `--color-accent-primary` `#14ae5c`). Inter throughout; Fraunces headings not used, so the titles are not type-faithful. |
 | Code Connect | No mappings to update. |
 | Breakpoints | S · 480px / L · 1024px. Both frames draw the full table at its natural width, which is what the Big Join rule accepts at every breakpoint. |
-| Status | Round 02.9 current, verified by screenshot. 02.3–02.8 kept; 02.7 remains the reference for scroll behaviour and 02.8 for the full column set. **MVDS gate open.** |
+| Status | Round 02.10 current, verified by screenshot. 02.3–02.9 kept; 02.7 remains the reference for scroll behaviour and 02.8 for the full column set. **MVDS gate open.** |
 
 **Each revision is a new numbered page.** Katy, 2026-09-21: *"that should have been 2.4."* The alignment fix and her header copy were first applied on top of 02.3, which overwrote the round rather than answering it. Corrected: 02.3 is restored to how it was delivered (with her copy marks left on it, since those are hers) and **02.4 is the round that carries the response**. `rules/figma.mdc`'s page-per-iteration convention exists so a round stays readable as the thing that was actually reviewed — editing it afterwards destroys the record of what Katy responded to.
 
@@ -189,7 +190,7 @@ Etsy Ads therefore does **not** move wholesale into Targeted. One column does �
 
 **The finding: 108 keywords W&H actively targets have no row on this table.** Of 404 live tags, only **296 match a corpus keyword — 12.8% of the 2,310 rows**. The other 108 are tags on live listings that eRank has never scored, and the table cannot show them, because the corpus is built at ingest while Targeting is joined per-request. There is direct precedent for fixing this — Katy, 2026-09-18: *"add a row for the ranked keywords even if they don't have entries from the erank data"* — and the same argument applies with more force here, since these are keywords we *chose*. **Out of scope for this change; recorded as the next one.**
 
-**Two columns now called "Listing".** `Targeted on` (listings carrying the tag) and Shop's `Listing` (the listing a searcher reached) are different claims. Shop's needs renaming — `Landed on` is the obvious candidate — or the table teaches the reader that "Listing" means two things.
+**Two columns now called "Listing".** `Targeted on` (listings carrying the tag) and Shop's `Listing` (the listing a searcher reached) are different claims. **Resolved by Decision 15** — under one listing column per sub-row they collapse into the same column, and no rename is needed.
 
 **Cost: row height.** A keyword on four listings is a four-line row. `embroidery pattern` in round 02.8 is roughly four times the height of `folk art embroidery`. Uniform row height is gone, and with it easy vertical scanning; the drawing shows this honestly rather than sampling only single-listing keywords.
 
@@ -213,9 +214,21 @@ The hoped-for alignment mostly does not exist in the data:
 
 **This supersedes the line-break half of Decision 13.** The `Targeted on` column keeps its content; it stops being a multi-line cell and becomes one line per sub-row. `Listings` (the count) stays on the parent, where it now doubles as the sub-row count.
 
+**15 — A listing title appears in exactly one column, and the Ads band is renamed because it was lying.** Katy, 2026-09-21: *"Is it really advertised on, or is this a keyword that an ad happened to fire against?… if I see \"Digital leaf mandala…\" in one column, I think it needs to align with \"Digital leaf mandala…\" in any other column."*
+
+**She is right about the label, and the code says so in as many words.** `AdsKeywordValues` is documented as *"A keyword Etsy **matched** an ad to — whether or not anyone arrived."* Etsy Ads is not keyword-bid: you choose which **listings** to advertise and what to spend; **Etsy** chooses which search terms to show them for. So `Advertised on` was asserting a deliberate keyword choice that never happened, and the band label `Etsy Ads — targeted` carries the same false claim — it is Etsy's own export wording, not a description of an act of Katy's.
+
+**This corrects Decision 13, partly.** That decision justified moving a column into Targeted on the grounds that *"we bid on this keyword, for this listing, is a deliberate act."* The keyword half is wrong. What survives is the listing half: **this listing is in the ad campaign** is genuinely Katy's choice, and it is listing-grained — which is precisely the distinction she drew in the first place. So the column stays in Targeted, as a mark on the listing's row, and the band is renamed **`Etsy Ads — matched by Etsy`**.
+
+**The alignment rule: one listing, one column, one row.** The sub-row *is* the listing, so its title is written once in a single `Listing` column and every other fact about it — tag slot, advertised, rank, visits, sold, ad views, ad spend, ROAS — is an attribute on that line. A second column repeating a listing title is what made round 02.9 confusing.
+
+**This dissolves the naming collision from Decision 13 for free.** `Targeted on` and Shop's `Listing` were two columns both meaning "a listing"; under one listing column they are the same column, and the proposed `Landed on` rename is no longer needed. `mandala embroidery pattern` in round 02.10 shows the payoff: Etsy matched an ad to one listing while a real searcher landed on a different one, so it reads as two rows rather than two columns that happen to disagree.
+
+**Honesty caveat, and it matters.** A blank `Advertised` does **not** mean the listing is unadvertised. It means Etsy never matched *this keyword* to it. The flag is only observable where a match happened, so absence is not a verdict — the same rule the corpus already applies to a missing searches figure, and the same trap as fabricating a `0`.
+
 ## Risks / Trade-offs
 
-**The MVDS gate is open, and it is now known to be un-closeable from here.** Round 02.9 is token-faithful but component-free, and `get_libraries` shows MVDS is not even offered to this file — so enabling it is a Figma UI action of Katy's, not a step that was skipped. This change ships no new controls, so the exposure is smaller than #508's: the risk is that the *drawing* is off, not the build.
+**The MVDS gate is open, and it is now known to be un-closeable from here.** Round 02.10 is token-faithful but component-free, and `get_libraries` shows MVDS is not even offered to this file — so enabling it is a Figma UI action of Katy's, not a step that was skipped. This change ships no new controls, so the exposure is smaller than #508's: the risk is that the *drawing* is off, not the build.
 
 **The change is no longer only about eRank.** It started as "merge three bands into one". It now also renames eight headers, reorders two bands, adds a grouping tier, takes the page full-bleed, and adds vertical header freeze plus horizontally pinned group labels — none of which the eRank merge requires. Each addition is Katy's and each is recorded, but the specs and tasks have to cover a table-wide restructure, not a band merge, **Renamed to `keyword-table-restructure` on 2026-09-21** (Katy: *"yes you can rename it"*) — kept whole rather than split, so the reasoning that connects the decisions stays in one place.
 
