@@ -142,6 +142,35 @@ export function toTableRows(
 }
 
 /**
+ * Etsy's API returns listing titles HTML-escaped — `6&quot; & 8&quot; hoops`
+ * for a title that actually reads `6" & 8" hoops`. We read `raw_response`
+ * verbatim, which is right for a capture record and wrong for a cell: the
+ * entities are a transport artifact of Etsy's JSON, not the shop's text, so
+ * rendering them would misrepresent the title rather than preserve it.
+ *
+ * Deliberately a fixed list rather than a parser. These are the entities
+ * Etsy actually emits; anything else passes through unchanged, which fails
+ * visibly instead of silently mangling a title.
+ */
+const ENTITIES: Record<string, string> = {
+  "&quot;": '"',
+  "&#39;": "'",
+  "&apos;": "'",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&amp;": "&",
+};
+
+function decodeTitle(title: string | null): string | null {
+  if (!title) return title;
+  // `&amp;` last: decoding it first would turn `&amp;quot;` into a quote.
+  return Object.entries(ENTITIES).reduce(
+    (text, [entity, char]) => text.split(entity).join(char),
+    title,
+  );
+}
+
+/**
  * Every listing related to a keyword, as one sub-row each.
  *
  * The union of the three id-bearing relationships — tagged, ad-matched,
@@ -164,7 +193,7 @@ function toListingRows(
   const byId = new Map<string, KeywordTableRow["listings"][number]>();
 
   const slot = (listingId: string, title: string | null) => {
-    title = title ?? titles.get(listingId) ?? null;
+    title = decodeTitle(title ?? titles.get(listingId) ?? null);
     const existing = byId.get(listingId);
     if (existing) {
       if (existing.title === null && title !== null) existing.title = title;

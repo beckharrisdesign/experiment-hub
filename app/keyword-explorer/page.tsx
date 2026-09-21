@@ -49,8 +49,8 @@ export default async function KeywordExplorerPage() {
   const SOURCES = 7;
 
   return (
-    <div className="min-h-screen">
-      <main className="w-full p-8">
+    <div className="h-screen overflow-hidden">
+      <main className="flex h-full w-full flex-col p-8">
         {/*
         Full bleed, deliberately breaking the site's usual max-w-[1200px]
         (design.md Decision 12). Every pixel withheld is a column the reader
@@ -58,7 +58,7 @@ export default async function KeywordExplorerPage() {
         three narrow columns, and the table still scrolls — it does not make a
         2,700px join fit.
       */}
-      <div className="flex w-full flex-col gap-6">
+      <div className="flex min-h-0 w-full flex-1 flex-col gap-6">
           <header className="flex flex-col gap-2">
             <h2 className="text-2xl font-semibold text-text-primary">
               Keyword Explorer

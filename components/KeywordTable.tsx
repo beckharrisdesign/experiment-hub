@@ -27,6 +27,18 @@ type Direction = "asc" | "desc";
  */
 const FROZEN_LABEL_OFFSET = 12;
 
+/**
+ * The frozen column's right edge.
+ *
+ * Without it a pinned column reads as a gap rather than as a column holding
+ * its ground — Katy, 2026-09-21: "lets also include a shadow on the frozen
+ * col so I can tell that's what is going on." The shadow is the only thing
+ * that says the columns beneath it are passing underneath rather than
+ * missing.
+ */
+const FROZEN_EDGE =
+  "shadow-[6px_0_8px_-4px_rgba(0,0,0,0.55)] border-r border-accent-primary/40";
+
 const ALL = "__all__";
 const NO_RANGE = "__none__";
 
@@ -777,7 +789,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
           .join(", then ");
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       {/* Row 1 — narrowing, ordering, and getting the data out. */}
       <div className="flex flex-wrap items-center gap-3">
         <input
@@ -964,6 +976,19 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
       {/* Row 2 — moving around a table that is wider than the screen. */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-text-muted">Jump to band</span>
+        {/*
+          The keyword column is a band with no label, so it produced no chip —
+          which left no way back to the start, because the first labelled band
+          begins 496px in. Katy, 2026-09-21: "the quick links to different col
+          groups don't include a fully left option."
+        */}
+        <button
+          type="button"
+          onClick={() => scrollRef.current?.scrollTo({ left: 0, behavior: "smooth" })}
+          className="rounded-md border border-border bg-background-secondary px-2 py-1 text-xs text-text-primary transition-colors hover:text-text-secondary"
+        >
+          Keyword
+        </button>
         {GROUPS.filter((g) => g.label).map((g) => (
           <button
             key={g.key}
@@ -989,14 +1014,30 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
       </div>
 
       {/*
+        The scroll region is capped to the viewport and scrolls in BOTH axes.
+        It used to be as tall as its content — 88,878px with this corpus —
+        which broke two things at once and neither loudly: the horizontal
+        scrollbar sat at the very bottom of that column, some 89,000px down
+        the page and unreachable without scrolling past every row; and
+        `sticky top-0` on the header pinned to a scrollport that had itself
+        scrolled away, so the headers vanished after the first screenful
+        despite computing as `position: sticky`.
+
+        The region now FILLS the space the toolbar leaves rather than taking
+        a guessed height: `flex-1 min-h-0` inside a viewport-tall flex column.
+        A fixed `max-h-[calc(100vh-Nrem)]` was tried first and put the
+        scrollbar 50px below the fold, because the chrome above it is not a
+        constant — the filter chips wrap. Katy, 2026-09-21: "I can't scroll
+        left and right".
+
         The scrollbar is forced visible rather than left to the platform:
-        macOS overlay bars fade out, so a 3,000px table looks exactly like a
+        macOS overlay bars fade out, so a 4,000px table looks exactly like a
         1,000px one at rest and gives no sign that 20 more columns exist. The
         thumb's width is the only honest indicator of how much is off-screen.
       */}
       <div
         ref={scrollRef}
-        className="overflow-x-scroll [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-accent-primary/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-accent-primary/10"
+        className="min-h-0 flex-1 overflow-auto [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-accent-primary/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-accent-primary/10"
       >
         <table className="w-auto min-w-full border-collapse text-sm">
           <thead className="sticky top-0 z-30">
@@ -1022,7 +1063,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                     colSpan={span}
                     className={`whitespace-nowrap bg-background-primary px-3 pb-1 pt-3 text-left text-xs font-bold uppercase tracking-widest text-text-primary ${
                       frozen && bucket.key === "keyword"
-                        ? "sticky left-0 z-40"
+                        ? `sticky left-0 z-40 ${FROZEN_EDGE}`
                         : ""
                     }`}
                   >
@@ -1052,7 +1093,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                     colSpan={span}
                     className={`whitespace-nowrap bg-background-primary px-3 pb-1 pt-2 text-left text-[11px] font-medium uppercase tracking-wide text-text-secondary ${
                       frozen && group.key === "keyword"
-                        ? "sticky left-0 z-40"
+                        ? `sticky left-0 z-40 ${FROZEN_EDGE}`
                         : ""
                     }`}
                   >
@@ -1081,7 +1122,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                 const rank = sorts.findIndex((s) => s.key === column.key);
                 const sticky =
                   frozen && index === 0
-                    ? "sticky left-0 z-20 bg-background-primary"
+                    ? `sticky left-0 z-20 bg-background-primary ${FROZEN_EDGE}`
                     : "";
                 return (
                   <th
@@ -1123,7 +1164,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                       key={column.key}
                       className={`w-[1%] whitespace-nowrap px-3 py-2 text-text-primary ${
                         frozen && index === 0
-                          ? "sticky left-0 z-10 bg-background-primary"
+                          ? `sticky left-0 z-10 bg-background-primary ${FROZEN_EDGE}`
                           : ""
                       } ${column.numeric ? "text-right" : "text-left"}`}
                     >
@@ -1148,13 +1189,9 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                     {COLUMNS.map((column, index) => (
                       <td
                         key={column.key}
-                        className={`w-[1%] px-3 py-2 text-text-primary ${
-                          column.key === "listing.title"
-                            ? "whitespace-normal"
-                            : "whitespace-nowrap"
-                        } ${
+                        className={`w-[1%] whitespace-nowrap px-3 py-2 text-text-primary ${
                           frozen && index === 0
-                            ? "sticky left-0 z-10 bg-background-primary"
+                            ? `sticky left-0 z-10 bg-background-primary ${FROZEN_EDGE}`
                             : ""
                         } ${column.numeric ? "text-right" : "text-left"}`}
                       >
