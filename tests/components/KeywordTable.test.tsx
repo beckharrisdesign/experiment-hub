@@ -879,6 +879,23 @@ describe("KeywordTable — export", () => {
   });
 });
 
+describe("KeywordTable — frozen column edge", () => {
+  it("draws the edge with pseudo-elements, not a cell border", () => {
+    // A regression guard, not proof it renders: jsdom does not compute
+    // pseudo-element styles. What it does catch is the edge reverting to
+    // `border-r` + `box-shadow`, which is what was there before and which
+    // renders NOTHING under `border-collapse: collapse` — the styles compute
+    // exactly as written and the browser paints neither.
+    render(<KeywordTable rows={ROWS} />);
+    fireEvent.click(screen.getByRole("button", { name: /Freeze keyword/ }));
+
+    const firstCell = bodyRows()[0].querySelectorAll("td")[0];
+    expect(firstCell.className).toContain("sticky");
+    expect(firstCell.className).toContain("before:bg-accent-primary");
+    expect(firstCell.className).not.toContain("border-r ");
+  });
+});
+
 describe("KeywordTable — presence filters", () => {
   it("narrows to rows that have a value, and shows a removable chip", async () => {
     render(<KeywordTable rows={ROWS} />);

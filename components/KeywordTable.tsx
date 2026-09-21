@@ -32,12 +32,25 @@ const FROZEN_LABEL_OFFSET = 12;
  *
  * Without it a pinned column reads as a gap rather than as a column holding
  * its ground — Katy, 2026-09-21: "lets also include a shadow on the frozen
- * col so I can tell that's what is going on." The shadow is the only thing
- * that says the columns beneath it are passing underneath rather than
- * missing.
+ * col so I can tell that's what is going on", then "still missing the frozen
+ * column" when the first attempt drew nothing.
+ *
+ * Drawn with pseudo-elements rather than `border-r` + `box-shadow`, because
+ * the table is `border-collapse: collapse` and under it a cell's own border
+ * is merged away and its shadow paints beneath the neighbouring cells — the
+ * styles compute exactly as written and render nothing. design.md Decision 12
+ * predicted this ("sticky cells under border-collapse drop their borders");
+ * this is what it looks like when it happens. The sticky cell is already a
+ * positioned, stacked box, so an absolutely-positioned child of it escapes
+ * the collapse entirely and paints above its siblings.
+ *
+ * `before` is the line, at full accent so it reads on the dark green; `after`
+ * is the falloff to its right. A plain black shadow was the first attempt and
+ * is close to invisible on `#194b31`.
  */
 const FROZEN_EDGE =
-  "shadow-[6px_0_8px_-4px_rgba(0,0,0,0.55)] border-r border-accent-primary/40";
+  "before:pointer-events-none before:absolute before:inset-y-0 before:right-0 before:z-10 before:w-[2px] before:bg-accent-primary before:content-[''] " +
+  "after:pointer-events-none after:absolute after:inset-y-0 after:left-full after:z-10 after:w-4 after:bg-gradient-to-r after:from-black/45 after:to-transparent after:content-['']";
 
 const ALL = "__all__";
 const NO_RANGE = "__none__";
