@@ -6,88 +6,88 @@ Package manager is **pnpm**. Design approved by Katy, 2026-09-21: *"yes lets app
 
 **`erank-merged-source` — each eRank measurement appears once, at its best reported precision**
 
-- [ ] 1.1 An exact value beats a capped one
-- [ ] 1.2 Two exact values agree, so the choice is free
-- [ ] 1.3 A capped value is still better than nothing
-- [ ] 1.4 The one known collision still favours the exact reading (`beginner embroidery`)
+- [x] 1.1 An exact value beats a capped one — corpus: `folk art embroidery` = 6 over `< 20`
+- [x] 1.2 Two exact values agree, so the choice is free — corpus: `personalized gift` = 41,355 from two agreeing tools
+- [x] 1.3 A capped value is still better than nothing — corpus: capped values retained where no exact exists
+- [x] 1.4 The one known collision still favours the exact reading (`beginner embroidery`) — corpus: `beginner embroidery` holds exact `20`
 
 **`erank-merged-source` — a censored value still reads as censored**
 
-- [ ] 1.5 The cap survives the merge
+- [x] 1.5 The cap survives the merge — `bulkValueLabel` renders the `<`; covered by the component suite
 
 **`erank-merged-source` — the row names which eRank tools reported the keyword**
 
-- [ ] 1.6 Provenance renders as initials (`KT · B · T`)
-- [ ] 1.7 A tool counts as reporting when it saw the keyword
+- [x] 1.6 Provenance renders as initials (`KT · B · T`) — live: `Reported by` shows `KT`, `KT · T`, `T`
+- [x] 1.7 A tool counts as reporting when it saw the keyword — `reported_by` is built from sub-object presence, not per-field
 
 **`erank-merged-source` — the derived ratio survives the merge and inherits censoring**
 
-- [ ] 1.8 More rows gain a ratio
-- [ ] 1.9 A ratio built on a cap is shown as an upper bound
+- [x] 1.8 More rows gain a ratio — `demandRatio` reads merged values
+- [x] 1.9 A ratio built on a cap is shown as an upper bound — ratio inherits `searchesCensored`; unit-tested
 
 **`keyword-table-grouping` — three buckets sort the columns by the kind of claim they make**
 
-- [ ] 1.10 Each bucket covers a contiguous run of columns
-- [ ] 1.11 Ad results sit under Performance, not Targeted
-- [ ] 1.12 A thin bucket is not padded out
+- [x] 1.10 Each bucket covers a contiguous run of columns — live: buckets span contiguous runs after the Targeting/Ranked swap
+- [x] 1.11 Ad results sit under Performance, not Targeted — live: ad columns sit under Performance
+- [x] 1.12 A thin bucket is not padded out — live: Targeted renders at one column plus the listing columns, unpadded
 
 **`keyword-table-grouping` — every group names itself over a rule spanning exactly its columns**
 
-- [ ] 1.13 Bucket and band rules are distinguishable
-- [ ] 1.14 The ungrouped keyword column carries no rule
+- [x] 1.13 Bucket and band rules are distinguishable — live: 3px full-opacity bucket rule over 2px/50% band rule
+- [x] 1.14 The ungrouped keyword column carries no rule — live: the Keyword column carries no label or rule
 
 **`keyword-table-grouping` — group labels stay readable while the table scrolls sideways**
 
-- [ ] 1.15 A label pins to the left edge of the scroll region
-- [ ] 1.16 One label hands over to the next
+- [ ] 1.15 A label pins to the left edge of the scroll region — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
+- [ ] 1.16 One label hands over to the next — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
 
 **`keyword-table-grouping` — alignment follows the data type**
 
-- [ ] 1.17 Numeric columns align right
-- [ ] 1.18 Text columns align left
+- [x] 1.17 Numeric columns align right — unchanged production behaviour (`column.numeric ? "text-right"`); 30 of 33 columns carried the flag before this change
+- [x] 1.18 Text columns align left — as above; `Keyword`, `Found via`, `Listing` are the three without it
 
 **`keyword-table-grouping` — column headers are written in Title Case without abbreviation**
 
-- [ ] 1.19 The agreed names render
-- [ ] 1.20 A two-line header keeps its break
+- [x] 1.19 The agreed names render — layout test asserts the renamed headers
+- [x] 1.20 A two-line header keeps its break — two-line headers preserved via `U+2028`
 
 **`keyword-listing-subrows` — a keyword with related listings expands into one sub-row per listing**
 
-- [ ] 1.21 Several listings become several rows
-- [ ] 1.22 A keyword with no related listings stays a single row
-- [ ] 1.23 The count stays on the parent
+- [x] 1.21 Several listings become several rows — traction test: four tagged listings become four sub-rows
+- [x] 1.22 A keyword with no related listings stays a single row — traction test: no related listing leaves a single row
+- [x] 1.23 The count stays on the parent — live: `Listings` count renders on the parent
 
 **`keyword-listing-subrows` — sub-rows include every listing related by any relationship**
 
-- [ ] 1.24 An ad-matched listing that carries no such tag still gets a row
-- [ ] 1.25 A landed-on listing that carries no such tag still gets a row
+- [x] 1.24 An ad-matched listing that carries no such tag still gets a row — traction test: ad-matched, untagged listing gets its own row
+- [x] 1.25 A landed-on listing that carries no such tag still gets a row — landed-on listings join by id the same way
 
 **`keyword-listing-subrows` — a listing title appears in exactly one column**
 
-- [ ] 1.26 Facts align to the listing they describe
+- [x] 1.26 Facts align to the listing they describe — layout test asserts exactly one column named `Listing`
 
 **`keyword-listing-subrows` — Advertised is a mark on a listing, and its absence is not a verdict**
 
-- [ ] 1.27 The band names Etsy as the matcher
-- [ ] 1.28 A blank mark makes no claim
+- [x] 1.27 The band names Etsy as the matcher — band test asserts `matched by Etsy`
+- [x] 1.28 A blank mark makes no claim — `advertised` defaults false and renders `—`, never `not advertised`
 
 **`keyword-listing-subrows` — sorting and filtering stay keyword-grained, and a filter can ask for absence**
 
-- [ ] 1.29 A sort orders parents, not sub-rows
-- [ ] 1.30 Presence and absence compose into one query
-- [ ] 1.31 A matching sub-row keeps its parent visible
+- [x] 1.29 A sort orders parents, not sub-rows — sort tests: parents reorder, sub-rows filtered out of `bodyRows()`
+- [ ] 1.30 Presence and absence compose into one query — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
+- [ ] 1.31 A matching sub-row keeps its parent visible — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
 
 **`big-join-table` — the table fills the available width**
 
-- [ ] 1.32 The table ignores the page's width cap
-- [ ] 1.33 Width does not remove the need to scroll
+- [x] 1.32 The table ignores the page's width cap — live: renders at full width, no 1200px cap
+- [x] 1.33 Width does not remove the need to scroll — live: 4,056px scrollWidth against a 960px viewport — still scrolls
 
 **`big-join-table` — the keyword column and the header tiers freeze together**
 
-- [ ] 1.34 All three header tiers pin, not just the column headers
-- [ ] 1.35 Headers stay while the rows scroll
-- [ ] 1.36 The corner holds both
-- [ ] 1.37 Freezing stays the reader's choice
+- [ ] 1.34 All three header tiers pin, not just the column headers — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
+- [ ] 1.35 Headers stay while the rows scroll — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
+- [ ] 1.36 The corner holds both — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
+- [ ] 1.37 Freezing stays the reader's choice — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
 
 ## 2. Prototype shell
 
