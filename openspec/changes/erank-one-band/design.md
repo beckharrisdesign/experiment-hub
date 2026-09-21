@@ -72,16 +72,19 @@ Taken from `COLUMNS` in `components/KeywordTable.tsx`, not from the proposal's p
 | --- | --- |
 | Primary file URL | [`5zM3iearA5XFhHdjA0lV4D`](https://www.figma.com/design/5zM3iearA5XFhHdjA0lV4D/Document?node-id=7-2) — shared with #508 at Katy's direction, 2026-09-20: *"lets use the figma from 508 to kick off 509."* |
 | Round 02.3 | Page `02.3 Proposed — full table` (`7:2`) — the whole table, both states, drawn from the corpus. Frames `7:3` and `7:255`. **Superseded.** Left as delivered, with Katy's header copy marked on `7:255` — that markup is her feedback on this round, and is what 02.4 answers. |
-| Round 02.4 *(current)* | Page `02.4 Proposed — alignment + header copy` (`11:2`). |
-| As-is frame | `Round 02.4 — Current state · 33 columns` (`11:3`), 3,325 × 368. All 33 columns across 7 bands, production's header copy, production's alignment. The three eRank bands visibly repeat Searches / Competition / KD. |
-| Proposed frame | `Round 02.4 — Proposed · 26 columns` (`11:255`), 2,717 × 381. One eRank band of 10; `Ranked`, `Targeting`, `Shop — captured` and `Etsy Ads` carry the same columns, values and order as the as-is frame. Carries **Katy's header copy (Decision 9)** and **alignment by data type (Decision 8)**. |
+| Round 02.4 | Page `02.4 Proposed — alignment + header copy` (`11:2`), frames `11:3` / `11:255`. **Superseded.** Katy marked a further copy edit on it — `Tag Occurrence` → `Tag Count` — which 02.5 carries. |
+| Round 02.5 *(current)* | Page `02.5 Proposed — band rules` (`12:2`). |
+| As-is frame | `Round 02.5 — Current state · 33 columns` (`12:3`), 3,325 × 374. All 33 columns across 7 bands, production's header copy and alignment, **and production's per-band rules** — which is what makes the three eRank bands read as three repetitions of the same measurement rather than one long row of headers. |
+| Proposed frame | `Round 02.5 — Proposed · 26 columns` (`12:255`), 2,717 × 387. One eRank band of 10; `Ranked`, `Targeting`, `Shop — captured` and `Etsy Ads` carry the same columns, values and order as the as-is frame. Carries **Katy's header copy (Decision 9)**, **alignment by data type (Decision 8)** and **the band rules (Decision 10)**. |
 | Data | Not mocked. Six real rows rendered through the app's own formatting rules (`num`, `bulkValueLabel`, `demandRatio`) from `data/keyword-corpus.json`. `mandala embroidery pattern` is included specifically because it is one of the few rows carrying **both** Shop and Etsy Ads data, so those bands are populated rather than dashes in both frames. `folk art embroidery` shows the precision merge; `beginner embroidery` shows the Decision 2 collision. |
 | Libraries / version | **None — gate still open.** `get_libraries` on this file returns `libraries_added_to_file: []`, and MVDS is not among the libraries available to add, so it cannot be enabled from here at all. Drawn on `app/globals.css` tokens (`--color-background-primary` `#194b31`, `--color-background-secondary` `#113723`, `--color-text-primary` `#cff7d3`, `--color-text-muted` `#4d9a60`, `--color-accent-primary` `#14ae5c`). Inter throughout; Fraunces headings not used, so the titles are not type-faithful. |
 | Code Connect | No mappings to update. |
 | Breakpoints | S · 480px / L · 1024px. Both frames draw the full table at its natural width, which is what the Big Join rule accepts at every breakpoint. |
-| Status | Round 02.4 current, verified by screenshot. 02.3 superseded but kept. **MVDS gate open.** |
+| Status | Round 02.5 current, verified by screenshot. 02.3 and 02.4 superseded but kept. **MVDS gate open.** |
 
 **Each revision is a new numbered page.** Katy, 2026-09-21: *"that should have been 2.4."* The alignment fix and her header copy were first applied on top of 02.3, which overwrote the round rather than answering it. Corrected: 02.3 is restored to how it was delivered (with her copy marks left on it, since those are hers) and **02.4 is the round that carries the response**. `rules/figma.mdc`'s page-per-iteration convention exists so a round stays readable as the thing that was actually reviewed — editing it afterwards destroys the record of what Katy responded to.
+
+**One deviation in the band rule.** Production's rule spans the band's content box — `colSpan` width minus each `th`'s `px-3` padding — so the gaps between rules are that padding. The drawing spans the full band width including inter-column gaps. Visually equivalent at this scale; the implementation should follow the CSS, not measure the frame.
 
 **Drawn width is not production width.** These frames are 3,325px and 2,717px; production measured **5,108px** for the as-is. The frames use compact hugging widths and six rows, so the absolute numbers understate — #508 recorded the same error at 66%. What the pair is evidence *for* is which columns exist and where, not how wide the result will be.
 
@@ -103,11 +106,11 @@ Taken from `COLUMNS` in `components/KeywordTable.tsx`, not from the proposal's p
 
 Because it reads the Keyword Tool sub-object directly, it renders on **1,931 rows today**. Recomputed from the *merged* searches and competition it renders on **2,078** — 147 more. Of those 147, **114 rest on a censored searches value**, where the true ratio is an upper bound rather than a number. Consistent with Decision 6, the ratio inherits the censoring and renders `< 0.003` rather than `0.003`; the remaining 33 gain an exact ratio. `demandRatio()` changes signature from the Keyword Tool sub-object to the merged one, and returns the censored flag alongside the value.
 
-**8 — Alignment follows the data type: numbers right, dates right, text left.** Katy, 2026-09-21. This is **not a new behaviour** — `components/KeywordTable.tsx:917` and `:946` already render `column.numeric ? "text-right" : "text-left"`, and 30 of the 33 columns carry `numeric: true`. The three left-aligned columns are `Keyword`, `Found via` and `Listing`, which are the three without a `value` accessor. Round 02.3 was drawn uniformly left-aligned, which misrepresented production; **round 02.4** corrects both frames to match. **No code change is required for numbers or text.**
+**8 — Alignment follows the data type: numbers right, dates right, text left.** Katy, 2026-09-21. This is **not a new behaviour** — `components/KeywordTable.tsx:917` and `:946` already render `column.numeric ? "text-right" : "text-left"`, and 30 of the 33 columns carry `numeric: true`. The three left-aligned columns are `Keyword`, `Found via` and `Listing`, which are the three without a `value` accessor. Round 02.3 was drawn uniformly left-aligned, which misrepresented production; **round 02.4** corrected both frames to match. **No code change is required for numbers or text.**
 
 **There is no date column today**, so the date half of the rule has nothing to bind to yet. It is recorded as the standing rule for the table so that the next date field — a capture date is the obvious candidate, since every source sub-object already carries `capture` — lands right-aligned without re-litigating it. `Tag slot` is worth noting: it reads as text but carries `numeric: true` in code and so renders right today; the drawing follows production rather than quietly reclassifying it.
 
-**9 — Header copy: Title Case, fewer abbreviations, clearer names.** Katy edited the proposed frame directly, 2026-09-21: *"title case, less abbreviation, more clarity."* She marked them on round 02.3's `7:255`; they are carried verbatim into round 02.4's `11:255` and are the contract for the rename:
+**9 — Header copy: Title Case, fewer abbreviations, clearer names.** Katy edited the proposed frame directly, 2026-09-21: *"title case, less abbreviation, more clarity."* She marked them on round 02.3's `7:255`; they are carried verbatim into round 02.5's `12:255` and are the contract for the rename:
 
 | Today | Proposed |
 | --- | --- |
@@ -115,7 +118,7 @@ Because it reads the Keyword Tool sub-object directly, it renders on **1,931 row
 | `Etsy comp.` | `Etsy Competition` |
 | `Avg CTR` | `Avg CTR %` |
 | `Google` (Tag Report) | `Google Volume` |
-| `Tag occ.` | `Tag Occurrence` |
+| `Tag occ.` | `Tag Count` |
 | `S / comp.` | `Search / Competition` |
 | `Best pos.` | `Best Position` |
 | `Tag slot` | `Tag Slot` |
@@ -124,9 +127,15 @@ Because it reads the Keyword Tool sub-object directly, it renders on **1,931 row
 
 **This grows the change.** Consolidating eRank does not by itself require renaming `Best Position` or `Tag Slot`, which live in bands this change otherwise does not touch. The rename is carried anyway because the table is read as one surface and a half-renamed header row is worse than either end state. **Still open:** the Shop and Etsy Ads headers Katy did not reach — `L. sold`, `L. revenue`, `Click rate`, `Views`, `Clicks` — remain abbreviated, and whether her rule extends to them is her call, not an inference.
 
+**10 — The per-band rule comes back, copied from production rather than invented.** Katy, 2026-09-21: *"we've lost this horizontal rule pattern — it was a really easy way of seeing what cols were grouped together."* She is right that it was lost, and it was lost in my drawing, not in the app: `components/KeywordTable.tsx:884` renders each band label inside `<span class="block border-b-2 border-accent-primary/50 pb-1">`, so every band already carries a 2px accent rule spanning exactly its `colSpan`, with the gaps between rules falling in each `th`'s `px-3` padding. Rounds 02.3 and 02.4 drew a single rule under the whole header row instead, which is a different statement — it separates header from body but says nothing about grouping.
+
+Round 02.5 restores the real thing, and with it the rest of the band-label treatment the earlier rounds had also flattened: **uppercase with letter-spacing**, `--color-text-secondary` rather than accent, and the window in **parentheses, normal-case, muted** (`Shop — captured (this year)`) rather than folded into the label with a `·`. The band names now match `GROUPS` exactly, including `Etsy Ads — targeted`, which the earlier rounds had shortened to `Etsy Ads`.
+
+**This matters more to this change than to any other.** The argument for merging is that three bands report one measurement, and the per-band rule is what makes that visible at a glance in the as-is frame — three separate underlines over three repetitions of Searches / Competition / KD. Without it the duplication has to be read column by column. **No code change: the app already does this; the drawing was wrong.**
+
 ## Risks / Trade-offs
 
-**The MVDS gate is open, and it is now known to be un-closeable from here.** Round 02.4 is token-faithful but component-free, and `get_libraries` shows MVDS is not even offered to this file — so enabling it is a Figma UI action of Katy's, not a step that was skipped. This change ships no new controls, so the exposure is smaller than #508's: the risk is that the *drawing* is off, not the build.
+**The MVDS gate is open, and it is now known to be un-closeable from here.** Round 02.5 is token-faithful but component-free, and `get_libraries` shows MVDS is not even offered to this file — so enabling it is a Figma UI action of Katy's, not a step that was skipped. This change ships no new controls, so the exposure is smaller than #508's: the risk is that the *drawing* is off, not the build.
 
 **"Zero contradictions" is a claim about today's corpus, not a property of eRank.** Every comparison count here is in the tens, not the thousands, because the three exports overlap on few keywords. The merge rule is safe on the evidence available and would need re-checking if the corpus grew substantially — the rule picks the first non-null on the assumption that exact values agree, and that assumption is measured, not guaranteed.
 
