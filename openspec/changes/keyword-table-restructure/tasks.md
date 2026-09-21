@@ -121,20 +121,20 @@ Package manager is **pnpm**. Design approved by Katy, 2026-09-21: *"yes lets app
 
 - [x] 3.11 Collapse the three eRank column groups into one; drop the six duplicated columns; add `Reported by`. — eRank's 17 columns replaced by 10, including `Reported by`.
 - [x] 3.12 Apply the agreed header copy and keep deliberate two-line breaks. — Header copy applied: Search Volume, Etsy Competition, Avg CTR %, Google Volume, Tag Count, Search / Competition.
-- [ ] 3.13 Reorder `Targeting` before `Ranked` so the buckets are contiguous.
-- [ ] 3.14 Add the bucket tier above the bands, with a heavier rule than the band rule. Keep each rule spanning exactly its own columns (`:884` already does this for bands).
-- [ ] 3.15 Pin bucket and band labels to the left edge of the scroll region — `position: sticky` on the label span, offset by the frozen column width.
+- [x] 3.13 Reorder `Targeting` before `Ranked` so the buckets are contiguous. — `Targeting` ordered before `Ranked` in `GROUPS`; buckets are contiguous.
+- [x] 3.14 Add the bucket tier above the bands, with a heavier rule than the band rule. Keep each rule spanning exactly its own columns (`:884` already does this for bands). — `BUCKETS` tier renders above the bands with a 3px full-opacity rule against the band's 2px at 50%.
+- [x] 3.15 Pin bucket and band labels to the left edge of the scroll region — `position: sticky` on the label span, offset by the frozen column width. — Bucket and band labels are `position: sticky` on the label span, offset by `FROZEN_LABEL_OFFSET`.
 - [ ] 3.16 Extend `sticky left-0` to the bucket and band cells of the keyword column; `:901` and `:944` cover only the header row and body cells today.
-- [ ] 3.17 Add `sticky top-0` to the header tiers, with z-order such that the frozen corner sits above both.
-- [ ] 3.18 Render listing sub-rows: parent stays keyword-grained; membership is the union of tagged, ad-matched, landed-on and ranked listings; one `Listing` column, everything else an attribute on that row.
+- [x] 3.17 Add `sticky top-0` to the header tiers, with z-order such that the frozen corner sits above both. — `<thead className="sticky top-0 z-30">` with opaque cell backgrounds so rows do not show through.
+- [x] 3.18 Render listing sub-rows: parent stays keyword-grained; membership is the union of tagged, ad-matched, landed-on and ranked listings; one `Listing` column, everything else an attribute on that row. — Sub-rows render under each parent from `row.listings`; one `Listing` column, everything else via `renderListing`. Shop's duplicate `Listing` column removed.
 - [ ] 3.19 Keep sort and filter keyword-grained — sub-rows travel with their parent, and a sub-row match keeps its parent visible.
-- [ ] 3.20 Add presence/absence filters per column, composable with the existing range filters.
+- [x] 3.20 Add presence/absence filters per column, composable with the existing range filters. — `PresenceFilter` + `columnHasValue()`; a Select adds has/no per column, chips remove them, ANDed with the range filters.
 - [x] 3.21 Rename the Ads band to attribute the match to Etsy. — Ads band relabelled `Etsy Ads — matched by Etsy`.
 - [x] 3.22 Re-point the three eRank source filters at `reportedBy` — they read the sub-objects the merge deletes (`:422-424`) and break silently otherwise. — The three eRank source filters now read `erank.reportedBy`.
 
 **Page — `app/keyword-explorer/page.tsx`**
 
-- [ ] 3.23 Break the `max-w-[1200px]` cap on this route only (`:53`). Leave the rest of the site's width rule alone.
+- [x] 3.23 Break the `max-w-[1200px]` cap on this route only (`:53`). Leave the rest of the site's width rule alone. — `max-w-[1200px]` dropped on this route only.
 
 **Tests**
 

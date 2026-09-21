@@ -50,7 +50,14 @@ export default async function KeywordExplorerPage() {
   return (
     <div className="min-h-screen">
       <main className="w-full p-8">
-        <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6">
+        {/*
+        Full bleed, deliberately breaking the site's usual max-w-[1200px]
+        (design.md Decision 12). Every pixel withheld is a column the reader
+        has to scroll for. Honest accounting: at 1440 this buys ~240px, about
+        three narrow columns, and the table still scrolls — it does not make a
+        2,700px join fit.
+      */}
+      <div className="flex w-full flex-col gap-6">
           <header className="flex flex-col gap-2">
             <h2 className="text-2xl font-semibold text-text-primary">
               Keyword Explorer
