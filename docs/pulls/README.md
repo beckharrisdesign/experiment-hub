@@ -142,20 +142,29 @@ Then write the note **with its front-matter** and re-run with `--apply` to refre
 | --- | --- | --- | --- | --- | --- |
 | 2026-09-21 | [Etsy listing stats, this year + since day 0, captured 2026-09-21](2026-09-21-etsy-listing-stats.md) | `visibility`, `conversion` | `listing` | 1 × csv | unknown · 1/2 |
 | 2026-09-21 | [Etsy Ads per-listing keywords, captured 2026-09-21](2026-09-21-etsy-ads-listing-keywords.md) | `visibility`, `spend` | `listing` | — *(Drive)* | 🟢 fresh |
-| 2026-09-21 | [eRank Spotted on Etsy, checks of 2026-09-20, read 2026-09-21](2026-09-21-erank-spotted-on-etsy.md) | `rank` | `listing` | 1 × csv | unknown · 1/2 |
+| 2026-09-21 | [eRank Spotted on Etsy, checks of 2026-09-20, read 2026-09-21](2026-09-21-erank-spotted-on-etsy.md) | `rank` | `listing` | 1 × csv | unknown · 1/4 |
 | 2026-09-21 | [eRank keyword history, 124 keywords, captured 2026-09-21](2026-09-21-erank-keyword-history.md) | `demand` | `market` | 1 × csv | ⏹ superseded · 2/2 |
 | 2026-09-21 | [eRank keyword history, method probe, 2026-09-21](2026-09-21-erank-keyword-history-probe.md) | `demand` | `market` | 1 × csv | 🟢 fresh · 1/2 |
 | 2026-09-21 | [eRank Bulk Keywords, 7 runs, 124 keywords, captured 2026-09-21](2026-09-21-erank-bulk-keywords.md) | `demand`, `difficulty` | `market` | 7 × csv | 🟢 fresh · 1/2 |
 | 2026-09-20 | [Etsy listing stats, Jan–Sep 2026](2026-09-20-etsy-listing-stats.md) | `visibility`, `conversion` | `listing` | 1 × csv | ⏹ superseded · 2/2 |
+| 2026-09-20 | [Etsy Ads daily stats, Jan 1 – Sep 20, 2026, captured 2026-09-20](2026-09-20-etsy-ads-stats.md) | `spend`, `visibility`, `conversion` | `shop` | 2 × csv | unknown · 1/4 |
 | 2026-09-20 | [eRank Tag Report, 404 tags, captured 2026-09-20](2026-09-20-erank-tag-report.md) | `demand`, `difficulty` | `shop` | 1 × csv | 🟢 fresh · 1/2 |
-| 2026-09-18 | [eRank Keyword Tool, 12 seeds, captured 2026-09-18](2026-09-18-erank-keywords.md) | `demand` | `market` | 12 × csv | 🟢 fresh · 1/2 |
-| 2026-09-18 | [eRank Bulk Keywords, 6 exports, captured 2026-09-18](2026-09-18-erank-bulk-keywords.md) | `demand` | `market` | 6 × csv | ⏹ superseded · 2/2 |
+| 2026-09-20 | [eRank Spotted on Etsy, checks of 2026-09-19, captured 2026-09-20](2026-09-20-erank-spotted-on-etsy.md) | `rank` | `listing` | 1 × csv | ⏹ superseded · 2/4 |
+| 2026-09-18 | [Etsy Ads daily stats, Jan 1 – Sep 18, 2026, captured 2026-09-18](2026-09-18-etsy-ads-stats.md) | `spend`, `visibility`, `conversion` | `shop` | 1 × csv | ⏹ superseded · 2/4 |
+| 2026-09-18 | [eRank Keyword Tool, 12 seeds, captured 2026-09-18](2026-09-18-erank-keywords.md) | `demand` | `market` | 30 × csv | 🟢 fresh · 1/3 |
+| 2026-09-18 | [eRank Bulk Keywords, 6 exports, captured 2026-09-18](2026-09-18-erank-bulk-keywords.md) | `demand` | `market` | 12 × csv | ⏹ superseded · 2/2 |
 | 2026-09-17 | [Etsy dashboard title suggestions, captured 2026-09-17](2026-09-17-etsy-title-suggestions.md) | `content` | `shop` | — *(Drive)* | 🟢 fresh |
-| 2026-09-17 | [eRank "Spotted on Etsy", captured 2026-09-17](2026-09-17-erank-spotted-on-etsy.md) | `position` | `shop` | 2 × csv | ⏹ superseded · 2/2 |
-| 2026-09-17 | [eRank Keyword Tool, 10 seeds, captured 2026-09-17](2026-09-17-erank-keywords.md) | `demand` | `market` | 50 × csv | ⏹ superseded · 2/2 |
+| 2026-09-17 | [Etsy Ads daily stats, Jan 1 – Sep 17, 2026, captured 2026-09-17](2026-09-17-etsy-ads-stats.md) | `spend`, `visibility`, `conversion` | `shop` | 1 × csv | ⏹ superseded · 3/4 |
+| 2026-09-17 | [eRank "Spotted on Etsy", captured 2026-09-17](2026-09-17-erank-spotted-on-etsy.md) | `position` | `shop` | 2 × csv | ⏹ superseded · 3/4 |
+| 2026-09-17 | [eRank Keyword Tool, 10 seeds, captured 2026-09-17](2026-09-17-erank-keywords.md) | `demand` | `market` | 53 × csv | ⏹ superseded · 2/3 |
 | 2026-09-16 | [Etsy monthly statements, Dec 2025 – Sep 2026](2026-09-16-etsy-statements.md) | `conversion`, `spend` | `shop` | — *(Drive)* | ⚪ permanent |
 | 2026-09-16 | [Etsy Ads dashboard, captured 2026-09-16](2026-09-16-etsy-ads-dashboard.md) | `spend`, `conversion` | `shop` | — *(Drive)* | 🟢 fresh |
 | 2026-09-15 | [eRank, 2026-09-15](2026-09-15-erank.md) | `demand`, `competition` | `market` | 1 × csv | ⏹ superseded · 2/2 |
+| 2026-08-23 | [eRank Spotted on Etsy, check of 2026-08-22, captured 2026-08-23](2026-08-23-erank-spotted-on-etsy.md) | `rank` | `listing` | 1 × csv | ⏹ superseded · 4/4 |
+| 2026-08-23 | [eRank Keyword Tool, seed `embroidery designs`, captured 2026-08-23](2026-08-23-erank-keywords.md) | `demand` | `market` | 1 × csv | ⏹ superseded · 3/3 |
+| 2026-08-14 | [eRank Listings, 27 listings, captured 2026-08-14](2026-08-14-erank-listings.md) | `visibility`, `demand` | `listing` | 1 × csv | 🟡 aging |
+| 2026-08-04 | [eRank Health Check, 19 listings, captured 2026-08-04](2026-08-04-erank-health-check.md) | `completeness` | `listing` | 1 × csv | 🟡 aging |
+| 2026-07-25 | [Etsy Ads daily stats, Jun 25 – Jul 25, 2026, captured 2026-07-25](2026-07-25-etsy-ads-stats.md) | `spend`, `visibility`, `conversion` | `shop` | 1 × csv | ⏹ superseded · 4/4 |
 <!-- inventory:end -->
 
 *Generated by `scripts/ingest-pulls.py --apply`, alongside `index.json`. Don't hand-edit between the markers.*

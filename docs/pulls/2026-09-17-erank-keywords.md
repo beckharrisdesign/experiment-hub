@@ -182,3 +182,7 @@ Nothing here justifies a mid-window change. The tag experiment still closes 2026
 ## Where this plugs into the map
 
 Intelligence tier 3 (external tools) → evidence → product and tagging strategy. Sixth archived pull, and the first pointed at markets outside the current catalogue. The eRank trio now reads: [tag report](2026-09-15-erank.md) = demand for terms we use; this = demand for terms we don't; [Spotted on Etsy](2026-09-17-erank-spotted-on-etsy.md) = where we actually rank.
+
+## Addendum — three more exports from the same day, landed 2026-09-21
+
+Found un-landed in `~/Downloads`: `2026-09-17-erank-keywords-geometric-wreath.csv` (3 rows), `…-geometric-wreath-1.csv` (4 rows, the same pull re-exported with one extra row) and `…-small-gift-for-her.csv` (4 rows). Seeds taken from the shop's own ranked terms. Their related lists are `wreath sash`, `washi tape`, `hobonichi weeks`, `islamic wall art`, `labradorite necklace`, `compact mirror`, `best selling items` — nothing to do with the seeds, which is §0's guardrail in miniature: below a certain seed volume the Keyword Tool fills its list with whatever is trending. Landed for completeness; read by the ingest; changes nothing.
