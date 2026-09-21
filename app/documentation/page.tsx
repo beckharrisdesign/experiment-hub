@@ -4,7 +4,6 @@
 // snapshot.
 export const dynamic = "force-dynamic";
 
-import Sidebar from "@/components/Sidebar";
 import { getDocumentation, getExperimentById } from "@/lib/data";
 import { slugify } from "@/lib/utils";
 import Link from "next/link";
@@ -24,9 +23,8 @@ export default async function DocumentationPage() {
   );
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="ml-64 flex-1 p-8">
+    <div className="min-h-screen">
+      <main className="w-full p-8">
         <div className="mx-auto max-w-4xl">
           <h2 className="mb-6 text-2xl font-semibold text-text-primary">Documentation</h2>
           {docsWithExperiments.length === 0 ? (

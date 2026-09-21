@@ -5,7 +5,6 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import Sidebar from "@/components/Sidebar";
 import { getPrototypes, getExperimentById } from "@/lib/data";
 import { slugify } from "@/lib/utils";
 import StatusBadge from "@/components/StatusBadge";
@@ -29,9 +28,8 @@ export default async function PrototypesPage() {
   );
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="ml-64 flex-1 p-8">
+    <div className="min-h-screen">
+      <main className="w-full p-8">
         <div className="mx-auto max-w-4xl">
           <h2 className="mb-6 text-2xl font-semibold text-text-primary">
             Prototypes
