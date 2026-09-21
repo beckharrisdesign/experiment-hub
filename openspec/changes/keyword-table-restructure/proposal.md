@@ -1,4 +1,6 @@
-# erank-one-band
+# keyword-table-restructure
+
+> **Renamed 2026-09-21** (was `erank-one-band`). The proposal below is the original eRank merge, unchanged and still the change's starting point. It has since grown — header copy, band order, a bucket tier, full bleed, a frozen corner, and listings inside Targeted — at Katy's direction across rounds 02.3–02.8. Those additions live in `design.md` as Decisions 8–13; this file is left as written so the original argument stays readable. Katy, 2026-09-21: *"yes you can rename it."*
 
 ## Human anchor
 

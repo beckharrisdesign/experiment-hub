@@ -16,7 +16,7 @@ function listing(
   tags: string[],
   state: string = "active",
 ): RawListing {
-  return { listing_id: id, tags, state };
+  return { listing_id: id, tags, state, title: `Listing ${id}` };
 }
 
 describe("computeTargeting", () => {
@@ -27,7 +27,7 @@ describe("computeTargeting", () => {
     );
     expect(result.get("snow globe")).toEqual({
       best: 2,
-      matches: [{ listingId: 1, slot: 2 }],
+      matches: [{ listingId: 1, slot: 2, title: "Listing 1" }],
     });
   });
 
@@ -72,8 +72,8 @@ describe("computeTargeting", () => {
     const result = computeTargeting(
       ["snow globe"],
       [
-        { listing_id: 1, tags: null, state: "active" },
-        { listing_id: 2, tags: undefined, state: "active" },
+        { listing_id: 1, tags: null, state: "active", title: "Listing 1" },
+        { listing_id: 2, tags: undefined, state: "active", title: "Listing 2" },
       ],
     );
     expect(result.size).toBe(0);
@@ -101,7 +101,7 @@ describe("computeTargeting", () => {
     );
     expect(result.get("snow globe")).toEqual({
       best: 1,
-      matches: [{ listingId: 2, slot: 1 }],
+      matches: [{ listingId: 2, slot: 1, title: "Listing 2" }],
     });
   });
 });
@@ -109,6 +109,20 @@ describe("computeTargeting", () => {
 function keywordRow(overrides: Partial<KeywordRow>): KeywordRow {
   return {
     keyword: "snow globe",
+    erank: {
+      searches: 210,
+      searchesCensored: false,
+      competition: 180,
+      kd: 22,
+      avgClicks: null,
+      avgClicksCensored: false,
+      avgCtr: null,
+      avgCtrCensored: false,
+      googleSearches: null,
+      tagOccurrences: null,
+      foundVia: [],
+      reportedBy: ["KT"],
+    },
     keywordTool: {
       searches: 210,
       competition: 180,
@@ -151,13 +165,14 @@ describe("withTargeting", () => {
   it("merges a real Targeting match onto the matching row", async () => {
     const { withTargeting } = await import("@/lib/keyword-traction");
     mockGetLatestListingSnapshots.mockResolvedValue([
-      { listing_id: 1, tags: ["snow globe"], state: "active" },
+      { listing_id: 1, tags: ["snow globe"], state: "active", title: "Listing 1" },
     ]);
 
-    const [result] = await withTargeting([keywordRow({})]);
+    const { rows: out } = await withTargeting([keywordRow({})]);
+    const [result] = out;
     expect(result.targeting).toEqual({
       best: 1,
-      matches: [{ listingId: 1, slot: 1 }],
+      matches: [{ listingId: 1, slot: 1, title: "Listing 1" }],
     });
   });
 
@@ -171,7 +186,7 @@ describe("withTargeting", () => {
       keywordRow({ keyword: "snow globe" }),
       keywordRow({ keyword: "gift" }),
     ];
-    const result = await withTargeting(rows);
+    const { rows: result } = await withTargeting(rows);
 
     expect(result).toHaveLength(2);
     expect(result.every((r) => r.targeting === null)).toBe(true);
@@ -189,11 +204,76 @@ describe("withTargeting", () => {
 
     const staleRow = keywordRow({
       keyword: "snow globe",
-      targeting: { best: 1, matches: [{ listingId: 1, slot: 1 }] },
+      targeting: { best: 1, matches: [{ listingId: 1, slot: 1, title: "Listing 1" }] },
     });
-    const [result] = await withTargeting([staleRow]);
+    const { rows: out } = await withTargeting([staleRow]);
 
-    expect(result.targeting).toBeNull();
+    expect(out[0].targeting).toBeNull();
+  });
+});
+
+describe("toTableRows — listing sub-rows", () => {
+  it("gives an ad-matched listing its own sub-row even when no tag carries the keyword", () => {
+    const [row] = toTableRows([
+      keywordRow({
+        keyword: "embroidery pattern",
+        targeting: {
+          best: 4,
+          matches: [{ listingId: 1, slot: 4, title: "Tagged listing" }],
+        },
+        ads: {
+          views: 9,
+          clicks: 0,
+          clickRatePct: 0,
+          spendUsd: 0,
+          revenueUsd: 0,
+          orders: 0,
+          roas: 0,
+          listingId: "2",
+        },
+      }),
+    ]);
+
+    // The union, not the intersection: listing 2 carries no such tag and is
+    // still a row, which is the whole point (design.md Decision 14).
+    expect(row.listings.map((l) => l.listingId)).toEqual(["1", "2"]);
+    expect(row.listings[0].tagSlot).toBe(4);
+    expect(row.listings[0].advertised).toBe(false);
+    expect(row.listings[1].tagSlot).toBeNull();
+    expect(row.listings[1].advertised).toBe(true);
+    expect(row.listings[1].adViews).toBe(9);
+  });
+
+  it("falls back to the snapshot title for a listing no tag named", () => {
+    // Without this an ad-matched listing renders as a bare id, which defeats
+    // the one-listing-column decision.
+    const [row] = toTableRows(
+      [
+        keywordRow({
+          keyword: "embroidery pattern",
+          ads: {
+            views: 9,
+            clicks: 0,
+            clickRatePct: 0,
+            spendUsd: 0,
+            revenueUsd: 0,
+            orders: 0,
+            roas: 0,
+            listingId: "2",
+          },
+        }),
+      ],
+      new Map([["2", "Digital leaf mandala embroidery pattern"]]),
+    );
+
+    expect(row.listings[0].title).toBe(
+      "Digital leaf mandala embroidery pattern",
+    );
+  });
+
+  it("leaves a keyword with no related listing as a single row", () => {
+    const [row] = toTableRows([keywordRow({})]);
+    expect(row.listings).toEqual([]);
   });
 });
 
@@ -205,7 +285,7 @@ describe("toTableRows", () => {
           best: 8,
           matches: [{ listing: "Listing A", page: 2, position: 8 }],
         },
-        targeting: { best: 3, matches: [{ listingId: 1, slot: 3 }] },
+        targeting: { best: 3, matches: [{ listingId: 1, slot: 3, title: "Listing 1" }] },
       }),
     ]);
     expect(result.ranked).toBe(8);

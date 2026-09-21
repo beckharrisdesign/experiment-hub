@@ -1,4 +1,4 @@
-import type { KeywordToolValues } from "@/types";
+import type { ErankValues, KeywordToolValues } from "@/types";
 
 /**
  * Client-safe by construction: this module has no import of
@@ -47,7 +47,7 @@ export function bulkValueLabel(
  * zero occurrences rather than a fabricated measurement.
  */
 export function totalTagOccurrences(
-  source: Pick<KeywordToolValues, "foundVia"> | null,
+  source: Pick<ErankValues, "foundVia"> | null,
 ): number {
   if (!source) return 0;
   return source.foundVia.reduce((sum, hit) => sum + hit.tagOccurrences, 0);
@@ -55,13 +55,30 @@ export function totalTagOccurrences(
 
 /**
  * Searches per unit of competition. Higher is a less crowded opportunity.
- * `null` when there is no Keyword Tool sub-object at all, when either side is
- * `null`, or when competition is 0 — none of those has a real ratio to
- * report, and a 0 here would sort as the most crowded possible keyword.
+ *
+ * Reads the MERGED eRank values, so it renders wherever searches and
+ * competition are both known — even when they came from different eRank
+ * tools. That is 2,078 rows against 1,931 before the merge.
+ *
+ * `censored` propagates: 114 of the rows that gain a ratio rest on a capped
+ * searches figure, where the true ratio is an upper bound rather than a
+ * value. Rendering that as an exact number would be the same fabrication the
+ * corpus forbids everywhere else, so the flag travels and the caller prefixes
+ * a `<`.
+ *
+ * `null` when there is no eRank data, when either side is missing, or when
+ * competition is 0 — none of those has a real ratio, and a 0 here would sort
+ * as the most crowded keyword possible.
  */
 export function demandRatio(
-  source: Pick<KeywordToolValues, "searches" | "competition"> | null,
-): number | null {
+  source: Pick<
+    ErankValues,
+    "searches" | "searchesCensored" | "competition"
+  > | null,
+): { value: number; censored: boolean } | null {
   if (!source || source.searches === null || !source.competition) return null;
-  return source.searches / source.competition;
+  return {
+    value: source.searches / source.competition,
+    censored: source.searchesCensored,
+  };
 }

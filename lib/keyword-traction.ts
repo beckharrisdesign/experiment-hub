@@ -40,7 +40,11 @@ export function computeTargeting(
       const key = tag.trim().toLowerCase();
       if (!key) return;
       const existing = matchesByTag.get(key) ?? [];
-      existing.push({ listingId: listing.listing_id, slot: index + 1 });
+      existing.push({
+        listingId: listing.listing_id,
+        slot: index + 1,
+        title: listing.title ?? null,
+      });
       matchesByTag.set(key, existing);
     });
   }
@@ -71,20 +75,33 @@ export function computeTargeting(
  * failed read must still degrade to blank, not silently keep stale live
  * data.
  */
-export async function withTargeting(rows: KeywordRow[]): Promise<KeywordRow[]> {
+export async function withTargeting(
+  rows: KeywordRow[],
+): Promise<{ rows: KeywordRow[]; titles: Map<string, string> }> {
   try {
     const snapshots = await getLatestListingSnapshots();
     const targeting = computeTargeting(
       rows.map((r) => r.keyword),
       snapshots,
     );
-    return rows.map((row) => ({
-      ...row,
-      targeting: targeting.get(row.keyword) ?? null,
-    }));
+    // Every active listing's title, not just the tagged ones. The snapshots
+    // are already in hand, and without this an ad-matched listing that
+    // carries no tag renders as a bare id — which is exactly the row the
+    // sub-rows exist to make legible (design.md Decision 15).
+    const titles = new Map<string, string>();
+    for (const listing of snapshots) {
+      if (listing.title) titles.set(String(listing.listing_id), listing.title);
+    }
+    return {
+      rows: rows.map((row) => ({
+        ...row,
+        targeting: targeting.get(row.keyword) ?? null,
+      })),
+      titles,
+    };
   } catch (error) {
     console.error("keyword-explorer: Targeting read failed", error);
-    return rows.map((row) => ({ ...row, targeting: null }));
+    return { rows: rows.map((row) => ({ ...row, targeting: null })), titles: new Map() };
   }
 }
 
@@ -105,56 +122,113 @@ export async function withTargeting(rows: KeywordRow[]): Promise<KeywordRow[]> {
  * server-only `KeywordRow` field across this boundary — this function has to
  * agree with that allowlist by construction, not by remembering to.
  */
-export function toTableRows(rows: KeywordRow[]): KeywordTableRow[] {
+export function toTableRows(
+  rows: KeywordRow[],
+  titles: Map<string, string> = new Map(),
+): KeywordTableRow[] {
   return rows.map((row) => ({
     keyword: row.keyword,
     capture: row.keywordTool?.capture ?? null,
-    // Each source is projected to its VALUES only — the capture metadata
-    // (`capture`/`current`/`supersededBy`) and `history` stay server-side.
-    // The table renders one collapsed row per keyword and deliberately says
-    // nothing about repeat captures (design.md decision 5), so shipping that
-    // metadata to a public client component would be payload for nothing.
-    keywordTool: row.keywordTool
-      ? {
-          searches: row.keywordTool.searches,
-          competition: row.keywordTool.competition,
-          kd: row.keywordTool.kd,
-          foundVia: row.keywordTool.foundVia,
-          coverage: row.keywordTool.coverage,
-        }
-      : null,
-    bulkKeywords: row.bulkKeywords
-      ? {
-          avgSearches: row.bulkKeywords.avgSearches,
-          avgSearchesCensored: row.bulkKeywords.avgSearchesCensored,
-          avgClicks: row.bulkKeywords.avgClicks,
-          avgClicksCensored: row.bulkKeywords.avgClicksCensored,
-          avgCtr: row.bulkKeywords.avgCtr,
-          avgCtrCensored: row.bulkKeywords.avgCtrCensored,
-          etsyCompetition: row.bulkKeywords.etsyCompetition,
-          kd: row.bulkKeywords.kd,
-        }
-      : null,
-    tagReport: row.tagReport
-      ? {
-          tagOccurrences: row.tagReport.tagOccurrences,
-          avgSearches: row.tagReport.avgSearches,
-          avgSearchesCensored: row.tagReport.avgSearchesCensored,
-          avgClicks: row.tagReport.avgClicks,
-          avgClicksCensored: row.tagReport.avgClicksCensored,
-          avgCtr: row.tagReport.avgCtr,
-          avgCtrCensored: row.tagReport.avgCtrCensored,
-          etsyCompetition: row.tagReport.etsyCompetition,
-          kd: row.tagReport.kd,
-          googleSearches: row.tagReport.googleSearches,
-        }
-      : null,
-    // Captured demand passes through whole: unlike ranked/targeting there is
-    // no per-listing detail to withhold — the listing it names is the shop's
-    // own public listing, and the table renders every field.
+    // The three eRank sources collapse to one here. `KeywordRow` keeps them
+    // for their capture history; the table has no use for it (design.md
+    // decision 5 — every visible row is current by construction).
+    erank: row.erank,
     shopSearch: row.shopSearch,
     ads: row.ads,
     ranked: row.ranked?.best ?? null,
     targeting: row.targeting?.best ?? null,
+    listings: toListingRows(row, titles),
   }));
 }
+
+/**
+ * Every listing related to a keyword, as one sub-row each.
+ *
+ * The union of the three id-bearing relationships — tagged, ad-matched,
+ * landed-on — keyed by listing id. The union is the point: `embroidery
+ * pattern` is tagged on four listings and advertised on a fifth that carries
+ * no such tag, and an intersection would hide exactly that.
+ *
+ * `Ranked` is not joined in. `RankedMatch` identifies listings by title
+ * string rather than id, so matching it onto these rows would mean comparing
+ * titles — fragile enough to invent rows (design.md Decision 18). The
+ * keyword's best position stays on the parent as `ranked`.
+ *
+ * Returns `[]` for a keyword with no listing relationship at all, which is
+ * roughly 86% of the corpus; those keywords render as a single row.
+ */
+function toListingRows(
+  row: KeywordRow,
+  titles: Map<string, string>,
+): KeywordTableRow["listings"] {
+  const byId = new Map<string, KeywordTableRow["listings"][number]>();
+
+  const slot = (listingId: string, title: string | null) => {
+    title = title ?? titles.get(listingId) ?? null;
+    const existing = byId.get(listingId);
+    if (existing) {
+      if (existing.title === null && title !== null) existing.title = title;
+      return existing;
+    }
+    const created = {
+      listingId,
+      title,
+      tagSlot: null,
+      advertised: false,
+      visits: null,
+      itemsSold: null,
+      revenueUsd: null,
+      adViews: null,
+      adClicks: null,
+      adClickRatePct: null,
+      adSpendUsd: null,
+      adRevenueUsd: null,
+      adOrders: null,
+      adRoas: null,
+    };
+    byId.set(listingId, created);
+    return created;
+  };
+
+  for (const match of row.targeting?.matches ?? []) {
+    const entry = slot(String(match.listingId), match.title ?? null);
+    // Lowest slot wins if one listing somehow carries the tag twice.
+    if (entry.tagSlot === null || match.slot < entry.tagSlot) {
+      entry.tagSlot = match.slot;
+    }
+  }
+
+  const shop = row.shopSearch;
+  if (shop) {
+    const entry = slot(String(shop.listingId), shop.listingTitle);
+    entry.visits = shop.visits;
+    entry.itemsSold = shop.listingItemsSold;
+    entry.revenueUsd = shop.listingRevenueUsd;
+  }
+
+  const ads = row.ads;
+  if (ads && ads.listingId) {
+    const entry = slot(String(ads.listingId), null);
+    // `advertised` says Etsy matched an ad for THIS keyword to this listing.
+    // A `false` elsewhere is not evidence a listing is unadvertised.
+    entry.advertised = true;
+    entry.adViews = ads.views;
+    entry.adClicks = ads.clicks;
+    entry.adClickRatePct = ads.clickRatePct;
+    entry.adSpendUsd = ads.spendUsd;
+    entry.adRevenueUsd = ads.revenueUsd;
+    entry.adOrders = ads.orders;
+    entry.adRoas = ads.roas;
+  }
+
+  // Tagged listings first, by slot; then everything else, so the deliberate
+  // acts read before the things that merely happened.
+  return [...byId.values()].sort((a, b) => {
+    if (a.tagSlot !== null && b.tagSlot !== null) return a.tagSlot - b.tagSlot;
+    if (a.tagSlot !== null) return -1;
+    if (b.tagSlot !== null) return 1;
+    return a.listingId.localeCompare(b.listingId);
+  });
+}
+
+

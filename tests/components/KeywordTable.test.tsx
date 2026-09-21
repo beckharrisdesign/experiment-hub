@@ -34,38 +34,86 @@ interface RowSpec {
   keyword?: string;
   capture?: string | null;
   searches?: number | null;
+  searchesCensored?: boolean;
   competition?: number | null;
   kd?: number | null;
+  avgClicks?: number | null;
+  avgClicksCensored?: boolean;
+  avgCtr?: number | null;
+  avgCtrCensored?: boolean;
+  googleSearches?: number | null;
+  tagOccurrences?: number | null;
   foundVia?: { query: string; tagOccurrences: number }[];
+  reportedBy?: string[];
   ranked?: number | null;
   targeting?: number | null;
-  bulkKeywords?: KeywordTableRow["bulkKeywords"];
-  tagReport?: KeywordTableRow["tagReport"];
   shopSearch?: KeywordTableRow["shopSearch"];
   ads?: KeywordTableRow["ads"];
-  noKeywordTool?: boolean;
+  listings?: KeywordTableRow["listings"];
+  /** A keyword no eRank export ever scored — `erank` is null, not zeroed. */
+  noErank?: boolean;
 }
 
 function row(overrides: RowSpec = {}): KeywordTableRow {
   return {
     keyword: overrides.keyword ?? "keyword",
     capture: overrides.capture !== undefined ? overrides.capture : "2026-09-17",
-    keywordTool: overrides.noKeywordTool
+    erank: overrides.noErank
       ? null
       : {
           searches: overrides.searches !== undefined ? overrides.searches : 100,
+          searchesCensored: overrides.searchesCensored ?? false,
           competition:
             overrides.competition !== undefined ? overrides.competition : 50,
           kd: overrides.kd !== undefined ? overrides.kd : 10,
+          avgClicks: overrides.avgClicks ?? null,
+          avgClicksCensored: overrides.avgClicksCensored ?? false,
+          avgCtr: overrides.avgCtr ?? null,
+          avgCtrCensored: overrides.avgCtrCensored ?? false,
+          googleSearches: overrides.googleSearches ?? null,
+          tagOccurrences: overrides.tagOccurrences ?? null,
           foundVia: overrides.foundVia ?? [{ query: "test", tagOccurrences: 1 }],
-          coverage: { seen: 1, of: 1 },
+          reportedBy: overrides.reportedBy ?? ["KT"],
         },
-    bulkKeywords: overrides.bulkKeywords ?? null,
-    tagReport: overrides.tagReport ?? null,
     shopSearch: overrides.shopSearch ?? null,
     ads: overrides.ads ?? null,
     ranked: overrides.ranked ?? null,
     targeting: overrides.targeting ?? null,
+    listings: overrides.listings ?? [],
+  };
+}
+
+/** N listing sub-rows, tagged at ascending slots. */
+function listingsOfLength(n: number): KeywordTableRow["listings"] {
+  return Array.from({ length: n }, (_, i) =>
+    listingRow({
+      listingId: String(i + 1),
+      title: `Listing ${i + 1}`,
+      tagSlot: i + 1,
+    }),
+  );
+}
+
+/** A listing sub-row with everything absent unless a test says otherwise. */
+function listingRow(
+  overrides: Partial<KeywordTableRow["listings"][number]> = {},
+): KeywordTableRow["listings"][number] {
+  return {
+    listingId: "1",
+    title: "A listing",
+    tagSlot: null,
+    advertised: false,
+    visits: null,
+    itemsSold: null,
+    revenueUsd: null,
+    adViews: null,
+    adClicks: null,
+    adClickRatePct: null,
+    adSpendUsd: null,
+    adRevenueUsd: null,
+    adOrders: null,
+    adRoas: null,
+    ...overrides,
   };
 }
 
@@ -85,6 +133,7 @@ const ROWS: KeywordTableRow[] = [
     kd: 22,
     ranked: 8,
     targeting: 3,
+    listings: listingsOfLength(3)
   }),
   row({
     keyword: "calm stitching",
@@ -109,6 +158,7 @@ const ROWS: KeywordTableRow[] = [
     kd: 11,
     ranked: null,
     targeting: 5,
+    listings: listingsOfLength(5)
   }),
   row({
     keyword: "unrelated thing",
@@ -117,6 +167,7 @@ const ROWS: KeywordTableRow[] = [
     kd: 0,
     ranked: 15,
     targeting: 8,
+    listings: listingsOfLength(8)
   }),
 ];
 
@@ -125,7 +176,13 @@ function bodyRows() {
   // queryAllByRole, not getAllByRole: the empty-result tests render a
   // genuinely empty <tbody>, where getAllByRole would throw instead of
   // returning [].
-  return within(body).queryAllByRole("row");
+  // Parent rows only. A keyword with related listings now renders sub-rows
+  // beneath it (design.md Decision 14), and those carry no keyword of their
+  // own — counting them as rows would make every ordering assertion read a
+  // run of blanks.
+  return within(body)
+    .queryAllByRole("row")
+    .filter((tr) => tr.getAttribute("data-row") !== "listing");
 }
 
 function keywordOrder(): string[] {
@@ -147,42 +204,67 @@ const COL = {
   searches: 1,
   competition: 2,
   kd: 3,
-  foundVia: 4,
-  ratio: 5,
-  ranked: 18,
-  targeting: 19,
-  shopVisits: 20,
-  adsViews: 26,
+  ratio: 9,
+  foundVia: 8,
+  reportedBy: 10,
+  listingsCount: 11,
+  listingTitle: 12,
+  listingTagSlot: 13,
+  listingAdvertised: 14,
+  ranked: 15,
+  shopVisits: 16,
+  adsViews: 21,
 } as const;
 
 describe("KeywordTable — column layout", () => {
   it("keeps the column positions the other tests index by", () => {
     render(<KeywordTable rows={ROWS} />);
-    // Second header row — the first is the source-band row.
-    const headerRow = screen.getAllByRole("row")[1];
+    // Third header row: bucket tier, then source bands, then columns.
+    const headerRow = screen.getAllByRole("row")[2];
     const headers = within(headerRow)
       .getAllByRole("columnheader")
       .map((th) => th.textContent?.replace(/[↑↓↕]/g, "").trim() ?? "");
-    expect(headers).toHaveLength(33);
+    // 33 columns became 28: eRank's 17 collapse to 10, Targeting gains the
+    // listing columns, and Shop loses its duplicate Listing column.
+    expect(headers).toHaveLength(28);
     expect(headers[COL.keyword]).toBe("Keyword");
-    expect(headers[COL.searches]).toBe("Searches");
-    expect(headers[COL.competition]).toBe("Competition");
+    expect(headers[COL.searches]).toBe("Search Volume");
+    expect(headers[COL.competition]).toBe("Etsy Competition");
     expect(headers[COL.kd]).toBe("KD");
     expect(headers[COL.foundVia]).toBe("Found via");
-    expect(headers[COL.ratio]).toBe("S / comp.");
-    expect(headers[COL.ranked]).toBe("Best pos.");
-    expect(headers[COL.targeting]).toBe("Tag slot");
+    expect(headers[COL.ratio]).toBe("Search / Competition");
+    expect(headers[COL.reportedBy]).toBe("Reported by");
+    expect(headers[COL.listingsCount]).toBe("Listings");
+    expect(headers[COL.listingTitle]).toBe("Listing");
+    expect(headers[COL.ranked]).toBe("Etsy SEO");
+    // Only one column is ever named "Listing" (design.md Decision 15).
+    expect(headers.filter((h) => h === "Listing")).toHaveLength(1);
+  });
+
+  it("groups the bands under Observed, Targeted and Performance", () => {
+    render(<KeywordTable rows={ROWS} />);
+    const bucketRow = screen.getAllByRole("row")[0];
+    const buckets = within(bucketRow)
+      .getAllByRole("columnheader")
+      .map((th) => th.textContent?.trim() ?? "");
+    expect(buckets).toContain("Observed");
+    expect(buckets).toContain("Targeted");
+    expect(buckets).toContain("Performance");
   });
 
   it("names every source in a band above its own columns", () => {
     render(<KeywordTable rows={ROWS} />);
-    const bandRow = screen.getAllByRole("row")[0];
+    const bandRow = screen.getAllByRole("row")[1];
     const bands = within(bandRow)
       .getAllByRole("columnheader")
       .map((th) => th.textContent?.trim() ?? "");
-    expect(bands).toContain("eRank Keyword Tool");
-    expect(bands).toContain("eRank Bulk Keywords");
-    expect(bands).toContain("eRank Tag Report");
+    // The three eRank bands are one; the Ads band no longer claims the shop
+    // targeted the keyword, because Etsy picks the search terms.
+    expect(bands).toContain("eRank");
+    expect(bands).not.toContain("eRank Keyword Tool");
+    expect(bands).not.toContain("eRank Bulk Keywords");
+    expect(bands).not.toContain("eRank Tag Report");
+    expect(bands.some((b) => b.includes("matched by Etsy"))).toBe(true);
   });
 });
 
@@ -194,7 +276,9 @@ describe("KeywordTable — Ranked and Targeting columns", () => {
     )!;
     const cells = within(snowGlobeRow).getAllByRole("cell");
     expect(cells[COL.ranked].textContent).toBe("8");
-    expect(cells[COL.targeting].textContent).toBe("3");
+    // The Targeting column is now the listing COUNT; the tag slot moved onto
+    // each listing's own sub-row (design.md Decision 13).
+    expect(cells[COL.listingsCount].textContent).toBe("3");
   });
 
   it("shows a blank dash, never 0, when there is no match", () => {
@@ -204,7 +288,7 @@ describe("KeywordTable — Ranked and Targeting columns", () => {
     )!;
     const cells = within(fontRow).getAllByRole("cell");
     expect(cells[COL.ranked].textContent).toBe("—");
-    expect(cells[COL.targeting].textContent).toBe("—");
+    expect(cells[COL.listingsCount].textContent).toBe("—");
   });
 
   it("has no Status, Capture or Coverage column", () => {
@@ -218,7 +302,7 @@ describe("KeywordTable — Ranked and Targeting columns", () => {
     // legitimately labelled "Shop — captured" — matching that would fail a
     // test that means "no column named Capture", which is a different claim.
     render(<KeywordTable rows={ROWS} />);
-    const headerRow = screen.getAllByRole("row")[1];
+    const headerRow = screen.getAllByRole("row")[2];
     const headers = within(headerRow)
       .getAllByRole("columnheader")
       .map((th) => th.textContent?.toLowerCase() ?? "");
@@ -229,7 +313,7 @@ describe("KeywordTable — Ranked and Targeting columns", () => {
 
   it("sorts blank Ranked rows after populated ones, in either direction", () => {
     render(<KeywordTable rows={ROWS} />);
-    const header = screen.getByRole("button", { name: /Best pos\./ });
+    const header = screen.getByRole("button", { name: /Etsy SEO/ });
     const blanks = new Set(["embroidery font", "wooden wick candle"]);
 
     fireEvent.click(header); // first click: desc
@@ -251,12 +335,12 @@ describe("KeywordTable — Ranked and Targeting columns", () => {
     ]);
   });
 
-  it("sorts blank Targeting rows after populated ones, in either direction", () => {
+  it("sorts blank Listings rows after populated ones, in either direction", () => {
     // A separate code path from Ranked (its own sortKey branch and its own
     // rangeValue case) — asserted independently so a regression specific to
-    // Targeting can't hide behind the Ranked test passing.
+    // the listing count can't hide behind the Ranked test passing.
     render(<KeywordTable rows={ROWS} />);
-    const header = screen.getByRole("button", { name: /Tag slot/ });
+    const header = screen.getByRole("button", { name: /^Listings/ });
     const blanks = new Set(["calm stitching", "embroidery font"]);
 
     fireEvent.click(header); // first click: desc
@@ -285,7 +369,7 @@ describe("KeywordTable — a ranked-only row (no Keyword Tool data)", () => {
       // Since the merge this is the truer fixture: the row exists because
       // Ranked has the keyword, and the Keyword Tool sub-object is absent
       // rather than present-with-null-fields.
-      noKeywordTool: true,
+      noErank: true,
       capture: null,
       ranked: 4,
       targeting: null,
@@ -306,14 +390,14 @@ describe("KeywordTable — a ranked-only row (no Keyword Tool data)", () => {
 
   it("sorts a null Searches value after every real one, in either direction", () => {
     render(<KeywordTable rows={RANKED_ONLY_ROWS} />);
-    // Not by accessible name: "Searches" and "Searches / comp." both start
-    // with "Searches", and the active column's own arrow glyph varies with
-    // direction — a "/" is the one thing that tells them apart.
+    // Not by accessible name: "Search Volume" and "Search / Competition" both
+    // start with "Search", and the active column's own arrow glyph varies
+    // with direction — a "/" is the one thing that tells them apart.
     const header = screen
       .getAllByRole("columnheader")
       .find(
         (th) =>
-          th.textContent?.startsWith("Searches") &&
+          th.textContent?.startsWith("Search") &&
           !th.textContent.includes("/"),
       )!
       .querySelector("button")!;
@@ -327,8 +411,8 @@ describe("KeywordTable — a ranked-only row (no Keyword Tool data)", () => {
 
   it("excludes a null-Searches row from a min-bound range filter", () => {
     render(<KeywordTable rows={RANKED_ONLY_ROWS} />);
-    chooseRangeColumn("eRank Keyword Tool — Searches");
-    fireEvent.change(bound("eRank Keyword Tool — Searches", "minimum"), {
+    chooseRangeColumn("eRank — Search Volume");
+    fireEvent.change(bound("eRank — Search Volume", "minimum"), {
       target: { value: "0" },
     });
 
@@ -345,7 +429,7 @@ describe("KeywordTable — a ranked-only row (no Keyword Tool data)", () => {
  * Picks a range column by its full option label.
  *
  * The picker is a flat list with no band above it, so each option spells out
- * its source: "eRank Keyword Tool — KD". Call sites pass that whole string
+ * its source: "eRank — KD". Call sites pass that whole string
  * rather than a bare "KD", because since the merge three different columns
  * are named KD and a bare label matches all three.
  */
@@ -381,41 +465,41 @@ describe("KeywordTable — range filter", () => {
     // silently apply a bound Katy never set there. Filters compound now:
     // each carries its own bound and adding one must leave the other alone.
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Ranked — Best pos.");
-    fireEvent.change(bound("Ranked — Best pos.", "minimum"), {
+    chooseRangeColumn("Ranked — Etsy SEO");
+    fireEvent.change(bound("Ranked — Etsy SEO", "minimum"), {
       target: { value: "8" },
     });
 
-    chooseRangeColumn("Targeting — Tag slot");
+    chooseRangeColumn("Targeting — Listings");
 
-    expect(bound("Ranked — Best pos.", "minimum")).toHaveValue(8);
-    expect(bound("Targeting — Tag slot", "minimum")).toHaveValue(null);
+    expect(bound("Ranked — Etsy SEO", "minimum")).toHaveValue(8);
+    expect(bound("Targeting — Listings", "minimum")).toHaveValue(null);
     expect(activeFilters()).toEqual([
-      "Ranked — Best pos.",
-      "Targeting — Tag slot",
+      "Ranked — Etsy SEO",
+      "Targeting — Listings",
     ]);
   });
 
   it("removes one filter without disturbing the other", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Ranked — Best pos.");
-    chooseRangeColumn("Targeting — Tag slot");
-    fireEvent.change(bound("Targeting — Tag slot", "minimum"), {
+    chooseRangeColumn("Ranked — Etsy SEO");
+    chooseRangeColumn("Targeting — Listings");
+    fireEvent.change(bound("Targeting — Listings", "minimum"), {
       target: { value: "3" },
     });
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Remove Ranked — Best pos. filter" }),
+      screen.getByRole("button", { name: "Remove Ranked — Etsy SEO filter" }),
     );
 
-    expect(activeFilters()).toEqual(["Targeting — Tag slot"]);
-    expect(bound("Targeting — Tag slot", "minimum")).toHaveValue(3);
+    expect(activeFilters()).toEqual(["Targeting — Listings"]);
+    expect(bound("Targeting — Listings", "minimum")).toHaveValue(3);
   });
 
   it("narrows to rows within a minimum bound on Ranked", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Ranked — Best pos.");
-    fireEvent.change(bound("Ranked — Best pos.", "minimum"), {
+    chooseRangeColumn("Ranked — Etsy SEO");
+    fireEvent.change(bound("Ranked — Etsy SEO", "minimum"), {
       target: { value: "5" },
     });
 
@@ -427,8 +511,8 @@ describe("KeywordTable — range filter", () => {
 
   it("keeps blank rows when only a max bound is set", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Ranked — Best pos.");
-    fireEvent.change(bound("Ranked — Best pos.", "maximum"), {
+    chooseRangeColumn("Ranked — Etsy SEO");
+    fireEvent.change(bound("Ranked — Etsy SEO", "maximum"), {
       target: { value: "5" },
     });
 
@@ -442,8 +526,8 @@ describe("KeywordTable — range filter", () => {
     // Own describe-level case, not just Ranked — the range picker has a
     // separate Targeting branch in rangeValue().
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Targeting — Tag slot");
-    fireEvent.change(bound("Targeting — Tag slot", "minimum"), {
+    chooseRangeColumn("Targeting — Listings");
+    fireEvent.change(bound("Targeting — Listings", "minimum"), {
       target: { value: "4" },
     });
 
@@ -455,8 +539,8 @@ describe("KeywordTable — range filter", () => {
 
   it("keeps blank rows when only a max bound is set on Targeting", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Targeting — Tag slot");
-    fireEvent.change(bound("Targeting — Tag slot", "maximum"), {
+    chooseRangeColumn("Targeting — Listings");
+    fireEvent.change(bound("Targeting — Listings", "maximum"), {
       target: { value: "4" },
     });
 
@@ -471,8 +555,8 @@ describe("KeywordTable — range filter", () => {
   // branch that could regress independently of Ranked/Targeting above.
   it("narrows on Searches", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("eRank Keyword Tool — Searches");
-    fireEvent.change(bound("eRank Keyword Tool — Searches", "minimum"), {
+    chooseRangeColumn("eRank — Search Volume");
+    fireEvent.change(bound("eRank — Search Volume", "minimum"), {
       target: { value: "100" },
     });
 
@@ -485,8 +569,8 @@ describe("KeywordTable — range filter", () => {
 
   it("narrows on Competition", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("eRank Keyword Tool — Competition");
-    fireEvent.change(bound("eRank Keyword Tool — Competition", "maximum"), {
+    chooseRangeColumn("eRank — Etsy Competition");
+    fireEvent.change(bound("eRank — Etsy Competition", "maximum"), {
       target: { value: "50" },
     });
 
@@ -499,8 +583,8 @@ describe("KeywordTable — range filter", () => {
 
   it("narrows on KD", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("eRank Keyword Tool — KD");
-    fireEvent.change(bound("eRank Keyword Tool — KD", "minimum"), {
+    chooseRangeColumn("eRank — KD");
+    fireEvent.change(bound("eRank — KD", "minimum"), {
       target: { value: "20" },
     });
 
@@ -511,10 +595,10 @@ describe("KeywordTable — range filter", () => {
     expect(visible).not.toContain("wooden wick candle"); // kd 11, fails >= 20
   });
 
-  it("narrows on Searches / comp., excluding the null (zero-competition) row from a min bound", () => {
+  it("narrows on Search / Competition, excluding the null (zero-competition) row from a min bound", () => {
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("eRank Keyword Tool — S / comp.");
-    fireEvent.change(bound("eRank Keyword Tool — S / comp.", "minimum"), {
+    chooseRangeColumn("eRank — Search / Competition");
+    fireEvent.change(bound("eRank — Search / Competition", "minimum"), {
       target: { value: "2" },
     });
 
@@ -525,19 +609,19 @@ describe("KeywordTable — range filter", () => {
     expect(visible).not.toContain("unrelated thing"); // competition 0 -> ratio null, excluded by a min bound
   });
 
-  it("switches both range inputs to a decimal keypad for the fractional Searches / comp. column", () => {
+  it("switches both range inputs to a decimal keypad for the fractional Search / Competition column", () => {
     // Every other range target is a whole number (numeric keypad, no decimal
     // separator on mobile) — only this column's bounds need inputMode
     // "decimal", and previously nothing asserted that either input actually
     // got it.
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("eRank Keyword Tool — S / comp.");
+    chooseRangeColumn("eRank — Search / Competition");
 
-    expect(bound("eRank Keyword Tool — S / comp.", "minimum")).toHaveAttribute(
+    expect(bound("eRank — Search / Competition", "minimum")).toHaveAttribute(
       "inputmode",
       "decimal",
     );
-    expect(bound("eRank Keyword Tool — S / comp.", "maximum")).toHaveAttribute(
+    expect(bound("eRank — Search / Competition", "maximum")).toHaveAttribute(
       "inputmode",
       "decimal",
     );
@@ -549,8 +633,8 @@ describe("KeywordTable — range filter", () => {
     // a *keyword* filter turning up nothing) would misattribute the cause if
     // it showed here too.
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Ranked — Best pos.");
-    fireEvent.change(bound("Ranked — Best pos.", "minimum"), {
+    chooseRangeColumn("Ranked — Etsy SEO");
+    fireEvent.change(bound("Ranked — Etsy SEO", "minimum"), {
       target: { value: "1000" },
     });
 
@@ -576,7 +660,7 @@ describe("KeywordTable — range filter", () => {
     // treats both-blank min/max as "no bound." A keyword filter emptying the
     // table here must not be blamed on the merely-selected range column.
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Ranked — Best pos.");
+    chooseRangeColumn("Ranked — Etsy SEO");
     fireEvent.change(screen.getByLabelText("Filter keywords"), {
       target: { value: "no such keyword anywhere" },
     });
@@ -596,8 +680,8 @@ describe("KeywordTable — range filter", () => {
     // opposite direction from the round-8/9 fixes: not "no bound was ever
     // set," but "the bound was never actually the reason."
     render(<KeywordTable rows={ROWS} />);
-    chooseRangeColumn("Ranked — Best pos.");
-    fireEvent.change(bound("Ranked — Best pos.", "minimum"), {
+    chooseRangeColumn("Ranked — Etsy SEO");
+    fireEvent.change(bound("Ranked — Etsy SEO", "minimum"), {
       target: { value: "5" },
     });
     expect(keywordOrder()).toContain("snow globe"); // sanity: the bound alone doesn't empty the table
@@ -618,7 +702,7 @@ describe("KeywordTable — captured demand bands", () => {
   const CAPTURED: KeywordTableRow[] = [
     row({
       keyword: "paper embriodery template",
-      noKeywordTool: true,
+      noErank: true,
       capture: null,
       shopSearch: {
         visits: 1,
@@ -633,7 +717,7 @@ describe("KeywordTable — captured demand bands", () => {
     }),
     row({
       keyword: "geometric embroidery pattern",
-      noKeywordTool: true,
+      noErank: true,
       capture: null,
       ads: {
         views: 5,
@@ -650,7 +734,7 @@ describe("KeywordTable — captured demand bands", () => {
 
   it("renders Shop and Etsy Ads as separate bands, each stating its own window", () => {
     render(<KeywordTable rows={CAPTURED} />);
-    const bandRow = screen.getAllByRole("row")[0];
+    const bandRow = screen.getAllByRole("row")[1];
     const bands = within(bandRow)
       .getAllByRole("columnheader")
       .map((th) => th.textContent ?? "");
@@ -686,14 +770,14 @@ describe("KeywordTable — compound filtering and sorting", () => {
     render(<KeywordTable rows={ROWS} />);
     const before = bodyRows().length;
 
-    chooseRangeColumn("eRank Keyword Tool — Searches");
-    fireEvent.change(bound("eRank Keyword Tool — Searches", "minimum"), {
+    chooseRangeColumn("eRank — Search Volume");
+    fireEvent.change(bound("eRank — Search Volume", "minimum"), {
       target: { value: "10" },
     });
     const afterFirst = bodyRows().length;
 
-    chooseRangeColumn("Ranked — Best pos.");
-    fireEvent.change(bound("Ranked — Best pos.", "maximum"), {
+    chooseRangeColumn("Ranked — Etsy SEO");
+    fireEvent.change(bound("Ranked — Etsy SEO", "maximum"), {
       target: { value: "10" },
     });
     const afterSecond = bodyRows().length;
@@ -719,10 +803,11 @@ describe("KeywordTable — compound filtering and sorting", () => {
     // primary and demotes Searches to the tie-breaker — so with every KD
     // tied at 50, the order is Searches descending: 30, 20, 10.
     //
-    // KD is scoped by column position, not by name: three columns are called
-    // KD (Keyword Tool, Bulk Keywords, Tag Report) and a name query matches
-    // all three. That ambiguity is the whole reason columns sit under bands.
-    const headerRow = screen.getAllByRole("row")[1];
+    // KD is scoped by column position rather than by name. Before the merge
+    // three columns were called KD — one per eRank export — which is what
+    // made bands necessary; now there is one, and position still reads
+    // clearest against the COL map the other tests share.
+    const headerRow = screen.getAllByRole("row")[2];
     const headers = within(headerRow).getAllByRole("columnheader");
     fireEvent.click(within(headers[COL.kd]).getByRole("button"));
 
@@ -760,17 +845,17 @@ describe("KeywordTable — export", () => {
   it("writes every column of the visible rows", () => {
     const csv = captureExport(ROWS);
     const [header, ...body] = csv.split("\n");
-    expect(header.split('","')).toHaveLength(33);
+    expect(header.split('","')).toHaveLength(28);
     expect(body).toHaveLength(ROWS.length);
     expect(header).toContain("Keyword");
-    expect(header).toContain("Etsy Ads — targeted — Views");
+    expect(header).toContain("Etsy Ads — matched by Etsy — Views");
   });
 
   it("carries blanks and misspellings through verbatim, never a fabricated zero", () => {
     const csv = captureExport([
       row({
         keyword: "paper embriodery template",
-        noKeywordTool: true,
+        noErank: true,
         capture: null,
         shopSearch: {
           visits: 1,
@@ -794,18 +879,46 @@ describe("KeywordTable — export", () => {
   });
 });
 
+describe("KeywordTable — presence filters", () => {
+  it("narrows to rows that have a value, and shows a removable chip", async () => {
+    render(<KeywordTable rows={ROWS} />);
+    fireEvent.click(screen.getByLabelText("Add presence filter"));
+    fireEvent.click(
+      await screen.findByRole("option", { name: "has Ranked — Etsy SEO" }),
+    );
+
+    // A filter the reader cannot see is a filter they cannot undo — the chip
+    // is part of the feature, not decoration.
+    expect(
+      screen.getByRole("button", { name: /Remove has .* filter/ }),
+    ).toBeInTheDocument();
+    expect(keywordOrder()).not.toContain("embroidery font");
+  });
+
+  it("asks for absence as well as presence", async () => {
+    render(<KeywordTable rows={ROWS} />);
+    fireEvent.click(screen.getByLabelText("Add presence filter"));
+    fireEvent.click(
+      await screen.findByRole("option", { name: "no Ranked — Etsy SEO" }),
+    );
+
+    expect(keywordOrder()).toContain("embroidery font");
+    expect(keywordOrder()).not.toContain("snow globe");
+  });
+});
+
 describe("KeywordTable — scroll tools", () => {
   it("offers a jump control for every source band without hiding columns", () => {
     render(<KeywordTable rows={ROWS} />);
-    const before = within(screen.getAllByRole("row")[1]).getAllByRole(
+    const before = within(screen.getAllByRole("row")[2]).getAllByRole(
       "columnheader",
     ).length;
-    fireEvent.click(screen.getByRole("button", { name: "Etsy Ads — targeted" }));
-    const after = within(screen.getAllByRole("row")[1]).getAllByRole(
+    fireEvent.click(screen.getByRole("button", { name: "Etsy Ads — matched by Etsy" }));
+    const after = within(screen.getAllByRole("row")[2]).getAllByRole(
       "columnheader",
     ).length;
     expect(after).toBe(before);
-    expect(after).toBe(33);
+    expect(after).toBe(28);
   });
 
   it("leaves the keyword unfrozen until asked", () => {

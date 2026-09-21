@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@beckharrisdesign/mvds";
-import type { KeywordTableRow } from "@/types";
+import type { KeywordListingRow, KeywordTableRow } from "@/types";
 import {
   bulkValueLabel,
   demandRatio,
@@ -16,6 +16,16 @@ import {
 } from "@/lib/keyword-metrics";
 
 type Direction = "asc" | "desc";
+
+/**
+ * How far from the left edge of the scroll region a pinned group label sits.
+ *
+ * Matches the frozen keyword column's width so a label never slides under it.
+ * A plain number rather than a measured value: the keyword column is the one
+ * column with a fixed width, and measuring would make the header depend on
+ * layout that has not settled on first paint.
+ */
+const FROZEN_LABEL_OFFSET = 12;
 
 const ALL = "__all__";
 const NO_RANGE = "__none__";
@@ -32,13 +42,29 @@ const NO_RANGE = "__none__";
  */
 type GroupKey =
   | "keyword"
-  | "kt"
-  | "bulk"
-  | "tag"
-  | "ranked"
+  | "erank"
   | "targeting"
+  | "ranked"
   | "shop"
   | "ads";
+
+/**
+ * The kind of claim a group of columns makes, above the source bands.
+ *
+ * Observed is someone else's estimate of the market; Targeted is a deliberate
+ * act of ours; Performance is what really happened. Katy, 2026-09-21. The
+ * bands are ordered so each bucket covers a contiguous run — `Targeting`
+ * moves ahead of `Ranked`, which is the only column-order change the tier
+ * requires (design.md Decision 11).
+ */
+type BucketKey = "keyword" | "observed" | "targeted" | "performance";
+
+const BUCKETS: { key: BucketKey; label: string; groups: GroupKey[] }[] = [
+  { key: "keyword", label: "", groups: ["keyword"] },
+  { key: "observed", label: "Observed", groups: ["erank"] },
+  { key: "targeted", label: "Targeted", groups: ["targeting"] },
+  { key: "performance", label: "Performance", groups: ["ranked", "shop", "ads"] },
+];
 
 /**
  * `window` is rendered in the band label, not a footnote.
@@ -50,13 +76,11 @@ type GroupKey =
  */
 const GROUPS: { key: GroupKey; label: string; window?: string }[] = [
   { key: "keyword", label: "" },
-  { key: "kt", label: "eRank Keyword Tool" },
-  { key: "bulk", label: "eRank Bulk Keywords" },
-  { key: "tag", label: "eRank Tag Report" },
-  { key: "ranked", label: "Ranked" },
+  { key: "erank", label: "eRank" },
   { key: "targeting", label: "Targeting" },
+  { key: "ranked", label: "Ranked" },
   { key: "shop", label: "Shop — captured", window: "this year" },
-  { key: "ads", label: "Etsy Ads — targeted", window: "last 30 days" },
+  { key: "ads", label: "Etsy Ads — matched by Etsy", window: "last 30 days" },
 ];
 
 /**
@@ -84,6 +108,14 @@ interface Column {
   /** String value for sorting a non-numeric column. */
   text?: (row: KeywordTableRow) => string;
   render: (row: KeywordTableRow) => string;
+  /**
+   * What this column shows on a listing sub-row.
+   *
+   * Absent means the column is keyword-grained — it renders blank on a
+   * sub-row rather than repeating the parent's value, because repeating it
+   * would read as a per-listing figure that was never measured per listing.
+   */
+  renderListing?: (listing: KeywordListingRow) => string;
 }
 
 /** A plain number, or an em dash. Never `0` standing in for "no data". */
@@ -100,194 +132,156 @@ const COLUMNS: Column[] = [
     render: (r) => r.keyword,
   },
 
-  // --- eRank Keyword Tool ---
+  // --- eRank (the three exports merged; design.md Decisions 1-4) ---
   {
-    key: "kt.searches",
-    label: "Searches",
-    group: "kt",
+    key: "erank.searches",
+    label: "Search Volume",
+    group: "erank",
     numeric: true,
-    value: (r) => r.keywordTool?.searches ?? null,
-    render: (r) => num(r.keywordTool?.searches ?? null),
+    value: (r) => r.erank?.searches ?? null,
+    render: (r) =>
+      r.erank
+        ? bulkValueLabel(r.erank.searches, r.erank.searchesCensored)
+        : "—",
   },
   {
-    key: "kt.competition",
-    label: "Competition",
-    group: "kt",
+    key: "erank.competition",
+    label: "Etsy Competition",
+    group: "erank",
     numeric: true,
-    value: (r) => r.keywordTool?.competition ?? null,
-    render: (r) => num(r.keywordTool?.competition ?? null),
+    value: (r) => r.erank?.competition ?? null,
+    render: (r) => num(r.erank?.competition ?? null),
   },
   {
-    key: "kt.kd",
+    key: "erank.kd",
     label: "KD",
-    group: "kt",
+    group: "erank",
     numeric: true,
-    value: (r) => r.keywordTool?.kd ?? null,
-    render: (r) => num(r.keywordTool?.kd ?? null),
+    value: (r) => r.erank?.kd ?? null,
+    render: (r) => num(r.erank?.kd ?? null),
+  },
+  {
+    key: "erank.avgClicks",
+    label: "Avg Clicks",
+    group: "erank",
+    numeric: true,
+    value: (r) => r.erank?.avgClicks ?? null,
+    render: (r) =>
+      r.erank ? bulkValueLabel(r.erank.avgClicks, r.erank.avgClicksCensored) : "—",
+  },
+  {
+    key: "erank.avgCtr",
+    label: "Avg CTR %",
+    group: "erank",
+    numeric: true,
+    value: (r) => r.erank?.avgCtr ?? null,
+    render: (r) =>
+      r.erank ? bulkValueLabel(r.erank.avgCtr, r.erank.avgCtrCensored) : "—",
+  },
+  {
+    key: "erank.google",
+    label: "Google Volume",
+    group: "erank",
+    numeric: true,
+    value: (r) => r.erank?.googleSearches ?? null,
+    render: (r) => num(r.erank?.googleSearches ?? null),
+  },
+  {
+    key: "erank.tagCount",
+    label: "Tag Count",
+    group: "erank",
+    numeric: true,
+    value: (r) => r.erank?.tagOccurrences ?? null,
+    render: (r) => num(r.erank?.tagOccurrences ?? null),
   },
   {
     // Tag occurrences stay per query. `embroidery font` read 6, 81, 80 and 12
     // under four queries on one day; one merged number would be invented.
-    key: "kt.foundVia",
+    key: "erank.foundVia",
     label: "Found via",
-    group: "kt",
-    sortNumber: (r) => totalTagOccurrences(r.keywordTool),
+    group: "erank",
+    sortNumber: (r) => totalTagOccurrences(r.erank),
     render: (r) => {
-      const hits = r.keywordTool?.foundVia ?? [];
+      const hits = r.erank?.foundVia ?? [];
       if (hits.length === 0) return "—";
       return hits.map((hit) => `${hit.query} (${hit.tagOccurrences})`).join(", ");
     },
   },
   {
-    key: "kt.ratio",
-    label: "S / comp.",
-    group: "kt",
+    // Computed from the MERGED values, so it renders on 2,078 rows rather
+    // than the 1,931 the Keyword Tool alone could reach. Where the searches
+    // figure was capped the ratio is an upper bound and says so.
+    key: "erank.ratio",
+    label: "Search / Competition",
+    group: "erank",
     numeric: true,
-    value: (r) => demandRatio(r.keywordTool),
+    value: (r) => demandRatio(r.erank)?.value ?? null,
     render: (r) => {
-      const ratio = demandRatio(r.keywordTool);
-      return ratio === null ? "—" : ratio.toFixed(3);
+      const ratio = demandRatio(r.erank);
+      if (ratio === null) return "—";
+      return `${ratio.censored ? "< " : ""}${ratio.value.toFixed(3)}`;
+    },
+  },
+  {
+    // Attestation, not per-field provenance: which eRank tools had a record
+    // for this keyword at all (design.md Decision 3).
+    key: "erank.reportedBy",
+    label: "Reported by",
+    group: "erank",
+    text: (r) => (r.erank?.reportedBy ?? []).join(" · "),
+    render: (r) => {
+      const by = r.erank?.reportedBy ?? [];
+      return by.length ? by.join(" · ") : "—";
     },
   },
 
-  // --- eRank Bulk Keywords ---
   {
-    key: "bulk.avgSearches",
-    label: "Avg searches",
-    group: "bulk",
+    // How many listings relate to this keyword at all — the sub-row count.
+    // Replaces what used to be the lowest tag slot; the slot survives on each
+    // listing's own row, which is strictly more than `best` ever showed.
+    key: "targeting.count",
+    label: "Listings",
+    group: "targeting",
     numeric: true,
-    value: (r) => r.bulkKeywords?.avgSearches ?? null,
-    render: (r) =>
-      r.bulkKeywords
-        ? bulkValueLabel(r.bulkKeywords.avgSearches, r.bulkKeywords.avgSearchesCensored)
-        : "—",
+    value: (r) => (r.listings.length === 0 ? null : r.listings.length),
+    render: (r) => (r.listings.length === 0 ? "—" : String(r.listings.length)),
   },
   {
-    key: "bulk.avgClicks",
-    label: "Avg clicks",
-    group: "bulk",
-    numeric: true,
-    value: (r) => r.bulkKeywords?.avgClicks ?? null,
-    render: (r) =>
-      r.bulkKeywords
-        ? bulkValueLabel(r.bulkKeywords.avgClicks, r.bulkKeywords.avgClicksCensored)
-        : "—",
+    // The one column a listing title is ever written in (Decision 15).
+    key: "listing.title",
+    label: "Listing",
+    group: "targeting",
+    render: () => "",
+    renderListing: (l) => l.title ?? l.listingId,
   },
   {
-    key: "bulk.avgCtr",
-    label: "Avg CTR",
-    group: "bulk",
+    key: "listing.tagSlot",
+    label: "Tag slot",
+    group: "targeting",
     numeric: true,
-    value: (r) => r.bulkKeywords?.avgCtr ?? null,
-    render: (r) =>
-      r.bulkKeywords
-        ? bulkValueLabel(r.bulkKeywords.avgCtr, r.bulkKeywords.avgCtrCensored)
-        : "—",
+    render: () => "",
+    renderListing: (l) => (l.tagSlot === null ? "not tagged" : `#${l.tagSlot}`),
   },
   {
-    key: "bulk.etsyCompetition",
-    label: "Etsy comp.",
-    group: "bulk",
-    numeric: true,
-    value: (r) => r.bulkKeywords?.etsyCompetition ?? null,
-    render: (r) => num(r.bulkKeywords?.etsyCompetition ?? null),
-  },
-  {
-    key: "bulk.kd",
-    label: "KD",
-    group: "bulk",
-    numeric: true,
-    value: (r) => r.bulkKeywords?.kd ?? null,
-    render: (r) => num(r.bulkKeywords?.kd ?? null),
+    // Etsy matched an ad for THIS keyword to this listing. A blank is not
+    // evidence the listing is unadvertised — it means no match was observed
+    // for this keyword (design.md Decision 15).
+    key: "listing.advertised",
+    label: "Advertised",
+    group: "targeting",
+    render: () => "",
+    renderListing: (l) => (l.advertised ? "✓" : "—"),
   },
 
-  // --- eRank Tag Report ---
-  {
-    key: "tag.tagOccurrences",
-    label: "Tag occ.",
-    group: "tag",
-    numeric: true,
-    value: (r) => r.tagReport?.tagOccurrences ?? null,
-    render: (r) => num(r.tagReport?.tagOccurrences ?? null),
-  },
-  {
-    key: "tag.avgSearches",
-    label: "Avg searches",
-    group: "tag",
-    numeric: true,
-    value: (r) => r.tagReport?.avgSearches ?? null,
-    render: (r) =>
-      r.tagReport
-        ? bulkValueLabel(r.tagReport.avgSearches, r.tagReport.avgSearchesCensored)
-        : "—",
-  },
-  {
-    key: "tag.avgClicks",
-    label: "Avg clicks",
-    group: "tag",
-    numeric: true,
-    value: (r) => r.tagReport?.avgClicks ?? null,
-    render: (r) =>
-      r.tagReport
-        ? bulkValueLabel(r.tagReport.avgClicks, r.tagReport.avgClicksCensored)
-        : "—",
-  },
-  {
-    key: "tag.avgCtr",
-    label: "Avg CTR",
-    group: "tag",
-    numeric: true,
-    value: (r) => r.tagReport?.avgCtr ?? null,
-    render: (r) =>
-      r.tagReport
-        ? bulkValueLabel(r.tagReport.avgCtr, r.tagReport.avgCtrCensored)
-        : "—",
-  },
-  {
-    key: "tag.etsyCompetition",
-    label: "Etsy comp.",
-    group: "tag",
-    numeric: true,
-    value: (r) => r.tagReport?.etsyCompetition ?? null,
-    render: (r) => num(r.tagReport?.etsyCompetition ?? null),
-  },
-  {
-    key: "tag.kd",
-    label: "KD",
-    group: "tag",
-    numeric: true,
-    value: (r) => r.tagReport?.kd ?? null,
-    render: (r) => num(r.tagReport?.kd ?? null),
-  },
-  {
-    key: "tag.googleSearches",
-    label: "Google",
-    group: "tag",
-    numeric: true,
-    value: (r) => r.tagReport?.googleSearches ?? null,
-    render: (r) => num(r.tagReport?.googleSearches ?? null),
-  },
-
-  // --- Real-world traction ---
   {
     // Best (lowest) position across every ranking listing; blank, never 0,
     // when there is no Spotted on Etsy match.
     key: "ranked",
-    label: "Best pos.",
+    label: "Etsy SEO",
     group: "ranked",
     numeric: true,
     value: (r) => r.ranked,
     render: (r) => num(r.ranked),
-  },
-  {
-    // Lowest matching tag slot (1–13) across every current listing; blank,
-    // never 0, when untargeted.
-    key: "targeting",
-    label: "Tag slot",
-    group: "targeting",
-    numeric: true,
-    value: (r) => r.targeting,
-    render: (r) => num(r.targeting),
   },
 
   // --- Shop: captured search terms (visits, i.e. arrivals) ---
@@ -298,6 +292,7 @@ const COLUMNS: Column[] = [
     numeric: true,
     value: (r) => r.shopSearch?.visits ?? null,
     render: (r) => num(r.shopSearch?.visits ?? null),
+    renderListing: (l) => num(l.visits)
   },
   {
     key: "shop.etsy",
@@ -316,13 +311,6 @@ const COLUMNS: Column[] = [
     render: (r) => num(r.shopSearch?.googleVisits ?? null),
   },
   {
-    key: "shop.listing",
-    label: "Listing",
-    group: "shop",
-    text: (r) => r.shopSearch?.listingTitle ?? "",
-    render: (r) => r.shopSearch?.listingTitle ?? "—",
-  },
-  {
     // The listing's own numbers, not the term's. One visit from this term did
     // not itself produce this revenue — see design.md decision on labelling.
     key: "shop.sold",
@@ -331,6 +319,7 @@ const COLUMNS: Column[] = [
     numeric: true,
     value: (r) => r.shopSearch?.listingItemsSold ?? null,
     render: (r) => num(r.shopSearch?.listingItemsSold ?? null),
+    renderListing: (l) => num(l.itemsSold)
   },
   {
     key: "shop.revenue",
@@ -342,6 +331,7 @@ const COLUMNS: Column[] = [
       const v = r.shopSearch?.listingRevenueUsd;
       return v === null || v === undefined ? "—" : `$${v.toFixed(2)}`;
     },
+    renderListing: (l) => l.revenueUsd === null ? "—" : `$${l.revenueUsd.toFixed(2)}`
   },
 
   // --- Etsy Ads: targeted keywords (views, i.e. impressions) ---
@@ -352,6 +342,7 @@ const COLUMNS: Column[] = [
     numeric: true,
     value: (r) => r.ads?.views ?? null,
     render: (r) => num(r.ads?.views ?? null),
+    renderListing: (l) => num(l.adViews)
   },
   {
     key: "ads.clicks",
@@ -360,6 +351,7 @@ const COLUMNS: Column[] = [
     numeric: true,
     value: (r) => r.ads?.clicks ?? null,
     render: (r) => num(r.ads?.clicks ?? null),
+    renderListing: (l) => num(l.adClicks)
   },
   {
     key: "ads.ctr",
@@ -371,6 +363,7 @@ const COLUMNS: Column[] = [
       const v = r.ads?.clickRatePct;
       return v === null || v === undefined ? "—" : `${v}%`;
     },
+    renderListing: (l) => l.adClickRatePct === null ? "—" : `${l.adClickRatePct}%`
   },
   {
     key: "ads.spend",
@@ -382,6 +375,7 @@ const COLUMNS: Column[] = [
       const v = r.ads?.spendUsd;
       return v === null || v === undefined ? "—" : `$${v.toFixed(2)}`;
     },
+    renderListing: (l) => l.adSpendUsd === null ? "—" : `$${l.adSpendUsd.toFixed(2)}`
   },
   {
     key: "ads.revenue",
@@ -393,6 +387,7 @@ const COLUMNS: Column[] = [
       const v = r.ads?.revenueUsd;
       return v === null || v === undefined ? "—" : `$${v.toFixed(2)}`;
     },
+    renderListing: (l) => l.adRevenueUsd === null ? "—" : `$${l.adRevenueUsd.toFixed(2)}`
   },
   {
     key: "ads.orders",
@@ -401,6 +396,7 @@ const COLUMNS: Column[] = [
     numeric: true,
     value: (r) => r.ads?.orders ?? null,
     render: (r) => num(r.ads?.orders ?? null),
+    renderListing: (l) => num(l.adOrders)
   },
   {
     key: "ads.roas",
@@ -409,19 +405,46 @@ const COLUMNS: Column[] = [
     numeric: true,
     value: (r) => r.ads?.roas ?? null,
     render: (r) => num(r.ads?.roas ?? null),
+    renderListing: (l) => l.adRoas === null ? "—" : String(l.adRoas)
   },
 ];
 
 const RANGE_COLUMNS = COLUMNS.filter((c) => c.value);
+
+/**
+ * Columns worth asking "has / has no" about.
+ *
+ * Every column with a value, a per-listing renderer or sortable text, minus
+ * the keyword itself — every row has one of those, so the question is never
+ * interesting.
+ */
+const PRESENCE_COLUMNS = COLUMNS.filter(
+  (c) => c.key !== "keyword" && (c.value || c.renderListing || c.text),
+);
 
 const SOURCE_FILTERS: {
   key: string;
   label: string;
   has: (row: KeywordTableRow) => boolean;
 }[] = [
-  { key: "kt", label: "Keyword Tool", has: (r) => r.keywordTool !== null },
-  { key: "bulk", label: "Bulk Keywords", has: (r) => r.bulkKeywords !== null },
-  { key: "tag", label: "Tag Report", has: (r) => r.tagReport !== null },
+  // The merge deletes the three sub-objects these used to read, so they are
+  // re-pointed at `reportedBy` rather than dropped: "has Tag Report data"
+  // stays both visible and filterable (design.md Decision 4).
+  {
+    key: "kt",
+    label: "Keyword Tool",
+    has: (r) => (r.erank?.reportedBy ?? []).includes("KT"),
+  },
+  {
+    key: "bulk",
+    label: "Bulk Keywords",
+    has: (r) => (r.erank?.reportedBy ?? []).includes("B"),
+  },
+  {
+    key: "tag",
+    label: "Tag Report",
+    has: (r) => (r.erank?.reportedBy ?? []).includes("T"),
+  },
   { key: "ranked", label: "Ranked", has: (r) => r.ranked !== null },
   { key: "targeting", label: "Targeting", has: (r) => r.targeting !== null },
   { key: "shop", label: "Shop — captured", has: (r) => r.shopSearch !== null },
@@ -435,6 +458,26 @@ const SOURCE_FILTERS: {
  * `keyword-corpus`'s "absence is not a verdict" rule rather than treating an
  * unknown value as if it were 0.
  */
+/**
+ * Does this column hold anything for this row?
+ *
+ * Reads the rendered value rather than a source field, so "has a value"
+ * means the same thing the reader sees — an em dash is absence, a `< 20` cap
+ * is presence. A listing-grained column asks whether ANY of the keyword's
+ * sub-rows holds a value, which is what makes "has Ad views and no Tag slot"
+ * answerable at the keyword level.
+ */
+function columnHasValue(column: Column, row: KeywordTableRow): boolean {
+  if (column.renderListing) {
+    return row.listings.some((l) => {
+      const v = column.renderListing!(l);
+      return v !== "" && v !== "—" && v !== "not tagged";
+    });
+  }
+  const v = column.render(row);
+  return v !== "" && v !== "—";
+}
+
 function passesRange(
   value: number | null,
   min: number | null,
@@ -445,6 +488,19 @@ function passesRange(
   if (min !== null && value < min) return false;
   if (max !== null && value > max) return false;
   return true;
+}
+
+/**
+ * One presence/absence filter: "has this column" or "has no value here".
+ *
+ * The pattern Katy wants surfaced — a listing with impressions and no tag
+ * slot — is a presence AND an absence in one query, which range filters
+ * cannot express (design.md Decision 16). These AND together with the range
+ * filters rather than replacing them.
+ */
+interface PresenceFilter {
+  key: string;
+  present: boolean;
 }
 
 /** One active numeric filter. Several are held at once and AND together. */
@@ -494,13 +550,14 @@ interface KeywordTableProps {
 
 export default function KeywordTable({ rows }: KeywordTableProps) {
   const [sorts, setSorts] = useState<SortKey[]>([
-    { key: "kt.searches", direction: "desc" },
+    { key: "erank.searches", direction: "desc" },
   ]);
   const [keywordFilter, setKeywordFilter] = useState("");
   const [captureFilter, setCaptureFilter] = useState(ALL);
   const [queryFilter, setQueryFilter] = useState(ALL);
   const [sourceFilter, setSourceFilter] = useState(ALL);
   const [filters, setFilters] = useState<RangeFilter[]>([]);
+  const [presence, setPresence] = useState<PresenceFilter[]>([]);
   const [pendingColumn, setPendingColumn] = useState<string>(NO_RANGE);
   const [frozen, setFrozen] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -521,7 +578,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
       Array.from(
         new Set(
           rows.flatMap((r) =>
-            (r.keywordTool?.foundVia ?? []).map((hit) => hit.query),
+            (r.erank?.foundVia ?? []).map((hit) => hit.query),
           ),
         ),
       ).sort(),
@@ -541,7 +598,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
       if (captureFilter !== ALL && row.capture !== captureFilter) return false;
       if (
         queryFilter !== ALL &&
-        !(row.keywordTool?.foundVia ?? []).some((hit) => hit.query === queryFilter)
+        !(row.erank?.foundVia ?? []).some((hit) => hit.query === queryFilter)
       ) {
         return false;
       }
@@ -551,7 +608,18 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
 
     // Every bound filter must pass: they narrow together rather than
     // replacing one another.
-    const filtered = withoutRange.filter((row) =>
+    // Presence/absence first: cheaper than the range predicates, and it is
+    // the filter most likely to cut the set down hard.
+    const withPresence = withoutRange.filter((row) =>
+      presence.every((p) => {
+        const column = COLUMNS.find((c) => c.key === p.key);
+        if (!column) return true;
+        const has = columnHasValue(column, row);
+        return p.present ? has : !has;
+      }),
+    );
+
+    const filtered = withPresence.filter((row) =>
       filters.every((f) => {
         const column = COLUMNS.find((c) => c.key === f.key);
         if (!column?.value) return true;
@@ -615,6 +683,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
     queryFilter,
     sourceFilter,
     filters,
+    presence,
     boundFilters.length,
     sorts,
   ]);
@@ -645,6 +714,16 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
       next.shift();
       return next;
     });
+  }
+
+  function addPresence(raw: string) {
+    if (raw === NO_RANGE) return;
+    const [key, mode] = raw.split(":");
+    setPresence((prev) =>
+      prev.some((p) => p.key === key)
+        ? prev.map((p) => (p.key === key ? { key, present: mode === "has" } : p))
+        : [...prev, { key, present: mode === "has" }],
+    );
   }
 
   function addFilter(key: string) {
@@ -766,6 +845,34 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
           </SelectContent>
         </Select>
 
+        {/*
+          Presence/absence. "has Ad views" AND "no Tag slot" in one query is
+          the shape that surfaces a listing winning on a keyword it was never
+          tagged with (design.md Decision 16).
+        */}
+        <Select value={NO_RANGE} onValueChange={addPresence}>
+          <SelectTrigger
+            size="sm"
+            className="w-56"
+            aria-label="Add presence filter"
+          >
+            <SelectValue placeholder="+ Has / has no…" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={NO_RANGE}>+ Has / has no…</SelectItem>
+            {PRESENCE_COLUMNS.map((col) => (
+              <Fragment key={col.key}>
+                <SelectItem value={`${col.key}:has`}>
+                  has {qualified(col)}
+                </SelectItem>
+                <SelectItem value={`${col.key}:no`}>
+                  no {qualified(col)}
+                </SelectItem>
+              </Fragment>
+            ))}
+          </SelectContent>
+        </Select>
+
         <button
           type="button"
           onClick={exportCsv}
@@ -781,9 +888,34 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
       </div>
 
       {/* Active filters. Each stays visible and individually removable —
-          adding one never clears another. */}
-      {filters.length > 0 && (
+          adding one never clears another. Presence filters count too: an
+          active filter with no chip is a filter the reader cannot see or
+          undo. */}
+      {(filters.length > 0 || presence.length > 0) && (
         <div className="flex flex-wrap items-center gap-2">
+          {presence.map((p) => {
+            const column = COLUMNS.find((c) => c.key === p.key);
+            return (
+              <span
+                key={`presence:${p.key}`}
+                className="flex items-center gap-2 rounded-md border border-accent-primary/40 bg-background-secondary px-2 py-1 text-xs text-text-primary"
+              >
+                {p.present ? "has" : "no"} {column ? qualified(column) : p.key}
+                <button
+                  type="button"
+                  aria-label={`Remove ${p.present ? "has" : "no"} ${
+                    column ? qualified(column) : p.key
+                  } filter`}
+                  onClick={() =>
+                    setPresence((prev) => prev.filter((x) => x.key !== p.key))
+                  }
+                  className="text-text-muted transition-colors hover:text-text-primary"
+                >
+                  ×
+                </button>
+              </span>
+            );
+          })}
           {filters.map((f) => {
             const column = COLUMNS.find((c) => c.key === f.key);
             return (
@@ -796,7 +928,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                 </span>
                 <input
                   type="number"
-                  inputMode={f.key === "kt.ratio" ? "decimal" : "numeric"}
+                  inputMode={f.key === "erank.ratio" ? "decimal" : "numeric"}
                   value={f.min}
                   onChange={(e) => updateFilter(f.id, { min: e.target.value })}
                   placeholder="Min"
@@ -808,7 +940,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                 </span>
                 <input
                   type="number"
-                  inputMode={f.key === "kt.ratio" ? "decimal" : "numeric"}
+                  inputMode={f.key === "erank.ratio" ? "decimal" : "numeric"}
                   value={f.max}
                   onChange={(e) => updateFilter(f.id, { max: e.target.value })}
                   placeholder="Max"
@@ -867,7 +999,47 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
         className="overflow-x-scroll [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-accent-primary/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-accent-primary/10"
       >
         <table className="w-auto min-w-full border-collapse text-sm">
-          <thead>
+          <thead className="sticky top-0 z-30">
+            {/*
+              The bucket tier. Its rule is heavier than a band's so the two
+              levels of grouping are not confusable, and each label is
+              `sticky left-…` so it survives being scrolled past: a
+              left-aligned label at the start of a 14-column bucket is gone
+              the moment you scroll into that bucket, and freezing the header
+              row only fixes that vertically (design.md Decision 12).
+            */}
+            <tr>
+              {BUCKETS.map((bucket) => {
+                const span = COLUMNS.filter((c) =>
+                  bucket.groups.includes(c.group),
+                ).length;
+                if (span === 0) return null;
+                return (
+                  <th
+                    key={bucket.key}
+                    data-bucket={bucket.key}
+                    scope="colgroup"
+                    colSpan={span}
+                    className={`whitespace-nowrap bg-background-primary px-3 pb-1 pt-3 text-left text-xs font-bold uppercase tracking-widest text-text-primary ${
+                      frozen && bucket.key === "keyword"
+                        ? "sticky left-0 z-40"
+                        : ""
+                    }`}
+                  >
+                    {bucket.label ? (
+                      <span className="block border-b-[3px] border-accent-primary pb-1">
+                        <span
+                          className="sticky inline-block"
+                          style={{ left: FROZEN_LABEL_OFFSET }}
+                        >
+                          {bucket.label}
+                        </span>
+                      </span>
+                    ) : null}
+                  </th>
+                );
+              })}
+            </tr>
             <tr>
               {GROUPS.map((group) => {
                 const span = COLUMNS.filter((c) => c.group === group.key).length;
@@ -878,16 +1050,25 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                     data-band={group.key}
                     scope="colgroup"
                     colSpan={span}
-                    className="whitespace-nowrap px-3 pb-1 pt-2 text-left text-[11px] font-medium uppercase tracking-wide text-text-secondary"
+                    className={`whitespace-nowrap bg-background-primary px-3 pb-1 pt-2 text-left text-[11px] font-medium uppercase tracking-wide text-text-secondary ${
+                      frozen && group.key === "keyword"
+                        ? "sticky left-0 z-40"
+                        : ""
+                    }`}
                   >
                     {group.label ? (
                       <span className="block border-b-2 border-accent-primary/50 pb-1">
-                        {group.label}
-                        {group.window && (
-                          <span className="ml-2 normal-case text-text-muted">
-                            ({group.window})
-                          </span>
-                        )}
+                        <span
+                          className="sticky inline-block"
+                          style={{ left: FROZEN_LABEL_OFFSET }}
+                        >
+                          {group.label}
+                          {group.window && (
+                            <span className="ml-2 normal-case text-text-muted">
+                              ({group.window})
+                            </span>
+                          )}
+                        </span>
                       </span>
                     ) : null}
                   </th>
@@ -935,20 +1116,56 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
           </thead>
           <tbody>
             {visible.map((row) => (
-              <tr key={row.keyword} className="border-b border-border">
-                {COLUMNS.map((column, index) => (
-                  <td
-                    key={column.key}
-                    className={`w-[1%] whitespace-nowrap px-3 py-2 text-text-primary ${
-                      frozen && index === 0
-                        ? "sticky left-0 z-10 bg-background-primary"
-                        : ""
-                    } ${column.numeric ? "text-right" : "text-left"}`}
+              <Fragment key={row.keyword}>
+                <tr data-row="keyword" className="border-b border-border">
+                  {COLUMNS.map((column, index) => (
+                    <td
+                      key={column.key}
+                      className={`w-[1%] whitespace-nowrap px-3 py-2 text-text-primary ${
+                        frozen && index === 0
+                          ? "sticky left-0 z-10 bg-background-primary"
+                          : ""
+                      } ${column.numeric ? "text-right" : "text-left"}`}
+                    >
+                      {column.render(row)}
+                    </td>
+                  ))}
+                </tr>
+                {/*
+                  One sub-row per related listing. The sub-row IS the listing:
+                  its title is written once, in the Listing column, and every
+                  other fact about it — tag slot, advertised, visits, ad spend
+                  — is an attribute on the same line (design.md Decision 15).
+                  Roughly 86% of keywords relate to no listing at all and
+                  render as a single row, exactly as before.
+                */}
+                {row.listings.map((listing) => (
+                  <tr
+                    key={`${row.keyword}:${listing.listingId}`}
+                    data-row="listing"
+                    className="border-b border-border bg-background-secondary/40"
                   >
-                    {column.render(row)}
-                  </td>
+                    {COLUMNS.map((column, index) => (
+                      <td
+                        key={column.key}
+                        className={`w-[1%] px-3 py-2 text-text-primary ${
+                          column.key === "listing.title"
+                            ? "whitespace-normal"
+                            : "whitespace-nowrap"
+                        } ${
+                          frozen && index === 0
+                            ? "sticky left-0 z-10 bg-background-primary"
+                            : ""
+                        } ${column.numeric ? "text-right" : "text-left"}`}
+                      >
+                        {column.renderListing
+                          ? column.renderListing(listing)
+                          : ""}
+                      </td>
+                    ))}
+                  </tr>
                 ))}
-              </tr>
+              </Fragment>
             ))}
           </tbody>
         </table>
