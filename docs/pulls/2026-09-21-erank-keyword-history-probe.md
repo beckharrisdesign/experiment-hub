@@ -43,6 +43,17 @@ The Bulk Tool's *Export* button was not pressed (a file download needs your say-
 
 **3. What this means for the read.** Every eRank number on the Big Join is one September reading of a series that moves by 3–5× within the year. The read's §C candidates and §B tag volumes should be taken as "September" rather than "demand". Whether that is worth 4 days of quota — or an export — is Katy's call; this probe is the evidence for the call, not the pull.
 
+## Which tags to pull, and which not to
+
+Computed 2026-09-21 from the 9/20 Tag Report and the Big Join's listing membership; paste-ready runs of 20 in `2026-09-21-erank-keyword-history-runs.txt`.
+
+- **Skip the 206 tags eRank calls `Unknown`.** It has no series for them; a run returns a flat line and burns 20 searches. That is 59 of the treatment arm's 78 tags — their history question is answered already: eRank has never seen them.
+- **Batch A — the 60 tags with a printed volume** (from `personalized gift` 41,355 down to `whimsical forest art` 22). These are the only numbers on the Big Join that a series can change; the three probed above swung 3–5× within the year.
+- **Batch B — the 44 censored `< 20` tags on experiment listings**, treatment's 16 first (`botanical wreath`, `branch wreath`, `diamond pattern`, `geometric wreath`, `line art embroidery`, `mindful stitching`, …). The question is whether `< 20` is permanent or a September trough.
+- **Batch C — the 12 captured phrases and 8 candidates** (`stick and stitch`, `advent calendar`, `ultrasound ornament`, `needle minder`, `calm stitching`, `christmas embroidery designs`, `gingerbread ornament`, `punch needle kit`). The test of §E's caveat.
+
+124 keywords, 7 runs, 1¼ days of quota. Five of them (`calm stitching`, `geometric wreath`, `wooden wick candle`, `small gift for her`, `candles for her`) already have a free series in the [Spotted monitor file](2026-09-21-erank-spotted-on-etsy-monitor.json).
+
 ## Standing read
 
 §G row 5 stays open, with its cost now known. Do not run the Bulk Tool over the 316 tags from an agent session; if it is done, do it in batches of 20 by hand or with explicit approval, land each run as `YYYY-MM-DD-erank-keyword-history-<batch>.csv`, and add the reader described in §G. Row 6 (Keyword Tool seeds for the candidates) is parked with it.
