@@ -66,15 +66,21 @@ Taken from `COLUMNS` in `components/KeywordTable.tsx`, not from the proposal's p
 
 ## Visual design / Figma
 
+> **Correction, 2026-09-21.** Before this round was drawn, the Plugin API was asked what the file actually contains. The answer: **four pages, all of them empty.** `01 Current state` (`0:1`), `02 Proposed` (`1:2`), `02.1 Proposed — scroll tools` (`3:2`) and `02.2 Proposed — one eRank band` (`4:2`) exist as pages and hold **zero children** between them. Every frame previously cited in this document, in this change's proposal, and in `keyword-captured-demand`'s `design.md` — `1:3`, `3:3`, `4:3` — **does not exist**. The file is also named `Document`, not `keyword-captured-demand`. Those citations described drawings that were never made; they are withdrawn rather than repaired. **Round 02.3 below is the first round in this file with anything on the canvas**, and its node IDs were returned by the API that created it.
+
 | Item | Value |
 | --- | --- |
-| Primary file URL | [`keyword-captured-demand`](https://www.figma.com/design/5zM3iearA5XFhHdjA0lV4D/keyword-captured-demand?node-id=4-3) — **shared with #508** at Katy's direction, 2026-09-20: *"lets use the figma from 508 to kick off 509."* Deliberate deviation from `rules/figma.mdc`'s file-per-change convention: both changes edit the same table, round numbering continues unbroken, and the open MVDS gate needs enabling once rather than twice. |
-| As-is frame(s) | The BEFORE half of `Round 02.2` — three bands, 17 columns, with the six duplicated columns marked. It is clipped at the frame's right edge; that is the argument, not a drawing error. |
-| Proposed frame(s) | Round 02.2 — page `02.2 Proposed — one eRank band` (`4:2`) → frame `Round 02.2 — one eRank band` (`4:3`). Before/after on the same six real rows; AFTER shows one band, 10 columns, `Reported by` as initials. |
-| Libraries / version | **None — gate still open, carried forward from `keyword-captured-demand` task 4.4.** `get_libraries` on `5zM3iearA5XFhHdjA0lV4D` returns an empty `libraries_added_to_file`. Enabling MVDS Core is a Figma UI action only Katy can perform. Drawn on raw `app/globals.css` tokens. **One toggle and one round satisfies both changes.** |
-| Code Connect | No mappings to update. `KeywordTable` is a hub component; the MVDS components it consumes are unchanged. |
-| Breakpoints | S · 480px / L · 1024px. Behaviour identical at both — the table scrolls horizontally, nothing reflows. This change makes the 480px view meaningfully better for the first time, since seven fewer columns sit between the keyword and the next band. |
-| Status | Round 02.2 built. **MVDS gate open.** |
+| Primary file URL | [`5zM3iearA5XFhHdjA0lV4D`](https://www.figma.com/design/5zM3iearA5XFhHdjA0lV4D/Document?node-id=7-2) — shared with #508 at Katy's direction, 2026-09-20: *"lets use the figma from 508 to kick off 509."* |
+| Round 02.3 | Page `02.3 Proposed — full table` (`7:2`) — **the whole table, both states, drawn from the corpus.** |
+| As-is frame | `Round 02.3 — Current state · 33 columns` (`7:3`), 3,325 × 368. All 33 columns across 7 bands. The three eRank bands visibly repeat Searches / Competition / KD. |
+| Proposed frame | `Round 02.3 — Proposed · 26 columns` (`7:255`), 2,717 × 368. One eRank band of 10; `Ranked`, `Targeting`, `Shop — captured` and `Etsy Ads` carry the same columns, values and order as the as-is frame. |
+| Data | Not mocked. Six real rows rendered through the app's own formatting rules (`num`, `bulkValueLabel`, `demandRatio`) from `data/keyword-corpus.json`. `mandala embroidery pattern` is included specifically because it is one of the few rows carrying **both** Shop and Etsy Ads data, so those bands are populated rather than dashes in both frames. `folk art embroidery` shows the precision merge; `beginner embroidery` shows the Decision 2 collision. |
+| Libraries / version | **None — gate still open.** `get_libraries` on this file returns `libraries_added_to_file: []`, and MVDS is not among the libraries available to add, so it cannot be enabled from here at all. Drawn on `app/globals.css` tokens (`--color-background-primary` `#194b31`, `--color-background-secondary` `#113723`, `--color-text-primary` `#cff7d3`, `--color-text-muted` `#4d9a60`, `--color-accent-primary` `#14ae5c`). Inter throughout; Fraunces headings not used, so the titles are not type-faithful. |
+| Code Connect | No mappings to update. |
+| Breakpoints | S · 480px / L · 1024px. Both frames draw the full table at its natural width, which is what the Big Join rule accepts at every breakpoint. |
+| Status | Round 02.3 drawn and verified by screenshot. **MVDS gate open.** |
+
+**Drawn width is not production width.** These frames are 3,325px and 2,717px; production measured **5,108px** for the as-is. The frames use compact hugging widths and six rows, so the absolute numbers understate — #508 recorded the same error at 66%. What the pair is evidence *for* is which columns exist and where, not how wide the result will be.
 
 ## Decisions
 
@@ -96,7 +102,7 @@ Because it reads the Keyword Tool sub-object directly, it renders on **1,931 row
 
 ## Risks / Trade-offs
 
-**The MVDS gate is open and is the main risk, carried forward from #508.** Round 02.2 is token-faithful but component-free. This change ships no new controls, so the exposure is smaller than #508's — the risk is that the *drawing* is wrong, not the build.
+**The MVDS gate is open, and it is now known to be un-closeable from here.** Round 02.3 is token-faithful but component-free, and `get_libraries` shows MVDS is not even offered to this file — so enabling it is a Figma UI action of Katy's, not a step that was skipped. This change ships no new controls, so the exposure is smaller than #508's: the risk is that the *drawing* is off, not the build.
 
 **"Zero contradictions" is a claim about today's corpus, not a property of eRank.** Every comparison count here is in the tens, not the thousands, because the three exports overlap on few keywords. The merge rule is safe on the evidence available and would need re-checking if the corpus grew substantially — the rule picks the first non-null on the assumption that exact values agree, and that assumption is measured, not guaranteed.
 
