@@ -8,33 +8,33 @@ One checkbox per spec scenario, in spec order. Titles match `specs/**/spec.md` 1
 
 **`unified-keyword-row` — one row per distinct keyword, merged across every source**
 
-- [ ] 1.1 A keyword measured by three instruments is one row — `folk art embroidery` appears once, carrying Keyword Tool, Bulk Keywords and Tag Report together
-- [ ] 1.2 A keyword only one source has ever seen still gets a row — `bedroom wall art` (Tag Report only) and `snow globe` (Ranked only) both appear
-- [ ] 1.3 Near-identical keywords stay separate rows — `snow globe` and `snow globes` remain two rows
+- [x] 1.1 A keyword measured by three instruments is one row — `folk art embroidery` appears once, carrying Keyword Tool, Bulk Keywords and Tag Report together — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
+- [x] 1.2 A keyword only one source has ever seen still gets a row — `bedroom wall art` (Tag Report only) and `snow globe` (Ranked only) both appear — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
+- [x] 1.3 Near-identical keywords stay separate rows — `snow globe` and `snow globes` remain two rows — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
 
 **`unified-keyword-row` — an absent source renders blank, and blank has exactly one look**
 
-- [ ] 1.4 An absent source is never fabricated as zero — `embroidery kits` shows blank Tag Report columns, not `0`
-- [ ] 1.5 A reported unknown looks identical to an absent source — `calm stitching`'s `Unknown` Avg searches and empty KD read the same as a source with no row
-- [ ] 1.6 A censored value keeps its reported text — `folk art embroidery` shows `< 20`, not blank and not `20`
+- [x] 1.4 An absent source is never fabricated as zero — `embroidery kits` shows blank Tag Report columns, not `0` — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
+- [x] 1.5 A reported unknown looks identical to an absent source — `calm stitching`'s `Unknown` Avg searches and empty KD read the same as a source with no row — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
+- [x] 1.6 A censored value keeps its reported text — `folk art embroidery` shows `< 20`, not blank and not `20` — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
 
 **`unified-keyword-row` — the Tag Report is read into the corpus for the first time**
 
-- [ ] 1.7 Tag Report fields land on the merged row — its seven fields reach the row for a keyword it scores
-- [ ] 1.8 Tag-Report-only tags create their own rows — all 258 orphan tags appear rather than being dropped
+- [x] 1.7 Tag Report fields land on the merged row — its seven fields reach the row for a keyword it scores — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
+- [x] 1.8 Tag-Report-only tags create their own rows — all 258 orphan tags appear rather than being dropped — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
 
 **`keyword-explorer` — one table, with columns grouped under a band per source**
 
-- [ ] 1.9 Every source is a band of columns on one table
-- [ ] 1.10 The Bulk Keywords table is gone — its columns appear as the Bulk Keywords band instead
-- [ ] 1.11 Colliding column names are told apart by their band — the three KDs and the doubled Avg columns
-- [ ] 1.12 A row is mostly blank without looking broken — no empty state, warning or placeholder
+- [x] 1.9 Every source is a band of columns on one table — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
+- [x] 1.10 The Bulk Keywords table is gone — its columns appear as the Bulk Keywords band instead — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
+- [x] 1.11 Colliding column names are told apart by their band — the three KDs and the doubled Avg columns — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
+- [x] 1.12 A row is mostly blank without looking broken — no empty state, warning or placeholder — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
 
 **`keyword-explorer` — sorting and filtering work per column and never rank a blank as zero**
 
-- [ ] 1.13 Blanks sort last on any numeric column — in either direction, on every source's columns
-- [ ] 1.14 A range filter excludes blanks rather than counting them as zero
-- [ ] 1.15 Ranked and Targeting behave exactly as they do today
+- [x] 1.13 Blanks sort last on any numeric column — in either direction, on every source's columns — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
+- [x] 1.14 A range filter excludes blanks rather than counting them as zero — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
+- [x] 1.15 Ranked and Targeting behave exactly as they do today — ✓ exercised by `tests/keyword-corpus.test.ts` and `tests/components/KeywordTable.test.tsx` on `main`, and by Katy's walkthrough, 2026-09-21.
 
 ## 2. Prototype shell
 

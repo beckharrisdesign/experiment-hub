@@ -7,7 +7,7 @@ Twelve scenarios across the two capabilities, in spec order. Each is checked by 
 **`keyword-corpus`**
 
 - [x] 1.1 Katy runs one command and every archived keyword CSV is in the table — the ten 2026-09-17 exports' **83 data rows, represented as 71 keyword rows carrying 83 query hits** (12 of the 83 are the same keyword seen under a second query, which is the row grain working, not loss).
-- [ ] 1.2 *(generator verified against a synthetic second capture in 4.2; awaiting a real drop)* Katy drops a new export into `docs/pulls/`, re-runs the same command, and its rows appear with no file edited by hand.
+- [x] 1.2 *(generator verified against a synthetic second capture in 4.2; awaiting a real drop)* Katy drops a new export into `docs/pulls/`, re-runs the same command, and its rows appear with no file edited by hand. — **Verified for real by #501 (40 eRank exports) and #503 (Sep 18 batch)**, both landed after the generator was written; no file hand-edited.
 - [x] 1.3 Katy reads `embroidery font` and sees its four per-query tag-occurrence counts — 80, 81, 12 and 6 — not one merged number.
 - [x] 1.4 Katy sees searches, competition and KD once on the row, not repeated once per query that surfaced it.
 - [x] 1.5 Katy re-exports a query months later and can read both captures: the new one current, the previous marked superseded.
@@ -15,9 +15,9 @@ Twelve scenarios across the two capabilities, in spec order. Each is checked by 
 
 **`keyword-explorer`**
 
-- [ ] 1.7 *(implemented; awaiting her interactive check)* Katy sorts or filters on any column, computed columns included, and the table reorders or narrows on that field.
+- [x] 1.7 *(implemented; awaiting her interactive check)* Katy sorts or filters on any column, computed columns included, and the table reorders or narrows on that field. — **Katy, 2026-09-21:** walkthrough done (*"I did my walkthrough - consider it done"*).
 - [x] 1.8 Katy scrolls one surface past a screenful of rows and finds no page controls.
-- [ ] 1.9 *(implemented; column sits beyond the fold at 1024 — verify by scrolling)* Katy tells current rows from superseded ones at a glance, with each row's capture date legible.
+- [x] 1.9 *(implemented; column sits beyond the fold at 1024 — verify by scrolling)* Katy tells current rows from superseded ones at a glance, with each row's capture date legible. — **Katy, 2026-09-21:** walkthrough done (*"I did my walkthrough - consider it done"*).
 - [x] 1.10 Katy sees no cell wrapped to a second line, and one type size across the whole table, header row included.
 - [x] 1.11 Katy widens the window and the surplus goes to the keyword column while the others hold their width.
 - [x] 1.12 Katy sees no colour band on any value — the schema is recorded in the proposal, not applied.
@@ -56,7 +56,7 @@ Twelve scenarios across the two capabilities, in spec order. Each is checked by 
 
 ## 4. QA
 
-- [ ] 4.1 **Manual walkthrough, in Katy's terminal:** `python3 scripts/ingest-pulls.py --apply` → `pnpm dev` → `/keyword-explorer`. Walk §1.1–1.12 in order against the real page. Then drop a fresh CSV into `docs/pulls/`, re-run ingest, and confirm 1.2 and 1.5 on data that did not exist when the code was written.
+- [x] 4.1 **Manual walkthrough, in Katy's terminal:** `python3 scripts/ingest-pulls.py --apply` → `pnpm dev` → `/keyword-explorer`. Walk §1.1–1.12 in order against the real page. Then drop a fresh CSV into `docs/pulls/`, re-run ingest, and confirm 1.2 and 1.5 on data that did not exist when the code was written. — **Katy, 2026-09-21:** walkthrough done (*"I did my walkthrough - consider it done"*).
 - [x] 4.2 **Automated smoke** (`vitest run`): the generator produces **71 rows and 83 query hits** from the ten archived CSVs, and the hit count equals the raw CSV data-row count; `embroidery font` carries four query entries with counts 80/81/12/6; a keyword-scoped field appears once per row; a synthetic second capture marks the earlier rows superseded and leaves both readable; and **no output field ever reads zero or negative for a keyword merely absent from a later capture**.
 - [x] 4.3 **Screenshot the built page at 1024 and 480** and compare against Figma `02.3` — every earlier round's real defects (black-on-black text, collided headers, a clipped caveat, placeholder instance text) were caught by looking, not by reading.
 - [x] 4.4 `pnpm lint` and `pnpm test` clean before the PR.
