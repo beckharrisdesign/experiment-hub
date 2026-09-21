@@ -879,6 +879,34 @@ describe("KeywordTable — export", () => {
   });
 });
 
+describe("KeywordTable — presence filters", () => {
+  it("narrows to rows that have a value, and shows a removable chip", async () => {
+    render(<KeywordTable rows={ROWS} />);
+    fireEvent.click(screen.getByLabelText("Add presence filter"));
+    fireEvent.click(
+      await screen.findByRole("option", { name: "has Ranked — Etsy SEO" }),
+    );
+
+    // A filter the reader cannot see is a filter they cannot undo — the chip
+    // is part of the feature, not decoration.
+    expect(
+      screen.getByRole("button", { name: /Remove has .* filter/ }),
+    ).toBeInTheDocument();
+    expect(keywordOrder()).not.toContain("embroidery font");
+  });
+
+  it("asks for absence as well as presence", async () => {
+    render(<KeywordTable rows={ROWS} />);
+    fireEvent.click(screen.getByLabelText("Add presence filter"));
+    fireEvent.click(
+      await screen.findByRole("option", { name: "no Ranked — Etsy SEO" }),
+    );
+
+    expect(keywordOrder()).toContain("embroidery font");
+    expect(keywordOrder()).not.toContain("snow globe");
+  });
+});
+
 describe("KeywordTable — scroll tools", () => {
   it("offers a jump control for every source band without hiding columns", () => {
     render(<KeywordTable rows={ROWS} />);

@@ -38,8 +38,8 @@ Package manager is **pnpm**. Design approved by Katy, 2026-09-21: *"yes lets app
 
 **`keyword-table-grouping` — group labels stay readable while the table scrolls sideways**
 
-- [ ] 1.15 A label pins to the left edge of the scroll region — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
-- [ ] 1.16 One label hands over to the next — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
+- [x] 1.15 A label pins to the left edge of the scroll region — verified in-browser at scrollLeft 3065: the `Performance` cell starts 79px off-screen left while its label renders at +12, on screen
+- [x] 1.16 One label hands over to the next — same measurement: buckets scrolled fully past render their labels off-screen, so one label gives way to the next
 
 **`keyword-table-grouping` — alignment follows the data type**
 
@@ -74,8 +74,8 @@ Package manager is **pnpm**. Design approved by Katy, 2026-09-21: *"yes lets app
 **`keyword-listing-subrows` — sorting and filtering stay keyword-grained, and a filter can ask for absence**
 
 - [x] 1.29 A sort orders parents, not sub-rows — sort tests: parents reorder, sub-rows filtered out of `bodyRows()`
-- [ ] 1.30 Presence and absence compose into one query — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
-- [ ] 1.31 A matching sub-row keeps its parent visible — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
+- [x] 1.30 Presence and absence compose into one query — `has Etsy Ads — Views` narrowed 2,310 rows to **14** in the browser — exactly the 14 ad keywords in the corpus; both directions unit-tested
+- [x] 1.31 A matching sub-row keeps its parent visible — parent rows stay visible when a sub-row's value matches — `columnHasValue` asks the listings, and the parent is what renders
 
 **`big-join-table` — the table fills the available width**
 
@@ -84,10 +84,10 @@ Package manager is **pnpm**. Design approved by Katy, 2026-09-21: *"yes lets app
 
 **`big-join-table` — the keyword column and the header tiers freeze together**
 
-- [ ] 1.34 All three header tiers pin, not just the column headers — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
-- [ ] 1.35 Headers stay while the rows scroll — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
-- [ ] 1.36 The corner holds both — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
-- [ ] 1.37 Freezing stays the reader's choice — **not verified.** Sticky positioning and scroll state do not resolve in jsdom, and this needs a real viewport. Owed before merge.
+- [x] 1.34 All three header tiers pin, not just the column headers — verified in-browser: bucket, band and column-header keyword cells all report `sticky` when frozen
+- [x] 1.35 Headers stay while the rows scroll — verified: `thead` reports `sticky` and holds while rows scroll
+- [x] 1.36 The corner holds both — verified at scrollLeft 3000 with freeze on — the keyword column holds at viewport x=0 while the table shows Etsy Ads
+- [x] 1.37 Freezing stays the reader's choice — verified: the toggle reads `Freeze keyword · off` on load
 
 ## 2. Prototype shell
 
@@ -124,7 +124,7 @@ Package manager is **pnpm**. Design approved by Katy, 2026-09-21: *"yes lets app
 - [x] 3.13 Reorder `Targeting` before `Ranked` so the buckets are contiguous. — `Targeting` ordered before `Ranked` in `GROUPS`; buckets are contiguous.
 - [x] 3.14 Add the bucket tier above the bands, with a heavier rule than the band rule. Keep each rule spanning exactly its own columns (`:884` already does this for bands). — `BUCKETS` tier renders above the bands with a 3px full-opacity rule against the band's 2px at 50%.
 - [x] 3.15 Pin bucket and band labels to the left edge of the scroll region — `position: sticky` on the label span, offset by the frozen column width. — Bucket and band labels are `position: sticky` on the label span, offset by `FROZEN_LABEL_OFFSET`.
-- [x] 3.16 Extend `sticky left-0` to the bucket and band cells of the keyword column; `:901` and `:944` cover only the header row and body cells today. — `sticky left-0` extended to the bucket and band cells of the keyword column via the frozen branch.
+- [x] 3.16 Extend `sticky left-0` to the bucket and band cells of the keyword column; `:901` and `:944` cover only the header row and body cells today. — **Corrected.** The first receipt here was wrong: only the column-header row and body cells stuck, and the browser reported the bucket and band cells as `static`. Both now carry the frozen branch; verified in a real viewport at scrollLeft 3000 — all four report `sticky`.
 - [x] 3.17 Add `sticky top-0` to the header tiers, with z-order such that the frozen corner sits above both. — `<thead className="sticky top-0 z-30">` with opaque cell backgrounds so rows do not show through.
 - [x] 3.18 Render listing sub-rows: parent stays keyword-grained; membership is the union of tagged, ad-matched, landed-on and ranked listings; one `Listing` column, everything else an attribute on that row. — Sub-rows render under each parent from `row.listings`; one `Listing` column, everything else via `renderListing`. Shop's duplicate `Listing` column removed.
 - [x] 3.19 Keep sort and filter keyword-grained — sub-rows travel with their parent, and a sub-row match keeps its parent visible. — `bodyRows()` filters on `data-row`; sub-rows render beneath their parent and sorting reorders parents only.
@@ -156,4 +156,6 @@ Package manager is **pnpm**. Design approved by Katy, 2026-09-21: *"yes lets app
 - **`GROUPS` and `COLUMNS` order are two separate things, and only one of them was reordered.** Decision 11's band swap was applied to `GROUPS` but not to the `COLUMNS` array, which is what actually emits the cells. The band headers would have spanned the right *counts* over the wrong *columns* — a silent misalignment, since nothing throws. Caught by the layout test's span assertion, not by reading the code.
 - **`withTargeting` was already fetching every listing's title and discarding it.** An ad-matched listing that carries no tag had no title source at all, so it rendered as a bare listing id — on precisely the row the one-listing-column decision exists to make legible. It now returns a `listingId -> title` map alongside the rows.
 - **Three more keys were still pointing at the deleted columns**: the default sort (`kt.searches`), the decimal-keypad check (`kt.ratio`), and the three source filters (`keywordTool`/`bulkKeywords`/`tagReport`). Only the last was in the task list; the first two would have silently degraded — the table would have loaded unsorted.
+- **The presence filter applied but rendered no chip.** Its container was gated on `filters.length > 0`, so a presence-only filter was active, invisible and unremovable — the browser showed 14 rows with nothing on screen explaining why. Found by using it, not by reading it.
+- **The chip's remove button did not name its column**, so two chips would have been indistinguishable to a screen reader. Caught by writing the test around the label rather than the behaviour.
 - **Kept the three eRank source sub-objects on `KeywordRow`** rather than replacing them as task 3.7 says. They carry `capture`, `current`, `superseded_by` and `history`, which the corpus exists to preserve; `erank` is added alongside. The *table* row (`KeywordTableRow`) is where the three collapse to one — which is what the design actually requires.

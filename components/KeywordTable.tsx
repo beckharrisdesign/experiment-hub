@@ -888,8 +888,10 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
       </div>
 
       {/* Active filters. Each stays visible and individually removable —
-          adding one never clears another. */}
-      {filters.length > 0 && (
+          adding one never clears another. Presence filters count too: an
+          active filter with no chip is a filter the reader cannot see or
+          undo. */}
+      {(filters.length > 0 || presence.length > 0) && (
         <div className="flex flex-wrap items-center gap-2">
           {presence.map((p) => {
             const column = COLUMNS.find((c) => c.key === p.key);
@@ -901,7 +903,9 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                 {p.present ? "has" : "no"} {column ? qualified(column) : p.key}
                 <button
                   type="button"
-                  aria-label={`Remove ${p.present ? "has" : "no"} filter`}
+                  aria-label={`Remove ${p.present ? "has" : "no"} ${
+                    column ? qualified(column) : p.key
+                  } filter`}
                   onClick={() =>
                     setPresence((prev) => prev.filter((x) => x.key !== p.key))
                   }
@@ -1016,7 +1020,11 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                     data-bucket={bucket.key}
                     scope="colgroup"
                     colSpan={span}
-                    className="whitespace-nowrap bg-background-primary px-3 pb-1 pt-3 text-left text-xs font-bold uppercase tracking-widest text-text-primary"
+                    className={`whitespace-nowrap bg-background-primary px-3 pb-1 pt-3 text-left text-xs font-bold uppercase tracking-widest text-text-primary ${
+                      frozen && bucket.key === "keyword"
+                        ? "sticky left-0 z-40"
+                        : ""
+                    }`}
                   >
                     {bucket.label ? (
                       <span className="block border-b-[3px] border-accent-primary pb-1">
@@ -1042,7 +1050,11 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                     data-band={group.key}
                     scope="colgroup"
                     colSpan={span}
-                    className="whitespace-nowrap bg-background-primary px-3 pb-1 pt-2 text-left text-[11px] font-medium uppercase tracking-wide text-text-secondary"
+                    className={`whitespace-nowrap bg-background-primary px-3 pb-1 pt-2 text-left text-[11px] font-medium uppercase tracking-wide text-text-secondary ${
+                      frozen && group.key === "keyword"
+                        ? "sticky left-0 z-40"
+                        : ""
+                    }`}
                   >
                     {group.label ? (
                       <span className="block border-b-2 border-accent-primary/50 pb-1">
