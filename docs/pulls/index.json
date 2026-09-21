@@ -1,6 +1,151 @@
 {
-  "generated": "2026-09-19",
+  "generated": "2026-09-21",
   "pulls": [
+    {
+      "note": "2026-09-21-erank-keyword-history-probe.md",
+      "captured": "2026-09-21",
+      "source": "erank",
+      "surface": "keyword-history",
+      "tier": "external",
+      "scope": "market",
+      "measures": [
+        "demand"
+      ],
+      "subjects": [
+        "patterns",
+        "holiday"
+      ],
+      "half_life": "90d",
+      "status": "fresh",
+      "answers": "Whether eRank's per-keyword monthly search history can be taken at all, at what cost, and what three keywords' 15-month series look like. A method probe, not a data pull \u2014 three keywords, chart-read, not eRank-printed.",
+      "raw_files": [
+        "2026-09-21-erank-keyword-history-probe.csv"
+      ],
+      "current": true,
+      "series_index": 1,
+      "series_length": 1
+    },
+    {
+      "note": "2026-09-21-erank-spotted-on-etsy.md",
+      "captured": "2026-09-21",
+      "source": "erank",
+      "surface": "spotted-on-etsy",
+      "tier": "external",
+      "scope": "listing",
+      "measures": [
+        "rank"
+      ],
+      "subjects": [
+        "patterns",
+        "grandma-hobbies"
+      ],
+      "half_life": "7d",
+      "status": "unknown",
+      "answers": "Where W&H listings appeared in Etsy search on 2026-09-20, per eRank's monitor \u2014 page and position per term \u2014 with the previous check's rank and a 15-month search-trend series eRank prints inline. Second capture; the first is the 2026-09-17 export.",
+      "raw_files": [
+        "2026-09-21-erank-spotted-on-etsy.csv"
+      ],
+      "current": true,
+      "series_index": 1,
+      "series_length": 2
+    },
+    {
+      "note": "2026-09-21-etsy-ads-listing-keywords.md",
+      "captured": "2026-09-21",
+      "source": "etsy",
+      "surface": "ads-listing-keywords",
+      "tier": "bookend",
+      "scope": "listing",
+      "measures": [
+        "visibility",
+        "spend"
+      ],
+      "subjects": [
+        "patterns",
+        "holiday",
+        "grandma-hobbies"
+      ],
+      "half_life": "30d",
+      "status": "fresh",
+      "answers": "Which search terms Etsy matched each advertised listing's ad to over the last 30 days, with views, clicks and spend per term \u2014 day 6 of the tag experiment. Second capture of this surface; the first is 2026-09-20.",
+      "raw_files": [],
+      "current": true,
+      "series_index": 1,
+      "series_length": 1
+    },
+    {
+      "note": "2026-09-21-etsy-listing-stats.md",
+      "captured": "2026-09-21",
+      "source": "etsy",
+      "surface": "listing-stats",
+      "tier": "bookend",
+      "scope": "listing",
+      "measures": [
+        "visibility",
+        "conversion"
+      ],
+      "subjects": [
+        "all"
+      ],
+      "half_life": "rolling",
+      "status": "unknown",
+      "answers": "What each listing earned this year and, separately, in the first week of the tag experiment \u2014 visits, sales, revenue, traffic source, and the search terms buyers typed. The second capture of this surface; the first is 2026-09-20.",
+      "raw_files": [
+        "2026-09-21-etsy-listing-stats-this-year.csv"
+      ],
+      "current": true,
+      "series_index": 1,
+      "series_length": 2
+    },
+    {
+      "note": "2026-09-20-erank-tag-report.md",
+      "captured": "2026-09-20",
+      "source": "erank",
+      "surface": "tag-report",
+      "tier": "external",
+      "scope": "shop",
+      "measures": [
+        "demand",
+        "difficulty"
+      ],
+      "subjects": [
+        "all"
+      ],
+      "half_life": "90d",
+      "status": "fresh",
+      "answers": "eRank's estimate for every tag the shop uses \u2014 404 tags, including the holiday nine and the treatment tag sets that the 2026-09-15 report predates. Second capture of this surface; the first is 2026-09-15.",
+      "raw_files": [
+        "2026-09-20-erank-tag-report.csv"
+      ],
+      "current": true,
+      "series_index": 1,
+      "series_length": 2
+    },
+    {
+      "note": "2026-09-20-etsy-listing-stats.md",
+      "captured": "2026-09-20",
+      "source": "etsy",
+      "surface": "listing-stats",
+      "tier": "bookend",
+      "scope": "listing",
+      "measures": [
+        "visibility",
+        "conversion"
+      ],
+      "subjects": [
+        "all"
+      ],
+      "half_life": "rolling",
+      "status": "superseded",
+      "answers": "What each listing actually earned this year \u2014 visits, sales, revenue \u2014 and the search terms buyers really typed to reach it. The first source in this archive measuring captured demand rather than estimated market demand.",
+      "raw_files": [
+        "2026-09-20-etsy-listing-stats-this-year.csv"
+      ],
+      "current": false,
+      "series_index": 2,
+      "series_length": 2,
+      "superseded_by": "2026-09-21-etsy-listing-stats.md"
+    },
     {
       "note": "2026-09-18-erank-bulk-keywords.md",
       "captured": "2026-09-18",
@@ -166,15 +311,16 @@
         "grandma-hobbies"
       ],
       "half_life": "14d",
-      "status": "fresh",
+      "status": "superseded",
       "answers": "Where W&H listings actually rank in Etsy search, by term. Positions move fast \u2014 re-pull before citing.",
       "raw_files": [
         "2026-09-17-erank-spotted-on-etsy-2.csv",
         "2026-09-17-erank-spotted-on-etsy.csv"
       ],
-      "current": true,
-      "series_index": 1,
-      "series_length": 1
+      "current": false,
+      "series_index": 2,
+      "series_length": 2,
+      "superseded_by": "2026-09-21-erank-spotted-on-etsy.md"
     },
     {
       "note": "2026-09-17-etsy-title-suggestions.md",
@@ -256,14 +402,15 @@
         "all"
       ],
       "half_life": "180d",
-      "status": "fresh",
+      "status": "superseded",
       "answers": "What marketwide search volume and difficulty sit behind the tags W&H already uses, and which competitor shops were audited alongside.",
       "raw_files": [
         "2026-09-15-erank-tag-report.csv"
       ],
-      "current": true,
-      "series_index": 1,
-      "series_length": 1
+      "current": false,
+      "series_index": 2,
+      "series_length": 2,
+      "superseded_by": "2026-09-20-erank-tag-report.md"
     }
   ]
 }

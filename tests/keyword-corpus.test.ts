@@ -379,7 +379,13 @@ describe("keyword corpus generation", () => {
     // belongs to one of the archive's own captures.
     const captureDates = corpus.captures.map((c) => c.date);
     for (const row of corpus.rows) {
-      expect(captureDates).toContain(row.capture);
+      // A ranked-only row (searches null) is dated by the Spotted on Etsy
+      // capture that produced it, not by a Keyword Tool capture -- there is
+      // none. Until 2026-09-21 the two archives happened to share a date
+      // (both 09-17), which is what let this line pass unqualified.
+      if (row.searches !== null) {
+        expect(captureDates).toContain(row.capture);
+      }
       if (row.current) {
         expect(row.superseded_by).toBeNull();
       } else {

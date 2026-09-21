@@ -159,6 +159,18 @@ Ordered by what each pull unlocks, Etsy side first because those windows roll. E
 | 6 | **eRank Keyword Tool, seeded on the read's own candidates and captured phrases:** `stick and stitch`, `advent calendar`, `ultrasound ornament`, `needle minder`, `hand embroidery pdf`, `mandala embroidery` | The neighbourhood around each candidate — today each is a single row that another seed happened to surface. Also the one test of §E's caveat: does eRank see *anything* near the phrases buyers typed? | §C, §E | `YYYY-MM-DD-erank-keywords-<seed>.csv` | `read_keyword_csv()` — exists |
 | 7 | **eRank Spotted on Etsy, re-run** | Whether `calm stitching` still holds #1 after the treatment retitles, and whether any treatment term has entered the top 40. Already in release §1. | §A ranked | `YYYY-MM-DD-erank-spotted-on-etsy.csv` | `read_spotted_on_etsy_csv()` — exists |
 
+**Status, same day (2026-09-21, taken from Katy's Chrome session, Etsy paced at 6–8 s per page after a faster first pass):**
+
+| # | Taken | Where it landed | What it changed |
+|---|---|---|---|
+| 1 | ✅ both windows, all 36 listings | [listing-stats note](pulls/2026-09-21-etsy-listing-stats.md) | 8 visits shop-wide in days 0–6, 3 captured terms; treatment 1 visit, control 1. Since-day-0 file is the readout's baseline. |
+| 2 | ❌ **surface gone** | — | Shop Manager no longer has a Search Analytics page; `/your/shops/me/search-analytics` is a 404 and the sidebar's only search item is *Etsy search visibility*, the title-suggestions page. The 9/14 capture may have been the last one. The listing-stats search terms (row 1) are now the only organic-term source. |
+| 3 | ✅ all 10 advertised listings | [ads note](pulls/2026-09-21-etsy-ads-listing-keywords.md) | 145 views, 4 clicks, 0 orders in the window; 4465357735 now readable; nothing post–day 0 yet — the 9/29 capture is the one that matters. |
+| 4 | ✅ Katy's own export, found in Downloads | [tag-report note](pulls/2026-09-20-erank-tag-report.md) | 404 tags; the holiday nine and treatment sets are scored and mostly `Unknown`. §B's "unscored" rows become "scored, unknown". |
+| 5 | ⚠️ probed, not taken | [history probe](pulls/2026-09-21-erank-keyword-history-probe.md) | eRank shows a 15-month series per keyword but only as a chart; the Bulk Keyword Tool costs 1 of 100 daily searches per keyword and exposes the series as SVG geometry. Three keywords read as proof of method. 316 tags = four days of quota, or an export Katy has that this session does not. |
+| 6 | ⏸ not taken | — | Keyword Tool seeds cost quota; parked with row 5. |
+| 7 | ✅ monitor read | [spotted note](pulls/2026-09-21-erank-spotted-on-etsy.md) | `calm stitching` still page 1 position 1; the monitor table carries the 15-month series as text for its own terms. |
+
 Two notes on the list. **Rows 1–3 are the time-sensitive ones** — Etsy's windows roll and the 30-day ad panel cannot be recovered later; 4–7 are eRank and can wait. **Rows 2 and 5 need a reader before they can join the table**; the others land in the existing ingest and appear on the next `ingest-pulls.py --apply`. If only one eRank pull is taken, take row 5: it is the only one that changes what kind of number the Observed bucket holds.
 
 ## F. Where each item went

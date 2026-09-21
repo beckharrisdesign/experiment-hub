@@ -876,8 +876,22 @@ def read_listing_stats_json(path: Path) -> list[dict]:
     data = json.loads(path.read_text(encoding="utf-8"))
     out = []
     for listing in data.get("listings", []):
-        for raw in listing.get("term_rows", []):
-            row = _shop_term_row(raw)
+        rows = [_shop_term_row(raw) for raw in listing.get("term_rows", [])]
+        # The 2026-09-21 capture read Etsy's embedded JSON instead of the
+        # rendered table, so its terms arrive already structured. Same
+        # honesty rules: the term text is exactly what Etsy returned, and a
+        # missing Etsy/Google split stays None rather than 0.
+        rows += [
+            {
+                "keyword": t["term"],
+                "visits": t.get("visits"),
+                "etsy_visits": t.get("etsy_visits"),
+                "google_visits": t.get("google_visits"),
+            }
+            for t in listing.get("search_terms", [])
+            if t.get("term")
+        ]
+        for row in rows:
             if not row:
                 continue
             out.append({
