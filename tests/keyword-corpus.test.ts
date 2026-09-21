@@ -891,7 +891,12 @@ describe("captured demand — shop search terms and ad keywords", () => {
     const row = find("paper embriodery template")!;
     expect(row).toBeDefined();
     expect(row.keywordTool).toBeNull();
-    expect(row.bulkKeywords).toBeNull();
+    // 2026-09-21: the term was put to the Bulk Keyword Tool directly and eRank
+    // answered Unknown on every column. That is a measurement of "nothing
+    // known", kept as a sub-object with every field null -- distinct from
+    // never having been asked, which is what null meant before that pull.
+    expect(row.bulkKeywords?.avgSearches ?? null).toBeNull();
+    expect(row.bulkKeywords?.etsyCompetition ?? null).toBeNull();
     expect(row.shopSearch?.visits).toBe(1);
   });
 

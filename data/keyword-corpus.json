@@ -81,6 +81,11 @@
       "date": "2026-09-18",
       "source": "erank",
       "files": 6
+    },
+    {
+      "date": "2026-09-21",
+      "source": "erank",
+      "files": 7
     }
   ],
   "tag_report_captures": [
@@ -301,7 +306,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 41355,
+        "avg_searches_censored": false,
+        "avg_clicks": 47129,
+        "avg_clicks_censored": false,
+        "avg_ctr": 114,
+        "avg_ctr_censored": false,
+        "etsy_competition": 5573446,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 41355,
@@ -352,6 +370,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -405,7 +424,20 @@
     {
       "keyword": "digital products",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 31237,
+        "avg_searches_censored": false,
+        "avg_clicks": 40034,
+        "avg_clicks_censored": false,
+        "avg_ctr": 128,
+        "avg_ctr_censored": false,
+        "etsy_competition": 156839,
+        "kd": 35,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 2,
         "avg_searches": 31237,
@@ -497,6 +529,7 @@
         "tag_occurrences": 2,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -1161,7 +1194,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 13596,
+        "avg_searches_censored": false,
+        "avg_clicks": 15407,
+        "avg_clicks_censored": false,
+        "avg_ctr": 113,
+        "avg_ctr_censored": false,
+        "etsy_competition": 1468837,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 13596,
@@ -1212,6 +1258,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -2222,7 +2269,20 @@
     {
       "keyword": "christmas ornament",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 9166,
+        "avg_searches_censored": false,
+        "avg_clicks": 12245,
+        "avg_clicks_censored": false,
+        "avg_ctr": 134,
+        "avg_ctr_censored": false,
+        "etsy_competition": 2050300,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 9166,
@@ -2267,6 +2327,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -2681,7 +2742,20 @@
           }
         ]
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 8347,
+        "avg_searches_censored": false,
+        "avg_clicks": 10051,
+        "avg_clicks_censored": false,
+        "avg_ctr": 120,
+        "avg_ctr_censored": false,
+        "etsy_competition": 33071,
+        "kd": 30,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": null,
       "ranked": null,
       "erank": {
@@ -2689,9 +2763,9 @@
         "searches_censored": false,
         "competition": 33071,
         "kd": 30,
-        "avg_clicks": null,
+        "avg_clicks": 10051,
         "avg_clicks_censored": false,
-        "avg_ctr": null,
+        "avg_ctr": 120,
         "avg_ctr_censored": false,
         "google_searches": null,
         "tag_occurrences": null,
@@ -2702,7 +2776,8 @@
           }
         ],
         "reported_by": [
-          "KT"
+          "KT",
+          "B"
         ]
       }
     },
@@ -3215,7 +3290,20 @@
     {
       "keyword": "personalized home",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 7375,
+        "avg_searches_censored": false,
+        "avg_clicks": 6400,
+        "avg_clicks_censored": false,
+        "avg_ctr": 87,
+        "avg_ctr_censored": false,
+        "etsy_competition": 3301344,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 7375,
@@ -3246,6 +3334,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -3436,7 +3525,20 @@
     {
       "keyword": "embroidery designs",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 7082,
+        "avg_searches_censored": false,
+        "avg_clicks": 7772,
+        "avg_clicks_censored": false,
+        "avg_ctr": 110,
+        "avg_ctr_censored": false,
+        "etsy_competition": 248390,
+        "kd": 77,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 6,
         "avg_searches": 7082,
@@ -3528,6 +3630,7 @@
         "tag_occurrences": 6,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -4020,7 +4123,20 @@
     {
       "keyword": "digital product",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 6246,
+        "avg_searches_censored": false,
+        "avg_clicks": 7978,
+        "avg_clicks_censored": false,
+        "avg_ctr": 128,
+        "avg_ctr_censored": false,
+        "etsy_competition": 156843,
+        "kd": 70,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 2,
         "avg_searches": 6246,
@@ -4065,6 +4181,7 @@
         "tag_occurrences": 2,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -4118,7 +4235,20 @@
     {
       "keyword": "stocking stuffer",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 6159,
+        "avg_searches_censored": false,
+        "avg_clicks": 6782,
+        "avg_clicks_censored": false,
+        "avg_ctr": 110,
+        "avg_ctr_censored": false,
+        "etsy_competition": 535836,
+        "kd": 97,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 6159,
@@ -4163,6 +4293,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -4354,7 +4485,20 @@
     {
       "keyword": "self care gift",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 5843,
+        "avg_searches_censored": false,
+        "avg_clicks": 7048,
+        "avg_clicks_censored": false,
+        "avg_ctr": 121,
+        "avg_ctr_censored": false,
+        "etsy_competition": 182328,
+        "kd": 75,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 5,
         "avg_searches": 5843,
@@ -4399,6 +4543,7 @@
         "tag_occurrences": 5,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -6937,7 +7082,20 @@
     {
       "keyword": "best friend gift",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 4148,
+        "avg_searches_censored": false,
+        "avg_clicks": 4123,
+        "avg_clicks_censored": false,
+        "avg_ctr": 99,
+        "avg_ctr_censored": false,
+        "etsy_competition": 430257,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 4148,
@@ -6982,6 +7140,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -9525,7 +9684,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 3246,
+        "avg_searches_censored": false,
+        "avg_clicks": 4041,
+        "avg_clicks_censored": false,
+        "avg_ctr": 124,
+        "avg_ctr_censored": false,
+        "etsy_competition": 29016,
+        "kd": 48,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": null,
       "ranked": null,
       "erank": {
@@ -9533,9 +9705,9 @@
         "searches_censored": false,
         "competition": 29016,
         "kd": 48,
-        "avg_clicks": null,
+        "avg_clicks": 4041,
         "avg_clicks_censored": false,
-        "avg_ctr": null,
+        "avg_ctr": 124,
         "avg_ctr_censored": false,
         "google_searches": null,
         "tag_occurrences": null,
@@ -9550,7 +9722,8 @@
           }
         ],
         "reported_by": [
-          "KT"
+          "KT",
+          "B"
         ]
       }
     },
@@ -11022,7 +11195,20 @@
     {
       "keyword": "nutcracker",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 2890,
+        "avg_searches_censored": false,
+        "avg_clicks": 3199,
+        "avg_clicks_censored": false,
+        "avg_ctr": 111,
+        "avg_ctr_censored": false,
+        "etsy_competition": 101565,
+        "kd": 77,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 2890,
@@ -11053,6 +11239,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -12541,7 +12728,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 2555,
+        "avg_searches_censored": false,
+        "avg_clicks": 2919,
+        "avg_clicks_censored": false,
+        "avg_ctr": 114,
+        "avg_ctr_censored": false,
+        "etsy_competition": 1214149,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 4,
         "avg_searches": 2555,
@@ -12639,6 +12839,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -14810,7 +15011,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 2298,
+        "avg_searches_censored": false,
+        "avg_clicks": 2676,
+        "avg_clicks_censored": false,
+        "avg_ctr": 116,
+        "avg_ctr_censored": false,
+        "etsy_competition": 1809828,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 2298,
@@ -14847,6 +15061,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -16050,7 +16265,20 @@
           }
         ]
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 2168,
+        "avg_searches_censored": false,
+        "avg_clicks": 2801,
+        "avg_clicks_censored": false,
+        "avg_ctr": 129,
+        "avg_ctr_censored": false,
+        "etsy_competition": 43397,
+        "kd": 65,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": null,
       "ranked": null,
       "erank": {
@@ -16058,9 +16286,9 @@
         "searches_censored": false,
         "competition": 43397,
         "kd": 65,
-        "avg_clicks": null,
+        "avg_clicks": 2801,
         "avg_clicks_censored": false,
-        "avg_ctr": null,
+        "avg_ctr": 129,
         "avg_ctr_censored": false,
         "google_searches": null,
         "tag_occurrences": null,
@@ -16071,7 +16299,8 @@
           }
         ],
         "reported_by": [
-          "KT"
+          "KT",
+          "B"
         ]
       }
     },
@@ -17933,7 +18162,20 @@
     {
       "keyword": "bedroom wall art",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 1953,
+        "avg_searches_censored": false,
+        "avg_clicks": 1989,
+        "avg_clicks_censored": false,
+        "avg_ctr": 102,
+        "avg_ctr_censored": false,
+        "etsy_competition": 3832851,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 1953,
@@ -17978,6 +18220,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -20357,7 +20600,20 @@
     {
       "keyword": "family ornament",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 1701,
+        "avg_searches_censored": false,
+        "avg_clicks": 2362,
+        "avg_clicks_censored": false,
+        "avg_ctr": 139,
+        "avg_ctr_censored": false,
+        "etsy_competition": 304449,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 1701,
@@ -20402,6 +20658,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -22291,7 +22548,20 @@
     {
       "keyword": "boho wall decor",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 1583,
+        "avg_searches_censored": false,
+        "avg_clicks": 1557,
+        "avg_clicks_censored": false,
+        "avg_ctr": 98,
+        "avg_ctr_censored": false,
+        "etsy_competition": 706188,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 1583,
@@ -22336,6 +22606,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -22796,7 +23067,20 @@
           }
         ]
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 1541,
+        "avg_searches_censored": false,
+        "avg_clicks": 1444,
+        "avg_clicks_censored": false,
+        "avg_ctr": 94,
+        "avg_ctr_censored": false,
+        "etsy_competition": 41020,
+        "kd": 71,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": null,
       "ranked": null,
       "erank": {
@@ -22804,9 +23088,9 @@
         "searches_censored": false,
         "competition": 41020,
         "kd": 71,
-        "avg_clicks": null,
+        "avg_clicks": 1444,
         "avg_clicks_censored": false,
-        "avg_ctr": null,
+        "avg_ctr": 94,
         "avg_ctr_censored": false,
         "google_searches": null,
         "tag_occurrences": null,
@@ -22817,7 +23101,8 @@
           }
         ],
         "reported_by": [
-          "KT"
+          "KT",
+          "B"
         ]
       }
     },
@@ -25724,7 +26009,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 1262,
+        "avg_searches_censored": false,
+        "avg_clicks": 1273,
+        "avg_clicks_censored": false,
+        "avg_ctr": 101,
+        "avg_ctr_censored": false,
+        "etsy_competition": 8595,
+        "kd": 42,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": null,
       "ranked": null,
       "erank": {
@@ -25732,9 +26030,9 @@
         "searches_censored": false,
         "competition": 8595,
         "kd": 42,
-        "avg_clicks": null,
+        "avg_clicks": 1273,
         "avg_clicks_censored": false,
-        "avg_ctr": null,
+        "avg_ctr": 101,
         "avg_ctr_censored": false,
         "google_searches": null,
         "tag_occurrences": null,
@@ -25745,7 +26043,8 @@
           }
         ],
         "reported_by": [
-          "KT"
+          "KT",
+          "B"
         ]
       }
     },
@@ -25954,7 +26253,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 1224,
+        "avg_searches_censored": false,
+        "avg_clicks": 1545,
+        "avg_clicks_censored": false,
+        "avg_ctr": 126,
+        "avg_ctr_censored": false,
+        "etsy_competition": 77006,
+        "kd": 90,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 1224,
@@ -25991,6 +26303,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -26521,7 +26834,20 @@
     {
       "keyword": "pet ornament",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 1193,
+        "avg_searches_censored": false,
+        "avg_clicks": 1248,
+        "avg_clicks_censored": false,
+        "avg_ctr": 105,
+        "avg_ctr_censored": false,
+        "etsy_competition": 147029,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 1193,
@@ -26566,6 +26892,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -26803,7 +27130,20 @@
     {
       "keyword": "photo ornament",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 1174,
+        "avg_searches_censored": false,
+        "avg_clicks": 1612,
+        "avg_clicks_censored": false,
+        "avg_ctr": 137,
+        "avg_ctr_censored": false,
+        "etsy_competition": 93353,
+        "kd": 95,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 1174,
@@ -26848,6 +27188,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -27032,7 +27373,20 @@
           }
         ]
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 1166,
+        "avg_searches_censored": false,
+        "avg_clicks": 1136,
+        "avg_clicks_censored": false,
+        "avg_ctr": 97,
+        "avg_ctr_censored": false,
+        "etsy_competition": 9591,
+        "kd": 46,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": null,
       "ranked": null,
       "erank": {
@@ -27040,9 +27394,9 @@
         "searches_censored": false,
         "competition": 9591,
         "kd": 46,
-        "avg_clicks": null,
+        "avg_clicks": 1136,
         "avg_clicks_censored": false,
-        "avg_ctr": null,
+        "avg_ctr": 97,
         "avg_ctr_censored": false,
         "google_searches": null,
         "tag_occurrences": null,
@@ -27053,7 +27407,8 @@
           }
         ],
         "reported_by": [
-          "KT"
+          "KT",
+          "B"
         ]
       }
     },
@@ -29146,7 +29501,20 @@
     {
       "keyword": "snow globe",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 966,
+        "avg_searches_censored": false,
+        "avg_clicks": 1132,
+        "avg_clicks_censored": false,
+        "avg_ctr": 117,
+        "avg_ctr_censored": false,
+        "etsy_competition": 39973,
+        "kd": 81,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 966,
@@ -29191,6 +29559,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -29399,7 +29768,20 @@
     {
       "keyword": "girlfriend gift",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 935,
+        "avg_searches_censored": false,
+        "avg_clicks": 1139,
+        "avg_clicks_censored": false,
+        "avg_ctr": 122,
+        "avg_ctr_censored": false,
+        "etsy_competition": 523308,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 935,
@@ -29444,6 +29826,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -32420,7 +32803,20 @@
     {
       "keyword": "gardening shirt",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 654,
+        "avg_searches_censored": false,
+        "avg_clicks": 668,
+        "avg_clicks_censored": false,
+        "avg_ctr": 102,
+        "avg_ctr_censored": false,
+        "etsy_competition": 51805,
+        "kd": 95,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 654,
@@ -32465,6 +32861,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -32564,7 +32961,20 @@
     {
       "keyword": "stress relief",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 641,
+        "avg_searches_censored": false,
+        "avg_clicks": 526,
+        "avg_clicks_censored": false,
+        "avg_ctr": 82,
+        "avg_ctr_censored": false,
+        "etsy_competition": 87393,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 641,
@@ -32609,6 +33019,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -33002,7 +33413,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 618,
+        "avg_searches_censored": false,
+        "avg_clicks": 574,
+        "avg_clicks_censored": false,
+        "avg_ctr": 93,
+        "avg_ctr_censored": false,
+        "etsy_competition": 351284,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 618,
@@ -33039,6 +33463,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -33800,7 +34225,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 564,
+        "avg_searches_censored": false,
+        "avg_clicks": 570,
+        "avg_clicks_censored": false,
+        "avg_ctr": 101,
+        "avg_ctr_censored": false,
+        "etsy_competition": 183497,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 2,
         "avg_searches": 564,
@@ -33851,6 +34289,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -34520,7 +34959,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 505,
+        "avg_searches_censored": false,
+        "avg_clicks": 580,
+        "avg_clicks_censored": false,
+        "avg_ctr": 115,
+        "avg_ctr_censored": false,
+        "etsy_competition": 2075,
+        "kd": 31,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": null,
       "ranked": null,
       "erank": {
@@ -34528,9 +34980,9 @@
         "searches_censored": false,
         "competition": 2075,
         "kd": 31,
-        "avg_clicks": null,
+        "avg_clicks": 580,
         "avg_clicks_censored": false,
-        "avg_ctr": null,
+        "avg_ctr": 115,
         "avg_ctr_censored": false,
         "google_searches": null,
         "tag_occurrences": null,
@@ -34541,7 +34993,8 @@
           }
         ],
         "reported_by": [
-          "KT"
+          "KT",
+          "B"
         ]
       }
     },
@@ -34594,7 +35047,20 @@
     {
       "keyword": "retro christmas",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 502,
+        "avg_searches_censored": false,
+        "avg_clicks": 497,
+        "avg_clicks_censored": false,
+        "avg_ctr": 99,
+        "avg_ctr_censored": false,
+        "etsy_competition": 726061,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 502,
@@ -34625,6 +35091,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -35711,7 +36178,20 @@
     {
       "keyword": "instant download",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 440,
+        "avg_searches_censored": false,
+        "avg_clicks": 643,
+        "avg_clicks_censored": false,
+        "avg_ctr": 146,
+        "avg_ctr_censored": false,
+        "etsy_competition": 3673189,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 2,
         "avg_searches": 440,
@@ -35756,6 +36236,7 @@
         "tag_occurrences": 2,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -36221,7 +36702,20 @@
     {
       "keyword": "snowman decor",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 411,
+        "avg_searches_censored": false,
+        "avg_clicks": 397,
+        "avg_clicks_censored": false,
+        "avg_ctr": 97,
+        "avg_ctr_censored": false,
+        "etsy_competition": 178633,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 411,
@@ -36252,6 +36746,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -36443,7 +36938,20 @@
     {
       "keyword": "funny candle",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 403,
+        "avg_searches_censored": false,
+        "avg_clicks": 451,
+        "avg_clicks_censored": false,
+        "avg_ctr": 112,
+        "avg_ctr_censored": false,
+        "etsy_competition": 130039,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 403,
@@ -36488,6 +36996,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -38208,7 +38717,20 @@
     {
       "keyword": "poinsettia",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 333,
+        "avg_searches_censored": false,
+        "avg_clicks": 367,
+        "avg_clicks_censored": false,
+        "avg_ctr": 110,
+        "avg_ctr_censored": false,
+        "etsy_competition": 72899,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 333,
@@ -38239,6 +38761,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -38246,7 +38769,20 @@
     {
       "keyword": "christmas gift set",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 330,
+        "avg_searches_censored": false,
+        "avg_clicks": 345,
+        "avg_clicks_censored": false,
+        "avg_ctr": 105,
+        "avg_ctr_censored": false,
+        "etsy_competition": 379614,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 330,
@@ -38277,6 +38813,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -39635,7 +40172,20 @@
     {
       "keyword": "christmas bundle",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 298,
+        "avg_searches_censored": false,
+        "avg_clicks": 385,
+        "avg_clicks_censored": false,
+        "avg_ctr": 129,
+        "avg_ctr_censored": false,
+        "etsy_competition": 259140,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 298,
@@ -39666,6 +40216,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -41768,7 +42319,20 @@
     {
       "keyword": "thanksgiving craft",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 232,
+        "avg_searches_censored": false,
+        "avg_clicks": 241,
+        "avg_clicks_censored": false,
+        "avg_ctr": 104,
+        "avg_ctr_censored": false,
+        "etsy_competition": 254824,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 232,
@@ -41813,6 +42377,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -42610,7 +43175,20 @@
     {
       "keyword": "custom family gift",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 214,
+        "avg_searches_censored": false,
+        "avg_clicks": 214,
+        "avg_clicks_censored": false,
+        "avg_ctr": 100,
+        "avg_ctr_censored": false,
+        "etsy_competition": 674362,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 214,
@@ -42641,6 +43219,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -42740,7 +43319,20 @@
     {
       "keyword": "digital pattern",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 211,
+        "avg_searches_censored": false,
+        "avg_clicks": 299,
+        "avg_clicks_censored": false,
+        "avg_ctr": 142,
+        "avg_ctr_censored": false,
+        "etsy_competition": 1645527,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 3,
         "avg_searches": 211,
@@ -42785,6 +43377,7 @@
         "tag_occurrences": 3,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -44143,7 +44736,20 @@
     {
       "keyword": "candy cane",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 198,
+        "avg_searches_censored": false,
+        "avg_clicks": 193,
+        "avg_clicks_censored": false,
+        "avg_ctr": 97,
+        "avg_ctr_censored": false,
+        "etsy_competition": 135479,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 198,
@@ -44174,6 +44780,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -44521,7 +45128,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 196,
+        "avg_searches_censored": false,
+        "avg_clicks": 271,
+        "avg_clicks_censored": false,
+        "avg_ctr": 138,
+        "avg_ctr_censored": false,
+        "etsy_competition": 162947,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 3,
         "avg_searches": 196,
@@ -44572,6 +45192,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -45039,7 +45660,20 @@
     {
       "keyword": "nutcracker gift",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 188,
+        "avg_searches_censored": false,
+        "avg_clicks": 227,
+        "avg_clicks_censored": false,
+        "avg_ctr": 121,
+        "avg_ctr_censored": false,
+        "etsy_competition": 35448,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 188,
@@ -45070,6 +45704,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -46244,7 +46879,20 @@
     {
       "keyword": "pinback button",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 144,
+        "avg_searches_censored": false,
+        "avg_clicks": 50,
+        "avg_clicks_censored": false,
+        "avg_ctr": 35,
+        "avg_ctr_censored": false,
+        "etsy_competition": 100318,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 144,
@@ -46289,6 +46937,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -48015,7 +48664,20 @@
     {
       "keyword": "engraved ornament",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 127,
+        "avg_searches_censored": false,
+        "avg_clicks": 132,
+        "avg_clicks_censored": false,
+        "avg_ctr": 104,
+        "avg_ctr_censored": false,
+        "etsy_competition": 50244,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 127,
@@ -48060,6 +48722,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -48912,7 +49575,20 @@
     {
       "keyword": "custom snow globe",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 126,
+        "avg_searches_censored": false,
+        "avg_clicks": 128,
+        "avg_clicks_censored": false,
+        "avg_ctr": 102,
+        "avg_ctr_censored": false,
+        "etsy_competition": 4256,
+        "kd": 76,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 126,
@@ -48943,6 +49619,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -49888,7 +50565,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 124,
+        "avg_searches_censored": false,
+        "avg_clicks": 125,
+        "avg_clicks_censored": false,
+        "avg_ctr": 101,
+        "avg_ctr_censored": false,
+        "etsy_competition": 82506,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 124,
@@ -49939,6 +50629,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -50130,7 +50821,20 @@
     {
       "keyword": "nutcracker decor",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 123,
+        "avg_searches_censored": false,
+        "avg_clicks": 128,
+        "avg_clicks_censored": false,
+        "avg_ctr": 104,
+        "avg_ctr_censored": false,
+        "etsy_competition": 45067,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 123,
@@ -50161,6 +50865,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -51076,7 +51781,20 @@
     {
       "keyword": "personalized penguin",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 118,
+        "avg_searches_censored": false,
+        "avg_clicks": 171,
+        "avg_clicks_censored": false,
+        "avg_ctr": 145,
+        "avg_ctr_censored": false,
+        "etsy_competition": 7399,
+        "kd": 90,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 118,
@@ -51107,6 +51825,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -52630,7 +53349,20 @@
     {
       "keyword": "winter wonderland",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 108,
+        "avg_searches_censored": false,
+        "avg_clicks": 101,
+        "avg_clicks_censored": false,
+        "avg_ctr": 94,
+        "avg_ctr_censored": false,
+        "etsy_competition": 89213,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 108,
@@ -52661,6 +53393,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -53036,7 +53769,20 @@
     {
       "keyword": "heart ornament",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 106,
+        "avg_searches_censored": false,
+        "avg_clicks": 103,
+        "avg_clicks_censored": false,
+        "avg_ctr": 97,
+        "avg_ctr_censored": false,
+        "etsy_competition": 73383,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 106,
@@ -53081,6 +53827,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -55238,7 +55985,20 @@
     {
       "keyword": "christmas tree art",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 102,
+        "avg_searches_censored": false,
+        "avg_clicks": 97,
+        "avg_clicks_censored": false,
+        "avg_ctr": 95,
+        "avg_ctr_censored": false,
+        "etsy_competition": 447378,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 102,
@@ -55269,6 +56029,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -56932,7 +57693,20 @@
     {
       "keyword": "house embroidery",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 98,
+        "avg_searches_censored": false,
+        "avg_clicks": 93,
+        "avg_clicks_censored": false,
+        "avg_ctr": 95,
+        "avg_ctr_censored": false,
+        "etsy_competition": 31171,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 98,
@@ -56963,6 +57737,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -57292,7 +58067,20 @@
     {
       "keyword": "kids christmas craft",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 96,
+        "avg_searches_censored": false,
+        "avg_clicks": 93,
+        "avg_clicks_censored": false,
+        "avg_ctr": 97,
+        "avg_ctr_censored": false,
+        "etsy_competition": 1054195,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 96,
@@ -57323,6 +58111,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -57330,7 +58119,20 @@
     {
       "keyword": "classic christmas",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 95,
+        "avg_searches_censored": false,
+        "avg_clicks": 93,
+        "avg_clicks_censored": false,
+        "avg_ctr": 98,
+        "avg_ctr_censored": false,
+        "etsy_competition": 185555,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 95,
@@ -57361,6 +58163,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -57377,10 +58180,22 @@
         "avg_ctr_censored": false,
         "etsy_competition": 72304,
         "kd": 100,
-        "capture": "2026-09-18",
+        "capture": "2026-09-21",
         "current": true,
         "superseded_by": null,
-        "history": []
+        "history": [
+          {
+            "avg_searches": 93,
+            "avg_searches_censored": false,
+            "avg_clicks": 126,
+            "avg_clicks_censored": false,
+            "avg_ctr": 135,
+            "avg_ctr_censored": false,
+            "etsy_competition": 72304,
+            "kd": 100,
+            "capture": "2026-09-18"
+          }
+        ]
       },
       "tag_report": {
         "tag_occurrences": 2,
@@ -57986,7 +58801,20 @@
     {
       "keyword": "pdf download",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 71,
+        "avg_searches_censored": false,
+        "avg_clicks": 20,
+        "avg_clicks_censored": true,
+        "avg_ctr": 20,
+        "avg_ctr_censored": true,
+        "etsy_competition": 1294194,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 71,
@@ -58031,6 +58859,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -58176,7 +59005,20 @@
     {
       "keyword": "christmas bow",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 54,
+        "avg_searches_censored": false,
+        "avg_clicks": 77,
+        "avg_clicks_censored": false,
+        "avg_ctr": 143,
+        "avg_ctr_censored": false,
+        "etsy_competition": 347042,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 54,
@@ -58207,6 +59049,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -58214,7 +59057,20 @@
     {
       "keyword": "bow embroidery",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 53,
+        "avg_searches_censored": false,
+        "avg_clicks": 69,
+        "avg_clicks_censored": false,
+        "avg_ctr": 130,
+        "avg_ctr_censored": false,
+        "etsy_competition": 66082,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 53,
@@ -58245,6 +59101,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -59281,7 +60138,20 @@
     {
       "keyword": "funny badge",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 43,
+        "avg_searches_censored": false,
+        "avg_clicks": 63,
+        "avg_clicks_censored": false,
+        "avg_ctr": 147,
+        "avg_ctr_censored": false,
+        "etsy_competition": 68945,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 43,
@@ -59326,6 +60196,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -59747,7 +60618,20 @@
     {
       "keyword": "printable pdf",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 40,
+        "avg_searches_censored": false,
+        "avg_clicks": 52,
+        "avg_clicks_censored": false,
+        "avg_ctr": 130,
+        "avg_ctr_censored": false,
+        "etsy_competition": 898229,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 40,
@@ -59792,6 +60676,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -59799,7 +60684,20 @@
     {
       "keyword": "circle wall decor",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 38,
+        "avg_searches_censored": false,
+        "avg_clicks": 52,
+        "avg_clicks_censored": false,
+        "avg_ctr": 137,
+        "avg_ctr_censored": false,
+        "etsy_competition": 93759,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 38,
@@ -59844,6 +60742,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -60531,7 +61430,20 @@
     {
       "keyword": "cottagecore pattern",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 28,
+        "avg_searches_censored": false,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 51115,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 28,
@@ -60576,6 +61488,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -60675,7 +61588,20 @@
     {
       "keyword": "tree embroidery",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 28,
+        "avg_searches_censored": false,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 77539,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 28,
@@ -60706,6 +61632,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -61449,7 +62376,20 @@
     {
       "keyword": "whimsical forest art",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 22,
+        "avg_searches_censored": false,
+        "avg_clicks": 20,
+        "avg_clicks_censored": true,
+        "avg_ctr": 32,
+        "avg_ctr_censored": false,
+        "etsy_competition": 26950,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 22,
@@ -61494,6 +62434,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -61835,7 +62776,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": 20,
+        "avg_clicks_censored": true,
+        "avg_ctr": 100,
+        "avg_ctr_censored": false,
+        "etsy_competition": 83716,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 2,
         "avg_searches": 20,
@@ -61886,6 +62840,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -61976,7 +62931,20 @@
     {
       "keyword": "beginner friendly",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 53238,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -62021,6 +62989,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -62028,7 +62997,20 @@
     {
       "keyword": "beginner pattern",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 258321,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 2,
         "avg_searches": 20,
@@ -62073,6 +63055,7 @@
         "tag_occurrences": 2,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -62080,7 +63063,20 @@
     {
       "keyword": "bohemian pattern",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 43708,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -62125,6 +63121,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -62132,7 +63129,20 @@
     {
       "keyword": "boho embroidery",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 52500,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -62177,6 +63187,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -62205,6 +63216,83 @@
         "searches_censored": true,
         "competition": 18907,
         "kd": 100,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "google_searches": null,
+        "tag_occurrences": null,
+        "found_via": [],
+        "reported_by": [
+          "B"
+        ]
+      }
+    },
+    {
+      "keyword": "botanical embroidery design hand embroidery",
+      "keyword_tool": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": null,
+        "kd": null,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
+      "tag_report": null,
+      "ranked": null,
+      "shop_search": {
+        "keyword": "botanical embroidery design hand embroidery",
+        "visits": 1,
+        "etsy_visits": null,
+        "google_visits": null,
+        "listing_id": "4415032102",
+        "listing_title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
+        "listing_visits": 13,
+        "listing_items_sold": 0,
+        "listing_revenue_usd": 0.0,
+        "capture": "2026-09-20",
+        "window": "this_year (Jan 1 - Sep 20, 2026)",
+        "listings": [
+          {
+            "keyword": "botanical embroidery design hand embroidery",
+            "visits": 1,
+            "etsy_visits": null,
+            "google_visits": null,
+            "listing_id": "4415032102",
+            "listing_title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
+            "listing_visits": 13,
+            "listing_items_sold": 0,
+            "listing_revenue_usd": 0.0,
+            "capture": "2026-09-20",
+            "window": "this_year (Jan 1 - Sep 20, 2026)"
+          },
+          {
+            "keyword": "botanical embroidery design hand embroidery",
+            "visits": 1,
+            "etsy_visits": null,
+            "google_visits": 1,
+            "listing_id": "4415032102",
+            "listing_title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
+            "listing_visits": 13,
+            "listing_items_sold": 0,
+            "listing_revenue_usd": 0.0,
+            "capture": "2026-09-21",
+            "window": "this_year (Jan 1 - Sep 21, 2026)"
+          }
+        ]
+      },
+      "erank": {
+        "searches": 20,
+        "searches_censored": true,
+        "competition": null,
+        "kd": null,
         "avg_clicks": null,
         "avg_clicks_censored": false,
         "avg_ctr": null,
@@ -62256,7 +63344,20 @@
     {
       "keyword": "botanical pattern",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 70399,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -62301,6 +63402,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -62308,7 +63410,20 @@
     {
       "keyword": "botanical wreath",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 12034,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -62353,6 +63468,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -62412,7 +63528,20 @@
     {
       "keyword": "branch wreath",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 6460,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -62457,6 +63586,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -62516,7 +63646,20 @@
     {
       "keyword": "calming wall art",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": 20,
+        "avg_clicks_censored": true,
+        "avg_ctr": 20,
+        "avg_ctr_censored": true,
+        "etsy_competition": 123118,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -62561,6 +63704,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -62748,7 +63892,20 @@
     {
       "keyword": "celestial pattern",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 26849,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -62793,6 +63950,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -63650,7 +64808,20 @@
     {
       "keyword": "diamond pattern",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 51579,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -63695,6 +64866,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -64292,7 +65464,20 @@
     {
       "keyword": "folk botanical",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 6948,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -64337,6 +65522,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -64843,7 +66029,20 @@
     {
       "keyword": "geometric wreath",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 6616,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -64897,6 +66096,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -65164,7 +66364,20 @@
     {
       "keyword": "greenery embroidery",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 1076,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -65209,6 +66422,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -65216,7 +66430,20 @@
     {
       "keyword": "hand drawn pattern",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 48407,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -65261,6 +66488,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -65338,6 +66566,83 @@
       }
     },
     {
+      "keyword": "hand embroidery pattern pdf",
+      "keyword_tool": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 46981,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
+      "tag_report": null,
+      "ranked": null,
+      "shop_search": {
+        "keyword": "hand embroidery pattern pdf",
+        "visits": 1,
+        "etsy_visits": null,
+        "google_visits": 1,
+        "listing_id": "4415035303",
+        "listing_title": "Digital leaf mandala embroidery pattern \u2014 beginner-friendly design \u2014 PDF download for 6\u201d and 8\u201d hoops",
+        "listing_visits": 35,
+        "listing_items_sold": 1,
+        "listing_revenue_usd": 2.49,
+        "capture": "2026-09-20",
+        "window": "this_year (Jan 1 - Sep 20, 2026)",
+        "listings": [
+          {
+            "keyword": "hand embroidery pattern pdf",
+            "visits": 1,
+            "etsy_visits": null,
+            "google_visits": 1,
+            "listing_id": "4415035303",
+            "listing_title": "Digital leaf mandala embroidery pattern \u2014 beginner-friendly design \u2014 PDF download for 6\u201d and 8\u201d hoops",
+            "listing_visits": 35,
+            "listing_items_sold": 1,
+            "listing_revenue_usd": 2.49,
+            "capture": "2026-09-20",
+            "window": "this_year (Jan 1 - Sep 20, 2026)"
+          },
+          {
+            "keyword": "hand embroidery pattern pdf",
+            "visits": 1,
+            "etsy_visits": 0,
+            "google_visits": 1,
+            "listing_id": "4415035303",
+            "listing_title": "Digital leaf mandala embroidery pattern \u2014 beginner-friendly design \u2014 PDF download for 6\u201d and 8\u201d hoops",
+            "listing_visits": 35,
+            "listing_items_sold": 1,
+            "listing_revenue_usd": 2.49,
+            "capture": "2026-09-21",
+            "window": "this_year (Jan 1 - Sep 21, 2026)"
+          }
+        ]
+      },
+      "erank": {
+        "searches": 20,
+        "searches_censored": true,
+        "competition": 46981,
+        "kd": 100,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "google_searches": null,
+        "tag_occurrences": null,
+        "found_via": [],
+        "reported_by": [
+          "B"
+        ]
+      }
+    },
+    {
       "keyword": "hand poured candle",
       "keyword_tool": null,
       "bulk_keywords": null,
@@ -65392,7 +66697,20 @@
     {
       "keyword": "handmade gift craft",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 249752,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -65437,6 +66755,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -65962,7 +67281,20 @@
     {
       "keyword": "line art embroidery",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 10848,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -66007,6 +67339,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -66066,7 +67399,20 @@
     {
       "keyword": "linen embroidery",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 52740,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -66111,6 +67457,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -66179,10 +67526,22 @@
         "avg_ctr_censored": false,
         "etsy_competition": 4994,
         "kd": 100,
-        "capture": "2026-09-18",
+        "capture": "2026-09-21",
         "current": true,
         "superseded_by": null,
-        "history": []
+        "history": [
+          {
+            "avg_searches": 20,
+            "avg_searches_censored": true,
+            "avg_clicks": null,
+            "avg_clicks_censored": false,
+            "avg_ctr": null,
+            "avg_ctr_censored": false,
+            "etsy_competition": 4994,
+            "kd": 100,
+            "capture": "2026-09-18"
+          }
+        ]
       },
       "tag_report": null,
       "ranked": null,
@@ -66328,9 +67687,99 @@
       }
     },
     {
+      "keyword": "medieval embroidery patterns",
+      "keyword_tool": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": null,
+        "kd": null,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
+      "tag_report": null,
+      "ranked": null,
+      "shop_search": {
+        "keyword": "medieval embroidery patterns",
+        "visits": 1,
+        "etsy_visits": null,
+        "google_visits": null,
+        "listing_id": "4415032102",
+        "listing_title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
+        "listing_visits": 13,
+        "listing_items_sold": 0,
+        "listing_revenue_usd": 0.0,
+        "capture": "2026-09-20",
+        "window": "this_year (Jan 1 - Sep 20, 2026)",
+        "listings": [
+          {
+            "keyword": "medieval embroidery patterns",
+            "visits": 1,
+            "etsy_visits": null,
+            "google_visits": null,
+            "listing_id": "4415032102",
+            "listing_title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
+            "listing_visits": 13,
+            "listing_items_sold": 0,
+            "listing_revenue_usd": 0.0,
+            "capture": "2026-09-20",
+            "window": "this_year (Jan 1 - Sep 20, 2026)"
+          },
+          {
+            "keyword": "medieval embroidery patterns",
+            "visits": 1,
+            "etsy_visits": null,
+            "google_visits": 1,
+            "listing_id": "4415032102",
+            "listing_title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
+            "listing_visits": 13,
+            "listing_items_sold": 0,
+            "listing_revenue_usd": 0.0,
+            "capture": "2026-09-21",
+            "window": "this_year (Jan 1 - Sep 21, 2026)"
+          }
+        ]
+      },
+      "erank": {
+        "searches": 20,
+        "searches_censored": true,
+        "competition": null,
+        "kd": null,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "google_searches": null,
+        "tag_occurrences": null,
+        "found_via": [],
+        "reported_by": [
+          "B"
+        ]
+      }
+    },
+    {
       "keyword": "meditative craft",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 1181,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -66375,6 +67824,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -66506,7 +67956,20 @@
     {
       "keyword": "modern wreath",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 18225,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -66551,6 +68014,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -66720,7 +68184,20 @@
     {
       "keyword": "needlework pattern",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 61160,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 5,
         "avg_searches": 20,
@@ -66765,6 +68242,7 @@
         "tag_occurrences": 5,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -66938,7 +68416,20 @@
     {
       "keyword": "organic pattern",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 21070,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -66983,6 +68474,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -67486,7 +68978,20 @@
     {
       "keyword": "printable pattern",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 324397,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 2,
         "avg_searches": 20,
@@ -67531,6 +69036,7 @@
         "tag_occurrences": 2,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -67716,7 +69222,20 @@
     {
       "keyword": "simple embroidery",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 37085,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 3,
         "avg_searches": 20,
@@ -67761,6 +69280,7 @@
         "tag_occurrences": 3,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -67856,7 +69376,20 @@
     {
       "keyword": "sketch embroidery",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 46420,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 3,
         "avg_searches": 20,
@@ -67901,6 +69434,7 @@
         "tag_occurrences": 3,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -68041,6 +69575,56 @@
       }
     },
     {
+      "keyword": "snowman pattern",
+      "keyword_tool": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 41277,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
+      "tag_report": null,
+      "ranked": null,
+      "shop_search": {
+        "keyword": "snowman pattern",
+        "visits": 1,
+        "etsy_visits": null,
+        "google_visits": 1,
+        "listing_id": "4576478385",
+        "listing_title": "Personalized Snowman Snow Globe Hand Embroidery Pattern PDF, Custom Text Christmas Hoop Art, Beginner Keepsake Stitching, 6 and 8 Inch",
+        "listing_visits": 1,
+        "listing_items_sold": 0,
+        "listing_revenue_usd": 0.0,
+        "capture": "2026-09-21",
+        "window": "this_year (Jan 1 - Sep 21, 2026)",
+        "listings": []
+      },
+      "erank": {
+        "searches": 20,
+        "searches_censored": true,
+        "competition": 41277,
+        "kd": 100,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "google_searches": null,
+        "tag_occurrences": null,
+        "found_via": [],
+        "reported_by": [
+          "B"
+        ]
+      }
+    },
+    {
       "keyword": "snowy village art",
       "keyword_tool": null,
       "bulk_keywords": null,
@@ -68169,7 +69753,20 @@
     {
       "keyword": "star embroidery",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 31001,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -68214,6 +69811,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -68221,7 +69819,20 @@
     {
       "keyword": "starburst pattern",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 4107,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -68266,6 +69877,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -68273,7 +69885,20 @@
     {
       "keyword": "stitching pattern",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 824817,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -68318,6 +69943,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -68325,7 +69951,20 @@
     {
       "keyword": "sunburst design",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 2853,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -68370,6 +70009,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -68429,7 +70069,20 @@
     {
       "keyword": "twig embroidery",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 367,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -68474,6 +70127,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -68533,7 +70187,20 @@
     {
       "keyword": "vintage floral",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": 20,
+        "avg_clicks_censored": true,
+        "avg_ctr": 20,
+        "avg_ctr_censored": true,
+        "etsy_competition": 1346737,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -68578,6 +70245,7 @@
         "tag_occurrences": 1,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -75451,10 +77119,22 @@
         "avg_ctr_censored": true,
         "etsy_competition": 11224,
         "kd": 100,
-        "capture": "2026-09-18",
+        "capture": "2026-09-21",
         "current": true,
         "superseded_by": null,
-        "history": []
+        "history": [
+          {
+            "avg_searches": 20,
+            "avg_searches_censored": true,
+            "avg_clicks": 20,
+            "avg_clicks_censored": true,
+            "avg_ctr": 20,
+            "avg_ctr_censored": true,
+            "etsy_competition": 11224,
+            "kd": 100,
+            "capture": "2026-09-18"
+          }
+        ]
       },
       "tag_report": {
         "tag_occurrences": 1,
@@ -76176,7 +77856,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 20955,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 7,
         "avg_searches": 20,
@@ -76227,6 +77920,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -76758,7 +78452,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 505731,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 2,
         "avg_searches": 20,
@@ -76809,6 +78516,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -77646,7 +79354,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": 20,
+        "avg_clicks_censored": true,
+        "avg_ctr": 20,
+        "avg_ctr_censored": true,
+        "etsy_competition": 9687,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -77697,6 +79418,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -79086,7 +80808,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 1236972,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 2,
         "avg_searches": 20,
@@ -79137,6 +80872,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -79760,7 +81496,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": 20,
+        "avg_clicks_censored": true,
+        "avg_ctr": 25,
+        "avg_ctr_censored": false,
+        "etsy_competition": 29271,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -79811,6 +81560,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -83716,7 +85466,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 33210,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 2,
         "avg_searches": 20,
@@ -83767,6 +85530,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -84344,7 +86108,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 50352,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -84395,6 +86172,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -87134,7 +88912,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 182103,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -87185,6 +88976,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -88138,7 +89930,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 95636,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 2,
         "avg_searches": 20,
@@ -88189,6 +89994,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -89088,7 +90894,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 4694236,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -89139,6 +90958,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -97231,7 +99051,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 159516,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 4,
         "avg_searches": 20,
@@ -97282,6 +99115,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -98089,7 +99923,20 @@
         "superseded_by": null,
         "history": []
       },
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": 20,
+        "avg_searches_censored": true,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 2472,
+        "kd": 100,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 1,
         "avg_searches": 20,
@@ -98140,6 +99987,7 @@
         ],
         "reported_by": [
           "KT",
+          "B",
           "T"
         ]
       }
@@ -102866,55 +104714,6 @@
       }
     },
     {
-      "keyword": "botanical embroidery design hand embroidery",
-      "keyword_tool": null,
-      "bulk_keywords": null,
-      "tag_report": null,
-      "ranked": null,
-      "shop_search": {
-        "keyword": "botanical embroidery design hand embroidery",
-        "visits": 1,
-        "etsy_visits": null,
-        "google_visits": null,
-        "listing_id": "4415032102",
-        "listing_title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
-        "listing_visits": 13,
-        "listing_items_sold": 0,
-        "listing_revenue_usd": 0.0,
-        "capture": "2026-09-20",
-        "window": "this_year (Jan 1 - Sep 20, 2026)",
-        "listings": [
-          {
-            "keyword": "botanical embroidery design hand embroidery",
-            "visits": 1,
-            "etsy_visits": null,
-            "google_visits": null,
-            "listing_id": "4415032102",
-            "listing_title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
-            "listing_visits": 13,
-            "listing_items_sold": 0,
-            "listing_revenue_usd": 0.0,
-            "capture": "2026-09-20",
-            "window": "this_year (Jan 1 - Sep 20, 2026)"
-          },
-          {
-            "keyword": "botanical embroidery design hand embroidery",
-            "visits": 1,
-            "etsy_visits": null,
-            "google_visits": 1,
-            "listing_id": "4415032102",
-            "listing_title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
-            "listing_visits": 13,
-            "listing_items_sold": 0,
-            "listing_revenue_usd": 0.0,
-            "capture": "2026-09-21",
-            "window": "this_year (Jan 1 - Sep 21, 2026)"
-          }
-        ]
-      },
-      "erank": null
-    },
-    {
       "keyword": "botanical fan design",
       "keyword_tool": null,
       "bulk_keywords": null,
@@ -103111,7 +104910,20 @@
     {
       "keyword": "calm stitching",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": null,
+        "avg_searches_censored": false,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 1808,
+        "kd": null,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": {
         "tag_occurrences": 3,
         "avg_searches": null,
@@ -103175,6 +104987,7 @@
         "tag_occurrences": 3,
         "found_via": [],
         "reported_by": [
+          "B",
           "T"
         ]
       }
@@ -105220,7 +107033,20 @@
     {
       "keyword": "embroidered kippah women",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": null,
+        "avg_searches_censored": false,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": null,
+        "kd": null,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": null,
       "ranked": null,
       "shop_search": {
@@ -105264,7 +107090,22 @@
           }
         ]
       },
-      "erank": null
+      "erank": {
+        "searches": null,
+        "searches_censored": false,
+        "competition": null,
+        "kd": null,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "google_searches": null,
+        "tag_occurrences": null,
+        "found_via": [],
+        "reported_by": [
+          "B"
+        ]
+      }
     },
     {
       "keyword": "embroidery decor pattern",
@@ -107146,7 +108987,20 @@
     {
       "keyword": "geometric hand embroidery patterns",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": null,
+        "avg_searches_censored": false,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": null,
+        "kd": null,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": null,
       "ranked": null,
       "shop_search": {
@@ -107190,7 +109044,22 @@
           }
         ]
       },
-      "erank": null
+      "erank": {
+        "searches": null,
+        "searches_censored": false,
+        "competition": null,
+        "kd": null,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "google_searches": null,
+        "tag_occurrences": null,
+        "found_via": [],
+        "reported_by": [
+          "B"
+        ]
+      }
     },
     {
       "keyword": "geometric hoop art",
@@ -107715,55 +109584,6 @@
       "erank": null
     },
     {
-      "keyword": "hand embroidery pattern pdf",
-      "keyword_tool": null,
-      "bulk_keywords": null,
-      "tag_report": null,
-      "ranked": null,
-      "shop_search": {
-        "keyword": "hand embroidery pattern pdf",
-        "visits": 1,
-        "etsy_visits": null,
-        "google_visits": 1,
-        "listing_id": "4415035303",
-        "listing_title": "Digital leaf mandala embroidery pattern \u2014 beginner-friendly design \u2014 PDF download for 6\u201d and 8\u201d hoops",
-        "listing_visits": 35,
-        "listing_items_sold": 1,
-        "listing_revenue_usd": 2.49,
-        "capture": "2026-09-20",
-        "window": "this_year (Jan 1 - Sep 20, 2026)",
-        "listings": [
-          {
-            "keyword": "hand embroidery pattern pdf",
-            "visits": 1,
-            "etsy_visits": null,
-            "google_visits": 1,
-            "listing_id": "4415035303",
-            "listing_title": "Digital leaf mandala embroidery pattern \u2014 beginner-friendly design \u2014 PDF download for 6\u201d and 8\u201d hoops",
-            "listing_visits": 35,
-            "listing_items_sold": 1,
-            "listing_revenue_usd": 2.49,
-            "capture": "2026-09-20",
-            "window": "this_year (Jan 1 - Sep 20, 2026)"
-          },
-          {
-            "keyword": "hand embroidery pattern pdf",
-            "visits": 1,
-            "etsy_visits": 0,
-            "google_visits": 1,
-            "listing_id": "4415035303",
-            "listing_title": "Digital leaf mandala embroidery pattern \u2014 beginner-friendly design \u2014 PDF download for 6\u201d and 8\u201d hoops",
-            "listing_visits": 35,
-            "listing_items_sold": 1,
-            "listing_revenue_usd": 2.49,
-            "capture": "2026-09-21",
-            "window": "this_year (Jan 1 - Sep 21, 2026)"
-          }
-        ]
-      },
-      "erank": null
-    },
-    {
       "keyword": "hand embroidery patterns",
       "keyword_tool": null,
       "bulk_keywords": null,
@@ -107881,7 +109701,20 @@
     {
       "keyword": "hand embroidery pdf geometric",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": null,
+        "avg_searches_censored": false,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": null,
+        "kd": null,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": null,
       "ranked": null,
       "shop_search": {
@@ -107925,7 +109758,22 @@
           }
         ]
       },
-      "erank": null
+      "erank": {
+        "searches": null,
+        "searches_censored": false,
+        "competition": null,
+        "kd": null,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "google_searches": null,
+        "tag_occurrences": null,
+        "found_via": [],
+        "reported_by": [
+          "B"
+        ]
+      }
     },
     {
       "keyword": "hand needlework",
@@ -109472,7 +111320,20 @@
     {
       "keyword": "mandala embroidery design",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": null,
+        "avg_searches_censored": false,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 2059,
+        "kd": null,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": null,
       "ranked": null,
       "shop_search": {
@@ -109563,12 +111424,40 @@
           }
         ]
       },
-      "erank": null
+      "erank": {
+        "searches": null,
+        "searches_censored": false,
+        "competition": 2059,
+        "kd": null,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "google_searches": null,
+        "tag_occurrences": null,
+        "found_via": [],
+        "reported_by": [
+          "B"
+        ]
+      }
     },
     {
       "keyword": "mandala embroidery pattern download",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": null,
+        "avg_searches_censored": false,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": 2363,
+        "kd": null,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": null,
       "ranked": null,
       "shop_search": {
@@ -109612,7 +111501,22 @@
           }
         ]
       },
-      "erank": null
+      "erank": {
+        "searches": null,
+        "searches_censored": false,
+        "competition": 2363,
+        "kd": null,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "google_searches": null,
+        "tag_occurrences": null,
+        "found_via": [],
+        "reported_by": [
+          "B"
+        ]
+      }
     },
     {
       "keyword": "mandala hoop art",
@@ -109739,55 +111643,6 @@
           "T"
         ]
       }
-    },
-    {
-      "keyword": "medieval embroidery patterns",
-      "keyword_tool": null,
-      "bulk_keywords": null,
-      "tag_report": null,
-      "ranked": null,
-      "shop_search": {
-        "keyword": "medieval embroidery patterns",
-        "visits": 1,
-        "etsy_visits": null,
-        "google_visits": null,
-        "listing_id": "4415032102",
-        "listing_title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
-        "listing_visits": 13,
-        "listing_items_sold": 0,
-        "listing_revenue_usd": 0.0,
-        "capture": "2026-09-20",
-        "window": "this_year (Jan 1 - Sep 20, 2026)",
-        "listings": [
-          {
-            "keyword": "medieval embroidery patterns",
-            "visits": 1,
-            "etsy_visits": null,
-            "google_visits": null,
-            "listing_id": "4415032102",
-            "listing_title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
-            "listing_visits": 13,
-            "listing_items_sold": 0,
-            "listing_revenue_usd": 0.0,
-            "capture": "2026-09-20",
-            "window": "this_year (Jan 1 - Sep 20, 2026)"
-          },
-          {
-            "keyword": "medieval embroidery patterns",
-            "visits": 1,
-            "etsy_visits": null,
-            "google_visits": 1,
-            "listing_id": "4415032102",
-            "listing_title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
-            "listing_visits": 13,
-            "listing_items_sold": 0,
-            "listing_revenue_usd": 0.0,
-            "capture": "2026-09-21",
-            "window": "this_year (Jan 1 - Sep 21, 2026)"
-          }
-        ]
-      },
-      "erank": null
     },
     {
       "keyword": "medieval needlework",
@@ -110692,7 +112547,20 @@
     {
       "keyword": "modern minimalist embroidery pattern",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": null,
+        "avg_searches_censored": false,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": null,
+        "kd": null,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": null,
       "ranked": null,
       "shop_search": {
@@ -110736,7 +112604,22 @@
           }
         ]
       },
-      "erank": null
+      "erank": {
+        "searches": null,
+        "searches_censored": false,
+        "competition": null,
+        "kd": null,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "google_searches": null,
+        "tag_occurrences": null,
+        "found_via": [],
+        "reported_by": [
+          "B"
+        ]
+      }
     },
     {
       "keyword": "modern needlework",
@@ -111179,7 +113062,20 @@
     {
       "keyword": "paper embriodery template",
       "keyword_tool": null,
-      "bulk_keywords": null,
+      "bulk_keywords": {
+        "avg_searches": null,
+        "avg_searches_censored": false,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "etsy_competition": null,
+        "kd": null,
+        "capture": "2026-09-21",
+        "current": true,
+        "superseded_by": null,
+        "history": []
+      },
       "tag_report": null,
       "ranked": null,
       "shop_search": {
@@ -111223,7 +113119,22 @@
           }
         ]
       },
-      "erank": null
+      "erank": {
+        "searches": null,
+        "searches_censored": false,
+        "competition": null,
+        "kd": null,
+        "avg_clicks": null,
+        "avg_clicks_censored": false,
+        "avg_ctr": null,
+        "avg_ctr_censored": false,
+        "google_searches": null,
+        "tag_occurrences": null,
+        "found_via": [],
+        "reported_by": [
+          "B"
+        ]
+      }
     },
     {
       "keyword": "pattern for stitchers",
@@ -113063,28 +114974,6 @@
           "T"
         ]
       }
-    },
-    {
-      "keyword": "snowman pattern",
-      "keyword_tool": null,
-      "bulk_keywords": null,
-      "tag_report": null,
-      "ranked": null,
-      "shop_search": {
-        "keyword": "snowman pattern",
-        "visits": 1,
-        "etsy_visits": null,
-        "google_visits": 1,
-        "listing_id": "4576478385",
-        "listing_title": "Personalized Snowman Snow Globe Hand Embroidery Pattern PDF, Custom Text Christmas Hoop Art, Beginner Keepsake Stitching, 6 and 8 Inch",
-        "listing_visits": 1,
-        "listing_items_sold": 0,
-        "listing_revenue_usd": 0.0,
-        "capture": "2026-09-21",
-        "window": "this_year (Jan 1 - Sep 21, 2026)",
-        "listings": []
-      },
-      "erank": null
     },
     {
       "keyword": "snowman snow globe",

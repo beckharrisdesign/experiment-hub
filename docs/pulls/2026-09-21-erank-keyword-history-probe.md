@@ -15,6 +15,8 @@ answers: >-
 
 # Data pull — eRank keyword history, method probe, 2026-09-21
 
+> **Superseded the same day** by the full pull: [`2026-09-21-erank-keyword-history.md`](2026-09-21-erank-keyword-history.md), 124 keywords, all seven runs, with the chart readings validated against eRank's printed averages. The `-probe.csv` was removed; the method notes below still hold.
+
 **Provenance:** the Bulk Keyword Tool at `members.erank.com/bulk-keyword-tool`, run once with `digital products`, `embroidery designs`, `christmas embroidery` from the authenticated Chrome session on 2026-09-21 ~18:15 UTC. Its trend chart is an SVG; the three series were read from the path geometry against the axis labels and written to `2026-09-21-erank-keyword-history-probe.csv` (keyword, month, value, method). **These are chart readings, ±~300 at the chart's 0–60,000 scale, not numbers eRank printed.** The file says so on every row.
 
 **Quota:** the probe cost 3 of the day's 100 searches on Katy's plan (the counter went 0 → 3; two Keyword Tool page loads earlier in the session had already shown as 1 and 5 and reset). One search per keyword, whichever tool. This note exists so nobody spends the quota by accident.

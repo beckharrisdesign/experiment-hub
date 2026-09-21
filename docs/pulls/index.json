@@ -2,6 +2,38 @@
   "generated": "2026-09-21",
   "pulls": [
     {
+      "note": "2026-09-21-erank-bulk-keywords.md",
+      "captured": "2026-09-21",
+      "source": "erank",
+      "surface": "bulk-keywords",
+      "tier": "external",
+      "scope": "market",
+      "measures": [
+        "demand",
+        "difficulty"
+      ],
+      "subjects": [
+        "patterns",
+        "holiday",
+        "grandma-hobbies"
+      ],
+      "half_life": "90d",
+      "status": "fresh",
+      "answers": "eRank's current estimate for the 124 keywords the Big Join read asked history for \u2014 every tag with a printed volume, the censored tags on experiment listings, the 12 captured phrases and 8 candidates. Seven Bulk Keyword Tool exports, run by Katy in one sitting.",
+      "raw_files": [
+        "2026-09-21-erank-bulk-keywords-12.csv",
+        "2026-09-21-erank-bulk-keywords-13.csv",
+        "2026-09-21-erank-bulk-keywords-14.csv",
+        "2026-09-21-erank-bulk-keywords-15.csv",
+        "2026-09-21-erank-bulk-keywords-16.csv",
+        "2026-09-21-erank-bulk-keywords-17.csv",
+        "2026-09-21-erank-bulk-keywords-18.csv"
+      ],
+      "current": true,
+      "series_index": 1,
+      "series_length": 2
+    },
+    {
       "note": "2026-09-21-erank-keyword-history-probe.md",
       "captured": "2026-09-21",
       "source": "erank",
@@ -19,11 +51,35 @@
       "status": "fresh",
       "answers": "Whether eRank's per-keyword monthly search history can be taken at all, at what cost, and what three keywords' 15-month series look like. A method probe, not a data pull \u2014 three keywords, chart-read, not eRank-printed.",
       "raw_files": [
-        "2026-09-21-erank-keyword-history-probe.csv"
+        "2026-09-21-erank-keyword-history.csv"
       ],
       "current": true,
       "series_index": 1,
-      "series_length": 1
+      "series_length": 2
+    },
+    {
+      "note": "2026-09-21-erank-keyword-history.md",
+      "captured": "2026-09-21",
+      "source": "erank",
+      "surface": "keyword-history",
+      "tier": "external",
+      "scope": "market",
+      "measures": [
+        "demand"
+      ],
+      "subjects": [
+        "all"
+      ],
+      "half_life": "90d",
+      "status": "superseded",
+      "answers": "Fifteen months of eRank monthly search volume, May 2025 \u2013 Jul 2026, for the 124 keywords the Big Join read asked history for \u2014 every tag with a printed volume, the censored tags on experiment listings, the captured phrases and the candidates. The first time an eRank number on the Big Join has a shape.",
+      "raw_files": [
+        "2026-09-21-erank-keyword-history.csv"
+      ],
+      "current": false,
+      "series_index": 2,
+      "series_length": 2,
+      "superseded_by": "2026-09-21-erank-keyword-history-probe.md"
     },
     {
       "note": "2026-09-21-erank-spotted-on-etsy.md",
@@ -161,7 +217,7 @@
         "embroidery-patterns"
       ],
       "half_life": "90d",
-      "status": "fresh",
+      "status": "superseded",
       "answers": "Related-term demand across 99 embroidery-pattern-adjacent terms, from six eRank Bulk Keywords exports. Now part of the queryable corpus and its own table on /keyword-explorer, alongside (not merged into) the Keyword Tool rows.",
       "raw_files": [
         "2026-09-18-erank-bulk-keywords-2.csv",
@@ -171,9 +227,10 @@
         "2026-09-18-erank-bulk-keywords-6.csv",
         "2026-09-18-erank-bulk-keywords.csv"
       ],
-      "current": true,
-      "series_index": 1,
-      "series_length": 1
+      "current": false,
+      "series_index": 2,
+      "series_length": 2,
+      "superseded_by": "2026-09-21-erank-bulk-keywords.md"
     },
     {
       "note": "2026-09-18-erank-keywords.md",
