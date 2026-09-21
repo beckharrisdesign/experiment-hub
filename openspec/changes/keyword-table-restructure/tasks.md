@@ -147,7 +147,7 @@ Package manager is **pnpm**. Design approved by Katy, 2026-09-21: *"yes lets app
 - [ ] 4.2 `pnpm vitest run`, `pnpm exec tsc --noEmit`, `pnpm exec eslint` on changed files. Cap parallelism — this machine has 8GB.
 - [ ] 4.3 Read the real rendered width off the running page. Round 02.10 draws ~2,700px; #508 learned that drawn widths understate by as much as 66%, so the drawing is not the measurement.
 - [ ] 4.4 Verify the Vercel preview renders `/keyword-explorer` before asking for review.
-- [ ] 4.5 **Owed before ship:** a Figma round on MVDS. Carried from `keyword-captured-demand` task 4.4 and still open — `get_libraries` shows MVDS is not subscribed to the file and is not offered to it, so this needs Katy in the Figma UI.
+- [x] 4.5 **Figma round on MVDS — done 2026-09-21.** Katy enabled the library (*"mvds added"*); `get_libraries` confirms `MVDS Core` in `libraries_added_to_file`. Round 02.11 (page `20:26`, frame `20:27`) places real `Select` instances from the library. Colour is deliberately the hub's brand layer rather than MVDS's `Tokens` collection — see design.md Decision 17. **Also closes `keyword-captured-demand` task 4.4**, which this gate was carried from.
 
 ## 5. Found while building
 
