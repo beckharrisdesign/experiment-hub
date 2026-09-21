@@ -97,10 +97,10 @@ Package manager is **pnpm**. Design approved by Katy, 2026-09-21: *"yes lets app
 
 **Corpus — `scripts/ingest-pulls.py`**
 
-- [ ] 3.1 Merge the three eRank sources into one `erank` sub-object per row: exact beats censored beats absent, per field. Never average, sum or blend.
-- [ ] 3.2 Carry the censored flag onto the chosen value, and keep the single-tool fields (`avg_clicks`, `avg_ctr`, `google_searches`, `found_via`, `tag_occurrences`) intact.
-- [ ] 3.3 Record `reported_by` as the list of tools with a record for the keyword — attestation, not per-field.
-- [ ] 3.4 Regenerate `data/keyword-corpus.json`. Verify against the figures in `design.md`: 19 rows gain precision, 27 competition and 27 KD comparisons remain contradiction-free, and `beginner embroidery` remains the single exact-vs-cap collision.
+- [x] 3.1 Merge the three eRank sources into one `erank` sub-object per row: exact beats censored beats absent, per field. Never average, sum or blend. — Added `merge_erank()` + `_pick()` in `scripts/ingest-pulls.py`; exact beats censored beats absent, per field.
+- [x] 3.2 Carry the censored flag onto the chosen value, and keep the single-tool fields (`avg_clicks`, `avg_ctr`, `google_searches`, `found_via`, `tag_occurrences`) intact. — Censored flag carried onto the chosen value as `searches_censored` / `avg_clicks_censored` / `avg_ctr_censored`; `google_searches`, `tag_occurrences` and `found_via` kept.
+- [x] 3.3 Record `reported_by` as the list of tools with a record for the keyword — attestation, not per-field. — `reported_by` is the list of tools with a record for the keyword.
+- [x] 3.4 Regenerate `data/keyword-corpus.json`. Verify against the figures in `design.md`: 19 rows gain precision, 27 competition and 27 KD comparisons remain contradiction-free, and `beginner embroidery` remains the single exact-vs-cap collision. — Regenerated: 2,310 rows, **19 rows gain precision**, `folk art embroidery` = 6 over `< 20`, `beginner embroidery` holds its exact `20`, 21 rows carry no eRank data at all.
 
 **Targeting — `lib/keyword-traction.ts`**
 

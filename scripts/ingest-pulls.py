@@ -1006,6 +1006,101 @@ TAG_FIELDS = (
 )
 
 
+# --- eRank merge -----------------------------------------------------------
+#
+# eRank's three exports are one instrument reporting three times, not three
+# measurements (design.md Decision 1, checked against the corpus: 27 of 27
+# competition comparisons and 27 of 27 KD comparisons are identical, and every
+# exact-vs-exact searches pair agrees).
+#
+# So the merge PICKS a reported value and never computes one: an exact reading
+# beats a capped one, a cap beats nothing, and two exact readings agree so the
+# choice between them is free. The number on the row is always a number eRank
+# printed.
+#
+# The one known exception is recorded rather than smoothed over: `beginner
+# embroidery` reads exactly 20 in the Keyword Tool and `< 20` in the Tag
+# Report, which genuinely collide. The exact reading still wins, because a cap
+# another instrument contradicts is the less useful of the two.
+
+
+def _pick(candidates: list[tuple]) -> tuple:
+    """Most precise reported value from `(value, censored)` pairs.
+
+    Exact beats censored beats absent. Never averages, sums or blends --
+    the returned value is always one an export actually contained.
+    """
+    exact = [c for c in candidates if c[0] is not None and not c[1]]
+    if exact:
+        return exact[0]
+    capped = [c for c in candidates if c[0] is not None]
+    return capped[0] if capped else (None, False)
+
+
+def merge_erank(row: dict) -> dict | None:
+    """One `erank` sub-object from the three eRank sources on a merged row.
+
+    Returns `None` when no eRank source saw the keyword at all -- absence, not
+    a zeroed-out object, so "eRank never scored this" stays distinguishable
+    from "eRank scored it as none".
+    """
+    kt, bulk, tag = row["keyword_tool"], row["bulk_keywords"], row["tag_report"]
+    if not (kt or bulk or tag):
+        return None
+
+    # The Keyword Tool has no censored flag -- it reports exactly or not at all.
+    searches = _pick(
+        ([(kt["searches"], False)] if kt else [])
+        + [
+            (s["avg_searches"], s["avg_searches_censored"])
+            for s in (bulk, tag)
+            if s
+        ]
+    )
+    clicks = _pick([(s["avg_clicks"], s["avg_clicks_censored"]) for s in (bulk, tag) if s])
+    ctr = _pick([(s["avg_ctr"], s["avg_ctr_censored"]) for s in (bulk, tag) if s])
+
+    # Competition and KD carry no censored flag anywhere, so first non-null
+    # wins and the result is the same whichever source is asked.
+    def first(*values):
+        for v in values:
+            if v is not None:
+                return v
+        return None
+
+    reported_by = [
+        name
+        for name, src in (("KT", kt), ("B", bulk), ("T", tag))
+        if src is not None
+    ]
+
+    return {
+        "searches": searches[0],
+        "searches_censored": searches[1],
+        "competition": first(
+            kt["competition"] if kt else None,
+            bulk["etsy_competition"] if bulk else None,
+            tag["etsy_competition"] if tag else None,
+        ),
+        "kd": first(
+            kt["kd"] if kt else None,
+            bulk["kd"] if bulk else None,
+            tag["kd"] if tag else None,
+        ),
+        "avg_clicks": clicks[0],
+        "avg_clicks_censored": clicks[1],
+        "avg_ctr": ctr[0],
+        "avg_ctr_censored": ctr[1],
+        # Fields only one tool reports keep their own columns.
+        "google_searches": tag["google_searches"] if tag else None,
+        "tag_occurrences": tag["tag_occurrences"] if tag else None,
+        "found_via": kt["found_via"] if kt else [],
+        # Attestation: which tools had a record for the keyword, not which
+        # tools filled any particular field.
+        "reported_by": reported_by,
+    }
+
+
 def build_merged_corpus(pulls: Path | None = None) -> dict:
     base = build_corpus(pulls)
     bulk = build_bulk_corpus(pulls)
@@ -1082,11 +1177,17 @@ def build_merged_corpus(pulls: Path | None = None) -> dict:
 
     rows = list(merged.values())
 
-    # Same "blank sorts last, never 0" default the table applies: a keyword the
-    # Keyword Tool never scored must not sort as if its demand were zero.
+    # One eRank sub-object per row, alongside the three sources it was picked
+    # from: the table reads `erank`, while `keyword_tool` / `bulk_keywords` /
+    # `tag_report` stay as the provenance record and keep their `history`.
+    for r in rows:
+        r["erank"] = merge_erank(r)
+
+    # Same "blank sorts last, never 0" default the table applies: a keyword
+    # eRank never scored must not sort as if its demand were zero.
     def searches_of(r: dict):
-        kt = r["keyword_tool"]
-        return kt["searches"] if kt else None
+        erank = r["erank"]
+        return erank["searches"] if erank else None
 
     rows.sort(key=lambda r: (searches_of(r) is None, -(searches_of(r) or 0), r["keyword"]))
 
