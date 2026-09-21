@@ -122,6 +122,8 @@ function keywordRow(overrides: Partial<KeywordRow>): KeywordRow {
       tagOccurrences: null,
       foundVia: [],
       reportedBy: ["KT"],
+      history: null,
+      historyCapture: null,
     },
     keywordTool: {
       searches: 210,

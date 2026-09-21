@@ -342,6 +342,24 @@ export interface ErankValues {
   foundVia: KeywordQueryHit[];
   /** `"KT"` | `"B"` | `"T"`, in that order. */
   reportedBy: string[];
+  /**
+   * eRank's monthly search volume over time, oldest first, from a
+   * `erank-keyword-history` pull. `null` when no series has been pulled for
+   * this keyword — never a flat line of zeros. The 2026-09-21 series were
+   * read from the Bulk Keyword Tool's chart; their twelve-month means
+   * reproduce eRank's printed averages to the unit.
+   */
+  history: ErankMonth[] | null;
+  /** Capture date of `history`, or null. */
+  historyCapture: string | null;
+}
+
+/** One month of eRank search volume. `month` is ISO `YYYY-MM`; `label` is
+ * eRank's own axis label (`"Oct 25"`). */
+export interface ErankMonth {
+  month: string;
+  label: string;
+  searches: number;
 }
 
 /**

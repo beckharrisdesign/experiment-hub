@@ -20,7 +20,7 @@ answers: >-
 
 **How exact the readings are.** eRank's printed "Avg Searches" is the mean of the last twelve months of this series (Aug 2025 – Jul 2026). Recomputing that mean from the chart readings reproduces eRank's printed average to the unit for all 66 volume keywords (`personalized gift` 41,355, `digital products` 31,237, `christmas ornament` 9,166 … `whimsical forest art` 22). The readings are chart-derived, but they are not approximate in any way that matters.
 
-**Not read by the ingest yet.** No reader exists for a monthly series; the read's §G describes the change (a `history[]` on the eRank sub-object). Until then this file is for reading and for the readout, not for the table.
+**Read by the ingest** since the same day: `read_keyword_history_csv()` / `keyword_history()` attach the series to each keyword's merged eRank sub-object as `history` (newest capture wins, oldest month first), and the Big Join's eRank band shows it as `Peak Month` (label · value, numeric on the value) and `15-Month Trend` (one text glyph per month, scaled to the keyword's own peak). A keyword nobody pulled shows a dash in both, never a flat line.
 
 ## What surface this is
 
@@ -42,7 +42,7 @@ The time dimension of eRank's demand estimate. Every other eRank number on the B
 
 Changes what kind of number the Observed bucket holds. For the [Big Join read](../ETSY_BIG_JOIN_READ_2026-09-21.md): §C's candidates should be read with their windows (`advent calendar` and `ultrasound ornament` are Q4; `stick and stitch` and `needle minder` are year-round); §B's generic-tag volumes are mostly August–November spikes; and §E's biggest caveat is now a measurement. For the 10/15 readout: the treatment arm's tags are flat on eRank across fifteen months, so a treatment win is a win eRank could never have predicted at any time of year. Re-take this pull no more than quarterly — the shapes will not change, only the last month.
 
-**Next code change, when wanted:** a reader for this file and a `history[]` on the Big Join's eRank sub-object, with a peak-month or spark column on the table. Small; it is the change §G named.
+**The reader shipped with this pull.** Re-pulls land as further `YYYY-MM-DD-erank-keyword-history*.csv` files and supersede per keyword.
 
 ## Where this plugs into the map
 

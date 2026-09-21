@@ -981,3 +981,44 @@ describe("captured demand — shop search terms and ad keywords", () => {
     expect(row.shopSearch?.listingRevenueUsd).toBe(6);
   });
 });
+
+
+describe("eRank keyword history, against the real archive", () => {
+  const corpus = loadKeywordCorpus();
+  const find = (keyword: string) =>
+    corpus.rows.find((r) => r.keyword.toLowerCase() === keyword)!;
+
+  it("attaches fifteen months to a keyword the 2026-09-21 pull covered", () => {
+    const h = find("christmas ornament").erank!.history!;
+    expect(h).toHaveLength(15);
+    expect(h[0]).toEqual({ month: "2025-05", label: "May 25", searches: 1410 });
+    expect(h.map((m) => m.month)).toEqual([...h.map((m) => m.month)].sort());
+    const peak = h.reduce((b, m) => (m.searches > b.searches ? m : b), h[0]);
+    expect(peak.label).toBe("Oct 25");
+    expect(find("christmas ornament").erank!.historyCapture).toBe("2026-09-21");
+  });
+
+  it("reproduces eRank's printed average as the mean of the last twelve months", () => {
+    // The chart readings are only worth keeping if they agree with the
+    // number eRank prints; this is the check the pull note makes.
+    for (const keyword of ["digital products", "christmas ornament", "stick and stitch"]) {
+      const row = find(keyword);
+      const last12 = row.erank!.history!.slice(-12);
+      const mean = last12.reduce((a, m) => a + m.searches, 0) / 12;
+      expect(Math.abs(mean - (row.erank!.searches ?? 0))).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("gives a keyword nobody pulled null, never a flat line", () => {
+    expect(find("gift").erank!.history).toBeNull();
+    expect(find("gift").erank!.historyCapture).toBeNull();
+  });
+
+  it("keeps a flat series as zeros rather than dropping it", () => {
+    // `paper embriodery template` was asked for and read as zero every month.
+    // That is a measurement, and it is what distinguishes it from `gift`.
+    const h = find("paper embriodery template").erank!.history!;
+    expect(h).toHaveLength(15);
+    expect(h.every((m) => m.searches === 0)).toBe(true);
+  });
+});
