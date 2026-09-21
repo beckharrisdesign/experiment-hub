@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -17,15 +17,33 @@ import {
 
 type Direction = "asc" | "desc";
 
+/** Gap between the frozen column's edge and a pinned group label. */
+const LABEL_GUTTER = 12;
+
 /**
- * How far from the left edge of the scroll region a pinned group label sits.
+ * The frozen column's right edge.
  *
- * Matches the frozen keyword column's width so a label never slides under it.
- * A plain number rather than a measured value: the keyword column is the one
- * column with a fixed width, and measuring would make the header depend on
- * layout that has not settled on first paint.
+ * Without it a pinned column reads as a gap rather than as a column holding
+ * its ground — Katy, 2026-09-21: "lets also include a shadow on the frozen
+ * col so I can tell that's what is going on", then "still missing the frozen
+ * column" when the first attempt drew nothing.
+ *
+ * Drawn with pseudo-elements rather than `border-r` + `box-shadow`, because
+ * the table is `border-collapse: collapse` and under it a cell's own border
+ * is merged away and its shadow paints beneath the neighbouring cells — the
+ * styles compute exactly as written and render nothing. design.md Decision 12
+ * predicted this ("sticky cells under border-collapse drop their borders");
+ * this is what it looks like when it happens. The sticky cell is already a
+ * positioned, stacked box, so an absolutely-positioned child of it escapes
+ * the collapse entirely and paints above its siblings.
+ *
+ * `before` is the line, at full accent so it reads on the dark green; `after`
+ * is the falloff to its right. A plain black shadow was the first attempt and
+ * is close to invisible on `#194b31`.
  */
-const FROZEN_LABEL_OFFSET = 12;
+const FROZEN_EDGE =
+  "before:pointer-events-none before:absolute before:inset-y-0 before:right-0 before:z-10 before:w-[2px] before:bg-accent-primary before:content-[''] " +
+  "after:pointer-events-none after:absolute after:inset-y-0 after:left-full after:z-10 after:w-4 after:bg-gradient-to-r after:from-black/45 after:to-transparent after:content-['']";
 
 const ALL = "__all__";
 const NO_RANGE = "__none__";
@@ -251,14 +269,20 @@ const COLUMNS: Column[] = [
     key: "listing.title",
     label: "Listing",
     group: "targeting",
+    text: (r) => r.listings[0]?.title ?? "",
     render: () => "",
     renderListing: (l) => l.title ?? l.listingId,
   },
   {
+    // Sorts on the keyword's LOWEST slot across its listings, which is what
+    // `targeting` already holds. Without an accessor this column fell through
+    // to `localeCompare` — and with no `text` either, that compared keywords,
+    // so "sort by Tag slot" quietly sorted by something else entirely.
     key: "listing.tagSlot",
     label: "Tag slot",
     group: "targeting",
     numeric: true,
+    value: (r) => r.targeting,
     render: () => "",
     renderListing: (l) => (l.tagSlot === null ? "not tagged" : `#${l.tagSlot}`),
   },
@@ -269,6 +293,9 @@ const COLUMNS: Column[] = [
     key: "listing.advertised",
     label: "Advertised",
     group: "targeting",
+    // `sortNumber`, not `value`: a mark is not a range anyone would filter by
+    // a minimum of. Groups the keywords Etsy matched an ad to.
+    sortNumber: (r) => (r.listings.some((l) => l.advertised) ? 1 : 0),
     render: () => "",
     renderListing: (l) => (l.advertised ? "✓" : "—"),
   },
@@ -559,8 +586,49 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
   const [filters, setFilters] = useState<RangeFilter[]>([]);
   const [presence, setPresence] = useState<PresenceFilter[]>([]);
   const [pendingColumn, setPendingColumn] = useState<string>(NO_RANGE);
-  const [frozen, setFrozen] = useState(false);
+  /**
+   * The keyword column is always sticky. There is no toggle.
+   *
+   * It was a toggle, off by default, then on by default — and Katy hit the
+   * off state as a defect three times before it was understood as a setting.
+   * Katy, 2026-09-21: "that toggle is hidden and breaks a rule of making
+   * things that are clickable look clickable. and I shouldn't have to toggle
+   * it. Once I scroll enough it should just be sticky like the header."
+   *
+   * Which is the right shape: the header stays because a column without its
+   * heading is unreadable, and a row without its keyword is unreadable for
+   * the same reason. Neither is a preference.
+   */
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const keywordHeadRef = useRef<HTMLTableCellElement | null>(null);
+  /**
+   * The frozen column's real width, measured rather than assumed.
+   *
+   * Pinned group labels sit `left: <this> + gutter` so they clear the frozen
+   * column instead of sliding under it. A constant was tried first and the
+   * labels disappeared behind the keyword column, which is 496px with this
+   * corpus and changes with the longest keyword — there is no number to
+   * hardcode.
+   */
+  const [frozenWidth, setFrozenWidth] = useState(0);
+
+  useEffect(() => {
+    const cell = keywordHeadRef.current;
+    if (!cell) return;
+    const measure = () => setFrozenWidth(cell.getBoundingClientRect().width);
+    measure();
+    // The observer keeps the offset right when the column resizes — a filter
+    // that changes the longest visible keyword, or a viewport change. It is an
+    // enhancement over the measurement above, not the mechanism, so an
+    // environment without it (jsdom) degrades to a correct first measurement
+    // rather than throwing.
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(cell);
+    return () => observer.disconnect();
+  }, []);
+
+  const labelOffset = frozenWidth + LABEL_GUTTER;
   const nextId = useRef(1);
 
   const captures = useMemo(
@@ -654,6 +722,11 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
         if (av === bv) return 0;
         return sort.direction === "asc" ? av - bv : bv - av;
       }
+      // Falling back to the keyword is a trap: a column with no accessor at
+      // all sorts by something the reader never clicked, and looks broken
+      // rather than unsortable. Every column now defines one of `value`,
+      // `sortNumber` or `text`; this stays as the safety net for the keyword
+      // column itself.
       const left = column.text ? column.text(a) : a.keyword;
       const right = column.text ? column.text(b) : b.keyword;
       if (left === right) return 0;
@@ -760,10 +833,14 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
       `[data-band="${group}"]`,
     );
     if (!container || !target) return;
-    container.scrollTo({
-      left: Math.max(target.offsetLeft - 16, 0),
-      behavior: "smooth",
-    });
+    const left = Math.max(target.offsetLeft - 16, 0);
+    // Set the position first, then ask for the animation. `behavior: "smooth"`
+    // is a no-op in some contexts — under `prefers-reduced-motion`, and in
+    // automation — and when it no-ops it does not fall back, it simply does
+    // not scroll. Assigning first means the chip always lands; the smooth call
+    // afterwards is the nicety, not the mechanism.
+    container.scrollLeft = left;
+    container.scrollTo({ left, behavior: "smooth" });
   }
 
   const sortLabel =
@@ -777,7 +854,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
           .join(", then ");
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       {/* Row 1 — narrowing, ordering, and getting the data out. */}
       <div className="flex flex-wrap items-center gap-3">
         <input
@@ -964,6 +1041,19 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
       {/* Row 2 — moving around a table that is wider than the screen. */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-text-muted">Jump to band</span>
+        {/*
+          The keyword column is a band with no label, so it produced no chip —
+          which left no way back to the start, because the first labelled band
+          begins 496px in. Katy, 2026-09-21: "the quick links to different col
+          groups don't include a fully left option."
+        */}
+        <button
+          type="button"
+          onClick={() => scrollRef.current?.scrollTo({ left: 0, behavior: "smooth" })}
+          className="rounded-md border border-border bg-background-secondary px-2 py-1 text-xs text-text-primary transition-colors hover:text-text-secondary"
+        >
+          Keyword
+        </button>
         {GROUPS.filter((g) => g.label).map((g) => (
           <button
             key={g.key}
@@ -974,29 +1064,33 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
             {g.label}
           </button>
         ))}
-        <button
-          type="button"
-          onClick={() => setFrozen((v) => !v)}
-          aria-pressed={frozen}
-          className={`ml-auto rounded-md border px-2 py-1 text-xs transition-colors ${
-            frozen
-              ? "border-accent-primary bg-accent-primary/20 text-text-secondary"
-              : "border-border bg-background-secondary text-text-primary"
-          }`}
-        >
-          ❄ Freeze keyword · {frozen ? "on" : "off"}
-        </button>
       </div>
 
       {/*
+        The scroll region is capped to the viewport and scrolls in BOTH axes.
+        It used to be as tall as its content — 88,878px with this corpus —
+        which broke two things at once and neither loudly: the horizontal
+        scrollbar sat at the very bottom of that column, some 89,000px down
+        the page and unreachable without scrolling past every row; and
+        `sticky top-0` on the header pinned to a scrollport that had itself
+        scrolled away, so the headers vanished after the first screenful
+        despite computing as `position: sticky`.
+
+        The region now FILLS the space the toolbar leaves rather than taking
+        a guessed height: `flex-1 min-h-0` inside a viewport-tall flex column.
+        A fixed `max-h-[calc(100vh-Nrem)]` was tried first and put the
+        scrollbar 50px below the fold, because the chrome above it is not a
+        constant — the filter chips wrap. Katy, 2026-09-21: "I can't scroll
+        left and right".
+
         The scrollbar is forced visible rather than left to the platform:
-        macOS overlay bars fade out, so a 3,000px table looks exactly like a
+        macOS overlay bars fade out, so a 4,000px table looks exactly like a
         1,000px one at rest and gives no sign that 20 more columns exist. The
         thumb's width is the only honest indicator of how much is off-screen.
       */}
       <div
         ref={scrollRef}
-        className="overflow-x-scroll [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-accent-primary/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-accent-primary/10"
+        className="min-h-0 flex-1 overflow-auto [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-accent-primary/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-accent-primary/10"
       >
         <table className="w-auto min-w-full border-collapse text-sm">
           <thead className="sticky top-0 z-30">
@@ -1021,8 +1115,8 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                     scope="colgroup"
                     colSpan={span}
                     className={`whitespace-nowrap bg-background-primary px-3 pb-1 pt-3 text-left text-xs font-bold uppercase tracking-widest text-text-primary ${
-                      frozen && bucket.key === "keyword"
-                        ? "sticky left-0 z-40"
+                      bucket.key === "keyword"
+                        ? `sticky left-0 z-40 ${FROZEN_EDGE}`
                         : ""
                     }`}
                   >
@@ -1030,7 +1124,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                       <span className="block border-b-[3px] border-accent-primary pb-1">
                         <span
                           className="sticky inline-block"
-                          style={{ left: FROZEN_LABEL_OFFSET }}
+                          style={{ left: labelOffset }}
                         >
                           {bucket.label}
                         </span>
@@ -1051,8 +1145,8 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                     scope="colgroup"
                     colSpan={span}
                     className={`whitespace-nowrap bg-background-primary px-3 pb-1 pt-2 text-left text-[11px] font-medium uppercase tracking-wide text-text-secondary ${
-                      frozen && group.key === "keyword"
-                        ? "sticky left-0 z-40"
+                      group.key === "keyword"
+                        ? `sticky left-0 z-40 ${FROZEN_EDGE}`
                         : ""
                     }`}
                   >
@@ -1060,7 +1154,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                       <span className="block border-b-2 border-accent-primary/50 pb-1">
                         <span
                           className="sticky inline-block"
-                          style={{ left: FROZEN_LABEL_OFFSET }}
+                          style={{ left: labelOffset }}
                         >
                           {group.label}
                           {group.window && (
@@ -1080,8 +1174,8 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                 const sort = sorts.find((s) => s.key === column.key);
                 const rank = sorts.findIndex((s) => s.key === column.key);
                 const sticky =
-                  frozen && index === 0
-                    ? "sticky left-0 z-20 bg-background-primary"
+                  index === 0
+                    ? `sticky left-0 z-20 bg-background-primary ${FROZEN_EDGE}`
                     : "";
                 return (
                   <th
@@ -1094,7 +1188,14 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                           : "descending"
                         : "none"
                     }
-                    className={`w-[1%] whitespace-nowrap px-3 py-2 font-normal ${sticky} ${
+                    // Opaque, like the two tiers above it. A sticky <thead>
+                    // paints no background of its own — the section and row
+                    // backgrounds are not honoured — so an unpainted header
+                    // cell lets the rows scroll through it. Katy, 2026-09-21:
+                    // "third tier header needs a background to avoid strange
+                    // overlaps."
+                    ref={index === 0 ? keywordHeadRef : undefined}
+                    className={`w-[1%] whitespace-nowrap bg-background-primary px-3 py-2 font-normal ${sticky} ${
                       column.numeric ? "text-right" : "text-left"
                     }`}
                   >
@@ -1122,8 +1223,8 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                     <td
                       key={column.key}
                       className={`w-[1%] whitespace-nowrap px-3 py-2 text-text-primary ${
-                        frozen && index === 0
-                          ? "sticky left-0 z-10 bg-background-primary"
+                        index === 0
+                          ? `sticky left-0 z-10 bg-background-primary ${FROZEN_EDGE}`
                           : ""
                       } ${column.numeric ? "text-right" : "text-left"}`}
                     >
@@ -1148,13 +1249,9 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
                     {COLUMNS.map((column, index) => (
                       <td
                         key={column.key}
-                        className={`w-[1%] px-3 py-2 text-text-primary ${
-                          column.key === "listing.title"
-                            ? "whitespace-normal"
-                            : "whitespace-nowrap"
-                        } ${
-                          frozen && index === 0
-                            ? "sticky left-0 z-10 bg-background-primary"
+                        className={`w-[1%] whitespace-nowrap px-3 py-2 text-text-primary ${
+                          index === 0
+                            ? `sticky left-0 z-10 bg-background-primary ${FROZEN_EDGE}`
                             : ""
                         } ${column.numeric ? "text-right" : "text-left"}`}
                       >

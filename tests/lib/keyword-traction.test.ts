@@ -271,6 +271,33 @@ describe("toTableRows — listing sub-rows", () => {
     );
   });
 
+  it("decodes the HTML entities Etsy's API puts in listing titles", () => {
+    // Etsy returns `6&quot; & 8&quot; hoops` for a title that reads
+    // `6" & 8" hoops`. Keeping the entities would misrepresent the title,
+    // not preserve it.
+    const [row] = toTableRows(
+      [
+        keywordRow({
+          keyword: "embroidery pattern",
+          targeting: {
+            best: 1,
+            matches: [
+              {
+                listingId: 1,
+                slot: 1,
+                title: "Beginner design &#8212; 6&quot; &amp; 8&quot; hoops",
+              },
+            ],
+          },
+        }),
+      ],
+    );
+
+    expect(row.listings[0].title).toBe(
+      'Beginner design &#8212; 6" & 8" hoops',
+    );
+  });
+
   it("leaves a keyword with no related listing as a single row", () => {
     const [row] = toTableRows([keywordRow({})]);
     expect(row.listings).toEqual([]);

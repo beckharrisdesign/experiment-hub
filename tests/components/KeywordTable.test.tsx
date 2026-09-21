@@ -879,6 +879,52 @@ describe("KeywordTable — export", () => {
   });
 });
 
+describe("KeywordTable — sort accessors", () => {
+  it("sorts Tag slot by number, not by string", () => {
+    // `#10` before `#1` is the giveaway that a column marked numeric is
+    // actually being compared with localeCompare. Tag slot had no accessor at
+    // all, so it fell through to the keyword — it never sorted by tag slot.
+    const TIED: KeywordTableRow[] = [
+      row({ keyword: "alpha", targeting: 10, listings: listingsOfLength(1) }),
+      row({ keyword: "bravo", targeting: 2, listings: listingsOfLength(1) }),
+      row({ keyword: "charlie", targeting: 1, listings: listingsOfLength(1) }),
+    ];
+    render(<KeywordTable rows={TIED} />);
+    fireEvent.click(screen.getByRole("button", { name: /Tag slot/ }));
+
+    // desc on first click: 10, 2, 1 — not "10, 1, 2" as strings would give.
+    expect(keywordOrder()).toEqual(["alpha", "bravo", "charlie"]);
+  });
+
+  it("gives every column its own sort accessor", () => {
+    // The real defect was silent: a column with no `value`, `sortNumber` or
+    // `text` falls back to the keyword, so it looks sorted and is not.
+    render(<KeywordTable rows={ROWS} />);
+    const headerRow = screen.getAllByRole("row")[2];
+    const headers = within(headerRow).getAllByRole("columnheader");
+    // Every header is a button — i.e. every column claims to be sortable.
+    for (const th of headers) {
+      expect(within(th).getByRole("button")).toBeInTheDocument();
+    }
+  });
+});
+
+describe("KeywordTable — frozen column edge", () => {
+  it("draws the edge with pseudo-elements, not a cell border", () => {
+    // A regression guard, not proof it renders: jsdom does not compute
+    // pseudo-element styles. What it does catch is the edge reverting to
+    // `border-r` + `box-shadow`, which is what was there before and which
+    // renders NOTHING under `border-collapse: collapse` — the styles compute
+    // exactly as written and the browser paints neither.
+    render(<KeywordTable rows={ROWS} />);
+    // Frozen on arrival now — no click needed to reach the frozen state.
+    const firstCell = bodyRows()[0].querySelectorAll("td")[0];
+    expect(firstCell.className).toContain("sticky");
+    expect(firstCell.className).toContain("before:bg-accent-primary");
+    expect(firstCell.className).not.toContain("border-r ");
+  });
+});
+
 describe("KeywordTable — presence filters", () => {
   it("narrows to rows that have a value, and shows a removable chip", async () => {
     render(<KeywordTable rows={ROWS} />);
@@ -921,11 +967,16 @@ describe("KeywordTable — scroll tools", () => {
     expect(after).toBe(28);
   });
 
-  it("leaves the keyword unfrozen until asked", () => {
+  it("keeps the keyword column stuck to the left, with no toggle to find", () => {
+    // There is no Freeze control any more. It was a toggle, off by default,
+    // then on by default, and Katy read the off state as a defect three times
+    // before it was understood as a setting: "I shouldn't have to toggle it.
+    // Once I scroll enough it should just be sticky like the header."
     render(<KeywordTable rows={ROWS} />);
-    const toggle = screen.getByRole("button", { name: /Freeze keyword/ });
-    expect(toggle).toHaveAttribute("aria-pressed", "false");
-    fireEvent.click(toggle);
-    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(screen.queryByRole("button", { name: /Freeze keyword/ })).toBeNull();
+
+    const firstCell = bodyRows()[0].querySelectorAll("td")[0];
+    expect(firstCell.className).toContain("sticky");
+    expect(firstCell.className).toContain("left-0");
   });
 });

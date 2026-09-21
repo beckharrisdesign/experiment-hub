@@ -1,4 +1,3 @@
-import Sidebar from "@/components/Sidebar";
 
 /**
  * Next.js route-segment loading boundary: renders immediately while
@@ -17,9 +16,8 @@ import Sidebar from "@/components/Sidebar";
  */
 export default function KeywordExplorerLoading() {
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="ml-64 flex-1 p-8">
+    <div className="h-screen overflow-hidden">
+      <main className="flex h-full w-full flex-col p-8">
         <div className="flex flex-col gap-6">
           <header className="flex flex-col gap-2">
             <h2 className="text-2xl font-semibold text-text-primary">
