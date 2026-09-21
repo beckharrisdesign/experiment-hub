@@ -1,4 +1,4 @@
-# erank-one-band — design
+# keyword-table-restructure — design
 
 ## Context
 
@@ -196,7 +196,7 @@ Etsy Ads therefore does **not** move wholesale into Targeted. One column does �
 
 **The MVDS gate is open, and it is now known to be un-closeable from here.** Round 02.8 is token-faithful but component-free, and `get_libraries` shows MVDS is not even offered to this file — so enabling it is a Figma UI action of Katy's, not a step that was skipped. This change ships no new controls, so the exposure is smaller than #508's: the risk is that the *drawing* is off, not the build.
 
-**The change is no longer only about eRank.** It started as "merge three bands into one". It now also renames eight headers, reorders two bands, adds a grouping tier, takes the page full-bleed, and adds vertical header freeze plus horizontally pinned group labels — none of which the eRank merge requires. Each addition is Katy's and each is recorded, but the specs and tasks have to cover a table-wide restructure, not a band merge, and the title `erank-one-band` now undersells it.
+**The change is no longer only about eRank.** It started as "merge three bands into one". It now also renames eight headers, reorders two bands, adds a grouping tier, takes the page full-bleed, and adds vertical header freeze plus horizontally pinned group labels — none of which the eRank merge requires. Each addition is Katy's and each is recorded, but the specs and tasks have to cover a table-wide restructure, not a band merge, **Renamed to `keyword-table-restructure` on 2026-09-21** (Katy: *"yes you can rename it"*) — kept whole rather than split, so the reasoning that connects the decisions stays in one place.
 
 **"Zero contradictions" is a claim about today's corpus, not a property of eRank.** Every comparison count here is in the tens, not the thousands, because the three exports overlap on few keywords. The merge rule is safe on the evidence available and would need re-checking if the corpus grew substantially — the rule picks the first non-null on the assumption that exact values agree, and that assumption is measured, not guaranteed.
 
