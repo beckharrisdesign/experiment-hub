@@ -171,6 +171,12 @@ export interface RankedMatch {
 export interface TargetingListingMatch {
   listingId: number;
   slot: number;
+  /**
+   * The listing's title at capture time. `RawListing` carries it, so keeping
+   * it here costs nothing and saves the table a second lookup — without it a
+   * listing sub-row could only show an id (design.md Decision 13).
+   */
+  title: string | null;
 }
 
 /**
@@ -302,6 +308,81 @@ export type TagReportSource = TagReportValues &
   KeywordSourceCapture<TagReportValues>;
 
 /**
+ * eRank's three exports reduced to one reported value per field.
+ *
+ * The merge PICKS, never computes: an exact reading beats a capped one, a cap
+ * beats nothing, and where two tools both report exactly they agree, so the
+ * choice is free. Averaging or blending would put a number on the row that no
+ * eRank export ever contained.
+ *
+ * `*Censored` means eRank capped the value rather than reporting it exactly —
+ * the true figure is *below* the number, not equal to it. The flag travels
+ * with whichever source the value was picked from, so a cap still renders as
+ * a cap after the merge.
+ *
+ * `reportedBy` is attestation, not per-field provenance: a tool is listed
+ * because it had a record for the keyword, whether or not it filled any
+ * given field. A keyword all three tools scored is better attested than one
+ * only the Tag Report mentions, and that is what the column reports.
+ */
+export interface ErankValues {
+  searches: number | null;
+  searchesCensored: boolean;
+  competition: number | null;
+  kd: number | null;
+  avgClicks: number | null;
+  avgClicksCensored: boolean;
+  avgCtr: number | null;
+  avgCtrCensored: boolean;
+  /** Tag Report only. */
+  googleSearches: number | null;
+  /** Tag Report only. */
+  tagOccurrences: number | null;
+  /** Keyword Tool only. */
+  foundVia: KeywordQueryHit[];
+  /** `"KT"` | `"B"` | `"T"`, in that order. */
+  reportedBy: string[];
+}
+
+/**
+ * One listing related to a keyword — a sub-row under the keyword's own row.
+ *
+ * Membership is the UNION of the relationships a keyword can have with a
+ * listing, never the intersection: a listing carries the keyword as a tag, or
+ * Etsy matched an ad for it to that listing, or a real searcher reached it
+ * that way. The rows where one relationship holds and the others do not are
+ * the point — `embroidery pattern` is tagged on four listings and advertised
+ * on a fifth that carries no such tag.
+ *
+ * `advertised` records that Etsy matched an ad for THIS keyword to this
+ * listing. **A `false` here is not evidence the listing is unadvertised** —
+ * it means no match was observed for this keyword. Absence is not a verdict,
+ * the same rule the corpus applies to a missing searches figure.
+ *
+ * `Ranked` is deliberately absent: `RankedMatch` identifies listings by title
+ * string rather than by id, so joining a rank position onto a listing here
+ * would mean matching on titles (design.md Decision 18). The keyword's best
+ * position stays on the parent row.
+ */
+export interface KeywordListingRow {
+  listingId: string;
+  title: string | null;
+  /** 1–13, or `null` when the listing does not carry the keyword as a tag. */
+  tagSlot: number | null;
+  advertised: boolean;
+  visits: number | null;
+  itemsSold: number | null;
+  revenueUsd: number | null;
+  adViews: number | null;
+  adClicks: number | null;
+  adClickRatePct: number | null;
+  adSpendUsd: number | null;
+  adRevenueUsd: number | null;
+  adOrders: number | null;
+  adRoas: number | null;
+}
+
+/**
  * One keyword, with every source that has data for it.
  *
  * One row per distinct keyword text, matched case-insensitive exact — no
@@ -317,6 +398,16 @@ export type TagReportSource = TagReportValues &
  */
 export interface KeywordRow {
   keyword: string;
+  /**
+   * The three eRank sources reduced to one. `null` when no eRank tool saw
+   * the keyword at all — never a zeroed-out object.
+   *
+   * The three source sub-objects below are kept alongside it rather than
+   * replaced: they carry `capture`, `current`, `supersededBy` and `history`,
+   * which the corpus exists to preserve. The collapse to one happens at the
+   * table boundary, where it is actually needed.
+   */
+  erank: ErankValues | null;
   keywordTool: KeywordToolSource | null;
   bulkKeywords: BulkKeywordSource | null;
   tagReport: TagReportSource | null;
@@ -337,28 +428,35 @@ export interface KeywordRow {
 /**
  * `KeywordRow`, collapsed to what actually reaches `KeywordTable` — a client
  * component on a public, unauthenticated route. `toTableRows()`
- * (`lib/keyword-traction.ts`) is what performs this collapse; the page calls
- * it right before rendering, so `KeywordTable` only ever receives
- * `KeywordTableRow`, never a raw `KeywordRow`.
+ * (`lib/keyword-traction.ts`) performs this collapse; the page calls it right
+ * before rendering, so `KeywordTable` only ever receives `KeywordTableRow`.
  *
- * Ranked and Targeting are collapsed to the sort value (`.best`) only; the
- * full per-listing detail (`RankedMatch.matches` — listing titles, pages,
- * positions; `TargetingMatch.matches` — live listing IDs and which of the
- * 13 tag slots they occupy) never leaves the server. The table only ever
- * renders the number, so there is no reason to serialize the shop's
- * tag-placement detail into the RSC payload for any anonymous visitor —
- * that data stays server-side, in `KeywordRow`, for a future detail
- * surface this change deliberately doesn't build (proposal.md § Not
- * doing).
+ * **Per-listing detail now crosses this boundary, by decision.** An earlier
+ * version of this comment argued that `TargetingMatch.matches` — live listing
+ * ids and which of the 13 tag slots they occupy — should never leave the
+ * server, since there was no reason to serialise the shop's tag placement
+ * into the RSC payload for an anonymous visitor. That position was put to
+ * Katy with the alternative of gating the route, and she chose to publish:
+ * *"don't gate it its a PIA - just push it"* (2026-09-21, design.md Decision
+ * 18). `listings` below therefore carries tag slots and ad placement to
+ * anonymous visitors. Note the boundary was already partial rather than
+ * clean: `shopSearch` and `ads` were shipping the shop's listing revenue, ad
+ * spend and ROAS here before this change.
  *
- * Deliberately an explicit field list, not `Omit<KeywordRow, "ranked" |
- * "targeting">` (round 12 finding): `Omit` is a denylist — it inherits every
- * other `KeywordRow` field automatically, so a server-only field added to
- * `KeywordRow` in a future change would silently start flowing to this
- * public client component's props too, with nothing here forcing whoever
- * adds it to notice. An explicit allowlist means a new `KeywordRow` field
- * simply doesn't exist on `KeywordTableRow` until someone deliberately adds
- * it here — the safer failure mode for a public-route data boundary.
+ * The three eRank sub-objects collapse to one `erank` here — this is the
+ * boundary where the merge is visible, while `KeywordRow` keeps the sources
+ * for their capture history.
+ *
+ * Ranked and Targeting still collapse to their sort value (`.best`) as
+ * scalars, because `Ranked` identifies listings by title rather than id and
+ * so cannot be joined onto `listings` without matching on strings.
+ *
+ * Deliberately an explicit field list, not `Omit<KeywordRow, …>`: `Omit` is a
+ * denylist, so a server-only field added to `KeywordRow` later would silently
+ * start flowing to this public client component. An explicit allowlist means
+ * a new field simply does not exist here until someone adds it on purpose —
+ * the safer failure mode for a public-route data boundary, and the reason
+ * this comment is rewritten rather than deleted.
  */
 export interface KeywordTableRow {
   keyword: string;
@@ -373,13 +471,17 @@ export interface KeywordTableRow {
    * rather than left on screen doing nothing.
    */
   capture: string | null;
-  keywordTool: KeywordToolValues | null;
-  bulkKeywords: BulkKeywordValues | null;
-  tagReport: TagReportValues | null;
+  erank: ErankValues | null;
   shopSearch: ShopSearchValues | null;
   ads: AdsKeywordValues | null;
   ranked: number | null;
   targeting: number | null;
+  /**
+   * Every listing related to this keyword, one per sub-row. Empty for the
+   * ~86% of keywords with no listing relationship at all, which render as a
+   * single row exactly as they did before.
+   */
+  listings: KeywordListingRow[];
 }
 
 export interface KeywordCapture {

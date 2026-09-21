@@ -104,23 +104,23 @@ Package manager is **pnpm**. Design approved by Katy, 2026-09-21: *"yes lets app
 
 **Targeting — `lib/keyword-traction.ts`**
 
-- [ ] 3.5 Carry the listing title into `TargetingListingMatch`. `RawListing` already has it (`lib/etsy-scorecard.ts:31`) and `computeTargeting` currently drops it.
-- [ ] 3.6 Stop collapsing at the client boundary: `:158` sends `targeting?.best ?? null`, which discards `matches`. Send the matches through; do the same for `ranked` at `:157`.
+- [x] 3.5 Carry the listing title into `TargetingListingMatch`. `RawListing` already has it (`lib/etsy-scorecard.ts:31`) and `computeTargeting` currently drops it. — `TargetingListingMatch` now carries `title`; `computeTargeting` reads it from `RawListing`.
+- [x] 3.6 Stop collapsing at the client boundary: `:158` sends `targeting?.best ?? null`, which discards `matches`. Send the matches through; do the same for `ranked` at `:157`. — `toTableRows` sends `listings` (the union of tagged/ad-matched/landed-on, keyed by listing id). Ranked stays a scalar — it identifies listings by title, not id (Decision 18).
 
 **Types and loader**
 
-- [ ] 3.7 Replace `keywordTool` / `bulkKeywords` / `tagReport` on `KeywordRow` and `KeywordTableRow` with one `erank` object plus `reportedBy`.
-- [ ] 3.8 Add the listing sub-row shape: one entry per related listing, carrying title, tag slot, advertised mark, rank position, visits, sold, revenue and ad figures — all nullable, absence never a `0`.
-- [ ] 3.9 Map both at the snake_case boundary in `lib/keyword-corpus.ts`.
+- [x] 3.7 Replace `keywordTool` / `bulkKeywords` / `tagReport` on `KeywordRow` and `KeywordTableRow` with one `erank` object plus `reportedBy`. — `erank` + `listings` on `KeywordTableRow`; the three sources stay on `KeywordRow` for their capture history (deviation recorded in §5).
+- [x] 3.8 Add the listing sub-row shape: one entry per related listing, carrying title, tag slot, advertised mark, rank position, visits, sold, revenue and ad figures — all nullable, absence never a `0`. — `KeywordListingRow` added — tag slot, advertised, visits/sold/revenue, ad figures; all nullable.
+- [x] 3.9 Map both at the snake_case boundary in `lib/keyword-corpus.ts`. — `toErank()` maps the snake_case `erank` object in `lib/keyword-corpus.ts`.
 
 **Metrics — `lib/keyword-metrics.ts`**
 
-- [ ] 3.10 Change `demandRatio()` to take the merged values and return the censored flag alongside the number.
+- [x] 3.10 Change `demandRatio()` to take the merged values and return the censored flag alongside the number. — `demandRatio()` takes merged values and returns `{ value, censored }`.
 
 **Table — `components/KeywordTable.tsx`**
 
-- [ ] 3.11 Collapse the three eRank column groups into one; drop the six duplicated columns; add `Reported by`.
-- [ ] 3.12 Apply the agreed header copy and keep deliberate two-line breaks.
+- [x] 3.11 Collapse the three eRank column groups into one; drop the six duplicated columns; add `Reported by`. — eRank's 17 columns replaced by 10, including `Reported by`.
+- [x] 3.12 Apply the agreed header copy and keep deliberate two-line breaks. — Header copy applied: Search Volume, Etsy Competition, Avg CTR %, Google Volume, Tag Count, Search / Competition.
 - [ ] 3.13 Reorder `Targeting` before `Ranked` so the buckets are contiguous.
 - [ ] 3.14 Add the bucket tier above the bands, with a heavier rule than the band rule. Keep each rule spanning exactly its own columns (`:884` already does this for bands).
 - [ ] 3.15 Pin bucket and band labels to the left edge of the scroll region — `position: sticky` on the label span, offset by the frozen column width.
@@ -129,8 +129,8 @@ Package manager is **pnpm**. Design approved by Katy, 2026-09-21: *"yes lets app
 - [ ] 3.18 Render listing sub-rows: parent stays keyword-grained; membership is the union of tagged, ad-matched, landed-on and ranked listings; one `Listing` column, everything else an attribute on that row.
 - [ ] 3.19 Keep sort and filter keyword-grained — sub-rows travel with their parent, and a sub-row match keeps its parent visible.
 - [ ] 3.20 Add presence/absence filters per column, composable with the existing range filters.
-- [ ] 3.21 Rename the Ads band to attribute the match to Etsy.
-- [ ] 3.22 Re-point the three eRank source filters at `reportedBy` — they read the sub-objects the merge deletes (`:422-424`) and break silently otherwise.
+- [x] 3.21 Rename the Ads band to attribute the match to Etsy. — Ads band relabelled `Etsy Ads — matched by Etsy`.
+- [x] 3.22 Re-point the three eRank source filters at `reportedBy` — they read the sub-objects the merge deletes (`:422-424`) and break silently otherwise. — The three eRank source filters now read `erank.reportedBy`.
 
 **Page — `app/keyword-explorer/page.tsx`**
 

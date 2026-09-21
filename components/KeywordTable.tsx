@@ -32,13 +32,29 @@ const NO_RANGE = "__none__";
  */
 type GroupKey =
   | "keyword"
-  | "kt"
-  | "bulk"
-  | "tag"
-  | "ranked"
+  | "erank"
   | "targeting"
+  | "ranked"
   | "shop"
   | "ads";
+
+/**
+ * The kind of claim a group of columns makes, above the source bands.
+ *
+ * Observed is someone else's estimate of the market; Targeted is a deliberate
+ * act of ours; Performance is what really happened. Katy, 2026-09-21. The
+ * bands are ordered so each bucket covers a contiguous run — `Targeting`
+ * moves ahead of `Ranked`, which is the only column-order change the tier
+ * requires (design.md Decision 11).
+ */
+type BucketKey = "keyword" | "observed" | "targeted" | "performance";
+
+const BUCKETS: { key: BucketKey; label: string; groups: GroupKey[] }[] = [
+  { key: "keyword", label: "", groups: ["keyword"] },
+  { key: "observed", label: "Observed", groups: ["erank"] },
+  { key: "targeted", label: "Targeted", groups: ["targeting"] },
+  { key: "performance", label: "Performance", groups: ["ranked", "shop", "ads"] },
+];
 
 /**
  * `window` is rendered in the band label, not a footnote.
@@ -50,13 +66,11 @@ type GroupKey =
  */
 const GROUPS: { key: GroupKey; label: string; window?: string }[] = [
   { key: "keyword", label: "" },
-  { key: "kt", label: "eRank Keyword Tool" },
-  { key: "bulk", label: "eRank Bulk Keywords" },
-  { key: "tag", label: "eRank Tag Report" },
-  { key: "ranked", label: "Ranked" },
+  { key: "erank", label: "eRank" },
   { key: "targeting", label: "Targeting" },
+  { key: "ranked", label: "Ranked" },
   { key: "shop", label: "Shop — captured", window: "this year" },
-  { key: "ads", label: "Etsy Ads — targeted", window: "last 30 days" },
+  { key: "ads", label: "Etsy Ads — matched by Etsy", window: "last 30 days" },
 ];
 
 /**
@@ -100,175 +114,109 @@ const COLUMNS: Column[] = [
     render: (r) => r.keyword,
   },
 
-  // --- eRank Keyword Tool ---
+  // --- eRank (the three exports merged; design.md Decisions 1-4) ---
   {
-    key: "kt.searches",
-    label: "Searches",
-    group: "kt",
+    key: "erank.searches",
+    label: "Search Volume",
+    group: "erank",
     numeric: true,
-    value: (r) => r.keywordTool?.searches ?? null,
-    render: (r) => num(r.keywordTool?.searches ?? null),
+    value: (r) => r.erank?.searches ?? null,
+    render: (r) =>
+      r.erank
+        ? bulkValueLabel(r.erank.searches, r.erank.searchesCensored)
+        : "—",
   },
   {
-    key: "kt.competition",
-    label: "Competition",
-    group: "kt",
+    key: "erank.competition",
+    label: "Etsy Competition",
+    group: "erank",
     numeric: true,
-    value: (r) => r.keywordTool?.competition ?? null,
-    render: (r) => num(r.keywordTool?.competition ?? null),
+    value: (r) => r.erank?.competition ?? null,
+    render: (r) => num(r.erank?.competition ?? null),
   },
   {
-    key: "kt.kd",
+    key: "erank.kd",
     label: "KD",
-    group: "kt",
+    group: "erank",
     numeric: true,
-    value: (r) => r.keywordTool?.kd ?? null,
-    render: (r) => num(r.keywordTool?.kd ?? null),
+    value: (r) => r.erank?.kd ?? null,
+    render: (r) => num(r.erank?.kd ?? null),
+  },
+  {
+    key: "erank.avgClicks",
+    label: "Avg Clicks",
+    group: "erank",
+    numeric: true,
+    value: (r) => r.erank?.avgClicks ?? null,
+    render: (r) =>
+      r.erank ? bulkValueLabel(r.erank.avgClicks, r.erank.avgClicksCensored) : "—",
+  },
+  {
+    key: "erank.avgCtr",
+    label: "Avg CTR %",
+    group: "erank",
+    numeric: true,
+    value: (r) => r.erank?.avgCtr ?? null,
+    render: (r) =>
+      r.erank ? bulkValueLabel(r.erank.avgCtr, r.erank.avgCtrCensored) : "—",
+  },
+  {
+    key: "erank.google",
+    label: "Google Volume",
+    group: "erank",
+    numeric: true,
+    value: (r) => r.erank?.googleSearches ?? null,
+    render: (r) => num(r.erank?.googleSearches ?? null),
+  },
+  {
+    key: "erank.tagCount",
+    label: "Tag Count",
+    group: "erank",
+    numeric: true,
+    value: (r) => r.erank?.tagOccurrences ?? null,
+    render: (r) => num(r.erank?.tagOccurrences ?? null),
   },
   {
     // Tag occurrences stay per query. `embroidery font` read 6, 81, 80 and 12
     // under four queries on one day; one merged number would be invented.
-    key: "kt.foundVia",
+    key: "erank.foundVia",
     label: "Found via",
-    group: "kt",
-    sortNumber: (r) => totalTagOccurrences(r.keywordTool),
+    group: "erank",
+    sortNumber: (r) => totalTagOccurrences(r.erank),
     render: (r) => {
-      const hits = r.keywordTool?.foundVia ?? [];
+      const hits = r.erank?.foundVia ?? [];
       if (hits.length === 0) return "—";
       return hits.map((hit) => `${hit.query} (${hit.tagOccurrences})`).join(", ");
     },
   },
   {
-    key: "kt.ratio",
-    label: "S / comp.",
-    group: "kt",
+    // Computed from the MERGED values, so it renders on 2,078 rows rather
+    // than the 1,931 the Keyword Tool alone could reach. Where the searches
+    // figure was capped the ratio is an upper bound and says so.
+    key: "erank.ratio",
+    label: "Search / Competition",
+    group: "erank",
     numeric: true,
-    value: (r) => demandRatio(r.keywordTool),
+    value: (r) => demandRatio(r.erank)?.value ?? null,
     render: (r) => {
-      const ratio = demandRatio(r.keywordTool);
-      return ratio === null ? "—" : ratio.toFixed(3);
+      const ratio = demandRatio(r.erank);
+      if (ratio === null) return "—";
+      return `${ratio.censored ? "< " : ""}${ratio.value.toFixed(3)}`;
+    },
+  },
+  {
+    // Attestation, not per-field provenance: which eRank tools had a record
+    // for this keyword at all (design.md Decision 3).
+    key: "erank.reportedBy",
+    label: "Reported by",
+    group: "erank",
+    text: (r) => (r.erank?.reportedBy ?? []).join(" · "),
+    render: (r) => {
+      const by = r.erank?.reportedBy ?? [];
+      return by.length ? by.join(" · ") : "—";
     },
   },
 
-  // --- eRank Bulk Keywords ---
-  {
-    key: "bulk.avgSearches",
-    label: "Avg searches",
-    group: "bulk",
-    numeric: true,
-    value: (r) => r.bulkKeywords?.avgSearches ?? null,
-    render: (r) =>
-      r.bulkKeywords
-        ? bulkValueLabel(r.bulkKeywords.avgSearches, r.bulkKeywords.avgSearchesCensored)
-        : "—",
-  },
-  {
-    key: "bulk.avgClicks",
-    label: "Avg clicks",
-    group: "bulk",
-    numeric: true,
-    value: (r) => r.bulkKeywords?.avgClicks ?? null,
-    render: (r) =>
-      r.bulkKeywords
-        ? bulkValueLabel(r.bulkKeywords.avgClicks, r.bulkKeywords.avgClicksCensored)
-        : "—",
-  },
-  {
-    key: "bulk.avgCtr",
-    label: "Avg CTR",
-    group: "bulk",
-    numeric: true,
-    value: (r) => r.bulkKeywords?.avgCtr ?? null,
-    render: (r) =>
-      r.bulkKeywords
-        ? bulkValueLabel(r.bulkKeywords.avgCtr, r.bulkKeywords.avgCtrCensored)
-        : "—",
-  },
-  {
-    key: "bulk.etsyCompetition",
-    label: "Etsy comp.",
-    group: "bulk",
-    numeric: true,
-    value: (r) => r.bulkKeywords?.etsyCompetition ?? null,
-    render: (r) => num(r.bulkKeywords?.etsyCompetition ?? null),
-  },
-  {
-    key: "bulk.kd",
-    label: "KD",
-    group: "bulk",
-    numeric: true,
-    value: (r) => r.bulkKeywords?.kd ?? null,
-    render: (r) => num(r.bulkKeywords?.kd ?? null),
-  },
-
-  // --- eRank Tag Report ---
-  {
-    key: "tag.tagOccurrences",
-    label: "Tag occ.",
-    group: "tag",
-    numeric: true,
-    value: (r) => r.tagReport?.tagOccurrences ?? null,
-    render: (r) => num(r.tagReport?.tagOccurrences ?? null),
-  },
-  {
-    key: "tag.avgSearches",
-    label: "Avg searches",
-    group: "tag",
-    numeric: true,
-    value: (r) => r.tagReport?.avgSearches ?? null,
-    render: (r) =>
-      r.tagReport
-        ? bulkValueLabel(r.tagReport.avgSearches, r.tagReport.avgSearchesCensored)
-        : "—",
-  },
-  {
-    key: "tag.avgClicks",
-    label: "Avg clicks",
-    group: "tag",
-    numeric: true,
-    value: (r) => r.tagReport?.avgClicks ?? null,
-    render: (r) =>
-      r.tagReport
-        ? bulkValueLabel(r.tagReport.avgClicks, r.tagReport.avgClicksCensored)
-        : "—",
-  },
-  {
-    key: "tag.avgCtr",
-    label: "Avg CTR",
-    group: "tag",
-    numeric: true,
-    value: (r) => r.tagReport?.avgCtr ?? null,
-    render: (r) =>
-      r.tagReport
-        ? bulkValueLabel(r.tagReport.avgCtr, r.tagReport.avgCtrCensored)
-        : "—",
-  },
-  {
-    key: "tag.etsyCompetition",
-    label: "Etsy comp.",
-    group: "tag",
-    numeric: true,
-    value: (r) => r.tagReport?.etsyCompetition ?? null,
-    render: (r) => num(r.tagReport?.etsyCompetition ?? null),
-  },
-  {
-    key: "tag.kd",
-    label: "KD",
-    group: "tag",
-    numeric: true,
-    value: (r) => r.tagReport?.kd ?? null,
-    render: (r) => num(r.tagReport?.kd ?? null),
-  },
-  {
-    key: "tag.googleSearches",
-    label: "Google",
-    group: "tag",
-    numeric: true,
-    value: (r) => r.tagReport?.googleSearches ?? null,
-    render: (r) => num(r.tagReport?.googleSearches ?? null),
-  },
-
-  // --- Real-world traction ---
   {
     // Best (lowest) position across every ranking listing; blank, never 0,
     // when there is no Spotted on Etsy match.
@@ -419,9 +367,24 @@ const SOURCE_FILTERS: {
   label: string;
   has: (row: KeywordTableRow) => boolean;
 }[] = [
-  { key: "kt", label: "Keyword Tool", has: (r) => r.keywordTool !== null },
-  { key: "bulk", label: "Bulk Keywords", has: (r) => r.bulkKeywords !== null },
-  { key: "tag", label: "Tag Report", has: (r) => r.tagReport !== null },
+  // The merge deletes the three sub-objects these used to read, so they are
+  // re-pointed at `reportedBy` rather than dropped: "has Tag Report data"
+  // stays both visible and filterable (design.md Decision 4).
+  {
+    key: "kt",
+    label: "Keyword Tool",
+    has: (r) => (r.erank?.reportedBy ?? []).includes("KT"),
+  },
+  {
+    key: "bulk",
+    label: "Bulk Keywords",
+    has: (r) => (r.erank?.reportedBy ?? []).includes("B"),
+  },
+  {
+    key: "tag",
+    label: "Tag Report",
+    has: (r) => (r.erank?.reportedBy ?? []).includes("T"),
+  },
   { key: "ranked", label: "Ranked", has: (r) => r.ranked !== null },
   { key: "targeting", label: "Targeting", has: (r) => r.targeting !== null },
   { key: "shop", label: "Shop — captured", has: (r) => r.shopSearch !== null },
@@ -521,7 +484,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
       Array.from(
         new Set(
           rows.flatMap((r) =>
-            (r.keywordTool?.foundVia ?? []).map((hit) => hit.query),
+            (r.erank?.foundVia ?? []).map((hit) => hit.query),
           ),
         ),
       ).sort(),
@@ -541,7 +504,7 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
       if (captureFilter !== ALL && row.capture !== captureFilter) return false;
       if (
         queryFilter !== ALL &&
-        !(row.keywordTool?.foundVia ?? []).some((hit) => hit.query === queryFilter)
+        !(row.erank?.foundVia ?? []).some((hit) => hit.query === queryFilter)
       ) {
         return false;
       }

@@ -8,6 +8,7 @@ import type {
   RankedMatch,
   ShopSearchValues,
   TagReportValues,
+  ErankValues,
 } from "@/types";
 import raw from "@/data/keyword-corpus.json";
 
@@ -204,9 +205,46 @@ function toAds(r: RawAds | null): AdsKeywordValues | null {
   };
 }
 
+interface RawErank {
+  searches: number | null;
+  searches_censored: boolean;
+  competition: number | null;
+  kd: number | null;
+  avg_clicks: number | null;
+  avg_clicks_censored: boolean;
+  avg_ctr: number | null;
+  avg_ctr_censored: boolean;
+  google_searches: number | null;
+  tag_occurrences: number | null;
+  found_via: { query: string; tag_occurrences: number }[];
+  reported_by: string[];
+}
+
+function toErank(r: RawErank | null | undefined): ErankValues | null {
+  if (!r) return null;
+  return {
+    searches: r.searches,
+    searchesCensored: r.searches_censored,
+    competition: r.competition,
+    kd: r.kd,
+    avgClicks: r.avg_clicks,
+    avgClicksCensored: r.avg_clicks_censored,
+    avgCtr: r.avg_ctr,
+    avgCtrCensored: r.avg_ctr_censored,
+    googleSearches: r.google_searches,
+    tagOccurrences: r.tag_occurrences,
+    foundVia: (r.found_via ?? []).map((h) => ({
+      query: h.query,
+      tagOccurrences: h.tag_occurrences,
+    })),
+    reportedBy: r.reported_by ?? [],
+  };
+}
+
 function toRow(row: RawRow): KeywordRow {
   return {
     keyword: row.keyword,
+    erank: toErank((row as RawRow & { erank?: RawErank | null }).erank),
     shopSearch: toShopSearch(row.shop_search ?? null),
     ads: toAds(row.ads ?? null),
     keywordTool: toSource(row.keyword_tool, toKeywordToolValues),

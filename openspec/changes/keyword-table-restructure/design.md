@@ -259,6 +259,18 @@ That is the same failure, in the same tool, one route over. **So "build the prop
 
 **What the gate actually buys, now that it is closed:** the `Select` in the toolbar is a real instance, so its height, padding, radius and focus treatment come from the library rather than from my estimate — which is the specific risk every earlier round recorded as open. **It is the only MVDS component this surface imports** (`components/KeywordTable.tsx:4-10`); the rest of the toolbar and the whole table are bespoke markup, so there is nothing else to instance.
 
+**18 — The server-side boundary on per-listing detail is reversed, deliberately.** Katy, 2026-09-21, after the trade-off was put to her: *"don't gate it its a PIA - just push it."*
+
+`keyword-captured-demand` kept `RankedMatch.matches` and `TargetingMatch.matches` server-side, arguing in `types/index.ts` that there was *"no reason to serialize the shop's tag-placement detail into the RSC payload for any anonymous visitor."* Decisions 13–15 need exactly that detail on the client, and `/keyword-explorer` is unauthenticated — `middleware.ts:57` gates only `/admin`.
+
+Three options were put up: gate the route, publish the detail, or show sub-rows only when authenticated. **Katy chose to publish**, and declined gating as not worth the friction. So an anonymous visitor can now read which keywords W&H targets, on which listings, at which tag slot.
+
+**What made that cheaper than it sounds:** the boundary was already leakier than its own comment claimed. `shopSearch` and `ads` were already on `KeywordTableRow`, so the route was already serving anonymous visitors the shop's `listingRevenueUsd`, `spendUsd`, `revenueUsd` and `roas`. The money was public; only the tag placement was not. This decision removes an inconsistency rather than opening a new front — but it does widen exposure, and that is recorded here rather than left implicit in a deleted comment.
+
+**The comment in `types/index.ts` is rewritten, not deleted.** A doc comment arguing the opposite of what the code now does is worse than no comment; the replacement states the current position and names this decision, so the next reader finds the reasoning rather than the contradiction.
+
+**Scoping note — `Ranked` stays keyword-grained.** `RankedMatch` identifies listings by title string, not listing id, while Targeting, Shop and Ads all carry `listing_id`. Joining a rank position onto a listing sub-row would mean matching on titles, which is fragile enough to invent rows. `Etsy SEO` therefore renders on the parent as the keyword's best position, and sub-row membership is the union of the three id-bearing sources.
+
 ## Risks / Trade-offs
 
 **The MVDS gate is open, and it is now known to be un-closeable from here.** Round 02.10 is token-faithful but component-free, and `get_libraries` shows MVDS is not even offered to this file — so enabling it is a Figma UI action of Katy's, not a step that was skipped. This change ships no new controls, so the exposure is smaller than #508's: the risk is that the *drawing* is off, not the build.
