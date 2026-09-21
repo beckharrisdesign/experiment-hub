@@ -1,0 +1,182 @@
+{
+ "captured": "2026-09-21",
+ "source": "etsy",
+ "surface": "ads-listing-keywords",
+ "method": "Navigated https://www.etsy.com/your/shops/me/advertising/listings/<id> in the authenticated Chrome session, one listing at a time with a 6-8s wait, and read the rendered page: headline metrics from the page text, keyword_rows VERBATIM from each table row's textContent. 10 listings, the same set as the 9/20 capture. Etsy exposes no API for ads stats.",
+ "window_warning": "TWO WINDOWS ON ONE PAGE. The headline metrics (views/clicks/revenue/spend/roas) are scoped 'This year (Jan - Sep 2026)'. The targeted-keyword table is scoped 'over the last 30 days'. They are NOT the same period and must never be divided into one another.",
+ "raw_note": "keyword_rows are captured VERBATIM from each table row's textContent, whitespace-collapsed, with only Etsy's repeated tooltip string ('Turn off keywords that aren't relevant...') and the trailing 'Relevant keyword' toggle label removed. 'orders' (this-year) is null: the page-text read picked up the sidebar's 'Orders' link instead of the metric, so it is recorded as unread rather than guessed; lifetime_ad_orders is read from its own labelled line and is reliable. Listing 4466080258's table also contains an 'Orders that came from this ad' row (Sep 2, 2026, #4163388166, $6.00) which is kept verbatim in keyword_rows and ignored by the keyword parser.",
+ "listings": [
+  {
+   "listing_id": "4415035303",
+   "captured_at": "2026-09-21T17:34:04.354Z",
+   "views": 1247,
+   "clicks": 26,
+   "orders": null,
+   "revenue_usd": 2.49,
+   "spend_usd": 1.59,
+   "roas": 1.57,
+   "lifetime_ad_orders": 1,
+   "lifetime_ad_revenue_usd": 2.49,
+   "targeted_keyword_count": 8,
+   "keyword_rows": [
+    "Targeted keywordROASOrdersSpendRevenueClicksClick rateViews",
+    "Targeted keywordmandala embroidery patternROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views5",
+    "Targeted keywordmandala embroidery designROAS0Orders0Spend$0.10Revenue$0Clicks2Click rate40%Views5",
+    "Targeted keywordhand embroidery patternsROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views7",
+    "Targeted keywordhand embroidery designsROAS0Orders0Spend$0.11Revenue$0Clicks1Click rate7.7%Views13",
+    "Targeted keywordembroidery patterns pdfROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views9",
+    "Targeted keywordembroidery patternsROAS0Orders0Spend$0.04Revenue$0Clicks1Click rate2.6%Views38",
+    "Targeted keywordembroidery patternROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views10",
+    "Targeted keywordbeginner embroidery patternROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views5"
+   ]
+  },
+  {
+   "listing_id": "4466080258",
+   "captured_at": "2026-09-21T17:34:12.650Z",
+   "views": 635,
+   "clicks": 8,
+   "orders": null,
+   "revenue_usd": 12.0,
+   "spend_usd": 0.85,
+   "roas": 14.12,
+   "lifetime_ad_orders": 2,
+   "lifetime_ad_revenue_usd": 12.0,
+   "targeted_keyword_count": 1,
+   "keyword_rows": [
+    "Targeted keywordROASOrdersSpendRevenueClicksClick rateViews",
+    "Targeted keywordgeometric embroidery patternROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views5",
+    "DateItem orderedOrderRevenue",
+    "DateSep 2, 2026Item orderedDigital geometric embroidery pattern — beginner-friendly hoop design — PDF download for calm stitchingOrder#4163388166Revenue$6.00"
+   ]
+  },
+  {
+   "listing_id": "4466789627",
+   "captured_at": "2026-09-21T17:35:24.655Z",
+   "views": 387,
+   "clicks": 4,
+   "orders": null,
+   "revenue_usd": 0.0,
+   "spend_usd": 0.77,
+   "roas": 0.0,
+   "lifetime_ad_orders": 0,
+   "lifetime_ad_revenue_usd": 0.0,
+   "targeted_keyword_count": 1,
+   "keyword_rows": [
+    "Targeted keywordROASOrdersSpendRevenueClicksClick rateViews",
+    "Targeted keywordslow stitch patternsROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views7"
+   ]
+  },
+  {
+   "listing_id": "4415032102",
+   "captured_at": "2026-09-21T17:35:32.284Z",
+   "views": 392,
+   "clicks": 8,
+   "orders": null,
+   "revenue_usd": 0.0,
+   "spend_usd": 1.16,
+   "roas": 0.0,
+   "lifetime_ad_orders": 0,
+   "lifetime_ad_revenue_usd": 0.0,
+   "targeted_keyword_count": 1,
+   "keyword_rows": [
+    "Targeted keywordROASOrdersSpendRevenueClicksClick rateViews",
+    "Targeted keywordembroidery designsROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views10"
+   ]
+  },
+  {
+   "listing_id": "4414949521",
+   "captured_at": "2026-09-21T17:36:39.818Z",
+   "views": 626,
+   "clicks": 12,
+   "orders": null,
+   "revenue_usd": 0.0,
+   "spend_usd": 0.9,
+   "roas": 0.0,
+   "lifetime_ad_orders": 0,
+   "lifetime_ad_revenue_usd": 0.0,
+   "targeted_keyword_count": 2,
+   "keyword_rows": [
+    "Targeted keywordROASOrdersSpendRevenueClicksClick rateViews",
+    "Targeted keyworddigital productsROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views22",
+    "Targeted keywordcross stitch borderROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views4"
+   ]
+  },
+  {
+   "listing_id": "4466076995",
+   "captured_at": "2026-09-21T17:36:47.655Z",
+   "views": 255,
+   "clicks": 3,
+   "orders": null,
+   "revenue_usd": 0.0,
+   "spend_usd": 0.2,
+   "roas": 0.0,
+   "lifetime_ad_orders": 0,
+   "lifetime_ad_revenue_usd": 0.0,
+   "targeted_keyword_count": 0,
+   "keyword_rows": []
+  },
+  {
+   "listing_id": "4417249682",
+   "captured_at": "2026-09-21T17:36:55.065Z",
+   "views": 189,
+   "clicks": 2,
+   "orders": null,
+   "revenue_usd": 0.0,
+   "spend_usd": 0.18,
+   "roas": 0.0,
+   "lifetime_ad_orders": 0,
+   "lifetime_ad_revenue_usd": 0.0,
+   "targeted_keyword_count": 1,
+   "keyword_rows": [
+    "Targeted keywordROASOrdersSpendRevenueClicksClick rateViews",
+    "Targeted keywordadvanced embroidery patternROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views6"
+   ]
+  },
+  {
+   "listing_id": "4466082116",
+   "captured_at": "2026-09-21T17:38:14.030Z",
+   "views": 99,
+   "clicks": 3,
+   "orders": null,
+   "revenue_usd": 0.0,
+   "spend_usd": 0.32,
+   "roas": 0.0,
+   "lifetime_ad_orders": 0,
+   "lifetime_ad_revenue_usd": 0.0,
+   "targeted_keyword_count": 0,
+   "keyword_rows": []
+  },
+  {
+   "listing_id": "4417250225",
+   "captured_at": "2026-09-21T17:38:21.358Z",
+   "views": 187,
+   "clicks": 2,
+   "orders": null,
+   "revenue_usd": 0.0,
+   "spend_usd": 0.13,
+   "roas": 0.0,
+   "lifetime_ad_orders": 0,
+   "lifetime_ad_revenue_usd": 0.0,
+   "targeted_keyword_count": 0,
+   "keyword_rows": []
+  },
+  {
+   "listing_id": "4465357735",
+   "captured_at": "2026-09-21T17:38:30.908Z",
+   "views": 185,
+   "clicks": 1,
+   "orders": null,
+   "revenue_usd": 0.0,
+   "spend_usd": 0.13,
+   "roas": 0.0,
+   "lifetime_ad_orders": 0,
+   "lifetime_ad_revenue_usd": 0.0,
+   "targeted_keyword_count": 1,
+   "keyword_rows": [
+    "Targeted keywordROASOrdersSpendRevenueClicksClick rateViews",
+    "Targeted keywordhand embroidery designsROAS0Orders0Spend$0Revenue$0Clicks0Click rate0%Views5"
+   ]
+  }
+ ],
+ "unreadable": []
+}

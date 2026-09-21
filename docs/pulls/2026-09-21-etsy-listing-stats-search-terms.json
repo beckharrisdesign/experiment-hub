@@ -1,0 +1,668 @@
+{
+ "captured": "2026-09-21",
+ "source": "etsy",
+ "surface": "listing-stats",
+ "window": "this_year (Jan 1 - Sep 21, 2026)",
+ "channel": "etsy-retail",
+ "method": "Fetched https://www.etsy.com/your/shops/me/stats/listings/<id>?channel=etsy-retail&date_range=this_year via the authenticated Chrome session (fetch() from a Shop Manager page) and parsed the JSON Etsy embeds in the page HTML: the 'Search terms' horizontal_line_chart entries (label, value, segmented_values Internal/External), the 'Traffic sources' donut entries, and the Visits / Items Sold / Revenue line_chart total_string. Etsy exposes no API for shop stats. 36 requests, sequential, ~0.5s apart (faster than the pacing used for the later ads pass; noted in the pull note).",
+ "raw_note": "search_terms are structured rather than verbatim row strings because this capture read Etsy's embedded JSON, not the rendered table. Terms are stored exactly as Etsy returned them (no correction, no dedup). segmented_values Internal = Etsy, External = Google etc., verified against the 9/20 verbatim rows for the same listings. A listing with no search terms has an empty list, which the reader treats as no measurement, not zero.",
+ "listings": [
+  {
+   "listing_id": "4415035303",
+   "title": "Digital leaf mandala embroidery pattern — beginner-friendly design — PDF download for 6” and 8” hoops",
+   "visits": 35,
+   "items_sold": 1,
+   "revenue_usd": 2.49,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 12,
+    "Direct & other traffic": 8,
+    "Etsy Ads": 7,
+    "Etsy marketing & SEO": 4,
+    "Social media": 2,
+    "Etsy search": 2
+   },
+   "search_terms": [
+    {
+     "term": "mandala embroidery pattern download",
+     "visits": 1,
+     "etsy_visits": 1,
+     "google_visits": 0
+    },
+    {
+     "term": "embroidered kippah women",
+     "visits": 1,
+     "etsy_visits": 1,
+     "google_visits": 0
+    },
+    {
+     "term": "hand embroidery pattern pdf",
+     "visits": 1,
+     "etsy_visits": 0,
+     "google_visits": 1
+    },
+    {
+     "term": "mandala embroidery design",
+     "visits": 1,
+     "etsy_visits": 0,
+     "google_visits": 1
+    }
+   ]
+  },
+  {
+   "listing_id": "4415032102",
+   "title": "Fall Leaves Embroidery Pattern PDF, Autumn Botanical Hoop Art, Beginner Friendly Hand Embroidery Design, 6 and 8 Inch, Cozy Fall Craft",
+   "visits": 13,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 5,
+    "Etsy Ads": 4,
+    "Direct & other traffic": 3,
+    "Social media": 1,
+    "Etsy marketing & SEO": 0,
+    "Etsy search": 0
+   },
+   "search_terms": [
+    {
+     "term": "botanical embroidery design hand embroidery",
+     "visits": 1,
+     "etsy_visits": null,
+     "google_visits": 1
+    },
+    {
+     "term": "medieval embroidery patterns",
+     "visits": 1,
+     "etsy_visits": null,
+     "google_visits": 1
+    }
+   ]
+  },
+  {
+   "listing_id": "4466080258",
+   "title": "Digital geometric embroidery pattern — beginner-friendly design — PDF download for 6” or 8” hoops",
+   "visits": 19,
+   "items_sold": 1,
+   "revenue_usd": 6.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 6,
+    "Etsy Ads": 6,
+    "Social media": 5,
+    "Direct & other traffic": 2,
+    "Etsy marketing & SEO": 0,
+    "Etsy search": 0
+   },
+   "search_terms": [
+    {
+     "term": "hand embroidery pdf geometric",
+     "visits": 1,
+     "etsy_visits": null,
+     "google_visits": 1
+    },
+    {
+     "term": "modern minimalist embroidery pattern",
+     "visits": 1,
+     "etsy_visits": null,
+     "google_visits": 1
+    }
+   ]
+  },
+  {
+   "listing_id": "4414949521",
+   "title": "Beginner floral embroidery design — PDF digital product — 6\" & 8\" hoops",
+   "visits": 9,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 4,
+    "Etsy Ads": 3,
+    "Social media": 1,
+    "Direct & other traffic": 1,
+    "Etsy marketing & SEO": 0,
+    "Etsy search": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4466789627",
+   "title": "Geometric Wheel Hand Embroidery Pattern PDF, Radial Line Hoop Art for Mindful Stitching, Beginner Friendly, 6 or 8 Inch Hoops",
+   "visits": 15,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 4,
+    "Etsy marketing & SEO": 4,
+    "Etsy Ads": 3,
+    "Social media": 2,
+    "Direct & other traffic": 2,
+    "Etsy search": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4466076995",
+   "title": "Digital geometric embroidery pattern — beginner-friendly hoop design — PDF download for calm stitching",
+   "visits": 14,
+   "items_sold": 1,
+   "revenue_usd": 6.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 6,
+    "Etsy Ads": 3,
+    "Etsy marketing & SEO": 2,
+    "Direct & other traffic": 2,
+    "Social media": 1,
+    "Etsy search": 0
+   },
+   "search_terms": [
+    {
+     "term": "paper embriodery template",
+     "visits": 1,
+     "etsy_visits": null,
+     "google_visits": 1
+    }
+   ]
+  },
+  {
+   "listing_id": "4417249682",
+   "title": "Digital floral embroidery pattern — hand-drawn flower design — intermediate PDF download",
+   "visits": 6,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 3,
+    "Social media": 2,
+    "Direct & other traffic": 1,
+    "Etsy marketing & SEO": 0,
+    "Etsy search": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4417250225",
+   "title": "Digital hand-drawn starburst embroidery pattern — intermediate design — PDF download",
+   "visits": 5,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 4,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4465357735",
+   "title": "Beginner Botanical Embroidery Design, Floral Hoop Art Pattern (PDF Download)",
+   "visits": 8,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 3,
+    "Direct & other traffic": 3,
+    "Etsy marketing & SEO": 1,
+    "Social media": 1,
+    "Etsy search": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4466799018",
+   "title": "Folk Leaf Circle Hand Embroidery Pattern PDF, Scandi Nature Hoop Art, Beginner Friendly Design, 6 and 8 Inch Hoops, Download",
+   "visits": 4,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 3,
+    "Etsy Ads": 1,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0
+   },
+   "search_terms": [
+    {
+     "term": "mandala embroidery pattern",
+     "visits": 1,
+     "etsy_visits": null,
+     "google_visits": 1
+    }
+   ]
+  },
+  {
+   "listing_id": "4415081378",
+   "title": "Diamond Wreath Hand Embroidery Pattern PDF, Beginner Geometric Hoop Art, Calming Evening Craft for 6 and 8 Inch Hoops, Download",
+   "visits": 2,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Social media": 1,
+    "Direct & other traffic": 1,
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Etsy search": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4466793009",
+   "title": "Floral Embroidery Pattern, Botanical Wreath Design, Beginner Hoop Art (PDF Download)",
+   "visits": 2,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 2,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4417250834",
+   "title": "Digital hand drawn leaves embroidery pattern — beginner-friendly design — PDF download for calm stitching",
+   "visits": 2,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 1,
+    "Direct & other traffic": 1,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4466082116",
+   "title": "Geometric Rosette Hand Embroidery Pattern PDF, Calming Boho Wall Art Hoop Decor, Beginner Friendly Design, 6 and 8 Inch Hoops",
+   "visits": 6,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy marketing & SEO": 3,
+    "Etsy Ads": 2,
+    "Etsy app & other Etsy pages": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0
+   },
+   "search_terms": [
+    {
+     "term": "geometric hand embroidery patterns",
+     "visits": 1,
+     "etsy_visits": null,
+     "google_visits": 1
+    }
+   ]
+  },
+  {
+   "listing_id": "4466797252",
+   "title": "Botanical Branch Wreath Hand Embroidery Pattern PDF, Beginner Slow Stitching Hoop Art, Cozy Handmade Gift, 6 and 8 Inch Hoops",
+   "visits": 2,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 1,
+    "Etsy marketing & SEO": 1,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4466795015",
+   "title": "Digital hand-drawn firecracker embroidery pattern — beginner-friendly design — PDF download for calm stitching",
+   "visits": 1,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Direct & other traffic": 1,
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4465359686",
+   "title": "Leaf and Berry Hand Embroidery Pattern PDF, Scandinavian Folk Hoop Art, Cozy Beginner Craft Gift, 6 or 8 Inch Hoops, Download",
+   "visits": 3,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy marketing & SEO": 2,
+    "Direct & other traffic": 1,
+    "Etsy app & other Etsy pages": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4522918821",
+   "title": "Personalized Photo Portrait Ornament, Unique Engraved Wood Gift, Colorful Handmade Holiday, Multiple Shapes",
+   "visits": 0,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4465356349",
+   "title": "Leaf Fan Hand Embroidery Pattern PDF, Striped Botanical Hoop Art, Beginner Stress Relief Craft, 6 or 8 Inch Hoops, Download",
+   "visits": 1,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy marketing & SEO": 1,
+    "Etsy app & other Etsy pages": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4466078772",
+   "title": "Digital floral embroidery pattern — beginner-friendly design — PDF download for 6\" and 8\" hoops",
+   "visits": 1,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Direct & other traffic": 1,
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4466791377",
+   "title": "Digital leaf embroidery pattern — beginner-friendly design — PDF download for 6\" and 8\" hoops",
+   "visits": 1,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 1,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4466795496",
+   "title": "Leaf Floral Embroidery Pattern – Beginner Friendly PDF Download (6\" & 8\" Hoops)",
+   "visits": 1,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 1,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4576478385",
+   "title": "Personalized Snowman Snow Globe Hand Embroidery Pattern PDF, Custom Text Christmas Hoop Art, Beginner Keepsake Stitching, 6 and 8 Inch",
+   "visits": 1,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy Ads": 1,
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0
+   },
+   "search_terms": [
+    {
+     "term": "snowman pattern",
+     "visits": 1,
+     "etsy_visits": null,
+     "google_visits": 1
+    }
+   ]
+  },
+  {
+   "listing_id": "4555463082",
+   "title": "Hot Girls Have Grandma Hobbies Button, Funny Round Pinback Badge, Cozy Hobby Pin for Jackets, Totes & Vests, Small Gift for Her",
+   "visits": 0,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4576478415",
+   "title": "Personalized Snowy House Snow Globe Hand Embroidery Pattern PDF, Custom Text Christmas Village Hoop Art, Keepsake, 6 and 8 Inch Hoops",
+   "visits": 0,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4555452273",
+   "title": "Funny Pin Button, Hot Girls Have Grandma Hobbies Pin, Retro Olive Green Badge for Tote Bags & Denim Jackets, Cottagecore Gift",
+   "visits": 1,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 1,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4576478333",
+   "title": "Christmas Bow Hand Embroidery Pattern PDF, Holiday Hoop Art for Beginners, Cozy December Stitching, 6 and 8 Inch Hoops, Download",
+   "visits": 0,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4576478347",
+   "title": "Candy Cane Hand Embroidery Pattern PDF, Christmas Hoop Art with Bow and Holly, Beginner Holiday Craft, Festive Decor, 6 and 8 Inch Hoops",
+   "visits": 0,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4576478365",
+   "title": "Poinsettia Hand Embroidery Pattern PDF, Christmas Flower Hoop Art, Beginner Friendly Festive Decor Craft, 6 and 8 Inch Hoops, Download",
+   "visits": 0,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4576496782",
+   "title": "Christmas Classics Embroidery Pattern Set, 4 Hand Embroidery PDF Designs, Bow Candy Cane Nutcracker Poinsettia, Beginner Bundle",
+   "visits": 0,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4576478401",
+   "title": "Personalized Christmas Tree Snow Globe Hand Embroidery Pattern PDF, Custom Text Festive Hoop Art, Holiday Keepsake, 6 and 8 Inch Hoops",
+   "visits": 0,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4576496720",
+   "title": "Nutcracker Hand Embroidery Pattern PDF, Classic Christmas Hoop Art, Beginner Friendly Holiday Stitching, 6 and 8 Inch Hoops, Download",
+   "visits": 0,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4576496750",
+   "title": "Personalized Penguin Snow Globe Hand Embroidery Pattern PDF, Custom Text Christmas Hoop Art, Cute Holiday Keepsake, 6 and 8 Inch Hoops",
+   "visits": 0,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4555452153",
+   "title": "Funny Grandma Hobbies Shirt, Hot Girls Have Grandma Hobbies Cropped Boxy Tee, Cottagecore Gift for Knitting & Gardening Lovers",
+   "visits": 0,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4555463292",
+   "title": "Funny Candle for Her, Hot Girls Have Grandma Hobbies Soy Candle 13.75oz, Vanilla Bean, Comfort Spice or Sea Breeze, Cozy Gift",
+   "visits": 0,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  },
+  {
+   "listing_id": "4555463358",
+   "title": "Wooden Wick Candle, Hot Girls Have Grandma Hobbies Frosted Glass Candle 11oz, Coconut Soy Wax with Maple Lid, 9 Scents, Fun Gift",
+   "visits": 0,
+   "items_sold": 0,
+   "revenue_usd": 0.0,
+   "traffic_sources": {
+    "Etsy app & other Etsy pages": 0,
+    "Etsy marketing & SEO": 0,
+    "Social media": 0,
+    "Etsy search": 0,
+    "Direct & other traffic": 0,
+    "Etsy Ads": 0
+   },
+   "search_terms": []
+  }
+ ],
+ "not_recaptured": [],
+ "unreadable": []
+}

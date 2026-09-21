@@ -1,0 +1,506 @@
+{
+ "captured": "2026-09-21",
+ "source": "erank",
+ "surface": "spotted-on-etsy",
+ "filter": "Yesterday (checks run 2026-09-20 16:51-20:05 EST)",
+ "method": "Read the Spotted on Etsy monitor table at https://members.erank.com/spotted-on-etsy in the authenticated Chrome session (DOM textContent per row). The CSV alongside mirrors the 9/17 export columns; this file keeps the columns the export does not carry: the previous check's rank ('Rank' column) and the 15-month 'Search Trend' series eRank renders inline as text.",
+ "rows": [
+  {
+   "listing_title": "Wooden Wick Candle, Hot Girls Have Grandma Hobbies Frosted Glass Candle 11oz, Coconut Soy Wax with Maple Lid, 9 Scents, Fun Gift",
+   "search_term": "wooden wick candle",
+   "page": 1,
+   "position": 20,
+   "previous_check": "19 Sep 2026 #20",
+   "timestamp": "2026-09-20 20:05:00",
+   "search_trend_raw": "Jun 20250Jul 202510Aug 20250Sep 202510Oct 202510Nov 20250Dec 20250Jan 20260Feb 20260Mar 202610Apr 202610May 202610Jun 20260Jul 20260Aug 202610",
+   "search_trend": [
+    [
+     "Jun 2025",
+     0
+    ],
+    [
+     "Jul 2025",
+     10
+    ],
+    [
+     "Aug 2025",
+     0
+    ],
+    [
+     "Sep 2025",
+     10
+    ],
+    [
+     "Oct 2025",
+     10
+    ],
+    [
+     "Nov 2025",
+     0
+    ],
+    [
+     "Dec 2025",
+     0
+    ],
+    [
+     "Jan 2026",
+     0
+    ],
+    [
+     "Feb 2026",
+     0
+    ],
+    [
+     "Mar 2026",
+     10
+    ],
+    [
+     "Apr 2026",
+     10
+    ],
+    [
+     "May 2026",
+     10
+    ],
+    [
+     "Jun 2026",
+     0
+    ],
+    [
+     "Jul 2026",
+     0
+    ],
+    [
+     "Aug 2026",
+     10
+    ]
+   ]
+  },
+  {
+   "listing_title": "Hot Girls Have Grandma Hobbies Button, Funny Round Pinback Badge, Cozy Hobby Pin for Jackets, Totes & Vests, Small Gift for Her",
+   "search_term": "small gift for her",
+   "page": 2,
+   "position": 13,
+   "previous_check": "19 Sep 2026 #61",
+   "timestamp": "2026-09-20 19:27:00",
+   "search_trend_raw": "Jun 20250Jul 20250Aug 20250Sep 20250Oct 20250Nov 20250Dec 20250Jan 20260Feb 20260Mar 202610Apr 20260May 20260Jun 20260Jul 20260Aug 20260",
+   "search_trend": [
+    [
+     "Jun 2025",
+     0
+    ],
+    [
+     "Jul 2025",
+     0
+    ],
+    [
+     "Aug 2025",
+     0
+    ],
+    [
+     "Sep 2025",
+     0
+    ],
+    [
+     "Oct 2025",
+     0
+    ],
+    [
+     "Nov 2025",
+     0
+    ],
+    [
+     "Dec 2025",
+     0
+    ],
+    [
+     "Jan 2026",
+     0
+    ],
+    [
+     "Feb 2026",
+     0
+    ],
+    [
+     "Mar 2026",
+     10
+    ],
+    [
+     "Apr 2026",
+     0
+    ],
+    [
+     "May 2026",
+     0
+    ],
+    [
+     "Jun 2026",
+     0
+    ],
+    [
+     "Jul 2026",
+     0
+    ],
+    [
+     "Aug 2026",
+     0
+    ]
+   ]
+  },
+  {
+   "listing_title": "Diamond Wreath Hand Embroidery Pattern PDF, Beginner Geometric Hoop Art, Calming Evening Craft for 6 and 8 Inch Hoops, Download",
+   "search_term": "geometric wreath",
+   "page": 2,
+   "position": 21,
+   "previous_check": "19 Sep 2026 #69",
+   "timestamp": "2026-09-20 17:50:00",
+   "search_trend_raw": "Jun 20250Jul 20250Aug 20250Sep 20250Oct 20250Nov 20250Dec 20250Jan 20260Feb 20260Mar 20260Apr 202610May 20260Jun 20260Jul 20260Aug 20260",
+   "search_trend": [
+    [
+     "Jun 2025",
+     0
+    ],
+    [
+     "Jul 2025",
+     0
+    ],
+    [
+     "Aug 2025",
+     0
+    ],
+    [
+     "Sep 2025",
+     0
+    ],
+    [
+     "Oct 2025",
+     0
+    ],
+    [
+     "Nov 2025",
+     0
+    ],
+    [
+     "Dec 2025",
+     0
+    ],
+    [
+     "Jan 2026",
+     0
+    ],
+    [
+     "Feb 2026",
+     0
+    ],
+    [
+     "Mar 2026",
+     0
+    ],
+    [
+     "Apr 2026",
+     10
+    ],
+    [
+     "May 2026",
+     0
+    ],
+    [
+     "Jun 2026",
+     0
+    ],
+    [
+     "Jul 2026",
+     0
+    ],
+    [
+     "Aug 2026",
+     0
+    ]
+   ]
+  },
+  {
+   "listing_title": "Funny Candle for Her, Hot Girls Have Grandma Hobbies Soy Candle 13.75oz, Vanilla Bean, Comfort Spice or Sea Breeze, Cozy Gift",
+   "search_term": "candles for her",
+   "page": 2,
+   "position": 25,
+   "previous_check": "19 Sep 2026 #73",
+   "timestamp": "2026-09-20 16:52:00",
+   "search_trend_raw": "Jun 20250Jul 20250Aug 20250Sep 20250Oct 20250Nov 202510Dec 20250Jan 20260Feb 20260Mar 20260Apr 20260May 20260Jun 20260Jul 20260Aug 20260",
+   "search_trend": [
+    [
+     "Jun 2025",
+     0
+    ],
+    [
+     "Jul 2025",
+     0
+    ],
+    [
+     "Aug 2025",
+     0
+    ],
+    [
+     "Sep 2025",
+     0
+    ],
+    [
+     "Oct 2025",
+     0
+    ],
+    [
+     "Nov 2025",
+     10
+    ],
+    [
+     "Dec 2025",
+     0
+    ],
+    [
+     "Jan 2026",
+     0
+    ],
+    [
+     "Feb 2026",
+     0
+    ],
+    [
+     "Mar 2026",
+     0
+    ],
+    [
+     "Apr 2026",
+     0
+    ],
+    [
+     "May 2026",
+     0
+    ],
+    [
+     "Jun 2026",
+     0
+    ],
+    [
+     "Jul 2026",
+     0
+    ],
+    [
+     "Aug 2026",
+     0
+    ]
+   ]
+  },
+  {
+   "listing_title": "Digital hand drawn leaves embroidery pattern — beginner-friendly design — PDF download for calm stitching",
+   "search_term": "calm stitching",
+   "page": 2,
+   "position": 2,
+   "previous_check": "19 Sep 2026 #50",
+   "timestamp": "2026-09-20 16:51:00",
+   "search_trend_raw": "Jun 20250Jul 20250Aug 20250Sep 20250Oct 20250Nov 20250Dec 20250Jan 20260Feb 20260Mar 20260Apr 20260May 20260Jun 20260Jul 20260Aug 20260",
+   "search_trend": [
+    [
+     "Jun 2025",
+     0
+    ],
+    [
+     "Jul 2025",
+     0
+    ],
+    [
+     "Aug 2025",
+     0
+    ],
+    [
+     "Sep 2025",
+     0
+    ],
+    [
+     "Oct 2025",
+     0
+    ],
+    [
+     "Nov 2025",
+     0
+    ],
+    [
+     "Dec 2025",
+     0
+    ],
+    [
+     "Jan 2026",
+     0
+    ],
+    [
+     "Feb 2026",
+     0
+    ],
+    [
+     "Mar 2026",
+     0
+    ],
+    [
+     "Apr 2026",
+     0
+    ],
+    [
+     "May 2026",
+     0
+    ],
+    [
+     "Jun 2026",
+     0
+    ],
+    [
+     "Jul 2026",
+     0
+    ],
+    [
+     "Aug 2026",
+     0
+    ]
+   ]
+  },
+  {
+   "listing_title": "Digital geometric embroidery pattern — beginner-friendly hoop design — PDF download for calm stitching",
+   "search_term": "calm stitching",
+   "page": 1,
+   "position": 1,
+   "previous_check": "19 Sep 2026 #1",
+   "timestamp": "2026-09-20 16:51:00",
+   "search_trend_raw": "Jun 20250Jul 20250Aug 20250Sep 20250Oct 20250Nov 20250Dec 20250Jan 20260Feb 20260Mar 20260Apr 20260May 20260Jun 20260Jul 20260Aug 20260",
+   "search_trend": [
+    [
+     "Jun 2025",
+     0
+    ],
+    [
+     "Jul 2025",
+     0
+    ],
+    [
+     "Aug 2025",
+     0
+    ],
+    [
+     "Sep 2025",
+     0
+    ],
+    [
+     "Oct 2025",
+     0
+    ],
+    [
+     "Nov 2025",
+     0
+    ],
+    [
+     "Dec 2025",
+     0
+    ],
+    [
+     "Jan 2026",
+     0
+    ],
+    [
+     "Feb 2026",
+     0
+    ],
+    [
+     "Mar 2026",
+     0
+    ],
+    [
+     "Apr 2026",
+     0
+    ],
+    [
+     "May 2026",
+     0
+    ],
+    [
+     "Jun 2026",
+     0
+    ],
+    [
+     "Jul 2026",
+     0
+    ],
+    [
+     "Aug 2026",
+     0
+    ]
+   ]
+  },
+  {
+   "listing_title": "Digital hand-drawn firecracker embroidery pattern — beginner-friendly design — PDF download for calm stitching",
+   "search_term": "calm stitching",
+   "page": 2,
+   "position": 43,
+   "previous_check": "19 Sep 2026 #91",
+   "timestamp": "2026-09-20 16:51:00",
+   "search_trend_raw": "Jun 20250Jul 20250Aug 20250Sep 20250Oct 20250Nov 20250Dec 20250Jan 20260Feb 20260Mar 20260Apr 20260May 20260Jun 20260Jul 20260Aug 20260",
+   "search_trend": [
+    [
+     "Jun 2025",
+     0
+    ],
+    [
+     "Jul 2025",
+     0
+    ],
+    [
+     "Aug 2025",
+     0
+    ],
+    [
+     "Sep 2025",
+     0
+    ],
+    [
+     "Oct 2025",
+     0
+    ],
+    [
+     "Nov 2025",
+     0
+    ],
+    [
+     "Dec 2025",
+     0
+    ],
+    [
+     "Jan 2026",
+     0
+    ],
+    [
+     "Feb 2026",
+     0
+    ],
+    [
+     "Mar 2026",
+     0
+    ],
+    [
+     "Apr 2026",
+     0
+    ],
+    [
+     "May 2026",
+     0
+    ],
+    [
+     "Jun 2026",
+     0
+    ],
+    [
+     "Jul 2026",
+     0
+    ],
+    [
+     "Aug 2026",
+     0
+    ]
+   ]
+  }
+ ]
+}

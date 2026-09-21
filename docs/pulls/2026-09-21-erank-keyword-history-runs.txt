@@ -1,0 +1,141 @@
+# eRank keyword history — paste-ready runs for the Bulk Keyword Tool (20 per run, 1 search each, 100/day)
+# Skip the 206 tags the Tag Report calls Unknown: eRank has no series for them.
+# Land each run as docs/pulls/YYYY-MM-DD-erank-keyword-history-<run>.csv (Export button) or read the chart.
+
+## Run 1 of 7 — batch A — tags with a printed volume (the ones a series can change) (20 keywords)
+personalized gift
+digital products
+housewarming gift
+christmas ornament
+personalized home
+embroidery designs
+digital product
+stocking stuffer
+self care gift
+best friend gift
+nutcracker
+embroidery pattern
+christmas wall art
+bedroom wall art
+family ornament
+boho wall decor
+christmas village
+pet ornament
+photo ornament
+snow globe
+
+## Run 2 of 7 — batch A — tags with a printed volume (the ones a series can change) (20 keywords)
+girlfriend gift
+gardening shirt
+stress relief
+christmas embroidery
+hand embroidery
+retro christmas
+instant download
+snowman decor
+funny candle
+poinsettia
+christmas gift set
+christmas bundle
+thanksgiving craft
+custom family gift
+digital pattern
+candy cane
+embroidery hoop
+nutcracker gift
+pinback button
+engraved ornament
+
+## Run 3 of 7 — batch A — tags with a printed volume (the ones a series can change) (20 keywords)
+custom snow globe
+fall embroidery
+nutcracker decor
+personalized penguin
+winter wonderland
+heart ornament
+christmas tree art
+house embroidery
+kids christmas craft
+classic christmas
+embroidery template
+pdf download
+christmas bow
+bow embroidery
+funny badge
+printable pdf
+circle wall decor
+cottagecore pattern
+tree embroidery
+whimsical forest art
+
+## Run 4 of 7 — batch B — censored <20 tags on experiment listings, treatment first (is <20 permanent or seasonal?) (20 keywords)
+botanical wreath
+branch wreath
+calming wall art
+diamond pattern
+folk art embroidery
+folk botanical
+geometric wreath
+gift for crafter
+greenery embroidery
+handmade gift craft
+line art embroidery
+meditative craft
+mindful stitching
+modern wreath
+twig embroidery
+wreath embroidery
+beginner craft
+beginner embroidery
+beginner friendly
+beginner pattern
+
+## Run 5 of 7 — batch B — censored <20 tags on experiment listings, treatment first (is <20 permanent or seasonal?) (20 keywords)
+bohemian pattern
+boho embroidery
+botanical embroidery
+botanical pattern
+celestial pattern
+easy embroidery
+embroidery gift
+hand drawn pattern
+hoop embroidery
+leaf embroidery
+linen embroidery
+nature embroidery
+needlework pattern
+organic pattern
+pdf pattern
+printable pattern
+simple embroidery
+sketch embroidery
+slow stitching
+star embroidery
+
+## Run 6 of 7 — batch B — censored <20 tags on experiment listings, treatment first (is <20 permanent or seasonal?) (4 keywords)
+starburst pattern
+stitching pattern
+sunburst design
+vintage floral
+
+## Run 7 of 7 — batch C — the 12 captured phrases + 8 candidates (does eRank see the long tail at all?) (20 keywords)
+mandala embroidery pattern
+geometric hand embroidery patterns
+snowman pattern
+embroidered kippah women
+hand embroidery pdf geometric
+modern minimalist embroidery pattern
+paper embriodery template
+mandala embroidery design
+mandala embroidery pattern download
+hand embroidery pattern pdf
+botanical embroidery design hand embroidery
+medieval embroidery patterns
+stick and stitch
+advent calendar
+ultrasound ornament
+needle minder
+calm stitching
+christmas embroidery designs
+gingerbread ornament
+punch needle kit
