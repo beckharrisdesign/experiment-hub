@@ -76,14 +76,15 @@ Taken from `COLUMNS` in `components/KeywordTable.tsx`, not from the proposal's p
 | Round 02.5 | Page `02.5 Proposed — band rules` (`12:2`), frames `12:3` / `12:255`. **Superseded.** Katy renamed two more headers on it — `Best Position` → `Etsy SEO`, `Tag Slot` → `Listings` — which 02.6 carries. |
 | Round 02.6 | Page `02.6 Proposed — Observed / Targeted / Performance` (`14:2`), frames `14:3` / `14:273`. The table itself; still the reference for column content. |
 | Round 02.7 | Page `02.7 Proposed — frozen corner + full bleed` (`15:2`), frame `15:3`. Two viewport studies at 1440, mid-scroll in both axes — **A** as the current markup would behave, **B** with group labels pinned. |
-| Round 02.8 *(current)* | Page `02.8 Proposed — listings inside Targeted` (`16:2`), frame `16:3`. 28 columns; Targeted holds the count, the listings themselves and the advertised listing. |
+| Round 02.8 | Page `02.8 Proposed — listings inside Targeted` (`16:2`), frame `16:3`. 28 columns; Targeted holds the count, the listings and the advertised listing, line-delimited. **Line-delimited cells superseded by 02.9.** |
+| Round 02.9 *(current)* | Page `02.9 Proposed — sub-rows vs line breaks` (`17:2`), frame `17:3`. Focused study on one keyword: **A** line breaks, **B** listing sub-rows. |
 | As-is frame | `Round 02.6 — Current state · 33 columns` (`14:3`), 3,325 × 374. Production as it stands: 33 columns, 7 bands, per-band rules, **no bucket tier**, and `Ranked` sitting before `Targeting`. |
 | Proposed frame | `Round 02.6 — Proposed · 26 columns, three buckets` (`14:273`), 2,754 × 422. Carries Decisions 8–11: alignment, Katy's header copy, the band rules, and the **Observed / Targeted / Performance** tier. |
 | Data | Not mocked. Six real rows rendered through the app's own formatting rules (`num`, `bulkValueLabel`, `demandRatio`) from `data/keyword-corpus.json`. `mandala embroidery pattern` is included specifically because it is one of the few rows carrying **both** Shop and Etsy Ads data, so those bands are populated rather than dashes in both frames. `folk art embroidery` shows the precision merge; `beginner embroidery` shows the Decision 2 collision. |
 | Libraries / version | **None — gate still open.** `get_libraries` on this file returns `libraries_added_to_file: []`, and MVDS is not among the libraries available to add, so it cannot be enabled from here at all. Drawn on `app/globals.css` tokens (`--color-background-primary` `#194b31`, `--color-background-secondary` `#113723`, `--color-text-primary` `#cff7d3`, `--color-text-muted` `#4d9a60`, `--color-accent-primary` `#14ae5c`). Inter throughout; Fraunces headings not used, so the titles are not type-faithful. |
 | Code Connect | No mappings to update. |
 | Breakpoints | S · 480px / L · 1024px. Both frames draw the full table at its natural width, which is what the Big Join rule accepts at every breakpoint. |
-| Status | Round 02.8 current, verified by screenshot. 02.3–02.7 kept; 02.7 remains the reference for scroll behaviour. **MVDS gate open.** |
+| Status | Round 02.9 current, verified by screenshot. 02.3–02.8 kept; 02.7 remains the reference for scroll behaviour and 02.8 for the full column set. **MVDS gate open.** |
 
 **Each revision is a new numbered page.** Katy, 2026-09-21: *"that should have been 2.4."* The alignment fix and her header copy were first applied on top of 02.3, which overwrote the round rather than answering it. Corrected: 02.3 is restored to how it was delivered (with her copy marks left on it, since those are hers) and **02.4 is the round that carries the response**. `rules/figma.mdc`'s page-per-iteration convention exists so a round stays readable as the thing that was actually reviewed — editing it afterwards destroys the record of what Katy responded to.
 
@@ -182,7 +183,7 @@ Etsy Ads therefore does **not** move wholesale into Targeted. One column does �
 
 **Targeted becomes three columns:** `Listings` (the count), `Targeted on` (each listing on its own line, prefixed with its tag slot), `Advertised on`. The count column replaces what was previously the *best slot* — the slot survives, moved onto each listing's own line, which is strictly more information than `best` was.
 
-**The data supports it and the cell stays small.** Live from `etsy_latest_listing_snapshots`: **36 active listings, 404 distinct tags, 1.16 listings per tag on average, 7 at most, and only 8 tags on four or more listings.** A line-delimited cell is normally one line and never more than seven. Line breaks over commas is also the right call at this width — four comma-joined titles wrap into an unreadable paragraph, where four lines stay scannable.
+**The data supports it and the cell stays small.** Live from `etsy_latest_listing_snapshots`: **36 active listings, 404 distinct tags, 1.16 listings per tag on average, 7 at most, and only 8 tags on four or more listings.** A line-delimited cell is normally one line and never more than seven. Line breaks over commas was the right call at this width — four comma-joined titles wrap into an unreadable paragraph. **Superseded by Decision 14**: the lines become sub-rows, which keeps the scannability and adds per-listing alignment.
 
 **Two things this needs from the code, neither of which exists.** `computeTargeting` (`lib/keyword-traction.ts:37-46`) reads `RawListing`, which carries `title`, but stores only `{listingId, slot}` — the titles are dropped at the point they are available. And `lib/keyword-traction.ts:158` collapses `targeting: row.targeting?.best ?? null` at the client boundary, so `matches` never reaches the table at all. Both are small changes; neither is a rendering tweak.
 
@@ -192,9 +193,29 @@ Etsy Ads therefore does **not** move wholesale into Targeted. One column does �
 
 **Cost: row height.** A keyword on four listings is a four-line row. `embroidery pattern` in round 02.8 is roughly four times the height of `folk art embroidery`. Uniform row height is gone, and with it easy vertical scanning; the drawing shows this honestly rather than sampling only single-listing keywords.
 
+**14 — Sub-rows, not line breaks — and the reason is the opposite of the one that prompted the question.** Katy, 2026-09-21: *"so where we have more than one listing - should these be line breaks or pivot table style sub rows? that way \"Advertised on\" can align to the proper row."* **Sub-rows, yes — but they will rarely align anything, and that is exactly why they are worth having.**
+
+The hoped-for alignment mostly does not exist in the data:
+
+| Check | Result |
+| --- | --- |
+| Advertised keywords that are tagged on *any* listing | **3 of 14** |
+| …whose ad listing is among that keyword's tagged listings | **1 of 3** |
+| Landed-on keywords that are tagged on any listing | **0 of 11** |
+
+`embroidery pattern` is the case in round 02.9: tagged on four listings, advertised on a **fifth that carries no such tag**. Under line breaks the advertised listing sits beside four unrelated ones and adjacency implies a relationship the data does not have. Under sub-rows it gets its own line with an empty `Slot` cell, and the gap becomes legible: **we are paying for a keyword on a listing that does not carry it.** That is a shop-strategy finding the table currently hides, and Decision 13's line-delimited cell would have kept hiding it.
+
+**Sub-row membership is the union, not the intersection** — every listing related to the keyword by *any* relationship (tagged ∪ advertised ∪ landed-on ∪ ranked), because the whole point is the rows where one relationship holds and the others do not.
+
+**The cost is a change of grain, and it is real.** The table stops being one row per keyword, which is the contract the corpus, the sort, the compound filters and the CSV export are all built on. Open questions the specs must answer: does sorting by `Search Volume` order parents only (sub-rows travelling with their parent), and does a filter on `ROAS` match a parent whose *sub-row* passes? The honest default is **sort and filter stay keyword-grained on the parent, sub-rows always travel with it** — otherwise a filter can orphan a listing from the keyword that explains it.
+
+**The cost is bounded by how rare this is.** Rows with any listing relationship at all: 296 targeted + 14 advertised + 11 landed + 8 ranked = **at most 329 before dedupe, 14.2% of 2,310.** Nearly **86% of rows have no sub-rows whatever** and render exactly as they do today. Sub-rows appear only where there is something to align — which is also, unavoidably, where there is something to disagree.
+
+**This supersedes the line-break half of Decision 13.** The `Targeted on` column keeps its content; it stops being a multi-line cell and becomes one line per sub-row. `Listings` (the count) stays on the parent, where it now doubles as the sub-row count.
+
 ## Risks / Trade-offs
 
-**The MVDS gate is open, and it is now known to be un-closeable from here.** Round 02.8 is token-faithful but component-free, and `get_libraries` shows MVDS is not even offered to this file — so enabling it is a Figma UI action of Katy's, not a step that was skipped. This change ships no new controls, so the exposure is smaller than #508's: the risk is that the *drawing* is off, not the build.
+**The MVDS gate is open, and it is now known to be un-closeable from here.** Round 02.9 is token-faithful but component-free, and `get_libraries` shows MVDS is not even offered to this file — so enabling it is a Figma UI action of Katy's, not a step that was skipped. This change ships no new controls, so the exposure is smaller than #508's: the risk is that the *drawing* is off, not the build.
 
 **The change is no longer only about eRank.** It started as "merge three bands into one". It now also renames eight headers, reorders two bands, adds a grouping tier, takes the page full-bleed, and adds vertical header freeze plus horizontally pinned group labels — none of which the eRank merge requires. Each addition is Katy's and each is recorded, but the specs and tasks have to cover a table-wide restructure, not a band merge, **Renamed to `keyword-table-restructure` on 2026-09-21** (Katy: *"yes you can rename it"*) — kept whole rather than split, so the reasoning that connects the decisions stays in one place.
 
