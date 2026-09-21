@@ -75,14 +75,15 @@ Taken from `COLUMNS` in `components/KeywordTable.tsx`, not from the proposal's p
 | Round 02.4 | Page `02.4 Proposed — alignment + header copy` (`11:2`), frames `11:3` / `11:255`. **Superseded.** Katy marked a further copy edit on it — `Tag Occurrence` → `Tag Count` — which 02.5 carries. |
 | Round 02.5 | Page `02.5 Proposed — band rules` (`12:2`), frames `12:3` / `12:255`. **Superseded.** Katy renamed two more headers on it — `Best Position` → `Etsy SEO`, `Tag Slot` → `Listings` — which 02.6 carries. |
 | Round 02.6 | Page `02.6 Proposed — Observed / Targeted / Performance` (`14:2`), frames `14:3` / `14:273`. The table itself; still the reference for column content. |
-| Round 02.7 *(current)* | Page `02.7 Proposed — frozen corner + full bleed` (`15:2`), frame `15:3`. Two viewport studies at 1440, mid-scroll in both axes — **A** as the current markup would behave, **B** with group labels pinned. |
+| Round 02.7 | Page `02.7 Proposed — frozen corner + full bleed` (`15:2`), frame `15:3`. Two viewport studies at 1440, mid-scroll in both axes — **A** as the current markup would behave, **B** with group labels pinned. |
+| Round 02.8 *(current)* | Page `02.8 Proposed — listings inside Targeted` (`16:2`), frame `16:3`. 28 columns; Targeted holds the count, the listings themselves and the advertised listing. |
 | As-is frame | `Round 02.6 — Current state · 33 columns` (`14:3`), 3,325 × 374. Production as it stands: 33 columns, 7 bands, per-band rules, **no bucket tier**, and `Ranked` sitting before `Targeting`. |
 | Proposed frame | `Round 02.6 — Proposed · 26 columns, three buckets` (`14:273`), 2,754 × 422. Carries Decisions 8–11: alignment, Katy's header copy, the band rules, and the **Observed / Targeted / Performance** tier. |
 | Data | Not mocked. Six real rows rendered through the app's own formatting rules (`num`, `bulkValueLabel`, `demandRatio`) from `data/keyword-corpus.json`. `mandala embroidery pattern` is included specifically because it is one of the few rows carrying **both** Shop and Etsy Ads data, so those bands are populated rather than dashes in both frames. `folk art embroidery` shows the precision merge; `beginner embroidery` shows the Decision 2 collision. |
 | Libraries / version | **None — gate still open.** `get_libraries` on this file returns `libraries_added_to_file: []`, and MVDS is not among the libraries available to add, so it cannot be enabled from here at all. Drawn on `app/globals.css` tokens (`--color-background-primary` `#194b31`, `--color-background-secondary` `#113723`, `--color-text-primary` `#cff7d3`, `--color-text-muted` `#4d9a60`, `--color-accent-primary` `#14ae5c`). Inter throughout; Fraunces headings not used, so the titles are not type-faithful. |
 | Code Connect | No mappings to update. |
 | Breakpoints | S · 480px / L · 1024px. Both frames draw the full table at its natural width, which is what the Big Join rule accepts at every breakpoint. |
-| Status | Round 02.7 current, verified by screenshot. 02.3–02.6 kept; 02.6 remains the reference for column content. **MVDS gate open.** |
+| Status | Round 02.8 current, verified by screenshot. 02.3–02.7 kept; 02.7 remains the reference for scroll behaviour. **MVDS gate open.** |
 
 **Each revision is a new numbered page.** Katy, 2026-09-21: *"that should have been 2.4."* The alignment fix and her header copy were first applied on top of 02.3, which overwrote the round rather than answering it. Corrected: 02.3 is restored to how it was delivered (with her copy marks left on it, since those are hers) and **02.4 is the round that carries the response**. `rules/figma.mdc`'s page-per-iteration convention exists so a round stays readable as the thing that was actually reviewed — editing it afterwards destroys the record of what Katy responded to.
 
@@ -149,7 +150,7 @@ The type comments back the split rather than the labels doing it: `TargetingMatc
 
 **Targeted holds a single column, and that is the finding, not a flaw.** Ten columns of what someone else estimated, fourteen of what happened, and one recording what we actually chose to do. The asymmetry is real and the tier makes it visible for the first time; it is not a reason to pad the bucket out.
 
-**Open — where `Etsy Ads` belongs.** It sits in Performance here because every one of its seven columns is an outcome (views, clicks, spend, revenue, orders, ROAS), and Katy's definition of Performance names clicks and purchases, which only this band has. But the band is literally called *Etsy Ads — targeted*: a paid keyword is also a deliberate act, and an argument for putting it in Targeted is available. Recorded as Katy's call, not assumed.
+**Resolved by Decision 13 — where `Etsy Ads` belongs.** It sits in Performance here because every one of its seven columns is an outcome (views, clicks, spend, revenue, orders, ROAS), and Katy's definition of Performance names clicks and purchases, which only this band has. But the band is literally called *Etsy Ads — targeted*: a paid keyword is also a deliberate act, and an argument for putting it in Targeted is available. Recorded as Katy's call, not assumed.
 
 **Visual hierarchy.** Buckets are 12px Bold, `--color-text-primary`, 1.5px tracking, over a **3px accent rule at full opacity**. Bands stay 11px Medium, `--color-text-secondary`, over a **2px accent rule at 50%**. Three weights of rule now carry three levels of grouping. One layout rule falls out of it: **a bucket is never narrower than its own label** — `Targeted` spans one narrow column, so that column widens to 86px to fit the word rather than letting it wrap.
 
@@ -167,9 +168,33 @@ Study B is the fix: each bucket and band label is `position: sticky; left: <froz
 
 **Implementation gotcha.** The table renders with `border-collapse`, and sticky cells under `border-collapse: collapse` drop their borders in several browsers — the per-band rules of Decision 10 are exactly the borders at risk. Expect to move those rules onto the label span's own `border-b` (where Decision 10 already puts them) rather than onto the cell, and to verify the frozen column's divider renders at all.
 
+**13 — Targeted answers "which listings", and the Ads band splits.** Katy, 2026-09-21: *"the ads are part of targeting - but they use listing as the unit of currency not keyword… the listings related to the keyword should go in targeted right after the count. So if three listings target the keyword I should see three listings right next to it. delimited by line breaks not commas."*
+
+**The grain observation is the key, and it resolves the open Ads question from Decision 11.** The buckets do not actually divide by *source*; they divide by **whether a row records a choice we made or a result we got** — and the Ads band contains both. That we bid on this keyword, for this listing, is a deliberate act. Views, clicks, spend, revenue, orders and ROAS are what happened. So the band splits, exactly as `Targeting` and `Ranked` already split the same way:
+
+| | The choice → **Targeted** | The result → **Performance** |
+| --- | --- | --- |
+| Tags | which listings carry the keyword, at which slot | where those listings rank (`Ranked`) |
+| Ads | which listing we advertise it for | views, clicks, spend, revenue, orders, ROAS |
+| Search | — | which listing a searcher reached, visits, sold, revenue |
+
+Etsy Ads therefore does **not** move wholesale into Targeted. One column does — `Advertised on` — and the six outcome columns stay in Performance.
+
+**Targeted becomes three columns:** `Listings` (the count), `Targeted on` (each listing on its own line, prefixed with its tag slot), `Advertised on`. The count column replaces what was previously the *best slot* — the slot survives, moved onto each listing's own line, which is strictly more information than `best` was.
+
+**The data supports it and the cell stays small.** Live from `etsy_latest_listing_snapshots`: **36 active listings, 404 distinct tags, 1.16 listings per tag on average, 7 at most, and only 8 tags on four or more listings.** A line-delimited cell is normally one line and never more than seven. Line breaks over commas is also the right call at this width — four comma-joined titles wrap into an unreadable paragraph, where four lines stay scannable.
+
+**Two things this needs from the code, neither of which exists.** `computeTargeting` (`lib/keyword-traction.ts:37-46`) reads `RawListing`, which carries `title`, but stores only `{listingId, slot}` — the titles are dropped at the point they are available. And `lib/keyword-traction.ts:158` collapses `targeting: row.targeting?.best ?? null` at the client boundary, so `matches` never reaches the table at all. Both are small changes; neither is a rendering tweak.
+
+**The finding: 108 keywords W&H actively targets have no row on this table.** Of 404 live tags, only **296 match a corpus keyword — 12.8% of the 2,310 rows**. The other 108 are tags on live listings that eRank has never scored, and the table cannot show them, because the corpus is built at ingest while Targeting is joined per-request. There is direct precedent for fixing this — Katy, 2026-09-18: *"add a row for the ranked keywords even if they don't have entries from the erank data"* — and the same argument applies with more force here, since these are keywords we *chose*. **Out of scope for this change; recorded as the next one.**
+
+**Two columns now called "Listing".** `Targeted on` (listings carrying the tag) and Shop's `Listing` (the listing a searcher reached) are different claims. Shop's needs renaming — `Landed on` is the obvious candidate — or the table teaches the reader that "Listing" means two things.
+
+**Cost: row height.** A keyword on four listings is a four-line row. `embroidery pattern` in round 02.8 is roughly four times the height of `folk art embroidery`. Uniform row height is gone, and with it easy vertical scanning; the drawing shows this honestly rather than sampling only single-listing keywords.
+
 ## Risks / Trade-offs
 
-**The MVDS gate is open, and it is now known to be un-closeable from here.** Round 02.7 is token-faithful but component-free, and `get_libraries` shows MVDS is not even offered to this file — so enabling it is a Figma UI action of Katy's, not a step that was skipped. This change ships no new controls, so the exposure is smaller than #508's: the risk is that the *drawing* is off, not the build.
+**The MVDS gate is open, and it is now known to be un-closeable from here.** Round 02.8 is token-faithful but component-free, and `get_libraries` shows MVDS is not even offered to this file — so enabling it is a Figma UI action of Katy's, not a step that was skipped. This change ships no new controls, so the exposure is smaller than #508's: the risk is that the *drawing* is off, not the build.
 
 **The change is no longer only about eRank.** It started as "merge three bands into one". It now also renames eight headers, reorders two bands, adds a grouping tier, takes the page full-bleed, and adds vertical header freeze plus horizontally pinned group labels — none of which the eRank merge requires. Each addition is Katy's and each is recorded, but the specs and tasks have to cover a table-wide restructure, not a band merge, and the title `erank-one-band` now undersells it.
 
