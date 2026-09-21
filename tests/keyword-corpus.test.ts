@@ -820,13 +820,17 @@ describe("corpus loader", () => {
   });
 
   it("returns null rather than Infinity when competition is zero", () => {
-    // demandRatio only needs searches/competition — narrowed from the full
-    // KeywordRow so it also accepts KeywordTableRow (lib/keyword-metrics.ts).
-    expect(demandRatio({ searches: 10, competition: 0 })).toBeNull();
+    // demandRatio reads the merged eRank values, narrowed to the three
+    // fields it needs (lib/keyword-metrics.ts).
+    expect(
+      demandRatio({ searches: 10, searchesCensored: false, competition: 0 }),
+    ).toBeNull();
   });
 
   it("returns null, not a crash, when searches is null (a ranked-only row)", () => {
-    expect(demandRatio({ searches: null, competition: 180 })).toBeNull();
+    expect(
+      demandRatio({ searches: null, searchesCensored: false, competition: 180 }),
+    ).toBeNull();
   });
 
   it("normalises Bulk Keywords onto the merged row, not a separate array", () => {

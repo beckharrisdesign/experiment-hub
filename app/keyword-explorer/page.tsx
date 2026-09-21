@@ -38,7 +38,8 @@ export const dynamic = "force-dynamic";
  */
 export default async function KeywordExplorerPage() {
   const corpus = loadKeywordCorpus();
-  const rows = toTableRows(await withTargeting(corpus.rows));
+  const { rows: withLive, titles } = await withTargeting(corpus.rows);
+  const rows = toTableRows(withLive, titles);
 
   // Seven instruments reach the table: three eRank exports (Keyword Tool,
   // Bulk Keywords, Tag Report), two real-world traction joins (Ranked from

@@ -75,20 +75,33 @@ export function computeTargeting(
  * failed read must still degrade to blank, not silently keep stale live
  * data.
  */
-export async function withTargeting(rows: KeywordRow[]): Promise<KeywordRow[]> {
+export async function withTargeting(
+  rows: KeywordRow[],
+): Promise<{ rows: KeywordRow[]; titles: Map<string, string> }> {
   try {
     const snapshots = await getLatestListingSnapshots();
     const targeting = computeTargeting(
       rows.map((r) => r.keyword),
       snapshots,
     );
-    return rows.map((row) => ({
-      ...row,
-      targeting: targeting.get(row.keyword) ?? null,
-    }));
+    // Every active listing's title, not just the tagged ones. The snapshots
+    // are already in hand, and without this an ad-matched listing that
+    // carries no tag renders as a bare id — which is exactly the row the
+    // sub-rows exist to make legible (design.md Decision 15).
+    const titles = new Map<string, string>();
+    for (const listing of snapshots) {
+      if (listing.title) titles.set(String(listing.listing_id), listing.title);
+    }
+    return {
+      rows: rows.map((row) => ({
+        ...row,
+        targeting: targeting.get(row.keyword) ?? null,
+      })),
+      titles,
+    };
   } catch (error) {
     console.error("keyword-explorer: Targeting read failed", error);
-    return rows.map((row) => ({ ...row, targeting: null }));
+    return { rows: rows.map((row) => ({ ...row, targeting: null })), titles: new Map() };
   }
 }
 
@@ -109,7 +122,10 @@ export async function withTargeting(rows: KeywordRow[]): Promise<KeywordRow[]> {
  * server-only `KeywordRow` field across this boundary — this function has to
  * agree with that allowlist by construction, not by remembering to.
  */
-export function toTableRows(rows: KeywordRow[]): KeywordTableRow[] {
+export function toTableRows(
+  rows: KeywordRow[],
+  titles: Map<string, string> = new Map(),
+): KeywordTableRow[] {
   return rows.map((row) => ({
     keyword: row.keyword,
     capture: row.keywordTool?.capture ?? null,
@@ -121,7 +137,7 @@ export function toTableRows(rows: KeywordRow[]): KeywordTableRow[] {
     ads: row.ads,
     ranked: row.ranked?.best ?? null,
     targeting: row.targeting?.best ?? null,
-    listings: toListingRows(row),
+    listings: toListingRows(row, titles),
   }));
 }
 
@@ -141,10 +157,14 @@ export function toTableRows(rows: KeywordRow[]): KeywordTableRow[] {
  * Returns `[]` for a keyword with no listing relationship at all, which is
  * roughly 86% of the corpus; those keywords render as a single row.
  */
-function toListingRows(row: KeywordRow): KeywordTableRow["listings"] {
+function toListingRows(
+  row: KeywordRow,
+  titles: Map<string, string>,
+): KeywordTableRow["listings"] {
   const byId = new Map<string, KeywordTableRow["listings"][number]>();
 
   const slot = (listingId: string, title: string | null) => {
+    title = title ?? titles.get(listingId) ?? null;
     const existing = byId.get(listingId);
     if (existing) {
       if (existing.title === null && title !== null) existing.title = title;
@@ -188,7 +208,7 @@ function toListingRows(row: KeywordRow): KeywordTableRow["listings"] {
 
   const ads = row.ads;
   if (ads && ads.listingId) {
-    const entry = slot(String(ads.listingId), entryTitle(byId, String(ads.listingId)));
+    const entry = slot(String(ads.listingId), null);
     // `advertised` says Etsy matched an ad for THIS keyword to this listing.
     // A `false` elsewhere is not evidence a listing is unadvertised.
     entry.advertised = true;
@@ -211,10 +231,4 @@ function toListingRows(row: KeywordRow): KeywordTableRow["listings"] {
   });
 }
 
-function entryTitle(
-  byId: Map<string, { title: string | null }>,
-  listingId: string,
-): string | null {
-  return byId.get(listingId)?.title ?? null;
-}
 
