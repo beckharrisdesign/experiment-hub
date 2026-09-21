@@ -226,6 +226,28 @@ The hoped-for alignment mostly does not exist in the data:
 
 **Honesty caveat, and it matters.** A blank `Advertised` does **not** mean the listing is unadvertised. It means Etsy never matched *this keyword* to it. The flag is only observable where a match happened, so absence is not a verdict — the same rule the corpus already applies to a missing searches figure, and the same trap as fabricating a `0`.
 
+**16 — The table's job is to make the question askable, not to answer it.** Katy, 2026-09-21: *"this exposes a question to ask myself — why is a listing that I haven't included a tag on getting better traction in real life than the ones I have?"* and, on scope: *"The ui doesn't need to answer the question, only make it easy to surface that kind of insight."*
+
+That settles the boundary. **No scoring, no ranking, no "why this won" panel.** What the table owes is that a reader scanning it *trips over* the pattern without having gone looking for it.
+
+**The sub-rows already do most of the work.** Once the row is a listing (Decision 15), two shapes become visually distinct without any new feature: a row with a `Tag slot` and nothing in Performance, and a row with impressions or visits and an empty `Tag slot`. The second shape is the question. In round 02.10 `embroidery pattern` shows it on one screen — four tagged listings with no traction, and a fifth with impressions that carries no such tag.
+
+**What is still missing is one filter capability.** Today's compound filters are numeric ranges plus source presence. Noticing this pattern *deliberately* rather than by luck needs **presence/absence filters per column** — "has `Ad views`" **and** "no `Tag slot`" as one query. That is a small extension of the existing filter model, not a new subsystem, and it turns the observation into something repeatable.
+
+**Keeping `Search Volume` beside the tag decision is the other half**, and the bucket order already delivers it: Observed sits immediately left of Targeted, so a tag choice is read next to the demand figure that justifies it or doesn't.
+
+**Why this is worth designing for — the pattern is not a one-off.** Checked against the corpus and the live snapshots while answering Katy's question, and recorded here as motivation rather than as a feature:
+
+| | Tags currently on the 10 listings involved | Keywords that actually drew an impression or a visit |
+| --- | --- | --- |
+| Median searches | **20** | **1,288** |
+| At or under 20 searches | 40 of 54 with a figure | 3 of 6 |
+| No search figure at all | 53 of 107 | 17 of 23 |
+
+And on where the matches land: of 14 keywords Etsy matched an ad to, **1** was carried as a tag on the listing it matched, while **5** had every one of their words present in that listing's *title*. Of 11 keywords a real searcher landed on, **0** were tags and **3** were fully present in the title. Small samples, and Etsy's matching is opaque — this is not proof. But it points one way: **the traction is tracking title text, while the tags are largely terms with 20 or fewer searches.** One listing, `4415035303`, takes 9 of the 14 ad keywords on the strength of a title carrying generic high-volume phrases.
+
+**Not this change's job to act on.** No retagging, no title rewriting, no recommendation surface. The design implication is exactly two things: the sub-rows (already decided) and presence/absence filters (added to scope here).
+
 ## Risks / Trade-offs
 
 **The MVDS gate is open, and it is now known to be un-closeable from here.** Round 02.10 is token-faithful but component-free, and `get_libraries` shows MVDS is not even offered to this file — so enabling it is a Figma UI action of Katy's, not a step that was skipped. This change ships no new controls, so the exposure is smaller than #508's: the risk is that the *drawing* is off, not the build.
