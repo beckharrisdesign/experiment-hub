@@ -103,7 +103,7 @@
       ],
       "current": true,
       "series_index": 1,
-      "series_length": 2
+      "series_length": 4
     },
     {
       "note": "2026-09-21-etsy-ads-listing-keywords.md",
@@ -154,6 +154,31 @@
       "series_length": 2
     },
     {
+      "note": "2026-09-20-erank-spotted-on-etsy.md",
+      "captured": "2026-09-20",
+      "source": "erank",
+      "surface": "spotted-on-etsy",
+      "tier": "external",
+      "scope": "listing",
+      "measures": [
+        "rank"
+      ],
+      "subjects": [
+        "patterns",
+        "grandma-hobbies"
+      ],
+      "half_life": "7d",
+      "status": "superseded",
+      "answers": "Where W&H listings appeared in Etsy search on 2026-09-19 per eRank's monitor \u2014 seven placements, day 4 of the tag experiment. Between the 9/17 export and the 9/21 monitor read, and consistent with both.",
+      "raw_files": [
+        "2026-09-20-erank-spotted-on-etsy-3.csv"
+      ],
+      "current": false,
+      "series_index": 2,
+      "series_length": 4,
+      "superseded_by": "2026-09-21-erank-spotted-on-etsy.md"
+    },
+    {
       "note": "2026-09-20-erank-tag-report.md",
       "captured": "2026-09-20",
       "source": "erank",
@@ -176,6 +201,32 @@
       "current": true,
       "series_index": 1,
       "series_length": 2
+    },
+    {
+      "note": "2026-09-20-etsy-ads-stats.md",
+      "captured": "2026-09-20",
+      "source": "etsy",
+      "surface": "ads-stats",
+      "tier": "bookend",
+      "scope": "shop",
+      "measures": [
+        "spend",
+        "visibility",
+        "conversion"
+      ],
+      "subjects": [
+        "all"
+      ],
+      "half_life": "rolling",
+      "status": "unknown",
+      "answers": "The Jan 1 \u2013 Sep 20, 2026 daily ad series, exported twice 43 minutes apart; supersedes the 9/17 and 9/18 exports for every question.",
+      "raw_files": [
+        "2026-09-20-etsy-ads-stats-2026-01-01-2026-09-20-1.csv",
+        "2026-09-20-etsy-ads-stats-2026-01-01-2026-09-20.csv"
+      ],
+      "current": true,
+      "series_index": 1,
+      "series_length": 4
     },
     {
       "note": "2026-09-20-etsy-listing-stats.md",
@@ -220,11 +271,17 @@
       "status": "superseded",
       "answers": "Related-term demand across 99 embroidery-pattern-adjacent terms, from six eRank Bulk Keywords exports. Now part of the queryable corpus and its own table on /keyword-explorer, alongside (not merged into) the Keyword Tool rows.",
       "raw_files": [
+        "2026-09-18-erank-bulk-keywords-10.csv",
+        "2026-09-18-erank-bulk-keywords-11.csv",
         "2026-09-18-erank-bulk-keywords-2.csv",
         "2026-09-18-erank-bulk-keywords-3.csv",
         "2026-09-18-erank-bulk-keywords-4.csv",
         "2026-09-18-erank-bulk-keywords-5.csv",
+        "2026-09-18-erank-bulk-keywords-6-2.csv",
         "2026-09-18-erank-bulk-keywords-6.csv",
+        "2026-09-18-erank-bulk-keywords-7.csv",
+        "2026-09-18-erank-bulk-keywords-8.csv",
+        "2026-09-18-erank-bulk-keywords-9.csv",
         "2026-09-18-erank-bulk-keywords.csv"
       ],
       "current": false,
@@ -261,21 +318,65 @@
       "answers": "Marketwide demand for 12 seeds \u2014 7 new, 5 re-pulls of existing seeds that supersede their 2026-09-17 rows at the individual-keyword level. Extends the corpus from 50 seeds / 410 rows to 61 seeds / 2,014 rows.",
       "raw_files": [
         "2026-09-18-erank-keywords-book-nook.csv",
+        "2026-09-18-erank-keywords-calm-stitching.csv",
+        "2026-09-18-erank-keywords-candles-for-her.csv",
         "2026-09-18-erank-keywords-christmas-pattern.csv",
         "2026-09-18-erank-keywords-christmas.csv",
+        "2026-09-18-erank-keywords-colorful-embroidery.csv",
+        "2026-09-18-erank-keywords-contemporary-embroidery-designs.csv",
         "2026-09-18-erank-keywords-cutecore.csv",
         "2026-09-18-erank-keywords-dark-academia.csv",
         "2026-09-18-erank-keywords-embroidery-kits.csv",
+        "2026-09-18-erank-keywords-embroidery-pattern.csv",
+        "2026-09-18-erank-keywords-flower-hoop.csv",
+        "2026-09-18-erank-keywords-geometric-wreath-2.csv",
         "2026-09-18-erank-keywords-grandma-hobbies.csv",
+        "2026-09-18-erank-keywords-hand-embroidery-abstract.csv",
         "2026-09-18-erank-keywords-medieval-tapestry.csv",
+        "2026-09-18-erank-keywords-modern-hand-embroidery.csv",
+        "2026-09-18-erank-keywords-modern-mandala-embroidery-pdf.csv",
         "2026-09-18-erank-keywords-paint-by-numbers.csv",
         "2026-09-18-erank-keywords-pastel-goth.csv",
+        "2026-09-18-erank-keywords-small-gift-for-her-1.csv",
+        "2026-09-18-erank-keywords-snow-globe.csv",
+        "2026-09-18-erank-keywords-snow-globes.csv",
+        "2026-09-18-erank-keywords-stick-and-stitch-halloween.csv",
+        "2026-09-18-erank-keywords-stick-and-stitch-terrarium.csv",
+        "2026-09-18-erank-keywords-stick-and-stitch.csv",
+        "2026-09-18-erank-keywords-stickvorlagen.csv",
         "2026-09-18-erank-keywords-tapestry.csv",
-        "2026-09-18-erank-keywords-wall-art.csv"
+        "2026-09-18-erank-keywords-wall-art.csv",
+        "2026-09-18-erank-keywords-wooden-wick-candle.csv"
       ],
       "current": true,
       "series_index": 1,
-      "series_length": 2
+      "series_length": 3
+    },
+    {
+      "note": "2026-09-18-etsy-ads-stats.md",
+      "captured": "2026-09-18",
+      "source": "etsy",
+      "surface": "ads-stats",
+      "tier": "bookend",
+      "scope": "shop",
+      "measures": [
+        "spend",
+        "visibility",
+        "conversion"
+      ],
+      "subjects": [
+        "all"
+      ],
+      "half_life": "rolling",
+      "status": "superseded",
+      "answers": "The Jan 1 \u2013 Sep 18, 2026 daily ad series \u2014 one day longer than the 9/17 export, which it supersedes for every question.",
+      "raw_files": [
+        "2026-09-18-etsy-ads-stats-2026-01-01-2026-09-18.csv"
+      ],
+      "current": false,
+      "series_index": 2,
+      "series_length": 4,
+      "superseded_by": "2026-09-20-etsy-ads-stats.md"
     },
     {
       "note": "2026-09-17-erank-keywords.md",
@@ -321,6 +422,8 @@
         "2026-09-17-erank-keywords-fall-host-gift.csv",
         "2026-09-17-erank-keywords-font-bundle.csv",
         "2026-09-17-erank-keywords-frankenstein.csv",
+        "2026-09-17-erank-keywords-geometric-wreath-1.csv",
+        "2026-09-17-erank-keywords-geometric-wreath.csv",
         "2026-09-17-erank-keywords-gift-for-embroidery.csv",
         "2026-09-17-erank-keywords-gift-for-knitter.csv",
         "2026-09-17-erank-keywords-gift.csv",
@@ -337,6 +440,7 @@
         "2026-09-17-erank-keywords-procreate-brushes.csv",
         "2026-09-17-erank-keywords-school-name-embroidery-design.csv",
         "2026-09-17-erank-keywords-shirt.csv",
+        "2026-09-17-erank-keywords-small-gift-for-her.csv",
         "2026-09-17-erank-keywords-spooky-embroidery-design.csv",
         "2026-09-17-erank-keywords-spooky-embroidery-designs.csv",
         "2026-09-17-erank-keywords-stamps-procreate.csv",
@@ -349,7 +453,7 @@
       ],
       "current": false,
       "series_index": 2,
-      "series_length": 2,
+      "series_length": 3,
       "superseded_by": "2026-09-18-erank-keywords.md"
     },
     {
@@ -375,9 +479,35 @@
         "2026-09-17-erank-spotted-on-etsy.csv"
       ],
       "current": false,
-      "series_index": 2,
-      "series_length": 2,
+      "series_index": 3,
+      "series_length": 4,
       "superseded_by": "2026-09-21-erank-spotted-on-etsy.md"
+    },
+    {
+      "note": "2026-09-17-etsy-ads-stats.md",
+      "captured": "2026-09-17",
+      "source": "etsy",
+      "surface": "ads-stats",
+      "tier": "bookend",
+      "scope": "shop",
+      "measures": [
+        "spend",
+        "visibility",
+        "conversion"
+      ],
+      "subjects": [
+        "all"
+      ],
+      "half_life": "rolling",
+      "status": "superseded",
+      "answers": "The ad programme day by day for the whole year to date \u2014 Jan 1 \u2013 Sep 17, 2026 \u2014 views, clicks, orders, revenue, spend, ROAS and ending budget per date. The series the 9/18 and 9/20 exports extend by a day or three.",
+      "raw_files": [
+        "2026-09-17-etsy-ads-stats-2026-01-01-2026-09-17.csv"
+      ],
+      "current": false,
+      "series_index": 3,
+      "series_length": 4,
+      "superseded_by": "2026-09-20-etsy-ads-stats.md"
     },
     {
       "note": "2026-09-17-etsy-title-suggestions.md",
@@ -468,6 +598,130 @@
       "series_index": 2,
       "series_length": 2,
       "superseded_by": "2026-09-20-erank-tag-report.md"
+    },
+    {
+      "note": "2026-08-23-erank-keywords.md",
+      "captured": "2026-08-23",
+      "source": "erank",
+      "surface": "keywords",
+      "tier": "external",
+      "scope": "market",
+      "measures": [
+        "demand"
+      ],
+      "subjects": [
+        "embroidery",
+        "holiday"
+      ],
+      "half_life": "90d",
+      "status": "superseded",
+      "answers": "Ten related keywords eRank's Keyword Tool returned for the seed `embroidery designs` on 2026-08-23 \u2014 the earliest Keyword Tool capture in the archive, and the first reading of `stick and stitch`.",
+      "raw_files": [
+        "2026-08-23-erank-keywords-embroidery-designs.csv"
+      ],
+      "current": false,
+      "series_index": 3,
+      "series_length": 3,
+      "superseded_by": "2026-09-18-erank-keywords.md"
+    },
+    {
+      "note": "2026-08-23-erank-spotted-on-etsy.md",
+      "captured": "2026-08-23",
+      "source": "erank",
+      "surface": "spotted-on-etsy",
+      "tier": "external",
+      "scope": "listing",
+      "measures": [
+        "rank"
+      ],
+      "subjects": [
+        "patterns"
+      ],
+      "half_life": "7d",
+      "status": "superseded",
+      "answers": "Where W&H listings appeared in Etsy search on 2026-08-22 per eRank's monitor: `calm stitching` at page 1 position 1, and page 2 positions 2 and 43 \u2014 the earliest capture of this surface, a month before the experiment.",
+      "raw_files": [
+        "2026-08-23-erank-spotted-on-etsy.csv"
+      ],
+      "current": false,
+      "series_index": 4,
+      "series_length": 4,
+      "superseded_by": "2026-09-21-erank-spotted-on-etsy.md"
+    },
+    {
+      "note": "2026-08-14-erank-listings.md",
+      "captured": "2026-08-14",
+      "source": "erank",
+      "surface": "listings",
+      "tier": "external",
+      "scope": "listing",
+      "measures": [
+        "visibility",
+        "demand"
+      ],
+      "subjects": [
+        "patterns",
+        "grandma-hobbies"
+      ],
+      "half_life": "30d",
+      "status": "aging",
+      "answers": "eRank's per-listing grade, visibility score, total views and \"superstar keyword\" for 27 listings on 2026-08-14 \u2014 the shop as eRank scored it a month before the tag experiment.",
+      "raw_files": [
+        "2026-08-14-erank-listings.csv"
+      ],
+      "current": true,
+      "series_index": 1,
+      "series_length": 1
+    },
+    {
+      "note": "2026-08-04-erank-health-check.md",
+      "captured": "2026-08-04",
+      "source": "erank",
+      "surface": "health-check",
+      "tier": "external",
+      "scope": "listing",
+      "measures": [
+        "completeness"
+      ],
+      "subjects": [
+        "patterns",
+        "grandma-hobbies"
+      ],
+      "half_life": "30d",
+      "status": "aging",
+      "answers": "eRank's per-listing issue count on 2026-08-04 \u2014 missing tags, missing images, spelling, one-word tags \u2014 for the 19 listings it tracked then. A pre-experiment, pre-holiday snapshot of listing completeness.",
+      "raw_files": [
+        "2026-08-04-erank-health-check.csv"
+      ],
+      "current": true,
+      "series_index": 1,
+      "series_length": 1
+    },
+    {
+      "note": "2026-07-25-etsy-ads-stats.md",
+      "captured": "2026-07-25",
+      "source": "etsy",
+      "surface": "ads-stats",
+      "tier": "bookend",
+      "scope": "shop",
+      "measures": [
+        "spend",
+        "visibility",
+        "conversion"
+      ],
+      "subjects": [
+        "all"
+      ],
+      "half_life": "rolling",
+      "status": "superseded",
+      "answers": "The ad programme day by day for Jun 25 \u2013 Jul 25, 2026 \u2014 views, clicks, orders, revenue, spend, ROAS and ending budget per date. The first daily export of this surface; the Jan\u2013Sep series landed 2026-09-17 covers it.",
+      "raw_files": [
+        "2026-07-25-etsy-ads-stats-2026-06-25-2026-07-25.csv"
+      ],
+      "current": false,
+      "series_index": 4,
+      "series_length": 4,
+      "superseded_by": "2026-09-20-etsy-ads-stats.md"
     }
   ]
 }

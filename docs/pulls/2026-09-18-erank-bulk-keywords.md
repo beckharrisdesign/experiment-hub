@@ -36,3 +36,7 @@ Confirms rather than overturns the 2026-09-17 archive's read of hand embroidery:
 ## Where this plugs into the map
 
 Intelligence tier 3 (external tools) → evidence → product and tagging strategy, same tier as the Keyword Tool captures and now the same pipeline: `data/keyword-corpus.json` → `/keyword-explorer`.
+
+## Addendum — six more Bulk exports from the same day, landed 2026-09-21
+
+Found un-landed in `~/Downloads` and landed as `2026-09-18-erank-bulk-keywords-6-2.csv`, `-7`, `-8`, `-9`, `-10`, `-11` — five lists of twenty (geometric-pattern variants, geometric art movements, wellness/mental-health framings, sacred-geometry terms, mid-century/Bauhaus/Scandi terms) and one list of eight: the shop's own ranked terms (`calm stitching`, `candles for her`, `flower hoop`, `geometric wreath`, `small gift for her`, `snow globe`, `snow globes`, `wooden wick candle`). Read by `read_bulk_keywords_csv()`; the 9/18 bulk capture goes from 6 files to 12. The 9/21 bulk runs ([note](2026-09-21-erank-bulk-keywords.md)) supersede the eight ranked terms; the five themed lists are new to the corpus.

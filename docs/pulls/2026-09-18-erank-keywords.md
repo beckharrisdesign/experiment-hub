@@ -43,3 +43,13 @@ Extends the archive (61 seeds, 2,014 corpus rows) without changing any conclusio
 ## Where this plugs into the map
 
 Intelligence tier 3 (external tools) → evidence → product and tagging strategy. Extends the [2026-09-17 eRank Keyword Tool capture](2026-09-17-erank-keywords.md) rather than opening a new surface.
+
+## Addendum — seventeen more seeds from the same day, landed 2026-09-21
+
+Found un-landed in `~/Downloads` and landed as `2026-09-18-erank-keywords-<seed>.csv`: `calm stitching` (413 rows), `candles for her` (414), `colorful embroidery` (522), `contemporary embroidery designs` (480), `embroidery pattern` (1,485), `flower hoop` (598), `geometric wreath` (571, as `-2`), `hand embroidery abstract` (386), `modern hand embroidery` (395), `modern mandala embroidery pdf` (328), `small gift for her` (581, as `-1`), `snow globe` (1,559), `snow globes` (789), `stick and stitch` (1,204), `stick and stitch halloween` (326), `stick and stitch terrarium` (22), `stickvorlagen` (69), `wooden wick candle` (400). Read by `read_keyword_csv()`; the corpus goes from 2,420 rows to 8,247, and the 9/18 capture from 12 seeds to 30.
+
+Three things worth knowing before reading them:
+
+- **The big lists are the generic market again.** Every seed above 300 rows tops out at `gift` 58,648, `wall art` 53,423, `home decor` 31,986, `christmas` 41,113 — the same head terms whatever the seed. The seed-specific signal is in the long tail of each file, not the top.
+- **`stick and stitch` as a seed returns 1,204 related terms;** the term itself reads 1,166 on 9/21. `stickvorlagen` (69 rows) is the German market for the same product — a seed Katy tried and the only non-English one in the archive.
+- **`snow globe` / `snow globes` (1,559 / 789 rows) were pulled the day the Personalized snow-globe listings went live;** their heads are `stickers` and `gift`, their tails are where the snow-globe terms are.

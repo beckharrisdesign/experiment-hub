@@ -776,10 +776,14 @@ describe("corpus loader", () => {
   it("normalises the generated file into camelCase rows", () => {
     expect(corpus.rows.length).toBeGreaterThan(0);
     const row = corpus.rows.find((r) => r.keyword === "embroidery font")!;
-    // The original four counts must still be in there; later pulls may have
-    // added more (see the generation describe block above), so this checks
-    // containment rather than the exact set.
-    const counts = row.keywordTool!.foundVia.map((h) => h.tagOccurrences);
+    // The original four counts must still be in the archive. Newest capture
+    // wins on the row (design decision 5), so a later seed that re-surfaces
+    // the keyword — `embroidery pattern` on 2026-09-18 did — moves the
+    // 2026-09-17 queries under `history` rather than merging them. Look
+    // across the row and its history, never at the newest capture alone.
+    const counts = [row.keywordTool!, ...row.keywordTool!.history].flatMap((c) =>
+      c.foundVia.map((h) => h.tagOccurrences),
+    );
     for (const expected of [6, 12, 80, 81]) {
       expect(counts).toContain(expected);
     }
@@ -796,7 +800,9 @@ describe("corpus loader", () => {
       0,
     );
     expect(totalTagOccurrences(row.keywordTool)).toBe(expectedSum);
-    expect(row.keywordTool!.foundVia.length).toBeGreaterThanOrEqual(4);
+    // At least one query on the current capture; the count is whatever the
+    // newest seed surfaced, not a floor carried over from an older capture.
+    expect(row.keywordTool!.foundVia.length).toBeGreaterThanOrEqual(1);
   });
 
   it("reads coverage as a count, never as a trend", () => {
