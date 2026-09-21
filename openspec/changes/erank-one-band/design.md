@@ -27,7 +27,7 @@ The searches count rose from 7 to 8 because `#508` regenerated the corpus from 2
 **Non-Goals:**
 
 - No averaging, summing or blending. The number on the row is always a number eRank printed.
-- No touching Ranked, Targeting, Shop or Etsy Ads.
+- No touching Ranked, Targeting, Shop or Etsy Ads — all 15 of their columns survive byte-for-byte, and the inventory above is the check.
 - No dropping single-tool fields (Avg clicks, Avg CTR, Google searches, Found via, Tag occurrences).
 - No resolving the one genuine boundary collision by hiding it.
 
@@ -36,8 +36,33 @@ The searches count rose from 7 to 8 because `#508` regenerated the corpus from 2
 Unchanged entry, same screen, same controls. What changes inside the table:
 
 1. **Band headers** — seven bands become five: `eRank`, `Ranked`, `Targeting`, `Shop — captured`, `Etsy Ads`.
-2. **The eRank band** — `Searches`, `Etsy comp.`, `KD` appear once each, followed by `Avg clicks`, `Avg CTR`, `Google searches`, `Tag occurrences`, `Found via`, and `Reported by`.
-3. **Toolbar** — unchanged. The source filter keeps all seven of its entries, including the three eRank tools (**Decision 4**).
+2. **The eRank band** — 17 columns become 10.
+3. **Every other band is untouched**, column for column — see the inventory below.
+4. **Toolbar** — unchanged. The source filter keeps all seven of its entries, including the three eRank tools (**Decision 4**).
+
+### Column inventory — all 33, before and after
+
+Taken from `COLUMNS` in `components/KeywordTable.tsx`, not from the proposal's prose. **The table goes from 33 columns to 26.** Only the `kt` / `bulk` / `tag` groups are touched; nothing outside them is read, renamed or removed.
+
+| Band | Before | After | What happens |
+| --- | --- | --- | --- |
+| *(none)* | `Keyword` | `Keyword` | Untouched. |
+| **eRank** | `kt.searches`, `bulk.avgSearches`, `tag.avgSearches` | `Searches` | Merged by precedence. |
+| | `kt.competition`, `bulk.etsyCompetition`, `tag.etsyCompetition` | `Etsy comp.` | Merged; all 27 comparisons identical. |
+| | `kt.kd`, `bulk.kd`, `tag.kd` | `KD` | Merged; all 27 comparisons identical. |
+| | `bulk.avgClicks`, `tag.avgClicks` | `Avg clicks` | Merged; 2 exact comparisons, both agree. |
+| | `bulk.avgCtr`, `tag.avgCtr` | `Avg CTR` | Merged; as above. |
+| | `tag.googleSearches` | `Google` | Kept — Tag Report only. |
+| | `tag.tagOccurrences` | `Tag occ.` | Kept — Tag Report only. |
+| | `kt.foundVia` | `Found via` | Kept — Keyword Tool only. |
+| | `kt.ratio` | `S / comp.` | **Kept and widened — see Decision 7.** |
+| | — | `Reported by` | New. |
+| **Ranked** | `ranked` (`Best pos.`) | `Best pos.` | **Untouched.** |
+| **Targeting** | `targeting` (`Tag slot`) | `Tag slot` | **Untouched.** |
+| **Shop — captured** | `shop.visits`, `shop.etsy`, `shop.google`, `shop.listing`, `shop.sold`, `shop.revenue` | all 6, unchanged | **Untouched.** Reads `row.shopSearch`, which the merge never touches. |
+| **Etsy Ads** | `ads.views`, `ads.clicks`, `ads.ctr`, `ads.spend`, `ads.revenue`, `ads.orders`, `ads.roas` | all 7, unchanged | **Untouched.** Reads `row.ads`, which the merge never touches. |
+
+**17 eRank → 10; 16 non-eRank → 16; 33 → 26.** The Shop and Etsy Ads bands are the newest and thinnest-evidenced data in the corpus — 11 and 14 rows respectively — which is exactly why they are called out explicitly rather than assumed safe: a band that appears on 0.5% of rows is the one a careless refactor loses without any test going red.
 
 ## Visual design / Figma
 
@@ -65,6 +90,10 @@ Unchanged entry, same screen, same controls. What changes inside the table:
 
 **6 — A censored value still reads as censored.** `< 20` keeps its `<`. The merge changes which tool a number came from, never whether it was capped.
 
+**7 — `S / comp.` survives the merge and gets more rows, with censoring carried into the ratio.** The proposal's inventory of eRank fields missed this column. It is `kt.ratio` — searches divided by competition, computed in `lib/keyword-metrics.ts` — and it is the one eRank column that is *derived* rather than reported, which is how it escaped a list organised by which tool printed what. It must not be dropped: dropping it would be the single real regression available in this change.
+
+Because it reads the Keyword Tool sub-object directly, it renders on **1,931 rows today**. Recomputed from the *merged* searches and competition it renders on **2,078** — 147 more. Of those 147, **114 rest on a censored searches value**, where the true ratio is an upper bound rather than a number. Consistent with Decision 6, the ratio inherits the censoring and renders `< 0.003` rather than `0.003`; the remaining 33 gain an exact ratio. `demandRatio()` changes signature from the Keyword Tool sub-object to the merged one, and returns the censored flag alongside the value.
+
 ## Risks / Trade-offs
 
 **The MVDS gate is open and is the main risk, carried forward from #508.** Round 02.2 is token-faithful but component-free. This change ships no new controls, so the exposure is smaller than #508's — the risk is that the *drawing* is wrong, not the build.
@@ -73,6 +102,6 @@ Unchanged entry, same screen, same controls. What changes inside the table:
 
 **Two different exact values would currently be silently resolved.** No such pair exists in 2,310 rows, so no handling is built. If eRank ever prints two different exact numbers for one field, the merge takes the first by precedence and the reader is never told. A cheap guard — surfacing a disagreement rather than picking — is deliberately deferred as speculative, and named here so it is a known gap rather than an oversight.
 
-**The 33 → ~26 column reduction is an estimate.** #508 learned the hard way that drawn widths understate reality by 66%; the real number must be read off the running page, not this document.
+**The column count is exact; the width saving is not.** 33 → 26 is counted from `COLUMNS`, not estimated. How much narrower that renders is unknown — #508 learned that drawn widths understate reality by 66%, and the removed columns are numeric and narrow while the ones that dominate the 5,108px (`Listing`, `Found via`) all survive. The width win may be a good deal smaller than the column count suggests, and must be read off the running page.
 
 **`Reported by` compresses two questions into one.** A keyword all three tools scored is better attested than one only the Tag Report mentions — but the column says nothing about whether those tools *agreed*, because with one boundary exception they always do. If contradictions become common, this column will be the wrong shape for the job.
