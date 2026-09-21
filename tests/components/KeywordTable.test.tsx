@@ -887,8 +887,7 @@ describe("KeywordTable — frozen column edge", () => {
     // renders NOTHING under `border-collapse: collapse` — the styles compute
     // exactly as written and the browser paints neither.
     render(<KeywordTable rows={ROWS} />);
-    fireEvent.click(screen.getByRole("button", { name: /Freeze keyword/ }));
-
+    // Frozen on arrival now — no click needed to reach the frozen state.
     const firstCell = bodyRows()[0].querySelectorAll("td")[0];
     expect(firstCell.className).toContain("sticky");
     expect(firstCell.className).toContain("before:bg-accent-primary");
@@ -938,11 +937,16 @@ describe("KeywordTable — scroll tools", () => {
     expect(after).toBe(28);
   });
 
-  it("leaves the keyword unfrozen until asked", () => {
+  it("keeps the keyword column stuck to the left, with no toggle to find", () => {
+    // There is no Freeze control any more. It was a toggle, off by default,
+    // then on by default, and Katy read the off state as a defect three times
+    // before it was understood as a setting: "I shouldn't have to toggle it.
+    // Once I scroll enough it should just be sticky like the header."
     render(<KeywordTable rows={ROWS} />);
-    const toggle = screen.getByRole("button", { name: /Freeze keyword/ });
-    expect(toggle).toHaveAttribute("aria-pressed", "false");
-    fireEvent.click(toggle);
-    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(screen.queryByRole("button", { name: /Freeze keyword/ })).toBeNull();
+
+    const firstCell = bodyRows()[0].querySelectorAll("td")[0];
+    expect(firstCell.className).toContain("sticky");
+    expect(firstCell.className).toContain("left-0");
   });
 });
