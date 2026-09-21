@@ -269,14 +269,20 @@ const COLUMNS: Column[] = [
     key: "listing.title",
     label: "Listing",
     group: "targeting",
+    text: (r) => r.listings[0]?.title ?? "",
     render: () => "",
     renderListing: (l) => l.title ?? l.listingId,
   },
   {
+    // Sorts on the keyword's LOWEST slot across its listings, which is what
+    // `targeting` already holds. Without an accessor this column fell through
+    // to `localeCompare` — and with no `text` either, that compared keywords,
+    // so "sort by Tag slot" quietly sorted by something else entirely.
     key: "listing.tagSlot",
     label: "Tag slot",
     group: "targeting",
     numeric: true,
+    value: (r) => r.targeting,
     render: () => "",
     renderListing: (l) => (l.tagSlot === null ? "not tagged" : `#${l.tagSlot}`),
   },
@@ -287,6 +293,9 @@ const COLUMNS: Column[] = [
     key: "listing.advertised",
     label: "Advertised",
     group: "targeting",
+    // `sortNumber`, not `value`: a mark is not a range anyone would filter by
+    // a minimum of. Groups the keywords Etsy matched an ad to.
+    sortNumber: (r) => (r.listings.some((l) => l.advertised) ? 1 : 0),
     render: () => "",
     renderListing: (l) => (l.advertised ? "✓" : "—"),
   },
@@ -713,6 +722,11 @@ export default function KeywordTable({ rows }: KeywordTableProps) {
         if (av === bv) return 0;
         return sort.direction === "asc" ? av - bv : bv - av;
       }
+      // Falling back to the keyword is a trap: a column with no accessor at
+      // all sorts by something the reader never clicked, and looks broken
+      // rather than unsortable. Every column now defines one of `value`,
+      // `sortNumber` or `text`; this stays as the safety net for the keyword
+      // column itself.
       const left = column.text ? column.text(a) : a.keyword;
       const right = column.text ? column.text(b) : b.keyword;
       if (left === right) return 0;

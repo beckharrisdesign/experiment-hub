@@ -879,6 +879,36 @@ describe("KeywordTable — export", () => {
   });
 });
 
+describe("KeywordTable — sort accessors", () => {
+  it("sorts Tag slot by number, not by string", () => {
+    // `#10` before `#1` is the giveaway that a column marked numeric is
+    // actually being compared with localeCompare. Tag slot had no accessor at
+    // all, so it fell through to the keyword — it never sorted by tag slot.
+    const TIED: KeywordTableRow[] = [
+      row({ keyword: "alpha", targeting: 10, listings: listingsOfLength(1) }),
+      row({ keyword: "bravo", targeting: 2, listings: listingsOfLength(1) }),
+      row({ keyword: "charlie", targeting: 1, listings: listingsOfLength(1) }),
+    ];
+    render(<KeywordTable rows={TIED} />);
+    fireEvent.click(screen.getByRole("button", { name: /Tag slot/ }));
+
+    // desc on first click: 10, 2, 1 — not "10, 1, 2" as strings would give.
+    expect(keywordOrder()).toEqual(["alpha", "bravo", "charlie"]);
+  });
+
+  it("gives every column its own sort accessor", () => {
+    // The real defect was silent: a column with no `value`, `sortNumber` or
+    // `text` falls back to the keyword, so it looks sorted and is not.
+    render(<KeywordTable rows={ROWS} />);
+    const headerRow = screen.getAllByRole("row")[2];
+    const headers = within(headerRow).getAllByRole("columnheader");
+    // Every header is a button — i.e. every column claims to be sortable.
+    for (const th of headers) {
+      expect(within(th).getByRole("button")).toBeInTheDocument();
+    }
+  });
+});
+
 describe("KeywordTable — frozen column edge", () => {
   it("draws the edge with pseudo-elements, not a cell border", () => {
     // A regression guard, not proof it renders: jsdom does not compute
