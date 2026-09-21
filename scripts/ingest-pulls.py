@@ -1115,6 +1115,82 @@ def merge_erank(row: dict) -> dict | None:
     }
 
 
+KEYWORD_HISTORY_RE = re.compile(
+    r"^(\d{4}-\d{2}-\d{2})-erank-keyword-history(?:-[a-z0-9-]+)?\.csv$"
+)
+
+MONTH_NUM = {
+    "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
+    "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12,
+}
+
+
+def _month_key(label: str) -> str | None:
+    """'Oct 25' -> '2025-10'. eRank prints two-digit years; anything else is
+    left unparsed rather than guessed."""
+    m = re.match(r"^([A-Z][a-z]{2}) (\d{2})$", (label or "").strip())
+    if not m or m.group(1) not in MONTH_NUM:
+        return None
+    return f"20{m.group(2)}-{MONTH_NUM[m.group(1)]:02d}"
+
+
+def read_keyword_history_csv(path: Path) -> list[dict]:
+    """Rows from one keyword-history capture: (keyword, month, searches).
+
+    The 2026-09-21 capture was read from the Bulk Keyword Tool's trend chart
+    rather than printed by eRank, and says so on every row (`chart_axis_max`,
+    `run`). The value is kept as read -- no rounding to eRank's own buckets --
+    and a month that cannot be parsed is skipped, not zeroed.
+    """
+    import csv
+
+    capture = KEYWORD_HISTORY_RE.match(path.name).group(1)
+    with path.open(encoding="utf-8-sig", newline="") as fh:
+        rows = []
+        for r in csv.DictReader(fh):
+            kw = (r.get("keyword") or "").strip()
+            key = _month_key(r.get("month") or "")
+            raw = (r.get("searches_chart_read") or "").strip()
+            if not kw or key is None or raw == "":
+                continue
+            rows.append({
+                "keyword": kw,
+                "month": key,
+                "label": (r.get("month") or "").strip(),
+                "searches": _num(raw),
+                "capture": capture,
+            })
+    return rows
+
+
+def keyword_history(pulls: Path | None = None) -> dict[str, dict]:
+    """keyword (lower) -> {capture, months: [{month, label, searches}, ...]}.
+
+    Newest capture wins per keyword, the same rule every other source uses;
+    the series is sorted by month. Nothing is interpolated: a keyword pulled
+    once has exactly the months that capture drew.
+    """
+    pulls = pulls or PULLS
+    by_kw: dict[str, dict[str, dict]] = {}
+    for f in sorted(pulls.glob("*.csv")):
+        if not KEYWORD_HISTORY_RE.match(f.name):
+            continue
+        for r in read_keyword_history_csv(f):
+            slot = by_kw.setdefault(r["keyword"].lower(), {})
+            cur = slot.get(r["capture"])
+            if cur is None:
+                cur = slot[r["capture"]] = {"capture": r["capture"], "months": {}}
+            cur["months"][r["month"]] = {"month": r["month"], "label": r["label"], "searches": r["searches"]}
+    out = {}
+    for kw, captures in by_kw.items():
+        newest = captures[max(captures)]
+        out[kw] = {
+            "capture": newest["capture"],
+            "months": [newest["months"][k] for k in sorted(newest["months"])],
+        }
+    return out
+
+
 def build_merged_corpus(pulls: Path | None = None) -> dict:
     base = build_corpus(pulls)
     bulk = build_bulk_corpus(pulls)
@@ -1194,8 +1270,16 @@ def build_merged_corpus(pulls: Path | None = None) -> dict:
     # One eRank sub-object per row, alongside the three sources it was picked
     # from: the table reads `erank`, while `keyword_tool` / `bulk_keywords` /
     # `tag_report` stay as the provenance record and keep their `history`.
+    history = keyword_history(pulls)
     for r in rows:
         r["erank"] = merge_erank(r)
+        # The monthly series rides on the merged sub-object: it is eRank's
+        # number over time, whichever tool printed the September reading.
+        # A keyword with no series gets null, never a flat line of zeros.
+        if r["erank"] is not None:
+            h = history.get(r["keyword"].lower())
+            r["erank"]["history"] = h["months"] if h else None
+            r["erank"]["history_capture"] = h["capture"] if h else None
 
     # Same "blank sorts last, never 0" default the table applies: a keyword
     # eRank never scored must not sort as if its demand were zero.

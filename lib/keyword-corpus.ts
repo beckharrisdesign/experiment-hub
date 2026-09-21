@@ -218,6 +218,8 @@ interface RawErank {
   tag_occurrences: number | null;
   found_via: { query: string; tag_occurrences: number }[];
   reported_by: string[];
+  history?: { month: string; label: string; searches: number }[] | null;
+  history_capture?: string | null;
 }
 
 function toErank(r: RawErank | null | undefined): ErankValues | null {
@@ -238,6 +240,10 @@ function toErank(r: RawErank | null | undefined): ErankValues | null {
       tagOccurrences: h.tag_occurrences,
     })),
     reportedBy: r.reported_by ?? [],
+    history: r.history
+      ? r.history.map((m) => ({ month: m.month, label: m.label, searches: m.searches }))
+      : null,
+    historyCapture: r.history_capture ?? null,
   };
 }
 

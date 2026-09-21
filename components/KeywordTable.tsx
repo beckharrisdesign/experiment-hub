@@ -12,6 +12,9 @@ import type { KeywordListingRow, KeywordTableRow } from "@/types";
 import {
   bulkValueLabel,
   demandRatio,
+  historyPeak,
+  historySparkline,
+  monthsAboveFloor,
   totalTagOccurrences,
 } from "@/lib/keyword-metrics";
 
@@ -251,6 +254,33 @@ const COLUMNS: Column[] = [
       const by = r.erank?.reportedBy ?? [];
       return by.length ? by.join(" · ") : "—";
     },
+  },
+  {
+    // eRank over time. Peak month and value from the keyword-history pull;
+    // sorts by the peak value so the biggest spikes come first.
+    // Numeric on the peak value, so it sorts and range-filters like any other
+    // eRank figure and a keyword with no series sorts last, never as zero.
+    key: "erank.peak",
+    label: "Peak Month",
+    group: "erank",
+    numeric: true,
+    value: (r) => historyPeak(r.erank)?.searches ?? null,
+    render: (r) => {
+      const peak = historyPeak(r.erank);
+      return peak ? `${peak.label} · ${num(peak.searches)}` : "—";
+    },
+  },
+  {
+    // One glyph per month, scaled to the keyword's own peak. Sorts by how
+    // many months read above eRank's `< 20` floor — a steady keyword first,
+    // a one-month spike next, a flat line after that, and a keyword with no
+    // series behind them all (-1: below any real count, same shape as Found
+    // via's sort-only number).
+    key: "erank.trend",
+    label: "15-Month Trend",
+    group: "erank",
+    sortNumber: (r) => monthsAboveFloor(r.erank) ?? -1,
+    render: (r) => historySparkline(r.erank) ?? "—",
   },
 
   {

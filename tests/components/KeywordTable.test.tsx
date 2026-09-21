@@ -45,6 +45,7 @@ interface RowSpec {
   tagOccurrences?: number | null;
   foundVia?: { query: string; tagOccurrences: number }[];
   reportedBy?: string[];
+  history?: KeywordTableRow["erank"] extends infer E ? (E extends { history: infer H } ? H : never) : never;
   ranked?: number | null;
   targeting?: number | null;
   shopSearch?: KeywordTableRow["shopSearch"];
@@ -74,6 +75,8 @@ function row(overrides: RowSpec = {}): KeywordTableRow {
           tagOccurrences: overrides.tagOccurrences ?? null,
           foundVia: overrides.foundVia ?? [{ query: "test", tagOccurrences: 1 }],
           reportedBy: overrides.reportedBy ?? ["KT"],
+          history: overrides.history ?? null,
+          historyCapture: overrides.history ? "2026-09-21" : null,
         },
     shopSearch: overrides.shopSearch ?? null,
     ads: overrides.ads ?? null,
@@ -207,14 +210,23 @@ const COL = {
   ratio: 9,
   foundVia: 8,
   reportedBy: 10,
-  listingsCount: 11,
-  listingTitle: 12,
-  listingTagSlot: 13,
-  listingAdvertised: 14,
-  ranked: 15,
-  shopVisits: 16,
-  adsViews: 21,
+  peak: 11,
+  trend: 12,
+  listingsCount: 13,
+  listingTitle: 14,
+  listingTagSlot: 15,
+  listingAdvertised: 16,
+  ranked: 17,
+  shopVisits: 18,
+  adsViews: 23,
 } as const;
+
+/** Fifteen months, May 25 → Jul 26, from a list of values. */
+function months(values: number[]) {
+  const labels = ["May 25","Jun 25","Jul 25","Aug 25","Sep 25","Oct 25","Nov 25","Dec 25","Jan 26","Feb 26","Mar 26","Apr 26","May 26","Jun 26","Jul 26"];
+  const iso = ["2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07"];
+  return values.map((searches, i) => ({ month: iso[i], label: labels[i], searches }));
+}
 
 describe("KeywordTable — column layout", () => {
   it("keeps the column positions the other tests index by", () => {
@@ -225,8 +237,9 @@ describe("KeywordTable — column layout", () => {
       .getAllByRole("columnheader")
       .map((th) => th.textContent?.replace(/[↑↓↕]/g, "").trim() ?? "");
     // 33 columns became 28: eRank's 17 collapse to 10, Targeting gains the
-    // listing columns, and Shop loses its duplicate Listing column.
-    expect(headers).toHaveLength(28);
+    // listing columns, and Shop loses its duplicate Listing column. Then 30:
+    // the keyword-history pull adds Peak Month and 15-Month Trend to eRank.
+    expect(headers).toHaveLength(30);
     expect(headers[COL.keyword]).toBe("Keyword");
     expect(headers[COL.searches]).toBe("Search Volume");
     expect(headers[COL.competition]).toBe("Etsy Competition");
@@ -234,6 +247,8 @@ describe("KeywordTable — column layout", () => {
     expect(headers[COL.foundVia]).toBe("Found via");
     expect(headers[COL.ratio]).toBe("Search / Competition");
     expect(headers[COL.reportedBy]).toBe("Reported by");
+    expect(headers[COL.peak]).toBe("Peak Month");
+    expect(headers[COL.trend]).toBe("15-Month Trend");
     expect(headers[COL.listingsCount]).toBe("Listings");
     expect(headers[COL.listingTitle]).toBe("Listing");
     expect(headers[COL.ranked]).toBe("Etsy SEO");
@@ -815,37 +830,38 @@ describe("KeywordTable — compound filtering and sorting", () => {
   });
 });
 
-describe("KeywordTable — export", () => {
-  function captureExport(rows: KeywordTableRow[]): string {
-    let captured = "";
-    const originalCreate = URL.createObjectURL;
-    const originalRevoke = URL.revokeObjectURL;
-    // jsdom has no Blob.text() synchronously, so read what was constructed.
-    const OriginalBlob = globalThis.Blob;
-    class CapturingBlob extends OriginalBlob {
-      constructor(parts: BlobPart[], options?: BlobPropertyBag) {
-        captured = String(parts[0]);
-        super(parts, options);
-      }
+function captureExport(rows: KeywordTableRow[]): string {
+  let captured = "";
+  const originalCreate = URL.createObjectURL;
+  const originalRevoke = URL.revokeObjectURL;
+  // jsdom has no Blob.text() synchronously, so read what was constructed.
+  const OriginalBlob = globalThis.Blob;
+  class CapturingBlob extends OriginalBlob {
+    constructor(parts: BlobPart[], options?: BlobPropertyBag) {
+      captured = String(parts[0]);
+      super(parts, options);
     }
-    globalThis.Blob = CapturingBlob as unknown as typeof Blob;
-    URL.createObjectURL = () => "blob:mock";
-    URL.revokeObjectURL = () => {};
-    try {
-      render(<KeywordTable rows={rows} />);
-      fireEvent.click(screen.getByRole("button", { name: /Export CSV/ }));
-    } finally {
-      globalThis.Blob = OriginalBlob;
-      URL.createObjectURL = originalCreate;
-      URL.revokeObjectURL = originalRevoke;
-    }
-    return captured;
   }
+  globalThis.Blob = CapturingBlob as unknown as typeof Blob;
+  URL.createObjectURL = () => "blob:mock";
+  URL.revokeObjectURL = () => {};
+  try {
+    render(<KeywordTable rows={rows} />);
+    fireEvent.click(screen.getByRole("button", { name: /Export CSV/ }));
+  } finally {
+    globalThis.Blob = OriginalBlob;
+    URL.createObjectURL = originalCreate;
+    URL.revokeObjectURL = originalRevoke;
+  }
+  return captured;
+}
+
+describe("KeywordTable — export", () => {
 
   it("writes every column of the visible rows", () => {
     const csv = captureExport(ROWS);
     const [header, ...body] = csv.split("\n");
-    expect(header.split('","')).toHaveLength(28);
+    expect(header.split('","')).toHaveLength(30);
     expect(body).toHaveLength(ROWS.length);
     expect(header).toContain("Keyword");
     expect(header).toContain("Etsy Ads — matched by Etsy — Views");
@@ -964,7 +980,7 @@ describe("KeywordTable — scroll tools", () => {
       "columnheader",
     ).length;
     expect(after).toBe(before);
-    expect(after).toBe(28);
+    expect(after).toBe(30);
   });
 
   it("keeps the keyword column stuck to the left, with no toggle to find", () => {
@@ -978,5 +994,61 @@ describe("KeywordTable — scroll tools", () => {
     const firstCell = bodyRows()[0].querySelectorAll("td")[0];
     expect(firstCell.className).toContain("sticky");
     expect(firstCell.className).toContain("left-0");
+  });
+});
+
+
+describe("KeywordTable — eRank history columns", () => {
+  const spike = months([1410, 4660, 7550, 12280, 12760, 42850, 15800, 1200, 10, 2180, 1010, 1190, 3470, 5490, 11750]);
+  const flat = months(Array(15).fill(0));
+  const rows = [
+    row({ keyword: "christmas ornament", searches: 9166, history: spike }),
+    row({ keyword: "calm stitching", searches: null, history: flat }),
+    row({ keyword: "gift", searches: 58648 }),
+  ];
+  const cellsOf = (keyword: string) => {
+    const kw = screen.getByText(keyword);
+    return within(kw.closest("tr")!).getAllByRole("cell");
+  };
+
+  it("renders the peak month with its value, and a dash without a series", () => {
+    render(<KeywordTable rows={rows} />);
+    expect(cellsOf("christmas ornament")[COL.peak].textContent).toBe("Oct 25 · 42,850");
+    expect(cellsOf("gift")[COL.peak].textContent).toBe("—");
+  });
+
+  it("draws one glyph per month, scaled to the keyword's own peak", () => {
+    render(<KeywordTable rows={rows} />);
+    const spark = cellsOf("christmas ornament")[COL.trend].textContent ?? "";
+    expect([...spark]).toHaveLength(15);
+    expect([...spark][5]).toBe("█"); // Oct 25 is the peak
+    expect([...spark][8]).toBe("▁"); // Jan 26 reads 10
+    // A flat series is fifteen floor glyphs — the honest picture of < 20
+    // everywhere, not a blank that would read as "not pulled".
+    expect(cellsOf("calm stitching")[COL.trend].textContent).toBe("▁".repeat(15));
+    expect(cellsOf("gift")[COL.trend].textContent).toBe("—");
+  });
+
+  it("sorts Peak Month by the peak value, with no-series rows last either way", () => {
+    render(<KeywordTable rows={rows} />);
+    const order = () =>
+      screen
+        .getAllByRole("row")
+        .slice(3)
+        .map((tr) => within(tr).getAllByRole("cell")[COL.keyword].textContent);
+    // First click: descending — the 42,850 spike first, the flat series
+    // (peak 0) next, and the keyword with no series last, never as a zero.
+    fireEvent.click(screen.getByRole("button", { name: /Peak Month/ }));
+    expect(order()).toEqual(["christmas ornament", "calm stitching", "gift"]);
+    // Second click: ascending — blank still last.
+    fireEvent.click(screen.getByRole("button", { name: /Peak Month/ }));
+    expect(order()).toEqual(["calm stitching", "christmas ornament", "gift"]);
+  });
+
+  it("carries both columns into the CSV export exactly as rendered", () => {
+    const csv = captureExport(rows);
+    expect(csv).toContain("Peak Month");
+    expect(csv).toContain("Oct 25 · 42,850");
+    expect(csv).toContain("▁".repeat(15));
   });
 });

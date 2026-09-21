@@ -102,3 +102,31 @@ The toolbar's Keyword Tool, Bulk Keywords and Tag Report filters narrow on
 
 **Fails until:** a source filter returns no rows because it reads a field the
 merge removed from the table row.
+
+### Requirement: The merged sub-object carries eRank's monthly series when one has been pulled
+
+A `erank-keyword-history` pull (one row per keyword per month) attaches to the
+merged eRank sub-object as `history`, oldest month first, with its capture
+date. A keyword nobody pulled carries `null`, never a flat line of zeros; a
+keyword that was pulled and read zero every month keeps its zeros, because
+that is a measurement.
+
+**Fails until:** a pulled keyword's row has no `history`, or an unpulled
+keyword's row shows a series.
+
+#### Scenario: The table shows the peak and the shape
+
+- **WHEN** a keyword has a series
+- **THEN** the eRank band renders `Peak Month` (the peak month's label and
+  value, numeric on the value so it sorts and range-filters with blanks
+  last) and `15-Month Trend` (one text glyph per month scaled to the
+  keyword's own peak, sorted by how many months read above eRank's `< 20`
+  floor), and both columns export to CSV exactly as rendered
+
+#### Scenario: The readings agree with eRank's printed average
+
+- **WHEN** a series was read from the Bulk Keyword Tool's chart rather than
+  printed by eRank
+- **THEN** the mean of its last twelve months reproduces the keyword's
+  printed `Search Volume` to within one — checked against the real archive
+  in `tests/keyword-corpus.test.ts`

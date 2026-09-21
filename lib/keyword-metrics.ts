@@ -1,4 +1,4 @@
-import type { ErankValues, KeywordToolValues } from "@/types";
+import type { ErankValues, KeywordToolValues, ErankMonth } from "@/types";
 
 /**
  * Client-safe by construction: this module has no import of
@@ -81,4 +81,47 @@ export function demandRatio(
     value: source.searches / source.competition,
     censored: source.searchesCensored,
   };
+}
+
+
+/**
+ * The month a keyword's eRank series peaks, with the peak value — or null
+ * when there is no series. Ties go to the earliest month, which is also
+ * what the chart shows first.
+ */
+export function historyPeak(
+  erank: { history: ErankMonth[] | null } | null,
+): ErankMonth | null {
+  const h = erank?.history;
+  if (!h || h.length === 0) return null;
+  return h.reduce((best, m) => (m.searches > best.searches ? m : best), h[0]);
+}
+
+/** How many months of the series read above eRank's `< 20` floor. */
+export function monthsAboveFloor(
+  erank: { history: ErankMonth[] | null } | null,
+): number | null {
+  const h = erank?.history;
+  if (!h || h.length === 0) return null;
+  return h.filter((m) => m.searches > 20).length;
+}
+
+const SPARK = "▁▂▃▄▅▆▇█";
+
+/**
+ * A text sparkline of the series, one glyph per month, scaled to the
+ * series' own peak. Text, not a graphic: it obeys the table's one-type-size,
+ * no-colour rules and survives the CSV export as-is. A flat series is a row
+ * of the lowest glyph, which is the honest picture of `< 20` everywhere.
+ */
+export function historySparkline(
+  erank: { history: ErankMonth[] | null } | null,
+): string | null {
+  const h = erank?.history;
+  if (!h || h.length === 0) return null;
+  const peak = Math.max(...h.map((m) => m.searches));
+  if (peak <= 0) return SPARK[0].repeat(h.length);
+  return h
+    .map((m) => SPARK[Math.min(SPARK.length - 1, Math.round((m.searches / peak) * (SPARK.length - 1)))])
+    .join("");
 }
