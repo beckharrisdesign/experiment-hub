@@ -1,0 +1,96 @@
+{
+  "id": "essay",
+  "label": "Essay / talk",
+  "route": "/emotional-design-in-the-age-of-ai",
+  "tier": "tree",
+  "capturedAt": "2026-09-24T18:04:40.047Z",
+  "viewport": 1347,
+  "rootFontSize": "18px",
+  "notionRoot": {
+    "x": 74,
+    "w": 1200,
+    "h": 808,
+    "paddingInline": "18px"
+  },
+  "pageClasses": [
+    "page__emotional-design-in-the-age-of-ai",
+    "parent-page__index"
+  ],
+  "blocks": [
+    {
+      "cls": "notion-page__properties-layout",
+      "x": 18,
+      "y": 451,
+      "w": 1164,
+      "h": 126,
+      "text": "Year2026"
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 577,
+      "w": 810,
+      "h": 99,
+      "text": "I recently gave a lecture to the students of CMU 70317: AI, "
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 676,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    },
+    {
+      "cls": "notion-embed",
+      "x": 18,
+      "y": 712,
+      "w": 1164,
+      "h": 320,
+      "text": ""
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 1032,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 1068,
+      "w": 1164,
+      "h": 141,
+      "text": "I enjoyed sharing observations, fielding questions on the re",
+      "columns": [
+        {
+          "x": 18,
+          "y": 1068,
+          "w": 917,
+          "h": 141,
+          "empty": false
+        },
+        {
+          "x": 971,
+          "y": 1068,
+          "w": 212,
+          "h": 141,
+          "empty": true
+        }
+      ]
+    }
+  ],
+  "dividers": [],
+  "tables": [],
+  "properties": [
+    {
+      "x": 18,
+      "y": 451,
+      "w": 1164,
+      "h": 99
+    }
+  ],
+  "emptyColumnCount": 1
+}

@@ -1,0 +1,120 @@
+{
+  "id": "curated",
+  "label": "Curated collection",
+  "route": "/for-babylist",
+  "tier": "unlisted",
+  "capturedAt": "2026-09-24T18:04:11.319Z",
+  "viewport": 1347,
+  "rootFontSize": "18px",
+  "notionRoot": {
+    "x": 74,
+    "w": 1200,
+    "h": 1404,
+    "paddingInline": "18px"
+  },
+  "pageClasses": [
+    "page__for-babylist",
+    "parent-page__index"
+  ],
+  "blocks": [
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 80,
+      "w": 1164,
+      "h": 177,
+      "text": "The role Director, Product Design (AI Builder) — Registry Ba",
+      "columns": [
+        {
+          "x": 18,
+          "y": 80,
+          "w": 846,
+          "h": 177,
+          "empty": false
+        },
+        {
+          "x": 900,
+          "y": 80,
+          "w": 282,
+          "h": 177,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 257,
+      "w": 810,
+      "h": 45,
+      "text": "Hi Babylist team —"
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 302,
+      "w": 810,
+      "h": 126,
+      "text": "I’m excited to apply for the Director, Product Design (AI Bu"
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 428,
+      "w": 810,
+      "h": 45,
+      "text": "Here are four case studies that showcase how I think:"
+    },
+    {
+      "cls": "notion-callout border",
+      "x": -73,
+      "y": 500,
+      "w": 1347,
+      "h": 691,
+      "text": "On leading a team's transition to AI-native product developm"
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 1236,
+      "w": 810,
+      "h": 72,
+      "text": "I’d love to bring my own mix of systems thinking, hands-on c"
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 1308,
+      "w": 810,
+      "h": 45,
+      "text": "Cheers,"
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 1353,
+      "w": 810,
+      "h": 45,
+      "text": "Katy."
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 1398,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    }
+  ],
+  "dividers": [],
+  "tables": [],
+  "properties": [
+    {
+      "x": -73,
+      "y": 0,
+      "w": 0,
+      "h": 0
+    }
+  ],
+  "emptyColumnCount": 0
+}

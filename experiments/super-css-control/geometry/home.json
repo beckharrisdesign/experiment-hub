@@ -1,0 +1,428 @@
+{
+  "id": "home",
+  "label": "Home",
+  "route": "/",
+  "tier": "tree",
+  "capturedAt": "2026-09-24T18:03:12.093Z",
+  "viewport": 1347,
+  "rootFontSize": "18px",
+  "notionRoot": {
+    "x": 74,
+    "w": 1200,
+    "h": 3771,
+    "paddingInline": "18px"
+  },
+  "pageClasses": [
+    "page__index"
+  ],
+  "blocks": [
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 80,
+      "w": 1164,
+      "h": 362,
+      "text": "Strategic leadership for complex ecosystemsKaty Harris is a ",
+      "columns": [
+        {
+          "x": 18,
+          "y": 80,
+          "w": 1058,
+          "h": 362,
+          "empty": false
+        },
+        {
+          "x": 1112,
+          "y": 80,
+          "w": 71,
+          "h": 362,
+          "empty": true
+        }
+      ]
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 442,
+      "w": 1164,
+      "h": 18,
+      "text": ""
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 460,
+      "w": 1164,
+      "h": 18,
+      "text": ""
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 486,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 495,
+      "w": 810,
+      "h": 45,
+      "text": "Unique expertise"
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 540,
+      "w": 1164,
+      "h": 18,
+      "text": ""
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 558,
+      "w": 1164,
+      "h": 367,
+      "text": "Operational leadership20+ years blurring the lines between d",
+      "columns": [
+        {
+          "x": 18,
+          "y": 558,
+          "w": 273,
+          "h": 367,
+          "empty": true
+        },
+        {
+          "x": 327,
+          "y": 558,
+          "w": 410,
+          "h": 367,
+          "empty": false
+        },
+        {
+          "x": 773,
+          "y": 558,
+          "w": 410,
+          "h": 367,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 924,
+      "w": 1164,
+      "h": 18,
+      "text": ""
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 950,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 959,
+      "w": 810,
+      "h": 45,
+      "text": "Case studies"
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 1004,
+      "w": 1164,
+      "h": 18,
+      "text": ""
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 1022,
+      "w": 1164,
+      "h": 1605,
+      "text": "BHD Labs: Building a minimally viable design systemBHD Labs:",
+      "columns": [
+        {
+          "x": 18,
+          "y": 1022,
+          "w": 282,
+          "h": 1605,
+          "empty": true
+        },
+        {
+          "x": 336,
+          "y": 1022,
+          "w": 846,
+          "h": 1605,
+          "empty": false
+        }
+      ],
+      "grid": {
+        "x": 336,
+        "y": 1034,
+        "w": 846,
+        "h": 1581,
+        "templateColumns": "414px 414px",
+        "gap": "18px",
+        "cardCount": 8,
+        "card": {
+          "x": 336,
+          "y": 1050,
+          "w": 414,
+          "h": 357
+        },
+        "cover": {
+          "w": 414,
+          "h": 200
+        }
+      }
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 2627,
+      "w": 1164,
+      "h": 18,
+      "text": ""
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 2653,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 2662,
+      "w": 810,
+      "h": 45,
+      "text": "Speaking + teaching"
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 2707,
+      "w": 1164,
+      "h": 265,
+      "text": "Writing and talks I’ve given lately at the intersection of d",
+      "columns": [
+        {
+          "x": 18,
+          "y": 2707,
+          "w": 282,
+          "h": 265,
+          "empty": false
+        },
+        {
+          "x": 336,
+          "y": 2707,
+          "w": 846,
+          "h": 265,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 2973,
+      "w": 1164,
+      "h": 18,
+      "text": ""
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 2991,
+      "w": 1164,
+      "h": 18,
+      "text": ""
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 3017,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 3026,
+      "w": 810,
+      "h": 45,
+      "text": "Lagniappe"
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 3071,
+      "w": 1164,
+      "h": 320,
+      "text": "A collection of extras and highlightsTrill TEDxTrill Present",
+      "columns": [
+        {
+          "x": 18,
+          "y": 3071,
+          "w": 282,
+          "h": 320,
+          "empty": false
+        },
+        {
+          "x": 336,
+          "y": 3071,
+          "w": 846,
+          "h": 320,
+          "empty": false
+        }
+      ],
+      "grid": {
+        "x": 336,
+        "y": 3083,
+        "w": 846,
+        "h": 278,
+        "templateColumns": "198px 198px 198px 198px",
+        "gap": "18px",
+        "cardCount": 7,
+        "card": {
+          "x": 336,
+          "y": 3099,
+          "w": 198,
+          "h": 120
+        },
+        "cover": {
+          "w": 198,
+          "h": 120
+        }
+      }
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3391,
+      "w": 1164,
+      "h": 18,
+      "text": ""
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3409,
+      "w": 1164,
+      "h": 18,
+      "text": ""
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 3435,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 3444,
+      "w": 810,
+      "h": 45,
+      "text": "Next steps"
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 3489,
+      "w": 1164,
+      "h": 258,
+      "text": "Let’s connect.Schedule a conversationBHD Consulting Currentl",
+      "columns": [
+        {
+          "x": 18,
+          "y": 3489,
+          "w": 282,
+          "h": 258,
+          "empty": false
+        },
+        {
+          "x": 336,
+          "y": 3489,
+          "w": 846,
+          "h": 258,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3747,
+      "w": 1164,
+      "h": 18,
+      "text": ""
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3765,
+      "w": 1164,
+      "h": 18,
+      "text": ""
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3783,
+      "w": 1164,
+      "h": 18,
+      "text": ""
+    }
+  ],
+  "dividers": [
+    {
+      "x": 18,
+      "y": 486,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 950,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 2653,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 3017,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 3435,
+      "w": 1164,
+      "h": 1
+    }
+  ],
+  "tables": [],
+  "properties": [],
+  "emptyColumnCount": 3
+}

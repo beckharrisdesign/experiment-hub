@@ -1,0 +1,612 @@
+{
+  "id": "about",
+  "label": "About",
+  "route": "/katy-harris",
+  "tier": "tree",
+  "capturedAt": "2026-09-24T18:03:16.383Z",
+  "viewport": 1347,
+  "rootFontSize": "18px",
+  "notionRoot": {
+    "x": 74,
+    "w": 1200,
+    "h": 4353,
+    "paddingInline": "18px"
+  },
+  "pageClasses": [
+    "page__katy-harris",
+    "parent-page__index"
+  ],
+  "blocks": [
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 391,
+      "w": 810,
+      "h": 99,
+      "text": "I'm a product design leader, maker, and founder with 20+ yea"
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 490,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 526,
+      "w": 810,
+      "h": 45,
+      "text": "Austin, TX, USA"
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 571,
+      "w": 810,
+      "h": 45,
+      "text": "Remote + Hybrid Preferred"
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 616,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 660,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 687,
+      "w": 1164,
+      "h": 79,
+      "text": "Cisco"
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 765,
+      "w": 1164,
+      "h": 343,
+      "text": "Senior leader in the IT Design and Research group.As Design ",
+      "columns": [
+        {
+          "x": 18,
+          "y": 765,
+          "w": 776,
+          "h": 343,
+          "empty": false
+        },
+        {
+          "x": 830,
+          "y": 765,
+          "w": 353,
+          "h": 343,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 1116,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 1143,
+      "w": 1164,
+      "h": 79,
+      "text": "Atlas Document Governance"
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 1222,
+      "w": 1164,
+      "h": 386,
+      "text": "Founding executive team member of Atlas, a highly configurab",
+      "columns": [
+        {
+          "x": 18,
+          "y": 1222,
+          "w": 776,
+          "h": 386,
+          "empty": false
+        },
+        {
+          "x": 830,
+          "y": 1222,
+          "w": 353,
+          "h": 386,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 1616,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 1643,
+      "w": 1164,
+      "h": 79,
+      "text": "Carbonite"
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 1722,
+      "w": 1164,
+      "h": 413,
+      "text": "Advanced from Senior Designer to lead the design function at",
+      "columns": [
+        {
+          "x": 18,
+          "y": 1722,
+          "w": 776,
+          "h": 413,
+          "empty": false
+        },
+        {
+          "x": 830,
+          "y": 1722,
+          "w": 353,
+          "h": 413,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 2135,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 2179,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 2206,
+      "w": 1164,
+      "h": 79,
+      "text": "Northeastern University"
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 2285,
+      "w": 1164,
+      "h": 150,
+      "text": "Adjunct lecturer focusing on information design and data vis",
+      "columns": [
+        {
+          "x": 18,
+          "y": 2285,
+          "w": 776,
+          "h": 150,
+          "empty": false
+        },
+        {
+          "x": 830,
+          "y": 2285,
+          "w": 353,
+          "h": 150,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 2443,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 2470,
+      "w": 1164,
+      "h": 79,
+      "text": "Beck Harris Design"
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 2549,
+      "w": 1164,
+      "h": 132,
+      "text": "Design consulting practice focused on providing entrepreneur",
+      "columns": [
+        {
+          "x": 18,
+          "y": 2549,
+          "w": 776,
+          "h": 132,
+          "empty": false
+        },
+        {
+          "x": 830,
+          "y": 2549,
+          "w": 353,
+          "h": 132,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 2689,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 2716,
+      "w": 1164,
+      "h": 79,
+      "text": "Trill Inc"
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 2794,
+      "w": 1164,
+      "h": 396,
+      "text": "\"Less couch, more culture.\" We co-founded Trill to disrupt t",
+      "columns": [
+        {
+          "x": 18,
+          "y": 2794,
+          "w": 776,
+          "h": 396,
+          "empty": false
+        },
+        {
+          "x": 830,
+          "y": 2794,
+          "w": 353,
+          "h": 396,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 3198,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 3225,
+      "w": 1164,
+      "h": 79,
+      "text": "Fathom Information Design"
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 3304,
+      "w": 1164,
+      "h": 253,
+      "text": "Designed and delivered impactful projects from hands-on data",
+      "columns": [
+        {
+          "x": 18,
+          "y": 3304,
+          "w": 776,
+          "h": 253,
+          "empty": false
+        },
+        {
+          "x": 830,
+          "y": 3304,
+          "w": 353,
+          "h": 253,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 3565,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 3592,
+      "w": 1164,
+      "h": 79,
+      "text": "Rhode Island School of Design"
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 3671,
+      "w": 1164,
+      "h": 150,
+      "text": "Curriculum development, critique, and teaching in a studio s",
+      "columns": [
+        {
+          "x": 18,
+          "y": 3671,
+          "w": 776,
+          "h": 150,
+          "empty": false
+        },
+        {
+          "x": 830,
+          "y": 3671,
+          "w": 353,
+          "h": 150,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 3829,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 3856,
+      "w": 1164,
+      "h": 79,
+      "text": "Memento Security"
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 3935,
+      "w": 1164,
+      "h": 159,
+      "text": "Responsible for transforming a mid-fidelity concept into a n",
+      "columns": [
+        {
+          "x": 18,
+          "y": 3935,
+          "w": 776,
+          "h": 159,
+          "empty": false
+        },
+        {
+          "x": 830,
+          "y": 3935,
+          "w": 353,
+          "h": 159,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 4102,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 4129,
+      "w": 1164,
+      "h": 79,
+      "text": "Network Solutions LLC"
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 4208,
+      "w": 1164,
+      "h": 114,
+      "text": "Frontend development team for a network of ecommerce sites i",
+      "columns": [
+        {
+          "x": 18,
+          "y": 4208,
+          "w": 776,
+          "h": 114,
+          "empty": false
+        },
+        {
+          "x": 830,
+          "y": 4208,
+          "w": 353,
+          "h": 114,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 4322,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 4358,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 4402,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 4429,
+      "w": 1164,
+      "h": 79,
+      "text": "Anvicom"
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 4508,
+      "w": 1164,
+      "h": 114,
+      "text": "Information architecture, web design, web development, and 5",
+      "columns": [
+        {
+          "x": 18,
+          "y": 4508,
+          "w": 776,
+          "h": 114,
+          "empty": false
+        },
+        {
+          "x": 830,
+          "y": 4508,
+          "w": 353,
+          "h": 114,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 4622,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 4658,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    }
+  ],
+  "dividers": [
+    {
+      "x": 18,
+      "y": 660,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 1116,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 1616,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 2179,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 2443,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 2689,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 3198,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 3565,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 3829,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 4102,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 4402,
+      "w": 1164,
+      "h": 1
+    }
+  ],
+  "tables": [],
+  "properties": [],
+  "emptyColumnCount": 0
+}

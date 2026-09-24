@@ -1,0 +1,155 @@
+{
+  "id": "projects",
+  "label": "Projects (gallery)",
+  "route": "/all-projects",
+  "tier": "tree",
+  "capturedAt": "2026-09-24T18:03:13.512Z",
+  "viewport": 1347,
+  "rootFontSize": "18px",
+  "notionRoot": {
+    "x": 74,
+    "w": 1200,
+    "h": 3451,
+    "paddingInline": "18px"
+  },
+  "pageClasses": [
+    "page__all-projects",
+    "parent-page__index"
+  ],
+  "blocks": [
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 143,
+      "w": 1164,
+      "h": 65,
+      "text": "Projects"
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 207,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    },
+    {
+      "cls": "notion-collection inline collection-499b908d7b37830782328752b18820e7",
+      "x": 18,
+      "y": 243,
+      "w": 1164,
+      "h": 2813,
+      "text": "A talk for CMU 70317: AI, Innovation & Competitive Advantage",
+      "grid": {
+        "x": 18,
+        "y": 243,
+        "w": 1164,
+        "h": 2813,
+        "templateColumns": "376px 376px 376px",
+        "gap": "18px",
+        "cardCount": 23,
+        "card": {
+          "x": 18,
+          "y": 259,
+          "w": 376,
+          "h": 363
+        },
+        "cover": {
+          "w": 376,
+          "h": 200
+        }
+      }
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3056,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3092,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 3136,
+      "w": 1164,
+      "h": 1,
+      "text": ""
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 3145,
+      "w": 810,
+      "h": 45,
+      "text": "Next steps"
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3190,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 3244,
+      "w": 1164,
+      "h": 79,
+      "text": "Let's figure out if we’re a fit."
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 3323,
+      "w": 810,
+      "h": 45,
+      "text": "Set up a conversation about where you are and what you need."
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3368,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    },
+    {
+      "cls": "notion-button",
+      "x": 18,
+      "y": 3408,
+      "w": 1164,
+      "h": 65,
+      "text": "Let's connect"
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3477,
+      "w": 1164,
+      "h": 36,
+      "text": ""
+    }
+  ],
+  "dividers": [
+    {
+      "x": 18,
+      "y": 3136,
+      "w": 1164,
+      "h": 1
+    }
+  ],
+  "tables": [],
+  "properties": [],
+  "emptyColumnCount": 0
+}

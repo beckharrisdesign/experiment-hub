@@ -1,0 +1,58 @@
+{
+  "id": "labs-detail",
+  "label": "Labs detail",
+  "route": "/bhd-labs/mvds",
+  "tier": "tree",
+  "capturedAt": "2026-09-24T18:04:07.792Z",
+  "viewport": 1347,
+  "rootFontSize": "18px",
+  "notionRoot": {
+    "x": 74,
+    "w": 1200,
+    "h": 576,
+    "paddingInline": "18px"
+  },
+  "pageClasses": [
+    "page__bhd-labs-mvds",
+    "parent-page__bhd-labs"
+  ],
+  "blocks": [
+    {
+      "cls": "notion-page__properties-layout",
+      "x": 18,
+      "y": 112,
+      "w": 1164,
+      "h": 526,
+      "text": "StatusValidatingTaglineAn opinionated design system that doe"
+    }
+  ],
+  "dividers": [],
+  "tables": [],
+  "properties": [
+    {
+      "x": 18,
+      "y": 112,
+      "w": 1164,
+      "h": 114
+    },
+    {
+      "x": 18,
+      "y": 227,
+      "w": 1164,
+      "h": 104
+    },
+    {
+      "x": 18,
+      "y": 330,
+      "w": 1164,
+      "h": 135
+    },
+    {
+      "x": 18,
+      "y": 466,
+      "w": 1164,
+      "h": 113
+    }
+  ],
+  "emptyColumnCount": 0
+}
