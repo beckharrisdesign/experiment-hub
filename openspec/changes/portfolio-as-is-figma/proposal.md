@@ -265,6 +265,49 @@ where `parent-page__*` proves insufficient as the sole authority, after the
 navigation-vs-containment split in 02.2. `design.md` now has two reasons to name
 what governs the tree.
 
+**Round 02.5 — raw databases also unlisted**
+
+- Page: `02.5 Proposed — raw databases also unlisted` (node `19:2`)
+- Supersedes 02.4. Earlier rounds left intact.
+
+`/bhd-database` joins `/for-*` outside the tree. The hierarchy is eight views; two
+patterns sit beside it.
+
+### Unlisted is not the same as private
+
+Checked rather than assumed, because the answer changes what the finding is:
+
+| | `/for-*` | `/bhd-database`, `/bhd-labs-database`, `/bhd-labs-history` |
+|---|---|---|
+| Visible in navigation | No | No |
+| Hidden by | §9 of the stylesheet, deliberately | **Super's own setting** |
+| Anchor present in homepage HTML | No | **Yes**, rendering 0×0 |
+| In `sitemap.xml` | Yes | **Yes** |
+| Returns 200 in full | Yes | **Yes** |
+
+The mechanism is Super's, not ours: `.notion-page { display: var(--page-display) }`
+in Super's `notion.css`, with `--page-display` resolving to `none` — the "show child
+pages" toggle being off. The anchors and their link text remain in the served HTML,
+and all three routes are advertised in `sitemap.xml`.
+
+So crawlers are pointed straight at the raw databases. `/bhd-database` carries rows
+including "Stealth-mode skills development" with LF/HF markers, which reads like
+working notes rather than published work.
+
+`/for-*` is different and fine: it is unlisted **by design**, and being reachable by
+direct link is the entire point of handing someone the URL.
+
+### Scope note
+
+This change captures as-is. Recording that the databases are crawlable is in scope;
+**making them not crawlable is not** — that alters live site behaviour, needs its own
+validation (gone from `sitemap.xml`, route no longer 200, nothing else broken), and
+would sit oddly inside a change whose stated outcome is "no proposed changes."
+
+Recommend a separate change. Noted here with the evidence so it is not lost either
+way — and it shares a root with the three dead sitemap routes already recorded
+above, so one change could reasonably cover **what `sitemap.xml` advertises**.
+
 **What this round is for:** arguing with the *inventory and the cut* — is this the
 right set of ten, is anything missing, is anything here really the same view as
 something else. Fidelity is deliberately rough. The detailed as-is pass, the
