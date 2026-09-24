@@ -1,0 +1,276 @@
+{
+  "id": "labs",
+  "label": "Labs index",
+  "route": "/bhd-labs",
+  "tier": "tree",
+  "capturedAt": "2026-09-24T18:06:03.271Z",
+  "viewport": 1347,
+  "rootFontSize": "18px",
+  "notionRoot": {
+    "x": 74,
+    "w": 1200,
+    "h": 2390,
+    "paddingInline": "18px"
+  },
+  "pageClasses": [
+    "page__bhd-labs",
+    "parent-page__index"
+  ],
+  "blocks": [
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 143,
+      "w": 1164,
+      "h": 65,
+      "text": "BHD Labs",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 207,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 243,
+      "w": 810,
+      "h": 72,
+      "text": "As a neurodiverse designer and founder, my best ideas come f",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 315,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 359,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 368,
+      "w": 810,
+      "h": 45,
+      "text": "Experiments",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 413,
+      "w": 1164,
+      "h": 854,
+      "text": "Simple Seed OrganizerSimple Seed OrganizerStash tracking for",
+      "columns": [
+        {
+          "x": 18,
+          "y": 413,
+          "w": 282,
+          "h": 854,
+          "empty": true,
+          "runs": []
+        },
+        {
+          "x": 336,
+          "y": 413,
+          "w": 846,
+          "h": 854,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Stash tracking for gardeners."
+            },
+            {
+              "tag": "p",
+              "t": "Plan online, execute on paper."
+            },
+            {
+              "tag": "p",
+              "t": "Generate a suite of listing artifacts from a single image."
+            },
+            {
+              "tag": "p",
+              "t": "A tiny timer."
+            },
+            {
+              "tag": "p",
+              "t": "Drop everything - we’ll schedule it."
+            },
+            {
+              "tag": "p",
+              "t": "AI-assisted household document organization."
+            },
+            {
+              "tag": "p",
+              "t": "Super simple inventory management."
+            }
+          ]
+        }
+      ],
+      "grid": {
+        "x": 336,
+        "y": 425,
+        "w": 846,
+        "h": 383,
+        "templateColumns": "414px 414px",
+        "gap": "18px",
+        "cardCount": 2,
+        "card": {
+          "x": 336,
+          "y": 441,
+          "w": 414,
+          "h": 363
+        },
+        "cover": {
+          "w": 414,
+          "h": 200
+        }
+      }
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 1275,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 1284,
+      "w": 810,
+      "h": 45,
+      "text": "Utilities and tools",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 1329,
+      "w": 1164,
+      "h": 1088,
+      "text": "MVDSMVDSAn opinionated design system that doesn’t drift.Vali",
+      "columns": [
+        {
+          "x": 18,
+          "y": 1329,
+          "w": 282,
+          "h": 1088,
+          "empty": true,
+          "runs": []
+        },
+        {
+          "x": 336,
+          "y": 1329,
+          "w": 846,
+          "h": 1088,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "An opinionated design system that doesn’t drift."
+            },
+            {
+              "tag": "p",
+              "t": "Experimentation scaffold for founders."
+            },
+            {
+              "tag": "p",
+              "t": "Design where you want — convert to DST once."
+            },
+            {
+              "tag": "p",
+              "t": "Grab websites to paste into Figma from the browser."
+            },
+            {
+              "tag": "p",
+              "t": "One change, told in one page — where it stands and how it got there."
+            },
+            {
+              "tag": "p",
+              "t": "Screenshot, annotate, and file Github Issues from the browser."
+            }
+          ]
+        }
+      ],
+      "grid": {
+        "x": 336,
+        "y": 1341,
+        "w": 846,
+        "h": 764,
+        "templateColumns": "414px 414px",
+        "gap": "18px",
+        "cardCount": 3,
+        "card": {
+          "x": 336,
+          "y": 1357,
+          "w": 414,
+          "h": 363
+        },
+        "cover": {
+          "w": 414,
+          "h": 200
+        }
+      }
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 2417,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    }
+  ],
+  "dividers": [
+    {
+      "x": 18,
+      "y": 359,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 1275,
+      "w": 1164,
+      "h": 1
+    }
+  ],
+  "tables": [
+    {
+      "x": 336,
+      "y": 844,
+      "w": 846,
+      "h": 365
+    },
+    {
+      "x": 336,
+      "y": 2141,
+      "w": 846,
+      "h": 254
+    }
+  ],
+  "properties": [],
+  "emptyColumnCount": 2
+}

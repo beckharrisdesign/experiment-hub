@@ -1,0 +1,920 @@
+{
+  "id": "about",
+  "label": "About",
+  "route": "/katy-harris",
+  "tier": "tree",
+  "capturedAt": "2026-09-24T18:05:53.346Z",
+  "viewport": 1347,
+  "rootFontSize": "18px",
+  "notionRoot": {
+    "x": 74,
+    "w": 1200,
+    "h": 4353,
+    "paddingInline": "18px"
+  },
+  "pageClasses": [
+    "page__katy-harris",
+    "parent-page__index"
+  ],
+  "blocks": [
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 391,
+      "w": 810,
+      "h": 99,
+      "text": "I'm a product design leader, maker, and founder with 20+ yea",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 490,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 526,
+      "w": 810,
+      "h": 45,
+      "text": "Austin, TX, USA",
+      "runs": []
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 571,
+      "w": 810,
+      "h": 45,
+      "text": "Remote + Hybrid Preferred",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 616,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 660,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 687,
+      "w": 1164,
+      "h": 79,
+      "text": "Cisco",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 765,
+      "w": 1164,
+      "h": 343,
+      "text": "Senior leader in the IT Design and Research group.As Design ",
+      "columns": [
+        {
+          "x": 18,
+          "y": 765,
+          "w": 776,
+          "h": 343,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Senior leader in the IT Design and Research group."
+            },
+            {
+              "tag": "li",
+              "t": "As Design Partner: On paper this role is to work with executive leaders to anticipate and evaluate design needs then connect the right practitioners to the project. In practice, I am a professional Gap Filler: part design manager,strategist, coach, program manager, scrum master, and design lead — whatever is called for"
+            },
+            {
+              "tag": "li",
+              "t": "As Design Manager: “Manager as coach” for 8-13 practitioners embedded in product teams across the IT space. Coached on skills, career development, and process optimization as my team tackled consumer, enterprise, and generative AI use cases."
+            }
+          ]
+        },
+        {
+          "x": 830,
+          "y": 765,
+          "w": 353,
+          "h": 343,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Design Partner"
+            },
+            {
+              "tag": "p",
+              "t": "Apr 2023 – Present"
+            },
+            {
+              "tag": "p",
+              "t": "Product Design Manager"
+            },
+            {
+              "tag": "p",
+              "t": "Mar 2023 – 2025"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 1116,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 1143,
+      "w": 1164,
+      "h": 79,
+      "text": "Atlas Document Governance",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 1222,
+      "w": 1164,
+      "h": 386,
+      "text": "Founding executive team member of Atlas, a highly configurab",
+      "columns": [
+        {
+          "x": 18,
+          "y": 1222,
+          "w": 776,
+          "h": 386,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Founding executive team member of Atlas, a highly configurable content editor and workflow application for business-critical content in the enterprise. Acquired by Archer Integrated Risk Management in 2022."
+            },
+            {
+              "tag": "li",
+              "t": "Served as interim Head of Product from 2020 to 2021 after departure of founder and CEO"
+            },
+            {
+              "tag": "li",
+              "t": "As Head of Product, responsible for strategic roadmap as well as managing 2 technical product managers and an external research vendor"
+            },
+            {
+              "tag": "li",
+              "t": "As Head of Design, managed a team of 2 while executing product design from conception to launch for two core products and one design system"
+            },
+            {
+              "tag": "li",
+              "t": "As a founding exec team member, planned for company-wide team health, resource allocation, project prioritization, and operations"
+            }
+          ]
+        },
+        {
+          "x": 830,
+          "y": 1222,
+          "w": 353,
+          "h": 386,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Head of Design"
+            },
+            {
+              "tag": "p",
+              "t": "Aug 2019 – Feb 2023 (3 yrs 7 mos)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 1616,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 1643,
+      "w": 1164,
+      "h": 79,
+      "text": "Carbonite",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 1722,
+      "w": 1164,
+      "h": 413,
+      "text": "Advanced from Senior Designer to lead the design function at",
+      "columns": [
+        {
+          "x": 18,
+          "y": 1722,
+          "w": 776,
+          "h": 413,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Advanced from Senior Designer to lead the design function at Carbonite for two years, recruiting and managing a team of 8 full stack designers to support 5 product lines, 300 customer facing properties, and 34 scrum teams."
+            },
+            {
+              "tag": "li",
+              "t": "Developed UX strategy for the mid-market product suite and executed across five acquisitions in three years"
+            },
+            {
+              "tag": "li",
+              "t": "Originated skill development plans and processes so team could handle complex use cases: multi-tenant, multi-channel software targeted to consumers, mid market, and enterprise, both on prem and in the cloud"
+            },
+            {
+              "tag": "li",
+              "t": "Initiated Carbonite's first product design system and component library"
+            },
+            {
+              "tag": "li",
+              "t": "Responsible for overall team health, career development, resource allocation, project prioritization, and operations"
+            }
+          ]
+        },
+        {
+          "x": 830,
+          "y": 1722,
+          "w": 353,
+          "h": 413,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "UX Manager"
+            },
+            {
+              "tag": "p",
+              "t": "Mar 2019 – Aug 2019 (6 mos)"
+            },
+            {
+              "tag": "p",
+              "t": "Principal UX Designer / Design Manager"
+            },
+            {
+              "tag": "p",
+              "t": "Jan 2018 – Mar 2019 (1 yr 3 mos)"
+            },
+            {
+              "tag": "p",
+              "t": "Senior UX Designer"
+            },
+            {
+              "tag": "p",
+              "t": "Jul 2016 – Jan 2018 (1 yr 7 mos)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 2135,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 2179,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 2206,
+      "w": 1164,
+      "h": 79,
+      "text": "Northeastern University",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 2285,
+      "w": 1164,
+      "h": 150,
+      "text": "Adjunct lecturer focusing on information design and data vis",
+      "columns": [
+        {
+          "x": 18,
+          "y": 2285,
+          "w": 776,
+          "h": 150,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Adjunct lecturer focusing on information design and data visualization in the College of Arts, Media, and Design."
+            }
+          ]
+        },
+        {
+          "x": 830,
+          "y": 2285,
+          "w": 353,
+          "h": 150,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Adjunct Lecturer"
+            },
+            {
+              "tag": "p",
+              "t": "Sep 2015 – Aug 2019 (4 yrs)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 2443,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 2470,
+      "w": 1164,
+      "h": 79,
+      "text": "Beck Harris Design",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 2549,
+      "w": 1164,
+      "h": 132,
+      "text": "Design consulting practice focused on providing entrepreneur",
+      "columns": [
+        {
+          "x": 18,
+          "y": 2549,
+          "w": 776,
+          "h": 132,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Design consulting practice focused on providing entrepreneurs and academics with information design, data visualization, and design advisory services."
+            }
+          ]
+        },
+        {
+          "x": 830,
+          "y": 2549,
+          "w": 353,
+          "h": 132,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Principal"
+            },
+            {
+              "tag": "p",
+              "t": "Sep 2006 – Aug 2019 (13 yrs)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 2689,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 2716,
+      "w": 1164,
+      "h": 79,
+      "text": "Trill Inc",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 2794,
+      "w": 1164,
+      "h": 396,
+      "text": "\"Less couch, more culture.\" We co-founded Trill to disrupt t",
+      "columns": [
+        {
+          "x": 18,
+          "y": 2794,
+          "w": 776,
+          "h": 396,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "\"Less couch, more culture.\""
+            },
+            {
+              "tag": "p",
+              "t": "We co-founded Trill to disrupt the arts and culture scene by creating tools to connect performers, venues, presenters, and audiences in Boston and beyond. Trill was a semi-finalist in the 2014 MassChallenge accelerator and a winner at the 2014 Berklee School of Music's Venture Day competition."
+            },
+            {
+              "tag": "li",
+              "t": "Spearheaded design and product development, transforming ambiguous ideas into four working MVPs within the first year."
+            },
+            {
+              "tag": "li",
+              "t": "As Head of Product, I built and maintained roadmaps aligned with strategic goals."
+            },
+            {
+              "tag": "li",
+              "t": "As Head of Design, I led all creative efforts, from user research and wireframes to final visual design and prototyping."
+            }
+          ]
+        },
+        {
+          "x": 830,
+          "y": 2794,
+          "w": 353,
+          "h": 396,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Design Advisor"
+            },
+            {
+              "tag": "p",
+              "t": "Sep 2016 – Dec 2017 (1 yr 4 mos)"
+            },
+            {
+              "tag": "p",
+              "t": "Co-Founder, Head of Design + Product"
+            },
+            {
+              "tag": "p",
+              "t": "Jan 2014 – Sep 2015 (1 yr 9 mos)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 3198,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 3225,
+      "w": 1164,
+      "h": 79,
+      "text": "Fathom Information Design",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 3304,
+      "w": 1164,
+      "h": 253,
+      "text": "Designed and delivered impactful projects from hands-on data",
+      "columns": [
+        {
+          "x": 18,
+          "y": 3304,
+          "w": 776,
+          "h": 253,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Designed and delivered impactful projects from hands-on data analysis to creative direction to development support for clients such as Thomson Reuters, the World Bank, and GE."
+            },
+            {
+              "tag": "p",
+              "t": "Project Awards:"
+            },
+            {
+              "tag": "li",
+              "t": "2013 Data Journalism Award (winner)"
+            },
+            {
+              "tag": "li",
+              "t": "2013 Innovation by Design Award (finalist)"
+            }
+          ]
+        },
+        {
+          "x": 830,
+          "y": 3304,
+          "w": 353,
+          "h": 253,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Lead Visualization Designer"
+            },
+            {
+              "tag": "p",
+              "t": "Sep 2010 – Jan 2014 (3 yrs 5 mos)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 3565,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 3592,
+      "w": 1164,
+      "h": 79,
+      "text": "Rhode Island School of Design",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 3671,
+      "w": 1164,
+      "h": 150,
+      "text": "Curriculum development, critique, and teaching in a studio s",
+      "columns": [
+        {
+          "x": 18,
+          "y": 3671,
+          "w": 776,
+          "h": 150,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Curriculum development, critique, and teaching in a studio setting."
+            }
+          ]
+        },
+        {
+          "x": 830,
+          "y": 3671,
+          "w": 353,
+          "h": 150,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Critic + Lecturer"
+            },
+            {
+              "tag": "p",
+              "t": "Feb 2011 – Feb 2012 (1 yr 1 mo)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 3829,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 3856,
+      "w": 1164,
+      "h": 79,
+      "text": "Memento Security",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 3935,
+      "w": 1164,
+      "h": 159,
+      "text": "Responsible for transforming a mid-fidelity concept into a n",
+      "columns": [
+        {
+          "x": 18,
+          "y": 3935,
+          "w": 776,
+          "h": 159,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Responsible for transforming a mid-fidelity concept into a net new product, collaborating closely with the machine learning, engineering, and sales teams to create actionable visualizations grounded in actual data. Acquired by FIS in 2012."
+            }
+          ]
+        },
+        {
+          "x": 830,
+          "y": 3935,
+          "w": 353,
+          "h": 159,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Lead Interaction Designer"
+            },
+            {
+              "tag": "p",
+              "t": "Aug 2009 – Sep 2010 (1 yr 2 mos)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 4102,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 4129,
+      "w": 1164,
+      "h": 79,
+      "text": "Network Solutions LLC",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 4208,
+      "w": 1164,
+      "h": 114,
+      "text": "Frontend development team for a network of ecommerce sites i",
+      "columns": [
+        {
+          "x": 18,
+          "y": 4208,
+          "w": 776,
+          "h": 114,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Frontend development team for a network of ecommerce sites including networksolutions.com"
+            }
+          ]
+        },
+        {
+          "x": 830,
+          "y": 4208,
+          "w": 353,
+          "h": 114,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Software Engineer (Frontend)"
+            },
+            {
+              "tag": "p",
+              "t": "Sep 2002 – Sep 2006 (4 yrs 1 mo)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 4322,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 4358,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 4402,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 4429,
+      "w": 1164,
+      "h": 79,
+      "text": "Anvicom",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 4508,
+      "w": 1164,
+      "h": 114,
+      "text": "Information architecture, web design, web development, and 5",
+      "columns": [
+        {
+          "x": 18,
+          "y": 4508,
+          "w": 776,
+          "h": 114,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Information architecture, web design, web development, and 508 compliance testing for the Federal Aviation Administration."
+            }
+          ]
+        },
+        {
+          "x": 830,
+          "y": 4508,
+          "w": 353,
+          "h": 114,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Web Developer"
+            },
+            {
+              "tag": "p",
+              "t": "Sep 2001 – Sep 2002 (1 yr 1 mo)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 4622,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 4658,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    }
+  ],
+  "dividers": [
+    {
+      "x": 18,
+      "y": 660,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 1116,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 1616,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 2179,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 2443,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 2689,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 3198,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 3565,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 3829,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 4102,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 4402,
+      "w": 1164,
+      "h": 1
+    }
+  ],
+  "tables": [],
+  "properties": [],
+  "emptyColumnCount": 0
+}

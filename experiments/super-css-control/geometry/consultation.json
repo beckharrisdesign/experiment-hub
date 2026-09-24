@@ -1,0 +1,659 @@
+{
+  "id": "consultation",
+  "label": "Consultation",
+  "route": "/bhd-consultation",
+  "tier": "tree",
+  "capturedAt": "2026-09-24T18:05:52.387Z",
+  "viewport": 1347,
+  "rootFontSize": "18px",
+  "notionRoot": {
+    "x": 74,
+    "w": 1200,
+    "h": 4037,
+    "paddingInline": "18px"
+  },
+  "pageClasses": [
+    "page__bhd-consultation",
+    "parent-page__index"
+  ],
+  "blocks": [
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 143,
+      "w": 1164,
+      "h": 123,
+      "text": "I help ventures, founders, and ambitious teams turn their be",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 266,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-button",
+      "x": 18,
+      "y": 306,
+      "w": 1164,
+      "h": 65,
+      "text": "Let's connect!",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 375,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 419,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 428,
+      "w": 810,
+      "h": 45,
+      "text": "Support at any scale",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 473,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 509,
+      "w": 1164,
+      "h": 204,
+      "text": "Fractional Head of DesignFor companies that need design lead",
+      "columns": [
+        {
+          "x": 18,
+          "y": 509,
+          "w": 319,
+          "h": 204,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "h2",
+              "t": "Fractional Head of Design"
+            }
+          ]
+        },
+        {
+          "x": 373,
+          "y": 509,
+          "w": 698,
+          "h": 204,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "For companies that need design leadership"
+            },
+            {
+              "tag": "p",
+              "t": "Senior design leadership embedded in your team — in your Slack, at your sprint reviews, at the product table. I own design vision, build and develop your team, and bridge design with product and engineering at the executive level."
+            }
+          ]
+        },
+        {
+          "x": 1107,
+          "y": 509,
+          "w": 75,
+          "h": 204,
+          "empty": true,
+          "runs": []
+        }
+      ]
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 713,
+      "w": 1164,
+      "h": 204,
+      "text": "Design Leadership + OpsFor product teams being built or rebu",
+      "columns": [
+        {
+          "x": 18,
+          "y": 713,
+          "w": 319,
+          "h": 204,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "h2",
+              "t": "Design Leadership + Ops"
+            }
+          ]
+        },
+        {
+          "x": 373,
+          "y": 713,
+          "w": 686,
+          "h": 204,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "For product teams being built or rebuilt from scratch"
+            },
+            {
+              "tag": "p",
+              "t": "Managing design teams, establishing scalable design processes, and integrating design functions into broader business strategy. I've done this as a founder and as a hired leader — the perspective is different and valuable."
+            }
+          ]
+        },
+        {
+          "x": 1095,
+          "y": 713,
+          "w": 87,
+          "h": 204,
+          "empty": true,
+          "runs": []
+        }
+      ]
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 917,
+      "w": 1164,
+      "h": 204,
+      "text": "Product Design StrategyFor founders navigating a 0→1 build o",
+      "columns": [
+        {
+          "x": 18,
+          "y": 917,
+          "w": 319,
+          "h": 204,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "h2",
+              "t": "Product Design Strategy"
+            }
+          ]
+        },
+        {
+          "x": 373,
+          "y": 917,
+          "w": 728,
+          "h": 204,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "For founders navigating a 0→1 build or pivot"
+            },
+            {
+              "tag": "p",
+              "t": "Strategic roadmaps for digital products. Defining user needs, evaluating market requirements, and aligning design outcomes with broader organizational goals — before a single line of code is written."
+            }
+          ]
+        },
+        {
+          "x": 1136,
+          "y": 917,
+          "w": 45,
+          "h": 204,
+          "empty": true,
+          "runs": []
+        }
+      ]
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 1121,
+      "w": 1164,
+      "h": 204,
+      "text": "Custom ToolingFor operations and internal platform teamsImpr",
+      "columns": [
+        {
+          "x": 18,
+          "y": 1121,
+          "w": 319,
+          "h": 204,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "h2",
+              "t": "Custom Tooling"
+            }
+          ]
+        },
+        {
+          "x": 373,
+          "y": 1121,
+          "w": 686,
+          "h": 204,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "For operations and internal platform teams"
+            },
+            {
+              "tag": "p",
+              "t": "Improving the systems organizations rely on internally. Researching employee workflows and designing solutions that reduce friction and improve operational efficiency."
+            }
+          ]
+        },
+        {
+          "x": 1095,
+          "y": 1121,
+          "w": 87,
+          "h": 204,
+          "empty": true,
+          "runs": []
+        }
+      ]
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 1325,
+      "w": 1164,
+      "h": 204,
+      "text": "Data VisualizationFor companies with complex data that needs",
+      "columns": [
+        {
+          "x": 18,
+          "y": 1325,
+          "w": 319,
+          "h": 204,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "h2",
+              "t": "Data Visualization"
+            }
+          ]
+        },
+        {
+          "x": 373,
+          "y": 1325,
+          "w": 698,
+          "h": 204,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "For companies with complex data that needs to be understood"
+            },
+            {
+              "tag": "p",
+              "t": "Organizing complex data environments. Taxonomy, navigation strategy, and content modeling for large-scale platforms — and visualizing dense datasets so any audience can act on them."
+            }
+          ]
+        },
+        {
+          "x": 1107,
+          "y": 1325,
+          "w": 75,
+          "h": 204,
+          "empty": true,
+          "runs": []
+        }
+      ]
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 1529,
+      "w": 1164,
+      "h": 186,
+      "text": "AI-Assisted DesignFor engineering-led teams that need design",
+      "columns": [
+        {
+          "x": 18,
+          "y": 1529,
+          "w": 319,
+          "h": 186,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "h2",
+              "t": "AI-Assisted Design"
+            }
+          ]
+        },
+        {
+          "x": 373,
+          "y": 1529,
+          "w": 686,
+          "h": 186,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "For engineering-led teams that need design to catch up fast"
+            },
+            {
+              "tag": "p",
+              "t": "Directing AI tools to prototype and build at speed — with a human eye on every output."
+            }
+          ]
+        },
+        {
+          "x": 1095,
+          "y": 1529,
+          "w": 87,
+          "h": 186,
+          "empty": true,
+          "runs": []
+        }
+      ]
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 1723,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 1732,
+      "w": 810,
+      "h": 45,
+      "text": "My unique expertise",
+      "runs": []
+    },
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 1777,
+      "w": 1164,
+      "h": 190,
+      "text": "20+Years as a founder, designer, developer, and educator 2Fo",
+      "columns": [
+        {
+          "x": 18,
+          "y": 1777,
+          "w": 332,
+          "h": 190,
+          "empty": true,
+          "runs": []
+        },
+        {
+          "x": 386,
+          "y": 1777,
+          "w": 255,
+          "h": 190,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "h1",
+              "t": "20+"
+            },
+            {
+              "tag": "p",
+              "t": "Years as a founder, designer, developer, and educator"
+            }
+          ]
+        },
+        {
+          "x": 677,
+          "y": 1777,
+          "w": 128,
+          "h": 190,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "h1",
+              "t": "2"
+            },
+            {
+              "tag": "p",
+              "t": "Founding teams"
+            }
+          ]
+        },
+        {
+          "x": 840,
+          "y": 1777,
+          "w": 102,
+          "h": 190,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "h1",
+              "t": "1"
+            },
+            {
+              "tag": "p",
+              "t": "Exit"
+            }
+          ]
+        },
+        {
+          "x": 978,
+          "y": 1777,
+          "w": 204,
+          "h": 190,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "h1",
+              "t": "∞"
+            },
+            {
+              "tag": "p",
+              "t": "0→1 Products Built"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 1966,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 2002,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 2046,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-collection inline collection-38fb908d7b37803da577000b682fef9a",
+      "x": 18,
+      "y": 2055,
+      "w": 1164,
+      "h": 1578,
+      "text": "Datlas: Colombian Atlas of Economic ComplexityDatlas: Colomb",
+      "runs": [],
+      "grid": {
+        "x": 18,
+        "y": 2055,
+        "w": 1164,
+        "h": 1578,
+        "templateColumns": "277.5px 277.5px 277.5px 277.5px",
+        "gap": "18px",
+        "cardCount": 10,
+        "card": {
+          "x": 18,
+          "y": 2071,
+          "w": 278,
+          "h": 598
+        },
+        "cover": {
+          "w": 278,
+          "h": 200
+        }
+      }
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3633,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-button",
+      "x": 18,
+      "y": 3673,
+      "w": 1164,
+      "h": 65,
+      "text": "View all projects",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3742,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3778,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-divider",
+      "x": 18,
+      "y": 3822,
+      "w": 1164,
+      "h": 1,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 3831,
+      "w": 810,
+      "h": 45,
+      "text": "Next steps",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3876,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-heading notion-semantic-string",
+      "x": 18,
+      "y": 3912,
+      "w": 1164,
+      "h": 43,
+      "text": "Let's connect.",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 3955,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    },
+    {
+      "cls": "notion-button",
+      "x": 18,
+      "y": 3995,
+      "w": 1164,
+      "h": 65,
+      "text": "Schedule a conversation",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 4064,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    }
+  ],
+  "dividers": [
+    {
+      "x": 18,
+      "y": 419,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 1723,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 2046,
+      "w": 1164,
+      "h": 1
+    },
+    {
+      "x": 18,
+      "y": 3822,
+      "w": 1164,
+      "h": 1
+    }
+  ],
+  "tables": [],
+  "properties": [],
+  "emptyColumnCount": 7
+}
