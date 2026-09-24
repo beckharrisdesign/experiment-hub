@@ -40,7 +40,8 @@ can be composed and argued before it is written as CSS — which is the order
 A new Figma **design file** (not FigJam — this is a set of surfaces, not a flow),
 titled `portfolio-as-is-figma`, containing:
 
-**1. The view inventory.** One frame per main view type. The set is derived from
+**1. The view inventory.** One frame per main view type — **nine in the site
+hierarchy plus one unlisted pattern** (see round 02.4). The set is derived from
 the CSS itself, which is scoped per page shape and therefore already enumerates
 them — each section below names the rules that prove the view is distinct:
 
@@ -234,6 +235,35 @@ problems.
 **Caveat worth stating:** this is a point-in-time scrape. It is illustrative of
 structure and density, not a content system of record — Notion remains that. The
 staleness risk named in Impact applies to the copy as much as the layout.
+
+**Round 02.4 — `/for-*` moved out of the hierarchy**
+
+- Page: `02.4 Proposed — /for-* pages moved out of the hierarchy` (node `17:2`)
+- Supersedes 02.3. Earlier rounds left intact.
+
+The curated collection is no longer a child of home. It sits in a separated
+**Unlisted** zone behind a broken rule, with no connector — reached by direct link
+only, not linked from any page in the tree.
+
+**The stylesheet already said this and the diagram was contradicting it.** §9 hides
+the page title, the cover, the properties row *and* the breadcrumbs on these pages,
+and the comment gives the reason outright: "a collection page is handed out as a
+direct link, not browsed to — '/ Selected work for Babylist' only tells the reader
+they are inside someone's filing system." A page that deliberately suppresses its
+own breadcrumb is not claiming a place in the hierarchy. Rounds 02.1–02.3 drew it
+as a peer of `/all-projects`, which was wrong.
+
+So the tree is **nine views**; `/for-*` is a **per-recipient pattern** with two live
+instances today (`/for-babylist`, `/for-customerio`) and presumably more later. That
+distinction matters beyond the drawing: a pattern that multiplies per recipient has
+different implications for navigation, sitemap inclusion and staleness than a
+section does.
+
+Worth noting the markup does *not* encode this — `/for-babylist` carries
+`parent-page__index` exactly like the real sections do. This is the second place
+where `parent-page__*` proves insufficient as the sole authority, after the
+navigation-vs-containment split in 02.2. `design.md` now has two reasons to name
+what governs the tree.
 
 **What this round is for:** arguing with the *inventory and the cut* — is this the
 right set of ten, is anything missing, is anything here really the same view as
