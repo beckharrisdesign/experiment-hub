@@ -3,7 +3,7 @@
   "label": "Labs detail",
   "route": "/bhd-labs/mvds",
   "tier": "tree",
-  "capturedAt": "2026-09-24T18:04:07.792Z",
+  "capturedAt": "2026-09-24T18:06:07.922Z",
   "viewport": 1347,
   "rootFontSize": "18px",
   "notionRoot": {
@@ -23,7 +23,21 @@
       "y": 112,
       "w": 1164,
       "h": 526,
-      "text": "StatusValidatingTaglineAn opinionated design system that doe"
+      "text": "StatusValidatingTaglineAn opinionated design system that doe",
+      "runs": [
+        {
+          "tag": "p",
+          "t": "An opinionated design system that doesn’t drift."
+        },
+        {
+          "tag": "p",
+          "t": "Design systems are often rich in components but scarce on point of view. As a designer/founder, I want the bare minimum set of components I need to prototype an idea, plus my own zero-to-one design strategy baked in. An MVP, but for design systems."
+        },
+        {
+          "tag": "p",
+          "t": "Solo founders need an minimally viable design system — an MVDS — that contains core set of components and design principles to put solid foundations into the wet cement of their experiments."
+        }
+      ]
     }
   ],
   "dividers": [],

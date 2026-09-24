@@ -3,7 +3,7 @@
   "label": "Projects (gallery)",
   "route": "/all-projects",
   "tier": "tree",
-  "capturedAt": "2026-09-24T18:03:13.512Z",
+  "capturedAt": "2026-09-24T18:05:51.419Z",
   "viewport": 1347,
   "rootFontSize": "18px",
   "notionRoot": {
@@ -23,7 +23,8 @@
       "y": 143,
       "w": 1164,
       "h": 65,
-      "text": "Projects"
+      "text": "Projects",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -31,7 +32,8 @@
       "y": 207,
       "w": 1164,
       "h": 36,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-collection inline collection-499b908d7b37830782328752b18820e7",
@@ -40,6 +42,7 @@
       "w": 1164,
       "h": 2813,
       "text": "A talk for CMU 70317: AI, Innovation & Competitive Advantage",
+      "runs": [],
       "grid": {
         "x": 18,
         "y": 243,
@@ -66,7 +69,8 @@
       "y": 3056,
       "w": 1164,
       "h": 36,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -74,7 +78,8 @@
       "y": 3092,
       "w": 1164,
       "h": 36,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-divider",
@@ -82,7 +87,8 @@
       "y": 3136,
       "w": 1164,
       "h": 1,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-text notion-text__content notion-semantic-string",
@@ -90,7 +96,8 @@
       "y": 3145,
       "w": 810,
       "h": 45,
-      "text": "Next steps"
+      "text": "Next steps",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -98,7 +105,8 @@
       "y": 3190,
       "w": 1164,
       "h": 36,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-heading notion-semantic-string",
@@ -106,7 +114,8 @@
       "y": 3244,
       "w": 1164,
       "h": 79,
-      "text": "Let's figure out if we’re a fit."
+      "text": "Let's figure out if we’re a fit.",
+      "runs": []
     },
     {
       "cls": "notion-text notion-text__content notion-semantic-string",
@@ -114,7 +123,8 @@
       "y": 3323,
       "w": 810,
       "h": 45,
-      "text": "Set up a conversation about where you are and what you need."
+      "text": "Set up a conversation about where you are and what you need.",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -122,7 +132,8 @@
       "y": 3368,
       "w": 1164,
       "h": 36,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-button",
@@ -130,7 +141,8 @@
       "y": 3408,
       "w": 1164,
       "h": 65,
-      "text": "Let's connect"
+      "text": "Let's connect",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -138,7 +150,8 @@
       "y": 3477,
       "w": 1164,
       "h": 36,
-      "text": ""
+      "text": "",
+      "runs": []
     }
   ],
   "dividers": [

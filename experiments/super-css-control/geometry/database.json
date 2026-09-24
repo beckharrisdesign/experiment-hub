@@ -3,7 +3,7 @@
   "label": "Raw database",
   "route": "/bhd-database",
   "tier": "unlisted",
-  "capturedAt": "2026-09-24T18:04:12.597Z",
+  "capturedAt": "2026-09-24T18:06:09.948Z",
   "viewport": 1347,
   "rootFontSize": "18px",
   "notionRoot": {
@@ -23,7 +23,8 @@
       "y": 395,
       "w": 1164,
       "h": 3503,
-      "text": "Not startedUse The Force, Luke.Use The Force, Luke.Shop Talk"
+      "text": "Not startedUse The Force, Luke.Use The Force, Luke.Shop Talk",
+      "runs": []
     }
   ],
   "dividers": [],

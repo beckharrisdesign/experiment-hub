@@ -3,7 +3,7 @@
   "label": "Essay / talk",
   "route": "/emotional-design-in-the-age-of-ai",
   "tier": "tree",
-  "capturedAt": "2026-09-24T18:04:40.047Z",
+  "capturedAt": "2026-09-24T18:06:01.898Z",
   "viewport": 1347,
   "rootFontSize": "18px",
   "notionRoot": {
@@ -23,7 +23,8 @@
       "y": 451,
       "w": 1164,
       "h": 126,
-      "text": "Year2026"
+      "text": "Year2026",
+      "runs": []
     },
     {
       "cls": "notion-text notion-text__content notion-semantic-string",
@@ -31,7 +32,8 @@
       "y": 577,
       "w": 810,
       "h": 99,
-      "text": "I recently gave a lecture to the students of CMU 70317: AI, "
+      "text": "I recently gave a lecture to the students of CMU 70317: AI, ",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -39,7 +41,8 @@
       "y": 676,
       "w": 1164,
       "h": 36,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-embed",
@@ -47,7 +50,8 @@
       "y": 712,
       "w": 1164,
       "h": 320,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -55,7 +59,8 @@
       "y": 1032,
       "w": 1164,
       "h": 36,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-column-list",
@@ -70,14 +75,25 @@
           "y": 1068,
           "w": 917,
           "h": 141,
-          "empty": false
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "I enjoyed sharing observations, fielding questions on the responsible use of AI and advice for job searchers in the class of 2025, and showing a demo of my personal experimentation setup."
+            },
+            {
+              "tag": "p",
+              "t": "The course has recently been featured in the Carnegie Mellon Tepper School of Business newsletter."
+            }
+          ]
         },
         {
           "x": 971,
           "y": 1068,
           "w": 212,
           "h": 141,
-          "empty": true
+          "empty": true,
+          "runs": []
         }
       ]
     }

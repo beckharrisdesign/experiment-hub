@@ -70,6 +70,14 @@ function measure() {
     const columns = [...node.querySelectorAll(':scope > .notion-column')].map((c) => ({
       ...rel(c),
       empty: c.textContent.trim().length === 0,
+      // Per-column runs, so a generator can place real copy into the measured box
+      runs: [...c.querySelectorAll('h1,h2,h3,p,li,.notion-text__content')]
+        .map((n) => ({
+          tag: n.tagName.toLowerCase(),
+          t: n.textContent.trim().replace(/\s+/g, ' ').slice(0, 320),
+        }))
+        .filter((r) => r.t)
+        .slice(0, 14),
     }));
 
     const gallery = node.querySelector('.notion-collection-gallery');
@@ -94,6 +102,12 @@ function measure() {
       cls: (node.className || '').split(' ').slice(0, 3).join(' '),
       ...box,
       text: node.textContent.trim().replace(/\s+/g, ' ').slice(0, 60),
+      runs: node.querySelector(':scope > .notion-column')
+        ? undefined
+        : [...node.querySelectorAll('h1,h2,h3,p,li,.notion-text__content')]
+            .map((n) => ({ tag: n.tagName.toLowerCase(), t: n.textContent.trim().replace(/\s+/g, ' ').slice(0, 320) }))
+            .filter((r) => r.t)
+            .slice(0, 14),
       columns: columns.length ? columns : undefined,
       grid,
     });

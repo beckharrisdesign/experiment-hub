@@ -3,7 +3,7 @@
   "label": "Home",
   "route": "/",
   "tier": "tree",
-  "capturedAt": "2026-09-24T18:03:12.093Z",
+  "capturedAt": "2026-09-24T18:05:50.395Z",
   "viewport": 1347,
   "rootFontSize": "18px",
   "notionRoot": {
@@ -29,14 +29,25 @@
           "y": 80,
           "w": 1058,
           "h": 362,
-          "empty": false
+          "empty": false,
+          "runs": [
+            {
+              "tag": "h1",
+              "t": "Strategic leadership for complex ecosystems"
+            },
+            {
+              "tag": "p",
+              "t": "Katy Harris is a product design executive and former founder who brings together a rare blend of hands-on design craft, technical fluency, and operational leadership. Her career spans front-end engineering, visualization design, startup founding, and design leadership across enterprise software, where she has helped sh"
+            }
+          ]
         },
         {
           "x": 1112,
           "y": 80,
           "w": 71,
           "h": 362,
-          "empty": true
+          "empty": true,
+          "runs": []
         }
       ]
     },
@@ -46,7 +57,8 @@
       "y": 442,
       "w": 1164,
       "h": 18,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -54,7 +66,8 @@
       "y": 460,
       "w": 1164,
       "h": 18,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-divider",
@@ -62,7 +75,8 @@
       "y": 486,
       "w": 1164,
       "h": 1,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-text notion-text__content notion-semantic-string",
@@ -70,7 +84,8 @@
       "y": 495,
       "w": 810,
       "h": 45,
-      "text": "Unique expertise"
+      "text": "Unique expertise",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -78,7 +93,8 @@
       "y": 540,
       "w": 1164,
       "h": 18,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-column-list",
@@ -93,21 +109,50 @@
           "y": 558,
           "w": 273,
           "h": 367,
-          "empty": true
+          "empty": true,
+          "runs": []
         },
         {
           "x": 327,
           "y": 558,
           "w": 410,
           "h": 367,
-          "empty": false
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "20+ years blurring the lines between design, engineering, product, and business leadership"
+            },
+            {
+              "tag": "p",
+              "t": "Drive strategy for complex, enterprise, AI-enabled product ecosystems"
+            },
+            {
+              "tag": "p",
+              "t": "Founding team member for two startups with one acquisition"
+            }
+          ]
         },
         {
           "x": 773,
           "y": 558,
           "w": 410,
           "h": 367,
-          "empty": false
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Director-level design leader"
+            },
+            {
+              "tag": "p",
+              "t": "Principal-level product designer with strengths in zero-to-one products, data visualization, and creative programming"
+            },
+            {
+              "tag": "p",
+              "t": "Adjunct professor of information and interaction design"
+            }
+          ]
         }
       ]
     },
@@ -117,7 +162,8 @@
       "y": 924,
       "w": 1164,
       "h": 18,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-divider",
@@ -125,7 +171,8 @@
       "y": 950,
       "w": 1164,
       "h": 1,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-text notion-text__content notion-semantic-string",
@@ -133,7 +180,8 @@
       "y": 959,
       "w": 810,
       "h": 45,
-      "text": "Case studies"
+      "text": "Case studies",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -141,7 +189,8 @@
       "y": 1004,
       "w": 1164,
       "h": 18,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-column-list",
@@ -156,14 +205,49 @@
           "y": 1022,
           "w": 282,
           "h": 1605,
-          "empty": true
+          "empty": true,
+          "runs": []
         },
         {
           "x": 336,
           "y": 1022,
           "w": 846,
           "h": 1605,
-          "empty": false
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "An AI orchestration layer for design leaders"
+            },
+            {
+              "tag": "p",
+              "t": "An AI orchestration layer for founders"
+            },
+            {
+              "tag": "p",
+              "t": "Leadership and resilience for high‑stakes enterprise content"
+            },
+            {
+              "tag": "p",
+              "t": "Proven playbook for wrangling post‑acquisition product and org sprawl"
+            },
+            {
+              "tag": "p",
+              "t": "Rigorous experimentation for establishing product market fit"
+            },
+            {
+              "tag": "p",
+              "t": "Actionable UX and visualization interventions for dense economic research"
+            },
+            {
+              "tag": "p",
+              "t": "Custom data storytelling for qualitative investigative reporting"
+            },
+            {
+              "tag": "p",
+              "t": "ML‑powered visualization of high-volume financial data"
+            }
+          ]
         }
       ],
       "grid": {
@@ -192,7 +276,8 @@
       "y": 2627,
       "w": 1164,
       "h": 18,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-divider",
@@ -200,7 +285,8 @@
       "y": 2653,
       "w": 1164,
       "h": 1,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-text notion-text__content notion-semantic-string",
@@ -208,7 +294,8 @@
       "y": 2662,
       "w": 810,
       "h": 45,
-      "text": "Speaking + teaching"
+      "text": "Speaking + teaching",
+      "runs": []
     },
     {
       "cls": "notion-column-list",
@@ -223,14 +310,21 @@
           "y": 2707,
           "w": 282,
           "h": 265,
-          "empty": false
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Writing and talks I’ve given lately at the intersection of design, innovation, entrepreneurship, and experimentation."
+            }
+          ]
         },
         {
           "x": 336,
           "y": 2707,
           "w": 846,
           "h": 265,
-          "empty": false
+          "empty": false,
+          "runs": []
         }
       ]
     },
@@ -240,7 +334,8 @@
       "y": 2973,
       "w": 1164,
       "h": 18,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -248,7 +343,8 @@
       "y": 2991,
       "w": 1164,
       "h": 18,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-divider",
@@ -256,7 +352,8 @@
       "y": 3017,
       "w": 1164,
       "h": 1,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-text notion-text__content notion-semantic-string",
@@ -264,7 +361,8 @@
       "y": 3026,
       "w": 810,
       "h": 45,
-      "text": "Lagniappe"
+      "text": "Lagniappe",
+      "runs": []
     },
     {
       "cls": "notion-column-list",
@@ -279,14 +377,21 @@
           "y": 3071,
           "w": 282,
           "h": 320,
-          "empty": false
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "A collection of extras and highlights"
+            }
+          ]
         },
         {
           "x": 336,
           "y": 3071,
           "w": 846,
           "h": 320,
-          "empty": false
+          "empty": false,
+          "runs": []
         }
       ],
       "grid": {
@@ -315,7 +420,8 @@
       "y": 3391,
       "w": 1164,
       "h": 18,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -323,7 +429,8 @@
       "y": 3409,
       "w": 1164,
       "h": 18,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-divider",
@@ -331,7 +438,8 @@
       "y": 3435,
       "w": 1164,
       "h": 1,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-text notion-text__content notion-semantic-string",
@@ -339,7 +447,8 @@
       "y": 3444,
       "w": 810,
       "h": 45,
-      "text": "Next steps"
+      "text": "Next steps",
+      "runs": []
     },
     {
       "cls": "notion-column-list",
@@ -354,14 +463,30 @@
           "y": 3489,
           "w": 282,
           "h": 258,
-          "empty": false
+          "empty": false,
+          "runs": [
+            {
+              "tag": "h1",
+              "t": "Let’s connect."
+            }
+          ]
         },
         {
           "x": 336,
           "y": 3489,
           "w": 846,
           "h": 258,
-          "empty": false
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "BHD Consulting Currently open to full-time, fractional, and venture partnerships."
+            },
+            {
+              "tag": "p",
+              "t": "View services"
+            }
+          ]
         }
       ]
     },
@@ -371,7 +496,8 @@
       "y": 3747,
       "w": 1164,
       "h": 18,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -379,7 +505,8 @@
       "y": 3765,
       "w": 1164,
       "h": 18,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -387,7 +514,8 @@
       "y": 3783,
       "w": 1164,
       "h": 18,
-      "text": ""
+      "text": "",
+      "runs": []
     }
   ],
   "dividers": [

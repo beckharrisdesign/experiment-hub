@@ -3,7 +3,7 @@
   "label": "Project detail",
   "route": "/connected-china",
   "tier": "tree",
-  "capturedAt": "2026-09-24T18:04:06.508Z",
+  "capturedAt": "2026-09-24T18:06:05.199Z",
   "viewport": 1347,
   "rootFontSize": "18px",
   "notionRoot": {
@@ -23,7 +23,8 @@
       "y": 391,
       "w": 1164,
       "h": 126,
-      "text": "Year2014"
+      "text": "Year2014",
+      "runs": []
     },
     {
       "cls": "notion-text notion-text__content notion-semantic-string",
@@ -31,7 +32,8 @@
       "y": 517,
       "w": 810,
       "h": 153,
-      "text": "Connected China was a Reuters data journalism initiative in "
+      "text": "Connected China was a Reuters data journalism initiative in ",
+      "runs": []
     },
     {
       "cls": "notion-button",
@@ -39,7 +41,8 @@
       "y": 674,
       "w": 1164,
       "h": 65,
-      "text": "Explore Connected China"
+      "text": "Explore Connected China",
+      "runs": []
     },
     {
       "cls": "notion-callout border",
@@ -47,7 +50,45 @@
       "y": 774,
       "w": 1347,
       "h": 344,
-      "text": "ChallengesHelp Western readers understand the political land"
+      "text": "ChallengesHelp Western readers understand the political land",
+      "runs": [
+        {
+          "tag": "li",
+          "t": "Help Western readers understand the political landscape as Xi Jinping rose to power"
+        },
+        {
+          "tag": "li",
+          "t": "Activate a dense dataset compiled over a year by 20+ Reuters journalists"
+        },
+        {
+          "tag": "li",
+          "t": "Build a data-rich interactive story for early iPad hardware with limited time-zone overlap"
+        },
+        {
+          "tag": "li",
+          "t": "Prototyped in live code, reviewed with the journalism team, and iterated repeatedly"
+        },
+        {
+          "tag": "li",
+          "t": "Used daily standups to coordinate design, development, content, and editorial decisions"
+        },
+        {
+          "tag": "li",
+          "t": "Led design and project management across a distributed team of designers, developers, and writers"
+        },
+        {
+          "tag": "li",
+          "t": "Won the Data Journalism Award and Deadline Club Award"
+        },
+        {
+          "tag": "li",
+          "t": "Earned recognition from Fast Company, SABEW, and Best American Infographics"
+        },
+        {
+          "tag": "li",
+          "t": "Created an interactive form for making opaque political power structures easier to explore"
+        }
+      ]
     },
     {
       "cls": "notion-heading notion-semantic-string",
@@ -55,7 +96,8 @@
       "y": 1154,
       "w": 1164,
       "h": 79,
-      "text": "Our process"
+      "text": "Our process",
+      "runs": []
     },
     {
       "cls": "notion-column-list",
@@ -70,14 +112,21 @@
           "y": 1233,
           "w": 353,
           "h": 460,
-          "empty": false
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Fathom collaborated with Reuters to find an interactive form for the dataset the China news desk had been amassing for over a year. I served as lead designer as well as project manager for the 3–5 additional designers, developers, and content writers working together to make it a reality."
+            }
+          ]
         },
         {
           "x": 407,
           "y": 1233,
           "w": 776,
           "h": 460,
-          "empty": true
+          "empty": true,
+          "runs": []
         }
       ]
     },
@@ -87,7 +136,8 @@
       "y": 1711,
       "w": 1164,
       "h": 79,
-      "text": "The final app"
+      "text": "The final app",
+      "runs": []
     },
     {
       "cls": "notion-column-list",
@@ -102,14 +152,16 @@
           "y": 1790,
           "w": 353,
           "h": 1831,
-          "empty": true
+          "empty": true,
+          "runs": []
         },
         {
           "x": 407,
           "y": 1790,
           "w": 776,
           "h": 1831,
-          "empty": true
+          "empty": true,
+          "runs": []
         }
       ]
     },
@@ -119,7 +171,8 @@
       "y": 3639,
       "w": 1164,
       "h": 79,
-      "text": "Further reading"
+      "text": "Further reading",
+      "runs": []
     },
     {
       "cls": "notion-column-list",
@@ -134,14 +187,62 @@
           "y": 3718,
           "w": 564,
           "h": 505,
-          "empty": false
+          "empty": false,
+          "runs": [
+            {
+              "tag": "li",
+              "t": "Fathom Connected China"
+            },
+            {
+              "tag": "li",
+              "t": "Reuters Connected China video archives"
+            },
+            {
+              "tag": "li",
+              "t": "“Reuters bets big on context, structure and dataviz to understand power in China,” Neiman Lab"
+            },
+            {
+              "tag": "li",
+              "t": "“Connecting China, visually,” Columbia Journalism Review"
+            },
+            {
+              "tag": "li",
+              "t": "“Reconnecting China,” Medium"
+            }
+          ]
         },
         {
           "x": 618,
           "y": 3718,
           "w": 564,
           "h": 505,
-          "empty": false
+          "empty": false,
+          "runs": [
+            {
+              "tag": "li",
+              "t": "2013 Data Journalism Award"
+            },
+            {
+              "tag": "li",
+              "t": "2013 Innovation by Design Awards (finalist)"
+            },
+            {
+              "tag": "li",
+              "t": "2013 Best in Business Competition, News Agencies General Excellence Category, Reuters"
+            },
+            {
+              "tag": "p",
+              "t": "”Reuters excelled in a tough field with an entry that showed strength in core business-news reporting and exceptional enterprise journalism that displayed courage, ambition and mastery of new storytelling techniques. Where Reuters clearly excelled was with its two enterprise pieces—Assets of the Ayatollah, and Connecte"
+            },
+            {
+              "tag": "li",
+              "t": "2014 Deadline Club Award"
+            },
+            {
+              "tag": "li",
+              "t": "2014 Best American Infographics"
+            }
+          ]
         }
       ]
     },
@@ -151,7 +252,8 @@
       "y": 4223,
       "w": 1164,
       "h": 36,
-      "text": ""
+      "text": "",
+      "runs": []
     },
     {
       "cls": "notion-text",
@@ -159,7 +261,8 @@
       "y": 4259,
       "w": 1164,
       "h": 36,
-      "text": ""
+      "text": "",
+      "runs": []
     }
   ],
   "dividers": [],
