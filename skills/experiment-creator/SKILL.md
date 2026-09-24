@@ -2,7 +2,7 @@
 name: experiment-creator
 description: >-
   Refines raw ideas into structured experiments, creates the experiment directory
-  and metadata in data/experiments.json, documentation and prototype entries. Use
+  and registers the experiment as a row in the Notion BHD Labs Database. Use
   when starting a new experiment; waits for explicit approval before creating files.
 ---
 
@@ -36,16 +36,22 @@ This agent helps refine experiment ideas and creates structured experiment entri
 
 - **Experiment Statement**: Clear, concise statement of what is being attempted
 - **Directory Structure**: Created experiment directory in `experiments/` folder
-- **Metadata**: JSON entry in `data/experiments.json` with:
+- **Metadata**: a row in the **Notion BHD Labs Database** with:
   - Statement
-  - Directory path
+  - Slug (must match the experiment directory name)
   - Status (default: Active)
   - Created date
   - Tags (suggested based on content)
-  - Documentation ID (linked)
-  - Prototype ID (linked)
-- **Documentation Entry**: Initial Documentation entry in `data/documentation.json`
-- **Prototype Entry**: Initial Prototype entry in `data/prototypes.json`
+  - `Public` checkbox — **leave unchecked unless the user asks**; the hub is
+    private-by-default and an unchecked row 404s on public routes
+
+> **Notion is the source of truth.** `data/experiments.json` is a legacy seed file
+> (it feeds `scripts/seed-supabase.ts` and the site-map tooling) and is **not read
+> at runtime** — `lib/data.ts` reads Notion, then Supabase. Do not add rows to it
+> and do not keep it in sync.
+
+> **Never create a Notion row without explicit approval.** Re-query for an existing
+> row immediately before inserting.
 
 ## Agent Instructions
 
@@ -103,7 +109,7 @@ openspec new change <slug> --schema bhd-experiment
 
 Then `/opsx:propose` on that change (one phase artifact per approval). For code, add a child change: `openspec new change <slug>-build --schema experiment-hub-lite`. See `openspec/schemas/bhd-experiment/README.md`.
 
-Set `openspecChangeId` and `openspecSchema: bhd-experiment` on the `experiments.json` row when using BHD so the hub list shows a phase chip and the detail page Lifecycle tab loads `explore.md` and later phases.
+Name the change directory to match the experiment's Notion slug. The Lifecycle tab resolves the change id from the experiment id and defaults the schema to `bhd-experiment`, so matching names is all that is required for the phase chip and the tab to load `explore.md` and later phases.
 
 ## Example Interaction
 

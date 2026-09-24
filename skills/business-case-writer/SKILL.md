@@ -81,7 +81,7 @@ Use the **Document template** below. Match section order and table shapes exactl
 
 | Context                          | Path                                                                                                                           |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Experiment Hub (this repo)**   | `experiments/<experiment-id>/docs/business-case.md` — use the `id` from `data/experiments.json` (e.g. `simple-seed-organizer`) |
+| **Experiment Hub (this repo)**   | `experiments/<experiment-id>/docs/business-case.md` — use the experiment's Notion slug (e.g. `simple-seed-organizer`) |
 | **Claude web / cloud artifacts** | `/mnt/user-data/outputs/business-case-<slug>.md` — slug: lowercase, hyphenated product name                                    |
 | **Ad hoc**                       | Path the user specifies                                                                                                        |
 
