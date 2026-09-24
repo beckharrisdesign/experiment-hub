@@ -167,6 +167,39 @@ The first two are live SEO and UX bugs — crawlers are being pointed at them. O
 scope for a capture change, and not something to fix quietly inside one; raised
 here so it is on the record.
 
+**Round 02.2 — detail views re-parented, readable canvas**
+
+- Page: `02.2 Proposed — detail views re-parented, readable canvas` (node `10:2`)
+- Supersedes 02.1; earlier rounds left intact.
+
+Two fixes. The 02.1 canvas was `#143639`, the same colour as the node backgrounds,
+so the views dissolved into the ground instead of reading as cards. 02.2 uses a
+neutral `#EDEFEF` canvas with dark labels.
+
+And the detail views moved: **Project detail under Projects, Labs detail under Labs**,
+rather than both hanging off home.
+
+### This makes it a navigation model, not a containment model
+
+Worth stating plainly, because it changes what the artifact is and the two
+structures genuinely disagree:
+
+| View | Markup says | Sitemap places it | Agree? |
+|---|---|---|---|
+| Labs detail `/bhd-labs/mvds` | `parent-page__bhd-labs` | under Labs index | ✅ |
+| Project detail `/connected-china` | `parent-page__index` | under Projects | ❌ |
+
+Notion's containment is flat under home for case studies; the site's *navigation*
+is not — a visitor reaches `/connected-china` through the Projects gallery. The
+sitemap follows navigation, which is what a sitemap is for. The divergent node
+carries the note on the board rather than hiding it.
+
+The consequence is that `parent-page__*` can no longer be the sole source for the
+tree. It was sufficient at 02.1 because the tree was flat; it is not sufficient
+now. `design.md` should say what the authority is when the two disagree — the
+honest answer is likely "navigation, with containment recorded as a second
+attribute", but that is a decision, not an observation.
+
 **What this round is for:** arguing with the *inventory and the cut* — is this the
 right set of ten, is anything missing, is anything here really the same view as
 something else. Fidelity is deliberately rough. The detailed as-is pass, the
