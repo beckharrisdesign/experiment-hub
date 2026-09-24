@@ -17,6 +17,30 @@
    Change a value here and it updates everywhere it's used below.
    ============================================================ */
 :root {
+  /* WHICH COPY IS THIS?
+     Two copies of this library can be applying at once — the one Super compiles
+     into its own inline <style> block, and this one, served from
+     labs.beckharrisdesign.com. They look identical, so nothing on screen tells
+     you which is winning.
+
+     Each copy declares its own marker, so both are detectable independently
+     (a shared name would only reveal whichever came last in the cascade):
+
+       this file  -> --bhd-css-remote
+       Super's    -> --bhd-css-inline   (add `--bhd-css-inline: 1;` to :root in
+                                         Super's custom-CSS field to tag it)
+
+     Read them from the console on the live site:
+
+       const cs = getComputedStyle(document.documentElement);
+       cs.getPropertyValue('--bhd-css-remote').trim()   // "1" => this file is live
+       cs.getPropertyValue('--bhd-css-inline').trim()   // "1" => Super's copy too
+
+     No version string here on purpose. `node scripts/super-css/check.mjs`
+     compares the served bytes against the repo, which cannot silently go stale
+     the way a hand-bumped version would. */
+  --bhd-css-remote: 1;
+
   --site-max-width: 1200px;      /* overall page width cap */
   --content-max-width: 45rem;    /* reading width for body text & property text */
   --accent: 173 223 227;         /* brand aqua, #ADDFE3 — same as navbar button bg.

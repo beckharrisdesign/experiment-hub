@@ -119,7 +119,17 @@ const normalize = (css) =>
 async function main() {
   const asJson = process.argv.includes('--json');
   const local = readFileSync(CSS_PATH, 'utf8');
-  const report = { delivery: null, drift: null, variables: [], selectors: [], problems: [] };
+  const report = {
+    delivery: null,
+    sources: [],
+    markers: {},
+    remote: null,
+    inline: null,
+    variables: [],
+    selectors: [],
+    problems: [],
+    notes: [],
+  };
 
   const home = await get(SITE + '/');
   if (!home.ok) {
@@ -127,30 +137,79 @@ async function main() {
     process.exit(1);
   }
 
-  // 1. DELIVERY -------------------------------------------------------------
+  // 1. SOURCES --------------------------------------------------------------
+  // The two copies are NOT mutually exclusive. During the cutover both apply at
+  // once, and because they are identical nothing on screen says so — which is
+  // the whole reason each copy carries its own marker.
+  const inlineBlocks = [...home.text.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)]
+    .map((m) => m[1])
+    .filter((b) => FINGERPRINT.test(b));
+  const inlined = inlineBlocks.length > 0;
   const linked = home.text.includes(ASSET_URL);
-  const inlined = FINGERPRINT.test(home.text);
-  report.delivery = linked ? 'external-link' : inlined ? 'super-inline' : 'absent';
+
+  report.sources = [linked && 'remote', inlined && 'inline'].filter(Boolean);
+  report.delivery =
+    report.sources.length === 2
+      ? 'both'
+      : report.sources[0] === 'remote'
+        ? 'external-link'
+        : report.sources[0] === 'inline'
+          ? 'super-inline'
+          : 'absent';
+
   if (report.delivery === 'absent') {
     report.problems.push('The library is neither linked nor inlined — the site is running stock Super.');
   }
+  if (report.delivery === 'both') {
+    report.problems.push(
+      'Both copies are applying. Expected mid-cutover; clear Super\'s custom-CSS field to finish.',
+    );
+  }
 
-  // 2. DRIFT ----------------------------------------------------------------
+  // Marker presence, read straight out of the served CSS.
+  report.markers = {
+    remote: /--bhd-css-remote\s*:/.test(home.text) || null,
+    inline: inlineBlocks.some((b) => /--bhd-css-inline\s*:/.test(b)) || null,
+  };
+  if (inlined && !report.markers.inline) {
+    report.notes.push(
+      "Super's inline copy is untagged — add `--bhd-css-inline: 1;` to :root in its custom-CSS field.",
+    );
+  }
+
+  // 2. FRESHNESS -------------------------------------------------------------
+  const localBody = normalize(local);
+
+  if (linked) {
+    const asset = await get(ASSET_URL);
+    if (!asset.ok) {
+      report.remote = `unreachable (${asset.status})`;
+      report.problems.push(`${ASSET_URL} returned ${asset.status} — the <link> resolves to nothing.`);
+    } else {
+      // Exact file, so compare equality rather than containment.
+      const same = normalize(asset.text) === localBody;
+      report.remote = same ? 'in-sync' : 'STALE';
+      if (!same) {
+        report.problems.push(
+          'Deployed CSS differs from your local public/super/site.css — most often an uncommitted edit, otherwise a pending deploy or a stale edge cache.',
+        );
+      }
+    }
+  } else {
+    report.remote = 'n/a (not linked)';
+  }
+
   if (inlined) {
-    const blocks = [...home.text.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]);
-    const carrier = blocks.find((b) => FINGERPRINT.test(b)) || '';
-    // Super appends the library to its theme block, so check containment,
-    // not equality — the block legitimately holds theme vars too.
-    const localBody = normalize(local);
-    const contains = normalize(carrier).includes(localBody);
-    report.drift = contains ? 'in-sync' : 'DIFFERS';
-    if (!contains) {
+    // Super appends the library to its theme block, so check containment.
+    const same = normalize(inlineBlocks[0]).includes(localBody);
+    report.inline = same ? 'in-sync' : 'DIFFERS';
+    if (!same) {
       report.problems.push(
         "Super's inline copy does not match public/super/site.css — the two have drifted.",
       );
     }
   } else {
-    report.drift = 'n/a (not inlined)';
+    report.inline = 'n/a (not inlined)';
   }
 
   // 3 + 4. VARIABLES AND SELECTORS -----------------------------------------
@@ -188,8 +247,10 @@ async function main() {
   } else {
     const mark = (ok) => (ok ? 'ok  ' : 'MISS');
     console.log(`\nSuper CSS check — ${SITE}\n`);
-    console.log(`  delivery : ${report.delivery}`);
-    console.log(`  drift    : ${report.drift}`);
+    console.log(`  delivery : ${report.delivery}` + (report.sources.length === 2 ? '  (both copies applying)' : ''));
+    console.log(`  remote   : ${report.remote}`);
+    console.log(`  inline   : ${report.inline}`);
+    console.log(`  markers  : remote=${report.markers.remote ? 'yes' : 'no'} inline=${report.markers.inline ? 'yes' : 'no'}`);
     console.log(
       `  variables: ${report.variables.length - missingVars.length}/${report.variables.length} present`,
     );
@@ -198,6 +259,11 @@ async function main() {
     );
     for (const v of missingVars) console.log(`  ${mark(false)} var ${v.name}`);
     for (const s of missingSels) console.log(`  ${mark(false)} sel .${s.name}`);
+    if (report.notes.length) {
+      console.log('Notes:');
+      for (const n of report.notes) console.log(`  - ${n}`);
+      console.log('');
+    }
     if (report.problems.length) {
       console.log('\nProblems:');
       for (const p of report.problems) console.log(`  - ${p}`);
