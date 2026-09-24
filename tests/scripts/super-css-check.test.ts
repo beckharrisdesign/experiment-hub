@@ -11,8 +11,12 @@ import { diagnoseFreshness } from '../../scripts/super-css/check.mjs';
 const fakeGit =
   (answers: Record<string, { ok: boolean; out?: string }>) =>
   (args: string[]) => {
-    const key = args[0];
-    return { ok: false, out: '', ...(answers[key] ?? {}) };
+    // Filled field by field rather than spread over defaults: spreading an
+    // answer whose `ok` is required makes tsc reject the default as dead
+    // (TS2783), and an unanswered command must still come back as a clean
+    // failure rather than undefined.
+    const answer = answers[args[0]];
+    return { ok: answer?.ok ?? false, out: answer?.out ?? '' };
   };
 
 const IN_REPO = { 'rev-parse': { ok: true, out: 'true\n' } };
