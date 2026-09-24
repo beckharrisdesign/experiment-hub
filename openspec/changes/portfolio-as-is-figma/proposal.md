@@ -55,7 +55,7 @@ them — each section below names the rules that prove the view is distinct:
 | Curated collection | `/for-babylist` | §9 in full — the only view with the card row |
 | Consultation | `/bhd-consultation` | §5 accent-coloured H2 section labels |
 | About | `/katy-harris` | §7 stacked properties at length |
-| Essay / talk | `/what-i-believe` | §4 body measure with no collection |
+| Essay / talk | `/emotional-design-in-the-age-of-ai` | §4 body measure with no collection |
 
 **2. The token set.** Defined as Figma variables, read from the live CSS rather
 than sampled by eye:
@@ -126,6 +126,46 @@ view frames at 1200px:
 Each frame carries a caption naming the route it represents and the CSS section
 that makes it a distinct view, so the inventory argues for itself rather than
 asking to be taken on trust.
+
+**Round 02.1 — sitemap structure**
+
+- Page: `02.1 Proposed — sitemap structure, hierarchy from parent-page classes` (node `7:2`)
+- Round 01 left untouched, per the never-edit-a-built-page rule in `rules/figma.mdc`.
+
+The same ten views, arranged as a tree instead of a row. **The hierarchy is read,
+not assumed:** Super emits a `parent-page__<slug>` class on every page, so the
+structure comes from the live markup.
+
+| Depth | Views | Evidence |
+|---|---|---|
+| 0 | Home | `page__index`, no `parent-page__*` |
+| 1 | Gallery, Project, Curated, Consultation, About, Essay, Labs index, Database | all carry `parent-page__index` |
+| 2 | Labs detail | `parent-page__bhd-labs` |
+
+Worth noting the tree is the **Notion page tree, not the navigation**. `/connected-china`
+is a child of home by this measure, though a visitor reaches it from the homepage
+gallery *and* from `/all-projects`. Any navigation model belongs in `design.md`.
+
+### Two corrections this round forced
+
+**The Essay / talk exemplar was a dead route.** `/what-i-believe` returns **404** —
+no `notion-root`, no page classes, nothing rendered. Round 01 named it as the
+canonical essay view on the strength of its appearing in `sitemap.xml`. Swapped for
+`/emotional-design-in-the-age-of-ai`, which is a real page carrying
+`parent-page__index`.
+
+**The sitemap advertises routes that do not resolve.** Auditing all 82 non-history
+routes found three 404s:
+
+| Route | Note |
+|---|---|
+| `/what-i-believe` | dead, advertised in `sitemap.xml` |
+| `/design-leadership` | dead, advertised in `sitemap.xml` |
+| `/site-unavailable` | Super system page; expected |
+
+The first two are live SEO and UX bugs — crawlers are being pointed at them. Out of
+scope for a capture change, and not something to fix quietly inside one; raised
+here so it is on the record.
 
 **What this round is for:** arguing with the *inventory and the cut* — is this the
 right set of ten, is anything missing, is anything here really the same view as
