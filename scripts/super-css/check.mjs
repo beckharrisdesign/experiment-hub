@@ -35,6 +35,8 @@ const ROUTES = [
   '/bhd-labs', // labs cards + borderless tables
   '/bhd-labs/mvds', // project page: header, page properties
   '/for-babylist', // section 9: the curated card row
+  '/bhd-consultation', // section 5: the accent-coloured H2 labels
+  '/bhd-labs/figma-grabber', // section 7: a page carrying URL properties
 ];
 
 /** Variables the library defines itself — not Super's to provide. */
@@ -166,11 +168,10 @@ async function main() {
     );
   }
 
-  // Marker presence, read straight out of the served CSS.
-  report.markers = {
-    remote: /--bhd-css-remote\s*:/.test(home.text) || null,
-    inline: inlineBlocks.some((b) => /--bhd-css-inline\s*:/.test(b)) || null,
-  };
+  // Marker presence. The remote marker lives in the linked FILE, not the page
+  // HTML — testing home.text here reported "no" while the marker was live.
+  report.markers = { remote: null, inline: null };
+  report.markers.inline = inlineBlocks.some((b) => /--bhd-css-inline\s*:/.test(b)) || null;
   if (inlined && !report.markers.inline) {
     report.notes.push(
       "Super's inline copy is untagged — add `--bhd-css-inline: 1;` to :root in its custom-CSS field.",
@@ -187,6 +188,7 @@ async function main() {
       report.problems.push(`${ASSET_URL} returned ${asset.status} — the <link> resolves to nothing.`);
     } else {
       // Exact file, so compare equality rather than containment.
+      report.markers.remote = /--bhd-css-remote\s*:/.test(asset.text) || null;
       const same = normalize(asset.text) === localBody;
       report.remote = same ? 'in-sync' : 'STALE';
       if (!same) {
@@ -226,7 +228,11 @@ async function main() {
     }
     const css = await collectCss(page.text, SITE);
     for (const v of definedVars(css)) seenVars.add(v);
-    for (const s of wantSels) if (page.text.includes(s)) seenSels.add(s);
+    // Search the MARKUP only. While Super inlined the library, its <style>
+    // block sat in this HTML, so every class name matched its own stylesheet
+    // and the count was silently inflated to a full pass.
+    const markup = page.text.replace(/<style[^>]*>[\s\S]*?<\/style>/g, '');
+    for (const s of wantSels) if (markup.includes(s)) seenSels.add(s);
   }
 
   report.variables = wantVars.map((v) => ({ name: v, present: seenVars.has(v) }));
