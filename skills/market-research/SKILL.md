@@ -3,7 +3,7 @@ name: market-research
 description: >-
   TAM/SAM/SOM and competitive analysis for commercial experiments; lighter problem/value
   or personal reflection for tool and personal types. Scores and go/no-go; uses
-  data/experiments.json type. Use after an experiment exists and before PRD or business case.
+  the experiment's Notion row type. Use after an experiment exists and before PRD or business case.
 ---
 
 # Market Research Agent
@@ -56,7 +56,7 @@ This agent conducts research and opportunity analysis for product experiments. T
 ## Input
 
 - **Experiment ID**: Reference to existing experiment
-- **Experiment Type**: `commercial`, `tool`, or `personal` — check `data/experiments.json`
+- **Experiment Type**: `commercial`, `tool`, or `personal` — read from the experiment's Notion row
 - **Product Concept**: Description of the product/experiment
 - **Target Customer**: Who the product serves (consumer, B2B, specific industry) — for commercial only
 - **Geographic Scope**: Target markets — for commercial only
@@ -77,7 +77,7 @@ This agent conducts research and opportunity analysis for product experiments. T
 
 ### Step 0: Check Experiment Type
 
-Before doing anything else, look up the experiment in `data/experiments.json` and read the `type` field.
+Before doing anything else, look up the experiment's row in the Notion BHD Labs Database and read its type. (`data/experiments.json` is a legacy seed file, not the source of truth — do not read or update it.)
 
 - **`commercial`** → continue with Steps 1–9 below
 - **`tool`** → skip to [Tool: Problem & Value Assessment](#tool-problem--value-assessment)
@@ -432,8 +432,10 @@ Using the scoring criteria from `agents/scoring-criteria.md`, generate scores fo
 
 After approval:
 
-- Update `data/experiments.json` with the scores
-- Include brief rationale in a comment or note
+- Write the scores to the `Score:PI` / `Score:SI` / `Score:BI` columns on the
+  experiment's Notion row (see `rules/scoring-criteria.mdc`)
+- Put each justification on the row's `Why: Personal` / `Why: Social` /
+  `Why: Business` child page
 
 **⚠️ COMPLETION**: After saving the report and scores, inform the user that market research and scoring are complete. The report can inform PRD creation, but **DO NOT automatically proceed** to PRD creation. Wait for explicit user request.
 

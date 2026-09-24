@@ -13,7 +13,7 @@ globs: openspec/**/*
 
 ### The one exception: `bhd-experiment`
 
-Not an alternative way to run a change — it is the backing schema for a **shipped hub feature**. Set `schema: bhd-experiment` in `.openspec.yaml` only when the experiment's detail page should render phase tabs (canonical spec: [`hub-bhd-phase-tabs`](../openspec/specs/hub-bhd-phase-tabs/spec.md); the row also needs `openspecSchema: bhd-experiment` in `data/experiments.json`).
+Not an alternative way to run a change — it is the backing schema for a **shipped hub feature**. Set `schema: bhd-experiment` in `.openspec.yaml` only when the experiment's detail page should render phase tabs (canonical spec: [`hub-bhd-phase-tabs`](../openspec/specs/hub-bhd-phase-tabs/spec.md)). The tabs resolve off the **Notion row's slug** matching the change directory name — `resolveOpenSpecChangeId` falls back to the experiment id and the schema defaults to `bhd-experiment`, so no registry field is required.
 
 Phase artifacts `explore.md` → `propose.md` → `apply.md` → `archive.md`, one per approval. Rules: [`bhd-experiment.mdc`](bhd-experiment.mdc). **Do not** mix lite files (`proposal.md`, `tasks.md`) on the same change. **Code** ships via a child change `--schema experiment-hub-lite` with `/opsx:apply` on the child only; the parent's `/opsx:apply` writes Build Units, not task checkboxes.
 

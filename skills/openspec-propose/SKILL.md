@@ -67,8 +67,7 @@ When ready to implement, run /opsx:apply
 - **`explore`:** Strategic Why (or intentional blank), proxy user if needed, permutations, M/P/S score profile per `rules/scoring-criteria.mdc`. Link `experiments/<slug>/docs/market-research.md` when present.
 - **`propose`:** After draft, prompt re-score vs Explore (deltas). Link `experiments/<slug>/docs/business-case.md` when present.
 - **`apply`:** Build Units only — remind that `/opsx:apply` for code uses a **child** lite change.
-- Optional: sync scorecard to `data/experiments.json` only when user asks (not automated).
-- **Hub registry (explore artifact):** When creating the first BHD artifact for change `<id>`, verify `data/experiments.json` has a row with matching `id` (or `openspecChangeId`) and `experiments/<id>/docs/` exists. If missing, tell the user and offer to register via `@experiment-creator` before continuing — list row links to `/experiments/<id>`; Lifecycle tab reads `openspec/changes/<id>/`.
+- **Hub registry (explore artifact):** When creating the first BHD artifact for change `<id>`, verify the **Notion BHD Labs Database** has a row whose slug is `<id>` and that `experiments/<id>/docs/` exists. If missing, tell the user and offer to register via `@experiment-creator` before continuing — list row links to `/experiments/<id>`; Lifecycle tab reads `openspec/changes/<id>/`. Do not touch `data/experiments.json`; it is a legacy seed file and is not read at runtime.
 
 5. **Create artifacts in sequence until apply-ready**
 

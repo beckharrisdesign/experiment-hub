@@ -1,6 +1,6 @@
 ---
 description: Apply when scoring experiments or conducting market research.
-globs: experiments/*/docs/market-research.md, data/experiments.json
+globs: experiments/*/docs/market-research.md
 ---
 
 # Experiment scoring (v3, 2026-08)
