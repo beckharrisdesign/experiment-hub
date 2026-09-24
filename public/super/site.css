@@ -1,0 +1,631 @@
+/* ============================================================
+   beckharrisdesign.com — Super.so custom CSS
+   ------------------------------------------------------------
+   CONTENTS
+   1. Design tokens        — colors, widths, type scale (edit here first)
+   2. Global guards        — page width, no sideways scroll
+   3. Navbar               — buttons, mobile sizing, breadcrumbs
+   4. Page headers         — hidden covers, titles, intro text
+   5. Blocks               — pills, callouts (incl. full-bleed), headings
+   6. Galleries & cards    — project grids, card covers
+   7. Page properties      — the metadata list on project pages
+   8. Tables               — the borderless tables on Labs
+   9. Collection pages     — the /for-<company> curated card rows
+   ============================================================ */
+/* ============================================================
+   1. DESIGN TOKENS
+   Change a value here and it updates everywhere it's used below.
+   ============================================================ */
+:root {
+  --site-max-width: 1200px;      /* overall page width cap */
+  --content-max-width: 45rem;    /* reading width for body text & property text */
+  --accent: 173 223 227;         /* brand aqua, #ADDFE3 — same as navbar button bg.
+                                    Written as bare RGB numbers so alpha can vary
+                                    per use: rgb(var(--accent) / 0.5) etc. */
+  --pill-bg: rgb(var(--accent) / 0.1);      /* tag pill background */
+  --callout-bg: rgba(255, 255, 255, 0.1);   /* callout background */
+  font-size: 18px;               /* base font size for the whole site */
+  line-height: 1.6;              /* unitless so headings scale correctly */
+}
+/* ============================================================
+   2. GLOBAL GUARDS
+   ============================================================ */
+/* Never allow sideways scroll — protects against the full-bleed
+   callout's 100vw math (scrollbar width on Windows) and the
+   navbar overflowing on narrow phones. */
+html {
+  overflow-x: clip;   /* Keep this on <html>, not <body>. It is a GUARD, not
+                         a fix: at ~420px the navbar's own row measures ~449px
+                         (logo + "Schedule a conversation" + hamburger), so
+                         moving the clip to <body> lets <html> scroll again and
+                         the sideways scroll comes straight back on a phone.
+                         The real fix is a narrower mobile navbar. */
+}
+/* Cap and center the whole page, with breathing room at the edges */
+.notion-root {
+  max-width: var(--site-max-width);
+  margin: 0 auto;
+  padding-inline: 1rem;
+}
+/* ============================================================
+   3. NAVBAR
+   ============================================================ */
+/* Header and footer share the page's measure AND its edge padding, so
+   their content lands on the same left edge as the body copy.
+
+   Three boxes are in play, and all three have to agree:
+     .super-navbar / .super-footer    the outer bar (full width)
+     .super-navbar__content           the centred inner box
+     .notion-root                     the page content (section 2)
+   The outer bar carries its own inline padding, which stacks on top
+   of the inner box's — that is what pushed the header ~1rem PAST the
+   content once the inner box was corrected. Zeroing it lets the two
+   centred boxes line up exactly.
+
+   If the header still sits off, inspect it and compare the computed
+   left edge of .super-navbar__content against .notion-root — the
+   difference is whatever padding is left on the outer bar. */
+.super-navbar,
+.super-footer {
+  padding-inline: 0 !important;
+}
+.super-navbar__content,
+.super-footer__content {
+  max-width: var(--site-max-width);
+  margin-inline: auto;
+  padding: 0 1rem;
+}
+/* Super pads its own navbar SLOTS, inside the centred box above:
+     .super-navbar__logo      16px left  (and 16px right)
+     .super-navbar__actions    8px right
+     the CTA link inside it    8px right
+   That padding is invisible but it inset the header's first and last
+   glyphs ~16px from the page grid, so the header read narrower than the
+   body even with both boxes perfectly aligned. Zero the two OUTER edges
+   only — the inner padding is what keeps the nav links off the CTA. */
+.super-navbar__logo {
+  padding-left: 0;
+}
+.super-navbar__actions {
+  padding-right: 0;
+}
+.super-navbar__actions > .notion-link {
+  padding-right: 0 !important;   /* Super guards this one with a double-:has()
+                                    selector (specificity 0,4,0) that no sane
+                                    custom selector beats, so !important is the
+                                    honest override. Without it the CTA sits
+                                    8px short of the grid. */
+}
+/* Nav button hit area — vertical padding only, no horizontal offset */
+.notion-button {
+  text-align: left;
+  padding: .5rem 0;
+}
+/* Nav button appearance — colors come from Super's own theme
+   variables so they follow the settings in the Super dashboard */
+.notion-button__content {
+  background: var(--navbar-button-background-color);
+  color: var(--navbar-button-text-color);
+  padding: .5rem 1rem;
+  border-radius: var(--navbar-button-border-radii);
+  font-weight: 400;
+  font-size: 1rem;               /* = 18px, tracks the base size above */
+}
+/* PHONES: shrink nav buttons so the navbar fits without overflowing.
+   Tweak .85rem to taste — it's the button text size on small screens. */
+@media (max-width: 600px) {
+  .notion-button__content {
+    font-size: .85rem;
+    padding: .4rem .75rem;
+  }
+}
+/* Breadcrumb bar — quiet, italic, faded accent color */
+.super-navbar__breadcrumbs {
+  background: none;
+  font-style: italic;
+  margin: 0;
+  padding: 0 0 0 1rem;
+}
+
+.super-navbar__breadcrumbs .notion-breadcrumb {
+  max-width: var(--layout-max-width);
+  margin: .2rem auto;
+  padding: 0 .5rem;
+}
+
+.super-navbar__breadcrumbs .notion-breadcrumb__item,
+.super-navbar__breadcrumbs .notion-breadcrumb__divider {
+  padding: 0;
+  margin: 0 .5rem 0 0;
+  color: rgb(var(--accent) / 0.5);   /* 50% accent = subdued */
+}
+/* Hide the first crumb (the "Home" item) */
+.super-navbar__breadcrumbs .notion-breadcrumb__item:first-child {
+  display: none;
+}
+/* Let long breadcrumb titles show in full instead of truncating with … */
+.super-navbar__breadcrumbs .notion-breadcrumb__item .notion-breadcrumb__title {
+  text-overflow: unset !important;
+  max-width: unset !important;
+}
+/* ============================================================
+   4. PAGE HEADERS
+   ============================================================ */
+/* Hide the Notion header/cover block on top-level pages —
+   these pages open straight into their own content instead.
+   To add a page to the list, add its .page__<slug> class here. */
+:is(#page-index, .page__all-projects, .page__bhd-consultation,
+    .page__bhd-labs, .parent-page__bhd-labs)
+  :is(.notion-header, .notion-header__cover.no-cover) {
+  display: none !important;
+}
+/* H1 size everywhere (homepage headline + in-page H1s) */
+h1.notion-heading {
+  font-size: 2.5rem;
+}
+/* Evens out ragged two-line titles; harmless where unsupported */
+h1.notion-heading,
+.notion-header__title {
+  text-wrap: balance;
+}
+/* Keep empty text blocks on the homepage from collapsing to zero height
+   (they're used as spacers) */
+#page-index .notion-text {
+  min-height: 1rem;
+}
+/* Body text: reading-width column, space below each paragraph */
+.notion-text__content {
+  padding: 0 0 1rem 0;
+  max-width: var(--content-max-width) !important;
+}
+/* Header area matches the site width and centers */
+.notion-header__content {
+  max-width: var(--site-max-width) !important;
+  margin: auto !important;
+}
+/* Project-page header: flush layout with edge padding.
+   Applies to children of the homepage and of Labs. */
+.parent-page__index .notion-header__content,
+.parent-page__bhd-labs .notion-header__content {
+  margin: 0 auto !important;
+  padding: 0 1rem 1rem 1rem !important;
+}
+/* Project page title: left-aligned, big, with space above the title */
+.notion-header__title {
+  margin-top: 2rem !important;
+  margin-inline: auto !important;
+  text-align: left !important;
+  font-size: 2.5rem !important;
+}
+/* ============================================================
+   5. BLOCKS
+   ============================================================ */
+/* Tag pills — soft accent-tinted chips */
+.notion-pill {
+  padding: 0.2rem 0.5rem;
+  border: 0;
+  border-radius: 0.25rem;
+  background: var(--pill-bg);
+  color: rgb(var(--accent) / 0.7);
+}
+/* Callouts — subtle frosted panel, no border.
+   For pill-shaped callouts instead, change the radius to
+   var(--navbar-button-border-radii) (currently 50px). */
+.notion-callout {
+  background: var(--callout-bg);
+  border: none !important;
+  border-radius: 0.5rem;
+}
+/* FULL-BLEED callout on project pages: stretches the callout
+   background edge-to-edge across the viewport while its content
+   (next rule) stays within the site width. */
+.parent-page__index .notion-callout {
+  margin-top: 1.75rem;
+  margin-bottom: 1rem;
+  margin-inline: calc(50% - 50vw);   /* the edge-to-edge trick */
+  padding-inline: 0;                 /* Super ships its own callout padding and it
+                                        is ASYMMETRIC (21.6px left / 27px right).
+                                        Left in, it pushes the re-centred content
+                                        ~3px left of the page grid, so card text
+                                        does not line up with body copy. */
+  border-radius: 0;                  /* a band that runs edge to edge has no
+                                        corners to round — the 0.5rem above
+                                        just leaks page background at the ends. */
+}
+/* …and re-center the callout's content back inside the site width */
+.parent-page__index .notion-callout__content {
+  max-width: var(--site-max-width);
+  padding: 0 1rem;
+  margin: auto;
+  font-size: 90%;
+}
+/* Lists inside full-bleed callouts: no bullets, tighter rhythm */
+.parent-page__index .notion-callout__content ul {
+  list-style-type: none !important;
+  padding: .5rem 2px;
+  margin: 0;
+}
+.parent-page__index .notion-callout__content li {
+  line-height: 1.25rem;
+  text-decoration: none;
+  list-style: none;
+  margin: .75rem 0;
+  padding: 0;
+}
+/* Space around every H2 */
+h2.notion-heading {
+  padding: 1rem 0;
+}
+/* Consultation page only: H2s act as quiet section labels
+   in the accent color */
+#page-bhd-consultation h2 {
+  margin: 0;
+  padding: 0;
+  color: var(--navbar-button-background-color);
+  opacity: .75;
+}
+/* ============================================================
+   6. GALLERIES & CARDS
+   ============================================================ */
+/* Gap between project cards */
+.notion-collection-gallery {
+  gap: 1rem;
+}
+/* Card text block below the cover image */
+.gallery .notion-collection-card__property.notion-semantic-string {
+  padding: .75rem 0 1.25rem 0;
+  line-height: 1.5rem;
+}
+/* Description line on cards: smaller, no extra padding */
+.gallery p.notion-collection-card__property.notion-semantic-string {
+  font-size: .9rem;
+  padding: 0;
+}
+/* Tighter gap between multi-select tags on cards */
+.notion-property__select.wrap {
+  gap: .1rem;
+}
+/* Card cover images: fill the card, crop from the center */
+.notion-collection-card__cover {
+  display: block;
+  object-position: center center !important;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+}
+/* Labs cards: crop from the TOP instead — the labs screenshots
+   have their important content at the top of the image */
+.page__bhd-labs .notion-collection-card__cover.medium,
+.page__bhd-labs .notion-collection-card__cover.large,
+.page__bhd-labs .notion-collection-card__cover.small {
+  object-position: center top !important;
+}
+/* ============================================================
+   7. PAGE PROPERTIES
+   The metadata list under project page titles (Role, Team, etc.).
+   Restyled from Super's two-column truncated layout into stacked
+   label-over-value groups that wrap in full.
+   ============================================================ */
+/* The whole properties area: wrapping row, space below */
+.notion-page__properties-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 !important;
+  padding: 0 0 1.5rem 0 !important;
+}
+/* Strip Super's per-property boxes */
+.notion-page__layout-property {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+/* Each property: let content wrap instead of truncating */
+.notion-page__property {
+  display: flex;
+  flex-wrap: wrap;
+  overflow: visible !important;
+  text-wrap: wrap !important;
+}
+/* Property label sits on its own full-width line above the value */
+.notion-page__property .notion-page__property-name-wrapper {
+  text-wrap: wrap !important;
+  width: 100% !important;
+  max-width: unset !important;
+  display: block;
+}
+.notion-page__property .notion-page__property-name {
+  overflow: visible;
+  text-overflow: unset;
+  margin-top: 1rem;
+  max-width: unset !important;
+  display: block !important;
+}
+/* Label typography: display font, larger than the value text */
+.notion-page__property .notion-page__property-name span {
+  font-family: var(--primary-font);
+  font-size: 1.25rem;
+  overflow: visible;
+  text-overflow: unset;
+}
+/* Property value text: small, reading-width */
+.notion-page__property .notion-property__text {
+  max-width: var(--content-max-width);
+  font-size: .9rem;
+  line-height: 1.25rem;
+  padding: 0;
+  margin: 0;
+}
+/* URL properties: align flush left, no highlight background */
+.notion-page__property .notion-property__url {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+  background: none;
+}
+/* ============================================================
+   8. TABLES
+   The collection tables on Labs, restyled as a borderless list:
+   no header row, just a thin divider between rows.
+   ============================================================ */
+.notion-collection-table {
+  border: 0 !important;
+  max-width: inherit;
+}
+/* Hide the column-header row entirely */
+thead.notion-collection-table__head {
+  display: none;
+}
+.notion-collection-table__body tr {
+  border: none;
+}
+/* Each row separated by one thin line in the card color */
+tbody.notion-collection-table__body td {
+  border: none;
+  border-bottom: 1px solid var(--color-card-bg);
+  padding: 1rem;
+}
+/* …except the last row */
+tbody.notion-collection-table__body tr:last-child td {
+  border: none;
+}
+/* Column widths: name 30% / description 55% / meta 15% */
+tbody.notion-collection-table__body td:first-child {
+  width: 30%;
+}
+tbody.notion-collection-table__body td:nth-child(2) {
+  width: 55%;
+}
+tbody.notion-collection-table__body td:last-child {
+  padding-top: 1.15rem;   /* nudges the meta column into visual alignment */
+  width: 15%;
+}
+/* ============================================================
+   9. COLLECTION PAGES  (/for-<company>)
+   ------------------------------------------------------------
+   The per-role curated pages. Each has TWO callouts:
+     • a 3-up role / what drew me / reach me card, and
+     • a row of case-study cards (heading, thumb, sentence, CTA).
+   Only the second one is restyled here.
+
+   SCOPING — read before editing:
+   Everything below is gated on BOTH
+     [class*="page__for-"]              → only /for-* pages, and
+     .notion-callout:has(.notion-image) → only a callout containing
+                                           images, i.e. the card row.
+   The role callout has no images, so it keeps the section-5
+   treatment untouched. Nothing outside /for-* pages is affected.
+
+   These pages are children of the homepage, so they also inherit
+   .parent-page__index — the full-bleed callout in section 5. That
+   is intentional and is preserved; the rules here only change what
+   happens INSIDE the tinted band.
+
+   NOTION SIDE — this section assumes:
+     • the CTA is a plain link, NOT wrapped in a nested callout
+     • card headings contain no manual <br> tags
+   A defensive rule for leftover nested callouts is at the end.
+   ============================================================ */
+/* --- Scope shorthand ----------------------------------------
+   Defined once as a comment for readability; CSS has no nesting
+   variable, so the full selector is repeated on each rule. */
+
+/* --- Page header --------------------------------------------
+   A collection page is a letter, so it opens on the role card,
+   not on Notion bookkeeping. Hide the page title, the cover,
+   and the properties row (Year, Company, etc.).
+
+   Note this is page-scoped, NOT gated on :has(.notion-image) —
+   the header sits outside the callouts, so it needs the plain
+   /for-* scope. Section 4's hidden-header list is untouched. */
+[class*="page__for-"] :is(
+  .notion-header,
+  .notion-header__cover,
+  .notion-header__title,
+  .notion-page__properties-layout
+) {
+  display: none !important;
+}
+/* --- Breadcrumbs --------------------------------------------
+   Hidden too. A collection page is handed out as a direct link,
+   not browsed to — "/ Selected work for Babylist" only tells the
+   reader they are inside someone's filing system.
+
+   Scoped from the page class rather than the navbar, so the
+   breadcrumb styling in section 3 still applies everywhere else. */
+[class*="page__for-"] .super-navbar__breadcrumbs {
+  display: none !important;
+}
+/* --- Vertical rhythm ----------------------------------------
+   The page alternates dark bands (page background, holding the
+   letter text) with light bands (full-bleed callouts). Left to
+   Super's defaults the two do not match: the gap ABOVE a callout
+   is the paragraph's own 1rem bottom padding (section 4) PLUS the
+   callout's 1.75rem top margin (section 5), while the gap BELOW
+   is only the callout's 1rem bottom margin — so the dark strips
+   read as bottom-heavy.
+
+   One value governs all of it. Change this number, not the rules. */
+[class*="page__for-"] {
+  --collection-gap: 2.5rem;
+}
+/* Subtracting the paragraph's 1rem here makes the VISIBLE gap the
+   same on both sides without needing to know the block structure:
+     above = 1rem (paragraph) + (gap − 1rem) = gap
+     below = gap
+   Keep the subtraction in sync if section 4's padding changes. */
+[class*="page__for-"] .notion-callout {
+  margin-top: calc(var(--collection-gap) - 1rem) !important;
+  margin-bottom: var(--collection-gap) !important;
+}
+/* The light band's inner breathing room matches the gap outside it,
+   so both colours get the same amount of air. */
+[class*="page__for-"] .notion-callout__content {
+  padding-block: var(--collection-gap);
+}
+/* --- Flush to the navbar ------------------------------------
+   With the header, properties and breadcrumbs all gone, the role
+   callout butts straight up against the persistent header.
+   `:not(:has(.notion-image))` picks out the role card — it is the
+   only callout on the page without thumbnails. Must come AFTER the
+   rhythm rules above so it wins on the top margin. */
+[class*="page__for-"] .notion-root {
+  padding-top: 0;
+}
+[class*="page__for-"] .notion-callout:not(:has(.notion-image)) {
+  margin-top: 0 !important;
+}
+
+/* --- The card row -------------------------------------------
+   MATCH ON STRUCTURE, NOT CLASS NAME. Super's column container
+   is not reliably .notion-column-list, so target "whatever
+   element directly contains the columns" instead. This is what
+   makes the rule actually land.
+
+   The equaliser is `flex: 1 1 0` on the columns: it overrides
+   Notion's inline width percentages, so the cards are equal
+   regardless of what ratios the blocks were saved with. */
+[class*="page__for-"] .notion-callout:has(.notion-image)
+  :has(> .notion-column) {
+  display: flex;
+  gap: 2rem;
+  align-items: stretch;
+}
+[class*="page__for-"] .notion-callout:has(.notion-image) .notion-column {
+  flex: 1 1 0 !important;    /* equal width, ignores inline width:xx% */
+  width: auto !important;
+  max-width: none !important;
+  min-width: 0;              /* lets long words wrap instead of forcing width */
+  display: flex;
+  flex-direction: column;
+  height: auto;
+}
+/* Inline padding stays at 1rem to match the full-bleed rule in
+   section 5; vertical padding comes from the shared gap token. */
+[class*="page__for-"] .notion-callout:has(.notion-image) .notion-callout__content {
+  padding: var(--collection-gap) 1rem;
+}
+/* --- Card heading -------------------------------------------
+   Smaller than a page H3, and floor-set to four lines so all
+   four thumbnails start at the same Y. Raise to 5.2em if a
+   heading ever needs four lines. */
+[class*="page__for-"] .notion-callout:has(.notion-image) h3.notion-heading {
+  font-size: 1.05rem;
+  line-height: 1.3;
+  margin: 0 0 1rem 0;
+  padding: 0;
+  min-height: 5.2em;         /* four lines — the longest heading in the set.
+                                Drop to 3.9em if every heading fits in three. */
+  text-wrap: balance;
+}
+/* --- Thumbnail ----------------------------------------------
+   One fixed ratio for every card, cropped from the top, so the
+   row reads as a set instead of four stray screenshots. Most of
+   these are slide exports with their content in the upper half —
+   switch to `center center` if a photo gets decapitated. */
+[class*="page__for-"] .notion-callout:has(.notion-image) .notion-image {
+  margin: 0 0 1rem 0;
+}
+[class*="page__for-"] .notion-callout:has(.notion-image) .notion-image img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: .375rem;
+}
+/* --- Card body ----------------------------------------------
+   Overrides the global 45rem reading cap from section 4 — inside
+   a quarter-width column it does nothing but confuse later edits. */
+[class*="page__for-"] .notion-callout:has(.notion-image) .notion-text__content {
+  max-width: none !important;
+  font-size: .9rem;
+  line-height: 1.5;
+  padding: 0 0 1.25rem 0;
+}
+/* --- CTA ----------------------------------------------------
+   The paragraph holding the link is pushed to the bottom of the
+   card, so all four buttons sit on one baseline regardless of
+   how long the sentence above runs. */
+[class*="page__for-"] .notion-callout:has(.notion-image)
+  .notion-text:has(.notion-link) {
+  margin-top: auto;
+  padding: 0;
+}
+[class*="page__for-"] .notion-callout:has(.notion-image)
+  .notion-text:has(.notion-link) .notion-text__content {
+  padding: 0;
+}
+/* The link itself, styled as a button */
+[class*="page__for-"] .notion-callout:has(.notion-image)
+  .notion-text .notion-link {
+  display: inline-block;
+  padding: .5rem 1.1rem;
+  border: 1px solid rgb(var(--accent) / 0.4);
+  border-radius: var(--navbar-button-border-radii, .375rem);
+  background: rgb(var(--accent) / 0.08);
+  color: rgb(var(--accent));
+  font-size: .85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background .15s ease, border-color .15s ease;
+}
+[class*="page__for-"] .notion-callout:has(.notion-image)
+  .notion-text .notion-link:hover {
+  background: rgb(var(--accent) / 0.18);
+  border-color: rgb(var(--accent) / 0.7);
+}
+/* --- Defensive: nested callouts -----------------------------
+   If a CTA is still wrapped in its own callout, flatten it so it
+   does not render as a box inside a box. Delete this rule once
+   the Notion pages are clean. */
+[class*="page__for-"] .notion-callout .notion-callout {
+  background: none;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+}
+[class*="page__for-"] .notion-callout .notion-callout .notion-callout__content {
+  padding: 0;
+  margin: 0;
+  max-width: none;
+}
+/* --- Responsive ---------------------------------------------
+   Four across is only honest on a wide screen. */
+@media (max-width: 1000px) {
+  [class*="page__for-"] .notion-callout:has(.notion-image)
+    :has(> .notion-column) {
+    flex-wrap: wrap;
+    gap: 2.5rem 1.5rem;
+  }
+  [class*="page__for-"] .notion-callout:has(.notion-image) .notion-column {
+    flex: 1 1 calc(50% - 1.5rem) !important;
+  }
+}
+@media (max-width: 640px) {
+  [class*="page__for-"] .notion-callout:has(.notion-image) .notion-column {
+    flex: 1 1 100% !important;
+  }
+  /* Stacked cards do not need reserved heading space */
+  [class*="page__for-"] .notion-callout:has(.notion-image) h3.notion-heading {
+    min-height: 0;
+  }
+}
