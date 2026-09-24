@@ -200,6 +200,41 @@ now. `design.md` should say what the authority is when the two disagree — the
 honest answer is likely "navigation, with containment recorded as a second
 attribute", but that is a decision, not an observation.
 
+**Round 02.3 — populated views in sitemap structure**
+
+- Page: `02.3 Proposed — populated views in sitemap structure` (node `12:2`)
+- Supersedes 02.2. Earlier rounds left intact.
+
+The nodes are now **full-size 1200px frames carrying real content**, not rough
+blocks. At 0.25 scale the sitemap nodes were structurally correct but illegible —
+you cannot critique type hierarchy, density or rhythm from a grey rectangle. Each
+node is now the actual view, and the tree is drawn around them.
+
+**The content is real, not simulated.** Scraped from the live routes, so what is on
+the frames is what is on the site: the Connected China project copy with its
+Challenges / Approach / Outcomes callout, the Babylist letter with its four case
+cards, the six consulting service blocks, the Labs experiment table with real
+taglines and statuses, the Cisco / Atlas / Carbonite role history. Simulated copy
+would have been the same effort and worth less — real content exposes real length
+problems.
+
+| Node | Content source |
+|---|---|
+| Home | headline, intro, both expertise columns, 8 case-study cards, speaking list |
+| Projects | 9 projects with company, year and multi-select tags |
+| Curated collection | the Babylist letter, role card, 4 case cards with CTAs |
+| Consultation | 6 service blocks with audience lines and body copy |
+| About | intro, location, Cisco / Atlas / Carbonite roles with dates |
+| Essay / talk | the CMU 70317 lecture write-up |
+| Labs index | 3 experiment cards + 6-row utilities table with statuses |
+| Database view | 12 rows with type, status and URL property |
+| Project detail | Connected China in full — properties, full-bleed callout, press, awards |
+| Labs detail | MVDS status, tagline, why-this-matters, hypothesis, the three Why cards |
+
+**Caveat worth stating:** this is a point-in-time scrape. It is illustrative of
+structure and density, not a content system of record — Notion remains that. The
+staleness risk named in Impact applies to the copy as much as the layout.
+
 **What this round is for:** arguing with the *inventory and the cut* — is this the
 right set of ten, is anything missing, is anything here really the same view as
 something else. Fidelity is deliberately rough. The detailed as-is pass, the
