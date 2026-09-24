@@ -308,6 +308,62 @@ Recommend a separate change. Noted here with the evidence so it is not lost eith
 way — and it shares a root with the three dead sitemap routes already recorded
 above, so one change could reasonably cover **what `sitemap.xml` advertises**.
 
+**Round 02.6 — Home rebuilt from measured geometry**
+
+- Page: `02.6 Proposed — Home rebuilt from measured geometry` (node `20:2`)
+
+Katy: *"figma isn't actually matching my live site — I typically include a column of
+blank space on the left side."* Correct, and the miss was methodological rather
+than careless.
+
+### The capture was built from markup, which cannot see layout
+
+Every check run against the portfolio so far — including
+`scripts/super-css/check.mjs` — uses `fetch` and parses HTML. The left gutter is an
+**empty `.notion-column`**: no text, no distinguishing class, nothing a parser can
+detect. It exists only once a browser computes the box model.
+
+Measuring the rendered page produced the real device, which repeats down the whole
+homepage:
+
+```
+divider           x18   w1164
+section label     x18   w810
+[ empty gutter 282 ]  [ content 846 from x336 ]
+```
+
+| | Drawn in 01–02.5 | Measured |
+|---|---|---|
+| Root padding | 48 | **18** |
+| Left gutter | none | **282px, empty** |
+| Case-study cards | 3 across, 360px, from x48 | **2 across, 414px, from x336** |
+| Card cover | 360×190 | **414×200** |
+| Dividers | 0 | **5** |
+
+The same blindness hid more: `/katy-harris` is 22 columns and 11 dividers, not
+stacked properties; `/bhd-consultation` has a gallery and 23 columns, not a stacked
+service list; `/bhd-labs/mvds` has no callouts. **Home is now measured; the other
+nine are not.**
+
+### Playwright is already here and not pointed at this
+
+`@playwright/test ^1.59.1` is a devDependency, driving `scripts/capture-site-map.js`
+and `sitemap-capture.yml` — for the hub. Nothing renders beckharrisdesign.com.
+
+That is the fix, and it earns its place twice over:
+
+1. **Accuracy** — per-view measured geometry (box model per block, column ratios,
+   card grids, breakpoints) is what the capture should be built from, instead of
+   inference from class names.
+2. **Staleness** — the Impact section names "the capture goes stale and nothing
+   enforces otherwise" as the open risk. A geometry extractor answers it: re-run,
+   diff against the recorded numbers, and the drift surfaces as a failing check
+   rather than as someone noticing a missing column.
+
+This belongs in `tasks`: extend the existing Playwright setup to the portfolio,
+emit measured geometry per canonical view, and build the remaining nine frames from
+that output rather than by hand.
+
 **What this round is for:** arguing with the *inventory and the cut* — is this the
 right set of ten, is anything missing, is anything here really the same view as
 something else. Fidelity is deliberately rough. The detailed as-is pass, the
