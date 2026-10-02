@@ -9,7 +9,37 @@
 
 set -euo pipefail
 
-cd "${CLAUDE_PROJECT_DIR:-.}"
+# Claude Code re-runs this hook every time it blocks the turn from ending, and
+# sets `stop_hook_active: true` on the stdin payload while that retry is in
+# flight. Without this guard the gate reaches the identical verdict on every
+# retry and blocks forever, until the harness hits its consecutive-block cap
+# and overrides the hook — a loop no amount of agent work can exit, because the
+# condition being reported is never one the retry can change.
+# Only the TOP-LEVEL flag counts, and only when it is literally `true`. A
+# substring match would also fire on the key nested anywhere in the payload,
+# and standing down here skips EVERY gate below — so a loose match is a way to
+# switch the whole gate off. Fails closed: no jq, unparseable payload, or flag
+# absent all fall through and run the checks normally.
+if [ ! -t 0 ]; then
+  payload=$(cat || true)
+  if [ -n "$payload" ] && command -v jq >/dev/null 2>&1; then
+    active=$(printf '%s' "$payload" \
+      | jq -r 'if type == "object" and .stop_hook_active == true then "1" else "0" end' \
+        2>/dev/null || echo "0")
+    if [ "$active" = "1" ]; then
+      exit 0
+    fi
+  fi
+fi
+
+# Audit the tree this session is actually working in.
+#
+# CLAUDE_PROJECT_DIR points at the MAIN checkout. In a git worktree session that
+# is not where the work is happening, so the gate audits a directory the session
+# never touched and reports the main checkout's unrelated dirt as this session's
+# — a false positive on every worktree run, which together with the missing
+# stop_hook_active guard above is what produces the block loop.
+cd "$(git rev-parse --show-toplevel 2>/dev/null || echo "${CLAUDE_PROJECT_DIR:-.}")"
 
 if ! git diff --quiet || ! git diff --cached --quiet; then
   echo "There are uncommitted changes in the repository. Please commit and push these changes to the remote branch." >&2
