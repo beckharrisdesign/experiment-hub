@@ -1,22 +1,42 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Fraunces } from "next/font/google";
+import localFont from "next/font/local";
 import { Suspense } from "react";
 import Script from "next/script";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { getHubGaMeasurementId, GOOGLE_ADS_ID } from "@/lib/analytics/ga";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
+// Self-hosted rather than fetched from Google at build time. `next/font/google`
+// downloads its files during `next build`, so a transient Google Fonts blip
+// fails the whole production build — which is how the deploy of d263f99 (#518)
+// died on a PR that touched no fonts at all. That now also blocks portfolio CSS
+// from shipping, since beckharrisdesign.com loads public/super/site.css off this
+// same project. The files live in app/fonts/, vendored and checksummed by
+// scripts/fonts/vendor.mjs; run it to pick up a new upstream version.
+//
+// Both are variable fonts covering 100..900, so the weight range replaces the
+// per-weight list the Google loader took and every weight the hub uses is in
+// the one file.
+const inter = localFont({
+  src: "./fonts/inter-latin-variable.woff2",
   variable: "--font-inter",
   display: "swap",
+  weight: "100 900",
+  style: "normal",
+  // Matches Google's own metric fallback for Inter, so layout does not shift
+  // when the real file lands.
+  adjustFontFallback: "Arial",
+  fallback: ["system-ui", "sans-serif"],
 });
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
+const fraunces = localFont({
+  src: "./fonts/fraunces-latin-variable.woff2",
   variable: "--font-fraunces",
   display: "swap",
-  weight: ["500", "600", "700"],
+  weight: "100 900",
+  style: "normal",
+  adjustFontFallback: "Times New Roman",
+  fallback: ["Georgia", "serif"],
 });
 
 export const metadata: Metadata = {
