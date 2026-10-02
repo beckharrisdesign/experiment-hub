@@ -435,18 +435,33 @@ h2.notion-heading {
   padding: 0;
   overflow-wrap: break-word;
 }
-.notion-page__property .notion-property__text {
+/* Both value types share one type ramp. Applying this to `__text` alone
+   left the select container on Super's inherited 18px/28.8px line box,
+   and the pill inside it — an inline-block — then sat on THAT larger
+   line box's baseline, printing the year ~5px below the text values
+   beside it. The cause looks like leftover badge padding and is not:
+   the pill already computes `padding: 0`. It is the line box. */
+.notion-page__property .notion-property__text,
+.notion-page__property .notion-property__select {
   font-size: .9rem;
   line-height: 1.25rem;
 }
 /* Select values (Year) read as plain text here, matching the text fields.
    The accent pill is reserved for actual tags elsewhere on the site; on a
-   year it reads as emphasis the value does not need. */
+   year it reads as emphasis the value does not need.
+
+   `display: inline` once the box styling is gone: with nothing left to
+   draw, an inline box flows on the same baseline as ordinary text instead
+   of being positioned as a box on it. Inheriting the type keeps it there
+   if the ramp above ever changes. */
 .notion-page__property .notion-pill {
+  display: inline;
   background: none !important;
   padding: 0 !important;
   border-radius: 0 !important;
   color: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
 }
 /* URL properties: align flush left, no highlight background */
 .notion-page__property .notion-property__url {
