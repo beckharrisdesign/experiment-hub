@@ -333,14 +333,21 @@ h2.notion-heading {
    Restyled from Super's two-column truncated layout into a wrapping
    band of label-over-value columns, each sized to its own content.
    ============================================================ */
-/* The whole properties area: a wrapping row, with space below.
-   `gap` does the separating — the per-property margins this used to
-   rely on could not space neighbours once they sat side by side. */
+/* The whole properties area sits on the SAME three-column grid as the
+   column blocks further down the page (the Challenges / Approach /
+   Outcomes callout), so the metadata lines up with the content beneath it
+   instead of landing on its own arbitrary rhythm.
+
+   The gap is Super's own `--column-spacing` (36px), not a hand-picked
+   value, so the tracks stay locked to that grid if Super ever retunes it.
+
+   `gap` also does the separating here — the per-property margins this
+   used to rely on could not space neighbours once they sat side by side. */
 .notion-page__properties-layout {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: wrap !important;
-  gap: 1.5rem 3rem !important;
+  gap: 1.5rem var(--column-spacing, 36px) !important;
   align-items: start !important;
   padding: 0 0 2rem 0 !important;
 }
@@ -350,22 +357,43 @@ h2.notion-heading {
    invisible while the pages carried a single property and is the whole
    reason this section needed revisiting.
 
-   `width: auto` — not a percentage — so the columns size to their content.
-   A fixed share (33.3%, say) has to assume a field count: it leaves a hole
-   on the ten pages carrying Year alone, and at 375px it pins every column
-   to ~114px, which is too narrow for a value like "Founder, CEO, COO of
-   numo". Content sizing degrades correctly from one field to four.
+   The width reproduces what Super writes inline on each column block:
 
-   `max-width` keeps one long value from claiming the whole row; `min-width:
-   0` lets a column actually shrink rather than overflowing its track. */
+     width: calc((100% - var(--column-spacing) * 2) * 0.3333333333333333)
+
+   Same container, same left edge, same track — so a property column and
+   the callout column below it share an edge exactly.
+
+   Content sizing (`width: auto`) was the obvious alternative and is wrong
+   here: it makes a two-field page look accidental, a 44px Year beside a
+   243px Role, because each track answers to its own text rather than to
+   the page. A field count of one, two or three now fills one, two or
+   three slots of the same grid, and a fourth wraps onto a second row.
+
+   `min-width: 0` lets a track shrink rather than overflowing; `max-width:
+   none` because the track governs the measure now, not a ch cap. */
 .notion-page__properties-layout .notion-page__layout-property {
-  width: auto !important;
-  flex: 0 1 auto !important;
+  width: calc((100% - var(--column-spacing, 36px) * 2) / 3) !important;
+  flex: 0 0 auto !important;
   min-width: 0 !important;
-  max-width: 24ch !important;
+  max-width: none !important;
   margin: 0 !important;
   padding: 0 !important;
   border: 0 !important;
+}
+/* Below 680px Super stacks its own columns:
+
+     @media only screen and (max-width: 680px) {
+       .notion-column { width: 100% !important; margin-inline-start: 0 }
+     }
+
+   Match that breakpoint exactly, so the properties stack at the same
+   moment the callout does. A third of a phone screen is ~90px, which no
+   real value fits. */
+@media only screen and (max-width: 680px) {
+  .notion-page__properties-layout .notion-page__layout-property {
+    width: 100% !important;
+  }
 }
 /* Each property: label stacked over value, content allowed to wrap */
 .notion-page__property {
