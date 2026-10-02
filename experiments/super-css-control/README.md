@@ -86,7 +86,7 @@ the only copy applying. Current reading from the check:
   remote   : in-sync
   inline   : n/a (not inlined)
   markers  : remote=yes inline=no
-  variables: 6/6 present
+  variables: 7/7 present
   selectors: 49/49 present
 ```
 
@@ -117,11 +117,11 @@ Four questions, no browser needed. Exit 0 clean, 1 if something needs attention;
 |---|---|
 | **delivery** | Is the external `<link>` installed, or is Super still inlining? |
 | **drift** | If Super holds an inline copy, does it match `public/super/site.css`? |
-| **variables** | Are all six Super theme variables the library reads still defined? |
-| **selectors** | Do all 49 classes the library targets still appear in the DOM? |
+| **variables** | Is every Super theme variable the library reads still defined? |
+| **selectors** | Does every class the library targets still appear in the DOM? |
 
 Current reading — `external-link`, remote `in-sync`, inline
-`n/a (not inlined)`, 6/6 variables, 49/49 selectors. Verbatim output is
+`n/a (not inlined)`, 7/7 variables, 49/49 selectors. Verbatim output is
 under [Current state](#current-state--2026-10-02), so a run can be diffed
 against it directly.
 
@@ -132,9 +132,13 @@ when it compiles the CSS in. Whitespace *between* values is preserved, because
 
 ## Compatibility baseline
 
-All six Super theme variables the library depends on are present with their
-assumed values; zero missing selectors across 14 class hooks x 5 pages. Full
-table in
+All seven Super theme variables the library depends on are present with their
+assumed values; zero missing selectors across 14 class hooks x 5 pages.
+
+The table in explore.md covers the original six. `--column-spacing` joined
+them when the page properties moved onto the same column grid as the block
+columns below them — the library now reads that variable rather than
+hard-coding a gap, so the two grids cannot drift apart. Full table in
 [`openspec/changes/super-css-control/explore.md`](../../openspec/changes/super-css-control/explore.md).
 
 ## Artifacts

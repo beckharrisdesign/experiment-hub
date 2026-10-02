@@ -330,8 +330,9 @@ h2.notion-heading {
 /* ============================================================
    7. PAGE PROPERTIES
    The metadata list under project page titles (Year, Role, etc.).
-   Restyled from Super's two-column truncated layout into a wrapping
-   band of label-over-value columns, each sized to its own content.
+   Restyled from Super's two-column truncated layout into a band of
+   label-over-value columns sharing the page's three-column grid — the
+   same tracks as the column blocks below — stacking where Super stacks.
    ============================================================ */
 /* The whole properties area sits on the SAME three-column grid as the
    column blocks further down the page (the Challenges / Approach /
