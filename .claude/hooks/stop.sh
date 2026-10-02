@@ -15,11 +15,21 @@ set -euo pipefail
 # retry and blocks forever, until the harness hits its consecutive-block cap
 # and overrides the hook — a loop no amount of agent work can exit, because the
 # condition being reported is never one the retry can change.
+# Only the TOP-LEVEL flag counts, and only when it is literally `true`. A
+# substring match would also fire on the key nested anywhere in the payload,
+# and standing down here skips EVERY gate below — so a loose match is a way to
+# switch the whole gate off. Fails closed: no jq, unparseable payload, or flag
+# absent all fall through and run the checks normally.
 if [ ! -t 0 ]; then
   payload=$(cat || true)
-  case "$(printf '%s' "$payload" | tr -d ' \t\n')" in
-    *'"stop_hook_active":true'*) exit 0 ;;
-  esac
+  if [ -n "$payload" ] && command -v jq >/dev/null 2>&1; then
+    active=$(printf '%s' "$payload" \
+      | jq -r 'if type == "object" and .stop_hook_active == true then "1" else "0" end' \
+        2>/dev/null || echo "0")
+    if [ "$active" = "1" ]; then
+      exit 0
+    fi
+  fi
 fi
 
 # Audit the tree this session is actually working in.
