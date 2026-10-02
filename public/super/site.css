@@ -18,10 +18,13 @@
    ============================================================ */
 :root {
   /* WHICH COPY IS THIS?
-     Two copies of this library can be applying at once — the one Super compiles
-     into its own inline <style> block, and this one, served from
-     labs.beckharrisdesign.com. They look identical, so nothing on screen tells
-     you which is winning.
+     As of 2026-10-02 this file is the only copy applying: the external <link>
+     is installed in Super's head and Super holds no inline copy.
+
+     It did not used to be. Super compiles custom CSS into its own inline
+     <style> block, and while both copies existed they looked identical, so
+     nothing on screen told you which was winning. This marker stays so that
+     condition stays detectable if it ever returns.
 
      Each copy declares its own marker, so both are detectable independently
      (a shared name would only reveal whichever came last in the cascade):
