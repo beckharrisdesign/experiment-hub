@@ -1,0 +1,189 @@
+{
+  "id": "curated",
+  "label": "Curated collection",
+  "route": "/for-babylist",
+  "tier": "unlisted",
+  "capturedAt": "2026-09-24T18:06:08.981Z",
+  "viewport": 1347,
+  "rootFontSize": "18px",
+  "notionRoot": {
+    "x": 74,
+    "w": 1200,
+    "h": 1404,
+    "paddingInline": "18px"
+  },
+  "pageClasses": [
+    "page__for-babylist",
+    "parent-page__index"
+  ],
+  "blocks": [
+    {
+      "cls": "notion-column-list",
+      "x": 18,
+      "y": 80,
+      "w": 1164,
+      "h": 177,
+      "text": "The role Director, Product Design (AI Builder) — Registry Ba",
+      "columns": [
+        {
+          "x": 18,
+          "y": 80,
+          "w": 846,
+          "h": 177,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "The role Director, Product Design (AI Builder) — Registry Babylist"
+            }
+          ]
+        },
+        {
+          "x": 900,
+          "y": 80,
+          "w": 282,
+          "h": 177,
+          "empty": false,
+          "runs": [
+            {
+              "tag": "p",
+              "t": "Contact Katy Harris katy@beckharrisdesign.com Beck Harris Design · LinkedIn · GitHub"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 257,
+      "w": 810,
+      "h": 45,
+      "text": "Hi Babylist team —",
+      "runs": []
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 302,
+      "w": 810,
+      "h": 126,
+      "text": "I’m excited to apply for the Director, Product Design (AI Bu",
+      "runs": []
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 428,
+      "w": 810,
+      "h": 45,
+      "text": "Here are four case studies that showcase how I think:",
+      "runs": []
+    },
+    {
+      "cls": "notion-callout border",
+      "x": -73,
+      "y": 500,
+      "w": 1347,
+      "h": 691,
+      "text": "On leading a team's transition to AI-native product developm",
+      "runs": [
+        {
+          "tag": "h3",
+          "t": "On leading a team's transition to AI-native product development."
+        },
+        {
+          "tag": "p",
+          "t": "I built the mentor-matching software myself and ran it for a live Cisco program across three years — we tackled real AI judgment calls beyond the initial enthusiasm."
+        },
+        {
+          "tag": "p",
+          "t": "Read more"
+        },
+        {
+          "tag": "h3",
+          "t": "On being the durable owner of a product area — UX, vision, KPIs, quality bar."
+        },
+        {
+          "tag": "p",
+          "t": "Founding executive team, Head of Design, and a year as interim Head of Product for a platform later acquired by RSA Archer — evidence I've owned an outcome rather than a queue."
+        },
+        {
+          "tag": "p",
+          "t": "Read more"
+        },
+        {
+          "tag": "h3",
+          "t": "On evolving an operating model, a hiring bar, and craft standards."
+        },
+        {
+          "tag": "p",
+          "t": "I rebuilt Carbonite's product design function after a major workforce reduction — the principles, engagement model and hiring bar written down rather than assumed."
+        },
+        {
+          "tag": "p",
+          "t": "Read more"
+        },
+        {
+          "tag": "h3",
+          "t": "On Registry as the heart of Babylist."
+        },
+        {
+          "tag": "p",
+          "t": "I co-founded a marketplace connecting performers, venues, presenters and audiences and shipped four MVPs in year one — the same multi-sided shape as Registry."
+        },
+        {
+          "tag": "p",
+          "t": "Read more"
+        }
+      ]
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 1236,
+      "w": 810,
+      "h": 72,
+      "text": "I’d love to bring my own mix of systems thinking, hands-on c",
+      "runs": []
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 1308,
+      "w": 810,
+      "h": 45,
+      "text": "Cheers,",
+      "runs": []
+    },
+    {
+      "cls": "notion-text notion-text__content notion-semantic-string",
+      "x": 18,
+      "y": 1353,
+      "w": 810,
+      "h": 45,
+      "text": "Katy.",
+      "runs": []
+    },
+    {
+      "cls": "notion-text",
+      "x": 18,
+      "y": 1398,
+      "w": 1164,
+      "h": 36,
+      "text": "",
+      "runs": []
+    }
+  ],
+  "dividers": [],
+  "tables": [],
+  "properties": [
+    {
+      "x": -73,
+      "y": 0,
+      "w": 0,
+      "h": 0
+    }
+  ],
+  "emptyColumnCount": 0
+}
