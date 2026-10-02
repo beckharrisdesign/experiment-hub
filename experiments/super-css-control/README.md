@@ -81,9 +81,14 @@ experiment's docs and OpenSpec artifacts only.
 head and Super no longer holds an inline copy, so `public/super/site.css` is
 the only copy applying. Current reading from the check:
 
-| delivery | remote | inline | variables | selectors |
-|---|---|---|---|---|
-| `external-link` | `in-sync` | none | 6/6 | 49/49 |
+```
+  delivery : external-link
+  remote   : in-sync
+  inline   : n/a (not inlined)
+  markers  : remote=yes inline=no
+  variables: 6/6 present
+  selectors: 49/49 present
+```
 
 Until this landed, Super compiled its own copy of the library into the same
 inline `<style>` block that carries the theme variables, and both copies
@@ -115,7 +120,10 @@ Four questions, no browser needed. Exit 0 clean, 1 if something needs attention;
 | **variables** | Are all six Super theme variables the library reads still defined? |
 | **selectors** | Do all 49 classes the library targets still appear in the DOM? |
 
-Current reading — `external-link`, `in-sync`, no inline copy, 6/6, 49/49.
+Current reading — `external-link`, remote `in-sync`, inline
+`n/a (not inlined)`, 6/6 variables, 49/49 selectors. Verbatim output is
+under [Current state](#current-state--2026-10-02), so a run can be diffed
+against it directly.
 
 The drift check compares meaning, not formatting: Super rewrites `.5rem` to
 `0.5rem`, strips spaces around `/`, and drops quotes in `[class*="page__for-"]`
