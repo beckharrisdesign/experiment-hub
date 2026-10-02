@@ -329,41 +329,62 @@ h2.notion-heading {
 }
 /* ============================================================
    7. PAGE PROPERTIES
-   The metadata list under project page titles (Role, Team, etc.).
-   Restyled from Super's two-column truncated layout into stacked
-   label-over-value groups that wrap in full.
+   The metadata list under project page titles (Year, Role, etc.).
+   Restyled from Super's two-column truncated layout into a wrapping
+   band of label-over-value columns, each sized to its own content.
    ============================================================ */
-/* The whole properties area: wrapping row, space below */
+/* The whole properties area: a wrapping row, with space below.
+   `gap` does the separating — the per-property margins this used to
+   rely on could not space neighbours once they sat side by side. */
 .notion-page__properties-layout {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 !important;
-  padding: 0 0 1.5rem 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: 1.5rem 3rem !important;
+  align-items: start !important;
+  padding: 0 0 2rem 0 !important;
 }
-/* Strip Super's per-property boxes */
-.notion-page__layout-property {
+/* Strip Super's per-property boxes AND its full-width rule.
+   Super ships `.notion-page__properties-layout .notion-page__layout-property
+   { width: 100% }`, which forces every field onto its own row. That was
+   invisible while the pages carried a single property and is the whole
+   reason this section needed revisiting.
+
+   `width: auto` — not a percentage — so the columns size to their content.
+   A fixed share (33.3%, say) has to assume a field count: it leaves a hole
+   on the ten pages carrying Year alone, and at 375px it pins every column
+   to ~114px, which is too narrow for a value like "Founder, CEO, COO of
+   numo". Content sizing degrades correctly from one field to four.
+
+   `max-width` keeps one long value from claiming the whole row; `min-width:
+   0` lets a column actually shrink rather than overflowing its track. */
+.notion-page__properties-layout .notion-page__layout-property {
+  width: auto !important;
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  max-width: 24ch !important;
   margin: 0 !important;
   padding: 0 !important;
   border: 0 !important;
 }
-/* Each property: let content wrap instead of truncating */
+/* Each property: label stacked over value, content allowed to wrap */
 .notion-page__property {
-  display: flex;
-  flex-wrap: wrap;
+  display: block !important;
   overflow: visible !important;
   text-wrap: wrap !important;
 }
-/* Property label sits on its own full-width line above the value */
+/* Label sits on its own line above the value. Width is auto so the label
+   does not dictate the column's width — the value usually should. */
 .notion-page__property .notion-page__property-name-wrapper {
   text-wrap: wrap !important;
-  width: 100% !important;
+  width: auto !important;
   max-width: unset !important;
   display: block;
 }
 .notion-page__property .notion-page__property-name {
   overflow: visible;
   text-overflow: unset;
-  margin-top: 1rem;
+  margin-top: 0 !important;
   max-width: unset !important;
   display: block !important;
 }
@@ -374,13 +395,30 @@ h2.notion-heading {
   overflow: visible;
   text-overflow: unset;
 }
-/* Property value text: small, reading-width */
+/* Property values: sit just under their label, wrap inside the column.
+   `max-width: none` because the column itself now caps the measure — the
+   old reading-width cap would fight it. `overflow-wrap` (NOT `white-space:
+   break-word`, which is not a valid value for that property and is dropped)
+   lets a long unbroken value break rather than overflow its column. */
+.notion-page__property .notion-property__text,
+.notion-page__property .notion-property__select {
+  max-width: none;
+  margin: .35rem 0 0 0;
+  padding: 0;
+  overflow-wrap: break-word;
+}
 .notion-page__property .notion-property__text {
-  max-width: var(--content-max-width);
   font-size: .9rem;
   line-height: 1.25rem;
-  padding: 0;
-  margin: 0;
+}
+/* Select values (Year) read as plain text here, matching the text fields.
+   The accent pill is reserved for actual tags elsewhere on the site; on a
+   year it reads as emphasis the value does not need. */
+.notion-page__property .notion-pill {
+  background: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  color: inherit !important;
 }
 /* URL properties: align flush left, no highlight background */
 .notion-page__property .notion-property__url {
