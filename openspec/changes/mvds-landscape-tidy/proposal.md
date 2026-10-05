@@ -12,7 +12,7 @@
 
 - **Who:** Katy, and all six hub experiments that inherit MVDS through the Hub's single root dependency — they move as one or not at all.
 - **Job:** Take the Hub's own side of the consumption audit's findings, leaving the package and the other consumer repo to their own sessions.
-- **Done when:** the Hub runs MVDS `0.4.0` with no visual regression on the six MVDS-bearing routes and the `.mvds-theme` / `.efa-theme` font-undo block deleted; the three genuinely-missing experiments appear in the registry seed; and `PACKAGE_CONTRIBUTION_CANDIDATES.md` reflects what `0.4.0` actually shipped.
+- **Done when:** the Hub runs MVDS `0.4.0` with no visual regression on the seven MVDS-bearing surfaces; the missing lite-schema experiments appear in the registry seed; and `PACKAGE_CONTRIBUTION_CANDIDATES.md` reflects what `0.4.0` actually shipped. (Originally this also required deleting the `.mvds-theme` / `.efa-theme` font override. Apply established that `0.4.0` still defaults `--font-heading` to the sans, so the override is load-bearing and stays — see the correction under Why.)
 - **Not doing:** Anything inside `@beckharrisdesign/mvds` — including the `Slider` contribution, which is handed to the concurrent MVDS session (see Handoffs). Repairing `bhd-headless-notion` (another repo, not the Hub — also a handoff). Migrating `etsy-listing-kit` off its 15KB `elk.module.css` onto MVDS components (a full restyle, its own change). Pulling any of the eight standalone prototypes under `experiments/` into the Hub (each is a separate stack decision). Notion writes of any kind.
 
 ## Why
@@ -38,12 +38,14 @@ The remaining two items are housekeeping that the bump makes timely rather than 
 Three items, all inside this repo.
 
 **1. Bump the Hub to MVDS `0.4.0`** (`package.json`, `pnpm-lock.yaml`, `app/globals.css`)
-   Move the root dependency to `^0.4.0`. Then attempt the deletion the bump makes possible: remove the `.efa-theme` / `.mvds-theme` font-undo block at `globals.css:160–170` and verify headings still resolve correctly on `/svg-to-stitch` (the only route opting into `.mvds-theme`) and on the Executive Function routes. Re-check the Hub's own `@theme` block against `0.4.0`'s runtime-token model — the Hub's `--color-border` override and its literal-green pin are known friction and should be left alone here if they still hold.
+   Move the root dependency to `^0.4.0`. Verify headings still resolve correctly on `/svg-to-stitch` (the only route opting into `.mvds-theme`) and on the Executive Function routes. (This item originally proposed deleting the `.efa-theme` / `.mvds-theme` font override at `globals.css:160–170`; apply found the override still load-bearing, so `app/globals.css` is unchanged.) Re-check the Hub's own `@theme` block against `0.4.0`'s runtime-token model — the Hub's `--color-border` override and its literal-green pin are known friction and should be left alone here if they still hold.
 
    `0.4.0` also brings `Input`, `Dropzone` and scoped brands into reach. **Adopting them is not part of this change** — the bump only makes them available; using them is later work with its own design pass.
 
 **2. Reconcile the experiments registry seed** (`data/experiments.json`)
-   The file holds 19 rows while `experiments/` holds 22 folders. Three are real experiments with docs directories and no registry row — `etsy-listing-kit` (a live `app/` route), `openspec-change-visualizer`, and `super-css-control`. Docs-only experiments already belong in this file (`pomodoro-maker` and `snap-issue` are both there with no code surface), so the omission is an oversight, not a convention.
+   The file holds 19 rows while `experiments/` holds 22 folders. Two are lite-schema experiments with docs directories and no registry row — `etsy-listing-kit` (a live `app/` route) and `openspec-change-visualizer`. Docs-only experiments already belong in this file (`pomodoro-maker` and `snap-issue` are both there with no code surface), so the omission is an oversight, not a convention.
+
+   `super-css-control` is **not** added, despite having an `experiments/` folder. It uses the `bhd-experiment` schema, for which `skills/openspec-propose/SKILL.md` states `data/experiments.json` must not be touched — its row belongs in the Notion BHD Labs Database, which needs explicit approval. It also has no `experiments/<slug>/docs/` directory, the other condition that schema's gate checks.
 
    **`keyword-explorer` is excluded deliberately, and must stay excluded.** Its own page header records the decision in Katy's words — *"lets surface it at root ... and it might end up an experiment but not today"* (2026-09-18) — and adding a row would contradict it.
 

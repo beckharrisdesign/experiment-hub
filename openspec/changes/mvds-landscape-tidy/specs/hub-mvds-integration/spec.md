@@ -14,15 +14,15 @@ nothing inside `@beckharrisdesign/mvds` (that is the concurrent MVDS session).
 
 ### Requirement: Every hub experiment renders unchanged on MVDS 0.4.0
 
-All six MVDS-bearing hub routes look the same after the bump as before it — Katy cannot tell the package version changed by looking.
+All seven MVDS-bearing hub surfaces look the same after the bump as before it — Katy cannot tell the package version changed by looking.
 
-**Fails until:** the root `package.json` resolves `@beckharrisdesign/mvds` at `0.4.0` in `pnpm-lock.yaml` (the only root lockfile), `npm run build` and the vitest suite are green, and all six routes have been read against the current deploy with any delta either absent or explicitly approved.
+**Fails until:** the root `package.json` resolves `@beckharrisdesign/mvds` at `0.4.0` in `pnpm-lock.yaml` (the only root lockfile), `npm run build` and the vitest suite are green, and all seven surfaces have been read against the current deploy with any delta either absent or explicitly approved.
 
 The Hub SHALL consume `@beckharrisdesign/mvds` at `^0.4.0` from the public npm registry, with no unapproved visual delta on any route that imports its components or inherits its stylesheet.
 
 #### Scenario: Six MVDS routes render unchanged after the bump
 
-- **WHEN** the bumped Hub is built and `/exec-function-assessment`, `/svg-to-stitch`, `/generative-sandbox`, `/pdf-metadata-viewer`, `/etsy-listing-kit` and `/keyword-explorer` are compared against the current deploy
+- **WHEN** the bumped Hub is built and all seven MVDS-bearing surfaces are compared against the current deploy — `/exec-function-assessment`, `/svg-to-stitch`, `/generative-sandbox`, `/pdf-metadata-viewer` (direct imports in `app/`), `/keyword-explorer` and `/admin` (direct imports via shared `components/`), and `/etsy-listing-kit` (inherit-only)
 - **THEN** each renders identically, or with deltas Katy has explicitly approved
 
 
