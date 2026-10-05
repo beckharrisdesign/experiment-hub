@@ -85,6 +85,15 @@ jobs:
       - name: Lint (hub app)
         run: pnpm run lint:app
 
+      # The hub's webfonts are committed rather than fetched from Google during
+      # `next build`, because a Google Fonts blip used to be able to fail the
+      # production build outright (#518). That only holds while the committed
+      # files are the ones the manifest vouches for, so verify the checksums.
+      # Offline by design — checking that we no longer depend on Google should
+      # not itself call Google.
+      - name: Verify vendored fonts
+        run: node scripts/fonts/vendor.mjs --check
+
   # Seed organizer jobs (unit tests, build check, lint) live in
   # seed-organizer-ci.yml, path-filtered to experiments/simple-seed-organizer/**
   # and packages/** so hub-only changes skip them.
