@@ -449,5 +449,42 @@
       "previewer",
       "client-side"
     ]
+  },
+  {
+    "id": "etsy-listing-kit",
+    "name": "Etsy Listing Kit",
+    "statement": "Turn one design file into every asset an Etsy listing needs, so sellers skip the unpaid second job.",
+    "type": "commercial",
+    "directory": "experiments/etsy-listing-kit",
+    "documentationId": "doc-etsy-listing-kit",
+    "prototypeId": "proto-etsy-listing-kit",
+    "status": "Active",
+    "createdDate": "2026-07-25",
+    "lastModified": "2026-08-24",
+    "tags": [
+      "etsy",
+      "listing-assets",
+      "embroidery",
+      "image-generation",
+      "paid"
+    ]
+  },
+  {
+    "id": "openspec-change-visualizer",
+    "name": "OpenSpec Change Visualizer",
+    "statement": "Visualize how a single change moved through OpenSpec gates, so \"what are we working on?\" has an answer.",
+    "type": "tool",
+    "directory": "experiments/openspec-change-visualizer",
+    "documentationId": "doc-openspec-change-visualizer",
+    "prototypeId": "proto-openspec-change-visualizer",
+    "status": "Active",
+    "createdDate": "2026-08-29",
+    "lastModified": "2026-08-29",
+    "tags": [
+      "openspec",
+      "workflow",
+      "visualization",
+      "process"
+    ]
   }
 ]

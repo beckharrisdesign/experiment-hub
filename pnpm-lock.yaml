@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@beckharrisdesign/mvds':
-        specifier: ^0.3.0
-        version: 0.3.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(tailwindcss@4.3.2)(typescript@5.9.3)
+        specifier: ^0.4.0
+        version: 0.4.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(tailwindcss@4.3.2)(typescript@5.9.3)
       '@notionhq/client':
         specifier: ^5.6.0
         version: 5.20.0
@@ -425,8 +425,8 @@ packages:
     resolution: {integrity: sha512-4zBIxpPzowiZpusoFkyGVwakdRJUyuH5PxQ/PrqghfdFWWasvnCdPfQXHrenDai+gyLARulZjZowCOj6fjT4pA==}
     engines: {node: '>=6.9.0'}
 
-  '@beckharrisdesign/mvds@0.3.0':
-    resolution: {integrity: sha512-YwHW4v5z1k0rJMCGUVuCaTkiqWdHOBkmvemE1agX1axSMwXsX9IGBFxpybnW9IK7F+b0Kh1LrUs9gHb2tzDncA==}
+  '@beckharrisdesign/mvds@0.4.0':
+    resolution: {integrity: sha512-0N10PTDENwpAFeC6yvfzX7eizHVUTJOTIgjWVHCDo73RAn3ZNH6BF56Ao+NLsiZuM5eszPVsZC8g9JDAzCxmJQ==}
     peerDependencies:
       react: ^19
       react-dom: ^19
@@ -6350,7 +6350,7 @@ snapshots:
       '@babel/helper-string-parser': 7.29.7
       '@babel/helper-validator-identifier': 7.29.7
 
-  '@beckharrisdesign/mvds@0.3.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(tailwindcss@4.3.2)(typescript@5.9.3)':
+  '@beckharrisdesign/mvds@0.4.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(tailwindcss@4.3.2)(typescript@5.9.3)':
     dependencies:
       '@fontsource-variable/inter': 5.2.8
       class-variance-authority: 0.7.1
