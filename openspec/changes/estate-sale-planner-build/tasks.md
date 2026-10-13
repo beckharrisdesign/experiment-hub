@@ -95,7 +95,8 @@
 - [x] 3.12 Sheet page `sheet/[id]` (server, `force-dynamic`, `noindex`): 404 on unknown
       ids (curl), "settling" / "not unlocked" holding states, paid page on the 02.1 card
       with print + copy-link. Summary gains the paid CTA `Card`
-      (`assets/built-02.3-summary-*.png`).
+      (`assets/built-02.3-summary-*.png`). Figma round 02.3 frames `32:74` / `32:109`
+      screenshot-verified in-session.
 
 ## 4. QA
 
