@@ -134,7 +134,7 @@
 - [x] 3.20 Capture modes: `Capture.tsx` new (optional name) / append (Back, "Start a new
       walkthrough instead"); Lists header with name + Rename + Film another room; Finish
       with Film another room + Start a new walkthrough; History and the summary show the
-      name. Playwright pass 2026-10-13 (`assets/built-round04-*`): named first pass 14
+      name. Playwright pass 2026-10-13 (`assets/r04-*`): named first pass 14
       items → add a room → 17 across 2 passes → rename → new walkthrough → history →
       reopen intact. Figma page `41:113`, frames `42:81` / `41:114`, screenshot-verified.
 
