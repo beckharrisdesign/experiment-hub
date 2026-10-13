@@ -63,8 +63,11 @@
       `ESP_STRIPE_WEBHOOK_SECRET_*`, Supabase tables; the flag route serves the fixture and
       says `configured: false` with no model key (round 02.3 — the round-01 entry
       registered an Anthropic key the hub does not hold).
-- [ ] 2.4 Supabase migration `016_esp_sell_sheets.sql` (`esp_events`, `esp_sheets`, RLS on)
-      — written and reviewed; **applying it to the live project is Katy's** (same as 007).
+- [x] 2.4 Supabase migration `016_esp_sell_sheets.sql` (`esp_events`, `esp_sheets`, RLS on)
+      — applied to Experiment Hub 2.0 (`ulqdjuiffpazzixnwwso`) 2026-10-13 on Katy's "you
+      have the connectors to run the migration": recorded as version `20261013211017`,
+      both tables present with RLS on and 0 rows, security advisors unchanged (the
+      standard RLS-no-policy info line only).
 
 ## 3. Implementation
 
@@ -148,7 +151,7 @@
       OpenAI adapter, sheet validation (details, note), checkout route, webhook route.
       Green 2026-10-13 (round 03). Round 04 adds append / rename / known / demo-growth
       coverage.
-- [ ] 4.4 **Katy:** apply migration 016; create the Stripe webhook endpoint for
+- [ ] 4.4 **Katy:** ~~apply migration 016~~ (done 2026-10-13); create the Stripe webhook endpoint for
       `/estate-sale-planner/api/webhook` (test mode first) and set
       `ESP_STRIPE_WEBHOOK_SECRET_TEST`; one test-mode purchase end to end (checkout → webhook
       → sheet unlocks → email row in `experiment_submissions`).
