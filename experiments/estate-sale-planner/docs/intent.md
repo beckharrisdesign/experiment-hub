@@ -5,7 +5,7 @@
 > until that's able to be folded in."
 > — Katy, 2026-10-13 (Claude Code session)
 
-The idea, as it arrived (Idea Browser "Idea of the day", 2026-10-13):
+The idea, as it arrived (a newsletter brief, 2026-10-13):
 
 > **The estate sale planner** — An app that tells families what's worth keeping when they
 > clear out a parent's house.

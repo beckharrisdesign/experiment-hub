@@ -4,8 +4,8 @@
 > `estate-sale-planner-build` (`schema: experiment-hub-lite`), per `rules/bhd-experiment.mdc`.
 >
 > **Classification: commercial** — a product with a monetization question, not a utility.
-> Source: Idea Browser "Idea of the day", 2026-10-13 ("The estate sale planner"), brought in
-> by the founder: *"I liked this idea of the day today. Let's try another autonomous build
+> Source: a newsletter brief ("The estate sale planner", 2026-10-13), brought in by the
+> founder: *"I liked this idea of the day today. Let's try another autonomous build
 > using MVDS."*
 >
 > **Autonomous build.** Consequential defaults are logged in
@@ -101,7 +101,7 @@ to beat that — fast and decisive — not beat WorthPoint on accuracy.
 
 ## Market analysis
 
-**Tailwind, not TAM.** The Idea Browser brief cites Cerulli Associates / Visa Business &
+**Tailwind, not TAM.** The brief cites Cerulli Associates / Visa Business &
 Economic Insights (via Walnut): roughly **$106T** to be inherited through 2048 (Boomers $6T,
 Gen X $39T, Millennials $46T, Gen Z $15T), "and a lot of it is houses full of stuff."
 
