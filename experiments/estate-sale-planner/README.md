@@ -2,8 +2,9 @@
 
 Film a walkthrough of a parent's house → a vision model flags what might be worth something
 → every item headed to keep, sell, or donate (toggle any time) → open an item to correct it,
-add a detail shot of a stamp or seam for a re-read, or remove it → one tap to schedule a
-donation pickup → save the sell list with photos as a $5 Sell Sheet at a shareable link.
+add a detail shot of a stamp or seam for a re-read, or remove it → film another room on
+another day and it joins the same walkthrough → one tap to schedule a donation pickup →
+save the sell list with photos as a $5 Sell Sheet at a shareable link.
 
 **Status:** Built on MVDS 0.5.0, Validating next (autonomous build; see the review queue before trusting any default).
 

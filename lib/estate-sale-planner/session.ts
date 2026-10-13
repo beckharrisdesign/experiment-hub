@@ -43,29 +43,70 @@ export interface Move {
 export interface Session {
   id: string;
   createdAt: string;
+  /** "Mom's house" — optional; history and the summary show it when set. */
+  name?: string;
   items: SessionItem[];
   /** Every destination change, oldest first — the undo stack. */
   history: Move[];
+  /** How many capture passes built this walkthrough (rooms added over days). */
+  passes?: number;
+}
+
+function placeItems(prefix: string, items: FlaggedItem[], images: Array<string | undefined>): SessionItem[] {
+  return items.map((item, i) => ({
+    ...item,
+    id: `${prefix}_${i}`,
+    ...(item.flagged ? { destination: "sell" as const } : {}),
+    ...(images[i] ? { image: images[i] } : {}),
+  }));
 }
 
 export function newSession(
   items: FlaggedItem[],
   now = new Date(),
   images: Array<string | undefined> = [],
+  name?: string,
 ): Session {
   const id = `esp_${now.getTime().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  const trimmed = name?.trim().slice(0, 60);
   return {
     id,
     createdAt: now.toISOString(),
-    items: items.map((item, i) => ({
-      ...item,
-      id: `${id}_${i}`,
-      ...(item.flagged ? { destination: "sell" as const } : {}),
-      ...(images[i] ? { image: images[i] } : {}),
-    })),
+    ...(trimmed ? { name: trimmed } : {}),
+    items: placeItems(id, items, images),
     history: [],
+    passes: 1,
   };
 }
+
+/**
+ * A second (third, …) room joins the same walkthrough: new items append,
+ * flagged ones start at Sell, nothing already sorted moves. Ids carry the
+ * pass number so they never collide with the first pass.
+ */
+export function appendItems(s: Session, items: FlaggedItem[], images: Array<string | undefined> = []): Session {
+  const pass = (s.passes ?? 1) + 1;
+  return {
+    ...s,
+    items: [...s.items, ...placeItems(`${s.id}_p${pass}`, items, images)],
+    passes: pass,
+  };
+}
+
+export function renameSession(s: Session, name: string): Session {
+  const trimmed = name.trim().slice(0, 60);
+  if ((s.name ?? "") === trimmed) return s;
+  const { name: _old, ...rest } = s;
+  return trimmed ? { ...rest, name: trimmed } : rest;
+}
+
+export interface KnownItem {
+  name: string;
+  room: string;
+}
+
+/** What the model is told is already listed, so re-walking a room adds the lamp it missed, not a second sofa. */
+export const knownItems = (s: Session): KnownItem[] => s.items.map(({ name, room }) => ({ name, room }));
 
 export const sellList = (s: Session) => s.items.filter((i) => i.destination === "sell");
 export const keepList = (s: Session) => s.items.filter((i) => i.destination === "keep");

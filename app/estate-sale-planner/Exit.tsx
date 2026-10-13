@@ -9,6 +9,8 @@ import { track } from "../../lib/estate-sale-planner/analytics";
 
 interface ExitProps {
   session: Session;
+  onFilmAnother: () => void;
+  onNewWalkthrough: () => void;
 }
 
 /**
@@ -17,7 +19,7 @@ interface ExitProps {
  * (print, or the paid Sell Sheet) is the secondary button. Junk haul is a
  * small link for the pile no charity will take — there is no Toss list.
  */
-export default function Exit({ session }: ExitProps) {
+export default function Exit({ session, onFilmAnother, onNewWalkthrough }: ExitProps) {
   const [noCoverage, setNoCoverage] = useState(false);
   const donate = donateList(session).length;
   const keep = keepList(session).length;
@@ -88,6 +90,15 @@ export default function Exit({ session }: ExitProps) {
       </p>
 
       <Callout>This walkthrough is saved on this device under Earlier walkthroughs. The Sell Sheet is the copy you can send to someone else.</Callout>
+
+      <Stack gap={8} align="center">
+        <Button variant="outline" onClick={onFilmAnother}>
+          Film another room
+        </Button>
+        <button type="button" className="text-small text-muted-foreground underline" onClick={onNewWalkthrough}>
+          Start a new walkthrough
+        </button>
+      </Stack>
     </Stack>
   );
 }

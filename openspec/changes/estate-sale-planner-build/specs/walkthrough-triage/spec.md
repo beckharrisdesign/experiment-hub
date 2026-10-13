@@ -118,3 +118,28 @@ The refine route SHALL validate the item and up to `DETAIL_SHOT.maxPerItem` base
 
 - **WHEN** no provider is keyed
 - **THEN** the photo is kept on the item and the user is told nothing was re-read
+
+### Requirement: A walkthrough grows room by room
+
+A second use adds to the same walkthrough: the user films another room, the new items join
+the existing lists, and the model is told what is already listed so it does not repeat it.
+Starting over is an explicit choice, and the earlier walkthrough stays in history.
+
+**Fails until:** a second capture appends items to the active session, the flag request carries the existing items as context, and the capture screen offers Start a new walkthrough separately.
+
+The lists and the finish screen SHALL offer Film another room; a capture in that mode SHALL send the walkthrough's existing names and rooms with the frames and SHALL append what comes back (flagged items at Sell, the rest undecided) without moving anything already sorted; the capture screen SHALL offer Start a new walkthrough, which keeps the active one in history; a walkthrough MAY be named and the name SHALL show in history and on the summary; in fixture mode the sample house SHALL grow room by room from the known list.
+
+#### Scenario: User films the next room on another day
+
+- **WHEN** the user taps Film another room, films the kitchen, and sends
+- **THEN** the kitchen's items append to the same walkthrough, the lists say how many were added, and nothing already sorted changes
+
+#### Scenario: Re-walking a room
+
+- **WHEN** the user films the living room again
+- **THEN** the request names the living room's items as already listed and the model returns only objects it had not listed
+
+#### Scenario: A different house
+
+- **WHEN** the user taps Start a new walkthrough
+- **THEN** a clean capture screen opens and the earlier walkthrough is still in Earlier walkthroughs

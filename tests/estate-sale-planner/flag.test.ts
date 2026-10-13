@@ -45,6 +45,22 @@ describe("parseFlagResponse", () => {
 // No-key path
 // ---------------------------------------------------------------------------
 
+describe("fixtureFlags grows the demo house room by room", () => {
+  it("whole house with no known list; first three rooms on a first pass; the next room per later pass; nothing when done", () => {
+    const all = fixtureFlags().items;
+    const rooms = [...new Set(all.map((i) => i.room))];
+    expect(rooms).toHaveLength(6);
+    const first = fixtureFlags([]).items;
+    expect(new Set(first.map((i) => i.room))).toEqual(new Set(rooms.slice(0, 3)));
+    expect(first.length).toBeLessThan(all.length);
+    const known = first.map(({ name, room }) => ({ name, room }));
+    const second = fixtureFlags(known).items;
+    expect(new Set(second.map((i) => i.room))).toEqual(new Set([rooms[3]]));
+    const everything = all.map(({ name, room }) => ({ name, room }));
+    expect(fixtureFlags(everything).items).toHaveLength(0);
+  });
+});
+
 describe("flagFrames without a model key", () => {
   it("serves the fixture and says so", async () => {
     expect(visionConfigured()).toBe(false);

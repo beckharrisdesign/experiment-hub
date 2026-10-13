@@ -21,6 +21,7 @@ export const HISTORY_LIMIT = 6;
 
 export interface HistoryEntry {
   id: string;
+  name?: string;
   createdAt: string;
   updatedAt: string;
   items: number;
@@ -54,6 +55,7 @@ export function loadSession(): Session | null {
 export function summarize(session: Session, updatedAt = new Date().toISOString()): HistoryEntry {
   return {
     id: session.id,
+    ...(session.name ? { name: session.name } : {}),
     createdAt: session.createdAt,
     updatedAt,
     items: session.items.length,

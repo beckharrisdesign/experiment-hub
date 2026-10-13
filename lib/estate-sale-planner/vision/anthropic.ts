@@ -6,7 +6,7 @@
  */
 import type { z } from "zod";
 import { VISION_MODELS } from "../config";
-import { FlagResponseSchema, SYSTEM_PROMPT, parseFlagResponse, type FlagResult, type FrameInput } from "../flag";
+import { FlagResponseSchema, SYSTEM_PROMPT, knownContext, parseFlagResponse, type FlagResult, type FrameInput, type KnownItem } from "../flag";
 import { REFINE_PROMPT, RefineResponseSchema, parseRefineResponse, refineUserText, type RefineInput, type RefineResult } from "../refine";
 
 type Part =
@@ -34,12 +34,14 @@ async function structured<T extends z.ZodType>(system: string, content: Part[], 
   };
 }
 
-export async function flagWithAnthropic(frames: FrameInput[], apiKey: string): Promise<FlagResult> {
+export async function flagWithAnthropic(frames: FrameInput[], apiKey: string, known?: KnownItem[]): Promise<FlagResult> {
   const content: Part[] = [];
   frames.forEach((f, i) => {
     content.push({ type: "text", text: `Frame ${i} (${f.at}s)` });
     content.push(imagePart(f));
   });
+  const ctx = knownContext(known);
+  if (ctx) content.push({ type: "text", text: ctx });
   content.push({ type: "text", text: `These ${frames.length} frames are one walkthrough. Return the items.` });
   const { raw, model, usage } = await structured(SYSTEM_PROMPT, content, FlagResponseSchema, apiKey);
   const parsed = raw ? parseFlagResponse(raw) : null;

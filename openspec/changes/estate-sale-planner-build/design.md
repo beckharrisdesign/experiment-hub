@@ -39,6 +39,9 @@ Six screens, one route:
                    + print / Sell Sheet (secondary) + "haul the rest" link
   Tab bar          Lists · Sort · Finish, fixed to the bottom once a walkthrough exists
   History          earlier walkthroughs on this device, listed on the capture screen
+  Second use       "Film another room" (Lists, Finish) → capture in add-room mode → items APPEND
+                   "Start a new walkthrough" (capture, Finish) → clean start, old one stays in history
+                   optional name ("Mom's house") on capture, Rename on Lists, shown in history + summary
   6. Summary       printable Sell list, "not an appraisal" first · Sell Sheet CTA ($5)
   7. Sell sheet    /sheet/[id] — the paid page: photos, bands, print, copy link
 Recovery: no key → demo on the fixture set, says so · nothing flagged → honest empty Sell
@@ -95,7 +98,7 @@ continues as **02** on the design file (as-is is `01`).
 | Libraries / version | FigJam page-per-iteration conventions per `rules/figma.mdc` | `MVDS Core` (`C20nU0mROzk3Zr0I9BELJF`, subscribed 2026-10-13, `source: team`) — instances of `Button`, `Badge`, `Card`, `Callout`; fills bound to the `Tokens` collection (`Color/background`, `foreground`, `muted-foreground`, `border`) with the collection pinned to **Dark** on every frame, matching the hub. Code: `@beckharrisdesign/mvds@0.5.0`. **Two mirror deviations, both recorded:** `Dropzone` and `Input` are not in the published library yet (import by key fails; the 0.5.0 changelog notes they reached Figma after the last publish), so the capture zone is a dashed stand-in frame named `Dropzone (stand-in: not yet published in MVDS Core)`; and Figma forbids inserting children into an instance, so the band/confidence `Badge` row sits beneath each `Card` rather than inline with the title as in code |
 | Code Connect | N/A — no code surface | Not set up (no published hub component library to map against — elk precedent); implementation maps to MVDS components in code |
 | Breakpoints | N/A — FigJam canvas, not a responsive screen | S · 480 px mobile (primary) / L · 1024 px desktop (review layout) — `rules/design-guidelines.mdc` |
-| Status | **Round 02 drawn** 2026-10-13 (rough — shape and sequence, as the proposal round should be) | **Round 02 drawn** 2026-10-13 on MVDS Core, dark, five frames; composition screenshot taken in-session, every text node in Inter (the product font: MVDS sets `--font-heading: var(--font-sans)`). **Round 02.1 drawn** 2026-10-13 after founder feedback; **Round 02.3 drawn** 2026-10-13 (sell sheet; page `32:73`, frames `32:74` / `32:109`); **Round 03 drawn** 2026-10-13 (keep / sell / donate, item screen, sort; page `36:73`, frames `36:74` / `36:119` / `36:109`) — see below. Implementation captures at `assets/built-*.png` (round 02 → `built-0N-*`, round 02.1 → `built-02.1-*`) |
+| Status | **Round 02 drawn** 2026-10-13 (rough — shape and sequence, as the proposal round should be) | **Round 02 drawn** 2026-10-13 on MVDS Core, dark, five frames; composition screenshot taken in-session, every text node in Inter (the product font: MVDS sets `--font-heading: var(--font-sans)`). **Round 02.1 drawn** 2026-10-13 after founder feedback; **Round 02.3 drawn** 2026-10-13 (sell sheet; page `32:73`, frames `32:74` / `32:109`); **Round 03 drawn** 2026-10-13 (keep / sell / donate, item screen, sort; page `36:73`, frames `36:74` / `36:119` / `36:109`); **Round 04 drawn** 2026-10-13 (add rooms, naming; page `41:113`, frames `42:81` / `41:114`) — see below. Implementation captures at `assets/built-*.png` (round 02 → `built-0N-*`, round 02.1 → `built-02.1-*`) |
 
 **Library:** MVDS Core was toggled on by the founder 2026-10-13 (`get_libraries` →
 `source: "team"`) before any proposed frame was built.
@@ -174,6 +177,23 @@ on each elements, correcting an object recognition decision that isn't right."*
 
 Captures: `assets/built-03-{lists,detail,sort,exit,capture-history}-mobile-480.png`. Figma: page **`03 Proposed — keep / sell / donate, item screen, detail shots`** (node `36:73`), frames `Proposed 03 · 03 Lists · Mobile 480` (`36:74`: toggle + Details beneath each card, toggles on every still-to-sort row, add-item button, tab bar), `Proposed 03 · 03a Item · Mobile 480` (`36:119`: Back, the card, destination toggle, closer-look actions, four field stand-ins, remove), `Proposed 03 · 04 Sort · Mobile 480` (`36:109`: Donate / Keep / Sell, Details · Undo, tab bar). Composition screenshot taken in-session, clean on the first pass, every text node in Inter. Two recorded mirror deviations: toggles sit beneath the `Item card` instances (instances cannot take children, as in 02.1) and the item screen's fields are dashed stand-ins because `Input` / `Select` / `Textarea` are not in the published MVDS Core library (#24). The tab bar is drawn as the frame's last child, labelled as fixed in code.
 
+### Round 04 — the second use (2026-10-13)
+
+Founder question, verbatim: *"so what does the second use of the product do - keep adding
+to the same list? start over?"* The honest answer was "starts over, and there was no way
+back to the capture screen while a walkthrough was active." Approved: *"sure approved - I
+want to try this out!"*
+
+| Concern | Round 03 | Round 04 |
+| --- | --- | --- |
+| Second room | Close the tab, film again → a separate session | **Film another room** on Lists and Finish → capture in add-room mode → the new items **append** to the same walkthrough (`appendItems`, ids carry the pass number); the lists say how many were added |
+| Re-walking a room | Duplicates | The flag request carries `known` (every listed name + room); the prompt says not to return them unless clearly a different object |
+| Starting over | Only by closing the tab | **Start a new walkthrough** on the capture screen (add-room mode) and on Finish; the active one stays in history |
+| Naming | A date | Optional name on the capture screen, **Rename** on Lists; shown in history, the lists header and the summary |
+| Demo mode | The whole sample house at once | Grows **room by room** from the known list — first pass three rooms, each later pass the next room, then "nothing new" — so the append is felt without a key |
+
+Captures: `assets/built-round04-{capture-append,lists-named,capture-history}-mobile-480.png` (prefixed `round04` because the round-02 captures already use `built-04-` for the swipe screen). Figma: page **`04 Proposed — add rooms, naming`** (node `41:113`), frames `Proposed 04 · 01 Capture (add a room) · Mobile 480` (`42:81`, cloned from the round-02 capture: Back, Add-a-room eyebrow, "Film another room", the dropzone stand-in, the "different house" line) and `Proposed 04 · 03 Lists (named, add a room) · Mobile 480` (`41:114`, cloned from round 03 with the walkthrough header `43:86`: name + Rename, pass count, Film another room). Composition screenshot clean on the first pass, all text in Inter.
+
 ## Decisions
 
 1. **Board for the proposal round, design file for the pair.** The proposal's question is
@@ -220,6 +240,8 @@ Captures: `assets/built-03-{lists,detail,sort,exit,capture-history}-mobile-480.p
 15. **History is on the device, nothing more.** Six walkthroughs in `localStorage` is
     "finding history" without accounts; the paid Sell Sheet remains the only copy that
     leaves the phone.
+16. **A walkthrough is a house, not a video.** Rooms append over days; the model is told
+    what is listed; starting over is a named choice, never a side effect of coming back.
 
 ## Risks / Trade-offs
 

@@ -84,10 +84,35 @@ export function parseFlagResponse(raw: unknown): FlagResponse | null {
   return result.success ? result.data : null;
 }
 
-export function fixtureFlags(): FlagResult {
+export interface KnownItem {
+  name: string;
+  room: string;
+}
+
+/** Appended to the walkthrough prompt when rooms are added to an existing walkthrough. */
+export function knownContext(known: KnownItem[] | undefined): string | null {
+  if (!known || known.length === 0) return null;
+  const lines = known.slice(0, 300).map((k) => `- ${k.name} (${k.room})`);
+  return `Already listed from earlier rooms of this house — do not return these again unless what you see is clearly a different object:\n${lines.join("\n")}`;
+}
+
+/**
+ * Fixture mode. Called with no `known` (tests, the library default) it is the
+ * whole sample house. Called with a `known` list — which the route always
+ * passes — it grows the demo house room by room, the way the product does:
+ * the first pass is the first three rooms, each later pass the next room not
+ * yet listed, and nothing once the house is done.
+ */
+export function fixtureFlags(known?: KnownItem[]): FlagResult {
   const parsed = parseFlagResponse(fixture);
   if (!parsed) throw new Error("estate-sale-planner fixture does not match FlagResponseSchema");
-  return { ...parsed, source: "fixture", provider: "fixture", model: "fixture" };
+  if (known === undefined) return { ...parsed, source: "fixture", provider: "fixture", model: "fixture" };
+  const rooms: string[] = [];
+  for (const item of parsed.items) if (!rooms.includes(item.room)) rooms.push(item.room);
+  const knownRooms = new Set(known.map((k) => k.room));
+  const unseen = rooms.filter((r) => !knownRooms.has(r));
+  const pick = knownRooms.size === 0 ? unseen.slice(0, 3) : unseen.slice(0, 1);
+  return { items: parsed.items.filter((i) => pick.includes(i.room)), source: "fixture", provider: "fixture", model: "fixture" };
 }
 
 export interface FrameInput {
@@ -101,13 +126,13 @@ export interface FrameInput {
  * Run the vision pass with whichever provider is keyed. Throws on API
  * failure; the route maps that to a 502.
  */
-export async function flagFrames(frames: FrameInput[]): Promise<FlagResult> {
+export async function flagFrames(frames: FrameInput[], known?: KnownItem[]): Promise<FlagResult> {
   const chosen = visionProvider();
-  if (!chosen) return fixtureFlags();
+  if (!chosen) return fixtureFlags(known);
   if (chosen.provider === "openai") {
     const { flagWithOpenAI } = await import("./vision/openai");
-    return flagWithOpenAI(frames, chosen.apiKey);
+    return flagWithOpenAI(frames, chosen.apiKey, fetch, known);
   }
   const { flagWithAnthropic } = await import("./vision/anthropic");
-  return flagWithAnthropic(frames, chosen.apiKey);
+  return flagWithAnthropic(frames, chosen.apiKey, known);
 }

@@ -22,7 +22,7 @@ export default function History({ entries, onOpen, onDelete }: HistoryProps) {
         {entries.map((e) => (
           <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
             <div className="min-w-0">
-              <p className="text-body text-foreground">{new Date(e.createdAt).toLocaleDateString()} · {e.items} items</p>
+              <p className="text-body text-foreground">{e.name ?? "Untitled walkthrough"} · {new Date(e.createdAt).toLocaleDateString()} · {e.items} items</p>
               <p className="text-small text-muted-foreground">
                 {e.sell} sell · {e.keep} keep · {e.donate} donate{e.undecided > 0 ? ` · ${e.undecided} to sort` : ""}
               </p>

@@ -60,6 +60,18 @@ describe("POST /estate-sale-planner/api/flag (no key)", () => {
     expect((await POST(req({ frames: [{ data: "AAAA", at: "soon" }] }))).status).toBe(400);
   });
 
+  it("grows the demo house from the known list, and rejects a malformed one", async () => {
+    const first = await (await POST(req({ frames: [frame], known: [] }, "10.0.4.1"))).json();
+    const firstRooms = new Set(first.items.map((i: { room: string }) => i.room));
+    expect(firstRooms.size).toBe(3);
+    const known = first.items.map(({ name, room }: { name: string; room: string }) => ({ name, room }));
+    const second = await (await POST(req({ frames: [frame], known }, "10.0.4.1"))).json();
+    expect(second.items.length).toBeGreaterThan(0);
+    expect(second.items.every((i: { room: string }) => !firstRooms.has(i.room))).toBe(true);
+    expect((await POST(req({ frames: [frame], known: [{ name: "", room: "x" }] }, "10.0.4.1"))).status).toBe(400);
+    expect((await POST(req({ frames: [frame], known: "nope" }, "10.0.4.1"))).status).toBe(400);
+  });
+
   it("throttles one IP after 6 walkthroughs in a minute", async () => {
     const ip = "10.0.9.9";
     for (let i = 0; i < 6; i++) expect((await POST(req({ frames: [frame] }, ip))).status).toBe(200);

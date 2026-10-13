@@ -79,7 +79,7 @@ export default function SummaryPage() {
           <Stack gap={8}>
             <h1 className="text-h1 text-foreground">Might be worth selling</h1>
             <p className="text-caption uppercase tracking-wider text-muted-foreground">
-              Walkthrough {new Date(session.createdAt).toLocaleDateString()} · {sell.length} items
+              {session.name ? `${session.name} · ` : ""}Walkthrough {new Date(session.createdAt).toLocaleDateString()} · {sell.length} items
             </p>
           </Stack>
 

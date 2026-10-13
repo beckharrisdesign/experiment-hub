@@ -56,6 +56,13 @@ Then the product shape itself, same day:
 shots / remove, add-item, a bottom tab bar, on-device history, and the exit re-pointed at a
 donation pickup (review queue #36–#42).
 
+> "so what does the second use of the product do - keep adding to the same list? start over?"
+
+> "sure approved - I want to try this out!"
+
+— round 04: rooms append to the same walkthrough with the model told what is listed, an
+explicit Start a new walkthrough, and names (review queue #43–#45).
+
 Two instructions shape the build:
 
 - **Autonomous.** The agent runs the hub's own ladder (Explore → Propose → lite build

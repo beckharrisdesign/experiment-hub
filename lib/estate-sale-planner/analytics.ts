@@ -18,7 +18,10 @@ export type FunnelEvent =
   | "esp_sheet_checkout"
   | "esp_destination_set"
   | "esp_detail_added"
-  | "esp_item_refined";
+  | "esp_item_refined"
+  | "esp_room_appended"
+  | "esp_new_walkthrough"
+  | "esp_walkthrough_named";
 
 export function track(event: FunnelEvent, params: Record<string, string | number | boolean | undefined> = {}) {
   trackEvent(event, { experiment_slug: EXPERIMENT_ID, surface_type: "prototype", ...params });

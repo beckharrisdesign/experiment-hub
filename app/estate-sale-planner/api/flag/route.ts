@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { FRAME_BUDGET } from "../../../../lib/estate-sale-planner/config";
-import { flagFrames, visionConfigured, type FrameInput } from "../../../../lib/estate-sale-planner/flag";
+import { flagFrames, visionConfigured, type FrameInput, type KnownItem } from "../../../../lib/estate-sale-planner/flag";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 /**
  * POST /estate-sale-planner/api/flag
- * Body: { frames: [{ data: <base64 jpeg>, at: <seconds> }, ...] }
+ * Body: { frames: [{ data: <base64 jpeg>, at: <seconds> }, ...], known?: [{ name, room }] }
+ * `known` is what the walkthrough already lists, sent when a room is added
+ * later; the model is told not to repeat them, and fixture mode grows the
+ * sample house room by room from it.
  *
  * The vision pass. Frames arrive already sampled and downscaled by the
  * browser (lib/estate-sale-planner/capture.ts); the budget is re-checked here
@@ -40,8 +43,14 @@ function validFrame(f: unknown): f is FrameInput {
   );
 }
 
+function validKnown(k: unknown): k is KnownItem {
+  if (!k || typeof k !== "object") return false;
+  const { name, room } = k as Record<string, unknown>;
+  return typeof name === "string" && name.length > 0 && name.length <= 80 && typeof room === "string" && room.length <= 40;
+}
+
 export async function POST(request: NextRequest) {
-  let body: { frames?: unknown };
+  let body: { frames?: unknown; known?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -62,6 +71,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Each frame needs base64 JPEG data and a time." }, { status: 400 });
   }
 
+  let known: KnownItem[] | undefined;
+  if (body.known !== undefined) {
+    if (!Array.isArray(body.known) || body.known.length > 300 || !body.known.every(validKnown)) {
+      return NextResponse.json({ error: "known must be a list of { name, room }." }, { status: 400 });
+    }
+    known = body.known;
+  }
+
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (throttled(ip)) {
     return NextResponse.json(
@@ -71,7 +88,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await flagFrames(frames);
+    const result = await flagFrames(frames, known);
     return NextResponse.json({ success: true, configured: visionConfigured(), ...result });
   } catch (error: any) {
     console.error("[esp flag] vision pass failed:", error);

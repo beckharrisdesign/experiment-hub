@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Callout, Grid, Stack } from "@beckharrisdesign/mvds";
+import { useState } from "react";
+import { Button, Callout, Grid, Inline, Input, Stack } from "@beckharrisdesign/mvds";
 import { byRoom, donateList, keepList, sellList, undecided, type Destination, type NewItemInput, type Session, type SessionItem } from "../../lib/estate-sale-planner/session";
 import AddItem from "./AddItem";
 import ItemCard, { ItemRow } from "./ItemCard";
@@ -12,6 +13,35 @@ interface ListsProps {
   onOpen: (itemId: string) => void;
   onAdd: (input: NewItemInput) => void;
   onStartSorting: () => void;
+  onFilmAnother: () => void;
+  onRename: (name: string) => void;
+}
+
+/** The walkthrough's name, editable in place: tap Rename, type, Save. */
+function WalkthroughName({ name, onRename }: { name?: string; onRename: (name: string) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(name ?? "");
+  if (editing) {
+    return (
+      <Inline gap={8} align="center" className="flex-wrap">
+        <Input value={draft} maxLength={60} placeholder="Mom's house" aria-label="Walkthrough name" onChange={(e) => setDraft(e.target.value)} />
+        <Button size="sm" onClick={() => { onRename(draft); setEditing(false); }}>
+          Save
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => { setDraft(name ?? ""); setEditing(false); }}>
+          Cancel
+        </Button>
+      </Inline>
+    );
+  }
+  return (
+    <Inline gap={8} align="center">
+      <span className="text-caption uppercase tracking-wider text-muted-foreground">{name ?? "Untitled walkthrough"}</span>
+      <Button size="sm" variant="ghost" onClick={() => { setDraft(name ?? ""); setEditing(true); }}>
+        Rename
+      </Button>
+    </Inline>
+  );
 }
 
 function RowList({ items, onDestination, onOpen }: { items: SessionItem[]; onDestination: ListsProps["onDestination"]; onOpen: ListsProps["onOpen"] }) {
@@ -37,7 +67,7 @@ function RowList({ items, onDestination, onOpen }: { items: SessionItem[]; onDes
  * keep / sell / donate toggle, so nothing is ever stuck where the model or a
  * swipe put it, and tapping a name opens the item.
  */
-export default function Lists({ session, fromFixture, onDestination, onOpen, onAdd, onStartSorting }: ListsProps) {
+export default function Lists({ session, fromFixture, onDestination, onOpen, onAdd, onStartSorting, onFilmAnother, onRename }: ListsProps) {
   const sell = sellList(session);
   const keep = keepList(session);
   const donate = donateList(session);
@@ -46,10 +76,21 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
   return (
     <Stack gap={40}>
       {fromFixture && (
-        <Callout>Demo mode: no vision key is configured, so this is a sample house, not yours.</Callout>
+        <Callout>Demo mode: no vision key is configured, so this is a sample house, not yours. Each room you add brings in the next sample room.</Callout>
       )}
 
       <Stack gap={16}>
+        <Stack gap={8}>
+          <WalkthroughName name={session.name} onRename={onRename} />
+          <p className="text-small text-muted-foreground">
+            {session.items.length} {session.items.length === 1 ? "item" : "items"} across {session.passes ?? 1} {(session.passes ?? 1) === 1 ? "pass" : "passes"} · {new Date(session.createdAt).toLocaleDateString()}
+          </p>
+          <div>
+            <Button variant="outline" onClick={onFilmAnother}>
+              Film another room
+            </Button>
+          </div>
+        </Stack>
         <Stack gap={4}>
           <p className="text-caption uppercase tracking-wider text-muted-foreground">Sell</p>
           <h1 className="text-h2 text-foreground">Might be worth something</h1>

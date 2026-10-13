@@ -7,7 +7,7 @@
  */
 import { z } from "zod";
 import { VISION_MODELS } from "../config";
-import { FlagResponseSchema, SYSTEM_PROMPT, parseFlagResponse, type FlagResult, type FrameInput } from "../flag";
+import { FlagResponseSchema, SYSTEM_PROMPT, knownContext, parseFlagResponse, type FlagResult, type FrameInput, type KnownItem } from "../flag";
 import { REFINE_PROMPT, RefineResponseSchema, parseRefineResponse, refineUserText, type RefineInput, type RefineResult } from "../refine";
 import { strictJsonSchema } from "./schema";
 
@@ -45,12 +45,14 @@ export function openAIBody({ system, parts, schema, name }: StructuredRequest) {
 }
 
 /** The walkthrough request body, exported so a test can pin the shape without a network. */
-export function openAIRequest(frames: FrameInput[]) {
+export function openAIRequest(frames: FrameInput[], known?: KnownItem[]) {
   const parts: ContentPart[] = [];
   frames.forEach((f, i) => {
     parts.push({ type: "text", text: `Frame ${i} (${f.at}s)` });
     parts.push(imagePart(f));
   });
+  const ctx = knownContext(known);
+  if (ctx) parts.push({ type: "text", text: ctx });
   parts.push({ type: "text", text: `These ${frames.length} frames are one walkthrough. Return the items.` });
   return openAIBody({ system: SYSTEM_PROMPT, parts, schema: FlagResponseSchema, name: "flag_response" });
 }
@@ -84,8 +86,8 @@ async function structured(body: ReturnType<typeof openAIBody>, apiKey: string, f
   };
 }
 
-export async function flagWithOpenAI(frames: FrameInput[], apiKey: string, fetchImpl: typeof fetch = fetch): Promise<FlagResult> {
-  const { raw, model, usage } = await structured(openAIRequest(frames), apiKey, fetchImpl);
+export async function flagWithOpenAI(frames: FrameInput[], apiKey: string, fetchImpl: typeof fetch = fetch, known?: KnownItem[]): Promise<FlagResult> {
+  const { raw, model, usage } = await structured(openAIRequest(frames, known), apiKey, fetchImpl);
   const parsed = parseFlagResponse(raw);
   if (!parsed) throw new Error("The vision pass returned an unreadable response.");
   return { ...parsed, source: "model", provider: "openai", model, usage };

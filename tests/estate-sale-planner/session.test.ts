@@ -2,7 +2,10 @@ import { describe, it, expect } from "vitest";
 import { fixtureFlags } from "@/lib/estate-sale-planner/flag";
 import {
   addItem,
+  appendItems,
   applyRefinement,
+  knownItems,
+  renameSession,
   attachDetail,
   byRoom,
   donateList,
@@ -144,5 +147,46 @@ describe("updateItem / removeItem / addItem", () => {
     expect(refined.markReading).toBe("J. Harlow 1931");
     expect(refined.band).toBe("$500–$2,000");
     expect(refined.destination).toBe("keep");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A walkthrough grows room by room (round 04)
+// ---------------------------------------------------------------------------
+
+describe("appendItems / renameSession / knownItems", () => {
+  it("a second pass appends with fresh ids, flagged items start at Sell, nothing sorted moves", () => {
+    let s = session();
+    const [a] = undecided(s);
+    s = setDestination(s, a.id, "keep");
+    const before = s.items.length;
+    const more = fixtureFlags().items.slice(0, 4);
+    s = appendItems(s, more, ["data:image/jpeg;base64,AAAA"]);
+    expect(s.items).toHaveLength(before + 4);
+    expect(s.passes).toBe(2);
+    const added = s.items.slice(before);
+    expect(new Set(s.items.map((i) => i.id)).size).toBe(s.items.length);
+    expect(added.every((i) => i.id.includes("_p2_"))).toBe(true);
+    expect(added.filter((i) => i.flagged).every((i) => i.destination === "sell")).toBe(true);
+    expect(added[0].image).toBe("data:image/jpeg;base64,AAAA");
+    expect(s.items.find((i) => i.id === a.id)?.destination).toBe("keep");
+    expect(s.history).toHaveLength(1);
+  });
+
+  it("names are trimmed and capped, and clearing one removes it", () => {
+    let s = newSession(fixtureFlags().items, new Date(), [], "  Mom's house  ");
+    expect(s.name).toBe("Mom's house");
+    s = renameSession(s, "x".repeat(80));
+    expect(s.name).toHaveLength(60);
+    expect(renameSession(s, s.name!)).toBe(s);
+    s = renameSession(s, "   ");
+    expect(s.name).toBeUndefined();
+  });
+
+  it("knownItems is the name + room list the model is told about", () => {
+    const s = session();
+    const known = knownItems(s);
+    expect(known).toHaveLength(s.items.length);
+    expect(known[0]).toEqual({ name: s.items[0].name, room: s.items[0].room });
   });
 });

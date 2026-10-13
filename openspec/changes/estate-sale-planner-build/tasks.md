@@ -41,6 +41,10 @@
       needs a keyed provider and a phone (Katy / proxy user).**
 - [x] 1.13 User finds an earlier walkthrough — `storage.ts` history (six on the device);
       Playwright: cleared the tab, reopened from the capture screen, items intact.
+- [x] 1.14 User films another room and it joins the same walkthrough; re-walking a room
+      does not duplicate (`session.test.ts` appendItems; `vision.test.ts` known context;
+      `flag-route.test.ts` demo growth); Playwright: named walkthrough → add a room →
+      items appended → new walkthrough → history shows both (round 04).
 - [x] 1.9 User prints the sell summary — `/estate-sale-planner/summary` 200; "not an
       appraisal" Callout renders first; `window.print()` button. *Print layout not
       visually checked.*
@@ -124,6 +128,15 @@
       (`kind=haul`); `exit-route.test.ts`; spec renamed `donation-pickup-exit`.
 - [x] 3.18 Figma round 03: page `36:73`, frames `36:74` (Lists) / `36:119` (Item) /
       `36:109` (Sort), screenshot-verified in-session, all Inter.
+- [x] 3.19 Second use (round 04): `session.ts` `appendItems` / `renameSession` /
+      `knownItems` + `name` / `passes`; `flag.ts` `knownContext` on both providers and the
+      route (`known` validated, ≤ 300); fixture grows room by room from `known`.
+- [x] 3.20 Capture modes: `Capture.tsx` new (optional name) / append (Back, "Start a new
+      walkthrough instead"); Lists header with name + Rename + Film another room; Finish
+      with Film another room + Start a new walkthrough; History and the summary show the
+      name. Playwright pass 2026-10-13 (`assets/built-round04-*`): named first pass 14
+      items → add a room → 17 across 2 passes → rename → new walkthrough → history →
+      reopen intact. Figma page `41:113`, frames `42:81` / `41:114`, screenshot-verified.
 
 ## 4. QA
 
@@ -133,7 +146,8 @@
       (destinations, undo, CRUD, re-read), flag parsing + no-key path, flag route, refine +
       refine route, exit route (both kinds), thumbnail crop geometry, vision provider +
       OpenAI adapter, sheet validation (details, note), checkout route, webhook route.
-      Green 2026-10-13 (round 03).
+      Green 2026-10-13 (round 03). Round 04 adds append / rename / known / demo-growth
+      coverage.
 - [ ] 4.4 **Katy:** apply migration 016; create the Stripe webhook endpoint for
       `/estate-sale-planner/api/webhook` (test mode first) and set
       `ESP_STRIPE_WEBHOOK_SECRET_TEST`; one test-mode purchase end to end (checkout → webhook

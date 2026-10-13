@@ -60,6 +60,17 @@ const frames = [
 ];
 
 describe("openAIRequest", () => {
+  it("tells the model what is already listed when a room is added", () => {
+    const body = openAIRequest(frames, [{ name: "Teak sideboard", room: "Living room" }, { name: "Recliner", room: "Living room" }]);
+    const user = body.messages[1].content as Array<{ type: string; text?: string }>;
+    const ctx = user.find((p) => p.text?.startsWith("Already listed"));
+    expect(ctx?.text).toContain("- Teak sideboard (Living room)");
+    expect(ctx?.text).toContain("- Recliner (Living room)");
+    expect(user[user.length - 1].text).toContain("Return the items");
+    const plain = openAIRequest(frames).messages[1].content as Array<{ text?: string }>;
+    expect(plain.some((p) => p.text?.startsWith("Already listed"))).toBe(false);
+  });
+
   it("sends every frame as a data-URL image with a strict json_schema response format", () => {
     const body = openAIRequest(frames);
     expect(body.model).toBe(VISION_MODELS.openai);

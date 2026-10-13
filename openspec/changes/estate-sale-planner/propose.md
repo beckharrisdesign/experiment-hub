@@ -64,7 +64,9 @@ junk, and the rest is one swipe at a time instead of a weekend of guessing.
 ### Use cases included in v1
 
 1. **Capture** — film a walkthrough on a phone (or upload one / upload photos). Frames are
-   sampled in the browser; nothing is sent until the user confirms.
+   sampled in the browser; nothing is sent until the user confirms. A walkthrough can be
+   named and grows room by room over days: "Film another room" appends, and the model is
+   told what is already listed; "Start a new walkthrough" is an explicit choice.
 2. **Flag** — a vision model returns the items that could be worth something, each with a
    name, a value band, a one-line reason, and a confidence.
 3. **Three destinations** — every item is headed to *Keep*, *Sell*, or *Donate*

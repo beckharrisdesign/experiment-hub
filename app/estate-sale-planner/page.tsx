@@ -15,10 +15,13 @@ import type { FlagResult, FrameInput } from "../../lib/estate-sale-planner/flag"
 import type { RefineResult } from "../../lib/estate-sale-planner/refine";
 import {
   addItem,
+  appendItems,
   applyRefinement,
   attachDetail,
+  knownItems,
   newSession,
   removeItem,
+  renameSession,
   setDestination,
   sortFinished,
   undecided,
@@ -54,6 +57,9 @@ export default function EstateSalePlannerPage() {
   const [openItem, setOpenItem] = useState<string | null>(null);
   const [refining, setRefining] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+  /** "new" starts a walkthrough; "append" adds a room to the active one. */
+  const [captureMode, setCaptureMode] = useState<"new" | "append">("new");
+  const [draftName, setDraftName] = useState("");
   /** Full-resolution detail shots for this tab only; thumbs are what persist. */
   const detailData = useRef(new Map<string, FrameInput[]>());
 
@@ -96,12 +102,18 @@ export default function EstateSalePlannerPage() {
   const onSend = useCallback(async () => {
     setBusy(true);
     setError(null);
-    track("esp_frames_confirmed", { frames: frames.length });
+    const appending = captureMode === "append" && session !== null;
+    track("esp_frames_confirmed", { frames: frames.length, appending });
     try {
       const res = await fetch("/estate-sale-planner/api/flag", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ frames: frames.map((f) => ({ data: f.data, at: f.at })) }),
+        body: JSON.stringify({
+          frames: frames.map((f) => ({ data: f.data, at: f.at })),
+          // Always sent: what is already listed (empty on a first pass). The
+          // model is told not to repeat it; demo mode grows the house from it.
+          known: appending ? knownItems(session) : [],
+        }),
       });
       const json = (await res.json()) as (FlagResult & { success: true }) | { error: string };
       if (!res.ok || "error" in json) throw new Error("error" in json ? json.error : `HTTP ${res.status}`);
@@ -118,7 +130,21 @@ export default function EstateSalePlannerPage() {
           }
         }),
       );
-      update(newSession(json.items, new Date(), images));
+      if (appending) {
+        const next = appendItems(session, json.items, images);
+        update(next);
+        track("esp_room_appended", { items: json.items.length, pass: next.passes ?? 0 });
+        setNotice(
+          json.items.length === 0
+            ? "Nothing new in those frames. Everything the model saw is already listed."
+            : `Added ${json.items.length} ${json.items.length === 1 ? "item" : "items"} from that room.`,
+        );
+      } else {
+        update(newSession(json.items, new Date(), images, draftName));
+        if (draftName.trim()) track("esp_walkthrough_named");
+        setDraftName("");
+      }
+      setCaptureMode("new");
       setFrames([]);
       setStep("lists");
     } catch (e: any) {
@@ -127,7 +153,7 @@ export default function EstateSalePlannerPage() {
     } finally {
       setBusy(false);
     }
-  }, [frames, update]);
+  }, [frames, update, captureMode, session, draftName]);
 
   const onDestination = useCallback(
     (itemId: string, to: Destination) => {
@@ -250,13 +276,49 @@ export default function EstateSalePlannerPage() {
     [session],
   );
 
+  /** Back out of the frame grid: to the lists when adding a room, else to a clean capture screen. */
   const reset = useCallback(() => {
+    setFrames([]);
+    setOpenItem(null);
+    if (captureMode === "append" && session) {
+      setStep("lists");
+      setCaptureMode("new");
+      return;
+    }
+    saveSession(null);
+    setSession(null);
+    setStep("capture");
+  }, [captureMode, session]);
+
+  const onFilmAnother = useCallback(() => {
+    setOpenItem(null);
+    setNotice(null);
+    setError(null);
+    setCaptureMode("append");
+    setStep("capture");
+  }, []);
+
+  /** The active walkthrough stays in history; the capture screen comes back clean. */
+  const onNewWalkthrough = useCallback(() => {
+    track("esp_new_walkthrough");
     saveSession(null);
     setSession(null);
     setFrames([]);
     setOpenItem(null);
+    setNotice(null);
+    setCaptureMode("new");
     setStep("capture");
+    setHistory(listHistory());
   }, []);
+
+  const onRename = useCallback(
+    (name: string) => {
+      if (!session) return;
+      update(renameSession(session, name));
+      if (name.trim()) track("esp_walkthrough_named");
+    },
+    [session, update],
+  );
 
   const current = openItem && session ? session.items.find((i) => i.id === openItem) : undefined;
   const hasNav = Boolean(session) && (step === "lists" || step === "sort" || step === "exit");
@@ -275,8 +337,19 @@ export default function EstateSalePlannerPage() {
           )}
           {step === "capture" && (
             <Stack gap={40}>
-              <Capture busy={busy} progress={progress} error={error} onFiles={onFiles} />
-              <History entries={history} onOpen={onOpenSaved} onDelete={onDeleteSaved} />
+              <Capture
+                busy={busy}
+                progress={progress}
+                error={error}
+                onFiles={onFiles}
+                mode={session && captureMode === "append" ? "append" : "new"}
+                sessionName={session?.name}
+                name={draftName}
+                onName={setDraftName}
+                onCancel={() => { setCaptureMode("new"); setStep("lists"); }}
+                onNewWalkthrough={onNewWalkthrough}
+              />
+              {!(session && captureMode === "append") && <History entries={history} onOpen={onOpenSaved} onDelete={onDeleteSaved} />}
             </Stack>
           )}
           {step === "frames" && <FrameGrid frames={frames} sending={busy} onSend={onSend} onBack={reset} />}
@@ -301,10 +374,12 @@ export default function EstateSalePlannerPage() {
                   onOpen={setOpenItem}
                   onAdd={onAdd}
                   onStartSorting={() => setStep("sort")}
+                  onFilmAnother={onFilmAnother}
+                  onRename={onRename}
                 />
               )}
               {step === "sort" && session && <Swipe session={session} onDestination={onDestination} onOpen={setOpenItem} onUndo={onUndo} />}
-              {step === "exit" && session && <Exit session={session} />}
+              {step === "exit" && session && <Exit session={session} onFilmAnother={onFilmAnother} onNewWalkthrough={onNewWalkthrough} />}
             </>
           )}
         </Stack>
