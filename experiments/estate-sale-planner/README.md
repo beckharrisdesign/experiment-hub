@@ -1,7 +1,8 @@
 # Estate Sale Planner
 
 Film a walkthrough of a parent's house → a vision model flags what might be worth something
-→ two lists (sell / keep-toss) → swipe to decide → one tap to call the haul-away truck.
+→ two lists (sell / keep-toss) → swipe to decide → one tap to call the haul-away truck →
+save the sell list with photos as a $5 Sell Sheet at a shareable link.
 
 **Status:** Built on MVDS 0.5.0, Validating next (autonomous build; see the review queue before trusting any default).
 
@@ -24,28 +25,36 @@ Film a walkthrough of a parent's house → a vision model flags what might be wo
 pnpm dev   # hub app on :3000 → http://localhost:3000/estate-sale-planner
 ```
 
-Works with **no keys**: without `ANTHROPIC_API_KEY` the flag route serves the checked-in
-fixture house (`lib/estate-sale-planner/fixtures/flags.json`) and the UI says so. With the
-key set, frames go to the vision model (`lib/estate-sale-planner/config.ts` holds the frame
-budget and model).
+Works with **no keys**: with neither `OPENAI_API_KEY` nor `ANTHROPIC_API_KEY` the flag route
+serves the checked-in fixture house (`lib/estate-sale-planner/fixtures/flags.json`) and the
+UI says so; without Stripe the summary says payments aren't configured and the free print
+still works. Everything else is the hub's shared rails (`.env.example`, Estate Sale Planner
+block): `OPENAI_API_KEY` for the vision pass (Anthropic as the alternate), `SUPABASE_URL` +
+`SUPABASE_SERVICE_ROLE_KEY` for `esp_events` / `esp_sheets`
+(`supabase/migrations/016_esp_sell_sheets.sql`), the shared `STRIPE_SECRET_KEY_<MODE>` pair
+plus this route's own `ESP_STRIPE_WEBHOOK_SECRET_<MODE>`.
 
 ## Test
 
 ```bash
-npx vitest run tests/estate-sale-planner   # 28 tests: sampler, session reducer, flag parsing, both routes
+npx vitest run tests/estate-sale-planner   # 62 tests: sampler, reducer, vision providers, thumbs, sheet, four routes
 ```
 
 ## Architecture (key files)
 
 | Area | File |
 | --- | --- |
-| Budget, model, haul-away links | `lib/estate-sale-planner/config.ts` |
-| Frame sampling (pure) / browser capture | `lib/estate-sale-planner/{frames,capture}.ts` |
-| Vision pass + zod schema + fixture | `lib/estate-sale-planner/flag.ts` |
+| Budget, models, haul-away links, Sell Sheet price | `lib/estate-sale-planner/config.ts` |
+| Frame sampling (pure) / browser capture / thumbnails | `lib/estate-sale-planner/{frames,capture,thumbs}.ts` |
+| Vision pass: zod schema, prompt, fixture, provider pick | `lib/estate-sale-planner/flag.ts` |
+| Vision adapters (OpenAI default, Anthropic alternate) | `lib/estate-sale-planner/vision/{openai,anthropic,schema}.ts` |
 | Session reducer (lists, decisions, undo) | `lib/estate-sale-planner/session.ts` |
+| Sell Sheet shapes + validation (pure) | `lib/estate-sale-planner/sheet.ts` |
+| Supabase (events, sheets, buyer email) / Stripe | `lib/estate-sale-planner/{db,supabase-admin,stripe}.ts` |
 | Flag route (budget re-check, throttle, fixture mode) | `app/estate-sale-planner/api/flag/route.ts` |
-| Exit route (counted tap → redirect) | `app/estate-sale-planner/api/exit/route.ts` |
-| Screens | `app/estate-sale-planner/{Capture,FrameGrid,Lists,Swipe,Exit}.tsx`, `summary/page.tsx` |
+| Exit route (counted row → redirect) | `app/estate-sale-planner/api/exit/route.ts` |
+| Checkout / webhook (Stripe is the source of truth) | `app/estate-sale-planner/api/{checkout,webhook}/route.ts` |
+| Screens | `app/estate-sale-planner/{Capture,FrameGrid,Lists,Swipe,Exit}.tsx`, `summary/page.tsx`, `sheet/[id]/page.tsx` |
 
 ## MVDS
 

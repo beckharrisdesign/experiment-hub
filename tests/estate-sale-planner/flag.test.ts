@@ -2,11 +2,14 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { fixtureFlags, flagFrames, parseFlagResponse, visionConfigured } from "@/lib/estate-sale-planner/flag";
 
 const saved = process.env.ANTHROPIC_API_KEY;
+const savedOpenAI = process.env.OPENAI_API_KEY;
 beforeEach(() => {
   delete process.env.ANTHROPIC_API_KEY;
+  delete process.env.OPENAI_API_KEY;
 });
 afterEach(() => {
   if (saved !== undefined) process.env.ANTHROPIC_API_KEY = saved;
+  if (savedOpenAI !== undefined) process.env.OPENAI_API_KEY = savedOpenAI;
 });
 
 // ---------------------------------------------------------------------------
@@ -42,7 +45,7 @@ describe("parseFlagResponse", () => {
 // No-key path
 // ---------------------------------------------------------------------------
 
-describe("flagFrames without ANTHROPIC_API_KEY", () => {
+describe("flagFrames without a model key", () => {
   it("serves the fixture and says so", async () => {
     expect(visionConfigured()).toBe(false);
     const result = await flagFrames([{ data: "AAAA", at: 0 }]);

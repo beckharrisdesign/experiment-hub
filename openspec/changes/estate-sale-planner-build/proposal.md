@@ -33,14 +33,17 @@
   - The flagged items come back as a *Sell* list — name, value band, one-line reason,
     confidence — and everything else as a *Keep / Toss* list grouped by room.
   - Keep/toss is one item at a time with undo; a sell item can be moved to keep or toss.
-  - The exit is one tap: the toss list goes to a haul-away link (counted before redirect);
-    the sell list is a printable summary.
+  - The exit is one tap: the toss list goes to a haul-away link (counted as a row before
+    redirect); the sell list is a printable summary.
+  - The sell list with its photos can be bought once as a Sell Sheet at a shareable link;
+    the Stripe webhook, not the success URL, unlocks it.
   - A walkthrough costs under $1.00 in model calls at the default frame budget, and the
     session says plainly that closing the tab loses it.
 - **Not doing:**
   - Appraisals or anything usable for insurance, tax, or probate.
   - Selling, listing, auctions, or the sell-side referral (Build Unit 2).
-  - Accounts, saved sessions, family sharing, or multi-person sorting.
+  - Accounts, family sharing, or multi-person sorting. The free session is not saved; the
+    paid sheet is the only server-side artifact.
   - Booking the haul-away in-app; raw video upload or server-side video processing.
   - Donation, shipping, logistics, grief or legal content.
 
@@ -53,7 +56,10 @@ referral exit over charging the family, so the thing to validate is whether tria
 what people do next: do they finish the sort, and do they tap the exit.
 
 Building in the hub costs almost nothing extra: MVDS is already wired, the deploy exists,
-and the only new secret is an Anthropic key.
+and the model key, database, and payments are the hub's shared ones (OpenAI, Supabase,
+Stripe) — no new credential. The first draft planned on an Anthropic key the hub does not
+hold and kept its count in expiring logs; revised 2026-10-13 on founder review (review queue
+#30–#35).
 
 ## What changes
 
@@ -63,15 +69,25 @@ and the only new secret is an Anthropic key.
   sampled from `<video>` to canvas at a fixed interval, near-duplicates dropped, downscaled,
   previewed, and sent on confirm. No raw video leaves the device.
 - **Vision route** `app/estate-sale-planner/api/flag/route.ts`: batches frames to the
-  Anthropic API and returns structured items (`name`, `room`, `band`, `reason`,
-  `confidence`). Frame budget and model name live in `lib/estate-sale-planner/config.ts`.
-- **Session state in the browser**: lists, swipe decisions, undo stack. No database.
+  vision model and returns structured items (`name`, `room`, `band`, `reason`,
+  `confidence`, `frame`, `box`). Provider follows the key the environment carries —
+  `OPENAI_API_KEY` first, `ANTHROPIC_API_KEY` as the alternate (`lib/estate-sale-planner/vision/`).
+  Frame budget and model names live in `lib/estate-sale-planner/config.ts`.
+- **Session state in the browser**: lists, swipe decisions, undo stack, thumbnails.
 - **Exit**: haul-away CTA as a counted link (`app/estate-sale-planner/api/exit/route.ts`
-  records the tap, then redirects to the deep link / `tel:`); printable sell summary.
-- **Analytics**: start, frames-confirmed, flags-returned, swipe-complete, exit-tap — the
-  Propose success thresholds are read off these.
-- **Secrets**: `ANTHROPIC_API_KEY` added to `.env.example`'s registry (vault entry is
-  Katy's).
+  records the tap as an `esp_events` row, then redirects to the deep link / `tel:`);
+  printable sell summary.
+- **Sell Sheet** (paid): `api/checkout` saves the Sell list to `esp_sheets` and opens Stripe
+  Checkout; `api/webhook` marks it paid and records the buyer's email in the shared
+  `experiment_submissions`; `sheet/[id]` renders the paid page at a UUID link.
+- **Analytics**: start, frames-confirmed, flags-returned, swipe-complete, exit-tap,
+  sheet-checkout — the Propose success thresholds are read off `esp_events` and
+  `esp_sheets`, with GA as the client-side mirror.
+- **Secrets**: none new. `OPENAI_API_KEY`, `SUPABASE_*`, `STRIPE_SECRET_KEY_*` are the hub's;
+  this route's own Stripe webhook signing secret is the one thing Katy creates
+  (`ESP_STRIPE_WEBHOOK_SECRET_*`, registered in `.env.example`).
+- **Database**: `supabase/migrations/016_esp_sell_sheets.sql` (`esp_events`, `esp_sheets`;
+  RLS on, service-role only, like `elk_orders`).
 
 ## Capabilities
 
@@ -81,6 +97,8 @@ and the only new secret is an Anthropic key.
   *Keep / Toss* list, then let the user decide one item at a time.
 - `haul-away-exit`: one counted tap that hands the toss list to a haul-away service and
   leaves the user with a printable sell summary.
+- `sell-sheet`: the sell list with photos, bought once and saved at a shareable link;
+  payment is confirmed by the Stripe webhook and every counted event is a database row.
 
 ### Modified Capabilities
 
@@ -88,16 +106,19 @@ _None._
 
 ## Impact
 
-- **Hub repo:** new route + `lib/estate-sale-planner/`; `.env.example` registry line;
-  tests under `tests/estate-sale-planner/`.
-- **Secrets:** one new key, Katy-owned.
+- **Hub repo:** new route + `lib/estate-sale-planner/`; `.env.example` registry block; one
+  Supabase migration; tests under `tests/estate-sale-planner/`.
+- **Secrets:** none new beyond this route's Stripe webhook signing secret (Katy creates the
+  endpoint). Model, database, and payment keys are the hub's shared ones.
 - **MVDS:** version bump to the next release before build; re-check stacking where the
   swipe card and sticky CTA overlap (the `z-*` utilities begin emitting in that release).
 - **Figma gate:** new UI surface → `design.md` needs an as-is + proposed pair on MVDS Core.
   As-is is net-new (elk precedent). The proposal round is a FigJam board, since the
   proposal's question is a flow.
-- **Money / prod:** no money out; the haul-away link is a placeholder until a deal exists
-  (review queue #7). Deploys with the hub as a private-by-default route.
+- **Money / prod:** no money out. Money *in* is Stripe test mode until Katy creates the
+  webhook endpoint and flips `STRIPE_MODE` (review queue #32); the haul-away link is a
+  placeholder until a deal exists (review queue #7). Deploys with the hub as a
+  private-by-default route.
 
 ## Optional links
 

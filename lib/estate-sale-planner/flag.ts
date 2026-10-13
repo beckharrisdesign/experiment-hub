@@ -2,13 +2,13 @@
  * The vision pass — frames in, flagged items out.
  *
  * The response is validated against a zod schema (structured outputs), so the
- * route never forwards free text. Without ANTHROPIC_API_KEY the fixture set is
- * served and the caller is told, so the demo runs end to end on a laptop with
- * no keys (same posture as etsy-listing-kit's evaluate route).
+ * route never forwards free text. The provider follows the key the environment
+ * carries — OPENAI_API_KEY first (the hub's synced model key), ANTHROPIC_API_KEY
+ * as the alternate, the ELK composer's order. With neither, the fixture set is
+ * served and the caller is told, so the demo runs end to end with no keys.
  */
 
 import { z } from "zod";
-import { VISION_MODEL } from "./config";
 import fixture from "./fixtures/flags.json";
 
 export const BANDS = ["under $25", "$25–$100", "$100–$500", "$500–$2,000", "over $2,000"] as const;
@@ -47,9 +47,12 @@ export const FlagResponseSchema = z.object({
 export type FlaggedItem = z.infer<typeof FlaggedItemSchema>;
 export type FlagResponse = z.infer<typeof FlagResponseSchema>;
 
+export type VisionProvider = "openai" | "anthropic";
+
 export interface FlagResult extends FlagResponse {
   /** "model" when the vision pass ran; "fixture" when no key was configured. */
   source: "model" | "fixture";
+  provider: VisionProvider | "fixture";
   model: string;
   usage?: { inputTokens: number; outputTokens: number };
 }
@@ -62,8 +65,17 @@ Be honest and specific. "band" is a rough resale value band, not an appraisal. "
 
 "frame" is the index of the frame the object is clearest in. "box" is where it sits in that frame: x and y are the top-left corner and w and h the size, all as fractions of the frame from 0 to 1. Make the box generous enough to include the whole object. Use null when you cannot place it.`;
 
+/** Which provider the environment can run, or null for fixture mode. */
+export function visionProvider(env: Record<string, string | undefined> = process.env): { provider: VisionProvider; apiKey: string } | null {
+  const openai = env.OPENAI_API_KEY?.trim();
+  if (openai) return { provider: "openai", apiKey: openai };
+  const anthropic = env.ANTHROPIC_API_KEY?.trim();
+  if (anthropic) return { provider: "anthropic", apiKey: anthropic };
+  return null;
+}
+
 export function visionConfigured(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY);
+  return visionProvider() !== null;
 }
 
 /** Validate a raw response. Returns null when the shape is wrong. */
@@ -75,7 +87,7 @@ export function parseFlagResponse(raw: unknown): FlagResponse | null {
 export function fixtureFlags(): FlagResult {
   const parsed = parseFlagResponse(fixture);
   if (!parsed) throw new Error("estate-sale-planner fixture does not match FlagResponseSchema");
-  return { ...parsed, source: "fixture", model: "fixture" };
+  return { ...parsed, source: "fixture", provider: "fixture", model: "fixture" };
 }
 
 export interface FrameInput {
@@ -86,50 +98,16 @@ export interface FrameInput {
 }
 
 /**
- * Run the vision pass. Frames go in one request as image blocks; the model
- * answers in the schema above. Throws on API failure; the route maps that.
+ * Run the vision pass with whichever provider is keyed. Throws on API
+ * failure; the route maps that to a 502.
  */
 export async function flagFrames(frames: FrameInput[]): Promise<FlagResult> {
-  if (!visionConfigured()) return fixtureFlags();
-
-  const { default: Anthropic } = await import("@anthropic-ai/sdk");
-  const { zodOutputFormat } = await import("@anthropic-ai/sdk/helpers/zod");
-  const client = new Anthropic();
-
-  const content: Array<
-    | { type: "image"; source: { type: "base64"; media_type: "image/jpeg"; data: string } }
-    | { type: "text"; text: string }
-  > = [];
-  frames.forEach((f, i) => {
-    content.push({ type: "text", text: `Frame ${i} (${f.at}s)` });
-    content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: f.data } });
-  });
-  content.push({
-    type: "text",
-    text: `These ${frames.length} frames are one walkthrough. Return the items.`,
-  });
-
-  const response = await client.messages.parse({
-    model: VISION_MODEL,
-    max_tokens: 16000,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content }],
-    output_config: { format: zodOutputFormat(FlagResponseSchema) },
-  });
-
-  if (response.stop_reason === "refusal") {
-    throw new Error("The vision pass declined this walkthrough.");
+  const chosen = visionProvider();
+  if (!chosen) return fixtureFlags();
+  if (chosen.provider === "openai") {
+    const { flagWithOpenAI } = await import("./vision/openai");
+    return flagWithOpenAI(frames, chosen.apiKey);
   }
-  const parsed = response.parsed_output ? parseFlagResponse(response.parsed_output) : null;
-  if (!parsed) throw new Error("The vision pass returned an unreadable response.");
-
-  return {
-    ...parsed,
-    source: "model",
-    model: response.model,
-    usage: {
-      inputTokens: response.usage.input_tokens,
-      outputTokens: response.usage.output_tokens,
-    },
-  };
+  const { flagWithAnthropic } = await import("./vision/anthropic");
+  return flagWithAnthropic(frames, chosen.apiKey);
 }

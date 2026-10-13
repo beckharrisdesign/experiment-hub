@@ -73,7 +73,7 @@ export default function Exit({ session }: ExitProps) {
       <div className="flex justify-center">
         <Button variant="outline" asChild>
           <Link href="/estate-sale-planner/summary" onClick={() => track("esp_summary_print")}>
-            Print or save the sell list
+            Save or print the sell list
           </Link>
         </Button>
       </div>

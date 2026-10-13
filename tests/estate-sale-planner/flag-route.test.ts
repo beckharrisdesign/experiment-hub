@@ -5,14 +5,17 @@ import { FRAME_BUDGET } from "@/lib/estate-sale-planner/config";
 let POST: typeof import("@/app/estate-sale-planner/api/flag/route").POST;
 
 const saved = process.env.ANTHROPIC_API_KEY;
+const savedOpenAI = process.env.OPENAI_API_KEY;
 let ipSeq = 0;
 
 beforeEach(async () => {
   delete process.env.ANTHROPIC_API_KEY;
+  delete process.env.OPENAI_API_KEY;
   ({ POST } = await import("@/app/estate-sale-planner/api/flag/route"));
 });
 afterEach(() => {
   if (saved !== undefined) process.env.ANTHROPIC_API_KEY = saved;
+  if (savedOpenAI !== undefined) process.env.OPENAI_API_KEY = savedOpenAI;
 });
 
 function req(body: unknown, ip?: string) {

@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { HAUL_AWAY } from "../../../../lib/estate-sale-planner/config";
+import { recordEvent } from "../../../../lib/estate-sale-planner/db";
 
 export const runtime = "nodejs";
 
 /**
  * GET /estate-sale-planner/api/exit?session=…&count=…&fallback=0|1&via=tel|web
  *
- * The counted exit. The tap is recorded server-side (a structured log line
- * that the function logs keep — v1 has no table) and then redirected to the
- * haul-away link. `fallback=1` means the user said the service doesn't cover
+ * The counted exit. The tap is recorded server-side as a row in esp_events
+ * (falling back to a structured log line when Supabase is not configured) and
+ * then redirected to the haul-away link. `fallback=1` means the user said the service doesn't cover
  * them, so the generic "find a hauler" link opens instead; the tap still
  * counts, labelled as fallback (spec: haul-away-exit).
  */
@@ -55,8 +56,8 @@ export function resolveExit(params: URLSearchParams): { record: ExitRecord; loca
 
 export async function GET(request: NextRequest) {
   const { record, location } = resolveExit(request.nextUrl.searchParams);
-  // The record IS the receipt — structured so the logs can be grepped for the
-  // Propose threshold ("≥ 5 haul-away taps") without a database in v1.
-  console.log(JSON.stringify(record));
+  // The row is the receipt the Propose threshold ("≥ 5 haul-away taps in 14
+  // days") is counted from; recordEvent also prints it and never throws.
+  await recordEvent({ event: record.event, session: record.session, count: record.count, fallback: record.fallback, via: record.via, referral: record.referral, at: record.at });
   return NextResponse.redirect(location, { status: 302 });
 }

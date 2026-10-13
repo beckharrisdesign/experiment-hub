@@ -9,8 +9,16 @@
 
 export const EXPERIMENT_ID = "estate-sale-planner";
 
-/** Vision model for the flag pass. Opus 5.5 is the default per the claude-api skill. */
-export const VISION_MODEL = process.env.ESP_VISION_MODEL || "claude-opus-5-5";
+/**
+ * Vision models, one per provider. The provider is chosen by which key the
+ * environment carries — OPENAI_API_KEY first, because it is the hub's one
+ * synced model key (`.env.example`, scripts/sync-secrets.sh), ANTHROPIC_API_KEY
+ * as the alternate (same order as etsy-listing-kit's composer).
+ */
+export const VISION_MODELS = {
+  openai: process.env.ESP_OPENAI_VISION_MODEL || "gpt-5",
+  anthropic: process.env.ESP_ANTHROPIC_VISION_MODEL || "claude-opus-5-5",
+} as const;
 
 export const FRAME_BUDGET = {
   /** Seconds between sampled frames of a walkthrough video. */
@@ -47,3 +55,21 @@ export const HAUL_AWAY = {
 
 /** Browser-side session key; closing the tab loses it, and the UI says so. */
 export const SESSION_STORAGE_KEY = "esp:session:v1";
+
+/**
+ * The paid moment on the family's side: the Sell Sheet. The free flow ends in
+ * a print; the sheet is the same list with the photos, saved at a link that
+ * survives closing the tab and can be sent to siblings or the estate-sale
+ * company. One-time Stripe Checkout, same wiring as etsy-listing-kit
+ * (review queue #32 for the price).
+ */
+export const SELL_SHEET = {
+  priceCents: 500,
+  currency: "usd",
+  productName: "Estate Sale Planner — Sell Sheet",
+  productDescription: "Your sell list with photos, saved at a link you can share.",
+  statementSuffix: "SELL SHEET",
+  /** Largest data-URL thumbnail accepted per item on checkout (bytes). */
+  maxImageBytes: 60_000,
+  maxItems: 120,
+} as const;

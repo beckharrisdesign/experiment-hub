@@ -43,8 +43,13 @@
       metadata) and `page.tsx`; `pnpm dev` → `http://localhost:3000/estate-sale-planner`.
 - [x] 2.2 `lib/estate-sale-planner/config.ts` — model, frame budget, haul-away links,
       placeholder referral, fallback link, session key.
-- [x] 2.3 `.env.example` registry: `ANTHROPIC_API_KEY` (+ optional `ESP_VISION_MODEL`); the
-      route serves the fixture and says `configured: false` without it.
+- [x] 2.3 `.env.example` registry: Estate Sale Planner block — vision on the hub's
+      `OPENAI_API_KEY` (Anthropic alternate), `ESP_*_VISION_MODEL` overrides,
+      `ESP_STRIPE_WEBHOOK_SECRET_*`, Supabase tables; the flag route serves the fixture and
+      says `configured: false` with no model key (round 02.3 — the round-01 entry
+      registered an Anthropic key the hub does not hold).
+- [ ] 2.4 Supabase migration `016_esp_sell_sheets.sql` (`esp_events`, `esp_sheets`, RLS on)
+      — written and reviewed; **applying it to the live project is Katy's** (same as 007).
 
 ## 3. Implementation
 
@@ -74,14 +79,36 @@
       frame on-device (`cropRect` proven by `tests/estate-sale-planner/thumbs.test.ts`);
       `session.ts` carries `image` per item; `storage.ts` retries without images on a
       quota error. Fixture carries boxes (3 `null`) so demo mode shows the fallback too.
+- [x] 3.9 Vision provider (round 02.3): `vision/openai.ts` (fetch, strict JSON schema from
+      the zod schema via `vision/schema.ts`, `gpt-5`, high-detail data-URL frames, refusal
+      → error) is the default on `OPENAI_API_KEY`; `vision/anthropic.ts` is the alternate;
+      `flag.ts` picks by key order. `vision.test.ts` covers selection, schema, request
+      shape, success / refusal / off-schema / HTTP failure (2026-10-13).
+- [x] 3.10 Counted rows: `db.ts` `recordEvent` → `esp_events`, log line as fallback; the
+      exit route and the checkout route call it (`exit-route.test.ts`, `checkout-route.test.ts`).
+- [x] 3.11 Sell Sheet checkout + webhook: `api/checkout` (validate via `sheet.ts`, upsert
+      `esp_sheets`, Stripe Checkout with `experiment_id` + `order_id`, paid session → link
+      without a charge) and `api/webhook` (signature, ELK's decision logic scoped to this
+      experiment, idempotent `markPaid`, buyer email → `experiment_submissions`, 5xx on DB
+      failure). 11 route tests green 2026-10-13; live curl: 500 "Payments are not
+      configured yet." without Stripe, 400 on a bad sheet, webhook 500 without a secret.
+- [x] 3.12 Sheet page `sheet/[id]` (server, `force-dynamic`, `noindex`): 404 on unknown
+      ids (curl), "settling" / "not unlocked" holding states, paid page on the 02.1 card
+      with print + copy-link. Summary gains the paid CTA `Card`
+      (`assets/built-02.3-summary-*.png`).
 
 ## 4. QA
 
 - [ ] 4.1 Manual walkthrough on a phone (capture → send → lists → swipe → exit → print) —
       **Katy / proxy user**; needs `ANTHROPIC_API_KEY` set for the real vision pass.
-- [x] 4.2 Automated: `tests/estate-sale-planner/` — 35 tests across sampler, reducer, flag
+- [x] 4.2 Automated: `tests/estate-sale-planner/` — 62 tests across sampler, reducer, flag
       parsing + no-key path, flag route (validation, budget, throttle), exit route
-      (record + redirect), thumbnail crop geometry. Green 2026-10-13 (round 02.1).
+      (record + redirect), thumbnail crop geometry, vision provider + OpenAI adapter,
+      sheet validation, checkout route, webhook route. Green 2026-10-13 (round 02.3).
+- [ ] 4.4 **Katy:** apply migration 016; create the Stripe webhook endpoint for
+      `/estate-sale-planner/api/webhook` (test mode first) and set
+      `ESP_STRIPE_WEBHOOK_SECRET_TEST`; one test-mode purchase end to end (checkout → webhook
+      → sheet unlocks → email row in `experiment_submissions`).
 - [x] 4.3 `tsc --noEmit` and `eslint .` clean (0 errors; the two `set-state-in-effect`
       warnings match the hub's existing after-hydration `sessionStorage` reads). MVDS
       components only.

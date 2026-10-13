@@ -34,9 +34,12 @@ Six screens, one route:
   2. Frames        sampled grid + count + Send            ← confirm before anything leaves the phone
   3. Lists         Sell (bands) · Keep / Toss by room     ← read, then "Start sorting"
   4. Swipe         one item, Keep | Toss, Undo            ← loop until the stack is empty
-  5. Exit          haul-away CTA (own line, centered)     ← counted, then deep link / tel:
-  6. Summary       printable Sell list, "not an appraisal" first
+  5. Exit          haul-away CTA (own line, centered)     ← counted row, then deep link / tel:
+  6. Summary       printable Sell list, "not an appraisal" first · Sell Sheet CTA ($5)
+  7. Sell sheet    /sheet/[id] — the paid page: photos, bands, print, copy link
 Recovery: no key → demo on the fixture set, says so · nothing flagged → honest empty Sell
+          no Stripe → summary says payments aren't configured, print still works
+          success URL before webhook → "settling" note, no items until Stripe confirms
 ```
 
 The proposal-round flow as generated (the board's Mermaid source, kept here because the
@@ -126,6 +129,21 @@ hand-off: a `Card` variant with an image slot and a badge row (review queue #28)
 | Page scaffolding | `Section`, `Container`, `Stack`, `Inline` | No |
 | Swipe gesture handling | — | Yes: small pointer-event hook; visual is still a `Card` |
 
+### Round 02.3 — shared rails and the paid moment (2026-10-13)
+
+Founder review of the experiment's design, verbatim: *"why are we planning on a key I
+don't have when I do have chatgpt and other openai keys? what about stripe or supabase?"*
+and *"we need some sort of payment in the model."* Three changes, all on infrastructure
+the hub already runs:
+
+| Concern | Round 02.1 | Round 02.3 |
+| --- | --- | --- |
+| Vision provider | Anthropic SDK on a key the hub does not hold | **OpenAI first** (`OPENAI_API_KEY`, the hub's synced model key) via plain fetch and a strict JSON schema; Anthropic kept as the alternate — the ELK composer's order |
+| Counting | Exit taps as a log line in Vercel function logs, which expire before the 14-day window | **`esp_events` rows** (migration 016); log line kept as the no-database fallback |
+| Payment | None on the family's side; revenue waited on an affiliate deal | **Sell Sheet, $5 one-time**: the summary's free print stays, and beside it a `Card` sells the same list with photos at a shareable link (`/sheet/[id]`). Stripe Checkout on the hub's shared key; this route's own webhook endpoint; `esp_sheets` row; buyer email → `experiment_submissions` |
+
+Surfaces: the summary gains one `Card` (eyebrow *Keep this list* → `CardTitle` → `CardDescription` with the price → one centered `Button`; the free print demotes to `outline` when the paid CTA is present). The sheet page reuses the 02.1 image-first `Item card` in a two-column `Grid`, with print and copy-link beneath. Figma page **`02.3 Proposed — sell sheet`** carries both frames (see the Visual design table). Captures: `assets/built-02.3-summary-mobile-480.png` (CTA) and `assets/built-02.3-summary-unconfigured-mobile-480.png` (no Stripe).
+
 ## Decisions
 
 1. **Board for the proposal round, design file for the pair.** The proposal's question is
@@ -153,6 +171,14 @@ hand-off: a `Card` variant with an image slot and a badge row (review queue #28)
    model only says *where* (frame index + normalized box). That keeps the image honest
    (it is literally what the model looked at), costs no extra tokens, and sends nothing
    new off the device.
+9. **Shared rails before new credentials.** The provider, the database, and the payment
+   rail are whichever the hub already keys and syncs; a design that needs a new secret
+   has to argue for it in the review queue first (round 02.3 reversed round 01 on this).
+10. **The webhook unlocks the sheet, never the success URL.** ELK's rule, reused with its
+    decision logic. The sheet page shows a "settling" note until Stripe confirms.
+11. **The link is the credential.** A sheet is a UUID path with no account and `noindex`;
+    anyone with the link can open it, which is the point of a sheet you send to siblings.
+    Said on the page in one line.
 
 ## Risks / Trade-offs
 

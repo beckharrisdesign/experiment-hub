@@ -7,36 +7,50 @@
 > **Stores:** Business Patterns / Service Patterns / BHD Ecosystem stores are "pending" per
 > `openspec/schemas/bhd-experiment/README.md` and do not exist. Nearest in-repo pattern is
 > `etsy-listing-kit` (one input → one transformation → one paid exit), which this follows
-> with the exit moved from a Stripe charge to a referral.
+> on the hub's shared rails — the OpenAI key, Supabase, and Stripe that ELK already runs on.
+>
+> **Revised 2026-10-13** after founder review: the first draft planned on an Anthropic key
+> the hub does not hold, kept the validation count in expiring function logs, and had no
+> payment in the model. Katy: *"we need some sort of payment in the model."* Both paid
+> moments below are now in v1.
 
 ## Business Brief
 
 ### Monetization model
 
-**Affiliate / referral — free for the family.** Decided before pricing, per the rule.
+**Two paid moments, one on each side of the sort.** Decided before pricing, per the rule.
 
-The family pays nothing in v1. The paid moment is the **haul-away tap** at the end of the
-sort (1-800-GOT-JUNK first; a generic "find a hauler" fallback where it does not operate).
+1. **Referral — the haul-away tap** at the end of the sort (1-800-GOT-JUNK first; a generic
+   "find a hauler" fallback where it does not operate). Free for the family; the partner
+   pays. The deal does not exist yet (review queue #7), so v1 counts the tap on a
+   placeholder link.
+2. **One-time purchase — the Sell Sheet.** The free flow ends in a printable summary. The
+   Sell Sheet is the same list *with the photos*, saved at a link that survives closing
+   the tab and can be sent to siblings or the estate-sale company. Stripe Checkout, no
+   account, same wiring as ELK's kit.
+
+Why the sheet and not a paywall on the triage: the person using this is grieving,
+time-poor, and about to spend real money on a crew or a truck. The triage stays free so the
+test still measures whether it changes what they do next. The sheet is paid because it is
+the one thing they will want *after* the tab closes, and because a dollar signal with
+infrastructure the hub already has beats a referral signal that waits on a deal that does
+not exist. ELK validated with real charges; this does the same.
+
 The sell-side referral (estate-sale companies, consignment, MaxSold-style auctions —
-Explore Permutation C) is the second exit and is deliberately **not** in v1.
-
-Why not charge the family: the person using this is grieving, time-poor, and about to spend
-real money on either a crew or a truck. A $5 paywall in front of "what's worth keeping" is
-a worse product *and* a worse test — it measures willingness to pay for a report, when the
-question is whether triage changes what they do next. The referral exit measures that.
-
-Honest cost of this choice: it makes revenue depend on a partner deal that does not exist
-yet (review queue #7). The validation plan is built so the signal is readable *before* that
-deal is real — a tap on a placeholder link still counts.
+Explore Permutation C) remains Build Unit 2.
 
 ### Pricing
 
-None to the family in v1. Referral economics are the partner's published rate once a deal
-exists; the placeholder records intent only.
+- **Sell Sheet: $5, one-time** (review queue #32). Anchored under ELK's $3 kit times the
+  item count a house produces, and far under what an estate-sale company charges to walk
+  through. Test mode until the Stripe endpoint for this route exists; live only on Katy's
+  flip of `STRIPE_MODE`.
+- Referral economics are the partner's published rate once a deal exists; the placeholder
+  records intent only.
 
 ### SKUs / tiers
 
-None. One flow.
+One SKU: the Sell Sheet. One flow.
 
 ### Internal Positioning
 
@@ -57,13 +71,16 @@ junk, and the rest is one swipe at a time instead of a weekend of guessing.
    moved to keep or toss.
 5. **Exit** — one tap hands the toss list to a haul-away service (deep link / `tel:`); the
    sell list is shown as a printable summary.
+6. **Sell Sheet** — from the summary, pay once to save the sell list with its photos at a
+   shareable link; the page is unlocked by the Stripe webhook, never by the success URL.
 
 ### Use cases NOT included in v1
 
 - Appraisals, certified valuations, or anything usable for insurance, tax, or probate.
 - Selling anything — no marketplace, auction, or listing creation.
-- Accounts, saved sessions across devices, or family sharing. A session lives in the
-  browser; closing the tab loses it (stated on screen).
+- Accounts. The free session lives in the browser and closing the tab loses it (stated on
+  screen); the paid Sell Sheet is the only thing saved server-side, and the link is the
+  only way back to it.
 - Multi-person sorting (siblings voting). The sibling fight is real and out of scope.
 - Booking the haul-away inside the app — v1 hands off, it does not book.
 - Donation pickup, shipping, or logistics of any kind.
@@ -82,10 +99,15 @@ junk, and the rest is one swipe at a time instead of a weekend of guessing.
 
 - iOS Safari and Android Chrome camera capture (`<input capture>` and `<video>` frame
   sampling to canvas).
-- Anthropic API (vision) via the hub's server routes — `ANTHROPIC_API_KEY` is not yet in
-  `.env.example` (review queue #6).
+- **OpenAI** (vision) via the hub's server routes on the hub's one synced model key,
+  `OPENAI_API_KEY`; `ANTHROPIC_API_KEY` as the alternate if an environment carries it
+  (review queue #30 — supersedes #6/#19).
+- **Supabase** — `esp_events` (every counted tap, so the thresholds below are a query) and
+  `esp_sheets` (the paid sheet); buyer emails land in the shared `experiment_submissions`.
+- **Stripe** — the hub's shared key pair; this route's own webhook endpoint (review queue
+  #32, Katy creates it).
 - 1-800-GOT-JUNK — deep link / `tel:` only in v1.
-- Vercel (hub), Supabase only if a sharable summary link is added later (not v1).
+- Vercel (hub).
 
 ## Validation Plan
 
@@ -114,14 +136,15 @@ whole claim, so the test has to run it:
 - Agent sessions: Explore + Propose (this), child change artifacts, one build session after
   the MVDS gate, one measurement session. Katy's time: the Figma library toggle, env key,
   the proxy-user ask, the ads toggle if used.
-- Money: $0 required; $15 ads optional; Anthropic API spend bounded by the frame budget
-  (target < $0.50 per walkthrough — see Measurement).
+- Money: $0 required; $15 ads optional; OpenAI spend bounded by the frame budget
+  (≈$0.05 per walkthrough at 48 frames on gpt-5 high-detail images — see Measurement).
 
 ### Success thresholds
 
 - **25** walkthrough starts in 14 days.
 - **≥ 40 %** of starts reach the end of the swipe.
-- **≥ 5** haul-away taps (placeholder counted).
+- **≥ 5** haul-away taps (placeholder counted, rows in `esp_events`).
+- **≥ 2** Sell Sheets paid in live mode (test-mode purchases do not count — ELK rule).
 - Proxy-user grade: flags judged "would not have known" on **≥ 3** items in one house, with
   no "absurd" bands.
 
@@ -145,8 +168,8 @@ whole claim, so the test has to run it:
 
 ### Success metric
 
-Haul-away taps per walkthrough start (the exit is the business), and sort completion rate
-(the product).
+Paid Sell Sheets and haul-away taps per walkthrough start (the two paid moments), and sort
+completion rate (the product).
 
 ### Leading indicator
 
@@ -167,5 +190,5 @@ Scored on **v3** (PI/SI/BI) — the template's B/P/C/$/S table is the retired v1
 |---|---|---|---|---|
 | PI | 2 | 2 | 0 | No personal driver stated; nothing in Propose changes that. |
 | SI | 4 | 4 | 0 | Free-for-family keeps the help where the need is. |
-| BI | 3 | 3 | 0 | Referral exit chosen, but the deal is unproven — Explore already assumed this path. Moves to 4 only with a signed partner or a measured tap rate. |
+| BI | 3 | 3 | 0 | Referral exit chosen, but the deal is unproven — Explore already assumed this path. The Sell Sheet (revision) adds a dollar signal on rails the hub already has; it moves to 4 only on measured live purchases, not on the design. Katy's call whether the revision re-scores (review queue #18). |
 | **Total** | **9/15** | **9/15** | 0 | Shape unchanged: *Mission-driven*. |

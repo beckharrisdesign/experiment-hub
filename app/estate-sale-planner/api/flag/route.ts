@@ -11,8 +11,9 @@ export const maxDuration = 60;
  *
  * The vision pass. Frames arrive already sampled and downscaled by the
  * browser (lib/estate-sale-planner/capture.ts); the budget is re-checked here
- * so a hand-rolled request cannot run up a bill. Without ANTHROPIC_API_KEY the
- * fixture set is returned with `source: "fixture"` — the UI says so.
+ * so a hand-rolled request cannot run up a bill. With neither OPENAI_API_KEY
+ * nor ANTHROPIC_API_KEY the fixture set is returned with `source: "fixture"`
+ * — the UI says so. The response carries `provider` so logs show which ran.
  */
 
 const MAX_BASE64_PER_FRAME = 600_000; // ~450 KB JPEG; the sampler emits ~80–150 KB
