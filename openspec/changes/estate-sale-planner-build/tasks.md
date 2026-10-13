@@ -122,6 +122,8 @@
       details, mark reading, note.
 - [x] 3.17 Exit re-pointed: `DONATE_PICKUP` primary (`kind=donate`), `HAUL_AWAY` demoted
       (`kind=haul`); `exit-route.test.ts`; spec renamed `donation-pickup-exit`.
+- [x] 3.18 Figma round 03: page `36:73`, frames `36:74` (Lists) / `36:119` (Item) /
+      `36:109` (Sort), screenshot-verified in-session, all Inter.
 
 ## 4. QA
 
