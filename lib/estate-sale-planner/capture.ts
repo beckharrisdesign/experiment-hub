@@ -5,8 +5,9 @@
  * network: the caller sends on the user's confirm.
  */
 
-import { FRAME_BUDGET } from "./config";
+import { DETAIL_SHOT, FRAME_BUDGET } from "./config";
 import { grayFromRgba, sampleTimes, selectFrames, type FrameSignature } from "./frames";
+import { itemThumbnail } from "./thumbs";
 
 export interface CapturedFrame extends FrameSignature {
   /** Base64 JPEG without the data: prefix — what the flag route takes. */
@@ -20,10 +21,10 @@ export interface CaptureProgress {
   total: number;
 }
 
-function scaledSize(w: number, h: number): [number, number] {
+function scaledSize(w: number, h: number, maxEdge: number = FRAME_BUDGET.maxEdgePx): [number, number] {
   const edge = Math.max(w, h);
-  if (edge <= FRAME_BUDGET.maxEdgePx) return [w, h];
-  const k = FRAME_BUDGET.maxEdgePx / edge;
+  if (edge <= maxEdge) return [w, h];
+  const k = maxEdge / edge;
   return [Math.round(w * k), Math.round(h * k)];
 }
 
@@ -127,4 +128,34 @@ export async function framesFromPhotos(
 
 export function isVideo(file: File): boolean {
   return file.type.startsWith("video/");
+}
+
+export interface DetailShot {
+  /** Base64 JPEG without the data: prefix — what the refine route takes. */
+  data: string;
+  /** Square 320 px data URL for the card and the sheet. */
+  thumb: string;
+}
+
+/**
+ * A detail shot — a seam, a stamp on the bottom. Encoded larger than a
+ * walkthrough frame so a mark stays legible, plus a small square thumb for
+ * the card. Nothing leaves the device until the caller posts it.
+ */
+export async function detailFromPhoto(file: File): Promise<DetailShot> {
+  const img = await loadImage(file);
+  try {
+    const [w, h] = scaledSize(img.naturalWidth, img.naturalHeight, DETAIL_SHOT.maxEdgePx);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas is not available in this browser.");
+    ctx.drawImage(img, 0, 0, w, h);
+    const full = canvas.toDataURL("image/jpeg", DETAIL_SHOT.jpegQuality);
+    const thumb = await itemThumbnail(full, null);
+    return { data: full.split(",")[1] ?? "", thumb };
+  } finally {
+    URL.revokeObjectURL(img.src);
+  }
 }

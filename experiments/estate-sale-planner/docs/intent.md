@@ -39,6 +39,23 @@ Three later instructions, all 2026-10-13, reshaped the UI and then the model:
 — i.e. vision on the hub's OpenAI key, counted events in Supabase, and a paid Sell Sheet
 on Stripe, all in the one build (review queue #30–#35).
 
+Then the product shape itself, same day:
+
+> "how do users move between selling and keeping and donating lists? how do they refine the
+> estimated cost or what the provenance of something is. what are my info sources for
+> genuinely valuable things?"
+
+> "and no we won't call it tossing -- keep, sell, donate are the options, and we should be
+> able to toggle between then per item. but there are moments where a user needs to take
+> additional details like a seam or a stamp on the bottom."
+
+> "consider mobile navigation paradigms - editing a profile, finding history, crud operations
+> on each elements, correcting an object recognition decision that isn't right"
+
+— round 03: keep / sell / donate on every item, the full-screen item with edit / detail
+shots / remove, add-item, a bottom tab bar, on-device history, and the exit re-pointed at a
+donation pickup (review queue #36–#42).
+
 Two instructions shape the build:
 
 - **Autonomous.** The agent runs the hub's own ladder (Explore → Propose → lite build

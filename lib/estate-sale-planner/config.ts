@@ -37,24 +37,49 @@ export const FRAME_BUDGET = {
 } as const;
 
 /**
- * Haul-away exit. The affiliate deal does not exist yet (review queue #7);
- * `referral` is a placeholder parameter so the tap is attributable the day
- * one does. `tel:` is the one-tap path on a phone.
+ * Detail shots — a seam, a stamp on the bottom, a maker's mark. Larger than a
+ * walkthrough frame because the point is legibility; capped per item so one
+ * curious user cannot run up the re-read bill.
+ */
+export const DETAIL_SHOT = {
+  maxEdgePx: 1024,
+  jpegQuality: 0.8,
+  maxPerItem: 3,
+} as const;
+
+/**
+ * The primary exit (round 03): a donation pickup for the Donate list. There
+ * is no Toss pile — keep, sell, donate are the only destinations (founder
+ * instruction) — so the referral moved from junk removal to charity pickup.
+ * Pickup Please (Vietnam Veterans of America) schedules free home pickups
+ * nationwide; no partner deal exists yet (review queue #7, #37), so
+ * `referral` is a placeholder parameter. `tel:` is the one-tap path.
+ */
+export const DONATE_PICKUP = {
+  name: "Pickup Please",
+  tel: "tel:+18007758387",
+  web: "https://pickupplease.org/",
+  referral: "bhd-labs-esp",
+  /** Shown when the user says the service doesn't cover them. */
+  fallback: {
+    name: "Salvation Army pickup",
+    web: "https://satruck.org/",
+  },
+} as const;
+
+/**
+ * Haul-away, demoted to a secondary link for the houses that still have a
+ * pile no charity will take. Same placeholder referral posture.
  */
 export const HAUL_AWAY = {
   name: "1-800-GOT-JUNK",
   tel: "tel:+18004685865",
   web: "https://www.1800gotjunk.com/",
   referral: "bhd-labs-esp",
-  /** Shown when the user says the service doesn't cover them. */
-  fallback: {
-    name: "find a hauler near you",
-    web: "https://www.google.com/maps/search/junk+removal+near+me",
-  },
 } as const;
 
-/** Browser-side session key; closing the tab loses it, and the UI says so. */
-export const SESSION_STORAGE_KEY = "esp:session:v1";
+/** Browser-side session key; closing the tab loses it, and the UI says so. v2: destinations. */
+export const SESSION_STORAGE_KEY = "esp:session:v2";
 
 /**
  * The paid moment on the family's side: the Sell Sheet. The free flow ends in

@@ -1,21 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { HAUL_AWAY } from "../../../../lib/estate-sale-planner/config";
+import { DONATE_PICKUP, HAUL_AWAY } from "../../../../lib/estate-sale-planner/config";
 import { recordEvent } from "../../../../lib/estate-sale-planner/db";
 
 export const runtime = "nodejs";
 
 /**
- * GET /estate-sale-planner/api/exit?session=…&count=…&fallback=0|1&via=tel|web
+ * GET /estate-sale-planner/api/exit?kind=donate|haul&session=…&count=…&fallback=0|1&via=tel|web
  *
- * The counted exit. The tap is recorded server-side as a row in esp_events
- * (falling back to a structured log line when Supabase is not configured) and
- * then redirected to the haul-away link. `fallback=1` means the user said the service doesn't cover
- * them, so the generic "find a hauler" link opens instead; the tap still
- * counts, labelled as fallback (spec: haul-away-exit).
+ * The counted exit. `kind=donate` (the default, round 03) hands the Donate
+ * list to a pickup service; `kind=haul` is the demoted junk-removal link for
+ * a pile no charity will take. The tap is recorded as an esp_events row
+ * (structured log line when Supabase is not configured) and then redirected.
+ * `fallback=1` means the user said the service doesn't cover them, so the
+ * fallback link opens instead; the tap still counts, labelled.
  */
+
+export type ExitKind = "donate" | "haul";
 
 export interface ExitRecord {
   event: "esp_exit_tap";
+  kind: ExitKind;
   session: string;
   count: number;
   fallback: boolean;
@@ -26,38 +30,50 @@ export interface ExitRecord {
 
 /** Pure: what gets recorded and where the user goes. Exported for tests. */
 export function resolveExit(params: URLSearchParams): { record: ExitRecord; location: string } {
+  const kind: ExitKind = params.get("kind") === "haul" ? "haul" : "donate";
   const session = (params.get("session") ?? "").slice(0, 64) || "unknown";
   const count = Math.max(0, Math.min(999, Number.parseInt(params.get("count") ?? "0", 10) || 0));
-  const fallback = params.get("fallback") === "1";
+  const fallback = kind === "donate" && params.get("fallback") === "1";
   const via: "tel" | "web" = params.get("via") === "web" ? "web" : "tel";
+  const partner = kind === "haul" ? HAUL_AWAY : DONATE_PICKUP;
 
   const record: ExitRecord = {
     event: "esp_exit_tap",
+    kind,
     session,
     count,
     fallback,
     via,
-    referral: HAUL_AWAY.referral,
+    referral: partner.referral,
     at: new Date().toISOString(),
   };
 
   let location: string;
   if (fallback) {
-    location = HAUL_AWAY.fallback.web;
+    location = DONATE_PICKUP.fallback.web;
   } else if (via === "web") {
-    const url = new URL(HAUL_AWAY.web);
-    url.searchParams.set("ref", HAUL_AWAY.referral);
+    const url = new URL(partner.web);
+    url.searchParams.set("ref", partner.referral);
     location = url.toString();
   } else {
-    location = HAUL_AWAY.tel;
+    location = partner.tel;
   }
   return { record, location };
 }
 
 export async function GET(request: NextRequest) {
   const { record, location } = resolveExit(request.nextUrl.searchParams);
-  // The row is the receipt the Propose threshold ("≥ 5 haul-away taps in 14
+  // The row is the receipt the Propose threshold ("≥ 5 pickup taps in 14
   // days") is counted from; recordEvent also prints it and never throws.
-  await recordEvent({ event: record.event, session: record.session, count: record.count, fallback: record.fallback, via: record.via, referral: record.referral, at: record.at });
+  await recordEvent({
+    event: record.event,
+    session: record.session,
+    count: record.count,
+    fallback: record.fallback,
+    via: record.via,
+    referral: record.referral,
+    metadata: { kind: record.kind },
+    at: record.at,
+  });
   return NextResponse.redirect(location, { status: 302 });
 }

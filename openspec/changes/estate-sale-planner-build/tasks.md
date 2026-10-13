@@ -20,7 +20,7 @@
       `assets/built-02.1-lists-*.png`, 2026-10-13).
 - [x] 1.4 The model finds nothing worth flagging — empty-Sell state rendered in `Lists.tsx`
       ("Nothing stood out…"); reducer path covered by `session.test.ts`. *Not screenshot.*
-- [x] 1.5 User sorts the Keep / Toss list — `session.test.ts` (full pass leaves every item in
+- [x] 1.5 User sorts the undecided pile (round 03: keep / sell / donate, no Toss) — `session.test.ts` (full pass leaves every item in
       exactly one list; undo restores last only); swipe surface rendered
       (`assets/built-04-swipe-mobile-480.png`; image-first card in round 02.1:
       `assets/built-02.1-swipe-mobile-480.png`).
@@ -30,6 +30,17 @@
       `tel:+18004685865`, structured record logged (2026-10-13).
 - [x] 1.8 Haul-away is not available in the user's area — `fallback=1` → `302` → generic
       hauler link, record carries `fallback: true` (curl + test, 2026-10-13).
+- [x] 1.10 User toggles any item between keep, sell, donate and undoes it — `session.test.ts`
+      ("toggles between destinations any number of times…"); list, card, item and sort
+      surfaces all carry the toggle (Playwright pass 2026-10-13, `assets/built-03-*`).
+- [x] 1.11 User corrects a wrong recognition, removes a non-item, adds a missed one —
+      `session.test.ts` (updateItem / removeItem / addItem); item screen and add form
+      exercised in the Playwright pass (rename + note + add, then reopened from history).
+- [x] 1.12 User takes a detail shot and the item is re-read — `refine.test.ts` +
+      `refine-route.test.ts` (schema, request shape, fixture, throttle); **the live re-read
+      needs a keyed provider and a phone (Katy / proxy user).**
+- [x] 1.13 User finds an earlier walkthrough — `storage.ts` history (six on the device);
+      Playwright: cleared the tab, reopened from the capture screen, items intact.
 - [x] 1.9 User prints the sell summary — `/estate-sale-planner/summary` 200; "not an
       appraisal" Callout renders first; `window.print()` button. *Print layout not
       visually checked.*
@@ -97,15 +108,30 @@
       with print + copy-link. Summary gains the paid CTA `Card`
       (`assets/built-02.3-summary-*.png`). Figma round 02.3 frames `32:74` / `32:109`
       screenshot-verified in-session.
+- [x] 3.13 Destinations (round 03): `session.ts` → `keep | sell | donate`, `setDestination`
+      with per-change undo, `updateItem` / `removeItem` / `addItem`, `attachDetail` /
+      `applyRefinement`; storage key `esp:session:v2`; `DestinationToggle.tsx` on
+      `ItemCard`, `ItemRow`, `Swipe`, `ItemDetail`.
+- [x] 3.14 Item screen `ItemDetail.tsx` (edit name / room / band / note as you type,
+      detail shots with re-read, remove with confirmation) and `AddItem.tsx`.
+- [x] 3.15 Mobile IA: `BottomNav.tsx` (Lists · Sort · Finish on `Layer` float) and the
+      list → item push in `page.tsx`; `History.tsx` + `storage.ts` on-device history.
+- [x] 3.16 Detail shots: `capture.ts` `detailFromPhoto` (1024 px + 320 px thumb),
+      `refine.ts` + `api/refine/route.ts` on both providers (generic structured call in
+      `vision/openai.ts` / `vision/anthropic.ts`), fixture posture; sheet carries
+      details, mark reading, note.
+- [x] 3.17 Exit re-pointed: `DONATE_PICKUP` primary (`kind=donate`), `HAUL_AWAY` demoted
+      (`kind=haul`); `exit-route.test.ts`; spec renamed `donation-pickup-exit`.
 
 ## 4. QA
 
 - [ ] 4.1 Manual walkthrough on a phone (capture → send → lists → swipe → exit → print) —
       **Katy / proxy user**; needs `ANTHROPIC_API_KEY` set for the real vision pass.
-- [x] 4.2 Automated: `tests/estate-sale-planner/` — 62 tests across sampler, reducer, flag
-      parsing + no-key path, flag route (validation, budget, throttle), exit route
-      (record + redirect), thumbnail crop geometry, vision provider + OpenAI adapter,
-      sheet validation, checkout route, webhook route. Green 2026-10-13 (round 02.3).
+- [x] 4.2 Automated: `tests/estate-sale-planner/` — 76 tests across sampler, reducer
+      (destinations, undo, CRUD, re-read), flag parsing + no-key path, flag route, refine +
+      refine route, exit route (both kinds), thumbnail crop geometry, vision provider +
+      OpenAI adapter, sheet validation (details, note), checkout route, webhook route.
+      Green 2026-10-13 (round 03).
 - [ ] 4.4 **Katy:** apply migration 016; create the Stripe webhook endpoint for
       `/estate-sale-planner/api/webhook` (test mode first) and set
       `ESP_STRIPE_WEBHOOK_SECRET_TEST`; one test-mode purchase end to end (checkout → webhook

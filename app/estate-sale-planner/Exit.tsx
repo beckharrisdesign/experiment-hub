@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button, Callout, Stack } from "@beckharrisdesign/mvds";
-import { HAUL_AWAY } from "../../lib/estate-sale-planner/config";
-import { keepList, sellList, tossList, type Session } from "../../lib/estate-sale-planner/session";
+import { DONATE_PICKUP, HAUL_AWAY } from "../../lib/estate-sale-planner/config";
+import { donateList, keepList, sellList, type Session } from "../../lib/estate-sale-planner/session";
 import { track } from "../../lib/estate-sale-planner/analytics";
 
 interface ExitProps {
@@ -12,36 +12,39 @@ interface ExitProps {
 }
 
 /**
- * Screen 5 — the exit. One CTA on its own line, centered (founder rule). The
- * link is the counted route, which records the tap and then redirects; the
- * placeholder referral is explained in plain language until a deal exists.
+ * Screen 5 — the exits. One CTA on its own line, centered (founder rule): a
+ * pickup for the Donate list, the counted route. The sell list's own exit
+ * (print, or the paid Sell Sheet) is the secondary button. Junk haul is a
+ * small link for the pile no charity will take — there is no Toss list.
  */
 export default function Exit({ session }: ExitProps) {
   const [noCoverage, setNoCoverage] = useState(false);
-  const toss = tossList(session).length;
+  const donate = donateList(session).length;
   const keep = keepList(session).length;
   const sell = sellList(session).length;
 
-  const exitHref = (via: "tel" | "web") =>
-    `/estate-sale-planner/api/exit?session=${encodeURIComponent(session.id)}&count=${toss}&fallback=${noCoverage ? 1 : 0}&via=${via}`;
+  const exitHref = (kind: "donate" | "haul", via: "tel" | "web") =>
+    `/estate-sale-planner/api/exit?kind=${kind}&session=${encodeURIComponent(session.id)}&count=${kind === "donate" ? donate : 0}&fallback=${noCoverage ? 1 : 0}&via=${via}`;
 
   return (
     <Stack gap={24}>
       <Stack gap={8}>
         <h1 className="text-h1 text-foreground">Sorted.</h1>
         <p className="max-w-prose text-body-lg text-muted-foreground">
-          {toss} to toss, {keep} to keep, {sell} that might be worth selling.
+          {keep} to keep, {sell} that might be worth selling, {donate} to donate.
         </p>
       </Stack>
 
       <div className="flex justify-center">
         <Button size="lg" asChild>
           <a
-            href={exitHref("tel")}
-            onClick={() => track("esp_exit_tap", { count: toss, fallback: noCoverage, via: "tel" })}
+            href={exitHref("donate", "tel")}
+            onClick={() => track("esp_exit_tap", { kind: "donate", count: donate, fallback: noCoverage, via: "tel" })}
             data-analytics-event="esp_exit_tap"
           >
-            {noCoverage ? `Find a hauler for the ${toss} toss items` : `Call ${HAUL_AWAY.name} for the ${toss} toss items`}
+            {noCoverage
+              ? `Schedule a Salvation Army pickup for ${donate} ${donate === 1 ? "item" : "items"}`
+              : `Call ${DONATE_PICKUP.name} to pick up ${donate} ${donate === 1 ? "item" : "items"}`}
           </a>
         </Button>
       </div>
@@ -50,35 +53,41 @@ export default function Exit({ session }: ExitProps) {
         {!noCoverage && (
           <a
             className="text-small text-muted-foreground underline"
-            href={exitHref("web")}
-            onClick={() => track("esp_exit_tap", { count: toss, fallback: false, via: "web" })}
+            href={exitHref("donate", "web")}
+            onClick={() => track("esp_exit_tap", { kind: "donate", count: donate, fallback: false, via: "web" })}
           >
-            Book online instead
+            Schedule online instead
           </a>
         )}
-        <button
-          type="button"
-          className="text-small text-muted-foreground underline"
-          onClick={() => setNoCoverage((v) => !v)}
-        >
-          {noCoverage ? `Actually, ${HAUL_AWAY.name} does cover me` : "They don't cover my area"}
+        <button type="button" className="text-small text-muted-foreground underline" onClick={() => setNoCoverage((v) => !v)}>
+          {noCoverage ? `Actually, ${DONATE_PICKUP.name} does cover me` : "They don't cover my area"}
         </button>
       </Stack>
 
-      <Callout>
-        This link carries a placeholder referral code. No deal with {HAUL_AWAY.name} exists yet;
-        the tap is counted so we know whether one is worth making.
-      </Callout>
-
       <div className="flex justify-center">
-        <Button variant="outline" asChild>
+        <Button variant="outline" size="lg" asChild>
           <Link href="/estate-sale-planner/summary" onClick={() => track("esp_summary_print")}>
             Save or print the sell list
           </Link>
         </Button>
       </div>
 
-      <Callout>Closing this tab loses the session. Print the sell list if you want to keep it.</Callout>
+      <Callout>
+        These links carry a placeholder referral code. No deal with {DONATE_PICKUP.name} exists yet; the tap is counted so we know whether one is worth making.
+      </Callout>
+
+      <p className="text-center text-small text-muted-foreground">
+        Still a pile that is only trash?{" "}
+        <a
+          className="underline"
+          href={exitHref("haul", "web")}
+          onClick={() => track("esp_exit_tap", { kind: "haul", count: 0, fallback: false, via: "web" })}
+        >
+          Haul the rest away with {HAUL_AWAY.name}
+        </a>
+      </p>
+
+      <Callout>This walkthrough is saved on this device under Earlier walkthroughs. The Sell Sheet is the copy you can send to someone else.</Callout>
     </Stack>
   );
 }

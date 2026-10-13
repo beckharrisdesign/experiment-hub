@@ -4,7 +4,7 @@
  * Stripe or Supabase.
  */
 import { z } from "zod";
-import { SELL_SHEET } from "./config";
+import { DETAIL_SHOT, SELL_SHEET } from "./config";
 import { BANDS } from "./flag";
 import { sellList, type Session } from "./session";
 
@@ -19,6 +19,15 @@ export const SheetItemSchema = z.object({
     .regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/)
     .max(SELL_SHEET.maxImageBytes)
     .optional(),
+  /** Detail-shot thumbs (a seam, a stamp) the user added. */
+  details: z
+    .array(z.string().regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/).max(SELL_SHEET.maxImageBytes))
+    .max(DETAIL_SHOT.maxPerItem)
+    .optional(),
+  /** What the model read off a mark, if anything. */
+  markReading: z.string().max(160).nullable().optional(),
+  /** What the family knows — provenance in their words. */
+  note: z.string().max(500).optional(),
 });
 
 export const SheetInputSchema = z.object({
@@ -49,13 +58,16 @@ export function sheetInputFromSession(session: Session): SheetInput {
   return {
     sessionId: session.id,
     walkthroughAt: session.createdAt,
-    items: sellList(session).map(({ name, room, band, reason, confidence, image }) => ({
+    items: sellList(session).map(({ name, room, band, reason, confidence, image, details, markReading, note }) => ({
       name,
       room,
       band,
       reason,
       confidence,
       ...(image && image.length <= SELL_SHEET.maxImageBytes ? { image } : {}),
+      ...(details?.length ? { details: details.filter((d) => d.length <= SELL_SHEET.maxImageBytes).slice(0, DETAIL_SHOT.maxPerItem) } : {}),
+      ...(markReading ? { markReading } : {}),
+      ...(note?.trim() ? { note: note.trim().slice(0, 500) } : {}),
     })),
   };
 }

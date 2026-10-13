@@ -32,9 +32,13 @@ Six screens, one route:
 /estate-sale-planner
   1. Capture       film / pick video or photos            ← one button
   2. Frames        sampled grid + count + Send            ← confirm before anything leaves the phone
-  3. Lists         Sell (bands) · Keep / Toss by room     ← read, then "Start sorting"
-  4. Swipe         one item, Keep | Toss, Undo            ← loop until the stack is empty
-  5. Exit          haul-away CTA (own line, centered)     ← counted row, then deep link / tel:
+  3. Lists         Sell cards · Still to sort · Keep · Donate, toggle on every item ← tap = item
+  3a. Item         full-screen: toggle, rename, room, band, note, detail shots, re-read, remove
+  4. Sort          undecided pile one at a time: ← donate · keep → · Sell tap · Undo · Details
+  5. Finish        donation-pickup CTA (own line, centered) ← counted row, then deep link / tel:
+                   + print / Sell Sheet (secondary) + "haul the rest" link
+  Tab bar          Lists · Sort · Finish, fixed to the bottom once a walkthrough exists
+  History          earlier walkthroughs on this device, listed on the capture screen
   6. Summary       printable Sell list, "not an appraisal" first · Sell Sheet CTA ($5)
   7. Sell sheet    /sheet/[id] — the paid page: photos, bands, print, copy link
 Recovery: no key → demo on the fixture set, says so · nothing flagged → honest empty Sell
@@ -128,6 +132,9 @@ hand-off: a `Card` variant with an image slot and a badge row (review queue #28)
 | Photo fallback picker | `Dropzone` (code) — stand-in frame in Figma until the library publishes it | No |
 | Page scaffolding | `Section`, `Container`, `Stack`, `Inline` | No |
 | Swipe gesture handling | — | Yes: small pointer-event hook; visual is still a `Card` |
+| Per-item destination toggle | `Button` ×3 (`default` active, `outline` inactive) in an `Inline` | Yes, as composition (MVDS has no segmented control — hand-off) |
+| Item screen fields | `Field` + `Input` / `Textarea` / `Select` | No |
+| Bottom tab bar | `Layer level="float"` + `Button` (`default` / `ghost`) | Yes, as composition (no MVDS tab bar — hand-off) |
 
 ### Round 02.3 — shared rails and the paid moment (2026-10-13)
 
@@ -145,6 +152,27 @@ the hub already runs:
 Figma: page **`02.3 Proposed — sell sheet`** (node `32:73`), frames `Proposed 02.3 · 06 Summary · Mobile 480` (`32:74`) and `Proposed 02.3 · 07 Sell sheet · Mobile 480` (`32:109`), both cloned from the 02.1 Lists frame so the `Item card` instances and token bindings carry over; composition screenshot taken in-session, clean on the first pass, every text node in Inter. The founder's own page `02.2 Proposed — Manual design edits` (`22:152`) is hers and untouched. One mirror deviation: the Figma summary shows the Sell items as cards (the 02.1 `Item card`) where the built summary is a print table — the table adds no composition question the cards don't answer, and the paid card beneath is the thing this round draws.
 
 Surfaces: the summary gains one `Card` (eyebrow *Keep this list* → `CardTitle` → `CardDescription` with the price → one centered `Button`; the free print demotes to `outline` when the paid CTA is present). The sheet page reuses the 02.1 image-first `Item card` in a two-column `Grid`, with print and copy-link beneath. Figma page **`02.3 Proposed — sell sheet`** carries both frames (see the Visual design table). Captures: `assets/built-02.3-summary-mobile-480.png` (CTA) and `assets/built-02.3-summary-unconfigured-mobile-480.png` (no Stripe).
+
+### Round 03 — keep / sell / donate, the item screen, detail shots (2026-10-13)
+
+Founder direction, verbatim: *"no we won't call it tossing -- keep, sell, donate are the
+options, and we should be able to toggle between then per item. but there are moments where
+a user needs to take additional details like a seam or a stamp on the bottom."* and
+*"consider mobile navigation paradigms - editing a profile, finding history, crud operations
+on each elements, correcting an object recognition decision that isn't right."*
+
+| Concern | Round 02.3 | Round 03 |
+| --- | --- | --- |
+| Destinations | Sell / Keep / Toss, a one-way funnel (Sell → Keep/Toss, swipe decides, undo last only) | **Keep / Sell / Donate** on every item, toggled from any list any time; per-change undo. Model-flagged items start at Sell. No Toss |
+| Navigation | Linear steps | **Bottom tab bar** once a walkthrough exists (Lists · Sort · Finish, MVDS `Layer` float) and the **list → item push**: tap any card or row to open the item full-screen with a Back button |
+| CRUD | None | **Edit** name, room, band (`Select` over the bands), what the family knows (`Textarea`), saved as you type; **Remove** with one confirmation, for reflections, duplicates and wrong calls; **Add** something the model missed from the lists, starting with an honest low-confidence read |
+| Correcting a wrong recognition | Only "keep instead" | A rename plus a band on the item screen, or a detail shot that re-reads it; the destination is never a side effect |
+| Detail shots | None | Up to three close-ups per item (1024 px JPEG, `DETAIL_SHOT`), each posted to `api/refine` with the note; the item comes back with a better name / band / reason / confidence and **what the mark says**. Fixture mode keeps the photo and says nothing was re-read |
+| History | Closing the tab loses it | The last six walkthroughs saved on the device (`localStorage`, images dropped on quota) and listed on the capture screen with Open / Delete; the active one still resumes from `sessionStorage` |
+| Exit | Junk haul for the toss list | **Donation pickup** for the donate list (Pickup Please; Salvation Army fallback), the sell list's own exit as the secondary button, junk haul demoted to a "haul the rest" link |
+| Sort gestures | ← toss · keep → | **← donate · keep →**, Sell a deliberate tap (the two a thumb reaches for on a phone; three-way swipe was rejected as unlearnable) |
+
+Captures: `assets/built-03-{lists,detail,sort,exit,capture-history}-mobile-480.png`. Figma: see the Visual design table (round 03 frames recorded there once drawn).
 
 ## Decisions
 
@@ -181,6 +209,17 @@ Surfaces: the summary gains one `Card` (eyebrow *Keep this list* → `CardTitle`
 11. **The link is the credential.** A sheet is a UUID path with no account and `noindex`;
     anyone with the link can open it, which is the point of a sheet you send to siblings.
     Said on the page in one line.
+12. **Destination is a field, not a funnel.** Keep / Sell / Donate live on the item and
+    the toggle is on every surface; the swipe is a fast path over the undecided pile, not
+    the only way to decide. There is no Toss (founder instruction).
+13. **Mobile is list → item push plus a tab bar.** One route, client state: the item
+    screen replaces the step while open and Back returns to it; the bar is fixed to the
+    bottom on the float layer and the page pads for it. No modals.
+14. **A re-read never moves an item.** The model may change what it thinks a thing is and
+    what it is worth; where it is headed is the family's call, every time.
+15. **History is on the device, nothing more.** Six walkthroughs in `localStorage` is
+    "finding history" without accounts; the paid Sell Sheet remains the only copy that
+    leaves the phone.
 
 ## Risks / Trade-offs
 

@@ -2,29 +2,38 @@
 
 import { useRef, useState } from "react";
 import { Button, Card, CardDescription, CardHeader, CardTitle, Inline, Stack } from "@beckharrisdesign/mvds";
-import { keepList, tossList, undecided, type Session } from "../../lib/estate-sale-planner/session";
+import { donateList, keepList, sellList, undecided, type Destination, type Session } from "../../lib/estate-sale-planner/session";
 
 interface SwipeProps {
   session: Session;
-  onDecide: (itemId: string, decision: "keep" | "toss") => void;
+  onDestination: (itemId: string, to: Destination) => void;
+  onOpen: (itemId: string) => void;
   onUndo: () => void;
 }
 
 const SWIPE_THRESHOLD_PX = 80;
 
 /**
- * Screen 4 — one item at a time. The card is image-first (the crop the model
- * saw), then room eyebrow, name (h3), reason. Keep and Toss are real buttons
- * (keyboard, screen readers) and the card also takes a horizontal drag: left
- * is toss, right is keep. Undo sits under the buttons and is always visible.
+ * Screen 4 — the fast path through the undecided pile, one item at a time.
+ * Three real buttons (keyboard, screen readers): Donate, Keep, Sell. The card
+ * also takes a horizontal drag — left is donate, right is keep — because
+ * those are the two a thumb reaches for; Sell is the deliberate tap. Details
+ * opens the item; Undo is always visible.
  */
-export default function Swipe({ session, onDecide, onUndo }: SwipeProps) {
+export default function Swipe({ session, onDestination, onOpen, onUndo }: SwipeProps) {
   const stack = undecided(session);
   const item = stack[0];
   const [dx, setDx] = useState(0);
   const startX = useRef<number | null>(null);
 
-  if (!item) return null;
+  if (!item) {
+    return (
+      <Stack gap={16} align="center">
+        <h1 className="text-h3 text-foreground">Everything has a place.</h1>
+        <p className="text-body text-muted-foreground">Use the lists to change any of them, or finish up.</p>
+      </Stack>
+    );
+  }
 
   const onPointerDown = (e: React.PointerEvent) => {
     startX.current = e.clientX;
@@ -39,16 +48,16 @@ export default function Swipe({ session, onDecide, onUndo }: SwipeProps) {
     const moved = dx;
     startX.current = null;
     setDx(0);
-    if (moved <= -SWIPE_THRESHOLD_PX) onDecide(item.id, "toss");
-    else if (moved >= SWIPE_THRESHOLD_PX) onDecide(item.id, "keep");
+    if (moved <= -SWIPE_THRESHOLD_PX) onDestination(item.id, "donate");
+    else if (moved >= SWIPE_THRESHOLD_PX) onDestination(item.id, "keep");
   };
 
   return (
     <Stack gap={24} align="center">
       <Stack gap={4} align="center">
-        <h1 className="text-h3 text-foreground">Keep or toss?</h1>
+        <h1 className="text-h3 text-foreground">Keep, sell, or donate?</h1>
         <p className="text-caption uppercase tracking-wider text-muted-foreground">
-          {stack.length} left · {keepList(session).length} keep · {tossList(session).length} toss
+          {stack.length} left · {keepList(session).length} keep · {sellList(session).length} sell · {donateList(session).length} donate
         </p>
       </Stack>
 
@@ -75,17 +84,25 @@ export default function Swipe({ session, onDecide, onUndo }: SwipeProps) {
       </Card>
 
       <Inline gap={16} justify="center">
-        <Button variant="destructive" size="lg" onClick={() => onDecide(item.id, "toss")}>
-          Toss
+        <Button variant="outline" size="lg" onClick={() => onDestination(item.id, "donate")}>
+          Donate
         </Button>
-        <Button size="lg" onClick={() => onDecide(item.id, "keep")}>
+        <Button size="lg" onClick={() => onDestination(item.id, "keep")}>
           Keep
+        </Button>
+        <Button variant="secondary" size="lg" onClick={() => onDestination(item.id, "sell")}>
+          Sell
         </Button>
       </Inline>
 
-      <Button variant="ghost" size="sm" disabled={session.decided.length === 0} onClick={onUndo}>
-        Undo
-      </Button>
+      <Inline gap={16} justify="center">
+        <Button variant="ghost" size="sm" onClick={() => onOpen(item.id)}>
+          Details
+        </Button>
+        <Button variant="ghost" size="sm" disabled={session.history.length === 0} onClick={onUndo}>
+          Undo
+        </Button>
+      </Inline>
     </Stack>
   );
 }

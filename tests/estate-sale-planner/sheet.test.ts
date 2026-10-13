@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { formatPrice, parseSheetInput, sheetInputFromSession, sheetPath } from "@/lib/estate-sale-planner/sheet";
 import { SELL_SHEET } from "@/lib/estate-sale-planner/config";
-import { decide, newSession } from "@/lib/estate-sale-planner/session";
+import { attachDetail, newSession, setDestination, updateItem } from "@/lib/estate-sale-planner/session";
 import { fixtureFlags } from "@/lib/estate-sale-planner/flag";
 
 const img = "data:image/jpeg;base64,/9j/4AAQ";
@@ -10,7 +10,7 @@ describe("sheetInputFromSession", () => {
   it("carries only the Sell list — overridden and unflagged items stay off the sheet", () => {
     const session = newSession(fixtureFlags().items, new Date("2026-10-13T12:00:00Z"), fixtureFlags().items.map(() => img));
     const firstSell = session.items.find((i) => i.flagged)!;
-    const moved = decide(session, firstSell.id, "keep");
+    const moved = setDestination(session, firstSell.id, "keep");
     const input = sheetInputFromSession(moved);
     expect(input.sessionId).toBe(session.id);
     expect(input.walkthroughAt).toBe("2026-10-13T12:00:00.000Z");
@@ -18,6 +18,19 @@ describe("sheetInputFromSession", () => {
     expect(input.items.every((i) => i.image === img)).toBe(true);
     expect(input.items[0]).not.toHaveProperty("id");
     expect(input.items[0]).not.toHaveProperty("frame");
+  });
+
+  it("carries detail thumbs, the mark reading, and the family's note", () => {
+    let session = newSession(fixtureFlags().items, new Date(), []);
+    const item = session.items.find((i) => i.flagged)!;
+    session = attachDetail(session, item.id, img);
+    session = updateItem(session, item.id, { note: "  Bought in Copenhagen, 1962.  ", markReading: "Royal Copenhagen" } as any);
+    const input = sheetInputFromSession(session);
+    const row = input.items.find((i) => i.name === item.name)!;
+    expect(row.details).toEqual([img]);
+    expect(row.note).toBe("Bought in Copenhagen, 1962.");
+    expect(row.markReading).toBe("Royal Copenhagen");
+    expect(parseSheetInput(input)).not.toBeNull();
   });
 
   it("drops an oversized thumbnail rather than failing the whole sheet", () => {

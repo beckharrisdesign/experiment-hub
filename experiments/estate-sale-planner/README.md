@@ -1,8 +1,9 @@
 # Estate Sale Planner
 
 Film a walkthrough of a parent's house → a vision model flags what might be worth something
-→ two lists (sell / keep-toss) → swipe to decide → one tap to call the haul-away truck →
-save the sell list with photos as a $5 Sell Sheet at a shareable link.
+→ every item headed to keep, sell, or donate (toggle any time) → open an item to correct it,
+add a detail shot of a stamp or seam for a re-read, or remove it → one tap to schedule a
+donation pickup → save the sell list with photos as a $5 Sell Sheet at a shareable link.
 
 **Status:** Built on MVDS 0.5.0, Validating next (autonomous build; see the review queue before trusting any default).
 
@@ -37,24 +38,28 @@ plus this route's own `ESP_STRIPE_WEBHOOK_SECRET_<MODE>`.
 ## Test
 
 ```bash
-npx vitest run tests/estate-sale-planner   # 62 tests: sampler, reducer, vision providers, thumbs, sheet, four routes
+npx vitest run tests/estate-sale-planner   # 76 tests: sampler, reducer (destinations, CRUD), vision + refine, thumbs, sheet, five routes
 ```
 
 ## Architecture (key files)
 
 | Area | File |
 | --- | --- |
-| Budget, models, haul-away links, Sell Sheet price | `lib/estate-sale-planner/config.ts` |
+| Budget, models, detail-shot caps, pickup / haul links, Sell Sheet price | `lib/estate-sale-planner/config.ts` |
 | Frame sampling (pure) / browser capture / thumbnails | `lib/estate-sale-planner/{frames,capture,thumbs}.ts` |
 | Vision pass: zod schema, prompt, fixture, provider pick | `lib/estate-sale-planner/flag.ts` |
 | Vision adapters (OpenAI default, Anthropic alternate) | `lib/estate-sale-planner/vision/{openai,anthropic,schema}.ts` |
-| Session reducer (lists, decisions, undo) | `lib/estate-sale-planner/session.ts` |
+| Session reducer (destinations, undo, edit / remove / add, re-reads) | `lib/estate-sale-planner/session.ts` |
+| Detail-shot re-read (schema, prompt, provider pick) | `lib/estate-sale-planner/refine.ts` |
+| Active session + on-device history | `lib/estate-sale-planner/storage.ts` |
 | Sell Sheet shapes + validation (pure) | `lib/estate-sale-planner/sheet.ts` |
 | Supabase (events, sheets, buyer email) / Stripe | `lib/estate-sale-planner/{db,supabase-admin,stripe}.ts` |
 | Flag route (budget re-check, throttle, fixture mode) | `app/estate-sale-planner/api/flag/route.ts` |
-| Exit route (counted row → redirect) | `app/estate-sale-planner/api/exit/route.ts` |
+| Exit route (counted row → pickup or haul redirect) | `app/estate-sale-planner/api/exit/route.ts` |
+| Refine route (item + detail shots → better read) | `app/estate-sale-planner/api/refine/route.ts` |
 | Checkout / webhook (Stripe is the source of truth) | `app/estate-sale-planner/api/{checkout,webhook}/route.ts` |
-| Screens | `app/estate-sale-planner/{Capture,FrameGrid,Lists,Swipe,Exit}.tsx`, `summary/page.tsx`, `sheet/[id]/page.tsx` |
+| Screens | `app/estate-sale-planner/{Capture,FrameGrid,Lists,Swipe,Exit,ItemDetail,AddItem,History}.tsx`, `summary/page.tsx`, `sheet/[id]/page.tsx` |
+| Pieces | `app/estate-sale-planner/{ItemCard,DestinationToggle,BottomNav}.tsx` |
 
 ## MVDS
 

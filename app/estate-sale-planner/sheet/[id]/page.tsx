@@ -92,9 +92,20 @@ export default async function SheetPage({ params, searchParams }: SheetPageProps
                     <Badge variant={confidenceVariant[item.confidence]}>{item.confidence} confidence</Badge>
                   </Inline>
                   <CardDescription>{item.reason}</CardDescription>
+                  {item.markReading && <p className="text-small text-foreground">Mark reads: {item.markReading}</p>}
+                  {item.note && <p className="text-small text-muted-foreground">{item.note}</p>}
                 </CardHeader>
                 <CardContent>
-                  <span className="sr-only">Sell candidate</span>
+                  {item.details?.length ? (
+                    <Inline gap={8}>
+                      {item.details.map((d, j) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img key={j} src={d} alt={`Detail ${j + 1}`} className="size-12 rounded-md object-cover ring-1 ring-foreground/10" />
+                      ))}
+                    </Inline>
+                  ) : (
+                    <span className="sr-only">Sell candidate</span>
+                  )}
                 </CardContent>
               </Card>
             ))}

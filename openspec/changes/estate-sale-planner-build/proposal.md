@@ -31,10 +31,12 @@
   - A phone walkthrough video (or a set of photos) is turned into frames in the browser and
     sent only after the user confirms.
   - The flagged items come back as a *Sell* list — name, value band, one-line reason,
-    confidence — and everything else as a *Keep / Toss* list grouped by room.
-  - Keep/toss is one item at a time with undo; a sell item can be moved to keep or toss.
-  - The exit is one tap: the toss list goes to a haul-away link (counted as a row before
-    redirect); the sell list is a printable summary.
+    confidence — and everything else undecided; every item is headed to exactly one of
+    *Keep*, *Sell*, *Donate*, toggled per item from any list (round 03; there is no Toss).
+  - Sorting the undecided pile is one item at a time with undo; any item opens full-screen
+    to be corrected, re-read from detail shots, removed, and items can be added.
+  - The exit is one tap: the donate list goes to a pickup link (counted as a row before
+    redirect); the sell list is a printable summary; junk haul is a demoted link.
   - The sell list with its photos can be bought once as a Sell Sheet at a shareable link;
     the Stripe webhook, not the success URL, unlocks it.
   - A walkthrough costs under $1.00 in model calls at the default frame budget, and the
@@ -74,9 +76,17 @@ hold and kept its count in expiring logs; revised 2026-10-13 on founder review (
   `OPENAI_API_KEY` first, `ANTHROPIC_API_KEY` as the alternate (`lib/estate-sale-planner/vision/`).
   Frame budget and model names live in `lib/estate-sale-planner/config.ts`.
 - **Session state in the browser**: lists, swipe decisions, undo stack, thumbnails.
-- **Exit**: haul-away CTA as a counted link (`app/estate-sale-planner/api/exit/route.ts`
-  records the tap as an `esp_events` row, then redirects to the deep link / `tel:`);
-  printable sell summary.
+- **Destinations + item screen** (round 03): `session.ts` holds `keep | sell | donate` per
+  item with per-change undo, edit / remove / add; `ItemDetail.tsx` is the full-screen item
+  (toggle, rename, room, band, note, detail shots, re-read, remove); `BottomNav.tsx` is the
+  phone's Lists · Sort · Finish bar; `storage.ts` keeps the last six walkthroughs on the
+  device and lists them on the capture screen.
+- **Detail shots**: `api/refine` re-reads one item from up to three close-ups
+  (`lib/estate-sale-planner/refine.ts`, both providers) and returns a better read plus
+  what the mark says.
+- **Exit**: donation-pickup CTA as a counted link (`app/estate-sale-planner/api/exit/route.ts`
+  records the tap as an `esp_events` row with `kind`, then redirects to the deep link /
+  `tel:`); printable sell summary; junk haul demoted to a secondary link.
 - **Sell Sheet** (paid): `api/checkout` saves the Sell list to `esp_sheets` and opens Stripe
   Checkout; `api/webhook` marks it paid and records the buyer's email in the shared
   `experiment_submissions`; `sheet/[id]` renders the paid page at a UUID link.
@@ -95,8 +105,8 @@ hold and kept its count in expiring logs; revised 2026-10-13 on founder review (
 
 - `walkthrough-triage`: turn a phone walkthrough into a *Sell* list with value bands and a
   *Keep / Toss* list, then let the user decide one item at a time.
-- `haul-away-exit`: one counted tap that hands the toss list to a haul-away service and
-  leaves the user with a printable sell summary.
+- `donation-pickup-exit`: one counted tap that hands the donate list to a pickup service and
+  leaves the user with a printable sell summary (renamed from `haul-away-exit` in round 03).
 - `sell-sheet`: the sell list with photos, bought once and saved at a shareable link;
   payment is confirmed by the Stripe webhook and every counted event is a database row.
 

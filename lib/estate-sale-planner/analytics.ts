@@ -15,7 +15,10 @@ export type FunnelEvent =
   | "esp_sell_override"
   | "esp_exit_tap"
   | "esp_summary_print"
-  | "esp_sheet_checkout";
+  | "esp_sheet_checkout"
+  | "esp_destination_set"
+  | "esp_detail_added"
+  | "esp_item_refined";
 
 export function track(event: FunnelEvent, params: Record<string, string | number | boolean | undefined> = {}) {
   trackEvent(event, { experiment_slug: EXPERIMENT_ID, surface_type: "prototype", ...params });

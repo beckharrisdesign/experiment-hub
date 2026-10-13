@@ -106,7 +106,11 @@ export default function SummaryPage() {
                         <img src={item.image} alt="" className="size-12 rounded-md object-cover" />
                       ) : null}
                     </td>
-                    <td className="py-2 pr-4 text-foreground">{item.name}</td>
+                    <td className="py-2 pr-4 text-foreground">
+                      {item.name}
+                      {item.markReading && <span className="block text-muted-foreground">Mark: {item.markReading}</span>}
+                      {item.note && <span className="block text-muted-foreground">{item.note}</span>}
+                    </td>
                     <td className="py-2 pr-4">{item.room}</td>
                     <td className="py-2 pr-4">{item.band}</td>
                     <td className="py-2 pr-4">{item.confidence}</td>

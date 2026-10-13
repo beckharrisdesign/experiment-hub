@@ -20,10 +20,11 @@
 
 **Two paid moments, one on each side of the sort.** Decided before pricing, per the rule.
 
-1. **Referral — the haul-away tap** at the end of the sort (1-800-GOT-JUNK first; a generic
-   "find a hauler" fallback where it does not operate). Free for the family; the partner
-   pays. The deal does not exist yet (review queue #7), so v1 counts the tap on a
-   placeholder link.
+1. **Referral — the donation pickup tap** at the end of the sort (Pickup Please first, a
+   Salvation Army pickup where it does not operate; round 03 — there is no Toss list, so
+   the referral moved from junk removal to charity pickup, with 1-800-GOT-JUNK demoted to a
+   "haul the rest" link). Free for the family; the partner pays. No deal exists yet (review
+   queue #7, #37), so v1 counts the tap on a placeholder link.
 2. **One-time purchase — the Sell Sheet.** The free flow ends in a printable summary. The
    Sell Sheet is the same list *with the photos*, saved at a link that survives closing
    the tab and can be sent to siblings or the estate-sale company. Stripe Checkout, no
@@ -66,11 +67,15 @@ junk, and the rest is one swipe at a time instead of a weekend of guessing.
    sampled in the browser; nothing is sent until the user confirms.
 2. **Flag** — a vision model returns the items that could be worth something, each with a
    name, a value band, a one-line reason, and a confidence.
-3. **Two lists** — *Sell* (flagged) and *Keep / Toss* (everything else), grouped by room.
-4. **Swipe** — keep or toss, one item at a time; undo the last swipe; sell items can be
-   moved to keep or toss.
-5. **Exit** — one tap hands the toss list to a haul-away service (deep link / `tel:`); the
-   sell list is shown as a printable summary.
+3. **Three destinations** — every item is headed to *Keep*, *Sell*, or *Donate*
+   (model-flagged items start at Sell); a toggle on every card and row moves it any time.
+   Lists are grouped by destination, then room. Tap an item to open it: rename it (a wrong
+   recognition is a rename), change the band, write what the family knows, add detail shots,
+   remove it, or add one the model missed.
+4. **Sort** — the undecided pile one item at a time: drag left donate, right keep, tap
+   Sell; undo walks back one change.
+5. **Exit** — one tap hands the donate list to a pickup service (deep link / `tel:`); the
+   sell list is a printable summary; junk haul is a demoted link for a pile no charity takes.
 6. **Sell Sheet** — from the summary, pay once to save the sell list with its photos at a
    shareable link; the page is unlocked by the Stripe webhook, never by the success URL.
 
@@ -82,7 +87,7 @@ junk, and the rest is one swipe at a time instead of a weekend of guessing.
   screen); the paid Sell Sheet is the only thing saved server-side, and the link is the
   only way back to it.
 - Multi-person sorting (siblings voting). The sibling fight is real and out of scope.
-- Booking the haul-away inside the app — v1 hands off, it does not book.
+- Booking the pickup inside the app — v1 hands off, it does not book.
 - Donation pickup, shipping, or logistics of any kind.
 - Server-side video processing — no ffmpeg, no uploads of raw video.
 - Grief, legal, or estate guidance content.
@@ -106,7 +111,8 @@ junk, and the rest is one swipe at a time instead of a weekend of guessing.
   `esp_sheets` (the paid sheet); buyer emails land in the shared `experiment_submissions`.
 - **Stripe** — the hub's shared key pair; this route's own webhook endpoint (review queue
   #32, Katy creates it).
-- 1-800-GOT-JUNK — deep link / `tel:` only in v1.
+- Pickup Please (donation pickup) — deep link / `tel:` only in v1; Salvation Army pickup as
+  the fallback; 1-800-GOT-JUNK demoted to a "haul the rest" link.
 - Vercel (hub).
 
 ## Validation Plan
@@ -143,7 +149,7 @@ whole claim, so the test has to run it:
 
 - **25** walkthrough starts in 14 days.
 - **≥ 40 %** of starts reach the end of the swipe.
-- **≥ 5** haul-away taps (placeholder counted, rows in `esp_events`).
+- **≥ 5** pickup taps (placeholder counted, rows in `esp_events`, `kind: donate`).
 - **≥ 2** Sell Sheets paid in live mode (test-mode purchases do not count — ELK rule).
 - Proxy-user grade: flags judged "would not have known" on **≥ 3** items in one house, with
   no "absurd" bands.
@@ -158,7 +164,7 @@ whole claim, so the test has to run it:
 ### Decision point
 
 - All thresholds met → **Build Unit 2**: sell-side referral (Permutation C) and the real
-  haul-away deal; re-score.
+  pickup deal; re-score.
 - Starts met but finish rate or taps missed → the triage UI, not the idea, is the problem;
   one iteration on the swipe surface, then re-measure.
 - Flag quality killed → stop. The vision pass is the product; if it is not trustworthy on
@@ -168,7 +174,7 @@ whole claim, so the test has to run it:
 
 ### Success metric
 
-Paid Sell Sheets and haul-away taps per walkthrough start (the two paid moments), and sort
+Paid Sell Sheets and pickup taps per walkthrough start (the two paid moments), and sort
 completion rate (the product).
 
 ### Leading indicator

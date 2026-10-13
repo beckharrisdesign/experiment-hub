@@ -1,28 +1,51 @@
 /**
- * Session state — the lists, the decisions, and undo. A pure reducer so the
- * swipe surface is testable and every item provably ends in exactly one of
- * Sell, Keep, or Toss (spec: walkthrough-triage, "Decide one item at a time").
+ * Session state — where every item is headed, and undo. A pure reducer so the
+ * surfaces are testable and every item provably ends in exactly one of Keep,
+ * Sell, or Donate (spec: walkthrough-triage). There is no Toss: the founder's
+ * instruction is that those three are the options and the user can toggle
+ * between them per item, any time.
  */
 
 import type { FlaggedItem } from "./flag";
+import type { RefineResponse } from "./refine";
 
-export type Decision = "keep" | "toss";
+export type Destination = "keep" | "sell" | "donate";
+export const DESTINATIONS: readonly Destination[] = ["keep", "sell", "donate"] as const;
 
 export interface SessionItem extends FlaggedItem {
   /** Stable id for lists and analytics; never the model's text. */
   id: string;
-  /** Set once the user decides; a Sell item with a decision was overridden. */
-  decision?: Decision;
+  /** Where it is headed. Model-flagged items start at "sell"; the rest start undecided. */
+  destination?: Destination;
   /** Small JPEG data URL cropped from the kept frame — what the model saw. */
   image?: string;
+  /** Detail shots the user added (a seam, a stamp), as small data URLs. */
+  details?: string[];
+  /** What the model read off the details — a stamp, a maker's mark, a label. */
+  markReading?: string | null;
+  /** True once a detail-shot re-read updated name / band / reason / confidence. */
+  refined?: boolean;
+  /** What the family knows — who bought it, where, when. Sent with a re-read; printed on the sheet. */
+  note?: string;
+  /** Added by the user, not seen by the model. */
+  userAdded?: boolean;
+}
+
+/** The fields the user may edit directly; the destination has its own verb. */
+export type ItemPatch = Partial<Pick<SessionItem, "name" | "room" | "band" | "reason" | "confidence" | "note">>;
+
+export interface Move {
+  id: string;
+  from?: Destination;
+  to?: Destination;
 }
 
 export interface Session {
   id: string;
   createdAt: string;
   items: SessionItem[];
-  /** Ids of items decided, newest last — the undo stack. */
-  decided: string[];
+  /** Every destination change, oldest first — the undo stack. */
+  history: Move[];
 }
 
 export function newSession(
@@ -34,42 +57,111 @@ export function newSession(
   return {
     id,
     createdAt: now.toISOString(),
-    items: items.map((item, i) => ({ ...item, id: `${id}_${i}`, ...(images[i] ? { image: images[i] } : {}) })),
-    decided: [],
+    items: items.map((item, i) => ({
+      ...item,
+      id: `${id}_${i}`,
+      ...(item.flagged ? { destination: "sell" as const } : {}),
+      ...(images[i] ? { image: images[i] } : {}),
+    })),
+    history: [],
   };
 }
 
-export const sellList = (s: Session) => s.items.filter((i) => i.flagged && !i.decision);
-export const undecided = (s: Session) => s.items.filter((i) => !i.flagged && !i.decision);
-export const keepList = (s: Session) => s.items.filter((i) => i.decision === "keep");
-export const tossList = (s: Session) => s.items.filter((i) => i.decision === "toss");
-/** Sell items the user moved to keep or toss — the flag-acceptance signal. */
-export const overrides = (s: Session) => s.items.filter((i) => i.flagged && i.decision);
+export const sellList = (s: Session) => s.items.filter((i) => i.destination === "sell");
+export const keepList = (s: Session) => s.items.filter((i) => i.destination === "keep");
+export const donateList = (s: Session) => s.items.filter((i) => i.destination === "donate");
+export const undecided = (s: Session) => s.items.filter((i) => !i.destination);
+/** Model-flagged items the user moved off Sell — the flag-acceptance signal. */
+export const overrides = (s: Session) => s.items.filter((i) => i.flagged && i.destination && i.destination !== "sell");
 
-export function decide(s: Session, itemId: string, decision: Decision): Session {
+/** Toggle an item to a destination. Same destination is a no-op; anything else is undoable. */
+export function setDestination(s: Session, itemId: string, to: Destination): Session {
   const item = s.items.find((i) => i.id === itemId);
-  if (!item || item.decision) return s;
+  if (!item || item.destination === to) return s;
   return {
     ...s,
-    items: s.items.map((i) => (i.id === itemId ? { ...i, decision } : i)),
-    decided: [...s.decided, itemId],
+    items: s.items.map((i) => (i.id === itemId ? { ...i, destination: to } : i)),
+    history: [...s.history, { id: itemId, from: item.destination, to }],
   };
 }
 
 export function undo(s: Session): Session {
-  const last = s.decided[s.decided.length - 1];
+  const last = s.history[s.history.length - 1];
   if (!last) return s;
   return {
     ...s,
-    items: s.items.map((i) => (i.id === last ? { ...i, decision: undefined } : i)),
-    decided: s.decided.slice(0, -1),
+    items: s.items.map((i) => (i.id === last.id ? { ...i, destination: last.from } : i)),
+    history: s.history.slice(0, -1),
   };
 }
 
 /** True when nothing is left to decide — the exit screen's condition. */
 export const sortFinished = (s: Session) => undecided(s).length === 0;
 
-/** Rooms in first-seen order, for the Keep / Toss list grouping. */
+/** A detail shot lands on the item before any re-read, so it survives a failed request. */
+export function attachDetail(s: Session, itemId: string, thumb: string): Session {
+  return {
+    ...s,
+    items: s.items.map((i) => (i.id === itemId ? { ...i, details: [...(i.details ?? []), thumb] } : i)),
+  };
+}
+
+/** Fold a re-read into the item. The destination is the user's and is never touched. */
+export function applyRefinement(s: Session, itemId: string, r: RefineResponse): Session {
+  return {
+    ...s,
+    items: s.items.map((i) =>
+      i.id === itemId
+        ? { ...i, name: r.name, band: r.band, reason: r.reason, confidence: r.confidence, markReading: r.markReading, refined: true }
+        : i,
+    ),
+  };
+}
+
+/** Edit an item in place — correcting a wrong recognition is a rename plus, often, a band. */
+export function updateItem(s: Session, itemId: string, patch: ItemPatch): Session {
+  if (!s.items.some((i) => i.id === itemId)) return s;
+  return { ...s, items: s.items.map((i) => (i.id === itemId ? { ...i, ...patch } : i)) };
+}
+
+/** Remove an item that is not real (a reflection, a duplicate, a wrong call). Its history goes too. */
+export function removeItem(s: Session, itemId: string): Session {
+  if (!s.items.some((i) => i.id === itemId)) return s;
+  return { ...s, items: s.items.filter((i) => i.id !== itemId), history: s.history.filter((m) => m.id !== itemId) };
+}
+
+export interface NewItemInput {
+  name: string;
+  room: string;
+  destination?: Destination;
+  image?: string;
+}
+
+/** Add something the model missed. It starts with an honest "no read" band. */
+export function addItem(s: Session, input: NewItemInput): Session {
+  const id = `${s.id}_u${s.items.length}_${Math.random().toString(36).slice(2, 6)}`;
+  const item: SessionItem = {
+    id,
+    name: input.name.trim().slice(0, 80) || "Untitled item",
+    room: input.room.trim().slice(0, 40) || "Unplaced",
+    flagged: false,
+    band: "under $25",
+    reason: "Added by you; the model has not looked at it. Add a photo and re-read for a band.",
+    confidence: "low",
+    frame: 0,
+    box: null,
+    userAdded: true,
+    ...(input.destination ? { destination: input.destination } : {}),
+    ...(input.image ? { image: input.image } : {}),
+  };
+  return {
+    ...s,
+    items: [...s.items, item],
+    history: input.destination ? [...s.history, { id, to: input.destination }] : s.history,
+  };
+}
+
+/** Rooms in first-seen order, for the list grouping. */
 export function byRoom(items: SessionItem[]): Array<{ room: string; items: SessionItem[] }> {
   const groups = new Map<string, SessionItem[]>();
   for (const item of items) {
