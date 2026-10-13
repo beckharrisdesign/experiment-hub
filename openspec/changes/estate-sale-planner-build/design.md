@@ -84,16 +84,14 @@ continues as **02** on the design file (as-is is `01`).
 | --- | --- | --- |
 | Primary file URL | <https://www.figma.com/board/uafykXQHdW2h3YpBAy3Hfv> (`uafykXQHdW2h3YpBAy3Hfv`) | <https://www.figma.com/design/p75qmqHxUBh0TDLAUUXUmn> (`p75qmqHxUBh0TDLAUUXUmn`) |
 | As-is frame(s) | Page `01 Current state` (node `1:2`), section `Current state` — net-new note | Page `01 Current state` (node `1:2`), frame `Current state · net-new` (node `1:4`) — documents the net-new surface, elk precedent |
-| Proposed frame(s) | Page `02 Proposed — flow` (node `0:1`), anchor section `On the phone` (node `2:12`); generated via `generate_diagram`, 14 nodes | Page `02 Proposed` (node `1:3`) — **pending MVDS Core subscription**: six frames × two breakpoints (Capture, Frames, Lists, Swipe, Exit, Summary · `Proposed · Mobile 480` / `Proposed · Desktop 1024`) |
-| Libraries / version | FigJam page-per-iteration conventions per `rules/figma.mdc` | `MVDS Core` (`C20nU0mROzk3Zr0I9BELJF`) — **not yet subscribed on this file** (`get_libraries` 2026-10-13: `libraries_added_to_file: []`); code `@beckharrisdesign/mvds@0.4.0` → next release once published |
+| Proposed frame(s) | Page `02 Proposed — flow` (node `0:1`), anchor section `On the phone` (node `2:12`); generated via `generate_diagram`, 14 nodes | Page `02 Proposed` (node `1:3`): `Proposed · 01 Capture · Mobile 480` (`12:218`), `Proposed · 03 Lists · Mobile 480` (`13:33`), `Proposed · 03 Lists · Desktop 1024` (`13:106`), `Proposed · 04 Swipe · Mobile 480` (`12:229`), `Proposed · 05 Exit · Mobile 480` (`12:251`). Frames 02 (frame grid) and 06 (summary) are the built surface only — a thumbnail grid and a print table add no composition question the other five don't answer |
+| Libraries / version | FigJam page-per-iteration conventions per `rules/figma.mdc` | `MVDS Core` (`C20nU0mROzk3Zr0I9BELJF`, subscribed 2026-10-13, `source: team`) — instances of `Button`, `Badge`, `Card`, `Callout`; fills bound to the `Tokens` collection (`Color/background`, `foreground`, `muted-foreground`, `border`) with the collection pinned to **Dark** on every frame, matching the hub. Code: `@beckharrisdesign/mvds@0.5.0`. **Two mirror deviations, both recorded:** `Dropzone` and `Input` are not in the published library yet (import by key fails; the 0.5.0 changelog notes they reached Figma after the last publish), so the capture zone is a dashed stand-in frame named `Dropzone (stand-in: not yet published in MVDS Core)`; and Figma forbids inserting children into an instance, so the band/confidence `Badge` row sits beneath each `Card` rather than inline with the title as in code |
 | Code Connect | N/A — no code surface | Not set up (no published hub component library to map against — elk precedent); implementation maps to MVDS components in code |
 | Breakpoints | N/A — FigJam canvas, not a responsive screen | S · 480 px mobile (primary) / L · 1024 px desktop (review layout) — `rules/design-guidelines.mdc` |
-| Status | **Round 02 drawn** 2026-10-13 (rough — shape and sequence, as the proposal round should be) | **Blocked on one founder click** — see below. Frames are drawn on `02 Proposed` once MVDS Core is on; the gate is not skippable |
+| Status | **Round 02 drawn** 2026-10-13 (rough — shape and sequence, as the proposal round should be) | **Round 02 drawn** 2026-10-13 on MVDS Core, dark, five frames; composition screenshot taken in-session, every text node in Inter (the product font: MVDS sets `--font-heading: var(--font-sans)`). Implementation captures at `assets/built-*.png` |
 
-**The one click (Katy):** open <https://www.figma.com/design/p75qmqHxUBh0TDLAUUXUmn> →
-**Assets** panel → library icon (top right of the panel) → toggle **MVDS Core** on. Then
-`get_libraries` must show `MVDS Core` with `source: "team"` before any proposed frame is
-built.
+**Library:** MVDS Core was toggled on by the founder 2026-10-13 (`get_libraries` →
+`source: "team"`) before any proposed frame was built.
 
 **Component mapping (MVDS → screens):**
 
@@ -103,7 +101,7 @@ built.
 | Frame grid, list rows, swipe card | `Card` + `CardContent` on `Grid` / `Stack` | No |
 | Value band + confidence | `Badge` (`muted` for low confidence) | No |
 | "Not an appraisal" / "closing the tab loses this" | `Callout` | No |
-| Photo fallback picker | `Dropzone` | No |
+| Photo fallback picker | `Dropzone` (code) — stand-in frame in Figma until the library publishes it | No |
 | Page scaffolding | `Section`, `Container`, `Stack`, `Inline` | No |
 | Swipe gesture handling | — | Yes: small pointer-event hook; visual is still a `Card` |
 
@@ -119,16 +117,16 @@ built.
    property, not a footnote.
 4. **Toss is `destructive`, Keep is default.** The irreversible-feeling action gets the
    stronger colour; Undo is always visible beneath the card.
-5. **No screenshots committed yet.** The Figma thumbnail host (`s3-alpha.figma.com`) is
-   denied by the build environment's egress policy, so the PR body carries file links and
-   the Mermaid source above; PNGs can be captured from Katy's machine and committed under
-   `assets/` when the frames exist.
+5. **Screenshots in the PR are of the built surface, not the Figma frames.** The Figma
+   thumbnail host (`s3-alpha.figma.com`) is denied by the build environment's egress
+   policy; the committed `assets/built-*.png` are Playwright captures of the running route
+   at 480/1024 px, and the Figma frames were verified by inline screenshot in-session.
 
 ## Risks / Trade-offs
 
-- **The gate blocks on a founder action** (library toggle). Mitigation: it is one click
-  and is listed first in the hand-off; nothing else in the change depends on it until the
-  build session.
+- **Two library gaps in the mirror** (`Dropzone`/`Input` unpublished; no children inside
+  instances). Both are recorded above and in the review queue; the first is an MVDS
+  hand-off (publish the library), the second is a Figma constraint, not a design choice.
 - **Frame sampling on low-end phones** may be slow for a 10-minute video. Mitigation: the
   sampler runs incrementally with a progress bar and the budget cap is low by default.
 - **Dark-only hub** means the product cannot be previewed in MVDS light mode inside the
