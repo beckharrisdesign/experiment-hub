@@ -1,26 +1,319 @@
 {
   "items": [
-    { "name": "Teak sideboard, tapered legs", "room": "Living room", "flagged": true, "band": "$500–$2,000", "reason": "Mid-century teak case pieces resell quickly; this one looks intact with original hardware.", "confidence": "medium", "frame": 2 },
-    { "name": "Framed oil landscape", "room": "Living room", "flagged": true, "band": "$100–$500", "reason": "Original oil in a period frame; worth a dealer's look before it goes in a box.", "confidence": "low", "frame": 3 },
-    { "name": "Wool area rug, red medallion", "room": "Living room", "flagged": true, "band": "$100–$500", "reason": "Hand-knotted wool rugs hold value even with wear; check the back for knots.", "confidence": "medium", "frame": 4 },
-    { "name": "Upright piano", "room": "Dining room", "flagged": true, "band": "under $25", "reason": "Uprights are usually free to a good home; moving costs more than they fetch.", "confidence": "high", "frame": 6 },
-    { "name": "Cast-iron skillet set", "room": "Kitchen", "flagged": true, "band": "$25–$100", "reason": "Vintage cast iron sells reliably; check the bottom for a maker's mark.", "confidence": "high", "frame": 9 },
-    { "name": "Stand mixer", "room": "Kitchen", "flagged": true, "band": "$100–$500", "reason": "Working stand mixers resell well regardless of age.", "confidence": "high", "frame": 10 },
-    { "name": "Sewing machine in cabinet", "room": "Spare bedroom", "flagged": true, "band": "$25–$100", "reason": "Cabinet machines are common; the machine itself may be worth more than the cabinet.", "confidence": "medium", "frame": 14 },
-    { "name": "Sofa, floral upholstery", "room": "Living room", "flagged": false, "band": "under $25", "reason": "Upholstered seating rarely resells; worn fabric.", "confidence": "high", "frame": 2 },
-    { "name": "Recliner", "room": "Living room", "flagged": false, "band": "under $25", "reason": "Everyday recliner, no maker visible.", "confidence": "high", "frame": 3 },
-    { "name": "Television, older flat panel", "room": "Living room", "flagged": false, "band": "under $25", "reason": "Older TVs have little resale value.", "confidence": "high", "frame": 4 },
-    { "name": "Dining table and six chairs", "room": "Dining room", "flagged": false, "band": "$25–$100", "reason": "Common set; sells locally only if moved cheaply.", "confidence": "medium", "frame": 6 },
-    { "name": "China cabinet", "room": "Dining room", "flagged": false, "band": "under $25", "reason": "Brown furniture like this is hard to give away.", "confidence": "medium", "frame": 7 },
-    { "name": "Boxes of paperwork", "room": "Dining room", "flagged": false, "band": "under $25", "reason": "Keep for the estate, not for sale.", "confidence": "high", "frame": 7 },
-    { "name": "Everyday dishes", "room": "Kitchen", "flagged": false, "band": "under $25", "reason": "Common stoneware.", "confidence": "high", "frame": 9 },
-    { "name": "Small appliances", "room": "Kitchen", "flagged": false, "band": "under $25", "reason": "Toaster, kettle, coffee maker; donate or toss.", "confidence": "high", "frame": 10 },
-    { "name": "Queen bed frame and mattress", "room": "Main bedroom", "flagged": false, "band": "under $25", "reason": "Mattresses cannot be resold; frame is generic.", "confidence": "high", "frame": 12 },
-    { "name": "Dresser with mirror", "room": "Main bedroom", "flagged": false, "band": "$25–$100", "reason": "Solid but ordinary; a hauler's crew will take it unless someone wants it.", "confidence": "medium", "frame": 12 },
-    { "name": "Closet of clothing", "room": "Main bedroom", "flagged": false, "band": "under $25", "reason": "Donate.", "confidence": "high", "frame": 13 },
-    { "name": "Twin bed", "room": "Spare bedroom", "flagged": false, "band": "under $25", "reason": "Generic frame.", "confidence": "high", "frame": 14 },
-    { "name": "Bookshelves and paperbacks", "room": "Spare bedroom", "flagged": false, "band": "under $25", "reason": "Paperbacks have no resale value; check for signed or first editions before boxing.", "confidence": "medium", "frame": 15 },
-    { "name": "Garden tools", "room": "Garage", "flagged": false, "band": "under $25", "reason": "Rusted hand tools.", "confidence": "high", "frame": 18 },
-    { "name": "Workbench with vise", "room": "Garage", "flagged": false, "band": "$25–$100", "reason": "A bench vise alone can sell; the bench is usually left behind.", "confidence": "medium", "frame": 18 }
+    {
+      "name": "Teak sideboard, tapered legs",
+      "room": "Living room",
+      "flagged": true,
+      "band": "$500–$2,000",
+      "reason": "Mid-century teak case pieces resell quickly; this one looks intact with original hardware.",
+      "confidence": "medium",
+      "frame": 2,
+      "box": {
+        "x": 0.08,
+        "y": 0.35,
+        "w": 0.5,
+        "h": 0.45
+      }
+    },
+    {
+      "name": "Framed oil landscape",
+      "room": "Living room",
+      "flagged": true,
+      "band": "$100–$500",
+      "reason": "Original oil in a period frame; worth a dealer's look before it goes in a box.",
+      "confidence": "low",
+      "frame": 3,
+      "box": {
+        "x": 0.55,
+        "y": 0.1,
+        "w": 0.35,
+        "h": 0.4
+      }
+    },
+    {
+      "name": "Wool area rug, red medallion",
+      "room": "Living room",
+      "flagged": true,
+      "band": "$100–$500",
+      "reason": "Hand-knotted wool rugs hold value even with wear; check the back for knots.",
+      "confidence": "medium",
+      "frame": 4,
+      "box": {
+        "x": 0.1,
+        "y": 0.6,
+        "w": 0.8,
+        "h": 0.35
+      }
+    },
+    {
+      "name": "Upright piano",
+      "room": "Dining room",
+      "flagged": true,
+      "band": "under $25",
+      "reason": "Uprights are usually free to a good home; moving costs more than they fetch.",
+      "confidence": "high",
+      "frame": 6,
+      "box": {
+        "x": 0.2,
+        "y": 0.2,
+        "w": 0.4,
+        "h": 0.6
+      }
+    },
+    {
+      "name": "Cast-iron skillet set",
+      "room": "Kitchen",
+      "flagged": true,
+      "band": "$25–$100",
+      "reason": "Vintage cast iron sells reliably; check the bottom for a maker's mark.",
+      "confidence": "high",
+      "frame": 9,
+      "box": {
+        "x": 0.3,
+        "y": 0.4,
+        "w": 0.4,
+        "h": 0.3
+      }
+    },
+    {
+      "name": "Stand mixer",
+      "room": "Kitchen",
+      "flagged": true,
+      "band": "$100–$500",
+      "reason": "Working stand mixers resell well regardless of age.",
+      "confidence": "high",
+      "frame": 10,
+      "box": {
+        "x": 0.6,
+        "y": 0.3,
+        "w": 0.3,
+        "h": 0.4
+      }
+    },
+    {
+      "name": "Sewing machine in cabinet",
+      "room": "Spare bedroom",
+      "flagged": true,
+      "band": "$25–$100",
+      "reason": "Cabinet machines are common; the machine itself may be worth more than the cabinet.",
+      "confidence": "medium",
+      "frame": 14,
+      "box": null
+    },
+    {
+      "name": "Sofa, floral upholstery",
+      "room": "Living room",
+      "flagged": false,
+      "band": "under $25",
+      "reason": "Upholstered seating rarely resells; worn fabric.",
+      "confidence": "high",
+      "frame": 2,
+      "box": {
+        "x": 0.05,
+        "y": 0.3,
+        "w": 0.6,
+        "h": 0.5
+      }
+    },
+    {
+      "name": "Recliner",
+      "room": "Living room",
+      "flagged": false,
+      "band": "under $25",
+      "reason": "Everyday recliner, no maker visible.",
+      "confidence": "high",
+      "frame": 3,
+      "box": {
+        "x": 0.6,
+        "y": 0.35,
+        "w": 0.35,
+        "h": 0.5
+      }
+    },
+    {
+      "name": "Television, older flat panel",
+      "room": "Living room",
+      "flagged": false,
+      "band": "under $25",
+      "reason": "Older TVs have little resale value.",
+      "confidence": "high",
+      "frame": 4,
+      "box": {
+        "x": 0.25,
+        "y": 0.1,
+        "w": 0.5,
+        "h": 0.35
+      }
+    },
+    {
+      "name": "Dining table and six chairs",
+      "room": "Dining room",
+      "flagged": false,
+      "band": "$25–$100",
+      "reason": "Common set; sells locally only if moved cheaply.",
+      "confidence": "medium",
+      "frame": 6,
+      "box": {
+        "x": 0.1,
+        "y": 0.4,
+        "w": 0.8,
+        "h": 0.4
+      }
+    },
+    {
+      "name": "China cabinet",
+      "room": "Dining room",
+      "flagged": false,
+      "band": "under $25",
+      "reason": "Brown furniture like this is hard to give away.",
+      "confidence": "medium",
+      "frame": 7,
+      "box": {
+        "x": 0.65,
+        "y": 0.1,
+        "w": 0.3,
+        "h": 0.7
+      }
+    },
+    {
+      "name": "Boxes of paperwork",
+      "room": "Dining room",
+      "flagged": false,
+      "band": "under $25",
+      "reason": "Keep for the estate, not for sale.",
+      "confidence": "high",
+      "frame": 7,
+      "box": null
+    },
+    {
+      "name": "Everyday dishes",
+      "room": "Kitchen",
+      "flagged": false,
+      "band": "under $25",
+      "reason": "Common stoneware.",
+      "confidence": "high",
+      "frame": 9,
+      "box": {
+        "x": 0.3,
+        "y": 0.5,
+        "w": 0.4,
+        "h": 0.3
+      }
+    },
+    {
+      "name": "Small appliances",
+      "room": "Kitchen",
+      "flagged": false,
+      "band": "under $25",
+      "reason": "Toaster, kettle, coffee maker; donate or toss.",
+      "confidence": "high",
+      "frame": 10,
+      "box": {
+        "x": 0.1,
+        "y": 0.55,
+        "w": 0.5,
+        "h": 0.3
+      }
+    },
+    {
+      "name": "Queen bed frame and mattress",
+      "room": "Main bedroom",
+      "flagged": false,
+      "band": "under $25",
+      "reason": "Mattresses cannot be resold; frame is generic.",
+      "confidence": "high",
+      "frame": 12,
+      "box": {
+        "x": 0.1,
+        "y": 0.3,
+        "w": 0.8,
+        "h": 0.5
+      }
+    },
+    {
+      "name": "Dresser with mirror",
+      "room": "Main bedroom",
+      "flagged": false,
+      "band": "$25–$100",
+      "reason": "Solid but ordinary; a hauler's crew will take it unless someone wants it.",
+      "confidence": "medium",
+      "frame": 12,
+      "box": {
+        "x": 0.1,
+        "y": 0.2,
+        "w": 0.45,
+        "h": 0.6
+      }
+    },
+    {
+      "name": "Closet of clothing",
+      "room": "Main bedroom",
+      "flagged": false,
+      "band": "under $25",
+      "reason": "Donate.",
+      "confidence": "high",
+      "frame": 13,
+      "box": null
+    },
+    {
+      "name": "Twin bed",
+      "room": "Spare bedroom",
+      "flagged": false,
+      "band": "under $25",
+      "reason": "Generic frame.",
+      "confidence": "high",
+      "frame": 14,
+      "box": {
+        "x": 0.1,
+        "y": 0.3,
+        "w": 0.6,
+        "h": 0.5
+      }
+    },
+    {
+      "name": "Bookshelves and paperbacks",
+      "room": "Spare bedroom",
+      "flagged": false,
+      "band": "under $25",
+      "reason": "Paperbacks have no resale value; check for signed or first editions before boxing.",
+      "confidence": "medium",
+      "frame": 15,
+      "box": {
+        "x": 0.05,
+        "y": 0.1,
+        "w": 0.5,
+        "h": 0.8
+      }
+    },
+    {
+      "name": "Garden tools",
+      "room": "Garage",
+      "flagged": false,
+      "band": "under $25",
+      "reason": "Rusted hand tools.",
+      "confidence": "high",
+      "frame": 18,
+      "box": {
+        "x": 0.6,
+        "y": 0.5,
+        "w": 0.35,
+        "h": 0.4
+      }
+    },
+    {
+      "name": "Workbench with vise",
+      "room": "Garage",
+      "flagged": false,
+      "band": "$25–$100",
+      "reason": "A bench vise alone can sell; the bench is usually left behind.",
+      "confidence": "medium",
+      "frame": 18,
+      "box": {
+        "x": 0.1,
+        "y": 0.4,
+        "w": 0.8,
+        "h": 0.45
+      }
+    }
   ]
 }

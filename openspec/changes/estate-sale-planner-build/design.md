@@ -88,17 +88,38 @@ continues as **02** on the design file (as-is is `01`).
 | Libraries / version | FigJam page-per-iteration conventions per `rules/figma.mdc` | `MVDS Core` (`C20nU0mROzk3Zr0I9BELJF`, subscribed 2026-10-13, `source: team`) — instances of `Button`, `Badge`, `Card`, `Callout`; fills bound to the `Tokens` collection (`Color/background`, `foreground`, `muted-foreground`, `border`) with the collection pinned to **Dark** on every frame, matching the hub. Code: `@beckharrisdesign/mvds@0.5.0`. **Two mirror deviations, both recorded:** `Dropzone` and `Input` are not in the published library yet (import by key fails; the 0.5.0 changelog notes they reached Figma after the last publish), so the capture zone is a dashed stand-in frame named `Dropzone (stand-in: not yet published in MVDS Core)`; and Figma forbids inserting children into an instance, so the band/confidence `Badge` row sits beneath each `Card` rather than inline with the title as in code |
 | Code Connect | N/A — no code surface | Not set up (no published hub component library to map against — elk precedent); implementation maps to MVDS components in code |
 | Breakpoints | N/A — FigJam canvas, not a responsive screen | S · 480 px mobile (primary) / L · 1024 px desktop (review layout) — `rules/design-guidelines.mdc` |
-| Status | **Round 02 drawn** 2026-10-13 (rough — shape and sequence, as the proposal round should be) | **Round 02 drawn** 2026-10-13 on MVDS Core, dark, five frames; composition screenshot taken in-session, every text node in Inter (the product font: MVDS sets `--font-heading: var(--font-sans)`). Implementation captures at `assets/built-*.png` |
+| Status | **Round 02 drawn** 2026-10-13 (rough — shape and sequence, as the proposal round should be) | **Round 02 drawn** 2026-10-13 on MVDS Core, dark, five frames; composition screenshot taken in-session, every text node in Inter (the product font: MVDS sets `--font-heading: var(--font-sans)`). **Round 02.1 drawn** 2026-10-13 after founder feedback (see below). Implementation captures at `assets/built-*.png` (round 02 → `built-0N-*`, round 02.1 → `built-02.1-*`) |
 
 **Library:** MVDS Core was toggled on by the founder 2026-10-13 (`get_libraries` →
 `source: "team"`) before any proposed frame was built.
+
+### Round 02.1 — type ramp, card contrast, item images (2026-10-13)
+
+Founder feedback on round 02, verbatim: *"the typography is clunky and the card for each
+found item needs to have more contrast and an image of what it thinks it found."* Three
+changes, each applied in code and mirrored on the design file's page
+`02.1 Proposed — type ramp, card contrast, item images` (node `21:2`), frames
+`Proposed 02.1 · 03 Lists · Mobile 480` (`21:225`) and
+`Proposed 02.1 · 04 Swipe · Mobile 480` (`21:315`):
+
+| Feedback | Round 02 | Round 02.1 |
+| --- | --- | --- |
+| Typography | Hand-picked Tailwind sizes (`text-2xl`, `text-sm`, `font-semibold`) per screen | Every text node on the **MVDS type ramp**: `text-h1`/`text-display` for the capture headline, `text-h2` for list headings, `text-h3` for the swipe card title, `text-body-lg` intro, `text-body` reasons, `text-small` meta, `text-caption uppercase tracking-wider` eyebrows (room / section labels). In Figma the same ramp is bound through the `Typography/*` size variables |
+| Card contrast | `Card` default (`bg-card` + 10 % ring, no elevation) on the `background` surface | `Card` with `shadow-lg` (MVDS `--elevation-lg`) and `ring-foreground/15`; eyebrow → title → badges → reason stack inside `CardHeader`; actions in `CardContent`. Desktop Sell list is a two-column `Grid` so cards keep a card's proportions instead of stretching to 1024 px |
+| Image of what it found | None — text only | **Image-first card**: the vision pass now returns, per item, the `frame` index it is clearest in and a nullable normalized `box` (`x y w h` ∈ 0–1); the phone crops a square thumbnail from the frame the user already confirmed (`lib/estate-sale-planner/thumbs.ts`, 320 px JPEG, box padded 15 %, floored at 28 % of the frame, whole frame when `null`). No second model call, nothing new leaves the device. The Sell card leads with a 4:3 image, the swipe card with a square one, Keep / Toss rows and the summary table carry a small thumb |
+
+**Figma deviation, recorded:** MVDS `Card` instances cannot take children, so the 02.1
+frames use a local component **`Item card`** (`21:208`: image slot, eyebrow, title, inline
+badge row, reason, action row) built from MVDS tokens and `Badge`/`Button` instances. This
+supersedes the round-02 "badges beneath the card" workaround and is the shape of the MVDS
+hand-off: a `Card` variant with an image slot and a badge row (review queue #28).
 
 **Component mapping (MVDS → screens):**
 
 | Need | MVDS | Product-local? |
 | --- | --- | --- |
 | Capture / Send / Keep / Toss / haul-away CTA | `Button` (default, `outline`, `destructive` for Toss) | No |
-| Frame grid, list rows, swipe card | `Card` + `CardContent` on `Grid` / `Stack` | No |
+| Frame grid, list rows, swipe card | `Card` (image as first child → `has-[>img:first-child]:pt-0`) + `CardHeader`/`CardTitle`/`CardDescription`/`CardContent` on `Grid` / `Stack`; `shadow-lg` + `ring-foreground/15` for the found-item cards | No (Figma mirror uses a local `Item card` until MVDS Core ships a Card image slot) |
 | Value band + confidence | `Badge` (`muted` for low confidence) | No |
 | "Not an appraisal" / "closing the tab loses this" | `Callout` | No |
 | Photo fallback picker | `Dropzone` (code) — stand-in frame in Figma until the library publishes it | No |
@@ -121,6 +142,17 @@ continues as **02** on the design file (as-is is `01`).
    thumbnail host (`s3-alpha.figma.com`) is denied by the build environment's egress
    policy; the committed `assets/built-*.png` are Playwright captures of the running route
    at 480/1024 px, and the Figma frames were verified by inline screenshot in-session.
+6. **Type comes from the ramp, never from a per-screen size.** Round 02.1 removed every
+   ad-hoc `text-*`/`font-*` size; hierarchy is eyebrow (caption, uppercase) → heading
+   (h1–h3) → body → small. If the ramp lacks a step, that is an MVDS change, not a local
+   override.
+7. **Found-item cards earn their contrast with an image, elevation, and a stronger ring,
+   not with a new colour.** `shadow-lg` + `ring-foreground/15` on the `card` surface is the
+   whole recipe; the thumbnail does most of the work.
+8. **The thumbnail is cropped on the phone from a frame the user already approved.** The
+   model only says *where* (frame index + normalized box). That keeps the image honest
+   (it is literally what the model looked at), costs no extra tokens, and sends nothing
+   new off the device.
 
 ## Risks / Trade-offs
 

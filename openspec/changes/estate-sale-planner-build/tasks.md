@@ -16,12 +16,14 @@
       exercised on a device.
 - [x] 1.3 Flags render as Sell and Keep / Toss — fixture-mode flag route 200 with 22 items /
       7 flagged (curl 2026-10-13); rendered lists at 480 and 1024 px
-      (`assets/built-03-lists-*.png`).
+      (`assets/built-03-lists-*.png`; round 02.1 with images on the type ramp:
+      `assets/built-02.1-lists-*.png`, 2026-10-13).
 - [x] 1.4 The model finds nothing worth flagging — empty-Sell state rendered in `Lists.tsx`
       ("Nothing stood out…"); reducer path covered by `session.test.ts`. *Not screenshot.*
 - [x] 1.5 User sorts the Keep / Toss list — `session.test.ts` (full pass leaves every item in
       exactly one list; undo restores last only); swipe surface rendered
-      (`assets/built-04-swipe-mobile-480.png`).
+      (`assets/built-04-swipe-mobile-480.png`; image-first card in round 02.1:
+      `assets/built-02.1-swipe-mobile-480.png`).
 - [x] 1.6 User overrides a Sell flag — `session.test.ts` ("overriding a Sell flag moves it off
       Sell and counts as an override"; band still on the item); `esp_sell_override` event.
 - [x] 1.7 User taps the haul-away button — `exit-route.test.ts` + live curl: `302` →
@@ -54,25 +56,32 @@
       `flag.ts` with zod `FlagResponseSchema` via `client.messages.parse` +
       `zodOutputFormat`, `claude-opus-5-5`, refusal → 502; fixture
       `fixtures/flags.json` for tests and the no-key demo.
-- [x] 3.3 Lists: Sell (band `Badge`, confidence `Badge`, reason, room, Keep/Toss instead)
-      and Keep / Toss grouped by room; honest empty state.
-- [x] 3.4 Swipe: one `Card` at a time, Keep/Toss buttons + pointer drag (80 px), Undo
-      beneath; `session.ts` reducer; `sessionStorage` with the "closing the tab" line on
-      the exit screen.
+- [x] 3.3 Lists: Sell (image-first `Card`, room eyebrow, `CardTitle`, band `Badge`,
+      confidence `Badge`, reason, Keep/Toss instead; two-column `Grid` at ≥ md) and
+      Keep / Toss grouped by room with thumbs; honest empty state. Type on the MVDS ramp
+      (round 02.1).
+- [x] 3.4 Swipe: one image-first `Card` at a time (`shadow-lg`, `ring-foreground/15`),
+      Keep/Toss buttons + pointer drag (80 px), Undo beneath; `session.ts` reducer;
+      `sessionStorage` with the "closing the tab" line on the exit screen.
 - [x] 3.5 Exit: `api/exit/route.ts` records `{event, session, count, fallback, via,
       referral}` then 302; single centered CTA; "They don't cover my area" fallback.
 - [x] 3.6 Summary: print-friendly Sell table with the "not an appraisal" line first.
 - [x] 3.7 Analytics: `esp_start`, `esp_frames_confirmed`, `esp_flags_returned`,
       `esp_swipe_complete`, `esp_sell_override`, `esp_exit_tap`, `esp_summary_print`
       (`lib/estate-sale-planner/analytics.ts` over the hub GA helper).
+- [x] 3.8 Item images (round 02.1): `FlaggedItemSchema` gains `frame` + nullable normalized
+      `box`; the prompt asks for both; `thumbs.ts` crops a 320 px square from the confirmed
+      frame on-device (`cropRect` proven by `tests/estate-sale-planner/thumbs.test.ts`);
+      `session.ts` carries `image` per item; `storage.ts` retries without images on a
+      quota error. Fixture carries boxes (3 `null`) so demo mode shows the fallback too.
 
 ## 4. QA
 
 - [ ] 4.1 Manual walkthrough on a phone (capture → send → lists → swipe → exit → print) —
       **Katy / proxy user**; needs `ANTHROPIC_API_KEY` set for the real vision pass.
-- [x] 4.2 Automated: `tests/estate-sale-planner/` — 28 tests across sampler, reducer, flag
+- [x] 4.2 Automated: `tests/estate-sale-planner/` — 35 tests across sampler, reducer, flag
       parsing + no-key path, flag route (validation, budget, throttle), exit route
-      (record + redirect). Green 2026-10-13.
+      (record + redirect), thumbnail crop geometry. Green 2026-10-13 (round 02.1).
 - [x] 4.3 `tsc --noEmit` and `eslint .` clean (0 errors; the two `set-state-in-effect`
       warnings match the hub's existing after-hydration `sessionStorage` reads). MVDS
       components only.

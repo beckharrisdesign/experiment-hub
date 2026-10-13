@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Button, Card, CardContent, Inline, Stack } from "@beckharrisdesign/mvds";
+import { Button, Card, CardDescription, CardHeader, CardTitle, Inline, Stack } from "@beckharrisdesign/mvds";
 import { keepList, tossList, undecided, type Session } from "../../lib/estate-sale-planner/session";
 
 interface SwipeProps {
@@ -13,9 +13,10 @@ interface SwipeProps {
 const SWIPE_THRESHOLD_PX = 80;
 
 /**
- * Screen 4 — one item at a time. Keep and Toss are real buttons (keyboard,
- * screen readers) and the card also takes a horizontal drag: left is toss,
- * right is keep. Undo sits under the card and is always visible.
+ * Screen 4 — one item at a time. The card is image-first (the crop the model
+ * saw), then room eyebrow, name (h3), reason. Keep and Toss are real buttons
+ * (keyboard, screen readers) and the card also takes a horizontal drag: left
+ * is toss, right is keep. Undo sits under the buttons and is always visible.
  */
 export default function Swipe({ session, onDecide, onUndo }: SwipeProps) {
   const stack = undecided(session);
@@ -45,14 +46,14 @@ export default function Swipe({ session, onDecide, onUndo }: SwipeProps) {
   return (
     <Stack gap={24} align="center">
       <Stack gap={4} align="center">
-        <h1 className="text-2xl font-semibold text-foreground">Keep or toss?</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-h3 text-foreground">Keep or toss?</h1>
+        <p className="text-caption uppercase tracking-wider text-muted-foreground">
           {stack.length} left · {keepList(session).length} keep · {tossList(session).length} toss
         </p>
       </Stack>
 
       <Card
-        className="w-full max-w-sm touch-pan-y select-none"
+        className="w-full max-w-sm touch-pan-y select-none shadow-lg ring-foreground/15"
         style={{ transform: `translateX(${dx}px) rotate(${dx / 30}deg)`, transition: dx ? "none" : "transform 150ms ease-out" }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -60,13 +61,17 @@ export default function Swipe({ session, onDecide, onUndo }: SwipeProps) {
         onPointerCancel={onPointerUp}
         aria-label={`${item.name}, ${item.room}`}
       >
-        <CardContent>
-          <Stack gap={8}>
-            <p className="text-xl font-medium text-foreground">{item.name}</p>
-            <p className="text-sm text-muted-foreground">{item.room}</p>
-            <p className="text-sm text-muted-foreground">{item.reason}</p>
-          </Stack>
-        </CardContent>
+        {item.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.image} alt={item.name} className="aspect-square w-full object-cover" draggable={false} />
+        ) : (
+          <div className="aspect-[4/3] w-full bg-muted" aria-hidden />
+        )}
+        <CardHeader>
+          <p className="text-caption uppercase tracking-wider text-muted-foreground">{item.room}</p>
+          <CardTitle className="text-h3">{item.name}</CardTitle>
+          <CardDescription className="text-body">{item.reason}</CardDescription>
+        </CardHeader>
       </Card>
 
       <Inline gap={16} justify="center">

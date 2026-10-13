@@ -10,6 +10,7 @@ import Exit from "./Exit";
 import { framesFromPhotos, framesFromVideo, isVideo, type CapturedFrame, type CaptureProgress } from "../../lib/estate-sale-planner/capture";
 import type { FlagResult } from "../../lib/estate-sale-planner/flag";
 import { decide, newSession, sortFinished, undo, type Session } from "../../lib/estate-sale-planner/session";
+import { itemThumbnail } from "../../lib/estate-sale-planner/thumbs";
 import { loadSession, saveSession } from "../../lib/estate-sale-planner/storage";
 import { track } from "../../lib/estate-sale-planner/analytics";
 
@@ -77,7 +78,21 @@ export default function EstateSalePlannerPage() {
       if (!res.ok || "error" in json) throw new Error("error" in json ? json.error : `HTTP ${res.status}`);
       track("esp_flags_returned", { items: json.items.length, flagged: json.items.filter((i) => i.flagged).length, source: json.source });
       setFromFixture(json.source === "fixture");
-      update(newSession(json.items));
+      // "What it thinks it found": crop each item's frame to its box on the
+      // device. The fixture's frame indices belong to a sample house, so they
+      // wrap onto whatever frames the user actually sent.
+      const images = await Promise.all(
+        json.items.map(async (item) => {
+          const frame = frames[item.frame % frames.length];
+          if (!frame) return undefined;
+          try {
+            return await itemThumbnail(frame.preview, item.box);
+          } catch {
+            return undefined;
+          }
+        }),
+      );
+      update(newSession(json.items, new Date(), images));
       setFrames([]);
       setStep("lists");
     } catch (e: any) {

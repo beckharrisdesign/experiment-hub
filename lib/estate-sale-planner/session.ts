@@ -13,6 +13,8 @@ export interface SessionItem extends FlaggedItem {
   id: string;
   /** Set once the user decides; a Sell item with a decision was overridden. */
   decision?: Decision;
+  /** Small JPEG data URL cropped from the kept frame — what the model saw. */
+  image?: string;
 }
 
 export interface Session {
@@ -23,12 +25,16 @@ export interface Session {
   decided: string[];
 }
 
-export function newSession(items: FlaggedItem[], now = new Date()): Session {
+export function newSession(
+  items: FlaggedItem[],
+  now = new Date(),
+  images: Array<string | undefined> = [],
+): Session {
   const id = `esp_${now.getTime().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
   return {
     id,
     createdAt: now.toISOString(),
-    items: items.map((item, i) => ({ ...item, id: `${id}_${i}` })),
+    items: items.map((item, i) => ({ ...item, id: `${id}_${i}`, ...(images[i] ? { image: images[i] } : {}) })),
     decided: [],
   };
 }

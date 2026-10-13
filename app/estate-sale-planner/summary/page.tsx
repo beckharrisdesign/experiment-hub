@@ -25,7 +25,7 @@ export default function SummaryPage() {
       <Section bg="background" py={24}>
         <Container size="md">
           <Stack gap={16}>
-            <h1 className="text-2xl font-semibold text-foreground">No session to print</h1>
+            <h1 className="text-h2 text-foreground">No session to print</h1>
             <p className="text-muted-foreground">The session lives in this tab only. Start a walkthrough to make one.</p>
             <Button asChild>
               <Link href="/estate-sale-planner">Start a walkthrough</Link>
@@ -49,8 +49,8 @@ export default function SummaryPage() {
           </Callout>
 
           <Stack gap={8}>
-            <h1 className="text-3xl font-semibold text-foreground">Might be worth selling</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-h1 text-foreground">Might be worth selling</h1>
+            <p className="text-caption uppercase tracking-wider text-muted-foreground">
               Walkthrough {new Date(session.createdAt).toLocaleDateString()} · {sell.length} items
             </p>
           </Stack>
@@ -58,9 +58,10 @@ export default function SummaryPage() {
           {sell.length === 0 ? (
             <p className="text-muted-foreground">Nothing was flagged for this house.</p>
           ) : (
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-left text-small">
               <thead>
                 <tr className="text-muted-foreground">
+                  <th className="py-2 pr-4 font-medium">Photo</th>
                   <th className="py-2 pr-4 font-medium">Item</th>
                   <th className="py-2 pr-4 font-medium">Room</th>
                   <th className="py-2 pr-4 font-medium">Band</th>
@@ -71,6 +72,12 @@ export default function SummaryPage() {
               <tbody>
                 {sell.map((item) => (
                   <tr key={item.id} className="border-t border-border align-top">
+                    <td className="py-2 pr-4">
+                      {item.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={item.image} alt="" className="size-12 rounded-md object-cover" />
+                      ) : null}
+                    </td>
                     <td className="py-2 pr-4 text-foreground">{item.name}</td>
                     <td className="py-2 pr-4">{item.room}</td>
                     <td className="py-2 pr-4">{item.band}</td>
@@ -83,7 +90,7 @@ export default function SummaryPage() {
           )}
 
           {moved.length > 0 && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-small text-muted-foreground">
               You moved {moved.length} flagged {moved.length === 1 ? "item" : "items"} to keep or toss; they are not listed here.
             </p>
           )}

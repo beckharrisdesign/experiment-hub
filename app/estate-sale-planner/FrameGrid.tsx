@@ -19,8 +19,8 @@ export default function FrameGrid({ frames, sending, onSend, onBack }: FrameGrid
   return (
     <Stack gap={24}>
       <Stack gap={8}>
-        <h1 className="text-3xl font-semibold text-foreground">Send these {frames.length} frames?</h1>
-        <p className="max-w-prose text-muted-foreground">
+        <h1 className="text-h2 text-foreground">Send these {frames.length} frames?</h1>
+        <p className="max-w-prose text-body-lg text-muted-foreground">
           These are the views we&apos;ll look at. Nothing has been sent yet.
         </p>
       </Stack>

@@ -21,8 +21,8 @@ export default function Capture({ busy, progress, error, onFiles }: CaptureProps
   return (
     <Stack gap={24}>
       <Stack gap={8}>
-        <h1 className="text-3xl font-semibold text-foreground">What&apos;s worth keeping?</h1>
-        <p className="max-w-prose text-muted-foreground">
+        <h1 className="text-h1 text-foreground md:text-display">What&apos;s worth keeping?</h1>
+        <p className="max-w-prose text-body-lg text-muted-foreground">
           Walk through the house with your phone, one room at a time. You&apos;ll get a short
           list of what might be worth something, and a quick way to sort the rest.
         </p>
@@ -62,14 +62,14 @@ export default function Capture({ busy, progress, error, onFiles }: CaptureProps
       />
 
       {progress && (
-        <p className="text-sm text-muted-foreground" aria-live="polite">
+        <p className="text-small text-muted-foreground" aria-live="polite">
           Sampling frames: {progress.done} of {progress.total}
         </p>
       )}
 
       {error && <Callout>{error}</Callout>}
 
-      <p className="text-sm text-muted-foreground">
+      <p className="text-caption text-muted-foreground">
         Value bands are a model&apos;s guess with a confidence, never an appraisal. Nothing
         here is advice for insurance, tax, or probate.
       </p>

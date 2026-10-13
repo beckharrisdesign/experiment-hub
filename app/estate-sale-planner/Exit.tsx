@@ -28,8 +28,8 @@ export default function Exit({ session }: ExitProps) {
   return (
     <Stack gap={24}>
       <Stack gap={8}>
-        <h1 className="text-3xl font-semibold text-foreground">Sorted.</h1>
-        <p className="max-w-prose text-muted-foreground">
+        <h1 className="text-h1 text-foreground">Sorted.</h1>
+        <p className="max-w-prose text-body-lg text-muted-foreground">
           {toss} to toss, {keep} to keep, {sell} that might be worth selling.
         </p>
       </Stack>
@@ -49,7 +49,7 @@ export default function Exit({ session }: ExitProps) {
       <Stack gap={4} align="center">
         {!noCoverage && (
           <a
-            className="text-sm text-muted-foreground underline"
+            className="text-small text-muted-foreground underline"
             href={exitHref("web")}
             onClick={() => track("esp_exit_tap", { count: toss, fallback: false, via: "web" })}
           >
@@ -58,7 +58,7 @@ export default function Exit({ session }: ExitProps) {
         )}
         <button
           type="button"
-          className="text-sm text-muted-foreground underline"
+          className="text-small text-muted-foreground underline"
           onClick={() => setNoCoverage((v) => !v)}
         >
           {noCoverage ? `Actually, ${HAUL_AWAY.name} does cover me` : "They don't cover my area"}

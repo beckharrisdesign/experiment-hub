@@ -16,8 +16,18 @@ export function loadSession(): Session | null {
 
 export function saveSession(session: Session | null): void {
   try {
-    if (session) window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
-    else window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    if (!session) {
+      window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      return;
+    }
+    try {
+      window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+    } catch {
+      // Over quota (item thumbnails on a long walkthrough): keep the decisions,
+      // drop the pictures. The in-memory session still shows them this tab.
+      const slim = { ...session, items: session.items.map(({ image: _image, ...rest }) => rest) };
+      window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(slim));
+    }
   } catch {
     // Private mode or blocked storage: the in-memory session still works.
   }

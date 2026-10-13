@@ -13,6 +13,18 @@ import fixture from "./fixtures/flags.json";
 
 export const BANDS = ["under $25", "$25–$100", "$100–$500", "$500–$2,000", "over $2,000"] as const;
 
+/**
+ * Where the object sits in its frame, normalized 0–1 from the top-left. The
+ * device crops the kept frame to this box to show "what it thinks it found";
+ * null means the model wasn't sure and the whole frame is shown instead.
+ */
+export const BoxSchema = z.object({
+  x: z.number().min(0).max(1),
+  y: z.number().min(0).max(1),
+  w: z.number().min(0).max(1),
+  h: z.number().min(0).max(1),
+});
+
 export const FlaggedItemSchema = z.object({
   name: z.string().min(1).max(80),
   room: z.string().min(1).max(40),
@@ -23,7 +35,10 @@ export const FlaggedItemSchema = z.object({
   confidence: z.enum(["low", "medium", "high"]),
   /** Index into the frames sent, so the UI can show where it was seen. */
   frame: z.number().int().min(0),
+  box: BoxSchema.nullable(),
 });
+
+export type Box = z.infer<typeof BoxSchema>;
 
 export const FlagResponseSchema = z.object({
   items: z.array(FlaggedItemSchema).max(120),
@@ -43,7 +58,9 @@ export const SYSTEM_PROMPT = `You help an adult child clearing out a parent's ho
 
 You will see frames sampled from a phone walkthrough. For each distinct object you can identify, return one item. Set "flagged": true only for objects that a local estate-sale company or online resale buyer would plausibly pay for: furniture with recognizable style or maker, art, rugs, instruments, tools, collectibles, jewelry, electronics still in demand, quality cookware. Everyday consumables, worn soft furnishings, and generic décor are not flagged.
 
-Be honest and specific. "band" is a rough resale value band, not an appraisal. "reason" is one plain sentence a grieving person can act on, no hedging boilerplate. "room" is a short label for where it was seen. Use "confidence": "low" freely; a wrong "high" costs trust. Never invent an object you did not see. Prefer fewer, better items over a long list.`;
+Be honest and specific. "band" is a rough resale value band, not an appraisal. "reason" is one plain sentence a grieving person can act on, no hedging boilerplate. "room" is a short label for where it was seen. Use "confidence": "low" freely; a wrong "high" costs trust. Never invent an object you did not see. Prefer fewer, better items over a long list.
+
+"frame" is the index of the frame the object is clearest in. "box" is where it sits in that frame: x and y are the top-left corner and w and h the size, all as fractions of the frame from 0 to 1. Make the box generous enough to include the whole object. Use null when you cannot place it.`;
 
 export function visionConfigured(): boolean {
   return Boolean(process.env.ANTHROPIC_API_KEY);
