@@ -11,6 +11,7 @@
    7. Page properties      — the metadata list on project pages
    8. Tables               — the borderless tables on Labs
    9. Collection pages     — the /for-<company> curated card rows
+   10. Lightbox            — the image viewer (behaviour in lightbox.js)
    ============================================================ */
 /* ============================================================
    1. DESIGN TOKENS
@@ -737,4 +738,148 @@ tbody.notion-collection-table__body td:last-child {
   [class*="page__for-"] .notion-callout:has(.notion-image) h3.notion-heading {
     min-height: 0;
   }
+}
+/* ============================================================
+   10. LIGHTBOX
+   Styles for public/super/lightbox.js, which replaces Super's stock
+   lightbox snippet. Kept here, not injected by the script, so they load
+   render-blocking with the rest of the library and live under the same
+   review and rollback. Classes are prefixed bhd-lb so they can never
+   collide with Super's markup (and the compat check ignores them).
+   ============================================================ */
+/* Content images open the viewer — show it. Linked images keep their link. */
+.notion-image img[data-bhd-lb] {
+  cursor: zoom-in;
+}
+.notion-image img[data-bhd-lb]:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 4px;
+}
+/* Page scroll is locked while the viewer is open. Overrides the global
+   guard's overflow-x on <html> only for as long as the class is present. */
+html.bhd-lb-open {
+  overflow: hidden;
+}
+.bhd-lb {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;            /* above Super's navbar and its stock overlay */
+  display: grid;
+  grid-template-rows: 1fr auto;
+  background: rgb(10 22 23 / 0.94);   /* brand green #112829, deepened */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.bhd-lb[hidden] { display: none; }
+.bhd-lb.is-visible { opacity: 1; }
+.bhd-lb--still { transition: none; }
+
+/* The stage is the scroll container: fitted by default, pannable when
+   zoomed. Native scrolling means trackpads and touch pan for free. */
+.bhd-lb__stage {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4.5rem 4.5rem 1rem;
+  touch-action: pan-y pinch-zoom;
+}
+.bhd-lb__img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 12px 48px rgb(0 0 0 / 0.5);
+  user-select: none;
+  -webkit-user-select: none;
+}
+.bhd-lb__stage.can-zoom .bhd-lb__img { cursor: zoom-in; }
+
+.bhd-lb.is-zoomed .bhd-lb__stage {
+  overflow: auto;
+  display: block;            /* flex centring would clip the top/left edge */
+  padding: 0;
+  touch-action: auto;
+}
+.bhd-lb.is-zoomed .bhd-lb__img {
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  border-radius: 0;
+  box-shadow: none;
+  cursor: zoom-out;
+}
+.bhd-lb.is-zoomed .bhd-lb__bar,
+.bhd-lb.is-zoomed .bhd-lb__prev,
+.bhd-lb.is-zoomed .bhd-lb__next { display: none; }
+
+/* Caption + counter, set to the site's reading measure */
+.bhd-lb__bar {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: 0.25rem 1.5rem 1.5rem;
+  text-align: center;
+}
+.bhd-lb__count {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: rgb(var(--accent));
+  font-variant-numeric: tabular-nums;
+}
+.bhd-lb__caption {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 0.85);
+}
+.bhd-lb__count[hidden],
+.bhd-lb__caption[hidden] { display: none; }
+
+/* Round controls, same aqua as the navbar button on hover */
+.bhd-lb__btn {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 44px;               /* minimum touch target */
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.12);
+  color: #fff;
+  font: inherit;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.bhd-lb__btn[hidden] { display: none; }
+.bhd-lb__btn:hover {
+  background: rgb(var(--accent));
+  color: #112829;
+}
+.bhd-lb__btn:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 3px;
+}
+.bhd-lb__close { top: 1rem; right: 1rem; }
+.bhd-lb__zoom  { top: 1rem; right: calc(1rem + 44px + 0.5rem); font-size: 1.4rem; }
+.bhd-lb__prev,
+.bhd-lb__next  { top: 50%; transform: translateY(-50%); font-size: 2rem; }
+.bhd-lb__prev  { left: 1rem; }
+.bhd-lb__next  { right: 1rem; }
+
+@media (max-width: 640px) {
+  /* Phones: full-width image; arrows move down beside the caption,
+     and swipe does most of the work anyway. */
+  .bhd-lb__stage { padding: 4rem 0 0.5rem; }
+  .bhd-lb__img { border-radius: 0; }
+  .bhd-lb__prev,
+  .bhd-lb__next { top: auto; bottom: 1rem; transform: none; }
+  .bhd-lb__bar { padding-inline: 4rem; }
 }
