@@ -538,8 +538,28 @@ tbody.notion-collection-table__body td:last-child {
   width: 1%;
   overflow: visible;
 }
+/* Pill and score cells share one top padding so every badge in a row
+   sits on the same line. Super gives multi-select cells only 3px. */
+tbody.notion-collection-table__body td.multi_select,
+tbody.notion-collection-table__body td.number,
 tbody.notion-collection-table__body td:last-child {
-  padding-top: 1.15rem;   /* nudges the meta column into visual alignment */
+  padding-top: 1rem !important;
+}
+/* Score components (number properties) render as badges matching the
+   Final Score pill: same tint, padding, radius and line height as
+   Super's table pills (1px 6px, 20.25px line). Asked for 2026-10-15. */
+tbody.notion-collection-table__body td.number {
+  width: 1%;
+}
+tbody.notion-collection-table__body td.number .notion-property__number {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 0.25rem;
+  background: var(--pill-bg);
+  color: rgb(var(--accent) / 0.7);
+  line-height: 20.25px;
+  margin-top: 3px;
+  white-space: nowrap;
 }
 tbody.notion-collection-table__body .notion-pill {
   white-space: nowrap;
