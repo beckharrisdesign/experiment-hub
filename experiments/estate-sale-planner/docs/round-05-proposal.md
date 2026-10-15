@@ -35,8 +35,11 @@ session; each numbered item below is a review-queue row (#46–#50). Say "veto 4
 
 - Camera button → `accept="image/*" capture="environment" multiple`. Each shot is one
   frame; the grid shows shots, not samples; "Send" is the same call.
-- **Remove video** from the UI and `framesFromVideo` + `FRAME_BUDGET` sampling from the
-  library. Git keeps it; restoring is a revert.
+- **Remove video** from the UI and the library: `framesFromVideo`, the sampler (`frames.ts`:
+  `sampleTimes`, `selectFrames`, de-dup) and the sampling knobs go. The encoding settings
+  photos still need (`maxEdgePx`, `jpegQuality`) and the cap survive as `PHOTO_BUDGET`; every
+  photo the family chose is kept — none is dropped as a "duplicate". Git keeps the rest;
+  restoring is a revert. *(Built in 05a exactly this way.)*
 - A deliberately framed photo gives the model a cleaner scene than a pan, so boxes
   improve for free, which is what #47 needs.
 - *Decision for you:* **OS camera** (one tap into the phone's camera app, zero permission
@@ -48,7 +51,9 @@ session; each numbered item below is a review-queue row (#46–#50). Say "veto 4
 
 - Keep each photo at **1600 px long edge** (≈250–400 KB JPEG). On-device in IndexedDB
   until accounts exist; then uploaded to a private Supabase Storage bucket `esp-photos`
-  and served by signed URL. Item gains `photoId` beside `frame` + `box`.
+  and served by signed URL. Each item gains `photo_id` — a foreign key to `esp_photos.id`
+  (`on delete set null`), never a blob or a path — beside its normalized `box`; the Source
+  photo link and recrop both resolve through that row.
 - A **Photos** view per sale and a **Source photo** link on every item. Drag a rectangle →
   **Make an item** (new user-added item with that crop as its picture, optional re-read
   through the existing refine endpoint for name/band) or **Use as this item's picture**.
@@ -73,10 +78,13 @@ session; each numbered item below is a review-queue row (#46–#50). Say "veto 4
 - **Tabs on every screen:** `Home · Items · Sort · Progress` with a **center camera
   action** (the one thing you do most). Tabs stay through item screens; only the camera and
   crop flows take the full screen with an explicit Done / Cancel.
-- **Real routes** instead of one page with a step machine: `/estate-sale-planner` (Home),
-  `/sales/[id]` (Items), `/sales/[id]/sort`, `/sales/[id]/progress`,
-  `/sales/[id]/items/[itemId]`, `/sales/[id]/photos`. Refresh, back button and deep links
-  all start meaning something; it is also what #50 needs.
+- **Real routes** instead of one page with a step machine, all under the hub prefix:
+  `/estate-sale-planner` (Home), `/estate-sale-planner/new`,
+  `/estate-sale-planner/sales/[id]` (Items), `/estate-sale-planner/sales/[id]/sort`,
+  `/estate-sale-planner/sales/[id]/progress`, `/estate-sale-planner/sales/[id]/capture`,
+  `/estate-sale-planner/sales/[id]/items/[itemId]`, and in 05c
+  `/estate-sale-planner/sales/[id]/photos`. Refresh, back button and deep links all start
+  meaning something; it is also what #50 needs.
 - Tab bar and top app bar still do not exist in MVDS (#39) — compositions here, hand-offs.
 
 ### 50 · System of record — *recommend: approve the shape, decide three things*
@@ -91,20 +99,30 @@ close with actuals → see how the estimates did**, across devices, forever.
   *Decision:* Supabase's built-in mailer is rate-limited to a handful of emails an hour;
   the hub has a Resend connector. Default: Supabase mailer for dogfooding, Resend before
   anyone else signs in.
-- **Schema (migration 017):** `esp_sales` (owner, name, status `planning | sorting | listed |
-  closed`, closed_at) · `esp_items` (sale, name, room, band, **estimate_low/high_cents**,
-  **ask_cents**, **sold_cents**, sold_at, destination, status `unsorted | kept | donated |
-  listed | sold | unsold`, photo, box, note, mark_reading, confidence, reason) ·
-  `esp_photos` (sale, storage path, w, h) · bucket `esp-photos`. RLS by owner.
-  `esp_sheets` gains `sale_id`. Existing `esp_events` unchanged.
+- **Schema (migration 017):** `esp_sales` (`user_id uuid not null references
+  auth.users(id) on delete cascade`, name, status `planning | sorting | listed | closed`,
+  closed_at) · `esp_items` (`sale_id` → `esp_sales`, `user_id` denormalized for the same
+  policy shape, name, room, band, **estimate_low/high_cents**, **ask_cents**,
+  **sold_cents**, sold_at, destination, status `unsorted | kept | donated | listed | sold |
+  unsold`, `photo_id` → `esp_photos`, box, note, mark_reading, confidence, reason) ·
+  `esp_photos` (`sale_id`, `user_id`, storage path, w, h) · bucket `esp-photos` with a
+  storage policy on the `user_id/` prefix. **Ownership contract:** RLS on every table
+  compares `user_id` with `auth.uid()` for select / insert / update / delete, the way the
+  seed organizer's `002_add_user_id_and_rls.sql` does; the service-role client is used only
+  by the Stripe webhook. `esp_sheets` gains `sale_id`. Existing `esp_events` unchanged.
 - **Estimates become numbers.** The model returns a low/high range beside the band (band
   stays the honest display); you set an ask; you enter what it sold for when you close.
   *Decision:* show the range on cards, or bands on cards and numbers only on the item and
   Home? Recommend bands on cards, numbers on the item, totals on Home.
 - **Home** = every sale with status, counts, and **estimated vs sold** (per sale and
   all-time, plus a hit-rate: sold inside the range). This is the screen the app opens on.
-- **Import** this phone's six saved walkthroughs into the account on first sign-in, so
-  nothing you have already sorted is lost.
+- **Import** this phone's saved sales into the account on first sign-in, so the sorting
+  you have already done is not lost. What imports is what the device holds: names, rooms,
+  bands, destinations, notes, mark readings and the 320 px thumbnails — and `storage.ts`
+  drops even the thumbnails when the browser's quota is hit, so some imported items will
+  have no picture at all. No sale from before 05c has original photos, so **imported items
+  cannot be recropped**; the import says so on each one, and "Photograph another room" is
+  the way to give an old sale originals.
 - *Decision:* "listings" means **tracking** here. If it ever means posting to Facebook
   Marketplace / eBay, that is a sibling of the Etsy Listing Kit and a shared rail, not an
   ESP feature. Say which.
