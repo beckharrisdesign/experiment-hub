@@ -84,3 +84,10 @@ Two days later, after the first real use on her phone (2026-10-15):
 — round 05, **proposed and awaiting her veto** before any code:
 [`round-05-proposal.md`](round-05-proposal.md) (review queue #46–#50). The last line
 re-defines the product: not a throwaway triage, a system of record for the sales she runs.
+
+> "go 05a"
+> — Katy, 2026-10-15
+
+— photos + the app shell, with every recommendation in the proposal taken as the default
+(review queue #46, #49, #51–#54). 05b (accounts, the record) and 05c (recrop, actuals)
+still wait for her numbers.

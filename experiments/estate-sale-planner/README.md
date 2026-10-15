@@ -6,7 +6,7 @@ add a detail shot of a stamp or seam for a re-read, or remove it → film anothe
 another day and it joins the same walkthrough → one tap to schedule a donation pickup →
 save the sell list with photos as a $5 Sell Sheet at a shareable link.
 
-**Status:** Built on MVDS 0.5.0, Validating next (autonomous build; see the review queue before trusting any default).
+**Status:** Built on MVDS 0.5.0 through round 05a (photos, app shell); 05b accounts + record and 05c recrop + actuals are proposed and waiting on Katy (autonomous build; see the review queue before trusting any default).
 
 - **Founder intent:** [`docs/intent.md`](docs/intent.md)
 - **Review queue (autonomous defaults, none approved until Katy says so):**
