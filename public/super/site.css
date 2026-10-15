@@ -474,15 +474,25 @@ h2.notion-heading {
 /* ============================================================
    8. TABLES
    The collection tables on Labs, restyled as a borderless list:
-   no header row, just a thin divider between rows.
+   a quiet header row, then a thin divider between rows.
    ============================================================ */
 .notion-collection-table {
   border: 0 !important;
   max-width: inherit;
 }
-/* Hide the column-header row entirely */
-thead.notion-collection-table__head {
-  display: none;
+/* Column-header row: shown again (2026-10-15, Katy asked for the
+   headers back after they'd been hidden). Kept quiet so it labels the
+   columns without competing with the rows. */
+thead.notion-collection-table__head th {
+  border: none;
+  border-bottom: 1px solid var(--color-card-bg);
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  text-align: left;
 }
 .notion-collection-table__body tr {
   border: none;
@@ -497,16 +507,42 @@ tbody.notion-collection-table__body td {
 tbody.notion-collection-table__body tr:last-child td {
   border: none;
 }
-/* Column widths: name 30% / description 55% / meta 15% */
+/* Column widths: name and tagline fixed, the description takes what is
+   left, and pill columns (status, tags) shrink to their contents.
+
+   Written for ANY number of columns. It used to hard-code three
+   (30% / 55% / 15%), and Super lays the table out with
+   table-layout: fixed from the first row's widths — so when the Notion
+   view grew to five columns, the two extras got 0px and the description
+   wrapped one letter per line (rows ~4,800px tall, 2026-10-15).
+   Auto layout lets the table size columns from their content instead;
+   adding or hiding a column in Notion now just reflows. */
+.notion-collection-table {
+  table-layout: auto !important;  /* Super sets fixed inline; this is the fix */
+}
+tbody.notion-collection-table__body td {
+  width: auto;
+}
 tbody.notion-collection-table__body td:first-child {
-  width: 30%;
+  width: 22%;               /* name */
 }
 tbody.notion-collection-table__body td:nth-child(2) {
-  width: 55%;
+  width: 20%;               /* tagline, wide enough not to split words */
+}
+/* Pill columns hug their pills. 1% + auto layout = "as narrow as the
+   content allows". Super clips cells (overflow: hidden), which cut off
+   pills like "Util", so this column is allowed to show its content. */
+tbody.notion-collection-table__body td.status,
+tbody.notion-collection-table__body td.multi_select,
+tbody.notion-collection-table__body td:last-child {
+  width: 1%;
+  overflow: visible;
 }
 tbody.notion-collection-table__body td:last-child {
   padding-top: 1.15rem;   /* nudges the meta column into visual alignment */
-  width: 15%;
+}
+tbody.notion-collection-table__body .notion-pill {
+  white-space: nowrap;
 }
 /* ============================================================
    9. COLLECTION PAGES  (/for-<company>)
