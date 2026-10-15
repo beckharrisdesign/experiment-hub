@@ -566,6 +566,16 @@ thead th.status .notion-collection-table__head-cell-content::after {
   content: " \2191" / ", sorted ascending";       /* screen readers hear the sort */
   color: rgb(var(--accent));
 }
+/* Rows are not links (2026-10-15). Super links each table row's name to
+   the item's own page; Labs experiments have no detail pages to keep up,
+   so the name reads as plain text and a click does nothing. Applies to
+   every collection table. This stops the mouse only; lightbox.js (its
+   "rows are not links" block) takes the link out of the tab order and
+   cancels Enter, which CSS can't do. */
+.notion-collection-table td.title a {
+  pointer-events: none;
+  cursor: default;
+}
 /* Pill and score cells share one top padding so every badge in a row
    sits on the same line. Super gives multi-select cells only 3px. */
 tbody.notion-collection-table__body td.multi_select,
