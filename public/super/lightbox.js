@@ -410,3 +410,60 @@
     start();
   }
 })();
+
+/*
+ * Collection-table rows are not links (2026-10-15).
+ *
+ * Not part of the lightbox: it rides in this file because the site already
+ * loads it, so no extra line in Super's head code. Super links each table
+ * row's name to the item's own page; Katy retired the Labs experiment
+ * detail pages, so the name must not navigate by mouse OR keyboard.
+ * site.css (section 8) stops the mouse; CSS can't stop Tab + Enter, so:
+ *   - the link leaves the tab order (tabindex -1) and reads as disabled,
+ *   - clicks and Enter on it are cancelled in the capture phase, before
+ *     Super's (React's) own link handler can route to the page.
+ * Applies to every collection table, matching the CSS rule.
+ */
+(function () {
+  "use strict";
+  if (window.__bhdNoRowLinks) return;
+  window.__bhdNoRowLinks = true;
+
+  var SELECTOR = ".notion-collection-table td.title a";
+
+  function disableAll() {
+    var links = document.querySelectorAll(SELECTOR);
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].getAttribute("tabindex") === "-1") continue;
+      links[i].setAttribute("tabindex", "-1");
+      links[i].setAttribute("aria-disabled", "true");
+    }
+  }
+
+  function block(event) {
+    if (event.type === "keydown" && event.key !== "Enter") return;
+    var target = event.target;
+    if (!(target instanceof Element) || !target.closest(SELECTOR)) return;
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  document.addEventListener("click", block, true);
+  document.addEventListener("auxclick", block, true);
+  document.addEventListener("keydown", block, true);
+
+  function start() {
+    disableAll();
+    var pending = false;
+    new MutationObserver(function () {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(function () { pending = false; disableAll(); });
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
+})();

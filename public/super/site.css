@@ -569,9 +569,9 @@ thead th.status .notion-collection-table__head-cell-content::after {
 /* Rows are not links (2026-10-15). Super links each table row's name to
    the item's own page; Labs experiments have no detail pages to keep up,
    so the name reads as plain text and a click does nothing. Applies to
-   every collection table. Keyboard focus can still reach the hidden link
-   (CSS can't remove it); Super's own "make items not clickable" setting
-   on the collection, if used, removes the link outright. */
+   every collection table. This stops the mouse only; lightbox.js (its
+   "rows are not links" block) takes the link out of the tab order and
+   cancels Enter, which CSS can't do. */
 .notion-collection-table td.title a {
   pointer-events: none;
   cursor: default;
