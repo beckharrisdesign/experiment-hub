@@ -474,15 +474,25 @@ h2.notion-heading {
 /* ============================================================
    8. TABLES
    The collection tables on Labs, restyled as a borderless list:
-   no header row, just a thin divider between rows.
+   a quiet header row, then a thin divider between rows.
    ============================================================ */
 .notion-collection-table {
   border: 0 !important;
   max-width: inherit;
 }
-/* Hide the column-header row entirely */
-thead.notion-collection-table__head {
-  display: none;
+/* Column-header row: shown again (2026-10-15, Katy asked for the
+   headers back after they'd been hidden). Kept quiet so it labels the
+   columns without competing with the rows. */
+thead.notion-collection-table__head th {
+  border: none;
+  border-bottom: 1px solid var(--color-card-bg);
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  text-align: left;
 }
 .notion-collection-table__body tr {
   border: none;
