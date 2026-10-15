@@ -194,6 +194,19 @@ want to try this out!"*
 
 Captures: `assets/r04-{capture-append,lists-named,capture-history}.png` (short names: the round-02 captures already use `built-04-` for the swipe screen, and the PR body tool escapes image URLs longer than about 155 characters). Figma: page **`04 Proposed — add rooms, naming`** (node `41:113`), frames `Proposed 04 · 01 Capture (add a room) · Mobile 480` (`42:81`, cloned from the round-02 capture: Back, Add-a-room eyebrow, "Film another room", the dropzone stand-in, the "different house" line) and `Proposed 04 · 03 Lists (named, add a room) · Mobile 480` (`41:114`, cloned from round 03 with the walkthrough header `43:86`: name + Rename, pass count, Film another room). Composition screenshot clean on the first pass, all text in Inter.
 
+### Round 05 — proposed, not built (2026-10-15)
+
+First real use on Katy's phone produced five signals, verbatim in
+[`docs/intent.md`](../../../experiments/estate-sale-planner/docs/intent.md): photos instead
+of video, recropping the originals, outlines later, a nav you can see, and a persistent
+record of sales with estimated vs sold. The triage and proposal live in
+[`docs/round-05-proposal.md`](../../../experiments/estate-sale-planner/docs/round-05-proposal.md)
+(review queue #46–#50, all `PROPOSED`). The fifth item re-defines the product as a system
+of record — accounts, a schema, a lifecycle — which the parent `propose.md` excluded; the
+proposal recommends dogfooding one real sale, then re-proposing the parent. Sequence
+offered: 05a photos + shell → 05b accounts + record → 05c recrop + actuals. No design or
+code changes until she answers the eight decisions at the end of that document.
+
 ## Decisions
 
 1. **Board for the proposal round, design file for the pair.** The proposal's question is

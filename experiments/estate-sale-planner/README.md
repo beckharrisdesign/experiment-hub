@@ -11,6 +11,8 @@ save the sell list with photos as a $5 Sell Sheet at a shareable link.
 - **Founder intent:** [`docs/intent.md`](docs/intent.md)
 - **Review queue (autonomous defaults, none approved until Katy says so):**
   [`docs/review-queue.md`](docs/review-queue.md)
+- **Round 05 proposal (photos, recrop, app shell, system of record — awaiting veto):**
+  [`docs/round-05-proposal.md`](docs/round-05-proposal.md)
 - **Lifecycle (OpenSpec, `bhd-experiment`):**
   [`openspec/changes/estate-sale-planner`](../../openspec/changes/estate-sale-planner) —
   `explore.md` → `propose.md` → `apply.md` → `archive.md`

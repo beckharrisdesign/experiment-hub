@@ -70,3 +70,17 @@ Two instructions shape the build:
   [`review-queue.md`](review-queue.md) for the founder to approve or revise. Money-out,
   deploy-to-production, and anything irreversible still wait for her.
 - **MVDS gate.** No code is built until the next MVDS release is published and folded in.
+
+Two days later, after the first real use on her phone (2026-10-15):
+
+> "I'm personally going to stick to images - a live camera instead of video since that adds
+> complexity out of the gate.
+> the ability to go back and recrop the og images into new elements.
+> the future func of using ML or AI models to identify objects and outline them.
+> no peristent nav - can't really tell where I am in the app.
+> no persistent saving of previous listings. I want this to be the core app where I kick off
+> those listings and monitor their progress and also what my estimated vs sold values were."
+
+— round 05, **proposed and awaiting her veto** before any code:
+[`round-05-proposal.md`](round-05-proposal.md) (review queue #46–#50). The last line
+re-defines the product: not a throwaway triage, a system of record for the sales she runs.
