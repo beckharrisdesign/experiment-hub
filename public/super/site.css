@@ -557,9 +557,13 @@ tbody.notion-collection-table__body tr:last-child td {
 }
 /* Sort indicator. Super doesn't expose the Notion view's sort, so this is
    set by hand: the Labs "All projects" view sorts by Status, ascending
-   (pipeline order). If that sort changes in Notion, move this arrow. */
+   (pipeline order). If that sort changes in Notion, move this arrow.
+   CSS can't set aria-sort, so the arrow carries alt text instead; a
+   browser that doesn't support the "/ alt" syntax drops that line and
+   keeps the plain arrow above it. */
 thead th.status .notion-collection-table__head-cell-content::after {
-  content: " \2191";            /* ↑ */
+  content: " \2191";                              /* ↑, for browsers without alt text */
+  content: " \2191" / ", sorted ascending";       /* screen readers hear the sort */
   color: rgb(var(--accent));
 }
 /* Pill and score cells share one top padding so every badge in a row
