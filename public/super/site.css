@@ -550,6 +550,7 @@ tbody.notion-collection-table__body td:last-child {
    Super's table pills (1px 6px, 20.25px line). Asked for 2026-10-15. */
 tbody.notion-collection-table__body td.number {
   width: 1%;
+  overflow: visible;      /* Super clips cells; don't cut off a badge */
 }
 tbody.notion-collection-table__body td.number .notion-property__number {
   display: inline-block;
