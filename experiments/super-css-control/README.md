@@ -29,7 +29,19 @@ editing again.
 <link rel="preload" href="https://labs.beckharrisdesign.com/super/site.css" as="style">
 <link rel="stylesheet" href="https://labs.beckharrisdesign.com/super/site.css">
 <script src="https://labs.beckharrisdesign.com/super/redirects.js" async></script>
+<script src="https://labs.beckharrisdesign.com/super/lightbox.js" async></script>
 ```
+
+> **Lightbox.** `public/super/lightbox.js` (styles in `site.css` §10)
+> replaces Super's stock lightbox snippet. Remove Super's two lines that load
+> `sites.super.so/snippets/v2/lightbox.css` and `…/lightbox.js`. If they are
+> still installed nothing breaks: this script handles the click in the capture
+> phase first, so Super's overlay never opens — but it is dead weight.
+>
+> Adds over the stock one: prev/next (arrows, buttons, swipe), Notion caption
+> + counter, a larger Cloudflare variant (up to the original's size, vs the
+> page's 1920px), click/Z to zoom to full size and pan, Esc, focus trap and
+> focus return, keyboard-openable images, scroll lock, reduced motion.
 
 **Head, not Body.** A stylesheet in `<head>` is render-blocking, which is what
 prevents a flash of unstyled content. In the body it would guarantee one.
