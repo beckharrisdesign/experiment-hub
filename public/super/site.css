@@ -507,36 +507,64 @@ tbody.notion-collection-table__body td {
 tbody.notion-collection-table__body tr:last-child td {
   border: none;
 }
-/* Column widths: name and tagline fixed, the description takes what is
-   left, and pill columns (status, tags) shrink to their contents.
+/* Column widths: the default display logic for every collection table.
 
-   Written for ANY number of columns. It used to hard-code three
-   (30% / 55% / 15%), and Super lays the table out with
-   table-layout: fixed from the first row's widths — so when the Notion
-   view grew to five columns, the two extras got 0px and the description
-   wrapped one letter per line (rows ~4,800px tall, 2026-10-15).
-   Auto layout lets the table size columns from their content instead;
-   adding or hiding a column in Notion now just reflows. */
+   Short columns (names, status and select pills, numbers) never wrap and
+   shrink to their content. Sentence columns (Notion "text" properties,
+   e.g. Tagline, Hypothesis) wrap and split all the remaining width, in
+   proportion to how much text they hold, so the longest gets the most.
+   This keys off Super's property-type class on each cell, so it holds
+   for any column added or hidden in the Notion view (2026-10-15).
+
+   History: the widths used to be hard-coded per column position, and
+   Super lays tables out with table-layout: fixed, so adding a Notion
+   column once squeezed the description to one letter per line. */
 .notion-collection-table {
-  table-layout: auto !important;  /* Super sets fixed inline; this is the fix */
+  table-layout: auto !important;  /* Super sets fixed inline */
+  width: 100% !important;
 }
-tbody.notion-collection-table__body td {
-  width: auto;
+.notion-collection-table th,
+.notion-collection-table td {
+  width: 1% !important;           /* + auto layout = as narrow as content allows */
+  min-width: 0 !important;        /* Super gives the name header 240px */
+  white-space: nowrap;
+  overflow: visible;              /* Super clips cells, cutting off pills */
+  padding-left: 0.6rem !important;
+  padding-right: 0.6rem !important;
 }
-tbody.notion-collection-table__body td:first-child {
-  width: 22%;               /* name */
+.notion-collection-table th:first-child,
+.notion-collection-table td:first-child {
+  padding-left: 0 !important;     /* name column sits on the page edge */
 }
-tbody.notion-collection-table__body td:nth-child(2) {
-  width: 20%;               /* tagline, wide enough not to split words */
+.notion-collection-table th.text,
+.notion-collection-table td.text {
+  width: auto !important;
+  white-space: normal;
 }
-/* Pill columns hug their pills. 1% + auto layout = "as narrow as the
-   content allows". Super clips cells (overflow: hidden), which cut off
-   pills like "Util", so this column is allowed to show its content. */
-tbody.notion-collection-table__body td.status,
-tbody.notion-collection-table__body td.multi_select,
-tbody.notion-collection-table__body td:last-child {
-  width: 1%;
-  overflow: visible;
+.notion-collection-table td.text {
+  min-width: 10rem !important;    /* never one or two words per line */
+}
+/* Headers may wrap between words ("FINAL / SCORE") so a two-word label
+   doesn't widen a one-number column, but never mid-word. */
+.notion-collection-table th {
+  white-space: normal !important;
+  vertical-align: bottom;
+}
+.notion-collection-table th,
+.notion-collection-table th * {
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+/* Sort indicator. Super doesn't expose the Notion view's sort, so this is
+   set by hand: the Labs "All projects" view sorts by Status, ascending
+   (pipeline order). If that sort changes in Notion, move this arrow.
+   CSS can't set aria-sort, so the arrow carries alt text instead; a
+   browser that doesn't support the "/ alt" syntax drops that line and
+   keeps the plain arrow above it. */
+thead th.status .notion-collection-table__head-cell-content::after {
+  content: " \2191";                              /* ↑, for browsers without alt text */
+  content: " \2191" / ", sorted ascending";       /* screen readers hear the sort */
+  color: rgb(var(--accent));
 }
 /* Pill and score cells share one top padding so every badge in a row
    sits on the same line. Super gives multi-select cells only 3px. */
@@ -548,10 +576,6 @@ tbody.notion-collection-table__body td:last-child {
 /* Score components (number properties) render as badges matching the
    Final Score pill: same tint, padding, radius and line height as
    Super's table pills (1px 6px, 20.25px line). Asked for 2026-10-15. */
-tbody.notion-collection-table__body td.number {
-  width: 1%;
-  overflow: visible;      /* Super clips cells; don't cut off a badge */
-}
 tbody.notion-collection-table__body td.number .notion-property__number {
   display: inline-block;
   padding: 1px 6px;
