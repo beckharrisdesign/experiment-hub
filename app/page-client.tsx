@@ -161,61 +161,12 @@ export default function HomePageClient({
 
       {/* Hero Section */}
       <section className="bg-background-primary px-4 md:px-8 lg:px-16 py-12 lg:py-[70px]">
-        <div className="flex flex-col lg:flex-row gap-4 lg:items-start max-w-screen-xl mx-auto">
-          {/* Large heading — grows on lg so info columns sit on the right */}
-          <div className="flex-1 min-w-0 lg:pr-5">
-            <h1 className="font-heading text-4xl md:text-5xl lg:text-[60px] font-semibold text-text-primary leading-tight">
-              Welcome
-              <br />
-              to BHD Labs
-            </h1>
-          </div>
-          {/* Info columns */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:flex lg:flex-row lg:shrink-0 lg:gap-4">
-            {/* About column */}
-            <div className="lg:w-[204px] lg:pr-4 lg:shrink-0">
-              <p className="text-sm font-bold text-white leading-5 mb-2">
-                About BHD Labs
-              </p>
-              <p className="text-sm font-light text-white leading-5">
-                I&apos;m a neurodiverse designer and founder. My best ideas come
-                fast and from everywhere. This platform is how I develop them
-                with rigor and pursue the strongest ones with focus.
-              </p>
-            </div>
-            {/* What drives me column */}
-            <div className="lg:w-[204px] lg:pr-4 lg:shrink-0">
-              <p className="text-sm font-bold text-white leading-5 mb-2">
-                What drives me
-              </p>
-              <p className="text-sm font-light text-white leading-5">
-                I build things I care deeply about, that serve a real market
-                need, and that make a difference in the world. I make sure all
-                three are true -- plus a few extras -- in a custom scoring
-                system.
-              </p>
-            </div>
-            {/* Core themes column */}
-            <div className="lg:w-[204px] lg:pr-4 lg:shrink-0">
-              <p className="text-sm font-bold text-white leading-5 mb-2">
-                My core themes
-              </p>
-              <ul className="text-sm font-light text-white leading-5 space-y-1.5">
-                <li>
-                  <span className="font-medium">Empowering makers</span> — tools
-                  for people who create things with their hands
-                </li>
-                <li>
-                  <span className="font-medium">Supporting neurodiversity</span>{" "}
-                  — products designed for how divergent minds actually work
-                </li>
-                <li>
-                  <span className="font-medium">Environmental impact</span> —
-                  helping people make more sustainable choices
-                </li>
-              </ul>
-            </div>
-          </div>
+        <div className="max-w-screen-xl mx-auto">
+          <h1 className="font-heading text-4xl md:text-5xl lg:text-[60px] font-semibold text-text-primary leading-tight">
+            Welcome
+            <br />
+            to BHD Labs
+          </h1>
         </div>
       </section>
 

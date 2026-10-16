@@ -14,11 +14,19 @@ Reusable patterns this experiment produced. **Not** auto-applied to shared packa
 
 ## MVDS (`@beckharrisdesign/mvds`) candidates
 
-| Candidate | Note |
-| --- | --- |
-| **Terracotta + ochre + cream accent set** | Warm, craft-friendly, WCAG-AA — a real alternative theme to the neutral default; could ship as an MVDS theme preset |
-| **Dropzone (drag/drop/paste) pattern** | Product-local now; a common enough interaction to live in MVDS |
-| **Watermarked preview grid** | Product-specific; probably stays local |
+### Delivered
+
+| Candidate | Shipped in | Note |
+| --- | --- | --- |
+| **Terracotta + ochre + cream accent set** | `0.4.0` | Landed as the scoped brand preset `themes/terracotta.css`, which doubles as the template for writing another |
+| **Dropzone (drag/drop/paste) pattern** | `0.4.0` | Landed as `Dropzone` — drag / drop / paste / picker over a hidden file input, with a real button in the a11y tree. Ends at "files selected"; transport and previews stay app concerns |
+
+### Open
+
+| Candidate | Evidence | Owner |
+| --- | --- | --- |
+| **`Slider`** | Two consumers independently worked around the same gap: `app/generative-sandbox/Slider.tsx` (native range input) and `image-lab/src/components/ui/slider.tsx` in `beckharrisdesign/generative-art` (composed from Radix). Both needed split `onValueChange` / `onValueCommit` semantics. MVDS has no open issue for it | The MVDS session — not claimed by the Hub |
+| **Watermarked preview grid** | Product-specific; probably stays local | — |
 
 ## Acquisition-tooling gap (identified at etsy-listing-kit launch, 2026-07-27)
 
@@ -36,5 +44,6 @@ Same pattern applies to Meta when that channel gets used. The campaign *plan* fo
 
 ## Do not
 
-- Do not modify or publish `@beckharrisdesign/mvds` from this experiment.
 - Do not fold the experiment's Stripe/order code into the shared scaffold until a second paid experiment validates the abstraction.
+
+> The former blanket line here — "do not modify or publish `@beckharrisdesign/mvds` from this experiment" — was removed on 2026-10-05. It described a moment when the package was off-limits to this repo; two of this section's three original candidates (Dropzone and the terracotta set) have since shipped, so the Hub's job is to record what it wants and hand it to whoever owns the package, not to pretend the door is shut. Promotion still happens deliberately, on the two-consumer evidence bar this doc already sets.
