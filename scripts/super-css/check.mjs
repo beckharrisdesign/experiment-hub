@@ -166,7 +166,17 @@ function git(args) {
  * whose answer decides whether the live site is actually behind: everything
  * else is about your checkout, and a dirty checkout is not an incident.
  */
-export function diagnoseFreshness(deployedBody, run = git) {
+export function diagnoseFreshness(deployedBody, run = git, { fetched = true } = {}) {
+  // A failed refresh leaves origin/main however old it was, and a stale ref
+  // would confidently blame the wrong cause. Better to say we cannot tell.
+  if (!fetched) {
+    return {
+      cause: 'unknown',
+      message:
+        'Deployed CSS differs from public/super/site.css, but `git fetch origin main` failed, so the cause could not be narrowed against a current main. Re-run once git can reach origin.',
+    };
+  }
+
   const head = run(['rev-parse', '--is-inside-work-tree']);
   if (!head.ok) {
     return {
@@ -230,7 +240,9 @@ async function main() {
   // The diagnosis is only as current as origin/main, and a local ref that is a
   // day old would confidently blame the wrong thing — the exact failure this
   // check exists to stop. Refs only; the working tree is untouched.
-  if (!process.argv.includes('--no-fetch')) git(['fetch', '--quiet', 'origin', 'main']);
+  // --no-fetch is an explicit choice to trust the local ref, so it counts as fetched.
+  const fetched =
+    process.argv.includes('--no-fetch') || git(['fetch', '--quiet', 'origin', 'main']).ok;
 
   const report = {
     delivery: null,
@@ -305,7 +317,7 @@ async function main() {
       if (same) {
         report.remote = 'in-sync';
       } else {
-        const { cause, message } = diagnoseFreshness(normalize(asset.text));
+        const { cause, message } = diagnoseFreshness(normalize(asset.text), git, { fetched });
         report.cause = cause;
         report.remote = `STALE (${cause})`;
         // Only a deploy that did not land means the LIVE SITE is behind. The

@@ -35,6 +35,18 @@ describe('diagnoseFreshness', () => {
     expect(result.message).toMatch(/has NOT shipped/);
   });
 
+  it('says unknown when the fetch failed, instead of trusting a stale main', () => {
+    // A stale origin/main that differs from live would otherwise read as a
+    // failed deploy.
+    const result = diagnoseFreshness(
+      'body{color:red}',
+      fakeGit({ ...IN_REPO, show: { ok: true, out: LIVE_CSS } }),
+      { fetched: false },
+    );
+    expect(result.cause).toBe('unknown');
+    expect(result.message).toMatch(/fetch origin main` failed/);
+  });
+
   it('blames an uncommitted edit only when main is genuinely live', () => {
     const result = diagnoseFreshness(
       ':root{--accent:#113723;}',
