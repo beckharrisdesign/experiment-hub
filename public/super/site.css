@@ -599,6 +599,14 @@ tbody.notion-collection-table__body td.number .notion-property__number {
 tbody.notion-collection-table__body .notion-pill {
   white-space: nowrap;
 }
+/* Status pills in tables match the score and select badges exactly.
+   site.css section 5 gives every pill 0.2rem 0.5rem padding, but Super
+   overrides that to 1px 6px only for select pills, so Status came out
+   ~5px taller than the badges beside it (2026-10-15). */
+.notion-collection-table td.status .notion-pill {
+  padding: 1px 6px;
+  line-height: 20.25px;
+}
 /* ============================================================
    9. COLLECTION PAGES  (/for-<company>)
    ------------------------------------------------------------
