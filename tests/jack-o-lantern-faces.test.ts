@@ -106,6 +106,20 @@ describe("jack-o-lantern faces", () => {
     expect(bookish).toContain('data-part="glasses"');
   });
 
+  it("cuts brows and tongues too in stencil mode", () => {
+    for (const [prompt, part] of [
+      ["scared", "brow"],
+      ["silly", "tongue"],
+    ]) {
+      const svg = generateLantern(prompt, { mode: "stencil" }).svg;
+      const strokes = [
+        ...svg.matchAll(new RegExp(`data-part="${part}"[^>]*stroke="([^"]+)"`, "g")),
+      ].map((match) => match[1]);
+      expect(strokes.length, `${prompt} draws a ${part}`).toBeGreaterThan(0);
+      expect(strokes.every((color) => color === CUT)).toBe(true);
+    }
+  });
+
   it("uses display ink for the on-screen preview", () => {
     const { svg } = generateLantern("vampire", { palette: "preview" });
     expect(svg).not.toContain(CUT);

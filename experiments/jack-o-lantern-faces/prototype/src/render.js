@@ -359,10 +359,10 @@ export function renderFace(face, options = {}) {
 
   if (face.brows === "unibrow") {
     const y = eyes.left.y - eyes.left.s - 3;
-    parts.push(pathEl("brow", `M ${p(eyes.left.x - eyes.left.s, y)} L ${p(eyes.right.x + eyes.right.s, y)}`, lineStroke, lineWidth, "unibrow"));
+    parts.push(pathEl("brow", `M ${p(eyes.left.x - eyes.left.s, y)} L ${p(eyes.right.x + eyes.right.s, y)}`, faceStroke, faceWidth, "unibrow"));
   } else if (face.brows !== "none") {
     for (const side of ["left", "right"]) {
-      parts.push(pathEl("brow", browPath(face.brows, p, eyes[side], face.layout.browTilt, side), lineStroke, lineWidth, face.brows));
+      parts.push(pathEl("brow", browPath(face.brows, p, eyes[side], face.layout.browTilt, side), faceStroke, faceWidth, face.brows));
     }
   }
 
@@ -383,7 +383,7 @@ export function renderFace(face, options = {}) {
     parts.push(pathEl("fang", triangle(p, mouth.cx + mouth.w * 0.22, mouth.cy - 1, 2.1), faceStroke, faceWidth));
   }
   if (face.mouth === "tongue") {
-    parts.push(pathEl("tongue", ellipse(p, u, mouth.cx, mouth.cy + 2.2, mouth.w * 0.14, mouth.h * 0.45), lineStroke, lineWidth));
+    parts.push(pathEl("tongue", ellipse(p, u, mouth.cx, mouth.cy + 2.2, mouth.w * 0.14, mouth.h * 0.45), faceStroke, faceWidth));
   }
 
   drawAccessories(parts, face, tools, eyes, lineStroke, lineWidth);

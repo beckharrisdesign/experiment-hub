@@ -1,7 +1,7 @@
 # Jack-o'-lantern faces
 
 Turn a short prompt into a funny jack-o'-lantern in simple line art, then
-export an SVG an xTool can cut and engrave.
+export an SVG that an xTool can cut and engrave.
 
 I'm attempting to turn a short prompt into a funny jack-o'-lantern line
 drawing you can engrave on an xTool.
