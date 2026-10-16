@@ -17,12 +17,15 @@ This skill covers how proactive to be.
 
 ## Just do it — never ask first
 
-- **Red CI on a PR you opened:** root-cause it, fix it, push. That includes failures
-  in unrelated code that block the PR, such as a flaky live test or a timeout. Fix it
-  on the same PR and note it in the Summary. Don't open a separate PR.
+- **Red CI caused by your PR:** root-cause it, fix it, push.
+- **Red CI from unrelated code that blocks your PR,** such as a flaky live test or a
+  timeout: open a separate small fix PR yourself, without asking, and link it in one
+  comment on the blocked PR. Don't bundle the fix into the blocked PR. Each PR stays
+  one logical unit, per `rules/github-workflow.mdc`.
 - **Copilot and review-bot comments:** fix anything that's correct and small, then
   reply on the thread and resolve it. If a finding isn't worth fixing, reply with one
-  line saying why, then resolve it.
+  line saying why, then resolve it. Security findings are the exception: reply, but
+  leave the thread open for Katy (see below).
 - **Nits and style comments:** if a commit is already going out, fold them in.
   Otherwise reply with one line and resolve.
 - **Merge conflicts on your own branch:** merge main in, resolve, validate, push.
