@@ -6,25 +6,48 @@ the three requirements below hold on a phone. Not doing: appraisals, selling, ac
 
 ## ADDED Requirements
 
-### Requirement: Walkthrough becomes frames on the device
+### Requirement: Photos become frames on the device
 
-The user films or picks a walkthrough video (or photos) and sees the sampled frames before
-anything is sent.
+The family photographs a room (the phone's camera, several shots at a time, or photos
+picked from the library); each photo is scaled on the device and becomes one frame for
+the model. No video is accepted (round 05a, founder: *"stick to images - a live camera
+instead of video since that adds complexity out of the gate"*). A confirm grid shows every
+photo with a way to leave one out; nothing is sent until the user taps Send. At most 48
+photos go in one pass.
 
-**Fails until:** a 10-minute phone video yields a frame set that stays inside the budget in
-`lib/estate-sale-planner/config.ts`, with no raw video in any request.
+#### Scenario: User photographs a room and confirms
 
-The route SHALL sample frames from the video in the browser, drop near-duplicates, downscale, and send only on the user's confirm.
+- **WHEN** the user takes or picks one or more photos and the grid appears
+- **THEN** every photo is shown with a count, any one can be left out, and no network request carrying a photo has been made yet
 
-#### Scenario: User films a walkthrough and confirms the frames
+#### Scenario: User picks a video
 
-- **WHEN** the user records or picks a video and taps Continue
-- **THEN** a grid of sampled frames appears with a count and a Send button, and no network request carrying video or frames has been made yet
+- **WHEN** the files chosen contain a video and no images
+- **THEN** the video is ignored and the user is told to take a few photos instead
 
-#### Scenario: User has photos instead of video
+### Requirement: The app says where you are
 
-- **WHEN** the user picks one or more photos
-- **THEN** the same frame grid appears with those photos as the frames
+Every screen carries a top bar with the sale's name and the screen's name, and Back
+wherever there is somewhere to go. A tab bar — Home · Items · [camera] · Sort · Progress —
+shows on every screen except the camera flows, which take the full screen with Cancel.
+Each screen has its own URL, so refresh, the back button and a shared link all land on
+the same place (round 05a, founder: *"no persistent nav - can't really tell where I am in
+the app"*).
+
+#### Scenario: Deep link into a sale
+
+- **WHEN** the user opens `/estate-sale-planner/sales/<id>/sort` on the phone that holds that sale
+- **THEN** the Sort screen renders with the top bar reading the sale's name and "Sort", the Sort tab lit, and Back going to the sale's items
+
+#### Scenario: A sale that is not on this device
+
+- **WHEN** the user opens a sale URL on a different phone
+- **THEN** the screen says the sale is saved on the phone that photographed it and offers Home
+
+#### Scenario: The center camera
+
+- **WHEN** the user taps the camera in the tab bar
+- **THEN** it opens "add a room" for the sale in context, or a new sale when there is none, with the tabs hidden until Send or Cancel
 
 ### Requirement: Flags come back as a Sell list and an undecided pile
 

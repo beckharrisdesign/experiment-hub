@@ -26,27 +26,23 @@ promoted from ELK in `rules/design-guidelines.mdc` apply here unchanged.
 
 ## User flow / IA
 
-Six screens, one route:
+Round 05a — every screen its own URL, the shell on all of them:
 
 ```
-/estate-sale-planner
-  1. Capture       film / pick video or photos            ← one button
-  2. Frames        sampled grid + count + Send            ← confirm before anything leaves the phone
-  3. Lists         Sell cards · Still to sort · Keep · Donate, toggle on every item ← tap = item
-  3a. Item         full-screen: toggle, rename, room, band, note, detail shots, re-read, remove
-  4. Sort          undecided pile one at a time: ← donate · keep → · Sell tap · Undo · Details
-  5. Finish        donation-pickup CTA (own line, centered) ← counted row, then deep link / tel:
-                   + print / Sell Sheet (secondary) + "haul the rest" link
-  Tab bar          Lists · Sort · Finish, fixed to the bottom once a walkthrough exists
-  History          earlier walkthroughs on this device, listed on the capture screen
-  Second use       "Film another room" (Lists, Finish) → capture in add-room mode → items APPEND
-                   "Start a new walkthrough" (capture, Finish) → clean start, old one stays in history
-                   optional name ("Mom's house") on capture, Rename on Lists, shown in history + summary
-  6. Summary       printable Sell list, "not an appraisal" first · Sell Sheet CTA ($5)
-  7. Sell sheet    /sheet/[id] — the paid page: photos, bands, print, copy link
-Recovery: no key → demo on the fixture set, says so · nothing flagged → honest empty Sell
+/estate-sale-planner                      Home: your sales (badge, counts), Start a sale
+/estate-sale-planner/new                  camera flow: photograph a room → confirm grid → Send   (no tabs; Cancel)
+/estate-sale-planner/sales/[id]           Items: Sell cards · Still to sort · Keep · Donate, toggle on every item
+/estate-sale-planner/sales/[id]/sort      Sort: undecided pile one at a time: ← donate · keep → · Sell tap · Undo
+/estate-sale-planner/sales/[id]/progress  Progress: N still to sort · counts · pickup CTA · print / Sell Sheet · add a room
+/estate-sale-planner/sales/[id]/capture   camera flow: add a room (items APPEND, model told what is listed)   (no tabs)
+/estate-sale-planner/sales/[id]/items/[itemId]  the item: toggle, rename, room, band, note, detail shots, re-read, remove
+/estate-sale-planner/summary              printable Sell list · Sell Sheet CTA ($5)            (outside the shell)
+/estate-sale-planner/sheet/[id]           the paid page                                         (outside the shell)
+Top bar   sale name · screen name · Back — on every screen
+Tab bar   Home · Items · [camera] · Sort · Progress — everywhere but the camera flows; camera = add a room,
+          or a new sale when there is none; Items/Sort/Progress point at the sale in context, else the newest
+Recovery: no key → demo house grows room by room, says so · sale not on this device → honest screen + Home
           no Stripe → summary says payments aren't configured, print still works
-          success URL before webhook → "settling" note, no items until Stripe confirms
 ```
 
 The proposal-round flow as generated (the board's Mermaid source, kept here because the
@@ -193,6 +189,31 @@ want to try this out!"*
 | Demo mode | The whole sample house at once | Grows **room by room** from the known list — first pass three rooms, each later pass the next room, then "nothing new" — so the append is felt without a key |
 
 Captures: `assets/r04-{capture-append,lists-named,capture-history}.png` (short names: the round-02 captures already use `built-04-` for the swipe screen, and the PR body tool escapes image URLs longer than about 155 characters). Figma: page **`04 Proposed — add rooms, naming`** (node `41:113`), frames `Proposed 04 · 01 Capture (add a room) · Mobile 480` (`42:81`, cloned from the round-02 capture: Back, Add-a-room eyebrow, "Film another room", the dropzone stand-in, the "different house" line) and `Proposed 04 · 03 Lists (named, add a room) · Mobile 480` (`41:114`, cloned from round 03 with the walkthrough header `43:86`: name + Rename, pass count, Film another room). Composition screenshot clean on the first pass, all text in Inter.
+
+### Round 05a — photos and the app shell (2026-10-15)
+
+First real use on Katy's phone produced five signals, verbatim in
+[`docs/intent.md`](../../../experiments/estate-sale-planner/docs/intent.md); the triage is
+[`docs/round-05-proposal.md`](../../../experiments/estate-sale-planner/docs/round-05-proposal.md)
+(review queue #46–#50). She answered *"go 05a"*: photos (#46) and the shell (#49), every
+recommendation taken as the default (#51–#54). 05b (accounts, the record) and 05c (recrop,
+actuals) wait for her numbers.
+
+| Concern | Round 04 | Round 05a |
+| --- | --- | --- |
+| Capture | Video sampled every 2.5 s, de-duplicated, capped at 48; photos as a side path | **Photos only.** The camera button opens the phone camera for several shots; each is one frame; the grid shows every shot with an × to leave one out; cap 48, no de-dup (a photo you took on purpose is never dropped). `framesFromVideo`, `frames.ts` and `FRAME_BUDGET` are gone |
+| Where am I | Nothing named the screen; tabs only on Lists / Sort / Finish | **Top bar on every screen** — sale name as the eyebrow, the screen's name, Back wherever there is somewhere to go. **Tab bar on every screen** but the camera flows: Home · Items · [camera] · Sort · Progress |
+| URLs | One route, a client step machine; refresh and back meant nothing | **Real routes** under `app/estate-sale-planner/(app)/`: `/` Home, `/new`, `/sales/[id]` Items, `/sales/[id]/sort`, `/sales/[id]/progress`, `/sales/[id]/capture`, `/sales/[id]/items/[itemId]`. Chrome and tab state are a pure lookup (`lib/estate-sale-planner/routes.ts`); the sale in context loads from the device for any deep link, and a sale that is not on this phone says so |
+| Home | The capture screen, with history beneath | **Your sales**: every sale on the device with a Sorting / Sorted badge and its counts; Start a sale. The empty state is the pitch |
+| Finish → Progress | Reachable only once the sort finished | **Progress** at any time: "N still to sort" + Sort the rest, the counts, the pickup CTA (hidden while nothing is marked to donate), print / Sell Sheet, Photograph another room, Start a new sale |
+| Words | Walkthrough | **Sale** everywhere the family reads; code keeps `Session` and the analytics event names |
+
+Captures: `assets/r05a-{home-empty,new,photos,items,sort,progress,item,capture-append,home}.png`
+and `r05a-items-desktop.png` (Playwright, 480 px and 1024 px, fixture mode). Figma: page
+**`05a Proposed — photos, app shell`** (node `47:83`), frames `Proposed 05a · 00 Home ·
+Mobile 480` (`47:192`) and `Proposed 05a · 02 Items (shell) · Mobile 480` (`47:84`, cloned
+from round 04 with the top bar `47:174` and tab bar `47:179` composed on MVDS tokens —
+both still MVDS hand-offs, #39). All text Inter.
 
 ## Decisions
 

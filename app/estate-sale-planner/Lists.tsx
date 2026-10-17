@@ -13,18 +13,18 @@ interface ListsProps {
   onOpen: (itemId: string) => void;
   onAdd: (input: NewItemInput) => void;
   onStartSorting: () => void;
-  onFilmAnother: () => void;
+  onAddRoom: () => void;
   onRename: (name: string) => void;
 }
 
-/** The walkthrough's name, editable in place: tap Rename, type, Save. */
-function WalkthroughName({ name, onRename }: { name?: string; onRename: (name: string) => void }) {
+/** The sale's name, editable in place: tap Rename, type, Save. */
+function SaleName({ name, onRename }: { name?: string; onRename: (name: string) => void }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(name ?? "");
   if (editing) {
     return (
       <Inline gap={8} align="center" className="flex-wrap">
-        <Input value={draft} maxLength={60} placeholder="Mom's house" aria-label="Walkthrough name" onChange={(e) => setDraft(e.target.value)} />
+        <Input value={draft} maxLength={60} placeholder="Mom's house" aria-label="Sale name" onChange={(e) => setDraft(e.target.value)} />
         <Button size="sm" onClick={() => { onRename(draft); setEditing(false); }}>
           Save
         </Button>
@@ -36,7 +36,7 @@ function WalkthroughName({ name, onRename }: { name?: string; onRename: (name: s
   }
   return (
     <Inline gap={8} align="center">
-      <span className="text-caption uppercase tracking-wider text-muted-foreground">{name ?? "Untitled walkthrough"}</span>
+      <span className="text-caption uppercase tracking-wider text-muted-foreground">{name?.trim() || "Untitled sale"}</span>
       <Button size="sm" variant="ghost" onClick={() => { setDraft(name ?? ""); setEditing(true); }}>
         Rename
       </Button>
@@ -62,12 +62,12 @@ function RowList({ items, onDestination, onOpen }: { items: SessionItem[]; onDes
 }
 
 /**
- * Screen 3 — the lists, by destination. Sell items are full cards; Keep,
+ * Items (round 05a; was Lists) — the sale by destination. Sell items are full cards; Keep,
  * Donate and the still-to-sort pile are rows. Every item carries its own
  * keep / sell / donate toggle, so nothing is ever stuck where the model or a
  * swipe put it, and tapping a name opens the item.
  */
-export default function Lists({ session, fromFixture, onDestination, onOpen, onAdd, onStartSorting, onFilmAnother, onRename }: ListsProps) {
+export default function Lists({ session, fromFixture, onDestination, onOpen, onAdd, onStartSorting, onAddRoom, onRename }: ListsProps) {
   const sell = sellList(session);
   const keep = keepList(session);
   const donate = donateList(session);
@@ -81,13 +81,13 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
 
       <Stack gap={16}>
         <Stack gap={8}>
-          <WalkthroughName name={session.name} onRename={onRename} />
+          <SaleName name={session.name} onRename={onRename} />
           <p className="text-small text-muted-foreground">
-            {session.items.length} {session.items.length === 1 ? "item" : "items"} across {session.passes ?? 1} {(session.passes ?? 1) === 1 ? "pass" : "passes"} · {new Date(session.createdAt).toLocaleDateString()}
+            {session.items.length} {session.items.length === 1 ? "item" : "items"} across {session.passes ?? 1} {(session.passes ?? 1) === 1 ? "room pass" : "room passes"} · {new Date(session.createdAt).toLocaleDateString()}
           </p>
           <div>
-            <Button variant="outline" onClick={onFilmAnother}>
-              Film another room
+            <Button variant="outline" onClick={onAddRoom}>
+              Photograph another room
             </Button>
           </div>
         </Stack>

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
-import { FRAME_BUDGET } from "@/lib/estate-sale-planner/config";
+import { PHOTO_BUDGET } from "@/lib/estate-sale-planner/config";
 
 let POST: typeof import("@/app/estate-sale-planner/api/flag/route").POST;
 
@@ -49,7 +49,7 @@ describe("POST /estate-sale-planner/api/flag (no key)", () => {
   });
 
   it("refuses more frames than the budget", async () => {
-    const frames = Array.from({ length: FRAME_BUDGET.maxFrames + 1 }, () => frame);
+    const frames = Array.from({ length: PHOTO_BUDGET.maxPhotos + 1 }, () => frame);
     const res = await POST(req({ frames }));
     expect(res.status).toBe(400);
     expect((await res.json()).error).toMatch(/budget/i);

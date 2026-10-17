@@ -7,6 +7,7 @@ import { SELL_SHEET } from "../../../lib/estate-sale-planner/config";
 import { sellList, overrides, type Session } from "../../../lib/estate-sale-planner/session";
 import { formatPrice, sheetInputFromSession } from "../../../lib/estate-sale-planner/sheet";
 import { loadSession } from "../../../lib/estate-sale-planner/storage";
+import { paths } from "../../../lib/estate-sale-planner/routes";
 import { track } from "../../../lib/estate-sale-planner/analytics";
 
 /**
@@ -53,10 +54,10 @@ export default function SummaryPage() {
       <Section bg="background" py={24}>
         <Container size="md">
           <Stack gap={16}>
-            <h1 className="text-h2 text-foreground">No session to print</h1>
-            <p className="text-muted-foreground">The session lives in this tab only. Start a walkthrough to make one.</p>
+            <h1 className="text-h2 text-foreground">No sale to print</h1>
+            <p className="text-muted-foreground">Open a sale from Home first; the summary prints the one in context.</p>
             <Button asChild>
-              <Link href="/estate-sale-planner">Start a walkthrough</Link>
+              <Link href={paths.home()}>Go to Home</Link>
             </Button>
           </Stack>
         </Container>
@@ -72,14 +73,14 @@ export default function SummaryPage() {
       <Container size="md">
         <Stack gap={24}>
           <Callout>
-            These value bands are a model&apos;s guess from a phone walkthrough, with a stated
+            These value bands are a model&apos;s guess from phone photos, with a stated
             confidence. They are not an appraisal and not advice for insurance, tax, or probate.
           </Callout>
 
           <Stack gap={8}>
             <h1 className="text-h1 text-foreground">Might be worth selling</h1>
             <p className="text-caption uppercase tracking-wider text-muted-foreground">
-              {session.name ? `${session.name} · ` : ""}Walkthrough {new Date(session.createdAt).toLocaleDateString()} · {sell.length} items
+              {session.name ? `${session.name} · ` : ""}Sale started {new Date(session.createdAt).toLocaleDateString()} · {sell.length} items
             </p>
           </Stack>
 
@@ -123,7 +124,7 @@ export default function SummaryPage() {
 
           {moved.length > 0 && (
             <p className="text-small text-muted-foreground">
-              You moved {moved.length} flagged {moved.length === 1 ? "item" : "items"} to keep or toss; they are not listed here.
+              You moved {moved.length} flagged {moved.length === 1 ? "item" : "items"} to keep or donate; they are not listed here.
             </p>
           )}
 
@@ -160,7 +161,7 @@ export default function SummaryPage() {
           </div>
           <div className="flex justify-center print:hidden">
             <Button variant="ghost" asChild>
-              <Link href="/estate-sale-planner">Back to the sort</Link>
+              <Link href={paths.sale(session.id)}>Back to the sale</Link>
             </Button>
           </div>
         </Stack>

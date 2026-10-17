@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { FRAME_BUDGET } from "../../../../lib/estate-sale-planner/config";
+import { PHOTO_BUDGET } from "../../../../lib/estate-sale-planner/config";
 import { flagFrames, visionConfigured, type FrameInput, type KnownItem } from "../../../../lib/estate-sale-planner/flag";
 
 export const runtime = "nodejs";
@@ -61,9 +61,9 @@ export async function POST(request: NextRequest) {
   if (!frames || frames.length === 0) {
     return NextResponse.json({ error: "Send at least one frame." }, { status: 400 });
   }
-  if (frames.length > FRAME_BUDGET.maxFrames) {
+  if (frames.length > PHOTO_BUDGET.maxPhotos) {
     return NextResponse.json(
-      { error: `Too many frames — the budget is ${FRAME_BUDGET.maxFrames} per walkthrough.` },
+      { error: `Too many frames — the budget is ${PHOTO_BUDGET.maxPhotos} per pass.` },
       { status: 400 },
     );
   }
