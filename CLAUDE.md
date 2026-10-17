@@ -59,6 +59,8 @@ discovers (flat `skills/<name>.md` files are ignored).
 - Triage: `skills/issue-triage/SKILL.md` — P0–P4 rubric, light retitling, cluster identification across open issues
 - Case studies: `skills/case-study/SKILL.md` — argument-form write-ups through schema gates; content in Notion/Figma, markdown stops at OpenSpec artifacts
 - Code review: `.github/skills/code-review/SKILL.md` — PR autonomy rules; lives under `.github/skills/` so every IDE and GitHub Copilot read it, and `skills/code-review` symlinks to it
+- Lineage proposals: `skills/lineage-proposals/SKILL.md` — evidence-backed corrections to the Idea Lineage graph, written as proposals Katy accepts in the graph; Notion first, git for dates
+- Theme proposals: `skills/theme-proposals/SKILL.md` — sharper, split, or missing themes on the Idea Lineage graph, written as proposals Katy accepts in the graph
 - Linked repos: `skills/linked-repo-session/SKILL.md` — GitHub MCP is the standard access path for linked-repo code from hub sessions; primer format; opt-in local clones
 
 ## Hooks (Claude Code only)
