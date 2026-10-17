@@ -62,10 +62,14 @@ changes until she taps *Yes*.
    the KBH Second Brain notes, such as the weekly "Hub week of …" pages. Search
    with `notion-search`, then read rows with `notion-fetch`.
 2. **Git dates things.** For each folder, the first commit tells you when it
-   appeared. Run `git log --diff-filter=A --format=%ad --date=short -- <path> | tail -1`
+   appeared. Run `git log --diff-filter=A --reverse --format='%ad %h' --date=short -- <path>`
    for each `experiments/<slug>/` and `openspec/changes/<id>/` (including
-   `archive/`). PR bodies (`git show --stat --format=%b <sha>`) often say what a
-   change grew out of.
+   `archive/`), and read the **first line of the full output**. Never pipe
+   `git log` into `head` or `tail`: RTK truncates output before the pipe sees
+   it, which returns a confidently wrong date (same rule as
+   `lib/change-visualizer/git.ts`). Don't add `--max-count` either, because git
+   applies the limit before `--reverse`. PR bodies
+   (`git show --stat --format=%b <sha>`) often say what a change grew out of.
 3. **Repo docs say why.** Look at `experiments/<slug>/docs/` (intent, prior art,
    history drafts), OpenSpec `proposal.md` and `design.md` (the "Why" and
    "Human anchor" sections), and `docs/pulls/` notes.
