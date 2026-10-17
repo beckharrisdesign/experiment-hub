@@ -29,10 +29,11 @@ between nodes. Read its **Sources** section: the same rules apply here
   its database with the **ArtifactData** tool.
 - **`nodes`:** each node has `themes[]`. Only `idea` and `tool` nodes carry
   themes; tests, decisions and sunsets inherit them from their family.
-- **Built-in themes** (keys): `makers` (Empowering makers), `environment`,
-  `parents` (Modern working parents), `neuro` (Supporting neurodiversity),
-  `building` (Building products at scale, emptied on purpose because it
-  swallowed everything). A theme with no nodes is hidden on the graph.
+- **Built-in themes** (key → label): `makers` → Makers, `environment` →
+  Conservation, `parents` → Caregivers, `neuro` → Neurodiversity, `building` →
+  Scale (emptied on purpose because it swallowed everything). Added so far:
+  `design-teams` → Designers, `memorials` → Memory. A theme with no nodes is
+  hidden on the graph.
 - **`themes` collection:** every theme beyond the built-in five, as
   `{label, lines: [line1, line2], color: {light, dark}, createdAt}`, keyed by a
   kebab-case id. Never write here directly. Accepting a proposal creates the
@@ -42,15 +43,15 @@ between nodes. Read its **Sources** section: the same rules apply here
 
 ```json
 {
-  "title": "New theme: Empowering design teams",
+  "title": "New theme: Designers",
   "status": "open",
   "createdAt": "<ISO timestamp>",
   "source": "From node records + Notion",
   "rationale": "What the theme holds today, and the clearer grouping the evidence shows.",
   "evidence": ["Dated, sourced fact, in Katy's words where they exist", "…"],
   "changes": [
-    { "addTheme": { "key": "design-teams", "label": "Empowering design teams",
-                    "lines": ["Empowering", "design teams"],
+    { "addTheme": { "key": "design-teams", "label": "Designers",
+                    "lines": ["Designers", ""],
                     "color": { "light": "#0e7490", "dark": "#67e8f9" } } },
     { "node": "cisco-hub", "field": "themes", "from": ["makers"], "to": ["design-teams"] }
   ]
@@ -70,7 +71,7 @@ between nodes. Read its **Sources** section: the same rules apply here
    split candidate. `building` became one giant blob this way.
 2. **Two audiences under one label.** Read each member's own words (`why`,
    `need`, `riskiest`) and its Notion row. Your founding example is
-   *Empowering makers*:
+   *Makers*:
    - **physical making:** embroidery, Etsy patterns, stitch files, seeds,
      laser and craft work;
    - **tooling for design teams inside companies:** Cisco hub, Figma Grabber,
@@ -93,9 +94,10 @@ between nodes. Read its **Sources** section: the same rules apply here
    this matters*).
 3. **Group by audience** in plain words first, then compare with the current
    themes. Propose only where the gap is clear.
-4. **Name a new theme in Katy's voice.** Use the existing pattern,
-   "Empowering …" / "Supporting …" / "Modern …". `lines` splits the label onto
-   two lines of similar length. Give a kebab-case `key`.
+4. **Name a new theme in one word**, a noun for who or what the work serves:
+   Makers, Conservation, Caregivers, Neurodiversity, Designers, Memory. Set
+   `lines` to `["Word", ""]`. Give a kebab-case `key`, which never changes
+   after it's created (renaming only changes `label` and `lines`).
 5. **Pick a color** that isn't an existing theme or node color. Taken: makers
    pink, environment teal-green, parents olive, neuro purple, building gold;
    node kinds use green, orange, blue and gray. Give a `light` color dark
