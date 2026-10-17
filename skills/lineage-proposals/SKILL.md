@@ -48,8 +48,8 @@ changes until she taps *Yes*.
 }
 ```
 
-- `field` must be `parents` or `testOf`. Those are the only fields the page
-  can preview and apply.
+- `field` must be `parents` or `testOf` for link changes. Theme changes
+  (`themes`, new themes) belong to `skills/theme-proposals/SKILL.md`.
 - `from` must equal the node's **current** value. The page warns when it
   doesn't, but a proposal that is wrong from the start wastes a review.
 - An open proposal adds +1 to the badge of each node it would change. Write
