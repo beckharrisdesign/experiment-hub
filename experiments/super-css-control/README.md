@@ -212,6 +212,20 @@ inline `<style>` block that carries the theme variables, and both copies
 applied at once. The `--bhd-css-remote` marker in `site.css` stays anyway —
 it is how the check tells the two apart if an inline copy ever comes back.
 
+### Components — 2026-10-21
+
+The `components.js` module line is installed in Super's head alongside the
+lightbox and redirects lines, and the first `::patents` callout renders live
+on the patents page (PR #546). Verified by eye on the live site after the
+head-code change; the automated coverage is the jsdom suite in
+`tests/scripts/super-components.test.ts` and the CORS rule pinned by
+`tests/ci/super-cors-headers.test.ts`.
+
+Nothing in the compat check watches the components yet. The hooks it would
+need to watch are the two the loader depends on — `.notion-callout` and
+`.notion-callout__content` — and both are already in its selector list via
+`site.css`, so a Super markup change that breaks the loader shows up there.
+
 ### The trade, now paid
 
 Super used to ship the CSS *inline in the initial HTML* — the fastest possible
