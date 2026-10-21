@@ -140,6 +140,11 @@ Rules:
 - **Thumbnail, from Notion:** put the cursor at the end of the bullet, Enter,
   Tab to indent, `/image`, upload or paste. The image nested under that bullet
   becomes its thumbnail. (Or paste an image URL as a field; either works.)
+- **Placeholder thumbnail:** `public/super/components/placeholder-thumb.png`
+  (320×320, brand dark teal with an aqua image glyph), served at
+  `https://labs.beckharrisdesign.com/super/components/placeholder-thumb.png`.
+  The FIS Memento patents block uses uploaded copies of it under each bullet
+  until real images replace them.
 - Nested bullets under an item are ignored, so working notes can live there.
 - `::patents` is an alias for `::links`: the first block shipped under that
   name and still works.
