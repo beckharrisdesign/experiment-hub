@@ -91,6 +91,18 @@ const nextConfig = {
     ];
 
     return [
+      // The Super library (public/super/*) is loaded by beckharrisdesign.com,
+      // a different origin. A classic <script> and a <link rel=stylesheet>
+      // do not care, but components.js is an ES module: the module request,
+      // its dynamic import()s and its fetch() of component CSS are all CORS
+      // requests, and the browser blocks them without this header. Public,
+      // read-only static files with no cookies involved, so `*` is the honest
+      // value — Super's preview domains need it as much as the live site.
+      {
+        source: '/super/:path*',
+        headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }],
+      },
+
       // The Picker pages. X-Frame-Options is omitted here rather than set to
       // DENY: it is a legacy header with no frame-src equivalent, and
       // frame-ancestors 'none' in the CSP already denies being framed.
