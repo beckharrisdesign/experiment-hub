@@ -12,6 +12,7 @@
    8. Tables               — the borderless tables on Labs
    9. Collection pages     — the /for-<company> curated card rows
    10. Lightbox            — the image viewer (behaviour in lightbox.js)
+   11. Components          — Notion-callout components (components.js)
    ============================================================ */
 /* ============================================================
    1. DESIGN TOKENS
@@ -981,4 +982,40 @@ html.bhd-lb-open {
   .bhd-lb__prev,
   .bhd-lb__next { top: auto; bottom: 1rem; transform: none; }
   .bhd-lb__bar { padding-inline: 4rem; }
+}
+
+/* ============================================================
+   11. COMPONENTS
+   Hooks for public/super/components.js, which turns a Notion callout
+   whose first line is `::name` into a component rendered in a Shadow
+   DOM. The component's own styles live in components/<name>.css; this
+   section only covers what sits in the light DOM: the host element and
+   the not-yet-converted callout. Classes are prefixed bhd- so they can
+   never collide with Super's markup (the compat check ignores them).
+   ============================================================ */
+/* The host <aside> takes the callout's place in the flow. Inherited
+   properties (font, colour, line-height) and custom properties cross
+   into the shadow root from here, so this is where the component picks
+   up the site's type. */
+.bhd-component {
+  display: block;
+  margin: 1.75rem 0 1rem;
+  max-width: var(--content-max-width);
+}
+/* Flash of raw content. The loader stamps a marked callout with
+   data-bhd-pending as soon as it runs; hide it until the component
+   replaces it. visibility (not display) keeps the space, so the swap
+   does not shift the page.
+
+   The 2s delay is the fallback: a zero-length animation whose `from`
+   keyframe holds while the delay runs, then `to` lands. If the component
+   never arrives — module 404, network, a thrown render — the callout
+   reappears on its own with no JavaScript involved. On a caught failure
+   the loader removes the attribute sooner. */
+.notion-callout[data-bhd-pending] {
+  animation: bhd-pending-reveal 0s linear 2s both;
+}
+@keyframes bhd-pending-reveal {
+  from { visibility: hidden; }
+  to   { visibility: visible; }
 }
