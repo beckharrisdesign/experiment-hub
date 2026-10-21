@@ -1002,17 +1002,18 @@ html.bhd-lb-open {
   margin: 1.75rem 0 1rem;
   max-width: var(--content-max-width);
 }
-/* Flash of raw content. The loader stamps a marked callout with
-   data-bhd-pending as soon as it runs; hide it until the component
-   replaces it. visibility (not display) keeps the space, so the swap
+/* Flash of raw content. The loader stamps every part of a marked block
+   (the marker paragraph and the lists under it, or the callout) with
+   data-bhd-pending as soon as it runs; hide them until the component
+   replaces them. visibility (not display) keeps the space, so the swap
    does not shift the page.
 
    The 2s delay is the fallback: a zero-length animation whose `from`
    keyframe holds while the delay runs, then `to` lands. If the component
-   never arrives — module 404, network, a thrown render — the callout
+   never arrives — module 404, network, a thrown render — the content
    reappears on its own with no JavaScript involved. On a caught failure
    the loader removes the attribute sooner. */
-.notion-callout[data-bhd-pending] {
+[data-bhd-pending] {
   animation: bhd-pending-reveal 0s linear 2s both;
 }
 @keyframes bhd-pending-reveal {

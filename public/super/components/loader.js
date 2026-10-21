@@ -6,17 +6,20 @@
  *
  * The pattern: write in Notion, enhance here.
  *
- *   You write ordinary Notion blocks — a callout with a bulleted list inside.
- *   The callout's FIRST LINE carries a marker, `::patents`, optionally
- *   followed by a title. The loader finds those callouts, reads their
- *   content, and replaces each with the matching component. If the script
- *   never loads, readers still see a readable Notion callout. Nothing breaks.
+ *   You write ordinary Notion blocks: a line that starts with a marker,
+ *   `::links`, optionally followed by a title, and a bulleted list right
+ *   under it. That is the custom block. The loader finds the marker line,
+ *   reads the list, and replaces both with the matching component. If the
+ *   script never loads, readers see a line of text and a readable list.
+ *   Nothing breaks.
  *
  *   ::links  Patents
  *   • Presenting fraud detection information | https://patents.google.com/patent/… | Connects an alert to the right evidence…
  *   • Presenting quasi-periodic activity | https://… | Visually connects recurring transactions…
  *
- *   First line : `::name` plus an optional title
+ *   Marker line: `::name` plus an optional title, as its own paragraph
+ *                anywhere on the page — or as the first line of a callout
+ *                with the list inside it; both shapes work.
  *   Each bullet: one item. Fields split by `|`; a Notion link anywhere in
  *                the bullet (select text, Cmd/Ctrl+K) is picked up as the
  *                item's link, and an image block nested under the bullet as
@@ -60,7 +63,7 @@
  * every callout the loader saw and what it made of it.
  */
 
-export const VERSION = '2';
+export const VERSION = '3';
 
 /** Marker name → module file in this directory. Add new components here. */
 export const REGISTRY = {
@@ -75,6 +78,11 @@ export const isRegistered = (name) => Object.hasOwn(REGISTRY, name);
 export const MARK = /^::([\w-]+)(?:[ \t]+(.*))?$/;
 
 const CONTENT_SELECTOR = '.notion-callout__content';
+/* Where a marker can live: a callout's first line, or a paragraph of its own
+   (Super renders a Notion paragraph as `.notion-text`; `p` covers any other
+   host). Lists are never candidates themselves — they belong to the marker
+   paragraph above them. */
+const CANDIDATE_SELECTOR = '.notion-callout, .notion-text, p';
 
 /**
  * @typedef {{ href: string, text: string }} Link
@@ -152,6 +160,40 @@ export function parseCallout(el) {
   return { ...mark, items: listItems(content) };
 }
 
+/** A list block, as Super renders one: the <ul>/<ol> itself or a wrapper around one. */
+function isList(el) {
+  if (!el || el.nodeType !== 1) return false;
+  if (el.matches('ul, ol')) return true;
+  if (el.matches('[class*="notion-list"]')) return true;
+  return el.children.length === 1 && el.firstElementChild.matches('ul, ol');
+}
+
+/**
+ * @typedef {{ spec: Spec, parts: Element[], kind: 'callout' | 'block' }} Block
+ *   `parts[0]` is the element the component replaces; the rest are removed
+ *   with it (the lists under a marker paragraph).
+ */
+
+/**
+ * The custom block: a marker paragraph plus every list that follows it
+ * directly, or a callout carrying the marker on its first line.
+ * @param {Element} el  a candidate (see CANDIDATE_SELECTOR)
+ * @returns {Block | null}  null when `el` is not a marked block
+ */
+export function parseBlock(el) {
+  if (el.matches('.notion-callout')) {
+    const spec = parseCallout(el);
+    return spec && { spec, parts: [el], kind: 'callout' };
+  }
+  if (el.closest('.notion-callout, li')) return null; // a callout's own text, or a bullet
+  const mark = parseMarker(normalize(el.textContent));
+  if (!mark) return null;
+  const lists = [];
+  for (let sib = el.nextElementSibling; isList(sib); sib = sib.nextElementSibling) lists.push(sib);
+  const items = lists.flatMap(listItems);
+  return { spec: { ...mark, items }, parts: [el, ...lists], kind: 'block' };
+}
+
 /** Collapse whitespace runs, keep line breaks meaningful, trim. */
 function normalize(s) {
   return String(s ?? '')
@@ -181,21 +223,26 @@ function loadComponent(name) {
 }
 
 /**
- * Component failed to arrive: show the Notion callout as written, minus the
- * marker, so readers get the content and nobody sees `::patents`.
- * @param {Element} el
- * @param {Spec} spec
+ * Component failed to arrive: show the Notion content as written, minus the
+ * marker, so readers get the list and nobody sees `::links`.
+ * @param {Block} block
  */
-function revealFallback(el, spec) {
-  const content = el.querySelector(CONTENT_SELECTOR) ?? el;
-  for (const child of content.children) {
-    if (child.matches('ul, ol')) break;
-    if (normalize(child.textContent).startsWith('::')) {
-      child.textContent = spec.title;
-      break;
+function revealFallback({ spec, parts, kind }) {
+  const [el] = parts;
+  if (kind === 'callout') {
+    const content = el.querySelector(CONTENT_SELECTOR) ?? el;
+    for (const child of content.children) {
+      if (child.matches('ul, ol')) break;
+      if (normalize(child.textContent).startsWith('::')) {
+        child.textContent = spec.title;
+        break;
+      }
     }
+  } else {
+    const text = el.querySelector('.notion-text__content') ?? el;
+    text.textContent = spec.title;
   }
-  el.removeAttribute('data-bhd-pending');
+  for (const part of parts) part.removeAttribute('data-bhd-pending');
   el.dataset.bhdState = 'failed';
 }
 
@@ -211,25 +258,28 @@ const noted = new WeakSet();
  */
 export async function enhance(root = document, { load = loadComponent } = {}) {
   const jobs = [];
-  for (const el of root.querySelectorAll('.notion-callout:not([data-bhd])')) {
-    const spec = parseCallout(el);
-    if (!spec) {
-      if (!noted.has(el)) {
+  for (const el of root.querySelectorAll(CANDIDATE_SELECTOR)) {
+    if (el.hasAttribute('data-bhd')) continue;
+    const block = parseBlock(el);
+    if (!block) {
+      // Only callouts are worth a line in the report; every paragraph is not.
+      if (el.matches('.notion-callout') && !noted.has(el)) {
         noted.add(el);
         seen.push({ first: firstLine(el.querySelector(CONTENT_SELECTOR) ?? el).slice(0, 60), status: 'no marker' });
       }
       continue;
     }
+    const { spec, parts, kind } = block;
     if (!isRegistered(spec.name)) {
       if (!noted.has(el)) {
         noted.add(el);
-        seen.push({ first: `::${spec.name}`, status: 'unknown component' });
+        seen.push({ first: `::${spec.name}`, status: 'unknown component', shape: kind });
       }
       continue;
     }
     el.dataset.bhd = spec.name;
-    el.dataset.bhdPending = '';
-    const entry = { first: `::${spec.name}`, status: 'loading', items: spec.items.length };
+    for (const part of parts) part.dataset.bhdPending = '';
+    const entry = { first: `::${spec.name}`, status: 'loading', items: spec.items.length, shape: kind };
     seen.push(entry);
     jobs.push(
       load(spec.name)
@@ -237,11 +287,12 @@ export async function enhance(root = document, { load = loadComponent } = {}) {
           const out = mod.render(el, { ...spec, css });
           out.dataset.bhd = spec.name;
           el.replaceWith(out);
+          for (const part of parts.slice(1)) part.remove();
           entry.status = 'rendered';
         })
         .catch((err) => {
           console.warn(`[bhd] component "${spec.name}" failed to load`, err);
-          revealFallback(el, spec);
+          revealFallback(block);
           entry.status = `failed: ${err?.message ?? err}`;
         }),
     );
@@ -272,5 +323,5 @@ export function boot() {
     });
   };
   new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
-  enhance().then(() => console.debug(`[bhd] components v${VERSION}: ${seen.length} callout(s) seen — bhdComponents.report() for detail`));
+  enhance().then(() => console.debug(`[bhd] components v${VERSION}: ${seen.length} block(s) seen — bhdComponents.report() for detail`));
 }

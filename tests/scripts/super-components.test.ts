@@ -5,6 +5,7 @@ import {
   isRegistered,
   parseMarker,
   parseCallout,
+  parseBlock,
   parseItem,
   enhance,
 } from '../../public/super/components/loader.js';
@@ -37,6 +38,21 @@ function callout(firstLine: string, items: string[] = PATENTS): HTMLElement {
     items.map((t) => `<li><span class="notion-semantic-string">${t}</span></li>`).join('') +
     `</ul></div>`;
   return el;
+}
+
+/** The custom block as Super renders it: a paragraph, then one <ul> per bullet. */
+function block(firstLine: string, items: string[] = PATENTS, { oneList = false } = {}): HTMLElement[] {
+  const p = document.createElement('p');
+  p.className = 'notion-text';
+  p.innerHTML = `<span class="notion-text__content"><span class="notion-semantic-string">${firstLine}</span></span>`;
+  const lis = items.map((t) => `<li><span class="notion-semantic-string">${t}</span></li>`);
+  const lists = (oneList ? [lis.join('')] : lis).map((html) => {
+    const ul = document.createElement('ul');
+    ul.className = 'notion-list notion-list-disc';
+    ul.innerHTML = html;
+    return ul;
+  });
+  return [p, ...lists];
 }
 
 const li = (html: string) => {
@@ -116,6 +132,59 @@ describe('parseCallout', () => {
   });
 });
 
+describe('parseBlock — the custom block (marker paragraph + list)', () => {
+  it('reads a marker paragraph and every list directly under it, one <ul> per bullet', () => {
+    const parts = block('::links  Patents');
+    document.body.append(...parts);
+    const b = parseBlock(parts[0])!;
+    expect(b.kind).toBe('block');
+    expect(b.spec.title).toBe('Patents');
+    expect(b.spec.items).toHaveLength(3);
+    expect(b.parts).toHaveLength(4);
+  });
+
+  it('also accepts a single <ul> holding all the bullets', () => {
+    const parts = block('::links', PATENTS, { oneList: true });
+    document.body.append(...parts);
+    const b = parseBlock(parts[0])!;
+    expect(b.spec.items).toHaveLength(3);
+    expect(b.parts).toHaveLength(2);
+  });
+
+  it('stops at the first sibling that is not a list', () => {
+    const parts = block('::links  Patents', [PATENTS[0]]);
+    const after = document.createElement('p');
+    after.className = 'notion-text';
+    after.textContent = 'Prose after the block';
+    const stray = document.createElement('ul');
+    stray.innerHTML = '<li>unrelated list later on</li>';
+    document.body.append(...parts, after, stray);
+    const b = parseBlock(parts[0])!;
+    expect(b.spec.items).toHaveLength(1);
+    expect(b.parts).not.toContain(after);
+    expect(b.parts).not.toContain(stray);
+  });
+
+  it('ignores ordinary paragraphs, a callout\'s own text, and text inside bullets', () => {
+    const plain = document.createElement('p');
+    plain.textContent = 'Just prose';
+    expect(parseBlock(plain)).toBeNull();
+
+    const c = callout('::links  In a callout');
+    document.body.append(c);
+    // The span carrying the marker inside the callout is not a block of its own…
+    const inner = c.querySelector('.notion-callout__content > span') as HTMLElement;
+    expect(parseBlock(inner)).toBeNull();
+    // …the callout is.
+    expect(parseBlock(c)!.kind).toBe('callout');
+  });
+
+  it('still treats a callout carrying the marker as the block', () => {
+    const c = callout('::patents  Alias');
+    expect(parseBlock(c)!.spec.name).toBe('patents');
+  });
+});
+
 describe('enhance', () => {
   const okLoad = async () => ({ mod: { render: renderLinks }, css: '' });
 
@@ -189,6 +258,48 @@ describe('enhance', () => {
     const first = el.querySelector('.notion-callout__content > *')!;
     expect(first.textContent).toBe('Five patents, one argument');
     expect(el.querySelectorAll('li')).toHaveLength(3);
+  });
+
+  it('renders the custom block in place of the marker paragraph and removes its lists', async () => {
+    const before = document.createElement('p');
+    before.textContent = 'Prose before';
+    const parts = block('::links  Patents');
+    const after = document.createElement('p');
+    after.textContent = 'Prose after';
+    document.body.append(before, ...parts, after);
+
+    await enhance(document, { load: okLoad });
+
+    const host = document.querySelector('aside[data-bhd="links"]')!;
+    expect(host).not.toBeNull();
+    expect(host.previousElementSibling).toBe(before);
+    expect(host.nextElementSibling).toBe(after);
+    expect(document.querySelectorAll('ul')).toHaveLength(0);
+    expect(document.querySelectorAll('[data-bhd-pending]')).toHaveLength(0);
+    expect(host.shadowRoot!.querySelectorAll('.bhd-links__row')).toHaveLength(3);
+  });
+
+  it('on a failed load, reveals the marker paragraph as its title and keeps the lists', async () => {
+    const parts = block('::links  Patents');
+    document.body.append(...parts);
+
+    await enhance(document, { load: async () => { throw new Error('offline'); } });
+
+    expect(parts[0].textContent).toBe('Patents');
+    expect(parts[0].dataset.bhdState).toBe('failed');
+    expect(document.querySelectorAll('ul')).toHaveLength(3);
+    expect(document.querySelectorAll('[data-bhd-pending]')).toHaveLength(0);
+  });
+
+  it('leaves ordinary paragraphs alone and does not list them in the report', async () => {
+    const p = document.createElement('p');
+    p.className = 'notion-text';
+    p.textContent = 'Ordinary paragraph';
+    document.body.append(p);
+    let calls = 0;
+    await enhance(document, { load: async () => { calls += 1; return okLoad(); } });
+    expect(calls).toBe(0);
+    expect(p.hasAttribute('data-bhd')).toBe(false);
   });
 
   it('exposes the registry so a new component is one line, with ::patents as an alias', () => {
