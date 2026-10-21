@@ -47,6 +47,12 @@
  * Caching: Vercel serves public/ with `max-age=0, must-revalidate`, so this
  * file is fresh on every page load. The component modules it imports carry
  * `?v=VERSION` as a second guard; bump VERSION when a component changes.
+ *
+ * Cross-origin: this module, its dynamic imports and the CSS fetch all run
+ * from beckharrisdesign.com against labs.beckharrisdesign.com, and unlike a
+ * classic <script> every one of them is a CORS request. next.config.js sets
+ * `Access-Control-Allow-Origin: *` on /super/* for that reason; without it
+ * the browser blocks the module before boot() runs.
  */
 
 /* Resolved against this file's own URL, so the same code serves production
@@ -58,6 +64,9 @@ const VERSION = '1';
 export const REGISTRY = {
   patents: 'patents.js',
 };
+
+/** Own entries only: `::constructor` or `::__proto__` must not resolve. */
+export const isRegistered = (name) => Object.hasOwn(REGISTRY, name);
 
 /** `::name  optional title` — must be the very first line of the callout. */
 export const MARK = /^::([\w-]+)(?:[ \t]+(.*))?$/;
@@ -151,6 +160,7 @@ const cache = new Map();
 /** @returns {Promise<{ mod: ComponentModule, css: string }>} */
 function loadComponent(name) {
   if (!cache.has(name)) {
+    if (!isRegistered(name)) return Promise.reject(new Error(`[bhd] unknown component "${name}"`));
     const file = REGISTRY[name];
     const url = `${BASE}${file}?v=${VERSION}`;
     const cssUrl = url.replace(/\.js\?/, '.css?');
@@ -193,7 +203,7 @@ export async function enhance(root = document, { load = loadComponent } = {}) {
   const jobs = [];
   for (const el of root.querySelectorAll('.notion-callout:not([data-bhd])')) {
     const spec = parseCallout(el);
-    if (!spec || !REGISTRY[spec.name]) continue;
+    if (!spec || !isRegistered(spec.name)) continue;
     el.dataset.bhd = spec.name;
     el.dataset.bhdPending = '';
     jobs.push(

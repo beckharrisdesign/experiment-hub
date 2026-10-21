@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   REGISTRY,
+  isRegistered,
   parseMarker,
   parseCallout,
   splitItem,
@@ -162,6 +163,23 @@ describe('enhance', () => {
 
   it('exposes the registry so a new component is one line', () => {
     expect(REGISTRY.patents).toBe('patents.js');
+  });
+
+  it('does not treat inherited Object.prototype names as components', async () => {
+    // `REGISTRY['constructor']` is truthy on any plain object; a marker that
+    // happens to spell one must stay an unknown marker, untouched.
+    expect(isRegistered('constructor')).toBe(false);
+    expect(isRegistered('__proto__')).toBe(false);
+    expect(isRegistered('toString')).toBe(false);
+    expect(isRegistered('patents')).toBe(true);
+
+    const el = callout('::constructor  Title');
+    document.body.append(el);
+    let calls = 0;
+    await enhance(document, { load: async () => { calls += 1; return { mod: { render: renderPatents }, css: '' }; } });
+    expect(calls).toBe(0);
+    expect(document.body.contains(el)).toBe(true);
+    expect(el.hasAttribute('data-bhd')).toBe(false);
   });
 });
 
