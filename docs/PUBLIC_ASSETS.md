@@ -13,7 +13,7 @@ local dev, on preview deployments, and in production
 | `figma-grabber/`   | `/figma-grabber/`      | Snap-issue grabber page                                                                                     |
 | `landing/`         | `/landing/…`           | Static landing pages (`best-day-ever`, `simple-seed-organizer`)                                             |
 | `lib/`, `scripts/` | `/lib/…`, `/scripts/…` | Capture library and bookmarklet sources for the grabber                                                     |
-| `super/`           | `/super/…`             | The CSS/JS behind beckharrisdesign.com (Notion → Super): `site.css`, `lightbox.js`, `redirects.js`, `components.js` + `components/`. See `experiments/super-css-control/README.md` |
+| `super/`           | `/super/…`             | The CSS/JS behind beckharrisdesign.com (Notion → Super): `site.css`, `lightbox.js`, `redirects.js`, `components.js` + `components/` (loader and `::links`). See `experiments/super-css-control/README.md` |
 
 ## On the wordmark
 
