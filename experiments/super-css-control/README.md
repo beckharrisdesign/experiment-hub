@@ -75,12 +75,15 @@ load.
 
 ## Components
 
-**The pattern: write in Notion, enhance with the script.** You write the
-content in normal Notion blocks: a callout with a bulleted list inside. A
-marker on the callout's first line (`::links`) tells the loader what to
-build. The loader finds those blocks, reads their content and replaces them
-with the component. If the script fails to load, readers still see a readable
-Notion callout, so nothing breaks.
+**The pattern: write in Notion, enhance with the script.** You write ordinary
+Notion blocks: a line that starts with a marker (`::links`, plus an optional
+title) and a bulleted list right under it. That is the custom block. The
+loader finds the marker line, reads the list, and replaces both with the
+component. If the script fails to load, readers see a line of text and a
+readable list, so nothing breaks.
+
+The same marker on the first line of a callout, with the list inside it,
+also works. The callout is optional, not the container.
 
 Why not code blocks or JSON: collaborators edit plain Notion text, content
 stays with the page it belongs to, and structure and styling live in this repo
@@ -109,17 +112,19 @@ hides a marked callout until it has been converted.
 
 ### `::links` — external links with a title, description, link and thumbnail
 
-What the content looks like in Notion, as a callout block:
+What the content looks like in Notion, anywhere on a page:
 
 ```
 ::links  Patents
-- Presenting fraud detection information | https://patents.google.com/patent/… | Connects an analytics-generated alert to appropriate interface components.
-- Presenting quasi-periodic activity | https://patents.google.com/patent/… | Visually connects recurring transactions and distinguishes them from other activity.
+- Presenting fraud detection information | https://patents.google.com/patent/US8306889B2 | Connects an analytics-generated alert to appropriate interface components.
+- Presenting quasi-periodic activity | https://patents.google.com/patent/US8290845B2 | Visually connects recurring transactions and distinguishes them from other activity.
 ```
 
 Rules:
 
-- **First line:** `::links` plus an optional heading.
+- **Marker line:** `::links` plus an optional heading, as a paragraph of its
+  own. Every bulleted list directly under it belongs to the block; the block
+  ends at the first thing that is not a list.
 - **Each bullet:** one item. Fields are split by `|` and may come in **any
   order**:
 
@@ -132,8 +137,11 @@ Rules:
 
   So `[Title](url) \| Description`, `Title \| url \| Description` and
   `Title \| Description \| url` all render the same.
+- **Thumbnail, from Notion:** put the cursor at the end of the bullet, Enter,
+  Tab to indent, `/image`, upload or paste. The image nested under that bullet
+  becomes its thumbnail. (Or paste an image URL as a field; either works.)
 - Nested bullets under an item are ignored, so working notes can live there.
-- `::patents` is an alias for `::links`: the first callout shipped under that
+- `::patents` is an alias for `::links`: the first block shipped under that
   name and still works.
 
 ### Adding a component
@@ -181,9 +189,10 @@ bhdComponents.report()   // every callout the loader saw, and what it made of it
 
 `undefined` means the bootstrap never ran: check the head line is installed
 and `labs.beckharrisdesign.com/super/components.js` loads in the Network tab.
-A row reading `no marker` means the first line of that callout is not
-`::name`; `unknown component` means the name is not in the registry;
-`failed: …` names the error.
+A row reading `no marker` is a callout without a marker (plain paragraphs
+are not listed); `unknown component` means the name is not in the registry;
+`failed: …` names the error. `shape` says whether the block was a marker
+paragraph (`block`) or a callout.
 
 ### Who edits what
 
@@ -195,14 +204,16 @@ A row reading `no marker` means the first line of that callout is not
 
 ### Testing
 
-`tests/scripts/super-components.test.ts` builds the callout markup Super emits
-and covers the loader–component contract in jsdom: marker parsing, item
-parsing (fields, Notion links, nested images), replacement, idempotence, the
-unknown-marker and failed-load paths, and the `::links` render including the
-thumbnail and link rules. The live site cannot be reached from CI, so a
-browser smoke test is manual: serve `public/` locally, load a page carrying
-the callout above with a plain `<script src>`, and check that an
-`<aside data-bhd="links">` with a shadow root took its place.
+`tests/scripts/super-components.test.ts` builds the markup Super emits (a
+marker paragraph with one `<ul>` per bullet, and the callout form) and covers
+the loader–component contract in jsdom: marker parsing, item parsing (fields,
+Notion links, nested images), block detection and where it stops, replacement
+in place, idempotence, the unknown-marker and failed-load paths, and the
+`::links` render including the thumbnail and link rules. The live site cannot
+be reached from CI, so a browser smoke test is manual: serve `public/`
+locally, load a page carrying the block above with a plain `<script src>`,
+and check that an `<aside data-bhd="links">` with a shadow root took its
+place between the surrounding paragraphs.
 
 ## ⚠️ Why the CSS is not in this directory
 
