@@ -119,6 +119,17 @@ describe('parseCallout', () => {
     ]);
   });
 
+  it('takes an image block right after a bullet inside the callout as its thumbnail', () => {
+    const el = callout('::links', PATENTS.slice(0, 1));
+    const img = document.createElement('div');
+    img.className = 'notion-image normal';
+    img.innerHTML = '<img src="https://images.spr.so/thumb-1/w=1920">';
+    el.querySelector('.notion-callout__content')!.append(img);
+    const spec = parseCallout(el)!;
+    expect(spec.items).toHaveLength(1);
+    expect(spec.items[0].images).toEqual(['https://images.spr.so/thumb-1/w=1920']);
+  });
+
   it('returns null for a callout without a marker', () => {
     expect(parseCallout(callout('Just a note'))).toBeNull();
   });
@@ -156,6 +167,58 @@ describe('parseBlock — images nested under a bullet, as Super renders them', (
       ['https://images.spr.so/thumb-3/w=1920'],
     ]);
     expect(describeLink(items[0]).thumb).toBe('https://images.spr.so/thumb-1/w=1920');
+  });
+});
+
+describe('parseBlock — an image block after a bullet, not indented', () => {
+  const imgBlock = (n: number) => {
+    const d = document.createElement('div');
+    d.className = 'notion-image normal';
+    d.innerHTML = `<img alt="image" src="https://images.spr.so/thumb-${n}/w=1920">`;
+    return d;
+  };
+  const para = (text = '') => {
+    const p = document.createElement('div');
+    p.className = 'notion-text';
+    p.textContent = text;
+    return p;
+  };
+
+  it('gives each image to the bullet above it and stops at a blank line', () => {
+    // Live markup: <ul><li/></ul> then <div.notion-image> at page level, one per bullet.
+    const [marker, ...lists] = block('::links  Patents');
+    const after = para('');
+    const later = imgBlock(9); // an unrelated image after the blank line
+    document.body.append(marker, lists[0], imgBlock(1), lists[1], lists[2], imgBlock(3), after, later);
+
+    const b = parseBlock(marker)!;
+    expect(b.spec.items.map((i) => i.images)).toEqual([
+      ['https://images.spr.so/thumb-1/w=1920'],
+      [],
+      ['https://images.spr.so/thumb-3/w=1920'],
+    ]);
+    expect(b.parts).toHaveLength(6); // marker, 3 lists, 2 images
+    expect(b.parts).not.toContain(after);
+    expect(b.parts).not.toContain(later);
+  });
+
+  it('leaves an image before the first bullet out of the block', () => {
+    const [marker, ...lists] = block('::links', PATENTS.slice(0, 1));
+    const first = imgBlock(0);
+    document.body.append(marker, first, ...lists);
+    const b = parseBlock(marker)!;
+    expect(b.parts).toEqual([marker]);
+    expect(b.spec.items).toEqual([]);
+  });
+
+  it('removes the images with the block when it renders', async () => {
+    const [marker, ...lists] = block('::links', PATENTS.slice(0, 1));
+    document.body.append(marker, lists[0], imgBlock(1), para('after'));
+    await enhance(document.body, {
+      load: async () => ({ mod: { render: () => document.createElement('aside') }, css: '' }),
+    });
+    expect(document.querySelectorAll('.notion-image, ul').length).toBe(0);
+    expect(document.body.textContent).toContain('after');
   });
 });
 
