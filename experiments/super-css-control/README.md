@@ -85,6 +85,11 @@ readable list, so nothing breaks.
 The same marker on the first line of a callout, with the list inside it,
 also works. The callout is optional, not the container.
 
+A block is a callout-sized aside, not a page section: drop one next to the
+part of the story it supports, with **one link or several**. A page can carry
+as many `::links` blocks as it needs. Thumbnails follow the same rule in both
+shapes: an image right below a bullet, indented or not.
+
 Why not code blocks or JSON: collaborators edit plain Notion text, content
 stays with the page it belongs to, and structure and styling live in this repo
 so every page stays consistent.

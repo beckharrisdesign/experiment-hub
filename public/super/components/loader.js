@@ -178,7 +178,17 @@ export function parseCallout(el) {
   const content = el.querySelector(CONTENT_SELECTOR) ?? el;
   const mark = parseMarker(firstLine(content));
   if (!mark) return null;
-  return { ...mark, items: listItems(content) };
+  // Same rule as the plain block: an image block right after a bullet, not
+  // indented, is that bullet's thumbnail.
+  const items = [];
+  for (const child of content.children) {
+    if (isImageBlock(child)) {
+      if (items.length) items[items.length - 1].images.push(...imageSrcs(child));
+    } else if (child.matches('ul, ol') || child.querySelector('li')) {
+      items.push(...listItems(child));
+    }
+  }
+  return { ...mark, items };
 }
 
 /** A list block, as Super renders one: the <ul>/<ol> itself or a wrapper around one. */

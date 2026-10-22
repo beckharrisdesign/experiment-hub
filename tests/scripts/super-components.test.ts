@@ -119,6 +119,17 @@ describe('parseCallout', () => {
     ]);
   });
 
+  it('takes an image block right after a bullet inside the callout as its thumbnail', () => {
+    const el = callout('::links', PATENTS.slice(0, 1));
+    const img = document.createElement('div');
+    img.className = 'notion-image normal';
+    img.innerHTML = '<img src="https://images.spr.so/thumb-1/w=1920">';
+    el.querySelector('.notion-callout__content')!.append(img);
+    const spec = parseCallout(el)!;
+    expect(spec.items).toHaveLength(1);
+    expect(spec.items[0].images).toEqual(['https://images.spr.so/thumb-1/w=1920']);
+  });
+
   it('returns null for a callout without a marker', () => {
     expect(parseCallout(callout('Just a note'))).toBeNull();
   });
