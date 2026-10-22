@@ -62,7 +62,7 @@ a.bhd-links__name {
   border-bottom: 1px solid rgb(var(--accent, 173 223 227) / 0.5);
 }
 a.bhd-links__name::after {
-  content: " ↗";
+  content: " \2197\FE0E"; /* text-style arrow, never the emoji */
   font-weight: 400;
   color: rgb(var(--accent, 173 223 227) / 0.85);
 }
