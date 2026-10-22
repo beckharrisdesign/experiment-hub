@@ -132,6 +132,33 @@ describe('parseCallout', () => {
   });
 });
 
+describe('parseBlock — images nested under a bullet, as Super renders them', () => {
+  it('takes each image block that follows a bullet inside the same <ul> as that bullet\'s image', () => {
+    // Live markup from the FIS Memento page: the nested image is the <li>'s
+    // next sibling, not its child. One <ul> holds every bullet and image.
+    const p = document.createElement('p');
+    p.className = 'notion-text';
+    p.textContent = '::links  Patents';
+    const ul = document.createElement('ul');
+    ul.className = 'notion-bulleted-list';
+    const img = (n: number) =>
+      `<div class="notion-image align-start page-width"><span><img alt="image" loading="lazy" src="https://images.spr.so/thumb-${n}/w=1920"></span></div>`;
+    ul.innerHTML =
+      `<li class="notion-list-item">${PATENTS[0]}</li>${img(1)}` +
+      `<li class="notion-list-item">${PATENTS[1]}</li>` +
+      `<li class="notion-list-item">${PATENTS[2]}</li>${img(3)}`;
+    document.body.append(p, ul);
+
+    const items = parseBlock(p)!.spec.items;
+    expect(items.map((i) => i.images)).toEqual([
+      ['https://images.spr.so/thumb-1/w=1920'],
+      [],
+      ['https://images.spr.so/thumb-3/w=1920'],
+    ]);
+    expect(describeLink(items[0]).thumb).toBe('https://images.spr.so/thumb-1/w=1920');
+  });
+});
+
 describe('parseBlock — the custom block (marker paragraph + list)', () => {
   it('reads a marker paragraph and every list directly under it, one <ul> per bullet', () => {
     const parts = block('::links  Patents');

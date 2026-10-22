@@ -63,7 +63,7 @@
  * every callout the loader saw and what it made of it.
  */
 
-export const VERSION = '3';
+export const VERSION = '4';
 
 /** Marker name → module file in this directory. Add new components here. */
 export const REGISTRY = {
@@ -103,8 +103,9 @@ export function parseMarker(text) {
 
 /**
  * One bullet: its text split on `|`, any links Notion put in it, and any
- * images nested under it (an image block indented under the bullet renders
- * inside the <li>). Nested lists are detail, not part of the item.
+ * images inside the <li> itself. Super renders an image block indented under
+ * the bullet as the <li>'s next sibling instead; listItems() picks those up
+ * via trailingImages(). Nested lists are detail, not part of the item.
  * @param {Element} li
  * @returns {Item}
  */
@@ -145,8 +146,32 @@ function firstLine(content) {
 function listItems(content) {
   return [...content.querySelectorAll('li')]
     .filter((li) => !li.parentElement?.closest('li'))
-    .map(parseItem)
+    .map((li) => {
+      const item = parseItem(li);
+      item.images.push(...trailingImages(li));
+      return item;
+    })
     .filter((item) => item.raw);
+}
+
+/**
+ * Images nested under a bullet, as Super actually renders them: the image
+ * block is the <li>'s next sibling inside the same <ul>, not inside the <li>.
+ * Collects from every sibling up to the next bullet; nested lists are skipped.
+ * @param {Element} li
+ * @returns {string[]}
+ */
+function trailingImages(li) {
+  const srcs = [];
+  for (let sib = li.nextElementSibling; sib && !sib.matches('li'); sib = sib.nextElementSibling) {
+    if (sib.matches('ul, ol')) continue;
+    const imgs = sib.matches('img[src]') ? [sib] : [...sib.querySelectorAll('img[src]')];
+    for (const img of imgs) {
+      const src = img.getAttribute('src') ?? '';
+      if (/^(https?:)?\/\//i.test(src)) srcs.push(src);
+    }
+  }
+  return srcs;
 }
 
 /**
