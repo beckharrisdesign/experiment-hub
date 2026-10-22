@@ -49,6 +49,14 @@
   border-radius: 0.375rem;
   background: rgba(255, 255, 255, 0.08);
 }
+/* The thumbnail opens the site lightbox (it marks it with data-bhd-lb). */
+.bhd-links__thumb[data-bhd-lb] {
+  cursor: zoom-in;
+}
+.bhd-links__thumb[data-bhd-lb]:focus-visible {
+  outline: 2px solid rgb(var(--accent, 173 223 227));
+  outline-offset: 3px;
+}
 .bhd-links__body {
   min-width: 0;
 }

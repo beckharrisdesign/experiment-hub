@@ -162,6 +162,9 @@ Rules:
   `https://labs.beckharrisdesign.com/super/components/placeholder-thumb.png`.
   The FIS Memento patents block uses uploaded copies of it under each bullet
   until real images replace them.
+- **Lightbox:** a thumbnail opens in the site lightbox (`lightbox.js`) like
+  any page image, in reading order with the rest of the page's images. Its
+  caption is the row's own text: title, an em dash, then the description.
 - Nested bullets under an item are ignored, so working notes can live there.
 - `::patents` is an alias for `::links`: the first block shipped under that
   name and still works.
