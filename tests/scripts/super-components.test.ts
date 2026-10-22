@@ -222,6 +222,34 @@ describe('parseBlock — an image block after a bullet, not indented', () => {
   });
 });
 
+describe('enhance — adjacent ::links blocks stay separate', () => {
+  it('renders two marker blocks placed back to back as two components', async () => {
+    // Live markup from the FIS Memento Challenge column: one patent per block,
+    // the second marker directly after the first block's list.
+    const [m1, ...l1] = block('::links  Patent US8306889B2', PATENTS.slice(0, 1));
+    const [m2, ...l2] = block('::links  Patent US10460377B2', PATENTS.slice(1, 2));
+    document.body.append(m1, ...l1, m2, ...l2);
+
+    expect(parseBlock(m1)!.parts).toEqual([m1, ...l1]);
+    expect(parseBlock(m2)!.parts).toEqual([m2, ...l2]);
+
+    const titles: string[] = [];
+    await enhance(document.body, {
+      load: async () => ({
+        mod: {
+          render: (_el: Element, spec: { title: string }) => {
+            titles.push(spec.title);
+            return document.createElement('aside');
+          },
+        },
+        css: '',
+      }),
+    });
+    expect(titles).toEqual(['Patent US8306889B2', 'Patent US10460377B2']);
+    expect(document.querySelectorAll('aside')).toHaveLength(2);
+  });
+});
+
 describe('parseBlock — the custom block (marker paragraph + list)', () => {
   it('reads a marker paragraph and every list directly under it, one <ul> per bullet', () => {
     const parts = block('::links  Patents');
