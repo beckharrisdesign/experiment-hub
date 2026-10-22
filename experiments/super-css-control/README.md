@@ -123,23 +123,35 @@ What the content looks like in Notion, anywhere on a page:
 Rules:
 
 - **Marker line:** `::links` plus an optional heading, as a paragraph of its
-  own. Every bulleted list directly under it belongs to the block; the block
-  ends at the first thing that is not a list.
+  own. Every bullet and image directly under it belongs to the block; a
+  blank line (or any other block) ends it.
 - **Each bullet:** one item. Fields are split by `|` and may come in **any
   order**:
 
   | Field | How the loader recognises it |
   |---|---|
   | link | a Notion link anywhere in the bullet (select the title, Cmd/Ctrl+K, paste), **or** a field that is a URL |
-  | thumbnail | a field that is an image URL (`.png .jpg .jpeg .webp .gif .svg .avif`), **or** an image block indented under the bullet |
+  | thumbnail | a field that is an image URL (`.png .jpg .jpeg .webp .gif .svg .avif`), **or** an image block right under the bullet, indented or not |
   | title | the first field that is not a URL |
   | description | every remaining non-URL field |
 
   So `[Title](url) \| Description`, `Title \| url \| Description` and
   `Title \| Description \| url` all render the same.
-- **Thumbnail, from Notion:** put the cursor at the end of the bullet, Enter,
-  Tab to indent, `/image`, upload or paste. The image nested under that bullet
-  becomes its thumbnail. (Or paste an image URL as a field; either works.)
+- **Thumbnail, from Notion:** add an image block directly below the bullet
+  (`/image`, upload or paste). It does **not** need to be indented: images
+  inside a Notion bullet are fiddly to edit, so an image right after a bullet
+  counts as that bullet's thumbnail either way. To swap it, delete the image
+  block and add a new one in the same spot. (Or paste an image URL as a field.)
+  The pattern, top to bottom:
+
+  ```
+  ::links  Patents
+  • Title | https://link | Description
+  [image]
+  • Title | https://link | Description
+  [image]
+  (blank line — ends the block)
+  ```
 - **Placeholder thumbnail:** `public/super/components/placeholder-thumb.png`
   (320×320, brand dark teal with an aqua image glyph), served at
   `https://labs.beckharrisdesign.com/super/components/placeholder-thumb.png`.

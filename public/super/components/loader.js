@@ -63,7 +63,7 @@
  * every callout the loader saw and what it made of it.
  */
 
-export const VERSION = '4';
+export const VERSION = '5';
 
 /** Marker name → module file in this directory. Add new components here. */
 export const REGISTRY = {
@@ -165,11 +165,7 @@ function trailingImages(li) {
   const srcs = [];
   for (let sib = li.nextElementSibling; sib && !sib.matches('li'); sib = sib.nextElementSibling) {
     if (sib.matches('ul, ol')) continue;
-    const imgs = sib.matches('img[src]') ? [sib] : [...sib.querySelectorAll('img[src]')];
-    for (const img of imgs) {
-      const src = img.getAttribute('src') ?? '';
-      if (/^(https?:)?\/\//i.test(src)) srcs.push(src);
-    }
+    srcs.push(...imageSrcs(sib));
   }
   return srcs;
 }
@@ -193,15 +189,32 @@ function isList(el) {
   return el.children.length === 1 && el.firstElementChild.matches('ul, ol');
 }
 
+/** An image block, as Super renders one: `div.notion-image` (or a bare figure/img). */
+function isImageBlock(el) {
+  if (!el || el.nodeType !== 1) return false;
+  return el.matches('.notion-image, figure, img');
+}
+
+/** The image URLs in an image block. */
+function imageSrcs(el) {
+  return (el.matches('img[src]') ? [el] : [...el.querySelectorAll('img[src]')])
+    .map((img) => img.getAttribute('src') ?? '')
+    .filter((src) => /^(https?:)?\/\//i.test(src));
+}
+
 /**
  * @typedef {{ spec: Spec, parts: Element[], kind: 'callout' | 'block' }} Block
  *   `parts[0]` is the element the component replaces; the rest are removed
- *   with it (the lists under a marker paragraph).
+ *   with it (the lists and images under a marker paragraph).
  */
 
 /**
- * The custom block: a marker paragraph plus every list that follows it
- * directly, or a callout carrying the marker on its first line.
+ * The custom block: a marker paragraph plus every list and image block that
+ * follows it directly, or a callout carrying the marker on its first line.
+ * An image block right after a bullet, not indented, is that bullet's
+ * thumbnail: editing an image inside a Notion bullet is fiddly, so the block
+ * accepts it either way. A blank line or any other block ends it; an image
+ * before the first bullet is not part of it.
  * @param {Element} el  a candidate (see CANDIDATE_SELECTOR)
  * @returns {Block | null}  null when `el` is not a marked block
  */
@@ -213,10 +226,19 @@ export function parseBlock(el) {
   if (el.closest('.notion-callout, li')) return null; // a callout's own text, or a bullet
   const mark = parseMarker(normalize(el.textContent));
   if (!mark) return null;
-  const lists = [];
-  for (let sib = el.nextElementSibling; isList(sib); sib = sib.nextElementSibling) lists.push(sib);
-  const items = lists.flatMap(listItems);
-  return { spec: { ...mark, items }, parts: [el, ...lists], kind: 'block' };
+  const parts = [el];
+  const items = [];
+  for (let sib = el.nextElementSibling; sib; sib = sib.nextElementSibling) {
+    if (isList(sib)) {
+      items.push(...listItems(sib));
+    } else if (isImageBlock(sib) && items.length) {
+      items[items.length - 1].images.push(...imageSrcs(sib));
+    } else {
+      break;
+    }
+    parts.push(sib);
+  }
+  return { spec: { ...mark, items }, parts, kind: 'block' };
 }
 
 /** Collapse whitespace runs, keep line breaks meaningful, trim. */
