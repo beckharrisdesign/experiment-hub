@@ -466,6 +466,19 @@ describe('links component', () => {
     });
   });
 
+  it('marks thumbnails for the site lightbox, captioned with the row text', () => {
+    const host = renderLinks(document.createElement('div'), {
+      title: 'Patent',
+      css: '',
+      items: [parseItem(li(`<a href="https://site.example/p">Title</a> | Desc<div class="notion-image"><img src="https://img.example/t.png"></div>`))],
+    });
+    const img = host.shadowRoot!.querySelector('img')!;
+    expect(img.hasAttribute('data-bhd-lightbox')).toBe(true);
+    expect(img.getAttribute('data-bhd-caption')).toBe('Title — Desc');
+    expect(img.alt).toBe('Title');
+    expect(img.closest('a')).toBeNull(); // a linked image would keep its link, not open the lightbox
+  });
+
   it('renders one row per item inside a shadow root, linking titles that have a link', () => {
     const el = callout('::patents  Five patents, one argument');
     const spec = parseCallout(el)!;
@@ -490,7 +503,8 @@ describe('links component', () => {
     const aside = renderLinks(el, { ...parseCallout(el)!, css: '' });
     const img = aside.shadowRoot!.querySelector('img.bhd-links__thumb')!;
     expect(img.getAttribute('src')).toBe('https://img.example/t.png');
-    expect(img.getAttribute('alt')).toBe('');
+    // Not decorative: it opens the lightbox, so it is named after its row.
+    expect(img.getAttribute('alt')).toBe('Title');
     expect(aside.shadowRoot!.querySelector('.bhd-links__row')!.classList.contains('has-thumb')).toBe(true);
   });
 

@@ -75,7 +75,11 @@ export function render(_source, opts) {
     if (thumb) {
       const img = el('img', 'bhd-links__thumb');
       img.src = thumb;
-      img.alt = '';
+      img.alt = title;
+      // Opens in the site lightbox (public/super/lightbox.js), captioned with
+      // the row's own text.
+      img.dataset.bhdLightbox = '';
+      img.dataset.bhdCaption = description ? `${title} — ${description}` : title;
       img.loading = 'lazy';
       img.decoding = 'async';
       row.append(img);

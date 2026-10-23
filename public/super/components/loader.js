@@ -63,7 +63,7 @@
  * every callout the loader saw and what it made of it.
  */
 
-export const VERSION = '5';
+export const VERSION = '6';
 
 /** Marker name → module file in this directory. Add new components here. */
 export const REGISTRY = {

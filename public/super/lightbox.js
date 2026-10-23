@@ -7,7 +7,9 @@
  * already loaded, and the only way out is the close button or a click.
  *
  * What this one does:
- *   - Gallery: every content image on the page, in reading order.
+ *   - Gallery: every content image on the page, in reading order,
+ *     including ::links thumbnails rendered by components.js (captioned
+ *     with their row's title and description).
  *     ← / → keys, on-screen buttons, and swipe on touch screens.
  *   - Caption: the Notion caption under the image (alt text as fallback),
  *     plus a "3 / 7" counter.
@@ -39,6 +41,11 @@
 
   /* Content images only: Notion image blocks. Linked images keep their link. */
   var IMAGE_SELECTOR = ".notion-image img";
+  /* Images inside a components.js component (an open shadow root on a
+     [data-bhd] host) that opt in. The ::links thumbnails do, and carry their
+     row's text as the caption in data-bhd-caption. */
+  var COMPONENT_HOST = "[data-bhd]";
+  var COMPONENT_IMAGE_SELECTOR = "img[data-bhd-lightbox]";
   /* Cloudflare Images flexible variant used by Super: w=1920,quality=90,… */
   var HIRES_WIDTH = 3200;
   var SWIPE_PX = 50;
@@ -63,21 +70,47 @@
     return n;
   }
 
+  /* The component host an image renders inside, or null for a page image. */
+  function componentHost(node) {
+    var r = node.getRootNode && node.getRootNode();
+    var host = r && r !== document && r.host;
+    return host && host.matches(COMPONENT_HOST) ? host : null;
+  }
+
   function isEligible(node) {
     return (
-      node &&
+      !!node &&
       node.tagName === "IMG" &&
-      node.matches(IMAGE_SELECTOR) &&
+      (node.matches(IMAGE_SELECTOR) ||
+        (node.matches(COMPONENT_IMAGE_SELECTOR) && !!componentHost(node))) &&
       !node.closest("a") &&
       !(root && root.contains(node))
     );
   }
 
+  /* Page images plus component images, in reading order. A component image
+     sorts by its host's place on the page. */
   function eligibleImages() {
-    return Array.prototype.filter.call(
-      document.querySelectorAll(IMAGE_SELECTOR),
-      isEligible
-    );
+    var nodes = Array.prototype.slice.call(document.querySelectorAll(IMAGE_SELECTOR));
+    Array.prototype.forEach.call(document.querySelectorAll(COMPONENT_HOST), function (host) {
+      if (!host.shadowRoot) return;
+      nodes = nodes.concat(
+        Array.prototype.slice.call(host.shadowRoot.querySelectorAll(COMPONENT_IMAGE_SELECTOR))
+      );
+    });
+    nodes = nodes.filter(isEligible);
+    var anchor = function (n) { return componentHost(n) || n; };
+    return nodes.sort(function (a, b) {
+      var x = anchor(a), y = anchor(b);
+      if (x === y) return 0;
+      return x.compareDocumentPosition(y) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+    });
+  }
+
+  /* Clicks and focus inside a shadow root are retargeted to its host;
+     the real target is the first node on the composed path. */
+  function realTarget(e) {
+    return (e.composedPath && e.composedPath()[0]) || e.target;
   }
 
   function displaySrc(node) {
@@ -93,6 +126,8 @@
   }
 
   function captionFor(node) {
+    var given = node.getAttribute("data-bhd-caption");
+    if (given) return given.trim();
     var block = node.closest(".notion-image");
     var fig = block && block.querySelector("figcaption, .notion-caption");
     var text = fig ? fig.textContent.trim() : "";
@@ -193,7 +228,7 @@
       }
     };
     if (reduceMotion) done(); else setTimeout(done, 200);
-    if (opener && document.body.contains(opener)) opener.focus({ preventScroll: true });
+    if (opener && opener.isConnected) opener.focus({ preventScroll: true });
   }
 
   function go(step) {
@@ -371,7 +406,7 @@
   // Capture phase on window runs before any listener on the image itself,
   // so if Super's stock lightbox is still installed it never sees the click.
   window.addEventListener("click", function (e) {
-    var node = e.target;
+    var node = realTarget(e);
     if (!isEligible(node) || e.button !== 0 || e.metaKey || e.ctrlKey) return;
     e.preventDefault();
     e.stopPropagation();
@@ -380,7 +415,8 @@
 
   document.addEventListener("keydown", function (e) {
     if (isOpen || (e.key !== "Enter" && e.key !== " ")) return;
-    if (isEligible(e.target)) { e.preventDefault(); open(e.target); }
+    var node = realTarget(e);
+    if (isEligible(node)) { e.preventDefault(); open(node); }
   });
 
   // Close if the page changes underneath (client-side navigation).
