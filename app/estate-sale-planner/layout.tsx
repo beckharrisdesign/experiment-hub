@@ -8,9 +8,9 @@ import type { Metadata } from "next";
  * The hub pins `.dark` at the root, so this renders in MVDS dark mode.
  */
 export const metadata: Metadata = {
-  title: "Estate Sale Planner: what's worth keeping, before the junk truck comes",
+  title: "Estate Sale Planner: what's worth keeping",
   description:
-    "Film a walkthrough of a parent's house. A vision model flags what might be worth something, you swipe keep or toss on the rest, and one tap calls the haul-away truck.",
+    "Photograph a parent's house one room at a time. A vision model flags what might be worth something, you sort keep, sell, or donate, and one tap schedules the donation pickup.",
 };
 
 interface EstateSalePlannerLayoutProps {

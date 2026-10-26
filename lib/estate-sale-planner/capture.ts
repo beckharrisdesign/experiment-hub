@@ -1,15 +1,17 @@
 /**
- * Frame capture — the browser half. Draws a walkthrough video (or photos)
- * onto a canvas on the device, hands the pure sampler the thumbnails, and
- * returns only the frames that survive the budget. Nothing here touches the
- * network: the caller sends on the user's confirm.
+ * Photo capture — the browser half (round 05a: photos are the primitive, no
+ * video). Each photo the family takes is drawn onto a canvas on the device,
+ * scaled to the budget, and returned as one frame for the model. Nothing here
+ * touches the network: the caller sends on the user's confirm.
  */
 
-import { DETAIL_SHOT, FRAME_BUDGET } from "./config";
-import { grayFromRgba, sampleTimes, selectFrames, type FrameSignature } from "./frames";
+import { DETAIL_SHOT, PHOTO_BUDGET } from "./config";
 import { itemThumbnail } from "./thumbs";
 
-export interface CapturedFrame extends FrameSignature {
+export interface CapturedFrame {
+  id: string;
+  /** Position in the pass — what the flag route echoes back as `frame`. */
+  at: number;
   /** Base64 JPEG without the data: prefix — what the flag route takes. */
   data: string;
   /** data: URL for the confirm grid. */
@@ -21,20 +23,14 @@ export interface CaptureProgress {
   total: number;
 }
 
-function scaledSize(w: number, h: number, maxEdge: number = FRAME_BUDGET.maxEdgePx): [number, number] {
+export function scaledSize(w: number, h: number, maxEdge: number = PHOTO_BUDGET.maxEdgePx): [number, number] {
   const edge = Math.max(w, h);
   if (edge <= maxEdge) return [w, h];
   const k = maxEdge / edge;
   return [Math.round(w * k), Math.round(h * k)];
 }
 
-function encode(
-  source: CanvasImageSource,
-  w: number,
-  h: number,
-  id: string,
-  at: number,
-): CapturedFrame {
+function encode(source: CanvasImageSource, w: number, h: number, id: string, at: number): CapturedFrame {
   const [cw, ch] = scaledSize(w, h);
   const canvas = document.createElement("canvas");
   canvas.width = cw;
@@ -42,61 +38,8 @@ function encode(
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas is not available in this browser.");
   ctx.drawImage(source, 0, 0, cw, ch);
-
-  const tiny = document.createElement("canvas");
-  tiny.width = 8;
-  tiny.height = 8;
-  const tctx = tiny.getContext("2d");
-  if (!tctx) throw new Error("Canvas is not available in this browser.");
-  tctx.drawImage(canvas, 0, 0, 8, 8);
-  const gray = grayFromRgba(tctx.getImageData(0, 0, 8, 8).data);
-
-  const preview = canvas.toDataURL("image/jpeg", FRAME_BUDGET.jpegQuality);
-  return { id, at, gray, data: preview.split(",")[1] ?? "", preview };
-}
-
-function loadVideo(file: File): Promise<HTMLVideoElement> {
-  return new Promise((resolve, reject) => {
-    const video = document.createElement("video");
-    video.muted = true;
-    video.playsInline = true;
-    video.preload = "auto";
-    video.src = URL.createObjectURL(file);
-    video.onloadedmetadata = () => resolve(video);
-    video.onerror = () => reject(new Error("That video couldn't be read. Try a different file."));
-  });
-}
-
-function seek(video: HTMLVideoElement, t: number): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const onSeeked = () => {
-      video.removeEventListener("seeked", onSeeked);
-      resolve();
-    };
-    video.addEventListener("seeked", onSeeked);
-    video.onerror = () => reject(new Error("Seeking the video failed."));
-    video.currentTime = Math.min(t, Math.max(0, video.duration - 0.05));
-  });
-}
-
-/** Sample a walkthrough video into budgeted frames, entirely on the device. */
-export async function framesFromVideo(
-  file: File,
-  onProgress?: (p: CaptureProgress) => void,
-): Promise<CapturedFrame[]> {
-  const video = await loadVideo(file);
-  try {
-    const times = sampleTimes(video.duration);
-    const all: CapturedFrame[] = [];
-    for (let i = 0; i < times.length; i++) {
-      await seek(video, times[i]);
-      all.push(encode(video, video.videoWidth, video.videoHeight, `v${i}`, times[i]));
-      onProgress?.({ done: i + 1, total: times.length });
-    }
-    return selectFrames(all);
-  } finally {
-    URL.revokeObjectURL(video.src);
-  }
+  const preview = canvas.toDataURL("image/jpeg", PHOTO_BUDGET.jpegQuality);
+  return { id, at, data: preview.split(",")[1] ?? "", preview };
 }
 
 function loadImage(file: File): Promise<HTMLImageElement> {
@@ -108,26 +51,28 @@ function loadImage(file: File): Promise<HTMLImageElement> {
   });
 }
 
-/** Photos are frames too — one per file, same budget. */
+/** Keep only image files, in the order they were chosen, within the budget. */
+export function pickPhotos(files: File[], max: number = PHOTO_BUDGET.maxPhotos): File[] {
+  return files.filter((f) => f.type.startsWith("image/")).slice(0, max);
+}
+
+/** One frame per photo, same budget as before; the caller already capped the list. */
 export async function framesFromPhotos(
   files: File[],
   onProgress?: (p: CaptureProgress) => void,
 ): Promise<CapturedFrame[]> {
+  const photos = pickPhotos(files);
   const all: CapturedFrame[] = [];
-  for (let i = 0; i < files.length; i++) {
-    const img = await loadImage(files[i]);
+  for (let i = 0; i < photos.length; i++) {
+    const img = await loadImage(photos[i]);
     try {
       all.push(encode(img, img.naturalWidth, img.naturalHeight, `p${i}`, i));
     } finally {
       URL.revokeObjectURL(img.src);
     }
-    onProgress?.({ done: i + 1, total: files.length });
+    onProgress?.({ done: i + 1, total: photos.length });
   }
-  return selectFrames(all);
-}
-
-export function isVideo(file: File): boolean {
-  return file.type.startsWith("video/");
+  return all;
 }
 
 export interface DetailShot {
@@ -139,7 +84,7 @@ export interface DetailShot {
 
 /**
  * A detail shot — a seam, a stamp on the bottom. Encoded larger than a
- * walkthrough frame so a mark stays legible, plus a small square thumb for
+ * room photo because the point is legibility, plus a small square thumb for
  * the card. Nothing leaves the device until the caller posts it.
  */
 export async function detailFromPhoto(file: File): Promise<DetailShot> {

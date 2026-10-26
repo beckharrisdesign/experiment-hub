@@ -3,8 +3,8 @@
  *
  * Everything that decides cost or where the exit points lives here so the
  * validation plan (openspec/changes/estate-sale-planner/propose.md) can be
- * tuned without touching the flow. Frame budget × model price is the whole
- * per-walkthrough cost; the Propose kill criterion is $1.00.
+ * tuned without touching the flow. Photo budget × model price is the whole
+ * per-pass cost; the Propose kill criterion is $1.00.
  */
 
 export const EXPERIMENT_ID = "estate-sale-planner";
@@ -20,20 +20,19 @@ export const VISION_MODELS = {
   anthropic: process.env.ESP_ANTHROPIC_VISION_MODEL || "claude-opus-5-5",
 } as const;
 
-export const FRAME_BUDGET = {
-  /** Seconds between sampled frames of a walkthrough video. */
-  intervalSeconds: 2.5,
-  /** Hard cap on frames sent per walkthrough, after de-duplication. */
-  maxFrames: 48,
-  /** Longest edge of each sent frame, in px. Rooms read fine at this size. */
+/**
+ * Photo budget (round 05a). Photos are the capture primitive — the family
+ * photographs a room, each shot is one frame to the model — so there is no
+ * sampling or de-duplication any more; the cap is the whole cost bound.
+ * Founder, 2026-10-15: "stick to images - a live camera instead of video".
+ */
+export const PHOTO_BUDGET = {
+  /** Hard cap on photos sent per pass; the grid keeps the first this many. */
+  maxPhotos: 48,
+  /** Longest edge of each sent photo, in px. Rooms read fine at this size. */
   maxEdgePx: 768,
-  /** JPEG quality for sent frames (0–1). */
+  /** JPEG quality for sent photos (0–1). */
   jpegQuality: 0.72,
-  /**
-   * Near-duplicate threshold on 8×8 greyscale thumbnails: mean absolute
-   * difference (0–255) below which a frame is dropped as "same view".
-   */
-  duplicateMeanDiff: 12,
 } as const;
 
 /**

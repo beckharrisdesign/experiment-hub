@@ -11,7 +11,6 @@ import { confidenceVariant } from "./ItemCard";
 interface ItemDetailProps {
   item: SessionItem;
   refining: boolean;
-  onBack: () => void;
   onDestination: (itemId: string, to: Destination) => void;
   onUpdate: (itemId: string, patch: ItemPatch) => void;
   onDetail: (itemId: string, file: File) => void;
@@ -20,13 +19,13 @@ interface ItemDetailProps {
 }
 
 /**
- * The item screen — the mobile "push" from a list. Everything about one object
+ * The item screen — its own URL since round 05a; Back is in the top bar. Everything about one object
  * is editable here: where it is headed, what it is called (correcting a wrong
  * recognition is a rename), the band, what the family knows, and detail shots
  * that trigger a re-read. Remove is for things that are not real: a
  * reflection, a duplicate, a call the model got wrong. Edits save as you type.
  */
-export default function ItemDetail({ item, refining, onBack, onDestination, onUpdate, onDetail, onReread, onRemove }: ItemDetailProps) {
+export default function ItemDetail({ item, refining, onDestination, onUpdate, onDetail, onReread, onRemove }: ItemDetailProps) {
   const [confirmRemove, setConfirmRemove] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const detailCount = item.details?.length ?? 0;
@@ -34,12 +33,6 @@ export default function ItemDetail({ item, refining, onBack, onDestination, onUp
 
   return (
     <Stack gap={24}>
-      <Inline gap={8} align="center">
-        <Button variant="ghost" size="sm" onClick={onBack} aria-label="Back to the lists">
-          ← Back
-        </Button>
-      </Inline>
-
       {item.image ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={item.image} alt={item.name} className="aspect-[4/3] w-full rounded-lg object-cover ring-1 ring-foreground/15" />
@@ -133,7 +126,7 @@ export default function ItemDetail({ item, refining, onBack, onDestination, onUp
         {confirmRemove ? (
           <Callout>
             <Stack gap={8}>
-              <span>Remove &ldquo;{item.name}&rdquo; from this walkthrough? This cannot be undone.</span>
+              <span>Remove &ldquo;{item.name}&rdquo; from this sale? This cannot be undone.</span>
               <Inline gap={8}>
                 <Button variant="destructive" size="sm" onClick={() => onRemove(item.id)}>
                   Remove it

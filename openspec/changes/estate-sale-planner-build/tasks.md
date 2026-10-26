@@ -141,16 +141,39 @@
       items → add a room → 17 across 2 passes → rename → new walkthrough → history →
       reopen intact. Figma page `41:113`, frames `42:81` / `41:114`, screenshot-verified.
 
+- [x] 3.21 Round 05a — photos: `capture.ts` photos only (`pickPhotos` cap 48, no de-dup;
+      `frames.ts` + `frames.test.ts` deleted), `PHOTO_BUDGET` replaces `FRAME_BUDGET` in
+      `config.ts` / the flag route / its test; `Capture.tsx` camera input
+      `accept="image/*" capture multiple`; `PhotoGrid.tsx` with per-photo ×;
+      `CaptureFlow.tsx` (camera → grid → flag → the sale).
+- [x] 3.22 Round 05a — the shell: route group `app/estate-sale-planner/(app)/` with
+      `layout.tsx` (client shell), `store.tsx` (`SaleProvider`, `useSaleStore`, `useSale`),
+      `TopBar.tsx`, `TabBar.tsx`, pages for Home, `/new`, `/sales/[id]`, `sort`, `progress`,
+      `capture`, `items/[itemId]`; `lib/estate-sale-planner/routes.ts` (`paths`, `parseRoute`,
+      `chromeFor`, `tabFor`, `showsTabs`, `cameraTarget`) + `routes.test.ts`; `SaleList.tsx`
+      on Home; `Exit.tsx` → `Progress.tsx`; old `page.tsx`, `BottomNav.tsx`, `FrameGrid.tsx`,
+      `History.tsx` removed; "sale" wording; summary links back to the sale.
+- [x] 3.23 Round 05a verification: Playwright 2026-10-15 (`assets/r05a-*`): Home empty →
+      Start a sale → name → 3 photos → leave one out → Send → `/sales/<id>` with the bar
+      reading "MOM'S HOUSE / Items" → Sort tab → Keep → Progress "7 still to sort" → Items →
+      item (bar reads the item's name, tabs stay) → Back → center camera → add a room (no
+      tabs) → 2 photos → "Added 3 items" → Home row "Sorting" → deep link to `/sort` after a
+      reload → unknown sale id → honest screen. `next build` green. Figma page `47:83`,
+      frames `47:192` / `47:84`, screenshot-verified, all Inter.
+
 ## 4. QA
 
-- [ ] 4.1 Manual walkthrough on a phone (capture → send → lists → swipe → exit → print) —
-      **Katy / proxy user**; needs `ANTHROPIC_API_KEY` set for the real vision pass.
-- [x] 4.2 Automated: `tests/estate-sale-planner/` — 76 tests across sampler, reducer
+- [ ] 4.1 Manual pass on a phone (photograph → send → items → sort → progress → print) —
+      **Katy / proxy user**; production has `OPENAI_API_KEY` for the real vision pass. Her
+      2026-10-15 pass on round 04 produced the round 05 proposal.
+- [x] 4.2 Automated: `tests/estate-sale-planner/` — 81 tests (round 05a: the video sampler
+      tests went with the sampler; `routes.test.ts` covers the shell's URL/chrome/tab lookup
+      and the photo cap) across reducer
       (destinations, undo, CRUD, re-read), flag parsing + no-key path, flag route, refine +
       refine route, exit route (both kinds), thumbnail crop geometry, vision provider +
       OpenAI adapter, sheet validation (details, note), checkout route, webhook route.
       Green 2026-10-13 (round 03). Round 04 adds append / rename / known / demo-growth
-      coverage.
+      coverage; round 05a green 2026-10-15.
 - [ ] 4.4 **Katy:** ~~apply migration 016~~ (done 2026-10-13); create the Stripe webhook endpoint for
       `/estate-sale-planner/api/webhook` (test mode first) and set
       `ESP_STRIPE_WEBHOOK_SECRET_TEST`; one test-mode purchase end to end (checkout → webhook
