@@ -90,17 +90,17 @@ Two files, both titled with the change ID per `rules/figma.mdc`. Round numbering
 continuously across them:
 
 - The proposal argued the flow on the board, in rounds 02–04.
-- The surface pair lives on the design file: as-is is `01`, proposed continues at `05`.
+- The surface pair lives on the design file: as-is is `01`, proposed continues at `05` (correction and comps) and `06` (breadcrumb header, D11).
 
 | Item | Board (proposal rounds) | Design file (surface pair) |
 | --- | --- | --- |
 | Primary file URL | <https://www.figma.com/board/jOMdrrP5xLfaR1Yf7qfVdA> (`jOMdrrP5xLfaR1Yf7qfVdA`) | <https://www.figma.com/design/LzaDhbJ8HPsLTZObccHnlW> (`LzaDhbJ8HPsLTZObccHnlW`) |
 | As-is frame(s) | N/A: the board argues flow, not surface | Page `01 Current state` (node `1:2`): `As-is · Item · S 480` (`4:189`), `As-is · Item · L 1024` (`4:259`), reconstructed from `ItemDetail.tsx`. The photo is a stand-in (see Libraries) |
-| Proposed frame(s) | Page `02 Proposed — flow` (page `0:1`): first lookup flow. Page `03 Proposed — correct, then look up` (page `8:207`): confirm step before the gate. Page `04 Proposed — search query after the gate` (page `14:212`): query written only for confirmed, gated items | Page `05 Proposed — correct the item` (node `1:3`). Item screen: `Item · unconfirmed · S 480` (`7:3`), `Item · confirmed, based on sold · S 480` (`7:85`), same at `L 1024` (`7:173`). `Band line · states` (`7:262`), all seven band lines. Source photo: `view · S 480` (`7:286`), `adjust` (`7:335`), `split` (`7:382`), `add` (`7:428`), `select` (`7:478`), `view · L 1024` (`7:529`) |
-| Libraries / version | FigJam page-per-iteration conventions per `rules/figma.mdc` | `MVDS Core` (team default library, `source: team`, confirmed 2026-10-27). Instances of `Button`, `Badge`, `Field`, with fills bound to `Tokens` (`background`, `foreground`, `muted`, `muted-foreground`, `border`, `card`, `primary`), spacing bound to `Scales`, and type from `Type/*` styles. The `Tokens` collection is pinned to **Dark** on every frame, matching the hub. Code: `@beckharrisdesign/mvds@0.5.0`. **Local stand-ins on page `00 Components` (node `0:1`):** `Breadcrumb header` (`10:2`, D11) on every proposed frame. `TopBar` (`3:25`) appears on the as-is frames only, since it is today's header. `TabBar` (`3:30`). The header and tab bar are MVDS hand-off #39, not in the library. `Subject box` component set (`3:54`, variants Selected / Faint / Editing / Picked), the box-editor hand-off below. `Photo stand-in · living room` (`3:55`), grey blocks in place of a real walkthrough photo; reference only, not product imagery. The `Value band` field is drawn as `Field` (text input) where code uses `Select`, since MVDS Core has no Select in the library yet |
+| Proposed frame(s) | Page `02 Proposed — flow` (page `0:1`): first lookup flow. Page `03 Proposed — correct, then look up` (page `8:207`): confirm step before the gate. Page `04 Proposed — search query after the gate` (page `14:212`): query written only for confirmed, gated items | Page `05 Proposed — correct the item` (node `1:3`). Item screen: `Item · unconfirmed · S 480` (`7:3`), `Item · confirmed, based on sold · S 480` (`7:85`), same at `L 1024` (`7:173`). `Band line · states` (`7:262`), all seven band lines. Source photo: `view · S 480` (`7:286`), `adjust` (`7:335`), `split` (`7:382`), `add` (`7:428`), `select` (`7:478`), `view · L 1024` (`7:529`). Page `06 Proposed — breadcrumb header` (node `13:337`): the same nine screens with the breadcrumb header in place of the top bar, the only change from 05. Item `unconfirmed · S 480` (`13:338`), `confirmed · S 480` (`13:383`), `confirmed · L 1024` (`13:435`); source photo `view` (`13:488`), `adjust` (`13:511`), `split` (`13:531`), `add` (`13:552`), `select` (`13:573`), `view · L 1024` (`13:596`) |
+| Libraries / version | FigJam page-per-iteration conventions per `rules/figma.mdc` | `MVDS Core` (team default library, `source: team`, confirmed 2026-10-27). Instances of `Button`, `Badge`, `Field`, with fills bound to `Tokens` (`background`, `foreground`, `muted`, `muted-foreground`, `border`, `card`, `primary`), spacing bound to `Scales`, and type from `Type/*` styles. The `Tokens` collection is pinned to **Dark** on every frame, matching the hub. Code: `@beckharrisdesign/mvds@0.5.0`. **Local stand-ins on page `00 Components` (node `0:1`):** `Breadcrumb header` (`10:2`, D11) on the page 06 frames. `TopBar` (`3:25`) is today's header, on the as-is frames and on page 05. `TabBar` (`3:30`). The header and tab bar are MVDS hand-off #39, not in the library. `Subject box` component set (`3:54`, variants Selected / Faint / Editing / Picked), the box-editor hand-off below. `Photo stand-in · living room` (`3:55`), grey blocks in place of a real walkthrough photo; reference only, not product imagery. The `Value band` field is drawn as `Field` (text input) where code uses `Select`, since MVDS Core has no Select in the library yet |
 | Code Connect | N/A: no code surface | Not set up (elk / build precedent); implementation maps to MVDS components in code |
 | Breakpoints | N/A: FigJam canvas, not a responsive screen | S · 480px mobile / L · 1024px desktop (BHD Content Types), per `rules/design-guidelines.mdc` |
-| Status | Rounds 02–04 done; 04 is current | Round 05 drawn 2026-10-27; awaiting review |
+| Status | Rounds 02–04 done; 04 is current | Rounds 05 and 06 drawn 2026-10-27; 06 is current; awaiting review |
 
 **MVDS hand-off:** MVDS has no crop or box-editing component. The editor is a composition
 on MVDS tokens:
@@ -314,7 +314,7 @@ RLS on, no policies:
 
 ### D11. A breadcrumb header replaces the top bar
 
-Katy, on round 05: *"the header component is awkward - just do a simple breadcrumb style
+Round **06** on the design file (page `13:337`). Katy, on round 05: *"the header component is awkward - just do a simple breadcrumb style
 header and let that function as the back button too"*.
 
 - **One line, 44 px tall:** `Home / Mom's house / Mantel clock / Source photo`.
