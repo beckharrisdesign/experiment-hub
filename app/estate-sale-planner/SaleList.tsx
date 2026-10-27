@@ -35,7 +35,7 @@ export default function SaleList({ entries, onDelete }: SaleListProps) {
                     <Badge variant={status.variant}>{status.label}</Badge>
                   </Inline>
                   <p className="text-small text-muted-foreground">
-                    {new Date(e.createdAt).toLocaleDateString()} · {e.items} {e.items === 1 ? "item" : "items"} · {e.sell} sell · {e.keep} keep · {e.donate} donate
+                    {new Date(e.createdAt).toLocaleDateString()} · {e.items} {e.items === 1 ? "item" : "items"} · {e.sell} sell · {e.donate} donate · {e.keep} keep
                     {e.undecided > 0 ? ` · ${e.undecided} to sort` : ""}
                   </p>
                 </Stack>

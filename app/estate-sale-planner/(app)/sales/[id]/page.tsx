@@ -7,7 +7,7 @@ import Lists from "../../../Lists";
 import { useSaleStore } from "../../store";
 import SaleScreen from "./SaleScreen";
 
-/** /sales/[id] — the Items screen: Sell cards, Still to sort, Keep, Donate. */
+/** /sales/[id] — the Items screen: Sell cards, Still to sort, Donate, Keep. */
 export default function ItemsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();

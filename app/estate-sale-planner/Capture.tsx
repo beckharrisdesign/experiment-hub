@@ -52,7 +52,7 @@ export default function Capture({ busy, progress, error, onFiles, mode = "new", 
       </Stack>
 
       {!append && onName && (
-        <Field label="Name this sale" help="Optional. Shows on Home and on the sell sheet.">
+        <Field label="Name this sale" help="Optional. Shows on Home and on the sell list.">
           <Input value={name} maxLength={60} placeholder="Mom's house" onChange={(e) => onName(e.target.value)} />
         </Field>
       )}

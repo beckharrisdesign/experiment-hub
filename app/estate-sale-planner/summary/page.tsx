@@ -2,50 +2,24 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Button, Callout, Card, CardContent, CardDescription, CardHeader, CardTitle, Stack } from "@beckharrisdesign/mvds";
-import { SELL_SHEET } from "../../../lib/estate-sale-planner/config";
+import { Button, Callout, Stack } from "@beckharrisdesign/mvds";
 import { sellList, overrides, type Session } from "../../../lib/estate-sale-planner/session";
-import { formatPrice, sheetInputFromSession } from "../../../lib/estate-sale-planner/sheet";
 import { loadSession } from "../../../lib/estate-sale-planner/storage";
 import { paths } from "../../../lib/estate-sale-planner/routes";
-import { track } from "../../../lib/estate-sale-planner/analytics";
 
 /**
- * The printable sell list — free — and the paid moment beside it: the Sell
- * Sheet, the same list with the photos saved at a link that survives closing
- * the tab. The "not an appraisal" line comes first because it is the honest
- * frame for everything under it.
+ * The printable sell list. The paid Sell Sheet that sat beside it is out for
+ * now (founder, 2026-10-27: "skip all the upsells for now. I just want to build
+ * it for now and then SaaSify it later"); the checkout route, webhook and sheet
+ * page stay in place, unlinked. The "not an appraisal" line comes first because
+ * it is the honest frame for everything under it.
  */
 export default function SummaryPage() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
-  const [canceled, setCanceled] = useState(false);
-  const [buying, setBuying] = useState(false);
-  const [buyError, setBuyError] = useState<string | null>(null);
 
   useEffect(() => {
     setSession(loadSession());
-    setCanceled(new URLSearchParams(window.location.search).get("canceled") === "1");
   }, []);
-
-  const buySheet = async () => {
-    if (!session) return;
-    setBuying(true);
-    setBuyError(null);
-    track("esp_sheet_checkout", { items: sellList(session).length });
-    try {
-      const res = await fetch("/estate-sale-planner/api/checkout", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(sheetInputFromSession(session)),
-      });
-      const json = (await res.json()) as { url?: string; error?: string };
-      if (!res.ok || !json.url) throw new Error(json.error ?? `HTTP ${res.status}`);
-      window.location.assign(json.url);
-    } catch (e: any) {
-      setBuyError(e.message ?? "Checkout didn't open.");
-      setBuying(false);
-    }
-  };
 
   if (session === undefined) return null;
 
@@ -125,34 +99,8 @@ export default function SummaryPage() {
         </p>
       )}
 
-      {sell.length > 0 && (
-        <Card className="shadow-lg ring-foreground/15 print:hidden">
-          <CardHeader>
-            <p className="text-caption uppercase text-muted-foreground">Keep this list</p>
-            <CardTitle>Save the sell sheet with photos</CardTitle>
-            <CardDescription>
-              The same list with the pictures, at a link you can send to siblings or the
-              estate-sale company. It stays up after you close this tab. One-time, {formatPrice(SELL_SHEET.priceCents)}.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Stack gap={8}>
-              <div className="flex justify-center">
-                <Button size="lg" onClick={buySheet} disabled={buying}>
-                  {buying ? "Opening checkout…" : `Save the sell sheet — ${formatPrice(SELL_SHEET.priceCents)}`}
-                </Button>
-              </div>
-              {canceled && !buyError && (
-                <p className="text-center text-small text-muted-foreground">Checkout was canceled. The free print below still works.</p>
-              )}
-              {buyError && <p className="text-center text-small text-destructive">{buyError}</p>}
-            </Stack>
-          </CardContent>
-        </Card>
-      )}
-
       <div className="flex justify-center print:hidden">
-        <Button size="lg" variant={sell.length > 0 ? "outline" : "default"} onClick={() => window.print()}>
+        <Button size="lg" onClick={() => window.print()}>
           Print or save as PDF
         </Button>
       </div>

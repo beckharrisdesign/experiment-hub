@@ -19,7 +19,7 @@ interface ItemCardProps {
 /**
  * The found-item card (round 02.1 visual): the crop the model saw, room
  * eyebrow, name, band + confidence, reason, any detail shots — then the
- * keep / sell / donate toggle and a Details button that opens the item.
+ * sell / donate / keep toggle and a Details button that opens the item.
  */
 export default function ItemCard({ item, onDestination, onOpen }: ItemCardProps) {
   return (
@@ -65,7 +65,7 @@ interface ItemRowProps {
   onOpen: (itemId: string) => void;
 }
 
-/** The compact row for the Keep / Donate / Still-to-sort lists: thumb, name, toggle. Tap the name for details. */
+/** The compact row for the Still-to-sort / Donate / Keep lists: thumb, name, toggle. Tap the name for details. */
 export function ItemRow({ item, onDestination, onOpen }: ItemRowProps) {
   return (
     <li className="flex flex-wrap items-center gap-4 py-2">
