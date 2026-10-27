@@ -122,7 +122,7 @@ export default function ItemDetail({ item, refining, onDestination, onUpdate, on
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="What the family knows" help="Who bought it, where, when, anything on the receipt. Goes with the next re-read and onto the sell sheet.">
+            <Field label="What the family knows" help="Who bought it, where, when, anything on the receipt. Goes with the next re-read and onto the sell list.">
               <Textarea value={item.note ?? ""} maxLength={500} rows={3} onChange={(e) => onUpdate(item.id, { note: e.target.value })} />
             </Field>
           </Stack>

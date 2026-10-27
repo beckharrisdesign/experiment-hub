@@ -47,7 +47,7 @@ export function parseRoute(pathname: string): RouteInfo {
   return { screen: "other" };
 }
 
-export type Tab = "home" | "items" | "sort" | "progress";
+export type Tab = "home" | "items" | "sort" | "progress" | "sell";
 
 /** The lit tab. An open item lights Items (it is where you came from); camera flows light none. */
 export function tabFor(screen: Screen): Tab | null {
@@ -60,8 +60,9 @@ export function tabFor(screen: Screen): Tab | null {
     case "sort":
       return "sort";
     case "progress":
-    case "summary":
       return "progress";
+    case "summary":
+      return "sell";
     default:
       return null;
   }
@@ -100,7 +101,7 @@ export function chromeFor(route: RouteInfo, saleName?: string, itemName?: string
     case "item":
       return { eyebrow: sale, title: itemName?.trim() || "Item", back: paths.sale(route.saleId!) };
     case "summary":
-      return { eyebrow: sale, title: "Sell list", back: contextSaleId ? paths.progress(contextSaleId) : paths.home() };
+      return { eyebrow: sale, title: "Sell list", back: contextSaleId ? paths.sale(contextSaleId) : paths.home() };
     case "sheet":
       return { eyebrow: APP_NAME, title: "Sell Sheet", back: paths.home() };
     default:

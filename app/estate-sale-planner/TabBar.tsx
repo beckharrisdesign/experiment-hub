@@ -23,36 +23,48 @@ function CameraGlyph() {
 
 /**
  * The tab bar on every page (round 05a; camera flows included since
- * 2026-10-27): Home · Items · [camera] · Sort · Progress. The camera is the one
+ * 2026-10-27): Home · Items · [camera] · Sort · Progress · Sell list (founder:
+ * "make the Sell list a menu item for now at the bottom"). The camera is the one
  * thing you do most, so it sits in the middle and goes to "add a room" for the
  * sale in context or to a new sale when there is none. MVDS Chrome (bottom)
  * makes it sticky; the tabs stay in a `sm` container so they don't spread
  * across a desktop screen. MVDS has no tab bar yet (hand-off #39).
  */
 export default function TabBar({ active, saleId, left }: TabBarProps) {
-  const tab = (id: Tab, label: string, href: string | null) => {
+  const tab = (id: Tab, label: React.ReactNode, href: string | null) => {
     const lit = active === id;
     if (!href) {
       return (
-        <Button key={id} variant="ghost" size="sm" disabled aria-disabled>
+        <Button key={id} variant="ghost" size="sm" className="px-2" disabled aria-disabled>
           {label}
         </Button>
       );
     }
     return (
-      <Button key={id} variant={lit ? "default" : "ghost"} size="sm" asChild>
+      <Button key={id} variant={lit ? "default" : "ghost"} size="sm" className="px-2" asChild>
         <Link href={href} aria-current={lit ? "page" : undefined}>
           {label}
         </Link>
       </Button>
     );
   };
-  const sortLabel = saleId ? (left > 0 ? `Sort · ${left}` : "Sorted") : "Sort";
+  // Six tabs fit a 360px phone only without the count; it comes back from `sm` up.
+  const sortLabel = saleId ? (
+    left > 0 ? (
+      <>
+        Sort<span className="hidden sm:inline"> · {left}</span>
+      </>
+    ) : (
+      "Sorted"
+    )
+  ) : (
+    "Sort"
+  );
 
   return (
     <Chrome position="bottom" bg="background" className="border-t border-border print:hidden">
       <Container size="sm" className="h-full">
-        <Inline gap={4} align="center" justify="around" className="h-full" role="navigation" aria-label="Estate Sale Planner">
+        <Inline gap={0} align="center" justify="around" className="h-full" role="navigation" aria-label="Estate Sale Planner">
             {tab("home", "Home", paths.home())}
             {tab("items", "Items", saleId ? paths.sale(saleId) : null)}
             <Button size="icon-lg" className="rounded-full shadow-lg" asChild>
@@ -62,6 +74,7 @@ export default function TabBar({ active, saleId, left }: TabBarProps) {
             </Button>
             {tab("sort", sortLabel, saleId ? paths.sort(saleId) : null)}
             {tab("progress", "Progress", saleId ? paths.progress(saleId) : null)}
+            {tab("sell", "Sell list", saleId ? paths.summary() : null)}
         </Inline>
       </Container>
     </Chrome>

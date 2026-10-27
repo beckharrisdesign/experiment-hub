@@ -32,8 +32,8 @@ describe("tabs", () => {
     expect(tabFor("progress")).toBe("progress");
   });
 
-  it("lights Progress for the sell list it prints, and nothing for a shared sheet", () => {
-    expect(tabFor("summary")).toBe("progress");
+  it("lights Sell list for the sell list, and nothing for a shared sheet", () => {
+    expect(tabFor("summary")).toBe("sell");
     expect(tabFor("sheet")).toBeNull();
   });
 
@@ -54,7 +54,7 @@ describe("chromeFor", () => {
   });
 
   it("names the sell list and the shared sheet, with Back to the sale in context when there is one", () => {
-    expect(chromeFor({ screen: "summary" }, "Mom's house", undefined, id)).toEqual({ eyebrow: "Mom's house", title: "Sell list", back: paths.progress(id) });
+    expect(chromeFor({ screen: "summary" }, "Mom's house", undefined, id)).toEqual({ eyebrow: "Mom's house", title: "Sell list", back: paths.sale(id) });
     expect(chromeFor({ screen: "summary" })).toMatchObject({ title: "Sell list", back: paths.home() });
     expect(chromeFor({ screen: "sheet" })).toEqual({ eyebrow: "Estate Sale Planner", title: "Sell Sheet", back: paths.home() });
   });
