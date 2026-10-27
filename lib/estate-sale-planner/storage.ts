@@ -13,6 +13,7 @@
  */
 import { SESSION_STORAGE_KEY } from "./config";
 import { donateList, keepList, sellList, undecided, type Session } from "./session";
+import { tallies, type Tally } from "./tally";
 
 const HISTORY_KEY = "esp:history:v1";
 const SAVED_PREFIX = "esp:saved:";
@@ -29,6 +30,9 @@ export interface HistoryEntry {
   sell: number;
   donate: number;
   undecided: number;
+  /** What each pile might be worth, so Home can show it without opening the sale. Entries saved
+   * before this field existed are filled in from the saved copy on read. */
+  tallies?: { sell: Tally; donate: Tally; keep: Tally };
 }
 
 function slim(session: Session): Session {
@@ -63,13 +67,30 @@ export function summarize(session: Session, updatedAt = new Date().toISOString()
     sell: sellList(session).length,
     donate: donateList(session).length,
     undecided: undecided(session).length,
+    tallies: pileTallies(session),
   };
+}
+
+function pileTallies(session: Session): NonNullable<HistoryEntry["tallies"]> {
+  const { sell, donate, keep } = tallies(session);
+  return { sell, donate, keep };
+}
+
+/** An entry from before tallies were stored: work them out from the saved copy, if it is still here. */
+function withTallies(entry: HistoryEntry): HistoryEntry {
+  if (entry.tallies) return entry;
+  try {
+    const raw = window.localStorage.getItem(SAVED_PREFIX + entry.id);
+    return raw ? { ...entry, tallies: pileTallies(JSON.parse(raw) as Session) } : entry;
+  } catch {
+    return entry;
+  }
 }
 
 export function listHistory(): HistoryEntry[] {
   try {
     const raw = window.localStorage.getItem(HISTORY_KEY);
-    const entries = raw ? (JSON.parse(raw) as HistoryEntry[]) : [];
+    const entries = raw ? (JSON.parse(raw) as HistoryEntry[]).map(withTallies) : [];
     return entries.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   } catch {
     return [];

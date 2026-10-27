@@ -16,6 +16,7 @@ interface ItemDetailProps {
   onUpdate: (itemId: string, patch: ItemPatch) => void;
   onRemove: (itemId: string) => void;
   onConfirm: (itemId: string) => void;
+  onRetryReread: (itemId: string) => void;
   onMessage: (itemId: string, text: string) => Promise<boolean>;
   onUndoMessage: (itemId: string, index: number) => void;
   onAddPhoto: (itemId: string, file: File) => Promise<boolean>;
@@ -24,13 +25,13 @@ interface ItemDetailProps {
 /**
  * The item screen (sold-comps design, Figma round 17). Top to bottom: name and price on one
  * row, both Heading 2, price top-right (D15, D17); the photo, with the photo check directly
- * under it (D19); the reason and band line; "Adjust this item" by message (D14); Correct it;
- * remove. The destination toggle lives in the sticky header (D16, D21). One image per item —
+ * under it (D19); "Adjust this item" by message (D14); Correct it. No model reason paragraph
+ * (founder, 2026-10-27: "weird advice that will be absolute clutter really fast"). The destination toggle lives in the sticky header (D16, D21). One image per item —
  * detail shots left the screen (founder: "sticking to single image per item for now").
  *
  * Desktop: the name and price run full width, then the photo takes 5 of 12 columns.
  */
-export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove, onConfirm, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
+export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove, onConfirm, onRetryReread, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
   const [confirmRemove, setConfirmRemove] = useState(false);
   const photoHref = paths.photo(saleId, item.id);
   const bandOptions: string[] = (BANDS as readonly string[]).includes(item.band) ? [...BANDS] : [item.band, ...BANDS];
@@ -77,17 +78,12 @@ export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove,
             ) : (
               <NoPhoto onFile={(file) => onAddPhoto(item.id, file)} />
             )}
-            <PhotoStatus item={item} photoHref={photoHref} onConfirm={onConfirm} />
+            <PhotoStatus item={item} photoHref={photoHref} onConfirm={onConfirm} onRetry={onRetryReread} />
           </Stack>
         </GridItem>
 
         <GridItem span={{ base: 1, lg: 7 }}>
           <Stack gap={40}>
-            <Stack gap={8}>
-              {item.bandSource === "family" && <p className="text-small text-foreground">Set by you</p>}
-              <p className="text-body text-muted-foreground">{item.reason}</p>
-            </Stack>
-
             <AdjustByMessage item={item} busy={refining} onMessage={onMessage} onUndo={onUndoMessage} />
 
             <Stack gap={24}>
@@ -144,27 +140,35 @@ function NoPhoto({ onFile }: { onFile: (file: File) => void }) {
 }
 
 /**
- * Directly under the photo: the check while unconfirmed, the confirmed state after (D19). The
- * photo actions only show when there is a kept original to fix.
+ * Directly under the photo: the check while unconfirmed (D19). Once confirmed there is no
+ * "✓ Confirmed" label — the check going away says it (founder, 2026-10-27: "What's this even
+ * mean?"). A failed re-read says so plainly and offers another try. The photo actions only show
+ * when there is a kept original to fix.
  */
-function PhotoStatus({ item, photoHref, onConfirm }: { item: SessionItem; photoHref: string; onConfirm: (id: string) => void }) {
+function PhotoStatus({ item, photoHref, onConfirm, onRetry }: { item: SessionItem; photoHref: string; onConfirm: (id: string) => void; onRetry: (id: string) => void }) {
   const hasPhoto = Boolean(item.photoId);
   return (
     <Stack gap={8}>
-      {item.rereadPending && <p className="text-small text-muted-foreground">Reading the new picture…</p>}
-      {item.rereadFailed && <p className="text-small text-muted-foreground">Not re-read yet.</p>}
-      {item.confirmed ? (
+      {item.rereadPending && <p className="text-small text-muted-foreground">Reading the new crop…</p>}
+      {item.rereadFailed && (
         <Inline gap={8} justify="between" align="center">
-          <Inline gap={8} align="center">
-            <span className="text-small text-muted-foreground">✓ Confirmed</span>
-            {item.lot && <Badge variant="outline">Lot of {item.lot.parts.length}</Badge>}
-          </Inline>
-          {hasPhoto && (
-            <Button variant="secondary" asChild>
-              <Link href={photoHref}>Source photo</Link>
-            </Button>
-          )}
+          <p className="text-small text-muted-foreground">Couldn&apos;t read the new crop. The name and price are from before.</p>
+          <Button variant="secondary" size="sm" onClick={() => onRetry(item.id)}>
+            Try again
+          </Button>
         </Inline>
+      )}
+      {item.confirmed ? (
+        (item.lot || hasPhoto) && (
+          <Inline gap={8} justify="between" align="center">
+            {item.lot ? <Badge variant="outline">Lot of {item.lot.parts.length}</Badge> : <span />}
+            {hasPhoto && (
+              <Button variant="secondary" asChild>
+                <Link href={photoHref}>Source photo</Link>
+              </Button>
+            )}
+          </Inline>
+        )
       ) : (
         <ButtonGroup>
           {hasPhoto && (

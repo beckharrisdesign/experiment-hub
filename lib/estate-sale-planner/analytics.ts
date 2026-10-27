@@ -24,6 +24,7 @@ export type FunnelEvent =
   | "esp_walkthrough_named"
   // sold-comps: item correction
   | "esp_item_confirmed"
+  | "esp_item_reread_retry"
   | "esp_item_corrected"
   | "esp_item_message"
   | "esp_photos_evicted";
