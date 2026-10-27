@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Callout, Grid, Inline, Input, Stack } from "@beckharrisdesign/mvds";
-import { byRoom, donateList, keepList, sellList, undecided, type Destination, type NewItemInput, type Session, type SessionItem } from "../../lib/estate-sale-planner/session";
+import { donateList, keepList, sellList, undecided, type Destination, type NewItemInput, type Session, type SessionItem } from "../../lib/estate-sale-planner/session";
 import AddItem from "./AddItem";
 import ItemCard, { ItemRow } from "./ItemCard";
 import ValueTally from "./ValueTally";
@@ -48,16 +48,11 @@ function SaleName({ name, onRename }: { name?: string; onRename: (name: string) 
 function RowList({ items, onDestination, onOpen }: { items: SessionItem[]; onDestination: ListsProps["onDestination"]; onOpen: ListsProps["onOpen"] }) {
   return (
     <Stack gap={16}>
-      {byRoom(items).map(({ room, items }) => (
-        <Stack key={room} gap={4}>
-          <h3 className="text-caption uppercase text-muted-foreground">{room}</h3>
-          <ul className="divide-y divide-border">
-            {items.map((item) => (
-              <ItemRow key={item.id} item={item} onDestination={onDestination} onOpen={onOpen} />
-            ))}
-          </ul>
-        </Stack>
-      ))}
+      <ul className="divide-y divide-border">
+        {items.map((item) => (
+          <ItemRow key={item.id} item={item} onDestination={onDestination} onOpen={onOpen} />
+        ))}
+      </ul>
     </Stack>
   );
 }
@@ -77,18 +72,18 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
   return (
     <Stack gap={40}>
       {fromFixture && (
-        <Callout>Demo mode: no vision key is configured, so this is a sample house, not yours. Each room you add brings in the next sample room.</Callout>
+        <Callout>Demo mode: no vision key is configured, so this is a sample house, not yours. Each time you add photos, the next part of the sample house comes in.</Callout>
       )}
 
       <Stack gap={16}>
         <Stack gap={8}>
           <SaleName name={session.name} onRename={onRename} />
           <p className="text-small text-muted-foreground">
-            {session.items.length} {session.items.length === 1 ? "item" : "items"} across {session.passes ?? 1} {(session.passes ?? 1) === 1 ? "room pass" : "room passes"} · {new Date(session.createdAt).toLocaleDateString()}
+            {session.items.length} {session.items.length === 1 ? "item" : "items"} · {new Date(session.createdAt).toLocaleDateString()}
           </p>
           <div>
             <Button variant="outline" onClick={onAddRoom}>
-              Photograph another room
+              Add more photos
             </Button>
           </div>
         </Stack>

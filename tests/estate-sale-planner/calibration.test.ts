@@ -34,7 +34,7 @@ vi.mock("@/lib/estate-sale-planner/vision/openai", () => ({
         name: "Stand mixer",
         room: "Kitchen",
         flagged: true,
-        band: "$100–$500",
+        band: "$100–$250",
         reason: "r",
         confidence: "high",
         frame: 0,
@@ -97,10 +97,10 @@ describe("capConfidence without a mark", () => {
     expect(capConfidence(read("$500–$2,000", "low"), null).confidence).toBe(
       "low",
     );
-    expect(capConfidence(read("$100–$500", "high"), null).confidence).toBe(
+    expect(capConfidence(read("$100–$250", "high"), null).confidence).toBe(
       "high",
     );
-    expect(capConfidence(read("under $25", "high"), null).confidence).toBe(
+    expect(capConfidence(read("$10–$25", "high"), null).confidence).toBe(
       "high",
     );
   });
@@ -140,7 +140,7 @@ describe("flagFrames applies the cap to the walkthrough pass", () => {
     expect(result.items.map((i) => [i.name, i.band, i.confidence])).toEqual([
       ["Teak sideboard", "$500–$2,000", "medium"],
       ["Oil painting", "over $2,000", "low"],
-      ["Stand mixer", "$100–$500", "high"],
+      ["Stand mixer", "$100–$250", "high"],
     ]);
   });
 });
@@ -179,7 +179,7 @@ describe("prompts anchor the band to a realistic sale", () => {
     );
     expect(SYSTEM_PROMPT).toMatch(/not retail/i);
     expect(SYSTEM_PROMPT).toMatch(
-      /most things in a house sell for under \$25/i,
+      /most things at a garage sale sell for \$1 to \$10/i,
     );
     expect(SYSTEM_PROMPT).toMatch(/choose the lower/i);
   });

@@ -63,7 +63,6 @@ export default function SummaryPage() {
             <tr className="text-muted-foreground">
               <th className="py-2 pr-4 text-caption">Photo</th>
               <th className="py-2 pr-4 text-caption">Item</th>
-              <th className="py-2 pr-4 text-caption">Room</th>
               <th className="py-2 pr-4 text-caption">Band</th>
               <th className="py-2 pr-4 text-caption">Confidence</th>
               <th className="py-2 text-caption">Why</th>
@@ -83,7 +82,6 @@ export default function SummaryPage() {
                   {item.markReading && <span className="block text-muted-foreground">Mark: {item.markReading}</span>}
                   {item.note && <span className="block text-muted-foreground">{item.note}</span>}
                 </td>
-                <td className="py-2 pr-4">{item.room}</td>
                 <td className="py-2 pr-4">{item.band}</td>
                 <td className="py-2 pr-4">{item.confidence}</td>
                 <td className="py-2">{item.reason}</td>

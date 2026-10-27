@@ -13,7 +13,6 @@ interface AddItemProps {
 export default function AddItem({ onAdd }: AddItemProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [room, setRoom] = useState("");
   const [destination, setDestination] = useState<Destination | undefined>(undefined);
 
   if (!open) {
@@ -28,9 +27,8 @@ export default function AddItem({ onAdd }: AddItemProps) {
 
   const submit = () => {
     if (!name.trim()) return;
-    onAdd({ name, room, destination });
+    onAdd({ name, destination });
     setName("");
-    setRoom("");
     setDestination(undefined);
     setOpen(false);
   };
@@ -39,15 +37,12 @@ export default function AddItem({ onAdd }: AddItemProps) {
     <Card className="ring-foreground/15">
       <CardHeader>
         <CardTitle>Add an item</CardTitle>
-        <CardDescription>Name it, say where it is, and pick where it is headed. Open it afterwards to add a photo.</CardDescription>
+        <CardDescription>Name it and pick where it&apos;s headed.</CardDescription>
       </CardHeader>
       <CardContent>
         <Stack gap={16}>
           <Field label="What is it?" required>
             <Input value={name} maxLength={80} placeholder="Oak rolltop desk" onChange={(e) => setName(e.target.value)} />
-          </Field>
-          <Field label="Room">
-            <Input value={room} maxLength={40} placeholder="Study" onChange={(e) => setRoom(e.target.value)} />
           </Field>
           <DestinationToggle value={destination} onChange={setDestination} label="Where is it headed?" />
           <Inline gap={8}>

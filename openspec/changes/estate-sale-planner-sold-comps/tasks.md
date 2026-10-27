@@ -11,23 +11,23 @@
 
 **Item correction**
 
-- [ ] 1.1 After a walkthrough, each photo is kept on the phone at up to 1600 px, and every item knows which photo it came from
-- [ ] 1.2 When phone storage runs short, the oldest sale loses its original photos first. Its items keep their pictures and every correction
+- [x] 1.1 After a walkthrough, each photo is kept on the phone at up to 1600 px, and every item knows which photo it came from — `photos.test.ts`; Playwright run loaded the original on the source photo screen (2026-10-27)
+- [x] 1.2 When phone storage runs short, the oldest sale loses its original photos first. Its items keep their pictures and every correction — `photos.test.ts` (eviction plan + IndexedDB)
 - [ ] 1.3 An item whose original is gone still opens and can be renamed, re-priced, moved or removed. The photo actions say the photo is no longer on this device
-- [ ] 1.4 User opens an item's source photo and sees the whole photo, with this item outlined and the other items from that photo shown faintly
+- [x] 1.4 User opens an item's source photo and sees the whole photo, with this item outlined and the other items from that photo shown faintly — `assets/built-source-view-480.png`, `-1024.png`
 - [ ] 1.5 When the model gave no box, the whole photo is the subject, and the user can draw a box
-- [ ] 1.6 User drags the box onto the clock instead of the table. The picture becomes the clock, and the name, price and reason update
-- [ ] 1.7 If the re-read fails after an adjustment, the new box and picture stay, the old name and price stay, and the item says it hasn't been re-read yet
-- [ ] 1.8 User splits "three vases" into three items, each with its own picture and read
-- [ ] 1.9 User draws a box around a lamp the model missed. A new item appears with that picture, marked as added by you, and is read
-- [ ] 1.10 User merges a lamp and its shade into one item, framed around both, and it is read
-- [ ] 1.11 User marks six Pyrex bowls as one lot. It is named and priced as a set and can be split back
-- [ ] 1.12 User sends "this is actually a vintage Hermes - adjust pricing". That item's name, price and reason update, it shows what changed, and it is confirmed
-- [ ] 1.13 A message changes only the item it was sent on
-- [ ] 1.14 User taps Undo on a change a message made, and the previous name, price and reason come back
+- [~] 1.6 User drags the box onto the clock instead of the table. The picture becomes the clock, and the name, price and reason update — reducer + route covered (`correction.test.ts`, `refine-route.test.ts`); **live re-read needs a key and a phone**
+- [x] 1.7 If the re-read fails after an adjustment, the new box and picture stay, the old name and price stay, and the item says it hasn't been re-read yet — `correction.test.ts`
+- [~] 1.8 User splits "three vases" into three items, each with its own picture and read — reducer tested; Playwright drew 2 boxes, Save enabled (`assets/built-source-split-480.png`); live read needs a key
+- [~] 1.9 User draws a box around a lamp the model missed. A new item appears with that picture, marked as added by you, and is read — reducer tested; UI built, not driven
+- [~] 1.10 User merges a lamp and its shade into one item, framed around both, and it is read — reducer tested; UI built, not driven
+- [~] 1.11 User marks six Pyrex bowls as one lot. It is named and priced as a set and can be split back — reducer tested; naming as a set needs a keyed read
+- [~] 1.12 User sends "this is actually a vintage Hermes - adjust pricing". That item's name, price and reason update, it shows what changed, and it is confirmed — `correction.test.ts`, `refine.test.ts`; live message needs a key
+- [x] 1.13 A message changes only the item it was sent on — `correction.test.ts`
+- [x] 1.14 User taps Undo on a change a message made, and the previous name, price and reason come back — `correction.test.ts`
 - [ ] 1.15 If the call fails after a message, the item is unchanged and the message stays in the box to send again
-- [ ] 1.16 User taps Looks right and the item shows as confirmed
-- [ ] 1.17 Any correction (adjust, split, merge, lot, add, message) confirms every resulting item without a separate tap
+- [x] 1.16 User taps Looks right and the item shows as confirmed — Playwright (`assets/built-item-confirmed-480.png`)
+- [x] 1.17 Any correction (adjust, split, merge, lot, add, message) confirms every resulting item without a separate tap — `correction.test.ts`
 - [ ] 1.18 An unconfirmed item headed to Sell at a high price keeps the model's price, and no lookup runs
 
 **Sold-price lookup**
@@ -58,28 +58,28 @@
 
 ### PR 1: correction and the item screen
 
-- [ ] 3.1 **Finer bands (D18).**
+- [x] 3.1 **Finer bands (D18).**
   - `BANDS` (`flag.ts`) becomes the ten-band list.
   - The `BAND_GUIDE` base rate becomes "$1–$10".
   - Every band gets a `RANGE` in `tally.ts`, and the old bands stay readable as legacy ranges.
   - Fixtures move to the new bands.
   - Tests: `calibration.test.ts`, `tally.test.ts`, the vision and refine schema tests.
-- [ ] 3.2 **Brand (D20).** Add an `.esp-theme` class in `app/globals.css` that redefines `--primary`, `--primary-foreground`, `--ring`, `--background`, `--card`, `--muted` and `--border`, and apply it in `layout.tsx` next to `mvds-theme`.
-- [ ] 3.3 **Rooms out of the UI (D12).**
+- [x] 3.2 **Brand (D20).** Add an `.esp-theme` class in `app/globals.css` that redefines `--primary`, `--primary-foreground`, `--ring`, `--background`, `--card`, `--muted` and `--border`, and apply it in `layout.tsx` next to `mvds-theme`.
+- [x] 3.3 **Rooms out of the UI (D12).**
   - No room label on ItemCard, ItemDetail, Swipe, the summary or the sheet.
   - No Room field on ItemDetail or AddItem.
   - Lists is no longer grouped by `byRoom`.
   - Copy becomes "Take photos" / "Add more photos". `room` stays in the schema.
-- [ ] 3.4 **Breadcrumb (D11).**
+- [x] 3.4 **Breadcrumb (D11).**
   - `chromeFor` returns `crumbs` plus `title`.
   - `TopBar.tsx` renders `<nav aria-label="Breadcrumb">`, the last ancestor is Back, and leading crumbs collapse to `…`.
   - `routes.test.ts` asserts every trail.
-- [ ] 3.5 **Segmented destination toggle (D16).**
+- [x] 3.5 **Segmented destination toggle (D16).**
   - `DestinationToggle` gets a full-width `variant="segmented"`: `role="radiogroup"`, arrow keys move the selection, on MVDS tokens.
   - Used on the item screen.
   - Unit test for keyboard selection.
-- [ ] 3.6 **Sticky item header (D21).** The breadcrumb and toggle share the MVDS `Chrome position="top"` block on the item route. The breadcrumb is a slot.
-- [ ] 3.7 **Item screen layout (D15, D17, D19).** Round 17 order:
+- [x] 3.6 **Sticky item header (D21).** The breadcrumb and toggle share the MVDS `Chrome position="top"` block on the item route. The breadcrumb is a slot.
+- [x] 3.7 **Item screen layout (D15, D17, D19).** Round 17 order:
   1. Name and price as `text-h2`, the price in success colour, top-right.
   2. The photo.
   3. The photo check (or "✓ Confirmed" · Source photo).
@@ -91,35 +91,35 @@
   Also in this item:
   - Drop the confidence badge, the "Take a closer look" section and the room.
   - At `lg`: header and name/price at full width; photo column 5/12, details 7/12.
-- [ ] 3.8 **Button groups (D13).** A small `ButtonGroup` (Inline `gap={8}`, `justify-end`, wraps, primary last) used by every group in this change.
-- [ ] 3.9 **Photo store (D1).**
+- [x] 3.8 **Button groups (D13).** A small `ButtonGroup` (Inline `gap={8}`, `justify-end`, wraps, primary last) used by every group in this change.
+- [x] 3.9 **Photo store (D1).**
   - `lib/estate-sale-planner/photos.ts`: IndexedDB `esp-photos`, put/get/delete, a `PHOTO_STORE.capBytes` cap (150 MB) with oldest-sale-first eviction, and `storage.persist()` on first save.
   - `capture.ts` writes the 1600 px copy alongside the 768 px frame.
   - Tests with `fake-indexeddb` (a new dev dependency; not in `package.json` yet).
-- [ ] 3.10 **Session model (D2).**
+- [x] 3.10 **Session model (D2).**
   - New fields: `photoId`, `lot`, `confirmed`, `bandSource`, `rereadPending`, `messages`.
   - New reducers: `adjustBox`, `splitItem`, `addFromPhoto`, `mergeItems`, `markLot`, `splitLot`, `confirmItem`, `applyMessage`, `undoMessage`.
   - Destination precedence on merge and lot.
   - Tests in `session.test.ts`.
-- [ ] 3.11 **Crop and re-read (D3).**
+- [x] 3.11 **Crop and re-read (D3).**
   - Crop from the original at up to 1024 px using `cropRect` padding.
   - `RefineInput.reframed` adds the prompt line.
   - The thumbnail is re-cut at 320 px.
   - At most 3 re-reads in flight; `rereadPending` and failure states.
   - Tests in `refine.test.ts`.
-- [ ] 3.12 **Source photo screen.**
+- [x] 3.12 **Source photo screen.**
   - Route `/sales/[id]/items/[itemId]/photo`.
   - `BoxEditor` (an SVG overlay with pointer events and 44 px handles) with modes view, adjust, split, add and select.
   - Actions per the D13 groups.
   - "Photo no longer on this device" fallback.
-- [ ] 3.13 **Adjust by message (D14).**
+- [x] 3.13 **Adjust by message (D14).**
   - `/api/refine` accepts `message` (prompt plus request schema).
   - Message thread with an "Updated this item" card and Undo.
   - Messages are appended to `note`, and a message confirms the item.
   - Tests in `refine-route.test.ts` and `session.test.ts`.
-- [ ] 3.14 **Confirmed state.** **Looks right** on the item screen and the source photo screen. Confirmed is persisted in `storage.ts` and shown under the photo.
-- [ ] 3.15 **Copy and accessibility.** Run `skills/user-communication` over the new copy. Check focus order, the radiogroup, the breadcrumb `aria-current`, and 44 px targets.
-- [ ] 3.16 **Built captures** at 480 and 1024 against round 17, saved to `openspec/changes/estate-sale-planner-sold-comps/assets/built-*.png`, with any drift noted in `design.md`.
+- [x] 3.14 **Confirmed state.** **Looks right** on the item screen and the source photo screen. Confirmed is persisted in `storage.ts` and shown under the photo.
+- [x] 3.15 **Copy and accessibility.** Run `skills/user-communication` over the new copy. Check focus order, the radiogroup, the breadcrumb `aria-current`, and 44 px targets.
+- [x] 3.16 **Built captures** at 480 and 1024 against round 17, saved to `openspec/changes/estate-sale-planner-sold-comps/assets/built-*.png` (fixture mode, stand-in photos, 2026-10-27). Drift: the photo check's corner dots are 8 px (design.md) where the Figma stand-in drew 12; the confidence badge on list cards picks up the brand primary.
 
 ### PR 2: sold-price lookup
 

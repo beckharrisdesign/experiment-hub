@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { formatTally, tally, tallies } from "@/lib/estate-sale-planner/tally";
+import { BANDS } from "@/lib/estate-sale-planner/flag";
 import type { Session, SessionItem } from "@/lib/estate-sale-planner/session";
 
 const item = (band: SessionItem["band"], destination?: SessionItem["destination"]): SessionItem => ({
@@ -17,11 +18,21 @@ const item = (band: SessionItem["band"], destination?: SessionItem["destination"
 
 describe("tally", () => {
   it("sums each band's low and high ends", () => {
-    expect(tally([item("under $25"), item("$25–$100"), item("$100–$500")])).toEqual({ count: 3, low: 125, high: 625 });
+    expect(tally([item("$1–$5"), item("$25–$50"), item("$100–$250")])).toEqual({ count: 3, low: 126, high: 305 });
   });
 
   it("an open-ended band makes the high end open", () => {
     expect(tally([item("$500–$2,000"), item("over $2,000")])).toEqual({ count: 2, low: 2500, high: null });
+  });
+
+  it("covers every band, narrow at the bottom", () => {
+    expect(BANDS).toHaveLength(10);
+    expect(tally(BANDS.map((b) => item(b)))).toEqual({ count: 10, low: 2941, high: null });
+  });
+
+  it("still reads bands saved before the finer list", () => {
+    const legacy = (band: string) => item(band as SessionItem["band"]);
+    expect(tally([legacy("under $25"), legacy("$25–$100"), legacy("$100–$500")])).toEqual({ count: 3, low: 125, high: 625 });
   });
 
   it("nothing is zero", () => {
@@ -31,10 +42,10 @@ describe("tally", () => {
 
 describe("tallies", () => {
   it("splits by destination and counts what is still unsorted", () => {
-    const s = { items: [item("$100–$500", "sell"), item("$25–$100", "sell"), item("under $25", "donate"), item("$500–$2,000", "keep"), item("$25–$100")] } as Session;
+    const s = { items: [item("$100–$250", "sell"), item("$25–$50", "sell"), item("under $1", "donate"), item("$500–$2,000", "keep"), item("$25–$50")] } as Session;
     const t = tallies(s);
-    expect(t.sell).toEqual({ count: 2, low: 125, high: 600 });
-    expect(t.donate).toEqual({ count: 1, low: 0, high: 25 });
+    expect(t.sell).toEqual({ count: 2, low: 125, high: 300 });
+    expect(t.donate).toEqual({ count: 1, low: 0, high: 1 });
     expect(t.keep).toEqual({ count: 1, low: 500, high: 2000 });
     expect(t.unsorted).toBe(1);
   });

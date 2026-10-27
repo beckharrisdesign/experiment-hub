@@ -3,7 +3,7 @@ import { fixtureRefine, parseRefineResponse, refineUserText, type RefineInput } 
 import { openAIRefineRequest, refineWithOpenAI } from "@/lib/estate-sale-planner/vision/openai";
 
 const input: RefineInput = {
-  item: { name: "Upright piano", room: "Dining room", band: "under $25", reason: "Uprights are usually free to a good home.", confidence: "high" },
+  item: { name: "Upright piano", room: "Dining room", band: "$10–$25", reason: "Uprights are usually free to a good home.", confidence: "high" },
   details: [{ data: "AAAA", at: 0 }, { data: "BBBB", at: 1 }],
   context: "Grandpa bought it new in 1958.",
 };
@@ -12,17 +12,34 @@ describe("refineUserText", () => {
   it("carries the walkthrough read, the detail count, and what the family knows", () => {
     const text = refineUserText(input);
     expect(text).toContain("Upright piano (Dining room)");
-    expect(text).toContain("under $25, high confidence");
+    expect(text).toContain("$10–$25, high confidence");
     expect(text).toContain("2 detail photos follow");
     expect(text).toContain("What the family knows: Grandpa bought it new in 1958.");
     expect(refineUserText({ ...input, context: "  " })).not.toContain("What the family knows");
+  });
+
+  it("a re-framed crop says the photo is the object itself", () => {
+    const text = refineUserText({ ...input, details: [{ data: "AAAA", at: 0 }], reframed: true });
+    expect(text).toContain("The family re-framed this object; the photo is the object itself.");
+    expect(text).toContain("1 photo of the object follows");
+  });
+
+  it("a message is the family's words, a fact unless the photo plainly says otherwise, and only that changes", () => {
+    const text = refineUserText({ ...input, details: [{ data: "AAAA", at: 0 }], message: "this is actually a vintage Hermes - adjust pricing" });
+    expect(text).toContain('The family says: "this is actually a vintage Hermes - adjust pricing"');
+    expect(text).toMatch(/fact about this object unless the photo plainly contradicts it/);
+    expect(text).toMatch(/Change only what the message is about/);
+  });
+
+  it("a message with no picture still reads", () => {
+    expect(refineUserText({ ...input, details: [], message: "set of 6" })).toContain("No photo follows");
   });
 });
 
 describe("parseRefineResponse", () => {
   it("accepts a legible mark and a null one, rejects an unknown band", () => {
     expect(parseRefineResponse({ name: "Steinway upright", band: "over $2,000", reason: "Serial dates it to 1958.", confidence: "high", markReading: "Steinway & Sons 123456" })).not.toBeNull();
-    expect(parseRefineResponse({ name: "x", band: "under $25", reason: "y", confidence: "low", markReading: null })).not.toBeNull();
+    expect(parseRefineResponse({ name: "x", band: "$10–$25", reason: "y", confidence: "low", markReading: null })).not.toBeNull();
     expect(parseRefineResponse({ name: "x", band: "priceless", reason: "y", confidence: "low", markReading: null })).toBeNull();
   });
 });
@@ -30,7 +47,7 @@ describe("parseRefineResponse", () => {
 describe("fixtureRefine", () => {
   it("keeps the item as it was and says so", () => {
     const r = fixtureRefine(input);
-    expect(r).toMatchObject({ name: "Upright piano", band: "under $25", markReading: null, source: "fixture", provider: "fixture" });
+    expect(r).toMatchObject({ name: "Upright piano", band: "$10–$25", markReading: null, source: "fixture", provider: "fixture" });
   });
 });
 

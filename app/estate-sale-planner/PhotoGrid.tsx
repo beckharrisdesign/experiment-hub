@@ -47,7 +47,7 @@ export default function PhotoGrid({ photos, sending, onSend, onRemove, onBack }:
 
       <div className="flex justify-center">
         <Button size="lg" disabled={sending || photos.length === 0} onClick={onSend} data-analytics-event="esp_frames_confirmed">
-          {sending ? "Looking at the room…" : "Send and flag what's worth something"}
+          {sending ? "Looking at your photos…" : "Send and flag what's worth something"}
         </Button>
       </div>
       <div className="flex justify-center">

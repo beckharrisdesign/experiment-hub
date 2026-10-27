@@ -11,7 +11,15 @@
 import { z } from "zod";
 import fixture from "./fixtures/flags.json";
 
-export const BANDS = ["under $25", "$25–$100", "$100–$500", "$500–$2,000", "over $2,000"] as const;
+/**
+ * Garage-sale-sized value bands, narrow at the bottom where most of a house
+ * sells (founder, 2026-10-27: "in a garage sale $1 and $5 are really big
+ * buckets"). Order matters: low to high.
+ */
+export const BANDS = ["under $1", "$1–$5", "$5–$10", "$10–$25", "$25–$50", "$50–$100", "$100–$250", "$250–$500", "$500–$2,000", "over $2,000"] as const;
+
+/** The five bands used before 2026-10-27. Saved sales and sheets may still carry them; they stay readable. */
+export const LEGACY_BANDS = ["under $25", "$25–$100", "$100–$500"] as const;
 
 /**
  * Where the object sits in its frame, normalized 0–1 from the top-left. The
@@ -63,7 +71,7 @@ export interface FlagResult extends FlagResponse {
  * in perfect condition (founder, 2026-10-27: "the confidence and price ranges
  * are wildly optimistic").
  */
-export const BAND_GUIDE = `"band" is what this object would most likely sell for, used, in the condition you can see, at a local estate sale, garage sale, or Facebook Marketplace: the typical price a buyer actually pays. Not retail, not replacement cost, and not an online asking price for a perfect example. Estate sales get a small fraction of what things cost new, and most things in a house sell for under $25. Put an object at $100 or more only when you can see why a buyer would pay that: solid wood in a known style, sterling, a brand people search for. Put it at $500 or more only when you can identify the maker, model, or artist. "over $2,000" from a photo is almost never right. When you are torn between two bands, choose the lower one.
+export const BAND_GUIDE = `"band" is what this object would most likely sell for, used, in the condition you can see, at a local estate sale, garage sale, or Facebook Marketplace: the typical price a buyer actually pays. Not retail, not replacement cost, and not an online asking price for a perfect example. Estate sales get a small fraction of what things cost new, and most things at a garage sale sell for $1 to $10. Put an object at $100 or more only when you can see why a buyer would pay that: solid wood in a known style, sterling, a brand people search for. Put it at $500 or more only when you can identify the maker, model, or artist. "over $2,000" from a photo is almost never right. When you are torn between two bands, choose the lower one.
 
 "confidence" is how sure you are of the band. "high" means you can identify the maker or model and similar ones sell often at a known price. "medium" means the kind of object is clear but the maker is not. "low" means anything less. Use "low" freely; a wrong "high" costs trust.`;
 

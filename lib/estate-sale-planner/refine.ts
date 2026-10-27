@@ -23,6 +23,10 @@ export interface RefineInput {
   details: FrameInput[];
   /** Anything the user typed about the piece — who bought it, where, when. */
   context?: string;
+  /** The family re-framed the object on its source photo; the single image is the new crop (sold-comps D3). */
+  reframed?: boolean;
+  /** "Adjust this item": the family's words, applied to this item only (sold-comps D14). */
+  message?: string;
 }
 
 export interface RefineResult extends RefineResponse {
@@ -34,17 +38,22 @@ export interface RefineResult extends RefineResponse {
 
 export const REFINE_PROMPT = `You help an adult child clearing out a parent's house decide what might be worth selling. You already looked at this object in a walkthrough frame and gave a rough resale value band. The person has now taken close-up detail photos of it — a seam, a stamp on the bottom, a label, a maker's mark — because they want a better read.
 
-Look at the details and return the same object with a better name, band, reason, and confidence. "markReading" is exactly what you can read off any stamp, mark, label, or signature, transcribed plainly; null when nothing is legible. If the mark changes what the object is (a maker, a period, a reproduction), say so in the reason in one plain sentence. Never invent a mark you cannot read.
+Look at the details and return the same object with a better name, band, reason, and confidence. Sometimes the photo is a new crop the family drew around the object, or the family tells you something in their own words; use what they give you. "markReading" is exactly what you can read off any stamp, mark, label, or signature, transcribed plainly; null when nothing is legible. If the mark changes what the object is (a maker, a period, a reproduction), say so in the reason in one plain sentence. Never invent a mark you cannot read.
 
 ${BAND_GUIDE}`;
 
 export function refineUserText(input: RefineInput): string {
   const { item } = input;
-  const lines = [
-    `Object: ${item.name} (${item.room}). Walkthrough read: ${item.band}, ${item.confidence} confidence — "${item.reason}".`,
-    `${input.details.length} detail ${input.details.length === 1 ? "photo" : "photos"} follow.`,
-  ];
+  const n = input.details.length;
+  const photos = input.reframed || input.message ? (n === 0 ? "No photo follows." : `${n} ${n === 1 ? "photo" : "photos"} of the object follows.`) : `${n} detail ${n === 1 ? "photo" : "photos"} follow.`;
+  const lines = [`Object: ${item.name} (${item.room}). Walkthrough read: ${item.band}, ${item.confidence} confidence — "${item.reason}".`];
+  if (input.reframed) lines.push("The family re-framed this object; the photo is the object itself.");
+  lines.push(photos);
   if (input.context?.trim()) lines.push(`What the family knows: ${input.context.trim()}`);
+  if (input.message?.trim()) {
+    lines.push(`The family says: "${input.message.trim()}"`);
+    lines.push("Treat it as a fact about this object unless the photo plainly contradicts it. Change only what the message is about; keep the rest of the read.");
+  }
   lines.push("Return the object again with the better read.");
   return lines.join("\n");
 }

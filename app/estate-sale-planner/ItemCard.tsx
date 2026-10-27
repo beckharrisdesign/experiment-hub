@@ -29,7 +29,6 @@ export default function ItemCard({ item, onDestination, onOpen }: ItemCardProps)
         <img src={item.image} alt={item.name} className="aspect-[4/3] w-full object-cover" />
       )}
       <CardHeader>
-        <p className="text-caption uppercase text-muted-foreground">{item.room}</p>
         <CardTitle>{item.name}</CardTitle>
         <Inline gap={8} align="center">
           <Badge variant="success">{item.band}</Badge>

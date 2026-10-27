@@ -13,6 +13,7 @@ describe("parseRoute", () => {
     expect(parseRoute(paths.progress(id))).toEqual({ screen: "progress", saleId: id });
     expect(parseRoute(paths.capture(id))).toEqual({ screen: "capture", saleId: id });
     expect(parseRoute(paths.item(id, `${id}_p1_3`))).toEqual({ screen: "item", saleId: id, itemId: `${id}_p1_3` });
+    expect(parseRoute(paths.photo(id, `${id}_p1_3`))).toEqual({ screen: "photo", saleId: id, itemId: `${id}_p1_3` });
   });
 
   it("tolerates a trailing slash and calls everything else 'other'", () => {
@@ -27,6 +28,7 @@ describe("parseRoute", () => {
 describe("tabs", () => {
   it("lights Items for an open item and nothing for the camera flows", () => {
     expect(tabFor("item")).toBe("items");
+    expect(tabFor("photo")).toBe("items");
     expect(tabFor("new")).toBeNull();
     expect(tabFor("capture")).toBeNull();
     expect(tabFor("progress")).toBe("progress");
@@ -44,19 +46,32 @@ describe("tabs", () => {
 });
 
 describe("chromeFor", () => {
-  it("says where you are on every screen, with Back everywhere but Home", () => {
-    expect(chromeFor({ screen: "home" })).toEqual({ title: "Estate Sale Planner" });
-    expect(chromeFor({ screen: "items", saleId: id }, "Mom's house")).toEqual({ eyebrow: "Mom's house", title: "Items", back: paths.home() });
-    expect(chromeFor({ screen: "sort", saleId: id }, "")).toMatchObject({ eyebrow: "Untitled sale", title: "Sort", back: paths.sale(id) });
-    expect(chromeFor({ screen: "item", saleId: id, itemId: "x" }, "Mom's house", "Spinet cabinet").title).toBe("Spinet cabinet");
-    expect(chromeFor({ screen: "item", saleId: id, itemId: "x" }, "Mom's house").title).toBe("Item");
-    expect(chromeFor({ screen: "new" })).toMatchObject({ eyebrow: "New sale", back: paths.home() });
+  const home = { label: "Home", href: paths.home() };
+  const sale = (name: string) => ({ label: name, href: paths.sale(id) });
+
+  it("is a breadcrumb trail: every ancestor is a link, the last one is Back", () => {
+    expect(chromeFor({ screen: "home" })).toEqual({ title: "Estate Sale Planner", crumbs: [] });
+    expect(chromeFor({ screen: "items", saleId: id }, "2026 All Family Garage Sale")).toEqual({ title: "2026 All Family Garage Sale", crumbs: [home], back: paths.home() });
+    expect(chromeFor({ screen: "sort", saleId: id }, "")).toEqual({ title: "Sort", crumbs: [home, sale("Untitled sale")], back: paths.sale(id) });
+    expect(chromeFor({ screen: "progress", saleId: id }, "Sale")).toMatchObject({ title: "Progress", crumbs: [home, sale("Sale")] });
+    expect(chromeFor({ screen: "capture", saleId: id }, "Sale")).toMatchObject({ title: "Add photos", crumbs: [home, sale("Sale")] });
+    expect(chromeFor({ screen: "item", saleId: id, itemId: "x" }, "Sale", "Mantel clock")).toEqual({ title: "Mantel clock", crumbs: [home, sale("Sale")], back: paths.sale(id) });
+    expect(chromeFor({ screen: "item", saleId: id, itemId: "x" }, "Sale").title).toBe("Item");
+    expect(chromeFor({ screen: "new" })).toEqual({ title: "Take photos", crumbs: [home], back: paths.home() });
   });
 
-  it("names the sell list and the shared sheet, with Back to the sale in context when there is one", () => {
-    expect(chromeFor({ screen: "summary" }, "Mom's house", undefined, id)).toEqual({ eyebrow: "Mom's house", title: "Sell list", back: paths.sale(id) });
-    expect(chromeFor({ screen: "summary" })).toMatchObject({ title: "Sell list", back: paths.home() });
-    expect(chromeFor({ screen: "sheet" })).toEqual({ eyebrow: "Estate Sale Planner", title: "Sell Sheet", back: paths.home() });
+  it("puts the source photo under its item", () => {
+    expect(chromeFor({ screen: "photo", saleId: id, itemId: "x" }, "Sale", "Mantel clock")).toEqual({
+      title: "Source photo",
+      crumbs: [home, sale("Sale"), { label: "Mantel clock", href: paths.item(id, "x") }],
+      back: paths.item(id, "x"),
+    });
+  });
+
+  it("names the sell list and the shared sheet, under the sale in context when there is one", () => {
+    expect(chromeFor({ screen: "summary" }, "Sale", undefined, id)).toEqual({ title: "Sell list", crumbs: [home, sale("Sale")], back: paths.sale(id) });
+    expect(chromeFor({ screen: "summary" })).toEqual({ title: "Sell list", crumbs: [home], back: paths.home() });
+    expect(chromeFor({ screen: "sheet" })).toEqual({ title: "Sell Sheet", crumbs: [home], back: paths.home() });
   });
 });
 

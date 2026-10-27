@@ -11,7 +11,7 @@ import PhotoGrid from "./PhotoGrid";
 import { useSaleStore } from "./(app)/store";
 
 interface CaptureFlowProps {
-  /** Present → add a room to this sale; absent → start a new one. */
+  /** Present → add photos to this sale; absent → start a new one. */
   sale?: Session;
 }
 
@@ -56,7 +56,7 @@ export default function CaptureFlow({ sale }: CaptureFlowProps) {
         append
           ? outcome.added === 0
             ? "Nothing new in those photos. Everything the model saw is already listed."
-            : `Added ${outcome.added} ${outcome.added === 1 ? "item" : "items"} from that room.`
+            : `Added ${outcome.added} ${outcome.added === 1 ? "item" : "items"} from those photos.`
           : null,
       );
       setPhotos([]);

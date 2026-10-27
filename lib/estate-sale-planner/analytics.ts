@@ -21,7 +21,12 @@ export type FunnelEvent =
   | "esp_item_refined"
   | "esp_room_appended"
   | "esp_new_walkthrough"
-  | "esp_walkthrough_named";
+  | "esp_walkthrough_named"
+  // sold-comps: item correction
+  | "esp_item_confirmed"
+  | "esp_item_corrected"
+  | "esp_item_message"
+  | "esp_photos_evicted";
 
 export function track(event: FunnelEvent, params: Record<string, string | number | boolean | undefined> = {}) {
   trackEvent(event, { experiment_slug: EXPERIMENT_ID, surface_type: "prototype", ...params });

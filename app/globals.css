@@ -158,6 +158,29 @@
   --efa-heading-font: inherit;
 }
 
+/* ---------------------------------------------------------------------------
+ * Estate Sale Planner brand (sold-comps design D20; founder, 2026-10-27:
+ * "this is super boring so far", then "#F0905D"). A soft coral-orange primary
+ * on warm near-blacks, layered on `.mvds-theme` the way MVDS expects to be
+ * branded: by redefining its semantic tokens, never by editing components.
+ * Price stays on --success: green reads as money. Popover, secondary and
+ * accent follow the warm surfaces so selects and secondary buttons sit in
+ * the same palette.
+ * ------------------------------------------------------------------------ */
+.esp-theme {
+  --primary: #f0905d;
+  --primary-foreground: #2b1407;
+  --ring: #f0905d;
+  --background: #14100d;
+  --card: #1e1814;
+  --popover: #1e1814;
+  --muted: #2a211b;
+  --secondary: #2a211b;
+  --accent: #2a211b;
+  --border: #3b2f26;
+  --input: #3b2f26;
+}
+
 /* MVDS sets `--font-heading: var(--font-sans)` — its headings are the UI sans.
  * The hub repoints both the element selectors and the .font-heading utility at
  * Fraunces, and MVDS's CardTitle renders a div carrying that utility, so both

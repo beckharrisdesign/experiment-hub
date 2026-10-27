@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { CapturedFrame } from "../../../lib/estate-sale-planner/capture";
 import { detailFromPhoto } from "../../../lib/estate-sale-planner/capture";
-import type { FlagResult, FrameInput } from "../../../lib/estate-sale-planner/flag";
+import type { Box, FlagResult, FrameInput } from "../../../lib/estate-sale-planner/flag";
 import type { RefineResult } from "../../../lib/estate-sale-planner/refine";
 import {
   addItem,
@@ -23,6 +23,9 @@ import {
   type Session,
 } from "../../../lib/estate-sale-planner/session";
 import { itemThumbnail } from "../../../lib/estate-sale-planner/thumbs";
+import { addFromPhoto, adjustBox, applyMessage, applyReread, confirmItem, failReread, markLot, mergeItems, splitItem, splitLot, undoMessage } from "../../../lib/estate-sale-planner/correction";
+import { cropFromPhoto } from "../../../lib/estate-sale-planner/crops";
+import { photoKey, putPhotos } from "../../../lib/estate-sale-planner/photos";
 import { deleteSaved, listHistory, loadSession, openSaved, saveSession, type HistoryEntry } from "../../../lib/estate-sale-planner/storage";
 import { track } from "../../../lib/estate-sale-planner/analytics";
 
@@ -61,6 +64,20 @@ export interface SaleStore {
   onUndo: () => void;
   onRename: (name: string) => void;
   deleteSale: (id: string) => void;
+  /** Looks right. */
+  onConfirm: (itemId: string) => void;
+  /** Corrections on the source photo (sold-comps spec: item-correction). Each confirms what it
+   * produces, saves at once, then crops and re-reads every new or changed item in the background
+   * (three at a time). They return the ids that now exist, so the screen can follow. */
+  onAdjust: (itemId: string, box: Box) => string[];
+  onSplit: (itemId: string, boxes: Box[]) => string[];
+  onAddFromPhoto: (from: { photoId?: string; frame: number; box: Box; destination?: Destination }) => string[];
+  onMerge: (ids: string[]) => string[];
+  onLot: (ids: string[]) => string[];
+  onSplitLot: (lotId: string) => string[];
+  /** "Adjust this item". Resolves false when the message couldn't be applied (the screen keeps it). */
+  onMessage: (itemId: string, text: string) => Promise<boolean>;
+  onUndoMessage: (itemId: string, index: number) => void;
 }
 
 const SaleContext = createContext<SaleStore | null>(null);
@@ -139,13 +156,26 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
           }
         }),
       );
+      // Keep the 1600 px originals on the device and point each new item at its photo (sold-comps D1).
+      const pass = base ? (base.passes ?? 1) + 1 : 1;
+      const hasOriginals = frames.some((f) => f.original);
+      const stamp = (s: Session, from: number): Session =>
+        hasOriginals ? { ...s, items: s.items.map((it, idx) => (idx >= from ? { ...it, photoId: photoKey(s.id, pass, it.frame % frames.length) } : it)) } : s;
+      const keep = (saleId: string) => {
+        if (!hasOriginals) return;
+        void putPhotos(saleId, pass, frames.flatMap((f) => (f.original ? [{ frame: f.at, blob: f.original }] : []))).then((evicted) => {
+          if (evicted.length) track("esp_photos_evicted", { sales: evicted.length });
+        });
+      };
       if (base) {
-        const next = appendItems(base, json.items, images);
+        const next = stamp(appendItems(base, json.items, images), base.items.length);
+        keep(next.id);
         update(next);
         track("esp_room_appended", { items: json.items.length, pass: next.passes ?? 0 });
         return { id: next.id, added: json.items.length, source: json.source };
       }
-      const next = newSession(json.items, new Date(), images, opts.name);
+      const next = stamp(newSession(json.items, new Date(), images, opts.name), 0);
+      keep(next.id);
       update(next);
       if (opts.name?.trim()) track("esp_walkthrough_named");
       return { id: next.id, added: json.items.length, source: json.source };
@@ -263,9 +293,165 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // ---- Corrections (sold-comps spec: item-correction) -------------------------------------
+
+  const rereadCorrected = useCallback(
+    async (itemId: string) => {
+      const item = latest.current?.items.find((i) => i.id === itemId);
+      if (!item) return;
+      const patch = (fn: (s: Session) => Session) => latest.current && update(fn(latest.current));
+      let crop = null;
+      try {
+        crop = item.photoId ? await cropFromPhoto(item.photoId, item.box) : null;
+      } catch {
+        crop = null;
+      }
+      if (!crop) return patch((s) => failReread(s, itemId));
+      patch((s) => ({ ...s, items: s.items.map((i) => (i.id === itemId ? { ...i, image: crop.thumb } : i)) }));
+      try {
+        const res = await fetch("/estate-sale-planner/api/refine", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            item: { name: item.name, room: item.room, band: item.band, reason: item.reason, confidence: item.confidence },
+            details: [{ data: crop.data, at: 0 }],
+            context: item.note,
+            reframed: true,
+          }),
+        });
+        const json = (await res.json()) as (RefineResult & { success: true }) | { error: string };
+        if (!res.ok || "error" in json) throw new Error("error" in json ? json.error : `HTTP ${res.status}`);
+        if (json.source === "fixture") {
+          setNotice("Demo mode: the new picture is kept, but no vision key is configured, so nothing was re-read.");
+          return patch((s) => ({ ...s, items: s.items.map((i) => (i.id === itemId ? { ...i, rereadPending: false } : i)) }));
+        }
+        patch((s) => applyReread(s, itemId, json));
+      } catch {
+        patch((s) => failReread(s, itemId));
+      }
+    },
+    [update],
+  );
+
+  /** At most three re-reads in flight; a split into six queues the rest (design D3). */
+  const queue = useRef<string[]>([]);
+  const running = useRef(0);
+  const pump = useCallback(
+    function run() {
+      while (running.current < 3 && queue.current.length > 0) {
+        const id = queue.current.shift()!;
+        running.current += 1;
+        void rereadCorrected(id).finally(() => {
+          running.current -= 1;
+          run();
+        });
+      }
+    },
+    [rereadCorrected],
+  );
+
+  const correct = useCallback(
+    (next: Session, ids: string[], kind: string): string[] => {
+      update(next);
+      track("esp_item_corrected", { kind, items: ids.length });
+      queue.current.push(...ids);
+      pump();
+      return ids;
+    },
+    [update, pump],
+  );
+
+  const onConfirm = useCallback((itemId: string) => {
+    if (!latest.current) return;
+    update(confirmItem(latest.current, itemId));
+    track("esp_item_confirmed", { via: "looks_right" });
+  }, [update]);
+
+  const onAdjust = useCallback((itemId: string, box: Box) => (latest.current ? correct(adjustBox(latest.current, itemId, box), [itemId], "adjust") : []), [correct]);
+
+  const onSplit = useCallback(
+    (itemId: string, boxes: Box[]) => (latest.current ? correct(splitItem(latest.current, itemId, boxes), boxes.map((_, n) => `${itemId}_s${n + 1}`), "split") : []),
+    [correct],
+  );
+
+  const onAddFromPhoto = useCallback(
+    (from: { photoId?: string; frame: number; box: Box; destination?: Destination }) => {
+      if (!latest.current) return [];
+      const next = addFromPhoto(latest.current, from);
+      return correct(next, [next.items[next.items.length - 1].id], "add");
+    },
+    [correct],
+  );
+
+  const combineAs = useCallback(
+    (ids: string[], suffix: "m" | "lot") => {
+      const current = latest.current;
+      const first = current?.items.find((i) => ids.includes(i.id));
+      if (!current || !first || ids.length < 2) return [];
+      const next = suffix === "m" ? mergeItems(current, ids) : markLot(current, ids);
+      return correct(next, [`${first.id}_${suffix}`], suffix === "m" ? "merge" : "lot");
+    },
+    [correct],
+  );
+  const onMerge = useCallback((ids: string[]) => combineAs(ids, "m"), [combineAs]);
+  const onLot = useCallback((ids: string[]) => combineAs(ids, "lot"), [combineAs]);
+
+  const onSplitLot = useCallback(
+    (lotId: string) => {
+      const lot = latest.current?.items.find((i) => i.id === lotId)?.lot;
+      if (!latest.current || !lot) return [];
+      return correct(splitLot(latest.current, lotId), lot.parts.map((_, n) => `${lotId}_p${n + 1}`), "split_lot");
+    },
+    [correct],
+  );
+
+  const onMessage = useCallback(
+    async (itemId: string, text: string) => {
+      const item = latest.current?.items.find((i) => i.id === itemId);
+      if (!item || !text.trim()) return false;
+      let data: string | undefined;
+      try {
+        data = item.photoId ? (await cropFromPhoto(item.photoId, item.box))?.data : undefined;
+      } catch {
+        data = undefined;
+      }
+      if (!data && item.image?.startsWith("data:")) data = item.image.split(",")[1];
+      setRefining(itemId);
+      try {
+        const res = await fetch("/estate-sale-planner/api/refine", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            item: { name: item.name, room: item.room, band: item.band, reason: item.reason, confidence: item.confidence },
+            details: data ? [{ data, at: 0 }] : [],
+            message: text.trim(),
+          }),
+        });
+        const json = (await res.json()) as (RefineResult & { success: true }) | { error: string };
+        if (!res.ok || "error" in json) throw new Error("error" in json ? json.error : `HTTP ${res.status}`);
+        if (json.source === "fixture") {
+          setNotice("Demo mode: no vision key is configured, so the message wasn't read.");
+          return false;
+        }
+        if (latest.current) update(applyMessage(latest.current, itemId, text, json));
+        track("esp_item_message", { withPhoto: Boolean(data) });
+        return true;
+      } catch {
+        return false;
+      } finally {
+        setRefining(null);
+      }
+    },
+    [update],
+  );
+
+  const onUndoMessage = useCallback((itemId: string, index: number) => {
+    if (latest.current) update(undoMessage(latest.current, itemId, index));
+  }, [update]);
+
   const value = useMemo<SaleStore>(
-    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, flag, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale }),
-    [ready, session, history, fromFixture, notice, refining, open, update, flag, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale],
+    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, flag, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale, onConfirm, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage }),
+    [ready, session, history, fromFixture, notice, refining, open, update, flag, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale, onConfirm, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage],
   );
 
   return <SaleContext.Provider value={value}>{children}</SaleContext.Provider>;
