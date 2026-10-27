@@ -97,7 +97,7 @@ continuously across them:
 | Primary file URL | <https://www.figma.com/board/jOMdrrP5xLfaR1Yf7qfVdA> (`jOMdrrP5xLfaR1Yf7qfVdA`) | <https://www.figma.com/design/LzaDhbJ8HPsLTZObccHnlW> (`LzaDhbJ8HPsLTZObccHnlW`) |
 | As-is frame(s) | N/A: the board argues flow, not surface | Page `01 Current state` (node `1:2`): `As-is · Item · S 480` (`4:189`), `As-is · Item · L 1024` (`4:259`), reconstructed from `ItemDetail.tsx`. The photo is a stand-in (see Libraries) |
 | Proposed frame(s) | Page `02 Proposed — flow` (page `0:1`): first lookup flow. Page `03 Proposed — correct, then look up` (page `8:207`): confirm step before the gate. Page `04 Proposed — search query after the gate` (page `14:212`): query written only for confirmed, gated items | Page `05 Proposed — correct the item` (node `1:3`). Item screen: `Item · unconfirmed · S 480` (`7:3`), `Item · confirmed, based on sold · S 480` (`7:85`), same at `L 1024` (`7:173`). `Band line · states` (`7:262`), all seven band lines. Source photo: `view · S 480` (`7:286`), `adjust` (`7:335`), `split` (`7:382`), `add` (`7:428`), `select` (`7:478`), `view · L 1024` (`7:529`) |
-| Libraries / version | FigJam page-per-iteration conventions per `rules/figma.mdc` | `MVDS Core` (team default library, `source: team`, confirmed 2026-10-27). Instances of `Button`, `Badge`, `Field`, with fills bound to `Tokens` (`background`, `foreground`, `muted`, `muted-foreground`, `border`, `card`, `primary`), spacing bound to `Scales`, and type from `Type/*` styles. The `Tokens` collection is pinned to **Dark** on every frame, matching the hub. Code: `@beckharrisdesign/mvds@0.5.0`. **Local stand-ins on page `00 Components` (node `0:1`):** `TopBar` (`3:25`) and `TabBar` (`3:30`), MVDS hand-off #39, not in the library. `Subject box` component set (`3:54`, variants Selected / Faint / Editing / Picked), the box-editor hand-off below. `Photo stand-in · living room` (`3:55`), grey blocks in place of a real walkthrough photo; reference only, not product imagery. The `Value band` field is drawn as `Field` (text input) where code uses `Select`, since MVDS Core has no Select in the library yet |
+| Libraries / version | FigJam page-per-iteration conventions per `rules/figma.mdc` | `MVDS Core` (team default library, `source: team`, confirmed 2026-10-27). Instances of `Button`, `Badge`, `Field`, with fills bound to `Tokens` (`background`, `foreground`, `muted`, `muted-foreground`, `border`, `card`, `primary`), spacing bound to `Scales`, and type from `Type/*` styles. The `Tokens` collection is pinned to **Dark** on every frame, matching the hub. Code: `@beckharrisdesign/mvds@0.5.0`. **Local stand-ins on page `00 Components` (node `0:1`):** `Breadcrumb header` (`10:2`, D11) on every proposed frame. `TopBar` (`3:25`) appears on the as-is frames only, since it is today's header. `TabBar` (`3:30`). The header and tab bar are MVDS hand-off #39, not in the library. `Subject box` component set (`3:54`, variants Selected / Faint / Editing / Picked), the box-editor hand-off below. `Photo stand-in · living room` (`3:55`), grey blocks in place of a real walkthrough photo; reference only, not product imagery. The `Value band` field is drawn as `Field` (text input) where code uses `Select`, since MVDS Core has no Select in the library yet |
 | Code Connect | N/A: no code surface | Not set up (elk / build precedent); implementation maps to MVDS components in code |
 | Breakpoints | N/A: FigJam canvas, not a responsive screen | S · 480px mobile / L · 1024px desktop (BHD Content Types), per `rules/design-guidelines.mdc` |
 | Status | Rounds 02–04 done; 04 is current | Round 05 drawn 2026-10-27; awaiting review |
@@ -312,6 +312,36 @@ RLS on, no policies:
 2. **Lookup:** D4–D9, the band lines, and the cost ledger. Needs Katy's provider key to
    show real comps. Without the key, it ships showing "not set up yet".
 
+### D11. A breadcrumb header replaces the top bar
+
+Katy, on round 05: *"the header component is awkward - just do a simple breadcrumb style
+header and let that function as the back button too"*.
+
+- **One line, 44 px tall:** `Home / Mom's house / Mantel clock / Source photo`.
+- **Every ancestor crumb is a link.** The last ancestor is Back, so there's no separate
+  Back button.
+- **Styling:** the current page uses `foreground` and is marked `aria-current="page"`;
+  ancestors use `muted-foreground`, all in `Type/Small`.
+- **When the trail doesn't fit at 480,** leading crumbs collapse to `…`. The parent crumb
+  and the current page always show.
+- **Code:** `chromeFor` (`routes.ts`) returns `crumbs: Array<{ label; href }>` plus `title`,
+  in place of `eyebrow` / `back`. `TopBar.tsx` renders a `<nav aria-label="Breadcrumb">`
+  inside the same MVDS `Chrome`, and `routes.test.ts` asserts each screen's trail.
+- **Trails:**
+
+  | Screen | Trail |
+  | --- | --- |
+  | Home | `Estate Sale Planner` alone |
+  | Items | `Home / <sale>` |
+  | Sort, Progress, Add a room, Sell list | `Home / <sale> / <screen>` |
+  | Item | `Home / <sale> / <item>` |
+  | Source photo | `Home / <sale> / <item> / Source photo` |
+  | Sell Sheet | `Home / Sell Sheet` |
+
+- **Scope:** ships in PR 1 (correction), because the source-photo screen is the deepest
+  page and needs the trail most. It applies to every page, so it supersedes the top-bar half
+  of #49 and #57. The tab bar is unchanged.
+
 ### Review-queue rows (added as PROPOSED with this design)
 
 | # | Decision | Default |
@@ -323,6 +353,7 @@ RLS on, no policies:
 | 63 | Freshness window | 90 days per normalized query, shared across sales |
 | 64 | Minimum matching sales | 3; fewer keeps the labelled guess |
 | 65 | Who sets the comps band | Model picks matches; code takes the 25th–75th percentile and the band of the median |
+| 66 | Header | Breadcrumb trail; the parent crumb is Back (D11) |
 
 ## Risks / Trade-offs
 
