@@ -116,6 +116,14 @@ export function saveSession(session: Session | null): void {
   } catch {
     // Private mode or blocked storage: the in-memory session still works.
   }
+  saveCopy(session);
+}
+
+/**
+ * Keep a sale's device copy and its Home entry current without making it the active one — for a
+ * photo pass that comes back after the family has moved on to another sale.
+ */
+export function saveCopy(session: Session): void {
   try {
     const entries = listHistory().filter((e) => e.id !== session.id);
     entries.unshift(summarize(session));
@@ -123,7 +131,17 @@ export function saveSession(session: Session | null): void {
     writeHistory(entries.slice(0, HISTORY_LIMIT));
     writeWithFallback(window.localStorage, SAVED_PREFIX + session.id, session);
   } catch {
-    // History is a convenience; the active session above is what matters.
+    // History is a convenience; the active session is what matters.
+  }
+}
+
+/** A sale's device copy, read without opening it. */
+export function readSaved(id: string): Session | null {
+  try {
+    const raw = window.localStorage.getItem(SAVED_PREFIX + id);
+    return raw ? (JSON.parse(raw) as Session) : null;
+  } catch {
+    return null;
   }
 }
 

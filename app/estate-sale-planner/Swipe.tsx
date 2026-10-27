@@ -11,6 +11,8 @@ interface SwipeProps {
   onDestination: (itemId: string, to: Destination) => void;
   onOpen: (itemId: string) => void;
   onUndo: () => void;
+  /** Photos are still being read: an empty pile is "more on the way", not "all done". */
+  reading?: boolean;
 }
 
 const SWIPE_THRESHOLD_PX = 80;
@@ -22,12 +24,13 @@ const SWIPE_THRESHOLD_PX = 80;
  * those are the two a thumb reaches for; Sell is the deliberate tap. Details
  * opens the item; Undo is always visible.
  */
-export default function Swipe({ session, onDestination, onOpen, onUndo }: SwipeProps) {
+export default function Swipe({ session, onDestination, onOpen, onUndo, reading = false }: SwipeProps) {
   const stack = undecided(session);
   const item = stack[0];
   const [dx, setDx] = useState(0);
   const startX = useRef<number | null>(null);
 
+  if (!item && reading) return null;
   if (!item) {
     return (
       // Nothing to sort is not a dead end (founder, 2026-10-27: "at least show a CTA to upload

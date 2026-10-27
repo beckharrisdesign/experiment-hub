@@ -18,6 +18,10 @@ describe("refineUserText", () => {
     expect(refineUserText({ ...input, context: "  " })).not.toContain("What the family knows");
   });
 
+  it("an item with no room doesn't get an empty pair of brackets", () => {
+    expect(refineUserText({ ...input, item: { ...input.item, room: "" } })).toContain("Object: Upright piano. Walkthrough read");
+  });
+
   it("a re-framed crop says the photo is the object itself", () => {
     const text = refineUserText({ ...input, details: [{ data: "AAAA", at: 0 }], reframed: true });
     expect(text).toContain("The family re-framed this object; the photo is the object itself.");
