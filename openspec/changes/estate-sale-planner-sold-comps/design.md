@@ -90,17 +90,17 @@ Two files, both titled with the change ID per `rules/figma.mdc`. Round numbering
 continuously across them:
 
 - The proposal argued the flow on the board, in rounds 02–04.
-- The surface pair lives on the design file: as-is is `01`, proposed continues at `05` (correction and comps) and `06` (breadcrumb header, D11).
+- The surface pair lives on the design file: as-is is `01`, proposed continues at `05` (correction and comps), `06` (breadcrumb header, D11), `07` (no rooms, D12) and `08` (button groups, D13). Each round changes only what its title says.
 
 | Item | Board (proposal rounds) | Design file (surface pair) |
 | --- | --- | --- |
 | Primary file URL | <https://www.figma.com/board/jOMdrrP5xLfaR1Yf7qfVdA> (`jOMdrrP5xLfaR1Yf7qfVdA`) | <https://www.figma.com/design/LzaDhbJ8HPsLTZObccHnlW> (`LzaDhbJ8HPsLTZObccHnlW`) |
 | As-is frame(s) | N/A: the board argues flow, not surface | Page `01 Current state` (node `1:2`): `As-is · Item · S 480` (`4:189`), `As-is · Item · L 1024` (`4:259`), reconstructed from `ItemDetail.tsx`. The photo is a stand-in (see Libraries) |
-| Proposed frame(s) | Page `02 Proposed — flow` (page `0:1`): first lookup flow. Page `03 Proposed — correct, then look up` (page `8:207`): confirm step before the gate. Page `04 Proposed — search query after the gate` (page `14:212`): query written only for confirmed, gated items | Page `05 Proposed — correct the item` (node `1:3`). Item screen: `Item · unconfirmed · S 480` (`7:3`), `Item · confirmed, based on sold · S 480` (`7:85`), same at `L 1024` (`7:173`). `Band line · states` (`7:262`), all seven band lines. Source photo: `view · S 480` (`7:286`), `adjust` (`7:335`), `split` (`7:382`), `add` (`7:428`), `select` (`7:478`), `view · L 1024` (`7:529`). Page `06 Proposed — breadcrumb header` (node `13:337`): the same nine screens with the breadcrumb header in place of the top bar, the only change from 05. Item `unconfirmed · S 480` (`13:338`), `confirmed · S 480` (`13:383`), `confirmed · L 1024` (`13:435`); source photo `view` (`13:488`), `adjust` (`13:511`), `split` (`13:531`), `add` (`13:552`), `select` (`13:573`), `view · L 1024` (`13:596`) |
-| Libraries / version | FigJam page-per-iteration conventions per `rules/figma.mdc` | `MVDS Core` (team default library, `source: team`, confirmed 2026-10-27). Instances of `Button`, `Badge`, `Field`, with fills bound to `Tokens` (`background`, `foreground`, `muted`, `muted-foreground`, `border`, `card`, `primary`), spacing bound to `Scales`, and type from `Type/*` styles. The `Tokens` collection is pinned to **Dark** on every frame, matching the hub. Code: `@beckharrisdesign/mvds@0.5.0`. **Local stand-ins on page `00 Components` (node `0:1`):** `Breadcrumb header` (`10:2`, D11) on the page 06 frames. `TopBar` (`3:25`) is today's header, on the as-is frames and on page 05. `TabBar` (`3:30`). The header and tab bar are MVDS hand-off #39, not in the library. `Subject box` component set (`3:54`, variants Selected / Faint / Editing / Picked), the box-editor hand-off below. `Photo stand-in · living room` (`3:55`), grey blocks in place of a real walkthrough photo; reference only, not product imagery. The `Value band` field is drawn as `Field` (text input) where code uses `Select`, since MVDS Core has no Select in the library yet |
+| Proposed frame(s) | Page `02 Proposed — flow` (page `0:1`): first lookup flow. Page `03 Proposed — correct, then look up` (page `8:207`): confirm step before the gate. Page `04 Proposed — search query after the gate` (page `14:212`): query written only for confirmed, gated items | Page `05 Proposed — correct the item` (node `1:3`). Item screen: `Item · unconfirmed · S 480` (`7:3`), `Item · confirmed, based on sold · S 480` (`7:85`), same at `L 1024` (`7:173`). `Band line · states` (`7:262`), all seven band lines. Source photo: `view · S 480` (`7:286`), `adjust` (`7:335`), `split` (`7:382`), `add` (`7:428`), `select` (`7:478`), `view · L 1024` (`7:529`). Page `06 Proposed — breadcrumb header` (node `13:337`): the same nine screens with the breadcrumb header in place of the top bar, the only change from 05. Item `unconfirmed · S 480` (`13:338`), `confirmed · S 480` (`13:383`), `confirmed · L 1024` (`13:435`); source photo `view` (`13:488`), `adjust` (`13:511`), `split` (`13:531`), `add` (`13:552`), `select` (`13:573`), `view · L 1024` (`13:596`). Page `07 Proposed — no rooms` (node `14:337`): the 06 screens without the room label, the Room field, or the room in the photo caption. Page `08 Proposed — button groups` (node `15:325`): the 07 screens with every button group rebuilt per D13, and the sample sale renamed **2026 All Family Garage Sale** (the leading crumb collapses to `…` at 480). Item `unconfirmed · S 480` (`15:326`), `confirmed · S 480` (`15:410`), `confirmed · L 1024` (`15:495`); source photo `view` (`15:581`), `adjust` (`15:644`), `split` (`15:699`), `add` (`15:753`), `select` (`15:811`), `view · L 1024` (`15:874`) |
+| Libraries / version | FigJam page-per-iteration conventions per `rules/figma.mdc` | `MVDS Core` (team default library, `source: team`, confirmed 2026-10-27). Instances of `Button`, `Badge`, `Field`, with fills bound to `Tokens` (`background`, `foreground`, `muted`, `muted-foreground`, `border`, `card`, `primary`), spacing bound to `Scales`, and type from `Type/*` styles. The `Tokens` collection is pinned to **Dark** on every frame, matching the hub. Code: `@beckharrisdesign/mvds@0.5.0`. **Local stand-ins on page `00 Components` (node `0:1`):** `Breadcrumb header` (`10:2`, D11) on the frames of pages 06–08. `TopBar` (`3:25`) is today's header, on the as-is frames and on page 05. `TabBar` (`3:30`). The header and tab bar are MVDS hand-off #39, not in the library. `Subject box` component set (`3:54`, variants Selected / Faint / Editing / Picked), the box-editor hand-off below. `Photo stand-in · living room` (`3:55`), grey blocks in place of a real walkthrough photo; reference only, not product imagery. The `Value band` field is drawn as `Field` (text input) where code uses `Select`, since MVDS Core has no Select in the library yet |
 | Code Connect | N/A: no code surface | Not set up (elk / build precedent); implementation maps to MVDS components in code |
 | Breakpoints | N/A: FigJam canvas, not a responsive screen | S · 480px mobile / L · 1024px desktop (BHD Content Types), per `rules/design-guidelines.mdc` |
-| Status | Rounds 02–04 done; 04 is current | Rounds 05 and 06 drawn 2026-10-27; 06 is current; awaiting review |
+| Status | Rounds 02–04 done; 04 is current | Rounds 05–08 drawn 2026-10-27; **08 is current**; awaiting review |
 
 **MVDS hand-off:** MVDS has no crop or box-editing component. The editor is a composition
 on MVDS tokens:
@@ -151,7 +151,7 @@ rereadPending?: boolean;   // a correction was saved; its re-read hasn't landed
   `adjustBox`, `splitItem`, `addFromPhoto`, `mergeItems`, `markLot`, `splitLot`,
   `confirmItem`.
 - **Every correction confirms:** each reducer returns confirmed items.
-- **Edits keep confirmation:** `updateItem` (name, room, band) leaves `confirmed` alone, and
+- **Edits keep confirmation:** `updateItem` (name, band) leaves `confirmed` alone, and
   a band edit sets `bandSource: "family"`.
 - **Destination on merge and lot (spec):** the result keeps the most specific destination.
   Any Sell beats Donate, and Donate beats Keep, matching the order of what matters to the
@@ -182,7 +182,7 @@ rereadPending?: boolean;   // a correction was saved; its re-read hasn't landed
 ### D4. Gate and query writing run server-side, in one new route
 
 - **One route:** `POST /estate-sale-planner/api/comps`. Body: the confirmed item's name,
-  room, band, destination, `markReading`, note, lot count and `confirmed` flag. It returns
+  band, destination, `markReading`, note, lot count and `confirmed` flag. It returns
   a `CompsSummary`.
 - **The server checks the gate again:** confirmed, Sell, band at or above `COMPS.minBand`
   (`"$100–$500"`). A failed check returns `{ status: "gated" }` with no model call. The
@@ -317,7 +317,7 @@ RLS on, no policies:
 Round **06** on the design file (page `13:337`). Katy, on round 05: *"the header component is awkward - just do a simple breadcrumb style
 header and let that function as the back button too"*.
 
-- **One line, 44 px tall:** `Home / Mom's house / Mantel clock / Source photo`.
+- **One line, 44 px tall:** `Home / 2026 All Family Garage Sale / Mantel clock / Source photo`.
 - **Every ancestor crumb is a link.** The last ancestor is Back, so there's no separate
   Back button.
 - **Styling:** the current page uses `foreground` and is marked `aria-current="page"`;
@@ -333,7 +333,7 @@ header and let that function as the back button too"*.
   | --- | --- |
   | Home | `Estate Sale Planner` alone |
   | Items | `Home / <sale>` |
-  | Sort, Progress, Add a room, Sell list | `Home / <sale> / <screen>` |
+  | Sort, Progress, Add photos, Sell list | `Home / <sale> / <screen>` |
   | Item | `Home / <sale> / <item>` |
   | Source photo | `Home / <sale> / <item> / Source photo` |
   | Sell Sheet | `Home / Sell Sheet` |
@@ -341,6 +341,48 @@ header and let that function as the back button too"*.
 - **Scope:** ships in PR 1 (correction), because the source-photo screen is the deepest
   page and needs the trail most. It applies to every page, so it supersedes the top-bar half
   of #49 and #57. The tab bar is unchanged.
+
+### D12. Rooms leave the UI
+
+Round **07** (page `14:337`). Katy: *"I just don't care about rooms right now - feels like
+overengineering before I even know if the images are ok"*.
+
+- **Nothing shows a room:**
+  - No room label on the item screen, cards, Swipe, the sell list or the Sell Sheet.
+  - No Room field on the item screen or on Add item.
+  - The source-photo caption reads "Photo 3 of 12".
+- **Lists:** Items are one list per destination instead of grouped by room (`byRoom` goes
+  unused).
+- **Copy:** "Photograph a room" and "Photograph another room" become "Take photos" and "Add
+  more photos". The breadcrumb's "Add a room" becomes "Add photos".
+- **The data stays:** the walkthrough schema still returns `room` and saved sales keep it.
+  So the prompt, the fixtures and old sales are untouched, and bringing rooms back is a UI
+  change only.
+- **The search query no longer uses room** (spec updated to match).
+- **Ships in PR 1.**
+
+### D13. Button groups
+
+Round **08** (page `15:325`). Katy: *"primary and secondary buttons should match one another.
+Buttons align right, have a tokenized spacing between them, and the primary button is always
+on the right."*
+
+- **Every group:** the same size, MVDS `secondary` for the others and `default` for the
+  primary.
+- **Layout:** right-aligned, `Spacing/space-8` (`Inline gap={8}`) between buttons, primary
+  rightmost. When narrow, it wraps to a second right-aligned line.
+- **Groups in this change:**
+
+  | Group | Buttons, left to right |
+  | --- | --- |
+  | Confirm card | **Fix it on the photo** · **Looks right** |
+  | Source photo | **Adjust** · **Split** · **Add** · **Select** · **Looks right** |
+  | Adjust, split, add | **Cancel** · **Save** (or **Save 3 items**) |
+  | Select | **Cancel** · **Mark as a lot** · **Merge into one** |
+
+- **What changes from round 05:** Cancel is `secondary` (it was ghost), and **Looks right**
+  is no longer full width.
+- **Hub-wide rule:** promoted to `rules/design-guidelines.mdc` (Components → Buttons).
 
 ### Review-queue rows (added as PROPOSED with this design)
 
@@ -354,6 +396,8 @@ header and let that function as the back button too"*.
 | 64 | Minimum matching sales | 3; fewer keeps the labelled guess |
 | 65 | Who sets the comps band | Model picks matches; code takes the 25th–75th percentile and the band of the median |
 | 66 | Header | Breadcrumb trail; the parent crumb is Back (D11) |
+| 67 | Rooms | Out of the UI; `room` kept in the data (D12) |
+| 68 | Button groups | Same size, secondary + primary, right-aligned, space-8, primary rightmost (D13) |
 
 ## Risks / Trade-offs
 

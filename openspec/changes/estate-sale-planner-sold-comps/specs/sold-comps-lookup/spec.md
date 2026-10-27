@@ -17,7 +17,7 @@ is at or above the threshold; its search query is written at that moment and not
 
 **Fails until:** a confirmed Sell item at or above the threshold triggers exactly one query-writing call and one lookup, and every other item triggers neither.
 
-The lookup gate SHALL require confirmed, destination Sell and a band at or above a configured threshold ($100 by default); only then SHALL a text-only call write the search query from the item's confirmed name, room, mark reading, family note and lot flag; the walkthrough and the re-read SHALL NOT write queries.
+The lookup gate SHALL require confirmed, destination Sell and a band at or above a configured threshold ($100 by default); only then SHALL a text-only call write the search query from the item's confirmed name, mark reading, family note and lot flag; the walkthrough and the re-read SHALL NOT write queries.
 
 #### Scenario: A confirmed item passes the gate
 
