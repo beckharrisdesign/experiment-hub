@@ -5,7 +5,7 @@
  * touches the network: the caller sends on the user's confirm.
  */
 
-import { DETAIL_SHOT, PHOTO_BUDGET } from "./config";
+import { DETAIL_SHOT, PHOTO_BUDGET, PHOTO_STORE } from "./config";
 import { itemThumbnail } from "./thumbs";
 
 export interface CapturedFrame {
@@ -16,6 +16,8 @@ export interface CapturedFrame {
   data: string;
   /** data: URL for the confirm grid. */
   preview: string;
+  /** The 1600 px copy kept on the device for re-cropping (sold-comps D1); never sent. */
+  original?: Blob;
 }
 
 export interface CaptureProgress {
@@ -42,6 +44,18 @@ function encode(source: CanvasImageSource, w: number, h: number, id: string, at:
   return { id, at, data: preview.split(",")[1] ?? "", preview };
 }
 
+/** The 1600 px original. Undefined where the canvas can't produce a Blob; the frame still works. */
+function encodeOriginal(source: CanvasImageSource, w: number, h: number): Promise<Blob | undefined> {
+  const [cw, ch] = scaledSize(w, h, PHOTO_STORE.maxEdgePx);
+  const canvas = document.createElement("canvas");
+  canvas.width = cw;
+  canvas.height = ch;
+  const ctx = canvas.getContext("2d");
+  if (!ctx || !canvas.toBlob) return Promise.resolve(undefined);
+  ctx.drawImage(source, 0, 0, cw, ch);
+  return new Promise((resolve) => canvas.toBlob((b) => resolve(b ?? undefined), "image/jpeg", PHOTO_STORE.jpegQuality));
+}
+
 function loadImage(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -66,7 +80,9 @@ export async function framesFromPhotos(
   for (let i = 0; i < photos.length; i++) {
     const img = await loadImage(photos[i]);
     try {
-      all.push(encode(img, img.naturalWidth, img.naturalHeight, `p${i}`, i));
+      const frame = encode(img, img.naturalWidth, img.naturalHeight, `p${i}`, i);
+      const original = await encodeOriginal(img, img.naturalWidth, img.naturalHeight);
+      all.push(original ? { ...frame, original } : frame);
     } finally {
       URL.revokeObjectURL(img.src);
     }

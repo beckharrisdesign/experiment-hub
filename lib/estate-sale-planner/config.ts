@@ -40,6 +40,15 @@ export const PHOTO_BUDGET = {
  * walkthrough frame because the point is legibility; capped per item so one
  * curious user cannot run up the re-read bill.
  */
+/** The 1600 px originals kept on the device for re-cropping (sold-comps design D1). */
+export const PHOTO_STORE = {
+  dbName: "esp-photos",
+  maxEdgePx: 1600,
+  jpegQuality: 0.8,
+  /** About 10 full 48-photo rooms; the oldest sale's originals go first past this. */
+  capBytes: 150 * 1024 * 1024,
+} as const;
+
 export const DETAIL_SHOT = {
   maxEdgePx: 1024,
   jpegQuality: 0.8,

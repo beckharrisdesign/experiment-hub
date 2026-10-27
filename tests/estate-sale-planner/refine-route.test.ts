@@ -33,6 +33,12 @@ describe("POST /estate-sale-planner/api/refine", () => {
     expect((await POST(req({ item, details: [{ data: "data:image/jpeg;base64,AAAA", at: 0 }] }))).status).toBe(400);
   });
 
+  it("takes a message, with or without a picture, and ignores one that isn't text", async () => {
+    expect((await POST(req({ item, details: [], message: "this is actually a vintage Hermes" }, "2.2.2.2"))).status).toBe(200);
+    expect((await POST(req({ item, details: [{ data: "AAAA", at: 0 }], message: "Hermès", reframed: true }, "2.2.2.3"))).status).toBe(200);
+    expect((await POST(req({ item, details: [], message: 42 }, "2.2.2.4"))).status).toBe(400);
+  });
+
   it("serves fixture mode with no key: the item comes back unchanged and says so", async () => {
     const res = await POST(req({ item, details: [{ data: "AAAA", at: 0 }], context: "Grandpa's" }));
     expect(res.status).toBe(200);

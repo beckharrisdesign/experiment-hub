@@ -14,6 +14,10 @@ export const maxDuration = 60;
  * go to whichever provider is keyed; the item comes back with a better read
  * and what the model could make of any mark. Fixture mode returns the item
  * unchanged with `source: "fixture"` — the shot is kept, nothing is re-read.
+ *
+ * Also carries the sold-comps corrections: `reframed: true` when the single photo is a crop
+ * the family drew (D3), and `message` for "Adjust this item" (D14) — a message may come with
+ * no photo at all.
  */
 
 const MAX_BASE64_PER_DETAIL = 1_200_000; // ~900 KB JPEG; a 1024 px detail is ~150–400 KB
@@ -40,15 +44,20 @@ function validItem(i: unknown): i is RefineInput["item"] {
 }
 
 export async function POST(request: NextRequest) {
-  let body: { item?: unknown; details?: unknown; context?: unknown };
+  let body: { item?: unknown; details?: unknown; context?: unknown; message?: unknown; reframed?: unknown };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Expected JSON with an item and detail photos." }, { status: 400 });
   }
   const details = Array.isArray(body.details) ? body.details : null;
-  if (!validItem(body.item) || !details || details.length === 0) {
-    return NextResponse.json({ error: "Send the item and at least one detail photo." }, { status: 400 });
+  if (body.message !== undefined && typeof body.message !== "string") {
+    return NextResponse.json({ error: "A message is text." }, { status: 400 });
+  }
+  const message = typeof body.message === "string" && body.message.trim() ? body.message.trim().slice(0, 500) : undefined;
+  // A message can stand alone (an item with no picture); a re-read without one needs a photo.
+  if (!validItem(body.item) || !details || (details.length === 0 && !message)) {
+    return NextResponse.json({ error: "Send the item and at least one photo, or a message." }, { status: 400 });
   }
   if (details.length > DETAIL_SHOT.maxPerItem) {
     return NextResponse.json({ error: `Up to ${DETAIL_SHOT.maxPerItem} detail photos per item.` }, { status: 400 });
@@ -64,7 +73,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await refineItem({ item: body.item, details, context });
+    const result = await refineItem({ item: body.item, details, context, message, reframed: body.reframed === true });
     return NextResponse.json({ success: true, configured: visionConfigured(), ...result });
   } catch (error: any) {
     console.error("[esp refine] re-read failed:", error);
