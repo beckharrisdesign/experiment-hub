@@ -151,7 +151,8 @@ two to five items worth checking, and many repeat across houses (Pyrex, cast iro
 - v1 build: `openspec/changes/estate-sale-planner-build/`
 - Round 05 proposal (recrop #47, outlines #48): `experiments/estate-sale-planner/docs/round-05-proposal.md`
 - Review queue: `experiments/estate-sale-planner/docs/review-queue.md` (#55 band anchor, #58 no upsells)
-- Figma, FigJam board titled with the change ID: <https://www.figma.com/board/jOMdrrP5xLfaR1Yf7qfVdA>
-  - `02 Proposed — flow`: the first lookup flow (gate, comps store, comps pass, cost ledger).
-  - `03 Proposed — correct, then look up`: the confirm step between the vision model and the
-    gate; drawn beside round 02 so the history stays visible.
+- Figma, FigJam board titled with the change ID, one page per round: <https://www.figma.com/board/jOMdrrP5xLfaR1Yf7qfVdA>
+  - Page `02 Proposed — flow` (page `0:1`): the first lookup flow (gate, comps store, comps
+    pass, cost ledger).
+  - Page `03 Proposed — correct, then look up` (page `8:207`): the confirm step between the
+    vision model and the gate.
