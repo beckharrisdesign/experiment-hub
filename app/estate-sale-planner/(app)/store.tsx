@@ -66,6 +66,8 @@ export interface SaleStore {
   deleteSale: (id: string) => void;
   /** Looks right. */
   onConfirm: (itemId: string) => void;
+  /** Re-read a corrected crop again after the last try failed. */
+  onRetryReread: (itemId: string) => void;
   /** Corrections on the source photo (sold-comps spec: item-correction). Each confirms what it
    * produces, saves at once, then crops and re-reads every new or changed item in the background
    * (three at a time). They return the ids that now exist, so the screen can follow. */
@@ -371,6 +373,17 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     track("esp_item_confirmed", { via: "looks_right" });
   }, [update]);
 
+  const onRetryReread = useCallback(
+    (itemId: string) => {
+      if (!latest.current) return;
+      update({ ...latest.current, items: latest.current.items.map((i) => (i.id === itemId ? { ...i, rereadFailed: false, rereadPending: true } : i)) });
+      track("esp_item_reread_retry", {});
+      queue.current.push(itemId);
+      pump();
+    },
+    [update, pump],
+  );
+
   const onAdjust = useCallback((itemId: string, box: Box) => (latest.current ? correct(adjustBox(latest.current, itemId, box), [itemId], "adjust") : []), [correct]);
 
   const onSplit = useCallback(
@@ -485,8 +498,8 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   }, [update]);
 
   const value = useMemo<SaleStore>(
-    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, flag, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale, onConfirm, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale }),
-    [ready, session, history, fromFixture, notice, refining, open, update, flag, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale, onConfirm, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale],
+    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, flag, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale, onConfirm, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale }),
+    [ready, session, history, fromFixture, notice, refining, open, update, flag, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale, onConfirm, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale],
   );
 
   return <SaleContext.Provider value={value}>{children}</SaleContext.Provider>;
