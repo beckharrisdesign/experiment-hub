@@ -76,6 +76,7 @@ export default function CaptureFlow({ sale }: CaptureFlowProps) {
       <Column>
         <PhotoGrid
           photos={photos}
+          saleName={sale ? sale.name || "Untitled sale" : name}
           sending={busy}
           onSend={onSend}
           onRemove={(id) => setPhotos((ps) => ps.filter((p) => p.id !== id))}
