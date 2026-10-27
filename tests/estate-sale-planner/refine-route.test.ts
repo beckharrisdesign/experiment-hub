@@ -14,7 +14,7 @@ afterEach(() => {
   if (savedAnthropic !== undefined) process.env.ANTHROPIC_API_KEY = savedAnthropic;
 });
 
-const item = { name: "Upright piano", room: "Dining room", band: "under $25", reason: "Free to a good home.", confidence: "high" };
+const item = { name: "Upright piano", room: "Dining room", band: "$10–$25", reason: "Free to a good home.", confidence: "high" };
 function req(body: unknown, ip = "1.1.1.1") {
   return new NextRequest("http://localhost/estate-sale-planner/api/refine", {
     method: "POST",

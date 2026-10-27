@@ -106,10 +106,10 @@ describe("updateItem / removeItem / addItem", () => {
   it("correcting a wrong recognition is a rename plus a band, destination untouched", () => {
     let s = session();
     const piano = sellList(s)[0];
-    s = updateItem(s, piano.id, { name: "Spinet cabinet, not a piano", band: "under $25", note: "Grandma bought it in 1962" });
+    s = updateItem(s, piano.id, { name: "Spinet cabinet, not a piano", band: "$10–$25", note: "Grandma bought it in 1962" });
     const edited = s.items.find((i) => i.id === piano.id)!;
     expect(edited.name).toBe("Spinet cabinet, not a piano");
-    expect(edited.band).toBe("under $25");
+    expect(edited.band).toBe("$10–$25");
     expect(edited.note).toBe("Grandma bought it in 1962");
     expect(edited.destination).toBe("sell");
     expect(updateItem(s, "nope", { name: "x" })).toBe(s);

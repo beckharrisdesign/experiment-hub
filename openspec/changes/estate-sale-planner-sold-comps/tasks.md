@@ -58,7 +58,7 @@
 
 ### PR 1: correction and the item screen
 
-- [ ] 3.1 **Finer bands (D18).**
+- [x] 3.1 **Finer bands (D18).**
   - `BANDS` (`flag.ts`) becomes the ten-band list.
   - The `BAND_GUIDE` base rate becomes "$1–$10".
   - Every band gets a `RANGE` in `tally.ts`, and the old bands stay readable as legacy ranges.

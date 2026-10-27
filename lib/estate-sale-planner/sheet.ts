@@ -5,13 +5,13 @@
  */
 import { z } from "zod";
 import { DETAIL_SHOT, SELL_SHEET } from "./config";
-import { BANDS } from "./flag";
+import { BANDS, LEGACY_BANDS } from "./flag";
 import { sellList, type Session } from "./session";
 
 export const SheetItemSchema = z.object({
   name: z.string().min(1).max(80),
   room: z.string().min(1).max(40),
-  band: z.enum(BANDS),
+  band: z.enum([...BANDS, ...LEGACY_BANDS]),
   reason: z.string().min(1).max(160),
   confidence: z.enum(["low", "medium", "high"]),
   image: z

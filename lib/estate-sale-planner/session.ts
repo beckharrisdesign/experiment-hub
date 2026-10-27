@@ -187,7 +187,7 @@ export function addItem(s: Session, input: NewItemInput): Session {
     name: input.name.trim().slice(0, 80) || "Untitled item",
     room: input.room.trim().slice(0, 40) || "Unplaced",
     flagged: false,
-    band: "under $25",
+    band: "$1–$5",
     reason: "Added by you; the model has not looked at it. Add a photo and re-read for a band.",
     confidence: "low",
     frame: 0,

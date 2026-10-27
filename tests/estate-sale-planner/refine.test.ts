@@ -3,7 +3,7 @@ import { fixtureRefine, parseRefineResponse, refineUserText, type RefineInput } 
 import { openAIRefineRequest, refineWithOpenAI } from "@/lib/estate-sale-planner/vision/openai";
 
 const input: RefineInput = {
-  item: { name: "Upright piano", room: "Dining room", band: "under $25", reason: "Uprights are usually free to a good home.", confidence: "high" },
+  item: { name: "Upright piano", room: "Dining room", band: "$10–$25", reason: "Uprights are usually free to a good home.", confidence: "high" },
   details: [{ data: "AAAA", at: 0 }, { data: "BBBB", at: 1 }],
   context: "Grandpa bought it new in 1958.",
 };
@@ -12,7 +12,7 @@ describe("refineUserText", () => {
   it("carries the walkthrough read, the detail count, and what the family knows", () => {
     const text = refineUserText(input);
     expect(text).toContain("Upright piano (Dining room)");
-    expect(text).toContain("under $25, high confidence");
+    expect(text).toContain("$10–$25, high confidence");
     expect(text).toContain("2 detail photos follow");
     expect(text).toContain("What the family knows: Grandpa bought it new in 1958.");
     expect(refineUserText({ ...input, context: "  " })).not.toContain("What the family knows");
@@ -22,7 +22,7 @@ describe("refineUserText", () => {
 describe("parseRefineResponse", () => {
   it("accepts a legible mark and a null one, rejects an unknown band", () => {
     expect(parseRefineResponse({ name: "Steinway upright", band: "over $2,000", reason: "Serial dates it to 1958.", confidence: "high", markReading: "Steinway & Sons 123456" })).not.toBeNull();
-    expect(parseRefineResponse({ name: "x", band: "under $25", reason: "y", confidence: "low", markReading: null })).not.toBeNull();
+    expect(parseRefineResponse({ name: "x", band: "$10–$25", reason: "y", confidence: "low", markReading: null })).not.toBeNull();
     expect(parseRefineResponse({ name: "x", band: "priceless", reason: "y", confidence: "low", markReading: null })).toBeNull();
   });
 });
@@ -30,7 +30,7 @@ describe("parseRefineResponse", () => {
 describe("fixtureRefine", () => {
   it("keeps the item as it was and says so", () => {
     const r = fixtureRefine(input);
-    expect(r).toMatchObject({ name: "Upright piano", band: "under $25", markReading: null, source: "fixture", provider: "fixture" });
+    expect(r).toMatchObject({ name: "Upright piano", band: "$10–$25", markReading: null, source: "fixture", provider: "fixture" });
   });
 });
 
