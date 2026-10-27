@@ -10,7 +10,8 @@ import type { FlaggedItem } from "./flag";
 import type { RefineResponse } from "./refine";
 
 export type Destination = "keep" | "sell" | "donate";
-export const DESTINATIONS: readonly Destination[] = ["keep", "sell", "donate"] as const;
+/** Display order everywhere — toggles, sections, counts, tallies (founder, 2026-10-27: "Sell, Donate, Keep"). */
+export const DESTINATIONS: readonly Destination[] = ["sell", "donate", "keep"] as const;
 
 export interface SessionItem extends FlaggedItem {
   /** Stable id for lists and analytics; never the model's text. */

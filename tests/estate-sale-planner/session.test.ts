@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { fixtureFlags } from "@/lib/estate-sale-planner/flag";
 import {
+  DESTINATIONS,
   addItem,
   appendItems,
   applyRefinement,
@@ -26,8 +27,14 @@ function session() {
 }
 
 // ---------------------------------------------------------------------------
-// Destinations: keep, sell, donate — nothing else (founder instruction)
+// Destinations: sell, donate, keep — nothing else (founder instruction)
 // ---------------------------------------------------------------------------
+
+describe("DESTINATIONS", () => {
+  it("is the display order everywhere: Sell, Donate, Keep", () => {
+    expect(DESTINATIONS).toEqual(["sell", "donate", "keep"]);
+  });
+});
 
 describe("newSession", () => {
   it("starts model-flagged items at Sell and the rest undecided", () => {

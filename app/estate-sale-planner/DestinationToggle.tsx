@@ -13,7 +13,7 @@ interface DestinationToggleProps {
 const LABELS: Record<Destination, string> = { keep: "Keep", sell: "Sell", donate: "Donate" };
 
 /**
- * The per-item toggle: keep, sell, donate — the only three destinations, and
+ * The per-item toggle: sell, donate, keep — the only three destinations, and
  * every item can move between them any time. The active one is the filled
  * button; `aria-pressed` carries the state for assistive tech.
  */

@@ -12,7 +12,7 @@ import AppShell from "./AppShell";
 export const metadata: Metadata = {
   title: "Estate Sale Planner: what's worth keeping",
   description:
-    "Photograph a parent's house one room at a time. A vision model flags what might be worth something, you sort keep, sell, or donate, and one tap schedules the donation pickup.",
+    "Photograph a parent's house one room at a time. A vision model flags what might be worth something, you sort sell, donate, or keep, and one tap schedules the donation pickup.",
 };
 
 interface EstateSalePlannerLayoutProps {

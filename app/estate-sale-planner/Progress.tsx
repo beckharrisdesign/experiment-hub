@@ -35,7 +35,7 @@ export default function Progress({ session }: ProgressProps) {
       <Stack gap={8}>
         <h1 className="text-h1 text-foreground">{left > 0 ? `${left} still to sort` : "Sorted."}</h1>
         <p className="max-w-prose text-body-lg text-muted-foreground">
-          {session.items.length} {session.items.length === 1 ? "item" : "items"} across {session.passes ?? 1} {(session.passes ?? 1) === 1 ? "room pass" : "room passes"}: {keep} to keep, {sell} that might be worth selling, {donate} to donate.
+          {session.items.length} {session.items.length === 1 ? "item" : "items"} across {session.passes ?? 1} {(session.passes ?? 1) === 1 ? "room pass" : "room passes"}: {sell} that might be worth selling, {donate} to donate, {keep} to keep.
         </p>
         {left > 0 && (
           <div>

@@ -65,7 +65,7 @@ function RowList({ items, onDestination, onOpen }: { items: SessionItem[]; onDes
 /**
  * Items (round 05a; was Lists) — the sale by destination. Sell items are full cards; Keep,
  * Donate and the still-to-sort pile are rows. Every item carries its own
- * keep / sell / donate toggle, so nothing is ever stuck where the model or a
+ * sell / donate / keep toggle, so nothing is ever stuck where the model or a
  * swipe put it, and tapping a name opens the item.
  */
 export default function Lists({ session, fromFixture, onDestination, onOpen, onAdd, onStartSorting, onAddRoom, onRename }: ListsProps) {
@@ -125,16 +125,6 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
         </Stack>
       )}
 
-      {keep.length > 0 && (
-        <Stack gap={16}>
-          <Stack gap={4}>
-            <p className="text-caption uppercase text-muted-foreground">Keep</p>
-            <h2 className="text-h2 text-foreground">Staying with the family</h2>
-          </Stack>
-          <RowList items={keep} onDestination={onDestination} onOpen={onOpen} />
-        </Stack>
-      )}
-
       {donate.length > 0 && (
         <Stack gap={16}>
           <Stack gap={4}>
@@ -142,6 +132,16 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
             <h2 className="text-h2 text-foreground">Going to a good home</h2>
           </Stack>
           <RowList items={donate} onDestination={onDestination} onOpen={onOpen} />
+        </Stack>
+      )}
+
+      {keep.length > 0 && (
+        <Stack gap={16}>
+          <Stack gap={4}>
+            <p className="text-caption uppercase text-muted-foreground">Keep</p>
+            <h2 className="text-h2 text-foreground">Staying with the family</h2>
+          </Stack>
+          <RowList items={keep} onDestination={onDestination} onOpen={onOpen} />
         </Stack>
       )}
 

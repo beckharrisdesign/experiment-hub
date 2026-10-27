@@ -55,9 +55,9 @@ export default function Swipe({ session, onDestination, onOpen, onUndo }: SwipeP
   return (
     <Stack gap={24} align="center">
       <Stack gap={4} align="center">
-        <h1 className="text-h3 text-foreground">Keep, sell, or donate?</h1>
+        <h1 className="text-h3 text-foreground">Sell, donate, or keep?</h1>
         <p className="text-caption uppercase text-muted-foreground">
-          {stack.length} left · {keepList(session).length} keep · {sellList(session).length} sell · {donateList(session).length} donate
+          {stack.length} left · {sellList(session).length} sell · {donateList(session).length} donate · {keepList(session).length} keep
         </p>
       </Stack>
 
