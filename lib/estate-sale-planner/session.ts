@@ -6,7 +6,7 @@
  * between them per item, any time.
  */
 
-import type { FlaggedItem } from "./flag";
+import type { Box, FlaggedItem } from "./flag";
 import type { RefineResponse } from "./refine";
 
 export type Destination = "keep" | "sell" | "donate";
@@ -30,6 +30,31 @@ export interface SessionItem extends FlaggedItem {
   note?: string;
   /** Added by the user, not seen by the model. */
   userAdded?: boolean;
+  /** "<saleId>/<photoIndex>" — the 1600 px original in the device photo store (sold-comps D1). Absent: no original. */
+  photoId?: string;
+  /** Present when this item is a set sold together; keeps the parts so it can be split back. */
+  lot?: { parts: Array<{ box: Box | null; name: string }> };
+  /** The family checked the subject: by correcting it or with Looks right. Gates the price lookup. */
+  confirmed?: boolean;
+  /** Where the band came from. Absent reads as the model's estimate. */
+  bandSource?: "guess" | "comps" | "family";
+  /** A correction was saved and its re-read has not landed yet. */
+  rereadPending?: boolean;
+  /** The last re-read after a correction failed; the item says it has not been re-read. */
+  rereadFailed?: boolean;
+  /** "Adjust this item" messages, oldest first (sold-comps D14). */
+  messages?: ItemMessage[];
+}
+
+/** What a message changed, so Undo can put it back. */
+export type MessageFields = Pick<SessionItem, "name" | "band" | "reason">;
+
+export interface ItemMessage {
+  text: string;
+  at: string;
+  before: MessageFields;
+  after: MessageFields;
+  undone?: boolean;
 }
 
 /** The fields the user may edit directly; the destination has its own verb. */
@@ -160,10 +185,16 @@ export function applyRefinement(s: Session, itemId: string, r: RefineResponse): 
   };
 }
 
-/** Edit an item in place — correcting a wrong recognition is a rename plus, often, a band. */
+/**
+ * Edit an item in place — correcting a wrong recognition is a rename plus, often, a band.
+ * A band the family picks is theirs (`bandSource: "family"`): re-reads and comps never
+ * overwrite it. Editing never un-confirms an item.
+ */
 export function updateItem(s: Session, itemId: string, patch: ItemPatch): Session {
-  if (!s.items.some((i) => i.id === itemId)) return s;
-  return { ...s, items: s.items.map((i) => (i.id === itemId ? { ...i, ...patch } : i)) };
+  const item = s.items.find((i) => i.id === itemId);
+  if (!item) return s;
+  const familyBand = patch.band !== undefined && patch.band !== item.band;
+  return { ...s, items: s.items.map((i) => (i.id === itemId ? { ...i, ...patch, ...(familyBand ? { bandSource: "family" as const } : {}) } : i)) };
 }
 
 /** Remove an item that is not real (a reflection, a duplicate, a wrong call). Its history goes too. */

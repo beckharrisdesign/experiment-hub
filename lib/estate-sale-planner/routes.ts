@@ -1,6 +1,6 @@
 /**
  * The app's URLs and the chrome each one gets (round 05a). One place decides
- * what the top bar says, which tab is lit, and whether the tab bar shows, so
+ * what the breadcrumb says, which tab is lit, and whether the tab bar shows, so
  * the shell layout is a lookup and the pages stay about their content.
  *
  * Founder, 2026-10-15: "no persistent nav - can't really tell where I am in
@@ -17,10 +17,11 @@ export const paths = {
   progress: (id: string) => `${APP_ROOT}/sales/${id}/progress`,
   capture: (id: string) => `${APP_ROOT}/sales/${id}/capture`,
   item: (id: string, itemId: string) => `${APP_ROOT}/sales/${id}/items/${itemId}`,
+  photo: (id: string, itemId: string) => `${APP_ROOT}/sales/${id}/items/${itemId}/photo`,
   summary: () => `${APP_ROOT}/summary`,
 } as const;
 
-export type Screen = "home" | "new" | "items" | "sort" | "progress" | "capture" | "item" | "summary" | "sheet" | "other";
+export type Screen = "home" | "new" | "items" | "sort" | "progress" | "capture" | "item" | "photo" | "summary" | "sheet" | "other";
 
 export interface RouteInfo {
   screen: Screen;
@@ -44,6 +45,7 @@ export function parseRoute(pathname: string): RouteInfo {
     return { screen: parts[2], saleId };
   }
   if (parts.length === 4 && parts[2] === "items") return { screen: "item", saleId, itemId: parts[3] };
+  if (parts.length === 5 && parts[2] === "items" && parts[4] === "photo") return { screen: "photo", saleId, itemId: parts[3] };
   return { screen: "other" };
 }
 
@@ -56,6 +58,7 @@ export function tabFor(screen: Screen): Tab | null {
       return "home";
     case "items":
     case "item":
+    case "photo":
       return "items";
     case "sort":
       return "sort";
@@ -68,12 +71,22 @@ export function tabFor(screen: Screen): Tab | null {
   }
 }
 
+export interface Crumb {
+  label: string;
+  href: string;
+}
+
+/**
+ * The header is a breadcrumb (sold-comps design D11; founder, 2026-10-27: "just do a simple
+ * breadcrumb style header and let that function as the back button too"). Every ancestor is a
+ * link; the last one is Back, so there is no separate Back button.
+ */
 export interface Chrome {
-  /** Small caps above the title — the sale's name, or what kind of thing this is. */
-  eyebrow?: string;
-  /** Where you are, in one or two words. The page body keeps its own h1. */
+  /** Ancestors, root first. Empty on Home. */
+  crumbs: Crumb[];
+  /** The current page, last in the trail. */
   title: string;
-  /** Where Back goes; absent on Home. */
+  /** The last crumb's href — where Back goes. Absent on Home. */
   back?: string;
 }
 
@@ -85,31 +98,37 @@ export const APP_NAME = "Estate Sale Planner";
  */
 export function chromeFor(route: RouteInfo, saleName?: string, itemName?: string, contextSaleId?: string): Chrome {
   const sale = saleName?.trim() || "Untitled sale";
+  const home: Crumb = { label: "Home", href: paths.home() };
+  const trail = (title: string, crumbs: Crumb[]): Chrome => ({ title, crumbs, ...(crumbs.length ? { back: crumbs[crumbs.length - 1].href } : {}) });
+  const inSale = (id: string): Crumb[] => [home, { label: sale, href: paths.sale(id) }];
+  const item = itemName?.trim() || "Item";
   switch (route.screen) {
     case "home":
-      return { title: APP_NAME };
+      return trail(APP_NAME, []);
     case "new":
-      return { eyebrow: "New sale", title: "Take photos", back: paths.home() };
+      return trail("Take photos", [home]);
     case "items":
-      return { eyebrow: sale, title: "Items", back: paths.home() };
+      return trail(sale, [home]);
     case "sort":
-      return { eyebrow: sale, title: "Sort", back: paths.sale(route.saleId!) };
+      return trail("Sort", inSale(route.saleId!));
     case "progress":
-      return { eyebrow: sale, title: "Progress", back: paths.sale(route.saleId!) };
+      return trail("Progress", inSale(route.saleId!));
     case "capture":
-      return { eyebrow: sale, title: "Add photos", back: paths.sale(route.saleId!) };
+      return trail("Add photos", inSale(route.saleId!));
     case "item":
-      return { eyebrow: sale, title: itemName?.trim() || "Item", back: paths.sale(route.saleId!) };
+      return trail(item, inSale(route.saleId!));
+    case "photo":
+      return trail("Source photo", [...inSale(route.saleId!), { label: item, href: paths.item(route.saleId!, route.itemId!) }]);
     case "summary":
-      return { eyebrow: sale, title: "Sell list", back: contextSaleId ? paths.sale(contextSaleId) : paths.home() };
+      return trail("Sell list", contextSaleId ? inSale(contextSaleId) : [home]);
     case "sheet":
-      return { eyebrow: APP_NAME, title: "Sell Sheet", back: paths.home() };
+      return trail("Sell Sheet", [home]);
     default:
-      return { title: APP_NAME, back: paths.home() };
+      return trail(APP_NAME, [home]);
   }
 }
 
-/** Where the center camera button goes: add a room to the sale in context, else start a sale. */
+/** Where the center camera button goes: add photos to the sale in context, else start a sale. */
 export function cameraTarget(saleId?: string): string {
   return saleId ? paths.capture(saleId) : paths.newSale();
 }

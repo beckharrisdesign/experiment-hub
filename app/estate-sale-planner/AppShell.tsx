@@ -5,6 +5,7 @@ import { Callout, Section, Stack } from "@beckharrisdesign/mvds";
 import { chromeFor, parseRoute, tabFor } from "../../lib/estate-sale-planner/routes";
 import { undecided } from "../../lib/estate-sale-planner/session";
 import TopBar from "./TopBar";
+import DestinationToggle from "./DestinationToggle";
 import TabBar from "./TabBar";
 import { SaleProvider, useSaleStore } from "./(app)/store";
 
@@ -31,7 +32,12 @@ function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <TopBar chrome={chrome} />
+      <TopBar chrome={chrome}>
+        {/* The item screen's destination rides in the sticky header (sold-comps D21). */}
+        {route.screen === "item" && item && (
+          <DestinationToggle variant="segmented" value={item.destination} onChange={(to) => store.onDestination(item.id, to)} />
+        )}
+      </TopBar>
       <main className="flex-1">
         <Section bg="background" py={24} innerSize="xl">
           <Stack gap={16}>
