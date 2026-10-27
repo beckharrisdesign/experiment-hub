@@ -159,6 +159,8 @@ two to five items worth checking, and many repeat across houses (Pyrex, cast iro
   - Page `02 Proposed — flow` (page `0:1`): the first lookup flow (gate, comps store, comps
     pass, cost ledger).
   - Page `03 Proposed — correct, then look up` (page `8:207`): the confirm step between the
-    vision model and the gate, and the search query written only after the gate (Katy: "we are
-    still searching before confirming according to 03 -- why confirm afterwards and have to do
-    it all again?").
+    vision model and the gate.
+  - Page `04 Proposed — search query after the gate` (page `14:212`): the walkthrough no longer
+    writes a search query; a text-only step writes one for confirmed, gated items right before
+    the lookup (Katy: "we are still searching before confirming according to 03 -- why confirm
+    afterwards and have to do it all again?").
