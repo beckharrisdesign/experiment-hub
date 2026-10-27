@@ -89,7 +89,7 @@ export function chromeFor(route: RouteInfo, saleName?: string, itemName?: string
     case "home":
       return { title: APP_NAME };
     case "new":
-      return { eyebrow: "New sale", title: "Photograph a room", back: paths.home() };
+      return { eyebrow: "New sale", title: "Take photos", back: paths.home() };
     case "items":
       return { eyebrow: sale, title: "Items", back: paths.home() };
     case "sort":
@@ -97,7 +97,7 @@ export function chromeFor(route: RouteInfo, saleName?: string, itemName?: string
     case "progress":
       return { eyebrow: sale, title: "Progress", back: paths.sale(route.saleId!) };
     case "capture":
-      return { eyebrow: sale, title: "Add a room", back: paths.sale(route.saleId!) };
+      return { eyebrow: sale, title: "Add photos", back: paths.sale(route.saleId!) };
     case "item":
       return { eyebrow: sale, title: itemName?.trim() || "Item", back: paths.sale(route.saleId!) };
     case "summary":

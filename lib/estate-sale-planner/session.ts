@@ -174,7 +174,8 @@ export function removeItem(s: Session, itemId: string): Session {
 
 export interface NewItemInput {
   name: string;
-  room: string;
+  /** Rooms left the UI (sold-comps D12); kept so the data and the model prompt are unchanged. */
+  room?: string;
   destination?: Destination;
   image?: string;
 }
@@ -185,7 +186,7 @@ export function addItem(s: Session, input: NewItemInput): Session {
   const item: SessionItem = {
     id,
     name: input.name.trim().slice(0, 80) || "Untitled item",
-    room: input.room.trim().slice(0, 40) || "Unplaced",
+    room: input.room?.trim().slice(0, 40) || "Unplaced",
     flagged: false,
     band: "$1–$5",
     reason: "Added by you; the model has not looked at it. Add a photo and re-read for a band.",

@@ -68,7 +68,7 @@ export default function Swipe({ session, onDestination, onOpen, onUndo }: SwipeP
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        aria-label={`${item.name}, ${item.room}`}
+        aria-label={item.name}
       >
         {item.image ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -77,7 +77,6 @@ export default function Swipe({ session, onDestination, onOpen, onUndo }: SwipeP
           <div className="aspect-[4/3] w-full bg-muted" aria-hidden />
         )}
         <CardHeader>
-          <p className="text-caption uppercase text-muted-foreground">{item.room}</p>
           <CardTitle className="text-h3">{item.name}</CardTitle>
           <CardDescription className="text-body">{item.reason}</CardDescription>
         </CardHeader>

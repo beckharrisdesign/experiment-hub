@@ -9,7 +9,7 @@ interface CaptureProps {
   progress: { done: number; total: number } | null;
   error: string | null;
   onFiles: (files: File[]) => void;
-  /** "new" starts a sale; "append" adds a room to the one in context. */
+  /** "new" starts a sale; "append" adds photos to the one in context. */
   mode?: "new" | "append";
   /** The sale's name, in append mode. */
   saleName?: string;
@@ -29,23 +29,23 @@ interface CaptureProps {
 export default function Capture({ busy, progress, error, onFiles, mode = "new", saleName, name = "", onName }: CaptureProps) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const append = mode === "append";
-  const label = append ? "Photograph another room" : "Photograph a room";
+  const label = append ? "Add more photos" : "Take photos";
 
   return (
     <Stack gap={24}>
       <Stack gap={8}>
         {append ? (
           <>
-            <h1 className="text-h1 text-foreground">Add a room to {saleName?.trim() || "this sale"}</h1>
+            <h1 className="text-h1 text-foreground">Add photos to {saleName?.trim() || "this sale"}</h1>
             <p className="max-w-prose text-body-lg text-muted-foreground">
-              Take a few photos of the next room, or pick them from your library. What the model finds joins the items you already have; it is told what is listed so it does not repeat them.
+              Take a few more photos, or pick them from your library. What the model finds joins the items you already have; it is told what is listed so it does not repeat them.
             </p>
           </>
         ) : (
           <>
             <h1 className="text-h1 text-foreground md:text-display">What&apos;s worth keeping?</h1>
             <p className="max-w-prose text-body-lg text-muted-foreground">
-              Photograph the house one room at a time — a few wide shots, then anything you wonder about. You&apos;ll get a short list of what might be worth something and a quick way to sort the rest. Add rooms later, over as many days as it takes.
+              Take a few wide shots, then anything you wonder about. You&apos;ll get a short list of what might be worth something and a quick way to sort the rest. Add more photos later, over as many days as it takes.
             </p>
           </>
         )}
@@ -81,7 +81,7 @@ export default function Capture({ busy, progress, error, onFiles, mode = "new", 
         accept="image/*"
         multiple
         disabled={busy}
-        label={append ? "Or pick photos of the room" : "Or pick photos of each room"}
+        label="Or pick photos from your library"
         hint={`Up to ${PHOTO_BUDGET.maxPhotos} photos a pass. Nothing leaves your phone until you say so.`}
         onFilesSelected={(files) => files.length && onFiles(files)}
       />

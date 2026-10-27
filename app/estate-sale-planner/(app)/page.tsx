@@ -29,7 +29,7 @@ export default function HomePage() {
         <Stack gap={8}>
           <h1 className="text-h1 text-foreground md:text-display">Your sales</h1>
           <p className="max-w-prose text-body-lg text-muted-foreground">
-            Nothing here yet. Photograph a room of the house and you&apos;ll have a list of what might be worth something, sorted into sell, donate, and keep.
+            Nothing here yet. Take a few photos of the house and you&apos;ll have a list of what might be worth something, sorted into sell, donate, and keep.
           </p>
         </Stack>
         <div className="flex justify-center">

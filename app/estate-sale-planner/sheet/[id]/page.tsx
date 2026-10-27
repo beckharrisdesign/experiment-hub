@@ -82,7 +82,6 @@ export default async function SheetPage({ params, searchParams }: SheetPageProps
               <img src={item.image} alt="" className="aspect-[4/3] w-full object-cover" />
             ) : null}
             <CardHeader>
-              <p className="text-caption uppercase text-muted-foreground">{item.room}</p>
               <CardTitle>{item.name}</CardTitle>
               <Inline gap={8}>
                 <Badge variant="success">{item.band}</Badge>
