@@ -29,7 +29,7 @@ export default function ItemCard({ item, onDestination, onOpen }: ItemCardProps)
         <img src={item.image} alt={item.name} className="aspect-[4/3] w-full object-cover" />
       )}
       <CardHeader>
-        <p className="text-caption uppercase tracking-wider text-muted-foreground">{item.room}</p>
+        <p className="text-caption uppercase text-muted-foreground">{item.room}</p>
         <CardTitle>{item.name}</CardTitle>
         <Inline gap={8} align="center">
           <Badge variant="success">{item.band}</Badge>
@@ -68,8 +68,8 @@ interface ItemRowProps {
 /** The compact row for the Keep / Donate / Still-to-sort lists: thumb, name, toggle. Tap the name for details. */
 export function ItemRow({ item, onDestination, onOpen }: ItemRowProps) {
   return (
-    <li className="flex flex-wrap items-center gap-3 py-2">
-      <button type="button" className="flex min-w-0 flex-1 items-center gap-3 text-left" onClick={() => onOpen(item.id)}>
+    <li className="flex flex-wrap items-center gap-4 py-2">
+      <button type="button" className="flex min-w-0 flex-1 items-center gap-4 text-left" onClick={() => onOpen(item.id)}>
         {item.image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={item.image} alt="" className="size-10 shrink-0 rounded-md object-cover ring-1 ring-foreground/10" />

@@ -56,7 +56,7 @@ export default function Swipe({ session, onDestination, onOpen, onUndo }: SwipeP
     <Stack gap={24} align="center">
       <Stack gap={4} align="center">
         <h1 className="text-h3 text-foreground">Keep, sell, or donate?</h1>
-        <p className="text-caption uppercase tracking-wider text-muted-foreground">
+        <p className="text-caption uppercase text-muted-foreground">
           {stack.length} left · {keepList(session).length} keep · {sellList(session).length} sell · {donateList(session).length} donate
         </p>
       </Stack>
@@ -77,7 +77,7 @@ export default function Swipe({ session, onDestination, onOpen, onUndo }: SwipeP
           <div className="aspect-[4/3] w-full bg-muted" aria-hidden />
         )}
         <CardHeader>
-          <p className="text-caption uppercase tracking-wider text-muted-foreground">{item.room}</p>
+          <p className="text-caption uppercase text-muted-foreground">{item.room}</p>
           <CardTitle className="text-h3">{item.name}</CardTitle>
           <CardDescription className="text-body">{item.reason}</CardDescription>
         </CardHeader>

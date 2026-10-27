@@ -20,7 +20,7 @@ export const paths = {
   summary: () => `${APP_ROOT}/summary`,
 } as const;
 
-export type Screen = "home" | "new" | "items" | "sort" | "progress" | "capture" | "item" | "other";
+export type Screen = "home" | "new" | "items" | "sort" | "progress" | "capture" | "item" | "summary" | "sheet" | "other";
 
 export interface RouteInfo {
   screen: Screen;
@@ -35,6 +35,8 @@ export function parseRoute(pathname: string): RouteInfo {
   const parts = rel.split("/").filter(Boolean);
   if (parts.length === 0) return { screen: "home" };
   if (parts[0] === "new" && parts.length === 1) return { screen: "new" };
+  if (parts[0] === "summary" && parts.length === 1) return { screen: "summary" };
+  if (parts[0] === "sheet" && parts.length === 2) return { screen: "sheet" };
   if (parts[0] !== "sales" || !parts[1]) return { screen: "other" };
   const saleId = parts[1];
   if (parts.length === 2) return { screen: "items", saleId };
@@ -58,15 +60,11 @@ export function tabFor(screen: Screen): Tab | null {
     case "sort":
       return "sort";
     case "progress":
+    case "summary":
       return "progress";
     default:
       return null;
   }
-}
-
-/** The tab bar hides only inside the camera flows, which get an explicit Cancel / Back instead. */
-export function showsTabs(screen: Screen): boolean {
-  return screen !== "new" && screen !== "capture" && screen !== "other";
 }
 
 export interface Chrome {
@@ -80,8 +78,11 @@ export interface Chrome {
 
 export const APP_NAME = "Estate Sale Planner";
 
-/** What the top bar shows for a route. `saleName` and `itemName` are optional — the bar still reads without them. */
-export function chromeFor(route: RouteInfo, saleName?: string, itemName?: string): Chrome {
+/**
+ * What the top bar shows for a route. `saleName` and `itemName` are optional — the bar still reads without them.
+ * `contextSaleId` is the sale the shell has in context, for screens whose URL carries none (the sell list).
+ */
+export function chromeFor(route: RouteInfo, saleName?: string, itemName?: string, contextSaleId?: string): Chrome {
   const sale = saleName?.trim() || "Untitled sale";
   switch (route.screen) {
     case "home":
@@ -98,6 +99,10 @@ export function chromeFor(route: RouteInfo, saleName?: string, itemName?: string
       return { eyebrow: sale, title: "Add a room", back: paths.sale(route.saleId!) };
     case "item":
       return { eyebrow: sale, title: itemName?.trim() || "Item", back: paths.sale(route.saleId!) };
+    case "summary":
+      return { eyebrow: sale, title: "Sell list", back: contextSaleId ? paths.progress(contextSaleId) : paths.home() };
+    case "sheet":
+      return { eyebrow: APP_NAME, title: "Sell Sheet", back: paths.home() };
     default:
       return { title: APP_NAME, back: paths.home() };
   }

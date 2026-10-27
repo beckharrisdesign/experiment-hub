@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Inline, Stack } from "@beckharrisdesign/mvds";
+import { Button, Grid, GridItem, Inline, Stack } from "@beckharrisdesign/mvds";
 import { framesFromPhotos, type CapturedFrame, type CaptureProgress } from "../../lib/estate-sale-planner/capture";
 import { paths } from "../../lib/estate-sale-planner/routes";
 import type { Session } from "../../lib/estate-sale-planner/session";
@@ -16,9 +16,10 @@ interface CaptureFlowProps {
 }
 
 /**
- * Camera → confirm grid → vision pass → the sale's Items. Full-screen (the
- * shell hides the tabs here); Cancel goes back to where you were. On success
- * the router lands on the sale and the shell's notice says what was added.
+ * Camera → confirm grid → vision pass → the sale's Items. The tab bar stays
+ * (founder, 2026-10-27: sticky "on all views"); Cancel goes back to where you
+ * were. On success the router lands on the sale and the shell's notice says
+ * what was added.
  */
 export default function CaptureFlow({ sale }: CaptureFlowProps) {
   const router = useRouter();
@@ -72,33 +73,48 @@ export default function CaptureFlow({ sale }: CaptureFlowProps) {
 
   if (photos.length > 0) {
     return (
-      <PhotoGrid
-        photos={photos}
-        sending={busy}
-        onSend={onSend}
-        onRemove={(id) => setPhotos((ps) => ps.filter((p) => p.id !== id))}
-        onBack={() => setPhotos([])}
-      />
+      <Column>
+        <PhotoGrid
+          photos={photos}
+          sending={busy}
+          onSend={onSend}
+          onRemove={(id) => setPhotos((ps) => ps.filter((p) => p.id !== id))}
+          onBack={() => setPhotos([])}
+        />
+      </Column>
     );
   }
 
   return (
-    <Stack gap={24}>
-      <Capture
-        busy={busy}
-        progress={progress}
-        error={error}
-        onFiles={onFiles}
-        mode={append ? "append" : "new"}
-        saleName={sale?.name}
-        name={name}
-        onName={append ? undefined : setName}
-      />
-      <Inline gap={8} justify="center">
-        <Button variant="ghost" disabled={busy} onClick={() => router.push(cancelHref)}>
-          Cancel
-        </Button>
-      </Inline>
-    </Stack>
+    <Column>
+      <Stack gap={24}>
+        <Capture
+          busy={busy}
+          progress={progress}
+          error={error}
+          onFiles={onFiles}
+          mode={append ? "append" : "new"}
+          saleName={sale?.name}
+          name={name}
+          onName={append ? undefined : setName}
+        />
+        <Inline gap={8} justify="center">
+          <Button variant="ghost" disabled={busy} onClick={() => router.push(cancelHref)}>
+            Cancel
+          </Button>
+        </Inline>
+      </Stack>
+    </Column>
+  );
+}
+
+/** The camera flow is a form, so on desktop it stays one centered column: 8 of 12, from column 3. */
+function Column({ children }: { children: React.ReactNode }) {
+  return (
+    <Grid cols={{ base: 1, lg: 12 }}>
+      <GridItem span={{ base: 1, lg: 8 }} start={{ lg: 3 }}>
+        {children}
+      </GridItem>
+    </Grid>
   );
 }

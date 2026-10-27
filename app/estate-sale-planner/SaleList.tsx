@@ -26,8 +26,8 @@ export default function SaleList({ entries, onDelete }: SaleListProps) {
       {entries.map((e) => {
         const status = saleStatus(e);
         return (
-          <li key={e.id} className="py-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+          <li key={e.id} className="py-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <Link href={paths.sale(e.id)} className="min-w-0 flex-1">
                 <Stack gap={4}>
                   <Inline gap={8} align="center">

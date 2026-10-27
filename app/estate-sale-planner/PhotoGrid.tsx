@@ -34,7 +34,7 @@ export default function PhotoGrid({ photos, sending, onSend, onRemove, onBack }:
             <img src={p.preview} alt={`Photo ${i + 1}`} className="aspect-square w-full rounded-md object-cover" />
             <button
               type="button"
-              className="absolute right-1 top-1 flex size-7 items-center justify-center rounded-full bg-background/90 text-small text-foreground shadow ring-1 ring-foreground/15"
+              className="absolute right-1 top-1 flex size-8 items-center justify-center rounded-full bg-background/90 text-small text-foreground shadow ring-1 ring-foreground/15"
               aria-label={`Leave out photo ${i + 1}`}
               disabled={sending}
               onClick={() => onRemove(p.id)}

@@ -37,7 +37,7 @@ function SaleName({ name, onRename }: { name?: string; onRename: (name: string) 
   }
   return (
     <Inline gap={8} align="center">
-      <span className="text-caption uppercase tracking-wider text-muted-foreground">{name?.trim() || "Untitled sale"}</span>
+      <span className="text-caption uppercase text-muted-foreground">{name?.trim() || "Untitled sale"}</span>
       <Button size="sm" variant="ghost" onClick={() => { setDraft(name ?? ""); setEditing(true); }}>
         Rename
       </Button>
@@ -50,7 +50,7 @@ function RowList({ items, onDestination, onOpen }: { items: SessionItem[]; onDes
     <Stack gap={16}>
       {byRoom(items).map(({ room, items }) => (
         <Stack key={room} gap={4}>
-          <h3 className="text-caption uppercase tracking-wider text-muted-foreground">{room}</h3>
+          <h3 className="text-caption uppercase text-muted-foreground">{room}</h3>
           <ul className="divide-y divide-border">
             {items.map((item) => (
               <ItemRow key={item.id} item={item} onDestination={onDestination} onOpen={onOpen} />
@@ -94,7 +94,7 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
         </Stack>
         <ValueTally session={session} />
         <Stack gap={4}>
-          <p className="text-caption uppercase tracking-wider text-muted-foreground">Sell</p>
+          <p className="text-caption uppercase text-muted-foreground">Sell</p>
           <h1 className="text-h2 text-foreground">Might be worth something</h1>
         </Stack>
         {sell.length === 0 ? (
@@ -102,7 +102,7 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
             Nothing is marked to sell. Toggle any item below, or add one the model missed.
           </p>
         ) : (
-          <Grid cols={{ base: 1, md: 2 }} gap={16}>
+          <Grid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} gap={16}>
             {sell.map((item) => (
               <ItemCard key={item.id} item={item} onDestination={onDestination} onOpen={onOpen} />
             ))}
@@ -113,7 +113,7 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
       {rest.length > 0 && (
         <Stack gap={16}>
           <Stack gap={4}>
-            <p className="text-caption uppercase tracking-wider text-muted-foreground">Still to sort</p>
+            <p className="text-caption uppercase text-muted-foreground">Still to sort</p>
             <h2 className="text-h2 text-foreground">{rest.length} {rest.length === 1 ? "item" : "items"} left</h2>
           </Stack>
           <RowList items={rest} onDestination={onDestination} onOpen={onOpen} />
@@ -128,7 +128,7 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
       {keep.length > 0 && (
         <Stack gap={16}>
           <Stack gap={4}>
-            <p className="text-caption uppercase tracking-wider text-muted-foreground">Keep</p>
+            <p className="text-caption uppercase text-muted-foreground">Keep</p>
             <h2 className="text-h2 text-foreground">Staying with the family</h2>
           </Stack>
           <RowList items={keep} onDestination={onDestination} onOpen={onOpen} />
@@ -138,7 +138,7 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
       {donate.length > 0 && (
         <Stack gap={16}>
           <Stack gap={4}>
-            <p className="text-caption uppercase tracking-wider text-muted-foreground">Donate</p>
+            <p className="text-caption uppercase text-muted-foreground">Donate</p>
             <h2 className="text-h2 text-foreground">Going to a good home</h2>
           </Stack>
           <RowList items={donate} onDestination={onDestination} onOpen={onOpen} />
