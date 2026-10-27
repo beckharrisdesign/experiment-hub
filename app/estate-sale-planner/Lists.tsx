@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Callout, Grid, Inline, Input, Stack } from "@beckharrisdesign/mvds";
+import { Button, Callout, Field, Grid, Input, Stack } from "@beckharrisdesign/mvds";
 import { donateList, keepList, sellList, undecided, type Destination, type NewItemInput, type Session, type SessionItem } from "../../lib/estate-sale-planner/session";
 import AddItem from "./AddItem";
+import ButtonGroup from "./ButtonGroup";
 import ItemCard, { ItemRow } from "./ItemCard";
 import ValueTally from "./ValueTally";
 
@@ -15,33 +16,31 @@ interface ListsProps {
   onAdd: (input: NewItemInput) => void;
   onStartSorting: () => void;
   onAddRoom: () => void;
-  onRename: (name: string) => void;
+  onDetails: (details: { name: string; location: string }) => void;
 }
 
-/** The sale's name is the page title (same treatment as every page), editable in place: Rename, type, Save. */
-function SaleName({ name, onRename }: { name?: string; onRename: (name: string) => void }) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(name ?? "");
-  if (editing) {
-    return (
-      <Inline gap={8} align="center" className="flex-wrap">
-        <Input value={draft} maxLength={60} placeholder="Mom's house" aria-label="Sale name" onChange={(e) => setDraft(e.target.value)} />
-        <Button size="sm" onClick={() => { onRename(draft); setEditing(false); }}>
-          Save
-        </Button>
-        <Button size="sm" variant="ghost" onClick={() => { setDraft(name ?? ""); setEditing(false); }}>
+/**
+ * The sale's details, edited in place from the action row: a title and a city or ZIP (founder,
+ * 2026-10-27: "a title, yes, but also a city or zipcode"). Both optional.
+ */
+function SaleDetails({ session, onDetails, onClose }: { session: Session; onDetails: ListsProps["onDetails"]; onClose: () => void }) {
+  const [name, setName] = useState(session.name ?? "");
+  const [location, setLocation] = useState(session.location ?? "");
+  return (
+    <Stack gap={16}>
+      <Field label="Sale name">
+        <Input value={name} maxLength={60} placeholder="Mom's house" autoFocus onChange={(e) => setName(e.target.value)} />
+      </Field>
+      <Field label="City or ZIP">
+        <Input value={location} maxLength={40} placeholder="Ithaca, NY or 14850" autoComplete="postal-code" onChange={(e) => setLocation(e.target.value)} />
+      </Field>
+      <ButtonGroup>
+        <Button variant="secondary" onClick={onClose}>
           Cancel
         </Button>
-      </Inline>
-    );
-  }
-  return (
-    <div className="flex items-start justify-between gap-4">
-      <h1 className="min-w-0 break-words text-h1 text-foreground">{name?.trim() || "Untitled sale"}</h1>
-      <Button size="sm" variant="secondary" className="mt-2 shrink-0" onClick={() => { setDraft(name ?? ""); setEditing(true); }}>
-        Rename
-      </Button>
-    </div>
+        <Button onClick={() => { onDetails({ name, location }); onClose(); }}>Save</Button>
+      </ButtonGroup>
+    </Stack>
   );
 }
 
@@ -61,13 +60,17 @@ function RowList({ items, onDestination, onOpen }: { items: SessionItem[]; onDes
  * Items (round 05a; was Lists) — the sale by destination. Sell items are full cards; Keep,
  * Donate and the still-to-sort pile are rows. Every item carries its own
  * sell / donate / keep toggle, so nothing is ever stuck where the model or a
- * swipe put it, and tapping a name opens the item.
+ * swipe put it, and tapping a name opens the item. Every action on the sale itself — rename, add
+ * an item, sort, add photos — sits in one row of primary buttons in the upper right (founder,
+ * 2026-10-27: "none of this scattered everywhere stuff").
  */
-export default function Lists({ session, fromFixture, onDestination, onOpen, onAdd, onStartSorting, onAddRoom, onRename }: ListsProps) {
+export default function Lists({ session, fromFixture, onDestination, onOpen, onAdd, onStartSorting, onAddRoom, onDetails }: ListsProps) {
   const sell = sellList(session);
   const keep = keepList(session);
   const donate = donateList(session);
   const rest = undecided(session);
+  const [editing, setEditing] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   return (
     <Stack gap={48}>
@@ -77,35 +80,41 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
 
       <Stack gap={32}>
         <Stack gap={16}>
-          <Stack gap={8}>
-            <SaleName name={session.name} onRename={onRename} />
-            <p className="text-small text-muted-foreground">
-              {session.items.length} {session.items.length === 1 ? "item" : "items"} · {new Date(session.createdAt).toLocaleDateString()}
-            </p>
-          </Stack>
-          <div>
-            <Button variant="outline" onClick={onAddRoom}>
-              Add more photos
-            </Button>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <Stack gap={8} className="min-w-0">
+              <h1 className="break-words text-h1 text-foreground">{session.name?.trim() || "Untitled sale"}</h1>
+              <p className="text-small text-muted-foreground">
+                {[session.location, `${session.items.length} ${session.items.length === 1 ? "item" : "items"}`, new Date(session.createdAt).toLocaleDateString()].filter(Boolean).join(" · ")}
+              </p>
+            </Stack>
+            <ButtonGroup className="w-full md:mt-2 md:w-auto">
+              <Button onClick={() => setEditing(true)} disabled={editing}>
+                Edit details
+              </Button>
+              <Button onClick={() => setAdding(true)} disabled={adding}>
+                Add more
+              </Button>
+              {rest.length > 0 && <Button onClick={onStartSorting}>Sort {rest.length} left</Button>}
+              <Button onClick={onAddRoom}>Add photos</Button>
+            </ButtonGroup>
           </div>
+          {editing && <SaleDetails session={session} onDetails={onDetails} onClose={() => setEditing(false)} />}
+          {adding && <AddItem onAdd={onAdd} onClose={() => setAdding(false)} />}
         </Stack>
-        <ValueTally session={session} />
+        {session.items.length > 0 && <ValueTally session={session} />}
       </Stack>
 
-      <Stack gap={24}>
-        <h2 className="text-h2 text-foreground">Possible sale</h2>
-        {sell.length === 0 ? (
-          <p className="text-body-lg text-muted-foreground">
-            Nothing is marked to sell. Toggle any item below, or add one the model missed.
-          </p>
-        ) : (
+      {/* An empty section gets no header (founder, 2026-10-27): "Add more" in the action row is the CTA. */}
+      {sell.length > 0 && (
+        <Stack gap={24}>
+          <h2 className="text-h2 text-foreground">Possible sale</h2>
           <Grid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} gap={16}>
             {sell.map((item) => (
               <ItemCard key={item.id} item={item} onDestination={onDestination} onOpen={onOpen} />
             ))}
           </Grid>
-        )}
-      </Stack>
+        </Stack>
+      )}
 
       {rest.length > 0 && (
         <Stack gap={24}>
@@ -114,11 +123,6 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
             <h2 className="text-h2 text-foreground">{rest.length} {rest.length === 1 ? "item" : "items"} left</h2>
           </Stack>
           <RowList items={rest} onDestination={onDestination} onOpen={onOpen} />
-          <div className="flex justify-center">
-            <Button size="lg" onClick={onStartSorting}>
-              Sort the rest, one at a time
-            </Button>
-          </div>
         </Stack>
       )}
 
@@ -136,7 +140,6 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
         </Stack>
       )}
 
-      <AddItem onAdd={onAdd} />
     </Stack>
   );
 }

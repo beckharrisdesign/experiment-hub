@@ -40,7 +40,9 @@ function validDetail(f: unknown): f is FrameInput {
 function validItem(i: unknown): i is RefineInput["item"] {
   if (!i || typeof i !== "object") return false;
   const o = i as Record<string, unknown>;
-  return ["name", "room", "band", "reason", "confidence"].every((k) => typeof o[k] === "string" && (o[k] as string).length <= 200);
+  // Room is optional now (items added by hand may have none).
+  if (o.room !== undefined && (typeof o.room !== "string" || o.room.length > 200)) return false;
+  return ["name", "band", "reason", "confidence"].every((k) => typeof o[k] === "string" && (o[k] as string).length <= 200);
 }
 
 export async function POST(request: NextRequest) {
@@ -73,7 +75,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await refineItem({ item: body.item, details, context, message, reframed: body.reframed === true });
+    const started = Date.now();
+    const result = await refineItem({ item: { ...body.item, room: body.item.room ?? "" }, details, context, message, reframed: body.reframed === true });
+    // Successes are logged too, so a re-read that "did nothing" can be told apart from one that never arrived.
+    console.info(`[esp refine] ok in ${Date.now() - started} ms (${result.source}${body.reframed === true ? ", reframed" : ""}${message ? ", message" : ""})`);
     return NextResponse.json({ success: true, configured: visionConfigured(), ...result });
   } catch (error: any) {
     console.error("[esp refine] re-read failed:", error);

@@ -16,7 +16,7 @@ interface CaptureFlowProps {
 }
 
 /**
- * Camera → confirm grid → vision pass → the sale's Items. The tab bar stays
+ * Camera → confirm grid → the sale's Sort screen, where the vision pass shows as it runs. The tab bar stays
  * (founder, 2026-10-27: sticky "on all views"); Cancel goes back to where you
  * were. On success the router lands on the sale and the shell's notice says
  * what was added.
@@ -29,6 +29,7 @@ export default function CaptureFlow({ sale }: CaptureFlowProps) {
   const [progress, setProgress] = useState<CaptureProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
+  const [location, setLocation] = useState("");
   const append = Boolean(sale);
 
   const onFiles = useCallback(async (files: File[]) => {
@@ -47,27 +48,15 @@ export default function CaptureFlow({ sale }: CaptureFlowProps) {
     }
   }, []);
 
-  const onSend = useCallback(async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const outcome = await store.flag(photos, { append, name });
-      store.setNotice(
-        append
-          ? outcome.added === 0
-            ? "Nothing new in those photos. Everything the model saw is already listed."
-            : `Added ${outcome.added} ${outcome.added === 1 ? "item" : "items"} from those photos.`
-          : null,
-      );
-      setPhotos([]);
-      router.replace(paths.sale(outcome.id));
-    } catch (e: any) {
-      setError(e.message ?? "The vision pass didn't come back.");
-      setPhotos([]);
-    } finally {
-      setBusy(false);
-    }
-  }, [store, photos, append, name, router]);
+  // Send and go: the pass runs in the background and the sale's Sort screen shows the photos
+  // being read (founder, 2026-10-27: "Drop directly to the processing list and let us either
+  // watch them get processed or move around to manage other things").
+  const onSend = useCallback(() => {
+    const id = store.startPass(photos, { append, name, location });
+    store.setNotice(null);
+    setPhotos([]);
+    router.replace(paths.sort(id));
+  }, [store, photos, append, name, location, router]);
 
   const cancelHref = sale ? paths.sale(sale.id) : paths.home();
 
@@ -98,7 +87,9 @@ export default function CaptureFlow({ sale }: CaptureFlowProps) {
           saleName={sale?.name}
           name={name}
           onName={append ? undefined : setName}
-          onStartEmpty={append ? undefined : () => router.replace(paths.sale(store.createSale(name)))}
+          location={location}
+          onLocation={append ? undefined : setLocation}
+          onStartEmpty={append ? undefined : () => router.replace(paths.sale(store.createSale(name, location)))}
         />
         <Inline gap={8} justify="center">
           <Button variant="ghost" disabled={busy} onClick={() => router.push(cancelHref)}>

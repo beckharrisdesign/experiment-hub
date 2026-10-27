@@ -14,6 +14,7 @@ import {
   newSession,
   removeItem,
   renameSession,
+  setLocation,
   setDestination,
   undo,
   updateItem,
@@ -26,14 +27,16 @@ import { itemThumbnail } from "../../../lib/estate-sale-planner/thumbs";
 import { addFromPhoto, adjustBox, applyMessage, applyReread, confirmItem, failReread, markLot, mergeItems, splitItem, splitLot, undoMessage } from "../../../lib/estate-sale-planner/correction";
 import { cropFromPhoto } from "../../../lib/estate-sale-planner/crops";
 import { itemPhotoKey, photoKey, putPhotos } from "../../../lib/estate-sale-planner/photos";
-import { deleteSaved, listHistory, loadSession, openSaved, saveSession, type HistoryEntry } from "../../../lib/estate-sale-planner/storage";
+import { deleteSaved, listHistory, loadSession, openSaved, readSaved, saveCopy, saveSession, type HistoryEntry } from "../../../lib/estate-sale-planner/storage";
 import { track } from "../../../lib/estate-sale-planner/analytics";
 
-export interface FlagOutcome {
-  /** The sale the items landed in — new, or the one appended to. */
+/** Photos sent to the vision pass that have not come back yet (or came back with an error). */
+export interface PendingPass {
   id: string;
-  added: number;
-  source: FlagResult["source"];
+  saleId: string;
+  previews: string[];
+  /** Set when the pass failed; the photos stay so it can be tried again. */
+  error?: string;
 }
 
 export interface SaleStore {
@@ -52,8 +55,16 @@ export interface SaleStore {
   /** Make `id` the sale in context (from sessionStorage or the device's saved copies). False when it is not on this device. */
   open: (id: string) => boolean;
   update: (next: Session) => void;
-  /** Send photos to the vision pass; `append` adds to the sale in context, else a new sale is made. */
-  flag: (frames: CapturedFrame[], opts: { append: boolean; name?: string }) => Promise<FlagOutcome>;
+  /** Photo passes still being read, across sales. */
+  pending: PendingPass[];
+  /**
+   * Send photos to the vision pass and return at once with the sale they join: `append` adds to
+   * the sale in context, else a new (empty) sale is made first. The items land when the pass comes
+   * back, whichever screen — or sale — the family is on by then.
+   */
+  startPass: (frames: CapturedFrame[], opts: { append: boolean; name?: string; location?: string }) => string;
+  retryPass: (passId: string) => void;
+  dismissPass: (passId: string) => void;
   /** Returns the session after the move so a page can react (the sort page finishes on the last one). */
   onDestination: (itemId: string, to: Destination) => Session | null;
   onDetail: (itemId: string, file: File) => Promise<void>;
@@ -62,7 +73,8 @@ export interface SaleStore {
   onRemove: (itemId: string) => void;
   onAdd: (input: NewItemInput) => void;
   onUndo: () => void;
-  onRename: (name: string) => void;
+  /** The sale's details: its title and city or ZIP. */
+  onDetails: (details: { name: string; location: string }) => void;
   deleteSale: (id: string) => void;
   /** Looks right. */
   onConfirm: (itemId: string) => void;
@@ -81,7 +93,7 @@ export interface SaleStore {
   onMessage: (itemId: string, text: string) => Promise<boolean>;
   onUndoMessage: (itemId: string, index: number) => void;
   /** A new, empty sale (no photos yet). Returns its id. */
-  createSale: (name?: string) => string;
+  createSale: (name?: string, location?: string) => string;
   /** A photo for an item that has none (one the family typed in): kept like a walkthrough photo, then read. */
   onAddPhoto: (itemId: string, file: File) => Promise<boolean>;
 }
@@ -101,6 +113,9 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   const [fromFixture, setFromFixture] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [refining, setRefining] = useState<string | null>(null);
+  const [pending, setPending] = useState<PendingPass[]>([]);
+  /** The photos behind each pending pass, kept for a retry. */
+  const passFrames = useRef(new Map<string, CapturedFrame[]>());
   /** Full-resolution detail shots for this tab only; thumbs are what persist. */
   const detailData = useRef(new Map<string, FrameInput[]>());
   /** The latest session for async handlers that outlive a render; every setSession below writes it first. */
@@ -132,62 +147,125 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     return true;
   }, []);
 
-  const flag = useCallback(
-    async (frames: CapturedFrame[], opts: { append: boolean; name?: string }): Promise<FlagOutcome> => {
-      const base = opts.append ? latest.current : null;
-      const appending = Boolean(base);
-      track("esp_frames_confirmed", { frames: frames.length, appending });
-      const res = await fetch("/estate-sale-planner/api/flag", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          frames: frames.map((f) => ({ data: f.data, at: f.at })),
-          // Always sent: what is already listed (empty on a first pass). The
-          // model is told not to repeat it; demo mode grows the house from it.
-          known: base ? knownItems(base) : [],
-        }),
-      });
-      const json = (await res.json()) as (FlagResult & { success: true }) | { error: string };
-      if (!res.ok || "error" in json) throw new Error("error" in json ? json.error : `HTTP ${res.status}`);
-      track("esp_flags_returned", { items: json.items.length, flagged: json.items.filter((i) => i.flagged).length, source: json.source });
-      setFromFixture(json.source === "fixture");
-      const images = await Promise.all(
-        json.items.map(async (item) => {
-          const frame = frames[item.frame % frames.length];
-          if (!frame) return undefined;
-          try {
-            return await itemThumbnail(frame.preview, item.box);
-          } catch {
-            return undefined;
-          }
-        }),
-      );
-      // Keep the 1600 px originals on the device and point each new item at its photo (sold-comps D1).
-      const pass = base ? (base.passes ?? 1) + 1 : 1;
-      const hasOriginals = frames.some((f) => f.original);
-      const stamp = (s: Session, from: number): Session =>
-        hasOriginals ? { ...s, items: s.items.map((it, idx) => (idx >= from ? { ...it, photoId: photoKey(s.id, pass, it.frame % frames.length) } : it)) } : s;
-      const keep = (saleId: string) => {
-        if (!hasOriginals) return;
-        void putPhotos(saleId, pass, frames.flatMap((f) => (f.original ? [{ frame: f.at, blob: f.original }] : []))).then((evicted) => {
-          if (evicted.length) track("esp_photos_evicted", { sales: evicted.length });
-        });
-      };
-      if (base) {
-        const next = stamp(appendItems(base, json.items, images), base.items.length);
-        keep(next.id);
+  /** Change a sale whether or not it is the one in context: a pass can outlive the screen that started it. */
+  const applyTo = useCallback(
+    (saleId: string, fn: (s: Session) => Session): Session | null => {
+      if (latest.current?.id === saleId) {
+        const next = fn(latest.current);
         update(next);
-        track("esp_room_appended", { items: json.items.length, pass: next.passes ?? 0 });
-        return { id: next.id, added: json.items.length, source: json.source };
+        return next;
       }
-      const next = stamp(newSession(json.items, new Date(), images, opts.name), 0);
-      keep(next.id);
-      update(next);
-      if (opts.name?.trim()) track("esp_walkthrough_named");
-      return { id: next.id, added: json.items.length, source: json.source };
+      const saved = readSaved(saleId);
+      if (!saved) return null;
+      const next = fn(saved);
+      saveCopy(next);
+      setHistory(listHistory());
+      return next;
     },
     [update],
   );
+
+  const runPass = useCallback(
+    async (passId: string, saleId: string, frames: CapturedFrame[]) => {
+      try {
+        const base = latest.current?.id === saleId ? latest.current : readSaved(saleId);
+        if (!base) throw new Error("That sale isn't on this device any more.");
+        const res = await fetch("/estate-sale-planner/api/flag", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            frames: frames.map((f) => ({ data: f.data, at: f.at })),
+            // Always sent: what is already listed (empty on a first pass). The
+            // model is told not to repeat it; demo mode grows the house from it.
+            known: knownItems(base),
+          }),
+        });
+        const json = (await res.json()) as (FlagResult & { success: true }) | { error: string };
+        if (!res.ok || "error" in json) throw new Error("error" in json ? json.error : `HTTP ${res.status}`);
+        track("esp_flags_returned", { items: json.items.length, flagged: json.items.filter((i) => i.flagged).length, source: json.source });
+        setFromFixture(json.source === "fixture");
+        const images = await Promise.all(
+          json.items.map(async (item) => {
+            const frame = frames[item.frame % frames.length];
+            if (!frame) return undefined;
+            try {
+              return await itemThumbnail(frame.preview, item.box);
+            } catch {
+              return undefined;
+            }
+          }),
+        );
+        // Keep the 1600 px originals on the device and point each new item at its photo (sold-comps D1).
+        // The pass number is read when the items land, so two passes in flight never share one.
+        const hasOriginals = frames.some((f) => f.original);
+        let pass = 1;
+        const next = applyTo(saleId, (s) => {
+          pass = (s.passes ?? 1) + 1;
+          const from = s.items.length;
+          const appended = appendItems(s, json.items, images);
+          return hasOriginals ? { ...appended, items: appended.items.map((it, idx) => (idx >= from ? { ...it, photoId: photoKey(s.id, pass, it.frame % frames.length) } : it)) } : appended;
+        });
+        if (!next) throw new Error("That sale isn't on this device any more.");
+        if (hasOriginals) {
+          void putPhotos(saleId, pass, frames.flatMap((f) => (f.original ? [{ frame: f.at, blob: f.original }] : []))).then((evicted) => {
+            if (evicted.length) track("esp_photos_evicted", { sales: evicted.length });
+          });
+        }
+        track("esp_room_appended", { items: json.items.length, pass: next.passes ?? 0 });
+        passFrames.current.delete(passId);
+        setPending((ps) => ps.filter((p) => p.id !== passId));
+        setNotice(
+          json.items.length === 0
+            ? "Nothing new in those photos. Everything the model saw is already listed."
+            : `Added ${json.items.length} ${json.items.length === 1 ? "item" : "items"} from those photos.`,
+        );
+      } catch (e: any) {
+        setPending((ps) => ps.map((p) => (p.id === passId ? { ...p, error: e?.message ?? "The vision pass didn't come back." } : p)));
+      }
+    },
+    [applyTo],
+  );
+
+  const createSale = useCallback(
+    (name?: string, location?: string) => {
+      const next = setLocation(newSession([], new Date(), [], name), location ?? "");
+      update(next);
+      track("esp_new_walkthrough", { empty: true });
+      if (name?.trim()) track("esp_walkthrough_named");
+      return next.id;
+    },
+    [update],
+  );
+
+  const startPass = useCallback(
+    (frames: CapturedFrame[], opts: { append: boolean; name?: string; location?: string }) => {
+      const appending = Boolean(opts.append && latest.current);
+      const saleId = appending ? latest.current!.id : createSale(opts.name, opts.location);
+      track("esp_frames_confirmed", { frames: frames.length, appending });
+      const passId = `pass_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+      passFrames.current.set(passId, frames);
+      setPending((ps) => [...ps, { id: passId, saleId, previews: frames.map((f) => f.preview) }]);
+      void runPass(passId, saleId, frames);
+      return saleId;
+    },
+    [createSale, runPass],
+  );
+
+  const retryPass = useCallback(
+    (passId: string) => {
+      const pass = pending.find((p) => p.id === passId);
+      const frames = passFrames.current.get(passId);
+      if (!pass || !frames) return;
+      setPending((ps) => ps.map((p) => (p.id === passId ? { id: p.id, saleId: p.saleId, previews: p.previews } : p)));
+      void runPass(passId, pass.saleId, frames);
+    },
+    [pending, runPass],
+  );
+
+  const dismissPass = useCallback((passId: string) => {
+    passFrames.current.delete(passId);
+    setPending((ps) => ps.filter((p) => p.id !== passId));
+  }, []);
 
   const onDestination = useCallback(
     (itemId: string, to: Destination): Session | null => {
@@ -284,11 +362,14 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     if (latest.current) update(undo(latest.current));
   }, [update]);
 
-  const onRename = useCallback((name: string) => {
-    if (!latest.current) return;
-    update(renameSession(latest.current, name));
-    if (name.trim()) track("esp_walkthrough_named");
-  }, [update]);
+  const onDetails = useCallback(
+    ({ name, location }: { name: string; location: string }) => {
+      if (!latest.current) return;
+      update(setLocation(renameSession(latest.current, name), location));
+      if (name.trim()) track("esp_walkthrough_named");
+    },
+    [update],
+  );
 
   const deleteSale = useCallback((id: string) => {
     deleteSaved(id);
@@ -315,11 +396,14 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
       if (!crop) return patch((s) => failReread(s, itemId));
       patch((s) => ({ ...s, items: s.items.map((i) => (i.id === itemId ? { ...i, image: crop.thumb } : i)) }));
       try {
+        // A re-read takes ~20 s; past the route's own 60 s limit it isn't coming back, so say so
+        // rather than spin forever.
         const res = await fetch("/estate-sale-planner/api/refine", {
           method: "POST",
           headers: { "content-type": "application/json" },
+          signal: AbortSignal.timeout(75_000),
           body: JSON.stringify({
-            item: { name: item.name, room: item.room, band: item.band, reason: item.reason, confidence: item.confidence },
+            item: { name: item.name, room: item.room ?? "", band: item.band, reason: item.reason, confidence: item.confidence },
             details: [{ data: crop.data, at: 0 }],
             context: item.note,
             reframed: true,
@@ -342,12 +426,15 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   /** At most three re-reads in flight; a split into six queues the rest (design D3). */
   const queue = useRef<string[]>([]);
   const running = useRef(0);
+  const inFlight = useRef(new Set<string>());
   const pump = useCallback(
     function run() {
       while (running.current < 3 && queue.current.length > 0) {
         const id = queue.current.shift()!;
         running.current += 1;
+        inFlight.current.add(id);
         void rereadCorrected(id).finally(() => {
+          inFlight.current.delete(id);
           running.current -= 1;
           run();
         });
@@ -355,6 +442,19 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     },
     [rereadCorrected],
   );
+
+  // "Reading the new crop…" is saved with the item, but the queue lives in this tab. After a
+  // reload (a phone often reloads a tab you come back to) pick up any read that was cut off,
+  // instead of leaving it spinning forever (founder, 2026-10-27: "I adjusted the crop but
+  // nothing happened").
+  useEffect(() => {
+    const stuck = (session?.items ?? []).filter((i) => i.rereadPending && !inFlight.current.has(i.id) && !queue.current.includes(i.id));
+    if (stuck.length === 0) return;
+    queue.current.push(...stuck.map((i) => i.id));
+    pump();
+    // Only when the sale in context changes (load, open); a live correction queues its own reads.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.id, pump]);
 
   const correct = useCallback(
     (next: Session, ids: string[], kind: string): string[] => {
@@ -462,16 +562,6 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     [update],
   );
 
-  const createSale = useCallback(
-    (name?: string) => {
-      const next = newSession([], new Date(), [], name);
-      update(next);
-      track("esp_new_walkthrough", { empty: true });
-      if (name?.trim()) track("esp_walkthrough_named");
-      return next.id;
-    },
-    [update],
-  );
 
   const onAddPhoto = useCallback(
     async (itemId: string, file: File) => {
@@ -498,8 +588,8 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   }, [update]);
 
   const value = useMemo<SaleStore>(
-    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, flag, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale, onConfirm, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale }),
-    [ready, session, history, fromFixture, notice, refining, open, update, flag, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale, onConfirm, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale],
+    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onConfirm, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale }),
+    [ready, session, history, fromFixture, notice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onConfirm, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale],
   );
 
   return <SaleContext.Provider value={value}>{children}</SaleContext.Provider>;

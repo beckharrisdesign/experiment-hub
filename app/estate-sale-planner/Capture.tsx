@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import { Button, Callout, Dropzone, Field, Input, Stack } from "@beckharrisdesign/mvds";
-import { PHOTO_BUDGET } from "../../lib/estate-sale-planner/config";
+import { Button, Callout, Field, Input, Stack } from "@beckharrisdesign/mvds";
+import ButtonGroup from "./ButtonGroup";
 
 interface CaptureProps {
   busy: boolean;
@@ -16,22 +16,22 @@ interface CaptureProps {
   /** Draft name for a new sale (optional, "Mom's house"). */
   name?: string;
   onName?: (name: string) => void;
+  /** City or ZIP for a new sale (optional). */
+  location?: string;
+  onLocation?: (location: string) => void;
   /** New sale only: start it empty and add items by hand or photos later. */
   onStartEmpty?: () => void;
 }
 
 /**
  * The camera screen (round 05a — photos, not video). One primary action:
- * photograph the room. The hidden input carries `capture="environment"` and
- * `multiple`, so a phone opens its camera and every shot is one frame to the
- * model; the Dropzone is the pick-from-library and desktop path. Founder,
- * 2026-10-15: "stick to images - a live camera instead of video since that adds
- * complexity out of the gate."
+ * add photos. The hidden input takes `multiple` and no `capture`, so a phone offers its camera or
+ * its library and every shot is one frame to the model. Founder, 2026-10-15: "stick to images - a
+ * live camera instead of video since that adds complexity out of the gate."
  */
-export default function Capture({ busy, progress, error, onFiles, mode = "new", saleName, name = "", onName, onStartEmpty }: CaptureProps) {
+export default function Capture({ busy, progress, error, onFiles, mode = "new", saleName, name = "", onName, location = "", onLocation, onStartEmpty }: CaptureProps) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const append = mode === "append";
-  const label = append ? "Add more photos" : "Take photos";
 
   return (
     <Stack gap={32}>
@@ -54,50 +54,47 @@ export default function Capture({ busy, progress, error, onFiles, mode = "new", 
       </Stack>
 
       {!append && onName && (
-        <Field label="Name this sale" help="Optional. Shows on Home and on the sell list.">
+        <Field label="Name this sale">
           <Input value={name} maxLength={60} placeholder="Mom's house" onChange={(e) => onName(e.target.value)} />
         </Field>
       )}
+      {!append && onLocation && (
+        <Field label="City or ZIP">
+          <Input value={location} maxLength={40} placeholder="Ithaca, NY or 14850" autoComplete="postal-code" onChange={(e) => onLocation(e.target.value)} />
+        </Field>
+      )}
 
-      <div className="flex justify-center">
-        <Button size="lg" disabled={busy} onClick={() => cameraRef.current?.click()} data-analytics-event="esp_capture_open">
-          {busy ? "Preparing your photos…" : label}
-        </Button>
-      </div>
+      {/* One button for camera and library (founder, 2026-10-27: "really wordy and long for basically
+          one button"). No `capture` attribute, so a phone offers Take Photo or Photo Library. */}
+      {!append && onStartEmpty ? (
+        <ButtonGroup>
+          <Button size="lg" variant="secondary" disabled={busy} onClick={onStartEmpty}>
+            Start without photos
+          </Button>
+          <Button size="lg" disabled={busy} onClick={() => cameraRef.current?.click()} data-analytics-event="esp_capture_open">
+            {busy ? "Preparing your photos…" : "Add photos"}
+          </Button>
+        </ButtonGroup>
+      ) : (
+        <div className="flex justify-center">
+          <Button size="lg" disabled={busy} onClick={() => cameraRef.current?.click()} data-analytics-event="esp_capture_open">
+            {busy ? "Preparing your photos…" : "Add photos"}
+          </Button>
+        </div>
+      )}
       <input
         ref={cameraRef}
         type="file"
         accept="image/*"
-        capture="environment"
         multiple
         className="sr-only"
-        aria-label={label}
+        aria-label="Add photos"
         onChange={(e) => {
           const files = Array.from(e.target.files ?? []);
           e.target.value = "";
           if (files.length) onFiles(files);
         }}
       />
-
-      <Dropzone
-        accept="image/*"
-        multiple
-        disabled={busy}
-        label="Or pick photos from your library"
-        hint={`Up to ${PHOTO_BUDGET.maxPhotos} photos a pass. Nothing leaves your phone until you say so.`}
-        onFilesSelected={(files) => files.length && onFiles(files)}
-      />
-
-      {!append && onStartEmpty && (
-        // A sale doesn't have to start with photos (founder, 2026-10-27: "Allow me to add a new
-        // sale w/o adding photos - right now I'm stuck on the uploading page").
-        <Stack gap={8} align="center">
-          <Button variant="secondary" disabled={busy} onClick={onStartEmpty}>
-            Start without photos
-          </Button>
-          <p className="text-caption text-muted-foreground">Add items by hand, and photos whenever you&apos;re ready.</p>
-        </Stack>
-      )}
 
       {progress && (
         <p className="text-small text-muted-foreground" aria-live="polite">

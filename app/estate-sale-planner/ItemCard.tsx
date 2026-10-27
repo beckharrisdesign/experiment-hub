@@ -21,20 +21,20 @@ interface ItemCardProps {
  * full-width sell / donate / keep toggle, the same control as the item screen. The whole card
  * above the toggle opens the item (founder, 2026-10-27: "make the whole card linkable to that
  * page"), so there is no Details button; the toggle stays its own control so a tap on it never
- * navigates.
+ * navigates. The photo fills its frame (founder, 2026-10-27: "Fill these cards with their images").
  */
 export default function ItemCard({ item, onDestination, onOpen }: ItemCardProps) {
   return (
-    <Card className={`shadow-lg ring-foreground/15 transition-shadow hover:ring-foreground/30 ${item.image ? "pt-0" : ""}`}>
+    <Card className={`h-full shadow-lg ring-foreground/15 transition-shadow hover:ring-foreground/30 ${item.image ? "pt-0" : ""}`}>
       <button
         type="button"
         onClick={() => onOpen(item.id)}
         aria-label={`Open ${item.name}`}
-        className="flex flex-col gap-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+        className="flex flex-1 flex-col gap-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
       >
       {item.image && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={item.image} alt="" className="aspect-[4/3] w-full bg-muted object-contain" />
+        <img src={item.image} alt="" className="aspect-[4/3] w-full bg-muted object-cover" />
       )}
       <CardHeader className="w-full">
         <CardTitle>{item.name}</CardTitle>
@@ -55,7 +55,9 @@ export default function ItemCard({ item, onDestination, onOpen }: ItemCardProps)
         ) : null}
       </CardHeader>
       </button>
-      <CardContent>
+      {/* mt-auto: in a row of cards the toggles line up along the bottom, however long each
+          reason runs (founder, 2026-10-27). */}
+      <CardContent className="mt-auto">
         <DestinationToggle variant="segmented" value={item.destination} onChange={(to) => onDestination(item.id, to)} />
       </CardContent>
     </Card>

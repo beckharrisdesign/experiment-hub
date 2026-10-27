@@ -25,7 +25,7 @@ interface ItemDetailProps {
 /**
  * The item screen (sold-comps design, Figma round 17). Top to bottom: name and price on one
  * row, both Heading 2, price top-right (D15, D17); the photo, with the photo check directly
- * under it (D19); "Adjust this item" by message (D14); Correct it. No model reason paragraph
+ * under it (D19); then one tab each for "Describe your edits" (by message, D14) and "Make edits". No model reason paragraph
  * (founder, 2026-10-27: "weird advice that will be absolute clutter really fast"). The destination toggle lives in the sticky header (D16, D21). One image per item —
  * detail shots left the screen (founder: "sticking to single image per item for now").
  *
@@ -84,29 +84,30 @@ export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove,
 
         <GridItem span={{ base: 1, lg: 7 }}>
           <Stack gap={40}>
-            <AdjustByMessage item={item} busy={refining} onMessage={onMessage} onUndo={onUndoMessage} />
-
-            <Stack gap={24}>
-              <p className="text-caption uppercase text-muted-foreground">Correct it</p>
-              <Field label="What is it?" help="If the model called it wrong, rename it here.">
-                <Input value={item.name} maxLength={80} onChange={(e) => onUpdate(item.id, { name: e.target.value })} />
-              </Field>
-              <Field label="Value band" help="A rough resale band, not an appraisal. Change it if you know better.">
-                <Select value={item.band} onValueChange={(v) => onUpdate(item.id, { band: v as SessionItem["band"] })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {bandOptions.map((b) => (
-                      <SelectItem key={b} value={b} disabled={!(BANDS as readonly string[]).includes(b)}>
-                        {b}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            </Stack>
-
+            <EditTabs
+              describe={<AdjustByMessage item={item} busy={refining} onMessage={onMessage} onUndo={onUndoMessage} />}
+              make={
+                <Stack gap={24}>
+                  <Field label="What is it?" help="If the model called it wrong, rename it here.">
+                    <Input value={item.name} maxLength={80} onChange={(e) => onUpdate(item.id, { name: e.target.value })} />
+                  </Field>
+                  <Field label="Value band">
+                    <Select value={item.band} onValueChange={(v) => onUpdate(item.id, { band: v as SessionItem["band"] })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {bandOptions.map((b) => (
+                          <SelectItem key={b} value={b} disabled={!(BANDS as readonly string[]).includes(b)}>
+                            {b}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                </Stack>
+              }
+            />
           </Stack>
         </GridItem>
       </Grid>
@@ -183,7 +184,70 @@ function PhotoStatus({ item, photoHref, onConfirm, onRetry }: { item: SessionIte
   );
 }
 
-/** "Adjust this item" (D14): the family's words change this item only, with undo. */
+const EDIT_TABS = [
+  { key: "describe", label: "Describe your edits" },
+  { key: "make", label: "Make edits" },
+] as const;
+
+/**
+ * The two ways to change an item, one tab each (founder, 2026-10-27: "two sides of the same
+ * coin"). An underline tab bar, so it never reads as the Sell / Donate / Keep segmented control.
+ * Arrow keys switch tabs; only the selected tab is in the tab order.
+ */
+function EditTabs({ describe, make }: { describe: React.ReactNode; make: React.ReactNode }) {
+  const [tab, setTab] = useState<(typeof EDIT_TABS)[number]["key"]>("describe");
+  const refs = useRef<Array<HTMLButtonElement | null>>([]);
+  const select = (i: number) => {
+    const next = (i + EDIT_TABS.length) % EDIT_TABS.length;
+    setTab(EDIT_TABS[next].key);
+    refs.current[next]?.focus();
+  };
+  return (
+    <Stack gap={24}>
+      <div role="tablist" aria-label="Edit this item" className="flex gap-6 border-b border-border">
+        {EDIT_TABS.map((t, i) => {
+          const selected = tab === t.key;
+          return (
+            <button
+              key={t.key}
+              ref={(el) => {
+                refs.current[i] = el;
+              }}
+              type="button"
+              role="tab"
+              id={`edit-tab-${t.key}`}
+              aria-selected={selected}
+              aria-controls={`edit-panel-${t.key}`}
+              tabIndex={selected ? 0 : -1}
+              onClick={() => setTab(t.key)}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowRight") {
+                  e.preventDefault();
+                  select(i + 1);
+                } else if (e.key === "ArrowLeft") {
+                  e.preventDefault();
+                  select(i - 1);
+                }
+              }}
+              className={`-mb-px border-b-2 pb-2 text-body font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                selected ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+      {EDIT_TABS.map((t) => (
+        <div key={t.key} role="tabpanel" id={`edit-panel-${t.key}`} aria-labelledby={`edit-tab-${t.key}`} hidden={tab !== t.key}>
+          {t.key === "describe" ? describe : make}
+        </div>
+      ))}
+    </Stack>
+  );
+}
+
+/** "Describe your edits" (D14): the family's words change this item only, with undo. */
 function AdjustByMessage({ item, busy, onMessage, onUndo }: { item: SessionItem; busy: boolean; onMessage: ItemDetailProps["onMessage"]; onUndo: ItemDetailProps["onUndoMessage"] }) {
   const [text, setText] = useState("");
   const [failed, setFailed] = useState(false);
@@ -195,10 +259,7 @@ function AdjustByMessage({ item, busy, onMessage, onUndo }: { item: SessionItem;
   };
   return (
     <Stack gap={24}>
-      <Stack gap={8}>
-        <p className="text-caption uppercase text-muted-foreground">Adjust this item</p>
-        <p className="text-small text-muted-foreground">Tell it what you know, in your own words. Only this item changes, and you can undo it.</p>
-      </Stack>
+      <p className="text-small text-muted-foreground">Tell it what you know, in your own words. Only this item changes, and you can undo it.</p>
       {(item.messages ?? []).map((m, i) => (
         <Fragment key={`${m.at}-${i}`}>
           <div className="rounded-lg border border-border bg-card p-4">

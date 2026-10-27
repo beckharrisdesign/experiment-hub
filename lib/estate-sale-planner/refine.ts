@@ -46,7 +46,7 @@ export function refineUserText(input: RefineInput): string {
   const { item } = input;
   const n = input.details.length;
   const photos = input.reframed || input.message ? (n === 0 ? "No photo follows." : `${n} ${n === 1 ? "photo" : "photos"} of the object follows.`) : `${n} detail ${n === 1 ? "photo" : "photos"} follow.`;
-  const lines = [`Object: ${item.name} (${item.room}). Walkthrough read: ${item.band}, ${item.confidence} confidence — "${item.reason}".`];
+  const lines = [`Object: ${item.name}${item.room ? ` (${item.room})` : ""}. Walkthrough read: ${item.band}, ${item.confidence} confidence — "${item.reason}".`];
   if (input.reframed) lines.push("The family re-framed this object; the photo is the object itself.");
   lines.push(photos);
   if (input.context?.trim()) lines.push(`What the family knows: ${input.context.trim()}`);
@@ -60,6 +60,8 @@ export function refineUserText(input: RefineInput): string {
 
 export function parseRefineResponse(raw: unknown): RefineResponse | null {
   const result = RefineResponseSchema.safeParse(clipFields(raw, { name: 80, reason: 160, markReading: 160 }));
+  // Which fields failed, never their content: enough to fix the schema from the logs.
+  if (!result.success) console.error("[esp refine] unreadable:", result.error.issues.map((i) => `${i.path.join(".")}: ${i.code}`).join("; "));
   return result.success ? result.data : null;
 }
 
