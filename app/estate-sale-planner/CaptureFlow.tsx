@@ -29,6 +29,7 @@ export default function CaptureFlow({ sale }: CaptureFlowProps) {
   const [progress, setProgress] = useState<CaptureProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
+  const [location, setLocation] = useState("");
   const append = Boolean(sale);
 
   const onFiles = useCallback(async (files: File[]) => {
@@ -51,11 +52,11 @@ export default function CaptureFlow({ sale }: CaptureFlowProps) {
   // being read (founder, 2026-10-27: "Drop directly to the processing list and let us either
   // watch them get processed or move around to manage other things").
   const onSend = useCallback(() => {
-    const id = store.startPass(photos, { append, name });
+    const id = store.startPass(photos, { append, name, location });
     store.setNotice(null);
     setPhotos([]);
     router.replace(paths.sort(id));
-  }, [store, photos, append, name, router]);
+  }, [store, photos, append, name, location, router]);
 
   const cancelHref = sale ? paths.sale(sale.id) : paths.home();
 
@@ -86,7 +87,9 @@ export default function CaptureFlow({ sale }: CaptureFlowProps) {
           saleName={sale?.name}
           name={name}
           onName={append ? undefined : setName}
-          onStartEmpty={append ? undefined : () => router.replace(paths.sale(store.createSale(name)))}
+          location={location}
+          onLocation={append ? undefined : setLocation}
+          onStartEmpty={append ? undefined : () => router.replace(paths.sale(store.createSale(name, location)))}
         />
         <Inline gap={8} justify="center">
           <Button variant="ghost" disabled={busy} onClick={() => router.push(cancelHref)}>

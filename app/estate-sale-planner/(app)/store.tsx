@@ -14,6 +14,7 @@ import {
   newSession,
   removeItem,
   renameSession,
+  setLocation,
   setDestination,
   undo,
   updateItem,
@@ -61,7 +62,7 @@ export interface SaleStore {
    * the sale in context, else a new (empty) sale is made first. The items land when the pass comes
    * back, whichever screen — or sale — the family is on by then.
    */
-  startPass: (frames: CapturedFrame[], opts: { append: boolean; name?: string }) => string;
+  startPass: (frames: CapturedFrame[], opts: { append: boolean; name?: string; location?: string }) => string;
   retryPass: (passId: string) => void;
   dismissPass: (passId: string) => void;
   /** Returns the session after the move so a page can react (the sort page finishes on the last one). */
@@ -72,7 +73,8 @@ export interface SaleStore {
   onRemove: (itemId: string) => void;
   onAdd: (input: NewItemInput) => void;
   onUndo: () => void;
-  onRename: (name: string) => void;
+  /** The sale's details: its title and city or ZIP. */
+  onDetails: (details: { name: string; location: string }) => void;
   deleteSale: (id: string) => void;
   /** Looks right. */
   onConfirm: (itemId: string) => void;
@@ -91,7 +93,7 @@ export interface SaleStore {
   onMessage: (itemId: string, text: string) => Promise<boolean>;
   onUndoMessage: (itemId: string, index: number) => void;
   /** A new, empty sale (no photos yet). Returns its id. */
-  createSale: (name?: string) => string;
+  createSale: (name?: string, location?: string) => string;
   /** A photo for an item that has none (one the family typed in): kept like a walkthrough photo, then read. */
   onAddPhoto: (itemId: string, file: File) => Promise<boolean>;
 }
@@ -225,8 +227,8 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   );
 
   const createSale = useCallback(
-    (name?: string) => {
-      const next = newSession([], new Date(), [], name);
+    (name?: string, location?: string) => {
+      const next = setLocation(newSession([], new Date(), [], name), location ?? "");
       update(next);
       track("esp_new_walkthrough", { empty: true });
       if (name?.trim()) track("esp_walkthrough_named");
@@ -236,9 +238,9 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   );
 
   const startPass = useCallback(
-    (frames: CapturedFrame[], opts: { append: boolean; name?: string }) => {
+    (frames: CapturedFrame[], opts: { append: boolean; name?: string; location?: string }) => {
       const appending = Boolean(opts.append && latest.current);
-      const saleId = appending ? latest.current!.id : createSale(opts.name);
+      const saleId = appending ? latest.current!.id : createSale(opts.name, opts.location);
       track("esp_frames_confirmed", { frames: frames.length, appending });
       const passId = `pass_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
       passFrames.current.set(passId, frames);
@@ -360,11 +362,14 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     if (latest.current) update(undo(latest.current));
   }, [update]);
 
-  const onRename = useCallback((name: string) => {
-    if (!latest.current) return;
-    update(renameSession(latest.current, name));
-    if (name.trim()) track("esp_walkthrough_named");
-  }, [update]);
+  const onDetails = useCallback(
+    ({ name, location }: { name: string; location: string }) => {
+      if (!latest.current) return;
+      update(setLocation(renameSession(latest.current, name), location));
+      if (name.trim()) track("esp_walkthrough_named");
+    },
+    [update],
+  );
 
   const deleteSale = useCallback((id: string) => {
     deleteSaved(id);
@@ -583,8 +588,8 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   }, [update]);
 
   const value = useMemo<SaleStore>(
-    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale, onConfirm, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale }),
-    [ready, session, history, fromFixture, notice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale, onConfirm, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale],
+    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onConfirm, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale }),
+    [ready, session, history, fromFixture, notice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onConfirm, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale],
   );
 
   return <SaleContext.Provider value={value}>{children}</SaleContext.Provider>;

@@ -27,7 +27,7 @@ export default function ItemsPage({ params }: { params: Promise<{ id: string }> 
           onAdd={store.onAdd}
           onStartSorting={() => router.push(paths.sort(id))}
           onAddRoom={() => router.push(paths.capture(id))}
-          onRename={store.onRename}
+          onDetails={store.onDetails}
         />
         </Stack>
       )}

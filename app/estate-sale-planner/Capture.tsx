@@ -16,6 +16,9 @@ interface CaptureProps {
   /** Draft name for a new sale (optional, "Mom's house"). */
   name?: string;
   onName?: (name: string) => void;
+  /** City or ZIP for a new sale (optional). */
+  location?: string;
+  onLocation?: (location: string) => void;
   /** New sale only: start it empty and add items by hand or photos later. */
   onStartEmpty?: () => void;
 }
@@ -28,7 +31,7 @@ interface CaptureProps {
  * 2026-10-15: "stick to images - a live camera instead of video since that adds
  * complexity out of the gate."
  */
-export default function Capture({ busy, progress, error, onFiles, mode = "new", saleName, name = "", onName, onStartEmpty }: CaptureProps) {
+export default function Capture({ busy, progress, error, onFiles, mode = "new", saleName, name = "", onName, location = "", onLocation, onStartEmpty }: CaptureProps) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const append = mode === "append";
   const label = append ? "Add more photos" : "Take photos";
@@ -54,8 +57,13 @@ export default function Capture({ busy, progress, error, onFiles, mode = "new", 
       </Stack>
 
       {!append && onName && (
-        <Field label="Name this sale" help="Optional. Shows on Home and on the sell list.">
+        <Field label="Name this sale">
           <Input value={name} maxLength={60} placeholder="Mom's house" onChange={(e) => onName(e.target.value)} />
+        </Field>
+      )}
+      {!append && onLocation && (
+        <Field label="City or ZIP">
+          <Input value={location} maxLength={40} placeholder="Ithaca, NY or 14850" autoComplete="postal-code" onChange={(e) => onLocation(e.target.value)} />
         </Field>
       )}
 

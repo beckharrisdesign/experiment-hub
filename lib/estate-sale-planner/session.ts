@@ -71,6 +71,8 @@ export interface Session {
   createdAt: string;
   /** "Mom's house" — optional; history and the summary show it when set. */
   name?: string;
+  /** City or ZIP, as the family typed it — optional. Local sold prices will key off it. */
+  location?: string;
   items: SessionItem[];
   /** Every destination change, oldest first — the undo stack. */
   history: Move[];
@@ -124,6 +126,14 @@ export function renameSession(s: Session, name: string): Session {
   if ((s.name ?? "") === trimmed) return s;
   const { name: _old, ...rest } = s;
   return trimmed ? { ...rest, name: trimmed } : rest;
+}
+
+/** Set or clear the sale's city or ZIP (trimmed, at most 40 characters). */
+export function setLocation(s: Session, location: string): Session {
+  const trimmed = location.trim().slice(0, 40);
+  if ((s.location ?? "") === trimmed) return s;
+  const { location: _old, ...rest } = s;
+  return trimmed ? { ...rest, location: trimmed } : rest;
 }
 
 export interface KnownItem {
