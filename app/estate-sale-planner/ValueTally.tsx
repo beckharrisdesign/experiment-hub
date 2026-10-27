@@ -5,9 +5,9 @@ import type { Session } from "../../lib/estate-sale-planner/session";
 import { formatTally, tallies } from "../../lib/estate-sale-planner/tally";
 
 const PILES = [
-  { key: "sell", label: "Possible sales" },
-  { key: "donate", label: "Donation value" },
-  { key: "keep", label: "Value kept" },
+  { key: "sell", label: "Possible sale" },
+  { key: "donate", label: "Possible donation" },
+  { key: "keep", label: "Possible keep" },
 ] as const;
 
 /**
