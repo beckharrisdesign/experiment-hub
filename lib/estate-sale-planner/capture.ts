@@ -111,7 +111,7 @@ export async function itemPhotoFromFile(file: File): Promise<{ original: Blob; t
 export interface DetailShot {
   /** Base64 JPEG without the data: prefix — what the refine route takes. */
   data: string;
-  /** Square 320 px data URL for the card and the sheet. */
+  /** Thumbnail data URL (the crop's own shape, up to THUMB.size) for the card and the sheet. */
   thumb: string;
 }
 

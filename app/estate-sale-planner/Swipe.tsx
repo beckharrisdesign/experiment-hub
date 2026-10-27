@@ -72,7 +72,7 @@ export default function Swipe({ session, onDestination, onOpen, onUndo }: SwipeP
       >
         {item.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.image} alt={item.name} className="aspect-square w-full object-cover" draggable={false} />
+          <img src={item.image} alt={item.name} className="aspect-square w-full bg-muted object-contain" draggable={false} />
         ) : (
           <div className="aspect-[4/3] w-full bg-muted" aria-hidden />
         )}

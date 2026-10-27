@@ -10,8 +10,8 @@
 import type { Box } from "./flag";
 
 export const THUMB = {
-  /** Output edge in px; cards render it at 2× density on phones. */
-  size: 320,
+  /** Longest output edge in px. The thumbnail keeps the box's shape (a tall statue stays tall). */
+  size: 480,
   jpegQuality: 0.7,
   /** Padding added around the model's box, as a fraction of the box. */
   pad: 0.15,
@@ -60,18 +60,26 @@ function loadDataUrl(dataUrl: string): Promise<HTMLImageElement> {
   });
 }
 
-/** Crop a kept frame (data URL) to the item's box; square, cover-fit. */
+/** Output size for a crop: its own shape, longest edge at `max`, never upscaled. */
+export function thumbSize(w: number, h: number, max: number = THUMB.size): { w: number; h: number } {
+  const k = Math.min(1, max / Math.max(w, h));
+  return { w: Math.max(1, Math.round(w * k)), h: Math.max(1, Math.round(h * k)) };
+}
+
+/**
+ * Crop a kept frame (any image URL) to the item's padded box, keeping the box's shape. It used
+ * to be cut to a square, which lost the top and bottom of tall objects (phone test 2026-10-27);
+ * screens now show it whole, fitted inside their frame.
+ */
 export async function itemThumbnail(frameDataUrl: string, box: Box | null | undefined): Promise<string> {
   const img = await loadDataUrl(frameDataUrl);
   const r = cropRect(box, img.naturalWidth, img.naturalHeight);
-  const side = Math.min(r.w, r.h);
-  const sx = r.x + (r.w - side) / 2;
-  const sy = r.y + (r.h - side) / 2;
+  const out = thumbSize(r.w, r.h);
   const canvas = document.createElement("canvas");
-  canvas.width = THUMB.size;
-  canvas.height = THUMB.size;
+  canvas.width = out.w;
+  canvas.height = out.h;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas is not available in this browser.");
-  ctx.drawImage(img, sx, sy, side, side, 0, 0, THUMB.size, THUMB.size);
+  ctx.drawImage(img, r.x, r.y, r.w, r.h, 0, 0, out.w, out.h);
   return canvas.toDataURL("image/jpeg", THUMB.jpegQuality);
 }

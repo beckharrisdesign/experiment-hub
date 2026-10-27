@@ -26,7 +26,7 @@ export default function ItemCard({ item, onDestination, onOpen }: ItemCardProps)
     <Card className="shadow-lg ring-foreground/15">
       {item.image && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={item.image} alt={item.name} className="aspect-[4/3] w-full object-cover" />
+        <img src={item.image} alt={item.name} className="aspect-[4/3] w-full bg-muted object-contain" />
       )}
       <CardHeader>
         <CardTitle>{item.name}</CardTitle>

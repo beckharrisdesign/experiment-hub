@@ -73,7 +73,7 @@ export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove,
           <Stack gap={16}>
             {item.image ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={item.image} alt={item.name} className="aspect-[4/3] w-full rounded-lg object-cover ring-1 ring-foreground/15" />
+              <img src={item.image} alt={item.name} className="aspect-[4/3] w-full rounded-lg bg-muted object-contain ring-1 ring-foreground/15" />
             ) : (
               <NoPhoto onFile={(file) => onAddPhoto(item.id, file)} />
             )}

@@ -74,7 +74,7 @@ export default async function SheetPage({ params, searchParams }: SheetPageProps
           <Card key={i} className="shadow-lg ring-foreground/15">
             {item.image ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={item.image} alt="" className="aspect-[4/3] w-full object-cover" />
+              <img src={item.image} alt="" className="aspect-[4/3] w-full bg-muted object-contain" />
             ) : null}
             <CardHeader>
               <CardTitle>{item.name}</CardTitle>

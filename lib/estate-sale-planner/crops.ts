@@ -1,6 +1,6 @@
 /**
  * Pictures cut from the kept originals (sold-comps design D3) — the browser
- * half of a correction. A corrected box gets a fresh 320 px card thumbnail and
+ * half of a correction. A corrected box gets a fresh card thumbnail (its own shape) and
  * a larger crop for the re-read; a message sends the item's current picture.
  */
 import type { Box } from "./flag";
@@ -11,7 +11,7 @@ import { cropRect, itemThumbnail } from "./thumbs";
 export interface Crop {
   /** Base64 JPEG, no data: prefix — what the re-read route takes. */
   data: string;
-  /** Square 320 px data URL for the card. */
+  /** Card thumbnail data URL, in the crop's own shape. */
   thumb: string;
 }
 
