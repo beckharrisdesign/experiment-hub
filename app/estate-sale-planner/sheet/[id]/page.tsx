@@ -61,11 +61,6 @@ export default async function SheetPage({ params, searchParams }: SheetPageProps
   return (
     <>
     <Stack gap={32}>
-      <Callout>
-        These value bands are a model&apos;s guess from a phone walkthrough, with a stated
-        confidence. They are not an appraisal and not advice for insurance, tax, or probate.
-      </Callout>
-
       <Stack gap={8}>
         <p className="text-caption uppercase text-muted-foreground">Sell sheet</p>
         <h1 className="text-h1 text-foreground">Might be worth selling</h1>
@@ -79,7 +74,7 @@ export default async function SheetPage({ params, searchParams }: SheetPageProps
           <Card key={i} className="shadow-lg ring-foreground/15">
             {item.image ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={item.image} alt="" className="aspect-[4/3] w-full object-cover" />
+              <img src={item.image} alt="" className="aspect-[4/3] w-full bg-muted object-contain" />
             ) : null}
             <CardHeader>
               <CardTitle>{item.name}</CardTitle>
@@ -108,6 +103,9 @@ export default async function SheetPage({ params, searchParams }: SheetPageProps
       </Grid>
 
       <SheetActions />
+      <p className="max-w-prose text-caption text-muted-foreground">
+        These value bands are a model&apos;s guess from a phone walkthrough, with a stated confidence. They are not an appraisal and not advice for insurance, tax, or probate.
+      </p>
     </Stack>
     </>
   );

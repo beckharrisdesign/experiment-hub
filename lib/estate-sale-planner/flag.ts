@@ -121,9 +121,34 @@ export function capConfidence<T extends { band: Band; confidence: Confidence }>(
   return { ...item, confidence: ceiling };
 }
 
-/** Validate a raw response. Returns null when the shape is wrong. */
+/**
+ * Cut text to `max` characters at a word, with an ellipsis. OpenAI's strict mode can't carry
+ * length limits to the model (vision/schema.ts drops them), so a long name or reason is
+ * trimmed here rather than failing the whole read (phone test 2026-10-27: every message and
+ * re-read after a split came back "unreadable").
+ */
+export function clipText(text: string, max: number): string {
+  const t = text.trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max - 1);
+  const atWord = cut.lastIndexOf(" ");
+  return `${(atWord > max * 0.5 ? cut.slice(0, atWord) : cut).replace(/[\s,;:.\u2014-]+$/, "")}…`;
+}
+
+/** Trim the free-text fields of an item-shaped object to their schema limits; anything else passes through. */
+export function clipFields<T>(raw: T, limits: Record<string, number>): T {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+  const out: Record<string, unknown> = { ...(raw as Record<string, unknown>) };
+  for (const [key, max] of Object.entries(limits)) if (typeof out[key] === "string") out[key] = clipText(out[key] as string, max);
+  return out as T;
+}
+
+const ITEM_LIMITS = { name: 80, room: 40, reason: 160 };
+
+/** Validate a raw response. Returns null when the shape is wrong; over-long text is trimmed, not rejected. */
 export function parseFlagResponse(raw: unknown): FlagResponse | null {
-  const result = FlagResponseSchema.safeParse(raw);
+  const items = raw && typeof raw === "object" && Array.isArray((raw as { items?: unknown }).items) ? (raw as { items: unknown[] }).items : null;
+  const result = FlagResponseSchema.safeParse(items ? { ...(raw as object), items: items.map((i) => clipFields(i, ITEM_LIMITS)) } : raw);
   return result.success ? result.data : null;
 }
 

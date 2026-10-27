@@ -18,7 +18,7 @@ interface ListsProps {
   onRename: (name: string) => void;
 }
 
-/** The sale's name, editable in place: tap Rename, type, Save. */
+/** The sale's name is the page title (same treatment as every page), editable in place: Rename, type, Save. */
 function SaleName({ name, onRename }: { name?: string; onRename: (name: string) => void }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(name ?? "");
@@ -36,12 +36,12 @@ function SaleName({ name, onRename }: { name?: string; onRename: (name: string) 
     );
   }
   return (
-    <Inline gap={8} align="center">
-      <span className="text-caption uppercase text-muted-foreground">{name?.trim() || "Untitled sale"}</span>
-      <Button size="sm" variant="ghost" onClick={() => { setDraft(name ?? ""); setEditing(true); }}>
+    <div className="flex items-start justify-between gap-4">
+      <h1 className="min-w-0 break-words text-h1 text-foreground">{name?.trim() || "Untitled sale"}</h1>
+      <Button size="sm" variant="secondary" className="mt-2 shrink-0" onClick={() => { setDraft(name ?? ""); setEditing(true); }}>
         Rename
       </Button>
-    </Inline>
+    </div>
   );
 }
 
@@ -70,17 +70,19 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
   const rest = undecided(session);
 
   return (
-    <Stack gap={40}>
+    <Stack gap={48}>
       {fromFixture && (
         <Callout>Demo mode: no vision key is configured, so this is a sample house, not yours. Each time you add photos, the next part of the sample house comes in.</Callout>
       )}
 
-      <Stack gap={16}>
-        <Stack gap={8}>
-          <SaleName name={session.name} onRename={onRename} />
-          <p className="text-small text-muted-foreground">
-            {session.items.length} {session.items.length === 1 ? "item" : "items"} · {new Date(session.createdAt).toLocaleDateString()}
-          </p>
+      <Stack gap={32}>
+        <Stack gap={16}>
+          <Stack gap={8}>
+            <SaleName name={session.name} onRename={onRename} />
+            <p className="text-small text-muted-foreground">
+              {session.items.length} {session.items.length === 1 ? "item" : "items"} · {new Date(session.createdAt).toLocaleDateString()}
+            </p>
+          </Stack>
           <div>
             <Button variant="outline" onClick={onAddRoom}>
               Add more photos
@@ -88,10 +90,10 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
           </div>
         </Stack>
         <ValueTally session={session} />
-        <Stack gap={4}>
-          <p className="text-caption uppercase text-muted-foreground">Sell</p>
-          <h1 className="text-h2 text-foreground">Might be worth something</h1>
-        </Stack>
+      </Stack>
+
+      <Stack gap={24}>
+        <h2 className="text-h2 text-foreground">Possible sale</h2>
         {sell.length === 0 ? (
           <p className="text-body-lg text-muted-foreground">
             Nothing is marked to sell. Toggle any item below, or add one the model missed.
@@ -106,8 +108,8 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
       </Stack>
 
       {rest.length > 0 && (
-        <Stack gap={16}>
-          <Stack gap={4}>
+        <Stack gap={24}>
+          <Stack gap={8}>
             <p className="text-caption uppercase text-muted-foreground">Still to sort</p>
             <h2 className="text-h2 text-foreground">{rest.length} {rest.length === 1 ? "item" : "items"} left</h2>
           </Stack>
@@ -121,21 +123,15 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
       )}
 
       {donate.length > 0 && (
-        <Stack gap={16}>
-          <Stack gap={4}>
-            <p className="text-caption uppercase text-muted-foreground">Donate</p>
-            <h2 className="text-h2 text-foreground">Going to a good home</h2>
-          </Stack>
+        <Stack gap={24}>
+          <h2 className="text-h2 text-foreground">Possible donation</h2>
           <RowList items={donate} onDestination={onDestination} onOpen={onOpen} />
         </Stack>
       )}
 
       {keep.length > 0 && (
-        <Stack gap={16}>
-          <Stack gap={4}>
-            <p className="text-caption uppercase text-muted-foreground">Keep</p>
-            <h2 className="text-h2 text-foreground">Staying with the family</h2>
-          </Stack>
+        <Stack gap={24}>
+          <h2 className="text-h2 text-foreground">Possible keep</h2>
           <RowList items={keep} onDestination={onDestination} onOpen={onOpen} />
         </Stack>
       )}

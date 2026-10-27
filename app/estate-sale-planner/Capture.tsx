@@ -16,6 +16,8 @@ interface CaptureProps {
   /** Draft name for a new sale (optional, "Mom's house"). */
   name?: string;
   onName?: (name: string) => void;
+  /** New sale only: start it empty and add items by hand or photos later. */
+  onStartEmpty?: () => void;
 }
 
 /**
@@ -26,13 +28,13 @@ interface CaptureProps {
  * 2026-10-15: "stick to images - a live camera instead of video since that adds
  * complexity out of the gate."
  */
-export default function Capture({ busy, progress, error, onFiles, mode = "new", saleName, name = "", onName }: CaptureProps) {
+export default function Capture({ busy, progress, error, onFiles, mode = "new", saleName, name = "", onName, onStartEmpty }: CaptureProps) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const append = mode === "append";
   const label = append ? "Add more photos" : "Take photos";
 
   return (
-    <Stack gap={24}>
+    <Stack gap={32}>
       <Stack gap={8}>
         {append ? (
           <>
@@ -85,6 +87,17 @@ export default function Capture({ busy, progress, error, onFiles, mode = "new", 
         hint={`Up to ${PHOTO_BUDGET.maxPhotos} photos a pass. Nothing leaves your phone until you say so.`}
         onFilesSelected={(files) => files.length && onFiles(files)}
       />
+
+      {!append && onStartEmpty && (
+        // A sale doesn't have to start with photos (founder, 2026-10-27: "Allow me to add a new
+        // sale w/o adding photos - right now I'm stuck on the uploading page").
+        <Stack gap={8} align="center">
+          <Button variant="secondary" disabled={busy} onClick={onStartEmpty}>
+            Start without photos
+          </Button>
+          <p className="text-caption text-muted-foreground">Add items by hand, and photos whenever you&apos;re ready.</p>
+        </Stack>
+      )}
 
       {progress && (
         <p className="text-small text-muted-foreground" aria-live="polite">

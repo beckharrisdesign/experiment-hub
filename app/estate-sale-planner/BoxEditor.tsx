@@ -125,7 +125,18 @@ export default function BoxEditor({ src, alt, boxes, onTap, onEdit, onDraw }: Bo
             )}
           >
             {b.label && (
-              <span className={cn("absolute left-1 top-1 rounded px-1 text-caption", b.state === "faint" ? "bg-background/80 text-muted-foreground" : "bg-primary text-primary-foreground")}>
+              // Outside the box, so a tight crop never hides the object (founder, 2026-10-27:
+              // "I want the labels outside of the bounding box so that I can get closer crops").
+              // Above the top edge, or below the bottom when the box touches the top of the photo;
+              // one line, truncated — the full name is the title and the aria-label.
+              <span
+                title={b.label}
+                className={cn(
+                  "pointer-events-none absolute left-0 truncate whitespace-nowrap rounded px-1 text-caption",
+                  b.box.y < 0.07 ? "top-full mt-1" : "bottom-full mb-1",
+                  b.state === "faint" ? "max-w-[max(100%,6rem)] bg-background/80 text-muted-foreground" : "max-w-[max(100%,14rem)] bg-primary text-primary-foreground",
+                )}
+              >
                 {b.label}
               </span>
             )}

@@ -25,8 +25,8 @@ export default function HomePage() {
 
   if (store.history.length === 0) {
     return (
-      <Stack gap={24}>
-        <Stack gap={8}>
+      <Stack gap={40}>
+        <Stack gap={16}>
           <h1 className="text-h1 text-foreground md:text-display">Your sales</h1>
           <p className="max-w-prose text-body-lg text-muted-foreground">
             Nothing here yet. Take a few photos of the house and you&apos;ll have a list of what might be worth something, sorted into sell, donate, and keep.
@@ -45,8 +45,8 @@ export default function HomePage() {
   }
 
   return (
-    <Stack gap={24}>
-      <Stack gap={8}>
+    <Stack gap={40}>
+      <Stack gap={16}>
         <h1 className="text-h1 text-foreground">Your sales</h1>
         <p className="text-small text-muted-foreground">
           {store.history.length} {store.history.length === 1 ? "sale" : "sales"} on this device. Open one to keep sorting, or start another.

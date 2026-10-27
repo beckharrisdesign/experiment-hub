@@ -40,7 +40,7 @@ function Shell({ children }: { children: React.ReactNode }) {
       </TopBar>
       <main className="flex-1">
         <Section bg="background" py={24} innerSize="xl">
-          <Stack gap={16}>
+          <Stack gap={24}>
             {store.notice && (
               <Callout>
                 <span>{store.notice}</span>{" "}

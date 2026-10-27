@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button, Stack } from "@beckharrisdesign/mvds";
 import { paths } from "../../lib/estate-sale-planner/routes";
-import { donateList, keepList, sellList, undecided, type Session } from "../../lib/estate-sale-planner/session";
+import { undecided, type Session } from "../../lib/estate-sale-planner/session";
 import ValueTally from "./ValueTally";
 
 interface ProgressProps {
@@ -18,18 +18,12 @@ interface ProgressProps {
  * the CTA elements"). The camera and Home are in the tab bar.
  */
 export default function Progress({ session }: ProgressProps) {
-  const donate = donateList(session).length;
-  const keep = keepList(session).length;
-  const sell = sellList(session).length;
   const left = undecided(session).length;
 
   return (
-    <Stack gap={24}>
-      <Stack gap={8}>
-        <h1 className="text-h1 text-foreground">{left > 0 ? `${left} still to sort` : "Sorted."}</h1>
-        <p className="max-w-prose text-body-lg text-muted-foreground">
-          {session.items.length} {session.items.length === 1 ? "item" : "items"}: {sell} that might be worth selling, {donate} to donate, {keep} to keep.
-        </p>
+    <Stack gap={40}>
+      <Stack gap={16}>
+        <h1 className="text-h1 text-foreground">{left > 0 ? `${left} still to sort` : "Sorted"}</h1>
         {left > 0 && (
           <div>
             <Button variant="outline" asChild>

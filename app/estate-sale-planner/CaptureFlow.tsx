@@ -76,6 +76,7 @@ export default function CaptureFlow({ sale }: CaptureFlowProps) {
       <Column>
         <PhotoGrid
           photos={photos}
+          saleName={sale ? sale.name || "Untitled sale" : name}
           sending={busy}
           onSend={onSend}
           onRemove={(id) => setPhotos((ps) => ps.filter((p) => p.id !== id))}
@@ -87,7 +88,7 @@ export default function CaptureFlow({ sale }: CaptureFlowProps) {
 
   return (
     <Column>
-      <Stack gap={24}>
+      <Stack gap={32}>
         <Capture
           busy={busy}
           progress={progress}
@@ -97,6 +98,7 @@ export default function CaptureFlow({ sale }: CaptureFlowProps) {
           saleName={sale?.name}
           name={name}
           onName={append ? undefined : setName}
+          onStartEmpty={append ? undefined : () => router.replace(paths.sale(store.createSale(name)))}
         />
         <Inline gap={8} justify="center">
           <Button variant="ghost" disabled={busy} onClick={() => router.push(cancelHref)}>

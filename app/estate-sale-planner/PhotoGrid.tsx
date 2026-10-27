@@ -4,6 +4,8 @@ import { Button, Grid, Stack } from "@beckharrisdesign/mvds";
 import type { CapturedFrame } from "../../lib/estate-sale-planner/capture";
 
 interface PhotoGridProps {
+  /** The sale these photos join (or the name typed for a new one). */
+  saleName?: string;
   photos: CapturedFrame[];
   sending: boolean;
   onSend: () => void;
@@ -15,12 +17,19 @@ interface PhotoGridProps {
  * Confirm before anything leaves the phone. Every photo you took is here;
  * drop a blurry one with its ×. Send is the first network request in the flow.
  */
-export default function PhotoGrid({ photos, sending, onSend, onRemove, onBack }: PhotoGridProps) {
+/** "Add to the 2027 Jumble Sale?" — never "…Sale sale?"; a new unnamed sale is "a new sale". */
+export function addToSaleTitle(saleName?: string): string {
+  const name = saleName?.trim();
+  if (!name) return "Add to a new sale?";
+  return /\bsale$/i.test(name) ? `Add to the ${name}?` : `Add to the ${name} sale?`;
+}
+
+export default function PhotoGrid({ photos, sending, onSend, onRemove, onBack, saleName }: PhotoGridProps) {
   return (
-    <Stack gap={24}>
+    <Stack gap={32}>
       <Stack gap={8}>
         <h1 className="text-h2 text-foreground">
-          Send {photos.length === 1 ? "this photo" : `these ${photos.length} photos`}?
+          {addToSaleTitle(saleName)}
         </h1>
         <p className="max-w-prose text-body-lg text-muted-foreground">
           These are the views the model will look at. Nothing has been sent yet. Tap × to leave one out.
@@ -47,7 +56,7 @@ export default function PhotoGrid({ photos, sending, onSend, onRemove, onBack }:
 
       <div className="flex justify-center">
         <Button size="lg" disabled={sending || photos.length === 0} onClick={onSend} data-analytics-event="esp_frames_confirmed">
-          {sending ? "Looking at your photos…" : "Send and flag what's worth something"}
+          {sending ? "Looking at your photos…" : `Add ${photos.length} ${photos.length === 1 ? "photo" : "photos"}`}
         </Button>
       </div>
       <div className="flex justify-center">

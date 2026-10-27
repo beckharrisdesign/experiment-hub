@@ -33,6 +33,8 @@ export interface SaleUsage {
 }
 
 export const photoKey = (saleId: string, pass: number, frame: number) => `${saleId}/${pass}/${frame}`;
+/** A photo added to one item by hand (an item the family typed in). */
+export const itemPhotoKey = (saleId: string, itemId: string) => `${saleId}/item/${itemId}`;
 
 /** Which sales' originals to drop, oldest first, so `incoming` bytes fit under `cap`. Pure. */
 export function planEviction(sales: SaleUsage[], incoming: number, cap: number, writing: string): string[] {
@@ -110,7 +112,7 @@ let askedToPersist = false;
 export async function putPhotos(
   saleId: string,
   pass: number,
-  photos: Array<{ frame: number; blob: Blob }>,
+  photos: Array<{ frame: number; blob: Blob; id?: string }>,
   opts: { now?: number; capBytes?: number } = {},
 ): Promise<string[]> {
   const db = await openDb();
@@ -122,7 +124,7 @@ export async function putPhotos(
   const now = opts.now ?? Date.now();
   const cap = opts.capBytes ?? PHOTO_STORE.capBytes;
   const rows: StoredPhoto[] = await Promise.all(
-    photos.map(async ({ frame, blob }) => ({ id: photoKey(saleId, pass, frame), saleId, type: blob.type || "image/jpeg", data: await blob.arrayBuffer(), bytes: blob.size, savedAt: now })),
+    photos.map(async ({ frame, blob, id }) => ({ id: id ?? photoKey(saleId, pass, frame), saleId, type: blob.type || "image/jpeg", data: await blob.arrayBuffer(), bytes: blob.size, savedAt: now })),
   );
   const incoming = rows.reduce((n, r) => n + r.bytes, 0);
   const evicted = planEviction((await photoUsage()).sales, incoming, cap, saleId);

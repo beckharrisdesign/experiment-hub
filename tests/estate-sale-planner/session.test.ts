@@ -136,6 +136,8 @@ describe("updateItem / removeItem / addItem", () => {
     expect(added.flagged).toBe(false);
     expect(added.confidence).toBe("low");
     expect(added.destination).toBe("sell");
+    // The family chose what it is, so it starts confirmed (phone test 2026-10-27).
+    expect(added.confirmed).toBe(true);
     expect(sellList(s).some((i) => i.id === added.id)).toBe(true);
     s = addItem(s, { name: "", room: "" });
     expect(s.items[s.items.length - 1].name).toBe("Untitled item");

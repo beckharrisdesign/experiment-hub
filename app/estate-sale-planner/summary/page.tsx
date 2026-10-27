@@ -11,8 +11,9 @@ import { paths } from "../../../lib/estate-sale-planner/routes";
  * The printable sell list. The paid Sell Sheet that sat beside it is out for
  * now (founder, 2026-10-27: "skip all the upsells for now. I just want to build
  * it for now and then SaaSify it later"); the checkout route, webhook and sheet
- * page stay in place, unlinked. The "not an appraisal" line comes first because
- * it is the honest frame for everything under it.
+ * page stay in place, unlinked. The "not an appraisal" line sits last, in its
+ * own block below everything else (founder, 2026-10-27: "this is footer filler -- move it to a
+ * content block below any other block").
  */
 export default function SummaryPage() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
@@ -26,7 +27,7 @@ export default function SummaryPage() {
   if (!session) {
     return (
       <>
-      <Stack gap={16}>
+      <Stack gap={24}>
         <h1 className="text-h2 text-foreground">No sale to print</h1>
         <p className="text-muted-foreground">Open a sale from Home first; the summary prints the one in context.</p>
         <Button asChild>
@@ -42,12 +43,7 @@ export default function SummaryPage() {
 
   return (
     <>
-    <Stack gap={24}>
-      <Callout>
-        These value bands are a model&apos;s guess from phone photos, with a stated
-        confidence. They are not an appraisal and not advice for insurance, tax, or probate.
-      </Callout>
-
+    <Stack gap={32}>
       <Stack gap={8}>
         <h1 className="text-h1 text-foreground">Might be worth selling</h1>
         <p className="text-caption uppercase text-muted-foreground">
@@ -107,6 +103,9 @@ export default function SummaryPage() {
           <Link href={paths.sale(session.id)}>Back to the sale</Link>
         </Button>
       </div>
+      <p className="max-w-prose text-caption text-muted-foreground">
+        These value bands are a model&apos;s guess from phone photos, with a stated confidence. They are not an appraisal and not advice for insurance, tax, or probate.
+      </p>
     </Stack>
     </>
   );

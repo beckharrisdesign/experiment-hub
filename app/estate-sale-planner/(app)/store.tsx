@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { CapturedFrame } from "../../../lib/estate-sale-planner/capture";
-import { detailFromPhoto } from "../../../lib/estate-sale-planner/capture";
+import { detailFromPhoto, itemPhotoFromFile } from "../../../lib/estate-sale-planner/capture";
 import type { Box, FlagResult, FrameInput } from "../../../lib/estate-sale-planner/flag";
 import type { RefineResult } from "../../../lib/estate-sale-planner/refine";
 import {
@@ -25,7 +25,7 @@ import {
 import { itemThumbnail } from "../../../lib/estate-sale-planner/thumbs";
 import { addFromPhoto, adjustBox, applyMessage, applyReread, confirmItem, failReread, markLot, mergeItems, splitItem, splitLot, undoMessage } from "../../../lib/estate-sale-planner/correction";
 import { cropFromPhoto } from "../../../lib/estate-sale-planner/crops";
-import { photoKey, putPhotos } from "../../../lib/estate-sale-planner/photos";
+import { itemPhotoKey, photoKey, putPhotos } from "../../../lib/estate-sale-planner/photos";
 import { deleteSaved, listHistory, loadSession, openSaved, saveSession, type HistoryEntry } from "../../../lib/estate-sale-planner/storage";
 import { track } from "../../../lib/estate-sale-planner/analytics";
 
@@ -78,6 +78,10 @@ export interface SaleStore {
   /** "Adjust this item". Resolves false when the message couldn't be applied (the screen keeps it). */
   onMessage: (itemId: string, text: string) => Promise<boolean>;
   onUndoMessage: (itemId: string, index: number) => void;
+  /** A new, empty sale (no photos yet). Returns its id. */
+  createSale: (name?: string) => string;
+  /** A photo for an item that has none (one the family typed in): kept like a walkthrough photo, then read. */
+  onAddPhoto: (itemId: string, file: File) => Promise<boolean>;
 }
 
 const SaleContext = createContext<SaleStore | null>(null);
@@ -445,13 +449,44 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     [update],
   );
 
+  const createSale = useCallback(
+    (name?: string) => {
+      const next = newSession([], new Date(), [], name);
+      update(next);
+      track("esp_new_walkthrough", { empty: true });
+      if (name?.trim()) track("esp_walkthrough_named");
+      return next.id;
+    },
+    [update],
+  );
+
+  const onAddPhoto = useCallback(
+    async (itemId: string, file: File) => {
+      const current = latest.current;
+      if (!current) return false;
+      try {
+        const { original, thumb } = await itemPhotoFromFile(file);
+        const photoId = itemPhotoKey(current.id, itemId);
+        await putPhotos(current.id, 0, [{ frame: 0, blob: original, id: photoId }]);
+        const base = latest.current ?? current;
+        const withPhoto: Session = { ...base, items: base.items.map((i) => (i.id === itemId ? { ...i, photoId, image: thumb } : i)) };
+        correct(adjustBox(withPhoto, itemId, { x: 0, y: 0, w: 1, h: 1 }, thumb), [itemId], "add_photo");
+        return true;
+      } catch (e: any) {
+        setNotice(e.message ?? "That photo couldn't be read.");
+        return false;
+      }
+    },
+    [correct],
+  );
+
   const onUndoMessage = useCallback((itemId: string, index: number) => {
     if (latest.current) update(undoMessage(latest.current, itemId, index));
   }, [update]);
 
   const value = useMemo<SaleStore>(
-    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, flag, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale, onConfirm, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage }),
-    [ready, session, history, fromFixture, notice, refining, open, update, flag, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale, onConfirm, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage],
+    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, flag, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale, onConfirm, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale }),
+    [ready, session, history, fromFixture, notice, refining, open, update, flag, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onRename, deleteSale, onConfirm, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale],
   );
 
   return <SaleContext.Provider value={value}>{children}</SaleContext.Provider>;

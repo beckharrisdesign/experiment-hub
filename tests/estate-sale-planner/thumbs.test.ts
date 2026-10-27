@@ -1,9 +1,22 @@
 import { describe, it, expect } from "vitest";
-import { cropRect, THUMB } from "@/lib/estate-sale-planner/thumbs";
+import { cropRect, thumbSize, THUMB } from "@/lib/estate-sale-planner/thumbs";
 
 // ---------------------------------------------------------------------------
 // Crop geometry — the pure half of "what it thinks it found"
 // ---------------------------------------------------------------------------
+
+describe("thumbSize", () => {
+  // Phone test 2026-10-27: "tall selection boxes don't thumbnail well" — a square crop cut the
+  // top and bottom off a tall statue. The thumbnail now keeps the box's own shape.
+  it("keeps the crop's shape, longest edge at the thumbnail size", () => {
+    expect(thumbSize(300, 900)).toEqual({ w: Math.round(THUMB.size / 3), h: THUMB.size });
+    expect(thumbSize(1200, 600)).toEqual({ w: THUMB.size, h: THUMB.size / 2 });
+  });
+
+  it("never upscales a small crop", () => {
+    expect(thumbSize(120, 90)).toEqual({ w: 120, h: 90 });
+  });
+});
 
 describe("cropRect", () => {
   it("uses the whole frame when there is no box", () => {

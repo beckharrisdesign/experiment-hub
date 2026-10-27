@@ -40,6 +40,7 @@ export default function ItemPage({ params }: { params: Promise<{ id: string; ite
             onConfirm={store.onConfirm}
             onMessage={store.onMessage}
             onUndoMessage={store.onUndoMessage}
+            onAddPhoto={store.onAddPhoto}
             onRemove={(removeId) => {
               store.onRemove(removeId);
               router.replace(paths.sale(id));
