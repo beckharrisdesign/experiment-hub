@@ -77,24 +77,30 @@ manifests in `figma/components/*.figma.mjs`). Component descriptions in Figma sa
 so: *"Edit in code, then re-run the sync — do not edit here."* Never fix an MVDS
 component in Figma — fix `src/components/**` in the mvds repo and re-sync.
 
-**Availability is per file.** A library existing is not the same as a library
-being usable: `get_libraries` reports what a given file has *subscribed*, not what
-exists. A **newly created** change file starts with nothing subscribed — MVDS Core
-will not even appear in `libraries_available_to_add`, which lists only community
-kits. It has to be turned on in the Figma UI, and only Katy can do it.
+**MVDS Core is a team default library (since 2026-10-27).** Katy turned it on as a
+default for design files across the team, so a new change file — and existing ones —
+come with it subscribed. Still verify: `get_libraries` reports what a given file has
+*subscribed*, not what exists, so call it on the new key right after
+`create_new_file` and confirm `MVDS Core` shows with `source: "team"` before
+importing anything (first confirmed on `estate-sale-planner-sold-comps`,
+`LzaDhbJ8HPsLTZObccHnlW`).
 
-**Ask at file-creation time, not after you hit the wall.** The moment you call
-`create_new_file` for a change, call `get_libraries` on the new key; if MVDS Core
-is missing, give Katy this one-liner *before* doing any other Figma work, so the
-subscription happens while she is already in the tool:
+**If it is missing anyway** (a file outside the team, or the default switched off),
+only Katy can turn it on. Give her this one-liner *before* doing any other Figma
+work, so the subscription happens while she is already in the tool:
 
 > Open <https://www.figma.com/design/hHAppz4A23qMoLQFTo8QAc> → **Assets** panel →
 > the library icon (top right of the panel) → toggle **MVDS Core** on.
 > (Replace the URL with the new file's own.)
 
-Then re-run `get_libraries` and confirm `MVDS Core` shows with `source: "team"`
-before importing anything. Do not build bespoke chrome as a workaround — the
-design gate requires proposed frames built on MVDS.
+Do not build bespoke chrome as a workaround — the design gate requires proposed
+frames built on MVDS.
+
+**Two Plugin API traps seen building on MVDS tokens.** Paint `opacity` does not
+survive on a fill whose colour is bound to a variable — it comes back as 1 — so put
+translucency on the layer (`node.opacity`) instead. And `resize()` on an instance
+does not scale its children even with `SCALE` constraints; use `rescale(k)` when a
+stand-in (a photo, an illustration) must scale as a whole.
 
 **Layout primitives are deliberately absent.** `Stack`, `Inline` and `Container`
 have no Figma counterparts because they carry no visual treatment — auto-layout is
