@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@beckharrisdesign/mvds";
+import { Button, Chrome, Container, Inline } from "@beckharrisdesign/mvds";
 import { cameraTarget, paths, type Tab } from "../../lib/estate-sale-planner/routes";
 
 interface TabBarProps {
@@ -22,12 +22,12 @@ function CameraGlyph() {
 }
 
 /**
- * The tab bar on every screen but the camera flows (round 05a): Home · Items ·
- * [camera] · Sort · Progress. The camera is the one thing you do most, so it
- * sits in the middle and goes to "add a room" for the sale in context or to a
- * new sale when there is none. Fixed on MVDS's `z-float` utility (not `Layer`,
- * which is a full-viewport overlay that swallows taps); the shell pads for it.
- * MVDS has no tab bar yet (hand-off #39); this is a composition on its tokens.
+ * The tab bar on every page (round 05a; camera flows included since
+ * 2026-10-27): Home · Items · [camera] · Sort · Progress. The camera is the one
+ * thing you do most, so it sits in the middle and goes to "add a room" for the
+ * sale in context or to a new sale when there is none. MVDS Chrome (bottom)
+ * makes it sticky; the tabs stay in a `sm` container so they don't spread
+ * across a desktop screen. MVDS has no tab bar yet (hand-off #39).
  */
 export default function TabBar({ active, saleId, left }: TabBarProps) {
   const tab = (id: Tab, label: string, href: string | null) => {
@@ -50,18 +50,20 @@ export default function TabBar({ active, saleId, left }: TabBarProps) {
   const sortLabel = saleId ? (left > 0 ? `Sort · ${left}` : "Sorted") : "Sort";
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-float border-t border-border bg-background/95 backdrop-blur print:hidden">
-      <nav aria-label="Estate Sale Planner" className="mx-auto flex max-w-md items-center justify-around gap-1 px-2 py-2">
-        {tab("home", "Home", paths.home())}
-        {tab("items", "Items", saleId ? paths.sale(saleId) : null)}
-        <Button size="icon-lg" className="rounded-full shadow-lg" asChild>
-          <Link href={cameraTarget(saleId)} aria-label={saleId ? "Photograph another room" : "Start a sale"} data-analytics-event="esp_capture_open">
-            <CameraGlyph />
-          </Link>
-        </Button>
-        {tab("sort", sortLabel, saleId ? paths.sort(saleId) : null)}
-        {tab("progress", "Progress", saleId ? paths.progress(saleId) : null)}
-      </nav>
-    </div>
+    <Chrome position="bottom" bg="background" className="border-t border-border print:hidden">
+      <Container size="sm" className="h-full">
+        <Inline gap={4} align="center" justify="around" className="h-full" role="navigation" aria-label="Estate Sale Planner">
+            {tab("home", "Home", paths.home())}
+            {tab("items", "Items", saleId ? paths.sale(saleId) : null)}
+            <Button size="icon-lg" className="rounded-full shadow-lg" asChild>
+              <Link href={cameraTarget(saleId)} aria-label={saleId ? "Photograph another room" : "Start a sale"} data-analytics-event="esp_capture_open">
+                <CameraGlyph />
+              </Link>
+            </Button>
+            {tab("sort", sortLabel, saleId ? paths.sort(saleId) : null)}
+            {tab("progress", "Progress", saleId ? paths.progress(saleId) : null)}
+        </Inline>
+      </Container>
+    </Chrome>
   );
 }

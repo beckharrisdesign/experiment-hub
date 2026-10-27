@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { cameraTarget, chromeFor, parseRoute, paths, showsTabs, tabFor } from "@/lib/estate-sale-planner/routes";
+import { cameraTarget, chromeFor, parseRoute, paths, tabFor } from "@/lib/estate-sale-planner/routes";
 import { pickPhotos } from "@/lib/estate-sale-planner/capture";
 
 const id = "esp_lx1abc_k9q2zz";
@@ -17,7 +17,8 @@ describe("parseRoute", () => {
 
   it("tolerates a trailing slash and calls everything else 'other'", () => {
     expect(parseRoute(`${paths.sale(id)}/`).screen).toBe("items");
-    expect(parseRoute(paths.summary()).screen).toBe("other");
+    expect(parseRoute(paths.summary())).toEqual({ screen: "summary" });
+    expect(parseRoute("/estate-sale-planner/sheet/0f8c1a52-7d3e-4c1b-9a51-2b6f0e4d9c11")).toEqual({ screen: "sheet" });
     expect(parseRoute(`${paths.sale(id)}/photos`).screen).toBe("other");
     expect(parseRoute("/etsy-listing-kit").screen).toBe("other");
   });
@@ -31,11 +32,9 @@ describe("tabs", () => {
     expect(tabFor("progress")).toBe("progress");
   });
 
-  it("hides the bar only inside the camera flows", () => {
-    expect(showsTabs("new")).toBe(false);
-    expect(showsTabs("capture")).toBe(false);
-    expect(showsTabs("item")).toBe(true);
-    expect(showsTabs("home")).toBe(true);
+  it("lights Progress for the sell list it prints, and nothing for a shared sheet", () => {
+    expect(tabFor("summary")).toBe("progress");
+    expect(tabFor("sheet")).toBeNull();
   });
 
   it("points the camera at the sale in context, else at a new sale", () => {
@@ -52,6 +51,12 @@ describe("chromeFor", () => {
     expect(chromeFor({ screen: "item", saleId: id, itemId: "x" }, "Mom's house", "Spinet cabinet").title).toBe("Spinet cabinet");
     expect(chromeFor({ screen: "item", saleId: id, itemId: "x" }, "Mom's house").title).toBe("Item");
     expect(chromeFor({ screen: "new" })).toMatchObject({ eyebrow: "New sale", back: paths.home() });
+  });
+
+  it("names the sell list and the shared sheet, with Back to the sale in context when there is one", () => {
+    expect(chromeFor({ screen: "summary" }, "Mom's house", undefined, id)).toEqual({ eyebrow: "Mom's house", title: "Sell list", back: paths.progress(id) });
+    expect(chromeFor({ screen: "summary" })).toMatchObject({ title: "Sell list", back: paths.home() });
+    expect(chromeFor({ screen: "sheet" })).toEqual({ eyebrow: "Estate Sale Planner", title: "Sell Sheet", back: paths.home() });
   });
 });
 

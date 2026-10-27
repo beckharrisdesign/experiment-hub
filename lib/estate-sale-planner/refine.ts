@@ -5,7 +5,7 @@
  * the mark. Same provider order and fixture posture as the walkthrough pass.
  */
 import { z } from "zod";
-import { BANDS, visionProvider, type FrameInput, type VisionProvider } from "./flag";
+import { BANDS, BAND_GUIDE, capConfidence, visionProvider, type FrameInput, type VisionProvider } from "./flag";
 
 export const RefineResponseSchema = z.object({
   name: z.string().min(1).max(80),
@@ -34,7 +34,9 @@ export interface RefineResult extends RefineResponse {
 
 export const REFINE_PROMPT = `You help an adult child clearing out a parent's house decide what might be worth selling. You already looked at this object in a walkthrough frame and gave a rough resale value band. The person has now taken close-up detail photos of it — a seam, a stamp on the bottom, a label, a maker's mark — because they want a better read.
 
-Look at the details and return the same object with a better name, band, reason, and confidence. "markReading" is exactly what you can read off any stamp, mark, label, or signature, transcribed plainly; null when nothing is legible. If the mark changes what the object is (a maker, a period, a reproduction), say so in the reason in one plain sentence. Stay honest: the band is still not an appraisal, and a wrong "high" costs trust. Never invent a mark you cannot read.`;
+Look at the details and return the same object with a better name, band, reason, and confidence. "markReading" is exactly what you can read off any stamp, mark, label, or signature, transcribed plainly; null when nothing is legible. If the mark changes what the object is (a maker, a period, a reproduction), say so in the reason in one plain sentence. Never invent a mark you cannot read.
+
+${BAND_GUIDE}`;
 
 export function refineUserText(input: RefineInput): string {
   const { item } = input;
@@ -70,10 +72,13 @@ export function fixtureRefine(input: RefineInput): RefineResult {
 export async function refineItem(input: RefineInput): Promise<RefineResult> {
   const chosen = visionProvider();
   if (!chosen) return fixtureRefine(input);
+  let result: RefineResult;
   if (chosen.provider === "openai") {
     const { refineWithOpenAI } = await import("./vision/openai");
-    return refineWithOpenAI(input, chosen.apiKey);
+    result = await refineWithOpenAI(input, chosen.apiKey);
+  } else {
+    const { refineWithAnthropic } = await import("./vision/anthropic");
+    result = await refineWithAnthropic(input, chosen.apiKey);
   }
-  const { refineWithAnthropic } = await import("./vision/anthropic");
-  return refineWithAnthropic(input, chosen.apiKey);
+  return capConfidence(result, result.markReading);
 }

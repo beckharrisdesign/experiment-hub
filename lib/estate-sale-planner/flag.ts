@@ -57,11 +57,23 @@ export interface FlagResult extends FlagResponse {
   usage?: { inputTokens: number; outputTokens: number };
 }
 
+/**
+ * What "band" and "confidence" mean, shared by the walkthrough pass and the
+ * re-read. Without it the model priced the best example it could find online,
+ * in perfect condition (founder, 2026-10-27: "the confidence and price ranges
+ * are wildly optimistic").
+ */
+export const BAND_GUIDE = `"band" is what this object would most likely sell for, used, in the condition you can see, at a local estate sale, garage sale, or Facebook Marketplace: the typical price a buyer actually pays. Not retail, not replacement cost, and not an online asking price for a perfect example. Estate sales get a small fraction of what things cost new, and most things in a house sell for under $25. Put an object at $100 or more only when you can see why a buyer would pay that: solid wood in a known style, sterling, a brand people search for. Put it at $500 or more only when you can identify the maker, model, or artist. "over $2,000" from a photo is almost never right. When you are torn between two bands, choose the lower one.
+
+"confidence" is how sure you are of the band. "high" means you can identify the maker or model and similar ones sell often at a known price. "medium" means the kind of object is clear but the maker is not. "low" means anything less. Use "low" freely; a wrong "high" costs trust.`;
+
 export const SYSTEM_PROMPT = `You help an adult child clearing out a parent's house decide what might be worth selling before a clean-out crew takes everything.
 
 You will see frames sampled from a phone walkthrough. For each distinct object you can identify, return one item. Set "flagged": true only for objects that a local estate-sale company or online resale buyer would plausibly pay for: furniture with recognizable style or maker, art, rugs, instruments, tools, collectibles, jewelry, electronics still in demand, quality cookware. Everyday consumables, worn soft furnishings, and generic décor are not flagged.
 
-Be honest and specific. "band" is a rough resale value band, not an appraisal. "reason" is one plain sentence a grieving person can act on, no hedging boilerplate. "room" is a short label for where it was seen. Use "confidence": "low" freely; a wrong "high" costs trust. Never invent an object you did not see. Prefer fewer, better items over a long list.
+${BAND_GUIDE}
+
+Be honest and specific. "reason" is one plain sentence a grieving person can act on, no hedging boilerplate. "room" is a short label for where it was seen. Never invent an object you did not see. Prefer fewer, better items over a long list.
 
 "frame" is the index of the frame the object is clearest in. "box" is where it sits in that frame: x and y are the top-left corner and w and h the size, all as fractions of the frame from 0 to 1. Make the box generous enough to include the whole object. Use null when you cannot place it.`;
 
@@ -76,6 +88,29 @@ export function visionProvider(env: Record<string, string | undefined> = process
 
 export function visionConfigured(): boolean {
   return visionProvider() !== null;
+}
+
+type Band = (typeof BANDS)[number];
+type Confidence = FlaggedItem["confidence"];
+
+/**
+ * The most confidence a band can carry when no mark was read. A wide photo
+ * shows what kind of thing an object is, not who made it, and past $500 the
+ * maker is the price. The prompt asks for this too; the cap holds when the
+ * model doesn't listen.
+ */
+const CEILING_WITHOUT_MARK: Partial<Record<Band, Confidence>> = {
+  "$500–$2,000": "medium",
+  "over $2,000": "low",
+};
+const RANK: Record<Confidence, number> = { low: 0, medium: 1, high: 2 };
+
+/** Lower confidence to the band's ceiling unless a mark was read. Never raises it or touches the band. */
+export function capConfidence<T extends { band: Band; confidence: Confidence }>(item: T, markReading: string | null): T {
+  if (markReading?.trim()) return item;
+  const ceiling = CEILING_WITHOUT_MARK[item.band];
+  if (!ceiling || RANK[item.confidence] <= RANK[ceiling]) return item;
+  return { ...item, confidence: ceiling };
 }
 
 /** Validate a raw response. Returns null when the shape is wrong. */
@@ -129,10 +164,13 @@ export interface FrameInput {
 export async function flagFrames(frames: FrameInput[], known?: KnownItem[]): Promise<FlagResult> {
   const chosen = visionProvider();
   if (!chosen) return fixtureFlags(known);
+  let result: FlagResult;
   if (chosen.provider === "openai") {
     const { flagWithOpenAI } = await import("./vision/openai");
-    return flagWithOpenAI(frames, chosen.apiKey, fetch, known);
+    result = await flagWithOpenAI(frames, chosen.apiKey, fetch, known);
+  } else {
+    const { flagWithAnthropic } = await import("./vision/anthropic");
+    result = await flagWithAnthropic(frames, chosen.apiKey, known);
   }
-  const { flagWithAnthropic } = await import("./vision/anthropic");
-  return flagWithAnthropic(frames, chosen.apiKey, known);
+  return { ...result, items: result.items.map((item) => capConfidence(item, null)) };
 }
