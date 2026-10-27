@@ -1,7 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { Button, Card, CardDescription, CardHeader, CardTitle, Inline, Stack } from "@beckharrisdesign/mvds";
+import { paths } from "../../lib/estate-sale-planner/routes";
 import { donateList, keepList, sellList, undecided, type Destination, type Session } from "../../lib/estate-sale-planner/session";
 
 interface SwipeProps {
@@ -28,9 +30,16 @@ export default function Swipe({ session, onDestination, onOpen, onUndo }: SwipeP
 
   if (!item) {
     return (
-      <Stack gap={16} align="center">
-        <h1 className="text-h3 text-foreground">Everything has a place</h1>
-        <p className="text-body text-muted-foreground">Use the lists to change any of them, or finish up.</p>
+      // Nothing to sort is not a dead end (founder, 2026-10-27: "at least show a CTA to upload
+      // another image"). One CTA, so centered on its own line.
+      <Stack gap={24} align="center">
+        <Stack gap={8} align="center">
+          <h1 className="text-h3 text-foreground">Everything has a place</h1>
+          <p className="text-center text-body text-muted-foreground">Add more photos to find more, or use the lists to change any of them.</p>
+        </Stack>
+        <Button size="lg" asChild>
+          <Link href={paths.capture(session.id)}>Add more photos</Link>
+        </Button>
       </Stack>
     );
   }
