@@ -34,11 +34,12 @@ export default function ItemPage({ params }: { params: Promise<{ id: string; ite
         return (
           <ItemDetail
             item={item}
+            saleId={id}
             refining={store.refining === item.id}
-            onDestination={store.onDestination}
             onUpdate={store.onUpdate}
-            onDetail={store.onDetail}
-            onReread={store.onReread}
+            onConfirm={store.onConfirm}
+            onMessage={store.onMessage}
+            onUndoMessage={store.onUndoMessage}
             onRemove={(removeId) => {
               store.onRemove(removeId);
               router.replace(paths.sale(id));

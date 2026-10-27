@@ -37,7 +37,7 @@ export default function AddItem({ onAdd }: AddItemProps) {
     <Card className="ring-foreground/15">
       <CardHeader>
         <CardTitle>Add an item</CardTitle>
-        <CardDescription>Name it and pick where it's headed.</CardDescription>
+        <CardDescription>Name it and pick where it&apos;s headed.</CardDescription>
       </CardHeader>
       <CardContent>
         <Stack gap={16}>

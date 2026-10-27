@@ -336,27 +336,29 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   /** At most three re-reads in flight; a split into six queues the rest (design D3). */
   const queue = useRef<string[]>([]);
   const running = useRef(0);
-  const pump = useRef<() => void>(() => {});
-  pump.current = () => {
-    while (running.current < 3 && queue.current.length > 0) {
-      const id = queue.current.shift()!;
-      running.current += 1;
-      void rereadCorrected(id).finally(() => {
-        running.current -= 1;
-        pump.current();
-      });
-    }
-  };
+  const pump = useCallback(
+    function run() {
+      while (running.current < 3 && queue.current.length > 0) {
+        const id = queue.current.shift()!;
+        running.current += 1;
+        void rereadCorrected(id).finally(() => {
+          running.current -= 1;
+          run();
+        });
+      }
+    },
+    [rereadCorrected],
+  );
 
   const correct = useCallback(
     (next: Session, ids: string[], kind: string): string[] => {
       update(next);
       track("esp_item_corrected", { kind, items: ids.length });
       queue.current.push(...ids);
-      pump.current();
+      pump();
       return ids;
     },
-    [update],
+    [update, pump],
   );
 
   const onConfirm = useCallback((itemId: string) => {
