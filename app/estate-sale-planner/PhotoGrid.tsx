@@ -17,7 +17,7 @@ interface PhotoGridProps {
  */
 export default function PhotoGrid({ photos, sending, onSend, onRemove, onBack }: PhotoGridProps) {
   return (
-    <Stack gap={24}>
+    <Stack gap={32}>
       <Stack gap={8}>
         <h1 className="text-h2 text-foreground">
           Send {photos.length === 1 ? "this photo" : `these ${photos.length} photos`}?

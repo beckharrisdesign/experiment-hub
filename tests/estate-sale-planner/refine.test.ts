@@ -44,6 +44,24 @@ describe("parseRefineResponse", () => {
   });
 });
 
+describe("parseRefineResponse · over-long text (phone test 2026-10-27: \"Couldn't update it\")", () => {
+  it("trims a long name and reason at a word instead of rejecting the whole read", () => {
+    const reason = "This transferware platter shows a central scene with a border of flowers; patterns like this were made by many Staffordshire potters and sell steadily, more with a legible backstamp naming the maker and pattern.";
+    const name = "Lot of blue-and-white transferware plates and platters from the middle shelf of the kitchen hutch (2 of 4)";
+    const r = parseRefineResponse({ name, band: "$25–$50", reason, confidence: "medium", markReading: null });
+    expect(r).not.toBeNull();
+    expect(r!.name.length).toBeLessThanOrEqual(80);
+    expect(r!.reason.length).toBeLessThanOrEqual(160);
+    expect(r!.reason.endsWith("…")).toBe(true);
+    expect(r!.reason.startsWith("This transferware platter")).toBe(true);
+  });
+
+  it("still rejects what can't be trimmed into shape", () => {
+    expect(parseRefineResponse({ name: "", band: "$25–$50", reason: "r", confidence: "medium", markReading: null })).toBeNull();
+    expect(parseRefineResponse({ name: "x", band: "priceless", reason: "r", confidence: "medium", markReading: null })).toBeNull();
+  });
+});
+
 describe("fixtureRefine", () => {
   it("keeps the item as it was and says so", () => {
     const r = fixtureRefine(input);

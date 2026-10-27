@@ -70,17 +70,19 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
   const rest = undecided(session);
 
   return (
-    <Stack gap={40}>
+    <Stack gap={48}>
       {fromFixture && (
         <Callout>Demo mode: no vision key is configured, so this is a sample house, not yours. Each time you add photos, the next part of the sample house comes in.</Callout>
       )}
 
-      <Stack gap={16}>
-        <Stack gap={8}>
-          <SaleName name={session.name} onRename={onRename} />
-          <p className="text-small text-muted-foreground">
-            {session.items.length} {session.items.length === 1 ? "item" : "items"} · {new Date(session.createdAt).toLocaleDateString()}
-          </p>
+      <Stack gap={32}>
+        <Stack gap={16}>
+          <Stack gap={8}>
+            <SaleName name={session.name} onRename={onRename} />
+            <p className="text-small text-muted-foreground">
+              {session.items.length} {session.items.length === 1 ? "item" : "items"} · {new Date(session.createdAt).toLocaleDateString()}
+            </p>
+          </Stack>
           <div>
             <Button variant="outline" onClick={onAddRoom}>
               Add more photos
@@ -88,7 +90,10 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
           </div>
         </Stack>
         <ValueTally session={session} />
-        <Stack gap={4}>
+      </Stack>
+
+      <Stack gap={24}>
+        <Stack gap={8}>
           <p className="text-caption uppercase text-muted-foreground">Sell</p>
           <h1 className="text-h2 text-foreground">Might be worth something</h1>
         </Stack>
@@ -106,8 +111,8 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
       </Stack>
 
       {rest.length > 0 && (
-        <Stack gap={16}>
-          <Stack gap={4}>
+        <Stack gap={24}>
+          <Stack gap={8}>
             <p className="text-caption uppercase text-muted-foreground">Still to sort</p>
             <h2 className="text-h2 text-foreground">{rest.length} {rest.length === 1 ? "item" : "items"} left</h2>
           </Stack>
@@ -121,8 +126,8 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
       )}
 
       {donate.length > 0 && (
-        <Stack gap={16}>
-          <Stack gap={4}>
+        <Stack gap={24}>
+          <Stack gap={8}>
             <p className="text-caption uppercase text-muted-foreground">Donate</p>
             <h2 className="text-h2 text-foreground">Going to a good home</h2>
           </Stack>
@@ -131,8 +136,8 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
       )}
 
       {keep.length > 0 && (
-        <Stack gap={16}>
-          <Stack gap={4}>
+        <Stack gap={24}>
+          <Stack gap={8}>
             <p className="text-caption uppercase text-muted-foreground">Keep</p>
             <h2 className="text-h2 text-foreground">Staying with the family</h2>
           </Stack>

@@ -5,7 +5,7 @@
  * the mark. Same provider order and fixture posture as the walkthrough pass.
  */
 import { z } from "zod";
-import { BANDS, BAND_GUIDE, capConfidence, visionProvider, type FrameInput, type VisionProvider } from "./flag";
+import { BANDS, BAND_GUIDE, capConfidence, clipFields, visionProvider, type FrameInput, type VisionProvider } from "./flag";
 
 export const RefineResponseSchema = z.object({
   name: z.string().min(1).max(80),
@@ -38,7 +38,7 @@ export interface RefineResult extends RefineResponse {
 
 export const REFINE_PROMPT = `You help an adult child clearing out a parent's house decide what might be worth selling. You already looked at this object in a walkthrough frame and gave a rough resale value band. The person has now taken close-up detail photos of it — a seam, a stamp on the bottom, a label, a maker's mark — because they want a better read.
 
-Look at the details and return the same object with a better name, band, reason, and confidence. Sometimes the photo is a new crop the family drew around the object, or the family tells you something in their own words; use what they give you. "markReading" is exactly what you can read off any stamp, mark, label, or signature, transcribed plainly; null when nothing is legible. If the mark changes what the object is (a maker, a period, a reproduction), say so in the reason in one plain sentence. Never invent a mark you cannot read.
+Look at the details and return the same object with a better name, band, reason, and confidence. Keep "name" under 80 characters and "reason" to one sentence under 160. Sometimes the photo is a new crop the family drew around the object, or the family tells you something in their own words; use what they give you. "markReading" is exactly what you can read off any stamp, mark, label, or signature, transcribed plainly; null when nothing is legible. If the mark changes what the object is (a maker, a period, a reproduction), say so in the reason in one plain sentence. Never invent a mark you cannot read.
 
 ${BAND_GUIDE}`;
 
@@ -59,7 +59,7 @@ export function refineUserText(input: RefineInput): string {
 }
 
 export function parseRefineResponse(raw: unknown): RefineResponse | null {
-  const result = RefineResponseSchema.safeParse(raw);
+  const result = RefineResponseSchema.safeParse(clipFields(raw, { name: 80, reason: 160, markReading: 160 }));
   return result.success ? result.data : null;
 }
 

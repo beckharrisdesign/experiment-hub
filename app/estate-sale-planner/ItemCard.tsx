@@ -64,10 +64,14 @@ interface ItemRowProps {
   onOpen: (itemId: string) => void;
 }
 
-/** The compact row for the Still-to-sort / Donate / Keep lists: thumb, name, toggle. Tap the name for details. */
+/**
+ * The compact row for the Still-to-sort / Donate / Keep lists: thumb, name, value, toggle. Tap the
+ * name for details. The value shows on every row (founder, 2026-10-27: "I still want values on the
+ * donation rows") — a donation has a value too.
+ */
 export function ItemRow({ item, onDestination, onOpen }: ItemRowProps) {
   return (
-    <li className="flex flex-wrap items-center gap-4 py-2">
+    <li className="flex flex-wrap items-center gap-4 py-4">
       <button type="button" className="flex min-w-0 flex-1 items-center gap-4 text-left" onClick={() => onOpen(item.id)}>
         {item.image ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -75,7 +79,8 @@ export function ItemRow({ item, onDestination, onOpen }: ItemRowProps) {
         ) : (
           <span className="size-10 shrink-0 rounded-md bg-muted" aria-hidden />
         )}
-        <span className="truncate text-body text-foreground">{item.name}</span>
+        <span className="min-w-0 flex-1 truncate text-body text-foreground">{item.name}</span>
+        <span className="shrink-0 whitespace-nowrap text-body font-medium text-success">{item.band}</span>
       </button>
       <DestinationToggle value={item.destination} onChange={(to) => onDestination(item.id, to)} />
     </li>

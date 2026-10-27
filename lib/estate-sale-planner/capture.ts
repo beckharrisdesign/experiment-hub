@@ -91,6 +91,23 @@ export async function framesFromPhotos(
   return all;
 }
 
+/** One photo for one item (an item added by hand): the 1600 px original to keep, and its card thumbnail. */
+export async function itemPhotoFromFile(file: File): Promise<{ original: Blob; thumb: string }> {
+  const img = await loadImage(file);
+  try {
+    const original = await encodeOriginal(img, img.naturalWidth, img.naturalHeight);
+    if (!original) throw new Error("This browser couldn't keep that photo.");
+    const url = URL.createObjectURL(original);
+    try {
+      return { original, thumb: await itemThumbnail(url, null) };
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  } finally {
+    URL.revokeObjectURL(img.src);
+  }
+}
+
 export interface DetailShot {
   /** Base64 JPEG without the data: prefix — what the refine route takes. */
   data: string;

@@ -19,7 +19,7 @@ export default function ValueTally({ session }: { session: Session }) {
   const t = tallies(session);
   return (
     <section aria-label="What each pile might be worth">
-      <Stack gap={8}>
+      <Stack gap={16}>
         <Grid cols={{ base: 1, sm: 3 }} gap={16}>
           {PILES.map(({ key, label }) => (
             <Card key={key} size="sm">
@@ -33,9 +33,6 @@ export default function ValueTally({ session }: { session: Session }) {
             </Card>
           ))}
         </Grid>
-        <p className="text-caption text-muted-foreground">
-          Each item&apos;s value band, added up{t.unsorted > 0 ? `; ${t.unsorted} still to sort ${t.unsorted === 1 ? "isn't" : "aren't"} counted` : ""}. A model&apos;s guess, never an appraisal.
-        </p>
       </Stack>
     </section>
   );

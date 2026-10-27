@@ -61,11 +61,6 @@ export default async function SheetPage({ params, searchParams }: SheetPageProps
   return (
     <>
     <Stack gap={32}>
-      <Callout>
-        These value bands are a model&apos;s guess from a phone walkthrough, with a stated
-        confidence. They are not an appraisal and not advice for insurance, tax, or probate.
-      </Callout>
-
       <Stack gap={8}>
         <p className="text-caption uppercase text-muted-foreground">Sell sheet</p>
         <h1 className="text-h1 text-foreground">Might be worth selling</h1>
@@ -108,6 +103,9 @@ export default async function SheetPage({ params, searchParams }: SheetPageProps
       </Grid>
 
       <SheetActions />
+      <p className="max-w-prose text-caption text-muted-foreground">
+        These value bands are a model&apos;s guess from a phone walkthrough, with a stated confidence. They are not an appraisal and not advice for insurance, tax, or probate.
+      </p>
     </Stack>
     </>
   );

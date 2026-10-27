@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import Link from "next/link";
 import { Badge, Button, Callout, Field, Grid, GridItem, Inline, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Stack, Textarea } from "@beckharrisdesign/mvds";
 import { BANDS } from "../../lib/estate-sale-planner/flag";
@@ -18,6 +18,7 @@ interface ItemDetailProps {
   onConfirm: (itemId: string) => void;
   onMessage: (itemId: string, text: string) => Promise<boolean>;
   onUndoMessage: (itemId: string, index: number) => void;
+  onAddPhoto: (itemId: string, file: File) => Promise<boolean>;
 }
 
 /**
@@ -29,13 +30,37 @@ interface ItemDetailProps {
  *
  * Desktop: the name and price run full width, then the photo takes 5 of 12 columns.
  */
-export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove, onConfirm, onMessage, onUndoMessage }: ItemDetailProps) {
+export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove, onConfirm, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
   const [confirmRemove, setConfirmRemove] = useState(false);
   const photoHref = paths.photo(saleId, item.id);
   const bandOptions: string[] = (BANDS as readonly string[]).includes(item.band) ? [...BANDS] : [item.band, ...BANDS];
 
   return (
-    <Stack gap={24}>
+    <Stack gap={32}>
+      {/* Remove sits top right as a secondary button (founder, 2026-10-27: the old text link at the
+          bottom "looks like text, like an error message"). */}
+      <Stack gap={16}>
+        <ButtonGroup>
+          <Button variant="secondary" size="sm" onClick={() => setConfirmRemove(true)} disabled={confirmRemove}>
+            Remove item
+          </Button>
+        </ButtonGroup>
+        {confirmRemove && (
+          <Callout>
+            <Stack gap={8}>
+              <span>Remove &ldquo;{item.name}&rdquo; from this sale? Use this for things that aren&apos;t real: a reflection, a duplicate. It can&apos;t be undone.</span>
+              <ButtonGroup>
+                <Button variant="secondary" size="sm" onClick={() => setConfirmRemove(false)}>
+                  Keep it listed
+                </Button>
+                <Button variant="destructive" size="sm" onClick={() => onRemove(item.id)}>
+                  Remove it
+                </Button>
+              </ButtonGroup>
+            </Stack>
+          </Callout>
+        )}
+      </Stack>
       <div className="flex items-start justify-between gap-4">
         <h1 className="min-w-0 break-words text-h2 text-foreground">{item.name}</h1>
         <p className="shrink-0 whitespace-nowrap text-h2 text-success" aria-label={`Value band ${item.band}`}>
@@ -45,19 +70,19 @@ export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove,
 
       <Grid cols={{ base: 1, lg: 12 }} gap={32}>
         <GridItem span={{ base: 1, lg: 5 }}>
-          <Stack gap={8}>
+          <Stack gap={16}>
             {item.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={item.image} alt={item.name} className="aspect-[4/3] w-full rounded-lg object-cover ring-1 ring-foreground/15" />
             ) : (
-              <div className="aspect-[4/3] w-full rounded-lg bg-muted" aria-hidden />
+              <NoPhoto onFile={(file) => onAddPhoto(item.id, file)} />
             )}
             <PhotoStatus item={item} photoHref={photoHref} onConfirm={onConfirm} />
           </Stack>
         </GridItem>
 
         <GridItem span={{ base: 1, lg: 7 }}>
-          <Stack gap={24}>
+          <Stack gap={40}>
             <Stack gap={8}>
               {item.bandSource === "family" && <p className="text-small text-foreground">Set by you</p>}
               <p className="text-body text-muted-foreground">{item.reason}</p>
@@ -65,7 +90,7 @@ export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove,
 
             <AdjustByMessage item={item} busy={refining} onMessage={onMessage} onUndo={onUndoMessage} />
 
-            <Stack gap={16}>
+            <Stack gap={24}>
               <p className="text-caption uppercase text-muted-foreground">Correct it</p>
               <Field label="What is it?" help="If the model called it wrong, rename it here.">
                 <Input value={item.name} maxLength={80} onChange={(e) => onUpdate(item.id, { name: e.target.value })} />
@@ -86,25 +111,6 @@ export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove,
               </Field>
             </Stack>
 
-            {confirmRemove ? (
-              <Callout>
-                <Stack gap={8}>
-                  <span>Remove &ldquo;{item.name}&rdquo; from this sale? This cannot be undone.</span>
-                  <ButtonGroup className="justify-start">
-                    <Button variant="secondary" size="sm" onClick={() => setConfirmRemove(false)}>
-                      Keep it listed
-                    </Button>
-                    <Button variant="destructive" size="sm" onClick={() => onRemove(item.id)}>
-                      Remove it
-                    </Button>
-                  </ButtonGroup>
-                </Stack>
-              </Callout>
-            ) : (
-              <Button variant="ghost" size="sm" className="self-start text-destructive" onClick={() => setConfirmRemove(true)}>
-                Not a real item — remove it
-              </Button>
-            )}
           </Stack>
         </GridItem>
       </Grid>
@@ -112,8 +118,37 @@ export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove,
   );
 }
 
-/** Directly under the photo: the check while unconfirmed, the confirmed state after (D19). */
+/** An item with no picture (typed in by the family): say so, and offer one. Not a grey box with controls that lead nowhere. */
+function NoPhoto({ onFile }: { onFile: (file: File) => void }) {
+  const input = useRef<HTMLInputElement>(null);
+  return (
+    <div className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-border bg-muted/40 p-4 text-center">
+      <p className="text-small text-muted-foreground">No photo yet</p>
+      <input
+        ref={input}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="sr-only"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onFile(file);
+          e.target.value = "";
+        }}
+      />
+      <Button variant="secondary" onClick={() => input.current?.click()}>
+        Add a photo
+      </Button>
+    </div>
+  );
+}
+
+/**
+ * Directly under the photo: the check while unconfirmed, the confirmed state after (D19). The
+ * photo actions only show when there is a kept original to fix.
+ */
 function PhotoStatus({ item, photoHref, onConfirm }: { item: SessionItem; photoHref: string; onConfirm: (id: string) => void }) {
+  const hasPhoto = Boolean(item.photoId);
   return (
     <Stack gap={8}>
       {item.rereadPending && <p className="text-small text-muted-foreground">Reading the new picture…</p>}
@@ -124,15 +159,19 @@ function PhotoStatus({ item, photoHref, onConfirm }: { item: SessionItem; photoH
             <span className="text-small text-muted-foreground">✓ Confirmed</span>
             {item.lot && <Badge variant="outline">Lot of {item.lot.parts.length}</Badge>}
           </Inline>
-          <Button variant="secondary" asChild>
-            <Link href={photoHref}>Source photo</Link>
-          </Button>
+          {hasPhoto && (
+            <Button variant="secondary" asChild>
+              <Link href={photoHref}>Source photo</Link>
+            </Button>
+          )}
         </Inline>
       ) : (
         <ButtonGroup>
-          <Button variant="secondary" asChild>
-            <Link href={photoHref}>Fix this photo</Link>
-          </Button>
+          {hasPhoto && (
+            <Button variant="secondary" asChild>
+              <Link href={photoHref}>Fix this photo</Link>
+            </Button>
+          )}
           <Button onClick={() => onConfirm(item.id)}>Looks right</Button>
         </ButtonGroup>
       )}
@@ -151,7 +190,7 @@ function AdjustByMessage({ item, busy, onMessage, onUndo }: { item: SessionItem;
     else setFailed(true);
   };
   return (
-    <Stack gap={16}>
+    <Stack gap={24}>
       <Stack gap={8}>
         <p className="text-caption uppercase text-muted-foreground">Adjust this item</p>
         <p className="text-small text-muted-foreground">Tell it what you know, in your own words. Only this item changes, and you can undo it.</p>

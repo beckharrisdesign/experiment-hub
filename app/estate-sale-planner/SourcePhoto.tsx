@@ -201,7 +201,7 @@ export default function SourcePhoto({ session, item }: { session: Session; item:
   );
 
   const panel = (
-    <Stack gap={16}>
+    <Stack gap={24}>
       <Stack gap={8}>
         {photoNumber !== undefined && <p className="text-caption text-muted-foreground">Photo {Number(photoNumber) + 1}</p>}
         <p className="text-small text-foreground">{mode === "select" && picked.length > 1 ? `${picked.length} selected. ${HINTS.select.split(". ").slice(1).join(". ")}` : HINTS[mode]}</p>

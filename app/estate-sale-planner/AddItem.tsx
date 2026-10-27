@@ -40,7 +40,7 @@ export default function AddItem({ onAdd }: AddItemProps) {
         <CardDescription>Name it and pick where it&apos;s headed.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Stack gap={16}>
+        <Stack gap={24}>
           <Field label="What is it?" required>
             <Input value={name} maxLength={80} placeholder="Oak rolltop desk" onChange={(e) => setName(e.target.value)} />
           </Field>

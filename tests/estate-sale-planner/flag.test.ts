@@ -1,5 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { fixtureFlags, flagFrames, parseFlagResponse, visionConfigured } from "@/lib/estate-sale-planner/flag";
+import { clipText, fixtureFlags, flagFrames, parseFlagResponse, visionConfigured } from "@/lib/estate-sale-planner/flag";
+
+describe("clipText", () => {
+  it("leaves short text alone and cuts long text at a word with an ellipsis", () => {
+    expect(clipText("Mantel clock", 80)).toBe("Mantel clock");
+    const out = clipText("one two three four five six seven eight nine ten", 20);
+    expect(out.length).toBeLessThanOrEqual(20);
+    expect(out).toBe("one two three four…");
+  });
+});
 
 const saved = process.env.ANTHROPIC_API_KEY;
 const savedOpenAI = process.env.OPENAI_API_KEY;

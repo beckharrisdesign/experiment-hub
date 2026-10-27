@@ -220,11 +220,13 @@ export function addItem(s: Session, input: NewItemInput): Session {
     room: input.room?.trim().slice(0, 40) || "Unplaced",
     flagged: false,
     band: "$1–$5",
-    reason: "Added by you; the model has not looked at it. Add a photo and re-read for a band.",
+    reason: "Added by you; the model hasn't seen it. Add a photo and it reads it for a value.",
     confidence: "low",
     frame: 0,
     box: null,
     userAdded: true,
+    // The family named it, so the subject is theirs: confirmed from the start.
+    confirmed: true,
     ...(input.destination ? { destination: input.destination } : {}),
     ...(input.image ? { image: input.image } : {}),
   };

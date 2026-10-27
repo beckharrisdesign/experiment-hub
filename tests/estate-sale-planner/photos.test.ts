@@ -4,7 +4,7 @@
  */
 import "fake-indexeddb/auto";
 import { describe, it, expect, beforeEach } from "vitest";
-import { deleteSalePhotos, getPhoto, photoKey, planEviction, putPhotos, photoUsage } from "@/lib/estate-sale-planner/photos";
+import { deleteSalePhotos, getPhoto, itemPhotoKey, photoKey, planEviction, putPhotos, photoUsage } from "@/lib/estate-sale-planner/photos";
 
 const blob = (bytes: number) => new Blob([new Uint8Array(bytes)], { type: "image/jpeg" });
 
@@ -46,6 +46,11 @@ describe("the photo store", () => {
     expect(got?.size).toBe(12);
     expect(got?.type).toBe("image/jpeg");
     expect(await getPhoto(photoKey("a", 1, 9))).toBeNull();
+  });
+
+  it("a photo added to one item by hand is kept under its own key", async () => {
+    await putPhotos("a", 0, [{ frame: 0, blob: blob(9), id: itemPhotoKey("a", "a_u1") }], { now: 1 });
+    expect((await getPhoto("a/item/a_u1"))?.size).toBe(9);
   });
 
   it("past the cap, the oldest sale's originals go first and the new ones are kept", async () => {

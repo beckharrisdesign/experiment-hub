@@ -29,7 +29,7 @@ export default function Swipe({ session, onDestination, onOpen, onUndo }: SwipeP
   if (!item) {
     return (
       <Stack gap={16} align="center">
-        <h1 className="text-h3 text-foreground">Everything has a place.</h1>
+        <h1 className="text-h3 text-foreground">Everything has a place</h1>
         <p className="text-body text-muted-foreground">Use the lists to change any of them, or finish up.</p>
       </Stack>
     );
