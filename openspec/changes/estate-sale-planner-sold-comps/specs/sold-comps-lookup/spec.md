@@ -4,7 +4,7 @@ See `../../proposal.md`. This capability is part 2 of the change: a confirmed it
 matter gets its band from real sold listings instead of the model's memory, as cheaply as
 possible. Done when a confirmed Sell item at or above the threshold shows a band set from
 matching sales with how many it rests on and links to some of them, a repeat item costs no
-lookup, too few matches leave a labelled guess, and every model call and lookup records its
+lookup, too few matches leave the model's band as it was, and every model call and lookup records its
 cost. Not doing: licensed price databases, a pricing model of our own, lookups for unconfirmed,
 Keep, Donate or low-band items, auction-house or Etsy prices, any upsell.
 
@@ -13,11 +13,12 @@ Keep, Donate or low-band items, auction-house or Etsy prices, any upsell.
 ### Requirement: Only confirmed items that could matter are looked up
 
 A lookup runs only for an item the family has confirmed, that is headed to Sell, and whose band
-is at or above the threshold; its search query is written at that moment and not before.
+is at or above the threshold; its search query is written at that moment and not before, and again
+if the family later changes what the item is.
 
 **Fails until:** a confirmed Sell item at or above the threshold triggers exactly one query-writing call and one lookup, and every other item triggers neither.
 
-The lookup gate SHALL require confirmed, destination Sell and a band at or above a configured threshold ($100 by default); only then SHALL a text-only call write the search query from the item's confirmed name, mark reading, family note and lot flag; the walkthrough and the re-read SHALL NOT write queries.
+The lookup gate SHALL require confirmed, destination Sell and a band at or above a configured threshold ($100 by default, the `$100–$250` band and up); only then SHALL a text-only call write the search query from the item's confirmed name, mark reading, family note and lot flag; the walkthrough and the re-read SHALL NOT write queries.
 
 #### Scenario: A confirmed item passes the gate
 
@@ -27,12 +28,17 @@ The lookup gate SHALL require confirmed, destination Sell and a band at or above
 #### Scenario: An item below the gate
 
 - **WHEN** an item is unconfirmed, set to Keep or Donate, or banded under the threshold
-- **THEN** no query is written, no lookup runs, and its band is labelled as the model's guess
+- **THEN** no query is written, no lookup runs, and the item shows the model's band with no comps line
 
 #### Scenario: A lot is looked up as a set
 
 - **WHEN** a confirmed lot passes the gate
 - **THEN** its query describes the set ("set of 6 Pyrex mixing bowls"), not one piece
+
+#### Scenario: A message changes what a confirmed item is
+
+- **WHEN** the family's message changes the name or band of a confirmed Sell item that is at or above the threshold
+- **THEN** a new query is written and looked up, and a saved result for that query is reused when it is fresh
 
 ### Requirement: Lookups are saved and reused
 
@@ -62,9 +68,9 @@ Lookups SHALL go through a provider adapter (CompsAPI first, selected by configu
 A short text-only pass keeps only the sold listings that are the same object and sets the band
 from them, and the item shows what it rests on.
 
-**Fails until:** an item with at least the minimum number of matching sales shows a band derived from them, the count, and links to the listings kept; with fewer, it keeps the model's band labelled as a guess.
+**Fails until:** an item with at least the minimum number of matching sales shows a band derived from them, the count, and links to the listings kept; with fewer, it keeps the model's band with no comps line.
 
-The comps pass SHALL send the confirmed item and its sold listings to a text-only call that returns which listings match, a band from the matching prices and a one-line reason; with at least the minimum number of matches (3 by default) the item SHALL show that band as "Based on N sold" with links to a few kept listings; with fewer, the model's band SHALL stay and say it is a guess.
+The comps pass SHALL send the confirmed item and its sold listings to a text-only call that returns which listings match, a band from the matching prices and a one-line reason; with at least the minimum number of matches (3 by default) the item SHALL show that band as "Based on N sold" with links to a few kept listings; with fewer, the model's band SHALL stay, with no comps line.
 
 #### Scenario: Enough matching sales
 
@@ -74,7 +80,7 @@ The comps pass SHALL send the confirmed item and its sold listings to a text-onl
 #### Scenario: Too few matching sales
 
 - **WHEN** fewer than three listings match the item
-- **THEN** the item keeps the model's band, labelled as a guess, and says how many sales were found
+- **THEN** the item keeps the model's band and shows no comps line
 
 #### Scenario: The family changes the band by hand
 
@@ -104,21 +110,21 @@ Every walkthrough, re-read, query-writing and comps call SHALL write an `esp_cos
 - **WHEN** writing a cost row fails
 - **THEN** the walkthrough, re-read or lookup still returns normally and the failure is logged
 
-### Requirement: When a lookup cannot run, the item keeps its guess and says why
+### Requirement: When a lookup cannot run, the item keeps the model's band
 
-A missing key, a provider outage or a spent quota never breaks the item; it falls back to the
-labelled guess.
+A missing key, a provider outage or a spent quota never breaks the item; it keeps the model's
+band and the reason goes on the cost row.
 
-**Fails until:** with no provider key, a provider error, or a quota response, the gated item shows the model's band labelled as a guess with a plain reason, and nothing else on the screen fails.
+**Fails until:** with no provider key, a provider error, or a quota response, the gated item shows the model's band with no comps line, the reason is recorded, and nothing else on the screen fails.
 
-When no provider key is configured, the provider errors or times out, or the plan's quota is spent, the item SHALL keep the model's band labelled as a guess with a one-line reason; the provider key SHALL never reach the browser; a later visit SHALL retry the lookup.
+When no provider key is configured, the provider errors or times out, or the plan's quota is spent, the item SHALL keep the model's band with no comps line and the reason SHALL be recorded on the cost row; the provider key SHALL never reach the browser; a later visit SHALL retry the lookup.
 
 #### Scenario: No provider key is configured
 
 - **WHEN** a gated item is confirmed on an environment with no provider key
-- **THEN** the item keeps its guess and says price lookups are not set up yet
+- **THEN** the item keeps the model's band, shows no comps line, and the cost row says lookups are not configured
 
 #### Scenario: The provider fails
 
 - **WHEN** the provider errors, times out or reports the quota is spent
-- **THEN** the item keeps its guess with a one-line reason, the cost row records the failed call, and the next visit tries again
+- **THEN** the item keeps the model's band, the cost row records the failed call and its reason, and the next visit tries again

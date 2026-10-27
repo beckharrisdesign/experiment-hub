@@ -4,9 +4,10 @@ See `../../proposal.md`. This capability is part 1 of the change: before anythin
 up, the family can see what the model decided the subject of each item is, fix it on the photo
 it came from, and confirm it. Done when any item opens its source photo with its box drawn, the
 box can be adjusted, one item can become several (or several one, or one lot), a missed object
-can be drawn in, each correction gets a fresh read, and an item is confirmed once it is fixed or
+can be drawn in, the family can tell it what is wrong in a message, each correction gets a fresh
+read, and an item is confirmed once it is fixed or
 marked right. Not doing: outlines or segmentation (round 05 #48), cloud photo storage or
-accounts (05b), confirming items in bulk.
+accounts (05b), confirming items in bulk, detail shots (one image per item for now).
 
 ## ADDED Requirements
 
@@ -97,6 +98,35 @@ The source-photo view SHALL let the user draw one box per object to split an ite
 - **WHEN** the user selects six Pyrex bowls and marks them as one lot
 - **THEN** one lot item remains, named and banded as a set by the re-read, and it can be split back into its parts
 
+### Requirement: The family can adjust an item by message
+
+On any item, the family types what they know in their own words, and that item, and only that
+item, follows.
+
+**Fails until:** a message sent from an item screen updates only that item's name, band and reason through the re-read, shows what changed, and can be undone.
+
+The item screen SHALL offer a message box; sending SHALL call the re-read with the item's fields, its picture and the message; the result SHALL update only that item's name, band and reason; the item SHALL show the message and what changed, with **Undo** restoring the previous values; a message SHALL count as a correction; a failed call SHALL leave the item unchanged and keep the message to send again.
+
+#### Scenario: The family names the maker
+
+- **WHEN** the user sends "this is actually a vintage Hermes - adjust pricing" on an item
+- **THEN** that item's name, band and reason update, the item shows the message and what changed, and it is confirmed
+
+#### Scenario: Nothing else changes
+
+- **WHEN** a message updates one item
+- **THEN** no other item in the sale changes
+
+#### Scenario: The family undoes it
+
+- **WHEN** the user taps **Undo** on a change a message made
+- **THEN** the item's previous name, band and reason come back
+
+#### Scenario: The call fails
+
+- **WHEN** the re-read fails or is unavailable after a message
+- **THEN** the item is unchanged and the message stays in the box to send again
+
 ### Requirement: An item is confirmed once it is fixed or marked right
 
 The family tells the app the subject is right, either by correcting it or with one tap, and only confirmed items go on to a price lookup.
@@ -118,4 +148,4 @@ Each item SHALL carry a confirmed state that any correction in this capability s
 #### Scenario: Unconfirmed items stay out of the lookup
 
 - **WHEN** an item flagged for Sell at a high band has not been confirmed
-- **THEN** it keeps the model's band, labelled as a guess, and no lookup runs for it
+- **THEN** it keeps the model's band and no lookup runs for it

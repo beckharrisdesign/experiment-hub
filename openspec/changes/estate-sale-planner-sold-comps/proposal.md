@@ -15,7 +15,13 @@
 > "what if the image is of three separate items? what if the user needs to split out the image
 > or adjust what we've determined is the subject of the image?"
 >
-> — Katy, 2026-10-27 (phone testing round 05a, the model-call review, then the round-02 board)
+> "I want to be able to submit a chat message within each listing page - to adjust the data on
+> that page only. Like entering 'this is actually a vintage Hermes - adjust pricing'"
+>
+> "I also want slightly more granular bands - in a garage sale $1 and $5 are really big buckets"
+>
+> — Katy, 2026-10-27 (phone testing round 05a, the model-call review, the round-02 board, then
+> design review)
 
 ## Outcomes
 
@@ -28,6 +34,8 @@
     **adjust** it, **split** it into separate items, **merge** items or mark them as **one lot**,
     or **draw a box** around something the model missed. Each correction gets a fresh read of
     the new crop.
+  - On any item, the family can **tell it** what's wrong in a message ("this is actually a
+    vintage Hermès"), and that item, and only that item, follows, with an undo.
   - An item flagged for Sell at $100 or more, once confirmed, shows a band set from real sold
     listings, how many sales it rests on, and links to a few of them.
   - The same item seen again is answered from our own saved results without a paid lookup.
@@ -35,7 +43,7 @@
 - **Not doing:** Licensing a price database (WorthPoint, LiveAuctioneers, Invaluable — none
   publish a license; revisit with users). Training or hosting a pricing model (nothing usable
   exists on Hugging Face). Object outlines / segmentation (round 05 #48 stays roadmap; boxes
-  are enough to correct a subject). Cloud photo storage and accounts (05b). Lookups for items
+  are enough to correct a subject). Detail shots: one image per item for now. Cloud photo storage and accounts (05b). Lookups for items
   under $100, Keep, Donate, or unconfirmed items. Any upsell (review queue #58).
 
 ## Why
@@ -74,13 +82,19 @@ two to five items worth checking, and many repeat across houses (Pyrex, cast iro
   as one lot ("Set of 6 Pyrex bowls"); draw a box around something missed to make a new item
   with a picture (add). Each correction sends the new crop through the existing re-read, so the
   name, band and reason follow the subject.
-- **Confirm.** An item becomes *confirmed* when the family corrects it or taps **Looks right**.
-  Confirmation is part of the lookup gate.
+- **Tell it.** A message box on every item: the family's words go through the same re-read
+  with the item's picture, only that item updates, it shows what changed, and **Undo** puts it
+  back.
+- **One image per item.** The detail-shot section leaves the item screen for now.
+- **Confirm.** An item becomes *confirmed* when the family corrects it (box or message) or taps
+  **Looks right**. Confirmation is part of the lookup gate.
 
 **Part 2 — look up its price**
 
 - **The gate.** Only confirmed items, flagged for Sell, at a band of $100 or more get a lookup.
-  Everything else keeps the model's band, labelled as a guess.
+  Everything else shows the model's band.
+- **Finer bands.** Ten garage-sale-sized bands, from under $1 to over $2,000, so a $1 item
+  and a $20 item are not the same answer.
 - **The search query is written last.** Only after an item is confirmed *and* passes the gate,
   a small text-only call writes the query a reseller would type ("Lodge cast iron skillet
   No. 8"; a lot gets a lot query) from the confirmed name, room, mark reading and family note.
@@ -94,8 +108,7 @@ two to five items worth checking, and many repeat across houses (Pyrex, cast iro
   nothing. Over time this is the price database we cannot buy today.
 - **The model reads the comps.** A short text-only call drops comps that are not the same
   object, sets the band from what is left, and returns the ones it kept, so the item shows
-  "Based on 7 sold, $40–$85" with links. Too few matching sales → the band stays a labelled
-  guess.
+  "Based on 7 sold, $40–$85" with links. Too few matching sales → the model's band stays.
 - **Cost logging.** Token usage from every model call and the price of every lookup go to a
   Supabase row per call, so a room's cost is a query, not a guess.
 - **In parallel, not code:** apply for eBay's own sold-price API (Marketplace Insights). If
@@ -116,8 +129,8 @@ two to five items worth checking, and many repeat across houses (Pyrex, cast iro
 - The walkthrough pass (`lib/estate-sale-planner/flag.ts`) and the re-read (`refine.ts`) are
   unchanged in what they return; the search query comes from a new text-only step after
   confirmation. Items carry a photo reference, a lot flag and a confirmed flag. The item
-  screen gains the source photo, the correction tools and the comps line. Bands without comps
-  read as a guess.
+  screen gains the source photo, the correction tools, a message box and the comps line. The band
+  list gets finer (ten bands).
 
 ## Impact
 
