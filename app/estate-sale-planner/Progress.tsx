@@ -7,6 +7,7 @@ import { DONATE_PICKUP, HAUL_AWAY } from "../../lib/estate-sale-planner/config";
 import { paths } from "../../lib/estate-sale-planner/routes";
 import { donateList, keepList, sellList, undecided, type Session } from "../../lib/estate-sale-planner/session";
 import { track } from "../../lib/estate-sale-planner/analytics";
+import ValueTally from "./ValueTally";
 
 interface ProgressProps {
   session: Session;
@@ -44,6 +45,8 @@ export default function Progress({ session }: ProgressProps) {
           </div>
         )}
       </Stack>
+
+      <ValueTally session={session} />
 
       {donate > 0 ? (
         <>

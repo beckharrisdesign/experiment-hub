@@ -5,6 +5,7 @@ import { Button, Callout, Grid, Inline, Input, Stack } from "@beckharrisdesign/m
 import { byRoom, donateList, keepList, sellList, undecided, type Destination, type NewItemInput, type Session, type SessionItem } from "../../lib/estate-sale-planner/session";
 import AddItem from "./AddItem";
 import ItemCard, { ItemRow } from "./ItemCard";
+import ValueTally from "./ValueTally";
 
 interface ListsProps {
   session: Session;
@@ -91,6 +92,7 @@ export default function Lists({ session, fromFixture, onDestination, onOpen, onA
             </Button>
           </div>
         </Stack>
+        <ValueTally session={session} />
         <Stack gap={4}>
           <p className="text-caption uppercase tracking-wider text-muted-foreground">Sell</p>
           <h1 className="text-h2 text-foreground">Might be worth something</h1>
