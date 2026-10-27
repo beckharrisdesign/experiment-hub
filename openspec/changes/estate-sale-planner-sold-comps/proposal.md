@@ -81,8 +81,11 @@ two to five items worth checking, and many repeat across houses (Pyrex, cast iro
 
 - **The gate.** Only confirmed items, flagged for Sell, at a band of $100 or more get a lookup.
   Everything else keeps the model's band, labelled as a guess.
-- **A search name, not a description.** The walkthrough (and each re-read) returns the short
-  query a reseller would type ("Lodge cast iron skillet No. 8"; a lot gets a lot query).
+- **The search query is written last.** Only after an item is confirmed *and* passes the gate,
+  a small text-only call writes the query a reseller would type ("Lodge cast iron skillet
+  No. 8"; a lot gets a lot query) from the confirmed name, room, mark reading and family note.
+  The walkthrough and the re-read do not write queries: most items are never looked up, and a
+  query written before a correction would have to be written again.
 - **One lookup per item, through an adapter.** A sold-listings provider behind one interface,
   starting with a third-party eBay sold-listings API on its entry plan (CompsAPI first; others
   are a config swap). Server-side with the hub's key; the phone never sees it.
@@ -110,8 +113,9 @@ two to five items worth checking, and many repeat across houses (Pyrex, cast iro
 
 ### Modified Capabilities
 
-- The walkthrough pass (`lib/estate-sale-planner/flag.ts`) and the re-read (`refine.ts`) return
-  a search query. Items carry a photo reference, a lot flag and a confirmed flag. The item
+- The walkthrough pass (`lib/estate-sale-planner/flag.ts`) and the re-read (`refine.ts`) are
+  unchanged in what they return; the search query comes from a new text-only step after
+  confirmation. Items carry a photo reference, a lot flag and a confirmed flag. The item
   screen gains the source photo, the correction tools and the comps line. Bands without comps
   read as a guess.
 
@@ -155,4 +159,6 @@ two to five items worth checking, and many repeat across houses (Pyrex, cast iro
   - Page `02 Proposed — flow` (page `0:1`): the first lookup flow (gate, comps store, comps
     pass, cost ledger).
   - Page `03 Proposed — correct, then look up` (page `8:207`): the confirm step between the
-    vision model and the gate.
+    vision model and the gate, and the search query written only after the gate (Katy: "we are
+    still searching before confirming according to 03 -- why confirm afterwards and have to do
+    it all again?").
