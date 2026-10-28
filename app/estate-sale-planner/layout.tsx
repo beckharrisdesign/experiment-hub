@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import AppShell from "./AppShell";
 
 /**
@@ -16,6 +16,13 @@ export const metadata: Metadata = {
     "Photograph a parent's house. A vision model flags what might be worth something, you sort sell, donate, or keep, and one tap schedules the donation pickup.",
   // Add to Home Screen opens the planner standalone — see manifest.webmanifest/route.ts.
   manifest: "/estate-sale-planner/manifest.webmanifest",
+  // iOS takes its home-screen icon from here; the manifest's icons are for everyone else.
+  icons: { apple: "/estate-sale-planner/apple-touch-icon.png" },
+};
+
+/** The browser bars take the planner's warm dark (`.esp-theme` background), not the hub's green. */
+export const viewport: Viewport = {
+  themeColor: "#14100d",
 };
 
 interface EstateSalePlannerLayoutProps {

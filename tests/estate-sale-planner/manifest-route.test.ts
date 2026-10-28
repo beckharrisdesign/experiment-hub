@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { GET } from "@/app/estate-sale-planner/manifest.webmanifest/route";
+import { metadata, viewport } from "@/app/estate-sale-planner/layout";
 
 // ---------------------------------------------------------------------------
 // Web app manifest (founder, 2026-10-28: "lets just do the web manifest")
@@ -33,5 +34,17 @@ describe("GET /estate-sale-planner/manifest.webmanifest", () => {
     expect(sizes).toEqual(expect.arrayContaining(["192x192", "512x512"]));
     expect(m.icons.some((i: { purpose?: string }) => i.purpose === "maskable")).toBe(true);
     for (const icon of m.icons) expect(existsSync(join(process.cwd(), "public", icon.src))).toBe(true);
+  });
+});
+
+describe("planner layout · home screen and browser chrome", () => {
+  it("gives iOS its own home-screen icon, and the file exists", () => {
+    const apple = (metadata.icons as { apple: string }).apple;
+    expect(apple).toBe("/estate-sale-planner/apple-touch-icon.png");
+    expect(existsSync(join(process.cwd(), "public", apple))).toBe(true);
+  });
+
+  it("colors the browser bars with the planner's warm dark, not the hub green", () => {
+    expect(viewport.themeColor).toBe("#14100d");
   });
 });
