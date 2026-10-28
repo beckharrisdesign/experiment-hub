@@ -8,7 +8,8 @@ import { NextResponse } from "next/server";
  * A route handler rather than `app/manifest.ts`, which Next only serves for the whole site;
  * this one is scoped to /estate-sale-planner so the rest of the hub stays a website. The
  * layout links it via `metadata.manifest`. Colors are the `.esp-theme` background
- * (app/globals.css). Icons are placeholders in public/estate-sale-planner/.
+ * (app/globals.css). Icons are in public/estate-sale-planner/, drawn by
+ * scripts/estate-sale-planner/icons.mjs (a price tag with a house in it) until there is final art.
  */
 const MANIFEST = {
   id: "/estate-sale-planner",
