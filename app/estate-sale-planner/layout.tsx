@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   title: "Estate Sale Planner: what's worth keeping",
   description:
     "Photograph a parent's house. A vision model flags what might be worth something, you sort sell, donate, or keep, and one tap schedules the donation pickup.",
+  // Add to Home Screen opens the planner standalone — see manifest.webmanifest/route.ts.
+  manifest: "/estate-sale-planner/manifest.webmanifest",
 };
 
 interface EstateSalePlannerLayoutProps {
