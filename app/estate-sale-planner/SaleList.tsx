@@ -9,11 +9,15 @@ import { formatTally } from "../../lib/estate-sale-planner/tally";
 
 interface SaleListProps {
   entries: HistoryEntry[];
+  /** Sales with a photo pass still being read. */
+  reading?: Set<string>;
   onDelete: (id: string) => void;
 }
 
-/** A sale's state in a word or two, from its counts. The real lifecycle (listed, closed, sold) is 05b. */
-export function saleStatus(e: HistoryEntry): { label: string; variant: "default" | "muted" | "success" } {
+/** A sale's state in a word or two, from its counts. The real lifecycle (listed, closed, sold) is 05b.
+ * A sale whose photos are still being read says so rather than "Empty" (2026-10-28). */
+export function saleStatus(e: HistoryEntry, reading = false): { label: string; variant: "default" | "muted" | "success" } {
+  if (reading) return { label: "Reading photos…", variant: "default" };
   if (e.items === 0) return { label: "Empty", variant: "muted" };
   if (e.undecided > 0) return { label: `${e.undecided} to sort`, variant: "default" };
   return { label: "Sorted", variant: "success" };
@@ -36,7 +40,7 @@ const COLUMNS = "grid grid-cols-3 gap-x-4 md:grid-cols-[minmax(0,2fr)_repeat(3,m
  * 2026-10-27: "Include tallies from the three buckets in each sale row / Don't make content on
  * the second line like this where we don't have to"). The name opens the sale.
  */
-export default function SaleList({ entries, onDelete }: SaleListProps) {
+export default function SaleList({ entries, reading, onDelete }: SaleListProps) {
   const [confirm, setConfirm] = useState<string | null>(null);
   return (
     <div>
@@ -51,7 +55,7 @@ export default function SaleList({ entries, onDelete }: SaleListProps) {
       </div>
       <ul className="divide-y divide-border">
         {entries.map((e) => {
-          const status = saleStatus(e);
+          const status = saleStatus(e, reading?.has(e.id));
           const name = e.name?.trim() || "Untitled sale";
           return (
             <li key={e.id} className={`${COLUMNS} items-center gap-y-2 py-4`}>

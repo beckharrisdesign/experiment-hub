@@ -56,4 +56,12 @@ describe("Home sale rows carry the three pile tallies", () => {
     expect(saleStatus(e).label).toBe(`${e.undecided} to sort`);
     expect(saleStatus({ ...e, undecided: 0 }).label).toBe("Sorted");
   });
+
+  it("a sale whose photos are still being read says so, not Empty", () => {
+    const e = { ...summarize(sorted()), items: 0, undecided: 0 };
+    expect(saleStatus(e).label).toBe("Empty");
+    expect(saleStatus(e, true).label).toBe("Reading photos…");
+    render(<SaleList entries={[e]} reading={new Set([e.id])} onDelete={() => {}} />);
+    expect(screen.getByText("Reading photos…")).toBeTruthy();
+  });
 });

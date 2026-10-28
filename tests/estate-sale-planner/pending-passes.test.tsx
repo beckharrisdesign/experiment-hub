@@ -14,6 +14,12 @@ describe("PendingPasses · photos read in the background", () => {
     expect(screen.queryByRole("button")).toBeNull();
   });
 
+  it("holds places for the items on their way, announced as loading", () => {
+    render(<PendingPasses passes={[pass]} onRetry={() => {}} onDismiss={() => {}} />);
+    expect(screen.getByRole("status", { name: "Finding items in 3 photos" })).toBeTruthy();
+    expect(screen.getAllByTestId("item-placeholder").length).toBe(3);
+  });
+
   it("a failed pass says so and offers Try again or Leave them out", () => {
     const onRetry = vi.fn();
     const onDismiss = vi.fn();

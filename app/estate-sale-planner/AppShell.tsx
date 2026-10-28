@@ -29,6 +29,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   const item = route.itemId && inContext ? inContext.items.find((i) => i.id === route.itemId) : undefined;
   const chrome = chromeFor(route, saleName, item?.name, saleId);
   const left = inContext ? undecided(inContext).length : store.history.find((h) => h.id === saleId)?.undecided ?? 0;
+  const reading = store.pending.some((p) => p.saleId === saleId && !p.error);
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -53,7 +54,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           </Stack>
         </Section>
       </main>
-      <TabBar active={tabFor(route.screen)} saleId={saleId} left={left} />
+      <TabBar active={tabFor(route.screen)} saleId={saleId} left={left} reading={reading} />
     </div>
   );
 }

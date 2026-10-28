@@ -2,7 +2,10 @@
  * Where a walkthrough lives on the device (round 03).
  *
  * - The ACTIVE session is in sessionStorage, as before, so a reload mid-sort
- *   resumes.
+ *   resumes. Which sale that is also lands in localStorage (`ACTIVE_KEY`): added
+ *   to the home screen, iOS closes the app — and wipes sessionStorage — whenever
+ *   it likes, and the next launch reopens that sale from its saved copy
+ *   (founder, 2026-10-28: "lets fix the storage issue").
  * - Every save also lands in localStorage under its own key plus an index, so
  *   the capture screen can list earlier walkthroughs and reopen one. The
  *   paid Sell Sheet is still the only copy that leaves the device.
@@ -17,6 +20,8 @@ import { tallies, type Tally } from "./tally";
 
 const HISTORY_KEY = "esp:history:v1";
 const SAVED_PREFIX = "esp:saved:";
+/** The id of the sale in context, kept where a closed app can't wipe it. */
+const ACTIVE_KEY = "esp:active:v1";
 /** Earlier walkthroughs kept on the device; the oldest full copy is evicted past this. */
 export const HISTORY_LIMIT = 6;
 
@@ -50,9 +55,25 @@ function writeWithFallback(storage: Storage, key: string, session: Session): voi
 export function loadSession(): Session | null {
   try {
     const raw = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Session) : null;
+    if (raw) return JSON.parse(raw) as Session;
+  } catch {
+    // Fall through to the device copy.
+  }
+  // A fresh launch (the app was closed): reopen the last active sale, if it is still here.
+  try {
+    const id = window.localStorage.getItem(ACTIVE_KEY);
+    return id ? openSaved(id) : null;
   } catch {
     return null;
+  }
+}
+
+function setActive(id: string | null): void {
+  try {
+    if (id) window.localStorage.setItem(ACTIVE_KEY, id);
+    else window.localStorage.removeItem(ACTIVE_KEY);
+  } catch {
+    // Blocked storage: this tab still works, a relaunch lands on Home.
   }
 }
 
@@ -104,6 +125,7 @@ function writeHistory(entries: HistoryEntry[]): void {
 /** Save the active session, and keep a copy on the device for the history list. */
 export function saveSession(session: Session | null): void {
   if (!session) {
+    setActive(null);
     try {
       window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
     } catch {
@@ -111,6 +133,7 @@ export function saveSession(session: Session | null): void {
     }
     return;
   }
+  setActive(session.id);
   try {
     writeWithFallback(window.sessionStorage, SESSION_STORAGE_KEY, session);
   } catch {
@@ -151,7 +174,12 @@ export function openSaved(id: string): Session | null {
     const raw = window.localStorage.getItem(SAVED_PREFIX + id);
     if (!raw) return null;
     const session = JSON.parse(raw) as Session;
-    writeWithFallback(window.sessionStorage, SESSION_STORAGE_KEY, session);
+    setActive(session.id);
+    try {
+      writeWithFallback(window.sessionStorage, SESSION_STORAGE_KEY, session);
+    } catch {
+      // The device copy is enough to work from.
+    }
     return session;
   } catch {
     return null;
@@ -162,8 +190,9 @@ export function deleteSaved(id: string): void {
   try {
     window.localStorage.removeItem(SAVED_PREFIX + id);
     writeHistory(listHistory().filter((e) => e.id !== id));
-    const active = loadSession();
-    if (active?.id === id) window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    if (window.localStorage.getItem(ACTIVE_KEY) === id) setActive(null);
+    const raw = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+    if (raw && (JSON.parse(raw) as Session).id === id) window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
   } catch {
     // Nothing to do.
   }

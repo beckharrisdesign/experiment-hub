@@ -5,16 +5,17 @@ import { Button, Stack } from "@beckharrisdesign/mvds";
 import { paths } from "../../../../../lib/estate-sale-planner/routes";
 import type { Session } from "../../../../../lib/estate-sale-planner/session";
 import { useSale } from "../../store";
+import Loading from "../../../Loading";
 
 interface SaleScreenProps {
   id: string;
   children: (session: Session) => React.ReactNode;
 }
 
-/** Loads the sale for a /sales/[id] screen; renders nothing while reading the device and an honest message when it is not here. */
+/** Loads the sale for a /sales/[id] screen; a loading placeholder while reading the device and an honest message when it is not here. */
 export default function SaleScreen({ id, children }: SaleScreenProps) {
   const state = useSale(id);
-  if (state.status === "loading") return null;
+  if (state.status === "loading") return <Loading label="Loading your sale" />;
   if (state.status === "missing") {
     return (
       <Stack gap={16}>
