@@ -41,11 +41,10 @@ and needs a home that doesn't move every screen when it arrives.
 ## What changes
 
 - The `TopBar` row becomes a real navigation control on a phone, using MVDS `Button`, and the row
-  grows to fit 44 px targets (about 60 px tall). Two treatments are drawn in round 02, and **one
-  gets picked** before specs:
+  grows to fit 44 px targets (about 60 px tall). Two treatments are drawn in round 02; **A was picked**
+  (see Decision):
   - **A, back button:** one secondary button with a chevron and the parent's name, then the page
-    title, then the menu. Deeper ancestors drop off. This is the familiar phone pattern, and the
-    recommended one.
+    title, then the menu. Deeper ancestors drop off. This is the familiar phone pattern.
   - **B, breadcrumb chips:** the full trail stays, and every ancestor becomes a 44 px outline chip
     with › between, with the current page in bold. More context, but more width; long sale names
     truncate inside the chip.
@@ -78,10 +77,10 @@ of its own.
 - **Design:** Figma `esp-header-affordance`, pages `01 Current state` and `02 Proposed`.
 - **No data, API or storage changes.**
 
-## Open question for Katy
+## Decision
 
-- **A or B?** A is the recommendation: it's the pattern a phone user already knows, and it leaves
-  room for the menu without truncating. B keeps the whole trail visible.
+- **A, back button.** Katy, 2026-10-28: "A for now". B stays drawn in round 02 in case the full
+  trail comes back.
 
 ## Optional links
 
