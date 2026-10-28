@@ -119,6 +119,7 @@
   - Tests in `refine-route.test.ts` and `session.test.ts`.
 - [x] 3.14 **Confirmed state.** **Looks right** on the item screen and the source photo screen. Confirmed is persisted in `storage.ts` and shown under the photo.
 - [x] 3.15 **Copy and accessibility.** Run `skills/user-communication` over the new copy. Check focus order, the radiogroup, the breadcrumb `aria-current`, and 44 px targets.
+  - 2026-10-28 correction: the 44 px claim didn't hold on a phone (tab bar 24 px, most buttons 32 px, fields 14 px so iOS zoomed on focus). Fixed on `claude/esp-phone-ergonomics` with a coarse-pointer floor; Playwright at iPhone 12 Pro Max (428×926) finds 0 interactive targets under 44 px across all eight routes (`assets/phone-*-sort.png`).
 - [x] 3.16 **Built captures** at 480 and 1024 against round 17, saved to `openspec/changes/estate-sale-planner-sold-comps/assets/built-*.png` (fixture mode, stand-in photos, 2026-10-27). Drift: the photo check's corner dots are 8 px (design.md) where the Figma stand-in drew 12; the confidence badge on list cards picks up the brand primary.
 
 ### PR 2: sold-price lookup
@@ -152,7 +153,7 @@
 
 ## 4. QA
 
-- [ ] 4.1 **Manual walkthrough on a phone,** fixture mode then keyed:
+- [~] 4.1 **Manual walkthrough on a phone,** fixture mode then keyed:
   1. Photograph a room.
   2. Open an item and confirm it.
   3. Adjust a box, split, add, merge and lot.
@@ -161,6 +162,7 @@
   6. Check the price and the bands.
   7. With a provider key, confirm a $100+ Sell item, see "Based on N sold", and reopen it to see the cache hit.
   8. Check the cost rows in Supabase.
+  - 2026-10-28: first pass on an iPhone 12 Pro Max found jitter, content off the viewport and small targets (fixed on `claude/esp-phone-ergonomics`). Steps 1–8 still to walk on the fixed build.
 - [ ] 4.2 **Automated:** `pnpm vitest run tests/estate-sale-planner` green, plus `pnpm tsc --noEmit` and `pnpm lint`.
 - [ ] 4.3 **Visual check against Figma round 17** at 480 and 1024 (built captures from 3.16).
 - [ ] 4.4 **Validate and record:**
