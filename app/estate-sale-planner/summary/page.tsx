@@ -6,6 +6,7 @@ import { Button, Callout, Stack } from "@beckharrisdesign/mvds";
 import { sellList, overrides, type Session } from "../../../lib/estate-sale-planner/session";
 import { loadSession } from "../../../lib/estate-sale-planner/storage";
 import { paths } from "../../../lib/estate-sale-planner/routes";
+import Loading from "../Loading";
 
 /**
  * The printable sell list. The paid Sell Sheet that sat beside it is out for
@@ -22,7 +23,7 @@ export default function SummaryPage() {
     setSession(loadSession());
   }, []);
 
-  if (session === undefined) return null;
+  if (session === undefined) return <Loading label="Loading the sell list" />;
 
   if (!session) {
     return (

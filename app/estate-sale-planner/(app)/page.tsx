@@ -5,6 +5,7 @@ import { Button, Stack } from "@beckharrisdesign/mvds";
 import { paths } from "../../../lib/estate-sale-planner/routes";
 import { track } from "../../../lib/estate-sale-planner/analytics";
 import SaleList from "../SaleList";
+import Loading from "../Loading";
 import { useSaleStore } from "./store";
 
 /**
@@ -16,7 +17,7 @@ import { useSaleStore } from "./store";
 export default function HomePage() {
   const router = useRouter();
   const store = useSaleStore();
-  if (!store.ready) return null;
+  if (!store.ready) return <Loading label="Loading your sales" />;
 
   const start = () => {
     if (store.history.length > 0) track("esp_new_walkthrough");
@@ -52,7 +53,7 @@ export default function HomePage() {
           {store.history.length} {store.history.length === 1 ? "sale" : "sales"} on this device. Open one to keep sorting, or start another.
         </p>
       </Stack>
-      <SaleList entries={store.history} onDelete={store.deleteSale} />
+      <SaleList entries={store.history} reading={new Set(store.pending.filter((p) => !p.error).map((p) => p.saleId))} onDelete={store.deleteSale} />
       <div className="flex justify-center">
         <Button size="lg" variant="outline" onClick={start}>
           Start a new sale

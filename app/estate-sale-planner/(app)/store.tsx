@@ -42,7 +42,7 @@ export interface PendingPass {
 export interface SaleStore {
   /** False until the device's storage has been read once (first client render). */
   ready: boolean;
-  /** The sale in context — the one open in sessionStorage. */
+  /** The sale in context — the one open in sessionStorage, reopened from the device after the app is closed. */
   session: Session | null;
   /** Every sale saved on this device, newest first. */
   history: HistoryEntry[];
@@ -128,6 +128,8 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     setSession(existing);
     setHistory(listHistory());
     setReady(true);
+    // Ask the browser not to evict the device copies under storage pressure; best effort, no prompt.
+    void navigator.storage?.persist?.().catch(() => {});
   }, []);
 
   const update = useCallback((next: Session) => {

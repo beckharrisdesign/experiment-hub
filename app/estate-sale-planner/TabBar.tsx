@@ -10,6 +10,8 @@ interface TabBarProps {
   saleId?: string;
   /** Items still to sort in that sale, for the Sort label. */
   left: number;
+  /** Photos for that sale are still being read: more items are coming, so it isn't "Sorted" yet. */
+  reading?: boolean;
 }
 
 function CameraGlyph() {
@@ -34,7 +36,7 @@ function CameraGlyph() {
 /** Each tab shares the row's width and is a full 44 px tall, so the whole slot is the target, not just the word. */
 const TAB = "h-11 min-w-0 flex-1 px-1";
 
-export default function TabBar({ active, saleId, left }: TabBarProps) {
+export default function TabBar({ active, saleId, left, reading = false }: TabBarProps) {
   const tab = (id: Tab, label: React.ReactNode, href: string | null) => {
     const lit = active === id;
     if (!href) {
@@ -58,6 +60,8 @@ export default function TabBar({ active, saleId, left }: TabBarProps) {
       <>
         Sort<span className="hidden sm:inline"> · {left}</span>
       </>
+    ) : reading ? (
+      "Sort"
     ) : (
       "Sorted"
     )
