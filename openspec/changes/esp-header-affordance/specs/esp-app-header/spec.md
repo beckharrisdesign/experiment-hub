@@ -69,16 +69,16 @@ The header SHALL render a 44 × 44 px MVDS icon `Button` with a menu glyph and t
 
 ### Requirement: The menu opens a placeholder and nothing else
 
-Tapping the menu says account and profile options are coming, and closes without side effects.
+Tapping the menu opens an empty "Account & profile" panel, which closes without side effects.
 
-The Menu button SHALL open a dismissible panel stating that account and profile options are coming
-soon, containing no other actions, closable by its close button, Escape, or tapping outside, with
+The Menu button SHALL open a dismissible panel headed "Account & profile" with a Close button and
+no other content or actions, closable by its close button, Escape, or tapping outside, with
 focus returned to the Menu button on close.
 
 #### Scenario: Open and close the placeholder
 
 - **WHEN** the family taps Menu
-- **THEN** a panel says account and profile options are coming soon, and closing it (close button, Escape, or tapping outside) returns focus to Menu and changes nothing else
+- **THEN** a panel headed "Account & profile" opens with only a Close button, and closing it (close button, Escape, or tapping outside) returns focus to Menu and changes nothing else
 
 ### Requirement: The taller header still fits its contents
 

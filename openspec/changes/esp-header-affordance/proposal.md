@@ -21,8 +21,7 @@
     and a back cue, at least 44 px, not muted text that happens to be a link.
   - The current page's name still shows in the header.
   - A menu button sits in the upper right of the header on every planner page, 44 px, labelled
-    for screen readers. Tapping it opens a placeholder that says account and profile options are
-    coming, and nothing else.
+    for screen readers. Tapping it opens an empty "Account & profile" panel, and nothing else.
   - The item screen's destination toggle still rides in the sticky header under this row.
 - **Not doing:**
   - Accounts, sign-in, personas or any real menu items. The menu is a placeholder only.
@@ -49,7 +48,7 @@ and needs a home that doesn't move every screen when it arrives.
     with › between, with the current page in bold. More context, but more width; long sale names
     truncate inside the chip.
 - A placeholder menu button (MVDS secondary icon `Button`, menu glyph) is pinned to the upper right
-  on every planner page, and opens a "coming soon" sheet.
+  on every planner page, and opens an empty "Account & profile" panel.
 - The header's height token (`--chrome-top-height`) follows, including the item screen's taller
   variant.
 
