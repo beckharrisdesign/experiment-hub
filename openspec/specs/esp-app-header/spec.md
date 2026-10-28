@@ -1,7 +1,7 @@
 # esp-app-header Specification
 
 ## Purpose
-TBD - created by archiving change esp-header-affordance. Update Purpose after archive.
+The Estate Sale Planner's sticky header: a Back button to the parent screen, the current page's name, and a Menu slot for account and persona work. From `esp-header-affordance` (archived 2026-10-28).
 
 ## Requirements
 
