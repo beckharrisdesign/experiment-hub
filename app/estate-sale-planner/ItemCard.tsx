@@ -81,9 +81,9 @@ export function ItemRow({ item, onDestination, onOpen }: ItemRowProps) {
       <button type="button" className="flex min-w-0 flex-1 items-center gap-4 text-left" onClick={() => onOpen(item.id)}>
         {item.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.image} alt="" className="size-10 shrink-0 rounded-md object-cover ring-1 ring-foreground/10" />
+          <img src={item.image} alt="" className="size-11 shrink-0 rounded-md object-cover ring-1 ring-foreground/10" />
         ) : (
-          <span className="size-10 shrink-0 rounded-md bg-muted" aria-hidden />
+          <span className="size-11 shrink-0 rounded-md bg-muted" aria-hidden />
         )}
         <span className="min-w-0 flex-1 truncate text-body text-foreground">{item.name}</span>
         <span className="shrink-0 whitespace-nowrap text-body font-medium text-success">{item.band}</span>

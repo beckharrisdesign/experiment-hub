@@ -20,7 +20,7 @@ import type { Chrome as ChromeInfo } from "../../lib/estate-sale-planner/routes"
 export default function TopBar({ chrome, children }: { chrome: ChromeInfo; children?: React.ReactNode }) {
   const { crumbs, title } = chrome;
   const parent = crumbs.length - 1;
-  const height = children ? "6.5rem" : "2.75rem";
+  const height = children ? "6.75rem" : "2.75rem";
   return (
     <Chrome position="top" bg="background" className="border-b border-border print:hidden" style={{ ["--chrome-top-height" as string]: height }}>
       <Container size="xl" className="h-full">
@@ -36,7 +36,7 @@ export default function TopBar({ chrome, children }: { chrome: ChromeInfo; child
               <li key={`${c.href}-${i}`} className={`${i < parent ? "hidden sm:flex" : "flex"} min-w-0 shrink items-center gap-2`}>
                 <Link
                   href={c.href}
-                  className="truncate rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="block truncate rounded-sm py-3 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   {...(i === parent ? { "aria-label": `Back to ${c.label}` } : {})}
                 >
                   {c.label}

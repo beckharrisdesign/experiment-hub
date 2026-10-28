@@ -31,7 +31,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   const left = inContext ? undecided(inContext).length : store.history.find((h) => h.id === saleId)?.undecided ?? 0;
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       <TopBar chrome={chrome}>
         {/* The item screen's destination rides in the sticky header (sold-comps D21). */}
         {route.screen === "item" && item && (

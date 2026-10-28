@@ -64,8 +64,10 @@ export default function Swipe({ session, onDestination, onOpen, onUndo, reading 
     else if (moved >= SWIPE_THRESHOLD_PX) onDestination(item.id, "keep");
   };
 
+  // Card, buttons and Undo fit one phone screen without scrolling (phone test 2026-10-28): the
+  // photo is capped to a share of the visible height and the gaps are tighter than elsewhere.
   return (
-    <Stack gap={24} align="center">
+    <Stack gap={16} align="center">
       <Stack gap={4} align="center">
         <h1 className="text-h3 text-foreground">Sell, donate, or keep?</h1>
         <p className="text-caption uppercase text-muted-foreground">
@@ -84,9 +86,9 @@ export default function Swipe({ session, onDestination, onOpen, onUndo, reading 
       >
         {item.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.image} alt={item.name} className="aspect-square w-full bg-muted object-contain" draggable={false} />
+          <img src={item.image} alt={item.name} className="aspect-square max-h-[36dvh] w-full bg-muted object-contain" draggable={false} />
         ) : (
-          <div className="aspect-[4/3] w-full bg-muted" aria-hidden />
+          <div className="aspect-[4/3] max-h-[36dvh] w-full bg-muted" aria-hidden />
         )}
         <CardHeader>
           <CardTitle className="text-h3">{item.name}</CardTitle>
