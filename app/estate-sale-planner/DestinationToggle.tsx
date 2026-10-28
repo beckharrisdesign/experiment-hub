@@ -63,7 +63,7 @@ export default function DestinationToggle({ value, onChange, size = "sm", label,
                 }
               }}
               className={cn(
-                "h-10 rounded-md text-small font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "h-11 rounded-md text-small font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 checked ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
               )}
             >

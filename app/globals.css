@@ -181,6 +181,27 @@
   --input: #3b2f26;
 }
 
+/* Phone ergonomics (founder phone test, 2026-10-28: "the affordances on the
+ * buttons are way too small" and "half the time things have scrolled off the
+ * viewport"). On a touch screen every MVDS button and segment is at least
+ * 44 px — Apple's minimum target — whatever its size variant, and fields are
+ * 16 px: anything smaller makes iOS Safari zoom in on focus and stay zoomed,
+ * which is what pushed the page past the edges. Desktop keeps MVDS density. */
+@media (pointer: coarse) {
+  .esp-theme :is([data-slot="button"], [role="radio"], [role="tab"]) {
+    min-height: 44px;
+  }
+  .esp-theme :is([data-slot="button"], [role="radio"]) {
+    min-width: 44px;
+  }
+  .esp-theme :is([data-slot="input"], [data-slot="select-trigger"], select) {
+    min-height: 44px;
+  }
+  .esp-theme :is(input, textarea, select) {
+    font-size: 16px;
+  }
+}
+
 /* MVDS sets `--font-heading: var(--font-sans)` — its headings are the UI sans.
  * The hub repoints both the element selectors and the .font-heading utility at
  * Fraunces, and MVDS's CardTitle renders a div carrying that utility, so both

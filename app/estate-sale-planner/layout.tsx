@@ -22,7 +22,7 @@ interface EstateSalePlannerLayoutProps {
 
 export default function EstateSalePlannerLayout({ children }: EstateSalePlannerLayoutProps) {
   return (
-    <div className="mvds-theme esp-theme min-h-screen bg-background text-foreground">
+    <div className="mvds-theme esp-theme min-h-dvh bg-background text-foreground">
       <AppShell>{children}</AppShell>
     </div>
   );
