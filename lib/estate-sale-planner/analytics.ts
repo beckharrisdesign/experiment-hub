@@ -27,8 +27,17 @@ export type FunnelEvent =
   | "esp_item_reread_retry"
   | "esp_item_corrected"
   | "esp_item_message"
-  | "esp_photos_evicted";
+  | "esp_photos_evicted"
+  // esp-header-affordance: does anyone reach for the menu placeholder?
+  | "esp_menu_open";
 
-export function track(event: FunnelEvent, params: Record<string, string | number | boolean | undefined> = {}) {
-  trackEvent(event, { experiment_slug: EXPERIMENT_ID, surface_type: "prototype", ...params });
+export function track(
+  event: FunnelEvent,
+  params: Record<string, string | number | boolean | undefined> = {},
+) {
+  trackEvent(event, {
+    experiment_slug: EXPERIMENT_ID,
+    surface_type: "prototype",
+    ...params,
+  });
 }
