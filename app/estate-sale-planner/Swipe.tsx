@@ -86,9 +86,9 @@ export default function Swipe({ session, onDestination, onOpen, onUndo, reading 
       >
         {item.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.image} alt={item.name} className="aspect-square max-h-[36dvh] w-full bg-muted object-contain" draggable={false} />
+          <img src={item.image} alt={item.name} className="aspect-square max-h-[33dvh] w-full bg-muted object-contain" draggable={false} />
         ) : (
-          <div className="aspect-[4/3] max-h-[36dvh] w-full bg-muted" aria-hidden />
+          <div className="aspect-[4/3] max-h-[33dvh] w-full bg-muted" aria-hidden />
         )}
         <CardHeader>
           <CardTitle className="text-h3">{item.name}</CardTitle>
