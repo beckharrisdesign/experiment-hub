@@ -121,6 +121,58 @@ Two channels, both anchored to the day edits land:
 4. ✅ Ads-panel relevance handled on 4414949521 (2026-09-17) — **`cross stitch designs` marked not relevant, not `digital products`.** Katy’s call, and the better one: cross stitch is a different craft, so that term was drawing the wrong buyers outright, while `digital products` is at least accurate (28 impressions / 0 clicks — useless, not wrong). Permitted under the unassigned-listing rule below: ad-keyword relevance is not listing content. Surface is the [Etsy Ads dashboard](https://www.etsy.com/your/shops/me/advertising) (Marketing → Etsy Ads → the listing → search-terms panel) — **not** the listing editor, which must not be saved on this listing during the window. *Day-30 note: this listing’s `digital products` baseline row (28/0) will have shifted for a reason that is not the experiment.*
 5. ✅ Duplicate draft bundles resolved 2026-09-17 — **both** 4522856685 and 4522923804 were deleted (the ask was one), along with an unrelated `Custom engraved pet keychain` draft (4522917501). Verified in `etsy_listing_snapshots`: last seen 2026-09-16 18:51 UTC, absent from the 2026-09-17 10:49 UTC run, and **zero duplicate SKUs shop-wide** in that run — the daily `conflicts: 1` warning is cleared. All 18 experiment listings (4 protected / 6 treatment / 6 control / 2 unassigned) are present in the same run, so nothing measured was caught in the cleanup. Note the deleted drafts were the *Affirmation Garden Markers* plant-tag bundle (SKU `WH-UN-B-7584`), not an embroidery bundle; it no longer exists in any form and would need rebuilding to publish.
 6. ✅ Baselines captured 2026-09-14 — Search Analytics terms + 7 ad-panel rows (tables above)
-7. ☐ Wait — sync measures daily; day-14 sanity check due 2026-09-29
-8. ☐ Day 30 (2026-10-15): re-capture ad panels + Search Analytics, run treatment-vs-control comparison, call the verdict.
+7. ✅ Daily sync ran through the window. Day-14 (2026-09-29) snapshot, computed retroactively at readout: treatment +8 views vs control +15 — no early signal either way.
+8. ✅ Day 30 (2026-10-15): readout taken — **verdict: Flat.** See [Day-30 readout](#day-30-readout-2026-10-15) below.
    This date is the **[2026-10-15 release](../../../docs/ETSY_RELEASE_2026-10-15.md)** — the readout gates everything else in it, including the catalog re-sectioning and the P4/P5 deferrals. Take the readout first.
+
+## Day-30 readout (2026-10-15)
+
+**Verdict: Flat.** Neither win condition was met, and the one treatment listing that moved was driven by a Pinterest pin, not by its new title and tags. The bigger finding: **Etsy search sends W&H almost no traffic**, so a title + tag intervention had very little to act on. Next hypothesis is **off-Etsy discovery (Pinterest)**, not thumbnails — see "What changes" below.
+
+Evidence files (Katy's captures, 2026-10-15): `~/Documents/Claude/Projects/Watermark & Hue/readout-2026-10-15/` — `ads-panels/`, `stats-referrers/`, `listing-stats/`, `etsy-ads-daily-2026-09-15_2026-10-15.csv`, `erank-spotted-on-etsy.csv`, `erank-tag-report.csv`.
+
+### Organic: `views_delta` per listing (day 0 = 2026-09-15 snapshot → day 30 = 2026-10-15 snapshot)
+
+| Group | Listing | 9/15 | 10/15 | Δ views | Δ favs |
+|---|---|---|---|---|---|
+| Treatment | 4415081378 diamond wreath | 9 | 9 | 0 | 0 |
+| Treatment | 4466797252 branch wreath | 5 | 39 | **34** | 0 |
+| Treatment | 4466789627 geometric wheel | 26 | 29 | 3 | 0 |
+| Treatment | 4466082116 geometric rosette | 4 | 8 | 4 | 0 |
+| Treatment | 4465356349 leaf fan | 3 | 3 | 0 | 0 |
+| Treatment | 4465359686 leaf & berry folk | 4 | 8 | 4 | 0 |
+| **Treatment mean** | | | | **7.5** (2.2 excl. branch wreath) | 0 |
+| Control | 4466078772 folk tulip | 3 | 3 | 0 | 0 |
+| Control | 4466791377 leaf | 3 | 5 | 2 | 0 |
+| Control | 4417250834 ornate floral | 8 | 11 | 3 | 0 |
+| Control | 4466795015 firecracker | 5 | 5 | 0 | 0 |
+| Control | 4466795496 leaf floral | 2 | 7 | 5 | 0 |
+| Control | 4465357735 beginner botanical | 11 | 26 | 15 | 0 |
+| **Control mean** | | | | **4.2** | 0 |
+
+- **Win rule:** treatment ≥ 2× control → 1.8×, not met. ≥ 2 treatment listings at 10+ views → 1 (branch wreath), not met.
+- **Branch wreath is a social spike, not a search effect.** It gained 33 views on 2026-10-03 → 10-05 and none after. Its listing stats (Jan–Oct) show **29 of 32 visits from social media**, 0 from Etsy search, 0 from Etsy Ads (shop-wide ads clicks were 0 on Oct 3–5).
+- **Control is contaminated the other way:** beginner botanical (+15) is the target of a live Pinterest ad; social media is its top source (7 of 16 visits).
+- **Protected listings dipped, as did the whole shop.** Δ views in the window vs the ~30 days before (2026-08-12 → 09-14): leaf mandala +8 vs +46, geometric diagonals +9 vs +24, geometric lines +9 vs +9, starburst +9 vs +11 (total 35 vs 90, −61%). Etsy Ads impressions fell from ~80/day in mid-Sept to ~40/day in Oct, and Shop Stats show "Etsy app & other pages" visits falling since August. The decline hit every group, so it doesn't change the comparison, but it means the window was a shrinking-traffic month.
+
+### Ads: secondary signal not measurable
+
+- Re-captured listing ad panels (Sep 15 – Oct 15): **"Targeted keywords (0)" on nearly every panel.** Only two rows exist shop-wide — 4414949521 "cross stitch border" (1 view; same cross-stitch family as the term marked not-relevant on 9/17) and the Christmas Classics bundle "advent embroidery pattern" (5 views, 0 clicks). None of the 7 baseline rows can be compared.
+- Whole-shop ads, 30 days: ~12 clicks, ~$1.50 spend, 0 orders. Sub-noise.
+- Not captured: ad panels for 3 treatment (4415081378, 4465356349, 4465359686) and 4 control listings (4466078772, 4466791377, 4466795015, 4466795496). Given every other panel showed zero keywords, these would not change the call.
+
+### Search: Etsy search is ~1% of visits
+
+- Shop Stats → traffic (Jan–Oct 2026): Etsy app & pages 32%, **social media 27%**, direct & referral 18%, Etsy Ads 12%, Etsy marketing & SEO 8%, **Etsy search 1%**.
+- Etsy search: **3 search terms all year, 1 visit each** ("mandala embroidery pattern download", "embroidered kippah women", "embroidery neckline designs geometric"); **0 Etsy-search visits in October.**
+- Across the 15 listings with per-listing stats: Etsy app & pages 63 visits, social 52, Etsy Ads 29, **Etsy search 3** (leaf mandala 2, geometric lines 1).
+- Social is accelerating: ~10 visits in Sept → ~44 in Oct; pinterest.com is the single largest referrer (39).
+- eRank (2026-10-14): diamond wreath (treatment) spotted at page 2 #29 for "geometric wreath" — the only sign of a treatment listing ranking on its new descriptor. One data point.
+
+### What changes
+
+1. **Keyword work is not the constraint — Etsy search barely sends traffic.** The treatment copy stays (it's cleaner, de-duplicated and follows the copy rules); nothing is reverted.
+2. **Next hypothesis: off-Etsy discovery.** One pin moved branch wreath ~6×. Pinterest pins pointed at specific listings, each with its own Etsy tracking link, replace thumbnails as the next test. Unblock Pin Builder image hosting first.
+3. **Holiday listings need pins now.** The personalized snow globe patterns (4576478385, 4576478415, 4576496750) have 0–1 visits all year and the Grandma Hobbies pin (4555463082) has 0. Etsy search won't surface them before November.
+4. **Freeze lifts.** Protected/control/treatment listings are open for edits. The catalog-wide title sweep to Etsy's Apr 2026 rules goes ahead, but as hygiene, not as the traffic lever.
+5. **Physical product tests** (Notion: Physical Product Experiments — Oct 2026) should launch each listing with its own pin from day one, or they will land in the "under 100 views → fix traffic first" bucket.
