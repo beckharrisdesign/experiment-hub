@@ -30,6 +30,6 @@
 
 ## 4. QA
 
-- [ ] 4.1 Manual walkthrough on the phone (home-screen app): Home → sale → Sort → Back → Back; open an item and a source photo and back out; open and close Menu three ways; check a long sale name
+- [x] 4.1 Manual walkthrough on the phone (home-screen app): Home → sale → Sort → Back → Back; open an item and a source photo and back out; open and close Menu three ways; check a long sale name — Katy, on her phone after #568 merged: "I've done a phone walk through -- looks good!" (2026-10-28)
 - [x] 4.2 Automated: `pnpm vitest run tests/estate-sale-planner` (new `top-bar.test.tsx` and `menu-placeholder.test.tsx`), `eslint`, `tsc --noEmit` — 24 files, 190 tests pass (14 new); eslint 0 errors; tsc clean for planner files (2026-10-28)
 - [x] 4.3 Playwright at iPhone 12 Pro Max (428 × 926) and 360 px: every route's header controls are ≥ 44 px with no horizontal overflow; capture against round 02.1 — all eight routes at 428 and 360; `assets/built-*-428.png` (2026-10-28)
