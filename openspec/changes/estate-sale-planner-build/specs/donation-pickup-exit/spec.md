@@ -3,8 +3,8 @@
 See `../../proposal.md`. This capability is the exit on the Donate side: the donate list goes
 to a pickup service in one counted tap, and the user keeps a printable sell summary (the
 paid Sell Sheet is `../sell-sheet/spec.md`). There is no Toss list (founder instruction,
-round 03); junk haul survives only as a demoted link for a pile no charity will take. Not
-doing: booking in-app, the sell-side referral (Build Unit 2).
+round 03), and no haul-away exit (founder, 2026-10-30). Not doing: booking in-app, the
+sell-side referral (Build Unit 2).
 
 ## ADDED Requirements
 
@@ -27,10 +27,10 @@ The exit SHALL be a single centered button on its own line, SHALL record the tap
 - **WHEN** the user indicates the service does not cover them
 - **THEN** the fallback pickup link is offered and the tap is still counted, labelled as fallback
 
-#### Scenario: A pile that is only trash
+#### Scenario: A request for the old haul-away exit
 
-- **WHEN** the user follows the demoted haul-away link
-- **THEN** the tap is recorded with `kind: haul` and the junk-removal link opens; the fallback flag does not apply
+- **WHEN** the exit route is called with `kind=haul`
+- **THEN** it is treated as the donation pickup: the tap is recorded with `kind: donate` and the pickup link opens
 
 ### Requirement: The sell list survives the session
 

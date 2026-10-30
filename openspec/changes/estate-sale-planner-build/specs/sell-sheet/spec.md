@@ -57,7 +57,7 @@ The exit and checkout routes SHALL insert a row in `esp_events` with the session
 
 #### Scenario: Exit tap with the database configured
 
-- **WHEN** the user taps the haul-away button
+- **WHEN** the user taps the donation pickup button
 - **THEN** an `esp_events` row is written and the redirect still happens
 
 #### Scenario: Exit tap without the database

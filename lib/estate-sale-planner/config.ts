@@ -75,26 +75,16 @@ export const DONATE_PICKUP = {
   },
 } as const;
 
-/**
- * Haul-away, demoted to a secondary link for the houses that still have a
- * pile no charity will take. Same placeholder referral posture.
- */
-export const HAUL_AWAY = {
-  name: "1-800-GOT-JUNK",
-  tel: "tel:+18004685865",
-  web: "https://www.1800gotjunk.com/",
-  referral: "bhd-labs-esp",
-} as const;
-
 /** Browser-side session key; closing the tab loses it, and the UI says so. v2: destinations. */
 export const SESSION_STORAGE_KEY = "esp:session:v2";
 
 /**
- * The paid moment on the family's side: the Sell Sheet. The free flow ends in
- * a print; the sheet is the same list with the photos, saved at a link that
- * survives closing the tab and can be sent to siblings or the estate-sale
- * company. One-time Stripe Checkout, same wiring as etsy-listing-kit
- * (review queue #32 for the price).
+ * The Sell Sheet: the sell list with its photos, saved at a link that survives
+ * closing the tab. Built as a one-time Stripe Checkout (etsy-listing-kit
+ * wiring) and left unlinked. Payment is not wired for now, and the sheet is
+ * not where a fee is planned (founder, 2026-10-30: "it'll be a fee to do the
+ * digging for pricing but everything else can stay free") — the future paid
+ * step is the sold-price lookup; review queue #32.
  */
 export const SELL_SHEET = {
   priceCents: 500,

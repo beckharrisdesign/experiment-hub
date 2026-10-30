@@ -26,9 +26,9 @@
       `assets/built-02.1-swipe-mobile-480.png`).
 - [x] 1.6 User overrides a Sell flag — `session.test.ts` ("overriding a Sell flag moves it off
       Sell and counts as an override"; band still on the item); `esp_sell_override` event.
-- [x] 1.7 User taps the haul-away button — `exit-route.test.ts` + live curl: `302` →
+- [~] 1.7 *Superseded 2026-10-30: haul-away removed (review queue #7, PR TBD).* User taps the haul-away button — `exit-route.test.ts` + live curl: `302` →
       `tel:+18004685865`, structured record logged (2026-10-13).
-- [x] 1.8 Haul-away is not available in the user's area — `fallback=1` → `302` → generic
+- [~] 1.8 *Superseded 2026-10-30 with 1.7.* Haul-away is not available in the user's area — `fallback=1` → `302` → generic
       hauler link, record carries `fallback: true` (curl + test, 2026-10-13).
 - [x] 1.10 User toggles any item between keep, sell, donate and undoes it — `session.test.ts`
       ("toggles between destinations any number of times…"); list, card, item and sort
@@ -174,7 +174,7 @@
       OpenAI adapter, sheet validation (details, note), checkout route, webhook route.
       Green 2026-10-13 (round 03). Round 04 adds append / rename / known / demo-growth
       coverage; round 05a green 2026-10-15.
-- [ ] 4.4 **Katy:** ~~apply migration 016~~ (done 2026-10-13); create the Stripe webhook endpoint for
+- [~] 4.4 *Not needed for now (2026-10-30, review queue #32): no payment is wired; the planned fee is the sold-price lookup.* **Katy:** ~~apply migration 016~~ (done 2026-10-13); create the Stripe webhook endpoint for
       `/estate-sale-planner/api/webhook` (test mode first) and set
       `ESP_STRIPE_WEBHOOK_SECRET_TEST`; one test-mode purchase end to end (checkout → webhook
       → sheet unlocks → email row in `experiment_submissions`).
