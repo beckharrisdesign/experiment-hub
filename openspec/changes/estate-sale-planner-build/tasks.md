@@ -26,7 +26,7 @@
       `assets/built-02.1-swipe-mobile-480.png`).
 - [x] 1.6 User overrides a Sell flag — `session.test.ts` ("overriding a Sell flag moves it off
       Sell and counts as an override"; band still on the item); `esp_sell_override` event.
-- [~] 1.7 *Superseded 2026-10-30: haul-away removed (review queue #7, PR TBD).* User taps the haul-away button — `exit-route.test.ts` + live curl: `302` →
+- [~] 1.7 *Superseded 2026-10-30: haul-away removed (review queue #7, PR #572).* User taps the haul-away button — `exit-route.test.ts` + live curl: `302` →
       `tel:+18004685865`, structured record logged (2026-10-13).
 - [~] 1.8 *Superseded 2026-10-30 with 1.7.* Haul-away is not available in the user's area — `fallback=1` → `302` → generic
       hauler link, record carries `fallback: true` (curl + test, 2026-10-13).
