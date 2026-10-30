@@ -1,21 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { DONATE_PICKUP, HAUL_AWAY } from "../../../../lib/estate-sale-planner/config";
+import { DONATE_PICKUP } from "../../../../lib/estate-sale-planner/config";
 import { recordEvent } from "../../../../lib/estate-sale-planner/db";
 
 export const runtime = "nodejs";
 
 /**
- * GET /estate-sale-planner/api/exit?kind=donate|haul&session=…&count=…&fallback=0|1&via=tel|web
+ * GET /estate-sale-planner/api/exit?session=…&count=…&fallback=0|1&via=tel|web
  *
- * The counted exit. `kind=donate` (the default, round 03) hands the Donate
- * list to a pickup service; `kind=haul` is the demoted junk-removal link for
- * a pile no charity will take. The tap is recorded as an esp_events row
+ * The counted exit: hands the Donate list to a pickup service. There is no
+ * haul-away exit (founder, 2026-10-30: "I don't want to wire up hauling away -
+ * don't include the button"); any `kind` resolves to the donation pickup. The
+ * tap is recorded as an esp_events row
  * (structured log line when Supabase is not configured) and then redirected.
  * `fallback=1` means the user said the service doesn't cover them, so the
  * fallback link opens instead; the tap still counts, labelled.
  */
 
-export type ExitKind = "donate" | "haul";
+export type ExitKind = "donate";
 
 export interface ExitRecord {
   event: "esp_exit_tap";
@@ -30,12 +31,12 @@ export interface ExitRecord {
 
 /** Pure: what gets recorded and where the user goes. Exported for tests. */
 export function resolveExit(params: URLSearchParams): { record: ExitRecord; location: string } {
-  const kind: ExitKind = params.get("kind") === "haul" ? "haul" : "donate";
+  const kind: ExitKind = "donate";
   const session = (params.get("session") ?? "").slice(0, 64) || "unknown";
   const count = Math.max(0, Math.min(999, Number.parseInt(params.get("count") ?? "0", 10) || 0));
-  const fallback = kind === "donate" && params.get("fallback") === "1";
+  const fallback = params.get("fallback") === "1";
   const via: "tel" | "web" = params.get("via") === "web" ? "web" : "tel";
-  const partner = kind === "haul" ? HAUL_AWAY : DONATE_PICKUP;
+  const partner = DONATE_PICKUP;
 
   const record: ExitRecord = {
     event: "esp_exit_tap",

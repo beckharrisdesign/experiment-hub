@@ -4,7 +4,8 @@ Film a walkthrough of a parent's house → a vision model flags what might be wo
 → every item headed to keep, sell, or donate (toggle any time) → open an item to correct it,
 add a detail shot of a stamp or seam for a re-read, or remove it → film another room on
 another day and it joins the same walkthrough → one tap to schedule a donation pickup →
-save the sell list with photos as a $5 Sell Sheet at a shareable link.
+save or print the sell list. Free to use; the one planned fee is the sold-price lookup,
+not wired yet (review queue #32). No haul-away (#7).
 
 **Status:** Built on MVDS 0.5.0 through round 05a (photos, app shell); 05b accounts + record and 05c recrop + actuals are proposed and waiting on Katy (autonomous build; see the review queue before trusting any default).
 
@@ -48,7 +49,7 @@ npx vitest run tests/estate-sale-planner   # 76 tests: sampler, reducer (destina
 
 | Area | File |
 | --- | --- |
-| Budget, models, detail-shot caps, pickup / haul links, Sell Sheet price | `lib/estate-sale-planner/config.ts` |
+| Budget, models, detail-shot caps, pickup links, Sell Sheet price (unlinked) | `lib/estate-sale-planner/config.ts` |
 | Frame sampling (pure) / browser capture / thumbnails | `lib/estate-sale-planner/{frames,capture,thumbs}.ts` |
 | Vision pass: zod schema, prompt, fixture, provider pick | `lib/estate-sale-planner/flag.ts` |
 | Vision adapters (OpenAI default, Anthropic alternate) | `lib/estate-sale-planner/vision/{openai,anthropic,schema}.ts` |
@@ -58,7 +59,7 @@ npx vitest run tests/estate-sale-planner   # 76 tests: sampler, reducer (destina
 | Sell Sheet shapes + validation (pure) | `lib/estate-sale-planner/sheet.ts` |
 | Supabase (events, sheets, buyer email) / Stripe | `lib/estate-sale-planner/{db,supabase-admin,stripe}.ts` |
 | Flag route (budget re-check, throttle, fixture mode) | `app/estate-sale-planner/api/flag/route.ts` |
-| Exit route (counted row → pickup or haul redirect) | `app/estate-sale-planner/api/exit/route.ts` |
+| Exit route (counted row → donation pickup redirect) | `app/estate-sale-planner/api/exit/route.ts` |
 | Refine route (item + detail shots → better read) | `app/estate-sale-planner/api/refine/route.ts` |
 | Checkout / webhook (Stripe is the source of truth) | `app/estate-sale-planner/api/{checkout,webhook}/route.ts` |
 | Screens | `app/estate-sale-planner/{Capture,FrameGrid,Lists,Swipe,Exit,ItemDetail,AddItem,History}.tsx`, `summary/page.tsx`, `sheet/[id]/page.tsx` |

@@ -1,5 +1,10 @@
 # Design: estate-sale-planner-build
 
+> **Superseded in part, 2026-10-30 (PR #572):** there is no haul-away exit (review queue #7),
+> and no payment is wired: the Sell Sheet stays free, and the one planned fee is the
+> sold-price lookup (#32). Haul-away and paid-sheet wording below is history from earlier
+> rounds; the specs and `tasks.md` hold the current contract.
+
 ## Context
 
 New in-hub route, mobile-first: the phone is the camera. The product is a linear funnel

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
-import { DONATE_PICKUP, HAUL_AWAY } from "@/lib/estate-sale-planner/config";
+import * as config from "@/lib/estate-sale-planner/config";
+import { DONATE_PICKUP } from "@/lib/estate-sale-planner/config";
 
 let GET: typeof import("@/app/estate-sale-planner/api/exit/route").GET;
 let resolveExit: typeof import("@/app/estate-sale-planner/api/exit/route").resolveExit;
@@ -37,12 +38,15 @@ describe("resolveExit", () => {
     expect(location).toBe(DONATE_PICKUP.fallback.web);
   });
 
-  it("the demoted junk-haul link is its own kind and ignores fallback", () => {
-    const { record, location } = resolveExit(new URLSearchParams("kind=haul&session=s&via=web&fallback=1"));
-    expect(record.kind).toBe("haul");
-    expect(record.fallback).toBe(false);
-    expect(location).toContain(HAUL_AWAY.web);
-    expect(location).toContain(`ref=${HAUL_AWAY.referral}`);
+  it("has no haul-away exit: kind=haul resolves to the donation pickup (founder, 2026-10-30)", () => {
+    const { record, location } = resolveExit(new URLSearchParams("kind=haul&session=s&via=web"));
+    expect(record.kind).toBe("donate");
+    expect(location).toContain(DONATE_PICKUP.web);
+    expect(location).not.toContain("1800gotjunk");
+  });
+
+  it("config carries no haul-away partner", () => {
+    expect("HAUL_AWAY" in config).toBe(false);
   });
 
   it("clamps junk counts and missing sessions", () => {
