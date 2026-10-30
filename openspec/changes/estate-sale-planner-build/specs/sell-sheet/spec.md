@@ -1,5 +1,11 @@
 ## Outcomes
 
+> **Deferred 2026-10-30 (review queue #32).** No payment is wired for now, and the Sell
+> Sheet is not where a fee is planned: founder, *"it'll be a fee to do the digging for
+> pricing but everything else can stay free."* The checkout, webhook and sheet page below
+> stay in the code, unlinked. Do not link or extend the payment requirements; the one
+> planned fee is the sold-price lookup (`estate-sale-planner-sold-comps`).
+
 See `../../proposal.md`. This capability is the paid moment on the family's side: the sell
 list with its photos, bought once and saved at a link that survives closing the tab. It
 also makes every counted event a database row, so the validation plan is a query. Not

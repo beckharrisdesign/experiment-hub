@@ -2,7 +2,7 @@
 
 See `../../proposal.md`. This capability is the exit on the Donate side: the donate list goes
 to a pickup service in one counted tap, and the user keeps a printable sell summary (the
-paid Sell Sheet is `../sell-sheet/spec.md`). There is no Toss list (founder instruction,
+Sell Sheet, built but unlinked and free for now, is `../sell-sheet/spec.md`). There is no Toss list (founder instruction,
 round 03), and no haul-away exit (founder, 2026-10-30). Not doing: booking in-app, the
 sell-side referral (Build Unit 2).
 

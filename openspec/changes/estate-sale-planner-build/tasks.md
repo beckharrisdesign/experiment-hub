@@ -56,7 +56,7 @@
       utilities so no stacking change; tsc/eslint/vitest green on 0.5.0.
 - [x] 2.1 In-hub route `app/estate-sale-planner/` with `layout.tsx` (`.mvds-theme`,
       metadata) and `page.tsx`; `pnpm dev` → `http://localhost:3000/estate-sale-planner`.
-- [x] 2.2 `lib/estate-sale-planner/config.ts` — model, frame budget, haul-away links,
+- [x] 2.2 `lib/estate-sale-planner/config.ts` — model, frame budget, ~~haul-away links~~ (removed 2026-10-30, PR #572),
       placeholder referral, fallback link, session key.
 - [x] 2.3 `.env.example` registry: Estate Sale Planner block — vision on the hub's
       `OPENAI_API_KEY` (Anthropic alternate), `ESP_*_VISION_MODEL` overrides,
@@ -128,7 +128,9 @@
       `vision/openai.ts` / `vision/anthropic.ts`), fixture posture; sheet carries
       details, mark reading, note.
 - [x] 3.17 Exit re-pointed: `DONATE_PICKUP` primary (`kind=donate`), `HAUL_AWAY` demoted
-      (`kind=haul`); `exit-route.test.ts`; spec renamed `donation-pickup-exit`.
+      (`kind=haul`); `exit-route.test.ts`; spec renamed `donation-pickup-exit`. *Haul half
+      superseded 2026-10-30 (PR #572): `HAUL_AWAY` and `kind=haul` removed; `kind=haul` now
+      resolves to the donation pickup.*
 - [x] 3.18 Figma round 03: page `36:73`, frames `36:74` (Lists) / `36:119` (Item) /
       `36:109` (Sort), screenshot-verified in-session, all Inter.
 - [x] 3.19 Second use (round 04): `session.ts` `appendItems` / `renameSession` /
@@ -170,14 +172,15 @@
       tests went with the sampler; `routes.test.ts` covers the shell's URL/chrome/tab lookup
       and the photo cap) across reducer
       (destinations, undo, CRUD, re-read), flag parsing + no-key path, flag route, refine +
-      refine route, exit route (both kinds), thumbnail crop geometry, vision provider +
+      refine route, exit route (both kinds then; the haul kind was removed 2026-10-30, PR #572), thumbnail crop geometry, vision provider +
       OpenAI adapter, sheet validation (details, note), checkout route, webhook route.
       Green 2026-10-13 (round 03). Round 04 adds append / rename / known / demo-growth
       coverage; round 05a green 2026-10-15.
-- [~] 4.4 *Not needed for now (2026-10-30, review queue #32): no payment is wired; the planned fee is the sold-price lookup.* **Katy:** ~~apply migration 016~~ (done 2026-10-13); create the Stripe webhook endpoint for
+- [~] 4.4 *Not needed for now (2026-10-30, review queue #32): no payment is wired; the planned fee is the sold-price lookup.* ~~**Katy:** apply migration 016 (done 2026-10-13); create the Stripe webhook endpoint for
       `/estate-sale-planner/api/webhook` (test mode first) and set
       `ESP_STRIPE_WEBHOOK_SECRET_TEST`; one test-mode purchase end to end (checkout → webhook
-      → sheet unlocks → email row in `experiment_submissions`).
+      → sheet unlocks → email row in `experiment_submissions`).~~ Deferred, not outstanding:
+      revisit only if the sold-price lookup fee is built.
 - [x] 4.3 `tsc --noEmit` and `eslint .` clean (0 errors; the two `set-state-in-effect`
       warnings match the hub's existing after-hydration `sessionStorage` reads). MVDS
       components only.
