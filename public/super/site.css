@@ -329,6 +329,36 @@ h2.notion-heading {
 .page__bhd-labs .notion-collection-card__cover.small {
   object-position: center top !important;
 }
+/* "Coming soon" rows: listed, muted, not clickable.
+   Set Availability = Coming soon on a BHD Database page and every view that
+   shows the Availability property lists it greyed out with a "Coming soon"
+   pill instead of linking to an unfinished page. Clear the field and the row
+   is live again. No code change either way.
+
+   .property-7d783b4e is Super's class for the Availability property: the
+   Notion property ID (`}x;N`) as hex. Recreating the property changes the ID;
+   tests/scripts/super-css-coming-soon.test.ts documents how to re-derive it.
+   The property must be visible in the view, or Super never renders the class.
+   Super renders that <div> on every row, empty when there is no value, so
+   the rules key on the pill inside it: a bare :has(.property-7d783b4e) would
+   mute the whole list.
+
+   List rows: the link is an empty overlay <a> beside the text, so removing it
+   takes away click, keyboard focus and the screen-reader link in one go.
+   Gallery cards wrap their content in the <a>, so they can only drop pointer
+   events; a keyboard user can still tab to one. */
+.notion-collection-list__item:has(.property-7d783b4e .notion-pill),
+.notion-collection-card:has(.property-7d783b4e .notion-pill) {
+  opacity: .45;
+  cursor: default;
+}
+.notion-collection-list__item:has(.property-7d783b4e .notion-pill) .notion-collection-list__item-anchor {
+  display: none;
+}
+.notion-collection-card:has(.property-7d783b4e .notion-pill),
+.notion-collection-card:has(.property-7d783b4e .notion-pill) a {
+  pointer-events: none;
+}
 /* ============================================================
    7. PAGE PROPERTIES
    The metadata list under project page titles (Year, Role, etc.).
