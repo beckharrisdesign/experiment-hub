@@ -2,12 +2,13 @@
 
 See `../../proposal.md`. This capability is part 1 of the change: before anything is looked
 up, the family can see what the model decided the subject of each item is, fix it on the photo
-it came from, and confirm it. Done when any item opens its source photo with its box drawn, the
+it came from, and fix it. Done when any item opens its source photo with its box drawn, the
 box can be adjusted, one item can become several (or several one, or one lot), a missed object
-can be drawn in, the family can tell it what is wrong in a message, each correction gets a fresh
-read, and an item is confirmed once it is fixed or
-marked right. Not doing: outlines or segmentation (round 05 #48), cloud photo storage or
-accounts (05b), confirming items in bulk, detail shots (one image per item for now).
+can be drawn in, the family can tell it what is wrong in a message, and each correction gets a
+fresh read. Not doing: outlines or segmentation (round 05 #48), cloud photo storage or
+accounts (05b), detail shots (one image per item for now), and any confirmed or "Looks right"
+state — an item is in the app or it isn't (founder, 2026-10-31: "I don't know that I want to
+deal with a confirmed or not confirmed state. Its in the app or its not."; review queue #60).
 
 ## ADDED Requirements
 
@@ -110,7 +111,7 @@ The item screen SHALL offer a message box; sending SHALL call the re-read with t
 #### Scenario: The family names the maker
 
 - **WHEN** the user sends "this is actually a vintage Hermes - adjust pricing" on an item
-- **THEN** that item's name, band and reason update, the item shows the message and what changed, and it is confirmed
+- **THEN** that item's name, band and reason update, and the item shows the message and what changed
 
 #### Scenario: Nothing else changes
 
@@ -126,26 +127,3 @@ The item screen SHALL offer a message box; sending SHALL call the re-read with t
 
 - **WHEN** the re-read fails or is unavailable after a message
 - **THEN** the item is unchanged and the message stays in the box to send again
-
-### Requirement: An item is confirmed once it is fixed or marked right
-
-The family tells the app the subject is right, either by correcting it or with one tap, and only confirmed items go on to a price lookup.
-
-**Fails until:** an item carries a confirmed flag that is set by any correction or by **Looks right**, and is shown on the item.
-
-Each item SHALL carry a confirmed state that any correction in this capability sets, that a **Looks right** action on the item and on the source-photo view sets, that persists with the sale, and that the item shows; editing a confirmed item's name, room or band SHALL keep it confirmed.
-
-#### Scenario: User taps Looks right
-
-- **WHEN** the user checks an item's source photo and taps **Looks right**
-- **THEN** the item is marked confirmed and shows it
-
-#### Scenario: A correction confirms the item
-
-- **WHEN** the user adjusts, splits, merges, lots or draws an item
-- **THEN** every resulting item is confirmed without a separate tap
-
-#### Scenario: Unconfirmed items stay out of the lookup
-
-- **WHEN** an item flagged for Sell at a high band has not been confirmed
-- **THEN** it keeps the model's band and no lookup runs for it

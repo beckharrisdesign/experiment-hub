@@ -7,6 +7,13 @@ Follow-on build change inside the shipped Estate Sale Planner (`app/estate-sale-
 review queue #57. Two capabilities, built in order: `item-correction` (part 1) and
 `sold-comps-lookup` (part 2). A lookup only ever runs on an item the family confirmed.
 
+> **2026-10-31 — no confirmed state (review queue #60).** Founder: *"I don't know that I want to
+> deal with a confirmed or not confirmed state. Its in the app or its not."* `confirmed`, **Looks
+> right** and `confirmItem` are removed. The lookup gate is now Sell + the profile threshold
+> (#59). Where this document says "confirmed", read it as history; the specs carry the current
+> contract.
+
+
 What exists today, which this design builds on:
 
 - **Photos are thrown away.** `framesFromPhotos` (`capture.ts`) scales each photo to

@@ -77,7 +77,7 @@ export const DONATE_PICKUP = {
 
 /**
  * Sold-price lookup (sold-comps change, PR 2). Review queue #59: a lookup runs only for
- * confirmed Sell items at or above a band threshold — most of a house is under $25 and a real
+ * Sell items at or above a band threshold — most of a house is under $25 and a real
  * sold price can't move it; $100 is where it changes the family's decision.
  *
  * The threshold is a token, not a hard-coded rule (founder, 2026-10-31: "Tokenize that choice -

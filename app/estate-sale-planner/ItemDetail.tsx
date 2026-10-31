@@ -15,7 +15,6 @@ interface ItemDetailProps {
   refining: boolean;
   onUpdate: (itemId: string, patch: ItemPatch) => void;
   onRemove: (itemId: string) => void;
-  onConfirm: (itemId: string) => void;
   onRetryReread: (itemId: string) => void;
   onMessage: (itemId: string, text: string) => Promise<boolean>;
   onUndoMessage: (itemId: string, index: number) => void;
@@ -31,7 +30,7 @@ interface ItemDetailProps {
  *
  * Desktop: the name and price run full width, then the photo takes 5 of 12 columns.
  */
-export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove, onConfirm, onRetryReread, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
+export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove, onRetryReread, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
   const [confirmRemove, setConfirmRemove] = useState(false);
   const photoHref = paths.photo(saleId, item.id);
   const bandOptions: string[] = (BANDS as readonly string[]).includes(item.band) ? [...BANDS] : [item.band, ...BANDS];
@@ -78,7 +77,7 @@ export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove,
             ) : (
               <NoPhoto onFile={(file) => onAddPhoto(item.id, file)} />
             )}
-            <PhotoStatus item={item} photoHref={photoHref} onConfirm={onConfirm} onRetry={onRetryReread} />
+            <PhotoStatus item={item} photoHref={photoHref} onRetry={onRetryReread} />
           </Stack>
         </GridItem>
 
@@ -141,12 +140,12 @@ function NoPhoto({ onFile }: { onFile: (file: File) => void }) {
 }
 
 /**
- * Directly under the photo: the check while unconfirmed (D19). Once confirmed there is no
- * "✓ Confirmed" label — the check going away says it (founder, 2026-10-27: "What's this even
- * mean?"). A failed re-read says so plainly and offers another try. The photo actions only show
- * when there is a kept original to fix.
+ * Directly under the photo: the lot badge and the way to the source photo, where the item is
+ * fixed. There is no confirmed state and no "Looks right" (founder, 2026-10-31: "Its in the app
+ * or its not."). A failed re-read says so plainly and offers another try. The photo button only
+ * shows when there is a kept original to fix.
  */
-function PhotoStatus({ item, photoHref, onConfirm, onRetry }: { item: SessionItem; photoHref: string; onConfirm: (id: string) => void; onRetry: (id: string) => void }) {
+function PhotoStatus({ item, photoHref, onRetry }: { item: SessionItem; photoHref: string; onRetry: (id: string) => void }) {
   const hasPhoto = Boolean(item.photoId);
   return (
     <Stack gap={8}>
@@ -159,26 +158,15 @@ function PhotoStatus({ item, photoHref, onConfirm, onRetry }: { item: SessionIte
           </Button>
         </Inline>
       )}
-      {item.confirmed ? (
-        (item.lot || hasPhoto) && (
-          <Inline gap={8} justify="between" align="center">
-            {item.lot ? <Badge variant="outline">Lot of {item.lot.parts.length}</Badge> : <span />}
-            {hasPhoto && (
-              <Button variant="secondary" asChild>
-                <Link href={photoHref}>Source photo</Link>
-              </Button>
-            )}
-          </Inline>
-        )
-      ) : (
-        <ButtonGroup>
+      {(item.lot || hasPhoto) && (
+        <Inline gap={8} justify="between" align="center">
+          {item.lot ? <Badge variant="outline">Lot of {item.lot.parts.length}</Badge> : <span />}
           {hasPhoto && (
             <Button variant="secondary" asChild>
-              <Link href={photoHref}>Fix this photo</Link>
+              <Link href={photoHref}>Source photo</Link>
             </Button>
           )}
-          <Button onClick={() => onConfirm(item.id)}>Looks right</Button>
-        </ButtonGroup>
+        </Inline>
       )}
     </Stack>
   );

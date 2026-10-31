@@ -24,7 +24,7 @@ import {
   type Session,
 } from "../../../lib/estate-sale-planner/session";
 import { itemThumbnail } from "../../../lib/estate-sale-planner/thumbs";
-import { addFromPhoto, adjustBox, applyMessage, applyReread, confirmItem, failReread, markLot, mergeItems, splitItem, splitLot, undoMessage } from "../../../lib/estate-sale-planner/correction";
+import { addFromPhoto, adjustBox, applyMessage, applyReread, failReread, markLot, mergeItems, splitItem, splitLot, undoMessage } from "../../../lib/estate-sale-planner/correction";
 import { cropFromPhoto } from "../../../lib/estate-sale-planner/crops";
 import { itemPhotoKey, photoKey, putPhotos } from "../../../lib/estate-sale-planner/photos";
 import { deleteSaved, listHistory, loadSession, openSaved, readSaved, saveCopy, saveSession, type HistoryEntry } from "../../../lib/estate-sale-planner/storage";
@@ -76,12 +76,9 @@ export interface SaleStore {
   /** The sale's details: its title and city or ZIP. */
   onDetails: (details: { name: string; location: string }) => void;
   deleteSale: (id: string) => void;
-  /** Looks right. */
-  onConfirm: (itemId: string) => void;
   /** Re-read a corrected crop again after the last try failed. */
   onRetryReread: (itemId: string) => void;
-  /** Corrections on the source photo (sold-comps spec: item-correction). Each confirms what it
-   * produces, saves at once, then crops and re-reads every new or changed item in the background
+  /** Corrections on the source photo (sold-comps spec: item-correction). Each saves at once, then crops and re-reads every new or changed item in the background
    * (three at a time). They return the ids that now exist, so the screen can follow. */
   onAdjust: (itemId: string, box: Box) => string[];
   onSplit: (itemId: string, boxes: Box[]) => string[];
@@ -469,12 +466,6 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     [update, pump],
   );
 
-  const onConfirm = useCallback((itemId: string) => {
-    if (!latest.current) return;
-    update(confirmItem(latest.current, itemId));
-    track("esp_item_confirmed", { via: "looks_right" });
-  }, [update]);
-
   const onRetryReread = useCallback(
     (itemId: string) => {
       if (!latest.current) return;
@@ -590,8 +581,8 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   }, [update]);
 
   const value = useMemo<SaleStore>(
-    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onConfirm, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale }),
-    [ready, session, history, fromFixture, notice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onConfirm, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale],
+    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale }),
+    [ready, session, history, fromFixture, notice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale],
   );
 
   return <SaleContext.Provider value={value}>{children}</SaleContext.Provider>;
