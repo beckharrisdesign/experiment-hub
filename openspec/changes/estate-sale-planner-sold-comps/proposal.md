@@ -5,6 +5,10 @@
 >
 > **Order inside this change:** correct the item first, then look up its price. A lookup only
 > runs on an item the family has confirmed.
+>
+> **2026-10-31 — no confirmed state (review queue #60).** Founder: *"I don't know that I want to
+> deal with a confirmed or not confirmed state. Its in the app or its not."* A lookup now runs for
+> any Sell item at or above the profile threshold (#59); "confirmed" below is history.
 
 ## Human anchor
 

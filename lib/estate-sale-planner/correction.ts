@@ -15,7 +15,9 @@ import type { Box } from "./flag";
 import type { RefineResponse } from "./refine";
 import { DESTINATIONS, type Destination, type ItemMessage, type MessageFields, type Session, type SessionItem } from "./session";
 
-const CORRECTED = { confirmed: true, rereadPending: true } as const;
+/** Every correction waits for a fresh read. There is no confirmed state (founder, 2026-10-31:
+ * "Its in the app or its not."). */
+const CORRECTED = { rereadPending: true } as const;
 
 function replaceAt(s: Session, index: number, removeIds: string[], insert: SessionItem[]): Session {
   const kept = s.items.filter((i) => !removeIds.includes(i.id));
@@ -30,11 +32,6 @@ function replaceAt(s: Session, index: number, removeIds: string[], insert: Sessi
 function clearFailed<T extends SessionItem>(item: T): T {
   const { rereadFailed: _f, ...rest } = item;
   return rest as T;
-}
-
-/** Looks right. */
-export function confirmItem(s: Session, itemId: string): Session {
-  return { ...s, items: s.items.map((i) => (i.id === itemId ? { ...i, confirmed: true } : i)) };
 }
 
 /** The box was dragged to fit; `image` is the new crop. */
@@ -161,7 +158,7 @@ export function markLot(s: Session, ids: string[], image?: string): Session {
   return replaceAt(s, c.index, ids, [lot]);
 }
 
-/** A lot back into its parts, each confirmed and re-read. */
+/** A lot back into its parts, each re-read. */
 export function splitLot(s: Session, lotId: string, images: Array<string | undefined> = []): Session {
   const index = s.items.findIndex((i) => i.id === lotId);
   const lot = s.items[index];
@@ -187,7 +184,7 @@ export function applyMessage(s: Session, itemId: string, text: string, r: Refine
       const after: MessageFields = { name: r.name, band: r.band, reason: r.reason };
       const message: ItemMessage = { text: text.trim(), at: now.toISOString(), before: fields(i), after };
       const note = [i.note?.trim(), text.trim()].filter(Boolean).join("\n");
-      return clearFailed({ ...i, ...after, confidence: r.confidence, markReading: r.markReading, bandSource: "guess" as const, confirmed: true, note, messages: [...(i.messages ?? []), message] });
+      return clearFailed({ ...i, ...after, confidence: r.confidence, markReading: r.markReading, bandSource: "guess" as const, note, messages: [...(i.messages ?? []), message] });
     }),
   };
 }

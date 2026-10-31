@@ -1,38 +1,38 @@
 ## Outcomes
 
-See `../../proposal.md`. This capability is part 2 of the change: a confirmed item that could
+See `../../proposal.md`. This capability is part 2 of the change: an item that could
 matter gets its band from real sold listings instead of the model's memory, as cheaply as
-possible. Done when a confirmed Sell item at or above the threshold shows a band set from
+possible. Done when a Sell item at or above the threshold shows a band set from
 matching sales with how many it rests on and links to some of them, a repeat item costs no
 lookup, too few matches leave the model's band as it was, and every model call and lookup records its
-cost. Not doing: licensed price databases, a pricing model of our own, lookups for unconfirmed,
+cost. Not doing: licensed price databases, a pricing model of our own, lookups for
 Keep, Donate or low-band items, auction-house or Etsy prices, any upsell.
 
 ## ADDED Requirements
 
-### Requirement: Only confirmed items that could matter are looked up
+### Requirement: Only items that could matter are looked up
 
-A lookup runs only for an item the family has confirmed, that is headed to Sell, and whose band
-is at or above the threshold; its search query is written at that moment and not before, and again
-if the family later changes what the item is.
+A lookup runs only for an item headed to Sell whose band is at or above the threshold; there is
+no confirmed state (review queue #60). Its search query is written when the item first meets the
+gate and not before, and again if the family later changes what the item is.
 
-**Fails until:** a confirmed Sell item at or above the threshold triggers exactly one query-writing call and one lookup, and every other item triggers neither.
+**Fails until:** a Sell item at or above the threshold triggers exactly one query-writing call and one lookup, and every other item triggers neither.
 
-The lookup gate SHALL require confirmed, destination Sell and a band at or above the person's threshold from their profile ($25, $100 or $500; $100 by default, the `$100–$250` band and up — `COMPS.minBand`), and the server SHALL accept only one of those choices, treating anything else as the default; only then SHALL a text-only call write the search query from the item's confirmed name, mark reading, family note and lot flag; the walkthrough and the re-read SHALL NOT write queries.
+The lookup gate SHALL require destination Sell and a band at or above the person's threshold from their profile ($25, $100 or $500; $100 by default, the `$100–$250` band and up — `COMPS.minBand`), and the server SHALL accept only one of those choices, treating anything else as the default; only then SHALL a text-only call write the search query from the item's current name, mark reading, family note and lot flag; the walkthrough and the re-read SHALL NOT write queries.
 
-#### Scenario: A confirmed item passes the gate
+#### Scenario: An item passes the gate
 
-- **WHEN** an item is confirmed, set to Sell and banded at $100 or more
+- **WHEN** an item is set to Sell and banded at $100 or more, or a Sell item's band rises to $100 or more
 - **THEN** a search query is written for it and one lookup runs
 
 #### Scenario: An item below the gate
 
-- **WHEN** an item is unconfirmed, set to Keep or Donate, or banded under the threshold
+- **WHEN** an item is set to Keep or Donate, has no destination yet, or is banded under the threshold
 - **THEN** no query is written, no lookup runs, and the item shows the model's band with no comps line
 
 #### Scenario: The family raised their threshold
 
-- **WHEN** the profile threshold is $500+ and a confirmed Sell item is banded `$250–$500`
+- **WHEN** the profile threshold is $500+ and a Sell item is banded `$250–$500`
 - **THEN** no query is written and no lookup runs
 
 #### Scenario: A tampered threshold
@@ -42,12 +42,12 @@ The lookup gate SHALL require confirmed, destination Sell and a band at or above
 
 #### Scenario: A lot is looked up as a set
 
-- **WHEN** a confirmed lot passes the gate
+- **WHEN** a lot passes the gate
 - **THEN** its query describes the set ("set of 6 Pyrex mixing bowls"), not one piece
 
-#### Scenario: A message changes what a confirmed item is
+#### Scenario: A correction changes what the item is
 
-- **WHEN** the family's message changes the name or band of a confirmed Sell item that is at or above the threshold
+- **WHEN** a message or a photo correction changes the name or band of a Sell item that is at or above the threshold
 - **THEN** a new query is written and looked up, and a saved result for that query is reused when it is fresh
 
 ### Requirement: Lookups are saved and reused
@@ -80,7 +80,7 @@ from them, and the item shows what it rests on.
 
 **Fails until:** an item with at least the minimum number of matching sales shows a band derived from them, the count, and links to the listings kept; with fewer, it keeps the model's band with no comps line.
 
-The comps pass SHALL send the confirmed item and its sold listings to a text-only call that returns which listings match, a band from the matching prices and a one-line reason; with at least the minimum number of matches (3 by default) the item SHALL show that band as "Based on N sold" with links to a few kept listings; with fewer, the model's band SHALL stay, with no comps line.
+The comps pass SHALL send the item and its sold listings to a text-only call that returns which listings match, a band from the matching prices and a one-line reason; with at least the minimum number of matches (3 by default) the item SHALL show that band as "Based on N sold" with links to a few kept listings; with fewer, the model's band SHALL stay, with no comps line.
 
 #### Scenario: Enough matching sales
 
@@ -131,7 +131,7 @@ When no provider key is configured, the provider errors or times out, or the pla
 
 #### Scenario: No provider key is configured
 
-- **WHEN** a gated item is confirmed on an environment with no provider key
+- **WHEN** an item passes the gate on an environment with no provider key
 - **THEN** the item keeps the model's band, shows no comps line, and the cost row says lookups are not configured
 
 #### Scenario: The provider fails

@@ -37,7 +37,6 @@ export default function ItemPage({ params }: { params: Promise<{ id: string; ite
             saleId={id}
             refining={store.refining === item.id}
             onUpdate={store.onUpdate}
-            onConfirm={store.onConfirm}
             onRetryReread={store.onRetryReread}
             onMessage={store.onMessage}
             onUndoMessage={store.onUndoMessage}

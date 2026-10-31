@@ -123,14 +123,6 @@ export default function SourcePhoto({ session, item }: { session: Session; item:
                 Split lot
               </Button>
             )}
-            <Button
-              onClick={() => {
-                store.onConfirm(item.id);
-                router.push(paths.item(session.id, item.id));
-              }}
-            >
-              Looks right
-            </Button>
           </ButtonGroup>
         );
       case "adjust":

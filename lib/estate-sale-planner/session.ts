@@ -34,8 +34,6 @@ export interface SessionItem extends FlaggedItem {
   photoId?: string;
   /** Present when this item is a set sold together; keeps the parts so it can be split back. */
   lot?: { parts: Array<{ box: Box | null; name: string }> };
-  /** The family checked the subject: by correcting it or with Looks right. Gates the price lookup. */
-  confirmed?: boolean;
   /** Where the band came from. Absent reads as the model's estimate. */
   bandSource?: "guess" | "comps" | "family";
   /** A correction was saved and its re-read has not landed yet. */
@@ -235,8 +233,6 @@ export function addItem(s: Session, input: NewItemInput): Session {
     frame: 0,
     box: null,
     userAdded: true,
-    // The family named it, so the subject is theirs: confirmed from the start.
-    confirmed: true,
     ...(input.destination ? { destination: input.destination } : {}),
     ...(input.image ? { image: input.image } : {}),
   };
