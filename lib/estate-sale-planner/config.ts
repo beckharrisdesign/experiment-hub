@@ -75,6 +75,23 @@ export const DONATE_PICKUP = {
   },
 } as const;
 
+/**
+ * Sold-price lookup (sold-comps change, PR 2). Review queue #59: a lookup runs only for
+ * confirmed Sell items at or above a band threshold — most of a house is under $25 and a real
+ * sold price can't move it; $100 is where it changes the family's decision.
+ *
+ * The threshold is a token, not a hard-coded rule (founder, 2026-10-31: "Tokenize that choice -
+ * and put it in my profile"): `minBand` is the default, and each person picks their own from
+ * `minBandChoices` in Account & profile (lib/estate-sale-planner/profile.ts). The server accepts
+ * only one of these choices, so the lowest one is the spend floor.
+ */
+export const COMPS = {
+  /** Default threshold: the $100–$250 band and up. */
+  minBand: "$100–$250",
+  /** The thresholds the profile offers, low to high (the #59 alternatives: $25, $100, $500). */
+  minBandChoices: ["$25–$50", "$100–$250", "$500–$2,000"],
+} as const;
+
 /** Browser-side session key; closing the tab loses it, and the UI says so. v2: destinations. */
 export const SESSION_STORAGE_KEY = "esp:session:v2";
 

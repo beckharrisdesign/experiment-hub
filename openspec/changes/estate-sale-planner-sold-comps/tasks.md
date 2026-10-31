@@ -138,7 +138,7 @@
 - [ ] 3.21 **Query writer (D4).** `comps/query.ts` `writeQuery()`: text-only, smallest model per provider from `config.ts`. `normalizeQuery()` is a pure function and tested.
 - [ ] 3.22 **Comps pass and band math (D7).** `comps/read.ts` `readComps()` returns which listings match. `comps/band.ts` takes the 25th–75th percentile range and the median's band, with a minimum of 3 matches. Both tested.
 - [ ] 3.23 **Route `/api/comps`.**
-  - The server re-checks the gate (confirmed, Sell, `$100–$250` and up).
+  - The server re-checks the gate (confirmed, Sell, the profile's `minBand` via `resolveLookupMinBand` + `bandMeetsLookup`; default `$100–$250` and up).
   - Returns a `CompsSummary`.
   - Throttled like `/api/refine`.
   - Route tests cover gated, ok, too-few, not-configured, error and quota.
@@ -146,8 +146,9 @@
   - Run on confirm, on opening a gated item with no comps or a failed last run, and after a message changes a confirmed, gated item.
   - Band line states per D15.
   - `bandSource: "family"` is never overwritten.
-- [ ] 3.25 **Config and keys.**
-  - `COMPS` (`minBand`, `freshDays`, `minMatches`, provider) in `config.ts`.
+- [~] 3.25 **Config and keys.**
+  - [x] `COMPS.minBand` + `COMPS.minBandChoices` in `config.ts`, with the per-person threshold in Account & profile (`profile.ts`, `MenuPlaceholder.tsx`); review queue #59 approved 2026-10-31 (PR: esp-lookup-threshold-profile).
+  - `COMPS.freshDays`, `COMPS.minMatches`, provider still to add with #62–#64.
   - Add `COMPS_PROVIDER` and `COMPS_API_KEY` to `.env.example` with their provenance; Katy adds the value.
 - [ ] 3.26 **Cost query.** A saved SQL snippet in `experiments/estate-sale-planner/docs/` for "cost per sale" from `esp_costs`.
 

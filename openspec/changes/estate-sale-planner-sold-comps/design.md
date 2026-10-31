@@ -201,9 +201,13 @@ rereadPending?: boolean;   // a correction was saved; its re-read hasn't landed
 - **One route:** `POST /estate-sale-planner/api/comps`. Body: the confirmed item's name,
   band, destination, `markReading`, note, lot count and `confirmed` flag. It returns
   a `CompsSummary`.
-- **The server checks the gate again:** confirmed, Sell, band at or above `COMPS.minBand`
-  (`"$100–$500"`). A failed check returns `{ status: "gated" }` with no model call. The
-  client gates too; the server check is the one that protects spend.
+- **The server checks the gate again:** confirmed, Sell, band at or above the person's
+  threshold. The body carries `minBand` from their profile; the server runs it through
+  `resolveLookupMinBand` (only a `COMPS.minBandChoices` value counts, anything else is
+  `COMPS.minBand`, `$100–$250`) and compares with `bandMeetsLookup`. A failed check returns
+  `{ status: "gated" }` with no model call. The client gates too; the server check is the one
+  that protects spend. *(2026-10-31, #59: the threshold became a profile setting — founder:
+  "Tokenize that choice - and put it in my profile".)*
 - **When the client calls:**
   - On confirm.
   - On opening an item that is gated in, has no `comps`, and either never ran or last failed
@@ -547,7 +551,7 @@ Eventually I will swap in a better pattern than breadcrumb here."*
 
 | # | Decision | Default |
 | --- | --- | --- |
-| 59 | Lookup threshold | Band $100–$500 or higher (`COMPS.minBand`) |
+| 59 | Lookup threshold | Band $100–$500 or higher (`COMPS.minBand`). *2026-10-31: APPROVED as a token — $100 default, $25/$100/$500 per person in Account & profile* |
 | 60 | What counts as confirmed | Any correction or **Looks right**; edits keep it; nothing un-confirms |
 | 61 | Photo storage cap | 150 MB of originals; oldest sale's originals go first |
 | 62 | Provider | CompsAPI entry plan behind the adapter; eBay Marketplace Insights if granted |

@@ -18,7 +18,7 @@ if the family later changes what the item is.
 
 **Fails until:** a confirmed Sell item at or above the threshold triggers exactly one query-writing call and one lookup, and every other item triggers neither.
 
-The lookup gate SHALL require confirmed, destination Sell and a band at or above a configured threshold ($100 by default, the `$100–$250` band and up); only then SHALL a text-only call write the search query from the item's confirmed name, mark reading, family note and lot flag; the walkthrough and the re-read SHALL NOT write queries.
+The lookup gate SHALL require confirmed, destination Sell and a band at or above the person's threshold from their profile ($25, $100 or $500; $100 by default, the `$100–$250` band and up — `COMPS.minBand`), and the server SHALL accept only one of those choices, treating anything else as the default; only then SHALL a text-only call write the search query from the item's confirmed name, mark reading, family note and lot flag; the walkthrough and the re-read SHALL NOT write queries.
 
 #### Scenario: A confirmed item passes the gate
 
@@ -29,6 +29,16 @@ The lookup gate SHALL require confirmed, destination Sell and a band at or above
 
 - **WHEN** an item is unconfirmed, set to Keep or Donate, or banded under the threshold
 - **THEN** no query is written, no lookup runs, and the item shows the model's band with no comps line
+
+#### Scenario: The family raised their threshold
+
+- **WHEN** the profile threshold is $500+ and a confirmed Sell item is banded `$250–$500`
+- **THEN** no query is written and no lookup runs
+
+#### Scenario: A tampered threshold
+
+- **WHEN** a lookup request carries a threshold that is not one of the offered choices (for example `under $1`)
+- **THEN** the server gates on the $100 default instead
 
 #### Scenario: A lot is looked up as a set
 
