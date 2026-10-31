@@ -26,6 +26,11 @@ const RANGE: Record<Band, [number, number | null]> = {
   "$100–$500": [100, 500],
 };
 
+/** A band's low end in whole dollars, or null for a band this list doesn't know. */
+export function bandLow(band: string): number | null {
+  return Object.prototype.hasOwnProperty.call(RANGE, band) ? RANGE[band as Band][0] : null;
+}
+
 export interface Tally {
   count: number;
   /** Whole dollars. */

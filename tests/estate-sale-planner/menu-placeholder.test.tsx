@@ -15,7 +15,10 @@ beforeAll(() => {
     this.dispatchEvent(new Event("close"));
   };
 });
-beforeEach(() => vi.mocked(track).mockClear());
+beforeEach(() => {
+  vi.mocked(track).mockClear();
+  window.localStorage.clear();
+});
 
 const dialog = () => document.querySelector("dialog") as HTMLDialogElement;
 const open = () =>
@@ -33,7 +36,7 @@ describe("MenuPlaceholder", () => {
     expect(dialog().open).toBe(false);
   });
 
-  it("opens an Account & profile panel holding only a Close button", () => {
+  it("opens an Account & profile panel: Close plus the lookup threshold, no body copy", () => {
     render(<MenuPlaceholder />);
     open();
     expect(dialog().open).toBe(true);
@@ -43,8 +46,10 @@ describe("MenuPlaceholder", () => {
       document.getElementById(dialog().getAttribute("aria-labelledby")!)
         ?.textContent,
     ).toBe("Account & profile");
+    const radios = dialog().querySelectorAll('[role="radio"]');
+    expect(Array.from(radios).map((r) => r.textContent)).toEqual(["$25+", "$100+", "$500+"]);
     const inside = dialog().querySelectorAll(
-      "button, a, input, select, textarea",
+      "button:not([role=radio]), a, input, select, textarea",
     );
     expect(inside.length).toBe(1);
     expect(inside[0].getAttribute("aria-label")).toBe("Close");
@@ -70,5 +75,43 @@ describe("MenuPlaceholder", () => {
     expect(dialog().open).toBe(true);
     fireEvent.click(dialog());
     expect(dialog().open).toBe(false);
+  });
+
+  // -------------------------------------------------------------------------
+  // Review queue #59 · the lookup threshold lives in the profile (founder, 2026-10-31:
+  // "Tokenize that choice - and put it in my profile")
+  // -------------------------------------------------------------------------
+
+  it("shows the sold-price lookup threshold at the $100 default", () => {
+    render(<MenuPlaceholder />);
+    open();
+    const group = screen.getByRole("radiogroup", { name: "Look up sold prices for", hidden: true });
+    expect(group).toBeTruthy();
+    const checked = dialog().querySelector('[role="radio"][aria-checked="true"]');
+    expect(checked?.textContent).toBe("$100+");
+  });
+
+  it("saves a new threshold to the profile, and it is still there next time", () => {
+    const { unmount } = render(<MenuPlaceholder />);
+    open();
+    fireEvent.click(screen.getByRole("radio", { name: "$500+", hidden: true }));
+    expect(track).toHaveBeenCalledWith("esp_lookup_threshold_set", { band: "$500–$2,000" });
+    expect(dialog().open).toBe(true);
+    unmount();
+    render(<MenuPlaceholder />);
+    open();
+    expect(
+      dialog().querySelector('[role="radio"][aria-checked="true"]')?.textContent,
+    ).toBe("$500+");
+  });
+
+  it("moves the choice with the arrow keys, like the item screen's toggle", () => {
+    render(<MenuPlaceholder />);
+    open();
+    const current = screen.getByRole("radio", { name: "$100+", hidden: true });
+    fireEvent.keyDown(current, { key: "ArrowLeft" });
+    expect(
+      dialog().querySelector('[role="radio"][aria-checked="true"]')?.textContent,
+    ).toBe("$25+");
   });
 });

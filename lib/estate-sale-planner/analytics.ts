@@ -29,7 +29,9 @@ export type FunnelEvent =
   | "esp_item_message"
   | "esp_photos_evicted"
   // esp-header-affordance: does anyone reach for the menu placeholder?
-  | "esp_menu_open";
+  | "esp_menu_open"
+  // review queue #59: someone changed their sold-price lookup threshold in the profile
+  | "esp_lookup_threshold_set";
 
 export function track(
   event: FunnelEvent,
