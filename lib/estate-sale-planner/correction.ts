@@ -58,7 +58,7 @@ export function applyReread(s: Session, itemId: string, r: RefineResponse): Sess
         reason: r.reason,
         confidence: r.confidence,
         markReading: r.markReading,
-        ...(familyBand || compsBand ? {} : { band: r.band, bandSource: "guess" as const }),
+        ...(familyBand ? {} : compsBand ? { guessBand: r.band } : { band: r.band, bandSource: "guess" as const, guessBand: undefined }),
         refined: true,
         rereadPending: false,
       });

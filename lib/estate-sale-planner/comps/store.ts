@@ -6,6 +6,7 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { COMPS } from "../config";
+import { messageOf } from "../errors";
 import type { SoldListing } from "./provider";
 
 export interface StoredComps {
@@ -37,8 +38,8 @@ export async function getFreshComps(
     if (error) throw error;
     if (!data || !isFresh(data.fetched_at, now)) return null;
     return { query: data.query, fetchedAt: data.fetched_at, results: Array.isArray(data.results) ? data.results : [] };
-  } catch (error: any) {
-    console.error("[esp comps] store read failed; looking it up instead:", error?.message ?? error);
+  } catch (error: unknown) {
+    console.error("[esp comps] store read failed; looking it up instead:", messageOf(error));
     return null;
   }
 }
@@ -62,7 +63,7 @@ export async function saveComps(
       { onConflict: "provider,query_norm" },
     );
     if (error) throw error;
-  } catch (error: any) {
-    console.error("[esp comps] store write failed:", error?.message ?? error);
+  } catch (error: unknown) {
+    console.error("[esp comps] store write failed:", messageOf(error));
   }
 }

@@ -85,6 +85,19 @@ describe("a lookup landing", () => {
     expect(bandLine(item, false)).toMatchObject({ kind: "family", comps: { matched: 4 } });
   });
 
+  it("keeps the model's band aside, and gives it back when the item is renamed or the new subject has no sales", () => {
+    const looked = withComps(base);
+    expect(looked).toMatchObject({ band: "$50–$100", guessBand: "$100–$250" });
+    // Renamed by hand: the old sales no longer apply, so the model's band shows until a new lookup lands.
+    const renamed = updateItem(sale([looked]), base.id, { name: "Griswold No. 8 skillet" }).items[0];
+    expect(renamed).toMatchObject({ band: "$100–$250", bandSource: "guess" });
+    // A comps band whose new subject finds too few sales goes back to the model's too.
+    const shifted = { ...looked, markReading: "LODGE 8" };
+    const after = applyComps(sale([shifted]), base.id, compsKey(shifted), { status: "too-few", found: 1, matched: 0 }).items[0];
+    expect(after).toMatchObject({ band: "$100–$250", bandSource: "guess" });
+    expect(after.guessBand).toBeUndefined();
+  });
+
   it("is dropped when the item became something else while it was in flight", () => {
     const s = sale([{ ...base, name: "Griswold skillet" }]);
     expect(applyComps(s, base.id, compsKey(base), ok)).toEqual(s);

@@ -14,6 +14,7 @@
  * different shape degrades to "too few", never a crash. Check it on the first keyed call.
  */
 import { COMPS, COMPS_PROVIDERS } from "../config";
+import { messageOf } from "../errors";
 import { ProviderError, type CompsProvider, type SoldListing } from "./provider";
 
 const USER_AGENT = "bhd-labs-estate-sale-planner/1.0 (+https://beckharrisdesign.com)";
@@ -62,21 +63,25 @@ export function compsApiProvider(apiKey: string, fetchImpl: typeof fetch = fetch
           headers: { "X-API-Key": apiKey, "User-Agent": USER_AGENT, accept: "application/json" },
           signal,
         });
-      } catch (error: any) {
-        const timedOut = error?.name === "TimeoutError" || error?.name === "AbortError";
-        throw new ProviderError("error", timedOut ? "timeout" : `network: ${error?.message ?? "unknown"}`);
+      } catch (error: unknown) {
+        const name = error instanceof Error ? error.name : "";
+        const timedOut = name === "TimeoutError" || name === "AbortError";
+        throw new ProviderError("error", timedOut ? "timeout" : `network: ${messageOf(error)}`);
       }
-      let body: any = null;
+      let body: unknown = null;
       try {
         body = await response.json();
       } catch {
         // Fall through: a non-JSON body is an error below, or no items.
       }
-      if (response.status === 429 || body?.error === "quota_reached") {
-        throw new ProviderError("quota", body?.error ? String(body.error) : "429");
+      // Untrusted vendor JSON: read only the two fields the docs promise, and only as what they are.
+      const fields = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+      const error = typeof fields.error === "string" ? fields.error.slice(0, 120) : undefined;
+      if (response.status === 429 || error === "quota_reached") {
+        throw new ProviderError("quota", error ?? "429");
       }
-      if (!response.ok || body?.ok === false) {
-        throw new ProviderError("error", `compsapi ${response.status}${body?.error ? `: ${String(body.error).slice(0, 120)}` : ""}`);
+      if (!response.ok || fields.ok === false) {
+        throw new ProviderError("error", `compsapi ${response.status}${error ? `: ${error}` : ""}`);
       }
       return parseCompsApiItems(body);
     },

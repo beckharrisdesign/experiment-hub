@@ -7,7 +7,8 @@
 import { z } from "zod";
 import { textStructured, type TextResult } from "./text";
 
-export const QuerySchema = z.object({ query: z.string().min(1).max(80) });
+/** Trimmed before the length check, so a reply of spaces can never become an empty search or cache key. */
+export const QuerySchema = z.object({ query: z.string().trim().min(1).max(80) });
 
 export interface QueryInput {
   name: string;
@@ -35,7 +36,7 @@ export function fixtureQuery(input: QueryInput): string {
 
 export async function writeQuery(input: QueryInput): Promise<{ query: string; call: TextResult<unknown> | null }> {
   const call = await textStructured({ system: QUERY_PROMPT, user: queryUserText(input), schema: QuerySchema, name: "comps_query" });
-  return { query: call ? call.data.query.trim() : fixtureQuery(input), call };
+  return { query: call ? call.data.query : fixtureQuery(input), call };
 }
 
 export { normalizeQuery } from "./normalize";

@@ -215,6 +215,12 @@ rereadPending?: boolean;   // a correction was saved; its re-read hasn't landed
   `{ status: "gated" }` with no model call. The client gates too; the server check is the one
   that protects spend. *(2026-10-31, #59: the threshold became a profile setting — founder:
   "Tokenize that choice - and put it in my profile".)*
+- **What the server can and can't enforce yet** *(2026-11-02, PR review)*: with no accounts the
+  threshold arrives from the device, so the server can hold it only to an offered choice. The
+  floor it really enforces is the lowest choice ($25), not each person's own setting; that
+  moves to the person's row with sign-in (#50). Spend is also bounded by per-address and
+  per-instance rate limits on the route, and by the provider plan, which pauses at its quota
+  with no overage.
 - **When the client calls:**
   - On confirm.
   - On opening an item that is gated in, has no `comps`, and either never ran or last failed

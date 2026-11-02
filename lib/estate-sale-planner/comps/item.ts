@@ -69,9 +69,12 @@ export function applyComps(s: Session, itemId: string, key: string, summary: Com
       if (i.id !== itemId || compsKey(i) !== key) return i;
       const comps: ItemComps = { ...summary, status, key, at: now.toISOString() };
       if (i.bandSource === "family") return { ...i, comps };
-      if (status === "ok" && summary.band) return { ...i, comps, band: summary.band, bandSource: "comps" as const };
-      // A band set from an earlier subject's sales is the model's estimate again.
-      return { ...i, comps, ...(i.bandSource === "comps" ? { bandSource: "guess" as const } : {}) };
+      // The model's band is kept aside so it can come back.
+      const guessBand = i.bandSource === "comps" ? (i.guessBand ?? i.band) : i.band;
+      if (status === "ok" && summary.band) return { ...i, comps, band: summary.band, bandSource: "comps" as const, guessBand };
+      // No usable sales for this subject: a band set from an earlier subject's sales gives way to the model's.
+      if (i.bandSource === "comps") return { ...i, comps, band: guessBand, bandSource: "guess" as const, guessBand: undefined };
+      return { ...i, comps };
     }),
   };
 }

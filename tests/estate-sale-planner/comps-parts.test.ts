@@ -30,6 +30,11 @@ describe("the query step", () => {
     expect(fixtureQuery({ name: "Lodge skillet" })).toBe("Lodge skillet");
     expect(fixtureQuery({ name: "Pyrex bowls", lotCount: 6 })).toBe("set of 6 Pyrex bowls");
   });
+  it("never accepts a search of only spaces, and trims the rest", () => {
+    expect(QuerySchema.safeParse({ query: "   " }).success).toBe(false);
+    expect(QuerySchema.parse({ query: "  lodge skillet " }).query).toBe("lodge skillet");
+  });
+
   it("runs on the smallest OpenAI model, text only", () => {
     const body = openAITextBody({ system: "s", user: "u", schema: QuerySchema, name: "comps_query" });
     expect(body.model).toBe("gpt-5-nano");

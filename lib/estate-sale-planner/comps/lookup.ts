@@ -9,6 +9,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { COMPS } from "../config";
 import type { CostInput } from "../costs";
 import type { Destination } from "../session";
+import { messageOf } from "../errors";
 import { bandFromPrices } from "./band";
 import { ProviderError, type CompsProvider, type SoldListing } from "./provider";
 import { normalizeQuery, writeQuery as defaultWriteQuery, type QueryInput } from "./query";
@@ -60,8 +61,8 @@ export async function lookupComps(input: LookupInput, deps: LookupDeps): Promise
     if (written.call) {
       record({ kind: "query", provider: written.call.provider, model: written.call.model, ...written.call.usage });
     }
-  } catch (error: any) {
-    record({ kind: "query", ok: false, error: `error: ${error?.message ?? "unknown"}` });
+  } catch (error: unknown) {
+    record({ kind: "query", ok: false, error: `error: ${messageOf(error)}` });
     return { status: "error", reason: "The search couldn't be written." };
   }
 
@@ -78,10 +79,10 @@ export async function lookupComps(input: LookupInput, deps: LookupDeps): Promise
   } else {
     try {
       listings = await provider.search(query, AbortSignal.timeout(COMPS.timeoutMs));
-    } catch (error: any) {
+    } catch (error: unknown) {
       const kind = error instanceof ProviderError ? error.kind : "error";
       // Failed requests aren't billed (CompsAPI docs), so the row carries no cost.
-      record({ kind: "lookup", provider: provider.name, cents: 0, ok: false, error: kind === "quota" ? "quota" : `error: ${error?.message ?? "unknown"}` });
+      record({ kind: "lookup", provider: provider.name, cents: 0, ok: false, error: kind === "quota" ? "quota" : `error: ${messageOf(error)}` });
       return { status: kind, query };
     }
     fetchedAt = now().toISOString();
@@ -100,8 +101,8 @@ export async function lookupComps(input: LookupInput, deps: LookupDeps): Promise
     matches = read.matches;
     reason = read.reason;
     if (read.call) record({ kind: "comps", provider: read.call.provider, model: read.call.model, ...read.call.usage });
-  } catch (error: any) {
-    record({ kind: "comps", ok: false, error: `error: ${error?.message ?? "unknown"}` });
+  } catch (error: unknown) {
+    record({ kind: "comps", ok: false, error: `error: ${messageOf(error)}` });
     return { status: "error", query, found, fetchedAt, cached, reason: "The sold listings couldn't be checked." };
   }
 

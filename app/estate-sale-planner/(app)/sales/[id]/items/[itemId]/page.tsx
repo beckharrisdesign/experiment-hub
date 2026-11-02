@@ -14,11 +14,13 @@ export default function ItemPage({ params }: { params: Promise<{ id: string; ite
   const { id, itemId } = use(params);
   const router = useRouter();
   const store = useSaleStore();
-  const { ready, onOpenItem } = store;
-  // A gated item that was never looked up, or whose last lookup failed, tries again when it's opened.
+  const { onOpenItem } = store;
+  const loadedId = store.session?.id;
+  // A gated item that was never looked up, or whose last lookup failed, tries again when it's
+  // opened — once this URL's sale is the one in context, not the sale we navigated away from.
   useEffect(() => {
-    if (ready) onOpenItem(itemId);
-  }, [ready, itemId, onOpenItem]);
+    if (loadedId === id) onOpenItem(id, itemId);
+  }, [loadedId, id, itemId, onOpenItem]);
   return (
     <SaleScreen id={id}>
       {(session) => {

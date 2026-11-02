@@ -8,6 +8,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { after } from "next/server";
 import { EXPERIMENT_ID, MODEL_PRICES } from "./config";
+import { messageOf } from "./errors";
 import { createAdminSupabaseClient } from "./supabase-admin";
 
 export type CostKind = "walkthrough" | "reread" | "query" | "comps" | "lookup";
@@ -102,8 +103,8 @@ export async function recordCost(
     const { error } = await db.from("esp_costs").insert(row);
     if (error) throw error;
     return "db";
-  } catch (error: any) {
-    console.error(`[esp costs] couldn't record a ${input.kind} row:`, error?.message ?? error);
+  } catch (error: unknown) {
+    console.error(`[esp costs] couldn't record a ${input.kind} row:`, messageOf(error));
     return "failed";
   }
 }

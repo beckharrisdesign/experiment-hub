@@ -96,10 +96,10 @@ export interface SaleStore {
   createSale: (name?: string, location?: string) => string;
   /** A photo for an item that has none (one the family typed in): kept like a walkthrough photo, then read. */
   onAddPhoto: (itemId: string, file: File) => Promise<boolean>;
-  /** Items whose sold-price lookup is in flight ("Checking sold prices…"). */
+  /** Items whose sold-price lookup is in flight ("Checking sold prices…"); one entry per flight. */
   checkingComps: string[];
   /** The item screen opened: look up a gated item that never was, or whose last try failed (sold-comps 3.24). */
-  onOpenItem: (itemId: string) => void;
+  onOpenItem: (saleId: string, itemId: string) => void;
 }
 
 const SaleContext = createContext<SaleStore | null>(null);
@@ -629,13 +629,22 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
             saleId,
           }),
         });
-        const json = (await res.json()) as CompsSummary | { error: string };
-        summary = res.ok && "status" in json ? json : { status: "error" };
+        const json = (await res.json()) as (CompsSummary & { success: true }) | { error: string };
+        if (res.ok && "success" in json) {
+          const { success: _success, ...rest } = json;
+          summary = rest;
+        } else {
+          summary = { status: "error" };
+        }
       } catch {
         summary = { status: "error" };
       } finally {
         lookupsInFlight.current.delete(flight);
-        setCheckingComps((ids) => ids.filter((id) => id !== itemId));
+        // One entry per flight: a rename can start a second lookup before the first lands.
+        setCheckingComps((ids) => {
+          const at = ids.indexOf(itemId);
+          return at < 0 ? ids : [...ids.slice(0, at), ...ids.slice(at + 1)];
+        });
       }
       track("esp_comps_result", { status: summary.status, cached: summary.cached, matched: summary.matched });
       applyTo(saleId, (s) => applyComps(s, itemId, key, summary));
@@ -682,10 +691,11 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const onOpenItem = useCallback(
-    (itemId: string) => {
+    (saleId: string, itemId: string) => {
       const current = latest.current;
-      const item = current?.items.find((i) => i.id === itemId);
-      if (current && item && retryDue(item, loadProfile().lookupMinBand)) schedule(current.id, [itemId], 0);
+      if (current?.id !== saleId) return;
+      const item = current.items.find((i) => i.id === itemId);
+      if (item && retryDue(item, loadProfile().lookupMinBand)) schedule(saleId, [itemId], 0);
     },
     [schedule],
   );
