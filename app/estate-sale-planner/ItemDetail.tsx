@@ -3,6 +3,7 @@
 import { Fragment, useRef, useState } from "react";
 import Link from "next/link";
 import { Badge, Button, Callout, Field, Grid, GridItem, Inline, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Stack, Textarea } from "@beckharrisdesign/mvds";
+import { bandLine, formatRange, type BandLine } from "../../lib/estate-sale-planner/comps/item";
 import { BANDS } from "../../lib/estate-sale-planner/flag";
 import { paths } from "../../lib/estate-sale-planner/routes";
 import type { ItemPatch, SessionItem } from "../../lib/estate-sale-planner/session";
@@ -13,6 +14,8 @@ interface ItemDetailProps {
   saleId: string;
   /** A message for this item is being read. */
   refining: boolean;
+  /** Its sold-price lookup is in flight. */
+  checkingComps?: boolean;
   onUpdate: (itemId: string, patch: ItemPatch) => void;
   onRemove: (itemId: string) => void;
   onRetryReread: (itemId: string) => void;
@@ -30,7 +33,7 @@ interface ItemDetailProps {
  *
  * Desktop: the name and price run full width, then the photo takes 5 of 12 columns.
  */
-export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove, onRetryReread, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
+export default function ItemDetail({ item, saleId, refining, checkingComps = false, onUpdate, onRemove, onRetryReread, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
   const [confirmRemove, setConfirmRemove] = useState(false);
   const photoHref = paths.photo(saleId, item.id);
   const bandOptions: string[] = (BANDS as readonly string[]).includes(item.band) ? [...BANDS] : [item.band, ...BANDS];
@@ -61,12 +64,15 @@ export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove,
           </Callout>
         )}
       </Stack>
-      <div className="flex items-start justify-between gap-4">
-        <h1 className="min-w-0 break-words text-h2 text-foreground">{item.name}</h1>
-        <p className="shrink-0 whitespace-nowrap text-h2 text-success" aria-label={`Value band ${item.band}`}>
-          {item.band}
-        </p>
-      </div>
+      <Stack gap={8}>
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="min-w-0 break-words text-h2 text-foreground">{item.name}</h1>
+          <p className="shrink-0 whitespace-nowrap text-h2 text-success" aria-label={`Value band ${item.band}`}>
+            {item.band}
+          </p>
+        </div>
+        <BandLineView line={bandLine(item, checkingComps)} />
+      </Stack>
 
       <Grid cols={{ base: 1, lg: 12 }} gap={32}>
         <GridItem span={{ base: 1, lg: 5 }}>
@@ -111,6 +117,46 @@ export default function ItemDetail({ item, saleId, refining, onUpdate, onRemove,
         </GridItem>
       </Grid>
     </Stack>
+  );
+}
+
+/**
+ * The line under the name and price (D15). Shown only while checking, when the band comes from
+ * sold listings, or when the family set it; everything else shows nothing.
+ */
+function BandLineView({ line }: { line: BandLine | null }) {
+  if (!line) return null;
+  if (line.kind === "checking") {
+    return (
+      <p className="text-small text-muted-foreground" role="status">
+        Checking sold prices…
+      </p>
+    );
+  }
+  const comps = line.comps;
+  return (
+    <div className="space-y-2">
+      <p className="text-small text-muted-foreground">
+        {line.kind === "family" ? "Set by you" : null}
+        {line.kind === "family" && comps ? " · " : null}
+        {comps?.rangeCents ? `Based on ${comps.matched} sold · ${formatRange(comps.rangeCents)}` : null}
+      </p>
+      {comps?.listings?.length ? (
+        <ul className="text-small">
+          {comps.listings.map((l) => (
+            <li key={l.url} className="flex items-center gap-2 pointer-coarse:min-h-11">
+              <a href={l.url} target="_blank" rel="noopener noreferrer" className="min-w-0 truncate text-foreground underline underline-offset-2">
+                {l.title}
+              </a>
+              <span className="shrink-0 text-muted-foreground">
+                ${Math.round(l.priceCents / 100).toLocaleString("en-US")}
+                {l.soldAt ? ` · ${new Date(l.soldAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : ""}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   );
 }
 

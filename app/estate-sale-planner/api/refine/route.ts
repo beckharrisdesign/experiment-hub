@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { DETAIL_SHOT } from "../../../../lib/estate-sale-planner/config";
+import { deferCost, saleIdOf } from "../../../../lib/estate-sale-planner/costs";
 import { visionConfigured, type FrameInput } from "../../../../lib/estate-sale-planner/flag";
 import { refineItem, type RefineInput } from "../../../../lib/estate-sale-planner/refine";
 
@@ -46,7 +47,7 @@ function validItem(i: unknown): i is RefineInput["item"] {
 }
 
 export async function POST(request: NextRequest) {
-  let body: { item?: unknown; details?: unknown; context?: unknown; message?: unknown; reframed?: unknown };
+  let body: { item?: unknown; details?: unknown; context?: unknown; message?: unknown; reframed?: unknown; saleId?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -79,6 +80,9 @@ export async function POST(request: NextRequest) {
     const result = await refineItem({ item: { ...body.item, room: body.item.room ?? "" }, details, context, message, reframed: body.reframed === true });
     // Successes are logged too, so a re-read that "did nothing" can be told apart from one that never arrived.
     console.info(`[esp refine] ok in ${Date.now() - started} ms (${result.source}${body.reframed === true ? ", reframed" : ""}${message ? ", message" : ""})`);
+    if (result.source === "model") {
+      deferCost({ kind: "reread", saleId: saleIdOf(body.saleId), provider: result.provider, model: result.model, ...result.usage });
+    }
     return NextResponse.json({ success: true, configured: visionConfigured(), ...result });
   } catch (error: any) {
     console.error("[esp refine] re-read failed:", error);

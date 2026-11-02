@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Stack } from "@beckharrisdesign/mvds";
@@ -14,6 +14,11 @@ export default function ItemPage({ params }: { params: Promise<{ id: string; ite
   const { id, itemId } = use(params);
   const router = useRouter();
   const store = useSaleStore();
+  const { ready, onOpenItem } = store;
+  // A gated item that was never looked up, or whose last lookup failed, tries again when it's opened.
+  useEffect(() => {
+    if (ready) onOpenItem(itemId);
+  }, [ready, itemId, onOpenItem]);
   return (
     <SaleScreen id={id}>
       {(session) => {
@@ -36,6 +41,7 @@ export default function ItemPage({ params }: { params: Promise<{ id: string; ite
             item={item}
             saleId={id}
             refining={store.refining === item.id}
+            checkingComps={store.checkingComps.includes(item.id)}
             onUpdate={store.onUpdate}
             onRetryReread={store.onRetryReread}
             onMessage={store.onMessage}

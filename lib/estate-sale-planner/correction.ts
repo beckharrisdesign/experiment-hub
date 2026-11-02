@@ -11,6 +11,7 @@
  * picture, runs the re-read, and folds the answer back with `applyReread` (or
  * `failReread`). Ids are derived, never the model's text.
  */
+import { compsKey } from "./comps/item";
 import type { Box } from "./flag";
 import type { RefineResponse } from "./refine";
 import { DESTINATIONS, type Destination, type ItemMessage, type MessageFields, type Session, type SessionItem } from "./session";
@@ -42,20 +43,22 @@ export function adjustBox(s: Session, itemId: string, box: Box, image?: string):
   };
 }
 
-/** The re-read after a correction landed. A band the family set stays theirs. */
+/** The re-read after a correction landed. A band the family set stays theirs, and so does one set from sales of the same thing. */
 export function applyReread(s: Session, itemId: string, r: RefineResponse): Session {
   return {
     ...s,
     items: s.items.map((i) => {
       if (i.id !== itemId) return i;
       const familyBand = i.bandSource === "family";
+      // Sold prices for the same subject outrank a fresh guess; a new subject gets its own lookup.
+      const compsBand = i.bandSource === "comps" && i.comps?.status === "ok" && i.comps.key === compsKey({ name: r.name, markReading: r.markReading, lot: i.lot });
       return clearFailed({
         ...i,
         name: r.name,
         reason: r.reason,
         confidence: r.confidence,
         markReading: r.markReading,
-        ...(familyBand ? {} : { band: r.band }),
+        ...(familyBand || compsBand ? {} : { band: r.band, bandSource: "guess" as const }),
         refined: true,
         rereadPending: false,
       });

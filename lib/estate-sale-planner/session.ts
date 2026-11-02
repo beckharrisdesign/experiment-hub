@@ -6,6 +6,7 @@
  * between them per item, any time.
  */
 
+import type { ItemComps } from "./comps/item";
 import type { Box, FlaggedItem } from "./flag";
 import type { RefineResponse } from "./refine";
 
@@ -42,6 +43,8 @@ export interface SessionItem extends FlaggedItem {
   rereadFailed?: boolean;
   /** "Adjust this item" messages, oldest first (sold-comps D14). */
   messages?: ItemMessage[];
+  /** The last sold-price lookup, and the subject it was for (sold-comps D7). */
+  comps?: ItemComps;
 }
 
 /** What a message changed, so Undo can put it back. */

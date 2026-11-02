@@ -1,0 +1,101 @@
+/**
+ * Comps on the device (sold-comps tasks 3.24, design D7, D15): when an item's lookup is due,
+ * how a result lands on it, and which band line it shows. Pure, so the store's timing is the
+ * only untested part.
+ *
+ * A lookup is about the item's subject — its name, mark reading and lot size — not its band:
+ * the comps set the band, so keying on the band would loop. The subject changing (a rename, a
+ * re-read that renamed it, a message, a split or a lot) is what makes a new lookup due.
+ */
+import type { Session, SessionItem } from "../session";
+import { normalizeQuery } from "./normalize";
+import { meetsLookupGate, type CompsSummary } from "./summary";
+
+/** The last lookup for an item, and which subject it was for. */
+export type ItemComps = Omit<CompsSummary, "status"> & { status: Exclude<CompsSummary["status"], "gated">; key: string; at: string };
+
+type Subject = Pick<SessionItem, "name" | "markReading" | "lot">;
+
+export function compsKey(item: Subject): string {
+  return [normalizeQuery(item.name), normalizeQuery(item.markReading ?? ""), item.lot ? item.lot.parts.length : 1].join("|");
+}
+
+export function lotCount(item: Pick<SessionItem, "lot">): number | undefined {
+  return item.lot ? item.lot.parts.length : undefined;
+}
+
+const RETRYABLE = new Set(["error", "quota", "not-configured"]);
+
+function ready(item: SessionItem, minBand: unknown): boolean {
+  return meetsLookupGate(item, minBand) && !item.rereadPending;
+}
+
+/**
+ * Due when the item first meets the gate (set to Sell, or its band rises to the threshold,
+ * including when a re-read lands) or its subject changed while gated. Not merely because a
+ * sale was opened: an item that sat gated with no comps waits for its screen (`retryDue`).
+ */
+export function lookupDue(prev: SessionItem | undefined, next: SessionItem, minBand: unknown): boolean {
+  if (!ready(next, minBand)) return false;
+  const key = compsKey(next);
+  if (next.comps?.key === key) return false;
+  if (!prev || !ready(prev, minBand)) return true;
+  return compsKey(prev) !== key;
+}
+
+/** On opening a gated item: run if it has never been looked up for this subject, or the last try failed. */
+export function retryDue(item: SessionItem, minBand: unknown): boolean {
+  if (!ready(item, minBand)) return false;
+  return item.comps?.key !== compsKey(item) || RETRYABLE.has(item.comps.status);
+}
+
+/** Items in `next` whose lookup became due since `prev`. */
+export function lookupsDue(prev: Session | null, next: Session, minBand: unknown): string[] {
+  const before = prev?.id === next.id ? new Map(prev.items.map((i) => [i.id, i])) : new Map<string, SessionItem>();
+  return next.items.filter((i) => lookupDue(before.get(i.id), i, minBand)).map((i) => i.id);
+}
+
+/**
+ * A lookup came back. It lands only if the item is still the subject it was asked about. On
+ * `ok` the band comes from the sales, unless the family set one: theirs stays and the comps
+ * stay for reference. A gated answer (the threshold moved meanwhile) changes nothing.
+ */
+export function applyComps(s: Session, itemId: string, key: string, summary: CompsSummary, now = new Date()): Session {
+  const status = summary.status;
+  if (status === "gated") return s;
+  return {
+    ...s,
+    items: s.items.map((i) => {
+      if (i.id !== itemId || compsKey(i) !== key) return i;
+      const comps: ItemComps = { ...summary, status, key, at: now.toISOString() };
+      if (i.bandSource === "family") return { ...i, comps };
+      if (status === "ok" && summary.band) return { ...i, comps, band: summary.band, bandSource: "comps" as const };
+      // A band set from an earlier subject's sales is the model's estimate again.
+      return { ...i, comps, ...(i.bandSource === "comps" ? { bandSource: "guess" as const } : {}) };
+    }),
+  };
+}
+
+export type BandLine =
+  | { kind: "checking" }
+  | { kind: "comps"; comps: ItemComps }
+  | { kind: "family"; comps?: ItemComps };
+
+/**
+ * The band line under the name and price (D15): only "Checking sold prices…", "Based on N
+ * sold" and "Set by you". The model's estimate, too few matches, no key and failures show
+ * nothing; their reasons are on the cost row.
+ */
+export function bandLine(item: SessionItem, checking: boolean): BandLine | null {
+  const okComps = item.comps?.status === "ok" && item.comps.key === compsKey(item) ? item.comps : undefined;
+  if (item.bandSource === "family") return { kind: "family", ...(okComps ? { comps: okComps } : {}) };
+  if (checking) return { kind: "checking" };
+  if (item.bandSource === "comps" && okComps) return { kind: "comps", comps: okComps };
+  return null;
+}
+
+/** "$40–$85", or "$40" when the range is one price. */
+export function formatRange([lo, hi]: [number, number]): string {
+  const d = (c: number) => `$${Math.round(c / 100).toLocaleString("en-US")}`;
+  return lo === hi ? d(lo) : `${d(lo)}–${d(hi)}`;
+}

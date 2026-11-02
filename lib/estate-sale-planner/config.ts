@@ -90,7 +90,54 @@ export const COMPS = {
   minBand: "$100–$250",
   /** The thresholds the profile offers, low to high (the #59 alternatives: $25, $100, $500). */
   minBandChoices: ["$25–$50", "$100–$250", "$500–$2,000"],
+  /** A saved lookup younger than this is reused, from any sale (review queue #63). */
+  freshDays: 90,
+  /** Matching sold listings needed before they replace the model's band (review queue #64). */
+  minMatches: 3,
+  /** Listings sent to the comps pass; the provider returns up to 240 a page. */
+  maxListings: 25,
+  /** Kept listings the item links to. */
+  citeListings: 3,
+  /** The provider call gives up after this (design D5). */
+  timeoutMs: 8_000,
 } as const;
+
+/**
+ * Sold-listings providers (design D5, review queue #62). `COMPS_PROVIDER` picks one (default
+ * compsapi) and `COMPS_API_KEY` keys it, both server-only. Read from https://compsapi.com/docs
+ * and /pricing on 2026-11-02: GET /v1/sold, `X-API-Key`, a User-Agent is required, prices in
+ * USD. Starter is $9 for 5,000 requests a month with no overage, so a request is 0.18¢.
+ */
+export const COMPS_PROVIDERS = {
+  compsapi: {
+    url: "https://api.compsapi.com/v1/sold",
+    pricePerRequestCents: 0.18,
+  },
+} as const;
+
+/**
+ * The text-only steps (writing a search query, reading comps) use the smallest model of each
+ * provider, in the same provider order as the walkthrough (design D4).
+ */
+export const TEXT_MODELS = {
+  openai: process.env.ESP_OPENAI_TEXT_MODEL || "gpt-5-nano",
+  anthropic: process.env.ESP_ANTHROPIC_TEXT_MODEL || "claude-haiku-5-5",
+} as const;
+
+/**
+ * Standard-tier prices in USD per million tokens, for the cost ledger (design D8). Read from
+ * the vendor pages on 2026-11-02: developers.openai.com/api/docs/pricing and
+ * platform.claude.com/docs/en/about-claude/pricing (Haiku at the ≤100K-token prompt rate, which
+ * every call here is). Check again when a model changes; an unknown model records 0¢.
+ */
+export const MODEL_PRICES: Record<string, { input: number; output: number }> = {
+  "gpt-5": { input: 1.25, output: 10 },
+  "gpt-5-mini": { input: 0.25, output: 2 },
+  "gpt-5-nano": { input: 0.05, output: 0.4 },
+  "claude-opus-5-5": { input: 4, output: 20 },
+  "claude-sonnet-5-5": { input: 2, output: 10 },
+  "claude-haiku-5-5": { input: 0.1, output: 0.5 },
+};
 
 /** Browser-side session key; closing the tab loses it, and the UI says so. v2: destinations. */
 export const SESSION_STORAGE_KEY = "esp:session:v2";

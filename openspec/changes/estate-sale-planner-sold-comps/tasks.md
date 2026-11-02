@@ -32,21 +32,21 @@
 
 **Sold-price lookup**
 
-- [ ] 1.19 A Sell item at $100 or more (the profile threshold) gets one search query and one lookup
-- [ ] 1.20 Keep, Donate, undecided or under-threshold items get no query and no lookup, and show the model's price with no comps line
-- [ ] 1.21 A Sell lot over the threshold is looked up as a set ("set of 6 Pyrex mixing bowls")
-- [ ] 1.22 When a message or photo correction changes what a gated item is, a new query runs (and reuses a fresh saved result)
-- [ ] 1.23 The first lookup for a query calls the provider once and saves the results
-- [ ] 1.24 The same query within 90 days, from any sale, uses the saved results with no provider call
-- [ ] 1.25 Saved results older than 90 days are fetched again and replaced
-- [ ] 1.26 With 3 or more matching sales, the price is set from them and shows "Based on N sold" with links to some of them
-- [ ] 1.27 With fewer than 3 matches, the model's price stays and no comps line shows
-- [ ] 1.28 When the family sets the price by hand, their price stays, and the comps stay visible for reference
-- [ ] 1.29 Each walkthrough records one cost row with the model, tokens and estimated cents
-- [ ] 1.30 A provider lookup records its price; an answer from saved results records a zero-cost cache hit
-- [ ] 1.31 If the cost table can't be written, the walkthrough, re-read or lookup still works and the failure is logged
-- [ ] 1.32 With no provider key, a gated item keeps the model's price, shows no comps line, and the cost row says lookups aren't configured
-- [ ] 1.33 When the provider errors, times out or is out of quota, the item keeps the model's price, the failure is recorded, and the next visit tries again
+- [x] 1.19 A Sell item at $100 or more (the profile threshold) gets one search query and one lookup — `comps-lookup.test.ts` (fake provider); in the app, opening an ungated-yet-unlooked-up $250+ Sell item POSTed `/api/comps` once (2026-11-02)
+- [x] 1.20 Keep, Donate, undecided or under-threshold items get no query and no lookup, and show the model's price with no comps line — `comps-lookup.test.ts`, `comps-route.test.ts` (server gate, tampered threshold), `comps-item.test.ts` (no band line)
+- [~] 1.21 A Sell lot over the threshold is looked up as a set ("set of 6 Pyrex mixing bowls") — lot count reaches the query step and the fixture query (`comps-lookup.test.ts`); the model's set wording needs a keyed call
+- [x] 1.22 When a message or photo correction changes what a gated item is, a new query runs (and reuses a fresh saved result) — `comps-item.test.ts` (lookups key on the subject: name, mark, lot size; not the band); store reuse in `comps-lookup.test.ts`
+- [x] 1.23 The first lookup for a query calls the provider once and saves the results — `comps-lookup.test.ts`
+- [x] 1.24 The same query within 90 days, from any sale, uses the saved results with no provider call — `comps-lookup.test.ts`
+- [x] 1.25 Saved results older than 90 days are fetched again and replaced — `comps-lookup.test.ts`, `comps-parts.test.ts` (freshness)
+- [~] 1.26 With 3 or more matching sales, the price is set from them and shows "Based on N sold" with links to some of them — band math and citations tested (`comps-lookup.test.ts`, `comps-item.test.ts`); the line renders from a seeded result (`assets/built-comps-line-428.jpg`, 2026-11-02); **live sales need a CompsAPI key**
+- [x] 1.27 With fewer than 3 matches, the model's price stays and no comps line shows — `comps-lookup.test.ts`, `comps-item.test.ts`
+- [x] 1.28 When the family sets the price by hand, their price stays, and the comps stay visible for reference — `comps-item.test.ts` ("Set by you · Based on N sold")
+- [~] 1.29 Each walkthrough records one cost row with the model, tokens and estimated cents — wired in `/api/flag` with `saleId`, row shape in `costs.test.ts`; **lands once migration 019 is applied**
+- [~] 1.30 A provider lookup records its price; an answer from saved results records a zero-cost cache hit — `comps-lookup.test.ts`, `costs.test.ts`; **lands once migration 019 is applied**
+- [x] 1.31 If the cost table can't be written, the walkthrough, re-read or lookup still works and the failure is logged — `costs.test.ts`; seen live 2026-11-02: the dev server's Supabase key was unresolved, the log said `couldn't record a lookup row` and the lookup still answered
+- [x] 1.32 With no provider key, a gated item keeps the model's price, shows no comps line, and the cost row says lookups aren't configured — `comps-route.test.ts`, `comps-lookup.test.ts`; in the app (2026-11-02) the item stored `not-configured` and kept $250–$500
+- [x] 1.33 When the provider errors, times out or is out of quota, the item keeps the model's price, the failure is recorded, and the next visit tries again — `comps-lookup.test.ts`, `comps-parts.test.ts` (429/`quota_reached`, 401, timeout), `comps-item.test.ts` (`retryDue`)
 
 ## 2. Prototype shell
 
@@ -124,33 +124,34 @@
 
 ### PR 2: sold-price lookup
 
-- [ ] 3.17 **Migration `019_esp_comps_costs.sql` (D9).** Idempotent, RLS on, no policies. Apply it to Experiment Hub 2.0 and confirm `schema_migrations` matches the file.
-- [ ] 3.18 **Cost ledger (D8).**
+- [~] 3.17 **Migration `019_esp_comps_costs.sql` (D9).** Idempotent, RLS on, no policies. Apply it to Experiment Hub 2.0 and confirm `schema_migrations` matches the file.
+  - 2026-11-02: file written (`esp_comps`, `esp_costs`). **Not applied yet** — waits on Katy's OK to change the live database.
+- [x] 3.18 **Cost ledger (D8).** (2026-11-02; prices read from the vendor pages that day; `deferCost` uses `after()` so Vercel doesn't freeze the write)
   - `costs.ts` `recordCost()`: fire-and-forget, logs on failure.
   - `MODEL_PRICES` in `config.ts` from the vendor pricing pages, with a dated comment.
   - Wired into `/api/flag` and `/api/refine` (with `saleId`).
   - Tests: one row per call, and a failure doesn't throw.
-- [ ] 3.19 **Provider adapter (D5).**
+- [x] 3.19 **Provider adapter (D5).** (2026-11-02, from compsapi.com/docs: `GET /v1/sold`, `X-API-Key`, User-Agent required, USD dollars, 429 `quota_reached`, $9/5,000 = 0.18¢ a request. The docs show no full `/v1/sold` body; the parser reads `items` and drops what it can't read — **check on the first keyed call**.)
   - `comps/provider.ts` interface plus `comps/compsapi.ts`. Endpoint, auth, response shape and price come from CompsAPI's docs at apply time, not from memory.
   - 8 s timeout; quota and error mapping.
   - Fake provider in tests.
-- [ ] 3.20 **Comps store (D6).** `comps/store.ts`: read and upsert `esp_comps` by `(provider, query_norm)`, 90-day freshness, a zero-cost cache-hit row.
-- [ ] 3.21 **Query writer (D4).** `comps/query.ts` `writeQuery()`: text-only, smallest model per provider from `config.ts`. `normalizeQuery()` is a pure function and tested.
-- [ ] 3.22 **Comps pass and band math (D7).** `comps/read.ts` `readComps()` returns which listings match. `comps/band.ts` takes the 25th–75th percentile range and the median's band, with a minimum of 3 matches. Both tested.
-- [ ] 3.23 **Route `/api/comps`.**
+- [x] 3.20 **Comps store (D6).** `comps/store.ts`: read and upsert `esp_comps` by `(provider, query_norm)`, 90-day freshness, a zero-cost cache-hit row.
+- [x] 3.21 **Query writer (D4).** (`gpt-5-nano` / `claude-haiku-5-5`; with no model key the name is the query) `comps/query.ts` `writeQuery()`: text-only, smallest model per provider from `config.ts`. `normalizeQuery()` is a pure function and tested.
+- [x] 3.22 **Comps pass and band math (D7).** (with no model key nothing is kept, so unchecked comps never set a band) `comps/read.ts` `readComps()` returns which listings match. `comps/band.ts` takes the 25th–75th percentile range and the median's band, with a minimum of 3 matches. Both tested.
+- [x] 3.23 **Route `/api/comps`.**
   - The server re-checks the gate (Sell, the profile's `minBand` via `resolveLookupMinBand` + `bandMeetsLookup`; default `$100–$250` and up).
   - Returns a `CompsSummary`.
   - Throttled like `/api/refine`.
   - Route tests cover gated, ok, too-few, not-configured, error and quota.
-- [ ] 3.24 **Client trigger.**
+- [x] 3.24 **Client trigger.** (2026-11-02: lookups key on the item's subject — name, mark, lot size — not its band, or a comps band would trigger its own lookup; a rename waits 1.2 s to settle; three in flight at most; a result for a subject that changed meanwhile is dropped; listing rows are 44 px on touch)
   - Run when an item first meets the gate (set to Sell, or a Sell item's band reaches the threshold, including after a re-read), on opening a gated item with no comps or a failed last run, and after a correction changes a gated item.
   - Band line states per D15.
   - `bandSource: "family"` is never overwritten.
 - [~] 3.25 **Config and keys.**
   - [x] `COMPS.minBand` + `COMPS.minBandChoices` in `config.ts`, with the per-person threshold in Account & profile (`profile.ts`, `MenuPlaceholder.tsx`); review queue #59 approved 2026-10-31 (PR: esp-lookup-threshold-profile).
-  - `COMPS.freshDays`, `COMPS.minMatches`, provider still to add with #62–#64.
-  - Add `COMPS_PROVIDER` and `COMPS_API_KEY` to `.env.example` with their provenance; Katy adds the value.
-- [ ] 3.26 **Cost query.** A saved SQL snippet in `experiments/estate-sale-planner/docs/` for "cost per sale" from `esp_costs`.
+  - [x] `COMPS.freshDays` (90), `COMPS.minMatches` (3), `COMPS_PROVIDERS.compsapi`, `TEXT_MODELS`, `MODEL_PRICES` (2026-11-02).
+  - [x] `COMPS_PROVIDER`, `COMPS_API_KEY`, `ESP_*_TEXT_MODEL` in `.env.example` with provenance. **Katy adds the key value** (CompsAPI signup, #62).
+- [x] 3.26 **Cost query.** `experiments/estate-sale-planner/docs/cost-per-sale.sql`. A saved SQL snippet in `experiments/estate-sale-planner/docs/` for "cost per sale" from `esp_costs`.
 
 ## 4. QA
 
