@@ -42,8 +42,8 @@
 - [~] 1.26 With 3 or more matching sales, the price is set from them and shows "Based on N sold" with links to some of them — band math and citations tested (`comps-lookup.test.ts`, `comps-item.test.ts`); the line renders from a seeded result (`assets/built-comps-line-428.jpg`, 2026-11-02); **live sales need a CompsAPI key**
 - [x] 1.27 With fewer than 3 matches, the model's price stays and no comps line shows — `comps-lookup.test.ts`, `comps-item.test.ts`
 - [x] 1.28 When the family sets the price by hand, their price stays, and the comps stay visible for reference — `comps-item.test.ts` ("Set by you · Based on N sold")
-- [~] 1.29 Each walkthrough records one cost row with the model, tokens and estimated cents — wired in `/api/flag` with `saleId`, row shape in `costs.test.ts`; **lands once migration 019 is applied**
-- [~] 1.30 A provider lookup records its price; an answer from saved results records a zero-cost cache hit — `comps-lookup.test.ts`, `costs.test.ts`; **lands once migration 019 is applied**
+- [~] 1.29 Each walkthrough records one cost row with the model, tokens and estimated cents — wired in `/api/flag` with `saleId`, row shape in `costs.test.ts`; migration 019 applied 2026-11-02; **confirm on the first real walkthrough in prod**
+- [~] 1.30 A provider lookup records its price; an answer from saved results records a zero-cost cache hit — `comps-lookup.test.ts`, `costs.test.ts`; migration 019 applied 2026-11-02; **confirm once COMPS_API_KEY is set**
 - [x] 1.31 If the cost table can't be written, the walkthrough, re-read or lookup still works and the failure is logged — `costs.test.ts`; seen live 2026-11-02: the dev server's Supabase key was unresolved, the log said `couldn't record a lookup row` and the lookup still answered
 - [x] 1.32 With no provider key, a gated item keeps the model's price, shows no comps line, and the cost row says lookups aren't configured — `comps-route.test.ts`, `comps-lookup.test.ts`; in the app (2026-11-02) the item stored `not-configured` and kept $250–$500
 - [x] 1.33 When the provider errors, times out or is out of quota, the item keeps the model's price, the failure is recorded, and the next visit tries again — `comps-lookup.test.ts`, `comps-parts.test.ts` (429/`quota_reached`, 401, timeout), `comps-item.test.ts` (`retryDue`)
@@ -124,8 +124,9 @@
 
 ### PR 2: sold-price lookup
 
-- [~] 3.17 **Migration `019_esp_comps_costs.sql` (D9).** Idempotent, RLS on, no policies. Apply it to Experiment Hub 2.0 and confirm `schema_migrations` matches the file.
-  - 2026-11-02: file written (`esp_comps`, `esp_costs`). **Not applied yet** — waits on Katy's OK to change the live database.
+- [x] 3.17 **Migration `019_esp_comps_costs.sql` (D9).** Idempotent, RLS on, no policies. Apply it to Experiment Hub 2.0 and confirm `schema_migrations` matches the file.
+  - 2026-11-02: file written (`esp_comps`, `esp_costs`).
+  - 2026-11-02: applied to Experiment Hub 2.0 (ulqdjuiffpazzixnwwso) on Katy's OK; `schema_migrations` has `20261102184633 019_esp_comps_costs`. Both tables: RLS on, 0 policies, no anon/authenticated grants, service role can insert. Security advisor shows only the expected info-level "RLS enabled, no policy" note.
 - [x] 3.18 **Cost ledger (D8).** (2026-11-02; prices read from the vendor pages that day; `deferCost` uses `after()` so Vercel doesn't freeze the write)
   - `costs.ts` `recordCost()`: fire-and-forget, logs on failure.
   - `MODEL_PRICES` in `config.ts` from the vendor pricing pages, with a dated comment.
