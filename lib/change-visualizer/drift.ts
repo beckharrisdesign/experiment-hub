@@ -38,7 +38,10 @@ const ACKNOWLEDGES_CODE =
   /\bseam\b|stays wired|already (exists|there|wired)|is (already )?defined|in place|scaffold/i;
 
 /**
- * Where each symbol lives, for every symbol at once.
+ * Every file each symbol appears in, for every symbol at once. All of them, not the first:
+ * a task citing one module as prior art must not be flagged because another module that
+ * sorts earlier also uses the symbol (2026-11-03, when `lib/estate-sale-planner/sales-db.ts`
+ * started calling the signed-URL helper ahead of the module 3.3.1 cites).
  *
  * One `git grep` for the whole page rather than one per symbol: a change with
  * thirty open tasks otherwise fires close to two hundred subprocesses, which
@@ -47,8 +50,8 @@ const ACKNOWLEDGES_CODE =
 async function locateSymbols(
   symbols: string[],
   cwd: string,
-): Promise<Map<string, string>> {
-  const found = new Map<string, string>();
+): Promise<Map<string, string[]>> {
+  const found = new Map<string, string[]>();
   if (symbols.length === 0) return found;
 
   const patterns = symbols.flatMap((s) => ["-e", s]);
@@ -74,7 +77,10 @@ async function locateSymbols(
     if (!line.trim()) continue;
     const file = line.slice(0, line.indexOf(":"));
     for (const symbol of symbols) {
-      if (!found.has(symbol) && line.includes(symbol)) found.set(symbol, file);
+      if (!line.includes(symbol)) continue;
+      const files = found.get(symbol) ?? [];
+      if (!files.includes(file)) files.push(file);
+      found.set(symbol, files);
     }
   }
   return found;
@@ -138,8 +144,8 @@ export async function findDrift(
       //
       // Naming the symbol itself in this comment would make the search find it
       // here, in the detector's own source. It did, once.
-      .filter((symbol) => !item.text.includes(located.get(symbol) as string))
-      .map((symbol) => `${symbol} is defined in ${located.get(symbol)}`);
+      .filter((symbol) => !(located.get(symbol) as string[]).some((file) => item.text.includes(file)))
+      .map((symbol) => `${symbol} is defined in ${(located.get(symbol) as string[])[0]}`);
 
     if (evidence.length > 0) {
       findings.push({
