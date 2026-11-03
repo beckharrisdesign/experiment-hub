@@ -5,27 +5,34 @@ import { lookupComps, type LookupDeps, type LookupItem } from "@/lib/estate-sale
 import { ProviderError, type CompsProvider, type SoldListing } from "@/lib/estate-sale-planner/comps/provider";
 import { fixtureQuery } from "@/lib/estate-sale-planner/comps/query";
 
-/** Just enough of the Supabase client for esp_comps: one keyed select and an upsert. */
-function fakeDb(rows: Array<{ provider: string; query: string; query_norm: string; fetched_at: string; results: SoldListing[] }> = []) {
+type CompsRow = { provider: string; query: string; query_norm: string; fetched_at: string; results: SoldListing[] };
+type ReadRow = { provider: string; subject: string; query: string; query_norm: string; comps_fetched_at: string; matches: number[]; reason: string; model: string | null };
+
+/** Just enough of the Supabase client for esp_comps and esp_comps_reads: keyed selects and upserts. */
+function fakeDb(rows: CompsRow[] = [], reads: ReadRow[] = []) {
+  const tables: Record<string, any[]> = { esp_comps: rows, esp_comps_reads: reads };
   const db = {
     rows,
-    from: () => {
+    reads,
+    from: (table: string) => {
+      const list = tables[table];
       const filters: Record<string, string> = {};
       const q = {
         select: () => q,
         eq: (col: string, val: string) => ((filters[col] = val), q),
-        maybeSingle: async () => ({ data: rows.find((r) => r.provider === filters.provider && r.query_norm === filters.query_norm) ?? null, error: null }),
-        upsert: async (row: any) => {
-          const i = rows.findIndex((r) => r.provider === row.provider && r.query_norm === row.query_norm);
-          if (i >= 0) rows[i] = row;
-          else rows.push(row);
+        maybeSingle: async () => ({ data: list.find((r) => Object.entries(filters).every(([k, v]) => r[k] === v)) ?? null, error: null }),
+        upsert: async (row: any, opts: { onConflict: string }) => {
+          const keys = opts.onConflict.split(",");
+          const i = list.findIndex((r) => keys.every((k) => r[k] === row[k]));
+          if (i >= 0) list[i] = row;
+          else list.push(row);
           return { error: null };
         },
       };
       return q;
     },
   };
-  return db as unknown as SupabaseClient & { rows: typeof rows };
+  return db as unknown as SupabaseClient & { rows: CompsRow[]; reads: ReadRow[] };
 }
 
 const listing = (priceDollars: number, n: number): SoldListing => ({
@@ -205,5 +212,67 @@ describe("lookupComps — costs and failures", () => {
     expect((await lookupComps({ item: skillet }, q.d)).status).toBe("error");
     const r = deps({ readComps: vi.fn(async () => Promise.reject(new Error("down"))) });
     expect((await lookupComps({ item: skillet }, r.d)).status).toBe("error");
+  });
+});
+
+describe("lookupComps — the same item gets the same answer (design D22)", () => {
+  it("remembers the search and the kept sales under the item's subject", async () => {
+    const db = fakeDb();
+    const { d } = deps({ db });
+    await lookupComps({ item: { ...skillet, markReading: "LODGE 8" } }, d);
+    expect(db.reads).toHaveLength(1);
+    expect(db.reads[0]).toMatchObject({
+      provider: "compsapi",
+      subject: "lodge no 8 skillet|lodge 8|1",
+      query: "Lodge No. 8 skillet",
+      query_norm: "lodge no 8 skillet",
+      comps_fetched_at: NOW.toISOString(),
+      matches: [0, 1, 2, 3],
+    });
+  });
+
+  it("a repeat from any sale reuses both: no model call, no provider call, the same band", async () => {
+    const db = fakeDb();
+    const first = deps({ db });
+    const a = await lookupComps({ item: skillet, saleId: "esp_one" }, first.d);
+    const second = deps({ db });
+    const b = await lookupComps({ item: { ...skillet, name: "lodge no 8 SKILLET", band: "$250–$500" }, saleId: "esp_two" }, second.d);
+    expect(second.d.writeQuery).not.toHaveBeenCalled();
+    expect(second.d.readComps).not.toHaveBeenCalled();
+    expect(second.d.provider!.search).not.toHaveBeenCalled();
+    expect(b).toMatchObject({ status: "ok", band: a.band, rangeCents: a.rangeCents, matched: a.matched, query: a.query, cached: true });
+    expect(second.rows).toEqual([{ kind: "lookup", provider: "compsapi", cents: 0, cacheHit: true, saleId: "esp_two", sessionId: undefined }]);
+  });
+
+  it("once the sales are fetched again, keeps the search but reads the new sales", async () => {
+    const db = fakeDb(
+      [{ provider: "compsapi", query: "Lodge No. 8 skillet", query_norm: "lodge no 8 skillet", fetched_at: "2026-07-01T00:00:00Z", results: [] }],
+      [{ provider: "compsapi", subject: "lodge no 8 skillet||1", query: "Lodge No. 8 skillet", query_norm: "lodge no 8 skillet", comps_fetched_at: "2026-07-01T00:00:00Z", matches: [], reason: "None.", model: "gpt-5" }],
+    );
+    const { d } = deps({ db });
+    const summary = await lookupComps({ item: skillet }, d);
+    expect(d.writeQuery).not.toHaveBeenCalled();
+    expect(d.provider!.search).toHaveBeenCalledWith("Lodge No. 8 skillet", expect.anything());
+    expect(d.readComps).toHaveBeenCalledTimes(1);
+    expect(summary.status).toBe("ok");
+    expect(db.reads[0]).toMatchObject({ comps_fetched_at: NOW.toISOString(), matches: [0, 1, 2, 3] });
+  });
+
+  it("a different subject (a new mark, a lot) is a new search", async () => {
+    const db = fakeDb();
+    await lookupComps({ item: skillet }, deps({ db }).d);
+    const marked = deps({ db });
+    await lookupComps({ item: { ...skillet, markReading: "LODGE 8 SK" } }, marked.d);
+    expect(marked.d.writeQuery).toHaveBeenCalledTimes(1);
+    expect(db.reads.map((r) => r.subject)).toEqual(["lodge no 8 skillet||1", "lodge no 8 skillet|lodge 8 sk|1"]);
+  });
+
+  it("remembers the search even when nothing sold, and remembers nothing when the read fails", async () => {
+    const none = fakeDb();
+    await lookupComps({ item: skillet }, deps({ db: none, provider: fakeProvider([]) }).d);
+    expect(none.reads[0]).toMatchObject({ query: "Lodge No. 8 skillet", matches: [] });
+    const failed = fakeDb();
+    await lookupComps({ item: skillet }, deps({ db: failed, readComps: vi.fn(async () => Promise.reject(new Error("down"))) }).d);
+    expect(failed.reads).toEqual([]);
   });
 });

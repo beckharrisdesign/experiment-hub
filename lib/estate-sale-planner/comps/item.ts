@@ -8,7 +8,7 @@
  * re-read that renamed it, a message, a split or a lot) is what makes a new lookup due.
  */
 import type { Session, SessionItem } from "../session";
-import { normalizeQuery } from "./normalize";
+import { subjectKey } from "./normalize";
 import { meetsLookupGate, type CompsSummary } from "./summary";
 
 /** The last lookup for an item, and which subject it was for. */
@@ -17,7 +17,7 @@ export type ItemComps = Omit<CompsSummary, "status"> & { status: Exclude<CompsSu
 type Subject = Pick<SessionItem, "name" | "markReading" | "lot">;
 
 export function compsKey(item: Subject): string {
-  return [normalizeQuery(item.name), normalizeQuery(item.markReading ?? ""), item.lot ? item.lot.parts.length : 1].join("|");
+  return subjectKey({ name: item.name, markReading: item.markReading, lotCount: lotCount(item) });
 }
 
 export function lotCount(item: Pick<SessionItem, "lot">): number | undefined {

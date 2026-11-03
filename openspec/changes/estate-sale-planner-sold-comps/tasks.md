@@ -156,6 +156,14 @@
   - [x] `COMPS_PROVIDER`, `COMPS_API_KEY`, `ESP_*_TEXT_MODEL` in `.env.example` with provenance. **Katy adds the key value** (CompsAPI signup, #62).
   - 2026-11-03: key in the vault as `op://BHD Labs/CompsAPI Credentials/credential` (the item is "CompsAPI Credentials", not "CompsAPI"); `.env.example` corrected and `COMPS_API_KEY` added to the `scripts/sync-secrets.sh` manifest (target vercel). **Not yet:** the reference line in `.env.local`, and `sync-secrets.sh --apply` to Vercel.
 - [x] 3.26 **Cost query.** `experiments/estate-sale-planner/docs/cost-per-sale.sql`. A saved SQL snippet in `experiments/estate-sale-planner/docs/` for "cost per sale" from `esp_costs`.
+- [~] 3.27 **Same item, same answer (D22).** (2026-11-03, after the first keyed lookups priced one skillet two ways.)
+  - [x] `subjectKey()` in `comps/normalize.ts`: name | mark | lot, normalized; the device's `compsKey` now calls it.
+  - [x] `esp_comps_reads` memo in `store.ts` (`getRead`, `saveRead`); `lookupComps` reuses the search always, and the kept sales while the saved sales are the same fetch. A failed read saves nothing; no sales still saves the search. Tests: `comps-lookup.test.ts` ("the same item gets the same answer").
+  - [x] Search prompt: 3 to 6 words, maker + the mark's number + object; probe: Le Creuset 4/4 "Le Creuset 26 Dutch oven" (was 4 different).
+  - [x] Comps pass on gpt-5 (`TEXT_MODELS.openai.read`) with the size-number rule; probe 4/4 same kept set, live guard `comps-stability.live.test.ts` 3/3 at $50–$100 (2026-11-03).
+  - [x] Long model text clipped (`clipText`), not fatal — a 161-character reason had thrown the pass.
+  - [ ] **Migration `020_esp_comps_reads.sql`** written, **not applied** — waits on Katy's OK. Until then the memo logs a miss and the lookup runs in full.
+  - [ ] Keyed rerun in the app: the same item from two sales gets the same band; the second makes no model or provider call.
 
 ## 4. QA
 

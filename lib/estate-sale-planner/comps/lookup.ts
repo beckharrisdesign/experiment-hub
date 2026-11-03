@@ -3,6 +3,10 @@
  * provider → comps pass → band math, with a cost row for every step. Every way it can't run
  * ends in a summary the device can show; nothing here throws to the route.
  *
+ * The same item gets the same answer (D22): the search and the kept sales are remembered under
+ * the item's subject. A repeat reuses both — no model call, no provider call. When the saved
+ * sales are fetched again the search is kept and only the new sales are read.
+ *
  * Dependencies are injected so the whole pass is testable without a network or a database.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -12,9 +16,10 @@ import type { Destination } from "../session";
 import { messageOf } from "../errors";
 import { bandFromPrices } from "./band";
 import { ProviderError, type CompsProvider, type SoldListing } from "./provider";
+import { subjectKey } from "./normalize";
 import { normalizeQuery, writeQuery as defaultWriteQuery, type QueryInput } from "./query";
 import { readComps as defaultReadComps } from "./read";
-import { getFreshComps, saveComps } from "./store";
+import { getFreshComps, getRead, sameInstant, saveComps, saveRead } from "./store";
 import { meetsLookupGate, type CompsSummary } from "./summary";
 
 export interface LookupItem extends QueryInput {
@@ -54,16 +59,23 @@ export async function lookupComps(input: LookupInput, deps: LookupDeps): Promise
     return { status: "not-configured" };
   }
 
+  const subject = subjectKey(item);
+  const memo = await getRead(deps.db, provider.name, subject);
+
   let query: string;
-  try {
-    const written = await writeQuery(item);
-    query = written.query;
-    if (written.call) {
-      record({ kind: "query", provider: written.call.provider, model: written.call.model, ...written.call.usage });
+  if (memo) {
+    query = memo.query;
+  } else {
+    try {
+      const written = await writeQuery(item);
+      query = written.query;
+      if (written.call) {
+        record({ kind: "query", provider: written.call.provider, model: written.call.model, ...written.call.usage });
+      }
+    } catch (error: unknown) {
+      record({ kind: "query", ok: false, error: `error: ${messageOf(error)}` });
+      return { status: "error", reason: "The search couldn't be written." };
     }
-  } catch (error: unknown) {
-    record({ kind: "query", ok: false, error: `error: ${messageOf(error)}` });
-    return { status: "error", reason: "The search couldn't be written." };
   }
 
   const queryNorm = normalizeQuery(query);
@@ -91,19 +103,31 @@ export async function lookupComps(input: LookupInput, deps: LookupDeps): Promise
   }
 
   const found = listings.length;
-  if (found === 0) return { status: "too-few", query, found, matched: 0, fetchedAt, cached };
+  const remember = (matches: number[], reason: string, model?: string) =>
+    saveRead(deps.db, { provider: provider.name, subject, model, read: { query, queryNorm, compsFetchedAt: fetchedAt, matches, reason } });
+  if (found === 0) {
+    await remember([], "No sold listings came back.");
+    return { status: "too-few", query, found, matched: 0, fetchedAt, cached };
+  }
 
   const sent = listings.slice(0, COMPS.maxListings);
   let matches: number[];
   let reason: string;
-  try {
-    const read = await readComps(item, sent);
-    matches = read.matches;
-    reason = read.reason;
-    if (read.call) record({ kind: "comps", provider: read.call.provider, model: read.call.model, ...read.call.usage });
-  } catch (error: unknown) {
-    record({ kind: "comps", ok: false, error: `error: ${messageOf(error)}` });
-    return { status: "error", query, found, fetchedAt, cached, reason: "The sold listings couldn't be checked." };
+  if (memo && memo.queryNorm === queryNorm && sameInstant(memo.compsFetchedAt, fetchedAt)) {
+    // Same subject, same saved sales: the answer it got last time.
+    matches = memo.matches.filter((i) => i < sent.length);
+    reason = memo.reason;
+  } else {
+    try {
+      const read = await readComps(item, sent);
+      matches = read.matches;
+      reason = read.reason;
+      if (read.call) record({ kind: "comps", provider: read.call.provider, model: read.call.model, ...read.call.usage });
+      await remember(matches, reason, read.call?.model);
+    } catch (error: unknown) {
+      record({ kind: "comps", ok: false, error: `error: ${messageOf(error)}` });
+      return { status: "error", query, found, fetchedAt, cached, reason: "The sold listings couldn't be checked." };
+    }
   }
 
   const kept = matches.map((i) => sent[i]);

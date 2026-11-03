@@ -1,11 +1,11 @@
 /**
  * One small structured text call for the lookup's two model steps — writing the search query
- * and reading the comps (sold-comps design D4, D7). No images, the smallest model of each
- * provider (`TEXT_MODELS`), the same provider order as the walkthrough: OpenAI, then Anthropic.
+ * and reading the comps (sold-comps design D4, D7). No images; the model is per step
+ * (`TEXT_MODELS`, D22), the same provider order as the walkthrough: OpenAI, then Anthropic.
  * Returns null when no model key is set (fixture mode); the caller decides what that means.
  */
 import { z } from "zod";
-import { TEXT_MODELS } from "../config";
+import { TEXT_MODELS, type TextStep } from "../config";
 import { visionProvider, type VisionProvider } from "../flag";
 import { OPENAI_URL } from "../vision/openai";
 import { strictJsonSchema } from "../vision/schema";
@@ -15,6 +15,8 @@ export interface TextRequest<T extends z.ZodType> {
   user: string;
   schema: T;
   name: string;
+  /** Which lookup step: picks the model (`TEXT_MODELS`). */
+  step: TextStep;
 }
 
 export interface TextResult<T> {
@@ -25,9 +27,9 @@ export interface TextResult<T> {
 }
 
 /** The OpenAI body, exported so a test can pin the model and shape. */
-export function openAITextBody<T extends z.ZodType>({ system, user, schema, name }: TextRequest<T>) {
+export function openAITextBody<T extends z.ZodType>({ system, user, schema, name, step }: TextRequest<T>) {
   return {
-    model: TEXT_MODELS.openai,
+    model: TEXT_MODELS.openai[step],
     // Room for the reasoning tokens a gpt-5 model spends before a short answer.
     max_completion_tokens: 4000,
     reasoning_effort: "low",
@@ -67,7 +69,7 @@ export async function textStructured<T extends z.ZodType>(
     return {
       data: parsed.data,
       provider: "openai",
-      model: json.model ?? TEXT_MODELS.openai,
+      model: json.model ?? TEXT_MODELS.openai[request.step],
       usage: { inputTokens: json.usage?.prompt_tokens ?? 0, outputTokens: json.usage?.completion_tokens ?? 0 },
     };
   }
@@ -76,7 +78,7 @@ export async function textStructured<T extends z.ZodType>(
   const { zodOutputFormat } = await import("@anthropic-ai/sdk/helpers/zod");
   const client = new Anthropic({ apiKey: chosen.apiKey });
   const response = await client.messages.parse({
-    model: TEXT_MODELS.anthropic,
+    model: TEXT_MODELS.anthropic[request.step],
     max_tokens: 1000,
     system: request.system,
     messages: [{ role: "user", content: request.user }],

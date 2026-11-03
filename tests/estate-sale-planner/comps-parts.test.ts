@@ -2,10 +2,11 @@ import { describe, it, expect, vi } from "vitest";
 import { bandForDollars, bandFromPrices, percentile } from "@/lib/estate-sale-planner/comps/band";
 import { compsApiProvider, compsApiUrl, parseCompsApiItems } from "@/lib/estate-sale-planner/comps/compsapi";
 import { ProviderError, providerFromEnv } from "@/lib/estate-sale-planner/comps/provider";
-import { fixtureQuery, normalizeQuery, queryUserText } from "@/lib/estate-sale-planner/comps/query";
+import { fixtureQuery, normalizeQuery, queryUserText, QUERY_PROMPT, QuerySchema } from "@/lib/estate-sale-planner/comps/query";
+import { clipText, subjectKey } from "@/lib/estate-sale-planner/comps/normalize";
+import { READ_PROMPT, ReadSchema } from "@/lib/estate-sale-planner/comps/read";
 import { isFresh } from "@/lib/estate-sale-planner/comps/store";
 import { openAITextBody } from "@/lib/estate-sale-planner/comps/text";
-import { QuerySchema } from "@/lib/estate-sale-planner/comps/query";
 
 describe("normalizeQuery", () => {
   it("is the cache key: case, accents, punctuation and spacing fold together", () => {
@@ -35,10 +36,38 @@ describe("the query step", () => {
     expect(QuerySchema.parse({ query: "  lodge skillet " }).query).toBe("lodge skillet");
   });
 
-  it("runs on the smallest OpenAI model, text only", () => {
-    const body = openAITextBody({ system: "s", user: "u", schema: QuerySchema, name: "comps_query" });
-    expect(body.model).toBe("gpt-5-nano");
-    expect(body.messages[1]).toEqual({ role: "user", content: "u" });
+  it("a long answer is clipped, never a failed lookup (2026-11-03: a 161-character reason threw)", () => {
+    expect(QuerySchema.safeParse({ query: "x ".repeat(60) }).success).toBe(true);
+    expect(ReadSchema.safeParse({ matches: [1], reason: "y ".repeat(150) }).success).toBe(true);
+    expect(clipText("Le Creuset 5.5 qt round Dutch oven enamel cast iron Flame Orange", 30)).toBe("Le Creuset 5.5 qt round Dutch");
+    expect(clipText("Kept the three vintage No. 8s.", 160)).toBe("Kept the three vintage No. 8s.");
+    expect(clipText("Supercalifragilisticexpialidocious", 10)).toBe("Supercalif");
+  });
+
+  it("asks for a short search, the maker's own number kept", () => {
+    expect(QUERY_PROMPT).toMatch(/3 to 6 words/);
+    expect(QUERY_PROMPT).toMatch(/No\. 8/);
+  });
+
+  it("writes the search on the smallest OpenAI model and checks the sales on gpt-5 (design D22)", () => {
+    const query = openAITextBody({ system: "s", user: "u", schema: QuerySchema, name: "comps_query", step: "query" });
+    expect(query.model).toBe("gpt-5-nano");
+    expect(query.messages[1]).toEqual({ role: "user", content: "u" });
+    expect(openAITextBody({ system: "s", user: "u", schema: ReadSchema, name: "comps_read", step: "read" }).model).toBe("gpt-5");
+  });
+});
+
+describe("the comps pass prompt", () => {
+  it("knows a maker's number is a size, not inches", () => {
+    expect(READ_PROMPT).toMatch(/a No\. 8 skillet is not an 8-inch skillet/);
+  });
+});
+
+describe("subjectKey", () => {
+  it("is what a lookup is about: name, mark and lot size, normalized", () => {
+    expect(subjectKey({ name: "Lodge No. 8 skillet", markReading: "LODGE 8" })).toBe("lodge no 8 skillet|lodge 8|1");
+    expect(subjectKey({ name: "lodge no 8 SKILLET!", markReading: " Lodge 8 " })).toBe("lodge no 8 skillet|lodge 8|1");
+    expect(subjectKey({ name: "Pyrex bowls", lotCount: 6 })).toBe("pyrex bowls||6");
   });
 });
 

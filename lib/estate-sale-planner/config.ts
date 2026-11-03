@@ -116,13 +116,23 @@ export const COMPS_PROVIDERS = {
 } as const;
 
 /**
- * The text-only steps (writing a search query, reading comps) use the smallest model of each
- * provider, in the same provider order as the walkthrough (design D4).
+ * The text-only lookup steps, in the same provider order as the walkthrough (design D4).
+ * Writing the search stays on the smallest model. Checking the sold listings moved up to gpt-5
+ * (D22, 2026-11-03): it was the only model that kept the same sales run after run (~1¢ a
+ * check, against 0.04¢ on nano). A repeat for the same item makes no model call at all.
+ * The Anthropic read model is the matching tier by price and hasn't been probed.
  */
 export const TEXT_MODELS = {
-  openai: process.env.ESP_OPENAI_TEXT_MODEL || "gpt-5-nano",
-  anthropic: process.env.ESP_ANTHROPIC_TEXT_MODEL || "claude-haiku-5-5",
+  openai: {
+    query: process.env.ESP_OPENAI_TEXT_MODEL || "gpt-5-nano",
+    read: process.env.ESP_OPENAI_READ_MODEL || "gpt-5",
+  },
+  anthropic: {
+    query: process.env.ESP_ANTHROPIC_TEXT_MODEL || "claude-haiku-5-5",
+    read: process.env.ESP_ANTHROPIC_READ_MODEL || "claude-sonnet-5-5",
+  },
 } as const;
+export type TextStep = keyof (typeof TEXT_MODELS)["openai"];
 
 /**
  * Standard-tier prices in USD per million tokens, for the cost ledger (design D8). Read from
