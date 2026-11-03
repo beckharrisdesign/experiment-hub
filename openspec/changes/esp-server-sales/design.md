@@ -103,7 +103,8 @@ Nothing new to tap. What changes is where things come from:
 
 - **New `lib/estate-sale-planner/sync.ts`:** a small client queue.
   - `update()` and `applyTo()` mark the sale dirty after their local save.
-  - The queue sends after 1.5 s of quiet, which is well inside the spec's 5 seconds.
+  - The queue sends 1.5 s after the first unsent change, and later edits ride along. It
+    doesn't wait for quiet, so steady typing can't hold a save past the spec's 5 seconds.
 - **Version:** milliseconds, kept rising on the device (`max(now, last + 1)`) so two quick
   edits never tie.
 - **Payload:** the whole `Session`.

@@ -26,57 +26,57 @@
 
 **Only this phone**
 
-- [ ] 1.9 A first visit gets a private id: the server sets a cookie page scripts can't read, and the phone's sales are stored under it
-- [ ] 1.10 Another device or a guessed sale id gets nothing: the server answers as if the sale doesn't exist
+- [~] 1.9 A first visit gets a private id: the server sets a cookie page scripts can't read, and the phone's sales are stored under it — `device.test.ts` (random, HttpOnly, Secure, Lax, 400-day rolling, app-scoped; hash not value); in the app 2026-11-03 `document.cookie` has no `esp-device` and the routes reached the database scoped to it; **stored under it needs migration 021**
+- [~] 1.10 Another device or a guessed sale id gets nothing: the server answers as if the sale doesn't exist — `sales-routes.test.ts` (other cookie, no cookie, guessed id: 404 on load, save, photo and delete); **live check needs migration 021**
 - [ ] 1.11 A photo link stops working after an hour at most
 
 **Never in the way**
 
-- [ ] 1.12 The server is down mid-walkthrough: walking, correcting and lookups work as before, and the changes go up once the server answers
+- [~] 1.12 The server is down mid-walkthrough: walking, correcting and lookups work as before, and the changes go up once the server answers — in the app 2026-11-03 with the tables missing (every save 502): Home listed 4 sales, moving an item to Donate saved on the phone and joined the queue, no error shown; `sync.test.ts` (backoff, resend); **"go up once the server answers" needs migration 021**
 - [ ] 1.13 "Photo no longer on this device" is rare: with the photo on the server and the phone online, the photo loads instead
 
 ## 2. Setup
 
-- [ ] 2.1 No new shell: it ships inside the existing in-hub app (`app/estate-sale-planner/`). Run it with `pnpm dev` and go to `http://localhost:3000/estate-sale-planner`.
-- [ ] 2.2 Branch `claude/esp-server-sales`, off main after #575 (done 2026-11-03).
-- [ ] 2.3 Test first (`rules/principles.mdc`): each 3.x item lands its failing vitest under `tests/estate-sale-planner/` before the code.
+- [x] 2.1 No new shell: it ships inside the existing in-hub app (`app/estate-sale-planner/`). Run it with `pnpm dev` and go to `http://localhost:3000/estate-sale-planner`.
+- [x] 2.2 Branch `claude/esp-server-sales`, off main after #575 (done 2026-11-03).
+- [x] 2.3 Test first (`rules/principles.mdc`): each 3.x item lands its failing vitest under `tests/estate-sale-planner/` before the code.
 
 ## 3. Implementation
 
-- [ ] 3.1 **Migration `021_esp_server_sales.sql` (D2).**
+- [~] 3.1 **Migration `021_esp_server_sales.sql` (D2).** (2026-11-03: written, **not applied**.)
   - `esp_sales` and `esp_sale_photos` (cascade from the sale), with the `(device_hash, updated_at desc)` index.
   - The private `esp-photos` bucket.
   - `esp_save_sale()`: newer version wins, and only for the same `device_hash`; it returns whether it wrote.
   - RLS on, no policies, revoked from public, anon and authenticated.
   - **Apply to Experiment Hub 2.0 only on Katy's OK**, then confirm `schema_migrations` and grants.
-- [ ] 3.2 **Device cookie (D1).**
+- [x] 3.2 **Device cookie (D1).** (2026-11-03: `device.test.ts`, 7 tests.)
   - `middleware.ts` sets `esp-device` on `/estate-sale-planner` requests without one (32 random bytes, HttpOnly, Secure in prod, Lax, 400-day rolling).
   - `lib/estate-sale-planner/device.ts`: `deviceHashOf(request)` returns the sha256 of the cookie, or null.
   - Tests: the cookie is set once, never readable from the page, and refreshed on each visit; the hash, not the value, reaches the database.
-- [ ] 3.3 **Server store (D2, D4).**
+- [x] 3.3 **Server store (D2, D4).** (2026-11-03: `sales-db.ts`, `sale-summary.ts`; through `sales-routes.test.ts`.)
   - `lib/estate-sale-planner/sales-db.ts`: save (RPC), list summaries, get one, delete (row, photo rows, bucket objects), record a photo, sign a photo URL (10 minutes).
   - Every call is scoped by `device_hash`.
   - `summarize()` moves to a pure module both sides share.
-- [ ] 3.4 **Routes (D4).**
+- [x] 3.4 **Routes (D4).** (2026-11-03: `sales-routes.test.ts`, 12 tests against an in-memory Supabase (tables, `esp_save_sale`, bucket).)
   - `POST sales`, `GET sales`, `GET sales/one`, `POST sales/delete`, `POST photos`, `GET photos`, all under `/estate-sale-planner/api/`, with literal paths only.
   - No cookie or not the owner answers 404 (an empty list for `GET sales`).
   - Size and shape checks: the body is ≤ 4 MB, the sale `id` matches, `items` is an array; photos are JPEG/PNG ≤ 2 MB.
   - Per-device and per-instance throttles.
   - Route tests with dynamic import and `resetModules`, the repo convention.
-- [ ] 3.5 **Sync queue (D3, D6, D8).**
+- [x] 3.5 **Sync queue (D3, D6, D8).** (2026-11-03: `sync.test.ts`, 13 tests. The send fires 1.5 s after the *first* unsent change; design D3 updated to match.)
   - `lib/estate-sale-planner/sync.ts`: sale saves debounced 1.5 s; the version keeps rising on the device; payloads over 3.5 MB are slimmed; photo uploads wait for their sale's first save.
   - Backoff 2 s, 5 s, 15 s, 60 s, then 5 min. It sends on `online` and on return to the foreground. Every call has an 8 s timeout.
   - Pending ids are kept in localStorage. Failures are logged, never thrown into the screens.
   - Tests with fake timers and a fake fetch.
-- [ ] 3.6 **Wire the store (D3, D5).**
+- [x] 3.6 **Wire the store (D3, D5).** (2026-11-03: `store.tsx`: `refreshHistory` merges phone + server rows; `openFromServer`; `useSale` falls back to it.)
   - `store.tsx`: `update` / `applyTo` mark the sale dirty, `putPhotos` call sites queue uploads, and `deleteSaved` queues a delete.
   - On start, `GET sales` refreshes Home, and the newer version wins for each sale (a newer phone copy is queued to send).
   - `open(id)` fetches a sale the phone doesn't have.
-- [ ] 3.7 **Photos from the server (D5).**
+- [x] 3.7 **Photos from the server (D5).** (2026-11-03: `photos.ts`: `getLocalPhoto` (the queue reads this) and `getPhoto` (phone, then server, re-cached); thumbnails cut again in `openFromServer`.)
   - `getPhoto` checks the phone, then `GET photos`, and caches the blob under the cap.
   - Items missing `image` after a load get a thumbnail cut from their original and box.
-- [ ] 3.8 **First-open upload (D7).** On the first open of this version (`esp:server-sync:v1`), every saved sale and its originals are queued once.
-- [ ] 3.9 **Docs (D9, D11).**
+- [x] 3.8 **First-open upload (D7).** On the first open of this version (`esp:server-sync:v1`), every saved sale and its originals are queued once. (2026-11-03: `cloud.ts` `queueFirstUpload`; seen in the app: 4 earlier sales queued on first open.)
+- [x] 3.9 **Docs (D9, D11).** (2026-11-03: `app/policy/page.tsx` (collect + cookies, dated November 3, 2026); sold-comps design Risks note corrected; review queue #78–#80 PROPOSED; no new env keys.)
   - Correct the sold-comps D1 risk note.
   - Add the privacy-policy line.
   - Add review-queue rows #78–#80 as PROPOSED.

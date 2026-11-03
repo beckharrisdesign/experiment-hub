@@ -632,13 +632,15 @@ What changed:
 
 ## Risks / Trade-offs
 
-- **iOS Safari can delete IndexedDB.** Script-written storage goes after 7 days without a
-  visit unless the app is on the Home Screen.
-  - Effect: originals vanish, and correction falls back to "Photo no longer on this
-    device".
-  - Mitigation: thumbnails and every correction survive (they're in the session), plus
-    `storage.persist()` and the existing "Add to Home Screen" path.
-  - The real fix is 05b cloud storage.
+- **iOS Safari can delete everything the site keeps.** Script-written storage goes after 7
+  days of use without a visit unless the app is on the Home Screen. That's IndexedDB *and*
+  localStorage and sessionStorage.
+  - Effect: originals vanish, and so does the sale itself (items, thumbnails, corrections),
+    because the session lives in localStorage too.
+  - *Corrected 2026-11-03:* this note used to say thumbnails and corrections survive because
+    "they're in the session". They don't.
+  - The fix shipped as `esp-server-sales`: sales and originals are saved on the server, tied
+    to the phone by a server-set cookie, and the phone is only a cache (its design D5).
 - **Device storage:** 250–400 KB per original, so 48 photos is about 15 MB and the 150 MB
   cap holds about 10 full rooms. Older sales lose re-croppability first, by design.
 - **Box editing on a phone is fiddly.** Hence 44 px handles; Split and Add draw fresh boxes

@@ -15,8 +15,10 @@
  * in-memory session keeps showing them this tab either way.
  */
 import { SESSION_STORAGE_KEY } from "./config";
-import { donateList, keepList, sellList, undecided, type Session } from "./session";
-import { tallies, type Tally } from "./tally";
+import { pileTallies, summarize, type HistoryEntry } from "./sale-summary";
+import type { Session } from "./session";
+
+export { summarize, type HistoryEntry } from "./sale-summary";
 
 const HISTORY_KEY = "esp:history:v1";
 const SAVED_PREFIX = "esp:saved:";
@@ -25,20 +27,6 @@ const ACTIVE_KEY = "esp:active:v1";
 /** Earlier walkthroughs kept on the device; the oldest full copy is evicted past this. */
 export const HISTORY_LIMIT = 6;
 
-export interface HistoryEntry {
-  id: string;
-  name?: string;
-  createdAt: string;
-  updatedAt: string;
-  items: number;
-  keep: number;
-  sell: number;
-  donate: number;
-  undecided: number;
-  /** What each pile might be worth, so Home can show it without opening the sale. Entries saved
-   * before this field existed are filled in from the saved copy on read. */
-  tallies?: { sell: Tally; donate: Tally; keep: Tally };
-}
 
 function slim(session: Session): Session {
   return { ...session, items: session.items.map(({ image: _image, details: _details, ...rest }) => rest) };
@@ -75,26 +63,6 @@ function setActive(id: string | null): void {
   } catch {
     // Blocked storage: this tab still works, a relaunch lands on Home.
   }
-}
-
-export function summarize(session: Session, updatedAt = new Date().toISOString()): HistoryEntry {
-  return {
-    id: session.id,
-    ...(session.name ? { name: session.name } : {}),
-    createdAt: session.createdAt,
-    updatedAt,
-    items: session.items.length,
-    keep: keepList(session).length,
-    sell: sellList(session).length,
-    donate: donateList(session).length,
-    undecided: undecided(session).length,
-    tallies: pileTallies(session),
-  };
-}
-
-function pileTallies(session: Session): NonNullable<HistoryEntry["tallies"]> {
-  const { sell, donate, keep } = tallies(session);
-  return { sell, donate, keep };
 }
 
 /** An entry from before tallies were stored: work them out from the saved copy, if it is still here. */
