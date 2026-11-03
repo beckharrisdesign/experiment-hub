@@ -39,7 +39,7 @@
 - [x] 1.23 The first lookup for a query calls the provider once and saves the results — `comps-lookup.test.ts`
 - [x] 1.24 The same query within 90 days, from any sale, uses the saved results with no provider call — `comps-lookup.test.ts`
 - [x] 1.25 Saved results older than 90 days are fetched again and replaced — `comps-lookup.test.ts`, `comps-parts.test.ts` (freshness)
-- [~] 1.26 With 3 or more matching sales, the price is set from them and shows "Based on N sold" with links to some of them — band math and citations tested (`comps-lookup.test.ts`, `comps-item.test.ts`); the line renders from a seeded result (`assets/built-comps-line-428.jpg`, 2026-11-02); **live sales need a CompsAPI key**
+- [~] 1.26 With 3 or more matching sales, the price is set from them and shows "Based on N sold" with links to some of them — band math and citations tested (`comps-lookup.test.ts`, `comps-item.test.ts`); the line renders from a seeded result (`assets/built-comps-line-428.jpg`, 2026-11-02); first keyed call 2026-11-03 returned 50 real sales and the parser read all 50 (`comps-parts.test.ts`, real body); **the model's matching pass and the line on live sales still need a keyed run in the app**
 - [x] 1.27 With fewer than 3 matches, the model's price stays and no comps line shows — `comps-lookup.test.ts`, `comps-item.test.ts`
 - [x] 1.28 When the family sets the price by hand, their price stays, and the comps stay visible for reference — `comps-item.test.ts` ("Set by you · Based on N sold")
 - [~] 1.29 Each walkthrough records one cost row with the model, tokens and estimated cents — wired in `/api/flag` with `saleId`, row shape in `costs.test.ts`; migration 019 applied 2026-11-02; **confirm on the first real walkthrough in prod**
@@ -133,6 +133,7 @@
   - Wired into `/api/flag` and `/api/refine` (with `saleId`).
   - Tests: one row per call, and a failure doesn't throw.
 - [x] 3.19 **Provider adapter (D5).** (2026-11-02, from compsapi.com/docs: `GET /v1/sold`, `X-API-Key`, User-Agent required, USD dollars, 429 `quota_reached`, $9/5,000 = 0.18¢ a request. The docs show no full `/v1/sold` body; the parser reads `items` and drops what it can't read — **check on the first keyed call**.)
+  - 2026-11-03, first keyed call ("Lodge No. 8 cast iron skillet", HTTP 200, 777 ms): top level `ok, query, page, count, next_page, no_results, cached, days, size, source, site, items`; every item has `title, price, last_sold, url, image` plus `item_id, units_sold, total_sales, format, bids, ended_at, shipping_cost, free_shipping_pct, us_sale`. `price` is per unit (two lids: `price` 25.99, `total_sales` 51.98). Parser read 50/50; pinned in `comps-parts.test.ts`. Prices ran $4.69–$399.99 (lids, new retail, rare vintage) — the model's matching pass is what makes the band honest.
   - `comps/provider.ts` interface plus `comps/compsapi.ts`. Endpoint, auth, response shape and price come from CompsAPI's docs at apply time, not from memory.
   - 8 s timeout; quota and error mapping.
   - Fake provider in tests.
@@ -152,6 +153,7 @@
   - [x] `COMPS.minBand` + `COMPS.minBandChoices` in `config.ts`, with the per-person threshold in Account & profile (`profile.ts`, `MenuPlaceholder.tsx`); review queue #59 approved 2026-10-31 (PR: esp-lookup-threshold-profile).
   - [x] `COMPS.freshDays` (90), `COMPS.minMatches` (3), `COMPS_PROVIDERS.compsapi`, `TEXT_MODELS`, `MODEL_PRICES` (2026-11-02).
   - [x] `COMPS_PROVIDER`, `COMPS_API_KEY`, `ESP_*_TEXT_MODEL` in `.env.example` with provenance. **Katy adds the key value** (CompsAPI signup, #62).
+  - 2026-11-03: key in the vault as `op://BHD Labs/CompsAPI Credentials/credential` (the item is "CompsAPI Credentials", not "CompsAPI"); `.env.example` corrected and `COMPS_API_KEY` added to the `scripts/sync-secrets.sh` manifest (target vercel). **Not yet:** the reference line in `.env.local`, and `sync-secrets.sh --apply` to Vercel.
 - [x] 3.26 **Cost query.** `experiments/estate-sale-planner/docs/cost-per-sale.sql`. A saved SQL snippet in `experiments/estate-sale-planner/docs/` for "cost per sale" from `esp_costs`.
 
 ## 4. QA

@@ -107,6 +107,10 @@ NOTION_TOKEN|op://BHD Labs/Notion/token|gh
 NOTION_INVENTORY_DB_ID|op://BHD Labs/Notion/inventory db id|gh
 NOTION_EXPERIMENTS_DATA_SOURCE_ID|op://BHD Labs/Notion/experiments data source id|vercel,gh
 NOTION_HISTORY_DATA_SOURCE_ID|op://BHD Labs/Notion/history data source id|vercel,gh
+# Estate Sale Planner sold-price lookups (/estate-sale-planner/api/comps). Absent
+# on Vercel means every lookup answers "not-configured" and items keep the
+# model's price — safe, but silent. Item added 2026-11-03.
+COMPS_API_KEY|op://BHD Labs/CompsAPI Credentials/credential|vercel
 # Chromatic is MVDS's only CI secret, and it is the one piece of this vault
 # discipline that repo genuinely should inherit — docs/MVDS_INTEGRATION_REVIEW.md
 # concluded MVDS stays a standalone repo, so this row syncs OUTWARD to it rather

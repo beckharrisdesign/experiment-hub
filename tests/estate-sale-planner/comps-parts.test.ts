@@ -84,6 +84,32 @@ describe("the CompsAPI adapter (docs read 2026-11-02)", () => {
     expect(parseCompsApiItems({ ok: true })).toEqual([]);
   });
 
+  it("reads a real /v1/sold body (first keyed call, 2026-11-03), ignoring the fields it doesn't use", () => {
+    // Trimmed from the live answer for "Lodge No. 8 cast iron skillet": 50 items, all of this shape.
+    const live = {
+      ok: true, query: "Lodge No. 8 cast iron skillet", page: 1, ms: 777, no_results: false, count: 50,
+      cached: false, cached_age_s: 0, next_page: true, days: 90, size: 50, source: "ebay", site: "US",
+      items: [
+        {
+          item_id: "397358335833", title: "Lodge Pre-seasoned 8 Inch Cast Iron Skillet Model L6OG3 NEW FREE SHIPPING",
+          last_sold: "2026-11-03T07:23:00Z", price: 28.99, units_sold: 1, total_sales: 28.99, format: "FIXED_PRICE",
+          bids: 0, ended_at: "2026-11-03T07:24:03.000Z", shipping_cost: null, free_shipping_pct: 100.0,
+          url: "https://www.ebay.com/itm/397358335833", image: "https://i.ebayimg.com/00/s/MTI3N1g5MDA=/z/dxMAAeSwVuppMowu/$_57.PNG", us_sale: true,
+        },
+        {
+          item_id: "297918648996", title: "Lodge Pre-Seasoned Cast Iron Lid - for Skillet, 8 Inch, Black ",
+          last_sold: "2026-11-03T07:23:00Z", price: 25.99, units_sold: 2, total_sales: 51.98, format: "FIXED_PRICE",
+          bids: 0, ended_at: "2026-11-08T14:17:02.000Z", shipping_cost: null, free_shipping_pct: 100.0,
+          url: "https://www.ebay.com/itm/297918648996", image: "https://i.ebayimg.com/00/s/NzQ3WDE2MDA=/z/6e8AAeSweG9pX8kY/$_1.JPG", us_sale: true,
+        },
+      ],
+    };
+    const parsed = parseCompsApiItems(live);
+    expect(parsed).toHaveLength(2);
+    // `price` is per unit, not `total_sales`: two lids sold at $25.99 each is 2599, not 5198.
+    expect(parsed[1]).toMatchObject({ title: "Lodge Pre-Seasoned Cast Iron Lid - for Skillet, 8 Inch, Black", priceCents: 2599, soldAt: "2026-11-03T07:23:00Z" });
+  });
+
   it("sends the key and a User-Agent, and maps quota and errors", async () => {
     const fetchOk = vi.fn(async () => new Response(JSON.stringify({ ok: true, items: [] }), { status: 200 }));
     await compsApiProvider("k_123", fetchOk as unknown as typeof fetch).search("q", AbortSignal.timeout(1000));
