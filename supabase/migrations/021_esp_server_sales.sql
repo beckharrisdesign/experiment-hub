@@ -69,6 +69,8 @@ as $$
 $$;
 
 revoke all on function public.esp_save_sale(text, text, bigint, jsonb) from public, anon, authenticated;
+-- Explicit, so the service-role client can always call it whatever the default ACLs are.
+grant execute on function public.esp_save_sale(text, text, bigint, jsonb) to service_role;
 
 -- The private bucket the originals live in. Never public: the app reads photos
 -- through short-lived signed URLs, handed out only to the owning device.

@@ -39,3 +39,17 @@ export function pileTallies(session: Session): NonNullable<HistoryEntry["tallies
   const { sell, donate, keep } = tallies(session);
   return { sell, donate, keep };
 }
+
+/**
+ * Home rows: the phone's and the server's, one per sale (esp-server-sales D5). The newer is
+ * chosen by version, never by `updatedAt`: the phone's timestamps come from its own clock.
+ * `localVersion` is the version the phone holds for a sale (unsent, else last sent or received).
+ */
+export function mergeHistory(device: HistoryEntry[], server: Array<HistoryEntry & { version: number }>, localVersion: (id: string) => number | undefined): HistoryEntry[] {
+  const byId = new Map<string, HistoryEntry>(device.map((e) => [e.id, e]));
+  for (const { version, ...row } of server) {
+    const mine = localVersion(row.id);
+    if (!byId.has(row.id) || mine === undefined || version > mine) byId.set(row.id, row);
+  }
+  return [...byId.values()].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}

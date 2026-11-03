@@ -194,3 +194,39 @@ describe("coming back", () => {
     expect(h.sync.snapshot().sales.esp_a).toBeGreaterThan(Date.now() + 60_000);
   });
 });
+
+describe("review fixes (PR #576)", () => {
+  it("a delete queued while a flush is in flight is still sent", async () => {
+    const h = harness();
+    let release!: () => void;
+    const slow = new Promise<void>((r) => (release = r));
+    const fetch = h.deps.fetch;
+    h.deps.fetch = (async (...a: Parameters<typeof fetch>) => (await slow, fetch(...a))) as typeof fetch;
+    const sync = createSync(h.deps);
+    sync.markDirty("esp_a");
+    await vi.advanceTimersByTimeAsync(1500); // flush starts and waits on the network
+    h.sales.set("esp_b", sale("esp_b"));
+    sync.queueDelete("esp_b");
+    release();
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(h.calls.map((c) => c.path)).toEqual(["sales", "sales/delete"]);
+    expect(sync.hasWork()).toBe(false);
+  });
+
+  it("keeps detail shots when dropping the card thumbnails is enough", () => {
+    const big = sale("esp_a");
+    big.items[0].image = `data:image/jpeg;base64,${"A".repeat(SLIM_OVER_BYTES)}`;
+    big.items[0].details = ["data:image/jpeg;base64,DETAIL"];
+    const sent = JSON.parse(payloadOf("esp_a", 1, big));
+    expect(sent.session.items[0].image).toBeUndefined();
+    expect(sent.session.items[0].details).toEqual(["data:image/jpeg;base64,DETAIL"]);
+  });
+
+  it("drops detail shots only when the sale still doesn't fit without the cards", () => {
+    const huge = sale("esp_a");
+    huge.items[0].details = [`data:image/jpeg;base64,${"D".repeat(SLIM_OVER_BYTES)}`];
+    const sent = JSON.parse(payloadOf("esp_a", 1, huge));
+    expect(sent.session.items[0].details).toBeUndefined();
+    expect(sent.session.items[0].name).toBe("Lodge skillet");
+  });
+});

@@ -63,12 +63,20 @@ function load(storage: SyncDeps["storage"]): SyncState {
   }
 }
 
-/** The sale as it goes up: whole, or without thumbnails when it's too big for one request. */
+/**
+ * The sale as it goes up. Whole when it fits; else without card thumbnails (`image`), which
+ * restore cuts again from the originals. Detail-shot thumbnails (`details`) can't be rebuilt, so
+ * they go too only when the sale still doesn't fit without the cards; the phone keeps its own
+ * copy either way.
+ */
 export function payloadOf(id: string, version: number, session: Session): string {
   const whole = JSON.stringify({ id, version, session });
   if (whole.length <= SLIM_OVER_BYTES) return whole;
-  const slim = { ...session, items: session.items.map(({ image: _i, details: _d, ...rest }) => rest) };
-  return JSON.stringify({ id, version, session: slim });
+  const noCards = { ...session, items: session.items.map(({ image: _i, ...rest }) => rest) };
+  const slimmer = JSON.stringify({ id, version, session: noCards });
+  if (slimmer.length <= SLIM_OVER_BYTES) return slimmer;
+  const bare = { ...noCards, items: noCards.items.map(({ details: _d, ...rest }) => rest) };
+  return JSON.stringify({ id, version, session: bare });
 }
 
 export function createSync(deps: SyncDeps) {
@@ -201,8 +209,9 @@ export function createSync(deps: SyncDeps) {
       const ok = (await sendDeletes()) && (await sendSales()) && (await sendPhotos());
       if (!ok) throw new Error("server said no");
       failures = 0;
-      // Photos still waiting on their sale's first save, or sales re-marked mid-flight.
-      if (Object.keys(state.sales).length || state.photos.some((p) => state.known[p.saleId])) schedule(DEBOUNCE_MS);
+      // Anything queued while this flush ran (a re-marked sale, a delete, a photo whose sale has now
+      // saved) is sent next. Photos still waiting on their sale's first save don't keep it spinning.
+      if (state.deletes.length || Object.keys(state.sales).length || state.photos.some((p) => state.known[p.saleId])) schedule(DEBOUNCE_MS);
     } catch (error: unknown) {
       const wait = BACKOFF_MS[Math.min(failures, BACKOFF_MS.length - 1)];
       failures += 1;
