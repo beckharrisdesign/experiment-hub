@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PHOTO_BUDGET } from "../../../../lib/estate-sale-planner/config";
+import { deferCost, saleIdOf } from "../../../../lib/estate-sale-planner/costs";
 import { flagFrames, visionConfigured, type FrameInput, type KnownItem } from "../../../../lib/estate-sale-planner/flag";
 
 export const runtime = "nodejs";
@@ -7,7 +8,7 @@ export const maxDuration = 60;
 
 /**
  * POST /estate-sale-planner/api/flag
- * Body: { frames: [{ data: <base64 jpeg>, at: <seconds> }, ...], known?: [{ name, room }] }
+ * Body: { frames: [{ data: <base64 jpeg>, at: <seconds> }, ...], known?: [{ name, room }], saleId? }
  * `known` is what the walkthrough already lists, sent when a room is added
  * later; the model is told not to repeat them, and fixture mode grows the
  * sample house room by room from it.
@@ -50,7 +51,7 @@ function validKnown(k: unknown): k is KnownItem {
 }
 
 export async function POST(request: NextRequest) {
-  let body: { frames?: unknown; known?: unknown };
+  let body: { frames?: unknown; known?: unknown; saleId?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -89,6 +90,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await flagFrames(frames, known);
+    if (result.source === "model") {
+      deferCost({ kind: "walkthrough", saleId: saleIdOf(body.saleId), provider: result.provider, model: result.model, ...result.usage });
+    }
     return NextResponse.json({ success: true, configured: visionConfigured(), ...result });
   } catch (error: any) {
     console.error("[esp flag] vision pass failed:", error);

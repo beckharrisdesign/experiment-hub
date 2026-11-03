@@ -6,6 +6,7 @@
  * between them per item, any time.
  */
 
+import type { ItemComps } from "./comps/item";
 import type { Box, FlaggedItem } from "./flag";
 import type { RefineResponse } from "./refine";
 
@@ -42,6 +43,10 @@ export interface SessionItem extends FlaggedItem {
   rereadFailed?: boolean;
   /** "Adjust this item" messages, oldest first (sold-comps D14). */
   messages?: ItemMessage[];
+  /** The last sold-price lookup, and the subject it was for (sold-comps D7). */
+  comps?: ItemComps;
+  /** The model's band, kept while sold prices set the one shown, so it can come back if the subject changes. */
+  guessBand?: FlaggedItem["band"];
 }
 
 /** What a message changed, so Undo can put it back. */
@@ -202,7 +207,10 @@ export function updateItem(s: Session, itemId: string, patch: ItemPatch): Sessio
   const item = s.items.find((i) => i.id === itemId);
   if (!item) return s;
   const familyBand = patch.band !== undefined && patch.band !== item.band;
-  return { ...s, items: s.items.map((i) => (i.id === itemId ? { ...i, ...patch, ...(familyBand ? { bandSource: "family" as const } : {}) } : i)) };
+  // Renamed into something else: sold prices for the old name no longer apply, so the model's band comes back until a new lookup lands.
+  const staleComps = !familyBand && item.bandSource === "comps" && patch.name !== undefined && patch.name !== item.name;
+  const source = familyBand ? { bandSource: "family" as const } : staleComps ? { band: item.guessBand ?? item.band, bandSource: "guess" as const, guessBand: undefined } : {};
+  return { ...s, items: s.items.map((i) => (i.id === itemId ? { ...i, ...patch, ...source } : i)) };
 }
 
 /** Remove an item that is not real (a reflection, a duplicate, a wrong call). Its history goes too. */

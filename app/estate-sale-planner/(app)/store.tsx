@@ -29,6 +29,9 @@ import { cropFromPhoto } from "../../../lib/estate-sale-planner/crops";
 import { itemPhotoKey, photoKey, putPhotos } from "../../../lib/estate-sale-planner/photos";
 import { deleteSaved, listHistory, loadSession, openSaved, readSaved, saveCopy, saveSession, type HistoryEntry } from "../../../lib/estate-sale-planner/storage";
 import { track } from "../../../lib/estate-sale-planner/analytics";
+import { applyComps, compsKey, lookupsDue, lotCount, retryDue } from "../../../lib/estate-sale-planner/comps/item";
+import { meetsLookupGate, type CompsSummary } from "../../../lib/estate-sale-planner/comps/summary";
+import { loadProfile } from "../../../lib/estate-sale-planner/profile";
 
 /** Photos sent to the vision pass that have not come back yet (or came back with an error). */
 export interface PendingPass {
@@ -93,6 +96,10 @@ export interface SaleStore {
   createSale: (name?: string, location?: string) => string;
   /** A photo for an item that has none (one the family typed in): kept like a walkthrough photo, then read. */
   onAddPhoto: (itemId: string, file: File) => Promise<boolean>;
+  /** Items whose sold-price lookup is in flight ("Checking sold prices…"); one entry per flight. */
+  checkingComps: string[];
+  /** The item screen opened: look up a gated item that never was, or whose last try failed (sold-comps 3.24). */
+  onOpenItem: (saleId: string, itemId: string) => void;
 }
 
 const SaleContext = createContext<SaleStore | null>(null);
@@ -117,6 +124,9 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   const detailData = useRef(new Map<string, FrameInput[]>());
   /** The latest session for async handlers that outlive a render; every setSession below writes it first. */
   const latest = useRef<Session | null>(null);
+  const [checkingComps, setCheckingComps] = useState<string[]>([]);
+  /** Set below, once the lookup runner exists; `update` hands it every item whose lookup became due. */
+  const scheduleLookups = useRef<(saleId: string, itemIds: string[]) => void>(() => {});
 
   useEffect(() => {
     track("esp_start");
@@ -130,10 +140,12 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const update = useCallback((next: Session) => {
+    const due = lookupsDue(latest.current, next, loadProfile().lookupMinBand);
     latest.current = next;
     setSession(next);
     saveSession(next);
     setHistory(listHistory());
+    if (due.length) scheduleLookups.current(next.id, due);
   }, []);
 
   const open = useCallback((id: string) => {
@@ -177,6 +189,7 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
             // Always sent: what is already listed (empty on a first pass). The
             // model is told not to repeat it; demo mode grows the house from it.
             known: knownItems(base),
+            saleId,
           }),
         });
         const json = (await res.json()) as (FlagResult & { success: true }) | { error: string };
@@ -300,6 +313,7 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
             item: { name: item.name, room: item.room, band: item.band, reason: item.reason, confidence: item.confidence },
             details,
             context: item.note,
+            saleId: current.id,
           }),
         });
         const json = (await res.json()) as (RefineResult & { success: true }) | { error: string };
@@ -406,6 +420,7 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
             details: [{ data: crop.data, at: 0 }],
             context: item.note,
             reframed: true,
+            saleId: latest.current?.id,
           }),
         });
         const json = (await res.json()) as (RefineResult & { success: true }) | { error: string };
@@ -535,6 +550,7 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
             item: { name: item.name, room: item.room, band: item.band, reason: item.reason, confidence: item.confidence },
             details: data ? [{ data, at: 0 }] : [],
             message: text.trim(),
+            saleId: latest.current?.id,
           }),
         });
         const json = (await res.json()) as (RefineResult & { success: true }) | { error: string };
@@ -580,9 +596,113 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     if (latest.current) update(undoMessage(latest.current, itemId, index));
   }, [update]);
 
+  // ---- Sold-price lookups (sold-comps tasks 3.24) -------------------------------------------
+
+  /** Typing a new name shouldn't buy a lookup per keystroke: a due lookup waits this long for the item to settle. */
+  const LOOKUP_SETTLE_MS = 1200;
+  const lookupTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  const lookupQueue = useRef<Array<{ saleId: string; itemId: string }>>([]);
+  const lookupsRunning = useRef(0);
+  const lookupsInFlight = useRef(new Set<string>());
+
+  const runLookup = useCallback(
+    async (saleId: string, itemId: string) => {
+      const sale = latest.current?.id === saleId ? latest.current : readSaved(saleId);
+      const item = sale?.items.find((i) => i.id === itemId);
+      const minBand = loadProfile().lookupMinBand;
+      // Checked again when it runs: the item may have moved, been renamed or removed while it waited.
+      if (!item || item.rereadPending || !meetsLookupGate(item, minBand)) return;
+      const key = compsKey(item);
+      const flight = `${saleId}/${itemId}|${key}`;
+      if (lookupsInFlight.current.has(flight)) return;
+      lookupsInFlight.current.add(flight);
+      setCheckingComps((ids) => [...ids, itemId]);
+      let summary: CompsSummary;
+      try {
+        const res = await fetch("/estate-sale-planner/api/comps", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          signal: AbortSignal.timeout(60_000),
+          body: JSON.stringify({
+            item: { name: item.name, band: item.band, destination: item.destination, markReading: item.markReading ?? undefined, note: item.note, lotCount: lotCount(item) },
+            minBand,
+            saleId,
+          }),
+        });
+        const json = (await res.json()) as (CompsSummary & { success: true }) | { error: string };
+        if (res.ok && "success" in json) {
+          const { success: _success, ...rest } = json;
+          summary = rest;
+        } else {
+          summary = { status: "error" };
+        }
+      } catch {
+        summary = { status: "error" };
+      } finally {
+        lookupsInFlight.current.delete(flight);
+        // One entry per flight: a rename can start a second lookup before the first lands.
+        setCheckingComps((ids) => {
+          const at = ids.indexOf(itemId);
+          return at < 0 ? ids : [...ids.slice(0, at), ...ids.slice(at + 1)];
+        });
+      }
+      track("esp_comps_result", { status: summary.status, cached: summary.cached, matched: summary.matched });
+      applyTo(saleId, (s) => applyComps(s, itemId, key, summary));
+    },
+    [applyTo],
+  );
+
+  const pumpLookups = useCallback(
+    function run() {
+      while (lookupsRunning.current < 3 && lookupQueue.current.length > 0) {
+        const next = lookupQueue.current.shift()!;
+        lookupsRunning.current += 1;
+        void runLookup(next.saleId, next.itemId).finally(() => {
+          lookupsRunning.current -= 1;
+          run();
+        });
+      }
+    },
+    [runLookup],
+  );
+
+  const schedule = useCallback(
+    (saleId: string, itemIds: string[], delay = LOOKUP_SETTLE_MS) => {
+      for (const itemId of itemIds) {
+        const timer = `${saleId}/${itemId}`;
+        clearTimeout(lookupTimers.current.get(timer));
+        lookupTimers.current.set(
+          timer,
+          setTimeout(() => {
+            lookupTimers.current.delete(timer);
+            if (!lookupQueue.current.some((q) => q.saleId === saleId && q.itemId === itemId)) lookupQueue.current.push({ saleId, itemId });
+            pumpLookups();
+          }, delay),
+        );
+      }
+    },
+    [pumpLookups],
+  );
+  scheduleLookups.current = schedule;
+
+  useEffect(() => {
+    const timers = lookupTimers.current;
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const onOpenItem = useCallback(
+    (saleId: string, itemId: string) => {
+      const current = latest.current;
+      if (current?.id !== saleId) return;
+      const item = current.items.find((i) => i.id === itemId);
+      if (item && retryDue(item, loadProfile().lookupMinBand)) schedule(saleId, [itemId], 0);
+    },
+    [schedule],
+  );
+
   const value = useMemo<SaleStore>(
-    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale }),
-    [ready, session, history, fromFixture, notice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale],
+    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale, checkingComps, onOpenItem }),
+    [ready, session, history, fromFixture, notice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale, checkingComps, onOpenItem],
   );
 
   return <SaleContext.Provider value={value}>{children}</SaleContext.Provider>;
