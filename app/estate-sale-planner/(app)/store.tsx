@@ -28,6 +28,8 @@ import { addFromPhoto, adjustBox, applyMessage, applyReread, failReread, markLot
 import { cropFromPhoto } from "../../../lib/estate-sale-planner/crops";
 import { itemPhotoKey, photoKey, putPhotos } from "../../../lib/estate-sale-planner/photos";
 import { deleteSaved, listHistory, loadSession, openSaved, readSaved, saveCopy, saveSession, type HistoryEntry } from "../../../lib/estate-sale-planner/storage";
+import { cloud, fetchServerSale, fetchServerSales, queueFirstUpload, type ServerSale } from "../../../lib/estate-sale-planner/cloud";
+import { mergeHistory } from "../../../lib/estate-sale-planner/sale-summary";
 import { track } from "../../../lib/estate-sale-planner/analytics";
 import { applyComps, compsKey, lookupsDue, lotCount, retryDue } from "../../../lib/estate-sale-planner/comps/item";
 import { meetsLookupGate, type CompsSummary } from "../../../lib/estate-sale-planner/comps/summary";
@@ -47,7 +49,7 @@ export interface SaleStore {
   ready: boolean;
   /** The sale in context — the one open in sessionStorage, reopened from the device after the app is closed. */
   session: Session | null;
-  /** Every sale saved on this device, newest first. */
+  /** Every sale on this device or on the server for it, newest first (esp-server-sales D5). */
   history: HistoryEntry[];
   /** The last vision pass came from the fixture (no key) — the lists say so. */
   fromFixture: boolean;
@@ -57,6 +59,8 @@ export interface SaleStore {
   refining: string | null;
   /** Make `id` the sale in context (from sessionStorage or the device's saved copies). False when it is not on this device. */
   open: (id: string) => boolean;
+  /** Fetch a sale the phone no longer has from the server, keep it on the phone and open it (esp-server-sales D5). False when it isn't there either. */
+  openFromServer: (id: string, signal?: AbortSignal) => Promise<boolean>;
   update: (next: Session) => void;
   /** Photo passes still being read, across sales. */
   pending: PendingPass[];
@@ -104,6 +108,17 @@ export interface SaleStore {
 
 const SaleContext = createContext<SaleStore | null>(null);
 
+/** The version this phone holds for a sale: an unsent one, else the last sent or received. */
+function localVersionOf(id: string): number | undefined {
+  const q = cloud();
+  return q ? (q.snapshot().sales[id] ?? q.knownVersion(id)) : undefined;
+}
+
+/** The originals a sale's items point at, for the upload queue. */
+function photoKeysOf(session: Session): string[] {
+  return [...new Set(session.items.flatMap((i) => (i.photoId ? [i.photoId] : [])))];
+}
+
 /**
  * One store for the whole app shell (round 05a). The step machine that used
  * to live in a single page is gone: the URL says which screen you are on,
@@ -127,6 +142,35 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   const [checkingComps, setCheckingComps] = useState<string[]>([]);
   /** Set below, once the lookup runner exists; `update` hands it every item whose lookup became due. */
   const scheduleLookups = useRef<(saleId: string, itemIds: string[]) => void>(() => {});
+  /** The server's Home rows from the last refresh; merged into `history` every time it's set. */
+  const serverRows = useRef<ServerSale[]>([]);
+  /**
+   * A sale saved without thumbnails (too big for one request) gets them cut again from its
+   * originals, in the background. Not re-sent: the server copy is the same sale.
+   */
+  const restoreThumbs = useRef((id: string, session: Session) => {
+    const missing = session.items.filter((i) => !i.image && i.photoId);
+    if (!missing.length) return;
+    void (async () => {
+      const thumbs = new Map<string, string>();
+      for (const item of missing) {
+        const crop = await cropFromPhoto(item.photoId!, item.box ?? null).catch(() => null);
+        if (crop) thumbs.set(item.id, crop.thumb);
+      }
+      if (!thumbs.size) return;
+      const base = latest.current?.id === id ? latest.current : readSaved(id);
+      if (!base) return;
+      const withThumbs = { ...base, items: base.items.map((i) => (thumbs.has(i.id) && !i.image ? { ...i, image: thumbs.get(i.id) } : i)) };
+      if (latest.current?.id === id) {
+        latest.current = withThumbs;
+        setSession(withThumbs);
+        saveSession(withThumbs);
+      } else {
+        saveCopy(withThumbs);
+      }
+    })();
+  });
+  const refreshHistory = useCallback(() => setHistory(mergeHistory(listHistory(), serverRows.current, localVersionOf)), []);
 
   useEffect(() => {
     track("esp_start");
@@ -137,6 +181,46 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     setReady(true);
     // Ask the browser not to evict the device copies under storage pressure; best effort, no prompt.
     void navigator.storage?.persist?.().catch(() => {});
+
+    // The server is the copy of record (esp-server-sales D5, D7): send what this phone had before
+    // this version, then fold the server's sales into Home.
+    const q = cloud();
+    const stop = q?.start(window);
+    void queueFirstUpload(photoKeysOf).then((n) => {
+      if (n) track("esp_server_first_upload", { sales: n });
+    });
+    void (async () => {
+      const server = await fetchServerSales();
+      if (!server || !q) return;
+      serverRows.current = server;
+      for (const row of server) {
+        // The phone's copy is older than the server's: replace it (an unsent edit is newer still, and stays).
+        const known = q.knownVersion(row.id) ?? 0;
+        if (row.version > known && readSaved(row.id) && !q.snapshot().sales[row.id]) {
+          const fresh = await fetchServerSale(row.id);
+          // An edit made while this was loading is newer still: keep it.
+          if (!fresh || q.snapshot().sales[row.id]) continue;
+          q.noteServerVersion(row.id, fresh.version);
+          if (latest.current?.id === row.id) {
+            // The sale on screen is older than the server's: replace it, or the next edit would be
+            // made on stale data and overwrite the newer copy.
+            latest.current = fresh.session;
+            setSession(fresh.session);
+            saveSession(fresh.session);
+          } else {
+            saveCopy(fresh.session);
+          }
+          restoreThumbs.current(row.id, fresh.session);
+        } else if (row.version > known) {
+          q.noteServerVersion(row.id, row.version);
+        }
+      }
+      // On the phone but not on the server (saved while it couldn't be reached): send it.
+      const onServer = new Set(server.map((r) => r.id));
+      for (const e of listHistory()) if (!onServer.has(e.id) && q.knownVersion(e.id) === undefined) q.markDirty(e.id);
+      setHistory(mergeHistory(listHistory(), server, localVersionOf));
+    })();
+    return () => stop?.();
   }, []);
 
   const update = useCallback((next: Session) => {
@@ -144,9 +228,10 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     latest.current = next;
     setSession(next);
     saveSession(next);
-    setHistory(listHistory());
+    cloud()?.markDirty(next.id);
+    refreshHistory();
     if (due.length) scheduleLookups.current(next.id, due);
-  }, []);
+  }, [refreshHistory]);
 
   const open = useCallback((id: string) => {
     if (latest.current?.id === id) return true;
@@ -157,6 +242,23 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     setFromFixture(false);
     return true;
   }, []);
+
+  const openFromServer = useCallback(async (id: string, signal?: AbortSignal) => {
+    const fresh = await fetchServerSale(id);
+    // The screen that asked has gone (navigated away): don't touch the sale in context.
+    if (!fresh || signal?.aborted) return false;
+    cloud()?.noteServerVersion(id, fresh.version);
+    saveCopy(fresh.session);
+    if (!open(id)) {
+      // The phone couldn't keep a copy (storage full or blocked): work from memory this visit.
+      latest.current = fresh.session;
+      setSession(fresh.session);
+      setFromFixture(false);
+    }
+    refreshHistory();
+    restoreThumbs.current(id, fresh.session);
+    return true;
+  }, [open, refreshHistory]);
 
   /** Change a sale whether or not it is the one in context: a pass can outlive the screen that started it. */
   const applyTo = useCallback(
@@ -170,10 +272,11 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
       if (!saved) return null;
       const next = fn(saved);
       saveCopy(next);
-      setHistory(listHistory());
+      cloud()?.markDirty(next.id);
+      refreshHistory();
       return next;
     },
-    [update],
+    [update, refreshHistory],
   );
 
   const runPass = useCallback(
@@ -219,8 +322,10 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
         });
         if (!next) throw new Error("That sale isn't on this device any more.");
         if (hasOriginals) {
-          void putPhotos(saleId, pass, frames.flatMap((f) => (f.original ? [{ frame: f.at, blob: f.original }] : []))).then((evicted) => {
+          const kept = frames.flatMap((f) => (f.original ? [{ frame: f.at, blob: f.original }] : []));
+          void putPhotos(saleId, pass, kept).then((evicted) => {
             if (evicted.length) track("esp_photos_evicted", { sales: evicted.length });
+            cloud()?.queuePhotos(saleId, kept.map((k) => photoKey(saleId, pass, k.frame)));
           });
         }
         track("esp_room_appended", { items: json.items.length, pass: next.passes ?? 0 });
@@ -386,12 +491,14 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
 
   const deleteSale = useCallback((id: string) => {
     deleteSaved(id);
-    setHistory(listHistory());
+    cloud()?.queueDelete(id);
+    serverRows.current = serverRows.current.filter((r) => r.id !== id);
+    refreshHistory();
     if (latest.current?.id === id) {
       latest.current = null;
       setSession(null);
     }
-  }, []);
+  }, [refreshHistory]);
 
   // ---- Corrections (sold-comps spec: item-correction) -------------------------------------
 
@@ -580,6 +687,7 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
         const { original, thumb } = await itemPhotoFromFile(file);
         const photoId = itemPhotoKey(current.id, itemId);
         await putPhotos(current.id, 0, [{ frame: 0, blob: original, id: photoId }]);
+        cloud()?.queuePhotos(current.id, [photoId]);
         const base = latest.current ?? current;
         const withPhoto: Session = { ...base, items: base.items.map((i) => (i.id === itemId ? { ...i, photoId, image: thumb } : i)) };
         correct(adjustBox(withPhoto, itemId, { x: 0, y: 0, w: 1, h: 1 }, thumb), [itemId], "add_photo");
@@ -701,8 +809,8 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo<SaleStore>(
-    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale, checkingComps, onOpenItem }),
-    [ready, session, history, fromFixture, notice, refining, open, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale, checkingComps, onOpenItem],
+    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, openFromServer, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale, checkingComps, onOpenItem }),
+    [ready, session, history, fromFixture, notice, refining, open, openFromServer, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale, checkingComps, onOpenItem],
   );
 
   return <SaleContext.Provider value={value}>{children}</SaleContext.Provider>;
@@ -716,18 +824,21 @@ export function useSaleStore(): SaleStore {
 
 export type SaleState = { status: "loading" } | { status: "missing" } | { status: "ready"; session: Session };
 
-/** The sale a `/sales/[id]` screen is about: opened from the device if it is not already in context. */
+/** The sale a `/sales/[id]` screen is about: opened from the device, or else the server, if it is not already in context. */
 export function useSale(id: string): SaleState {
   const store = useSaleStore();
   const [missing, setMissing] = useState(false);
   useEffect(() => {
     if (!store.ready) return;
-    if (store.session?.id === id) {
-      setMissing(false);
-      return;
-    }
-    setMissing(!store.open(id));
-  }, [store.ready, store.session?.id, id, store.open, store]);
+    setMissing(false);
+    if (store.session?.id === id || store.open(id)) return;
+    // Not on the phone: the server may still have it (esp-server-sales D5). Loading until it answers.
+    const request = new AbortController();
+    void store.openFromServer(id, request.signal).then((found) => {
+      if (!request.signal.aborted && !found) setMissing(true);
+    });
+    return () => request.abort();
+  }, [store.ready, store.session?.id, id, store.open, store.openFromServer, store]);
   if (store.ready && store.session?.id === id) return { status: "ready", session: store.session };
   if (store.ready && missing) return { status: "missing" };
   return { status: "loading" };

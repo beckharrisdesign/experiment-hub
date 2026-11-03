@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     "What BHD Labs collects, why, and what happens to it. Plain language, no legal maze.",
 };
 
-const LAST_UPDATED = "September 1, 2026";
+const LAST_UPDATED = "November 3, 2026";
 
 function Section({
   title,
@@ -95,6 +95,16 @@ export default function PrivacyPolicyPage() {
               </li>
               <li>
                 <span className="font-medium text-text-primary">
+                  Estate Sale Planner sales.
+                </span>{" "}
+                The sales you walk through, their items and their photos are
+                stored privately on our servers so they are still there when
+                you come back. They are tied to the phone you made them on,
+                nobody else can open them, and they are kept until you delete
+                the sale.
+              </li>
+              <li>
+                <span className="font-medium text-text-primary">
                   Purchases.
                 </span>{" "}
                 When an experiment sells something, checkout collects your name
@@ -165,7 +175,9 @@ export default function PrivacyPolicyPage() {
           <Section title="Cookies">
             <P>
               The site sets analytics cookies from Google, and a session cookie
-              if you sign in to a gated area. There are no third-party
+              if you sign in to a gated area. Estate Sale Planner sets one
+              private cookie that ties your sales to your phone; it holds a
+              random id and nothing about you. There are no third-party
               advertising cookies.
             </P>
           </Section>

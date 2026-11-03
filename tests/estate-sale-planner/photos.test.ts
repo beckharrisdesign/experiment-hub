@@ -3,8 +3,8 @@
  * original photos stay on the device"; design D1).
  */
 import "fake-indexeddb/auto";
-import { describe, it, expect, beforeEach } from "vitest";
-import { deleteSalePhotos, getPhoto, itemPhotoKey, photoKey, planEviction, putPhotos, photoUsage } from "@/lib/estate-sale-planner/photos";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { deleteSalePhotos, getLocalPhoto, getPhoto, itemPhotoKey, photoKey, planEviction, putPhotos, photoUsage } from "@/lib/estate-sale-planner/photos";
 
 const blob = (bytes: number) => new Blob([new Uint8Array(bytes)], { type: "image/jpeg" });
 
@@ -62,5 +62,37 @@ describe("the photo store", () => {
     expect(await getPhoto(photoKey("c", 1, 0))).not.toBeNull();
     const usage = await photoUsage();
     expect(usage.sales.map((s) => s.saleId).sort()).toEqual(["b", "c"]);
+  });
+});
+
+describe("getPhoto falls back to the server (esp-server-sales D5)", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("loads an original the phone no longer has, and keeps it on the phone again", async () => {
+    await deleteSalePhotos("esp_srv");
+    // Raw bytes: under jsdom a jsdom Blob body would arrive as the text "[object Blob]".
+    const fetchMock = vi.fn(async () => new Response(new Uint8Array(321), { status: 200, headers: { "content-type": "image/jpeg" } }));
+    vi.stubGlobal("fetch", fetchMock);
+    const got = await getPhoto("esp_srv/1/0");
+    expect(got?.size).toBe(321);
+    expect(String((fetchMock.mock.calls[0] as unknown[])[0])).toBe("/estate-sale-planner/api/photos?saleId=esp_srv&key=esp_srv%2F1%2F0");
+    expect((await getLocalPhoto("esp_srv/1/0"))?.size).toBe(321);
+  });
+
+  it("is null when the server doesn't have it either, or can't be reached", async () => {
+    await deleteSalePhotos("esp_none");
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("nope", { status: 404 })));
+    expect(await getPhoto("esp_none/1/0")).toBeNull();
+    vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new TypeError("Failed to fetch"))));
+    expect(await getPhoto("esp_none/1/0")).toBeNull();
+    expect(await getLocalPhoto("esp_none/1/0")).toBeNull();
+  });
+
+  it("never asks the server for a photo the phone has", async () => {
+    await putPhotos("esp_here", 1, [{ frame: 0, blob: blob(50) }]);
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    expect((await getPhoto("esp_here/1/0"))?.size).toBe(50);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
