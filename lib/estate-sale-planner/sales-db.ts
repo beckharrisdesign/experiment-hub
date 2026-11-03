@@ -9,8 +9,6 @@ import { summarize, type HistoryEntry } from "./sale-summary";
 import type { Session } from "./session";
 
 export const PHOTO_BUCKET = "esp-photos";
-/** How long a handed-out photo link works. The spec allows an hour; ten minutes is plenty. */
-export const PHOTO_URL_SECONDS = 600;
 const LIST_LIMIT = 200;
 
 export interface StoredSale {
@@ -112,13 +110,22 @@ export async function savePhoto(
   return true;
 }
 
-/** A short-lived link to one original, or null when it isn't this device's or was never stored. */
-export async function photoUrl(db: SupabaseClient, deviceHash: string, saleId: string, key: string): Promise<string | null> {
+/**
+ * One original's bytes, or null when it isn't this device's or was never stored. Served through
+ * the route rather than as a signed link: the hub's CSP only lets the page connect to its own
+ * origin, and no link ever leaves the server (found in the first live run, 2026-11-03).
+ */
+export async function readPhoto(
+  db: SupabaseClient,
+  deviceHash: string,
+  saleId: string,
+  key: string,
+): Promise<{ data: ArrayBuffer; type: string } | null> {
   if (!(await owns(db, deviceHash, saleId))) return null;
   const row = await db.from("esp_sale_photos").select("path").eq("sale_id", saleId).eq("key", key).maybeSingle();
   if (row.error) throw row.error;
   if (!row.data) return null;
-  const signed = await db.storage.from(PHOTO_BUCKET).createSignedUrl(row.data.path as string, PHOTO_URL_SECONDS);
-  if (signed.error) throw signed.error;
-  return signed.data.signedUrl;
+  const file = await db.storage.from(PHOTO_BUCKET).download(row.data.path as string);
+  if (file.error) throw file.error;
+  return { data: await file.data.arrayBuffer(), type: file.data.type || "image/jpeg" };
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { photoUrl, savePhoto, validPhotoKey } from "../../../../lib/estate-sale-planner/sales-db";
+import { readPhoto, savePhoto, validPhotoKey } from "../../../../lib/estate-sale-planner/sales-db";
 import { MAX_PHOTO_BYTES, PHOTO_TYPES, SALE_ID, contextOf, failed, noStore, notFound } from "../../../../lib/estate-sale-planner/sales-route";
 import { makeThrottle } from "../../../../lib/estate-sale-planner/throttle";
 
@@ -10,7 +10,9 @@ export const runtime = "nodejs";
  *
  * POST form { saleId, key, photo }: store one 1600 px original in the private bucket. The
  * sale must already be saved by this device.
- * GET ?saleId=&key=: a 302 to a link that expires in ten minutes, or 404.
+ * GET ?saleId=&key=: the photo's bytes, only for the device that owns it, or 404. Served from
+ * this origin, never as a link: the hub's CSP blocks the page from fetching Supabase directly,
+ * and nothing that could be shared ever leaves the server.
  */
 
 const throttled = makeThrottle(120, 1200);
@@ -56,8 +58,9 @@ export async function GET(request: NextRequest) {
   const key = request.nextUrl.searchParams.get("key") ?? "";
   if (!SALE_ID.test(saleId) || !validPhotoKey(saleId, key)) return notFound();
   try {
-    const url = await photoUrl(ctx.db, ctx.deviceHash, saleId, key);
-    return url ? NextResponse.redirect(url, { status: 302, headers: noStore }) : notFound();
+    const photo = await readPhoto(ctx.db, ctx.deviceHash, saleId, key);
+    if (!photo) return notFound();
+    return new NextResponse(photo.data, { status: 200, headers: { ...noStore, "content-type": photo.type } });
   } catch (error: unknown) {
     return failed("load the photo", error);
   }

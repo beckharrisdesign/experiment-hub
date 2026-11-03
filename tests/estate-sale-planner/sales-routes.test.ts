@@ -9,7 +9,7 @@ import { DEVICE_COOKIE, hashDevice } from "@/lib/estate-sale-planner/device";
  */
 function fakeSupabase() {
   const tables: Record<string, any[]> = { esp_sales: [], esp_sale_photos: [] };
-  const bucket = new Map<string, { bytes: number; type: string }>();
+  const bucket = new Map<string, { bytes: number; type: string; data: ArrayBuffer }>();
   const query = (table: string) => {
     const filters: Array<[string, unknown]> = [];
     let order: string | null = null;
@@ -66,7 +66,11 @@ function fakeSupabase() {
     },
     storage: {
       from: () => ({
-        upload: async (path: string, data: ArrayBuffer, o: { contentType: string }) => (bucket.set(path, { bytes: data.byteLength, type: o.contentType }), { error: null }),
+        upload: async (path: string, data: ArrayBuffer, o: { contentType: string }) => (bucket.set(path, { bytes: data.byteLength, type: o.contentType, data }), { error: null }),
+        download: async (path: string) => {
+          const f = bucket.get(path);
+          return f ? { data: new Blob([f.data], { type: f.type }), error: null } : { data: null, error: new Error("not found") };
+        },
         remove: async (paths: string[]) => (paths.forEach((p) => bucket.delete(p)), { error: null }),
         createSignedUrl: async (path: string, seconds: number) => ({ data: { signedUrl: `https://storage.example/${path}?expires=${seconds}` }, error: null }),
       }),
@@ -199,13 +203,15 @@ describe("photos", () => {
     expect(db.bucket.size).toBe(0);
   });
 
-  it("hands its own phone a link that expires in ten minutes, and nobody else anything", async () => {
+  it("serves the photo's bytes to its own phone, from this origin, never as a link — and nobody else anything", async () => {
     await save("esp_a", 100);
     await upload("esp_a", "esp_a/0/0");
     const res = await routes.photos.GET(req("photos?saleId=esp_a&key=esp_a/0/0"));
-    expect(res.status).toBe(302);
-    expect(res.headers.get("location")).toBe("https://storage.example/esp_a/0/0.jpg?expires=600");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("location")).toBeNull();
+    expect(res.headers.get("content-type")).toBe("image/jpeg");
     expect(res.headers.get("cache-control")).toBe("no-store");
+    expect((await res.arrayBuffer()).byteLength).toBe(1000);
     expect((await routes.photos.GET(req("photos?saleId=esp_a&key=esp_a/0/0", { cookie: OTHER }))).status).toBe(404);
     expect((await routes.photos.GET(req("photos?saleId=esp_a&key=esp_a/9/9"))).status).toBe(404);
   });

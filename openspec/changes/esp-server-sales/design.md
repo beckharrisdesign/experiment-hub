@@ -130,10 +130,16 @@ Literal paths only (the hub's `[id]` vs `[slug]` 504 lesson):
 | `GET sales/one?id=` | one sale's JSON | 404 |
 | `POST sales/delete` | delete a sale and its photos | 404 |
 | `POST photos` | upload one original (`saleId`, `key`, JPEG/PNG ≤ 2 MB) | 404 |
-| `GET photos?saleId=&key=` | 302 to a signed URL that expires in 10 minutes | 404 |
+| `GET photos?saleId=&key=` | the photo's bytes, from this origin (see below) | 404 |
 
 - **The cookie is required.** With no cookie, a route answers 404, or an empty list for
   `GET sales`.
+- **Photos are served, not linked** *(2026-11-03, first live run)*. The first version answered
+  with a 302 to a signed Supabase URL. The hub's Content Security Policy only allows
+  `connect-src` to its own origin (and Google), so the browser blocked the redirect and the
+  photo showed as gone. The route now downloads the object with the service role and returns
+  the bytes. The CSP stays as it is, no link ever leaves the server, and every read is checked
+  against the cookie.
 - **Throttles:** per device and per instance, like `/api/comps`. 60 saves and 120 photo calls
   a minute per device.
 - **Summaries:** `summarize()` moves out of `storage.ts` into a pure module, so the server
@@ -147,7 +153,7 @@ Literal paths only (the hub's `[id]` vs `[slug]` 504 lesson):
   - A newer phone copy is queued to send, which covers edits made offline.
 - **`open(id)`:** with no phone copy, the sale is fetched from `GET sales/one`, cached, then
   opened.
-- **`getPhoto(id)`:** checks the phone, then `GET photos`.
+- **`getPhoto(id)`:** checks the phone, then `GET photos` (same origin, see D4).
   - The blob is fetched and put back into IndexedDB under the usual cap.
   - If both miss, the item shows "Photo no longer on this device", as today.
 - **Thumbnails:** an item with no `image` after a load gets one cut from its original and box

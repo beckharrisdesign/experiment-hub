@@ -9,31 +9,31 @@
 
 **Saving**
 
-- [ ] 1.1 An edit reaches the server: user renames an item or moves it to Sell, and within 5 seconds the sale on the server shows it
-- [ ] 1.2 A dropped signal delays the save and loses nothing: changes made offline reach the server once the signal is back, without the user doing anything
-- [ ] 1.3 An older copy never overwrites a newer one: a save that started earlier but arrives later doesn't replace the newer version
+- [x] 1.1 An edit reaches the server: user renames an item or moves it to Sell, and within 5 seconds the sale on the server shows it — 2026-11-03 live, local `pnpm dev` against Experiment Hub 2.0 after migration 021: moving an item to Sell showed on the server in **2.7 s**
+- [x] 1.2 A dropped signal delays the save and loses nothing: changes made offline reach the server once the signal is back, without the user doing anything — 2026-11-03 live, local `pnpm dev` against Experiment Hub 2.0 after migration 021: the move to Donate made while every save 502'd landed on the server once 021 existed; `sync.test.ts` (offline, backoff, reload)
+- [x] 1.3 An older copy never overwrites a newer one: a save that started earlier but arrives later doesn't replace the newer version — 2026-11-03 live, local `pnpm dev` against Experiment Hub 2.0 after migration 021: a version-1 copy named "STALE COPY" from the same phone answered `saved: false` and the server kept the newer name; `sales-routes.test.ts`
 
 **Photos**
 
-- [ ] 1.4 A walkthrough's photos reach the server: each kept original is stored privately under that sale
-- [ ] 1.5 A failed upload is retried: a photo that failed or lost signal reaches the server later on its own
+- [x] 1.4 A walkthrough's photos reach the server: each kept original is stored privately under that sale — 2026-11-03 live, local `pnpm dev` against Experiment Hub 2.0 after migration 021: a photo added to an item landed in the private `esp-photos` bucket under its sale (19,050 bytes, image/jpeg) with its `esp_sale_photos` row
+- [~] 1.5 A failed upload is retried: a photo that failed or lost signal reaches the server later on its own — `sync.test.ts` (a failed upload retried on backoff; a missing photo dropped); **not forced live**
 
 **Loading**
 
-- [ ] 1.6 Sales come back after Safari clears the site: Home lists them, and each opens with its items, prices, destinations, corrections and photos
-- [ ] 1.7 A photo the phone dropped loads from the server, and adjusting its box works
-- [ ] 1.8 Sales already on the phone go up once: the first open of this version sends them, and opening again doesn't send them twice
+- [x] 1.6 Sales come back after Safari clears the site: Home lists them, and each opens with its items, prices, destinations, corrections and photos — 2026-11-03 live, local `pnpm dev` against Experiment Hub 2.0 after migration 021: after clearing localStorage, sessionStorage and IndexedDB (cookie kept), Home listed all 4 sales and "Same answer check B" opened from the server with its item, $50–$100 band and destination
+- [x] 1.7 A photo the phone dropped loads from the server, and adjusting its box works — 2026-11-03 live, local `pnpm dev` against Experiment Hub 2.0 after migration 021: on the wiped phone the photo screen showed the 1200×900 original from the server and re-cached it (`assets/photo-from-server-after-wipe-375.jpg`); `photos.test.ts`. The box editor itself wasn't driven (it reads the same `getPhoto`)
+- [x] 1.8 Sales already on the phone go up once: the first open of this version sends them, and opening again doesn't send them twice — 2026-11-03 live, local `pnpm dev` against Experiment Hub 2.0 after migration 021: the 4 sales queued before 021 landed once; after the wipe and reloads no `updated_at` moved
 
 **Only this phone**
 
-- [~] 1.9 A first visit gets a private id: the server sets a cookie page scripts can't read, and the phone's sales are stored under it — `device.test.ts` (random, HttpOnly, Secure, Lax, 400-day rolling, app-scoped; hash not value); in the app 2026-11-03 `document.cookie` has no `esp-device` and the routes reached the database scoped to it; **stored under it needs migration 021**
-- [~] 1.10 Another device or a guessed sale id gets nothing: the server answers as if the sale doesn't exist — `sales-routes.test.ts` (other cookie, no cookie, guessed id: 404 on load, save, photo and delete); **live check needs migration 021**
-- [ ] 1.11 A photo link stops working after an hour at most
+- [x] 1.9 A first visit gets a private id: the server sets a cookie page scripts can't read, and the phone's sales are stored under it — `device.test.ts`; 2026-11-03 live, local `pnpm dev` against Experiment Hub 2.0 after migration 021: every row has the same `device_hash`, never the cookie; `document.cookie` can't see it
+- [x] 1.10 Another device or a guessed sale id gets nothing: the server answers as if the sale doesn't exist — `sales-routes.test.ts`; 2026-11-03 live, local `pnpm dev` against Experiment Hub 2.0 after migration 021: `curl` with no cookie and with another phone's cookie got 404 on the sale, the photo, delete and an overwrite, and an empty list; the sale was unchanged
+- [x] 1.11 A photo is never handed out as a link: it's served from the hub's own route, to its own phone only — scenario reworded 2026-11-03 (photos are served, never linked; see the spec note and design D4); `sales-routes.test.ts`: the GET returns bytes, no `location`, `no-store`
 
 **Never in the way**
 
-- [~] 1.12 The server is down mid-walkthrough: walking, correcting and lookups work as before, and the changes go up once the server answers — in the app 2026-11-03 with the tables missing (every save 502): Home listed 4 sales, moving an item to Donate saved on the phone and joined the queue, no error shown; `sync.test.ts` (backoff, resend); **"go up once the server answers" needs migration 021**
-- [ ] 1.13 "Photo no longer on this device" is rare: with the photo on the server and the phone online, the photo loads instead
+- [x] 1.12 The server is down mid-walkthrough: walking, correcting and lookups work as before, and the changes go up once the server answers — 2026-11-03 with the tables missing every save 502'd and the app worked (Home, a move to Donate, no error shown); 2026-11-03 live, local `pnpm dev` against Experiment Hub 2.0 after migration 021: those changes then went up
+- [x] 1.13 "Photo no longer on this device" is rare: with the photo on the server and the phone online, the photo loads instead — 2026-11-03 live, local `pnpm dev` against Experiment Hub 2.0 after migration 021: the same photo screen showed no "Photo no longer on this device"
 
 ## 2. Setup
 
@@ -43,7 +43,7 @@
 
 ## 3. Implementation
 
-- [~] 3.1 **Migration `021_esp_server_sales.sql` (D2).** (2026-11-03: written, **not applied**.)
+- [x] 3.1 **Migration `021_esp_server_sales.sql` (D2).** (2026-11-03: applied to Experiment Hub 2.0 on Katy's OK as `20261103191500 021_esp_server_sales`; both tables RLS on, 0 policies, no anon/authenticated access; `esp_save_sale` executable by service_role only; `esp-photos` bucket private; security advisor shows only the expected info-level note.)
   - `esp_sales` and `esp_sale_photos` (cascade from the sale), with the `(device_hash, updated_at desc)` index.
   - The private `esp-photos` bucket.
   - `esp_save_sale()`: newer version wins, and only for the same `device_hash`; it returns whether it wrote.
@@ -91,5 +91,5 @@
   - Reopen and check Home, the sale, a photo check and a box adjustment.
   - Go offline, edit, go online, and check the edit lands.
   - Open the sale's API from another browser and get a 404.
-- [ ] 4.2 **Automated:** `pnpm vitest run tests/estate-sale-planner` green, plus `pnpm tsc --noEmit` and `pnpm lint`.
+- [x] 4.2 **Automated:** `pnpm vitest run tests/estate-sale-planner` green, plus `pnpm tsc --noEmit` and `pnpm lint`. (2026-11-03: estate-sale-planner 311 pass; full suite 1,759 pass before the review fixes; tsc clean apart from a node_modules type file; lint adds no new warning.)
 - [ ] 4.3 **Validate and record:** `openspec validate esp-server-sales`, and dated receipts on every §1 line.

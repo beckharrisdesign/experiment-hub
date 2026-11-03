@@ -83,7 +83,7 @@ phone, and nothing else opens them.
 
 **Fails until:** a request without that phone's cookie gets nothing back for its sale id.
 
-The server SHALL set a long-lived, random, HttpOnly, Secure first-party cookie on first visit, SHALL serve and accept a sale or photo only for the device id that created it, and SHALL hand out photos only as links that expire within an hour.
+The server SHALL set a long-lived, random, HttpOnly, Secure first-party cookie on first visit, SHALL serve and accept a sale or photo only for the device id that created it, and SHALL serve photos only through its own routes, never as a link that could be shared.
 
 #### Scenario: A first visit gets a private id
 
@@ -95,10 +95,14 @@ The server SHALL set a long-lived, random, HttpOnly, Secure first-party cookie o
 - **WHEN** a request for a sale or photo comes without the cookie that created it, from another browser or with a copied or guessed sale id
 - **THEN** the server answers as if the sale doesn't exist, and nothing about it is returned
 
-#### Scenario: A photo link stops working
+#### Scenario: A photo is never handed out as a link
 
-- **WHEN** a photo link the server handed out is more than an hour old
-- **THEN** it no longer opens the photo
+- **WHEN** the phone loads one of its photos from the server
+- **THEN** the bytes come from the hub's own route, checked against the phone's cookie, and no storage link leaves the server
+
+> *2026-11-03, live run:* this was "a photo link stops working after an hour". The hub's Content
+> Security Policy blocks the page from fetching Supabase directly, so the route now serves the
+> bytes itself. That's stricter: there is no link to expire.
 
 ### Requirement: Saving never gets in the way of the walkthrough
 
