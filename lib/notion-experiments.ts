@@ -70,6 +70,7 @@ const STATUS_MAP: Record<string, ExperimentStatus> = {
   Validating: "Active",
   Launched: "Completed",
   Graduated: "Graduated",
+  Sunset: "Sunset",
 };
 
 const TYPE_MAP: Record<string, ExperimentKind> = {

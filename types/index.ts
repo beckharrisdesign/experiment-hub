@@ -4,7 +4,8 @@ export type ExperimentStatus =
   | "Abandoned"
   | "On Hold"
   | "Archived"
-  | "Graduated";
+  | "Graduated"
+  | "Sunset";
 /** Product vs workflow tool (no market table or hub score / no `scores` in JSON) vs personal R&D. Defaults to commercial when omitted. */
 export type ExperimentKind = "commercial" | "tool" | "personal";
 export type PrototypeStatus = "Active" | "Completed" | "Abandoned";

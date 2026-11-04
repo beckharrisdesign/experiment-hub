@@ -200,6 +200,7 @@ describe("mapNotionPageToExperiment", () => {
     ["Validating", "Active"],
     ["Launched", "Completed"],
     ["Graduated", "Graduated"],
+    ["Sunset", "Sunset"],
     ["Unknown Phase", "Active"],
   ])("maps Notion status %s to hub status %s", (notionStatus, hubStatus) => {
     const page = makePage({ Status: { status: { name: notionStatus } } });
@@ -372,6 +373,7 @@ describe("toNotionStatus", () => {
   it.each([
     ["Completed", "Launched"],
     ["Graduated", "Graduated"],
+    ["Sunset", "Sunset"],
   ])("maps hub status %s to Notion phase %s", (hubStatus, phase) => {
     expect(toNotionStatus(hubStatus)).toBe(phase);
   });
