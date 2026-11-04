@@ -30,7 +30,11 @@ export type FunnelEvent =
   // esp-header-affordance: does anyone reach for the menu placeholder?
   | "esp_menu_open"
   // review queue #59: someone changed their sold-price lookup threshold in the profile
-  | "esp_lookup_threshold_set";
+  | "esp_lookup_threshold_set"
+  // sold-comps PR 2: what each lookup came back as (ok, too-few, not-configured, quota, error)
+  | "esp_comps_result"
+  // esp-server-sales: how many sales the first open of the server version sent up
+  | "esp_server_first_upload";
 
 export function track(
   event: FunnelEvent,

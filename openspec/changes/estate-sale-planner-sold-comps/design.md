@@ -215,6 +215,12 @@ rereadPending?: boolean;   // a correction was saved; its re-read hasn't landed
   `{ status: "gated" }` with no model call. The client gates too; the server check is the one
   that protects spend. *(2026-10-31, #59: the threshold became a profile setting — founder:
   "Tokenize that choice - and put it in my profile".)*
+- **What the server can and can't enforce yet** *(2026-11-02, PR review)*: with no accounts the
+  threshold arrives from the device, so the server can hold it only to an offered choice. The
+  floor it really enforces is the lowest choice ($25), not each person's own setting; that
+  moves to the person's row with sign-in (#50). Spend is also bounded by per-address and
+  per-instance rate limits on the route, and by the provider plan, which pauses at its quota
+  with no overage.
 - **When the client calls:**
   - On confirm.
   - On opening an item that is gated in, has no `comps`, and either never ran or last failed
@@ -554,6 +560,52 @@ Eventually I will swap in a better pattern than breadcrumb here."*
 - **Figma:** the Plugin API can't set scroll behaviour, so the layer is named
   `… · position: sticky`; set it in the prototype panel if you want to click through.
 
+### D22. The same item gets the same answer
+
+*(2026-11-03, after the first keyed lookups.)* The same Lodge No. 8 skillet came back
+**$50–$100** through the route and **too few** a minute later in the app. Two causes:
+
+- **The search drifted.** The query step reworded the same item each run ("… 8 inch"), so the
+  90-day store missed and the provider was paid again. Le Creuset got four different searches
+  in four runs, one so specific it found 2 sales.
+- **The comps pass flipped.** On the same 25 sales, gpt-5-nano kept 3 one run and 0 the next.
+  On cast iron "No. 8" is a size number (about 10¼"), and half the listings were 8-inch #5
+  skillets, so the judgement is genuinely hard.
+
+A probe on the saved sales (2026-11-03, 4 runs each) settled the fix:
+
+| Comps pass | Same kept set every run | Right band ($50–$100) | Cost per check |
+| --- | --- | --- | --- |
+| gpt-5-nano, original prompt | no | 2 of 4 | 0.04¢ |
+| gpt-5-nano, looser prompt | no | 0 of 4 (let in 8-inch skillets) | 0.05¢ |
+| gpt-5-mini, strict + size-number rule | no | 3 of 4 (medium effort) | ~0.2–0.5¢ |
+| **gpt-5, strict + size-number rule** | **4 of 4** | **4 of 4** | ~1¢ |
+
+What changed:
+
+- **A memory per subject.** New table `esp_comps_reads` (migration 020), keyed by
+  `(provider, subjectKey)`. The key is the item's normalized name, mark and lot size, the same
+  key the device uses (`compsKey`). It holds the search, the kept indexes and the
+  `esp_comps.fetched_at` they index into.
+  - **Same subject, same saved sales:** reuse both. There's no model or provider call, and
+    the lookup row is a zero-cost cache hit.
+  - **Sales refetched after 90 days:** keep the search and read only the new sales.
+  - **A failed read** saves nothing. **No sales at all** still saves the search.
+- **The search prompt** asks for 3 to 6 words: maker, the mark's own number, and the object.
+  It leaves out colour and country. It stays on nano.
+- **The comps pass runs on gpt-5** (`TEXT_MODELS.openai.read`, override
+  `ESP_OPENAI_READ_MODEL`), with the strict prompt plus one rule: *a No. 8 skillet is not an
+  8-inch skillet*.
+  - This changes D4's "smallest model". A fresh lookup costs about 1.2¢ instead of 0.23¢, and
+    a repeat costs 0¢.
+  - The Anthropic read model (`claude-sonnet-5-5`) is the same price tier and hasn't been
+    probed.
+- **Long model text is clipped, not fatal.** Strict output doesn't enforce `maxLength`, and a
+  161-character reason had thrown the whole pass. Schemas drop the maximum; `clipText` cuts
+  at a word.
+- **Guard:** `comps-stability.live.test.ts` reruns the pass on the saved sales. It's opt-in
+  (`ESP_LIVE_COMPS=1`, about 3¢), so CI never spends on it.
+
 ### Review-queue rows (added as PROPOSED with this design)
 
 | # | Decision | Default |
@@ -576,16 +628,19 @@ Eventually I will swap in a better pattern than breadcrumb here."*
 | 74 | Item screen order and one image | Katy's order; photo check under the photo; no detail shots (D19) |
 | 75 | Brand colour | `#F0905D` on warm darks via `.esp-theme` (D20) |
 | 76 | Sticky header | Breadcrumb and destination toggle (D21) |
+| 77 | Same item, same answer | Remember the search and kept sales per subject; comps pass on gpt-5 (~1¢ a fresh check) (D22) |
 
 ## Risks / Trade-offs
 
-- **iOS Safari can delete IndexedDB.** Script-written storage goes after 7 days without a
-  visit unless the app is on the Home Screen.
-  - Effect: originals vanish, and correction falls back to "Photo no longer on this
-    device".
-  - Mitigation: thumbnails and every correction survive (they're in the session), plus
-    `storage.persist()` and the existing "Add to Home Screen" path.
-  - The real fix is 05b cloud storage.
+- **iOS Safari can delete everything the site keeps.** Script-written storage goes after 7
+  days of use without a visit unless the app is on the Home Screen. That's IndexedDB *and*
+  localStorage and sessionStorage.
+  - Effect: originals vanish, and so does the sale itself (items, thumbnails, corrections),
+    because the session lives in localStorage too.
+  - *Corrected 2026-11-03:* this note used to say thumbnails and corrections survive because
+    "they're in the session". They don't.
+  - The fix shipped as `esp-server-sales`: sales and originals are saved on the server, tied
+    to the phone by a server-set cookie, and the phone is only a cache (its design D5).
 - **Device storage:** 250–400 KB per original, so 48 photos is about 15 MB and the 150 MB
   cap holds about 10 full rooms. Older sales lose re-croppability first, by design.
 - **Box editing on a phone is fiddly.** Hence 44 px handles; Split and Add draw fresh boxes

@@ -153,9 +153,35 @@ export async function putPhotos(
   return evicted;
 }
 
-export async function getPhoto(id: string): Promise<Blob | null> {
+/** One original from this phone's store only. The upload queue reads through this. */
+export async function getLocalPhoto(id: string): Promise<Blob | null> {
   const db = await openDb();
   if (!db) return null;
   const row = (await all(db.transaction(STORE).objectStore(STORE).get(id))) as StoredPhoto | undefined;
   return row ? new Blob([row.data], { type: row.type }) : null;
+}
+
+/**
+ * One original: from the phone, or else from the server (esp-server-sales D5), kept on the phone
+ * again under the usual cap. Null only when it's in neither place — then the item says the photo
+ * is no longer on this device.
+ */
+export async function getPhoto(id: string): Promise<Blob | null> {
+  const local = await getLocalPhoto(id);
+  if (local) return local;
+  const saleId = id.split("/")[0];
+  if (!saleId || typeof window === "undefined") return null;
+  try {
+    const res = await fetch(`/estate-sale-planner/api/photos?${new URLSearchParams({ saleId, key: id })}`, {
+      credentials: "same-origin",
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    if (!blob.size) return null;
+    await putPhotos(saleId, 0, [{ frame: 0, blob, id }]);
+    return blob;
+  } catch {
+    return null;
+  }
 }

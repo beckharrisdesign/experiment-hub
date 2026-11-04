@@ -11,6 +11,13 @@ import {
   isGatedPath,
   verifySession,
 } from "./lib/pdf-auth";
+import {
+  DEVICE_COOKIE,
+  DEVICE_PATH,
+  newDeviceId,
+  setDeviceCookie,
+  validDeviceId,
+} from "./lib/estate-sale-planner/device";
 
 // Vanity host for the Etsy Listing Kit ad funnel — serves /etsy-listing-kit at
 // its root so ads can point at a clean URL. The labs.* paths keep working
@@ -51,6 +58,19 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = `/etsy-listing-kit${pathname === "/" ? "" : pathname}`;
     return NextResponse.rewrite(url);
+  }
+
+  // ── Estate Sale Planner: the phone's private id (esp-server-sales D1) ─────
+  // Set by the server so Safari's 7-day cap on script-written storage can't
+  // clear it, and re-set on every visit so the 400 days roll. A first request
+  // gets the new id on the request too, so even an API call sees it.
+  if (pathname === DEVICE_PATH || pathname.startsWith(`${DEVICE_PATH}/`)) {
+    const existing = request.cookies.get(DEVICE_COOKIE)?.value;
+    const id = validDeviceId(existing) ? existing : newDeviceId();
+    if (id !== existing) request.cookies.set(DEVICE_COOKIE, id);
+    const response = NextResponse.next({ request: { headers: request.headers } });
+    setDeviceCookie(response, id);
+    return response;
   }
 
   // ── Admin area protection ──────────────────────────────────────────────────
