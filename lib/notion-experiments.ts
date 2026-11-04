@@ -250,8 +250,8 @@ export function formatNotionProperty(prop: NotionProperty): string {
  * The ONLY Notion properties allowed to render on a public experiment detail
  * page, in display order. Everything else — bookkeeping (`Last edited time`,
  * `Name Alt`, `Public`), scores, tags, slug, dates — never reaches a public
- * route. `Status` is intentionally absent: it renders as a hero chip, not a
- * narrative row. This allowlist is the single source of truth for what a
+ * route. `Status` is intentionally absent: public pages do not show it. This
+ * allowlist is the single source of truth for what a
  * detail page may show; adding a Notion column does not surface it publicly
  * unless it is added here.
  */

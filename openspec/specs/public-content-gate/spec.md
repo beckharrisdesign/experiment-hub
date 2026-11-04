@@ -36,12 +36,12 @@ The public detail page SHALL show only the guiding statements — Why this matte
 
 ### Requirement: Curated presentation with silent empty states
 
-Guiding statements SHALL read as an intentional narrative — ordered, with Status as a hero chip and missing fields omitted rather than dashed. (Demo/code link buttons are deferred to `clickable-artifacts`.)
+Guiding statements SHALL read as an intentional narrative — ordered, with no status or type badge and missing fields omitted rather than dashed. (Demo/code link buttons are deferred to `clickable-artifacts`.)
 
 #### Scenario: Statements render in narrative order
 
 - **WHEN** a public row has all three guiding statements plus a Status
-- **THEN** the page renders Why this matters, Hypothesis, Exec Summary in that order and Status as a chip beside the type badge in the hero — with no field-row rendering of Status and no demo/code link buttons (links deferred to `clickable-artifacts`)
+- **THEN** the page renders Why this matters, Hypothesis, Exec Summary in that order, with no status or type badge in the hero, no field-row rendering of Status, and no demo/code link buttons (links deferred to `clickable-artifacts`)
 
 #### Scenario: Missing fields are omitted silently
 
