@@ -12,6 +12,7 @@ const STATUS_COLORS: Record<ExperimentStatus, string> = {
   "On Hold": "text-yellow-400",
   Archived: "text-text-secondary",
   Graduated: "text-purple-400",
+  Sunset: "text-text-secondary",
 };
 
 export default async function AdminPage() {

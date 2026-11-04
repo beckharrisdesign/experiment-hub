@@ -5,8 +5,6 @@ import Footer from "@/components/Footer";
 import ChangeArtifacts from "@/components/change-visualizer/ChangeArtifacts";
 import { listChangeArtifacts } from "@/lib/change-visualizer/artifacts";
 import { resolveOpenSpecChangeId } from "@/lib/openspec-shared";
-import ExperimentTypeBadge from "@/components/ExperimentTypeBadge";
-import StatusBadge from "@/components/StatusBadge";
 import { getExperimentBySlug } from "@/lib/data";
 import ImpactScoresDisplay from "@/components/ImpactScores";
 import {
@@ -133,13 +131,9 @@ export default async function ExperimentDetailPage({
             </ol>
           </nav>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="font-heading text-4xl md:text-5xl lg:text-[60px] font-semibold text-text-primary leading-tight">
-              {experiment.name}
-            </h1>
-            <ExperimentTypeBadge type={experiment.type} />
-            <StatusBadge status={experiment.status} />
-          </div>
+          <h1 className="font-heading text-4xl md:text-5xl lg:text-[60px] font-semibold text-text-primary leading-tight">
+            {experiment.name}
+          </h1>
           {experiment.statement && (
             <p className="mt-2 text-sm text-text-secondary">
               {experiment.statement}
