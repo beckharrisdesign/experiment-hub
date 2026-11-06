@@ -5,10 +5,12 @@
 -- item per device per 24 hours, and everything that went into it is kept here so
 -- reopening the item shows it again with no provider or model call.
 --
--- esp_comps_checks: one row per completed check ("ok" or "too-few"). A lookup that
---   couldn't run saves nothing and doesn't use up the day; its reason is on the
---   cost row. `detail` is the CompsCheck as the screen shows it: what the check was
---   given, the search, models, counts, the reason, the result, and every source.
+-- esp_comps_checks: one row per check. It's written as "running" before any money
+--   is spent and holds the limit from then on. It becomes "ok" or "too-few" when the
+--   check completes, and is deleted if the check couldn't run, so a failure doesn't
+--   use up the day (its reason is on the cost row). `detail` is the CompsCheck as the
+--   screen shows it: what the check was given, the search, models, counts, the reason,
+--   the result, and every source. A paid check that can't be saved stays "running".
 --
 -- A STOPGAP like esp_sales (021): a check belongs to a device (device_hash =
 -- sha256 of the esp-device cookie) until sign-in (review queue #50). No foreign key
@@ -22,12 +24,16 @@ create table if not exists public.esp_comps_checks (
   sale_id      text not null,                   -- the esp_… session id
   item_id      text not null,                   -- the item within that sale
   checked_at   timestamptz not null,
-  status       text not null check (status in ('ok', 'too-few')),
-  detail       jsonb not null
+  status       text not null check (status in ('running', 'ok', 'too-few')),
+  detail       jsonb                            -- null until the check completes
 );
 
 create index if not exists esp_comps_checks_item_idx
   on public.esp_comps_checks (device_hash, sale_id, item_id, checked_at desc);
+
+-- For the per-device daily cap.
+create index if not exists esp_comps_checks_device_idx
+  on public.esp_comps_checks (device_hash, checked_at desc);
 
 alter table public.esp_comps_checks enable row level security;
 

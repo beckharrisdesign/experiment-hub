@@ -103,12 +103,18 @@ export interface SaleStore {
   onAddPhoto: (itemId: string, file: File) => Promise<boolean>;
   /** Items whose sold-price check is in flight ("Checking sold prices…"). */
   checkingComps: string[];
-  /** Saved checks loaded so far, by `checkKey`; null means this item has none. */
-  compsChecks: Record<string, CompsCheck | null>;
+  /** What's loaded so far about each item's checks, by `checkKey`. */
+  compsChecks: Record<string, CheckView | undefined>;
   /** The item screen opened: load its saved check. No lookup runs (sold-comps D23). */
   onOpenItem: (saleId: string, itemId: string) => void;
   /** The item screen's button: one sold-price check. */
   onCheckComps: (saleId: string, itemId: string) => Promise<void>;
+}
+
+/** The newest completed check, and when the limit lets the next one run. */
+export interface CheckView {
+  check: CompsCheck | null;
+  nextCheckAt: string | null;
 }
 
 export const checkKey = (saleId: string, itemId: string) => `${saleId}/${itemId}`;
@@ -147,7 +153,7 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   /** The latest session for async handlers that outlive a render; every setSession below writes it first. */
   const latest = useRef<Session | null>(null);
   const [checkingComps, setCheckingComps] = useState<string[]>([]);
-  const [compsChecks, setCompsChecks] = useState<Record<string, CompsCheck | null>>({});
+  const [compsChecks, setCompsChecks] = useState<Record<string, CheckView | undefined>>({});
   /** The server's Home rows from the last refresh; merged into `history` every time it's set. */
   const serverRows = useRef<ServerSale[]>([]);
   /**
@@ -720,10 +726,10 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     void (async () => {
       try {
         const res = await fetch(`/estate-sale-planner/api/comps?saleId=${encodeURIComponent(saleId)}&itemId=${encodeURIComponent(itemId)}`);
-        const json = (await res.json()) as { success?: true; check?: CompsCheck | null };
+        const json = (await res.json()) as { success?: true; check?: CompsCheck | null; nextCheckAt?: string | null };
         if (!res.ok || !json.success) throw new Error("no check");
         // A check that landed while this loaded is newer: keep it.
-        setCompsChecks((all) => (all[at] ? all : { ...all, [at]: json.check ?? null }));
+        setCompsChecks((all) => (all[at] ? all : { ...all, [at]: { check: json.check ?? null, nextCheckAt: json.nextCheckAt ?? null } }));
       } catch {
         // Try again next time it opens. The server still holds the limit either way.
         checksLoaded.current.delete(at);
@@ -754,13 +760,13 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
             itemId,
           }),
         });
-        const json = (await res.json()) as (CompsSummary & { success: true; check?: CompsCheck; nextCheckAt?: string }) | { error: string };
+        const json = (await res.json()) as (CompsSummary & { success: true; check?: CompsCheck | null; nextCheckAt?: string; saved?: boolean }) | { error: string };
         if (res.ok && "success" in json) {
-          const { success: _success, check, nextCheckAt: _next, ...rest } = json;
+          const { success: _success, check, nextCheckAt, saved: _saved, ...rest } = json;
           summary = rest;
-          if (check) {
+          if (nextCheckAt) {
             checksLoaded.current.add(at);
-            setCompsChecks((all) => ({ ...all, [at]: check }));
+            setCompsChecks((all) => ({ ...all, [at]: { check: check ?? all[at]?.check ?? null, nextCheckAt } }));
           }
         }
       } catch {

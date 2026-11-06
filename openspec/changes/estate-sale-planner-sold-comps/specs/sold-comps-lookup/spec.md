@@ -157,12 +157,32 @@ what it found are kept so the item can show them without running again.
 
 **Fails until:** a second completed check within 24 hours is refused on the server with no lookup, and reopening an item shows its saved check, timestamp and sources with no model or provider call.
 
-The server SHALL allow one completed check per item per device per 24 hours, reading `esp_comps_checks` before any lookup; if it cannot read the last check it SHALL NOT run one. Each completed check, "ok" or "too-few", SHALL be saved with its timestamp, what it was given (item, mark, note, set, price before), the search, models, listings source and pull time, found, checked and matched counts, reason, result, matched listings and those left out. The item screen SHALL show the saved check on opening with no lookup, and the button SHALL say when it comes back.
+The server SHALL allow one check per item per device per 24 hours and 100 per device across all items, SHALL refuse a sale saved by another device, and SHALL reserve the check in `esp_comps_checks` before any paid work; if it cannot confirm any of these it SHALL NOT run one. A check that couldn't run SHALL give its reservation back; a paid check that can't be saved SHALL keep its reservation and so its limit. Each completed check, "ok" or "too-few", SHALL be saved with its timestamp, what it was given (item, mark, note, set, price before), the search, models, listings source and pull time, found, checked and matched counts, reason, result, matched listings and those left out. The item screen SHALL show the saved check on opening with no lookup, and the button SHALL say when it comes back.
 
 #### Scenario: A second click within the day
 
 - **WHEN** a request arrives for an item whose last completed check was under 24 hours ago on this device
 - **THEN** no lookup runs, and the response carries the saved check and when the next is allowed
+
+#### Scenario: A paid check can't be saved
+
+- **WHEN** a check completes but writing its result fails
+- **THEN** the item still gets the answer, the response says it wasn't saved, and the item stays limited for 24 hours
+
+#### Scenario: Someone else's sale
+
+- **WHEN** a request names a sale saved by another device
+- **THEN** it gets a 404 and nothing is spent
+
+#### Scenario: Made-up item ids
+
+- **WHEN** one device has used 100 checks across all items in the last 24 hours
+- **THEN** no lookup runs, whatever item id is sent
+
+#### Scenario: The screen is left open
+
+- **WHEN** an item screen stays open past the time the limit expires
+- **THEN** the button re-enables without a reload
 
 #### Scenario: The button says when it comes back
 

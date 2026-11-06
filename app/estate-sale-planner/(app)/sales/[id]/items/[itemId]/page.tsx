@@ -45,7 +45,8 @@ export default function ItemPage({ params }: { params: Promise<{ id: string; ite
             refining={store.refining === item.id}
             checkingComps={store.checkingComps.includes(item.id)}
             lookupMinBand={loadProfile().lookupMinBand}
-            check={store.compsChecks[checkKey(id, item.id)]}
+            check={store.compsChecks[checkKey(id, item.id)]?.check}
+            nextCheckAt={store.compsChecks[checkKey(id, item.id)]?.nextCheckAt}
             onCheckComps={() => void store.onCheckComps(id, item.id)}
             onUpdate={store.onUpdate}
             onRetryReread={store.onRetryReread}

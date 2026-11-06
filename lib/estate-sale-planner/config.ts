@@ -94,6 +94,8 @@ export const COMPS = {
   freshDays: 90,
   /** One check per item per device in this many hours (D23). A failed check doesn't count. */
   checkEveryHours: 24,
+  /** One device's checks across all items in that window: what made-up item ids can cost, about $1.20. */
+  maxChecksPerDevice: 100,
   /** Matching sold listings needed before they replace the model's band (review queue #64). */
   minMatches: 3,
   /** Listings sent to the comps pass; the provider returns up to 240 a page. */

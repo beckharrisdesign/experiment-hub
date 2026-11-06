@@ -9,28 +9,73 @@ const OTHER = "b".repeat(43);
 const NOW = new Date("2026-11-06T16:12:00Z");
 
 type Row = Record<string, any>;
+interface Fail {
+  read?: boolean;
+  reserve?: boolean;
+  save?: boolean;
+  release?: boolean;
+  sale?: boolean;
+  count?: boolean;
+}
 
-/** Just enough of the service-role client for esp_comps_checks. */
-function fakeDb(rows: Row[] = [], failReads = false) {
-  return {
-    rows,
-    from: () => {
-      const filters: Array<[string, unknown]> = [];
-      const q: any = {
-        select: () => q,
-        eq: (k: string, v: unknown) => (filters.push([k, v]), q),
-        order: () => q,
-        limit: () => q,
-        maybeSingle: async () => {
-          if (failReads) return { data: null, error: new Error("down") };
-          const found = rows.filter((r) => filters.every(([k, v]) => r[k] === v)).sort((a, b) => b.checked_at.localeCompare(a.checked_at));
-          return { data: found[0] ?? null, error: null };
+/** Just enough of the service-role client for esp_comps_checks and esp_sales ownership. */
+function fakeDb(rows: Row[] = [], fail: Fail = {}, sales: Row[] = []) {
+  let nextId = 1;
+  const checks = () => {
+    const filters: Array<[string, unknown]> = [];
+    let since: string | null = null;
+    let counting = false;
+    const matching = () =>
+      rows
+        .filter((r) => filters.every(([k, v]) => r[k] === v) && (!since || r.checked_at >= since))
+        .sort((a, b) => b.checked_at.localeCompare(a.checked_at));
+    const q: any = {
+      select: (_cols?: string, opts?: { count?: string }) => ((counting = Boolean(opts?.count)), q),
+      eq: (k: string, v: unknown) => (filters.push([k, v]), q),
+      gte: (_k: string, v: string) => ((since = v), q),
+      order: () => q,
+      limit: () => q,
+      then: (resolve: (v: unknown) => void) => {
+        if (counting) return resolve(fail.count ? { count: null, error: new Error("down") } : { count: matching().length, error: null });
+        return resolve(fail.read ? { data: null, error: new Error("down") } : { data: matching(), error: null });
+      },
+      insert: (row: Row) => ({
+        select: () => ({
+          single: async () => {
+            if (fail.reserve) return { data: null, error: new Error("down") };
+            const id = `row_${nextId++}`;
+            rows.push({ ...row, id });
+            return { data: { id }, error: null };
+          },
+        }),
+      }),
+      update: (patch: Row) => ({
+        eq: async (_k: string, id: string) => {
+          if (fail.save) return { error: new Error("down") };
+          Object.assign(rows.find((r) => r.id === id)!, patch);
+          return { error: null };
         },
-        insert: async (row: Row) => (rows.push(row), { error: null }),
-      };
-      return q;
-    },
+      }),
+      delete: () => ({
+        eq: async (_k: string, id: string) => {
+          if (fail.release) return { error: new Error("down") };
+          rows.splice(rows.findIndex((r) => r.id === id), 1);
+          return { error: null };
+        },
+      }),
+    };
+    return q;
   };
+  const saleTable = () => {
+    let id: unknown;
+    const q: any = {
+      select: () => q,
+      eq: (_k: string, v: unknown) => ((id = v), q),
+      maybeSingle: async () => (fail.sale ? { data: null, error: new Error("down") } : { data: sales.find((r) => r.id === id) ?? null, error: null }),
+    };
+    return q;
+  };
+  return { rows, from: (table: string) => (table === "esp_sales" ? saleTable() : checks()) };
 }
 
 const answer: CompsSummary = {
@@ -175,9 +220,87 @@ describe("POST: the check button", () => {
   });
 
   it("spends nothing when it can't tell whether today's check was used", async () => {
-    db = fakeDb([], true);
+    db = fakeDb([], { read: true });
     const json = await (await route.POST(post())).json();
     expect(json).toMatchObject({ success: true, status: "error" });
+    expect(lookup).not.toHaveBeenCalled();
+  });
+
+  it("spends nothing when it can't reserve the check first", async () => {
+    db = fakeDb([], { reserve: true });
+    const json = await (await route.POST(post())).json();
+    expect(json).toMatchObject({ success: true, status: "error" });
+    expect(lookup).not.toHaveBeenCalled();
+  });
+
+  it("holds the reservation while the lookup runs, so a second request is refused", async () => {
+    let during: Row[] = [];
+    lookup.mockImplementationOnce(async () => {
+      during = db!.rows.map((r) => ({ ...r }));
+      return answer;
+    });
+    await route.POST(post());
+    expect(during).toEqual([expect.objectContaining({ status: "running", detail: null })]);
+  });
+
+  it("keeps the limit when a paid check can't be saved, and says it wasn't saved", async () => {
+    db = fakeDb([], { save: true });
+    const json = await (await route.POST(post())).json();
+    // The answer was paid for, so the item still gets it, marked as not durable.
+    expect(json).toMatchObject({ success: true, status: "ok", saved: false, nextCheckAt: "2026-11-07T16:12:00.000Z" });
+    expect(db.rows).toEqual([expect.objectContaining({ status: "running", detail: null })]);
+    lookup.mockClear();
+    const again = await (await route.POST(post())).json();
+    expect(again).toMatchObject({ status: "limited", check: null, nextCheckAt: "2026-11-07T16:12:00.000Z" });
+    expect(lookup).not.toHaveBeenCalled();
+  });
+
+  it("says a saved check was saved", async () => {
+    expect((await (await route.POST(post())).json()).saved).toBe(true);
+  });
+
+  it("gives the reservation back when the lookup throws", async () => {
+    lookup.mockRejectedValueOnce(new Error("boom"));
+    expect((await route.POST(post())).status).toBe(502);
+    expect(db!.rows).toHaveLength(0);
+  });
+
+  it("refuses a sale that belongs to another device, without spending", async () => {
+    db = fakeDb([], {}, [{ id: "esp_abc", device_hash: await hashDevice(OTHER) }]);
+    expect((await route.POST(post())).status).toBe(404);
+    expect(lookup).not.toHaveBeenCalled();
+    expect(db.rows).toHaveLength(0);
+  });
+
+  it("allows this device's own sale, and one not saved to the server yet", async () => {
+    db = fakeDb([], {}, [{ id: "esp_abc", device_hash: await hashDevice(DEVICE) }]);
+    expect((await (await route.POST(post())).json()).status).toBe("ok");
+    db = fakeDb();
+    expect((await (await route.POST(post({ ...body, saleId: "esp_new" }))).json()).status).toBe("ok");
+  });
+
+  it("spends nothing when it can't tell who owns the sale", async () => {
+    db = fakeDb([], { sale: true });
+    expect((await (await route.POST(post())).json()).status).toBe("error");
+    expect(lookup).not.toHaveBeenCalled();
+  });
+
+  it("caps one device's checks across all items, so made-up item ids can't run up the bill", async () => {
+    const hash = await hashDevice(DEVICE);
+    const recent = Array.from({ length: 100 }, (_, i) => ({ id: `old_${i}`, device_hash: hash, sale_id: "esp_abc", item_id: `esp_abc_${i}`, status: "ok", checked_at: new Date(NOW.getTime() - 60_000).toISOString(), detail: {} }));
+    db = fakeDb(recent);
+    const json = await (await route.POST(post({ ...body, itemId: "esp_abc_new" }))).json();
+    expect(json.status).toBe("quota");
+    expect(lookup).not.toHaveBeenCalled();
+    // Yesterday's don't count, and another device has its own.
+    expect((await (await route.POST(post({ ...body, itemId: "esp_abc_new" }, OTHER))).json()).status).toBe("ok");
+    db = fakeDb(recent.map((r) => ({ ...r, checked_at: new Date(NOW.getTime() - 25 * 60 * 60 * 1000).toISOString() })));
+    expect((await (await route.POST(post({ ...body, itemId: "esp_abc_new" }))).json()).status).toBe("ok");
+  });
+
+  it("spends nothing when it can't count the device's checks", async () => {
+    db = fakeDb([], { count: true });
+    expect((await (await route.POST(post())).json()).status).toBe("error");
     expect(lookup).not.toHaveBeenCalled();
   });
 
@@ -208,6 +331,15 @@ describe("GET: the saved check", () => {
     await route.POST(post());
     const json = await (await route.GET(get())).json();
     expect(json.check.at).toBe(new Date(NOW.getTime() + 25 * 60 * 60 * 1000).toISOString());
+  });
+
+  it("reports the limit, and the last completed check, when the newest row never completed", async () => {
+    await route.POST(post());
+    vi.setSystemTime(new Date(NOW.getTime() + 25 * 60 * 60 * 1000));
+    db!.rows.push({ id: "stuck", device_hash: db!.rows[0].device_hash, sale_id: "esp_abc", item_id: "esp_abc_0", status: "running", checked_at: new Date().toISOString(), detail: null });
+    const json = await (await route.GET(get())).json();
+    expect(json.check.at).toBe(NOW.toISOString());
+    expect(json.nextCheckAt).toBe(new Date(NOW.getTime() + 49 * 60 * 60 * 1000).toISOString());
   });
 
   it("doesn't show one device's check to another, or to no device", async () => {

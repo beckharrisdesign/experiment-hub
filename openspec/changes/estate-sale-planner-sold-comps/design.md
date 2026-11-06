@@ -647,8 +647,16 @@ only, per item.
   Opening an item only reads its saved check, which costs nothing.
 - **One completed check per item per device per 24 hours,** held on the server in
   `esp_comps_checks` (migration 022). It's a rolling 24 hours, so there's no time zone to get
-  wrong. "ok" and "too-few" count: the money was spent. A failure saves nothing and doesn't use up
-  the day. A rename doesn't reset it. If the server can't read the last check, nothing runs.
+  wrong. "ok" and "too-few" count: the money was spent. A failure doesn't use up the day. A rename
+  doesn't reset it.
+- **The limit is reserved before any money is spent** (PR review, 2026-11-06). A `running` row goes
+  in first and is filled in when the check completes, or deleted if it couldn't run. If a paid
+  check can't be saved, the row stays, so the limit holds and the response says `saved: false`. A
+  function that dies mid-check leaves its item waiting out the day: on purpose, since costs are the
+  point. If any read or the reservation fails, nothing runs.
+- **Who can spend** (PR review, 2026-11-06). A sale saved by another device gets a 404. A sale not
+  on the server yet is allowed, because a check can beat the first save, so item ids aren't
+  verified. What bounds made-up ids is a cap of 100 checks per device per 24 hours, about $1.20.
 - **A click pulls fresh listings** (`fresh`), even when the 90-day store has some, or a second
   check a day later would just repeat the first. The search stays reused from D22, and the store
   is still written. About 1¢ a check.
@@ -663,8 +671,8 @@ only, per item.
   case says why (D15 note).
 
 **Limits, honestly:** tied to the device cookie until sign-in (#50), so clearing cookies gets a new
-device. Two requests in the same instant could both pass; the phone's in-flight guard covers a
-double tap. Items looked up before this keep their "Based on N sold" line and listings, with no
+device, and only the address and instance throttles bound that. Two requests in the same instant
+could both pass; the phone's in-flight guard covers a double tap. Items looked up before this keep their "Based on N sold" line and listings, with no
 panel until they're checked again.
 
 ## Risks / Trade-offs

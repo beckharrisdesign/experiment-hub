@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deferCost, saleIdOf } from "../../../../lib/estate-sale-planner/costs";
-import { getLatestCheck, nextCheckAt, checkAllowed, saveCheck, type CheckGiven, type CompsCheck } from "../../../../lib/estate-sale-planner/comps/check";
+import { checkAllowed, completeCheck, countRecentChecks, getCheckState, nextCheckAt, releaseCheck, reserveCheck, saleOfAnotherDevice, type CheckGiven, type CompsCheck } from "../../../../lib/estate-sale-planner/comps/check";
 import { lookupComps, type LookupItem } from "../../../../lib/estate-sale-planner/comps/lookup";
 import { providerFromEnv } from "../../../../lib/estate-sale-planner/comps/provider";
 import { deviceHashOf } from "../../../../lib/estate-sale-planner/device";
 import { messageOf } from "../../../../lib/estate-sale-planner/errors";
-import { noStore, SALE_ID } from "../../../../lib/estate-sale-planner/sales-route";
+import { COMPS } from "../../../../lib/estate-sale-planner/config";
+import { noStore, notFound, SALE_ID } from "../../../../lib/estate-sale-planner/sales-route";
 import { DESTINATIONS } from "../../../../lib/estate-sale-planner/session";
 import { createAdminSupabaseClient } from "../../../../lib/estate-sale-planner/supabase-admin";
 import { makeThrottle } from "../../../../lib/estate-sale-planner/throttle";
@@ -19,17 +20,22 @@ export const maxDuration = 60;
  *
  * A click of the item screen's sold-price button (sold-comps design D4, D23). `band` is what
  * decides eligibility (`gateBand` on the device); `priceBefore` is the price showing. Returns
- * `{ success: true, ...CompsSummary, check?, nextCheckAt? }`; a lookup that can't run is still a
+ * `{ success: true, ...CompsSummary, check?, nextCheckAt?, saved? }`; a lookup that can't run is still a
  * success with its status ("gated", "limited", "not-configured", "quota", "error"), because the
  * item simply keeps its band.
  *
  * GET ?saleId&itemId: the saved check for this item on this device, with no lookup.
  *
  * What bounds spend, honestly, while there are no accounts:
- * - One completed check per item per device per 24 hours, read from `esp_comps_checks` first.
- *   If that read fails nothing runs. Two clicks landing at the same instant could both pass, and
- *   clearing cookies gets a new device; the phone's own guard and the limits below cover those.
- *   With no database (local work) there is nothing to limit against.
+ * - One check per item per device per 24 hours, in `esp_comps_checks`. A row is reserved before
+ *   any money is spent and removed if the check couldn't run. If it completes but can't be saved,
+ *   the reservation stays and keeps the limit. Two clicks landing in the same instant could both
+ *   pass, and clearing cookies gets a new device; the phone's own guard and the limits below
+ *   cover those. If any of these reads or the reservation fail, nothing runs. With no database
+ *   (local work) there is nothing to limit against.
+ * - A sale saved by another device is refused. One not on the server yet is allowed, because a
+ *   sale can be checked before its first save lands, so item ids aren't verified: the cap of
+ *   `COMPS.maxChecksPerDevice` a day is what bounds made-up ones.
  * - The server re-checks the gate (Sell, band at or above the threshold), but the threshold
  *   comes from the device. `resolveLookupMinBand` only keeps it to an offered choice, so the
  *   floor the server enforces is the lowest choice ($25), not this person's own setting. That
@@ -116,18 +122,26 @@ export async function POST(request: NextRequest) {
 
   const db = createAdminSupabaseClient();
   const key = { deviceHash, saleId, itemId };
+  const { name, band, priceBefore, destination, markReading, note, lotCount } = body.item;
+  const at = new Date().toISOString();
+  let reservation: string | null = null;
   if (db) {
     try {
-      const latest = await getLatestCheck(db, key);
-      if (!checkAllowed(latest, Date.now())) return NextResponse.json({ success: true, status: "limited", check: latest, nextCheckAt: nextCheckAt(latest!) });
+      if (await saleOfAnotherDevice(db, saleId, deviceHash)) return notFound();
+      const { check, lastAt } = await getCheckState(db, key);
+      if (!checkAllowed(lastAt, Date.now())) return NextResponse.json({ success: true, status: "limited", check, nextCheckAt: nextCheckAt(lastAt!) });
+      if ((await countRecentChecks(db, deviceHash, Date.now())) >= COMPS.maxChecksPerDevice) return NextResponse.json({ success: true, status: "quota" });
+      reservation = await reserveCheck(db, key, at);
     } catch (error: unknown) {
-      console.error("[esp comps] couldn't read the last check; not running one:", messageOf(error));
+      console.error("[esp comps] couldn't confirm this check is allowed; not running one:", messageOf(error));
       return NextResponse.json({ success: true, status: "error" });
     }
   }
+  const release = async () => {
+    if (db && reservation) await releaseCheck(db, reservation);
+  };
 
   try {
-    const { name, band, priceBefore, destination, markReading, note, lotCount } = body.item;
     const { detail, ...summary } = await lookupComps(
       { item: { name, band, destination, markReading, note, lotCount }, minBand: body.minBand, saleId: saleIdOf(saleId), fresh: true },
       { provider: providerFromEnv(), db, record: deferCost },
@@ -135,13 +149,17 @@ export async function POST(request: NextRequest) {
     if (summary.status !== "gated") {
       console.info(`[esp comps] ${summary.status}${summary.cached ? " (cached)" : ""}${summary.matched !== undefined ? `, ${summary.matched}/${summary.found} matched` : ""}`);
     }
-    if (!detail || (summary.status !== "ok" && summary.status !== "too-few")) return NextResponse.json({ success: true, ...summary });
+    if (!detail || (summary.status !== "ok" && summary.status !== "too-few")) {
+      await release();
+      return NextResponse.json({ success: true, ...summary });
+    }
 
     const given: CheckGiven = { name, markReading, note, lotCount, priceBefore: priceBefore ?? band };
-    const check: CompsCheck = { ...detail, at: new Date().toISOString(), status: summary.status, given };
-    if (db) await saveCheck(db, key, check);
-    return NextResponse.json({ success: true, ...summary, check, nextCheckAt: nextCheckAt(check) });
+    const check: CompsCheck = { ...detail, at, status: summary.status, given };
+    const saved = db && reservation ? await completeCheck(db, reservation, check) : false;
+    return NextResponse.json({ success: true, ...summary, check, nextCheckAt: nextCheckAt(at), saved });
   } catch (error: unknown) {
+    await release();
     console.error("[esp comps] lookup failed:", error);
     return NextResponse.json({ error: `The sold-price lookup didn't come back: ${messageOf(error).slice(0, 200)}` }, { status: 502 });
   }
@@ -159,8 +177,8 @@ export async function GET(request: NextRequest) {
   const db = createAdminSupabaseClient();
   if (!deviceHash || !db) return NextResponse.json(empty, { headers: noStore });
   try {
-    const check = await getLatestCheck(db, { deviceHash, saleId, itemId });
-    return NextResponse.json(check ? { success: true, check, nextCheckAt: nextCheckAt(check) } : empty, { headers: noStore });
+    const { check, lastAt } = await getCheckState(db, { deviceHash, saleId, itemId });
+    return NextResponse.json({ success: true, check, nextCheckAt: lastAt ? nextCheckAt(lastAt) : null }, { headers: noStore });
   } catch (error: unknown) {
     console.error("[esp comps] couldn't read the saved check:", messageOf(error));
     return NextResponse.json({ error: "Couldn't load the saved check." }, { status: 502 });

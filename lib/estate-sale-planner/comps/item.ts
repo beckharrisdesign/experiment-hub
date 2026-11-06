@@ -10,7 +10,6 @@
 import { COMPS } from "../config";
 import { lookupChoiceLabel, resolveLookupMinBand } from "../profile";
 import type { Session, SessionItem } from "../session";
-import { checkAllowed, nextCheckAt, type CompsCheck } from "./check";
 import { subjectKey } from "./normalize";
 import { meetsLookupGate, type CompsSummary } from "./summary";
 
@@ -50,11 +49,11 @@ export interface CheckAction {
 const ONCE = `One check per item per day.`;
 
 /** The item screen's button (D23), or null when this item can't be checked. */
-export function checkAction(item: SessionItem, check: Pick<CompsCheck, "at"> | null, checking: boolean, minBand: unknown, now: number): CheckAction | null {
+export function checkAction(item: SessionItem, nextCheckAt: string | null, checking: boolean, minBand: unknown, now: number): CheckAction | null {
   if (!isEligible(item, minBand)) return null;
   if (checking) return { label: "Checking…", disabled: true, caption: ONCE };
-  if (!checkAllowed(check, now)) {
-    return { label: "Check sold prices", disabled: true, caption: `You can check this item again ${formatWhen(nextCheckAt(check!))}.` };
+  if (nextCheckAt && now < Date.parse(nextCheckAt)) {
+    return { label: "Check sold prices", disabled: true, caption: `You can check this item again ${formatWhen(nextCheckAt)}.` };
   }
   if (item.rereadPending) return { label: "Check sold prices", disabled: true, caption: ONCE };
   if (item.comps && item.comps.key === compsKey(item) && FAILED.has(item.comps.status)) return { label: "Try again", disabled: false, caption: null };

@@ -11,6 +11,7 @@ import { paths } from "../../lib/estate-sale-planner/routes";
 import type { ItemPatch, SessionItem } from "../../lib/estate-sale-planner/session";
 import ButtonGroup from "./ButtonGroup";
 import SoldPriceCheck from "./SoldPriceCheck";
+import { useNowUntil } from "./useNowUntil";
 
 interface ItemDetailProps {
   item: SessionItem;
@@ -23,6 +24,8 @@ interface ItemDetailProps {
   lookupMinBand: LookupMinBand;
   /** This item's saved sold-price check, once loaded. */
   check?: CompsCheck | null;
+  /** When the limit lets the next check run. */
+  nextCheckAt?: string | null;
   onCheckComps: () => void;
   onUpdate: (itemId: string, patch: ItemPatch) => void;
   onRemove: (itemId: string) => void;
@@ -41,11 +44,10 @@ interface ItemDetailProps {
  *
  * Desktop: the name and price run full width, then the photo takes 5 of 12 columns.
  */
-export default function ItemDetail({ item, saleId, refining, checkingComps = false, lookupMinBand, check = null, onCheckComps, onUpdate, onRemove, onRetryReread, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
+export default function ItemDetail({ item, saleId, refining, checkingComps = false, lookupMinBand, check = null, nextCheckAt = null, onCheckComps, onUpdate, onRemove, onRetryReread, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
   const [confirmRemove, setConfirmRemove] = useState(false);
-  // Read once: a check that lands while the screen is open only pushes the limit further out.
-  const [openedAt] = useState(() => Date.now());
-  const action = checkAction(item, check, checkingComps, lookupMinBand, openedAt);
+  const now = useNowUntil(nextCheckAt);
+  const action = checkAction(item, nextCheckAt, checkingComps, lookupMinBand, now);
   const photoHref = paths.photo(saleId, item.id);
   const bandOptions: string[] = (BANDS as readonly string[]).includes(item.band) ? [...BANDS] : [item.band, ...BANDS];
 

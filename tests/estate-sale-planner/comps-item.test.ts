@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { applyComps, bandLine, checkAction, compsKey, formatRange, gateBand, isEligible, type ItemComps } from "@/lib/estate-sale-planner/comps/item";
-import type { CompsCheck } from "@/lib/estate-sale-planner/comps/check";
 import type { CompsSummary } from "@/lib/estate-sale-planner/comps/summary";
 import { applyReread } from "@/lib/estate-sale-planner/correction";
 import { updateItem, type Session, type SessionItem } from "@/lib/estate-sale-planner/session";
@@ -46,7 +45,7 @@ describe("who can be checked", () => {
 describe("the check button", () => {
   const MIN = "$100–$250";
   const NOW = new Date(2026, 10, 6, 15, 0).getTime();
-  const check = { at: new Date(2026, 10, 6, 10, 12).toISOString() } as CompsCheck;
+  const next = new Date(2026, 10, 7, 10, 12).toISOString();
   const ONCE = "One check per item per day.";
 
   it("is offered on an eligible item that hasn't been checked", () => {
@@ -64,11 +63,11 @@ describe("the check button", () => {
   });
 
   it("is disabled for 24 hours after a check, and says when it comes back", () => {
-    expect(checkAction(base, check, false, MIN, NOW)).toEqual({ label: "Check sold prices", disabled: true, caption: "You can check this item again Nov 7 at 10:12 AM." });
+    expect(checkAction(base, next, false, MIN, NOW)).toEqual({ label: "Check sold prices", disabled: true, caption: "You can check this item again Nov 7 at 10:12 AM." });
     // A rename doesn't reset the day.
-    expect(checkAction({ ...base, name: "Griswold skillet" }, check, false, MIN, NOW)?.disabled).toBe(true);
+    expect(checkAction({ ...base, name: "Griswold skillet" }, next, false, MIN, NOW)?.disabled).toBe(true);
     const later = new Date(2026, 10, 7, 10, 12).getTime();
-    expect(checkAction(base, check, false, MIN, later)).toEqual({ label: "Check sold prices", disabled: false, caption: ONCE });
+    expect(checkAction(base, next, false, MIN, later)).toEqual({ label: "Check sold prices", disabled: false, caption: ONCE });
   });
 
   it("offers another try after a failure, which doesn't use up the day", () => {
