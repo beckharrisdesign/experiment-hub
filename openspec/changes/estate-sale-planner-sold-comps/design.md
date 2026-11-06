@@ -670,6 +670,11 @@ only, per item.
 - **A blank band line now means one thing:** eligible, with no result for this subject. Every other
   case says why (D15 note).
 
+**A test exemption** (2026-11-06). Katy: *"undo the once a day check just for me and my own
+testing"*. `TEST_DEVICE_HASHES` in `config.ts` skips the per-item limit and the device cap for her
+device; each click still spends, and is still reserved and saved. To be removed once the search is
+settled.
+
 **Limits, honestly:** tied to the device cookie until sign-in (#50), so clearing cookies gets a new
 device, and only the address and instance throttles bound that. Two requests in the same instant
 could both pass; the phone's in-flight guard covers a double tap. Items looked up before this keep their "Based on N sold" line and listings, with no

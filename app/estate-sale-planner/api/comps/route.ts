@@ -5,7 +5,7 @@ import { lookupComps, type LookupItem } from "../../../../lib/estate-sale-planne
 import { providerFromEnv } from "../../../../lib/estate-sale-planner/comps/provider";
 import { deviceHashOf } from "../../../../lib/estate-sale-planner/device";
 import { messageOf } from "../../../../lib/estate-sale-planner/errors";
-import { COMPS } from "../../../../lib/estate-sale-planner/config";
+import { COMPS, TEST_DEVICE_HASHES } from "../../../../lib/estate-sale-planner/config";
 import { noStore, notFound, SALE_ID } from "../../../../lib/estate-sale-planner/sales-route";
 import { DESTINATIONS } from "../../../../lib/estate-sale-planner/session";
 import { createAdminSupabaseClient } from "../../../../lib/estate-sale-planner/supabase-admin";
@@ -33,6 +33,7 @@ export const maxDuration = 60;
  *   pass, and clearing cookies gets a new device; the phone's own guard and the limits below
  *   cover those. If any of these reads or the reservation fail, nothing runs. With no database
  *   (local work) there is nothing to limit against.
+ *   `TEST_DEVICE_HASHES` skip these limits, though not the reservation or the rate limits below.
  * - A sale saved by another device is refused. One not on the server yet is allowed, because a
  *   sale can be checked before its first save lands, so item ids aren't verified: the cap of
  *   `COMPS.maxChecksPerDevice` a day is what bounds made-up ones.
@@ -124,13 +125,16 @@ export async function POST(request: NextRequest) {
   const key = { deviceHash, saleId, itemId };
   const { name, band, priceBefore, destination, markReading, note, lotCount } = body.item;
   const at = new Date().toISOString();
+  const limited = !TEST_DEVICE_HASHES.includes(deviceHash);
   let reservation: string | null = null;
   if (db) {
     try {
       if (await saleOfAnotherDevice(db, saleId, deviceHash)) return notFound();
-      const { check, lastAt } = await getCheckState(db, key);
-      if (!checkAllowed(lastAt, Date.now())) return NextResponse.json({ success: true, status: "limited", check, nextCheckAt: nextCheckAt(lastAt!) });
-      if ((await countRecentChecks(db, deviceHash, Date.now())) >= COMPS.maxChecksPerDevice) return NextResponse.json({ success: true, status: "quota" });
+      if (limited) {
+        const { check, lastAt } = await getCheckState(db, key);
+        if (!checkAllowed(lastAt, Date.now())) return NextResponse.json({ success: true, status: "limited", check, nextCheckAt: nextCheckAt(lastAt!) });
+        if ((await countRecentChecks(db, deviceHash, Date.now())) >= COMPS.maxChecksPerDevice) return NextResponse.json({ success: true, status: "quota" });
+      }
       reservation = await reserveCheck(db, key, at);
     } catch (error: unknown) {
       console.error("[esp comps] couldn't confirm this check is allowed; not running one:", messageOf(error));
@@ -157,7 +161,7 @@ export async function POST(request: NextRequest) {
     const given: CheckGiven = { name, markReading, note, lotCount, priceBefore: priceBefore ?? band };
     const check: CompsCheck = { ...detail, at, status: summary.status, given };
     const saved = db && reservation ? await completeCheck(db, reservation, check) : false;
-    return NextResponse.json({ success: true, ...summary, check, nextCheckAt: nextCheckAt(at), saved });
+    return NextResponse.json({ success: true, ...summary, check, nextCheckAt: limited ? nextCheckAt(at) : null, saved });
   } catch (error: unknown) {
     await release();
     console.error("[esp comps] lookup failed:", error);
@@ -178,7 +182,8 @@ export async function GET(request: NextRequest) {
   if (!deviceHash || !db) return NextResponse.json(empty, { headers: noStore });
   try {
     const { check, lastAt } = await getCheckState(db, { deviceHash, saleId, itemId });
-    return NextResponse.json({ success: true, check, nextCheckAt: lastAt ? nextCheckAt(lastAt) : null }, { headers: noStore });
+    const limited = !TEST_DEVICE_HASHES.includes(deviceHash);
+    return NextResponse.json({ success: true, check, nextCheckAt: limited && lastAt ? nextCheckAt(lastAt) : null }, { headers: noStore });
   } catch (error: unknown) {
     console.error("[esp comps] couldn't read the saved check:", messageOf(error));
     return NextResponse.json({ error: "Couldn't load the saved check." }, { status: 502 });

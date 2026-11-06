@@ -107,6 +107,14 @@ export const COMPS = {
 } as const;
 
 /**
+ * Devices exempt from the daily check limits, for testing (design D23). Each is the sha256 of an
+ * `esp-device` cookie, which can't be turned back into the cookie. Katy's, from 2026-11-06:
+ * clearing that browser's site data makes a new device, so this needs updating if she does. It
+ * spends real money on every click, so remove it once the search is settled.
+ */
+export const TEST_DEVICE_HASHES: readonly string[] = ["bb6b359135cd34655939fdc34400e282550a6fbc19e4d1673382844df4a11b46"];
+
+/**
  * Sold-listings providers (design D5, review queue #62). `COMPS_PROVIDER` picks one (default
  * compsapi) and `COMPS_API_KEY` keys it, both server-only. Read from https://compsapi.com/docs
  * and /pricing on 2026-11-02: GET /v1/sold, `X-API-Key`, a User-Agent is required, prices in
