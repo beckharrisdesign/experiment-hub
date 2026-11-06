@@ -63,6 +63,16 @@ describe.skipIf(!run)("searches on real sales", () => {
     expect(out.detail!.matches.every((l) => l.priceCents >= 10_000)).toBe(true);
   }, 120_000);
 
+  it("gets past barrel keys to real desks, when the name invites them", async () => {
+    const out = await check({
+      name: "Mid-century barrel top desk",
+      band: "$250–$500",
+      note: "This is a signed vintage piece, bought at Austin Auction House in 2020",
+    });
+    expect(out.detail!.matches.length).toBeGreaterThan(0);
+    expect(out.detail!.matches.every((l) => !/\bkey\b/i.test(l.title))).toBe(true);
+  }, 120_000);
+
   it("still keeps a known maker strict", async () => {
     const out = await check({ name: "Lodge No. 8 cast iron skillet", band: "$100–$250", markReading: "LODGE 8" });
     expect(out.status).toBe("ok");
