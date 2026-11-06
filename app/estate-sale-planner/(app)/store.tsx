@@ -31,8 +31,9 @@ import { deleteSaved, listHistory, loadSession, openSaved, readSaved, saveCopy, 
 import { cloud, fetchServerSale, fetchServerSales, queueFirstUpload, type ServerSale } from "../../../lib/estate-sale-planner/cloud";
 import { mergeHistory } from "../../../lib/estate-sale-planner/sale-summary";
 import { track } from "../../../lib/estate-sale-planner/analytics";
-import { applyComps, compsKey, lookupsDue, lotCount, retryDue } from "../../../lib/estate-sale-planner/comps/item";
-import { meetsLookupGate, type CompsSummary } from "../../../lib/estate-sale-planner/comps/summary";
+import type { CompsCheck } from "../../../lib/estate-sale-planner/comps/check";
+import { applyComps, compsKey, gateBand, isEligible, lotCount } from "../../../lib/estate-sale-planner/comps/item";
+import type { CompsSummary } from "../../../lib/estate-sale-planner/comps/summary";
 import { loadProfile } from "../../../lib/estate-sale-planner/profile";
 
 /** Photos sent to the vision pass that have not come back yet (or came back with an error). */
@@ -100,11 +101,23 @@ export interface SaleStore {
   createSale: (name?: string, location?: string) => string;
   /** A photo for an item that has none (one the family typed in): kept like a walkthrough photo, then read. */
   onAddPhoto: (itemId: string, file: File) => Promise<boolean>;
-  /** Items whose sold-price lookup is in flight ("Checking sold prices…"); one entry per flight. */
+  /** Items whose sold-price check is in flight ("Checking sold prices…"). */
   checkingComps: string[];
-  /** The item screen opened: look up a gated item that never was, or whose last try failed (sold-comps 3.24). */
+  /** What's loaded so far about each item's checks, by `checkKey`. */
+  compsChecks: Record<string, CheckView | undefined>;
+  /** The item screen opened: load its saved check. No lookup runs (sold-comps D23). */
   onOpenItem: (saleId: string, itemId: string) => void;
+  /** The item screen's button: one sold-price check. */
+  onCheckComps: (saleId: string, itemId: string) => Promise<void>;
 }
+
+/** The newest completed check, and when the limit lets the next one run. */
+export interface CheckView {
+  check: CompsCheck | null;
+  nextCheckAt: string | null;
+}
+
+export const checkKey = (saleId: string, itemId: string) => `${saleId}/${itemId}`;
 
 const SaleContext = createContext<SaleStore | null>(null);
 
@@ -140,8 +153,7 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   /** The latest session for async handlers that outlive a render; every setSession below writes it first. */
   const latest = useRef<Session | null>(null);
   const [checkingComps, setCheckingComps] = useState<string[]>([]);
-  /** Set below, once the lookup runner exists; `update` hands it every item whose lookup became due. */
-  const scheduleLookups = useRef<(saleId: string, itemIds: string[]) => void>(() => {});
+  const [compsChecks, setCompsChecks] = useState<Record<string, CheckView | undefined>>({});
   /** The server's Home rows from the last refresh; merged into `history` every time it's set. */
   const serverRows = useRef<ServerSale[]>([]);
   /**
@@ -224,13 +236,11 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const update = useCallback((next: Session) => {
-    const due = lookupsDue(latest.current, next, loadProfile().lookupMinBand);
     latest.current = next;
     setSession(next);
     saveSession(next);
     cloud()?.markDirty(next.id);
     refreshHistory();
-    if (due.length) scheduleLookups.current(next.id, due);
   }, [refreshHistory]);
 
   const open = useCallback((id: string) => {
@@ -704,55 +714,66 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     if (latest.current) update(undoMessage(latest.current, itemId, index));
   }, [update]);
 
-  // ---- Sold-price lookups (sold-comps tasks 3.24) -------------------------------------------
+  // ---- Sold-price checks (sold-comps design D23): only ever from the item screen's button ----
 
-  /** Typing a new name shouldn't buy a lookup per keystroke: a due lookup waits this long for the item to settle. */
-  const LOOKUP_SETTLE_MS = 1200;
-  const lookupTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
-  const lookupQueue = useRef<Array<{ saleId: string; itemId: string }>>([]);
-  const lookupsRunning = useRef(0);
-  const lookupsInFlight = useRef(new Set<string>());
+  const checksInFlight = useRef(new Set<string>());
+  const checksLoaded = useRef(new Set<string>());
 
-  const runLookup = useCallback(
+  const onOpenItem = useCallback((saleId: string, itemId: string) => {
+    const at = checkKey(saleId, itemId);
+    if (checksLoaded.current.has(at)) return;
+    checksLoaded.current.add(at);
+    void (async () => {
+      try {
+        const res = await fetch(`/estate-sale-planner/api/comps?saleId=${encodeURIComponent(saleId)}&itemId=${encodeURIComponent(itemId)}`);
+        const json = (await res.json()) as { success?: true; check?: CompsCheck | null; nextCheckAt?: string | null };
+        if (!res.ok || !json.success) throw new Error("no check");
+        // A check that landed while this loaded is newer: keep it.
+        setCompsChecks((all) => (all[at] ? all : { ...all, [at]: { check: json.check ?? null, nextCheckAt: json.nextCheckAt ?? null } }));
+      } catch {
+        // Try again next time it opens. The server still holds the limit either way.
+        checksLoaded.current.delete(at);
+      }
+    })();
+  }, []);
+
+  const onCheckComps = useCallback(
     async (saleId: string, itemId: string) => {
       const sale = latest.current?.id === saleId ? latest.current : readSaved(saleId);
       const item = sale?.items.find((i) => i.id === itemId);
       const minBand = loadProfile().lookupMinBand;
-      // Checked again when it runs: the item may have moved, been renamed or removed while it waited.
-      if (!item || item.rereadPending || !meetsLookupGate(item, minBand)) return;
+      const at = checkKey(saleId, itemId);
+      if (!item || item.rereadPending || !isEligible(item, minBand) || checksInFlight.current.has(at)) return;
+      checksInFlight.current.add(at);
       const key = compsKey(item);
-      const flight = `${saleId}/${itemId}|${key}`;
-      if (lookupsInFlight.current.has(flight)) return;
-      lookupsInFlight.current.add(flight);
       setCheckingComps((ids) => [...ids, itemId]);
-      let summary: CompsSummary;
+      let summary: CompsSummary = { status: "error" };
       try {
         const res = await fetch("/estate-sale-planner/api/comps", {
           method: "POST",
           headers: { "content-type": "application/json" },
           signal: AbortSignal.timeout(60_000),
           body: JSON.stringify({
-            item: { name: item.name, band: item.band, destination: item.destination, markReading: item.markReading ?? undefined, note: item.note, lotCount: lotCount(item) },
+            item: { name: item.name, band: gateBand(item), priceBefore: item.band, destination: item.destination, markReading: item.markReading ?? undefined, note: item.note, lotCount: lotCount(item) },
             minBand,
             saleId,
+            itemId,
           }),
         });
-        const json = (await res.json()) as (CompsSummary & { success: true }) | { error: string };
+        const json = (await res.json()) as (CompsSummary & { success: true; check?: CompsCheck | null; nextCheckAt?: string; saved?: boolean }) | { error: string };
         if (res.ok && "success" in json) {
-          const { success: _success, ...rest } = json;
+          const { success: _success, check, nextCheckAt, saved: _saved, ...rest } = json;
           summary = rest;
-        } else {
-          summary = { status: "error" };
+          if (nextCheckAt) {
+            checksLoaded.current.add(at);
+            setCompsChecks((all) => ({ ...all, [at]: { check: check ?? all[at]?.check ?? null, nextCheckAt } }));
+          }
         }
       } catch {
-        summary = { status: "error" };
+        // Stays an error: the item keeps its band and the button offers another try.
       } finally {
-        lookupsInFlight.current.delete(flight);
-        // One entry per flight: a rename can start a second lookup before the first lands.
-        setCheckingComps((ids) => {
-          const at = ids.indexOf(itemId);
-          return at < 0 ? ids : [...ids.slice(0, at), ...ids.slice(at + 1)];
-        });
+        checksInFlight.current.delete(at);
+        setCheckingComps((ids) => ids.filter((id) => id !== itemId));
       }
       track("esp_comps_result", { status: summary.status, cached: summary.cached, matched: summary.matched });
       applyTo(saleId, (s) => applyComps(s, itemId, key, summary));
@@ -760,57 +781,9 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     [applyTo],
   );
 
-  const pumpLookups = useCallback(
-    function run() {
-      while (lookupsRunning.current < 3 && lookupQueue.current.length > 0) {
-        const next = lookupQueue.current.shift()!;
-        lookupsRunning.current += 1;
-        void runLookup(next.saleId, next.itemId).finally(() => {
-          lookupsRunning.current -= 1;
-          run();
-        });
-      }
-    },
-    [runLookup],
-  );
-
-  const schedule = useCallback(
-    (saleId: string, itemIds: string[], delay = LOOKUP_SETTLE_MS) => {
-      for (const itemId of itemIds) {
-        const timer = `${saleId}/${itemId}`;
-        clearTimeout(lookupTimers.current.get(timer));
-        lookupTimers.current.set(
-          timer,
-          setTimeout(() => {
-            lookupTimers.current.delete(timer);
-            if (!lookupQueue.current.some((q) => q.saleId === saleId && q.itemId === itemId)) lookupQueue.current.push({ saleId, itemId });
-            pumpLookups();
-          }, delay),
-        );
-      }
-    },
-    [pumpLookups],
-  );
-  scheduleLookups.current = schedule;
-
-  useEffect(() => {
-    const timers = lookupTimers.current;
-    return () => timers.forEach(clearTimeout);
-  }, []);
-
-  const onOpenItem = useCallback(
-    (saleId: string, itemId: string) => {
-      const current = latest.current;
-      if (current?.id !== saleId) return;
-      const item = current.items.find((i) => i.id === itemId);
-      if (item && retryDue(item, loadProfile().lookupMinBand)) schedule(saleId, [itemId], 0);
-    },
-    [schedule],
-  );
-
   const value = useMemo<SaleStore>(
-    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, openFromServer, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale, checkingComps, onOpenItem }),
-    [ready, session, history, fromFixture, notice, refining, open, openFromServer, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale, checkingComps, onOpenItem],
+    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, openFromServer, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale, checkingComps, compsChecks, onOpenItem, onCheckComps }),
+    [ready, session, history, fromFixture, notice, refining, open, openFromServer, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale, checkingComps, compsChecks, onOpenItem, onCheckComps],
   );
 
   return <SaleContext.Provider value={value}>{children}</SaleContext.Provider>;

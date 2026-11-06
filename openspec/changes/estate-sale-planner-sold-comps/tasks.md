@@ -166,6 +166,8 @@
   - [x] Keyed rerun in the app (2026-11-03, local `pnpm dev`; `assets/built-comps-line-live-375.jpg`). Sale A, "Lodge No. 8 cast iron skillet" / LODGE 8: search "Lodge No. 8 skillet", 50 found, gpt-5 kept #12, #14, #24, **$50–$100, "Based on 3 sold · $59–$71"** with three links — 1.03¢ (query 0.007¢, lookup 0.18¢, comps 0.85¢), **35 s**. Sale B, "lodge no 8 Cast Iron Skillet" / "Lodge 8", model guess $250–$500: same band, range and links, **one zero-cost cache-hit row, 0.35 s**. Memo row holds subject `lodge no 8 cast iron skillet|lodge 8|1`, matches [12,14,24].
   - **Trade-off to watch:** a first lookup now waits ~30 s on gpt-5 (the line says "Checking sold prices…" meanwhile); repeats are instant.
 
+- [x] 3.40 **Check sold prices button (D23, Figma round 18).** Replaces the automatic trigger in 3.24. Migration 022 `esp_comps_checks`; `comps/check.ts`; `fresh` and `detail` in `lookupComps`; POST limit and GET saved check in `api/comps`; `SoldPriceCheck.tsx`; reason lines in `bandLine`. Tests: `comps-check-route.test.ts`, `comps-item.test.ts`, `comps-lookup.test.ts`. Automatic lookups removed, with their tests. Not walked on a real phone with a real key yet (4.1 step 7).
+
 ## 4. QA
 
 - [~] 4.1 **Manual walkthrough on a phone,** fixture mode then keyed:
@@ -175,11 +177,11 @@
   4. Send a message and undo it.
   5. Switch Sell, Donate and Keep in the sticky header.
   6. Check the price and the bands.
-  7. With a provider key, set a $100+ item to Sell, see "Based on N sold", and reopen it to see the cache hit.
+  7. With a provider key, set a $100+ item to Sell, click **Check sold prices**, see "Based on N sold" and the saved check, reopen it to see the check with no new cost row, and see the button disabled until tomorrow.
   8. Check the cost rows in Supabase.
   - 2026-10-28: first pass on an iPhone 12 Pro Max found jitter, content off the viewport and small targets (fixed on `claude/esp-phone-ergonomics`). Steps 1–8 still to walk on the fixed build.
 - [ ] 4.2 **Automated:** `pnpm vitest run tests/estate-sale-planner` green, plus `pnpm tsc --noEmit` and `pnpm lint`.
-- [ ] 4.3 **Visual check against Figma round 17** at 480 and 1024 (built captures from 3.16).
+- [ ] 4.3 **Visual check against Figma round 18** (item screen; 17 for the rest) at 480 and 1024 (built captures from 3.16).
 - [ ] 4.4 **Validate and record:**
   - `openspec validate estate-sale-planner-sold-comps` passes.
   - Review-queue rows #59–#76 are updated to APPROVED or DEFAULT_IMPLEMENTED as built.

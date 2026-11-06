@@ -79,7 +79,7 @@ What exists today, which this design builds on:
 
 **Look up its price (part 2).** Nothing new to navigate to:
 
-- When an item becomes confirmed and passes the gate, the lookup starts in the background.
+- *(Superseded by D23: a lookup now runs only from the item screen's **Check sold prices** button.)* When an item becomes confirmed and passes the gate, the lookup starts in the background.
 - The band line under the name and price shows the result (D15):
 
   | State | Band line reads |
@@ -87,7 +87,7 @@ What exists today, which this design builds on:
   | Lookup running | "Checking sold prices…" |
   | Enough matching sales | "Based on 7 sold · $40–$85", with up to 3 sold listings below (title, price, date; each links out) |
   | Family set the band | "Set by you" (comps stay listed underneath) |
-  | Model estimate, too few matches, not set up, lookup failed | no line |
+  | Model estimate, too few matches, not set up, lookup failed | no line *(superseded by D23: each now says why)* |
 
 - The Lists screen, the tallies and the Sell list use whatever band the item carries. A
   comps band replaces the model's band in the totals.
@@ -124,7 +124,7 @@ continuously across them:
 | Libraries / version | FigJam page-per-iteration conventions per `rules/figma.mdc` | `MVDS Core` (team default library, `source: team`, confirmed 2026-10-27). Instances of `Button`, `Badge`, `Field`, with fills bound to `Tokens` (`background`, `foreground`, `muted`, `muted-foreground`, `border`, `card`, `primary`), spacing bound to `Scales`, and type from `Type/*` styles. The `Tokens` collection is pinned to **Dark** on every frame, matching the hub. Code: `@beckharrisdesign/mvds@0.5.0`. **Local stand-ins on page `00 Components` (node `0:1`):** `Breadcrumb header` (`10:2`, D11) on the frames of pages 06–17. `Segmented toggle · destination` (`20:23`, D16), the second MVDS hand-off candidate. **Local variable collection `ESP brand`** (D20): `brand/primary`, `primary-foreground`, `background`, `card`, `muted`, `border` and `ring` override the matching MVDS `Color/*` tokens on pages 15–17. Mode `Dark · #FF6A1A (round 15)` is used on 15–16 and `Dark · #F0905D (round 17)` on 17. `TopBar` (`3:25`) is today's header, on the as-is frames and on page 05. `TabBar` (`3:30`). The header and tab bar are MVDS hand-off #39, not in the library. `Subject box` component set (`3:54`, variants Selected / Faint / Editing / Picked), the box-editor hand-off below. `Photo stand-in · living room` (`3:55`), grey blocks in place of a real walkthrough photo; reference only, not product imagery. The `Value band` field is drawn as `Field` (text input) where code uses `Select`, since MVDS Core has no Select in the library yet |
 | Code Connect | N/A: no code surface | Not set up (elk / build precedent); implementation maps to MVDS components in code |
 | Breakpoints | N/A: FigJam canvas, not a responsive screen | S · 480px mobile / L · 1024px desktop (BHD Content Types), per `rules/design-guidelines.mdc` |
-| Status | Rounds 02–04 done; 04 is current | Rounds 05–17 drawn 2026-10-27; **17 is current**; awaiting review |
+| Status | Rounds 02–04 done; 04 is current | Rounds 05–17 drawn 2026-10-27, round 18 (page `18 Proposed — check sold prices`, `42:368`; D23) drawn and approved 2026-11-06; **18 is current** |
 
 **MVDS hand-off:** MVDS has no crop or box-editing component. The editor is a composition
 on MVDS tokens:
@@ -457,6 +457,8 @@ removed. The price aligns top and right of the title."*
 - **No band line by default.** It appears only for "Checking sold prices…", "Based on N sold ·
   $x–$y" and "Set by you". The model's estimate, too few matches, no key and lookup failures
   show nothing; failure reasons go to the cost row. The specs are updated to match.
+  *(2026-11-06, D23: a blank line had too many meanings, so each of those now says why. The
+  "Guess" line stays gone: an eligible item with no result still shows no line, just the button.)*
 - **The confidence badge leaves the item screen** (Katy's edit in round 12). Confidence stays
   in the data and still caps through `capConfidence`.
 
@@ -629,6 +631,49 @@ What changed:
 | 75 | Brand colour | `#F0905D` on warm darks via `.esp-theme` (D20) |
 | 76 | Sticky header | Breadcrumb and destination toggle (D21) |
 | 77 | Same item, same answer | Remember the search and kept sales per subject; comps pass on gpt-5 (~1¢ a fresh check) (D22) |
+
+### D23. Sold prices are checked from a button, once a day per item
+
+*(2026-11-06, Figma round 18.)* Katy asked how she could tell a price was being looked up. The
+answer was a line that could be blank for four different reasons, and lookups she didn't start.
+Then: *"I'd like to have a button that allows me to kick off this ai feature from the page. Don't
+allow me to click the button more than once per day for now to keep my costs low. Include a
+display of the elements included in the completion and their values. Store that info in the db so
+we don't have to do the completion each time. Put a date/timestamp on the completion info so we
+can see its recency. show sources too."* Asked how that fits automatic lookups, she chose button
+only, per item.
+
+- **Nothing runs on its own.** The automatic trigger and the retry on opening an item are gone.
+  Opening an item only reads its saved check, which costs nothing.
+- **One completed check per item per device per 24 hours,** held on the server in
+  `esp_comps_checks` (migration 022). It's a rolling 24 hours, so there's no time zone to get
+  wrong. "ok" and "too-few" count: the money was spent. A failure doesn't use up the day. A rename
+  doesn't reset it.
+- **The limit is reserved before any money is spent** (PR review, 2026-11-06). A `running` row goes
+  in first and is filled in when the check completes, or deleted if it couldn't run. If a paid
+  check can't be saved, the row stays, so the limit holds and the response says `saved: false`. A
+  function that dies mid-check leaves its item waiting out the day: on purpose, since costs are the
+  point. If any read or the reservation fails, nothing runs.
+- **Who can spend** (PR review, 2026-11-06). A sale saved by another device gets a 404. A sale not
+  on the server yet is allowed, because a check can beat the first save, so item ids aren't
+  verified. What bounds made-up ids is a cap of 100 checks per device per 24 hours, about $1.20.
+- **A click pulls fresh listings** (`fresh`), even when the 90-day store has some, or a second
+  check a day later would just repeat the first. The search stays reused from D22, and the store
+  is still written. About 1¢ a check.
+- **Eligibility stays Sell at or above the threshold,** judged on the price from before any sold
+  prices (`gateBand`). Before this, sold prices could drop an item under the threshold, which
+  was harmless with one automatic lookup but would have stranded the button.
+- **The saved check shows:** when it ran; what it was given (item, mark, note, set, price before);
+  what it did (search, models, where and when the listings came from, found and checked counts);
+  what came back (matched, reason, middle range, price set); and sources (matched listings, plus
+  those left out on request). It records the item as it was, which may differ from today's name.
+- **A blank band line now means one thing:** eligible, with no result for this subject. Every other
+  case says why (D15 note).
+
+**Limits, honestly:** tied to the device cookie until sign-in (#50), so clearing cookies gets a new
+device, and only the address and instance throttles bound that. Two requests in the same instant
+could both pass; the phone's in-flight guard covers a double tap. Items looked up before this keep their "Based on N sold" line and listings, with no
+panel until they're checked again.
 
 ## Risks / Trade-offs
 

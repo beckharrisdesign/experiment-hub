@@ -4,9 +4,10 @@ import { use, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Stack } from "@beckharrisdesign/mvds";
+import { loadProfile } from "../../../../../../../lib/estate-sale-planner/profile";
 import { paths } from "../../../../../../../lib/estate-sale-planner/routes";
 import ItemDetail from "../../../../../ItemDetail";
-import { useSaleStore } from "../../../../store";
+import { checkKey, useSaleStore } from "../../../../store";
 import SaleScreen from "../../SaleScreen";
 
 /** /sales/[id]/items/[itemId] — one object, everything about it editable. */
@@ -16,8 +17,7 @@ export default function ItemPage({ params }: { params: Promise<{ id: string; ite
   const store = useSaleStore();
   const { onOpenItem } = store;
   const loadedId = store.session?.id;
-  // A gated item that was never looked up, or whose last lookup failed, tries again when it's
-  // opened — once this URL's sale is the one in context, not the sale we navigated away from.
+  // Load this item's saved sold-price check; nothing runs until the button is clicked.
   useEffect(() => {
     if (loadedId === id) onOpenItem(id, itemId);
   }, [loadedId, id, itemId, onOpenItem]);
@@ -44,6 +44,10 @@ export default function ItemPage({ params }: { params: Promise<{ id: string; ite
             saleId={id}
             refining={store.refining === item.id}
             checkingComps={store.checkingComps.includes(item.id)}
+            lookupMinBand={loadProfile().lookupMinBand}
+            check={store.compsChecks[checkKey(id, item.id)]?.check}
+            nextCheckAt={store.compsChecks[checkKey(id, item.id)]?.nextCheckAt}
+            onCheckComps={() => void store.onCheckComps(id, item.id)}
             onUpdate={store.onUpdate}
             onRetryReread={store.onRetryReread}
             onMessage={store.onMessage}

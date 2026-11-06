@@ -7,6 +7,9 @@
  * the item's subject. A repeat reuses both — no model call, no provider call. When the saved
  * sales are fetched again the search is kept and only the new sales are read.
  *
+ * A click of the check button (D23) passes `fresh`, so the listings are pulled again even when
+ * saved ones are in date. The search stays reused, so the same item keeps asking the same thing.
+ *
  * Dependencies are injected so the whole pass is testable without a network or a database.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -20,7 +23,7 @@ import { subjectKey } from "./normalize";
 import { normalizeQuery, writeQuery as defaultWriteQuery, type QueryInput } from "./query";
 import { readComps as defaultReadComps } from "./read";
 import { getFreshComps, getRead, sameInstant, saveComps, saveRead } from "./store";
-import { meetsLookupGate, type CompsSummary } from "./summary";
+import { meetsLookupGate, type CompsSummary, type LookupDetail } from "./summary";
 
 export interface LookupItem extends QueryInput {
   band: string;
@@ -33,6 +36,8 @@ export interface LookupInput {
   minBand?: unknown;
   sessionId?: string;
   saleId?: string;
+  /** Pull the sold listings again even if saved ones are still in date. */
+  fresh?: boolean;
 }
 
 export interface LookupDeps {
@@ -63,12 +68,14 @@ export async function lookupComps(input: LookupInput, deps: LookupDeps): Promise
   const memo = await getRead(deps.db, provider.name, subject);
 
   let query: string;
+  let queryModel: string | undefined;
   if (memo) {
     query = memo.query;
   } else {
     try {
       const written = await writeQuery(item);
       query = written.query;
+      queryModel = written.call?.model;
       if (written.call) {
         record({ kind: "query", provider: written.call.provider, model: written.call.model, ...written.call.usage });
       }
@@ -82,7 +89,7 @@ export async function lookupComps(input: LookupInput, deps: LookupDeps): Promise
   let listings: SoldListing[];
   let fetchedAt: string;
   let cached = false;
-  const saved = await getFreshComps(deps.db, provider.name, queryNorm, now());
+  const saved = input.fresh ? null : await getFreshComps(deps.db, provider.name, queryNorm, now());
   if (saved) {
     listings = saved.results;
     fetchedAt = saved.fetchedAt;
@@ -105,14 +112,29 @@ export async function lookupComps(input: LookupInput, deps: LookupDeps): Promise
   const found = listings.length;
   const remember = (matches: number[], reason: string, model?: string) =>
     saveRead(deps.db, { provider: provider.name, subject, model, read: { query, queryNorm, compsFetchedAt: fetchedAt, matches, reason } });
+  const detailOf = (sentListings: SoldListing[], matched: number[], extra: Partial<LookupDetail>): LookupDetail => ({
+    query,
+    ...(queryModel ? { queryModel } : {}),
+    queryReused: Boolean(memo),
+    provider: provider.name,
+    listingsAt: fetchedAt,
+    found,
+    checked: sentListings.length,
+    matched: matched.length,
+    matches: newestFirst(matched.map((i) => sentListings[i])),
+    leftOut: sentListings.filter((_, i) => !matched.includes(i)),
+    ...extra,
+  });
   if (found === 0) {
-    await remember([], "No sold listings came back.");
-    return { status: "too-few", query, found, matched: 0, fetchedAt, cached };
+    const reason = "No sold listings came back.";
+    await remember([], reason);
+    return { status: "too-few", query, found, matched: 0, fetchedAt, cached, detail: detailOf([], [], { reason }) };
   }
 
   const sent = listings.slice(0, COMPS.maxListings);
   let matches: number[];
   let reason: string;
+  let readModel: string | undefined;
   if (memo && memo.queryNorm === queryNorm && sameInstant(memo.compsFetchedAt, fetchedAt)) {
     // Same subject, same saved sales: the answer it got last time.
     matches = memo.matches.filter((i) => i < sent.length);
@@ -122,6 +144,7 @@ export async function lookupComps(input: LookupInput, deps: LookupDeps): Promise
       const read = await readComps(item, sent);
       matches = read.matches;
       reason = read.reason;
+      readModel = read.call?.model;
       if (read.call) record({ kind: "comps", provider: read.call.provider, model: read.call.model, ...read.call.usage });
       await remember(matches, reason, read.call?.model);
     } catch (error: unknown) {
@@ -132,9 +155,10 @@ export async function lookupComps(input: LookupInput, deps: LookupDeps): Promise
 
   const kept = matches.map((i) => sent[i]);
   const band = bandFromPrices(kept.map((l) => l.priceCents), COMPS.minMatches);
-  if (!band) return { status: "too-few", query, found, matched: kept.length, reason, fetchedAt, cached };
+  const detail = (extra: Partial<LookupDetail> = {}) => detailOf(sent, matches, { reason, ...(readModel ? { readModel } : {}), ...extra });
+  if (!band) return { status: "too-few", query, found, matched: kept.length, reason, fetchedAt, cached, detail: detail() };
 
-  const cite = [...kept].sort((a, b) => (b.soldAt || "").localeCompare(a.soldAt || "")).slice(0, COMPS.citeListings);
+  const cite = newestFirst(kept).slice(0, COMPS.citeListings);
   return {
     status: "ok",
     query,
@@ -146,5 +170,10 @@ export async function lookupComps(input: LookupInput, deps: LookupDeps): Promise
     listings: cite,
     fetchedAt,
     cached,
+    detail: detail({ rangeCents: band.rangeCents, band: band.band }),
   };
+}
+
+function newestFirst(listings: SoldListing[]): SoldListing[] {
+  return [...listings].sort((a, b) => (b.soldAt || "").localeCompare(a.soldAt || ""));
 }

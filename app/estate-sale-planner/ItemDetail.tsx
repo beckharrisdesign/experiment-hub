@@ -3,11 +3,15 @@
 import { Fragment, useRef, useState } from "react";
 import Link from "next/link";
 import { Badge, Button, Callout, Field, Grid, GridItem, Inline, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Stack, Textarea } from "@beckharrisdesign/mvds";
-import { bandLine, formatRange, type BandLine } from "../../lib/estate-sale-planner/comps/item";
+import type { CompsCheck } from "../../lib/estate-sale-planner/comps/check";
+import { bandLine, checkAction, formatRange, type BandLine, type CheckAction } from "../../lib/estate-sale-planner/comps/item";
 import { BANDS } from "../../lib/estate-sale-planner/flag";
+import type { LookupMinBand } from "../../lib/estate-sale-planner/profile";
 import { paths } from "../../lib/estate-sale-planner/routes";
 import type { ItemPatch, SessionItem } from "../../lib/estate-sale-planner/session";
 import ButtonGroup from "./ButtonGroup";
+import SoldPriceCheck from "./SoldPriceCheck";
+import { useNowUntil } from "./useNowUntil";
 
 interface ItemDetailProps {
   item: SessionItem;
@@ -16,6 +20,13 @@ interface ItemDetailProps {
   refining: boolean;
   /** Its sold-price lookup is in flight. */
   checkingComps?: boolean;
+  /** The profile's sold-price threshold, for saying why an item wasn't looked up. */
+  lookupMinBand: LookupMinBand;
+  /** This item's saved sold-price check, once loaded. */
+  check?: CompsCheck | null;
+  /** When the limit lets the next check run. */
+  nextCheckAt?: string | null;
+  onCheckComps: () => void;
   onUpdate: (itemId: string, patch: ItemPatch) => void;
   onRemove: (itemId: string) => void;
   onRetryReread: (itemId: string) => void;
@@ -33,8 +44,10 @@ interface ItemDetailProps {
  *
  * Desktop: the name and price run full width, then the photo takes 5 of 12 columns.
  */
-export default function ItemDetail({ item, saleId, refining, checkingComps = false, onUpdate, onRemove, onRetryReread, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
+export default function ItemDetail({ item, saleId, refining, checkingComps = false, lookupMinBand, check = null, nextCheckAt = null, onCheckComps, onUpdate, onRemove, onRetryReread, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const now = useNowUntil(nextCheckAt);
+  const action = checkAction(item, nextCheckAt, checkingComps, lookupMinBand, now);
   const photoHref = paths.photo(saleId, item.id);
   const bandOptions: string[] = (BANDS as readonly string[]).includes(item.band) ? [...BANDS] : [item.band, ...BANDS];
 
@@ -71,7 +84,8 @@ export default function ItemDetail({ item, saleId, refining, checkingComps = fal
             {item.band}
           </p>
         </div>
-        <BandLineView line={bandLine(item, checkingComps)} />
+        <BandLineView line={bandLine(item, checkingComps, lookupMinBand)} showListings={!check} />
+        {action && <CheckRow action={action} onCheck={onCheckComps} />}
       </Stack>
 
       <Grid cols={{ base: 1, lg: 12 }} gap={32}>
@@ -88,7 +102,8 @@ export default function ItemDetail({ item, saleId, refining, checkingComps = fal
         </GridItem>
 
         <GridItem span={{ base: 1, lg: 7 }}>
-          <Stack gap={40}>
+          <Stack gap={32}>
+            {check && <SoldPriceCheck check={check} familyBand={item.bandSource === "family"} />}
             <EditTabs
               describe={<AdjustByMessage item={item} busy={refining} onMessage={onMessage} onUndo={onUndoMessage} />}
               make={
@@ -121,10 +136,10 @@ export default function ItemDetail({ item, saleId, refining, checkingComps = fal
 }
 
 /**
- * The line under the name and price (D15). Shown only while checking, when the band comes from
- * sold listings, or when the family set it; everything else shows nothing.
+ * The line under the name and price (D15, D23): checking, based on sold listings, set by the
+ * family, or why sold prices didn't set this price.
  */
-function BandLineView({ line }: { line: BandLine | null }) {
+function BandLineView({ line, showListings }: { line: BandLine | null; showListings: boolean }) {
   if (!line) return null;
   if (line.kind === "checking") {
     return (
@@ -133,6 +148,7 @@ function BandLineView({ line }: { line: BandLine | null }) {
       </p>
     );
   }
+  if (line.kind === "why") return <p className="text-small text-muted-foreground">{line.text}</p>;
   const comps = line.comps;
   return (
     <div className="space-y-2">
@@ -141,7 +157,7 @@ function BandLineView({ line }: { line: BandLine | null }) {
         {line.kind === "family" && comps ? " · " : null}
         {comps?.rangeCents ? `Based on ${comps.matched} sold · ${formatRange(comps.rangeCents)}` : null}
       </p>
-      {comps?.listings?.length ? (
+      {showListings && comps?.listings?.length ? (
         <ul className="text-small">
           {comps.listings.map((l) => (
             <li key={l.url} className="flex items-center gap-2 pointer-coarse:min-h-11">
@@ -156,6 +172,18 @@ function BandLineView({ line }: { line: BandLine | null }) {
           ))}
         </ul>
       ) : null}
+    </div>
+  );
+}
+
+/** The sold-price button and what limits it (D23). */
+function CheckRow({ action, onCheck }: { action: CheckAction; onCheck: () => void }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <p className="min-w-0 text-small text-muted-foreground">{action.caption}</p>
+      <Button className="shrink-0" disabled={action.disabled} onClick={onCheck}>
+        {action.label}
+      </Button>
     </div>
   );
 }
