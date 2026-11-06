@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { bandForDollars, bandFromPrices, percentile } from "@/lib/estate-sale-planner/comps/band";
 import { compsApiProvider, compsApiUrl, parseCompsApiItems } from "@/lib/estate-sale-planner/comps/compsapi";
 import { ProviderError, providerFromEnv } from "@/lib/estate-sale-planner/comps/provider";
-import { fixtureQuery, normalizeQuery, queryUserText, QUERY_PROMPT, QuerySchema } from "@/lib/estate-sale-planner/comps/query";
+import { cleanQuery, fixtureQuery, normalizeQuery, queryUserText, QUERY_PROMPT, QuerySchema } from "@/lib/estate-sale-planner/comps/query";
 import { clipText, subjectKey } from "@/lib/estate-sale-planner/comps/normalize";
 import { READ_PROMPT, ReadSchema } from "@/lib/estate-sale-planner/comps/read";
 import { isFresh } from "@/lib/estate-sale-planner/comps/store";
@@ -32,12 +32,12 @@ describe("the query step", () => {
     expect(fixtureQuery({ name: "Pyrex bowls", lotCount: 6 })).toBe("set of 6 Pyrex bowls");
   });
   it("never accepts a search of only spaces, and trims the rest", () => {
-    expect(QuerySchema.safeParse({ query: "   " }).success).toBe(false);
-    expect(QuerySchema.parse({ query: "  lodge skillet " }).query).toBe("lodge skillet");
+    expect(QuerySchema.safeParse({ query: "   ", broader: [] }).success).toBe(false);
+    expect(QuerySchema.parse({ query: "  lodge skillet ", broader: [] }).query).toBe("lodge skillet");
   });
 
   it("a long answer is clipped, never a failed lookup (2026-11-03: a 161-character reason threw)", () => {
-    expect(QuerySchema.safeParse({ query: "x ".repeat(60) }).success).toBe(true);
+    expect(QuerySchema.safeParse({ query: "x ".repeat(60), broader: [] }).success).toBe(true);
     expect(ReadSchema.safeParse({ matches: [1], reason: "y ".repeat(150) }).success).toBe(true);
     expect(clipText("Le Creuset 5.5 qt round Dutch oven enamel cast iron Flame Orange", 30)).toBe("Le Creuset 5.5 qt round Dutch");
     expect(clipText("Kept the three vintage No. 8s.", 160)).toBe("Kept the three vintage No. 8s.");
@@ -45,7 +45,6 @@ describe("the query step", () => {
   });
 
   it("asks for a short search, the maker's own number kept", () => {
-    expect(QUERY_PROMPT).toMatch(/3 to 6 words/);
     expect(QUERY_PROMPT).toMatch(/No\. 8/);
   });
 
@@ -163,10 +162,64 @@ describe("the CompsAPI adapter (docs read 2026-11-02)", () => {
 });
 
 describe("freshness", () => {
-  it("is 90 days", () => {
+  it("reuses saved listings for 90 days", () => {
     const now = new Date("2026-11-02T00:00:00Z");
     expect(isFresh("2026-08-05T00:00:00Z", now)).toBe(true);
     expect(isFresh("2026-08-03T00:00:00Z", now)).toBe(false);
     expect(isFresh("not a date", now)).toBe(false);
+  });
+});
+
+describe("cleanQuery — what's safe to send", () => {
+  it("takes out words that describe what we don't know, or that sellers don't search by", () => {
+    expect(cleanQuery("Unknown Maker tambour roll-top secretary desk")).toBe("tambour roll top secretary desk");
+    expect(cleanQuery("unbranded unmarked teak desk")).toBe("teak desk");
+    expect(cleanQuery("Signed Danish-style teak desk")).toBe("Danish teak desk");
+    expect(cleanQuery("maker unknown brass lamp")).toBe("brass lamp");
+    expect(cleanQuery("no-name generic lamp")).toBe("lamp");
+  });
+
+  it("keeps what identifies the object", () => {
+    expect(cleanQuery("Lodge No. 8 skillet")).toBe("Lodge No. 8 skillet");
+    expect(cleanQuery("set of 6 Pyrex mixing bowls")).toBe("set of 6 Pyrex mixing bowls");
+    expect(cleanQuery("Le Creuset 26 dutch oven")).toBe("Le Creuset 26 dutch oven");
+    expect(cleanQuery("Signet ring")).toBe("Signet ring");
+    expect(cleanQuery("Hi-Fi receiver")).toBe("Hi Fi receiver");
+  });
+
+  it("takes out quotes and extra space, and caps the length", () => {
+    expect(cleanQuery('  "teak"   desk ')).toBe("teak desk");
+    expect(cleanQuery("one two three four five six seven eight")).toBe("one two three four five six");
+  });
+
+  it("can come back empty, for the caller to skip", () => {
+    expect(cleanQuery("Unknown maker")).toBe("");
+  });
+});
+
+describe("the provider's limits", () => {
+  it("asks for a year of sales", () => {
+    expect(new URL(compsApiUrl("q")).searchParams.get("days")).toBe("365");
+  });
+
+  it("treats a burst as an error to retry, and only a spent plan as quota", async () => {
+    const respond = (status: number, body: unknown) => compsApiProvider("k", vi.fn(async () => new Response(JSON.stringify(body), { status })) as unknown as typeof fetch);
+    await expect(respond(429, { ok: false, error: "rate_limited" }).search("q", AbortSignal.timeout(1000))).rejects.toMatchObject({ kind: "error" });
+    await expect(respond(429, { ok: false, error: "quota_reached" }).search("q", AbortSignal.timeout(1000))).rejects.toMatchObject({ kind: "quota" });
+  });
+});
+
+describe("the prompts", () => {
+  it("asks for a narrow search and broader ones, in sellers' words", () => {
+    expect(QUERY_PROMPT).toMatch(/broader/);
+    expect(QUERY_PROMPT).toMatch(/No\. 8/);
+    expect(QUERY_PROMPT).toMatch(/Never write .*unknown/i);
+  });
+
+  it("lets an object with no known maker match comparable pieces, but not different objects", () => {
+    expect(READ_PROMPT).toMatch(/no known maker/i);
+    // A reason read "Kept 3" when it kept one listing, numbered 3.
+    expect(READ_PROMPT).toMatch(/never mention .*number/i);
+    expect(READ_PROMPT).toMatch(/a No\. 8 skillet is not an 8-inch skillet/);
   });
 });

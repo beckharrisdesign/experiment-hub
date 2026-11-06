@@ -98,7 +98,15 @@ export const COMPS = {
   maxChecksPerDevice: 100,
   /** Matching sold listings needed before they replace the model's band (review queue #64). */
   minMatches: 3,
-  /** Listings sent to the comps pass; the provider returns up to 240 a page. */
+  /** How far back to look for sold listings (D24). In 90 days a teak roll top desk had one real sale; in a year, three. */
+  lookbackDays: 365,
+  /** Fewer listings than this and a search is broadened (D24). */
+  enoughListings: 5,
+  /** Most provider calls one check can make, about 0.5¢ (D24). The provider allows 10 a minute. */
+  maxSearches: 3,
+  /** Batches of `maxListings` one check can read; the second only when the first finds too few (D24). */
+  maxReads: 2,
+  /** Listings sent to each comps pass; the provider returns up to 240 a page. */
   maxListings: 25,
   /** Kept listings the item links to. */
   citeListings: 3,

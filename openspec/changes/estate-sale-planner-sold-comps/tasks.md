@@ -168,6 +168,8 @@
 
 - [x] 3.40 **Check sold prices button (D23, Figma round 18).** Replaces the automatic trigger in 3.24. Migration 022 `esp_comps_checks`; `comps/check.ts`; `fresh` and `detail` in `lookupComps`; POST limit and GET saved check in `api/comps`; `SoldPriceCheck.tsx`; reason lines in `bandLine`. Tests: `comps-check-route.test.ts`, `comps-item.test.ts`, `comps-lookup.test.ts`. Automatic lookups removed, with their tests. Not walked on a real phone with a real key yet (4.1 step 7).
 
+- [x] 3.41 **Searches that find sales (D24).** One-year window, `cleanQuery`, broader searches, a second read, no remembering an empty search, comparable pieces for no known maker, rate limit not treated as quota. Tests: `comps-lookup.test.ts`, `comps-parts.test.ts`; on real services, `comps-search.live.test.ts` and `comps-stability.live.test.ts` pass. Not checked in the deployed app yet.
+
 ## 4. QA
 
 - [~] 4.1 **Manual walkthrough on a phone,** fixture mode then keyed:

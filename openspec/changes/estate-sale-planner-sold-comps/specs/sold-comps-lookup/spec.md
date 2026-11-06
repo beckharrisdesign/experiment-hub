@@ -213,3 +213,47 @@ The server SHALL allow one check per item per device per 24 hours and 100 per de
 
 - **WHEN** a different device opens the same sale and item id
 - **THEN** it sees no saved check and has its own limit, until sign-in moves this to the person
+
+### Requirement: A search that finds too little is broadened
+
+An item without a famous maker should still find its comparable sales, and a search that found
+nothing should never get stuck.
+
+**Fails until:** an item whose first search finds too few listings tries broader ones, up to the limit, and an empty search is never reused.
+
+The lookup SHALL search a year of sold listings, SHALL take words for what isn't known out of every search before sending it with no model call, SHALL try broader searches when one finds fewer than 5 listings, up to 3 searches a check and never a single word, SHALL use the search that found the most, and SHALL NOT remember a search that found nothing. When the first 25 listings keep too few matches it SHALL read the next 25. For an object with no known maker, the comps pass SHALL keep comparable pieces of the same kind, material, era and size, and SHALL NOT keep a different kind of object.
+
+#### Scenario: The first search finds nothing
+
+- **WHEN** an item's first search finds no listings and a broader one finds 50
+- **THEN** the broader one is used, and the saved check shows both searches and what each found
+
+#### Scenario: A placeholder in a search
+
+- **WHEN** a search reads "Unknown Maker tambour desk"
+- **THEN** "tambour desk" is what's sent
+
+#### Scenario: A remembered search has gone stale
+
+- **WHEN** an item's remembered search no longer finds enough listings
+- **THEN** a new search is written and remembered if it finds any
+
+#### Scenario: Small look-alikes crowd the first batch
+
+- **WHEN** the first 25 listings are organizers and the real desks are further down
+- **THEN** the next 25 are read, and the matches from both set the price
+
+#### Scenario: No known maker
+
+- **WHEN** a teak roll top desk with no known maker is checked against full-size teak roll top desks and small desk organizers
+- **THEN** the desks are kept whoever made them, and the organizers are dropped
+
+#### Scenario: A known maker stays strict
+
+- **WHEN** a Lodge No. 8 skillet is checked
+- **THEN** only Lodge No. 8 skillets are kept
+
+#### Scenario: Thin data
+
+- **WHEN** broadening still finds fewer than three matching sales
+- **THEN** the item keeps its price and says how many it found
