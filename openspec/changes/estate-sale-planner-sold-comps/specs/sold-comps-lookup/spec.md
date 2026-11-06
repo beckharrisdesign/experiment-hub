@@ -157,12 +157,17 @@ what it found are kept so the item can show them without running again.
 
 **Fails until:** a second completed check within 24 hours is refused on the server with no lookup, and reopening an item shows its saved check, timestamp and sources with no model or provider call.
 
-The server SHALL allow one check per item per device per 24 hours and 100 per device across all items, SHALL refuse a sale saved by another device, and SHALL reserve the check in `esp_comps_checks` before any paid work; if it cannot confirm any of these it SHALL NOT run one. A check that couldn't run SHALL give its reservation back; a paid check that can't be saved SHALL keep its reservation and so its limit. Each completed check, "ok" or "too-few", SHALL be saved with its timestamp, what it was given (item, mark, note, set, price before), the search, models, listings source and pull time, found, checked and matched counts, reason, result, matched listings and those left out. The item screen SHALL show the saved check on opening with no lookup, and the button SHALL say when it comes back.
+The server SHALL allow one check per item per device per 24 hours and 100 per device across all items, except for a device listed in `TEST_DEVICE_HASHES`, which SHALL skip those two limits and nothing else; it SHALL refuse a sale saved by another device, and SHALL reserve the check in `esp_comps_checks` before any paid work; if it cannot confirm any of these it SHALL NOT run one. A check that couldn't run SHALL give its reservation back; a paid check that can't be saved SHALL keep its reservation and so its limit. Each completed check, "ok" or "too-few", SHALL be saved with its timestamp, what it was given (item, mark, note, set, price before), the search, models, listings source and pull time, found, checked and matched counts, reason, result, matched listings and those left out. The item screen SHALL show the saved check on opening with no lookup, and the button SHALL say when it comes back.
 
 #### Scenario: A second click within the day
 
 - **WHEN** a request arrives for an item whose last completed check was under 24 hours ago on this device
 - **THEN** no lookup runs, and the response carries the saved check and when the next is allowed
+
+#### Scenario: A listed test device
+
+- **WHEN** a device in `TEST_DEVICE_HASHES` checks an item it checked less than 24 hours ago
+- **THEN** the check runs and is reserved and saved as usual, its button stays enabled, and another device's sale is still refused
 
 #### Scenario: A paid check can't be saved
 
