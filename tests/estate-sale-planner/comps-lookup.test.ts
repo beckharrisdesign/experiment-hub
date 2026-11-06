@@ -305,8 +305,8 @@ describe("lookupComps — a check from the button", () => {
       band: out.band,
       rangeCents: out.rangeCents,
     });
-    // Newest sale first; `listings` keeps only a few, the detail keeps them all.
-    expect(out.detail!.matches.map((l) => l.url)).toEqual([4, 3, 2, 1].map((n) => `https://www.ebay.com/itm/${n}`));
+    // In the order the check ranked them; `listings` keeps only a few, the detail keeps them all.
+    expect(out.detail!.matches.map((l) => l.url)).toEqual([1, 2, 3, 4].map((n) => `https://www.ebay.com/itm/${n}`));
     expect(out.detail!.leftOut.map((l) => l.url)).toEqual(["https://www.ebay.com/itm/5"]);
   });
 
@@ -476,5 +476,92 @@ describe("lookupComps — broadening a search that finds too little", () => {
     await lookupComps({ item: skillet, fresh: true }, deps({ db, provider: fakeProvider(SOLD) }).d);
     const out = await lookupComps({ item: skillet, fresh: true }, deps({ db, provider: fakeProvider(SOLD.slice(0, 4)), writeQuery: vi.fn(async () => Promise.reject(new Error("down"))) }).d);
     expect(out).toMatchObject({ status: "ok", found: 4 });
+  });
+});
+
+describe("lookupComps — too few matches", () => {
+  const provider = (results: Record<string, SoldListing[]>) => {
+    const p = fakeProvider([]);
+    p.search = vi.fn(async (q: string) => results[q] ?? []);
+    return p;
+  };
+  const ladder = (query: string, broader: string[]) => vi.fn(async () => ({ query, broader, call: null }));
+  const sold = (title: string, n: number, dollars = 500): SoldListing => ({ title, priceCents: dollars * 100, soldAt: "2026-10-02T12:00:00Z", url: `https://www.ebay.com/itm/${n}`, image: `https://i.ebayimg.com/${n}.jpg` });
+  /** Keeps desks, in the order given, whatever the search. */
+  const keepDesks = () =>
+    vi.fn(async (_item: unknown, batch: SoldListing[]) => ({
+      matches: batch.map((l, i) => (/desk/i.test(l.title) ? i : -1)).filter((i) => i >= 0),
+      reason: "Kept the desks.",
+      call: { data: {}, provider: "openai" as const, model: "gpt-5", usage: { inputTokens: 900, outputTokens: 40 } },
+    }));
+  const item: LookupItem = { name: "Mid-century barrel top desk", band: "$250–$500", destination: "sell" };
+  const keys = Array.from({ length: 14 }, (_, i) => sold("Barrel key", i, 14));
+
+  it("tries the next search when plenty of listings aren't real matches", async () => {
+    const results = {
+      "barrel top desk": [...keys, sold("Barrel top desk", 100)],
+      "roll top desk": [sold("Roll top desk", 101), sold("Roll top desk", 102), sold("Lamp", 103)],
+    };
+    const p = provider(results);
+    const readComps = keepDesks();
+    const out = await lookupComps({ item, fresh: true }, deps({ provider: p, writeQuery: ladder("barrel top desk", ["roll top desk"]), readComps }).d);
+    expect(p.search.mock.calls.map((c) => c[0])).toEqual(["barrel top desk", "roll top desk"]);
+    expect(readComps).toHaveBeenCalledTimes(2);
+    expect(out).toMatchObject({ status: "ok", matched: 3 });
+    expect(out.detail!.matches.map((l) => l.url)).toEqual([100, 101, 102].map((n) => `https://www.ebay.com/itm/${n}`));
+    expect(out.detail!.tried).toEqual([{ query: "barrel top desk", found: 15 }, { query: "roll top desk", found: 3 }]);
+    expect(out.detail!.checked).toBe(18);
+  });
+
+  it("doesn't pay to read the same listing twice, or count it twice", async () => {
+    const shared = sold("Barrel top desk", 100);
+    const p = provider({ "barrel top desk": [...keys, shared], "roll top desk": [shared, sold("Roll top desk", 101)] });
+    const readComps = keepDesks();
+    const out = await lookupComps({ item, fresh: true }, deps({ provider: p, writeQuery: ladder("barrel top desk", ["roll top desk"]), readComps }).d);
+    expect(readComps.mock.calls[1][1].map((l: SoldListing) => l.url)).toEqual(["https://www.ebay.com/itm/101"]);
+    expect(out.matched).toBe(2);
+  });
+
+  it("doesn't search further once enough match", async () => {
+    const five = [1, 2, 3, 4, 5].map((n) => sold("Desk", n));
+    const p = provider({ "barrel top desk": five, "roll top desk": [sold("Desk", 6)] });
+    const out = await lookupComps({ item, fresh: true }, deps({ provider: p, writeQuery: ladder("barrel top desk", ["roll top desk"]), readComps: keepDesks() }).d);
+    expect(p.search).toHaveBeenCalledTimes(1);
+    expect(out.matched).toBe(5);
+  });
+
+  it("stops at three reads, whatever is left", async () => {
+    const lots = (start: number) => Array.from({ length: 50 }, (_, i) => sold("Barrel key", start + i, 14));
+    const p = provider({ "s a": lots(0), "s b": lots(100), "s c": lots(200) });
+    const readComps = keepDesks();
+    await lookupComps({ item, fresh: true }, deps({ provider: p, writeQuery: ladder("s a", ["s b", "s c"]), readComps }).d);
+    expect(readComps).toHaveBeenCalledTimes(3);
+    expect(p.search).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps what it has when a later search or read fails", async () => {
+    const p = provider({ "barrel top desk": [...keys, sold("Barrel top desk", 100)] });
+    p.search = vi.fn(async (q: string) => {
+      if (q === "roll top desk") throw new ProviderError("error", "down");
+      return [...keys, sold("Barrel top desk", 100)];
+    });
+    const failedSearch = await lookupComps({ item, fresh: true }, deps({ provider: p, writeQuery: ladder("barrel top desk", ["roll top desk"]), readComps: keepDesks() }).d);
+    expect(failedSearch).toMatchObject({ status: "too-few", matched: 1 });
+
+    const q = provider({ "barrel top desk": [...keys, sold("Barrel top desk", 100)], "roll top desk": [sold("Roll top desk", 101)] });
+    const first = keepDesks();
+    const flaky = vi.fn(async (a: LookupItem, b: SoldListing[]) => {
+      if (flaky.mock.calls.length > 1) throw new Error("down");
+      return first(a, b);
+    });
+    const failedRead = await lookupComps({ item, fresh: true }, deps({ provider: q, writeQuery: ladder("barrel top desk", ["roll top desk"]), readComps: flaky as unknown as LookupDeps["readComps"] }).d);
+    expect(failedRead).toMatchObject({ status: "too-few", matched: 1 });
+  });
+
+  it("remembers the search that matched the most", async () => {
+    const db = fakeDb();
+    const p = provider({ "barrel top desk": keys, "roll top desk": [sold("Roll top desk", 101), sold("Roll top desk", 102)] });
+    await lookupComps({ item, fresh: true }, deps({ db, provider: p, writeQuery: ladder("barrel top desk", ["roll top desk"]), readComps: keepDesks() }).d);
+    expect(db.reads[0]).toMatchObject({ query: "roll top desk", matches: [0, 1] });
   });
 });

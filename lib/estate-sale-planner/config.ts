@@ -104,8 +104,8 @@ export const COMPS = {
   enoughListings: 5,
   /** Most provider calls one check can make, about 0.5¢ (D24). The provider allows 10 a minute. */
   maxSearches: 3,
-  /** Batches of `maxListings` one check can read; the second only when the first finds too few (D24). */
-  maxReads: 2,
+  /** Paid reads of `maxListings` one check can make, each only when the last found too few (D24, D25): about 4¢ at worst. */
+  maxReads: 3,
   /** Listings sent to each comps pass; the provider returns up to 240 a page. */
   maxListings: 25,
   /** Kept listings the item links to. */

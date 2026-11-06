@@ -49,7 +49,7 @@ export function applyReread(s: Session, itemId: string, r: RefineResponse): Sess
     ...s,
     items: s.items.map((i) => {
       if (i.id !== itemId) return i;
-      const familyBand = i.bandSource === "family";
+      const familyBand = i.bandSource === "family" || i.bandSource === "picked";
       // Sold prices for the same subject outrank a fresh guess; a new subject gets its own lookup.
       const compsBand = i.bandSource === "comps" && i.comps?.status === "ok" && i.comps.key === compsKey({ name: r.name, markReading: r.markReading, lot: i.lot });
       return clearFailed({
@@ -184,10 +184,12 @@ export function applyMessage(s: Session, itemId: string, text: string, r: Refine
     ...s,
     items: s.items.map((i) => {
       if (i.id !== itemId) return i;
-      const after: MessageFields = { name: r.name, band: r.band, reason: r.reason };
+      // A sale the family picked outranks a fresh estimate.
+      const picked = i.bandSource === "picked";
+      const after: MessageFields = { name: r.name, band: picked ? i.band : r.band, reason: r.reason };
       const message: ItemMessage = { text: text.trim(), at: now.toISOString(), before: fields(i), after };
       const note = [i.note?.trim(), text.trim()].filter(Boolean).join("\n");
-      return clearFailed({ ...i, ...after, confidence: r.confidence, markReading: r.markReading, bandSource: "guess" as const, note, messages: [...(i.messages ?? []), message] });
+      return clearFailed({ ...i, ...after, confidence: r.confidence, markReading: r.markReading, bandSource: picked ? ("picked" as const) : ("guess" as const), note, messages: [...(i.messages ?? []), message] });
     }),
   };
 }

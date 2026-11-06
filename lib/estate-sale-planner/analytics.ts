@@ -33,6 +33,8 @@ export type FunnelEvent =
   | "esp_lookup_threshold_set"
   // sold-comps PR 2: what each lookup came back as (ok, too-few, not-configured, quota, error)
   | "esp_comps_result"
+  // sold-comps D25: someone picked or un-picked a sale as the most likely match
+  | "esp_match_picked"
   // esp-server-sales: how many sales the first open of the server version sent up
   | "esp_server_first_upload";
 

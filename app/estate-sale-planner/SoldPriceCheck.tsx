@@ -12,30 +12,36 @@ const PROVIDER_LABEL: Record<string, string> = { compsapi: "CompsAPI (eBay sold)
 
 interface SoldPriceCheckProps {
   check: CompsCheck;
-  /** The family set this item's price, so the check didn't change it. */
-  familyBand: boolean;
 }
 
 /**
- * The saved sold-price check (sold-comps design D23, Figma round 18): when it ran, what it was
- * given, what it did, what came back, and its sources. Read from the database, so opening an
- * item costs nothing. A check names the item as it was then, which may differ from today's name.
+ * The saved sold-price check (sold-comps design D23, D25, Figma round 20): when it ran, and on
+ * request what it was given, what it did, what came back and its sources. Read from the database,
+ * so opening an item costs nothing. A check names the item as it was then, which may differ from
+ * today's name. It never set a price, so it doesn't report one.
  */
-export default function SoldPriceCheck({ check, familyBand }: SoldPriceCheckProps) {
+export default function SoldPriceCheck({ check }: SoldPriceCheckProps) {
+  const [open, setOpen] = useState(false);
   const [allMatches, setAllMatches] = useState(false);
   const [showLeftOut, setShowLeftOut] = useState(false);
   const { given } = check;
   const shown = allMatches ? check.matches : check.matches.slice(0, COMPS.citeListings);
   const hidden = check.matches.length - shown.length;
-  const priceResult = familyBand ? "Not changed: set by you" : check.status === "ok" && check.band ? check.band : "Not changed";
 
   return (
     <section aria-label="Sold-price check" className="space-y-4 rounded-lg border border-border p-4">
-      <div>
-        <h2 className="text-small font-normal text-foreground">Sold-price check</h2>
-        <p className="text-small text-muted-foreground">Checked {formatStamp(check.at)}</p>
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="text-small font-normal text-foreground">Sold-price check</h2>
+          <p className="text-small text-muted-foreground">Checked {formatStamp(check.at)}</p>
+        </div>
+        <Button className="shrink-0" variant="secondary" size="sm" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+          {open ? "Hide details" : "Show details"}
+        </Button>
       </div>
 
+      {open && (
+        <>
       <Rows
         title="What it was given"
         rows={[
@@ -68,7 +74,6 @@ export default function SoldPriceCheck({ check, familyBand }: SoldPriceCheckProp
           ["Matched", `${check.matched} of ${check.checked}`],
           ...(check.reason ? ([["Reason", check.reason]] as Array<[string, string]>) : []),
           ...(check.rangeCents ? ([["Middle price range", formatRange(check.rangeCents)]] as Array<[string, string]>) : []),
-          ["Price set to", priceResult],
         ]}
       />
 
@@ -96,6 +101,8 @@ export default function SoldPriceCheck({ check, familyBand }: SoldPriceCheckProp
           </ButtonGroup>
         )}
       </div>
+        </>
+      )}
     </section>
   );
 }
