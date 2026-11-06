@@ -124,7 +124,7 @@ continuously across them:
 | Libraries / version | FigJam page-per-iteration conventions per `rules/figma.mdc` | `MVDS Core` (team default library, `source: team`, confirmed 2026-10-27). Instances of `Button`, `Badge`, `Field`, with fills bound to `Tokens` (`background`, `foreground`, `muted`, `muted-foreground`, `border`, `card`, `primary`), spacing bound to `Scales`, and type from `Type/*` styles. The `Tokens` collection is pinned to **Dark** on every frame, matching the hub. Code: `@beckharrisdesign/mvds@0.5.0`. **Local stand-ins on page `00 Components` (node `0:1`):** `Breadcrumb header` (`10:2`, D11) on the frames of pages 06–17. `Segmented toggle · destination` (`20:23`, D16), the second MVDS hand-off candidate. **Local variable collection `ESP brand`** (D20): `brand/primary`, `primary-foreground`, `background`, `card`, `muted`, `border` and `ring` override the matching MVDS `Color/*` tokens on pages 15–17. Mode `Dark · #FF6A1A (round 15)` is used on 15–16 and `Dark · #F0905D (round 17)` on 17. `TopBar` (`3:25`) is today's header, on the as-is frames and on page 05. `TabBar` (`3:30`). The header and tab bar are MVDS hand-off #39, not in the library. `Subject box` component set (`3:54`, variants Selected / Faint / Editing / Picked), the box-editor hand-off below. `Photo stand-in · living room` (`3:55`), grey blocks in place of a real walkthrough photo; reference only, not product imagery. The `Value band` field is drawn as `Field` (text input) where code uses `Select`, since MVDS Core has no Select in the library yet |
 | Code Connect | N/A: no code surface | Not set up (elk / build precedent); implementation maps to MVDS components in code |
 | Breakpoints | N/A: FigJam canvas, not a responsive screen | S · 480px mobile / L · 1024px desktop (BHD Content Types), per `rules/design-guidelines.mdc` |
-| Status | Rounds 02–04 done; 04 is current | Rounds 05–17 drawn 2026-10-27, round 18 (page `18 Proposed — check sold prices`, `42:368`; D23) drawn and approved 2026-11-06; **18 is current** |
+| Status | Rounds 02–04 done; 04 is current | Rounds 05–17 drawn 2026-10-27, round 18 (page `18 Proposed — check sold prices`, `42:368`; D23) drawn and approved 2026-11-06; **18 is current**. D24 adds one text row to the saved check, "Searches tried", with no new round |
 
 **MVDS hand-off:** MVDS has no crop or box-editing component. The editor is a composition
 on MVDS tokens:
@@ -592,7 +592,8 @@ What changed:
   - **Same subject, same saved sales:** reuse both. There's no model or provider call, and
     the lookup row is a zero-cost cache hit.
   - **Sales refetched after 90 days:** keep the search and read only the new sales.
-  - **A failed read** saves nothing. **No sales at all** still saves the search.
+  - **A failed read** saves nothing. **No sales at all** still saves the search. *(Reversed by
+    D24: a search that found nothing is no longer saved.)*
 - **The search prompt** asks for 3 to 6 words: maker, the mark's own number, and the object.
   It leaves out colour and country. It stays on nano.
 - **The comps pass runs on gpt-5** (`TEXT_MODELS.openai.read`, override
@@ -670,10 +671,56 @@ only, per item.
 - **A blank band line now means one thing:** eligible, with no result for this subject. Every other
   case says why (D15 note).
 
+**A test exemption** (2026-11-06). Katy: *"undo the once a day check just for me and my own
+testing"*. `TEST_DEVICE_HASHES` in `config.ts` skips the per-item limit and the device cap for her
+device; each click still spends, and is still reserved and saved. To be removed once the search is
+settled.
+
 **Limits, honestly:** tied to the device cookie until sign-in (#50), so clearing cookies gets a new
 device, and only the address and instance throttles bound that. Two requests in the same instant
 could both pass; the phone's in-flight guard covers a double tap. Items looked up before this keep their "Based on N sold" line and listings, with no
 panel until they're checked again.
+
+### D24. Finding sales for things without a famous maker
+
+*(2026-11-06.)* Katy: *"this is a pretty common item I'm testing and its coming back empty. lets refine
+how we're querying. Do we have an agent that just makes sure what we're querying is well formed?"*
+We didn't. But her search was well formed: `Danish teak tambour roll-top secretary` was just too
+narrow, and it was stuck, because an empty search was saved and reused. Probes on the real provider:
+
+| Search | Window | Listings | What came back |
+| --- | --- | --- | --- |
+| `Danish teak tambour roll-top secretary` | 90 days | 0 | nothing |
+| `teak roll top desk` | 90 days | 21 | mostly desktop organizers, one $900 desk |
+| `teak roll top desk` | 1 year | 50 | adds desks at $585 and $600 |
+
+What changed:
+
+- **Look back a year** (`COMPS.lookbackDays`), not 90 days. Some prices are up to a year old.
+- **A rule-based check, not another AI step** (`cleanQuery`). It takes out words for what isn't known
+  ("Unknown Maker"), hyphens and filler, and caps the length. It's free and it can't drift.
+- **The search step returns broader searches too,** in the same model call. A search under
+  `COMPS.enoughListings` listings moves to the next, up to `COMPS.maxSearches`, and the one that
+  found the most is used. One-word searches are skipped: "desk" finds plenty and none of it is the
+  object. The screen shows every search tried.
+- **A search that found nothing isn't remembered.** A remembered search that no longer finds enough
+  is cleaned, tried once, then replaced.
+- **A second read, only when needed.** Listings come newest first, and 25 organizers crowded the real
+  desks out of the batch. If the first batch keeps too few, the next 25 are read too.
+- **No known maker means comparable pieces.** "The same maker and model" had nothing to compare to.
+  The read now keeps the same kind of object in the same material, era and size, whoever made it.
+  This is the riskiest change: comparable is looser than identical. On real data it kept the three
+  desks and dropped the organizers, and `comps-stability.live.test.ts` still passes on Lodge.
+- **A burst isn't a spent plan.** A 429 for `rate_limited` is now an ordinary failure, since the provider
+  allows only 10 searches a minute and broadening makes more of them.
+
+Result on the real services (`comps-search.live.test.ts`, about 6¢): the desk went from nothing to
+$593–$750 on 3 sales. Lodge stayed $50–$100. A butcher block table still found too few, 1–2 real
+sales, and says so: some things are just thin on eBay. A check still costs about 1.2¢ at best, and about
+3¢ at worst when it broadens and reads twice.
+
+The search step stays on nano and still varies a little between runs: 5 of 5 kept "teak" and "butcher
+block", but the wording moved. The first search that finds enough is remembered, which settles it.
 
 ## Risks / Trade-offs
 

@@ -760,11 +760,12 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
             itemId,
           }),
         });
-        const json = (await res.json()) as (CompsSummary & { success: true; check?: CompsCheck | null; nextCheckAt?: string; saved?: boolean }) | { error: string };
+        const json = (await res.json()) as (CompsSummary & { success: true; check?: CompsCheck | null; nextCheckAt?: string | null; saved?: boolean }) | { error: string };
         if (res.ok && "success" in json) {
           const { success: _success, check, nextCheckAt, saved: _saved, ...rest } = json;
           summary = rest;
-          if (nextCheckAt) {
+          // Null, not missing, is a device with no limit: it still has a check to show.
+          if (nextCheckAt !== undefined) {
             checksLoaded.current.add(at);
             setCompsChecks((all) => ({ ...all, [at]: { check: check ?? all[at]?.check ?? null, nextCheckAt } }));
           }

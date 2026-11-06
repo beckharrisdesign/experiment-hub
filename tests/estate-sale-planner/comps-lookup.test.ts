@@ -267,10 +267,10 @@ describe("lookupComps — the same item gets the same answer (design D22)", () =
     expect(db.reads.map((r) => r.subject)).toEqual(["lodge no 8 skillet||1", "lodge no 8 skillet|lodge 8 sk|1"]);
   });
 
-  it("remembers the search even when nothing sold, and remembers nothing when the read fails", async () => {
+  it("doesn't remember a search that found nothing, or anything when the read fails", async () => {
     const none = fakeDb();
     await lookupComps({ item: skillet }, deps({ db: none, provider: fakeProvider([]) }).d);
-    expect(none.reads[0]).toMatchObject({ query: "Lodge No. 8 skillet", matches: [] });
+    expect(none.reads).toEqual([]);
     const failed = fakeDb();
     await lookupComps({ item: skillet }, deps({ db: failed, readComps: vi.fn(async () => Promise.reject(new Error("down"))) }).d);
     expect(failed.reads).toEqual([]);
@@ -326,5 +326,155 @@ describe("lookupComps — a check from the button", () => {
     const failed = await lookupComps({ item: skillet, fresh: true }, deps({ provider: fakeProvider(new ProviderError("quota", "spent")) }).d);
     expect(failed.status).toBe("quota");
     expect(failed.detail).toBeUndefined();
+  });
+});
+
+describe("lookupComps — reading a second batch", () => {
+  const many = (n: number) => Array.from({ length: n }, (_, i) => listing(i % 2 ? 500 : 20, i));
+  const keepOver = (cents: number, reason = "Kept the desks.") =>
+    vi.fn(async (_item: unknown, listings: SoldListing[]) => ({
+      matches: listings.map((l, i) => (l.priceCents >= cents ? i : -1)).filter((i) => i >= 0),
+      reason,
+      call: { data: {}, provider: "openai" as const, model: "gpt-5", usage: { inputTokens: 900, outputTokens: 40 } },
+    }));
+
+  it("doesn't pay for it when the first batch finds enough", async () => {
+    const readComps = keepOver(100_00);
+    const out = await lookupComps({ item: skillet, fresh: true }, deps({ provider: fakeProvider(many(50)), readComps }).d);
+    expect(readComps).toHaveBeenCalledTimes(1);
+    expect(out.detail).toMatchObject({ checked: 25, matched: 12 });
+  });
+
+  it("reads the next listings when the first batch comes up short, and keeps both batches' matches", async () => {
+    const listings = many(50).map((l, i) => ({ ...l, priceCents: i === 2 || i === 30 || i === 40 ? 60_000 : 2_000 }));
+    const readComps = keepOver(100_00);
+    const { d, rows } = deps({ provider: fakeProvider(listings), readComps });
+    const out = await lookupComps({ item: skillet, fresh: true }, d);
+    expect(readComps).toHaveBeenCalledTimes(2);
+    expect(readComps.mock.calls[1][1]).toEqual(listings.slice(25, 50));
+    expect(out).toMatchObject({ status: "ok", matched: 3 });
+    expect(out.detail).toMatchObject({ checked: 50, matched: 3 });
+    expect(out.detail!.leftOut).toHaveLength(47);
+    expect(rows.filter((r) => r.kind === "comps")).toHaveLength(2);
+  });
+
+  it("remembers matches against the whole list, so a repeat gets the same answer", async () => {
+    const listings = many(50).map((l, i) => ({ ...l, priceCents: i === 2 || i === 30 || i === 40 ? 60_000 : 2_000 }));
+    const db = fakeDb();
+    await lookupComps({ item: skillet }, deps({ db, provider: fakeProvider(listings), readComps: keepOver(100_00) }).d);
+    expect(db.reads[0].matches).toEqual([2, 30, 40]);
+    const again = deps({ db, provider: fakeProvider(listings) });
+    const out = await lookupComps({ item: skillet }, again.d);
+    expect(again.d.readComps).not.toHaveBeenCalled();
+    expect(out).toMatchObject({ status: "ok", matched: 3 });
+  });
+
+  it("stops at what's there, and keeps the first batch if the second fails", async () => {
+    const short = keepOver(100_000);
+    await lookupComps({ item: skillet, fresh: true }, deps({ provider: fakeProvider(many(25)), readComps: short }).d);
+    expect(short).toHaveBeenCalledTimes(1);
+
+    const first = keepOver(100_00);
+    const flaky = vi.fn(async (item: LookupItem, batch: SoldListing[]) => {
+      if (flaky.mock.calls.length > 1) throw new Error("down");
+      return first(item, batch);
+    });
+    const listings = many(50).map((l, i) => ({ ...l, priceCents: i < 2 ? 60_000 : 2_000 }));
+    const { d, rows } = deps({ provider: fakeProvider(listings), readComps: flaky as unknown as LookupDeps["readComps"] });
+    const out = await lookupComps({ item: skillet, fresh: true }, d);
+    expect(out).toMatchObject({ status: "too-few", matched: 2, detail: { checked: 25 } });
+    expect(rows.some((r) => r.kind === "comps" && r.ok === false)).toBe(true);
+  });
+});
+
+describe("lookupComps — broadening a search that finds too little", () => {
+  /** A provider that answers by search, and an empty result for anything else. */
+  const byQuery = (results: Record<string, SoldListing[] | Error>) => {
+    const provider = fakeProvider([]);
+    provider.search = vi.fn(async (q: string) => {
+      const r = results[q] ?? [];
+      if (r instanceof Error) throw r;
+      return r;
+    });
+    return provider;
+  };
+  const ladder = (query: string, broader: string[]) =>
+    vi.fn(async () => ({ query, broader, call: { data: {}, provider: "openai" as const, model: "gpt-5-nano", usage: { inputTokens: 120, outputTokens: 20 } } }));
+  const desk: LookupItem = { name: "Danish teak tambour secretary", band: "$250–$500", destination: "sell" };
+
+  it("stops at the first search with enough listings", async () => {
+    const provider = byQuery({ "teak tambour secretary": [SOLD[0]], "teak roll top desk": SOLD, "roll top desk": SOLD });
+    const { d, rows } = deps({ provider, writeQuery: ladder("teak tambour secretary", ["teak roll top desk", "roll top desk"]) });
+    const out = await lookupComps({ item: desk, fresh: true }, d);
+    expect(provider.search.mock.calls.map((c) => c[0])).toEqual(["teak tambour secretary", "teak roll top desk"]);
+    expect(out).toMatchObject({ status: "ok", query: "teak roll top desk", found: 5 });
+    expect(out.detail).toMatchObject({ query: "teak roll top desk", queryModel: "gpt-5-nano", queryReused: false });
+    expect(out.detail!.tried).toEqual([{ query: "teak tambour secretary", found: 1 }, { query: "teak roll top desk", found: 5 }]);
+    expect(rows.filter((r) => r.kind === "lookup")).toHaveLength(2);
+    expect(rows.filter((r) => r.kind === "query")).toHaveLength(1);
+  });
+
+  it("makes at most three searches, and uses the one that found the most", async () => {
+    const provider = byQuery({ "q a": [SOLD[0]], "q b": SOLD.slice(0, 3), "q c": SOLD.slice(0, 2), "q d": SOLD });
+    const out = await lookupComps({ item: desk, fresh: true }, deps({ provider, writeQuery: ladder("q a", ["q b", "q c", "q d"]) }).d);
+    expect(provider.search).toHaveBeenCalledTimes(3);
+    expect(out).toMatchObject({ query: "q b", found: 3 });
+  });
+
+  it("doesn't pay twice for the same search", async () => {
+    const provider = byQuery({ "Teak desk": [SOLD[0]] });
+    await lookupComps({ item: desk, fresh: true }, deps({ provider, writeQuery: ladder("Teak desk", ["teak  DESK", "teak-desk"]) }).d);
+    expect(provider.search).toHaveBeenCalledTimes(1);
+  });
+
+  it("won't broaden down to a single word", async () => {
+    const provider = byQuery({ "teak desk": [SOLD[0]], desk: SOLD });
+    const out = await lookupComps({ item: desk, fresh: true }, deps({ provider, writeQuery: ladder("teak desk", ["desk"]) }).d);
+    expect(provider.search.mock.calls.map((c) => c[0])).toEqual(["teak desk"]);
+    expect(out.found).toBe(1);
+  });
+
+  it("gives up after a dead search with no broader one, as too few", async () => {
+    const provider = byQuery({});
+    const out = await lookupComps({ item: desk, fresh: true }, deps({ provider, writeQuery: ladder("nothing", []) }).d);
+    expect(provider.search).toHaveBeenCalledTimes(1);
+    expect(out).toMatchObject({ status: "too-few", found: 0, detail: { tried: [{ query: "nothing", found: 0 }] } });
+  });
+
+  it("writes a new search when a remembered one no longer finds enough", async () => {
+    const db = fakeDb([], [{ provider: "compsapi", subject: "danish teak tambour secretary||1", query: "Unknown Maker tambour desk", query_norm: "unknown maker tambour desk", comps_fetched_at: "2026-11-01T00:00:00Z", matches: [], reason: "No sold listings came back.", model: "gpt-5-nano" }]);
+    const provider = byQuery({ "teak roll top desk": SOLD });
+    const writeQuery = ladder("teak roll top desk", []);
+    const out = await lookupComps({ item: desk, fresh: true }, deps({ db, provider, writeQuery }).d);
+    // The dead search is cleaned before it's tried again, so the placeholder is never sent.
+    expect(provider.search.mock.calls.map((c) => c[0])).toEqual(["tambour desk", "teak roll top desk"]);
+    expect(writeQuery).toHaveBeenCalledTimes(1);
+    expect(out).toMatchObject({ status: "ok", query: "teak roll top desk", detail: { queryReused: false, queryModel: "gpt-5-nano" } });
+    expect(db.reads[0]).toMatchObject({ query: "teak roll top desk" });
+  });
+
+  it("keeps a remembered search that still finds enough, with no model call", async () => {
+    const db = fakeDb();
+    await lookupComps({ item: skillet, fresh: true }, deps({ db }).d);
+    const again = deps({ db });
+    const out = await lookupComps({ item: skillet, fresh: true }, again.d);
+    expect(again.d.writeQuery).not.toHaveBeenCalled();
+    expect(out.detail).toMatchObject({ queryReused: true, tried: [{ query: "Lodge No. 8 skillet", found: 5 }] });
+  });
+
+  it("uses what it has when a later search fails, and reports a failure with nothing to show", async () => {
+    const provider = byQuery({ "q a": SOLD.slice(0, 4), "q b": new ProviderError("error", "down") });
+    const out = await lookupComps({ item: desk, fresh: true }, deps({ provider, writeQuery: ladder("q a", ["q b"]) }).d);
+    expect(provider.search).toHaveBeenCalledTimes(2);
+    expect(out).toMatchObject({ status: "ok", query: "q a", found: 4 });
+    const failing = byQuery({ a: new ProviderError("quota", "spent") });
+    expect(await lookupComps({ item: desk, fresh: true }, deps({ provider: failing, writeQuery: ladder("a", ["b"]) }).d)).toMatchObject({ status: "quota" });
+  });
+
+  it("keeps what a remembered search found when writing a new one fails", async () => {
+    const db = fakeDb();
+    await lookupComps({ item: skillet, fresh: true }, deps({ db, provider: fakeProvider(SOLD) }).d);
+    const out = await lookupComps({ item: skillet, fresh: true }, deps({ db, provider: fakeProvider(SOLD.slice(0, 4)), writeQuery: vi.fn(async () => Promise.reject(new Error("down"))) }).d);
+    expect(out).toMatchObject({ status: "ok", found: 4 });
   });
 });

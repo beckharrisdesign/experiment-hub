@@ -23,7 +23,7 @@ const USER_AGENT = "bhd-labs-estate-sale-planner/1.0 (+https://beckharrisdesign.
 export function compsApiUrl(query: string): string {
   const params = new URLSearchParams({
     q: query.slice(0, 300),
-    days: "90",
+    days: String(COMPS.lookbackDays),
     // eBay US only: the default merges international sites, priced in converted dollars.
     site: "US",
     size: String(Math.max(10, COMPS.maxListings * 2)),
@@ -77,7 +77,8 @@ export function compsApiProvider(apiKey: string, fetchImpl: typeof fetch = fetch
       // Untrusted vendor JSON: read only the two fields the docs promise, and only as what they are.
       const fields = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
       const error = typeof fields.error === "string" ? fields.error.slice(0, 120) : undefined;
-      if (response.status === 429 || error === "quota_reached") {
+      // A 429 is the monthly plan or a burst past the per-minute rate; only the first won't clear itself.
+      if (error === "quota_reached" || (response.status === 429 && error !== "rate_limited")) {
         throw new ProviderError("quota", error ?? "429");
       }
       if (!response.ok || fields.ok === false) {

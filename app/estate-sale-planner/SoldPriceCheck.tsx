@@ -50,7 +50,10 @@ export default function SoldPriceCheck({ check, familyBand }: SoldPriceCheckProp
       <Rows
         title="What it did"
         rows={[
-          ["Search written", check.query],
+          ...(check.tried && check.tried.length > 1
+            ? ([["Searches tried", check.tried.map((t) => `${t.query} (${t.found} found)`).join("; ")]] as Array<[string, string]>)
+            : []),
+          ["Search used", check.query],
           ["Search model", check.queryModel ?? (check.queryReused ? "Reused from an earlier check" : "None")],
           ["Listings from", `${PROVIDER_LABEL[check.provider] ?? check.provider}, pulled ${formatStamp(check.listingsAt)}`],
           ["Listings found", String(check.found)],

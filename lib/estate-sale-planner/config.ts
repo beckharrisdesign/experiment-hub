@@ -98,13 +98,29 @@ export const COMPS = {
   maxChecksPerDevice: 100,
   /** Matching sold listings needed before they replace the model's band (review queue #64). */
   minMatches: 3,
-  /** Listings sent to the comps pass; the provider returns up to 240 a page. */
+  /** How far back to look for sold listings (D24). In 90 days a teak roll top desk had one real sale; in a year, three. */
+  lookbackDays: 365,
+  /** Fewer listings than this and a search is broadened (D24). */
+  enoughListings: 5,
+  /** Most provider calls one check can make, about 0.5¢ (D24). The provider allows 10 a minute. */
+  maxSearches: 3,
+  /** Batches of `maxListings` one check can read; the second only when the first finds too few (D24). */
+  maxReads: 2,
+  /** Listings sent to each comps pass; the provider returns up to 240 a page. */
   maxListings: 25,
   /** Kept listings the item links to. */
   citeListings: 3,
   /** The provider call gives up after this (design D5). */
   timeoutMs: 8_000,
 } as const;
+
+/**
+ * Devices exempt from the daily check limits, for testing (design D23). Each is the sha256 of an
+ * `esp-device` cookie, which can't be turned back into the cookie. Katy's, from 2026-11-06:
+ * clearing that browser's site data makes a new device, so this needs updating if she does. It
+ * spends real money on every click, so remove it once the search is settled.
+ */
+export const TEST_DEVICE_HASHES: readonly string[] = ["bb6b359135cd34655939fdc34400e282550a6fbc19e4d1673382844df4a11b46"];
 
 /**
  * Sold-listings providers (design D5, review queue #62). `COMPS_PROVIDER` picks one (default

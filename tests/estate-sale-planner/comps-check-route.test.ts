@@ -353,3 +353,50 @@ describe("GET: the saved check", () => {
     expect((await route.GET(get("saleId=esp_abc&itemId=no%20good"))).status).toBe(400);
   });
 });
+
+describe("a test device, exempt from the daily limits", () => {
+  beforeEach(async () => {
+    const hash = await hashDevice(DEVICE);
+    vi.resetModules();
+    vi.doMock("@/lib/estate-sale-planner/config", async (original) => ({
+      ...(await original<typeof import("@/lib/estate-sale-planner/config")>()),
+      TEST_DEVICE_HASHES: [hash],
+    }));
+    route = await import("@/app/estate-sale-planner/api/comps/route");
+  });
+  afterEach(() => vi.doUnmock("@/lib/estate-sale-planner/config"));
+
+  it("can check the same item again right away, and each check is still saved", async () => {
+    const first = await (await route.POST(post())).json();
+    const second = await (await route.POST(post())).json();
+    expect(first).toMatchObject({ status: "ok", saved: true, nextCheckAt: null });
+    expect(second).toMatchObject({ status: "ok", saved: true, nextCheckAt: null });
+    expect(lookup).toHaveBeenCalledTimes(2);
+    expect(db!.rows).toHaveLength(2);
+  });
+
+  it("isn't stopped by the per-device cap", async () => {
+    const hash = await hashDevice(DEVICE);
+    db = fakeDb(Array.from({ length: 100 }, (_, i) => ({ id: `old_${i}`, device_hash: hash, sale_id: "esp_abc", item_id: `esp_abc_${i}`, status: "ok", checked_at: new Date(NOW.getTime() - 60_000).toISOString(), detail: {} })));
+    expect((await (await route.POST(post({ ...body, itemId: "esp_abc_new" }))).json()).status).toBe("ok");
+  });
+
+  it("shows its saved check with no limit on the button", async () => {
+    await route.POST(post());
+    const json = await (await route.GET(get())).json();
+    expect(json).toMatchObject({ check: { at: NOW.toISOString() }, nextCheckAt: null });
+  });
+
+  it("changes nothing for any other device", async () => {
+    await route.POST(post(body, OTHER));
+    lookup.mockClear();
+    expect((await (await route.POST(post(body, OTHER))).json()).status).toBe("limited");
+    expect(lookup).not.toHaveBeenCalled();
+    expect((await (await route.GET(get(undefined, OTHER))).json()).nextCheckAt).toBe("2026-11-07T16:12:00.000Z");
+  });
+
+  it("still can't touch another device's sale", async () => {
+    db = fakeDb([], {}, [{ id: "esp_abc", device_hash: await hashDevice(OTHER) }]);
+    expect((await route.POST(post())).status).toBe(404);
+  });
+});

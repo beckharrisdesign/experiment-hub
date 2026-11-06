@@ -13,6 +13,8 @@ export type CompsStatus = "ok" | "too-few" | "gated" | "limited" | "not-configur
 /** Everything that went into a completed lookup, for the item screen (D23). The route saves it. */
 export interface LookupDetail {
   query: string;
+  /** Every search this check sent, in order, and how many each found. Absent on older saved checks. */
+  tried?: Array<{ query: string; found: number }>;
   /** The model that wrote the search; absent when it was reused or no model is configured. */
   queryModel?: string;
   queryReused: boolean;
