@@ -36,7 +36,7 @@ export default function PossibleMatches({ matches, pickedUrl, onPick }: Possible
         <h2 className="text-caption font-normal uppercase text-muted-foreground">Possible matches ({matches.length})</h2>
         {matches.length > 1 && (
           <span className="text-small text-muted-foreground" aria-hidden>
-            {position + 1} of {matches.length}
+            {Math.min(position, matches.length - 1) + 1} of {matches.length}
           </span>
         )}
       </div>
@@ -58,7 +58,13 @@ export default function PossibleMatches({ matches, pickedUrl, onPick }: Possible
   );
 }
 
-function MatchCard({ listing, picked, onPick }: { listing: SoldListing; picked: boolean; onPick: (listing: SoldListing) => void }) {
+interface MatchCardProps {
+  listing: SoldListing;
+  picked: boolean;
+  onPick: (listing: SoldListing) => void;
+}
+
+function MatchCard({ listing, picked, onPick }: MatchCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const soldOn = listing.soldAt ? new Date(listing.soldAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : null;
   return (

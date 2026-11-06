@@ -59,6 +59,18 @@ describe("PossibleMatches", () => {
     expect(screen.queryByText("1 of 1")).toBeNull();
   });
 
+  it("keeps the counter valid when a later check returns fewer matches", () => {
+    const five = [sale(1), sale(2), sale(3), sale(4), sale(5)];
+    const { rerender } = render(<PossibleMatches matches={five} onPick={() => {}} />);
+    const track = screen.getByRole("list");
+    // jsdom has no layout, so a card is 0 wide and a step is the 16 px gap.
+    track.scrollLeft = 64;
+    fireEvent.scroll(track);
+    expect(screen.getByText("5 of 5")).toBeInTheDocument();
+    rerender(<PossibleMatches matches={five.slice(0, 2)} onPick={() => {}} />);
+    expect(screen.getByText("2 of 2")).toBeInTheDocument();
+  });
+
   it("still works for a sale with no photo, or one whose photo fails to load", () => {
     render(<PossibleMatches matches={[sale(1, { image: undefined }), sale(2)]} onPick={() => {}} />);
     expect(within(cards()[0]).getByText("No photo")).toBeInTheDocument();
