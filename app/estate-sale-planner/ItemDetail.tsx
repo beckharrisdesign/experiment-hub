@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Badge, Button, Callout, Field, Grid, GridItem, Inline, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Stack, Textarea } from "@beckharrisdesign/mvds";
 import { bandLine, formatRange, type BandLine } from "../../lib/estate-sale-planner/comps/item";
 import { BANDS } from "../../lib/estate-sale-planner/flag";
+import type { LookupMinBand } from "../../lib/estate-sale-planner/profile";
 import { paths } from "../../lib/estate-sale-planner/routes";
 import type { ItemPatch, SessionItem } from "../../lib/estate-sale-planner/session";
 import ButtonGroup from "./ButtonGroup";
@@ -16,6 +17,8 @@ interface ItemDetailProps {
   refining: boolean;
   /** Its sold-price lookup is in flight. */
   checkingComps?: boolean;
+  /** The profile's sold-price threshold, for saying why an item wasn't looked up. */
+  lookupMinBand: LookupMinBand;
   onUpdate: (itemId: string, patch: ItemPatch) => void;
   onRemove: (itemId: string) => void;
   onRetryReread: (itemId: string) => void;
@@ -33,7 +36,7 @@ interface ItemDetailProps {
  *
  * Desktop: the name and price run full width, then the photo takes 5 of 12 columns.
  */
-export default function ItemDetail({ item, saleId, refining, checkingComps = false, onUpdate, onRemove, onRetryReread, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
+export default function ItemDetail({ item, saleId, refining, checkingComps = false, lookupMinBand, onUpdate, onRemove, onRetryReread, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
   const [confirmRemove, setConfirmRemove] = useState(false);
   const photoHref = paths.photo(saleId, item.id);
   const bandOptions: string[] = (BANDS as readonly string[]).includes(item.band) ? [...BANDS] : [item.band, ...BANDS];
@@ -71,7 +74,7 @@ export default function ItemDetail({ item, saleId, refining, checkingComps = fal
             {item.band}
           </p>
         </div>
-        <BandLineView line={bandLine(item, checkingComps)} />
+        <BandLineView line={bandLine(item, checkingComps, lookupMinBand)} />
       </Stack>
 
       <Grid cols={{ base: 1, lg: 12 }} gap={32}>
@@ -121,8 +124,8 @@ export default function ItemDetail({ item, saleId, refining, checkingComps = fal
 }
 
 /**
- * The line under the name and price (D15). Shown only while checking, when the band comes from
- * sold listings, or when the family set it; everything else shows nothing.
+ * The line under the name and price (D15, D23): checking, based on sold listings, set by the
+ * family, or why sold prices didn't set this price.
  */
 function BandLineView({ line }: { line: BandLine | null }) {
   if (!line) return null;
@@ -133,6 +136,7 @@ function BandLineView({ line }: { line: BandLine | null }) {
       </p>
     );
   }
+  if (line.kind === "why") return <p className="text-small text-muted-foreground">{line.text}</p>;
   const comps = line.comps;
   return (
     <div className="space-y-2">

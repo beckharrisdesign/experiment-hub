@@ -7,6 +7,8 @@
  * the comps set the band, so keying on the band would loop. The subject changing (a rename, a
  * re-read that renamed it, a message, a split or a lot) is what makes a new lookup due.
  */
+import { COMPS } from "../config";
+import { lookupChoiceLabel, resolveLookupMinBand } from "../profile";
 import type { Session, SessionItem } from "../session";
 import { subjectKey } from "./normalize";
 import { meetsLookupGate, type CompsSummary } from "./summary";
@@ -82,19 +84,49 @@ export function applyComps(s: Session, itemId: string, key: string, summary: Com
 export type BandLine =
   | { kind: "checking" }
   | { kind: "comps"; comps: ItemComps }
-  | { kind: "family"; comps?: ItemComps };
+  | { kind: "family"; comps?: ItemComps }
+  | { kind: "why"; text: string };
+
+const RETRY = "It'll try again when you reopen this item.";
 
 /**
- * The band line under the name and price (D15): only "Checking sold prices…", "Based on N
- * sold" and "Set by you". The model's estimate, too few matches, no key and failures show
- * nothing; their reasons are on the cost row.
+ * The band line under the name and price (D15, D23): "Checking sold prices…", "Based on N sold"
+ * or "Set by you", and otherwise why sold prices didn't set this price. It's blank only while a
+ * lookup is about to run: a new subject waiting out its settle time, or a re-read still landing.
  */
-export function bandLine(item: SessionItem, checking: boolean): BandLine | null {
+export function bandLine(item: SessionItem, checking: boolean, minBand: unknown): BandLine | null {
   const okComps = item.comps?.status === "ok" && item.comps.key === compsKey(item) ? item.comps : undefined;
   if (item.bandSource === "family") return { kind: "family", ...(okComps ? { comps: okComps } : {}) };
   if (checking) return { kind: "checking" };
   if (item.bandSource === "comps" && okComps) return { kind: "comps", comps: okComps };
-  return null;
+  const text = whyNoComps(item, minBand);
+  return text ? { kind: "why", text } : null;
+}
+
+/** Eligibility comes first: a past failure stops mattering once the item can't be looked up. */
+function whyNoComps(item: SessionItem, minBand: unknown): string | null {
+  if (item.destination !== "sell") return "Sold prices are only checked for items marked Sell.";
+  if (!meetsLookupGate(item, minBand)) {
+    return `Sold prices are only checked for items at ${lookupChoiceLabel(resolveLookupMinBand(minBand))}. You can change that in Account & profile.`;
+  }
+  if (item.rereadPending || item.comps?.key !== compsKey(item)) return null;
+  switch (item.comps.status) {
+    case "too-few":
+      return `${matchingSales(item.comps.matched ?? 0)} It takes ${COMPS.minMatches} to set the price.`;
+    case "error":
+      return `Couldn't check sold prices. ${RETRY}`;
+    case "quota":
+      return `Sold-price checks have hit their limit. ${RETRY}`;
+    case "not-configured":
+      return "Sold-price checks aren't set up here yet.";
+    default:
+      return null;
+  }
+}
+
+function matchingSales(n: number): string {
+  if (n === 0) return "Found no matching sales.";
+  return `Found ${n} matching ${n === 1 ? "sale" : "sales"}.`;
 }
 
 /** "$40–$85", or "$40" when the range is one price. */

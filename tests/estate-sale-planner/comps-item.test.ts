@@ -82,7 +82,7 @@ describe("a lookup landing", () => {
     const family = updateItem(sale([base]), base.id, { band: "$250–$500" }).items[0];
     const item = withComps(family);
     expect(item).toMatchObject({ band: "$250–$500", bandSource: "family", comps: { status: "ok" } });
-    expect(bandLine(item, false)).toMatchObject({ kind: "family", comps: { matched: 4 } });
+    expect(bandLine(item, false, "$100–$250")).toMatchObject({ kind: "family", comps: { matched: 4 } });
   });
 
   it("keeps the model's band aside, and gives it back when the item is renamed or the new subject has no sales", () => {
@@ -119,14 +119,59 @@ describe("a lookup landing", () => {
 });
 
 describe("the band line", () => {
-  it("shows only checking, based-on-sales and set-by-you", () => {
-    expect(bandLine(base, false)).toBeNull();
-    expect(bandLine(base, true)).toEqual({ kind: "checking" });
-    expect(bandLine(withComps(base), false)).toMatchObject({ kind: "comps", comps: { matched: 4 } });
-    expect(bandLine(withComps(base, { status: "not-configured" }), false)).toBeNull();
-    // Comps for an older name don't describe this one.
+  const MIN = "$100–$250";
+  const why = (text: string) => ({ kind: "why", text });
+  const RETRY = "It'll try again when you reopen this item.";
+
+  it("shows checking, based-on-sales and set-by-you", () => {
+    expect(bandLine(base, true, MIN)).toEqual({ kind: "checking" });
+    expect(bandLine(withComps(base), false, MIN)).toMatchObject({ kind: "comps", comps: { matched: 4 } });
+    expect(bandLine({ ...base, bandSource: "family" } as SessionItem, false, MIN)).toEqual({ kind: "family" });
+  });
+
+  it("stays blank only while a lookup is about to run", () => {
+    expect(bandLine(base, false, MIN)).toBeNull();
+    // Comps for an older name don't describe this one, and the new name's lookup is due.
     const looked = withComps(base);
-    expect(bandLine({ ...looked, name: "Something else" }, false)).toBeNull();
+    expect(bandLine(updateItem(sale([looked]), base.id, { name: "Something else" }).items[0], false, MIN)).toBeNull();
+    expect(bandLine({ ...withComps(base, { status: "error" }), rereadPending: true } as SessionItem, false, MIN)).toBeNull();
+  });
+
+  it("says when an item isn't eligible for a lookup", () => {
+    const sellOnly = why("Sold prices are only checked for items marked Sell.");
+    expect(bandLine({ ...base, destination: "donate" }, false, MIN)).toEqual(sellOnly);
+    expect(bandLine({ ...base, destination: "keep" }, false, MIN)).toEqual(sellOnly);
+    expect(bandLine({ ...base, destination: undefined } as SessionItem, false, MIN)).toEqual(sellOnly);
+    const cheap: SessionItem = { ...base, band: "$25–$50" };
+    expect(bandLine(cheap, false, MIN)).toEqual(why("Sold prices are only checked for items at $100+. You can change that in Account & profile."));
+    expect(bandLine(cheap, false, "$500–$2,000")).toEqual(why("Sold prices are only checked for items at $500+. You can change that in Account & profile."));
+    // Lowering the threshold makes the same item eligible, so its lookup is due.
+    expect(bandLine(cheap, false, "$25–$50")).toBeNull();
+  });
+
+  it("gives the count when too few sales matched", () => {
+    const tooFew = (matched?: number) => bandLine(withComps(base, { status: "too-few", matched }), false, MIN);
+    expect(tooFew(0)).toEqual(why("Found no matching sales. It takes 3 to set the price."));
+    expect(tooFew(undefined)).toEqual(why("Found no matching sales. It takes 3 to set the price."));
+    expect(tooFew(1)).toEqual(why("Found 1 matching sale. It takes 3 to set the price."));
+    expect(tooFew(2)).toEqual(why("Found 2 matching sales. It takes 3 to set the price."));
+  });
+
+  it("says when a lookup couldn't run", () => {
+    const after = (status: CompsSummary["status"]) => bandLine(withComps(base, { status }), false, MIN);
+    expect(after("error")).toEqual(why(`Couldn't check sold prices. ${RETRY}`));
+    expect(after("quota")).toEqual(why(`Sold-price checks have hit their limit. ${RETRY}`));
+    expect(after("not-configured")).toEqual(why("Sold-price checks aren't set up here yet."));
+  });
+
+  it("lets the current state win over a stale reason", () => {
+    const failed = withComps(base, { status: "error" });
+    expect(bandLine(failed, true, MIN)).toEqual({ kind: "checking" });
+    expect(bandLine({ ...failed, bandSource: "family" } as SessionItem, false, MIN)).toEqual({ kind: "family" });
+    // Sent to Donate after a failed lookup: the failure no longer matters.
+    expect(bandLine({ ...failed, destination: "donate" }, false, MIN)).toEqual(why("Sold prices are only checked for items marked Sell."));
+    // A price from sold listings still says so after the item moves to Donate.
+    expect(bandLine({ ...withComps(base), destination: "donate" }, false, MIN)).toMatchObject({ kind: "comps" });
   });
 
   it("formats a range in whole dollars", () => {

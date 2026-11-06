@@ -4,6 +4,7 @@ import { use, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Stack } from "@beckharrisdesign/mvds";
+import { loadProfile } from "../../../../../../../lib/estate-sale-planner/profile";
 import { paths } from "../../../../../../../lib/estate-sale-planner/routes";
 import ItemDetail from "../../../../../ItemDetail";
 import { useSaleStore } from "../../../../store";
@@ -44,6 +45,7 @@ export default function ItemPage({ params }: { params: Promise<{ id: string; ite
             saleId={id}
             refining={store.refining === item.id}
             checkingComps={store.checkingComps.includes(item.id)}
+            lookupMinBand={loadProfile().lookupMinBand}
             onUpdate={store.onUpdate}
             onRetryReread={store.onRetryReread}
             onMessage={store.onMessage}
