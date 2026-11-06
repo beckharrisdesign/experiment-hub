@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { applyComps, bandLine, checkAction, compsKey, formatRange, gateBand, isEligible, type ItemComps } from "@/lib/estate-sale-planner/comps/item";
+import { applyComps, bandLine, checkAction, compsKey, formatRange, gateBand, isEligible, possibleMatches, togglePick, type ItemComps } from "@/lib/estate-sale-planner/comps/item";
+import type { SoldListing } from "@/lib/estate-sale-planner/comps/provider";
 import type { CompsSummary } from "@/lib/estate-sale-planner/comps/summary";
-import { applyReread } from "@/lib/estate-sale-planner/correction";
+import { applyMessage, applyReread } from "@/lib/estate-sale-planner/correction";
 import { updateItem, type Session, type SessionItem } from "@/lib/estate-sale-planner/session";
 
 const base: SessionItem = {
@@ -27,6 +28,7 @@ const ok: CompsSummary = {
   band: "$50–$100",
   listings: [{ title: "Lodge 8", priceCents: 12000, soldAt: "2026-10-14T00:00:00Z", url: "https://www.ebay.com/itm/4" }],
 };
+const SALE: SoldListing = { title: "Teak roll top desk", priceCents: 90_000, soldAt: "2026-10-02T12:00:00Z", url: "https://www.ebay.com/itm/1", image: "https://i.ebayimg.com/1.jpg" };
 const withComps = (item: SessionItem, summary: CompsSummary = ok): SessionItem => applyComps(sale([item]), item.id, compsKey(item), summary).items[0];
 
 describe("who can be checked", () => {
@@ -34,11 +36,10 @@ describe("who can be checked", () => {
     expect(isEligible(base, undefined)).toBe(true);
     expect(isEligible({ ...base, destination: "keep" }, undefined)).toBe(false);
     expect(isEligible({ ...base, band: "$25–$50" }, undefined)).toBe(false);
-    // Sold prices can pull the band under the threshold; that mustn't end its checks.
-    const looked = withComps(base);
-    expect(looked.band).toBe("$50–$100");
-    expect(gateBand(looked)).toBe("$100–$250");
-    expect(isEligible(looked, undefined)).toBe(true);
+    // An item priced by text before D25 can sit under the threshold; that mustn't end its checks.
+    const old: SessionItem = { ...base, band: "$50–$100", bandSource: "comps", guessBand: "$100–$250" };
+    expect(gateBand(old)).toBe("$100–$250");
+    expect(isEligible(old, undefined)).toBe(true);
   });
 });
 
@@ -78,29 +79,34 @@ describe("the check button", () => {
 });
 
 describe("a lookup landing", () => {
-  it("sets the band from sales and marks where it came from", () => {
+  it("records what it found, and never changes the price", () => {
     const item = withComps(base);
-    expect(item).toMatchObject({ band: "$50–$100", bandSource: "comps", comps: { status: "ok", matched: 4, key: compsKey(base) } });
+    expect(item).toMatchObject({ band: "$100–$250", comps: { status: "ok", matched: 4, key: compsKey(base) } });
+    expect(item.bandSource).toBeUndefined();
   });
 
-  it("keeps a band the family set, with the comps for reference", () => {
+  it("keeps a band the family set", () => {
     const family = updateItem(sale([base]), base.id, { band: "$250–$500" }).items[0];
-    const item = withComps(family);
-    expect(item).toMatchObject({ band: "$250–$500", bandSource: "family", comps: { status: "ok" } });
-    expect(bandLine(item, false, "$100–$250")).toMatchObject({ kind: "family", comps: { matched: 4 } });
+    expect(withComps(family)).toMatchObject({ band: "$250–$500", bandSource: "family", comps: { status: "ok" } });
   });
 
-  it("keeps the model's band aside, and gives it back when the item is renamed or the new subject has no sales", () => {
-    const looked = withComps(base);
-    expect(looked).toMatchObject({ band: "$50–$100", guessBand: "$100–$250" });
-    // Renamed by hand: the old sales no longer apply, so the model's band shows until a new lookup lands.
-    const renamed = updateItem(sale([looked]), base.id, { name: "Griswold No. 8 skillet" }).items[0];
-    expect(renamed).toMatchObject({ band: "$100–$250", bandSource: "guess" });
-    // A comps band whose new subject finds too few sales goes back to the model's too.
-    const shifted = { ...looked, markReading: "LODGE 8" };
-    const after = applyComps(sale([shifted]), base.id, compsKey(shifted), { status: "too-few", found: 1, matched: 0 }).items[0];
+  it("keeps a sale the family picked", () => {
+    const picked = togglePick(sale([base]), base.id, SALE).items[0];
+    expect(withComps(picked)).toMatchObject({ band: "$500–$2,000", bandSource: "picked", picked: { listing: SALE } });
+  });
+
+  it("puts an item priced by text before this change back on its first estimate", () => {
+    const old: SessionItem = { ...base, band: "$50–$100", bandSource: "comps", guessBand: "$100–$250" };
+    const after = withComps(old);
     expect(after).toMatchObject({ band: "$100–$250", bandSource: "guess" });
     expect(after.guessBand).toBeUndefined();
+    const failed = applyComps(sale([old]), base.id, compsKey(old), { status: "error" }).items[0];
+    expect(failed).toMatchObject({ band: "$100–$250", bandSource: "guess" });
+  });
+
+  it("gives back the first estimate when an old text price is renamed", () => {
+    const old: SessionItem = { ...base, band: "$50–$100", bandSource: "comps", guessBand: "$100–$250" };
+    expect(updateItem(sale([old]), base.id, { name: "Griswold No. 8 skillet" }).items[0]).toMatchObject({ band: "$100–$250", bandSource: "guess" });
   });
 
   it("is dropped when the item became something else while it was in flight", () => {
@@ -108,18 +114,89 @@ describe("a lookup landing", () => {
     expect(applyComps(s, base.id, compsKey(base), ok)).toEqual(s);
   });
 
-  it("leaves the model's band with too few matches, and a gated answer changes nothing", () => {
-    expect(withComps(base, { status: "too-few", found: 2, matched: 1 })).toMatchObject({ band: "$100–$250", comps: { status: "too-few" } });
+  it("changes nothing when gated or limited", () => {
     const s = sale([base]);
     expect(applyComps(s, base.id, compsKey(base), { status: "gated" })).toBe(s);
+    expect(applyComps(s, base.id, compsKey(base), { status: "limited" })).toBe(s);
+  });
+});
+
+describe("picking a match", () => {
+  const pick = (item: SessionItem = base, listing = SALE) => togglePick(sale([item]), item.id, listing).items[0];
+
+  it("sets the price from that sale, and says so", () => {
+    const item = pick();
+    expect(item).toMatchObject({ band: "$500–$2,000", bandSource: "picked", picked: { listing: SALE, before: { band: "$100–$250" } } });
+    expect(bandLine(item, false, "$100–$250")).toEqual({ kind: "picked", priceCents: 90_000 });
   });
 
-  it("a re-read of the same thing keeps the sold-price band; a renamed one goes back to the model's", () => {
-    const looked = withComps(base);
-    const same = applyReread(sale([looked]), base.id, { name: base.name, band: "$250–$500", reason: "r", confidence: "high", markReading: null }).items[0];
-    expect(same).toMatchObject({ band: "$50–$100", bandSource: "comps" });
-    const renamed = applyReread(sale([looked]), base.id, { name: "Griswold No. 8", band: "$250–$500", reason: "r", confidence: "high", markReading: null }).items[0];
-    expect(renamed).toMatchObject({ band: "$250–$500", bandSource: "guess" });
+  it("works with a single sale: there's no three-sale minimum", () => {
+    const item = withComps(base, { status: "too-few", found: 1, matched: 1 });
+    expect(togglePick(sale([item]), item.id, SALE).items[0]).toMatchObject({ bandSource: "picked", band: "$500–$2,000" });
+  });
+
+  it("restores the price from before when tapped again", () => {
+    const item = togglePick(sale([pick()]), base.id, SALE).items[0];
+    expect(item).toMatchObject({ band: "$100–$250" });
+    expect(item.bandSource).toBeUndefined();
+    expect(item.picked).toBeUndefined();
+  });
+
+  it("replaces a price you typed in, and gives it back on undo", () => {
+    const family = updateItem(sale([base]), base.id, { band: "$250–$500" }).items[0];
+    const picked = pick(family);
+    expect(picked).toMatchObject({ band: "$500–$2,000", bandSource: "picked" });
+    expect(togglePick(sale([picked]), base.id, SALE).items[0]).toMatchObject({ band: "$250–$500", bandSource: "family" });
+  });
+
+  it("switching to another sale still undoes to the original price", () => {
+    const other = { ...SALE, url: "https://www.ebay.com/itm/2", priceCents: 30_000 };
+    const switched = pick(pick(), other);
+    expect(switched).toMatchObject({ band: "$250–$500", picked: { listing: other, before: { band: "$100–$250" } } });
+    expect(togglePick(sale([switched]), base.id, other).items[0]).toMatchObject({ band: "$100–$250" });
+  });
+
+  it("stays through a rename and a re-read, since you chose it", () => {
+    const picked = pick();
+    expect(updateItem(sale([picked]), base.id, { name: "Teak desk" }).items[0]).toMatchObject({ band: "$500–$2,000", bandSource: "picked" });
+    const reread = applyReread(sale([picked]), base.id, { name: "Teak desk", band: "$25–$50", reason: "r", confidence: "high", markReading: null }).items[0];
+    expect(reread).toMatchObject({ band: "$500–$2,000", bandSource: "picked", picked: { listing: SALE } });
+  });
+
+  it("stays through an adjust-by-message, whose estimate doesn't outrank it", () => {
+    const after = applyMessage(sale([pick()]), base.id, "It's walnut", { name: "Walnut desk", band: "$25–$50", reason: "r", confidence: "high", markReading: null }).items[0];
+    expect(after).toMatchObject({ name: "Walnut desk", band: "$500–$2,000", bandSource: "picked" });
+  });
+
+  it("gives way when you set the price by hand", () => {
+    const after = updateItem(sale([pick()]), base.id, { band: "$50–$100" }).items[0];
+    expect(after).toMatchObject({ band: "$50–$100", bandSource: "family" });
+    expect(after.picked).toBeUndefined();
+  });
+
+  it("doesn't change who can be checked", () => {
+    const low = pick(base, { ...SALE, priceCents: 2_000 });
+    expect(low.band).toBe("$10–$25");
+    expect(gateBand(low)).toBe("$100–$250");
+    expect(isEligible(low, undefined)).toBe(true);
+  });
+});
+
+describe("which matches to show", () => {
+  const sales = (n: number) => Array.from({ length: n }, (_, i) => ({ ...SALE, url: `https://www.ebay.com/itm/${i}` }));
+
+  it("shows the first five, in the order the check ranked them", () => {
+    expect(possibleMatches(sales(7), null).map((l) => l.url)).toEqual([0, 1, 2, 3, 4].map((i) => `https://www.ebay.com/itm/${i}`));
+  });
+
+  it("keeps a picked sale on show, even when a later check didn't find it", () => {
+    const gone = { ...SALE, url: "https://www.ebay.com/itm/gone" };
+    const shown = possibleMatches(sales(7), gone);
+    expect(shown).toHaveLength(5);
+    expect(shown[0]).toEqual(gone);
+    expect(possibleMatches([], gone)).toEqual([gone]);
+    // Already among the five: no duplicate, and its place stays.
+    expect(possibleMatches(sales(3), sales(3)[1]).map((l) => l.url)).toEqual(sales(3).map((l) => l.url));
   });
 });
 
@@ -128,10 +205,23 @@ describe("the band line", () => {
   const why = (text: string) => ({ kind: "why", text });
   const NOT_USED = "This didn't use today's check.";
 
-  it("shows checking, based-on-sales and set-by-you", () => {
+  it("shows checking and set-by-you, and an old text price says where it came from", () => {
     expect(bandLine(base, true, MIN)).toEqual({ kind: "checking" });
-    expect(bandLine(withComps(base), false, MIN)).toMatchObject({ kind: "comps", comps: { matched: 4 } });
     expect(bandLine({ ...base, bandSource: "family" } as SessionItem, false, MIN)).toEqual({ kind: "family" });
+    const key = compsKey(base);
+    const old = { ...base, bandSource: "comps", comps: { status: "ok", matched: 4, key, at: "2026-11-05T00:00:00Z" } } as SessionItem;
+    expect(bandLine(old, false, MIN)).toMatchObject({ kind: "comps", comps: { matched: 4 } });
+  });
+
+  it("offers matches without pricing them", () => {
+    const after = (status: "ok" | "too-few", matched?: number) => bandLine(withComps(base, { status, matched }), false, MIN);
+    expect(after("ok", 5)).toEqual(why("5 possible matches. Not priced until you pick one."));
+    expect(after("ok", 9)).toEqual(why("5 possible matches. Not priced until you pick one."));
+    expect(after("too-few", 2)).toEqual(why("2 possible matches. Not priced until you pick one."));
+    expect(after("too-few", 1)).toEqual(why("1 possible match. Not priced until you pick it."));
+    const none = why("No possible matches found. The price is still the first estimate.");
+    expect(after("too-few", 0)).toEqual(none);
+    expect(after("too-few", undefined)).toEqual(none);
   });
 
   it("stays blank when there's nothing to report: the button says the rest", () => {
@@ -154,14 +244,6 @@ describe("the band line", () => {
     expect(bandLine(cheap, false, "$25–$50")).toBeNull();
   });
 
-  it("gives the count when too few sales matched", () => {
-    const tooFew = (matched?: number) => bandLine(withComps(base, { status: "too-few", matched }), false, MIN);
-    expect(tooFew(0)).toEqual(why("Found no matching sales. It takes 3 to set the price."));
-    expect(tooFew(undefined)).toEqual(why("Found no matching sales. It takes 3 to set the price."));
-    expect(tooFew(1)).toEqual(why("Found 1 matching sale. It takes 3 to set the price."));
-    expect(tooFew(2)).toEqual(why("Found 2 matching sales. It takes 3 to set the price."));
-  });
-
   it("says when a lookup couldn't run", () => {
     const after = (status: CompsSummary["status"]) => bandLine(withComps(base, { status }), false, MIN);
     expect(after("error")).toEqual(why(`Couldn't check sold prices. ${NOT_USED}`));
@@ -175,8 +257,8 @@ describe("the band line", () => {
     expect(bandLine({ ...failed, bandSource: "family" } as SessionItem, false, MIN)).toEqual({ kind: "family" });
     // Sent to Donate after a failed lookup: the failure no longer matters.
     expect(bandLine({ ...failed, destination: "donate" }, false, MIN)).toEqual(why("Sold prices are only checked for items marked Sell."));
-    // A price from sold listings still says so after the item moves to Donate.
-    expect(bandLine({ ...withComps(base), destination: "donate" }, false, MIN)).toMatchObject({ kind: "comps" });
+    // A picked price still says so after the item moves to Donate.
+    expect(bandLine({ ...togglePick(sale([base]), base.id, SALE).items[0], destination: "donate" }, false, MIN)).toMatchObject({ kind: "picked" });
   });
 
   it("formats a range in whole dollars", () => {

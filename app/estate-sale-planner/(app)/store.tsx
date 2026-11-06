@@ -32,7 +32,8 @@ import { cloud, fetchServerSale, fetchServerSales, queueFirstUpload, type Server
 import { mergeHistory } from "../../../lib/estate-sale-planner/sale-summary";
 import { track } from "../../../lib/estate-sale-planner/analytics";
 import type { CompsCheck } from "../../../lib/estate-sale-planner/comps/check";
-import { applyComps, compsKey, gateBand, isEligible, lotCount } from "../../../lib/estate-sale-planner/comps/item";
+import { applyComps, compsKey, gateBand, isEligible, lotCount, togglePick } from "../../../lib/estate-sale-planner/comps/item";
+import type { SoldListing } from "../../../lib/estate-sale-planner/comps/provider";
 import type { CompsSummary } from "../../../lib/estate-sale-planner/comps/summary";
 import { loadProfile } from "../../../lib/estate-sale-planner/profile";
 
@@ -109,6 +110,8 @@ export interface SaleStore {
   onOpenItem: (saleId: string, itemId: string) => void;
   /** The item screen's button: one sold-price check. */
   onCheckComps: (saleId: string, itemId: string) => Promise<void>;
+  /** Pick a sale as the most likely match, which sets the price, or tap it again to undo (sold-comps D25). */
+  onPickMatch: (saleId: string, itemId: string, listing: SoldListing) => void;
 }
 
 /** The newest completed check, and when the limit lets the next one run. */
@@ -782,9 +785,17 @@ export function SaleProvider({ children }: { children: React.ReactNode }) {
     [applyTo],
   );
 
+  const onPickMatch = useCallback(
+    (saleId: string, itemId: string, listing: SoldListing) => {
+      track("esp_match_picked");
+      applyTo(saleId, (s) => togglePick(s, itemId, listing));
+    },
+    [applyTo],
+  );
+
   const value = useMemo<SaleStore>(
-    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, openFromServer, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale, checkingComps, compsChecks, onOpenItem, onCheckComps }),
-    [ready, session, history, fromFixture, notice, refining, open, openFromServer, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale, checkingComps, compsChecks, onOpenItem, onCheckComps],
+    () => ({ ready, session, history, fromFixture, notice, setNotice, refining, open, openFromServer, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale, checkingComps, compsChecks, onOpenItem, onCheckComps, onPickMatch }),
+    [ready, session, history, fromFixture, notice, refining, open, openFromServer, update, pending, startPass, retryPass, dismissPass, onDestination, onDetail, onReread, onUpdate, onRemove, onAdd, onUndo, onDetails, deleteSale, onRetryReread, onAdjust, onSplit, onAddFromPhoto, onMerge, onLot, onSplitLot, onMessage, onUndoMessage, onAddPhoto, createSale, checkingComps, compsChecks, onOpenItem, onCheckComps, onPickMatch],
   );
 
   return <SaleContext.Provider value={value}>{children}</SaleContext.Provider>;

@@ -218,6 +218,7 @@ describe("the prompts", () => {
 
   it("lets an object with no known maker match comparable pieces, but not different objects", () => {
     expect(READ_PROMPT).toMatch(/no known maker/i);
+    expect(READ_PROMPT).toMatch(/closest match first/i);
     // A reason read "Kept 3" when it kept one listing, numbered 3.
     expect(READ_PROMPT).toMatch(/never mention .*number/i);
     expect(READ_PROMPT).toMatch(/a No\. 8 skillet is not an 8-inch skillet/);

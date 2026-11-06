@@ -84,29 +84,54 @@ Lookups SHALL go through a provider adapter (CompsAPI first, selected by configu
 - **WHEN** the saved results for a query are older than the window
 - **THEN** the provider is called again and the new results replace the old ones
 
-### Requirement: The band comes from matching sales and cites them
+### Requirement: Matches are offered, and a person sets the price
 
-A short text-only pass keeps only the sold listings that are the same object and sets the band
-from them, and the item shows what it rests on.
+A short text-only pass keeps the sold listings that look like the same object, but it reads only
+their titles. So it offers them, and the family compares the photos and picks.
 
-**Fails until:** an item with at least the minimum number of matching sales shows a band derived from them, the count, and links to the listings kept; with fewer, it keeps the model's band and says how many matched.
+**Fails until:** a check leaves the price alone and offers up to five ranked matches with photos and links, picking one sets the price from that sale, and tapping it again restores the price.
 
-The comps pass SHALL send the item and its sold listings to a text-only call that returns which listings match, a band from the matching prices and a one-line reason; with at least the minimum number of matches (3 by default) the item SHALL show that band as "Based on N sold" with links to a few kept listings; with fewer, the model's band SHALL stay and the item SHALL say how many matched and how many it takes.
+The comps pass SHALL send the item and its sold listings to a text-only call that returns which listings match, closest first, and a one-line reason. A check SHALL NOT change the item's band. The item SHALL offer up to five kept listings, each with its photo, title, price, sold date and link. Picking one SHALL set the band from that sale's price and show that price; tapping it again SHALL restore the band from before. A pick SHALL survive a rename, a re-read and a message, and SHALL give way to a band the family sets by hand. Rejected listings SHALL NOT be offered.
 
-#### Scenario: Enough matching sales
+#### Scenario: Matches found
 
-- **WHEN** the comps pass keeps at least three matching listings
-- **THEN** the item's band is set from them and the item shows "Based on N sold" with links to some of them
+- **WHEN** a check keeps five listings
+- **THEN** the price doesn't change, five are offered, and the item shows "5 possible matches. Not priced until you pick one."
 
-#### Scenario: Too few matching sales
+#### Scenario: A single match
 
-- **WHEN** fewer than three listings match the item
-- **THEN** the item keeps the model's band and shows "Found N matching sales. It takes 3 to set the price."
+- **WHEN** a check keeps one listing
+- **THEN** it's offered, and picking it sets the price: there's no three-sale minimum
 
-#### Scenario: The family changes the band by hand
+#### Scenario: Nothing matches
 
-- **WHEN** the family sets a band on an item that has comps
-- **THEN** their band is shown and kept, and the comps stay visible for reference
+- **WHEN** a check keeps no listings
+- **THEN** no carousel shows, and the item says the price is still the first estimate
+
+#### Scenario: Picking a sale
+
+- **WHEN** the family picks a sale that sold for $900
+- **THEN** the band becomes `$500–$2,000` and the item shows "Based on the sale you picked · $900"
+
+#### Scenario: Undoing a pick
+
+- **WHEN** the family taps the picked sale again, even after switching between sales
+- **THEN** the band goes back to what it was before the first pick
+
+#### Scenario: A later check
+
+- **WHEN** an item with a picked sale is checked again
+- **THEN** the pick and its price stay, and the picked sale stays on show even if the new check didn't find it
+
+#### Scenario: An item priced by text before this rule
+
+- **WHEN** an item whose band was set automatically from sold listings is checked again
+- **THEN** its band goes back to the first estimate until a sale is picked
+
+#### Scenario: The family sets a band by hand
+
+- **WHEN** the family sets a band on an item with a picked sale
+- **THEN** their band is shown and the pick is cleared
 
 ### Requirement: Every model call and lookup records its cost
 
@@ -221,7 +246,7 @@ nothing should never get stuck.
 
 **Fails until:** an item whose first search finds too few listings tries broader ones, up to the limit, and an empty search is never reused.
 
-The lookup SHALL search a year of sold listings, SHALL take words for what isn't known out of every search before sending it with no model call, SHALL try broader searches when one finds fewer than 5 listings, up to 3 searches a check and never a single word, SHALL use the search that found the most, and SHALL NOT remember a search that found nothing. When the first 25 listings keep too few matches it SHALL read the next 25. For an object with no known maker, the comps pass SHALL keep comparable pieces of the same kind, material, era and size, and SHALL NOT keep a different kind of object.
+The lookup SHALL search a year of sold listings, SHALL read on while fewer than 3 listings match, up to 3 paid reads, and SHALL take words for what isn't known out of every search before sending it with no model call, SHALL try broader searches when one finds fewer than 5 listings, up to 3 searches a check and never a single word, SHALL use the search that found the most, and SHALL NOT remember a search that found nothing. When the first 25 listings keep too few matches it SHALL read the next 25, then broader searches, never reading a listing twice. For an object with no known maker, the comps pass SHALL keep comparable pieces of the same kind, material, era and size, and SHALL NOT keep a different kind of object.
 
 #### Scenario: The first search finds nothing
 
@@ -241,7 +266,7 @@ The lookup SHALL search a year of sold listings, SHALL take words for what isn't
 #### Scenario: Small look-alikes crowd the first batch
 
 - **WHEN** the first 25 listings are organizers and the real desks are further down
-- **THEN** the next 25 are read, and the matches from both set the price
+- **THEN** the next 25 are read, and the matches from both are offered
 
 #### Scenario: No known maker
 
@@ -253,7 +278,12 @@ The lookup SHALL search a year of sold listings, SHALL take words for what isn't
 - **WHEN** a Lodge No. 8 skillet is checked
 - **THEN** only Lodge No. 8 skillets are kept
 
+#### Scenario: Plenty of listings, few matches
+
+- **WHEN** a search finds 15 listings and one matches
+- **THEN** a broader search is read too, and matches from both are offered without repeats
+
 #### Scenario: Thin data
 
-- **WHEN** broadening still finds fewer than three matching sales
-- **THEN** the item keeps its price and says how many it found
+- **WHEN** broadening still finds few matching sales
+- **THEN** the item keeps its price and offers what it found

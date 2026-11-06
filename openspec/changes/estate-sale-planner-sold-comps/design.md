@@ -124,7 +124,7 @@ continuously across them:
 | Libraries / version | FigJam page-per-iteration conventions per `rules/figma.mdc` | `MVDS Core` (team default library, `source: team`, confirmed 2026-10-27). Instances of `Button`, `Badge`, `Field`, with fills bound to `Tokens` (`background`, `foreground`, `muted`, `muted-foreground`, `border`, `card`, `primary`), spacing bound to `Scales`, and type from `Type/*` styles. The `Tokens` collection is pinned to **Dark** on every frame, matching the hub. Code: `@beckharrisdesign/mvds@0.5.0`. **Local stand-ins on page `00 Components` (node `0:1`):** `Breadcrumb header` (`10:2`, D11) on the frames of pages 06–17. `Segmented toggle · destination` (`20:23`, D16), the second MVDS hand-off candidate. **Local variable collection `ESP brand`** (D20): `brand/primary`, `primary-foreground`, `background`, `card`, `muted`, `border` and `ring` override the matching MVDS `Color/*` tokens on pages 15–17. Mode `Dark · #FF6A1A (round 15)` is used on 15–16 and `Dark · #F0905D (round 17)` on 17. `TopBar` (`3:25`) is today's header, on the as-is frames and on page 05. `TabBar` (`3:30`). The header and tab bar are MVDS hand-off #39, not in the library. `Subject box` component set (`3:54`, variants Selected / Faint / Editing / Picked), the box-editor hand-off below. `Photo stand-in · living room` (`3:55`), grey blocks in place of a real walkthrough photo; reference only, not product imagery. The `Value band` field is drawn as `Field` (text input) where code uses `Select`, since MVDS Core has no Select in the library yet |
 | Code Connect | N/A: no code surface | Not set up (elk / build precedent); implementation maps to MVDS components in code |
 | Breakpoints | N/A: FigJam canvas, not a responsive screen | S · 480px mobile / L · 1024px desktop (BHD Content Types), per `rules/design-guidelines.mdc` |
-| Status | Rounds 02–04 done; 04 is current | Rounds 05–17 drawn 2026-10-27, round 18 (page `18 Proposed — check sold prices`, `42:368`; D23) drawn and approved 2026-11-06; **18 is current**. D24 adds one text row to the saved check, "Searches tried", with no new round |
+| Status | Rounds 02–04 done; 04 is current | Rounds 05–17 drawn 2026-10-27, round 18 (page `18 Proposed — check sold prices`, `42:368`; D23) drawn and approved 2026-11-06; D24 adds one text row to the saved check, "Searches tried", with no new round; round 19 (`47:237`, carousel, superseded) and round 20 (`50:154`, possible matches priced when picked; D25) drawn 2026-11-06, approved; **20 is current** |
 
 **MVDS hand-off:** MVDS has no crop or box-editing component. The editor is a composition
 on MVDS tokens:
@@ -721,6 +721,38 @@ sales, and says so: some things are just thin on eBay. A check still costs about
 
 The search step stays on nano and still varies a little between runs: 5 of 5 kept "teak" and "butcher
 block", but the wording moved. The first search that finds enough is remembered, which settles it.
+
+### D25. A check offers matches; a person sets the price
+
+*(2026-11-06, Figma round 20.)* A check on a full-size desk brought back hollow barrel keys and one
+real desk. Katy: *"what came back matched the text and not the image, and in estate sales that's not
+going to cut it"*. She'd asked for *"a carousel of the top five responses, with the option to select
+one as the most likely"*. Asked whether text matches should stop setting the price until she picks
+one: *"Yes, only when I pick"*.
+
+- **A check never changes the price.** The comps pass reads titles only, and neither photo reaches it.
+  Three title matches used to set the price on their own. That's over. An item priced that way keeps
+  its price until its next check, then goes back to the first estimate until a sale is picked.
+- **Up to five possible matches** in a carousel under the photo, so they can be compared. They aren't
+  called closest, because the order is a text judgment. Rejected listings never appear there.
+- **Picking one sets the price** from that sale, via `bandForDollars`, with the exact figure on the
+  line under it. Tapping it again restores the price from before; switching sales still undoes to the
+  original. There's no three-sale minimum, since a person compared the photos. The pick is stored on
+  the item, so it syncs with the sale.
+- **A pick is the family's call.** It replaces a typed price, survives a rename, a re-read and an
+  adjust-by-message, and gives way only to a price typed afterward. A rename may leave it describing
+  the old name; that's accepted, since the person chose it.
+- **The comps pass ranks its matches,** closest first, and that order is kept.
+- **Too few matches keep the search going.** D24 stopped at enough *listings*, but `barrel top desk`
+  found 15 listings and 1 match. A check now reads on while fewer than 3 match: the rest of this
+  search, then broader ones, up to `COMPS.maxReads` (3) paid reads. Worst case is about 4¢.
+- **eBay photos are hot-linked,** which needed `i.ebayimg.com` in `img-src`. One can vanish, so cards
+  have a "No photo" state. No photo is copied.
+- **Check details collapse** behind Show details, with the timestamp still showing, because the
+  carousel made the screen too long. The "Price set to" row is gone, since a check doesn't set one.
+
+**Still open:** photo comparison, which is being explored separately. Until then, the ranking is by words,
+and the person's eye is the check. Round 20 is the current item screen.
 
 ## Risks / Trade-offs
 

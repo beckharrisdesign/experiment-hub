@@ -52,6 +52,16 @@ export interface LookupDeps {
   now?: () => Date;
 }
 
+interface Found {
+  query: string;
+  listings: SoldListing[];
+  fetchedAt: string;
+  cached: boolean;
+}
+
+/** How far into one search's listings a check reads before moving on to the next search. */
+const MAX_BATCHES_PER_SEARCH = 2;
+
 export async function lookupComps(input: LookupInput, deps: LookupDeps): Promise<CompsSummary> {
   const { item, sessionId, saleId } = input;
   const writeQuery = deps.writeQuery ?? defaultWriteQuery;
@@ -89,122 +99,153 @@ export async function lookupComps(input: LookupInput, deps: LookupDeps): Promise
   let pending: string[] = remembered ? [remembered] : [];
   const tried: Array<{ query: string; found: number }> = [];
   const triedNorms = new Set<string>();
-  let best: { query: string; listings: SoldListing[]; fetchedAt: string; cached: boolean } | null = null;
 
-  while (tried.length < COMPS.maxSearches) {
-    if (pending.length === 0) {
-      if (wrote) break;
-      wrote = true;
-      try {
-        pending = await write();
-      } catch (error: unknown) {
-        record({ kind: "query", ok: false, error: `error: ${messageOf(error)}` });
-        if (best) break;
-        return { status: "error", reason: "The search couldn't be written." };
+  /** The next search with enough listings, or the fullest of those left. A failure with nothing found comes back as `failure`. */
+  const nextSearch = async (): Promise<{ found: Found | null; failure?: CompsSummary }> => {
+    let best: Found | null = null;
+    while (tried.length < COMPS.maxSearches) {
+      if (pending.length === 0) {
+        if (wrote) break;
+        wrote = true;
+        try {
+          pending = await write();
+        } catch (error: unknown) {
+          record({ kind: "query", ok: false, error: `error: ${messageOf(error)}` });
+          if (best) break;
+          return { found: null, failure: { status: "error", reason: "The search couldn't be written." } };
+        }
       }
-    }
-    const candidate = pending.shift()!;
-    const norm = normalizeQuery(candidate);
-    if (triedNorms.has(norm)) continue;
-    triedNorms.add(norm);
+      const candidate = pending.shift()!;
+      const norm = normalizeQuery(candidate);
+      if (triedNorms.has(norm)) continue;
+      triedNorms.add(norm);
 
-    let result: { listings: SoldListing[]; fetchedAt: string; cached: boolean };
-    const saved = input.fresh ? null : await getFreshComps(deps.db, provider.name, norm, now());
-    if (saved) {
-      result = { listings: saved.results, fetchedAt: saved.fetchedAt, cached: true };
-      record({ kind: "lookup", provider: provider.name, cents: 0, cacheHit: true });
-    } else {
-      try {
-        const listings = await provider.search(candidate, AbortSignal.timeout(COMPS.timeoutMs));
-        result = { listings, fetchedAt: now().toISOString(), cached: false };
-      } catch (error: unknown) {
-        const kind = error instanceof ProviderError ? error.kind : "error";
-        // Failed requests aren't billed (CompsAPI docs), so the row carries no cost.
-        record({ kind: "lookup", provider: provider.name, cents: 0, ok: false, error: kind === "quota" ? "quota" : `error: ${messageOf(error)}` });
-        if (best) break;
-        return { status: kind, query: candidate };
+      let result: Omit<Found, "query">;
+      const saved = input.fresh ? null : await getFreshComps(deps.db, provider.name, norm, now());
+      if (saved) {
+        result = { listings: saved.results, fetchedAt: saved.fetchedAt, cached: true };
+        record({ kind: "lookup", provider: provider.name, cents: 0, cacheHit: true });
+      } else {
+        try {
+          const listings = await provider.search(candidate, AbortSignal.timeout(COMPS.timeoutMs));
+          result = { listings, fetchedAt: now().toISOString(), cached: false };
+        } catch (error: unknown) {
+          const kind = error instanceof ProviderError ? error.kind : "error";
+          // Failed requests aren't billed (CompsAPI docs), so the row carries no cost.
+          record({ kind: "lookup", provider: provider.name, cents: 0, ok: false, error: kind === "quota" ? "quota" : `error: ${messageOf(error)}` });
+          if (best) break;
+          return { found: null, failure: { status: kind, query: candidate } };
+        }
+        record({ kind: "lookup", provider: provider.name, cents: provider.pricePerRequestCents });
+        await saveComps(deps.db, { provider: provider.name, query: candidate, queryNorm: norm, results: result.listings, fetchedAt: result.fetchedAt });
       }
-      record({ kind: "lookup", provider: provider.name, cents: provider.pricePerRequestCents });
-      await saveComps(deps.db, { provider: provider.name, query: candidate, queryNorm: norm, results: result.listings, fetchedAt: result.fetchedAt });
+      tried.push({ query: candidate, found: result.listings.length });
+      if (!best || result.listings.length > best.listings.length) best = { query: candidate, ...result };
+      if (result.listings.length >= COMPS.enoughListings) break;
     }
-    tried.push({ query: candidate, found: result.listings.length });
-    if (!best || result.listings.length > best.listings.length) best = { query: candidate, ...result };
-    if (result.listings.length >= COMPS.enoughListings) break;
-  }
+    return { found: best };
+  };
 
-  // The loop always tries at least one search or returns: `pending` is never empty after `write`.
-  const { query, listings, fetchedAt, cached } = best!;
+  const first = await nextSearch();
+  if (first.failure) return first.failure;
+  // `maxSearches` is at least one and `write` always gives a search, so one always ran.
+  const primary = first.found!;
+  const { query, fetchedAt, cached } = primary;
   const queryNorm = normalizeQuery(query);
   const queryReused = normalizeQuery(remembered) === queryNorm;
+  const found = primary.listings.length;
 
-  const found = listings.length;
-  const remember = (matches: number[], reason: string, model?: string) =>
-    saveRead(deps.db, { provider: provider.name, subject, model, read: { query, queryNorm, compsFetchedAt: fetchedAt, matches, reason } });
-  const detailOf = (sentListings: SoldListing[], matched: number[], extra: Partial<LookupDetail>): LookupDetail => ({
-    query,
-    tried,
-    ...(queryModel && !queryReused ? { queryModel } : {}),
-    queryReused,
-    provider: provider.name,
-    listingsAt: fetchedAt,
-    found,
-    checked: sentListings.length,
-    matched: matched.length,
-    matches: newestFirst(matched.map((i) => sentListings[i])),
-    leftOut: sentListings.filter((_, i) => !matched.includes(i)),
-    ...extra,
-  });
+  const detailOf = (checked: SoldListing[], kept: SoldListing[], extra: Partial<LookupDetail>): LookupDetail => {
+    const keptUrls = new Set(kept.map((l) => l.url));
+    return {
+      query,
+      tried,
+      ...(queryModel && !queryReused ? { queryModel } : {}),
+      queryReused,
+      provider: provider.name,
+      listingsAt: fetchedAt,
+      found,
+      checked: checked.length,
+      matched: kept.length,
+      matches: kept,
+      leftOut: checked.filter((l) => !keptUrls.has(l.url)),
+      ...extra,
+    };
+  };
   if (found === 0) {
     // Not remembered: the next check should write a new search, not repeat one that found nothing.
     const reason = "No sold listings came back.";
     return { status: "too-few", query, found, matched: 0, fetchedAt, cached, detail: detailOf([], [], { reason }) };
   }
 
-  const readLimit = COMPS.maxListings * COMPS.maxReads;
-  let sent = listings.slice(0, COMPS.maxListings);
-  let matches: number[];
-  let reason: string;
+  let kept: SoldListing[] = [];
+  let checked: SoldListing[];
+  let reason: string | undefined;
   let readModel: string | undefined;
   if (memo && memo.queryNorm === queryNorm && sameInstant(memo.compsFetchedAt, fetchedAt)) {
     // Same subject, same saved sales: the answer it got last time.
-    sent = listings.slice(0, readLimit);
-    matches = memo.matches.filter((i) => i < sent.length);
+    checked = primary.listings.slice(0, COMPS.maxListings * MAX_BATCHES_PER_SEARCH);
+    kept = memo.matches.filter((i) => i < checked.length).map((i) => checked[i]);
     reason = memo.reason;
   } else {
-    try {
-      const read = await readComps(item, sent);
-      matches = read.matches;
-      reason = read.reason;
-      readModel = read.call?.model;
+    checked = [];
+    const seen = new Set<string>();
+    let reads = 0;
+    let bestKept: { search: Found; matches: number[] } | null = null;
+    /** One paid read of listings not yet read; throws on failure. Matches stay in the order the model ranked them. */
+    const readBatch = async (search: Found, batch: SoldListing[]) => {
+      reads += 1;
+      const read = await readComps(item, batch);
       if (read.call) record({ kind: "comps", provider: read.call.provider, model: read.call.model, ...read.call.usage });
+      const matched = read.matches.map((i) => batch[i]);
+      for (const l of batch) seen.add(l.url);
+      checked = [...checked, ...batch];
+      kept = [...kept, ...matched];
+      if (reason === undefined || matched.length > 0) reason = read.reason;
+      readModel = read.call?.model ?? readModel;
+      const indexes = matched.map((l) => search.listings.indexOf(l));
+      if (bestKept?.search === search) bestKept.matches.push(...indexes);
+      else if (!bestKept || indexes.length > bestKept.matches.length) bestKept = { search, matches: indexes };
+    };
+    const unread = (search: Found) => search.listings.slice(0, COMPS.maxListings * MAX_BATCHES_PER_SEARCH).filter((l) => !seen.has(l.url)).slice(0, COMPS.maxListings);
+
+    try {
+      await readBatch(primary, unread(primary));
     } catch (error: unknown) {
       record({ kind: "comps", ok: false, error: `error: ${messageOf(error)}` });
       return { status: "error", query, found, fetchedAt, cached, reason: "The sold listings couldn't be checked." };
     }
-    // Listings come newest first, so small look-alikes can crowd the real ones out of the first
-    // batch (D24). Only pay for a second read when the first didn't find enough.
-    const next = listings.slice(sent.length, readLimit);
-    if (matches.length < COMPS.minMatches && next.length > 0) {
-      try {
-        const more = await readComps(item, next);
-        if (more.call) record({ kind: "comps", provider: more.call.provider, model: more.call.model, ...more.call.usage });
-        matches = [...matches, ...more.matches.map((i) => i + sent.length)];
-        if (more.matches.length > 0) reason = more.reason;
-        sent = [...sent, ...next];
-      } catch (error: unknown) {
-        // The first batch's answer still stands.
-        record({ kind: "comps", ok: false, error: `error: ${messageOf(error)}` });
+    // Plenty of listings can still hold few real matches, so keep going while too few match (D24, D25):
+    // the rest of this search first, then broader ones, up to `COMPS.maxReads` paid reads in all.
+    try {
+      let search: Found | null = primary;
+      while (kept.length < COMPS.minMatches && reads < COMPS.maxReads && search) {
+        let batch: SoldListing[] = unread(search);
+        if (batch.length === 0) {
+          search = (await nextSearch()).found;
+          batch = search ? unread(search) : [];
+          if (batch.length === 0) continue;
+        }
+        await readBatch(search!, batch);
       }
+    } catch (error: unknown) {
+      // What's been read so far still stands.
+      record({ kind: "comps", ok: false, error: `error: ${messageOf(error)}` });
     }
-    await remember(matches, reason, readModel);
+    const memory = bestKept as { search: Found; matches: number[] } | null;
+    const from: Found = memory?.search ?? primary;
+    await saveRead(deps.db, {
+      provider: provider.name,
+      subject,
+      model: readModel,
+      read: { query: from.query, queryNorm: normalizeQuery(from.query), compsFetchedAt: from.fetchedAt, matches: memory?.matches ?? [], reason: reason ?? "" },
+    });
   }
 
-  const kept = matches.map((i) => sent[i]);
   const band = bandFromPrices(kept.map((l) => l.priceCents), COMPS.minMatches);
-  const detail = (extra: Partial<LookupDetail> = {}) => detailOf(sent, matches, { reason, ...(readModel ? { readModel } : {}), ...extra });
+  const detail = (extra: Partial<LookupDetail> = {}) => detailOf(checked, kept, { ...(reason ? { reason } : {}), ...(readModel ? { readModel } : {}), ...extra });
   if (!band) return { status: "too-few", query, found, matched: kept.length, reason, fetchedAt, cached, detail: detail() };
 
-  const cite = newestFirst(kept).slice(0, COMPS.citeListings);
   return {
     status: "ok",
     query,
@@ -213,7 +254,7 @@ export async function lookupComps(input: LookupInput, deps: LookupDeps): Promise
     rangeCents: band.rangeCents,
     band: band.band,
     reason,
-    listings: cite,
+    listings: newestFirst(kept).slice(0, COMPS.citeListings),
     fetchedAt,
     cached,
     detail: detail({ rangeCents: band.rangeCents, band: band.band }),

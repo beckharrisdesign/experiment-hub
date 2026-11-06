@@ -4,12 +4,14 @@ import { Fragment, useRef, useState } from "react";
 import Link from "next/link";
 import { Badge, Button, Callout, Field, Grid, GridItem, Inline, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Stack, Textarea } from "@beckharrisdesign/mvds";
 import type { CompsCheck } from "../../lib/estate-sale-planner/comps/check";
-import { bandLine, checkAction, formatRange, type BandLine, type CheckAction } from "../../lib/estate-sale-planner/comps/item";
+import { bandLine, checkAction, formatRange, possibleMatches, type BandLine, type CheckAction } from "../../lib/estate-sale-planner/comps/item";
+import type { SoldListing } from "../../lib/estate-sale-planner/comps/provider";
 import { BANDS } from "../../lib/estate-sale-planner/flag";
 import type { LookupMinBand } from "../../lib/estate-sale-planner/profile";
 import { paths } from "../../lib/estate-sale-planner/routes";
 import type { ItemPatch, SessionItem } from "../../lib/estate-sale-planner/session";
 import ButtonGroup from "./ButtonGroup";
+import PossibleMatches from "./PossibleMatches";
 import SoldPriceCheck from "./SoldPriceCheck";
 import { useNowUntil } from "./useNowUntil";
 
@@ -27,6 +29,7 @@ interface ItemDetailProps {
   /** When the limit lets the next check run. */
   nextCheckAt?: string | null;
   onCheckComps: () => void;
+  onPickMatch: (listing: SoldListing) => void;
   onUpdate: (itemId: string, patch: ItemPatch) => void;
   onRemove: (itemId: string) => void;
   onRetryReread: (itemId: string) => void;
@@ -44,7 +47,7 @@ interface ItemDetailProps {
  *
  * Desktop: the name and price run full width, then the photo takes 5 of 12 columns.
  */
-export default function ItemDetail({ item, saleId, refining, checkingComps = false, lookupMinBand, check = null, nextCheckAt = null, onCheckComps, onUpdate, onRemove, onRetryReread, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
+export default function ItemDetail({ item, saleId, refining, checkingComps = false, lookupMinBand, check = null, nextCheckAt = null, onCheckComps, onPickMatch, onUpdate, onRemove, onRetryReread, onMessage, onUndoMessage, onAddPhoto }: ItemDetailProps) {
   const [confirmRemove, setConfirmRemove] = useState(false);
   const now = useNowUntil(nextCheckAt);
   const action = checkAction(item, nextCheckAt, checkingComps, lookupMinBand, now);
@@ -103,7 +106,8 @@ export default function ItemDetail({ item, saleId, refining, checkingComps = fal
 
         <GridItem span={{ base: 1, lg: 7 }}>
           <Stack gap={32}>
-            {check && <SoldPriceCheck check={check} familyBand={item.bandSource === "family"} />}
+            <PossibleMatches matches={possibleMatches(check?.matches ?? [], item.picked?.listing)} pickedUrl={item.picked?.listing.url} onPick={onPickMatch} />
+            {check && <SoldPriceCheck check={check} />}
             <EditTabs
               describe={<AdjustByMessage item={item} busy={refining} onMessage={onMessage} onUndo={onUndoMessage} />}
               make={
@@ -149,15 +153,15 @@ function BandLineView({ line, showListings }: { line: BandLine | null; showListi
     );
   }
   if (line.kind === "why") return <p className="text-small text-muted-foreground">{line.text}</p>;
+  if (line.kind === "family") return <p className="text-small text-muted-foreground">Set by you</p>;
+  if (line.kind === "picked") {
+    return <p className="text-small text-muted-foreground">Based on the sale you picked · ${Math.round(line.priceCents / 100).toLocaleString("en-US")}</p>;
+  }
   const comps = line.comps;
   return (
     <div className="space-y-2">
-      <p className="text-small text-muted-foreground">
-        {line.kind === "family" ? "Set by you" : null}
-        {line.kind === "family" && comps ? " · " : null}
-        {comps?.rangeCents ? `Based on ${comps.matched} sold · ${formatRange(comps.rangeCents)}` : null}
-      </p>
-      {showListings && comps?.listings?.length ? (
+      <p className="text-small text-muted-foreground">{comps.rangeCents ? `Based on ${comps.matched} sold · ${formatRange(comps.rangeCents)}` : null}</p>
+      {showListings && comps.listings?.length ? (
         <ul className="text-small">
           {comps.listings.map((l) => (
             <li key={l.url} className="flex items-center gap-2 pointer-coarse:min-h-11">

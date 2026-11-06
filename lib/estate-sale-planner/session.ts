@@ -6,7 +6,7 @@
  * between them per item, any time.
  */
 
-import type { ItemComps } from "./comps/item";
+import type { ItemComps, PickedMatch } from "./comps/item";
 import type { Box, FlaggedItem } from "./flag";
 import type { RefineResponse } from "./refine";
 
@@ -36,7 +36,7 @@ export interface SessionItem extends FlaggedItem {
   /** Present when this item is a set sold together; keeps the parts so it can be split back. */
   lot?: { parts: Array<{ box: Box | null; name: string }> };
   /** Where the band came from. Absent reads as the model's estimate. */
-  bandSource?: "guess" | "comps" | "family";
+  bandSource?: "guess" | "comps" | "family" | "picked";
   /** A correction was saved and its re-read has not landed yet. */
   rereadPending?: boolean;
   /** The last re-read after a correction failed; the item says it has not been re-read. */
@@ -47,6 +47,8 @@ export interface SessionItem extends FlaggedItem {
   comps?: ItemComps;
   /** The model's band, kept while sold prices set the one shown, so it can come back if the subject changes. */
   guessBand?: FlaggedItem["band"];
+  /** The sale the family picked as most likely, which sets the band, and what to restore on undo (D25). */
+  picked?: PickedMatch;
 }
 
 /** What a message changed, so Undo can put it back. */
@@ -210,7 +212,9 @@ export function updateItem(s: Session, itemId: string, patch: ItemPatch): Sessio
   // Renamed into something else: sold prices for the old name no longer apply, so the model's band comes back until a new lookup lands.
   const staleComps = !familyBand && item.bandSource === "comps" && patch.name !== undefined && patch.name !== item.name;
   const source = familyBand ? { bandSource: "family" as const } : staleComps ? { band: item.guessBand ?? item.band, bandSource: "guess" as const, guessBand: undefined } : {};
-  return { ...s, items: s.items.map((i) => (i.id === itemId ? { ...i, ...patch, ...source } : i)) };
+  // A price set by hand replaces a picked sale. A rename doesn't: the family chose that sale.
+  const dropPick = familyBand ? { picked: undefined } : {};
+  return { ...s, items: s.items.map((i) => (i.id === itemId ? { ...i, ...patch, ...source, ...dropPick } : i)) };
 }
 
 /** Remove an item that is not real (a reflection, a duplicate, a wrong call). Its history goes too. */

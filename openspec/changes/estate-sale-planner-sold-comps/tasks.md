@@ -170,6 +170,8 @@
 
 - [x] 3.41 **Searches that find sales (D24).** One-year window, `cleanQuery`, broader searches, a second read, no remembering an empty search, comparable pieces for no known maker, rate limit not treated as quota. Tests: `comps-lookup.test.ts`, `comps-parts.test.ts`; on real services, `comps-search.live.test.ts` and `comps-stability.live.test.ts` pass. Not checked in the deployed app yet.
 
+- [x] 3.42 **Possible matches, priced when picked (D25, Figma round 20).** `applyComps` no longer sets a band; `togglePick`, `possibleMatches`, `PossibleMatches.tsx`; ranked matches; read on while too few match; `i.ebayimg.com` in `img-src`; details collapsed. Tests: `comps-item`, `comps-lookup`, `possible-matches`. Not walked in the deployed app with real photos yet.
+
 ## 4. QA
 
 - [~] 4.1 **Manual walkthrough on a phone,** fixture mode then keyed:
@@ -179,11 +181,11 @@
   4. Send a message and undo it.
   5. Switch Sell, Donate and Keep in the sticky header.
   6. Check the price and the bands.
-  7. With a provider key, set a $100+ item to Sell, click **Check sold prices**, see "Based on N sold" and the saved check, reopen it to see the check with no new cost row, and see the button disabled until tomorrow.
+  7. With a provider key, set a $100+ item to Sell, click **Check sold prices**, see possible matches with the price unchanged, pick one and see the price change, tap it again and see it restored, reopen it to see the check with no new cost row, and see the button disabled until tomorrow.
   8. Check the cost rows in Supabase.
   - 2026-10-28: first pass on an iPhone 12 Pro Max found jitter, content off the viewport and small targets (fixed on `claude/esp-phone-ergonomics`). Steps 1–8 still to walk on the fixed build.
 - [ ] 4.2 **Automated:** `pnpm vitest run tests/estate-sale-planner` green, plus `pnpm tsc --noEmit` and `pnpm lint`.
-- [ ] 4.3 **Visual check against Figma round 18** (item screen; 17 for the rest) at 480 and 1024 (built captures from 3.16).
+- [ ] 4.3 **Visual check against Figma round 20** (item screen; 17 for the rest) at 480 and 1024 (built captures from 3.16).
 - [ ] 4.4 **Validate and record:**
   - `openspec validate estate-sale-planner-sold-comps` passes.
   - Review-queue rows #59–#76 are updated to APPROVED or DEFAULT_IMPLEMENTED as built.
