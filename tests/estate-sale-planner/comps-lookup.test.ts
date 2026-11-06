@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CostInput } from "@/lib/estate-sale-planner/costs";
 import { lookupComps, type LookupDeps, type LookupItem } from "@/lib/estate-sale-planner/comps/lookup";
 import { ProviderError, type CompsProvider, type SoldListing } from "@/lib/estate-sale-planner/comps/provider";
-import { fixtureQuery } from "@/lib/estate-sale-planner/comps/query";
+import { fixtureQuery, normalizeQuery } from "@/lib/estate-sale-planner/comps/query";
 
 type CompsRow = { provider: string; query: string; query_norm: string; fetched_at: string; results: SoldListing[] };
 type ReadRow = { provider: string; subject: string; query: string; query_norm: string; comps_fetched_at: string; matches: number[]; reason: string; model: string | null };
@@ -274,5 +274,57 @@ describe("lookupComps — the same item gets the same answer (design D22)", () =
     const failed = fakeDb();
     await lookupComps({ item: skillet }, deps({ db: failed, readComps: vi.fn(async () => Promise.reject(new Error("down"))) }).d);
     expect(failed.reads).toEqual([]);
+  });
+});
+
+describe("lookupComps — a check from the button", () => {
+  it("pulls fresh sold listings even when saved ones are still in date, and reads them", async () => {
+    const saved: CompsRow = { provider: "compsapi", query: fixtureQuery(skillet), query_norm: normalizeQuery(fixtureQuery(skillet)), fetched_at: "2026-11-01T12:00:00Z", results: SOLD };
+    const provider = fakeProvider();
+    const { d } = deps({ provider, db: fakeDb([saved]) });
+    const out = await lookupComps({ item: skillet, fresh: true }, d);
+    expect(provider.search).toHaveBeenCalledTimes(1);
+    expect(d.readComps).toHaveBeenCalledTimes(1);
+    expect(out).toMatchObject({ status: "ok", cached: false, fetchedAt: NOW.toISOString() });
+  });
+
+  it("reports everything that went into an answer, with every source", async () => {
+    const { d } = deps();
+    const out = await lookupComps({ item: skillet, fresh: true }, d);
+    expect(out.detail).toMatchObject({
+      query: fixtureQuery(skillet),
+      queryModel: "gpt-5-nano",
+      queryReused: false,
+      provider: "compsapi",
+      listingsAt: NOW.toISOString(),
+      found: 5,
+      checked: 5,
+      readModel: "gpt-5-nano",
+      matched: 4,
+      reason: "Kept the four No. 8 skillets; dropped a lid.",
+      band: out.band,
+      rangeCents: out.rangeCents,
+    });
+    // Newest sale first; `listings` keeps only a few, the detail keeps them all.
+    expect(out.detail!.matches.map((l) => l.url)).toEqual([4, 3, 2, 1].map((n) => `https://www.ebay.com/itm/${n}`));
+    expect(out.detail!.leftOut.map((l) => l.url)).toEqual(["https://www.ebay.com/itm/5"]);
+  });
+
+  it("says the search was reused rather than naming a model that didn't write it", async () => {
+    const db = fakeDb();
+    await lookupComps({ item: skillet, fresh: true }, deps({ db }).d);
+    const out = await lookupComps({ item: skillet, fresh: true }, deps({ db }).d);
+    expect(out.detail).toMatchObject({ queryReused: true });
+    expect(out.detail!.queryModel).toBeUndefined();
+  });
+
+  it("reports a too-few answer too, and nothing for one that couldn't run", async () => {
+    const few = await lookupComps({ item: skillet, fresh: true }, deps({ provider: fakeProvider([SOLD[0]]) }).d);
+    expect(few).toMatchObject({ status: "too-few", detail: { found: 1, matched: 1 } });
+    const none = await lookupComps({ item: skillet, fresh: true }, deps({ provider: fakeProvider([]) }).d);
+    expect(none).toMatchObject({ status: "too-few", detail: { found: 0, matched: 0, matches: [], leftOut: [] } });
+    const failed = await lookupComps({ item: skillet, fresh: true }, deps({ provider: fakeProvider(new ProviderError("quota", "spent")) }).d);
+    expect(failed.status).toBe("quota");
+    expect(failed.detail).toBeUndefined();
   });
 });

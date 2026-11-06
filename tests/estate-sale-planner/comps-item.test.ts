@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { applyComps, bandLine, compsKey, formatRange, lookupDue, lookupsDue, retryDue, type ItemComps } from "@/lib/estate-sale-planner/comps/item";
+import { applyComps, bandLine, checkAction, compsKey, formatRange, gateBand, isEligible, type ItemComps } from "@/lib/estate-sale-planner/comps/item";
+import type { CompsCheck } from "@/lib/estate-sale-planner/comps/check";
 import type { CompsSummary } from "@/lib/estate-sale-planner/comps/summary";
 import { applyReread } from "@/lib/estate-sale-planner/correction";
 import { updateItem, type Session, type SessionItem } from "@/lib/estate-sale-planner/session";
@@ -29,46 +30,51 @@ const ok: CompsSummary = {
 };
 const withComps = (item: SessionItem, summary: CompsSummary = ok): SessionItem => applyComps(sale([item]), item.id, compsKey(item), summary).items[0];
 
-describe("when a lookup is due", () => {
-  it("when an item first meets the gate: it lands at Sell and $100+, is set to Sell, or its band rises", () => {
-    expect(lookupDue(undefined, base, undefined)).toBe(true);
-    expect(lookupDue({ ...base, destination: "keep" }, base, undefined)).toBe(true);
-    expect(lookupDue({ ...base, band: "$50–$100" }, base, undefined)).toBe(true);
-  });
-
-  it("not for Keep, Donate, undecided or under-threshold items, nor while a re-read is pending", () => {
-    for (const next of [{ ...base, destination: "keep" as const }, { ...base, destination: undefined }, { ...base, band: "$50–$100" }, { ...base, rereadPending: true }] as SessionItem[]) {
-      expect(lookupDue(undefined, next, undefined)).toBe(false);
-    }
-  });
-
-  it("when a correction changes what a gated item is, but not when only its band moves", () => {
-    const looked = withComps(base, { ...ok, rangeCents: [11000, 18000], band: "$100–$250" });
-    expect(lookupDue(looked, { ...looked, name: "Griswold No. 8 skillet" }, undefined)).toBe(true);
-    expect(lookupDue(looked, { ...looked, lot: { parts: [{ box: null, name: "a" }, { box: null, name: "b" }] } }, undefined)).toBe(true);
-    expect(lookupDue(looked, { ...looked, band: "$250–$500" }, undefined)).toBe(false);
-    expect(lookupDue({ ...looked, rereadPending: true }, { ...looked, name: "Griswold skillet" }, undefined)).toBe(true);
-  });
-
-  it("not once sold prices put the item under the threshold", () => {
+describe("who can be checked", () => {
+  it("a Sell item at or above the threshold, judged on the price from before any sold prices", () => {
+    expect(isEligible(base, undefined)).toBe(true);
+    expect(isEligible({ ...base, destination: "keep" }, undefined)).toBe(false);
+    expect(isEligible({ ...base, band: "$25–$50" }, undefined)).toBe(false);
+    // Sold prices can pull the band under the threshold; that mustn't end its checks.
     const looked = withComps(base);
     expect(looked.band).toBe("$50–$100");
-    expect(lookupDue(looked, { ...looked, name: "Griswold No. 8 skillet" }, undefined)).toBe(false);
+    expect(gateBand(looked)).toBe("$100–$250");
+    expect(isEligible(looked, undefined)).toBe(true);
+  });
+});
+
+describe("the check button", () => {
+  const MIN = "$100–$250";
+  const NOW = new Date(2026, 10, 6, 15, 0).getTime();
+  const check = { at: new Date(2026, 10, 6, 10, 12).toISOString() } as CompsCheck;
+  const ONCE = "One check per item per day.";
+
+  it("is offered on an eligible item that hasn't been checked", () => {
+    expect(checkAction(base, null, false, MIN, NOW)).toEqual({ label: "Check sold prices", disabled: false, caption: ONCE });
   });
 
-  it("not merely because a sale was opened with gated items in it", () => {
-    expect(lookupsDue(sale([base]), sale([base]), undefined)).toEqual([]);
-    expect(lookupsDue(null, sale([base]), undefined)).toEqual(["esp_a_0"]);
+  it("isn't there for an item that can't be checked", () => {
+    expect(checkAction({ ...base, destination: "donate" }, null, false, MIN, NOW)).toBeNull();
+    expect(checkAction({ ...base, band: "$25–$50" }, null, false, MIN, NOW)).toBeNull();
   });
 
-  it("on opening the item: never looked up for this subject, or the last try failed", () => {
-    expect(retryDue(base, undefined)).toBe(true);
-    expect(retryDue(withComps(base), undefined)).toBe(false);
-    expect(retryDue(withComps(base, { status: "too-few", found: 1, matched: 0 }), undefined)).toBe(false);
+  it("is disabled while checking, and while a re-read is landing", () => {
+    expect(checkAction(base, null, true, MIN, NOW)).toEqual({ label: "Checking…", disabled: true, caption: ONCE });
+    expect(checkAction({ ...base, rereadPending: true } as SessionItem, null, false, MIN, NOW)).toEqual({ label: "Check sold prices", disabled: true, caption: ONCE });
+  });
+
+  it("is disabled for 24 hours after a check, and says when it comes back", () => {
+    expect(checkAction(base, check, false, MIN, NOW)).toEqual({ label: "Check sold prices", disabled: true, caption: "You can check this item again Nov 7 at 10:12 AM." });
+    // A rename doesn't reset the day.
+    expect(checkAction({ ...base, name: "Griswold skillet" }, check, false, MIN, NOW)?.disabled).toBe(true);
+    const later = new Date(2026, 10, 7, 10, 12).getTime();
+    expect(checkAction(base, check, false, MIN, later)).toEqual({ label: "Check sold prices", disabled: false, caption: ONCE });
+  });
+
+  it("offers another try after a failure, which doesn't use up the day", () => {
     for (const status of ["error", "quota", "not-configured"] as const) {
-      expect(retryDue(withComps(base, { status }), undefined)).toBe(true);
+      expect(checkAction(withComps(base, { status }), null, false, MIN, NOW)).toEqual({ label: "Try again", disabled: false, caption: null });
     }
-    expect(retryDue({ ...base, band: "$25–$50" }, "$500–$2,000")).toBe(false);
   });
 });
 
@@ -121,7 +127,7 @@ describe("a lookup landing", () => {
 describe("the band line", () => {
   const MIN = "$100–$250";
   const why = (text: string) => ({ kind: "why", text });
-  const RETRY = "It'll try again when you reopen this item.";
+  const NOT_USED = "This didn't use today's check.";
 
   it("shows checking, based-on-sales and set-by-you", () => {
     expect(bandLine(base, true, MIN)).toEqual({ kind: "checking" });
@@ -129,9 +135,9 @@ describe("the band line", () => {
     expect(bandLine({ ...base, bandSource: "family" } as SessionItem, false, MIN)).toEqual({ kind: "family" });
   });
 
-  it("stays blank only while a lookup is about to run", () => {
+  it("stays blank when there's nothing to report: the button says the rest", () => {
     expect(bandLine(base, false, MIN)).toBeNull();
-    // Comps for an older name don't describe this one, and the new name's lookup is due.
+    // Comps for an older name don't describe this one.
     const looked = withComps(base);
     expect(bandLine(updateItem(sale([looked]), base.id, { name: "Something else" }).items[0], false, MIN)).toBeNull();
     expect(bandLine({ ...withComps(base, { status: "error" }), rereadPending: true } as SessionItem, false, MIN)).toBeNull();
@@ -145,7 +151,7 @@ describe("the band line", () => {
     const cheap: SessionItem = { ...base, band: "$25–$50" };
     expect(bandLine(cheap, false, MIN)).toEqual(why("Sold prices are only checked for items at $100+. You can change that in Account & profile."));
     expect(bandLine(cheap, false, "$500–$2,000")).toEqual(why("Sold prices are only checked for items at $500+. You can change that in Account & profile."));
-    // Lowering the threshold makes the same item eligible, so its lookup is due.
+    // Lowering the threshold makes the same item eligible.
     expect(bandLine(cheap, false, "$25–$50")).toBeNull();
   });
 
@@ -159,8 +165,8 @@ describe("the band line", () => {
 
   it("says when a lookup couldn't run", () => {
     const after = (status: CompsSummary["status"]) => bandLine(withComps(base, { status }), false, MIN);
-    expect(after("error")).toEqual(why(`Couldn't check sold prices. ${RETRY}`));
-    expect(after("quota")).toEqual(why(`Sold-price checks have hit their limit. ${RETRY}`));
+    expect(after("error")).toEqual(why(`Couldn't check sold prices. ${NOT_USED}`));
+    expect(after("quota")).toEqual(why(`Sold-price checks have hit their limit. ${NOT_USED}`));
     expect(after("not-configured")).toEqual(why("Sold-price checks aren't set up here yet."));
   });
 

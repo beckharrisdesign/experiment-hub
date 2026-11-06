@@ -12,23 +12,34 @@ Keep, Donate or low-band items, auction-house or Etsy prices, any upsell.
 
 ### Requirement: Only items that could matter are looked up
 
-A lookup runs only for an item headed to Sell whose band is at or above the threshold; there is
-no confirmed state (review queue #60). Its search query is written when the item first meets the
-gate and not before, and again if the family later changes what the item is.
+A lookup runs only for an item headed to Sell whose band is at or above the threshold, and only
+when the family clicks its button (D23); there is no confirmed state (review queue #60). Its
+search query is written on the first check and not before, and again if the family later changes
+what the item is.
 
-**Fails until:** a Sell item at or above the threshold triggers exactly one query-writing call and one lookup, and every other item triggers neither.
+**Fails until:** clicking the button on a Sell item at or above the threshold triggers exactly one query-writing call and one lookup, nothing runs without a click, and every other item has no button.
 
 The lookup gate SHALL require destination Sell and a band at or above the person's threshold from their profile ($25, $100 or $500; $100 by default, the `$100–$250` band and up — `COMPS.minBand`), and the server SHALL accept only one of those choices, treating anything else as the default; only then SHALL a text-only call write the search query from the item's current name, mark reading, family note and lot flag; the walkthrough and the re-read SHALL NOT write queries.
 
 #### Scenario: An item passes the gate
 
-- **WHEN** an item is set to Sell and banded at $100 or more, or a Sell item's band rises to $100 or more
+- **WHEN** the family clicks **Check sold prices** on a Sell item banded at $100 or more
 - **THEN** a search query is written for it and one lookup runs
+
+#### Scenario: Nothing runs without a click
+
+- **WHEN** an item is set to Sell at $100 or more, or an eligible item is opened or renamed
+- **THEN** no query is written and no lookup runs
+
+#### Scenario: Sold prices pull an item under the threshold
+
+- **WHEN** a check sets a Sell item's band below the threshold
+- **THEN** the item stays eligible, judged on its price from before sold prices, and can be checked again after 24 hours
 
 #### Scenario: An item below the gate
 
 - **WHEN** an item is set to Keep or Donate, has no destination yet, or is banded under the threshold
-- **THEN** no query is written, no lookup runs, and the item shows the model's band with no comps line
+- **THEN** there is no button, no query is written, no lookup runs, and the item shows the model's band and says why it wasn't checked
 
 #### Scenario: The family raised their threshold
 
@@ -48,7 +59,7 @@ The lookup gate SHALL require destination Sell and a band at or above the person
 #### Scenario: A correction changes what the item is
 
 - **WHEN** a message or a photo correction changes the name or band of a Sell item that is at or above the threshold
-- **THEN** a new query is written and looked up, and a saved result for that query is reused when it is fresh
+- **THEN** the old result no longer applies, and the next click writes a new query and looks it up
 
 ### Requirement: Lookups are saved and reused
 
@@ -78,9 +89,9 @@ Lookups SHALL go through a provider adapter (CompsAPI first, selected by configu
 A short text-only pass keeps only the sold listings that are the same object and sets the band
 from them, and the item shows what it rests on.
 
-**Fails until:** an item with at least the minimum number of matching sales shows a band derived from them, the count, and links to the listings kept; with fewer, it keeps the model's band with no comps line.
+**Fails until:** an item with at least the minimum number of matching sales shows a band derived from them, the count, and links to the listings kept; with fewer, it keeps the model's band and says how many matched.
 
-The comps pass SHALL send the item and its sold listings to a text-only call that returns which listings match, a band from the matching prices and a one-line reason; with at least the minimum number of matches (3 by default) the item SHALL show that band as "Based on N sold" with links to a few kept listings; with fewer, the model's band SHALL stay, with no comps line.
+The comps pass SHALL send the item and its sold listings to a text-only call that returns which listings match, a band from the matching prices and a one-line reason; with at least the minimum number of matches (3 by default) the item SHALL show that band as "Based on N sold" with links to a few kept listings; with fewer, the model's band SHALL stay and the item SHALL say how many matched and how many it takes.
 
 #### Scenario: Enough matching sales
 
@@ -90,7 +101,7 @@ The comps pass SHALL send the item and its sold listings to a text-only call tha
 #### Scenario: Too few matching sales
 
 - **WHEN** fewer than three listings match the item
-- **THEN** the item keeps the model's band and shows no comps line
+- **THEN** the item keeps the model's band and shows "Found N matching sales. It takes 3 to set the price."
 
 #### Scenario: The family changes the band by hand
 
@@ -123,18 +134,57 @@ Every walkthrough, re-read, query-writing and comps call SHALL write an `esp_cos
 ### Requirement: When a lookup cannot run, the item keeps the model's band
 
 A missing key, a provider outage or a spent quota never breaks the item; it keeps the model's
-band and the reason goes on the cost row.
+band, the item says so, and the reason goes on the cost row.
 
-**Fails until:** with no provider key, a provider error, or a quota response, the gated item shows the model's band with no comps line, the reason is recorded, and nothing else on the screen fails.
+**Fails until:** with no provider key, a provider error, or a quota response, the item shows the model's band and a line saying why, the reason is recorded, today's check isn't used up, and nothing else on the screen fails.
 
-When no provider key is configured, the provider errors or times out, or the plan's quota is spent, the item SHALL keep the model's band with no comps line and the reason SHALL be recorded on the cost row; the provider key SHALL never reach the browser; a later visit SHALL retry the lookup.
+When no provider key is configured, the provider errors or times out, or the plan's quota is spent, the item SHALL keep the model's band and say why, and the reason SHALL be recorded on the cost row; the provider key SHALL never reach the browser; the failure SHALL NOT count against the daily limit, and the button SHALL offer another try.
 
 #### Scenario: No provider key is configured
 
 - **WHEN** an item passes the gate on an environment with no provider key
-- **THEN** the item keeps the model's band, shows no comps line, and the cost row says lookups are not configured
+- **THEN** the item keeps the model's band, says checks aren't set up, and the cost row says lookups are not configured
 
 #### Scenario: The provider fails
 
 - **WHEN** the provider errors, times out or reports the quota is spent
-- **THEN** the item keeps the model's band, the cost row records the failed call and its reason, and the next visit tries again
+- **THEN** the item keeps the model's band and says the check didn't use today's, the cost row records the failed call and its reason, and the button offers **Try again**
+
+### Requirement: A check is limited, saved and shown
+
+Each check is a click, limited to one a day per item to keep costs low, and what it was given and
+what it found are kept so the item can show them without running again.
+
+**Fails until:** a second completed check within 24 hours is refused on the server with no lookup, and reopening an item shows its saved check, timestamp and sources with no model or provider call.
+
+The server SHALL allow one completed check per item per device per 24 hours, reading `esp_comps_checks` before any lookup; if it cannot read the last check it SHALL NOT run one. Each completed check, "ok" or "too-few", SHALL be saved with its timestamp, what it was given (item, mark, note, set, price before), the search, models, listings source and pull time, found, checked and matched counts, reason, result, matched listings and those left out. The item screen SHALL show the saved check on opening with no lookup, and the button SHALL say when it comes back.
+
+#### Scenario: A second click within the day
+
+- **WHEN** a request arrives for an item whose last completed check was under 24 hours ago on this device
+- **THEN** no lookup runs, and the response carries the saved check and when the next is allowed
+
+#### Scenario: The button says when it comes back
+
+- **WHEN** an item was checked in the last 24 hours
+- **THEN** its button is disabled and reads "You can check this item again Nov 7 at 10:12 AM."
+
+#### Scenario: A rename doesn't reset the day
+
+- **WHEN** a checked item is renamed within 24 hours
+- **THEN** the button stays disabled and the saved check still shows the name it was given
+
+#### Scenario: Reopening costs nothing
+
+- **WHEN** an item with a saved check is opened
+- **THEN** the check, its timestamp and its sources show, with no model or provider call and no cost row
+
+#### Scenario: The sources can be followed
+
+- **WHEN** a saved check is on screen
+- **THEN** its matched listings link out with price and sold date, and those left out are one click away
+
+#### Scenario: Another device
+
+- **WHEN** a different device opens the same sale and item id
+- **THEN** it sees no saved check and has its own limit, until sign-in moves this to the person

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -20,8 +21,8 @@ const item = { name: "Lodge No. 8 skillet", band: "$100–$250", destination: "s
 function req(body: unknown, ip = "1.1.1.1") {
   return new NextRequest("http://localhost/estate-sale-planner/api/comps", {
     method: "POST",
-    headers: { "content-type": "application/json", "x-forwarded-for": ip },
-    body: typeof body === "string" ? body : JSON.stringify(body),
+    headers: { "content-type": "application/json", "x-forwarded-for": ip, cookie: `esp-device=${"a".repeat(43)}` },
+    body: typeof body === "string" ? body : JSON.stringify(typeof body === "object" && body && !Array.isArray(body) && "item" in body ? { saleId: "esp_abc", itemId: "esp_abc_0", ...body } : body),
   });
 }
 
@@ -42,7 +43,7 @@ describe("POST /estate-sale-planner/api/comps", () => {
   });
 
   it("with no provider key, a gated item keeps its band and the answer says lookups aren't configured", async () => {
-    const res = await POST(req({ item, saleId: "esp_abc" }));
+    const res = await POST(req({ item }));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ success: true, status: "not-configured" });
   });

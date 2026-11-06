@@ -7,7 +7,32 @@ import { bandMeetsLookup, resolveLookupMinBand } from "../profile";
 import type { Destination } from "../session";
 import type { SoldListing } from "./provider";
 
-export type CompsStatus = "ok" | "too-few" | "gated" | "not-configured" | "error" | "quota";
+/** "limited": this item was already checked in the last 24 hours (D23); nothing ran. */
+export type CompsStatus = "ok" | "too-few" | "gated" | "limited" | "not-configured" | "error" | "quota";
+
+/** Everything that went into a completed lookup, for the item screen (D23). The route saves it. */
+export interface LookupDetail {
+  query: string;
+  /** The model that wrote the search; absent when it was reused or no model is configured. */
+  queryModel?: string;
+  queryReused: boolean;
+  provider: string;
+  /** When the sold listings were pulled. */
+  listingsAt: string;
+  found: number;
+  /** Listings sent to the comps pass. */
+  checked: number;
+  /** The model that checked them; absent when no model is configured. */
+  readModel?: string;
+  matched: number;
+  reason?: string;
+  rangeCents?: [number, number];
+  band?: (typeof BANDS)[number];
+  /** Every kept listing, most recent first. */
+  matches: SoldListing[];
+  /** The listings checked and not kept. */
+  leftOut: SoldListing[];
+}
 
 export interface CompsSummary {
   status: CompsStatus;
@@ -25,6 +50,8 @@ export interface CompsSummary {
   fetchedAt?: string;
   /** Answered from the comps store with no provider call. */
   cached?: boolean;
+  /** On a completed lookup: the full record. The route moves it to `check` and saves it. */
+  detail?: LookupDetail;
 }
 
 /**
