@@ -1,0 +1,377 @@
+# Proposal — portfolio-as-is-figma
+
+## Human anchor
+
+> "lets start an openspec change so taht we can generate an as is figma of the
+> portfolio site right now. create all the main views in the site so far."
+
+## Outcomes
+
+- **Who:** Katy — the portfolio's designer and its only maintainer.
+- **Job:** Get a design source of truth for beckharrisdesign.com, which today
+  exists only as rendered HTML. Right now any change to the site is authored
+  blind, straight into CSS, and reviewed by looking at production.
+- **Done when:** Every main view type of the live site is a frame in a Figma
+  design file titled `portfolio-as-is-figma`, the portfolio's own tokens are
+  defined as Figma variables taken from `public/super/site.css`, and each frame
+  is traceable to the live route it was captured from.
+- **Not doing:** Redesign. No proposed changes, no cleanup of things that look
+  wrong — as-is means as-is, including the parts worth fixing later.
+
+## Why
+
+`super-css-control` put the portfolio's CSS under version control, so the
+*rules* are now diffable and reviewable. But there is still no representation of
+what those rules produce. The 630 lines describe overrides to a Notion page
+rendered by Super; nothing in the repo shows the resulting pages.
+
+That gap has a concrete cost. The library's own comments are full of measurements
+taken by inspecting production — "Super ships its own callout padding and it is
+ASYMMETRIC (21.6px left / 27px right)", "at ~420px the navbar's own row measures
+~449px". Those numbers were earned by looking at a live browser because there was
+nowhere else to look. A design file is where that knowledge should accumulate.
+
+It also makes the next change cheaper. With frames to draw on, a portfolio change
+can be composed and argued before it is written as CSS — which is the order
+`rules/figma.mdc` asks for everywhere else.
+
+## What changes
+
+A new Figma **design file** (not FigJam — this is a set of surfaces, not a flow),
+titled `portfolio-as-is-figma`, containing:
+
+**1. The view inventory.** One frame per main view type — **nine in the site
+hierarchy plus one unlisted pattern** (see round 02.4). The set is derived from
+the CSS itself, which is scoped per page shape and therefore already enumerates
+them — each section below names the rules that prove the view is distinct:
+
+| View | Route captured | Why it is its own view |
+|---|---|---|
+| Home | `/` | §4 hides its header; `#page-index` spacer rule |
+| Project / case study | `/connected-china` | `.parent-page__index` full-bleed callouts (§5) |
+| Gallery collection | `/all-projects` | §6 card grid, §4 hidden header |
+| Labs index | `/bhd-labs` | §6 top-cropped covers + §8 borderless tables |
+| Labs detail | `/bhd-labs/mvds` | `.parent-page__bhd-labs` header treatment (§4) |
+| Database view | `/bhd-database` | §7 page properties incl. `.notion-property__url` |
+| Curated collection | `/for-babylist` | §9 in full — the only view with the card row |
+| Consultation | `/bhd-consultation` | §5 accent-coloured H2 section labels |
+| About | `/katy-harris` | §7 stacked properties at length |
+| Essay / talk | `/emotional-design-in-the-age-of-ai` | §4 body measure with no collection |
+
+**2. The token set.** Defined as Figma variables, read from the live CSS rather
+than sampled by eye:
+
+- `--accent` `#ADDFE3`, `--color-bg-default` `#143639`, `--color-card-bg` `#1B4448`
+- `--site-max-width` 1200px, `--content-max-width` 45rem (810px at the 18px base)
+- 18px root, 1.6 line-height, Playfair Display display / Roboto body
+
+**3. Breakpoints.** The three the CSS actually defines — 1000px and 640px (§9
+card row), 600px (§3 navbar) — not invented ones.
+
+**This file does not subscribe MVDS.** MVDS is the hub's design system; the
+portfolio runs on Super's theme and has a different visual language entirely.
+Subscribing it here would import a vocabulary this surface does not use.
+
+## Capabilities
+
+### New Capabilities
+
+- `portfolio-figma-source`: a Figma design file holding every main view of
+  beckharrisdesign.com as-is, plus the token set its live CSS defines, traceable
+  frame-by-frame to the routes captured.
+
+### Modified Capabilities
+
+None.
+
+## Impact
+
+- **New:** one Figma design file, `portfolio-as-is-figma`.
+- **Touched in repo:** this change's artifacts only. No app code, no CSS.
+- **Depends on:** `public/super/site.css` as the token source — already merged
+  (#517, #518) and verified `in-sync` with what the site serves.
+- **Risk:** the capture is a point-in-time snapshot. It goes stale the moment the
+  CSS or the Notion content changes, and nothing enforces that it does not. Worth
+  naming now rather than discovering later; whether to add a staleness check is a
+  `design.md` question, not a reason to skip the capture.
+
+## Figma
+
+**Round 01 — as-is inventory** (rough: shape and composition, enough to argue with)
+
+- File: [portfolio-as-is-figma](https://www.figma.com/design/Lqe4n3Ir7zWwnFLd01m9mN/portfolio-as-is-figma?node-id=1-2)
+- Page: `02 Proposed`
+- Anchor node: `1:2` (page) · tokens block `2:2` · first view frame `2:15`
+
+A **design file**, not a FigJam board — this change is about surfaces, and a board
+cannot answer "what does this view actually look like."
+
+Contains the token block (colours, measures and type read from
+`public/super/site.css`, plus a `portfolio tokens` variable collection) and all ten
+view frames at 1200px:
+
+| # | Frame | Node |
+|---|---|---|
+| — | Tokens | `2:2` |
+| 01 | Home | `2:15` |
+| 02 | Project / case study | `2:45` |
+| 03 | Gallery collection | `3:2` |
+| 04 | Labs index | `3:47` |
+| 05 | Labs detail | `3:87` |
+| 06 | Database view | `3:103` |
+| 07 | Curated collection | `4:2` |
+| 08 | Consultation | `4:44` |
+| 09 | About | `4:61` |
+| 10 | Essay / talk | `4:80` |
+
+Each frame carries a caption naming the route it represents and the CSS section
+that makes it a distinct view, so the inventory argues for itself rather than
+asking to be taken on trust.
+
+**Round 02.1 — sitemap structure**
+
+- Page: `02.1 Proposed — sitemap structure, hierarchy from parent-page classes` (node `7:2`)
+- Round 01 left untouched, per the never-edit-a-built-page rule in `rules/figma.mdc`.
+
+The same ten views, arranged as a tree instead of a row. **The hierarchy is read,
+not assumed:** Super emits a `parent-page__<slug>` class on every page, so the
+structure comes from the live markup.
+
+| Depth | Views | Evidence |
+|---|---|---|
+| 0 | Home | `page__index`, no `parent-page__*` |
+| 1 | Gallery, Project, Curated, Consultation, About, Essay, Labs index, Database | all carry `parent-page__index` |
+| 2 | Labs detail | `parent-page__bhd-labs` |
+
+Worth noting the tree is the **Notion page tree, not the navigation**. `/connected-china`
+is a child of home by this measure, though a visitor reaches it from the homepage
+gallery *and* from `/all-projects`. Any navigation model belongs in `design.md`.
+
+### Two corrections this round forced
+
+**The Essay / talk exemplar was a dead route.** `/what-i-believe` returns **404** —
+no `notion-root`, no page classes, nothing rendered. Round 01 named it as the
+canonical essay view on the strength of its appearing in `sitemap.xml`. Swapped for
+`/emotional-design-in-the-age-of-ai`, which is a real page carrying
+`parent-page__index`.
+
+**The sitemap advertises routes that do not resolve.** Auditing all 82 non-history
+routes found three 404s:
+
+| Route | Note |
+|---|---|
+| `/what-i-believe` | dead, advertised in `sitemap.xml` |
+| `/design-leadership` | dead, advertised in `sitemap.xml` |
+| `/site-unavailable` | Super system page; expected |
+
+The first two are live SEO and UX bugs — crawlers are being pointed at them. Out of
+scope for a capture change, and not something to fix quietly inside one; raised
+here so it is on the record.
+
+**Round 02.2 — detail views re-parented, readable canvas**
+
+- Page: `02.2 Proposed — detail views re-parented, readable canvas` (node `10:2`)
+- Supersedes 02.1; earlier rounds left intact.
+
+Two fixes. The 02.1 canvas was `#143639`, the same colour as the node backgrounds,
+so the views dissolved into the ground instead of reading as cards. 02.2 uses a
+neutral `#EDEFEF` canvas with dark labels.
+
+And the detail views moved: **Project detail under Projects, Labs detail under Labs**,
+rather than both hanging off home.
+
+### This makes it a navigation model, not a containment model
+
+Worth stating plainly, because it changes what the artifact is and the two
+structures genuinely disagree:
+
+| View | Markup says | Sitemap places it | Agree? |
+|---|---|---|---|
+| Labs detail `/bhd-labs/mvds` | `parent-page__bhd-labs` | under Labs index | ✅ |
+| Project detail `/connected-china` | `parent-page__index` | under Projects | ❌ |
+
+Notion's containment is flat under home for case studies; the site's *navigation*
+is not — a visitor reaches `/connected-china` through the Projects gallery. The
+sitemap follows navigation, which is what a sitemap is for. The divergent node
+carries the note on the board rather than hiding it.
+
+The consequence is that `parent-page__*` can no longer be the sole source for the
+tree. It was sufficient at 02.1 because the tree was flat; it is not sufficient
+now. `design.md` should say what the authority is when the two disagree — the
+honest answer is likely "navigation, with containment recorded as a second
+attribute", but that is a decision, not an observation.
+
+**Round 02.3 — populated views in sitemap structure**
+
+- Page: `02.3 Proposed — populated views in sitemap structure` (node `12:2`)
+- Supersedes 02.2. Earlier rounds left intact.
+
+The nodes are now **full-size 1200px frames carrying real content**, not rough
+blocks. At 0.25 scale the sitemap nodes were structurally correct but illegible —
+you cannot critique type hierarchy, density or rhythm from a grey rectangle. Each
+node is now the actual view, and the tree is drawn around them.
+
+**The content is real, not simulated.** Scraped from the live routes, so what is on
+the frames is what is on the site: the Connected China project copy with its
+Challenges / Approach / Outcomes callout, the Babylist letter with its four case
+cards, the six consulting service blocks, the Labs experiment table with real
+taglines and statuses, the Cisco / Atlas / Carbonite role history. Simulated copy
+would have been the same effort and worth less — real content exposes real length
+problems.
+
+| Node | Content source |
+|---|---|
+| Home | headline, intro, both expertise columns, 8 case-study cards, speaking list |
+| Projects | 9 projects with company, year and multi-select tags |
+| Curated collection | the Babylist letter, role card, 4 case cards with CTAs |
+| Consultation | 6 service blocks with audience lines and body copy |
+| About | intro, location, Cisco / Atlas / Carbonite roles with dates |
+| Essay / talk | the CMU 70317 lecture write-up |
+| Labs index | 3 experiment cards + 6-row utilities table with statuses |
+| Database view | 12 rows with type, status and URL property |
+| Project detail | Connected China in full — properties, full-bleed callout, press, awards |
+| Labs detail | MVDS status, tagline, why-this-matters, hypothesis, the three Why cards |
+
+**Caveat worth stating:** this is a point-in-time scrape. It is illustrative of
+structure and density, not a content system of record — Notion remains that. The
+staleness risk named in Impact applies to the copy as much as the layout.
+
+**Round 02.4 — `/for-*` moved out of the hierarchy**
+
+- Page: `02.4 Proposed — /for-* pages moved out of the hierarchy` (node `17:2`)
+- Supersedes 02.3. Earlier rounds left intact.
+
+The curated collection is no longer a child of home. It sits in a separated
+**Unlisted** zone behind a broken rule, with no connector — reached by direct link
+only, not linked from any page in the tree.
+
+**The stylesheet already said this and the diagram was contradicting it.** §9 hides
+the page title, the cover, the properties row *and* the breadcrumbs on these pages,
+and the comment gives the reason outright: "a collection page is handed out as a
+direct link, not browsed to — '/ Selected work for Babylist' only tells the reader
+they are inside someone's filing system." A page that deliberately suppresses its
+own breadcrumb is not claiming a place in the hierarchy. Rounds 02.1–02.3 drew it
+as a peer of `/all-projects`, which was wrong.
+
+So the tree is **nine views**; `/for-*` is a **per-recipient pattern** with two live
+instances today (`/for-babylist`, `/for-customerio`) and presumably more later. That
+distinction matters beyond the drawing: a pattern that multiplies per recipient has
+different implications for navigation, sitemap inclusion and staleness than a
+section does.
+
+Worth noting the markup does *not* encode this — `/for-babylist` carries
+`parent-page__index` exactly like the real sections do. This is the second place
+where `parent-page__*` proves insufficient as the sole authority, after the
+navigation-vs-containment split in 02.2. `design.md` now has two reasons to name
+what governs the tree.
+
+**Round 02.5 — raw databases also unlisted**
+
+- Page: `02.5 Proposed — raw databases also unlisted` (node `19:2`)
+- Supersedes 02.4. Earlier rounds left intact.
+
+`/bhd-database` joins `/for-*` outside the tree. The hierarchy is eight views; two
+patterns sit beside it.
+
+### Unlisted is not the same as private
+
+Checked rather than assumed, because the answer changes what the finding is:
+
+| | `/for-*` | `/bhd-database`, `/bhd-labs-database`, `/bhd-labs-history` |
+|---|---|---|
+| Visible in navigation | No | No |
+| Hidden by | §9 of the stylesheet, deliberately | **Super's own setting** |
+| Anchor present in homepage HTML | No | **Yes**, rendering 0×0 |
+| In `sitemap.xml` | Yes | **Yes** |
+| Returns 200 in full | Yes | **Yes** |
+
+The mechanism is Super's, not ours: `.notion-page { display: var(--page-display) }`
+in Super's `notion.css`, with `--page-display` resolving to `none` — the "show child
+pages" toggle being off. The anchors and their link text remain in the served HTML,
+and all three routes are advertised in `sitemap.xml`.
+
+So crawlers are pointed straight at the raw databases. `/bhd-database` carries rows
+including "Stealth-mode skills development" with LF/HF markers, which reads like
+working notes rather than published work.
+
+`/for-*` is different and fine: it is unlisted **by design**, and being reachable by
+direct link is the entire point of handing someone the URL.
+
+### Scope note
+
+This change captures as-is. Recording that the databases are crawlable is in scope;
+**making them not crawlable is not** — that alters live site behaviour, needs its own
+validation (gone from `sitemap.xml`, route no longer 200, nothing else broken), and
+would sit oddly inside a change whose stated outcome is "no proposed changes."
+
+Recommend a separate change. Noted here with the evidence so it is not lost either
+way — and it shares a root with the three dead sitemap routes already recorded
+above, so one change could reasonably cover **what `sitemap.xml` advertises**.
+
+**Round 02.6 — Home rebuilt from measured geometry**
+
+- Page: `02.6 Proposed — Home rebuilt from measured geometry` (node `20:2`)
+
+Katy: *"figma isn't actually matching my live site — I typically include a column of
+blank space on the left side."* Correct, and the miss was methodological rather
+than careless.
+
+### The capture was built from markup, which cannot see layout
+
+Every check run against the portfolio so far — including
+`scripts/super-css/check.mjs` — uses `fetch` and parses HTML. The left gutter is an
+**empty `.notion-column`**: no text, no distinguishing class, nothing a parser can
+detect. It exists only once a browser computes the box model.
+
+Measuring the rendered page produced the real device, which repeats down the whole
+homepage:
+
+```
+divider           x18   w1164
+section label     x18   w810
+[ empty gutter 282 ]  [ content 846 from x336 ]
+```
+
+| | Drawn in 01–02.5 | Measured |
+|---|---|---|
+| Root padding | 48 | **18** |
+| Left gutter | none | **282px, empty** |
+| Case-study cards | 3 across, 360px, from x48 | **2 across, 414px, from x336** |
+| Card cover | 360×190 | **414×200** |
+| Dividers | 0 | **5** |
+
+The same blindness hid more: `/katy-harris` is 22 columns and 11 dividers, not
+stacked properties; `/bhd-consultation` has a gallery and 23 columns, not a stacked
+service list; `/bhd-labs/mvds` has no callouts. **Home is now measured; the other
+nine are not.**
+
+### Playwright is already here and not pointed at this
+
+`@playwright/test ^1.59.1` is a devDependency, driving `scripts/capture-site-map.js`
+and `sitemap-capture.yml` — for the hub. Nothing renders beckharrisdesign.com.
+
+That is the fix, and it earns its place twice over:
+
+1. **Accuracy** — per-view measured geometry (box model per block, column ratios,
+   card grids, breakpoints) is what the capture should be built from, instead of
+   inference from class names.
+2. **Staleness** — the Impact section names "the capture goes stale and nothing
+   enforces otherwise" as the open risk. A geometry extractor answers it: re-run,
+   diff against the recorded numbers, and the drift surfaces as a failing check
+   rather than as someone noticing a missing column.
+
+This belongs in `tasks`: extend the existing Playwright setup to the portfolio,
+emit measured geometry per canonical view, and build the remaining nine frames from
+that output rather than by hand.
+
+**What this round is for:** arguing with the *inventory and the cut* — is this the
+right set of ten, is anything missing, is anything here really the same view as
+something else. Fidelity is deliberately rough. The detailed as-is pass, the
+breakpoint variants and the Visual design table belong to `design.md`, and
+numbering continues from 01 there.
+
+## Optional links
+
+- Experiment directory: `experiments/super-css-control/`
+- The CSS this reads tokens from: `public/super/site.css`
+- Compatibility check: `scripts/super-css/check.mjs`
