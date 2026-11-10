@@ -529,6 +529,14 @@ h2.notion-heading {
 .notion-collection-card:has(.property-7d783b4e .notion-pill) a {
   pointer-events: none;
 }
+/* The pill itself is the hook, not the message (2026-11-10). The muted row
+   already reads as "not linked yet"; a visible "Coming soon" on 2012–2014
+   talks read as a stale backlog. Hidden visually and from screen readers.
+   :has() above still matches a display:none descendant, so the row stays
+   muted and unlinked. */
+:is(.notion-collection-list__item, .notion-collection-card) .property-7d783b4e {
+  display: none !important;
+}
 /* ============================================================
    7. PAGE PROPERTIES
    The metadata list under project page titles (Year, Role, etc.).
