@@ -238,6 +238,15 @@ html {
   font-weight: 400;
   font-size: 1rem;               /* = 18px, tracks the base size above */
 }
+/* Button label colour, whatever colour the Notion button was given.
+   Super ships `.notion-link:not(.color-default, .color-gray, …) { color:
+   inherit }` (specificity 0,2,0), which beats the rule above. A Notion
+   button with no colour set has none of those classes, so its label
+   inherited the accent and vanished on the accent fill: aqua on aqua on
+   the All projects "Next steps" button (2026-11-10). 0,2,1 wins. */
+a.notion-link.notion-button__content {
+  color: var(--navbar-button-text-color);
+}
 /* The navbar CTA ("Book a 30m call") inherits Super's --text-weight, so
    the light 200 body weight (section 1) made the site's main action the
    thinnest text on the page. Buttons stay at regular weight. */
@@ -528,6 +537,14 @@ h2.notion-heading {
 .notion-collection-card:has(.property-7d783b4e .notion-pill),
 .notion-collection-card:has(.property-7d783b4e .notion-pill) a {
   pointer-events: none;
+}
+/* The pill itself is the hook, not the message (2026-11-10). The muted row
+   already reads as "not linked yet"; a visible "Coming soon" on 2012–2014
+   talks read as a stale backlog. Hidden visually and from screen readers.
+   :has() above still matches a display:none descendant, so the row stays
+   muted and unlinked. */
+:is(.notion-collection-list__item, .notion-collection-card) .property-7d783b4e {
+  display: none !important;
 }
 /* ============================================================
    7. PAGE PROPERTIES

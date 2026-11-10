@@ -596,3 +596,62 @@
     start();
   }
 })();
+
+/*
+ * One booking link (2026-11-10).
+ *
+ * Not part of the lightbox; same reason as the blocks above. The site had
+ * two Google Calendar booking pages: the navbar CTA (set in Super) used
+ * 3eHc…, while five Notion BUTTON blocks (Home hero and footer, All
+ * projects footer, Consulting hero and footer) used jc9q…. Katy chose the
+ * navbar's. Notion's API cannot edit button blocks, so the published links
+ * are rewritten here instead, and every one reads "Book a 30m call" to
+ * match the navbar.
+ *
+ * The clean fix is still in Notion: edit each button's link to
+ * BOOKING_URL. Once that is done this block matches nothing and can go.
+ */
+(function () {
+  "use strict";
+  if (window.__bhdBookingLink) return;
+  window.__bhdBookingLink = true;
+
+  var OLD = "https://calendar.app.google/jc9qDdyEVvNbTutd6";
+  var BOOKING_URL = "https://calendar.app.google/3eHcrEXPG1VmqGrQ6";
+  var LABEL = "Book a 30m call";
+
+  // Replace the text of the deepest non-empty text node, so the button's
+  // own wrappers (and their styles) stay intact.
+  function setLabel(link) {
+    var walker = document.createTreeWalker(link, NodeFilter.SHOW_TEXT);
+    var last = null;
+    while (walker.nextNode()) {
+      if (walker.currentNode.nodeValue.trim()) last = walker.currentNode;
+    }
+    if (last && last.nodeValue.trim() !== LABEL) last.nodeValue = LABEL;
+  }
+
+  function patch() {
+    var links = document.querySelectorAll('a[href^="' + OLD + '"]');
+    for (var i = 0; i < links.length; i++) {
+      links[i].setAttribute("href", BOOKING_URL);
+      setLabel(links[i]);
+    }
+  }
+
+  function start() {
+    patch();
+    var pending = false;
+    new MutationObserver(function () {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(function () { pending = false; patch(); });
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
+})();
