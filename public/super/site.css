@@ -303,6 +303,16 @@ h1.notion-heading,
 .notion-header__title {
   text-wrap: balance;
 }
+/* MAIN TITLES set light. Fraunces (section 1) is variable, and at title
+   sizes its optical-size axis already gives it high contrast, so the
+   weight can drop well below Super's 600–700 heading weight without the
+   titles losing presence. Page titles and in-page H1s only; H2/H3 keep
+   Super's heading weight so section heads still read as a step down in
+   size, not in weight. */
+h1.notion-heading,
+.notion-header__title {
+  font-weight: 300 !important;
+}
 /* Keep empty text blocks on the homepage from collapsing to zero height
    (they're used as spacers) */
 #page-index .notion-text {
