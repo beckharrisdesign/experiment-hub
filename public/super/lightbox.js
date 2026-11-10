@@ -531,8 +531,14 @@
 
   var MENU = ".super-navbar__menu-open";
 
+  // Super mounts the wrapper on open and unmounts it on close (verified
+  // 2026-11-10: absent on load, present while open, absent after Esc or
+  // close). During the close transition it is briefly still mounted with
+  // react-transition-group's exit-* classes, so those count as closed too;
+  // that also keeps this right if Super ever keeps it mounted when closed.
   function menuIsOpen() {
-    return !!document.querySelector(".super-navbar__menu-wrapper");
+    var wrapper = document.querySelector(".super-navbar__menu-wrapper");
+    return !!wrapper && !/(^|\s)exit(-active|-done)?(\s|$)/.test(wrapper.className);
   }
 
   function patch() {
