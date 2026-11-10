@@ -56,6 +56,48 @@
   font-size: 18px;               /* base font size for the whole site */
   line-height: 1.6;              /* unitless so headings scale correctly */
 }
+/* DISPLAY FONT: Fraunces, self-hosted next to this file.
+   Fraunces is a Google Font, not a system font, so visitors only see it
+   if the page loads it. It lives in this repo rather than on Google's
+   CDN: same origin as this stylesheet (already preconnected and
+   CORS-open via next.config), versioned with the rest of the styling, and
+   no third-party request.
+
+   Source: @fontsource-variable/fraunces 5.3.0, latin subset, the "opsz"
+   build (variable weight 100–900 + optical size). Optical size is
+   Fraunces' signature: the browser picks a sharper, higher-contrast cut
+   at title sizes and a sturdier one at label sizes, automatically
+   (font-optical-sizing: auto is the default). OFL licence in
+   fonts/Fraunces-OFL.txt.
+
+   Super defines --primary-font (titles, headings, labels) on :root in its
+   own inline style. `html:root` outranks that regardless of load order.
+   Playfair Display stays as the fallback: Super already loads it, so a
+   slow font load or a non-latin glyph falls back to the current face
+   rather than to Georgia. */
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("fonts/fraunces-latin-opsz-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Fraunces";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("fonts/fraunces-latin-opsz-italic.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+html:root {
+  --primary-font: "Fraunces", "Playfair Display", Georgia, serif;
+}
 /* ============================================================
    2. GLOBAL GUARDS
    ============================================================ */
