@@ -503,3 +503,96 @@
     start();
   }
 })();
+
+/*
+ * Accessibility patches for Super's renderer (review 2026-11-10).
+ *
+ * Also not part of the lightbox; same reason as the block above (the site
+ * already loads this file). Each patch fixes markup Super renders and the
+ * custom code can't change at the source. Report the first two to Super.
+ *
+ *   1. Phone menu button: Super renders a bare <div> with tabindex -1, no
+ *      role and no name, so keyboard and screen-reader users could never
+ *      open the nav below 680px. It becomes a named, focusable button with
+ *      aria-expanded kept in sync, and Enter/Space open it.
+ *   2. List rows (home "Speaking + teaching"): each row's link is an EMPTY
+ *      overlay <a>, read as "link" with no name. It gets the row's title.
+ *   3. Gallery card covers repeat the card title as alt text, so every
+ *      card was announced three times. The cover is decorative next to
+ *      its visible title, so its alt is cleared.
+ *
+ * Idempotent and cheap: it re-runs on DOM changes (client-side navigation
+ * replaces the whole page tree) and skips anything already patched.
+ */
+(function () {
+  "use strict";
+  if (window.__bhdA11yPatches) return;
+  window.__bhdA11yPatches = true;
+
+  var MENU = ".super-navbar__menu-open";
+
+  // Super mounts the wrapper on open and unmounts it on close (verified
+  // 2026-11-10: absent on load, present while open, absent after Esc or
+  // close). During the close transition it is briefly still mounted with
+  // react-transition-group's exit-* classes, so those count as closed too;
+  // that also keeps this right if Super ever keeps it mounted when closed.
+  function menuIsOpen() {
+    var wrapper = document.querySelector(".super-navbar__menu-wrapper");
+    return !!wrapper && !/(^|\s)exit(-active|-done)?(\s|$)/.test(wrapper.className);
+  }
+
+  function patch() {
+    var btn = document.querySelector(MENU);
+    if (btn) {
+      if (!btn.hasAttribute("data-bhd-a11y")) {
+        btn.setAttribute("data-bhd-a11y", "");
+        btn.setAttribute("role", "button");
+        btn.setAttribute("tabindex", "0");
+        btn.setAttribute("aria-label", "Menu");
+      }
+      var expanded = menuIsOpen() ? "true" : "false";
+      if (btn.getAttribute("aria-expanded") !== expanded) {
+        btn.setAttribute("aria-expanded", expanded);
+      }
+    }
+
+    var rows = document.querySelectorAll(".notion-collection-list__item-anchor:not([aria-label])");
+    for (var i = 0; i < rows.length; i++) {
+      var item = rows[i].closest(".notion-collection-list__item");
+      var title = item && item.querySelector(".notion-property__title");
+      var text = title && title.textContent.trim();
+      if (text) rows[i].setAttribute("aria-label", text);
+    }
+
+    var covers = document.querySelectorAll("img.notion-collection-card__cover:not([data-bhd-alt])");
+    for (var j = 0; j < covers.length; j++) {
+      covers[j].setAttribute("data-bhd-alt", "");
+      covers[j].setAttribute("alt", "");
+    }
+  }
+
+  // Enter/Space activate the menu "button" the way a real <button> would.
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    var target = event.target;
+    if (!(target instanceof Element) || !target.matches(MENU)) return;
+    event.preventDefault();
+    target.click();
+  }, true);
+
+  function start() {
+    patch();
+    var pending = false;
+    new MutationObserver(function () {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(function () { pending = false; patch(); });
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
+})();
