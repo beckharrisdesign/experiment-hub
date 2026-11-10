@@ -459,6 +459,16 @@ h1.notion-heading,
 .parent-page__index .notion-callout__content ul:not(:has(~ :not(.notion-text:empty))) > li:last-child {
   margin-bottom: 0;
 }
+/* Dividers run edge to edge of the viewport, like the full-bleed callout
+   bands above, instead of stopping at the content column. Same
+   calc(50% - 50vw) trick; html's overflow-x: clip (section 2) absorbs the
+   scrollbar-width overshoot. Scoped to dividers that sit directly in the
+   page, so a divider inside a column or callout keeps its own width. */
+.notion-root > .notion-divider {
+  margin-inline: calc(50% - 50vw) !important;
+  width: auto !important;
+  max-width: none !important;
+}
 /* Space around every H2 */
 h2.notion-heading {
   padding: 1rem 0;
