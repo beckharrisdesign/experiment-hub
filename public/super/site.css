@@ -449,10 +449,14 @@ h2.notion-heading {
   max-width: unset !important;
   display: block !important;
 }
-/* Label typography: display font, larger than the value text */
+/* Label typography: display font at the SAME size as the value text.
+   The serif face alone carries the label/value distinction; at 1.25rem
+   the labels shouted over the values they introduce. Keep this pair in
+   sync with the value ramp below (.9rem / 1.25rem). */
 .notion-page__property .notion-page__property-name span {
   font-family: var(--primary-font);
-  font-size: 1.25rem;
+  font-size: .9rem;
+  line-height: 1.25rem;
   overflow: visible;
   text-overflow: unset;
 }
