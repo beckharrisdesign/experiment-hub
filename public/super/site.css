@@ -172,6 +172,30 @@ html {
 .super-navbar__breadcrumbs .notion-breadcrumb__item:first-child {
   display: none;
 }
+/* HERO PAGES: the breadcrumb floats on the cover image.
+   The breadcrumb bar is the first child of <main> (not part of the sticky
+   navbar; its `position: sticky` has no `top`, so it never sticks). A
+   fixed height plus a matching negative bottom margin takes it out of the
+   flow, so the cover slides up underneath it and starts flush against the
+   navbar. A frosted strip of the navbar colour keeps the text legible on
+   any photo, and the text comes up from 50% to 85% accent for the same
+   reason. Pages without a cover keep the plain bar from section 3. */
+.super-content:has(.notion-header.page .notion-header__cover.has-cover)
+  .super-navbar__breadcrumbs {
+  position: relative;
+  z-index: 20;
+  height: 2rem;
+  margin-bottom: -2rem;
+  display: flex;
+  align-items: center;
+  background: color-mix(in srgb, var(--navbar-background-color) 55%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.super-content:has(.notion-header.page .notion-header__cover.has-cover)
+  .super-navbar__breadcrumbs :is(.notion-breadcrumb__item, .notion-breadcrumb__divider) {
+  color: rgb(var(--accent) / 0.85);
+}
 /* Let long breadcrumb titles show in full instead of truncating with … */
 .super-navbar__breadcrumbs .notion-breadcrumb__item .notion-breadcrumb__title {
   text-overflow: unset !important;
@@ -218,6 +242,14 @@ h1.notion-heading,
 .parent-page__bhd-labs .notion-header__content {
   margin: 0 auto !important;
   padding: 0 1rem 1rem 1rem !important;
+}
+/* No cover image: Super still draws an empty 140px cover box (90px on its
+   mobile renderer), which with the title's 2rem margin left ~176px of
+   dead space under the breadcrumb. 3rem halves it (~90px total) without
+   jamming the title up against the nav. */
+.notion-header.page .notion-header__cover.no-cover {
+  height: 3rem !important;
+  max-height: 3rem !important;
 }
 /* Project page title: left-aligned, big, with space above the title */
 .notion-header__title {
@@ -280,6 +312,23 @@ h1.notion-heading,
   list-style: none;
   margin: .75rem 0;
   padding: 0;
+}
+/* Even the band's top and bottom space. Two things padded only the bottom:
+   - trailing EMPTY text blocks (blank lines left at the end of a Notion
+     column render as a 36px <div class="notion-text"></div>), and
+   - the last list's trailing spacing (ul bottom padding + last li margin).
+   The callout's own padding then reads the same above and below. Only a
+   trailing RUN of empty blocks is hidden; blank lines between content stay,
+   since authors use them as spacers. */
+.parent-page__index .notion-callout__content
+  .notion-text:empty:not(:has(~ :not(.notion-text:empty))) {
+  display: none;
+}
+.parent-page__index .notion-callout__content ul:not(:has(~ :not(.notion-text:empty))) {
+  padding-bottom: 0;
+}
+.parent-page__index .notion-callout__content ul:not(:has(~ :not(.notion-text:empty))) > li:last-child {
+  margin-bottom: 0;
 }
 /* Space around every H2 */
 h2.notion-heading {
