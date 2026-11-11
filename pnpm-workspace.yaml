@@ -6,6 +6,7 @@
 packages:
   - "packages/*"
   - "experiments/simple-seed-organizer/prototype/app"
+  - "experiments/image-dithering/prototype"
 
 onlyBuiltDependencies:
   - esbuild
