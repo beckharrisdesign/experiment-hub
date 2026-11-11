@@ -34,7 +34,9 @@ beforeAll(async () => {
   }
   cpSync(path.join(repo, MANIFEST), path.join(noGit, MANIFEST));
   __resetHistorySource();
-});
+  // Building the manifest walks git history for every OpenSpec change, so it
+  // grows with each archive; it took ~10s on CI by 2026-11-11 (PR #590).
+}, 60_000);
 
 afterAll(() => {
   rmSync(noGit, { recursive: true, force: true });
