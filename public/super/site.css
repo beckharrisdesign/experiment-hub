@@ -4,7 +4,7 @@
    CONTENTS
    1. Design tokens        — colors, widths, type scale (edit here first)
    2. Global guards        — page width, no sideways scroll
-   3. Navbar               — buttons, mobile sizing, breadcrumbs
+   3. Navbar               — logo, links, buttons, breadcrumbs
    4. Page headers         — hidden covers, titles, intro text
    5. Blocks               — pills, callouts (incl. full-bleed), headings
    6. Galleries & cards    — project grids, card covers
@@ -162,11 +162,12 @@ html:root {
    navbar overflowing on narrow phones. */
 html {
   overflow-x: clip;   /* Keep this on <html>, not <body>. It is a GUARD, not
-                         a fix: at ~420px the navbar's own row measures ~449px
-                         (logo + "Schedule a conversation" + hamburger), so
-                         moving the clip to <body> lets <html> scroll again and
-                         the sideways scroll comes straight back on a phone.
-                         The real fix is a narrower mobile navbar. */
+                         a fix. The navbar row fits down to 320px today
+                         (section 12 tightens it below 380px), but it
+                         overflowed when the button said "Schedule a
+                         conversation". A longer label brings that back, and
+                         a clip on <body> would not catch it: <html> would
+                         scroll sideways instead. */
 }
 /* Cap and center the whole page, with breathing room at the edges */
 .notion-root {
@@ -223,20 +224,68 @@ html {
                                     honest override. Without it the CTA sits
                                     8px short of the grid. */
 }
-/* Nav button hit area — vertical padding only, no horizontal offset */
+/* Logo — same size as the nav links (1rem = 18px). Super writes
+   font-size: 16px inline on the span, so !important is the only way past
+   it. The typeface (--primary-font) and Super's 600 weight stay. Section
+   12 shrinks it again below 380px. */
+.super-navbar__logo-text {
+  font-size: 1rem !important;
+}
+/* Nav links — Super folds them into the menu icon at 860px and below,
+   but they fit down to about 760px: at 760px there is still ~40px
+   between the logo and "Projects". Between the two widths, keep the
+   links in the bar and hide the menu icon.
+
+   Super's 860px rule also restyles every link as a full-width menu row
+   (width 100%, padding 8px). Those rows are meant for the dropdown, so
+   the links in the bar get their desktop shape back. The dropdown's own
+   links live in .super-navbar__menu, not the item list, so they keep
+   Super's rows. */
+@media (min-width: 760px) and (max-width: 860px) {
+  .super-navbar .super-navbar__item-list {
+    display: flex;
+  }
+  .super-navbar .super-navbar__menu-open {
+    display: none;
+  }
+  .super-navbar__item-list .super-navbar__item {
+    width: auto;
+    padding: 16px 12px;
+  }
+}
+/* Buttons — one look for every "Book a 30m call": the one in the page
+   (.notion-button__content) and the one in the bar (.super-navbar__cta).
+   Colors and corner radius come from Super's own navbar button theme
+   variables, so both follow the Super dashboard settings.
+
+   Super builds the two differently, so they only looked alike at full
+   size. The bar's button: 8px 16px padding, no border, and the light
+   body weight from Super's --text-weight (the thinnest text on the page
+   for the site's main action). The page button: a 1px dark-teal border,
+   nearly invisible on the dark page, and a label fixed at a 1.5rem
+   (27px) line height that does not shrink with the text. On phones that
+   left the page button 4px taller. Same padding, a transparent 1px
+   border on both, and a line height that scales with the text make them
+   identical at every size: 47px tall at 18px. The navbar-scoped selector
+   outranks Super's own rule. */
 .notion-button {
   text-align: left;
-  padding: .5rem 0;
+  padding: .5rem 0;              /* hit area: vertical only, so the button
+                                    sits on the text's left edge */
 }
-/* Nav button appearance — colors come from Super's own theme
-   variables so they follow the settings in the Super dashboard */
-.notion-button__content {
+.notion-button__content,
+.super-navbar__actions .super-navbar__cta {
   background: var(--navbar-button-background-color);
   color: var(--navbar-button-text-color);
   padding: .5rem 1rem;
+  border: 1px solid transparent;
   border-radius: var(--navbar-button-border-radii);
   font-weight: 400;
   font-size: 1rem;               /* = 18px, tracks the base size above */
+  line-height: 1.5;
+}
+.notion-button__content .notion-semantic-string {
+  line-height: inherit;          /* Super fixes it at 1.5rem */
 }
 /* Button label colour, whatever colour the Notion button was given.
    Super ships `.notion-link:not(.color-default, .color-gray, …) { color:
@@ -247,16 +296,13 @@ html {
 a.notion-link.notion-button__content {
   color: var(--navbar-button-text-color);
 }
-/* The navbar CTA ("Book a 30m call") inherits Super's --text-weight, so
-   the light 200 body weight (section 1) made the site's main action the
-   thinnest text on the page. Buttons stay at regular weight. */
-.super-navbar__cta {
-  font-weight: 400;
-}
-/* PHONES: shrink nav buttons so the navbar fits without overflowing.
-   Tweak .85rem to taste — it's the button text size on small screens. */
+/* PHONES: smaller buttons, both of them. Tweak .85rem to taste: it is
+   the button text size on small screens. Below 380px section 12 tightens
+   the bar's button further so the navbar row still fits at 320px; that
+   is the one width where the two buttons differ, on purpose. */
 @media (max-width: 600px) {
-  .notion-button__content {
+  .notion-button__content,
+  .super-navbar__actions .super-navbar__cta {
     font-size: .85rem;
     padding: .4rem .75rem;
   }
@@ -1327,10 +1373,10 @@ html.bhd-lb-open {
   }
   .super-navbar__logo-text {
     white-space: normal;
-    font-size: .85rem;
+    font-size: .85rem !important;  /* past Super's inline 16px, as in §3 */
     line-height: 1.15;
   }
-  .super-navbar__cta {
+  .super-navbar__actions .super-navbar__cta {   /* matches §3's selector */
     font-size: .8rem;
     padding-inline: .6rem !important;
     white-space: nowrap;
