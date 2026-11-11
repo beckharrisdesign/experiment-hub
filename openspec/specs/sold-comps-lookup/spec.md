@@ -56,28 +56,30 @@ The lookup gate SHALL require destination Sell and a band at or above the person
 - **WHEN** a message or a photo correction changes the name or band of a Sell item that is at or above the threshold
 - **THEN** the old result no longer applies, and the next click writes a new query and looks it up
 
-### Requirement: Lookups are saved and reused
+### Requirement: Lookups are saved, and a click pulls fresh listings
 
-Every lookup goes through one provider interface and is saved, so a repeat item costs nothing.
+Every lookup goes through one provider interface and is saved. A **Check sold prices** click
+always pulls the listings again, so the family sees current sales. What is reused is the item's
+search (D22), so the same item keeps asking the same thing.
 
-**Fails until:** a second lookup for the same normalized query inside the freshness window returns from `esp_comps` without calling the provider.
+**Fails until:** every lookup is stored in `esp_comps`, a check calls the provider even when a stored result for its query is in date, and a repeat check of an unchanged item sends the same search.
 
-Lookups SHALL go through a provider adapter (CompsAPI first, selected by configuration) called only server-side with a server key; every response SHALL be stored in `esp_comps` under the normalized query with provider, fetch time and the sold listings (price, date, title, link, image when given); a stored result younger than the freshness window (90 days by default) SHALL be used instead of a new call.
+Lookups SHALL go through a provider adapter (CompsAPI first, selected by configuration) called only server-side with a server key; every response SHALL be stored in `esp_comps` under the normalized query with provider, fetch time and the sold listings (price, date, title, link, image when given). A lookup made without `fresh` SHALL use a stored result younger than the freshness window (90 days by default) instead of a new call. The check route SHALL pass `fresh`, so a click SHALL call the provider and replace the stored result, and SHALL reuse the item's remembered search when it still finds enough listings.
 
 #### Scenario: First lookup for a query
 
 - **WHEN** a query has never been looked up
 - **THEN** the provider is called once and the results are saved under that query
 
-#### Scenario: A repeat query inside the freshness window
+#### Scenario: A click on an item checked before
 
-- **WHEN** the same normalized query was looked up within the window, from any sale
-- **THEN** the saved results are used and the provider is not called
+- **WHEN** the family checks an item again after its daily limit has passed, and the stored result for its query is still inside the window
+- **THEN** the provider is called again, the new listings replace the stored ones, and the search is the one the item used before
 
-#### Scenario: A stale saved result
+#### Scenario: A lookup without `fresh`
 
-- **WHEN** the saved results for a query are older than the window
-- **THEN** the provider is called again and the new results replace the old ones
+- **WHEN** a lookup made without `fresh` finds a stored result for its query inside the window, from any sale
+- **THEN** the stored results are used and the provider is not called
 
 ### Requirement: Matches are offered, and a person sets the price
 
@@ -143,7 +145,7 @@ Every walkthrough, re-read, query-writing and comps call SHALL write an `esp_cos
 
 #### Scenario: A lookup and a cache hit are recorded
 
-- **WHEN** one item triggers a provider lookup and another is answered from the store
+- **WHEN** a check calls the provider, or a lookup made without `fresh` is answered from the store
 - **THEN** the first writes a row with the provider's price and the second writes a zero-cost cache-hit row
 
 #### Scenario: The cost table is unavailable
