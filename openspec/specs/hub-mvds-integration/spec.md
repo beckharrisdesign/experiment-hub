@@ -1,19 +1,19 @@
 # hub-mvds-integration Specification
 
 ## Purpose
-The Hub's MVDS-facing surfaces: the single root dependency every hub experiment inherits, the CSS layer that adapts it, and the two in-repo records of what the Hub consumes and what it still wants from the package. From `mvds-landscape-tidy` (archived 2026-11-11), written for the version the Hub is on, not the 0.4.0 bump that change made; the Hub is on `^0.5.0` as of 2026-11-11.
+The Hub's MVDS-facing surfaces: the single root dependency every hub experiment inherits, the CSS layer that adapts it, and the two in-repo records of what the Hub consumes and what it still wants from the package. From `mvds-landscape-tidy` (archived 2026-11-11), written for the version the Hub is on, not the 0.4.0 bump that change made, and widened to `/estate-sale-planner`, which arrived after it; the Hub is on `^0.5.0` as of 2026-11-11.
 
 ## Requirements
 
 ### Requirement: An MVDS version move doesn't change how the Hub looks
 
-All seven MVDS-bearing hub surfaces look the same after a version move as before it: Katy cannot tell the package version changed by looking.
+All eight MVDS-bearing hub surfaces look the same after a version move as before it: Katy cannot tell the package version changed by looking.
 
-The Hub SHALL consume `@beckharrisdesign/mvds` from the public npm registry through the root `package.json` (resolved in `pnpm-lock.yaml`, the only root lockfile), and a version move SHALL NOT ship a visual change she hasn't approved on any route that imports its components or inherits its stylesheet. There is no visual regression suite, so the walkthrough below is the gate.
+The Hub SHALL consume `@beckharrisdesign/mvds` from the public npm registry through the root `package.json` (resolved in `pnpm-lock.yaml`, the only root lockfile), and a version move SHALL NOT ship a visual change she hasn't approved on any route that imports its components or inherits its stylesheet. There is no visual regression suite, so the walkthrough below is the gate. The dev-only `/dev/mvds` parity page isn't part of it: it 404s in production.
 
 #### Scenario: The MVDS routes look the same after a version move
 
-- **WHEN** the Hub moves to a new MVDS version and the seven MVDS-bearing surfaces are read against the deploy before it, canary first: `/etsy-listing-kit` (inherit-only), `/keyword-explorer` and `/admin` (through shared `components/`), `/svg-to-stitch`, `/generative-sandbox`, `/pdf-metadata-viewer`, and `/exec-function-assessment` (the widest component surface)
+- **WHEN** the Hub moves to a new MVDS version and the eight MVDS-bearing surfaces are read against the deploy before it, canary first: `/etsy-listing-kit` (inherit-only), `/keyword-explorer` and `/admin` (through shared `components/`), `/svg-to-stitch`, `/generative-sandbox`, `/pdf-metadata-viewer`, `/estate-sale-planner` (scoped `.mvds-theme`, the most component imports), and `/exec-function-assessment` (the widest component surface)
 - **THEN** each looks the same, or the differences are ones Katy has explicitly approved
 
 ### Requirement: Heading faces don't depend on MVDS's font tokens
@@ -24,7 +24,7 @@ The Hub SHALL keep its own `@theme` font tokens and its own `.font-heading` util
 
 #### Scenario: Scoped-theme headings stay correct
 
-- **WHEN** `/svg-to-stitch` (the only route opting into `.mvds-theme`) and the Executive Function routes are loaded
+- **WHEN** the routes opting into `.mvds-theme` (`/svg-to-stitch` and `/estate-sale-planner`) and the Executive Function routes are loaded
 - **THEN** headings render in the intended face in both scopes, with no card title diverging from its page title
 
 #### Scenario: The Hub's own font utility resolves
