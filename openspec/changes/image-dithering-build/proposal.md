@@ -62,3 +62,9 @@ None.
   are real Step 1 engine output on a procedural stand-in image, not mock-ups. `00 Components` holds the
   local `Comparison tile` (`4:22`) and `Slider (stand-in)` (`4:23`). `01 Current state` notes that the
   surface is net-new.
+- **Figma, round 02.1** (`02.1 Proposed — comparisons first, Advanced tab`, page `7:10`), from Katy's
+  2026-11-11 note: *"lead with the comparisons and only offer the specific toggles and sliders on an
+  advanced tab. In theory I could click one of the dithered options and be presented with four more so
+  I could pick the one I like the best."* Frames: `Proposed · Desktop 1024 · Pick` (`8:9`),
+  `Proposed · Mobile 480 · Pick` (`9:41`), `Proposed · Desktop 1024 · Advanced tab (tool area only)`
+  (`9:127`). `02 Proposed` is left intact for comparison.

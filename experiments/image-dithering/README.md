@@ -26,6 +26,7 @@ pnpm --filter image-dithering test   # Vitest: engine + PNG export
 
 ### Step 2 — presets + UI
 - [x] Figma first round: [`02 Proposed`](https://www.figma.com/design/jillBCo0orNQPZJaCAx0g7) (desktop 1024 + mobile 480)
+- [x] Round 02.1: comparisons first, refine by picking four variations, controls on an Advanced tab (review queue #22–#25)
 - [ ] Your go on the round, then `design.md` (review queue #4)
 - [ ] Tests 14–18 red → green
 - [ ] Web Worker wired; previews downscaled, export full-res
