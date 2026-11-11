@@ -1,0 +1,9 @@
+
+ RUN  v4.1.5 /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype
+
+
+ Test Files  2 passed (2)
+      Tests  47 passed (47)
+   Start at  17:39:40
+   Duration  362ms (transform 99ms, setup 0ms, import 143ms, tests 132ms, environment 0ms)
+
