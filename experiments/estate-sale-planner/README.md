@@ -17,8 +17,12 @@ not wired yet (review queue #32). No haul-away (#7).
 - **Lifecycle (OpenSpec, `bhd-experiment`):**
   [`openspec/changes/estate-sale-planner`](../../openspec/changes/estate-sale-planner) —
   `explore.md` → `propose.md` → `apply.md` → `archive.md`
-- **Build change (lite, code ships here):**
-  [`openspec/changes/estate-sale-planner-build`](../../openspec/changes/estate-sale-planner-build)
+- **Build changes (lite, code ships here), archived 2026-11-11:**
+  [`estate-sale-planner-build`](../../openspec/changes/archive/2026-11-11-estate-sale-planner-build) ·
+  [`estate-sale-planner-sold-comps`](../../openspec/changes/archive/2026-11-11-estate-sale-planner-sold-comps) ·
+  [`esp-server-sales`](../../openspec/changes/archive/2026-11-11-esp-server-sales). Current specs:
+  `walkthrough-triage`, `item-correction`, `sold-comps-lookup`, `esp-server-sales`, `esp-app-header`
+  under [`openspec/specs/`](../../openspec/specs/)
 - **Surface:** in-hub route `app/estate-sale-planner/` on MVDS, like `etsy-listing-kit` and
   `svg-to-stitch`; deploys with the hub.
 - **Notion row:** <https://app.notion.com/p/3f8b908d7b378191bcddf0b10d2a49bb>

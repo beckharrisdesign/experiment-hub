@@ -165,7 +165,7 @@
 
 ## 4. QA
 
-- [ ] 4.1 Manual pass on a phone (photograph → send → items → sort → progress → print) —
+- [x] 4.1 Manual pass on a phone (photograph → send → items → sort → progress → print) — — 2026-11-11: Katy walked it on a phone and signed off ("the estate sale planner walkthroughs worked great")
       **Katy / proxy user**; production has `OPENAI_API_KEY` for the real vision pass. Her
       2026-10-15 pass on round 04 produced the round 05 proposal.
 - [x] 4.2 Automated: `tests/estate-sale-planner/` — 81 tests (round 05a: the video sampler

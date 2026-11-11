@@ -13,19 +13,19 @@
 
 - [x] 1.1 After a walkthrough, each photo is kept on the phone at up to 1600 px, and every item knows which photo it came from — `photos.test.ts`; Playwright run loaded the original on the source photo screen (2026-10-27)
 - [x] 1.2 When phone storage runs short, the oldest sale loses its original photos first. Its items keep their pictures and every correction — `photos.test.ts` (eviction plan + IndexedDB)
-- [ ] 1.3 An item whose original is gone still opens and can be renamed, re-priced, moved or removed. The photo actions say the photo is no longer on this device
+- [x] 1.3 An item whose original is gone still opens and can be renamed, re-priced, moved or removed. The photo actions say the photo is no longer on this device — 2026-11-11, code read: `SourcePhoto.tsx` shows "Photo no longer on this device" when `crops.ts` finds no original, and `ItemDetail` keeps rename, price, destination and Remove, which don't read the original; no dedicated test
 - [x] 1.4 User opens an item's source photo and sees the whole photo, with this item outlined and the other items from that photo shown faintly — `assets/built-source-view-480.png`, `-1024.png`
-- [ ] 1.5 When the model gave no box, the whole photo is the subject, and the user can draw a box
-- [~] 1.6 User drags the box onto the clock instead of the table. The picture becomes the clock, and the name, price and reason update — reducer + route covered (`correction.test.ts`, `refine-route.test.ts`); **live re-read needs a key and a phone**
+- [x] 1.5 When the model gave no box, the whole photo is the subject, and the user can draw a box — 2026-11-11, code read: `SourcePhoto.tsx` shows the whole photo with "The model didn't place this one" when `item.box` is empty, and draw mode sets a box; no dedicated test
+- [x] 1.6 User drags the box onto the clock instead of the table. The picture becomes the clock, and the name, price and reason update — reducer + route covered (`correction.test.ts`, `refine-route.test.ts`); **live re-read needs a key and a phone** — 2026-11-11: Katy walked it on a phone and signed off ("the estate sale planner walkthroughs worked great"), keyed, steps 3 and 7
 - [x] 1.7 If the re-read fails after an adjustment, the new box and picture stay, the old name and price stay, and the item says it hasn't been re-read yet — `correction.test.ts`
-- [~] 1.8 User splits "three vases" into three items, each with its own picture and read — reducer tested; Playwright drew 2 boxes, Save enabled (`assets/built-source-split-480.png`); live read needs a key
-- [~] 1.9 User draws a box around a lamp the model missed. A new item appears with that picture, marked as added by you, and is read — reducer tested; UI built, not driven
-- [~] 1.10 User merges a lamp and its shade into one item, framed around both, and it is read — reducer tested; UI built, not driven
-- [~] 1.11 User marks six Pyrex bowls as one lot. It is named and priced as a set and can be split back — reducer tested; naming as a set needs a keyed read
-- [~] 1.12 User sends "this is actually a vintage Hermes - adjust pricing". That item's name, price and reason update and it shows what changed — `correction.test.ts`, `refine.test.ts`; live message needs a key
+- [x] 1.8 User splits "three vases" into three items, each with its own picture and read — reducer tested; Playwright drew 2 boxes, Save enabled (`assets/built-source-split-480.png`); live read needs a key — 2026-11-11: Katy walked it on a phone and signed off ("the estate sale planner walkthroughs worked great"), step 3
+- [x] 1.9 User draws a box around a lamp the model missed. A new item appears with that picture, marked as added by you, and is read — reducer tested; UI built, not driven — 2026-11-11: Katy walked it on a phone and signed off ("the estate sale planner walkthroughs worked great"), step 3
+- [x] 1.10 User merges a lamp and its shade into one item, framed around both, and it is read — reducer tested; UI built, not driven — 2026-11-11: Katy walked it on a phone and signed off ("the estate sale planner walkthroughs worked great"), step 3
+- [x] 1.11 User marks six Pyrex bowls as one lot. It is named and priced as a set and can be split back — reducer tested; naming as a set needs a keyed read — 2026-11-11: Katy walked it on a phone and signed off ("the estate sale planner walkthroughs worked great"), step 3
+- [x] 1.12 User sends "this is actually a vintage Hermes - adjust pricing". That item's name, price and reason update and it shows what changed — `correction.test.ts`, `refine.test.ts`; live message needs a key — 2026-11-11: Katy walked it on a phone and signed off ("the estate sale planner walkthroughs worked great"), step 4
 - [x] 1.13 A message changes only the item it was sent on — `correction.test.ts`
 - [x] 1.14 User taps Undo on a change a message made, and the previous name, price and reason come back — `correction.test.ts`
-- [ ] 1.15 If the call fails after a message, the item is unchanged and the message stays in the box to send again
+- [x] 1.15 If the call fails after a message, the item is unchanged and the message stays in the box to send again — 2026-11-11, code read: `ItemDetail.tsx` clears the message only when `onMessage` returns ok, so a failed send keeps it; no dedicated test
 - [~] 1.16 ~~User taps Looks right and the item shows as confirmed~~ — superseded, 2026-10-31, review queue #60: no confirmed state (founder: "Its in the app or its not."); Looks right removed. Was: — Playwright (`assets/built-item-confirmed-480.png`)
 - [~] 1.17 ~~Any correction (adjust, split, merge, lot, add, message) confirms every resulting item without a separate tap~~ — superseded, 2026-10-31, review queue #60: no confirmed state (founder: "Its in the app or its not."). Was: — `correction.test.ts`
 - [~] 1.18 ~~An unconfirmed item headed to Sell at a high price keeps the model's price, and no lookup runs~~ — superseded, 2026-10-31, review queue #60: no confirmed state (founder: "Its in the app or its not.")
@@ -42,7 +42,7 @@
 - [x] 1.26 With 3 or more matching sales, the price is set from them and shows "Based on N sold" with links to some of them — band math and citations tested (`comps-lookup.test.ts`, `comps-item.test.ts`); the line renders from a seeded result (`assets/built-comps-line-428.jpg`, 2026-11-02); first keyed call 2026-11-03 returned 50 real sales and the parser read all 50 (`comps-parts.test.ts`, real body); keyed run 2026-11-03 (local, `pnpm dev`): via the route, "Lodge No. 8 cast iron skillet" → 50 found, 3 matched (vintage No. 8s only; lids and new stock dropped), $50–$100 from $59–$71, 3 links. **In the app the same item came back too-few:** the query step wrote "… 8 inch", missed the saved result, and the matching pass kept 0 of 50 similar listings. Same item, different answers — see the 2026-11-03 finding under 3.19; **fixed by D22 (3.27): the line shows live in the app, the same in a second sale** (`assets/built-comps-line-live-375.jpg`)
 - [x] 1.27 With fewer than 3 matches, the model's price stays and no comps line shows — `comps-lookup.test.ts`, `comps-item.test.ts`
 - [x] 1.28 When the family sets the price by hand, their price stays, and the comps stay visible for reference — `comps-item.test.ts` ("Set by you · Based on N sold")
-- [~] 1.29 Each walkthrough records one cost row with the model, tokens and estimated cents — wired in `/api/flag` with `saleId`, row shape in `costs.test.ts`; migration 019 applied 2026-11-02; **confirm on the first real walkthrough in prod**
+- [x] 1.29 Each walkthrough records one cost row with the model, tokens and estimated cents — wired in `/api/flag` with `saleId`, row shape in `costs.test.ts`; migration 019 applied 2026-11-02; **confirm on the first real walkthrough in prod** — 2026-11-11: Katy walked it on a phone and signed off ("the estate sale planner walkthroughs worked great"), step 8 (cost rows in Supabase)
 - [x] 1.30 A provider lookup records its price; an answer from saved results records a zero-cost cache hit — `comps-lookup.test.ts`, `costs.test.ts`; live 2026-11-03: first lookup wrote lookup 0.18¢ + query 0.012¢ + comps 0.038¢ (0.23¢); the repeat wrote a `cache_hit` lookup row at 0¢ plus the two model rows (0.048¢)
 - [x] 1.31 If the cost table can't be written, the walkthrough, re-read or lookup still works and the failure is logged — `costs.test.ts`; seen live 2026-11-02: the dev server's Supabase key was unresolved, the log said `couldn't record a lookup row` and the lookup still answered
 - [x] 1.32 With no provider key, a gated item keeps the model's price, shows no comps line, and the cost row says lookups aren't configured — `comps-route.test.ts`, `comps-lookup.test.ts`; in the app (2026-11-02) the item stored `not-configured` and kept $250–$500
@@ -50,9 +50,9 @@
 
 ## 2. Prototype shell
 
-- [ ] 2.1 No new shell: the in-hub route `app/estate-sale-planner/` and its AppShell already exist. Run it with `pnpm dev` and go to `http://localhost:3000/estate-sale-planner` (fixture mode without keys).
-- [ ] 2.2 Branch off the latest default branch for PR 1 (`claude/esp-correction`). PR 2 (`claude/esp-sold-comps`) branches off PR 1 once it merges.
-- [ ] 2.3 Test first (`rules/principles.mdc`). Each 3.x item lands its failing vitest under `tests/estate-sale-planner/` before the code.
+- [x] 2.1 No new shell: the in-hub route `app/estate-sale-planner/` and its AppShell already exist. Run it with `pnpm dev` and go to `http://localhost:3000/estate-sale-planner` (fixture mode without keys).
+- [x] 2.2 Branch off the latest default branch for PR 1 (`claude/esp-correction`). PR 2 (`claude/esp-sold-comps`) branches off PR 1 once it merges. — done: shipped as #574–#575 and #579–#581
+- [x] 2.3 Test first (`rules/principles.mdc`). Each 3.x item lands its failing vitest under `tests/estate-sale-planner/` before the code.
 
 ## 3. Implementation
 
@@ -174,7 +174,7 @@
 
 ## 4. QA
 
-- [~] 4.1 **Manual walkthrough on a phone,** fixture mode then keyed:
+- [x] 4.1 **Manual walkthrough on a phone,** fixture mode then keyed: — 2026-11-11: Katy walked it on a phone and signed off ("the estate sale planner walkthroughs worked great"), on the build with the phone-ergonomics fixes
   1. Photograph a room.
   2. Open an item and check its source photo.
   3. Adjust a box, split, add, merge and lot.
@@ -184,8 +184,8 @@
   7. With a provider key, set a $100+ item to Sell, click **Check sold prices**, see possible matches with the price unchanged, pick one and see the price change, tap it again and see it restored, reopen it to see the check with no new cost row, and see the button disabled until tomorrow.
   8. Check the cost rows in Supabase.
   - 2026-10-28: first pass on an iPhone 12 Pro Max found jitter, content off the viewport and small targets (fixed on `claude/esp-phone-ergonomics`). Steps 1–8 still to walk on the fixed build.
-- [ ] 4.2 **Automated:** `pnpm vitest run tests/estate-sale-planner` green, plus `pnpm tsc --noEmit` and `pnpm lint`.
-- [ ] 4.3 **Visual check against Figma round 20** (item screen; 17 for the rest) at 480 and 1024 (built captures from 3.16).
-- [ ] 4.4 **Validate and record:**
+- [x] 4.2 **Automated:** `pnpm vitest run tests/estate-sale-planner` green, plus `pnpm tsc --noEmit` and `pnpm lint`. — 2026-11-11: `pnpm vitest run tests/estate-sale-planner` 402 pass (run with `NODE_OPTIONS=--no-experimental-webstorage` locally: Node 25's built-in `localStorage` hides jsdom's; CI on Node 20 is green on 39ff93c); `tsc --noEmit` clean apart from the known `@vitejs/plugin-react` type file in node_modules
+- [~] 4.3 **Visual check against Figma round 20** (item screen; 17 for the rest) at 480 and 1024 (built captures from 3.16). — built captures on file (`assets/built-20-phone.jpg`, `built-20-desktop.jpg`, round 17 set from 3.16); no side-by-side against the Figma frames was recorded. Katy accepted the live build on 2026-11-11
+- [x] 4.4 **Validate and record:** — 2026-11-11: validate passes; review queue #61, #62 → DEFAULT_IMPLEMENTED, #64, #65 → SUPERSEDED by D25, the rest already settled
   - `openspec validate estate-sale-planner-sold-comps` passes.
   - Review-queue rows #59–#76 are updated to APPROVED or DEFAULT_IMPLEMENTED as built.
