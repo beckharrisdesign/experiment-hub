@@ -3,7 +3,7 @@
 Upload a photo, dither it for laser engraving, and download a PNG at the exact physical size. It runs
 entirely in the browser. It's the first test of whether a programmatic-SEO tool site for makers can rank.
 
-**Status:** Step 1 (engine) done, 47/47 green. Next: Figma round for the page, then Step 2. This is an autonomous build: see the review queue before trusting any default.
+**Status:** Step 1 (engine) done, 47/47 green. The Figma first round is up and waiting on your go before any UI code. This is an autonomous build: see the review queue before trusting any default.
 
 - **Founder intent + full brief:** [`docs/intent.md`](docs/intent.md)
 - **Review queue:** [`docs/review-queue.md`](docs/review-queue.md)
@@ -25,7 +25,8 @@ pnpm --filter image-dithering test   # Vitest: engine + PNG export
 - [x] Engine + pHYs injection implemented: 47/47 green ([`docs/test-runs/step1-green.txt`](docs/test-runs/step1-green.txt)). Atkinson's 25%-gray tolerance set explicitly, see review queue #15
 
 ### Step 2 — presets + UI
-- [ ] Figma round + `design.md` approved (review queue #4)
+- [x] Figma first round: [`02 Proposed`](https://www.figma.com/design/jillBCo0orNQPZJaCAx0g7) (desktop 1024 + mobile 480)
+- [ ] Your go on the round, then `design.md` (review queue #4)
 - [ ] Tests 14–18 red → green
 - [ ] Web Worker wired; previews downscaled, export full-res
 

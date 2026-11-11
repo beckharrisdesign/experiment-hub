@@ -56,4 +56,9 @@ None.
 
 - Experiment directory: `experiments/image-dithering/`
 - Review queue (autonomous defaults): `experiments/image-dithering/docs/review-queue.md`
-- Figma round: due before Step 2 UI code (review queue #4)
+- **Figma, first round (`02 Proposed`):** design file [`image-dithering-build`](https://www.figma.com/design/jillBCo0orNQPZJaCAx0g7)
+  · page `02 Proposed` (node `1:267`) · frames `Proposed · Desktop 1024` (node `5:231`) and
+  `Proposed · Mobile 480` (node `6:61`). Built on MVDS Core (team default library). The image tiles
+  are real Step 1 engine output on a procedural stand-in image, not mock-ups. `00 Components` holds the
+  local `Comparison tile` (`4:22`) and `Slider (stand-in)` (`4:23`). `01 Current state` notes that the
+  surface is net-new.
