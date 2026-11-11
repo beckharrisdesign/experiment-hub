@@ -1,7 +1,7 @@
 # esp-app-header Specification
 
 ## Purpose
-The Estate Sale Planner's sticky header: a Back button to the parent screen, the current page's name, and a Menu slot for account and persona work. From `esp-header-affordance` (archived 2026-10-28).
+The Estate Sale Planner's sticky header: a Back button to the parent screen, the current page's name, and a Menu slot for account and persona work. From `esp-header-affordance` (archived 2026-10-28); the panel's first setting, the sold-price lookup threshold, from `estate-sale-planner-sold-comps` (archived 2026-11-11).
 
 ## Requirements
 
@@ -67,16 +67,24 @@ The header SHALL render a 44 × 44 px MVDS icon `Button` with a menu glyph and t
 
 ### Requirement: The menu opens a placeholder and nothing else
 
-Tapping the menu opens an empty "Account & profile" panel, which closes without side effects.
+Tapping the menu opens the "Account & profile" panel, which holds settings that belong to the
+person, not to one sale, and closes without side effects.
 
-The Menu button SHALL open a dismissible panel headed "Account & profile" with a Close button and
-no other content or actions, closable by its close button, Escape, or tapping outside, with
-focus returned to the Menu button on close.
+The Menu button SHALL open a dismissible panel headed "Account & profile" with a Close button
+and the person's settings, and no explanatory copy, closable by its close button, Escape, or
+tapping outside, with focus returned to the Menu button on close. Its first setting SHALL be
+"Look up sold prices for", a single-select of $25+, $100+ and $500+ (`COMPS.minBandChoices`)
+that starts at $100+ (`COMPS.minBand`) and is saved on the device until accounts exist.
 
 #### Scenario: Open and close the placeholder
 
 - **WHEN** the family taps Menu
-- **THEN** a panel headed "Account & profile" opens with only a Close button, and closing it (close button, Escape, or tapping outside) returns focus to Menu and changes nothing else
+- **THEN** a panel headed "Account & profile" opens with a Close button and the lookup threshold, and closing it (close button, Escape, or tapping outside) returns focus to Menu and changes nothing else
+
+#### Scenario: Change the lookup threshold
+
+- **WHEN** the family picks $500+ in the panel
+- **THEN** it is saved on the device, the next time the panel opens it shows $500+, and later lookups only run for $500-and-up items
 
 ### Requirement: The taller header still fits its contents
 

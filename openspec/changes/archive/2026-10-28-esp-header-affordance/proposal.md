@@ -87,5 +87,5 @@ of its own.
   - `01 Current state`: page `0:1`, frame `2:2` (`Current · Mobile 428`)
   - `02 Proposed`: page `3:2`, frames `3:170` (`Proposed A · back button · Mobile 428`) and
     `3:183` (`Proposed B · breadcrumb chips · Mobile 428`)
-- Prior header design: `openspec/changes/estate-sale-planner-sold-comps/design.md` (D11, D21)
+- Prior header design: `openspec/changes/archive/2026-11-11-estate-sale-planner-sold-comps/design.md` (D11, D21)
 - Experiment directory: `experiments/estate-sale-planner/`

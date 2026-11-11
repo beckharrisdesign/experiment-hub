@@ -84,7 +84,7 @@
 
 ## 4. QA
 
-- [ ] 4.1 **Manual walkthrough on a phone:**
+- [x] 4.1 **Manual walkthrough on a phone:** — 2026-11-11: Katy walked it on a phone and signed off ("the estate sale planner walkthroughs worked great")
   - Walk a room.
   - Confirm the sale and photos are in the database and bucket.
   - Simulate Safari's wipe. Clear the site's localStorage, sessionStorage and IndexedDB from Web Inspector, keeping cookies. iOS Settings → Clear Website Data also clears the cookie, so it's the lost-access case, not the wipe.
@@ -92,4 +92,4 @@
   - Go offline, edit, go online, and check the edit lands.
   - Open the sale's API from another browser and get a 404.
 - [x] 4.2 **Automated:** `pnpm vitest run tests/estate-sale-planner` green, plus `pnpm tsc --noEmit` and `pnpm lint`. (2026-11-03: estate-sale-planner 311 pass; full suite 1,759 pass before the review fixes; tsc clean apart from a node_modules type file; lint adds no new warning.)
-- [ ] 4.3 **Validate and record:** `openspec validate esp-server-sales`, and dated receipts on every §1 line.
+- [x] 4.3 **Validate and record:** `openspec validate esp-server-sales`, and dated receipts on every §1 line. — 2026-11-11: `openspec validate esp-server-sales` passes; every §1 line carries a dated receipt (1.5 stays partial: retry covered by `sync.test.ts`, not forced live)
