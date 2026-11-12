@@ -49,25 +49,41 @@ never counts.
 - 🔁 **Change the sorting screen, not the idea**, if starts are met but finishing or taps miss: one
   iteration on the swipe surface, then re-measure.
 - 🛑 **Stop** if **< 10 starts with the search burst, or < 5 without**, or the proxy user overrides
-  **> 60 %** of sell flags or calls a price band absurd on something they know the value of.
+  **> 60 %** of sell flags or calls a price band absurd on something they know the value of, or
+  **model cost per walkthrough can't be held under $1.00** (all three are propose.md's kill
+  criteria).
 
 **Where the numbers come from:**
-- **Starts and finish rate:** GA4 `G-120M120GDY`, events `esp_start` and `esp_swipe_complete`
-  (filter `experiment_slug = estate-sale-planner`). Cross-check, kept indefinitely: rows in
-  `esp_sales` created on or after day 0.
+- **Starts:** rows in `esp_sales` created on or after day 0, excluding Katy's device. Each new
+  walkthrough is one row, and the table carries `device_hash`, so it can be filtered. Not GA4's
+  `esp_start`: that fires whenever the planner opens (the sale store's mount effect), including
+  visits that never start a sale. GA4's `esp_new_walkthrough` isn't usable either: it only fires
+  when the person already has a sale, so it misses everyone's first one.
+- **Finished sort:** GA4 `G-120M120GDY`, event `esp_swipe_complete` (filter
+  `experiment_slug = estate-sale-planner`). GA4 events carry no device, so **before day 0 Katy
+  turns GA off on her own devices**: in each browser's console on the hub, run
+  `localStorage.setItem("analytics_optout", "true")`. The hub's `trackEvent` sends nothing while
+  that is set ([`lib/analytics/ga.ts`](../../lib/analytics/ga.ts)).
 - **Pickup taps:** `esp_events` rows with `event = 'esp_exit_tap'` (only exit taps and checkout
-  starts are written there; every other event is GA4 only). That table has no device column, so
-  Katy's own taps can't be filtered out of it: don't tap the pickup link while the test runs.
-- **Excluded:** Katy's device, `device_hash` in `TEST_DEVICE_HASHES`
+  starts are written there). That table has no device column either: don't tap the pickup link
+  while the test runs.
+- **Proxy-user overrides and absurd bands:** from the proxy user's grading of their own house, as
+  propose.md's method describes (for each *sell* item: "would I have known?", "is the band
+  plausible?"). Recorded by hand: GA4's `esp_sell_override` can't be tied to one person.
+- **Cost per walkthrough:** `esp_costs`, summed per `sale_id` for sales started on or after day 0
+  (model calls only: `kind in ('walkthrough','reread','query','comps')`). The per-sale query is
+  [`docs/cost-per-sale.sql`](docs/cost-per-sale.sql); change its 30-day window to day 0. Cents are
+  estimates from token counts × the `MODEL_PRICES` table.
+- **Katy's device:** `device_hash` in `TEST_DEVICE_HASHES`
   ([`lib/estate-sale-planner/config.ts`](../../lib/estate-sale-planner/config.ts)). If she clears
   that browser's site data it becomes a new device: update the hash before day 0.
 - **Before day 0** (read 2026-11-12): 7 saved walkthroughs, 2026-11-03 → 06, 1 of them on Katy's
   device; 0 pickup taps. All pre-test, so none count.
 
-| Checkpoint | Date | Starts (GA4 / `esp_sales`) | Finished sort | Pickup taps | Proxy-user overrides of sell flags |
-| --- | --- | --- | --- | --- | --- |
-| Day 7 | | | | | |
-| Day 14 | | | | | |
+| Checkpoint | Date | Starts (`esp_sales`, not Katy) | Finished sort (GA4) | Pickup taps | Proxy-user overrides of sell flags | Highest model cost per walkthrough |
+| --- | --- | --- | --- | --- | --- | --- |
+| Day 7 | | | | | | |
+| Day 14 | | | | | | |
 
 ## Run locally
 
