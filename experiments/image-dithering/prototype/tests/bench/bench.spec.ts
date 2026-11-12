@@ -54,6 +54,7 @@ test("preview update after a slider change, 2 MP (budget 300 ms)", async ({ page
   }
   results.previewSliderMs2MP = median(runs);
   console.log("slider → preview (2 MP), runs:", runs.map(Math.round), "median", results.previewSliderMs2MP);
+  expect(results.previewSliderMs2MP, "brief budget: 300 ms").toBeLessThanOrEqual(300);
 });
 
 test("comparison grid of 8 for a 12 MP photo (budget 1.5 s) and full-res Floyd–Steinberg export (budget 2 s)", async ({ page }) => {
@@ -61,6 +62,7 @@ test("comparison grid of 8 for a 12 MP photo (budget 1.5 s) and full-res Floyd�
   const file = photo(4000, 3000);
   results.grid8Ms12MP = Math.round(await upload(page, file));
   console.log("12 MP upload → 8 tiles painted:", results.grid8Ms12MP, "ms");
+  expect(results.grid8Ms12MP, "brief budget: 1.5 s").toBeLessThanOrEqual(1500);
 
   await page.getByRole("button", { name: "Floyd–Steinberg" }).click();
   await page.locator("#step-effect [data-next]").click();
@@ -79,6 +81,7 @@ test("comparison grid of 8 for a 12 MP photo (budget 1.5 s) and full-res Floyd�
   }
   results.exportFsMs12MP = best(runs);
   console.log("12 MP Floyd–Steinberg export (click → file ready), runs:", runs.map(Math.round), "best", results.exportFsMs12MP);
+  expect(results.exportFsMs12MP, "brief budget: 2 s").toBeLessThanOrEqual(2000);
 });
 
 test.afterAll(() => {

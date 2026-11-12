@@ -1,9 +1,10 @@
 import { injectPhys } from "../engine/png-phys";
 import { startAnalytics, trackDownload } from "../lib/analytics";
 import type { Settings } from "../engine/pipeline";
-import { lockAspect, mmToPx } from "../engine/size";
 import type { Gray } from "../engine/types";
 import { DITHER_EFFECTS, HALFTONE_EFFECTS, type Effect } from "../lib/effects";
+import { MAX_SIDE_PX, clampWidthMm, clampWidthPx, exportPixels } from "../lib/export-size";
+import { createLatest } from "../lib/latest";
 import { exportSettings, materialById } from "../lib/presets";
 import { searchFor, stateFromSearch } from "../lib/url";
 import { variations } from "../lib/variations";
@@ -32,20 +33,30 @@ const state = {
   material: fromUrl.material,
   widthMm: 100,
   widthPx: 800,
+  /**
+   * Output settings: what the laser needs, applied on top of whatever look is picked. Kept apart
+   * from base/current so going back and re-picking an effect can't lose them (Copilot review, PR #591).
+   */
+  out: { invert: fromUrl.settings.invert, mirror: fromUrl.settings.mirror, dpi: fromUrl.settings.dpi },
 };
+
+/** A look plus the output layer. Invert and mirror are laser-only; on screen they're off. */
+function withOutput(s: Settings): Settings {
+  return state.exportFor === "laser"
+    ? { ...s, invert: state.out.invert, mirror: state.out.mirror, dpi: state.out.dpi }
+    : { ...s, invert: false, mirror: false, dpi: state.out.dpi };
+}
+
+const loads = createLatest(); // latest upload wins (Copilot review, PR #591)
 
 const effects = (): Effect[] => (state.effect === "dither" ? DITHER_EFFECTS : HALFTONE_EFFECTS);
 
 // ── Rendering ────────────────────────────────────────────────────────────────
 
-/** The export size in pixels for the current choices. */
-function exportSize(): { w: number; h: number; dpi: number } {
-  const dpi = state.current.dpi;
-  if (state.exportFor === "laser") {
-    const { heightMm } = lockAspect(state.srcW, state.srcH, { widthMm: state.widthMm });
-    return { w: mmToPx(state.widthMm, dpi), h: mmToPx(heightMm, dpi), dpi };
-  }
-  return { w: state.widthPx, h: Math.max(1, Math.round((state.widthPx * state.srcH) / state.srcW)), dpi };
+/** The export size in pixels for the current choices; `tooLarge` past MAX_SIDE_PX. */
+function exportSize() {
+  const dpi = state.out.dpi;
+  return { ...exportPixels({ exportFor: state.exportFor, widthMm: state.widthMm, widthPx: state.widthPx, dpi, srcW: state.srcW, srcH: state.srcH }), dpi };
 }
 
 /**
@@ -74,11 +85,17 @@ function measure(canvases: HTMLCanvasElement[]): Box[] {
 }
 
 /** Render `s` into a canvas at its real pixel size, fitted (contain) on white. The worker does all pixel work. */
-async function paint(canvas: HTMLCanvasElement, s: Settings, gen: number, box: Box = measure([canvas])[0]): Promise<boolean> {
+async function paint(canvas: HTMLCanvasElement, look: Settings, gen: number, box: Box = measure([canvas])[0]): Promise<boolean> {
   const { cw, ch } = box;
   const fit = Math.min(cw / state.srcW, ch / state.srcH);
   const w = Math.max(1, Math.round(state.srcW * fit)), h = Math.max(1, Math.round(state.srcH * fit));
-  const rgba = await engine.tile(previewSettings(s, w), w, h, cw, ch);
+  let rgba: Uint8ClampedArray;
+  try {
+    rgba = await engine.tile(previewSettings(withOutput(look), w), w, h, cw, ch);
+  } catch {
+    canvas.dataset.error = "true"; // the tile stays blank; the engine error is shown by download()
+    return false;
+  }
   if (gen !== generation) return false;
   if (canvas.width !== cw) canvas.width = cw;
   if (canvas.height !== ch) canvas.height = ch;
@@ -180,7 +197,8 @@ function goTo(step: Step) {
 
 function setExportFor(v: "screen" | "laser") {
   state.exportFor = v;
-  if (v === "screen") state.material = null;
+  // Leaving Laser drops its material and laser-only settings, so they can't come back silently.
+  if (v === "screen") { state.material = null; state.out = { ...state.out, invert: false, mirror: false }; }
   syncUrl();
   renderExport();
 }
@@ -189,13 +207,13 @@ function setMaterial(id: string) {
   const m = materialById(id);
   if (!m) return;
   state.material = id;
-  state.current = { ...state.current, ...exportSettings(m) };
+  state.out = { ...state.out, ...exportSettings(m) };
   syncUrl();
   renderExport();
 }
 
 function toggle(key: "invert" | "mirror") {
-  state.current = { ...state.current, [key]: !state.current[key] };
+  state.out = { ...state.out, [key]: !state.out[key] };
   renderExport();
 }
 
@@ -205,11 +223,12 @@ function syncUrl() {
 }
 
 async function download() {
-  const { w, h, dpi } = exportSize();
+  const { w, h, dpi, tooLarge } = exportSize();
+  if (tooLarge) return; // the button is disabled and the size line explains why
   const btn = $<HTMLButtonElement>("#download");
   btn.disabled = true; btn.textContent = "Preparing…";
   try {
-    const out = await engine.render(state.current, w, h);
+    const out = await engine.render(withOutput(state.current), w, h);
     const canvas = document.createElement("canvas"); canvas.width = w; canvas.height = h;
     canvas.getContext("2d")!.putImageData(toImageData(out), 0, 0);
     const blob = await new Promise<Blob>((r) => canvas.toBlob((b) => r(b!), "image/png"));
@@ -226,6 +245,8 @@ async function download() {
       exportFor: state.exportFor,
       material: state.exportFor === "laser" ? state.material : null,
     });
+  } catch (err) {
+    $("#export-size").textContent = `Couldn't make the PNG (${err instanceof Error ? err.message : "unknown error"}). Try a smaller size or DPI.`;
   } finally {
     btn.disabled = false; btn.textContent = "Download PNG";
   }
@@ -233,14 +254,15 @@ async function download() {
 
 // ── Source image ─────────────────────────────────────────────────────────────
 
-async function setSource(rgba: Uint8ClampedArray | null, w: number, h: number, name: string, bitmap?: ImageBitmap) {
-  state.srcW = w; state.srcH = h; state.sourceName = name;
-  state.widthPx = Math.min(w, 2400);
+async function setSource(token: number, rgba: Uint8ClampedArray | null, w: number, h: number, name: string, bitmap?: ImageBitmap) {
   const thumb = $<HTMLCanvasElement>("#source-thumb");
   const tc = thumb.getContext("2d")!;
-  tc.fillStyle = "#fff"; tc.fillRect(0, 0, thumb.width, thumb.height);
   if (rgba) {
     await engine.setSource(rgba, w, h);
+    if (!loads.isCurrent(token)) return; // a newer image arrived while this one loaded
+    state.srcW = w; state.srcH = h; state.sourceName = name;
+    state.widthPx = Math.min(w, 2400);
+    tc.fillStyle = "#fff"; tc.fillRect(0, 0, thumb.width, thumb.height);
     if (bitmap) {
       const f = Math.min(thumb.width / w, thumb.height / h);
       tc.drawImage(bitmap, (thumb.width - w * f) / 2, (thumb.height - h * f) / 2, w * f, h * f);
@@ -248,6 +270,9 @@ async function setSource(rgba: Uint8ClampedArray | null, w: number, h: number, n
   } else {
     // The sample: generated in the worker; only the thumbnail comes back.
     const t = await engine.loadSample(w, h, thumb.width, thumb.height);
+    if (!loads.isCurrent(token)) return;
+    state.srcW = w; state.srcH = h; state.sourceName = name;
+    state.widthPx = Math.min(w, 2400);
     tc.putImageData(new ImageData(t as Uint8ClampedArray<ArrayBuffer>, thumb.width, thumb.height), 0, 0);
   }
   $("#source-name").textContent = name;
@@ -265,12 +290,18 @@ async function loadFile(file: File) {
   generation++;
   $$("#effect-grid .tile").forEach((el) => el.removeAttribute("data-rendered"));
   $<HTMLButtonElement>("#step-effect [data-next]").disabled = true;
+  const token = loads.next();
   const bmp = await createImageBitmap(file);
-  const f = Math.min(1, MAX_SOURCE / Math.max(bmp.width, bmp.height));
-  const w = Math.round(bmp.width * f), h = Math.round(bmp.height * f);
-  const c = document.createElement("canvas"); c.width = w; c.height = h;
-  const ctx = c.getContext("2d")!; ctx.drawImage(bmp, 0, 0, w, h);
-  await setSource(ctx.getImageData(0, 0, w, h).data, w, h, file.name, bmp);
+  try {
+    if (!loads.isCurrent(token)) return; // a newer upload started; drop this one
+    const f = Math.min(1, MAX_SOURCE / Math.max(bmp.width, bmp.height));
+    const w = Math.round(bmp.width * f), h = Math.round(bmp.height * f);
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const ctx = c.getContext("2d")!; ctx.drawImage(bmp, 0, 0, w, h);
+    await setSource(token, ctx.getImageData(0, 0, w, h).data, w, h, file.name, bmp);
+  } finally {
+    bmp.close(); // release the decoded bitmap now, not at the next GC (Copilot review, PR #591)
+  }
 }
 
 // ── Steps and controls ───────────────────────────────────────────────────────
@@ -294,16 +325,18 @@ function syncExportControls() {
   $$("[data-for]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.for === state.exportFor)));
   $$<HTMLElement>("[data-when]").forEach((el) => { el.hidden = el.dataset.when !== state.exportFor; });
   $$("[data-material]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.material === state.material)));
-  $$("[data-toggle]").forEach((b) => b.setAttribute("aria-checked", String(Boolean(state.current[b.dataset.toggle as "invert" | "mirror"]))));
-  const { heightMm } = lockAspect(state.srcW, state.srcH, { widthMm: state.widthMm });
+  $$("[data-toggle]").forEach((b) => b.setAttribute("aria-checked", String(Boolean(state.out[b.dataset.toggle as "invert" | "mirror"]))));
+  const { w, h, dpi, heightMm, tooLarge } = exportSize();
   $<HTMLInputElement>("#width-mm").value = String(state.widthMm);
   $<HTMLInputElement>("#height-mm").value = String(heightMm);
-  $<HTMLSelectElement>("#dpi").value = String(state.current.dpi);
+  $<HTMLSelectElement>("#dpi").value = String(dpi);
   $<HTMLInputElement>("#width-px").value = String(state.widthPx);
-  const { w, h, dpi } = exportSize();
-  $("#export-size").textContent = state.exportFor === "laser"
-    ? `${w} × ${h} px at ${dpi} DPI, written into the file so your laser software places it at ${state.widthMm} × ${heightMm} mm.`
-    : `${w} × ${h} px, black and white.`;
+  $<HTMLButtonElement>("#download").disabled = tooLarge;
+  $("#export-size").textContent = tooLarge
+    ? `${w} × ${h} px is too large to make in a browser (the limit is ${MAX_SIDE_PX.toLocaleString("en")} px per side). Lower the size or the DPI.`
+    : state.exportFor === "laser"
+      ? `${w} × ${h} px at ${dpi} DPI, written into the file so your laser software places it at ${state.widthMm} × ${heightMm} mm.`
+      : `${w} × ${h} px, black and white.`;
 }
 
 function renderAdvanced() {
@@ -360,13 +393,14 @@ function wire() {
   $$("[data-for]").forEach((b) => b.addEventListener("click", () => setExportFor(b.dataset.for as "screen" | "laser")));
   $$("[data-material]").forEach((b) => b.addEventListener("click", () => setMaterial(b.dataset.material!)));
   $$("[data-toggle]").forEach((b) => b.addEventListener("click", () => toggle(b.dataset.toggle as "invert" | "mirror")));
-  $<HTMLInputElement>("#width-mm").addEventListener("change", (e) => { const v = Number((e.target as HTMLInputElement).value); if (v > 0) { state.widthMm = v; renderExport(); } });
-  $<HTMLInputElement>("#width-px").addEventListener("change", (e) => { const v = Math.round(Number((e.target as HTMLInputElement).value)); if (v >= 16) { state.widthPx = v; renderExport(); } });
-  $<HTMLSelectElement>("#dpi").addEventListener("change", (e) => { state.current = { ...state.current, dpi: Number((e.target as HTMLSelectElement).value) }; renderExport(); });
+  // Typed sizes are clamped to the inputs' ranges, which `min`/`max` alone don't enforce (Copilot review, PR #591).
+  $<HTMLInputElement>("#width-mm").addEventListener("change", (e) => { state.widthMm = clampWidthMm(Number((e.target as HTMLInputElement).value)); renderExport(); });
+  $<HTMLInputElement>("#width-px").addEventListener("change", (e) => { state.widthPx = clampWidthPx(Number((e.target as HTMLInputElement).value)); renderExport(); });
+  $<HTMLSelectElement>("#dpi").addEventListener("change", (e) => { state.out = { ...state.out, dpi: Number((e.target as HTMLSelectElement).value) }; renderExport(); });
   $("#download").addEventListener("click", download);
 }
 
 startAnalytics(); // production host only; no-op locally, in tests and in CI
 wire();
 updateSteps();
-setSource(null, 800, 600, "Sample photo");
+setSource(loads.next(), null, 800, 600, "Sample photo");

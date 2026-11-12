@@ -14,7 +14,15 @@ type Msg =
   | { type: "tile"; id: number; settings: Settings; width: number; height: number; boxW: number; boxH: number };
 
 self.onmessage = (e: MessageEvent<Msg>) => {
-  const m = e.data;
+  try {
+    handle(e.data);
+  } catch (err) {
+    // Report instead of dying silently, so the page can tell the person (Copilot review, PR #591).
+    self.postMessage({ id: e.data.id, error: err instanceof Error ? err.message : String(err) });
+  }
+};
+
+function handle(m: Msg) {
   if (m.type === "sample") {
     // The sample is generated here, off the main thread, and only a small thumbnail goes back.
     const rgba = sampleImage(m.width, m.height);
@@ -48,4 +56,4 @@ self.onmessage = (e: MessageEvent<Msg>) => {
     return;
   }
   self.postMessage({ id: m.id, width: out.width, height: out.height, data: out.data }, [out.data.buffer]);
-};
+}

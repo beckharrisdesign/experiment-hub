@@ -49,7 +49,7 @@
 
 ## 4. QA
 
-- [x] 4.1 Automated: 95 unit (Vitest) + 12 build-output + 8 browser (Playwright: flow, keyboard, axe, privacy) + benchmarks + Lighthouse gate, all green in CI on PR #591 at `0f9c1e8` (12 passed, 2 skipped; read 2026-11-12)
+- [x] 4.1 Automated: unit (Vitest) + build-output + browser (Playwright: flow, keyboard, axe, privacy) + Lighthouse gate, all green in CI on PR #591 at `0f9c1e8` (12 passed, 2 skipped; read 2026-11-12). **Correction (Copilot review):** the benchmarks were not run in CI then; they ran locally only (1.7). From the review-fix commit on, a `Benchmarks` CI job runs them with the brief's budgets as assertions
 - [x] 4.2 Walkthrough in the browser pane (Claude), 2026-11-11 and live 2026-11-12: Halftone → pick → fine-tune → Laser → Slate → download, desktop and 375 px; clean console
 - [ ] 4.3 **Katy:** the downloaded PNG imports into **LightBurn** and **xTool Creative Space** at the size set in mm
 - [ ] 4.4 **Katy:** one test burn per material preset on the M1 Ultra; tune `src/data/presets.json` from the results

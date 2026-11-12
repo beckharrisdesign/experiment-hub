@@ -62,6 +62,29 @@ jobs:
           name: playwright-traces
           path: experiments/image-dithering/prototype/test-results/
 
+  benchmarks:
+    name: Benchmarks (brief budgets)
+    runs-on: ubuntu-24.04  # ubuntu-latest became 26.04, which Playwright 1.59 does not support yet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: experiments/image-dithering/prototype/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --ignore-workspace
+      - run: npx playwright install --with-deps chromium
+      - name: Slider 2 MP ≤ 300 ms · grid 12 MP ≤ 1.5 s · FS export 12 MP ≤ 2 s
+        run: npx playwright test -c playwright.bench.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bench-results
+          path: experiments/image-dithering/prototype/bench-results.json
+
   lighthouse:
     name: Lighthouse ship gate (mobile)
     runs-on: ubuntu-24.04  # ubuntu-latest became 26.04, which Playwright 1.59 does not support yet

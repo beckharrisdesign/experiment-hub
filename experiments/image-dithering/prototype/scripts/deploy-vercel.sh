@@ -12,7 +12,9 @@ TEAM="team_UhPjDkhxW0b4JX399pdc4iYs"   # katy-beckharrisdes-projects (not a secr
 PROJECT="dither-halftone-generator"
 VERCEL_TOKEN="$(op read 'op://BHD Labs/Vercel/token')" || { echo "✗ could not read the Vercel token from 1Password"; exit 1; }
 export VERCEL_TOKEN
-V() { npx --yes vercel@latest "$@" --scope "$TEAM" --token "$VERCEL_TOKEN"; }
+# The CLI reads the exported VERCEL_TOKEN itself; never pass it as an argument, where other local
+# processes could read it from the process list (Copilot review, PR #591).
+V() { npx --yes vercel@latest "$@" --scope "$TEAM"; }
 
 echo "→ project: $PROJECT"
 # `project inspect` exits non-zero when the project doesn't exist. (A `project ls | grep -q` check

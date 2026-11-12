@@ -57,3 +57,43 @@ test("?material=acrylic reaches Export already set for laser, mirror and invert 
   await expect(exp.getByRole("switch", { name: /Mirror/ })).toBeChecked();
   await expect(exp.getByRole("switch", { name: /Invert/ })).toBeChecked();
 });
+
+// Copilot review on PR #591: a material's invert/mirror/DPI were lost after going back and re-picking.
+test("a laser material survives going back and picking a different effect", async ({ page }) => {
+  await page.goto("/");
+  await expectRendered(page, "Pick an effect", 8);
+  const effect = step(page, "Pick an effect");
+  await effect.getByRole("button", { name: "Floyd–Steinberg" }).click();
+  await effect.getByRole("button", { name: /^Next/ }).click();
+  await step(page, "Fine-tune").getByRole("button", { name: /^Next/ }).click();
+  const exp = step(page, "Export");
+  await exp.getByRole("button", { name: "Laser" }).click();
+  await exp.getByRole("button", { name: "Slate" }).click();
+  await expect(exp.getByRole("switch", { name: /Invert/ })).toBeChecked();
+
+  await exp.getByRole("button", { name: /Back to fine-tune/ }).click();
+  await step(page, "Fine-tune").getByRole("button", { name: /Back to effect/ }).click();
+  await expectRendered(page, "Pick an effect", 8);
+  await effect.getByRole("button", { name: "Atkinson" }).click();
+  await effect.getByRole("button", { name: /^Next/ }).click();
+  await step(page, "Fine-tune").getByRole("button", { name: /^Next/ }).click();
+
+  await expect(exp.getByRole("button", { name: "Slate" })).toHaveAttribute("aria-pressed", "true");
+  await expect(exp.getByRole("switch", { name: /Invert/ })).toBeChecked();
+  await expect(page).toHaveURL(/material=slate/);
+});
+
+test("switching back to Screen clears the laser-only invert and mirror", async ({ page }) => {
+  await page.goto("/?material=acrylic");
+  await expectRendered(page, "Pick an effect", 8);
+  const effect = step(page, "Pick an effect");
+  await effect.getByRole("button", { name: "Stucki" }).click();
+  await effect.getByRole("button", { name: /^Next/ }).click();
+  await step(page, "Fine-tune").getByRole("button", { name: /^Next/ }).click();
+  const exp = step(page, "Export");
+  await exp.getByRole("button", { name: "Screen or print" }).click();
+  await exp.getByRole("button", { name: "Laser" }).click();
+  await expect(exp.getByRole("switch", { name: /Mirror/ })).not.toBeChecked();
+  await expect(exp.getByRole("switch", { name: /Invert/ })).not.toBeChecked();
+  await expect(page).not.toHaveURL(/material=/);
+});
