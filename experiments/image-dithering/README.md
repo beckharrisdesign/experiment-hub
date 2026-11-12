@@ -146,7 +146,7 @@ Subtract them at the day-7 checkpoint.
 
 ## Later
 
-- A real, rights-cleared sample photo in place of the procedural sphere (review queue #40)
+- Maybe later: a real, rights-cleared sample photo. Katy keeps the procedural sphere for now (2026-11-12, review queue #40)
 - Preset export sizes for screen and print (Instagram, A4…) (review queue #41)
 - Colour halftone (CMYK screens at separate angles)
 

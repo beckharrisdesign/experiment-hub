@@ -48,4 +48,4 @@ page per round, built rounds never edited in place.
 
 - **MVDS has no Tabs, Slider or thumbnail-select pattern** (review queue #18, #20, #23). The
   segmented control is buttons with `aria-pressed`, sliders are native `<input type=range>`, and tiles are buttons.
-- **The sample image is procedural** (the lit sphere). A real photo with rights cleared should replace it before launch.
+- **The sample image is procedural** (the lit sphere). Katy, 2026-11-12: *"I like the sample sphere for now."* Kept; a photo is optional later (review queue #40).
