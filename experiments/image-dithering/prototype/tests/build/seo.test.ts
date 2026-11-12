@@ -36,6 +36,10 @@ describe("built page (test 19)", () => {
     expect(attr(html, /<link rel="canonical" href="([^"]*)"/)).toBe(`${SITE}/`);
   });
 
+  it("carries the Google Search Console verification tag", () => {
+    expect(attr(html, /<meta name="google-site-verification" content="([^"]*)"/)).toBe("y0u7rG7N01At5V2n3n1Irv9RH1kfNjQSewYY_MtzX2Q");
+  });
+
   it("has exactly one H1", () => {
     expect(html.match(/<h1[\s>]/g)?.length).toBe(1);
   });

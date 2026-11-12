@@ -118,15 +118,19 @@ checkpoint** rather than relying on the dashboard later. Vercel's reporting API 
 **Verified live 2026-11-12 (`28068e9`):** a real download on production sent
 `png_downloaded {"exportFor":"laser","mode":"halftone"}` (200) **and** a page view of
 `/downloaded/laser-halftone` (route `/downloaded/[kind]`, 200). The address bar is unchanged and the
-console is clean. Still to confirm in the dashboard: both appear (custom events under Events, the
-virtual page under Pages).
+console is clean. **Dashboard confirmed 2026-11-12:** Events → `png_downloaded`, 1 visitor / 3 total,
+so custom events are stored on the Pro trial.
+
+**Test traffic to subtract:** those first 3 `png_downloaded` events (and the matching `/downloaded/*`
+page views and homepage views) on 2026-11-12 are Claude's verification runs, not real visitors.
+Subtract them at the day-7 checkpoint.
 
 ## Submit to Search Console (after deploy)
 
 1. ✅ Deployed to production: <https://dither-halftone-generator.vercel.app> (2026-11-12).
 2. ✅ Live page checked: no `noindex`, the canonical points at itself, `/sitemap.xml` and `/robots.txt` load.
 3. ☐ [Search Console](https://search.google.com/search-console) → Add property → **URL prefix** with the exact production URL.
-4. ☐ Verify ownership with the HTML-tag method (Katy adds the meta tag), or by DNS if a custom domain is in use (ask first: DNS).
+4. ☐ Verify ownership with the HTML-tag method. The tag is in the page head (2026-11-12, build-tested); Katy redeploys, then clicks **Verify**.
 5. ☐ Sitemaps → submit `sitemap.xml`.
 6. ☐ URL Inspection → paste the page URL → **Request indexing**.
 7. ☐ Write the submission date in this README; day 7 = indexed check, day 28 = impressions + rank check, week 6 = decision.
