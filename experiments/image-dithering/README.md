@@ -16,7 +16,7 @@ Give any image a dither or halftone effect, then download it for screen, print, 
 
 - **Founder intent + full brief:** [`docs/intent.md`](docs/intent.md)
 - **Review queue:** [`docs/review-queue.md`](docs/review-queue.md)
-- **OpenSpec:** [`openspec/changes/image-dithering-build`](../../openspec/changes/image-dithering-build)
+- **OpenSpec:** [`openspec/changes/image-dithering-build`](../../openspec/changes/image-dithering-build): proposal, design, specs (`laser-dither-engine`, `laser-dither-page`) and tasks with receipts. Archive after Katy's manual checks (tasks 4.3–4.5)
 - **Code:** [`prototype/`](prototype/), an Astro static site with one vanilla TypeScript island. It's a **standalone pnpm project with its own lockfile**, deliberately *not* a hub workspace member: Astro 7 brings Vite 8, and as a member it re-resolved the hub's own vitest onto Vite 8 and broke the hub's typecheck and deploy (PR #591, first CI run).
 - **Live:** <https://dither-halftone-generator.vercel.app> · Vercel project `dither-halftone-generator` (team katy-beckharrisdes-projects). Not Git-connected: deploy with `bash experiments/image-dithering/prototype/scripts/deploy-vercel.sh` from Katy's terminal (the token is vault-only)
 - **Notion row:** not created yet (review queue #5)
