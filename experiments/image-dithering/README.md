@@ -4,7 +4,15 @@
 
 Give any image a dither or halftone effect, then download it for screen, print, or the exact millimetre size a laser needs. It runs entirely in the browser. It's the first test of whether a programmatic-SEO tool site for makers can rank.
 
-**Status (2026-11-12): LIVE at <https://dither-halftone-generator.vercel.app>** (Vercel production). Ship gate passed on the live URL: Lighthouse mobile **100 / 100 / 100 / 100, LCP 860 ms, CLS 0** (median of 3 runs: 95, 100, 100). Next: submit to Search Console (checklist below). This is an autonomous build: see the review queue before trusting any default.
+**Status (2026-11-12): LIVE at <https://dither-halftone-generator.vercel.app>** (Vercel production) and **submitted to Search Console: day 0 = 2026-11-12.** Ship gate passed on the live URL: Lighthouse mobile **100 / 100 / 100 / 100, LCP 860 ms, CLS 0** (median of 3 runs: 95, 100, 100).
+
+| Checkpoint | Date | What to check |
+| --- | --- | --- |
+| Day 0 | **2026-11-12** | Verified, sitemap submitted, indexing requested |
+| Day 7 | **2026-11-19** | Indexed? (URL Inspection → "URL is on Google"); first analytics numbers into the table below |
+| Pro trial ends | **~2026-11-26** | Keep Pro (custom events, 12-month window) or let it revert to Hobby (page-view fallback keeps counting) |
+| Day 28 | **2026-12-10** | ≥ 100 impressions for the keyword family? Top 50 for "image dithering", "dither effect" or "halftone generator"? |
+| Week 6 | **2026-12-24** | **Decision:** < 100 impressions → stop and rethink; ≥ 100 with any clicks → per-material pages, then the DXF converter | This is an autonomous build: see the review queue before trusting any default.
 
 - **Founder intent + full brief:** [`docs/intent.md`](docs/intent.md)
 - **Review queue:** [`docs/review-queue.md`](docs/review-queue.md)
@@ -111,9 +119,9 @@ checkpoint** rather than relying on the dashboard later. Vercel's reporting API 
 
 | Checkpoint | Date | Page views (excl. /downloaded) | Downloads: screen-dither | screen-halftone | laser-dither | laser-halftone |
 | --- | --- | --- | --- | --- | --- | --- |
-| Day 7 | — | — | — | — | — | — |
-| Day 28 | — | — | — | — | — | — |
-| Week 6 (decision) | — | — | — | — | — | — |
+| Day 7 | 2026-11-19 | — | — | — | — | — |
+| Day 28 | 2026-12-10 | — | — | — | — | — |
+| Week 6 (decision) | 2026-12-24 | — | — | — | — | — |
 
 **Verified live 2026-11-12 (`28068e9`):** a real download on production sent
 `png_downloaded {"exportFor":"laser","mode":"halftone"}` (200) **and** a page view of
@@ -129,11 +137,11 @@ Subtract them at the day-7 checkpoint.
 
 1. ✅ Deployed to production: <https://dither-halftone-generator.vercel.app> (2026-11-12).
 2. ✅ Live page checked: no `noindex`, the canonical points at itself, `/sitemap.xml` and `/robots.txt` load.
-3. ☐ [Search Console](https://search.google.com/search-console) → Add property → **URL prefix** with the exact production URL.
-4. ☐ Verify ownership with the HTML-tag method. The tag is in the page head (2026-11-12, build-tested); Katy redeploys, then clicks **Verify**.
-5. ☐ Sitemaps → submit `sitemap.xml`.
-6. ☐ URL Inspection → paste the page URL → **Request indexing**.
-7. ☐ Write the submission date in this README; day 7 = indexed check, day 28 = impressions + rank check, week 6 = decision.
+3. ✅ [Search Console](https://search.google.com/search-console) → URL-prefix property for the production URL (2026-11-12).
+4. ✅ Verified with the HTML tag (in the page head, build-tested), 2026-11-12.
+5. ✅ `sitemap.xml` submitted, 2026-11-12.
+6. ✅ Indexing requested, 2026-11-12.
+7. ✅ Day 0 = **2026-11-12**; checkpoints are in the Status table at the top.
 8. ☐ If it lives under a base path on another host (e.g. `labs.beckharrisdesign.com/dither`), add `Sitemap: …/dither/sitemap.xml` to **that host's** root robots.txt (review queue #42).
 
 ## Later
