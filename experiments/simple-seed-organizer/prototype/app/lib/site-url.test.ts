@@ -27,4 +27,11 @@ describe("getSiteUrl", () => {
   it("falls back when the value is not a URL", () => {
     expect(getSiteUrl("simpleseedorganizer")).toBe(CANONICAL_SITE_URL);
   });
+
+  it.each(["mailto:katy@example.com", "data:text/plain,hi", "file:///tmp/x", "ftp://simpleseedorganizer.app"])(
+    "falls back for non-http(s) schemes (%s), whose origin would be \"null\"",
+    (value) => {
+      expect(getSiteUrl(value)).toBe(CANONICAL_SITE_URL);
+    }
+  );
 });

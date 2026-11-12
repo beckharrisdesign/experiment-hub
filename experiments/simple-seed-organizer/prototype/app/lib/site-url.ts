@@ -27,6 +27,12 @@ export function getSiteUrl(
     return CANONICAL_SITE_URL;
   }
 
+  // mailto:, data:, file: etc. parse fine but their origin is the string
+  // "null", which would break `new URL(siteUrl)` for metadataBase.
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    return CANONICAL_SITE_URL;
+  }
+
   if (url.protocol === "http:" && !LOCAL_HOSTS.has(url.hostname)) {
     url.protocol = "https:";
   }
