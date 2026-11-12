@@ -68,3 +68,12 @@ None.
   I could pick the one I like the best."* Frames: `Proposed · Desktop 1024 · Pick` (`8:9`),
   `Proposed · Mobile 480 · Pick` (`9:41`), `Proposed · Desktop 1024 · Advanced tab (tool area only)`
   (`9:127`). `02 Proposed` is left intact for comparison.
+- **Figma, round 02.2** (`02.2 Proposed — stepped flow, Next and Back`, page `10:2`), from three more
+  notes the same day: *"add in chunky next and back buttons so people can move freely up and down the
+  process. the previews only load when they've picked the previous series."* · *"bump up the visual
+  contrast particularly in the header. if this is an seo test don't we need content? even some terms and
+  faqs at the bottom could help."* · *"its weird to have a l-r workflow status for a process that's
+  actually going top to bottom."* Frames: `Proposed · Desktop 1024 · Step 2, nothing picked yet` (`10:3`),
+  `Proposed · Desktop 1024 · Step 3 active` (`10:87`), `Proposed · Mobile 480 · Step 3 active` (`13:51`),
+  `Proposed · Desktop 1024 · Content below the tool (SEO)` (`12:51`, ~740 words). Screenshots of every
+  round are in [`assets/`](assets/).
