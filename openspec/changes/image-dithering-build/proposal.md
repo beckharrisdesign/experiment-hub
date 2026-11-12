@@ -46,7 +46,7 @@ None.
 
 ## Impact
 
-- `pnpm-workspace.yaml` gains one member, and `pnpm-lock.yaml` grows by Astro and its test tooling.
+- The hub's `pnpm-workspace.yaml` and `pnpm-lock.yaml` are untouched. The prototype has its own lockfile and installs with `--ignore-workspace`, so its Vite 8 (via Astro 7) can't re-resolve the hub's dependencies. As a workspace member it did exactly that and broke the hub's typecheck in the first CI run.
 - The hub's Vercel build is unaffected: `vercel.json` already skips the `experiments/` path in its
   ignore command, and the hub's `next build` doesn't import the app.
 - Root CI is unaffected: root Vitest only collects `tests/**`, and root tsconfig/ESLint exclude

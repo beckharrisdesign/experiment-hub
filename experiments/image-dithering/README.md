@@ -8,14 +8,16 @@ entirely in the browser. It's the first test of whether a programmatic-SEO tool 
 - **Founder intent + full brief:** [`docs/intent.md`](docs/intent.md)
 - **Review queue:** [`docs/review-queue.md`](docs/review-queue.md)
 - **OpenSpec:** [`openspec/changes/image-dithering-build`](../../openspec/changes/image-dithering-build)
-- **Code:** [`prototype/`](prototype/), an Astro static site with one vanilla TypeScript island. It's a pnpm workspace member.
+- **Code:** [`prototype/`](prototype/), an Astro static site with one vanilla TypeScript island. It's a **standalone pnpm project with its own lockfile**, deliberately *not* a hub workspace member: Astro 7 brings Vite 8, and as a member it re-resolved the hub's own vitest onto Vite 8 and broke the hub's typecheck and deploy (PR #591, first CI run).
 - **Notion row:** not created yet (review queue #5)
 
 ## Run locally
 
 ```bash
-pnpm --filter image-dithering dev    # http://localhost:4321
-pnpm --filter image-dithering test   # Vitest: engine + PNG export
+cd experiments/image-dithering/prototype
+pnpm install --ignore-workspace      # its own lockfile; never the hub's
+pnpm dev                             # http://localhost:4321
+pnpm test                            # Vitest: engine + PNG export
 ```
 
 ## Checklist
