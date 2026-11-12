@@ -8,7 +8,7 @@ Give any image a dither or halftone effect, then download it for screen, print, 
 
 | Checkpoint | Date | What to check |
 | --- | --- | --- |
-| Day 0 | **2026-11-12** | Verified, sitemap submitted, indexing requested |
+| Day 0 | **2026-11-12** | Verified, sitemap submitted. **Request indexing hit Search Console's daily quota; retry 2026-11-13** |
 | Day 7 | **2026-11-19** | Indexed? (URL Inspection → "URL is on Google"); first analytics numbers into the table below |
 | Pro trial ends | **~2026-11-26** | Keep Pro (custom events, 12-month window) or let it revert to Hobby (page-view fallback keeps counting) |
 | Day 28 | **2026-12-10** | ≥ 100 impressions for the keyword family? Top 50 for "image dithering", "dither effect" or "halftone generator"? |
@@ -140,7 +140,7 @@ Subtract them at the day-7 checkpoint.
 3. ✅ [Search Console](https://search.google.com/search-console) → URL-prefix property for the production URL (2026-11-12).
 4. ✅ Verified with the HTML tag (in the page head, build-tested), 2026-11-12.
 5. ✅ `sitemap.xml` submitted, 2026-11-12.
-6. ✅ Indexing requested, 2026-11-12.
+6. ☐ Request indexing: **"Quota Exceeded" on 2026-11-12** (Search Console's daily per-account limit). Retry on **2026-11-13**. Not blocking: the verified property + submitted sitemap already lead Google to crawl; the request only nudges it sooner.
 7. ✅ Day 0 = **2026-11-12**; checkpoints are in the Status table at the top.
 8. ☐ If it lives under a base path on another host (e.g. `labs.beckharrisdesign.com/dither`), add `Sitemap: …/dither/sitemap.xml` to **that host's** root robots.txt (review queue #42).
 
