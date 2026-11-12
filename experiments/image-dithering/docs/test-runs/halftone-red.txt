@@ -1,0 +1,193 @@
+
+ RUN  v4.1.12 /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype
+
+ ❯ tests/unit/halftone.test.ts (29 tests | 25 failed) 70ms
+     × offers dot, line and cross screens, and round, square, ellipse and diamond dots 9ms
+     × flat 50% gray, 45°, round dots → 50% ± 3% ink 1ms
+       × gray 64 → 0.75 ± 3% ink 0ms
+       × gray 128 → 0.5 ± 3% ink 0ms
+       × gray 191 → 0.25 ± 3% ink 0ms
+       × gray 64 → 0.75 ± 3% ink 0ms
+       × gray 128 → 0.5 ± 3% ink 0ms
+       × gray 191 → 0.25 ± 3% ink 0ms
+       × gray 64 → 0.75 ± 3% ink 0ms
+       × gray 128 → 0.5 ± 3% ink 0ms
+       × gray 191 → 0.25 ± 3% ink 0ms
+     × round dots keep 50% gray at 50% ± 3% ink 0ms
+     × square dots keep 50% gray at 50% ± 3% ink 0ms
+     × ellipse dots keep 50% gray at 50% ± 3% ink 0ms
+     × diamond dots keep 50% gray at 50% ± 3% ink 0ms
+     × outputs only 0 and 255 for every screen and dot shape 3ms
+     × line screen at 0° has its dominant frequency at angle + 90° 0ms
+     × line screen at 15° has its dominant frequency at angle + 90° 0ms
+     × line screen at 45° has its dominant frequency at angle + 90° 0ms
+     × line screen at 75° has its dominant frequency at angle + 90° 0ms
+     × dot screen at 15° has its dominant frequency at the screen angle (mod 90°) 0ms
+     × dot screen at 45° has its dominant frequency at the screen angle (mod 90°) 0ms
+     × a different angle gives a different screen 0ms
+     × a higher LPI gives smaller cells (more, finer dots) 0ms
+     × halftone mode runs the halftone screen on the resampled image 9ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 25 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/halftone.test.ts > halftone > offers dot, line and cross screens, and round, square, ellipse and diamond dots
+AssertionError: expected [] to deeply equal [ 'cross', 'dot', 'line' ]
+
+- Expected
++ Received
+
+- [
+-   "cross",
+-   "dot",
+-   "line",
+- ]
++ []
+
+ ❯ tests/unit/halftone.test.ts:19:33
+     17| describe("halftone", () => {
+     18|   it("offers dot, line and cross screens, and round, square, ellipse a…
+     19|     expect([...SCREENS].sort()).toEqual(["cross", "dot", "line"]);
+       |                                 ^
+     20|     expect([...DOT_SHAPES].sort()).toEqual(["diamond", "ellipse", "rou…
+     21|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/25]⎯
+
+ FAIL  tests/unit/halftone.test.ts > halftone > flat 50% gray, 45°, round dots → 50% ± 3% ink
+Error: not implemented
+ ❯ halftone src/engine/halftone.ts:5:9
+      3| export const DOT_SHAPES: readonly string[] = [];
+      4| export function halftone(_g: Gray, _o: Record<string, unknown>): Gray {
+      5|   throw new Error("not implemented");
+       |         ^
+      6| }
+      7|
+ ❯ tests/unit/halftone.test.ts:25:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/25]⎯
+
+ FAIL  tests/unit/halftone.test.ts > halftone > dot screen keeps tone > gray 64 → 0.75 ± 3% ink
+ FAIL  tests/unit/halftone.test.ts > halftone > dot screen keeps tone > gray 128 → 0.5 ± 3% ink
+ FAIL  tests/unit/halftone.test.ts > halftone > dot screen keeps tone > gray 191 → 0.25 ± 3% ink
+ FAIL  tests/unit/halftone.test.ts > halftone > line screen keeps tone > gray 64 → 0.75 ± 3% ink
+ FAIL  tests/unit/halftone.test.ts > halftone > line screen keeps tone > gray 128 → 0.5 ± 3% ink
+ FAIL  tests/unit/halftone.test.ts > halftone > line screen keeps tone > gray 191 → 0.25 ± 3% ink
+ FAIL  tests/unit/halftone.test.ts > halftone > cross screen keeps tone > gray 64 → 0.75 ± 3% ink
+ FAIL  tests/unit/halftone.test.ts > halftone > cross screen keeps tone > gray 128 → 0.5 ± 3% ink
+ FAIL  tests/unit/halftone.test.ts > halftone > cross screen keeps tone > gray 191 → 0.25 ± 3% ink
+Error: not implemented
+ ❯ halftone src/engine/halftone.ts:5:9
+      3| export const DOT_SHAPES: readonly string[] = [];
+      4| export function halftone(_g: Gray, _o: Record<string, unknown>): Gray {
+      5|   throw new Error("not implemented");
+       |         ^
+      6| }
+      7|
+ ❯ tests/unit/halftone.test.ts:37:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/25]⎯
+
+ FAIL  tests/unit/halftone.test.ts > halftone > round dots keep 50% gray at 50% ± 3% ink
+ FAIL  tests/unit/halftone.test.ts > halftone > square dots keep 50% gray at 50% ± 3% ink
+ FAIL  tests/unit/halftone.test.ts > halftone > ellipse dots keep 50% gray at 50% ± 3% ink
+ FAIL  tests/unit/halftone.test.ts > halftone > diamond dots keep 50% gray at 50% ± 3% ink
+Error: not implemented
+ ❯ halftone src/engine/halftone.ts:5:9
+      3| export const DOT_SHAPES: readonly string[] = [];
+      4| export function halftone(_g: Gray, _o: Record<string, unknown>): Gray {
+      5|   throw new Error("not implemented");
+       |         ^
+      6| }
+      7|
+ ❯ tests/unit/halftone.test.ts:43:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/25]⎯
+
+ FAIL  tests/unit/halftone.test.ts > halftone > outputs only 0 and 255 for every screen and dot shape
+Error: not implemented
+ ❯ halftone src/engine/halftone.ts:5:9
+      3| export const DOT_SHAPES: readonly string[] = [];
+      4| export function halftone(_g: Gray, _o: Record<string, unknown>): Gray {
+      5|   throw new Error("not implemented");
+       |         ^
+      6| }
+      7|
+ ❯ tests/unit/halftone.test.ts:52:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/25]⎯
+
+ FAIL  tests/unit/halftone.test.ts > halftone > line screen at 0° has its dominant frequency at angle + 90°
+ FAIL  tests/unit/halftone.test.ts > halftone > line screen at 15° has its dominant frequency at angle + 90°
+ FAIL  tests/unit/halftone.test.ts > halftone > line screen at 45° has its dominant frequency at angle + 90°
+ FAIL  tests/unit/halftone.test.ts > halftone > line screen at 75° has its dominant frequency at angle + 90°
+Error: not implemented
+ ❯ halftone src/engine/halftone.ts:5:9
+      3| export const DOT_SHAPES: readonly string[] = [];
+      4| export function halftone(_g: Gray, _o: Record<string, unknown>): Gray {
+      5|   throw new Error("not implemented");
+       |         ^
+      6| }
+      7|
+ ❯ tests/unit/halftone.test.ts:61:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/25]⎯
+
+ FAIL  tests/unit/halftone.test.ts > halftone > dot screen at 15° has its dominant frequency at the screen angle (mod 90°)
+ FAIL  tests/unit/halftone.test.ts > halftone > dot screen at 45° has its dominant frequency at the screen angle (mod 90°)
+Error: not implemented
+ ❯ halftone src/engine/halftone.ts:5:9
+      3| export const DOT_SHAPES: readonly string[] = [];
+      4| export function halftone(_g: Gray, _o: Record<string, unknown>): Gray {
+      5|   throw new Error("not implemented");
+       |         ^
+      6| }
+      7|
+ ❯ tests/unit/halftone.test.ts:67:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/25]⎯
+
+ FAIL  tests/unit/halftone.test.ts > halftone > a different angle gives a different screen
+Error: not implemented
+ ❯ halftone src/engine/halftone.ts:5:9
+      3| export const DOT_SHAPES: readonly string[] = [];
+      4| export function halftone(_g: Gray, _o: Record<string, unknown>): Gray {
+      5|   throw new Error("not implemented");
+       |         ^
+      6| }
+      7|
+ ❯ tests/unit/halftone.test.ts:73:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/25]⎯
+
+ FAIL  tests/unit/halftone.test.ts > halftone > a higher LPI gives smaller cells (more, finer dots)
+Error: not implemented
+ ❯ halftone src/engine/halftone.ts:5:9
+      3| export const DOT_SHAPES: readonly string[] = [];
+      4| export function halftone(_g: Gray, _o: Record<string, unknown>): Gray {
+      5|   throw new Error("not implemented");
+       |         ^
+      6| }
+      7|
+ ❯ row tests/unit/halftone.test.ts:81:19
+ ❯ tests/unit/halftone.test.ts:86:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/25]⎯
+
+ FAIL  tests/unit/halftone.test.ts > halftone in the pipeline > halftone mode runs the halftone screen on the resampled image
+TypeError: prepareGray is not a function
+ ❯ tests/unit/halftone.test.ts:109:38
+    107|     expect(hash(viaPipeline.data)).not.toBe(hash(resampled.data));
+    108|     const direct = halftone(
+    109|       { width: 80, height: 60, data: prepareGray(src, settings).data },
+       |                                      ^
+    110|       { ...settings.halftone, dpi: settings.dpi },
+    111|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/25]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  25 failed | 51 passed (76)
+   Start at  18:13:02
+   Duration  593ms (transform 214ms, setup 0ms, import 318ms, tests 269ms, environment 0ms)
+

@@ -1,10 +1,16 @@
 import { dither, type Algorithm } from "./dither";
+import { halftone, type HalftoneOptions } from "./halftone";
 import type { Gray } from "./types";
 
 export type Tone = { brightness: number; contrast: number; gamma: number };
 
 export type Settings = Tone & {
+  /** Dither (error diffusion / ordered) or an amplitude-modulated halftone screen. */
+  mode: "dither" | "halftone";
   algorithm: Algorithm;
+  halftone: Omit<HalftoneOptions, "dpi">;
+  /** Output resolution. The halftone cell size is dpi / lpi pixels. */
+  dpi: number;
   serpentine: boolean;
   invert: boolean;
   /** Horizontal flip, applied to the 1-bit output (review queue #7). */
@@ -15,7 +21,10 @@ export type Settings = Tone & {
 };
 
 export const DEFAULT_SETTINGS: Settings = {
+  mode: "dither",
   algorithm: "floyd-steinberg",
+  halftone: { screen: "dot", angle: 45, lpi: 30, dotShape: "round" },
+  dpi: 300,
   serpentine: true,
   brightness: 0,
   contrast: 0,
@@ -27,17 +36,24 @@ export const DEFAULT_SETTINGS: Settings = {
 };
 
 /**
- * Pipeline: tone → invert → resample → dither → mirror.
+ * Pipeline: tone → invert → resample → (dither | halftone) → mirror.
  * Decoding and grayscale happen before this (`toGray`), so the worker can cache the gray
  * source and re-run only this part when a slider moves.
  */
 export function processImage(src: Gray, s: Settings): Gray {
+  const g = prepareGray(src, s);
+  let out = s.mode === "halftone"
+    ? halftone(g, { ...s.halftone, dpi: s.dpi })
+    : dither(g, s.algorithm, { serpentine: s.serpentine });
+  if (s.mirror) out = mirror(out);
+  return out;
+}
+
+/** The shared front half of the pipeline: tone → invert → resample, still 8-bit gray. */
+export function prepareGray(src: Gray, s: Settings): Gray {
   let g = adjustTone(src, s);
   if (s.invert) g = invert(g);
-  g = resample(g, s.widthPx || src.width, s.heightPx || src.height);
-  g = dither(g, s.algorithm, { serpentine: s.serpentine });
-  if (s.mirror) g = mirror(g);
-  return g;
+  return resample(g, s.widthPx || src.width, s.heightPx || src.height);
 }
 
 /** RGBA → luma (Rec. 601). Transparent pixels composite over white, i.e. "don't burn". */

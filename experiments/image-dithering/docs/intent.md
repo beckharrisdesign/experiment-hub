@@ -150,3 +150,23 @@ export. Note good ideas in the README's "Later" section rather than building the
 ## Done means
 Every item in the Ship gate passes, the app is deployed to a Vercel preview URL, and the README has
 the benchmark numbers, the market-outcomes plan, and a "Submit to Search Console" checklist.
+
+---
+
+## Scope update, 2026-11-11 (keyword research, US data), verbatim
+
+> Scope update from keyword research (US data):
+> - Most dither searchers are designers who want the look ("dither effect" 720/mo, rising),
+>   not laser makers (laser-specific phrasings show ~0). Lead the page with the effect for
+>   designers; keep laser export (exact mm + DPI, invert, mirror, pHYs) as the differentiator.
+> - Add a Halftone mode using the same pipeline: dot / line / cross screens, angle,
+>   frequency (LPI), dot shape. "halftone generator" is 880/mo (+46%), $1.46 CPC.
+>   Write failing tests first: a flat 50% gray at 45° with round dots gives 50% ± 3% ink
+>   coverage; the angle setting rotates the screen (check the dominant FFT direction or
+>   sample-based equivalent); the output is strictly 0/255.
+> - Working title: "Dither & Halftone Generator — for designers and laser makers".
+>   Target "image dithering", "dither effect" and "halftone generator" naturally.
+> - Add "dither effect", "dithering effect", "halftone generator" and "halftone effect"
+>   to the market-outcomes keyword family in the README.
+
+Earlier the same day: *"we learned that laser folks don't know the word dither... something else? Image to laser?"* That question led to this research.
