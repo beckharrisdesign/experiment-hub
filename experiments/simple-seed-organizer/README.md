@@ -23,13 +23,15 @@ gardeners, so a December call would mostly measure the calendar.
 
 | Checkpoint | Date | What to check |
 | --- | --- | --- |
-| Day 0 | **2026-11-12** | Canonicals + https sitemap live (#593). Baseline in the table below. Resubmit the sitemap in Search Console |
+| Day 0 | **2026-11-12** | Canonicals + https sitemap live (#593). Baseline in the table below. Search Console property verified, sitemap submitted |
 | Day 7 | **2026-11-19** | Search Console: `simpleseedorganizer.app` pages indexed? `vercel.app` copies dropped? |
 | Day 28 | **2026-12-10** | Search impressions for "seed organizer", "seed inventory", "seed tracker" |
 | Decision | **2027-02-15** | **≥ 10 new sign-ups from strangers, and ≥ 3 of them adding 5+ seeds** → keep building (import, reminders). Fewer → shelve it until next season |
 
-Not yet confirmed: whether `simpleseedorganizer.app` has a Search Console property. If not, add one
-(URL-prefix, HTML tag or DNS) before day 7.
+**Search Console:** Domain property `simpleseedorganizer.app` (covers https/http, www and every
+path), verified 2026-11-12 by a DNS TXT record at the root of the domain on Vercel DNS. Leave
+that record in place; Google rechecks it. `https://simpleseedorganizer.app/sitemap.xml` submitted
+2026-11-12.
 
 ## Numbers
 
