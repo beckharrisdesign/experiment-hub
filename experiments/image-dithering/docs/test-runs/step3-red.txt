@@ -1,0 +1,181 @@
+
+> image-dithering@0.1.0 test:build /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype
+> astro build && vitest run --config vitest.build.config.ts
+
+18:37:08 [types] Generated 70ms
+18:37:08 [build] output: "static"
+18:37:08 [build] mode: "static"
+18:37:08 [build] directory: /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/dist/
+18:37:08 [build] Collecting build info...
+18:37:08 [build] ✓ Completed in 86ms.
+18:37:08 [build] Building static entrypoints...
+18:37:08 [vite] ✓ built in 344ms
+18:37:08 [vite] ✓ built in 48ms
+18:37:08 [build] Rearranging server assets...
+
+ generating static routes 
+18:37:08   ├─ /index.html (+7ms) 
+18:37:08 ✓ Completed in 16ms.
+
+18:37:08 [build] ✓ Completed in 446ms.
+18:37:08 [build] 1 page(s) built in 536ms
+18:37:08 [build] Complete!
+
+ RUN  v4.1.12 /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype
+
+ ❯ tests/build/seo.test.ts (10 tests | 8 failed) 3279ms
+     × has a meta description of 120–160 characters 3ms
+     × has a canonical URL 2ms
+     × has JSON-LD that parses: a free WebApplication and an FAQPage matching the visible questions 0ms
+     × names the three target phrases in people-first copy 4ms
+     × has Open Graph tags and a 1200×630 share image 0ms
+     × sitemap.xml includes the page URL 1ms
+     × robots.txt references the sitemap 0ms
+     × canonical, sitemap and robots follow BASE_PATH 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/build/seo.test.ts > built page (test 19) > has a meta description of 120–160 characters
+AssertionError: expected 164 to be less than or equal to 160
+ ❯ tests/build/seo.test.ts:30:23
+     28|     expect(d).toBeTruthy();
+     29|     expect(d!.length).toBeGreaterThanOrEqual(120);
+     30|     expect(d!.length).toBeLessThanOrEqual(160);
+       |                       ^
+     31|   });
+     32|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  tests/build/seo.test.ts > built page (test 19) > has a canonical URL
+AssertionError: expected null to be 'https://image-dithering.vercel.app/' // Object.is equality
+
+- Expected:
+"https://image-dithering.vercel.app/"
+
++ Received:
+null
+
+ ❯ tests/build/seo.test.ts:34:64
+     32|
+     33|   it("has a canonical URL", () => {
+     34|     expect(attr(html, /<link rel="canonical" href="([^"]*)"/)).toBe(`$…
+       |                                                                ^
+     35|   });
+     36|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  tests/build/seo.test.ts > built page (test 19) > has JSON-LD that parses: a free WebApplication and an FAQPage matching the visible questions
+AssertionError: expected undefined to be truthy
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ tests/build/seo.test.ts:44:17
+     42|     const blocks = [...html.matchAll(/<script type="application\/ld\+j…
+     43|     const app = blocks.find((b) => b["@type"] === "WebApplication");
+     44|     expect(app).toBeTruthy();
+       |                 ^
+     45|     expect(app.name).toBe("Dither & Halftone Generator");
+     46|     expect(app.offers.price).toBe("0");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  tests/build/seo.test.ts > built page (test 19) > names the three target phrases in people-first copy
+AssertionError: expected '      dither & halftone generator — f…' to contain 'image dithering'
+
+Expected: "image dithering"
+Received: "      dither & halftone generator — free, in your browser        dither & halftone generator  for designers and laser makers. give any image a dither or halftone effect, then export it for screen, print, or the exact size your laser needs.      1  image      sample photo    drop an image, paste one, or  choose a file     your images never leave your device.     2  pick an effect      change      dither  halftone   your image in all eight dither patterns. pick the one you like.      ← back  next: fine-tune →    loads when you add an image.     3  fine-tune      change    pick the one you like best. each pick brings four new options, a little closer each time.       current   round 1        advanced settings      ← back to effect  next: export →    pick an effect above, then press next.     4  export         export for   screen or print  laser     width (px)      size   width in millimetres   ×  height in millimetres (locked to the image's proportions)   mm at  resolution   150 dpi  200 dpi  254 dpi  300 dpi  318 dpi  400 dpi  508 dpi      material  starting points    wood  slate  acrylic  glass  leather     invert (for slate and dark materials)      mirror (for back-engraved acrylic)        download png  your images never leave your device.     ← back to fine-tune    for screen, print, or your laser. unlocks after fine-tune.      dithering and halftones, explained  dithering and halftoning both turn the grays in an image into a pattern of black and white. from a normal viewing distance the pattern reads as shades. the dither effect scatters dots, giving the grainy, retro look of early computer graphics and newspaper photos. a halftone lines the dots up in a regular screen of dots, lines or crosses: the look of comic books, screen prints and risograph posters.  the same pattern is exactly what a laser engraver needs. a laser can only burn a spot or leave it alone, so a photo has to become dots before it can be engraved. that's why this tool exports both ways: as a png for screen or print, or at an exact size in millimetres with the dpi written into the file.    terms   error diffusion  each pixel is rounded to black or white, and the difference (the error) is passed on to neighbouring pixels. floyd–steinberg, atkinson, jarvis–judice–ninke, stucki and sierra lite all work this way.  floyd–steinberg  the classic. spreads the error to four neighbours. fine detail; flat areas can show faint worm-like patterns.  atkinson  created by bill atkinson for the original macintosh. passes on only three-quarters of the error, so results are crisp and high-contrast, but the darkest and lightest tones go solid.  jarvis–judice–ninke  spreads the error across twelve neighbours over three rows. smoother gradients and less visible pattern.  stucki  a close relative of jarvis–judice–ninke with different weights. slightly sharper.  sierra lite  a three-neighbour kernel, as fast as floyd–steinberg with a slightly different texture.  ordered (bayer) dithering  compares each pixel to a repeating grid of thresholds. the result is a regular crosshatch: the classic 8-bit look, and it holds up on coarse materials like glass.  threshold  lighter than a cut-off turns white, darker turns black. no grays at all: right for logos and line art.  halftone screen  a regular grid of cells. each cell gets one dot, line or cross, sized by how dark the image is there.  screen angle  the rotation of the screen. 45° is the classic angle for a single colour, because the eye notices it least.  lpi  lines per inch: how many cells fit in an inch. lower lpi means bigger, bolder dots.  dpi  dots per inch: how many pixels the image packs into each inch at its printed size. for a laser, 25.4 ÷ line interval in mm gives the dpi (a 0.1 mm interval is 254 dpi).     settings by material, for laser engraving  these are starting points, not rules. test on a scrap of the same material first.   wood  jarvis–judice–ninke keeps soft gradients smooth on grain; a slight gamma lift opens the mids, which burn darker on wood.  slate  a laser turns slate lighter, not darker, so the image is inverted; extra contrast keeps the marks readable.  acrylic  engraved from the back, the image is seen through the sheet, so it's mirrored; the frosted marks read as white, so it's inverted.  glass  fine, dense dots tend to chip glass, so a lower dpi and a coarser ordered pattern.  leather  leather burns through in the shadows; a gamma lift compresses the dark range so they hold detail.     questions   is my image uploaded anywhere?  no. all of the processing happens in your browser, and the image never leaves your device.  what's the difference between dithering and halftone?  dithering scatters dots in an irregular pattern; a halftone arranges them on a regular screen of dots, lines or crosses. try both in step 2 and pick by eye.  can i use the result for print or social posts?  yes. choose "screen or print" in export and set the width in pixels. the png is pure black and white.  will the png import into my laser software at the right size?  yes. choose laser in export: the file records its dpi, so lightburn and xtool creative space place it at the size you set in millimetres.  which dithering algorithm is best for laser engraving?  there isn't one best. jarvis–judice–ninke and stucki suit photos on wood, atkinson gives punchy portraits on dark materials, ordered patterns hold up on glass, and threshold is for logos.  why invert for slate, and mirror for acrylic?  on slate the laser's marks come out light, so the image is inverted. clear acrylic is engraved from the back and seen through the front, so the image is mirrored.         "
+
+ ❯ tests/build/seo.test.ts:59:99
+     57|   it("names the three target phrases in people-first copy", () => {
+     58|     const text = decode(html.replace(/<[^>]+>/g, " ")).toLowerCase();
+     59|     for (const phrase of ["image dithering", "dither effect", "halfton…
+       |                                                                                                   ^
+     60|   });
+     61|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  tests/build/seo.test.ts > built page (test 19) > has Open Graph tags and a 1200×630 share image
+AssertionError: expected null to be truthy
+
+- Expected:
+true
+
++ Received:
+null
+
+ ❯ tests/build/seo.test.ts:63:71
+     61|
+     62|   it("has Open Graph tags and a 1200×630 share image", () => {
+     63|     expect(attr(html, /<meta property="og:title" content="([^"]*)"/)).…
+       |                                                                       ^
+     64|     expect(attr(html, /<meta property="og:description" content="([^"]*…
+     65|     expect(attr(html, /<meta name="twitter:card" content="([^"]*)"/)).…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  tests/build/seo.test.ts > sitemap and robots (test 20) > sitemap.xml includes the page URL
+Error: ENOENT: no such file or directory, open '/Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/dist/sitemap.xml'
+ ❯ read tests/build/seo.test.ts:7:45
+      5|
+      6| const root = new URL("../..", import.meta.url).pathname;
+      7| const read = (dir: string, file: string) => readFileSync(join(root, di…
+       |                                             ^
+      8| const attr = (html: string, re: RegExp) => html.match(re)?.[1] ?? null;
+      9| const SITE = "https://image-dithering.vercel.app";
+ ❯ tests/build/seo.test.ts:75:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  tests/build/seo.test.ts > sitemap and robots (test 20) > robots.txt references the sitemap
+Error: ENOENT: no such file or directory, open '/Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/dist/robots.txt'
+ ❯ read tests/build/seo.test.ts:7:45
+      5|
+      6| const root = new URL("../..", import.meta.url).pathname;
+      7| const read = (dir: string, file: string) => readFileSync(join(root, di…
+       |                                             ^
+      8| const attr = (html: string, re: RegExp) => html.match(re)?.[1] ?? null;
+      9| const SITE = "https://image-dithering.vercel.app";
+ ❯ tests/build/seo.test.ts:78:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  tests/build/seo.test.ts > configurable base path > canonical, sitemap and robots follow BASE_PATH
+AssertionError: expected null to be 'https://image-dithering.vercel.app/di…' // Object.is equality
+
+- Expected:
+"https://image-dithering.vercel.app/dither/"
+
++ Received:
+null
+
+ ❯ tests/build/seo.test.ts:85:61
+     83|   it("canonical, sitemap and robots follow BASE_PATH", () => {
+     84|     const b = read("dist-base", "index.html");
+     85|     expect(attr(b, /<link rel="canonical" href="([^"]*)"/)).toBe(`${SI…
+       |                                                             ^
+     86|     expect(read("dist-base", "sitemap.xml")).toContain(`<loc>${SITE}/d…
+     87|     expect(read("dist-base", "robots.txt")).toContain(`Sitemap: ${SITE…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  8 failed | 3 passed (11)
+   Start at  18:37:08
+   Duration  3.52s (transform 35ms, setup 0ms, import 54ms, tests 3.28s, environment 0ms)
+
+ ELIFECYCLE  Command failed with exit code 1.
+--- e2e privacy ---
+
+Running 1 test using 1 worker
+
+  ✓  1 [chromium] › tests/e2e/privacy.spec.ts:5:1 › no request is made with image data during upload and export (2.7s)
+
+  1 passed (9.9s)

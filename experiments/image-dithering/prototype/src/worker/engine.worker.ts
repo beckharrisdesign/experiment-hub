@@ -1,0 +1,59 @@
+/// <reference lib="webworker" />
+import { processImage, toGray, type Settings } from "../engine/pipeline";
+import type { Gray } from "../engine/types";
+import { sampleImage } from "../lib/sample";
+
+// The engine runs here so the page never blocks. The decoded source is cached as gray once,
+// and every preview or export re-runs only the pipeline.
+let source: Gray | null = null;
+
+type Msg =
+  | { type: "sample"; id: number; width: number; height: number; thumbW: number; thumbH: number }
+  | { type: "source"; id: number; rgba: ArrayBuffer; width: number; height: number }
+  | { type: "render"; id: number; settings: Settings; width: number; height: number }
+  | { type: "tile"; id: number; settings: Settings; width: number; height: number; boxW: number; boxH: number };
+
+self.onmessage = (e: MessageEvent<Msg>) => {
+  try {
+    handle(e.data);
+  } catch (err) {
+    // Report instead of dying silently, so the page can tell the person (Copilot review, PR #591).
+    self.postMessage({ id: e.data.id, error: err instanceof Error ? err.message : String(err) });
+  }
+};
+
+function handle(m: Msg) {
+  if (m.type === "sample") {
+    // The sample is generated here, off the main thread, and only a small thumbnail goes back.
+    const rgba = sampleImage(m.width, m.height);
+    source = toGray(rgba, m.width, m.height);
+    const thumb = new Uint8ClampedArray(m.thumbW * m.thumbH * 4);
+    for (let y = 0; y < m.thumbH; y++) for (let x = 0; x < m.thumbW; x++) {
+      const sx = Math.floor(((x + 0.5) * m.width) / m.thumbW), sy = Math.floor(((y + 0.5) * m.height) / m.thumbH);
+      thumb.set(rgba.subarray((sy * m.width + sx) * 4, (sy * m.width + sx) * 4 + 4), (y * m.thumbW + x) * 4);
+    }
+    self.postMessage({ id: m.id, thumb }, [thumb.buffer]);
+    return;
+  }
+  if (m.type === "source") {
+    source = toGray(new Uint8ClampedArray(m.rgba), m.width, m.height);
+    self.postMessage({ id: m.id, ok: true });
+    return;
+  }
+  if (!source) { self.postMessage({ id: m.id, error: "no source" }); return; }
+  const out = processImage(source, { ...m.settings, widthPx: m.width, heightPx: m.height });
+  if (m.type === "tile") {
+    // Ready-to-paint RGBA at the canvas size, letterboxed on white, so the page does no pixel work.
+    const rgba = new Uint8ClampedArray(m.boxW * m.boxH * 4).fill(255);
+    const ox = Math.round((m.boxW - out.width) / 2), oy = Math.round((m.boxH - out.height) / 2);
+    for (let y = 0; y < out.height; y++) {
+      let p = ((y + oy) * m.boxW + ox) * 4;
+      for (let x = 0, i = y * out.width; x < out.width; x++, i++, p += 4) {
+        const v = out.data[i]; rgba[p] = v; rgba[p + 1] = v; rgba[p + 2] = v;
+      }
+    }
+    self.postMessage({ id: m.id, rgba }, [rgba.buffer]);
+    return;
+  }
+  self.postMessage({ id: m.id, width: out.width, height: out.height, data: out.data }, [out.data.buffer]);
+}

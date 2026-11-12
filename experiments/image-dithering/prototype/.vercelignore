@@ -1,0 +1,8 @@
+node_modules
+dist
+dist-base
+.astro
+test-results
+playwright-report
+bench-results.json
+lighthouse-summary.json

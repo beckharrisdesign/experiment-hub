@@ -1,0 +1,112 @@
+name: Image dithering CI
+
+# The Dither & Halftone Generator prototype (experiments/image-dithering/prototype): a standalone
+# pnpm project with its own lockfile, NOT a hub workspace member (Astro 7 brings Vite 8; as a
+# member it re-resolved the hub's vitest and broke the hub's typecheck, PR #591). Path-filtered,
+# so hub-only pushes skip it; none of these checks are required by the main ruleset.
+on:
+  push:
+    paths:
+      - 'experiments/image-dithering/**'
+      - '.github/workflows/image-dithering.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'experiments/image-dithering/**'
+      - '.github/workflows/image-dithering.yml'
+
+defaults:
+  run:
+    working-directory: experiments/image-dithering/prototype
+
+jobs:
+  unit-and-build:
+    name: Unit + build tests
+    runs-on: ubuntu-24.04  # ubuntu-latest became 26.04, which Playwright 1.59 does not support yet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: experiments/image-dithering/prototype/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --ignore-workspace
+      - run: npx tsc --noEmit -p .
+      - name: Unit tests (engine, presets, URL state, variations)
+        run: pnpm test
+      - name: Build-output tests (SEO, sitemap, robots, base path, JS budget)
+        run: pnpm test:build
+
+  e2e:
+    name: Browser tests (flow, keyboard, axe, privacy)
+    runs-on: ubuntu-24.04  # ubuntu-latest became 26.04, which Playwright 1.59 does not support yet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: experiments/image-dithering/prototype/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --ignore-workspace
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: experiments/image-dithering/prototype/test-results/
+
+  benchmarks:
+    name: Benchmarks (brief budgets)
+    runs-on: ubuntu-24.04  # ubuntu-latest became 26.04, which Playwright 1.59 does not support yet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: experiments/image-dithering/prototype/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --ignore-workspace
+      - run: npx playwright install --with-deps chromium
+      - name: Slider 2 MP ≤ 300 ms · grid 12 MP ≤ 1.5 s · FS export 12 MP ≤ 2 s
+        run: npx playwright test -c playwright.bench.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bench-results
+          path: experiments/image-dithering/prototype/bench-results.json
+
+  lighthouse:
+    name: Lighthouse ship gate (mobile)
+    runs-on: ubuntu-24.04  # ubuntu-latest became 26.04, which Playwright 1.59 does not support yet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: experiments/image-dithering/prototype/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --ignore-workspace
+      - run: npx astro build
+      - name: Lighthouse ≥ 95 ×4, LCP < 1.5 s, CLS < 0.05 (local preview; deployed run is separate)
+        run: |
+          npx astro preview --port 4329 --ignore-lock &
+          npx --yes wait-on@8 http://localhost:4329/ --timeout 60000
+          node scripts/lighthouse.mjs http://localhost:4329/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-summary
+          path: experiments/image-dithering/prototype/lighthouse-summary.json

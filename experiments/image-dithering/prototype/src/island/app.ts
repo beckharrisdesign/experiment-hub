@@ -1,0 +1,406 @@
+import { injectPhys } from "../engine/png-phys";
+import { startAnalytics, trackDownload } from "../lib/analytics";
+import type { Settings } from "../engine/pipeline";
+import type { Gray } from "../engine/types";
+import { DITHER_EFFECTS, HALFTONE_EFFECTS, type Effect } from "../lib/effects";
+import { MAX_SIDE_PX, clampWidthMm, clampWidthPx, exportPixels } from "../lib/export-size";
+import { createLatest } from "../lib/latest";
+import { exportSettings, materialById } from "../lib/presets";
+import { searchFor, stateFromSearch } from "../lib/url";
+import { variations } from "../lib/variations";
+import { Engine } from "./engine-client";
+
+type Step = 1 | 2 | 3 | 4;
+const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector(sel) as T;
+const $$ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => [...root.querySelectorAll(sel)] as T[];
+
+const engine = new Engine();
+const fromUrl = stateFromSearch(location.search);
+const MAX_SOURCE = 4000; // px on the long side; keeps memory sane for 12 MP+ photos
+
+const state = {
+  active: 2 as Step,
+  reached: 2 as Step,
+  srcW: 800,
+  srcH: 600,
+  sourceName: "Sample photo",
+  effect: "dither" as "dither" | "halftone",
+  pick: null as number | null,
+  base: fromUrl.settings as Settings, // look + laser starting point (from ?material=)
+  current: fromUrl.settings as Settings,
+  round: 1,
+  exportFor: fromUrl.exportFor,
+  material: fromUrl.material,
+  widthMm: 100,
+  widthPx: 800,
+  /**
+   * Output settings: what the laser needs, applied on top of whatever look is picked. Kept apart
+   * from base/current so going back and re-picking an effect can't lose them (Copilot review, PR #591).
+   */
+  out: { invert: fromUrl.settings.invert, mirror: fromUrl.settings.mirror, dpi: fromUrl.settings.dpi },
+};
+
+/** A look plus the output layer. Invert and mirror are laser-only; on screen they're off. */
+function withOutput(s: Settings): Settings {
+  return state.exportFor === "laser"
+    ? { ...s, invert: state.out.invert, mirror: state.out.mirror, dpi: state.out.dpi }
+    : { ...s, invert: false, mirror: false, dpi: state.out.dpi };
+}
+
+const loads = createLatest(); // latest upload wins (Copilot review, PR #591)
+
+const effects = (): Effect[] => (state.effect === "dither" ? DITHER_EFFECTS : HALFTONE_EFFECTS);
+
+// ── Rendering ────────────────────────────────────────────────────────────────
+
+/** The export size in pixels for the current choices; `tooLarge` past MAX_SIDE_PX. */
+function exportSize() {
+  const dpi = state.out.dpi;
+  return { ...exportPixels({ exportFor: state.exportFor, widthMm: state.widthMm, widthPx: state.widthPx, dpi, srcW: state.srcW, srcH: state.srcH }), dpi };
+}
+
+/**
+ * Settings for a preview of `w` px across. A halftone cell is dpi ÷ lpi px at export size, so
+ * the preview scales dpi by the same factor to keep the screen looking the same.
+ */
+function previewSettings(s: Settings, w: number): Settings {
+  if (s.mode !== "halftone") return s;
+  const scale = w / exportSize().w;
+  return { ...s, dpi: Math.max(s.halftone.lpi * 2, s.dpi * scale) };
+}
+
+let generation = 0; // bumps whenever the source or step content changes; stale paints are dropped
+
+/** Render `s` into a canvas at its real pixel size × devicePixelRatio, fitted (contain) on white. */
+type Box = { cw: number; ch: number };
+
+/** Read every canvas's size in one pass, before any writes, so painting never forces layout. */
+function measure(canvases: HTMLCanvasElement[]): Box[] {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  return canvases.map((c) => {
+    const box = c.getBoundingClientRect();
+    const cw = Math.max(16, Math.round((box.width || 200) * dpr));
+    return { cw, ch: Math.max(12, Math.round((box.height || cw * 0.75) * dpr)) };
+  });
+}
+
+/** Render `s` into a canvas at its real pixel size, fitted (contain) on white. The worker does all pixel work. */
+async function paint(canvas: HTMLCanvasElement, look: Settings, gen: number, box: Box = measure([canvas])[0]): Promise<boolean> {
+  const { cw, ch } = box;
+  const fit = Math.min(cw / state.srcW, ch / state.srcH);
+  const w = Math.max(1, Math.round(state.srcW * fit)), h = Math.max(1, Math.round(state.srcH * fit));
+  let rgba: Uint8ClampedArray;
+  try {
+    rgba = await engine.tile(previewSettings(withOutput(look), w), w, h, cw, ch);
+  } catch {
+    canvas.dataset.error = "true"; // the tile stays blank; the engine error is shown by download()
+    return false;
+  }
+  if (gen !== generation) return false;
+  if (canvas.width !== cw) canvas.width = cw;
+  if (canvas.height !== ch) canvas.height = ch;
+  canvas.getContext("2d")!.putImageData(new ImageData(rgba as Uint8ClampedArray<ArrayBuffer>, cw, ch), 0, 0);
+  canvas.dataset.paintedAt = String(performance.now()); // read by the benchmark script
+  return true;
+}
+
+function toImageData(g: Gray): ImageData {
+  const img = new ImageData(g.width, g.height);
+  for (let i = 0, p = 0; i < g.data.length; i++, p += 4) {
+    const v = g.data[i]; img.data[p] = v; img.data[p + 1] = v; img.data[p + 2] = v; img.data[p + 3] = 255;
+  }
+  return img;
+}
+
+function tile(label: string, onPick: () => void): { el: HTMLButtonElement; canvas: HTMLCanvasElement } {
+  const el = document.createElement("button");
+  el.type = "button"; el.className = "tile"; el.dataset.tile = ""; el.setAttribute("aria-pressed", "false");
+  const canvas = document.createElement("canvas"); canvas.setAttribute("aria-hidden", "true");
+  const span = document.createElement("span"); span.textContent = label;
+  el.append(canvas, span);
+  el.addEventListener("click", onPick);
+  el.dataset.label = label;
+  return { el, canvas };
+}
+
+async function renderEffects() {
+  const gen = ++generation;
+  const grid = $("#effect-grid");
+  const list = effects();
+  // Reuse the tiles the page shipped with when they match (no layout shift on load);
+  // rebuild only when the effect type changes.
+  const existing = $$<HTMLButtonElement>(".tile", grid);
+  const reuse = existing.length === list.length && existing.every((el, i) => el.dataset.label === list[i].label);
+  if (!reuse) grid.replaceChildren(...list.map((fx) => tile(fx.label, () => {}).el));
+  const tiles = $$<HTMLButtonElement>(".tile", grid).map((el, i) => {
+    el.dataset.label = list[i].label;
+    el.onclick = () => pickEffect(i);
+    el.setAttribute("aria-pressed", String(state.pick === i));
+    delete el.dataset.rendered;
+    return { el, canvas: $<HTMLCanvasElement>("canvas", el), fx: list[i] };
+  });
+  const boxes = measure(tiles.map((t) => t.canvas));
+  for (const [i, t] of tiles.entries()) if (await paint(t.canvas, t.fx.apply(state.base), gen, boxes[i])) t.el.dataset.rendered = "true";
+}
+
+async function renderFine() {
+  const gen = ++generation;
+  $("#fine-round").textContent = `Round ${state.round}`;
+  const grid = $("#fine-grid");
+  grid.replaceChildren();
+  const opts = variations(state.current, state.round).map((v) => ({ ...tile(v.name, () => pickVariation(v.settings)), v }));
+  for (const o of opts) grid.append(o.el);
+  renderAdvanced();
+  const current = $<HTMLCanvasElement>("#fine-current");
+  const [cur, ...boxes] = measure([current, ...opts.map((o) => o.canvas)]);
+  await paint(current, state.current, gen, cur);
+  for (const [i, o] of opts.entries()) if (await paint(o.canvas, o.v.settings, gen, boxes[i])) o.el.dataset.rendered = "true";
+}
+
+async function renderExport() {
+  const gen = ++generation;
+  syncExportControls();
+  await paint($<HTMLCanvasElement>("#export-preview"), state.current, gen);
+}
+
+// ── Actions ──────────────────────────────────────────────────────────────────
+
+function pickEffect(i: number) {
+  state.pick = i;
+  state.current = effects()[i].apply(state.base);
+  state.round = 1;
+  state.reached = 2;
+  $$("#effect-grid .tile").forEach((el, j) => el.setAttribute("aria-pressed", String(j === i)));
+  $<HTMLButtonElement>("#step-effect [data-next]").disabled = false;
+  updateSteps();
+}
+
+function pickVariation(s: Settings) {
+  state.current = s;
+  state.round += 1;
+  renderFine();
+}
+
+function goTo(step: Step) {
+  if (step === 1) { $<HTMLInputElement>("#file").focus(); return; }
+  state.active = step;
+  state.reached = Math.max(state.reached, step) as Step;
+  updateSteps();
+  if (step === 2) renderEffects();
+  if (step === 3) renderFine();
+  if (step === 4) renderExport();
+  const section = $(`[data-step="${step}"]`);
+  section.scrollIntoView({ block: "start", behavior: "smooth" });
+  ($(".step-head h2", section) as HTMLElement).setAttribute("tabindex", "-1");
+  ($(".step-head h2", section) as HTMLElement).focus({ preventScroll: true });
+}
+
+function setExportFor(v: "screen" | "laser") {
+  state.exportFor = v;
+  // Leaving Laser drops its material and laser-only settings, so they can't come back silently.
+  if (v === "screen") { state.material = null; state.out = { ...state.out, invert: false, mirror: false }; }
+  syncUrl();
+  renderExport();
+}
+
+function setMaterial(id: string) {
+  const m = materialById(id);
+  if (!m) return;
+  state.material = id;
+  state.out = { ...state.out, ...exportSettings(m) };
+  syncUrl();
+  renderExport();
+}
+
+function toggle(key: "invert" | "mirror") {
+  state.out = { ...state.out, [key]: !state.out[key] };
+  renderExport();
+}
+
+function syncUrl() {
+  const q = searchFor({ material: state.exportFor === "laser" ? state.material : null }, location.search);
+  history.replaceState(null, "", location.pathname + q + location.hash);
+}
+
+async function download() {
+  const { w, h, dpi, tooLarge } = exportSize();
+  if (tooLarge) return; // the button is disabled and the size line explains why
+  const btn = $<HTMLButtonElement>("#download");
+  btn.disabled = true; btn.textContent = "Preparing…";
+  try {
+    const out = await engine.render(withOutput(state.current), w, h);
+    const canvas = document.createElement("canvas"); canvas.width = w; canvas.height = h;
+    canvas.getContext("2d")!.putImageData(toImageData(out), 0, 0);
+    const blob = await new Promise<Blob>((r) => canvas.toBlob((b) => r(b!), "image/png"));
+    const png = injectPhys(new Uint8Array(await blob.arrayBuffer()), dpi);
+    const url = URL.createObjectURL(new Blob([png as Uint8Array<ArrayBuffer>], { type: "image/png" }));
+    const a = document.createElement("a");
+    const name = state.current.mode === "halftone" ? `halftone-${state.current.halftone.screen}` : `dither-${state.current.algorithm}`;
+    a.href = url; a.download = `${name}-${w}x${h}.png`;
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    trackDownload({
+      mode: state.current.mode,
+      effectLabel: state.pick === null ? "unknown" : effects()[state.pick].label,
+      exportFor: state.exportFor,
+      material: state.exportFor === "laser" ? state.material : null,
+    });
+  } catch (err) {
+    $("#export-size").textContent = `Couldn't make the PNG (${err instanceof Error ? err.message : "unknown error"}). Try a smaller size or DPI.`;
+  } finally {
+    btn.disabled = false; btn.textContent = "Download PNG";
+  }
+}
+
+// ── Source image ─────────────────────────────────────────────────────────────
+
+async function setSource(token: number, rgba: Uint8ClampedArray | null, w: number, h: number, name: string, bitmap?: ImageBitmap) {
+  const thumb = $<HTMLCanvasElement>("#source-thumb");
+  const tc = thumb.getContext("2d")!;
+  if (rgba) {
+    await engine.setSource(rgba, w, h);
+    if (!loads.isCurrent(token)) return; // a newer image arrived while this one loaded
+    state.srcW = w; state.srcH = h; state.sourceName = name;
+    state.widthPx = Math.min(w, 2400);
+    tc.fillStyle = "#fff"; tc.fillRect(0, 0, thumb.width, thumb.height);
+    if (bitmap) {
+      const f = Math.min(thumb.width / w, thumb.height / h);
+      tc.drawImage(bitmap, (thumb.width - w * f) / 2, (thumb.height - h * f) / 2, w * f, h * f);
+    }
+  } else {
+    // The sample: generated in the worker; only the thumbnail comes back.
+    const t = await engine.loadSample(w, h, thumb.width, thumb.height);
+    if (!loads.isCurrent(token)) return;
+    state.srcW = w; state.srcH = h; state.sourceName = name;
+    state.widthPx = Math.min(w, 2400);
+    tc.putImageData(new ImageData(t as Uint8ClampedArray<ArrayBuffer>, thumb.width, thumb.height), 0, 0);
+  }
+  $("#source-name").textContent = name;
+  // A new image invalidates every pick below it.
+  state.pick = null; state.current = state.base; state.round = 1; state.reached = 2;
+  $<HTMLButtonElement>("#step-effect [data-next]").disabled = true;
+  state.active = 2;
+  updateSteps();
+  await renderEffects();
+}
+
+async function loadFile(file: File) {
+  if (!file.type.startsWith("image/")) return;
+  // Until the new image is decoded and painted, the old previews no longer count as current.
+  generation++;
+  $$("#effect-grid .tile").forEach((el) => el.removeAttribute("data-rendered"));
+  $<HTMLButtonElement>("#step-effect [data-next]").disabled = true;
+  const token = loads.next();
+  const bmp = await createImageBitmap(file);
+  try {
+    if (!loads.isCurrent(token)) return; // a newer upload started; drop this one
+    const f = Math.min(1, MAX_SOURCE / Math.max(bmp.width, bmp.height));
+    const w = Math.round(bmp.width * f), h = Math.round(bmp.height * f);
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const ctx = c.getContext("2d")!; ctx.drawImage(bmp, 0, 0, w, h);
+    await setSource(token, ctx.getImageData(0, 0, w, h).data, w, h, file.name, bmp);
+  } finally {
+    bmp.close(); // release the decoded bitmap now, not at the next GC (Copilot review, PR #591)
+  }
+}
+
+// ── Steps and controls ───────────────────────────────────────────────────────
+
+function updateSteps() {
+  for (const section of $$<HTMLElement>("[data-step]")) {
+    const n = Number(section.dataset.step) as Step;
+    if (n === 1) continue;
+    section.dataset.state = n === state.active ? "active" : n < state.active ? "done" : "locked";
+  }
+  const fx = state.pick === null ? null : effects()[state.pick];
+  $("#step-effect .summary-text").textContent = fx ? `${state.effect === "dither" ? "Dither" : "Halftone"} · ${fx.label}` : "";
+  $("#step-fine .summary-text").textContent = `Round ${state.round}`;
+  $("#effect-hint").textContent = state.effect === "dither"
+    ? "Your image in all eight dither patterns. Pick the one you like."
+    : "Your image as eight halftone screens. Pick the one you like.";
+  $$("[data-effect]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.effect === state.effect)));
+}
+
+function syncExportControls() {
+  $$("[data-for]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.for === state.exportFor)));
+  $$<HTMLElement>("[data-when]").forEach((el) => { el.hidden = el.dataset.when !== state.exportFor; });
+  $$("[data-material]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.material === state.material)));
+  $$("[data-toggle]").forEach((b) => b.setAttribute("aria-checked", String(Boolean(state.out[b.dataset.toggle as "invert" | "mirror"]))));
+  const { w, h, dpi, heightMm, tooLarge } = exportSize();
+  $<HTMLInputElement>("#width-mm").value = String(state.widthMm);
+  $<HTMLInputElement>("#height-mm").value = String(heightMm);
+  $<HTMLSelectElement>("#dpi").value = String(dpi);
+  $<HTMLInputElement>("#width-px").value = String(state.widthPx);
+  $<HTMLButtonElement>("#download").disabled = tooLarge;
+  $("#export-size").textContent = tooLarge
+    ? `${w} × ${h} px is too large to make in a browser (the limit is ${MAX_SIDE_PX.toLocaleString("en")} px per side). Lower the size or the DPI.`
+    : state.exportFor === "laser"
+      ? `${w} × ${h} px at ${dpi} DPI, written into the file so your laser software places it at ${state.widthMm} × ${heightMm} mm.`
+      : `${w} × ${h} px, black and white.`;
+}
+
+function renderAdvanced() {
+  const s = state.current;
+  const root = $("#advanced");
+  const range = (id: string, label: string, min: number, max: number, step: number, value: number) =>
+    `<div class="range"><label for="${id}">${label}</label><input id="${id}" type="range" min="${min}" max="${max}" step="${step}" value="${value}"><output for="${id}">${value}</output></div>`;
+  const common = range("adv-brightness", "Brightness", -100, 100, 1, s.brightness) + range("adv-contrast", "Contrast", -100, 100, 1, s.contrast) + range("adv-gamma", "Gamma", 0.2, 3, 0.01, Number(s.gamma.toFixed(2)));
+  const specific = s.mode === "halftone"
+    ? range("adv-angle", "Screen angle (°)", 0, 90, 1, s.halftone.angle) + range("adv-lpi", "Frequency (LPI)", 10, 120, 1, s.halftone.lpi)
+    : `<label class="check"><input id="adv-serpentine" type="checkbox" ${s.serpentine ? "checked" : ""}> Serpentine scan</label>`;
+  root.innerHTML = common + specific;
+  root.oninput = (e) => {
+    const t = e.target as HTMLInputElement;
+    const v = Number(t.value);
+    const out = root.querySelector(`output[for="${t.id}"]`); if (out) out.textContent = t.value;
+    const c = state.current;
+    if (t.id === "adv-brightness") state.current = { ...c, brightness: v };
+    if (t.id === "adv-contrast") state.current = { ...c, contrast: v };
+    if (t.id === "adv-gamma") state.current = { ...c, gamma: v };
+    if (t.id === "adv-angle") state.current = { ...c, halftone: { ...c.halftone, angle: v } };
+    if (t.id === "adv-lpi") state.current = { ...c, halftone: { ...c.halftone, lpi: v } };
+    if (t.id === "adv-serpentine") state.current = { ...c, serpentine: t.checked };
+    scheduleFine();
+  };
+}
+
+let fineTimer = 0;
+function scheduleFine() {
+  clearTimeout(fineTimer);
+  fineTimer = window.setTimeout(async () => {
+    const gen = ++generation;
+    await paint($<HTMLCanvasElement>("#fine-current"), state.current, gen);
+  }, 60);
+}
+
+function wire() {
+  $<HTMLInputElement>("#file").addEventListener("change", (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) loadFile(f); });
+  const dz = $("#dropzone");
+  dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.classList.add("dragging"); });
+  dz.addEventListener("dragleave", () => dz.classList.remove("dragging"));
+  dz.addEventListener("drop", (e) => { e.preventDefault(); dz.classList.remove("dragging"); const f = e.dataTransfer?.files?.[0]; if (f) loadFile(f); });
+  document.addEventListener("paste", (e) => { const f = [...(e.clipboardData?.files ?? [])].find((x) => x.type.startsWith("image/")); if (f) loadFile(f); });
+
+  $$("[data-effect]").forEach((b) => b.addEventListener("click", () => {
+    const next = b.dataset.effect as "dither" | "halftone";
+    if (next === state.effect) return;
+    state.effect = next; state.pick = null; state.current = state.base;
+    $<HTMLButtonElement>("#step-effect [data-next]").disabled = true;
+    updateSteps(); renderEffects();
+  }));
+  $$("[data-next]").forEach((b) => b.addEventListener("click", () => goTo(Number(b.dataset.next) as Step)));
+  $$("[data-goto]").forEach((b) => b.addEventListener("click", () => goTo(Number(b.dataset.goto) as Step)));
+  $$("[data-for]").forEach((b) => b.addEventListener("click", () => setExportFor(b.dataset.for as "screen" | "laser")));
+  $$("[data-material]").forEach((b) => b.addEventListener("click", () => setMaterial(b.dataset.material!)));
+  $$("[data-toggle]").forEach((b) => b.addEventListener("click", () => toggle(b.dataset.toggle as "invert" | "mirror")));
+  // Typed sizes are clamped to the inputs' ranges, which `min`/`max` alone don't enforce (Copilot review, PR #591).
+  $<HTMLInputElement>("#width-mm").addEventListener("change", (e) => { state.widthMm = clampWidthMm(Number((e.target as HTMLInputElement).value)); renderExport(); });
+  $<HTMLInputElement>("#width-px").addEventListener("change", (e) => { state.widthPx = clampWidthPx(Number((e.target as HTMLInputElement).value)); renderExport(); });
+  $<HTMLSelectElement>("#dpi").addEventListener("change", (e) => { state.out = { ...state.out, dpi: Number((e.target as HTMLSelectElement).value) }; renderExport(); });
+  $("#download").addEventListener("click", download);
+}
+
+startAnalytics(); // production host only; no-op locally, in tests and in CI
+wire();
+updateSteps();
+setSource(loads.next(), null, 800, 600, "Sample photo");

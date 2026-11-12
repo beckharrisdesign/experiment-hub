@@ -1,0 +1,150 @@
+
+ RUN  v4.1.12 /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype
+
+ ❯ tests/unit/latest.test.ts (0 test)
+ ❯ tests/unit/export-size.test.ts (0 test)
+ ❯ tests/unit/engine-client.test.ts (2 tests | 2 failed) 3ms
+     × rejects every pending call when the worker errors 2ms
+     × rejects a call the worker reports as failed 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/export-size.test.ts [ tests/unit/export-size.test.ts ]
+Error: Cannot find module '../../src/lib/export-size' imported from /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/tests/unit/export-size.test.ts
+ ❯ tests/unit/export-size.test.ts:2:1
+      1| import { describe, expect, it } from "vitest";
+      2| import { MAX_SIDE_PX, clampWidthMm, clampWidthPx, exportPixels } from …
+       | ^
+      3|
+      4| // Copilot review on PR #591: inputs weren't clamped, and 2,000 mm at …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/latest.test.ts [ tests/unit/latest.test.ts ]
+Error: Cannot find module '../../src/lib/latest' imported from /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/tests/unit/latest.test.ts
+ ❯ tests/unit/latest.test.ts:2:1
+      1| import { describe, expect, it } from "vitest";
+      2| import { createLatest } from "../../src/lib/latest";
+       | ^
+      3|
+      4| // Copilot review on PR #591: two quick uploads could finish out of or…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/engine-client.test.ts > engine client > rejects every pending call when the worker errors
+ReferenceError: Worker is not defined
+ ❯ Engine.<instance_members_initializer> src/island/engine-client.ts:6:20
+      4| /** Promise wrapper around the engine worker. One worker; requests run…
+      5| export class Engine {
+      6|   private worker = new Worker(new URL("../worker/engine.worker.ts", im…
+       |                    ^
+      7|   private next = 1;
+      8|   private pending = new Map<number, (v: any) => void>();
+ ❯ new Engine src/island/engine-client.ts:9:3
+ ❯ tests/unit/engine-client.test.ts:19:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/unit/engine-client.test.ts > engine client > rejects a call the worker reports as failed
+ReferenceError: Worker is not defined
+ ❯ Engine.<instance_members_initializer> src/island/engine-client.ts:6:20
+      4| /** Promise wrapper around the engine worker. One worker; requests run…
+      5| export class Engine {
+      6|   private worker = new Worker(new URL("../worker/engine.worker.ts", im…
+       |                    ^
+      7|   private next = 1;
+      8|   private pending = new Map<number, (v: any) => void>();
+ ❯ new Engine src/island/engine-client.ts:9:3
+ ❯ tests/unit/engine-client.test.ts:29:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  2 failed (2)
+   Start at  10:21:34
+   Duration  241ms (transform 89ms, setup 0ms, import 68ms, tests 3ms, environment 0ms)
+
+
+Running 2 tests using 1 worker
+
+  ✘  1 [chromium] › tests/e2e/flow.spec.ts:62:1 › a laser material survives going back and picking a different effect (8.2s)
+  ✘  2 [chromium] › tests/e2e/flow.spec.ts:86:1 › switching back to Screen clears the laser-only invert and mirror (7.1s)
+
+
+  1) [chromium] › tests/e2e/flow.spec.ts:62:1 › a laser material survives going back and picking a different effect 
+
+    Error: expect(locator).toBeChecked() failed
+
+    Locator:  getByRole('region', { name: 'Export' }).getByRole('switch', { name: /Invert/ })
+    Expected: checked
+    Received: unchecked
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeChecked" with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Export' }).getByRole('switch', { name: /Invert/ })
+        9 × locator resolved to <button type="button" role="switch" class="switch" aria-checked="false" data-toggle="invert" aria-labelledby="lbl-invert"></button>
+          - unexpected value "unchecked"
+
+
+      80 |
+      81 |   await expect(exp.getByRole("button", { name: "Slate" })).toHaveAttribute("aria-pressed", "true");
+    > 82 |   await expect(exp.getByRole("switch", { name: /Invert/ })).toBeChecked();
+         |                                                             ^
+      83 |   await expect(page).toHaveURL(/material=slate/);
+      84 | });
+      85 |
+        at /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/tests/e2e/flow.spec.ts:82:61
+
+    Error Context: test-results/flow-a-laser-material-surv-68e0a--picking-a-different-effect-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/flow-a-laser-material-surv-68e0a--picking-a-different-effect-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/flow-a-laser-material-surv-68e0a--picking-a-different-effect-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/flow.spec.ts:86:1 › switching back to Screen clears the laser-only invert and mirror 
+
+    Error: expect(locator).not.toBeChecked() failed
+
+    Locator:  getByRole('region', { name: 'Export' }).getByRole('switch', { name: /Mirror/ })
+    Expected: not checked
+    Received: checked
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "not toBeChecked" with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Export' }).getByRole('switch', { name: /Mirror/ })
+        9 × locator resolved to <button type="button" role="switch" class="switch" aria-checked="true" data-toggle="mirror" aria-labelledby="lbl-mirror"></button>
+          - unexpected value "checked"
+
+
+      94 |   await exp.getByRole("button", { name: "Screen or print" }).click();
+      95 |   await exp.getByRole("button", { name: "Laser" }).click();
+    > 96 |   await expect(exp.getByRole("switch", { name: /Mirror/ })).not.toBeChecked();
+         |                                                                 ^
+      97 |   await expect(exp.getByRole("switch", { name: /Invert/ })).not.toBeChecked();
+      98 |   await expect(page).not.toHaveURL(/material=/);
+      99 | });
+        at /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/tests/e2e/flow.spec.ts:96:65
+
+    Error Context: test-results/flow-switching-back-to-Scr-81821-aser-only-invert-and-mirror-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/flow-switching-back-to-Scr-81821-aser-only-invert-and-mirror-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/flow-switching-back-to-Scr-81821-aser-only-invert-and-mirror-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › tests/e2e/flow.spec.ts:62:1 › a laser material survives going back and picking a different effect 
+    [chromium] › tests/e2e/flow.spec.ts:86:1 › switching back to Screen clears the laser-only invert and mirror 

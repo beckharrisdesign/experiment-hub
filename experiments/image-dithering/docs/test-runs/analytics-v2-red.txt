@@ -1,0 +1,63 @@
+
+ RUN  v4.1.12 /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype
+
+ ❯ tests/unit/analytics.test.ts (4 tests | 3 failed) 7ms
+     × the download event carries exactly 2 properties: exportFor and mode 5ms
+     × never includes the file name or the effect/material free text 1ms
+     × the fallback is a page view of /downloaded/<exportFor>-<mode> 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/analytics.test.ts > analytics (cookieless) > the download event carries exactly 2 properties: exportFor and mode
+AssertionError: expected { mode: 'halftone', …(3) } to deeply equal { Object (exportFor, mode) }
+
+- Expected
++ Received
+
+  {
++   "effect": "Round dots · 45°",
+    "exportFor": "laser",
++   "material": "slate",
+    "mode": "halftone",
+  }
+
+ ❯ tests/unit/analytics.test.ts:25:20
+     23|     const e = downloadEvent(choice);
+     24|     expect(e.name).toBe("png_downloaded");
+     25|     expect(e.data).toEqual({ exportFor: "laser", mode: "halftone" });
+       |                    ^
+     26|   });
+     27|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/unit/analytics.test.ts > analytics (cookieless) > never includes the file name or the effect/material free text
+TypeError: downloadPageview is not a function
+ ❯ tests/unit/analytics.test.ts:29:54
+     27|
+     28|   it("never includes the file name or the effect/material free text", …
+     29|     const s = JSON.stringify([downloadEvent(choice), downloadPageview(…
+       |                                                      ^
+     30|     expect(s).not.toContain("birthday");
+     31|     expect(s).not.toContain("slate");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/unit/analytics.test.ts > analytics (cookieless) > the fallback is a page view of /downloaded/<exportFor>-<mode>
+TypeError: downloadPageview is not a function
+ ❯ tests/unit/analytics.test.ts:37:12
+     35|   // Hobby-plan fallback: custom events stop when the Pro trial ends; …
+     36|   it("the fallback is a page view of /downloaded/<exportFor>-<mode>", …
+     37|     expect(downloadPageview(choice)).toEqual({ route: "/downloaded/[ki…
+       |            ^
+     38|     expect(downloadPageview({ ...choice, exportFor: "screen", mode: "d…
+     39|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed (4)
+   Start at  09:18:55
+   Duration  240ms (transform 24ms, setup 0ms, import 34ms, tests 7ms, environment 0ms)
+

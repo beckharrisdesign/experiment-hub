@@ -1,0 +1,49 @@
+
+ RUN  v4.1.12 /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype
+
+ ❯ tests/unit/analytics.test.ts (3 tests | 3 failed) 8ms
+     × is on only on the production host 6ms
+     × the download event carries only what was chosen, never the file name or image data 1ms
+     × records 'none' for material when exporting for screen 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/analytics.test.ts > analytics (cookieless, one event) > is on only on the production host
+Error: not implemented
+ ❯ analyticsEnabledOn src/lib/analytics.ts:1:68
+      1| export const analyticsEnabledOn = (_h: string): boolean => { throw new…
+       |                                                                    ^
+      2| export function downloadEvent(_s: unknown): { name: string; data: Reco…
+      3|
+ ❯ tests/unit/analytics.test.ts:6:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/unit/analytics.test.ts > analytics (cookieless, one event) > the download event carries only what was chosen, never the file name or image data
+Error: not implemented
+ ❯ downloadEvent src/lib/analytics.ts:2:100
+      1| export const analyticsEnabledOn = (_h: string): boolean => { throw new…
+      2| export function downloadEvent(_s: unknown): { name: string; data: Reco…
+       |                                                                                                    ^
+      3|
+ ❯ tests/unit/analytics.test.ts:13:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/unit/analytics.test.ts > analytics (cookieless, one event) > records 'none' for material when exporting for screen
+Error: not implemented
+ ❯ downloadEvent src/lib/analytics.ts:2:100
+      1| export const analyticsEnabledOn = (_h: string): boolean => { throw new…
+      2| export function downloadEvent(_s: unknown): { name: string; data: Reco…
+       |                                                                                                    ^
+      3|
+ ❯ tests/unit/analytics.test.ts:27:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  08:56:12
+   Duration  428ms (transform 33ms, setup 0ms, import 56ms, tests 8ms, environment 1ms)
+

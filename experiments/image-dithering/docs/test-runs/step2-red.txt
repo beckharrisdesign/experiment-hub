@@ -1,0 +1,424 @@
+
+ RUN  v4.1.12 /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype
+
+ ❯ tests/unit/url.test.ts (6 tests | 6 failed) 6ms
+     × ?material=slate loads with invert ON, exporting for laser 3ms
+     × ?material=acrylic loads with mirror and invert ON 0ms
+     × an unknown material falls back to the default without errors 2ms
+     × no query string is the default 0ms
+     × writes the material back, and drops it when there is none 0ms
+     × keeps unrelated query parameters 0ms
+ ❯ tests/unit/variations.test.ts (5 tests | 5 failed) 9ms
+     × offers exactly Lighter, Darker, More contrast, Softer 6ms
+     × round 1 moves gamma ×1.25 / ÷1.25 and contrast ±25 0ms
+     × each round halves the step, so picks converge 0ms
+     × changes only the tone it names 0ms
+     × stays inside the control ranges 0ms
+ ❯ tests/unit/presets.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/presets.test.ts [ tests/unit/presets.test.ts ]
+Error: Cannot find module '../../src/data/presets.json' imported from /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/tests/unit/presets.test.ts
+ ❯ tests/unit/presets.test.ts:3:1
+      1| import Ajv from "ajv";
+      2| import { describe, expect, it } from "vitest";
+      3| import presets from "../../src/data/presets.json";
+       | ^
+      4| import schema from "../../src/data/presets.schema.json";
+      5|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/url.test.ts > URL state > ?material=slate loads with invert ON, exporting for laser
+Error: not implemented
+ ❯ stateFromSearch src/lib/url.ts:3:68
+      1| import type { Settings } from "../engine/pipeline";
+      2| export type UrlState = { exportFor: "screen" | "laser"; material: stri…
+      3| export function stateFromSearch(_search: string): UrlState { throw new…
+       |                                                                    ^
+      4| export function searchFor(_s: { material: string | null }, _current = …
+      5|
+ ❯ tests/unit/url.test.ts:8:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  tests/unit/url.test.ts > URL state > ?material=acrylic loads with mirror and invert ON
+Error: not implemented
+ ❯ stateFromSearch src/lib/url.ts:3:68
+      1| import type { Settings } from "../engine/pipeline";
+      2| export type UrlState = { exportFor: "screen" | "laser"; material: stri…
+      3| export function stateFromSearch(_search: string): UrlState { throw new…
+       |                                                                    ^
+      4| export function searchFor(_s: { material: string | null }, _current = …
+      5|
+ ❯ tests/unit/url.test.ts:15:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  tests/unit/url.test.ts > URL state > an unknown material falls back to the default without errors
+AssertionError: expected [Function] to not throw an error but 'Error: not implemented' was thrown
+
+- Expected:
+undefined
+
++ Received:
+"Error: not implemented"
+
+ ❯ tests/unit/url.test.ts:21:64
+     19|
+     20|   it("an unknown material falls back to the default without errors", (…
+     21|     expect(() => stateFromSearch("?material=unobtainium")).not.toThrow…
+       |                                                                ^
+     22|     const s = stateFromSearch("?material=unobtainium");
+     23|     expect(s.material).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  tests/unit/url.test.ts > URL state > no query string is the default
+Error: not implemented
+ ❯ stateFromSearch src/lib/url.ts:3:68
+      1| import type { Settings } from "../engine/pipeline";
+      2| export type UrlState = { exportFor: "screen" | "laser"; material: stri…
+      3| export function stateFromSearch(_search: string): UrlState { throw new…
+       |                                                                    ^
+      4| export function searchFor(_s: { material: string | null }, _current = …
+      5|
+ ❯ tests/unit/url.test.ts:29:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  tests/unit/url.test.ts > URL state > writes the material back, and drops it when there is none
+Error: not implemented
+ ❯ searchFor src/lib/url.ts:4:91
+      2| export type UrlState = { exportFor: "screen" | "laser"; material: stri…
+      3| export function stateFromSearch(_search: string): UrlState { throw new…
+      4| export function searchFor(_s: { material: string | null }, _current = …
+       |                                                                                           ^
+      5|
+ ❯ tests/unit/url.test.ts:34:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  tests/unit/url.test.ts > URL state > keeps unrelated query parameters
+Error: not implemented
+ ❯ searchFor src/lib/url.ts:4:91
+      2| export type UrlState = { exportFor: "screen" | "laser"; material: stri…
+      3| export function stateFromSearch(_search: string): UrlState { throw new…
+      4| export function searchFor(_s: { material: string | null }, _current = …
+       |                                                                                           ^
+      5|
+ ❯ tests/unit/url.test.ts:39:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  tests/unit/variations.test.ts > fine-tune variations > offers exactly Lighter, Darker, More contrast, Softer
+Error: not implemented
+ ❯ variations src/lib/variations.ts:2:106
+      1| import type { Settings } from "../engine/pipeline";
+      2| export function variations(_s: Settings, _round: number): { name: stri…
+       |                                                                                                          ^
+      3|
+ ❯ tests/unit/variations.test.ts:10:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  tests/unit/variations.test.ts > fine-tune variations > round 1 moves gamma ×1.25 / ÷1.25 and contrast ±25
+Error: not implemented
+ ❯ variations src/lib/variations.ts:2:106
+      1| import type { Settings } from "../engine/pipeline";
+      2| export function variations(_s: Settings, _round: number): { name: stri…
+       |                                                                                                          ^
+      3|
+ ❯ byName tests/unit/variations.test.ts:6:64
+ ❯ tests/unit/variations.test.ts:14:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  tests/unit/variations.test.ts > fine-tune variations > each round halves the step, so picks converge
+Error: not implemented
+ ❯ variations src/lib/variations.ts:2:106
+      1| import type { Settings } from "../engine/pipeline";
+      2| export function variations(_s: Settings, _round: number): { name: stri…
+       |                                                                                                          ^
+      3|
+ ❯ byName tests/unit/variations.test.ts:6:64
+ ❯ tests/unit/variations.test.ts:22:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+ FAIL  tests/unit/variations.test.ts > fine-tune variations > changes only the tone it names
+Error: not implemented
+ ❯ variations src/lib/variations.ts:2:106
+      1| import type { Settings } from "../engine/pipeline";
+      2| export function variations(_s: Settings, _round: number): { name: stri…
+       |                                                                                                          ^
+      3|
+ ❯ byName tests/unit/variations.test.ts:6:64
+ ❯ tests/unit/variations.test.ts:28:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯
+
+ FAIL  tests/unit/variations.test.ts > fine-tune variations > stays inside the control ranges
+Error: not implemented
+ ❯ variations src/lib/variations.ts:2:106
+      1| import type { Settings } from "../engine/pipeline";
+      2| export function variations(_s: Settings, _round: number): { name: stri…
+       |                                                                                                          ^
+      3|
+ ❯ byName tests/unit/variations.test.ts:6:64
+ ❯ tests/unit/variations.test.ts:37:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/12]⎯
+
+
+ Test Files  3 failed | 3 passed (6)
+      Tests  11 failed | 76 passed (87)
+   Start at  18:21:33
+   Duration  852ms (transform 244ms, setup 0ms, import 351ms, tests 693ms, environment 0ms)
+
+--- e2e ---
+
+Running 7 tests using 1 worker
+
+  ✘  1 [chromium] › tests/e2e/a11y.spec.ts:6:1 › axe: no violations on first load (20.6s)
+  ✘  2 [chromium] › tests/e2e/a11y.spec.ts:13:1 › axe: no violations after an image is loaded (1.0m)
+  ✘  3 [chromium] › tests/e2e/flow.spec.ts:5:1 › upload → 8 thumbnails → laser + slate in the URL → 300 DPI PNG at 100 × 75 mm (1.0m)
+  ✘  4 [chromium] › tests/e2e/flow.spec.ts:31:1 › later steps stay locked, with no previews, until the step above has a pick (20.8s)
+  ✘  5 [chromium] › tests/e2e/flow.spec.ts:38:1 › Halftone switch shows eight halftone screens (1.0m)
+  ✘  6 [chromium] › tests/e2e/flow.spec.ts:47:1 › ?material=acrylic opens Export for laser with mirror and invert on (5.4s)
+  ✘  7 [chromium] › tests/e2e/keyboard.spec.ts:5:1 › keyboard only: upload, pick an effect, fine-tune, laser + material, download (1.0m)
+
+
+  1) [chromium] › tests/e2e/a11y.spec.ts:6:1 › axe: no violations on first load ────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveCount[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByRole('region', { name: 'Pick an effect' }).locator('[data-tile][data-rendered=\'true\']')
+    Expected: [32m8[39m
+    Received: [31m0[39m
+    Timeout:  20000ms
+
+    Call log:
+    [2m  - Expect "toHaveCount" with timeout 20000ms[22m
+    [2m  - waiting for getByRole('region', { name: 'Pick an effect' }).locator('[data-tile][data-rendered=\'true\']')[22m
+    [2m    23 × locator resolved to 0 elements[22m
+    [2m       - unexpected value "0"[22m
+
+
+       at helpers.ts:23
+
+      21 | export async function expectRendered(page: Page, stepName: string, count: number) {
+      22 |   const tiles = step(page, stepName).locator("[data-tile][data-rendered='true']");
+    > 23 |   await expect(tiles).toHaveCount(count, { timeout: 20_000 });
+         |                       ^
+      24 | }
+      25 |
+      26 | export const readDownload = (path: string) => readFileSync(path);
+        at expectRendered (/Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/tests/e2e/helpers.ts:23:23)
+        at /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/tests/e2e/a11y.spec.ts:8:9
+
+    Error Context: test-results/a11y-axe-no-violations-on-first-load-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/a11y-axe-no-violations-on-first-load-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/a11y-axe-no-violations-on-first-load-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/a11y.spec.ts:13:1 › axe: no violations after an image is loaded ────────
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.setInputFiles: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel('Choose an image')[22m
+
+
+      13 | test("axe: no violations after an image is loaded", async ({ page }) => {
+      14 |   await page.goto("/");
+    > 15 |   await page.getByLabel("Choose an image").setInputFiles(FIXTURE);
+         |   ^
+      16 |   await expectRendered(page, "Pick an effect", 8);
+      17 |   const r = await new AxeBuilder({ page }).analyze();
+      18 |   expect(r.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
+        at /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/tests/e2e/a11y.spec.ts:15:3
+
+    Error Context: test-results/a11y-axe-no-violations-after-an-image-is-loaded-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/a11y-axe-no-violations-after-an-image-is-loaded-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/a11y-axe-no-violations-after-an-image-is-loaded-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/flow.spec.ts:5:1 › upload → 8 thumbnails → laser + slate in the URL → 300 DPI PNG at 100 × 75 mm 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.setInputFiles: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel('Choose an image')[22m
+
+
+       5 | test("upload → 8 thumbnails → laser + slate in the URL → 300 DPI PNG at 100 × 75 mm", async ({ page }) => {
+       6 |   await page.goto("/");
+    >  7 |   await page.getByLabel("Choose an image").setInputFiles(FIXTURE);
+         |   ^
+       8 |
+       9 |   await expectRendered(page, "Pick an effect", 8);
+      10 |   const effect = step(page, "Pick an effect");
+        at /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/tests/e2e/flow.spec.ts:7:3
+
+    Error Context: test-results/flow-upload-→-8-thumbnails-a7f6e--300-DPI-PNG-at-100-×-75-mm-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/flow-upload-→-8-thumbnails-a7f6e--300-DPI-PNG-at-100-×-75-mm-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/flow-upload-→-8-thumbnails-a7f6e--300-DPI-PNG-at-100-×-75-mm-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/e2e/flow.spec.ts:31:1 › later steps stay locked, with no previews, until the step above has a pick 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveCount[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByRole('region', { name: 'Pick an effect' }).locator('[data-tile][data-rendered=\'true\']')
+    Expected: [32m8[39m
+    Received: [31m0[39m
+    Timeout:  20000ms
+
+    Call log:
+    [2m  - Expect "toHaveCount" with timeout 20000ms[22m
+    [2m  - waiting for getByRole('region', { name: 'Pick an effect' }).locator('[data-tile][data-rendered=\'true\']')[22m
+    [2m    23 × locator resolved to 0 elements[22m
+    [2m       - unexpected value "0"[22m
+
+
+       at helpers.ts:23
+
+      21 | export async function expectRendered(page: Page, stepName: string, count: number) {
+      22 |   const tiles = step(page, stepName).locator("[data-tile][data-rendered='true']");
+    > 23 |   await expect(tiles).toHaveCount(count, { timeout: 20_000 });
+         |                       ^
+      24 | }
+      25 |
+      26 | export const readDownload = (path: string) => readFileSync(path);
+        at expectRendered (/Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/tests/e2e/helpers.ts:23:23)
+        at /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/tests/e2e/flow.spec.ts:33:9
+
+    Error Context: test-results/flow-later-steps-stay-lock-23f40-l-the-step-above-has-a-pick-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/flow-later-steps-stay-lock-23f40-l-the-step-above-has-a-pick-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/flow-later-steps-stay-lock-23f40-l-the-step-above-has-a-pick-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › tests/e2e/flow.spec.ts:38:1 › Halftone switch shows eight halftone screens ───────
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('region', { name: 'Pick an effect' }).getByRole('button', { name: 'Halftone' })[22m
+
+
+      39 |   await page.goto("/");
+      40 |   const effect = step(page, "Pick an effect");
+    > 41 |   await effect.getByRole("button", { name: "Halftone" }).click();
+         |                                                          ^
+      42 |   await expect(effect.getByRole("button", { name: "Halftone" })).toHaveAttribute("aria-pressed", "true");
+      43 |   await expectRendered(page, "Pick an effect", 8);
+      44 |   await expect(effect.getByRole("button", { name: /Round dots/ })).toBeVisible();
+        at /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/tests/e2e/flow.spec.ts:41:58
+
+    Error Context: test-results/flow-Halftone-switch-shows-eight-halftone-screens-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/flow-Halftone-switch-shows-eight-halftone-screens-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/flow-Halftone-switch-shows-eight-halftone-screens-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › tests/e2e/flow.spec.ts:47:1 › ?material=acrylic opens Export for laser with mirror and invert on 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeChecked[2m([22m[2m)[22m failed
+
+    Locator: getByRole('region', { name: 'Export' }).getByRole('switch', { name: /Mirror/ })
+    Expected: checked
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeChecked" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('region', { name: 'Export' }).getByRole('switch', { name: /Mirror/ })[22m
+
+
+      48 |   await page.goto("/?material=acrylic");
+      49 |   const exp = step(page, "Export");
+    > 50 |   await expect(exp.getByRole("switch", { name: /Mirror/ })).toBeChecked();
+         |                                                             ^
+      51 |   await expect(exp.getByRole("switch", { name: /Invert/ })).toBeChecked();
+      52 | });
+      53 |
+        at /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/tests/e2e/flow.spec.ts:50:61
+
+    Error Context: test-results/flow--material-acrylic-ope-c8993-r-with-mirror-and-invert-on-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/flow--material-acrylic-ope-c8993-r-with-mirror-and-invert-on-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/flow--material-acrylic-ope-c8993-r-with-mirror-and-invert-on-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [chromium] › tests/e2e/keyboard.spec.ts:5:1 › keyboard only: upload, pick an effect, fine-tune, laser + material, download 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.evaluate: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel('Choose an image')[22m
+
+
+       7 |   const input = page.getByLabel("Choose an image");
+       8 |   // Tab until the file input has focus, then hand it a file (what the OS picker would do).
+    >  9 |   for (let i = 0; i < 20 && !(await input.evaluate((el) => el === document.activeElement)); i++) await page.keyboard.press("Tab");
+         |                                           ^
+      10 |   await expect(input).toBeFocused();
+      11 |   await input.setInputFiles(FIXTURE);
+      12 |   await expectRendered(page, "Pick an effect", 8);
+        at /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype/tests/e2e/keyboard.spec.ts:9:43
+
+    Error Context: test-results/keyboard-keyboard-only-upl-34049-une-laser-material-download-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/keyboard-keyboard-only-upl-34049-une-laser-material-download-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/keyboard-keyboard-only-upl-34049-une-laser-material-download-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7 failed
+    [chromium] › tests/e2e/a11y.spec.ts:6:1 › axe: no violations on first load ─────────────────────
+    [chromium] › tests/e2e/a11y.spec.ts:13:1 › axe: no violations after an image is loaded ─────────
+    [chromium] › tests/e2e/flow.spec.ts:5:1 › upload → 8 thumbnails → laser + slate in the URL → 300 DPI PNG at 100 × 75 mm 
+    [chromium] › tests/e2e/flow.spec.ts:31:1 › later steps stay locked, with no previews, until the step above has a pick 
+    [chromium] › tests/e2e/flow.spec.ts:38:1 › Halftone switch shows eight halftone screens ────────
+    [chromium] › tests/e2e/flow.spec.ts:47:1 › ?material=acrylic opens Export for laser with mirror and invert on 
+    [chromium] › tests/e2e/keyboard.spec.ts:5:1 › keyboard only: upload, pick an effect, fine-tune, laser + material, download 

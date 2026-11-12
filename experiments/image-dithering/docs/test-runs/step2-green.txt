@@ -1,0 +1,22 @@
+
+ RUN  v4.1.12 /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype
+
+
+ Test Files  6 passed (6)
+      Tests  91 passed (91)
+   Start at  18:33:15
+   Duration  1.11s (transform 390ms, setup 0ms, import 635ms, tests 841ms, environment 1ms)
+
+--- e2e ---
+
+Running 7 tests using 1 worker
+
+  ✓  1 [chromium] › tests/e2e/a11y.spec.ts:6:1 › axe: no violations on first load (1.8s)
+  ✓  2 [chromium] › tests/e2e/a11y.spec.ts:13:1 › axe: no violations after an image is loaded (851ms)
+  ✓  3 [chromium] › tests/e2e/flow.spec.ts:5:1 › upload → 8 thumbnails → laser + slate in the URL → 300 DPI PNG at 100 × 75 mm (1.1s)
+  ✓  4 [chromium] › tests/e2e/flow.spec.ts:31:1 › later steps stay locked, with no previews, until the step above has a pick (232ms)
+  ✓  5 [chromium] › tests/e2e/flow.spec.ts:38:1 › Halftone switch shows eight halftone screens (303ms)
+  ✓  6 [chromium] › tests/e2e/flow.spec.ts:47:1 › ?material=acrylic reaches Export already set for laser, mirror and invert on (574ms)
+  ✓  7 [chromium] › tests/e2e/keyboard.spec.ts:5:1 › keyboard only: upload, pick an effect, fine-tune, laser + material, download (1.9s)
+
+  7 passed (13.6s)

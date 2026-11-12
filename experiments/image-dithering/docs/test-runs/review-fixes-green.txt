@@ -1,0 +1,15 @@
+
+Running 10 tests using 1 worker
+
+  ✓   1 [chromium] › tests/e2e/a11y.spec.ts:6:1 › axe: no violations on first load (1.3s)
+  ✓   2 [chromium] › tests/e2e/a11y.spec.ts:13:1 › axe: no violations after an image is loaded (698ms)
+  ✓   3 [chromium] › tests/e2e/flow.spec.ts:5:1 › upload → 8 thumbnails → laser + slate in the URL → 300 DPI PNG at 100 × 75 mm (2.0s)
+  ✓   4 [chromium] › tests/e2e/flow.spec.ts:31:1 › later steps stay locked, with no previews, until the step above has a pick (239ms)
+  ✓   5 [chromium] › tests/e2e/flow.spec.ts:38:1 › Halftone switch shows eight halftone screens (295ms)
+  ✓   6 [chromium] › tests/e2e/flow.spec.ts:47:1 › ?material=acrylic reaches Export already set for laser, mirror and invert on (583ms)
+  ✓   7 [chromium] › tests/e2e/flow.spec.ts:62:1 › a laser material survives going back and picking a different effect (2.3s)
+  ✓   8 [chromium] › tests/e2e/flow.spec.ts:86:1 › switching back to Screen clears the laser-only invert and mirror (1.0s)
+  ✓   9 [chromium] › tests/e2e/keyboard.spec.ts:5:1 › keyboard only: upload, pick an effect, fine-tune, laser + material, download (3.1s)
+  ✓  10 [chromium] › tests/e2e/privacy.spec.ts:5:1 › no request is made with image data during upload and export (2.2s)
+
+  10 passed (20.3s)

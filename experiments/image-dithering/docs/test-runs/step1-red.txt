@@ -1,0 +1,321 @@
+
+ RUN  v4.1.5 /Users/katybharris/code/experiment-hub/experiments/image-dithering/prototype
+
+ ❯ tests/unit/png-phys.test.ts (4 tests | 3 failed) 7ms
+     × writes 11811 pixels per meter on both axes, unit = meter, at 300 DPI 5ms
+     × puts pHYs before the first IDAT with a valid CRC, and the file still decodes 1ms
+     × replaces an existing pHYs instead of adding a second one 0ms
+ ❯ tests/unit/engine.test.ts (43 tests | 43 failed) 13ms
+     × converts mm to px at a DPI 3ms
+     × locks aspect: 4000×3000 at 100 mm wide is 75 mm tall 0ms
+     × threshold at 128 maps [0, 127, 128, 255] to [0, 0, 255, 255] 0ms
+     × offers exactly the eight algorithms in the brief, five of them error diffusion 3ms
+     × floyd-steinberg outputs only 0 and 255 0ms
+     × atkinson outputs only 0 and 255 0ms
+     × jarvis outputs only 0 and 255 0ms
+     × stucki outputs only 0 and 255 0ms
+     × sierra-lite outputs only 0 and 255 0ms
+     × bayer-4 outputs only 0 and 255 0ms
+     × bayer-8 outputs only 0 and 255 0ms
+     × threshold outputs only 0 and 255 0ms
+       × 50% gray → 50% ± 2% white 0ms
+       × 25% gray → 25% ± 2% white 0ms
+       × 50% gray → 50% ± 2% white 0ms
+       × 25% gray → 25% ± 2% white 0ms
+       × 50% gray → 50% ± 2% white 0ms
+       × 25% gray → 25% ± 2% white 0ms
+       × 50% gray → 50% ± 2% white 0ms
+       × 25% gray → 25% ± 2% white 0ms
+       × 50% gray → 50% ± 2% white 0ms
+       × 25% gray → 25% ± 2% white 0ms
+     × Bayer 4×4 on flat 50% gray is exactly 50% white 0ms
+     × serpentine ON and OFF differ on a horizontal gradient 0ms
+     × floyd-steinberg is deterministic 0ms
+     × atkinson is deterministic 0ms
+     × jarvis is deterministic 0ms
+     × stucki is deterministic 0ms
+     × sierra-lite is deterministic 0ms
+     × bayer-4 is deterministic 0ms
+     × bayer-8 is deterministic 0ms
+     × threshold is deterministic 0ms
+     × gamma 1, brightness 0, contrast 0 leave the grayscale input unchanged 0ms
+     × invert ON turns flat 25% gray into 75% ± 2% white after Floyd–Steinberg 0ms
+     × floyd-steinberg: mirrored output is the unmirrored output flipped 0ms
+     × atkinson: mirrored output is the unmirrored output flipped 0ms
+     × jarvis: mirrored output is the unmirrored output flipped 0ms
+     × stucki: mirrored output is the unmirrored output flipped 0ms
+     × sierra-lite: mirrored output is the unmirrored output flipped 0ms
+     × bayer-4: mirrored output is the unmirrored output flipped 0ms
+     × bayer-8: mirrored output is the unmirrored output flipped 0ms
+     × threshold: mirrored output is the unmirrored output flipped 0ms
+     × resamples to the requested pixel size 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 46 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/engine.test.ts > size > converts mm to px at a DPI
+Error: not implemented
+ ❯ mmToPx src/engine/size.ts:2:9
+      1| export function mmToPx(_mm: number, _dpi: number): number {
+      2|   throw new Error("not implemented");
+       |         ^
+      3| }
+      4| export function lockAspect(
+ ❯ tests/unit/engine.test.ts:26:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/46]⎯
+
+ FAIL  tests/unit/engine.test.ts > size > locks aspect: 4000×3000 at 100 mm wide is 75 mm tall
+Error: not implemented
+ ❯ lockAspect src/engine/size.ts:9:9
+      7|   _size: { widthMm: number } | { heightMm: number },
+      8| ): { widthMm: number; heightMm: number } {
+      9|   throw new Error("not implemented");
+       |         ^
+     10| }
+     11|
+ ❯ tests/unit/engine.test.ts:32:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/46]⎯
+
+ FAIL  tests/unit/engine.test.ts > dither > threshold at 128 maps [0, 127, 128, 255] to [0, 0, 255, 255]
+Error: not implemented
+ ❯ dither src/engine/dither.ts:6:9
+      4| export const ERROR_DIFFUSION: readonly Algorithm[] = [];
+      5| export function dither(_g: Gray, _algorithm: Algorithm, _opts?: { serp…
+      6|   throw new Error("not implemented");
+       |         ^
+      7| }
+      8|
+ ❯ tests/unit/engine.test.ts:40:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/46]⎯
+
+ FAIL  tests/unit/engine.test.ts > dither > offers exactly the eight algorithms in the brief, five of them error diffusion
+AssertionError: expected [] to deeply equal [ 'atkinson', 'bayer-4', …(6) ]
+
+- Expected
++ Received
+
+- [
+-   "atkinson",
+-   "bayer-4",
+-   "bayer-8",
+-   "floyd-steinberg",
+-   "jarvis",
+-   "sierra-lite",
+-   "stucki",
+-   "threshold",
+- ]
++ []
+
+ ❯ tests/unit/engine.test.ts:44:36
+     42|
+     43|   it("offers exactly the eight algorithms in the brief, five of them e…
+     44|     expect([...ALGORITHMS].sort()).toEqual([...EIGHT].sort());
+       |                                    ^
+     45|     expect([...ERROR_DIFFUSION].sort()).toEqual([...DIFFUSION].sort());
+     46|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/46]⎯
+
+ FAIL  tests/unit/engine.test.ts > dither > floyd-steinberg outputs only 0 and 255
+ FAIL  tests/unit/engine.test.ts > dither > atkinson outputs only 0 and 255
+ FAIL  tests/unit/engine.test.ts > dither > jarvis outputs only 0 and 255
+ FAIL  tests/unit/engine.test.ts > dither > stucki outputs only 0 and 255
+ FAIL  tests/unit/engine.test.ts > dither > sierra-lite outputs only 0 and 255
+ FAIL  tests/unit/engine.test.ts > dither > bayer-4 outputs only 0 and 255
+ FAIL  tests/unit/engine.test.ts > dither > bayer-8 outputs only 0 and 255
+ FAIL  tests/unit/engine.test.ts > dither > threshold outputs only 0 and 255
+Error: not implemented
+ ❯ dither src/engine/dither.ts:6:9
+      4| export const ERROR_DIFFUSION: readonly Algorithm[] = [];
+      5| export function dither(_g: Gray, _algorithm: Algorithm, _opts?: { serp…
+      6|   throw new Error("not implemented");
+       |         ^
+      7| }
+      8|
+ ❯ tests/unit/engine.test.ts:50:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/46]⎯
+
+ FAIL  tests/unit/engine.test.ts > dither > floyd-steinberg preserves tone on flat gray > 50% gray → 50% ± 2% white
+ FAIL  tests/unit/engine.test.ts > dither > atkinson preserves tone on flat gray > 50% gray → 50% ± 2% white
+ FAIL  tests/unit/engine.test.ts > dither > jarvis preserves tone on flat gray > 50% gray → 50% ± 2% white
+ FAIL  tests/unit/engine.test.ts > dither > stucki preserves tone on flat gray > 50% gray → 50% ± 2% white
+ FAIL  tests/unit/engine.test.ts > dither > sierra-lite preserves tone on flat gray > 50% gray → 50% ± 2% white
+Error: not implemented
+ ❯ dither src/engine/dither.ts:6:9
+      4| export const ERROR_DIFFUSION: readonly Algorithm[] = [];
+      5| export function dither(_g: Gray, _algorithm: Algorithm, _opts?: { serp…
+      6|   throw new Error("not implemented");
+       |         ^
+      7| }
+      8|
+ ❯ tests/unit/engine.test.ts:57:34
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/46]⎯
+
+ FAIL  tests/unit/engine.test.ts > dither > floyd-steinberg preserves tone on flat gray > 25% gray → 25% ± 2% white
+ FAIL  tests/unit/engine.test.ts > dither > atkinson preserves tone on flat gray > 25% gray → 25% ± 2% white
+ FAIL  tests/unit/engine.test.ts > dither > jarvis preserves tone on flat gray > 25% gray → 25% ± 2% white
+ FAIL  tests/unit/engine.test.ts > dither > stucki preserves tone on flat gray > 25% gray → 25% ± 2% white
+ FAIL  tests/unit/engine.test.ts > dither > sierra-lite preserves tone on flat gray > 25% gray → 25% ± 2% white
+Error: not implemented
+ ❯ dither src/engine/dither.ts:6:9
+      4| export const ERROR_DIFFUSION: readonly Algorithm[] = [];
+      5| export function dither(_g: Gray, _algorithm: Algorithm, _opts?: { serp…
+      6|   throw new Error("not implemented");
+       |         ^
+      7| }
+      8|
+ ❯ tests/unit/engine.test.ts:60:34
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/46]⎯
+
+ FAIL  tests/unit/engine.test.ts > dither > Bayer 4×4 on flat 50% gray is exactly 50% white
+Error: not implemented
+ ❯ dither src/engine/dither.ts:6:9
+      4| export const ERROR_DIFFUSION: readonly Algorithm[] = [];
+      5| export function dither(_g: Gray, _algorithm: Algorithm, _opts?: { serp…
+      6|   throw new Error("not implemented");
+       |         ^
+      7| }
+      8|
+ ❯ tests/unit/engine.test.ts:66:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/46]⎯
+
+ FAIL  tests/unit/engine.test.ts > dither > serpentine ON and OFF differ on a horizontal gradient
+Error: not implemented
+ ❯ dither src/engine/dither.ts:6:9
+      4| export const ERROR_DIFFUSION: readonly Algorithm[] = [];
+      5| export function dither(_g: Gray, _algorithm: Algorithm, _opts?: { serp…
+      6|   throw new Error("not implemented");
+       |         ^
+      7| }
+      8|
+ ❯ tests/unit/engine.test.ts:72:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/46]⎯
+
+ FAIL  tests/unit/engine.test.ts > pipeline > floyd-steinberg is deterministic
+ FAIL  tests/unit/engine.test.ts > pipeline > atkinson is deterministic
+ FAIL  tests/unit/engine.test.ts > pipeline > jarvis is deterministic
+ FAIL  tests/unit/engine.test.ts > pipeline > stucki is deterministic
+ FAIL  tests/unit/engine.test.ts > pipeline > sierra-lite is deterministic
+ FAIL  tests/unit/engine.test.ts > pipeline > bayer-4 is deterministic
+ FAIL  tests/unit/engine.test.ts > pipeline > bayer-8 is deterministic
+ FAIL  tests/unit/engine.test.ts > pipeline > threshold is deterministic
+Error: not implemented
+ ❯ processImage src/engine/pipeline.ts:8:9
+      6| }
+      7| export function processImage(_g: Gray, _s: Settings): Gray {
+      8|   throw new Error("not implemented");
+       |         ^
+      9| }
+     10|
+ ❯ tests/unit/engine.test.ts:82:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/46]⎯
+
+ FAIL  tests/unit/engine.test.ts > pipeline > gamma 1, brightness 0, contrast 0 leave the grayscale input unchanged
+Error: not implemented
+ ❯ adjustTone src/engine/pipeline.ts:5:9
+      3| export const DEFAULT_SETTINGS: Settings = {};
+      4| export function adjustTone(_g: Gray, _t: { brightness: number; contras…
+      5|   throw new Error("not implemented");
+       |         ^
+      6| }
+      7| export function processImage(_g: Gray, _s: Settings): Gray {
+ ❯ tests/unit/engine.test.ts:90:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/46]⎯
+
+ FAIL  tests/unit/engine.test.ts > pipeline > invert ON turns flat 25% gray into 75% ± 2% white after Floyd–Steinberg
+Error: not implemented
+ ❯ processImage src/engine/pipeline.ts:8:9
+      6| }
+      7| export function processImage(_g: Gray, _s: Settings): Gray {
+      8|   throw new Error("not implemented");
+       |         ^
+      9| }
+     10|
+ ❯ tests/unit/engine.test.ts:96:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/46]⎯
+
+ FAIL  tests/unit/engine.test.ts > pipeline > floyd-steinberg: mirrored output is the unmirrored output flipped
+ FAIL  tests/unit/engine.test.ts > pipeline > atkinson: mirrored output is the unmirrored output flipped
+ FAIL  tests/unit/engine.test.ts > pipeline > jarvis: mirrored output is the unmirrored output flipped
+ FAIL  tests/unit/engine.test.ts > pipeline > stucki: mirrored output is the unmirrored output flipped
+ FAIL  tests/unit/engine.test.ts > pipeline > sierra-lite: mirrored output is the unmirrored output flipped
+ FAIL  tests/unit/engine.test.ts > pipeline > bayer-4: mirrored output is the unmirrored output flipped
+ FAIL  tests/unit/engine.test.ts > pipeline > bayer-8: mirrored output is the unmirrored output flipped
+ FAIL  tests/unit/engine.test.ts > pipeline > threshold: mirrored output is the unmirrored output flipped
+Error: not implemented
+ ❯ processImage src/engine/pipeline.ts:8:9
+      6| }
+      7| export function processImage(_g: Gray, _s: Settings): Gray {
+      8|   throw new Error("not implemented");
+       |         ^
+      9| }
+     10|
+ ❯ tests/unit/engine.test.ts:110:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/46]⎯
+
+ FAIL  tests/unit/engine.test.ts > pipeline > resamples to the requested pixel size
+Error: not implemented
+ ❯ processImage src/engine/pipeline.ts:8:9
+      6| }
+      7| export function processImage(_g: Gray, _s: Settings): Gray {
+      8|   throw new Error("not implemented");
+       |         ^
+      9| }
+     10|
+ ❯ tests/unit/engine.test.ts:122:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/46]⎯
+
+ FAIL  tests/unit/png-phys.test.ts > injectPhys > writes 11811 pixels per meter on both axes, unit = meter, at 300 DPI
+Error: not implemented
+ ❯ injectPhys src/engine/png-phys.ts:2:9
+      1| export function injectPhys(_png: Uint8Array, _dpi: number): Uint8Array…
+      2|   throw new Error("not implemented");
+       |         ^
+      3| }
+      4|
+ ❯ tests/unit/png-phys.test.ts:37:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/46]⎯
+
+ FAIL  tests/unit/png-phys.test.ts > injectPhys > puts pHYs before the first IDAT with a valid CRC, and the file still decodes
+Error: not implemented
+ ❯ injectPhys src/engine/png-phys.ts:2:9
+      1| export function injectPhys(_png: Uint8Array, _dpi: number): Uint8Array…
+      2|   throw new Error("not implemented");
+       |         ^
+      3| }
+      4|
+ ❯ tests/unit/png-phys.test.ts:48:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/46]⎯
+
+ FAIL  tests/unit/png-phys.test.ts > injectPhys > replaces an existing pHYs instead of adding a second one
+Error: not implemented
+ ❯ injectPhys src/engine/png-phys.ts:2:9
+      1| export function injectPhys(_png: Uint8Array, _dpi: number): Uint8Array…
+      2|   throw new Error("not implemented");
+       |         ^
+      3| }
+      4|
+ ❯ tests/unit/png-phys.test.ts:61:30
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/46]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  46 failed | 1 passed (47)
+   Start at  17:35:31
+   Duration  307ms (transform 118ms, setup 0ms, import 168ms, tests 20ms, environment 0ms)
+
