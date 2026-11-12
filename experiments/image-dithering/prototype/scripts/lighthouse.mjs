@@ -21,7 +21,19 @@ function cpuFor(benchmarkIndex) {
   return benchmarkIndex >= 1300 ? 4 : benchmarkIndex >= 800 ? 2 : 1;
 }
 
-const chrome = await chromeLauncher.launch({ chromeFlags: ["--headless=new", "--no-sandbox"] });
+// CI runners occasionally fail to *start* Chrome ("waiting for dynamic debugging port"). Retry the
+// launch once; this never re-runs a measurement, so it can't turn a failing score into a pass.
+async function launchChrome() {
+  const chromeFlags = ["--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"];
+  try {
+    return await chromeLauncher.launch({ chromeFlags });
+  } catch (e) {
+    console.log(`Chrome failed to start (${e.message}); retrying once.`);
+    await new Promise((r) => setTimeout(r, 3000));
+    return chromeLauncher.launch({ chromeFlags });
+  }
+}
+const chrome = await launchChrome();
 try {
   const probe = (await lighthouse(url, { port: chrome.port, output: "json", logLevel: "error", onlyCategories: ["performance"] })).lhr;
   const benchmarkIndex = Math.round(probe.environment.benchmarkIndex);
