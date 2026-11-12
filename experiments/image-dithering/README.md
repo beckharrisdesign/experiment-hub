@@ -4,12 +4,13 @@
 
 Give any image a dither or halftone effect, then download it for screen, print, or the exact millimetre size a laser needs. It runs entirely in the browser. It's the first test of whether a programmatic-SEO tool site for makers can rank.
 
-**Status (2026-11-11):** Steps 1–3 built. Every ship-gate check passes locally and in CI (Lighthouse 100 ×4, LCP 758 ms, CLS 0; 6.4 KB initial JS; all three benchmarks well inside budget). **Not deployed yet:** the Vercel project waits for your OK. This is an autonomous build: see the review queue before trusting any default.
+**Status (2026-11-12): LIVE at <https://dither-halftone-generator.vercel.app>** (Vercel production). Ship gate passed on the live URL: Lighthouse mobile **100 / 100 / 100 / 100, LCP 860 ms, CLS 0** (median of 3 runs: 95, 100, 100). Next: submit to Search Console (checklist below). This is an autonomous build: see the review queue before trusting any default.
 
 - **Founder intent + full brief:** [`docs/intent.md`](docs/intent.md)
 - **Review queue:** [`docs/review-queue.md`](docs/review-queue.md)
 - **OpenSpec:** [`openspec/changes/image-dithering-build`](../../openspec/changes/image-dithering-build)
 - **Code:** [`prototype/`](prototype/), an Astro static site with one vanilla TypeScript island. It's a **standalone pnpm project with its own lockfile**, deliberately *not* a hub workspace member: Astro 7 brings Vite 8, and as a member it re-resolved the hub's own vitest onto Vite 8 and broke the hub's typecheck and deploy (PR #591, first CI run).
+- **Live:** <https://dither-halftone-generator.vercel.app> · Vercel project `dither-halftone-generator` (team katy-beckharrisdes-projects). Not Git-connected: deploy with `bash experiments/image-dithering/prototype/scripts/deploy-vercel.sh` from Katy's terminal (the token is vault-only)
 - **Notion row:** not created yet (review queue #5)
 
 ## Run locally
@@ -55,8 +56,9 @@ BASE_PATH=/dither SITE_URL=https://labs.beckharrisdesign.com npx astro build   #
 - [x] Lighthouse mobile on the built site: **100 / 100 / 100 / 100, LCP 758 ms, CLS 0** (first run was 69 performance / CLS 0.077: the sample image was drawn on the main thread and the grid was injected after load; both fixed)
 - [x] Initial JS ≤ 60 KB gz: **6.4 KB** (worker 2.1 KB, reported separately)
 - [x] Benchmarks recorded below
-- [ ] Vercel project created and deployed (ask first)
-- [ ] Lighthouse re-run on the deployed URL (review queue #12: production `*.vercel.app`, not a preview, which Vercel marks noindex)
+- [x] Vercel project created and deployed to production, 2026-11-12 (Katy: "Yes, create and deploy"; run from her terminal because the token is vault-only and the Vercel connector can't create projects)
+- [x] Live checks: every file returns 200, no `noindex`, the canonical points at itself, `robots.txt` lists the sitemap, and `?material=slate` reaches Export with Laser + Slate + Invert on and a clean console
+- [x] Lighthouse on the live production URL: **100 ×4, LCP 860 ms, CLS 0** ([`lighthouse-live.json`](docs/test-runs/lighthouse-live.json))
 - [ ] Submit to Search Console (checklist below)
 
 ## Benchmarks
@@ -71,6 +73,7 @@ Measured 2026-11-11 in Chromium (Playwright, desktop profile) on Katy's M1 MacBo
 | Initial JS, gzipped (worker excluded) | ≤ 60 KB | **6.4 KB** |
 | Worker, gzipped | report only | **2.1 KB** |
 | Lighthouse mobile (local build) | ≥ 95 ×4, LCP < 1.5 s, CLS < 0.05 | **100 ×4, LCP 758 ms, CLS 0** |
+| **Lighthouse mobile (live URL, the ship gate)** | ≥ 95 ×4, LCP < 1.5 s, CLS < 0.05 | **100 ×4, LCP 860 ms, CLS 0** (median of 3) |
 
 Earlier Node-only signal (no canvas or worker): 12 MP Floyd–Steinberg 231 ms; all 8 algorithms on a 12 MP source 373 ms.
 
@@ -87,8 +90,8 @@ Earlier Node-only signal (no canvas or worker): 12 MP Floyd–Steinberg 231 ms; 
 
 ## Submit to Search Console (after deploy)
 
-1. ☐ Deploy to production on the project's own `*.vercel.app` (or the custom domain, once chosen). Previews are noindex.
-2. ☐ Open the live page and check: no `noindex`, the canonical points at itself, `/sitemap.xml` and `/robots.txt` load.
+1. ✅ Deployed to production: <https://dither-halftone-generator.vercel.app> (2026-11-12).
+2. ✅ Live page checked: no `noindex`, the canonical points at itself, `/sitemap.xml` and `/robots.txt` load.
 3. ☐ [Search Console](https://search.google.com/search-console) → Add property → **URL prefix** with the exact production URL.
 4. ☐ Verify ownership with the HTML-tag method (Katy adds the meta tag), or by DNS if a custom domain is in use (ask first: DNS).
 5. ☐ Sitemaps → submit `sitemap.xml`.

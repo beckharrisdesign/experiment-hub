@@ -7,3 +7,5 @@ dist-base/
 lighthouse-summary.json
 bench-results.json
 .vercel/
+.vercel
+.env*
