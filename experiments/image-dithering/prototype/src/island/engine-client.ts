@@ -20,6 +20,9 @@ export class Engine {
     const copy = rgba.slice();
     return this.call({ type: "source", rgba: copy.buffer, width, height }, [copy.buffer]);
   }
+  async tile(settings: Settings, width: number, height: number, boxW: number, boxH: number): Promise<Uint8ClampedArray> {
+    return (await this.call({ type: "tile", settings, width, height, boxW, boxH })).rgba;
+  }
   async render(settings: Settings, width: number, height: number): Promise<Gray> {
     const r = await this.call({ type: "render", settings, width, height });
     return { width: r.width, height: r.height, data: r.data };

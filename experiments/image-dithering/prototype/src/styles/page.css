@@ -101,7 +101,7 @@ select.input.sm { width: auto; }
 .switch[aria-checked="true"]::after { transform: translateX(16px); }
 
 /* Content below the tool */
-.content { display: flex; flex-direction: column; gap: 48px; padding-top: 48px; border-top: 1px solid var(--border); max-width: 42rem; }
+.content { content-visibility: auto; contain-intrinsic-size: auto 2600px; display: flex; flex-direction: column; gap: 48px; padding-top: 48px; border-top: 1px solid var(--border); max-width: 42rem; }
 .content section { display: flex; flex-direction: column; gap: 16px; }
 .content h2 { font-size: 1.875rem; }
 .content dl { margin: 0; display: flex; flex-direction: column; gap: 4px; }

@@ -6,7 +6,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 const root = new URL("../..", import.meta.url).pathname;
 const read = (dir: string, file: string) => readFileSync(join(root, dir, file), "utf8");
 const attr = (html: string, re: RegExp) => html.match(re)?.[1] ?? null;
-const SITE = "https://image-dithering.vercel.app";
+const SITE = "https://dither-halftone-generator.vercel.app";
 const decode = (s: string) => s.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 
 let html = "";

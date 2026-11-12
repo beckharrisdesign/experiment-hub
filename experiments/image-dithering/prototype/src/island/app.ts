@@ -60,19 +60,28 @@ function previewSettings(s: Settings, w: number): Settings {
 let generation = 0; // bumps whenever the source or step content changes; stale paints are dropped
 
 /** Render `s` into a canvas at its real pixel size × devicePixelRatio, fitted (contain) on white. */
-async function paint(canvas: HTMLCanvasElement, s: Settings, gen: number): Promise<boolean> {
+type Box = { cw: number; ch: number };
+
+/** Read every canvas's size in one pass, before any writes, so painting never forces layout. */
+function measure(canvases: HTMLCanvasElement[]): Box[] {
   const dpr = Math.min(2, window.devicePixelRatio || 1);
-  const box = canvas.getBoundingClientRect();
-  const cw = Math.max(16, Math.round((box.width || 200) * dpr));
-  const ch = Math.max(12, Math.round((box.height || cw * 0.75) * dpr));
+  return canvases.map((c) => {
+    const box = c.getBoundingClientRect();
+    const cw = Math.max(16, Math.round((box.width || 200) * dpr));
+    return { cw, ch: Math.max(12, Math.round((box.height || cw * 0.75) * dpr)) };
+  });
+}
+
+/** Render `s` into a canvas at its real pixel size, fitted (contain) on white. The worker does all pixel work. */
+async function paint(canvas: HTMLCanvasElement, s: Settings, gen: number, box: Box = measure([canvas])[0]): Promise<boolean> {
+  const { cw, ch } = box;
   const fit = Math.min(cw / state.srcW, ch / state.srcH);
   const w = Math.max(1, Math.round(state.srcW * fit)), h = Math.max(1, Math.round(state.srcH * fit));
-  const out = await engine.render(previewSettings(s, w), w, h);
+  const rgba = await engine.tile(previewSettings(s, w), w, h, cw, ch);
   if (gen !== generation) return false;
-  canvas.width = cw; canvas.height = ch;
-  const ctx = canvas.getContext("2d")!;
-  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cw, ch);
-  ctx.putImageData(toImageData(out), Math.round((cw - w) / 2), Math.round((ch - h) / 2));
+  if (canvas.width !== cw) canvas.width = cw;
+  if (canvas.height !== ch) canvas.height = ch;
+  canvas.getContext("2d")!.putImageData(new ImageData(rgba as Uint8ClampedArray<ArrayBuffer>, cw, ch), 0, 0);
   canvas.dataset.paintedAt = String(performance.now()); // read by the benchmark script
   return true;
 }
@@ -112,7 +121,8 @@ async function renderEffects() {
     delete el.dataset.rendered;
     return { el, canvas: $<HTMLCanvasElement>("canvas", el), fx: list[i] };
   });
-  for (const t of tiles) if (await paint(t.canvas, t.fx.apply(state.base), gen)) t.el.dataset.rendered = "true";
+  const boxes = measure(tiles.map((t) => t.canvas));
+  for (const [i, t] of tiles.entries()) if (await paint(t.canvas, t.fx.apply(state.base), gen, boxes[i])) t.el.dataset.rendered = "true";
 }
 
 async function renderFine() {
@@ -123,8 +133,10 @@ async function renderFine() {
   const opts = variations(state.current, state.round).map((v) => ({ ...tile(v.name, () => pickVariation(v.settings)), v }));
   for (const o of opts) grid.append(o.el);
   renderAdvanced();
-  await paint($<HTMLCanvasElement>("#fine-current"), state.current, gen);
-  for (const o of opts) if (await paint(o.canvas, o.v.settings, gen)) o.el.dataset.rendered = "true";
+  const current = $<HTMLCanvasElement>("#fine-current");
+  const [cur, ...boxes] = measure([current, ...opts.map((o) => o.canvas)]);
+  await paint(current, state.current, gen, cur);
+  for (const [i, o] of opts.entries()) if (await paint(o.canvas, o.v.settings, gen, boxes[i])) o.el.dataset.rendered = "true";
 }
 
 async function renderExport() {

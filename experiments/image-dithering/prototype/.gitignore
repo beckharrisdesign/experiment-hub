@@ -6,3 +6,4 @@ playwright-report/
 dist-base/
 lighthouse-summary.json
 bench-results.json
+.vercel/

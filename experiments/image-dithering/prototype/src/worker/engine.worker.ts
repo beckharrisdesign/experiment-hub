@@ -10,7 +10,8 @@ let source: Gray | null = null;
 type Msg =
   | { type: "sample"; id: number; width: number; height: number; thumbW: number; thumbH: number }
   | { type: "source"; id: number; rgba: ArrayBuffer; width: number; height: number }
-  | { type: "render"; id: number; settings: Settings; width: number; height: number };
+  | { type: "render"; id: number; settings: Settings; width: number; height: number }
+  | { type: "tile"; id: number; settings: Settings; width: number; height: number; boxW: number; boxH: number };
 
 self.onmessage = (e: MessageEvent<Msg>) => {
   const m = e.data;
@@ -33,5 +34,18 @@ self.onmessage = (e: MessageEvent<Msg>) => {
   }
   if (!source) { self.postMessage({ id: m.id, error: "no source" }); return; }
   const out = processImage(source, { ...m.settings, widthPx: m.width, heightPx: m.height });
+  if (m.type === "tile") {
+    // Ready-to-paint RGBA at the canvas size, letterboxed on white, so the page does no pixel work.
+    const rgba = new Uint8ClampedArray(m.boxW * m.boxH * 4).fill(255);
+    const ox = Math.round((m.boxW - out.width) / 2), oy = Math.round((m.boxH - out.height) / 2);
+    for (let y = 0; y < out.height; y++) {
+      let p = ((y + oy) * m.boxW + ox) * 4;
+      for (let x = 0, i = y * out.width; x < out.width; x++, i++, p += 4) {
+        const v = out.data[i]; rgba[p] = v; rgba[p + 1] = v; rgba[p + 2] = v;
+      }
+    }
+    self.postMessage({ id: m.id, rgba }, [rgba.buffer]);
+    return;
+  }
   self.postMessage({ id: m.id, width: out.width, height: out.height, data: out.data }, [out.data.buffer]);
 };
