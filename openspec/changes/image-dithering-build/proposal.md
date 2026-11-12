@@ -8,9 +8,9 @@
 
 ## Outcomes
 
-- **Who:** A laser maker (Katy first, on an xTool M1 Ultra) with a photo to engrave.
-- **Job:** Turn the photo into a 1-bit image tuned for the material, at the exact physical size,
-  without installing anything or uploading the photo anywhere.
+- **Who:** Designers who want the dither or halftone *look* (the bigger search audience), and laser makers (Katy first, on an xTool M1 Ultra) who need it at exact physical size. Scope update 2026-11-11, see intent.md.
+- **Job:** Give an image a dither or halftone effect and export it for screen, print, or a laser at
+  the exact physical size, without installing anything or uploading the image anywhere.
 - **Done when:** The brief's ship gate passes: tests 1–21 green in CI, Lighthouse mobile ≥ 95 on all
   four categories, initial JS ≤ 60 KB gz, the three benchmarks met or reported with a fix, and the page
   deployed on Vercel.
@@ -35,8 +35,8 @@ stop-or-expand decision at 6 weeks.
 
 ### New Capabilities
 
-- `laser-dither-engine`: grayscale/tone/invert/resample/dither/mirror pipeline with 8 algorithms and a
-  PNG export carrying a correct pHYs chunk.
+- `laser-dither-engine`: grayscale/tone/invert/resample → dither (8 algorithms) or halftone (dot / line /
+  cross screens) → mirror, plus a PNG export carrying a correct pHYs chunk.
 - `laser-dither-page`: the tool page, with comparison grid, material presets reflected in the URL,
   explainer, FAQs, and the SEO surface.
 
@@ -82,3 +82,7 @@ None.
   off"* · *"we learned that laser folks don't know the word dither... something else? Image to laser?"*
   Frames `16:62`, `16:103`, `16:148`, `16:186`. The H1 still targets "image dithering"; that's an open
   question (review queue #33).
+- **Figma, round 02.4** (`02.4 Proposed — Dither & Halftone Generator, designers first`, page `18:11`),
+  after the keyword-research scope update and Katy's *"the most valuable phrase is almost the smallest
+  text?"* Frames: `Proposed · Desktop 1024 · Step 2, Halftone` (`19:4`) and `Proposed · Desktop 1024 ·
+  Step 4, Export for laser` (`19:71`). The halftone tiles are real output from the new halftone engine.
