@@ -77,3 +77,8 @@ None.
   `Proposed · Desktop 1024 · Step 3 active` (`10:87`), `Proposed · Mobile 480 · Step 3 active` (`13:51`),
   `Proposed · Desktop 1024 · Content below the tool (SEO)` (`12:51`, ~740 words). Screenshots of every
   round are in [`assets/`](assets/).
+- **Figma, round 02.3** (`02.3 Proposed — Image to Laser name, no lab caption`, page `16:2`): 02.2 copied
+  with the lab caption replaced by the **Image to Laser** wordmark. Katy: *"take the BHD Labs Free Tool
+  off"* · *"we learned that laser folks don't know the word dither... something else? Image to laser?"*
+  Frames `16:62`, `16:103`, `16:148`, `16:186`. The H1 still targets "image dithering"; that's an open
+  question (review queue #33).

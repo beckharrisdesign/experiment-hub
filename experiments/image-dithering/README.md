@@ -1,4 +1,6 @@
-# Image Dithering for Laser Engraving
+# Image to Laser
+
+*Experiment slug: `image-dithering`. Working title was "Image Dithering for Laser Engraving".*
 
 Upload a photo, dither it for laser engraving, and download a PNG at the exact physical size. It runs
 entirely in the browser. It's the first test of whether a programmatic-SEO tool site for makers can rank.
@@ -30,6 +32,8 @@ pnpm test                            # Vitest: engine + PNG export
 - [x] Figma first round: [`02 Proposed`](https://www.figma.com/design/jillBCo0orNQPZJaCAx0g7) (desktop 1024 + mobile 480)
 - [x] Round 02.1: comparisons first, refine by picking four variations, controls on an Advanced tab (review queue #22–#25)
 - [x] Round 02.2: stepped flow, chunky Back/Next, lazy previews, inverse header, ~740 words of content (review queue #26–#30)
+- [x] Round 02.3: Image to Laser wordmark, lab caption removed (review queue #32, #34)
+- [ ] Keyword target decision (review queue #33)
 - [ ] Your go on the round, then `design.md` (review queue #4)
 - [ ] Tests 14–18 red → green
 - [ ] Web Worker wired; previews downscaled, export full-res
