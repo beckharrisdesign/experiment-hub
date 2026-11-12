@@ -63,7 +63,8 @@ never counts.
   `experiment_slug = estate-sale-planner`). GA4 events carry no device, so **before day 0 Katy
   turns GA off on her own devices**: in each browser's console on the hub, run
   `localStorage.setItem("analytics_optout", "true")`. The hub's `trackEvent` sends nothing while
-  that is set ([`lib/analytics/ga.ts`](../../lib/analytics/ga.ts)).
+  that is set ([`lib/analytics/ga.ts`](../../lib/analytics/ga.ts)). Set on Katy's desktop
+  browser 2026-11-12; her phone is not done yet.
 - **Pickup taps:** `esp_events` rows with `event = 'esp_exit_tap'` (only exit taps and checkout
   starts are written there). That table has no device column either: don't tap the pickup link
   while the test runs.
