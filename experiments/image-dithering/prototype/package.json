@@ -12,15 +12,22 @@
     "preview": "astro preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@beckharrisdesign/mvds": "0.5.0",
+    "@fontsource-variable/inter": "^5.3.0",
     "astro": "7.4.11"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "1.59.1",
     "@types/node": "^24.12.2",
     "@types/pngjs": "6.0.5",
+    "ajv": "^8.20.0",
     "pngjs": "7.0.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "vitest": "^4.1.5"
   }

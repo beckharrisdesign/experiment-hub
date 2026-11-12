@@ -4,7 +4,9 @@
 
 Give any image a dither or halftone effect, then download it for screen, print, or the exact millimetre size a laser needs. It runs entirely in the browser. It's the first test of whether a programmatic-SEO tool site for makers can rank.
 
-**Status:** Step 1 (engine) done, 47/47 green. The Figma first round is up and waiting on your go before any UI code. This is an autonomous build: see the review queue before trusting any default.
+**Status (2026-11-11):** Step 2 done: the page works end to end (91 unit + 7 browser tests green, axe clean). Step 3 (SEO, CI, deploy) next.
+
+**Earlier status:** Step 1 (engine) done, 47/47 green. The Figma first round is up and waiting on your go before any UI code. This is an autonomous build: see the review queue before trusting any default.
 
 - **Founder intent + full brief:** [`docs/intent.md`](docs/intent.md)
 - **Review queue:** [`docs/review-queue.md`](docs/review-queue.md)
@@ -18,7 +20,8 @@ Give any image a dither or halftone effect, then download it for screen, print, 
 cd experiments/image-dithering/prototype
 pnpm install --ignore-workspace      # its own lockfile; never the hub's
 pnpm dev                             # http://localhost:4321
-pnpm test                            # Vitest: dither + halftone engine, PNG export (76 tests)
+pnpm test                            # Vitest: engine, presets, URL state, variations (91 tests)
+npx playwright test                  # builds, previews, runs flow + keyboard + axe (7 tests, Chromium)
 ```
 
 ## Checklist
@@ -38,9 +41,10 @@ pnpm test                            # Vitest: dither + halftone engine, PNG exp
 - [x] Round 02.3: Image to Laser wordmark, lab caption removed (review queue #32, #34)
 - [x] Keyword target decided: designers first, laser export as the differentiator (review queue #33)
 - [x] Round 02.4: Dither & Halftone Generator as the H1, Dither/Halftone switch, laser options inside Export (review queue #35–#37)
-- [ ] Your go on the round, then `design.md` (review queue #4)
-- [ ] Tests 14–18 red → green
-- [ ] Web Worker wired; previews downscaled, export full-res
+- [x] Your go on round 02.4 ("Go, build Step 2"); [`design.md`](../../openspec/changes/image-dithering-build/design.md) written
+- [x] Tests 14–18 red → green: red was 11 unit + 7/7 browser failing ([`step2-red.txt`](docs/test-runs/step2-red.txt)), green is 91 unit + 7/7 browser ([`step2-green.txt`](docs/test-runs/step2-green.txt)). 16 and 17 follow round 02.4's four-step flow (material picked in Export → Laser)
+- [x] Web Worker wired; previews render at tile size × devicePixelRatio (pure 1-bit, checked in the browser), export full-res
+- [x] Checked by hand in the browser pane: desktop flow (Halftone → fine-tune → Laser → Slate → URL + size line) and mobile 375 (2 columns, no sideways scroll)
 
 ### Step 3 — SEO + deploy
 - [ ] Tests 19–21 red → green

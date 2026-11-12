@@ -81,6 +81,21 @@
       ],
       "port": 3007,
       "cwd": "."
+    },
+    {
+      "name": "image-dithering",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "--prefix",
+        "experiments/image-dithering/prototype",
+        "astro",
+        "dev",
+        "--root",
+        "experiments/image-dithering/prototype",
+        "--port",
+        "4321"
+      ],
+      "port": 4321
     }
   ]
 }

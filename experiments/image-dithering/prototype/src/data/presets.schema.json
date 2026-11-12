@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Material presets",
+  "description": "Laser material starting points. One entry per material, shaped so a future build can generate one landing page per entry from `page`.",
+  "type": "object",
+  "required": ["note", "materials"],
+  "additionalProperties": false,
+  "properties": {
+    "note": { "type": "string" },
+    "materials": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/material" } }
+  },
+  "definitions": {
+    "material": {
+      "type": "object",
+      "required": ["id", "label", "status", "why", "settings", "page"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "label": { "type": "string", "minLength": 1 },
+        "status": { "const": "starting-point" },
+        "why": { "type": "string", "minLength": 1 },
+        "settings": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "algorithm": { "enum": ["floyd-steinberg", "atkinson", "jarvis", "stucki", "sierra-lite", "bayer-4", "bayer-8", "threshold"] },
+            "brightness": { "type": "number", "minimum": -100, "maximum": 100 },
+            "contrast": { "type": "number", "minimum": -100, "maximum": 100 },
+            "gamma": { "type": "number", "minimum": 0.2, "maximum": 3 },
+            "invert": { "type": "boolean" },
+            "mirror": { "type": "boolean" },
+            "dpi": { "type": "integer", "minimum": 50, "maximum": 1200 }
+          }
+        },
+        "page": {
+          "type": "object",
+          "required": ["slug", "title", "description"],
+          "additionalProperties": false,
+          "properties": {
+            "slug": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+            "title": { "type": "string", "minLength": 1, "maxLength": 60 },
+            "description": { "type": "string", "minLength": 1, "maxLength": 160 }
+          }
+        }
+      }
+    }
+  }
+}

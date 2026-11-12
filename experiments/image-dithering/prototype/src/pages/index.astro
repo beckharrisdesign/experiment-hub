@@ -1,0 +1,210 @@
+---
+import "@fontsource-variable/inter";
+import "@beckharrisdesign/mvds/tokens.css";
+import "../styles/page.css";
+import { MATERIALS } from "../lib/presets";
+
+const title = "Dither & Halftone Generator — Free, In Your Browser";
+const description =
+  "Give any image a dither or halftone effect, then download it for screen, print, or laser engraving at the exact size. Free, and your image never leaves your device.";
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <h1>Dither &amp; Halftone Generator</h1>
+        <p>For designers and laser makers. Give any image a dither or halftone effect, then export it for screen, print, or the exact size your laser needs.</p>
+      </header>
+
+      <div class="steps" id="app">
+        <section class="step" id="step-image" data-step="1" data-state="done" aria-labelledby="h-image">
+          <div class="step-head">
+            <span class="num" aria-hidden="true">1</span>
+            <h2 id="h-image">Image</h2>
+          </div>
+          <div class="image-row">
+            <canvas class="thumb" id="source-thumb" width="128" height="96" aria-hidden="true"></canvas>
+            <p class="muted" id="source-name">Sample photo</p>
+            <label class="dropzone" id="dropzone">
+              <input id="file" type="file" accept="image/*" aria-label="Choose an image" class="visually-hidden" />
+              <span class="drop-label">Drop an image, paste one, or <u>choose a file</u></span>
+            </label>
+          </div>
+          <p class="trust">Your images never leave your device.</p>
+        </section>
+
+        <section class="step" id="step-effect" data-step="2" data-state="active" aria-labelledby="h-effect">
+          <div class="step-head">
+            <span class="num" aria-hidden="true">2</span>
+            <h2 id="h-effect">Pick an effect</h2>
+          </div>
+          <div class="summary"><span class="summary-text"></span><button type="button" class="btn ghost sm change" data-goto="2">Change</button></div>
+          <div class="body">
+            <div class="switch-row">
+              <div class="segmented" role="group" aria-label="Effect type">
+                <button type="button" class="seg" data-effect="dither" aria-pressed="true">Dither</button>
+                <button type="button" class="seg" data-effect="halftone" aria-pressed="false">Halftone</button>
+              </div>
+              <p class="muted small" id="effect-hint">Your image in all eight dither patterns. Pick the one you like.</p>
+            </div>
+            <div class="grid grid-4" id="effect-grid"></div>
+            <div class="nav">
+              <button type="button" class="btn outline lg" data-goto="1">← Back</button>
+              <button type="button" class="btn primary lg" data-next="3" disabled>Next: fine-tune →</button>
+            </div>
+          </div>
+          <p class="locked">Loads when you add an image.</p>
+        </section>
+
+        <section class="step" id="step-fine" data-step="3" data-state="locked" aria-labelledby="h-fine">
+          <div class="step-head">
+            <span class="num" aria-hidden="true">3</span>
+            <h2 id="h-fine">Fine-tune</h2>
+          </div>
+          <div class="summary"><span class="summary-text"></span><button type="button" class="btn ghost sm change" data-goto="3">Change</button></div>
+          <div class="body">
+            <p class="muted small">Pick the one you like best. Each pick brings four new options, a little closer each time.</p>
+            <div class="refine">
+              <figure class="current">
+                <canvas id="fine-current" data-preview aria-label="Current result" role="img"></canvas>
+                <figcaption><span class="badge">Current</span> <span class="muted small" id="fine-round">Round 1</span></figcaption>
+              </figure>
+              <div class="grid grid-2" id="fine-grid"></div>
+            </div>
+            <details class="advanced">
+              <summary>Advanced settings</summary>
+              <div class="advanced-body" id="advanced"></div>
+            </details>
+            <div class="nav">
+              <button type="button" class="btn outline lg" data-goto="2">← Back to effect</button>
+              <button type="button" class="btn primary lg" data-next="4">Next: export →</button>
+            </div>
+          </div>
+          <p class="locked">Pick an effect above, then press Next.</p>
+        </section>
+
+        <section class="step" id="step-export" data-step="4" data-state="locked" aria-labelledby="h-export">
+          <div class="step-head">
+            <span class="num" aria-hidden="true">4</span>
+            <h2 id="h-export">Export</h2>
+          </div>
+          <div class="body">
+            <div class="export">
+              <canvas id="export-preview" data-preview role="img" aria-label="Final result"></canvas>
+              <div class="export-settings">
+                <div class="field">
+                  <span class="label" id="lbl-for">Export for</span>
+                  <div class="segmented" role="group" aria-labelledby="lbl-for">
+                    <button type="button" class="seg" data-for="screen" aria-pressed="true">Screen or print</button>
+                    <button type="button" class="seg" data-for="laser" aria-pressed="false">Laser</button>
+                  </div>
+                </div>
+
+                <div class="field" data-when="screen">
+                  <label class="label" for="width-px">Width (px)</label>
+                  <input class="input" id="width-px" type="number" min="16" max="8000" step="1" inputmode="numeric" />
+                </div>
+
+                <div class="laser-only" data-when="laser">
+                  <div class="field">
+                    <span class="label">Size</span>
+                    <div class="size-row">
+                      <label class="visually-hidden" for="width-mm">Width in millimetres</label>
+                      <input class="input sm" id="width-mm" type="number" min="1" max="2000" step="0.1" inputmode="decimal" />
+                      <span class="muted small" aria-hidden="true">×</span>
+                      <label class="visually-hidden" for="height-mm">Height in millimetres (locked to the image's proportions)</label>
+                      <input class="input sm" id="height-mm" type="number" readonly tabindex="-1" />
+                      <span class="muted small" aria-hidden="true">mm at</span>
+                      <label class="visually-hidden" for="dpi">Resolution</label>
+                      <select class="input sm" id="dpi">
+                        <option value="150">150 DPI</option><option value="200">200 DPI</option><option value="254">254 DPI</option>
+                        <option value="300" selected>300 DPI</option><option value="318">318 DPI</option><option value="400">400 DPI</option>
+                        <option value="508">508 DPI</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <span class="label" id="lbl-material">Material <span class="badge muted">Starting points</span></span>
+                    <div class="chips" role="group" aria-labelledby="lbl-material">
+                      {MATERIALS.map((m) => (
+                        <button type="button" class="btn outline sm chip" data-material={m.id} aria-pressed="false" title={m.why}>{m.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div class="toggle">
+                    <span id="lbl-invert">Invert (for slate and dark materials)</span>
+                    <button type="button" class="switch" role="switch" aria-checked="false" aria-labelledby="lbl-invert" data-toggle="invert"></button>
+                  </div>
+                  <div class="toggle">
+                    <span id="lbl-mirror">Mirror (for back-engraved acrylic)</span>
+                    <button type="button" class="switch" role="switch" aria-checked="false" aria-labelledby="lbl-mirror" data-toggle="mirror"></button>
+                  </div>
+                </div>
+
+                <p class="muted small" id="export-size" aria-live="polite"></p>
+                <button type="button" class="btn primary lg block" id="download">Download PNG</button>
+                <p class="trust">Your images never leave your device.</p>
+              </div>
+            </div>
+            <div class="nav">
+              <button type="button" class="btn outline lg" data-goto="3">← Back to fine-tune</button>
+            </div>
+          </div>
+          <p class="locked">For screen, print, or your laser. Unlocks after fine-tune.</p>
+        </section>
+      </div>
+
+      <article class="content">
+        <section>
+          <h2>Dithering and halftones, explained</h2>
+          <p>Dithering and halftoning both turn the grays in an image into a pattern of black and white. From a normal viewing distance the pattern reads as shades. The dither effect scatters dots, giving the grainy, retro look of early computer graphics and newspaper photos. A halftone lines the dots up in a regular screen of dots, lines or crosses: the look of comic books, screen prints and risograph posters.</p>
+          <p>The same pattern is exactly what a laser engraver needs. A laser can only burn a spot or leave it alone, so a photo has to become dots before it can be engraved. That's why this tool exports both ways: as a PNG for screen or print, or at an exact size in millimetres with the DPI written into the file.</p>
+        </section>
+        <section>
+          <h2>Terms</h2>
+          <dl>
+            <dt>Error diffusion</dt><dd>Each pixel is rounded to black or white, and the difference (the error) is passed on to neighbouring pixels. Floyd–Steinberg, Atkinson, Jarvis–Judice–Ninke, Stucki and Sierra Lite all work this way.</dd>
+            <dt>Floyd–Steinberg</dt><dd>The classic. Spreads the error to four neighbours. Fine detail; flat areas can show faint worm-like patterns.</dd>
+            <dt>Atkinson</dt><dd>Created by Bill Atkinson for the original Macintosh. Passes on only three-quarters of the error, so results are crisp and high-contrast, but the darkest and lightest tones go solid.</dd>
+            <dt>Jarvis–Judice–Ninke</dt><dd>Spreads the error across twelve neighbours over three rows. Smoother gradients and less visible pattern.</dd>
+            <dt>Stucki</dt><dd>A close relative of Jarvis–Judice–Ninke with different weights. Slightly sharper.</dd>
+            <dt>Sierra Lite</dt><dd>A three-neighbour kernel, as fast as Floyd–Steinberg with a slightly different texture.</dd>
+            <dt>Ordered (Bayer) dithering</dt><dd>Compares each pixel to a repeating grid of thresholds. The result is a regular crosshatch: the classic 8-bit look, and it holds up on coarse materials like glass.</dd>
+            <dt>Threshold</dt><dd>Lighter than a cut-off turns white, darker turns black. No grays at all: right for logos and line art.</dd>
+            <dt>Halftone screen</dt><dd>A regular grid of cells. Each cell gets one dot, line or cross, sized by how dark the image is there.</dd>
+            <dt>Screen angle</dt><dd>The rotation of the screen. 45° is the classic angle for a single colour, because the eye notices it least.</dd>
+            <dt>LPI</dt><dd>Lines per inch: how many cells fit in an inch. Lower LPI means bigger, bolder dots.</dd>
+            <dt>DPI</dt><dd>Dots per inch: how many pixels the image packs into each inch at its printed size. For a laser, 25.4 ÷ line interval in mm gives the DPI (a 0.1 mm interval is 254 DPI).</dd>
+          </dl>
+        </section>
+        <section>
+          <h2>Settings by material, for laser engraving</h2>
+          <p>These are starting points, not rules. Test on a scrap of the same material first.</p>
+          <dl>
+            {MATERIALS.map((m) => (<><dt>{m.label}</dt><dd>{m.why}</dd></>))}
+          </dl>
+        </section>
+        <section>
+          <h2>Questions</h2>
+          <dl>
+            <dt>Is my image uploaded anywhere?</dt><dd>No. All of the processing happens in your browser, and the image never leaves your device.</dd>
+            <dt>What's the difference between dithering and halftone?</dt><dd>Dithering scatters dots in an irregular pattern; a halftone arranges them on a regular screen of dots, lines or crosses. Try both in step 2 and pick by eye.</dd>
+            <dt>Can I use the result for print or social posts?</dt><dd>Yes. Choose "Screen or print" in Export and set the width in pixels. The PNG is pure black and white.</dd>
+            <dt>Will the PNG import into my laser software at the right size?</dt><dd>Yes. Choose Laser in Export: the file records its DPI, so LightBurn and xTool Creative Space place it at the size you set in millimetres.</dd>
+            <dt>Which dithering algorithm is best for laser engraving?</dt><dd>There isn't one best. Jarvis–Judice–Ninke and Stucki suit photos on wood, Atkinson gives punchy portraits on dark materials, ordered patterns hold up on glass, and Threshold is for logos.</dd>
+            <dt>Why invert for slate, and mirror for acrylic?</dt><dd>On slate the laser's marks come out light, so the image is inverted. Clear acrylic is engraved from the back and seen through the front, so the image is mirrored.</dd>
+          </dl>
+        </section>
+      </article>
+    </main>
+    <script>
+      import "../island/app";
+    </script>
+  </body>
+</html>
