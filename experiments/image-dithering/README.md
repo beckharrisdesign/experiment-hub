@@ -90,20 +90,33 @@ Earlier Node-only signal (no canvas or worker): 12 MP Floyd–Steinberg 231 ms; 
 
 ## Analytics
 
-Cookieless **Vercel Web Analytics** (approved 2026-11-12): pageviews plus one custom event,
-`png_downloaded`, with `mode` (dither/halftone), `effect`, `exportFor` (screen/laser) and `material`.
-Never the file name or any image data (unit-tested in `tests/unit/analytics.test.ts`). It loads only
-on `dither-halftone-generator.vercel.app`, so local runs, tests and CI send nothing.
-Code: [`src/lib/analytics.ts`](prototype/src/lib/analytics.ts). Web Analytics must be switched on in the
-Vercel dashboard (Project → Analytics → Enable). Custom events may need a Pro plan; pageviews work on
-every plan (review queue #48).
+Cookieless **Vercel Web Analytics** (approved 2026-11-12). Every download is recorded **two ways**
+(Katy: "Yes, do both"):
 
-**Verified live, 2026-11-12:** enabled and redeployed (`2bb9289`). On the production page the insights
-script loads, the pageview POST returns 200, and a real download sends `png_downloaded` with exactly
-`{mode, effect, exportFor, material}` (captured: `dither`, `Floyd–Steinberg`, `laser`, `wood`), accepted
-with a 200. The console is clean. **Not yet confirmed:** that Vercel *stores* the event on this plan.
-The reporting API answered "Web Analytics not found" minutes after enabling, so check the dashboard's
-Events panel.
+1. **Custom event `png_downloaded {exportFor, mode}`.** Pro records at most 2 properties per custom
+   event, so the two kept answer the experiment: designers (`screen`) vs laser makers (`laser`), and
+   `dither` vs `halftone`. Custom events need Pro, which is a **14-day trial started 2026-11-12**.
+   Without a card, the team reverts to Hobby when the trial ends and custom events stop.
+2. **Page view of `/downloaded/<exportFor>-<mode>`**, e.g. `/downloaded/laser-dither`, in the
+   Pages panel. Page views work on Hobby (50,000 events/month), so the count **survives the trial**.
+   Side effect: total page views include downloads, so subtract the `/downloaded/*` rows when reading traffic.
+
+Never sent: the file name, image data, the effect or material names (unit-tested in
+`tests/unit/analytics.test.ts`). Only loads on `dither-halftone-generator.vercel.app`; local runs,
+tests and CI send nothing. Code: [`src/lib/analytics.ts`](prototype/src/lib/analytics.ts).
+
+**Reporting window:** Hobby keeps 1 month and Pro 12 months, so **write the numbers below at each
+checkpoint** rather than relying on the dashboard later. Vercel's reporting API currently answers
+"Web Analytics not found" for this project, so read them from the dashboard.
+
+| Checkpoint | Date | Page views (excl. /downloaded) | Downloads: screen-dither | screen-halftone | laser-dither | laser-halftone |
+| --- | --- | --- | --- | --- | --- | --- |
+| Day 7 | — | — | — | — | — | — |
+| Day 28 | — | — | — | — | — | — |
+| Week 6 (decision) | — | — | — | — | — | — |
+
+Verified live 2026-11-12 (first version): insights script loads, pageview 200, `png_downloaded`
+sent and accepted (200), clean console.
 
 ## Submit to Search Console (after deploy)
 

@@ -1,10 +1,17 @@
-import { inject, track } from "@vercel/analytics";
+import { inject, pageview, track } from "@vercel/analytics";
 
 /**
- * Cookieless Vercel Web Analytics: pageviews plus ONE custom event, `png_downloaded`.
- * Katy approved it on 2026-11-12 ("Yes, add it"). It only loads on the production host, so local
- * runs, tests and CI make no analytics requests. The event carries the choices only, never the
- * file name or any image data.
+ * Cookieless Vercel Web Analytics (Katy, 2026-11-12: "Yes, add it", then "Yes, do both").
+ *
+ * Every download is recorded two ways:
+ *  1. Custom event `png_downloaded {exportFor, mode}`. Pro records custom events with at most
+ *     2 properties, so the two kept are the ones that answer the experiment: designers (screen)
+ *     vs laser makers, and dither vs halftone. Custom events stop if the plan reverts to Hobby.
+ *  2. A page view of `/downloaded/<exportFor>-<mode>`. Page views work on Hobby, so the count
+ *     survives the end of the Pro trial. Side effect: total page views include downloads.
+ *
+ * Loads only on the production host, so local runs, tests and CI send nothing. Never sends the
+ * file name, image data, or free-text choices.
  */
 const PRODUCTION_HOSTS = ["dither-halftone-generator.vercel.app"];
 
@@ -12,18 +19,19 @@ export const analyticsEnabledOn = (hostname: string): boolean => PRODUCTION_HOST
 
 export type DownloadChoice = {
   mode: "dither" | "halftone";
-  effectLabel: string;
   exportFor: "screen" | "laser";
-  material: string | null;
-  /** Accepted so callers can pass their state, and deliberately dropped. */
+  /** Accepted so callers can pass their state, and deliberately not sent. */
+  effectLabel?: string;
+  material?: string | null;
   sourceName?: string;
 };
 
-export function downloadEvent(c: DownloadChoice): { name: "png_downloaded"; data: Record<string, string> } {
-  return {
-    name: "png_downloaded",
-    data: { mode: c.mode, effect: c.effectLabel, exportFor: c.exportFor, material: c.material ?? "none" },
-  };
+export function downloadEvent(c: DownloadChoice): { name: "png_downloaded"; data: { exportFor: string; mode: string } } {
+  return { name: "png_downloaded", data: { exportFor: c.exportFor, mode: c.mode } };
+}
+
+export function downloadPageview(c: DownloadChoice): { route: string; path: string } {
+  return { route: "/downloaded/[kind]", path: `/downloaded/${c.exportFor}-${c.mode}` };
 }
 
 export function startAnalytics(): void {
@@ -34,4 +42,5 @@ export function trackDownload(c: DownloadChoice): void {
   if (!analyticsEnabledOn(location.hostname)) return;
   const e = downloadEvent(c);
   track(e.name, e.data);
+  pageview(downloadPageview(c));
 }
