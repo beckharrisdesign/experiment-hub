@@ -28,6 +28,47 @@ not wired yet (review queue #32). No haul-away (#7).
 - **Notion row:** <https://app.notion.com/p/3f8b908d7b378191bcddf0b10d2a49bb>
 - **Figma:** board `uafykXQHdW2h3YpBAy3Hfv` (flow) · design file `p75qmqHxUBh0TDLAUUXUmn` (surface pair)
 
+## Checkpoints
+
+Approved 2026-11-12. The thresholds are the ones set in
+[`propose.md`](../../openspec/changes/estate-sale-planner/propose.md) (Validation Plan), with one
+change: **"≥ 2 paid Sell Sheets" is dropped** until a fee is wired (the planned fee is the
+sold-price lookup, review queue #32). **Day 0 is not set yet:** it is the day Katy posts it (the
+r/declutter-style threads) or turns on the optional $15 search burst. Testing on her own device
+never counts.
+
+| Checkpoint | Date | What to check |
+| --- | --- | --- |
+| Day 0 | **not set** (write it here) | The day it's posted or the search burst is on |
+| Day 7 | day 0 + 7 | Walkthrough starts so far: on pace for 25? |
+| Day 14 | day 0 + 14 | **Decision**, below |
+
+**Decision at day 14:**
+- ✅ **Keep going** (Unit 2: sell-side referral + the real pickup deal; re-score) if **25+ starts**,
+  **≥ 40 %** of starts finish the sort, and **5+ pickup taps**.
+- 🔁 **Change the sorting screen, not the idea**, if starts are met but finishing or taps miss: one
+  iteration on the swipe surface, then re-measure.
+- 🛑 **Stop** if **< 10 starts with the search burst, or < 5 without**, or the proxy user overrides
+  **> 60 %** of sell flags or calls a price band absurd on something they know the value of.
+
+**Where the numbers come from:**
+- **Starts and finish rate:** GA4 `G-120M120GDY`, events `esp_start` and `esp_swipe_complete`
+  (filter `experiment_slug = estate-sale-planner`). Cross-check, kept indefinitely: rows in
+  `esp_sales` created on or after day 0.
+- **Pickup taps:** `esp_events` rows with `event = 'esp_exit_tap'` (only exit taps and checkout
+  starts are written there; every other event is GA4 only). That table has no device column, so
+  Katy's own taps can't be filtered out of it: don't tap the pickup link while the test runs.
+- **Excluded:** Katy's device, `device_hash` in `TEST_DEVICE_HASHES`
+  ([`lib/estate-sale-planner/config.ts`](../../lib/estate-sale-planner/config.ts)). If she clears
+  that browser's site data it becomes a new device: update the hash before day 0.
+- **Before day 0** (read 2026-11-12): 7 saved walkthroughs, 2026-11-03 → 06, 1 of them on Katy's
+  device; 0 pickup taps. All pre-test, so none count.
+
+| Checkpoint | Date | Starts (GA4 / `esp_sales`) | Finished sort | Pickup taps | Proxy-user overrides of sell flags |
+| --- | --- | --- | --- | --- | --- |
+| Day 7 | | | | | |
+| Day 14 | | | | | |
+
 ## Run locally
 
 ```bash
