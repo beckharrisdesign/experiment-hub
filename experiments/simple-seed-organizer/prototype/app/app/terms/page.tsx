@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Terms of Service | Simple Seed Organizer",
   description: "Terms of Service for Simple Seed Organizer.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

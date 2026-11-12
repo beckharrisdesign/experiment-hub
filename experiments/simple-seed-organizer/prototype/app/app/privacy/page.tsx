@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Privacy Policy | Simple Seed Organizer",
   description: "Privacy Policy for Simple Seed Organizer.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

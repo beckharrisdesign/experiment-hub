@@ -4,12 +4,11 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { AppShell } from "@/components/AppShell";
 import { AppToaster } from "@/components/AppToaster";
+import { getSiteUrl } from "@/lib/site-url";
 
 const GA_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
 const AW_ID = "AW-10904266222";
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  "https://simple-seed-organizer.vercel.app";
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   title: {
