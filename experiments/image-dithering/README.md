@@ -115,8 +115,11 @@ checkpoint** rather than relying on the dashboard later. Vercel's reporting API 
 | Day 28 | — | — | — | — | — | — |
 | Week 6 (decision) | — | — | — | — | — | — |
 
-Verified live 2026-11-12 (first version): insights script loads, pageview 200, `png_downloaded`
-sent and accepted (200), clean console.
+**Verified live 2026-11-12 (`28068e9`):** a real download on production sent
+`png_downloaded {"exportFor":"laser","mode":"halftone"}` (200) **and** a page view of
+`/downloaded/laser-halftone` (route `/downloaded/[kind]`, 200). The address bar is unchanged and the
+console is clean. Still to confirm in the dashboard: both appear (custom events under Events, the
+virtual page under Pages).
 
 ## Submit to Search Console (after deploy)
 
