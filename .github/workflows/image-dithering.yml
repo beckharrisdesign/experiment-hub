@@ -22,7 +22,7 @@ defaults:
 jobs:
   unit-and-build:
     name: Unit + build tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # ubuntu-latest became 26.04, which Playwright 1.59 does not support yet
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -42,7 +42,7 @@ jobs:
 
   e2e:
     name: Browser tests (flow, keyboard, axe, privacy)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # ubuntu-latest became 26.04, which Playwright 1.59 does not support yet
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -64,7 +64,7 @@ jobs:
 
   lighthouse:
     name: Lighthouse ship gate (mobile)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # ubuntu-latest became 26.04, which Playwright 1.59 does not support yet
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
