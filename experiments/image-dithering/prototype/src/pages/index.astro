@@ -2,11 +2,39 @@
 import "@fontsource-variable/inter";
 import "@beckharrisdesign/mvds/tokens.css";
 import "../styles/page.css";
+import { FAQ } from "../data/faq";
+import { DITHER_EFFECTS } from "../lib/effects";
 import { MATERIALS } from "../lib/presets";
+import { fileUrl, pageUrl } from "../lib/site";
 
 const title = "Dither & Halftone Generator — Free, In Your Browser";
 const description =
-  "Give any image a dither or halftone effect, then download it for screen, print, or laser engraving at the exact size. Free, and your image never leaves your device.";
+  "Free dither and halftone generator. Give any image a dither effect or halftone screen, then download it for screen, print or laser engraving at the exact size.";
+const canonical = pageUrl(Astro.site, import.meta.env.BASE_URL);
+const ogImage = fileUrl(canonical, "og.png");
+const app = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Dither & Halftone Generator",
+  url: canonical,
+  description,
+  applicationCategory: "DesignApplication",
+  operatingSystem: "Any (runs in the browser)",
+  browserRequirements: "Requires JavaScript",
+  isAccessibleForFree: true,
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  featureList: [
+    "Eight dithering algorithms side by side",
+    "Halftone screens: dots, lines and crosses with angle and LPI",
+    "Laser export at an exact size in millimetres, with DPI written into the PNG",
+    "Runs entirely in the browser; images never leave the device",
+  ],
+};
+const faqLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+};
 ---
 <html lang="en">
   <head>
@@ -14,6 +42,20 @@ const description =
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="icon" href={`${import.meta.env.BASE_URL.replace(/\/?$/, "/")}favicon.svg`} type="image/svg+xml" />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A sphere shown as a dither on the left and a round-dot halftone on the right" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="sitemap" href={fileUrl(canonical, "sitemap.xml")} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(app)} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(faqLd)} />
   </head>
   <body>
     <main>
@@ -53,7 +95,11 @@ const description =
               </div>
               <p class="muted small" id="effect-hint">Your image in all eight dither patterns. Pick the one you like.</p>
             </div>
-            <div class="grid grid-4" id="effect-grid"></div>
+            <div class="grid grid-4" id="effect-grid">
+              {DITHER_EFFECTS.map((fx) => (
+                <button type="button" class="tile" data-tile data-label={fx.label} aria-pressed="false"><canvas aria-hidden="true"></canvas><span>{fx.label}</span></button>
+              ))}
+            </div>
             <div class="nav">
               <button type="button" class="btn outline lg" data-goto="1">← Back</button>
               <button type="button" class="btn primary lg" data-next="3" disabled>Next: fine-tune →</button>
@@ -163,7 +209,7 @@ const description =
       <article class="content">
         <section>
           <h2>Dithering and halftones, explained</h2>
-          <p>Dithering and halftoning both turn the grays in an image into a pattern of black and white. From a normal viewing distance the pattern reads as shades. The dither effect scatters dots, giving the grainy, retro look of early computer graphics and newspaper photos. A halftone lines the dots up in a regular screen of dots, lines or crosses: the look of comic books, screen prints and risograph posters.</p>
+          <p>Image dithering and halftoning both turn the grays in an image into a pattern of black and white. From a normal viewing distance the pattern reads as shades. The dither effect scatters dots, giving the grainy, retro look of early computer graphics and newspaper photos. A halftone lines the dots up in a regular screen of dots, lines or crosses: the look of comic books, screen prints and risograph posters.</p>
           <p>The same pattern is exactly what a laser engraver needs. A laser can only burn a spot or leave it alone, so a photo has to become dots before it can be engraved. That's why this tool exports both ways: as a PNG for screen or print, or at an exact size in millimetres with the DPI written into the file.</p>
         </section>
         <section>
@@ -193,12 +239,7 @@ const description =
         <section>
           <h2>Questions</h2>
           <dl>
-            <dt>Is my image uploaded anywhere?</dt><dd>No. All of the processing happens in your browser, and the image never leaves your device.</dd>
-            <dt>What's the difference between dithering and halftone?</dt><dd>Dithering scatters dots in an irregular pattern; a halftone arranges them on a regular screen of dots, lines or crosses. Try both in step 2 and pick by eye.</dd>
-            <dt>Can I use the result for print or social posts?</dt><dd>Yes. Choose "Screen or print" in Export and set the width in pixels. The PNG is pure black and white.</dd>
-            <dt>Will the PNG import into my laser software at the right size?</dt><dd>Yes. Choose Laser in Export: the file records its DPI, so LightBurn and xTool Creative Space place it at the size you set in millimetres.</dd>
-            <dt>Which dithering algorithm is best for laser engraving?</dt><dd>There isn't one best. Jarvis–Judice–Ninke and Stucki suit photos on wood, Atkinson gives punchy portraits on dark materials, ordered patterns hold up on glass, and Threshold is for logos.</dd>
-            <dt>Why invert for slate, and mirror for acrylic?</dt><dd>On slate the laser's marks come out light, so the image is inverted. Clear acrylic is engraved from the back and seen through the front, so the image is mirrored.</dd>
+            {FAQ.map(({ q, a }) => (<><dt>{q}</dt><dd>{a}</dd></>))}
           </dl>
         </section>
       </article>

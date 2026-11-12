@@ -4,9 +4,7 @@
 
 Give any image a dither or halftone effect, then download it for screen, print, or the exact millimetre size a laser needs. It runs entirely in the browser. It's the first test of whether a programmatic-SEO tool site for makers can rank.
 
-**Status (2026-11-11):** Step 2 done: the page works end to end (91 unit + 7 browser tests green, axe clean). Step 3 (SEO, CI, deploy) next.
-
-**Earlier status:** Step 1 (engine) done, 47/47 green. The Figma first round is up and waiting on your go before any UI code. This is an autonomous build: see the review queue before trusting any default.
+**Status (2026-11-11):** Steps 1–3 built. Every ship-gate check passes locally and in CI (Lighthouse 100 ×4, LCP 758 ms, CLS 0; 6.4 KB initial JS; all three benchmarks well inside budget). **Not deployed yet:** the Vercel project waits for your OK. This is an autonomous build: see the review queue before trusting any default.
 
 - **Founder intent + full brief:** [`docs/intent.md`](docs/intent.md)
 - **Review queue:** [`docs/review-queue.md`](docs/review-queue.md)
@@ -21,7 +19,11 @@ cd experiments/image-dithering/prototype
 pnpm install --ignore-workspace      # its own lockfile; never the hub's
 pnpm dev                             # http://localhost:4321
 pnpm test                            # Vitest: engine, presets, URL state, variations (91 tests)
-npx playwright test                  # builds, previews, runs flow + keyboard + axe (7 tests, Chromium)
+pnpm test:build                      # builds, then SEO / sitemap / robots / base path / JS budget (11 tests)
+npx playwright test                  # builds, previews: flow, keyboard, axe, privacy (8 tests, Chromium)
+npx playwright test -c playwright.bench.config.ts   # benchmarks → bench-results.json
+node scripts/lighthouse.mjs          # ship gate against `npx astro preview --port 4329 --ignore-lock`
+BASE_PATH=/dither SITE_URL=https://labs.beckharrisdesign.com npx astro build   # serve under a base path
 ```
 
 ## Checklist
@@ -47,24 +49,30 @@ npx playwright test                  # builds, previews, runs flow + keyboard + 
 - [x] Checked by hand in the browser pane: desktop flow (Halftone → fine-tune → Laser → Slate → URL + size line) and mobile 375 (2 columns, no sideways scroll)
 
 ### Step 3 — SEO + deploy
-- [ ] Tests 19–21 red → green
-- [ ] GitHub Actions workflow: unit + e2e
-- [ ] Vercel project created (ask first)
-- [ ] Lighthouse mobile ≥ 95 ×4, LCP < 1.5 s, CLS < 0.05
-- [ ] Initial JS ≤ 60 KB gz (worker reported separately)
-- [ ] Benchmarks recorded below
+- [x] Tests 19–21 red → green: red 8 of 11 build tests failing ([`step3-red.txt`](docs/test-runs/step3-red.txt)); green 91 unit + 11 build + 8/8 browser ([`step3-green.txt`](docs/test-runs/step3-green.txt)). Test 21 (no image data on the network) passed on its first run: the page makes no requests after load
+- [x] Title, meta description, canonical, Open Graph + a 1200×630 share image made by the engine, JSON-LD (WebApplication + FAQPage from the same data as the visible FAQ), sitemap.xml, robots.txt; base path configurable (`BASE_PATH`, tested)
+- [x] GitHub Actions: [`image-dithering.yml`](../../.github/workflows/image-dithering.yml): unit + build tests, Playwright + axe, Lighthouse gate; path-filtered
+- [x] Lighthouse mobile on the built site: **100 / 100 / 100 / 100, LCP 758 ms, CLS 0** (first run was 69 performance / CLS 0.077: the sample image was drawn on the main thread and the grid was injected after load; both fixed)
+- [x] Initial JS ≤ 60 KB gz: **6.4 KB** (worker 2.1 KB, reported separately)
+- [x] Benchmarks recorded below
+- [ ] Vercel project created and deployed (ask first)
+- [ ] Lighthouse re-run on the deployed URL (review queue #12: production `*.vercel.app`, not a preview, which Vercel marks noindex)
+- [ ] Submit to Search Console (checklist below)
 
 ## Benchmarks
 
-Early Node-only signal (2026-11-11, M1, no canvas/worker): 12 MP Floyd–Steinberg 231 ms; all 8 algorithms on a 12 MP source 373 ms. The formal numbers come from the browser benchmark in Step 3.
+Measured 2026-11-11 in Chromium (Playwright, desktop profile) on Katy's M1 MacBook (8 GB), through the real page and Web Worker, from the user's action to pixels on screen or a file ready. Script: [`tests/bench/bench.spec.ts`](prototype/tests/bench/bench.spec.ts). All three met, so no fix is needed. A slower phone CPU would be roughly 3–5× slower and still inside the slider and export budgets; that's not measured.
 
 | Target | Budget | Measured |
 | --- | --- | --- |
-| Preview update after a slider change, 2 MP | ≤ 300 ms | — |
-| Comparison grid, all 8 algorithms, 12 MP | ≤ 1.5 s | — |
-| Full-res Floyd–Steinberg export, 12 MP | ≤ 2 s | — |
-| Initial JS, gzipped (worker excluded) | ≤ 60 KB | — |
-| Worker, gzipped | report only | — |
+| Preview update after a slider change, 2 MP | ≤ 300 ms | **89 ms** (median of 5; includes the 60 ms input debounce) |
+| Comparison grid, all 8 algorithms, 12 MP | ≤ 1.5 s | **467 ms** (upload → all 8 tiles painted, decode included) |
+| Full-res Floyd–Steinberg export, 12 MP | ≤ 2 s | **502 ms** (click → PNG with pHYs ready; best of 3, worst 580 ms) |
+| Initial JS, gzipped (worker excluded) | ≤ 60 KB | **6.4 KB** |
+| Worker, gzipped | report only | **2.1 KB** |
+| Lighthouse mobile (local build) | ≥ 95 ×4, LCP < 1.5 s, CLS < 0.05 | **100 ×4, LCP 758 ms, CLS 0** |
+
+Earlier Node-only signal (no canvas or worker): 12 MP Floyd–Steinberg 231 ms; all 8 algorithms on a 12 MP source 373 ms.
 
 ## Market outcomes plan (Katy measures after launch)
 
@@ -77,7 +85,22 @@ Early Node-only signal (2026-11-11, M1, no canvas/worker): 12 MP Floyd–Steinbe
 - **Decision at 6 weeks:** < 100 impressions → stop and rethink. ≥ 100 impressions with any clicks →
   build the per-material pages, then the DXF converter.
 
+## Submit to Search Console (after deploy)
+
+1. ☐ Deploy to production on the project's own `*.vercel.app` (or the custom domain, once chosen). Previews are noindex.
+2. ☐ Open the live page and check: no `noindex`, the canonical points at itself, `/sitemap.xml` and `/robots.txt` load.
+3. ☐ [Search Console](https://search.google.com/search-console) → Add property → **URL prefix** with the exact production URL.
+4. ☐ Verify ownership with the HTML-tag method (Katy adds the meta tag), or by DNS if a custom domain is in use (ask first: DNS).
+5. ☐ Sitemaps → submit `sitemap.xml`.
+6. ☐ URL Inspection → paste the page URL → **Request indexing**.
+7. ☐ Write the submission date in this README; day 7 = indexed check, day 28 = impressions + rank check, week 6 = decision.
+8. ☐ If it lives under a base path on another host (e.g. `labs.beckharrisdesign.com/dither`), add `Sitemap: …/dither/sitemap.xml` to **that host's** root robots.txt (review queue #42).
+
 ## Later
+
+- A real, rights-cleared sample photo in place of the procedural sphere (review queue #40)
+- Preset export sizes for screen and print (Instagram, A4…) (review queue #41)
+- Colour halftone (CMYK screens at separate angles)
 
 - One landing page per material preset, generated from `presets.json`
 - DXF / SVG export

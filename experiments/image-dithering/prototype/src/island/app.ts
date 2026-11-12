@@ -4,7 +4,6 @@ import { lockAspect, mmToPx } from "../engine/size";
 import type { Gray } from "../engine/types";
 import { DITHER_EFFECTS, HALFTONE_EFFECTS, type Effect } from "../lib/effects";
 import { exportSettings, materialById } from "../lib/presets";
-import { sampleImage } from "../lib/sample";
 import { searchFor, stateFromSearch } from "../lib/url";
 import { variations } from "../lib/variations";
 import { Engine } from "./engine-client";
@@ -74,6 +73,7 @@ async function paint(canvas: HTMLCanvasElement, s: Settings, gen: number): Promi
   const ctx = canvas.getContext("2d")!;
   ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cw, ch);
   ctx.putImageData(toImageData(out), Math.round((cw - w) / 2), Math.round((ch - h) / 2));
+  canvas.dataset.paintedAt = String(performance.now()); // read by the benchmark script
   return true;
 }
 
@@ -92,18 +92,25 @@ function tile(label: string, onPick: () => void): { el: HTMLButtonElement; canva
   const span = document.createElement("span"); span.textContent = label;
   el.append(canvas, span);
   el.addEventListener("click", onPick);
+  el.dataset.label = label;
   return { el, canvas };
 }
 
 async function renderEffects() {
   const gen = ++generation;
   const grid = $("#effect-grid");
-  grid.replaceChildren();
-  const tiles = effects().map((fx, i) => {
-    const t = tile(fx.label, () => pickEffect(i));
-    t.el.setAttribute("aria-pressed", String(state.pick === i));
-    grid.append(t.el);
-    return { ...t, fx };
+  const list = effects();
+  // Reuse the tiles the page shipped with when they match (no layout shift on load);
+  // rebuild only when the effect type changes.
+  const existing = $$<HTMLButtonElement>(".tile", grid);
+  const reuse = existing.length === list.length && existing.every((el, i) => el.dataset.label === list[i].label);
+  if (!reuse) grid.replaceChildren(...list.map((fx) => tile(fx.label, () => {}).el));
+  const tiles = $$<HTMLButtonElement>(".tile", grid).map((el, i) => {
+    el.dataset.label = list[i].label;
+    el.onclick = () => pickEffect(i);
+    el.setAttribute("aria-pressed", String(state.pick === i));
+    delete el.dataset.rendered;
+    return { el, canvas: $<HTMLCanvasElement>("canvas", el), fx: list[i] };
   });
   for (const t of tiles) if (await paint(t.canvas, t.fx.apply(state.base), gen)) t.el.dataset.rendered = "true";
 }
@@ -207,17 +214,23 @@ async function download() {
 
 // ── Source image ─────────────────────────────────────────────────────────────
 
-async function setSource(rgba: Uint8ClampedArray, w: number, h: number, name: string) {
+async function setSource(rgba: Uint8ClampedArray | null, w: number, h: number, name: string, bitmap?: ImageBitmap) {
   state.srcW = w; state.srcH = h; state.sourceName = name;
   state.widthPx = Math.min(w, 2400);
-  await engine.setSource(rgba, w, h);
   const thumb = $<HTMLCanvasElement>("#source-thumb");
   const tc = thumb.getContext("2d")!;
-  const tmp = document.createElement("canvas"); tmp.width = w; tmp.height = h;
-  tmp.getContext("2d")!.putImageData(new ImageData(rgba as Uint8ClampedArray<ArrayBuffer>, w, h), 0, 0);
   tc.fillStyle = "#fff"; tc.fillRect(0, 0, thumb.width, thumb.height);
-  const f = Math.min(thumb.width / w, thumb.height / h);
-  tc.drawImage(tmp, (thumb.width - w * f) / 2, (thumb.height - h * f) / 2, w * f, h * f);
+  if (rgba) {
+    await engine.setSource(rgba, w, h);
+    if (bitmap) {
+      const f = Math.min(thumb.width / w, thumb.height / h);
+      tc.drawImage(bitmap, (thumb.width - w * f) / 2, (thumb.height - h * f) / 2, w * f, h * f);
+    }
+  } else {
+    // The sample: generated in the worker; only the thumbnail comes back.
+    const t = await engine.loadSample(w, h, thumb.width, thumb.height);
+    tc.putImageData(new ImageData(t as Uint8ClampedArray<ArrayBuffer>, thumb.width, thumb.height), 0, 0);
+  }
   $("#source-name").textContent = name;
   // A new image invalidates every pick below it.
   state.pick = null; state.current = state.base; state.round = 1; state.reached = 2;
@@ -229,12 +242,16 @@ async function setSource(rgba: Uint8ClampedArray, w: number, h: number, name: st
 
 async function loadFile(file: File) {
   if (!file.type.startsWith("image/")) return;
+  // Until the new image is decoded and painted, the old previews no longer count as current.
+  generation++;
+  $$("#effect-grid .tile").forEach((el) => el.removeAttribute("data-rendered"));
+  $<HTMLButtonElement>("#step-effect [data-next]").disabled = true;
   const bmp = await createImageBitmap(file);
   const f = Math.min(1, MAX_SOURCE / Math.max(bmp.width, bmp.height));
   const w = Math.round(bmp.width * f), h = Math.round(bmp.height * f);
   const c = document.createElement("canvas"); c.width = w; c.height = h;
   const ctx = c.getContext("2d")!; ctx.drawImage(bmp, 0, 0, w, h);
-  await setSource(ctx.getImageData(0, 0, w, h).data, w, h, file.name);
+  await setSource(ctx.getImageData(0, 0, w, h).data, w, h, file.name, bmp);
 }
 
 // ── Steps and controls ───────────────────────────────────────────────────────
@@ -332,4 +349,4 @@ function wire() {
 
 wire();
 updateSteps();
-setSource(sampleImage(800, 600), 800, 600, "Sample photo");
+setSource(null, 800, 600, "Sample photo");

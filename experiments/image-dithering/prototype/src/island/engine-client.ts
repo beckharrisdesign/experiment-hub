@@ -13,6 +13,9 @@ export class Engine {
     const id = this.next++;
     return new Promise((resolve) => { this.pending.set(id, resolve); this.worker.postMessage({ ...msg, id }, transfer); });
   }
+  async loadSample(width: number, height: number, thumbW: number, thumbH: number): Promise<Uint8ClampedArray> {
+    return (await this.call({ type: "sample", width, height, thumbW, thumbH })).thumb;
+  }
   setSource(rgba: Uint8ClampedArray, width: number, height: number): Promise<void> {
     const copy = rgba.slice();
     return this.call({ type: "source", rgba: copy.buffer, width, height }, [copy.buffer]);

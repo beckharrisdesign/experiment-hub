@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:build": "astro build && vitest run --config vitest.build.config.ts"
   },
   "dependencies": {
     "@beckharrisdesign/mvds": "0.5.0",
@@ -26,6 +27,8 @@
     "@types/node": "^24.12.2",
     "@types/pngjs": "6.0.5",
     "ajv": "^8.20.0",
+    "chrome-launcher": "^1.2.3",
+    "lighthouse": "^13.6.0",
     "pngjs": "7.0.0",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
