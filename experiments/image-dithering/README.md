@@ -88,6 +88,16 @@ Earlier Node-only signal (no canvas or worker): 12 MP Floyd–Steinberg 231 ms; 
 - **Decision at 6 weeks:** < 100 impressions → stop and rethink. ≥ 100 impressions with any clicks →
   build the per-material pages, then the DXF converter.
 
+## Analytics
+
+Cookieless **Vercel Web Analytics** (approved 2026-11-12): pageviews plus one custom event,
+`png_downloaded`, with `mode` (dither/halftone), `effect`, `exportFor` (screen/laser) and `material`.
+Never the file name or any image data (unit-tested in `tests/unit/analytics.test.ts`). It loads only
+on `dither-halftone-generator.vercel.app`, so local runs, tests and CI send nothing.
+Code: [`src/lib/analytics.ts`](prototype/src/lib/analytics.ts). Web Analytics must be switched on in the
+Vercel dashboard (Project → Analytics → Enable). Custom events may need a Pro plan; pageviews work on
+every plan (review queue #48).
+
 ## Submit to Search Console (after deploy)
 
 1. ✅ Deployed to production: <https://dither-halftone-generator.vercel.app> (2026-11-12).

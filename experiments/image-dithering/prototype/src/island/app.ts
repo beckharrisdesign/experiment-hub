@@ -1,4 +1,5 @@
 import { injectPhys } from "../engine/png-phys";
+import { startAnalytics, trackDownload } from "../lib/analytics";
 import type { Settings } from "../engine/pipeline";
 import { lockAspect, mmToPx } from "../engine/size";
 import type { Gray } from "../engine/types";
@@ -219,6 +220,12 @@ async function download() {
     a.href = url; a.download = `${name}-${w}x${h}.png`;
     document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    trackDownload({
+      mode: state.current.mode,
+      effectLabel: state.pick === null ? "unknown" : effects()[state.pick].label,
+      exportFor: state.exportFor,
+      material: state.exportFor === "laser" ? state.material : null,
+    });
   } finally {
     btn.disabled = false; btn.textContent = "Download PNG";
   }
@@ -359,6 +366,7 @@ function wire() {
   $("#download").addEventListener("click", download);
 }
 
+startAnalytics(); // production host only; no-op locally, in tests and in CI
 wire();
 updateSteps();
 setSource(null, 800, 600, "Sample photo");
