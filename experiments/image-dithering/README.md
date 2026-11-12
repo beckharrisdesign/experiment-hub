@@ -98,6 +98,13 @@ Code: [`src/lib/analytics.ts`](prototype/src/lib/analytics.ts). Web Analytics mu
 Vercel dashboard (Project → Analytics → Enable). Custom events may need a Pro plan; pageviews work on
 every plan (review queue #48).
 
+**Verified live, 2026-11-12:** enabled and redeployed (`2bb9289`). On the production page the insights
+script loads, the pageview POST returns 200, and a real download sends `png_downloaded` with exactly
+`{mode, effect, exportFor, material}` (captured: `dither`, `Floyd–Steinberg`, `laser`, `wood`), accepted
+with a 200. The console is clean. **Not yet confirmed:** that Vercel *stores* the event on this plan.
+The reporting API answered "Web Analytics not found" minutes after enabling, so check the dashboard's
+Events panel.
+
 ## Submit to Search Console (after deploy)
 
 1. ✅ Deployed to production: <https://dither-halftone-generator.vercel.app> (2026-11-12).

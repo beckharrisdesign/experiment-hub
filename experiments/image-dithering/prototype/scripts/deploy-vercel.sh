@@ -15,7 +15,9 @@ export VERCEL_TOKEN
 V() { npx --yes vercel@latest "$@" --scope "$TEAM" --token "$VERCEL_TOKEN"; }
 
 echo "→ project: $PROJECT"
-if V project ls 2>/dev/null | grep -qw "$PROJECT"; then echo "  exists"; else V project add "$PROJECT" >/dev/null && echo "  created"; fi
+# `project inspect` exits non-zero when the project doesn't exist. (A `project ls | grep -q` check
+# misfired under pipefail: grep closed the pipe early and the script "created" an existing project.)
+if V project inspect "$PROJECT" >/dev/null 2>&1; then echo "  exists"; else V project create "$PROJECT" >/dev/null && echo "  created"; fi
 
 echo "→ linking this folder (writes .vercel/, which is git-ignored)"
 V link --yes --project "$PROJECT" >/dev/null && echo "  linked"
