@@ -28,6 +28,64 @@ not wired yet (review queue #32). No haul-away (#7).
 - **Notion row:** <https://app.notion.com/p/3f8b908d7b378191bcddf0b10d2a49bb>
 - **Figma:** board `uafykXQHdW2h3YpBAy3Hfv` (flow) · design file `p75qmqHxUBh0TDLAUUXUmn` (surface pair)
 
+## Checkpoints
+
+Approved 2026-11-12. The thresholds are the ones set in
+[`propose.md`](../../openspec/changes/estate-sale-planner/propose.md) (Validation Plan), with one
+change: **"≥ 2 paid Sell Sheets" is dropped** until a fee is wired (the planned fee is the
+sold-price lookup, review queue #32). **Day 0 is not set yet:** it is the day Katy posts it (the
+r/declutter-style threads) or turns on the optional $15 search burst. Testing on her own device
+never counts.
+
+| Checkpoint | Date | What to check |
+| --- | --- | --- |
+| Day 0 | **not set** (write it here) | The day it's posted or the search burst is on |
+| Day 7 | day 0 + 7 | Walkthrough starts so far: on pace for 25? |
+| Day 14 | day 0 + 14 | **Decision**, below |
+
+**Decision at day 14:**
+- ✅ **Keep going** (Unit 2: sell-side referral + the real pickup deal; re-score) if **25+ starts**,
+  **≥ 40 %** of starts finish the sort, and **5+ pickup taps**.
+- 🔁 **Change the sorting screen, not the idea**, if starts are met but finishing or taps miss: one
+  iteration on the swipe surface, then re-measure.
+- 🛑 **Stop** if **< 10 starts with the search burst, or < 5 without**, or the proxy user overrides
+  **> 60 %** of sell flags or calls a price band absurd on something they know the value of, or
+  **model cost per walkthrough can't be held under $1.00** (all three are propose.md's kill
+  criteria).
+
+**Where the numbers come from:**
+- **Starts:** rows in `esp_sales` created on or after day 0, excluding Katy's device. Each new
+  walkthrough is one row, and the table carries `device_hash`, so it can be filtered. Not GA4's
+  `esp_start`: that fires whenever the planner opens (the sale store's mount effect), including
+  visits that never start a sale. GA4's `esp_new_walkthrough` isn't usable either: it only fires
+  when the person already has a sale, so it misses everyone's first one.
+- **Finished sort:** GA4 `G-120M120GDY`, event `esp_swipe_complete` (filter
+  `experiment_slug = estate-sale-planner`). GA4 events carry no device, so **before day 0 Katy
+  turns GA off on her own devices**: in each browser's console on the hub, run
+  `localStorage.setItem("analytics_optout", "true")`. The hub's `trackEvent` sends nothing while
+  that is set ([`lib/analytics/ga.ts`](../../lib/analytics/ga.ts)). Set on Katy's desktop
+  browser 2026-11-12; her phone is not done yet.
+- **Pickup taps:** `esp_events` rows with `event = 'esp_exit_tap'` (only exit taps and checkout
+  starts are written there). That table has no device column either: don't tap the pickup link
+  while the test runs.
+- **Proxy-user overrides and absurd bands:** from the proxy user's grading of their own house, as
+  propose.md's method describes (for each *sell* item: "would I have known?", "is the band
+  plausible?"). Recorded by hand: GA4's `esp_sell_override` can't be tied to one person.
+- **Cost per walkthrough:** `esp_costs`, summed per `sale_id` for sales started on or after day 0
+  (model calls only: `kind in ('walkthrough','reread','query','comps')`). The per-sale query is
+  [`docs/cost-per-sale.sql`](docs/cost-per-sale.sql); change its 30-day window to day 0. Cents are
+  estimates from token counts × the `MODEL_PRICES` table.
+- **Katy's device:** `device_hash` in `TEST_DEVICE_HASHES`
+  ([`lib/estate-sale-planner/config.ts`](../../lib/estate-sale-planner/config.ts)). If she clears
+  that browser's site data it becomes a new device: update the hash before day 0.
+- **Before day 0** (read 2026-11-12): 7 saved walkthroughs, 2026-11-03 → 06, 1 of them on Katy's
+  device; 0 pickup taps. All pre-test, so none count.
+
+| Checkpoint | Date | Starts (`esp_sales`, not Katy) | Finished sort (GA4) | Pickup taps | Proxy-user overrides of sell flags | Highest model cost per walkthrough |
+| --- | --- | --- | --- | --- | --- | --- |
+| Day 7 | | | | | | |
+| Day 14 | | | | | | |
+
 ## Run locally
 
 ```bash
