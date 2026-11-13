@@ -545,6 +545,18 @@ h2.notion-heading {
   font-size: .9rem;
   padding: 0;
 }
+/* Home case-study cards: the "Card outcome" property is the second text
+   property after the description. Set it apart as the result line, a
+   step heavier with a little space above, so it doesn't read as a
+   continuation of the description (2026-11-10). Home only; other
+   galleries have no Card outcome. */
+#page-index .notion-collection-card .notion-property__text
+  + .notion-property__text {
+  display: block;
+  margin-top: .5rem;
+  font-weight: 500;
+  color: rgb(var(--accent));
+}
 /* Tighter gap between multi-select tags on cards */
 .notion-property__select.wrap {
   gap: .1rem;

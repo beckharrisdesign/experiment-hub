@@ -655,3 +655,51 @@
     start();
   }
 })();
+
+/*
+ * Footer email is a link (2026-11-11).
+ *
+ * Not part of the lightbox; same reason as the blocks above. The address
+ * lives in Super's footer "footnote" setting, which renders plain text.
+ * Wrap an email address found there in a mailto: link so it can be tapped.
+ * Change the address in Super (Navigation > Footer), not here.
+ */
+(function () {
+  "use strict";
+  if (window.__bhdFooterEmail) return;
+  window.__bhdFooterEmail = true;
+
+  var EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+
+  function patch() {
+    var note = document.querySelector(".super-footer__footnote");
+    if (!note || note.querySelector("a")) return;
+    var match = note.textContent.match(EMAIL);
+    if (!match) return;
+    var link = document.createElement("a");
+    link.href = "mailto:" + match[0];
+    link.textContent = match[0];
+    var before = note.textContent.slice(0, match.index);
+    var after = note.textContent.slice(match.index + match[0].length);
+    note.textContent = "";
+    if (before) note.appendChild(document.createTextNode(before));
+    note.appendChild(link);
+    if (after) note.appendChild(document.createTextNode(after));
+  }
+
+  function start() {
+    patch();
+    var pending = false;
+    new MutationObserver(function () {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(function () { pending = false; patch(); });
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
+})();
