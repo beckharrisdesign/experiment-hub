@@ -70,16 +70,16 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
    button step down one size. The page content doesn't move. With reduced
    motion, the change is instant.
 3. **Scroll back to the top.** The bar returns to 80px.
-4. **Homepage.** A big display title, one line and the CTA, on a full-width
-   hero whose colour comes from the personal visual. The visual bleeds off
-   the right edge beside the text, or below the CTA on a phone, and melts
-   into that colour. Until Katy adds an image, the hero uses the band
-   colour and shows a dot pattern drawn by `site.css`.
+4. **Homepage.** A big display title, one line and the CTA, on a
+   full-width hero in the hero colour. The hero art sits behind them,
+   centred on the right-hand third at 110% of the hero's height, the same
+   on every width. Until Katy adds art, a dot pattern drawn by `site.css`
+   fills the same box.
 5. **Consulting / About / case study.** The hero sits on a band a step
    lighter than the page, and the band ends before the first body section.
-   On a case study with a cover, the hero takes its colour from the
-   cover, and the cover bleeds off the right edge beside the title,
-   properties and summary.
+   On a case study with a cover, the cover becomes the hero art, placed
+   by the same right-third rule behind the title, properties and
+   summary.
 6. **Deeper pages** (a Labs sub-page, or a page under a collection) keep
    the breadcrumb. It shows a level the nav can't.
 
@@ -89,21 +89,20 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 | ------------------- | ----- |
 | Primary file URL    | https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy (`portfolio-header-hero`) |
 | As-is frame(s)      | Page `01 As-is` (`0:1`): live captures. Homepage at load `1:3`, scrolled `1:4`, phone `1:5`; Consulting `1:6`, case study `1:7`, About `1:8`. Captured from the running site, so the pixels are real; the labels and measurements come from `as-is/measurements.json`. |
-| Proposed frame(s)   | Page `02 Proposed` (`1:2`), round 1 from the proposal: header `2:5` / `2:14` / `2:23` / `2:28`, homepage `3:12` / `3:27`, Consulting `4:3` / `4:20`, case study `4:32` / `4:59`. Page [`03 Design`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=13-2) (`13:2`), round 2, for this artifact. **A. Navbar, current link and compact sizes:** 1440 at 80px `13:6`, compact 56px `13:15`; 390 at 80px `13:24`, compact `13:29`. **B. Homepage with no image yet** (the pattern, the 86px title, Projects current): `13:37` / `13:832`; the phone frame marks the 600px CTA limit (CTA ends at 521px). **C. Case study:** with cover `13:1183`, no cover `13:1212`. Notes `13:1239`–`13:1241`. One change from round 1: phone frames at the top of a page show the 80px bar, as the spec requires. Page [`03.1 Design — real imagery + callout colour`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=17-2) (`17:2`), round 2.1, shows the same layouts with real pictures. **B.** The homepage with your W&H hand-drawn pattern as the visual: `17:6` / `17:800`. **C.** Case studies with live gallery images as covers: Rebuilding `17:1145`, Connected China `17:1173`, phone `17:1201`. **E.** Four callout colours: `17:1219` (today), `17:1249` (hero band, recommended), `17:1279` (a step lighter), `17:1309` (pill tint). Page [`03.2 Design — full-bleed heroes`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=19-2) (`19:2`), round 2.2, runs the hero image edge to edge. **H-A.** Homepage with the image behind the text and a scrim: `19:6` / `19:26`. **H-B.** Homepage with the image as a full-width band under the text: `19:42` / `19:62`. **C.** Case-study cover as a full-width band above the title: Rebuilding `19:77`, Connected China `19:105`, phone `19:133`. Page [`04 Design — on MVDS (round 3)`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=24-6) (`24:6`) is the build reference, the chosen design rebuilt on MVDS. **A.** Navbar: `24:10` (80px), `24:20` (56px), `24:30` (phone). **B.** Homepage H-A: `25:7` / `25:24`. **C.** Case study: `27:18` / `27:52`. The mapping and gaps are written on the page beside the frames. **Katy's case-study hero** `22:81` (her hand rework: the hero colour comes from the cover, the cover bleeds off the right, and the properties sit in divided cells). **D.** The same pattern on the homepage, keeping homepage type sizes: `31:33` (1440) / `31:53` (390; CTA ends at 500px). |
+| Proposed frame(s)   | Page `02 Proposed` (`1:2`), round 1 from the proposal: header `2:5` / `2:14` / `2:23` / `2:28`, homepage `3:12` / `3:27`, Consulting `4:3` / `4:20`, case study `4:32` / `4:59`. Page [`03 Design`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=13-2) (`13:2`), round 2, for this artifact. **A. Navbar, current link and compact sizes:** 1440 at 80px `13:6`, compact 56px `13:15`; 390 at 80px `13:24`, compact `13:29`. **B. Homepage with no image yet** (the pattern, the 86px title, Projects current): `13:37` / `13:832`; the phone frame marks the 600px CTA limit (CTA ends at 521px). **C. Case study:** with cover `13:1183`, no cover `13:1212`. Notes `13:1239`–`13:1241`. One change from round 1: phone frames at the top of a page show the 80px bar, as the spec requires. Page [`03.1 Design — real imagery + callout colour`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=17-2) (`17:2`), round 2.1, shows the same layouts with real pictures. **B.** The homepage with your W&H hand-drawn pattern as the visual: `17:6` / `17:800`. **C.** Case studies with live gallery images as covers: Rebuilding `17:1145`, Connected China `17:1173`, phone `17:1201`. **E.** Four callout colours: `17:1219` (today), `17:1249` (hero band, recommended), `17:1279` (a step lighter), `17:1309` (pill tint). Page [`03.2 Design — full-bleed heroes`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=19-2) (`19:2`), round 2.2, runs the hero image edge to edge. **H-A.** Homepage with the image behind the text and a scrim: `19:6` / `19:26`. **H-B.** Homepage with the image as a full-width band under the text: `19:42` / `19:62`. **C.** Case-study cover as a full-width band above the title: Rebuilding `19:77`, Connected China `19:105`, phone `19:133`. Page [`04 Design — on MVDS (round 3)`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=24-6) (`24:6`) is the build reference, the chosen design rebuilt on MVDS. **A.** Navbar: `24:10` (80px), `24:20` (56px), `24:30` (phone). **B.** Homepage H-A: `25:7` / `25:24`. **C.** Case study: `27:18` / `27:52`. The mapping and gaps are written on the page beside the frames. **Katy's case-study hero** `22:81` (her hand rework: the hero colour comes from the cover, the cover bleeds off the right, and the properties sit in divided cells). **D.** The same pattern on the homepage, keeping homepage type sizes: `31:33` (1440) / `31:53` (390; CTA ends at 500px). Page [`04.1 Design — hero art anchored to the right third`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=33-30) (`33:30`) applies the anchoring rule with Katy's placeholder art: case study `33:34`, homepage `33:60` / `33:85`. A dashed box marks the right third. |
 | Libraries / version | **MVDS Core** (team library, subscribed; `@beckharrisdesign/mvds@0.5.0` in code). From round 3 (page 04) the frames use MVDS Button, Hero, MediaFrame and Section instances, MVDS spacing and type-size variables, and a local collection, **"Portfolio — MVDS brand preset"**. That collection gives each MVDS colour and font role its portfolio value: background `#143639` (Super's `--color-bg-default`), foreground and primary `#ADDFE3`, card and muted `#1E474B`, secondary `#102D2F` (navbar), primary-foreground `#143639`, font-heading Fraunces, font-sans Roboto (decision 20). Binding audit across the seven page-04 frames: 42 of 42 text layers have size and family bound, and 68 of 69 solid fills are bound. The exception is a pink annotation line. Rounds 1–2.2 (pages 02–03.2) predate this and use raw values. |
 | Code Connect        | N/A. There is no React component; the surface is Notion blocks styled by `site.css`. |
 | Breakpoints         | S · 480px / L · 1024px (BHD Content Types). The site's own steps also apply: 600px (phone button size), 760–860px (nav links stay in the bar), and Super's column stack. Designs are drawn at 1440 and 390. |
-| Status              | Draft, awaiting approval. **Build from page 04:** navbar row A, case-study hero `22:81`, homepage row D. Rows B and C on page 04 (wash-over-image homepage, cover above the title) are superseded by Katy's pattern. **Earlier pick:** on page 03.2, H-A and C, which led to the pattern. Superseded, but kept as the record: the column visual (03 B, 03.1 B) and the cover beside the title (03 C, 03.1 C). The header rows (03 A) and the callout colours (03.1 E) still stand. |
+| Status              | Draft, awaiting approval. **Build from:** page 04 row A (navbar) and page 04.1 (heroes). Page 04 rows B–D and `22:81` as drawn (picture-coloured hero, hand-placed art) are the steps that led there. **Earlier pick:** on page 03.2, H-A and C, which led to the pattern. Superseded, but kept as the record: the column visual (03 B, 03.1 B) and the cover beside the title (03 C, 03.1 C). The header rows (03 A) and the callout colours (03.1 E) still stand. |
 
 ## Decisions
 
-> **Hero pattern (2026-11-16).** Katy picked full-bleed heroes (03.2 H-A),
-> then reworked the case-study hero by hand (Figma `22:81`, page 04): the hero
-> takes its colour from the cover, and the cover bleeds off the right edge
-> beside the text, with no wash. Decisions 10–12 and 15 describe that
-> pattern. The homepage follows it but keeps its own type sizes (row D on page
-> 04). The `portfolio-hero` spec was revised to match and goes back for
-> re-approval with this design.
+> **Hero pattern (2026-11-16).** Katy reworked the case-study hero by hand
+> (Figma `22:81`), then set the rule for hero art. Art arrives finished. It
+> sits behind the hero content, centred on the right-hand third, at 110% of
+> the hero's height. Page 04.1 applies the rule to the case study and the
+> homepage. Decisions 10–12 and 15 describe it. The `portfolio-hero` spec
+> was revised to match and goes back for re-approval with this design.
 
 ### Header
 
@@ -209,60 +208,57 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 
 ### Personal visual
 
-10. **The hero takes its colour from the picture (Katy's project-hero
-    pattern, Figma `22:81`, echoed on the homepage in row D of page 04).**
-    - The loader reads the picture's edge colour. Super's image host
-      answers `Access-Control-Allow-Origin: *` (checked 2026-11-16), so the
-      loader can load the same `src` into an `Image` with
-      `crossOrigin = "anonymous"`, draw it small into a canvas, and
-      average the strip on the side that faces the text: the left 5% on
-      desktop, the top 5% on a phone.
-    - It then darkens that colour toward `--background` in 5% steps, until
-      `--foreground` text on it reaches 4.5:1. The result goes in
-      `--hero-bg` on `<main>`.
-    - Measured on the real pictures:
-      - The Rebuilding cover's edge is `#2F3636`, already 8.49:1, so it is
-        used unchanged. That is the colour in Katy's frame.
-      - The W&H pattern's edge is light linen, `#D5B9A3` (1.28:1). It
-        darkens to `#4E5D59` (4.76:1).
-    - Without the script, or before the picture loads, `--hero-bg` falls
-      back to `--card`, the hero band colour, so the hero never flashes
-      the page colour or white.
-11. **The picture bleeds off the edge beside the text and melts into the
-    hero colour; there is no wash over it.**
-    - **Homepage, desktop.** The hero column list is painted full width in
-      `--hero-bg`, with the `border-image` technique from decision 13. The
-      columns split about 62 / 38, so the 86px title's three lines fit in
-      column 1. Column 2 holds the image block. It bleeds off the top,
-      right and bottom of the hero, using negative margins equal to the
-      hero padding and `calc(50% - 50vw)` on the right, and the image
-      fills it with `object-fit: cover`.
-    - **The melt.** `mask-image: linear-gradient(to right, transparent,
-      #000 180px)` on the picture fades its facing edge into whatever
-      colour sits behind it. That is `--hero-bg` by construction, so no
-      second colour is needed.
-    - **No hero text sits on the picture.** It starts where column 1 ends.
-      Text on a light picture can't hold 4.5:1, and the darkening in
-      decision 10 only guarantees the colour beside the picture, not the
-      picture itself.
-    - **Phone.** The columns stack, so the picture sits below the CTA at
-      full width, bleeding off the bottom and sides, about 300px tall. Its
-      mask runs `to bottom` and feathers the top edge. The CTA ends at
-      500px (page 04 `31:53`), inside the 600px limit.
+10. **Hero art arrives finished, so the site only places it.**
+    - Katy supplies hero art with its own borders, feathers or
+      transparency (for example the diamond placeholder, a transparent
+      PNG). The site adds no mask and no wash, and reads no colour from
+      the art.
+    - The hero colour is a token, `--hero-bg` `#2F3636`, taken from
+      Katy's frame `22:81`. In Figma it is `portfolio/hero-bg`. No MVDS
+      role matches it; the nearest is `card`. It is painted full width
+      with the `border-image` technique from decision 13.
+    - The earlier plan, reading the picture's edge colour in a canvas, is
+      dropped, and so is the script it needed.
+11. **One placement rule for all hero art: behind the content, centred on
+    the right-hand third, 110% of the hero's height.**
+    - **Homepage.** The hero column list is the positioning box
+      (`position: relative`, `isolation: isolate`). Column 2's image block
+      is lifted out of the flow and placed with:
+      `position: absolute; z-index: -1; top: 50%; height: 110%;
+      width: auto; left: calc(50% + 100vw / 3);
+      transform: translate(-50%, -50%)`. The image itself is
+      `height: 100%; width: auto`, so the art keeps its own shape.
+    - **Why that `left` works.** The column list is centred, so its left
+      edge sits at `(100vw − C) / 2`. The right third's centre sits at
+      `5/6 × 100vw`. Relative to the column list, that is
+      `C/2 + 100vw/3`, which is `50% + 100vw / 3`.
+    - **Clipping.** The art clips its own overflow:
+      `clip-path: inset(calc(100% / 22) 0)` trims the 5% that runs past
+      the top and the bottom. The hero box doesn't need `overflow`, so the
+      full-width band behind it isn't cut. Overflow past the right edge of
+      the viewport relies on §2's existing `overflow-x` guard, the same
+      one that protects the full-width callouts.
+    - **The text column stays 62 / 38** of the column list, so the 86px
+      title's three lines fit. The art may slip behind the end of a line,
+      as it does on page 04.1.
+    - **Phone: the same rule.** At 390 wide and a 764px hero, the art is
+      1010px wide, so it fills the hero behind the text. The CTA doesn't
+      move, because the art is out of the flow: it still ends at 500px.
+    - **Readable text is the art's job,** and the spec holds the line at
+      4.5:1. The placeholder measures 6.46:1 under accent text on its
+      densest overlap, and 7–8:1 on the outer layers.
     - **Type keeps the homepage's own sizes:** 86px display on desktop,
-      48px on a phone, and a 24px / 18px supporting line. Only the pattern
-      is shared with the case study.
-    - **To swap the picture:** Katy replaces the image in Notion, and Super
-      republishes. No pull request is needed, and the hero colour follows
-      the new picture by itself.
-12. **No image yet: the band colour and a pattern.** When column 2 has no
+      48px on a phone, and a 24px / 18px supporting line.
+    - **To swap the art:** Katy replaces the image in Notion, and Super
+      republishes. No pull request is needed.
+12. **No image yet: a pattern in the art's box.** When column 2 has no
     image (`.notion-column:nth-child(2):not(:has(.notion-image))`):
-    - `--hero-bg` stays at `--card`.
-    - Column 2 gets a dot grid as a CSS `radial-gradient` background,
-      with dots of `--foreground` at 14% on a 16px pitch.
+    - Column 2 takes the same box: absolutely placed, 110% of the hero's
+      height, centred on the right third, with a 6:5 aspect ratio like
+      the placeholder.
+    - It draws a dot grid: a CSS `radial-gradient` of `--foreground` at
+      14% on a 16px pitch.
     - It is decorative: no `alt`, and nothing for screen readers.
-    - It keys on content the way §9 does, and `check.mjs` guards the
-      class.
 
 ### Subpage hero band
 
@@ -295,43 +291,41 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
     - The Challenges callout takes the same colour as the hero band
       (decision 19). The 2rem of page colour between the two bands keeps
       them reading as separate things.
-15. **Case-study hero with a cover: Katy's pattern (Figma `22:81`).**
-    - **Colour.** With a cover (`main:has(.notion-header__cover.has-cover)`),
-      the hero band takes `--hero-bg`, sampled from the cover the same
-      way (decision 10), not `--card`.
-    - **The cover moves.** It sits on the right of the hero, bleeding off
-      the top, right and bottom, and melts in through the same left-edge
-      mask.
-      - The cover lives in `.notion-header`, while the properties and
-        summary live in `.notion-root`, so it can't share a grid with
-        them. `<main>` becomes `position: relative`, and the cover is
-        positioned absolutely, `top: 0; right: 0`, starting where the
-        text column ends.
-      - Its height is the hero's height. The loader measures the hero
-        blocks, the same pass that samples the colour, sets `--hero-h`,
-        and keeps it current with a `ResizeObserver`.
-      - Without the script, the cover stays where Super puts it, as a
-        banner above the title. That is a clean fallback.
+15. **Case-study cover: the same placement as the homepage art (Katy's
+    frame `22:81`, rule applied on page 04.1).**
+    - With a cover (`main:has(.notion-header__cover.has-cover)`), the
+      hero band takes `--hero-bg`, and the cover becomes hero art, placed
+      by decision 11's rule.
+    - **The positioning box differs.** The cover lives in
+      `.notion-header`, while the properties and summary live in
+      `.notion-root`. So the box is `<main>` (`position: relative`), and
+      the hero's top and height come from two custom properties,
+      `--hero-top` and `--hero-h`.
+      - The loader measures the hero blocks once they render, and keeps
+        the values current with a `ResizeObserver`. This is the only
+        script the hero needs.
+      - The cover is placed with
+        `top: calc(var(--hero-top) + var(--hero-h) / 2);
+        height: calc(var(--hero-h) * 1.1)`, centred on `5/6 × 100vw`,
+        with the same `clip-path`.
+    - **Without the script,** the cover stays where Super puts it, as a
+      banner above the title. That is a clean fallback.
     - **Text column:** title, properties and summary at 668px (Katy's
-      width), on the hero colour. The title is 45px Fraunces Light on a
-      56px line and may run to two lines. Gaps are `space-16` between the
-      title and the properties, and `space-32` before the summary. The
-      summary is 18px Roboto Light on a 28px line.
-    - **Properties row** (Katy's styling replaces §7's six-column grid on
-      case studies with a cover):
+      width). The title is 45px Fraunces Light on a 56px line and may run
+      to two lines. Gaps are `space-16` between the title and the
+      properties, and `space-32` before the summary. The summary is 18px
+      Roboto Light on a 28px line.
+    - **Properties row** (Katy's styling, which replaces §7's six-column
+      grid on these heroes):
       - one cell per property, padded 8 / 24 / 8 / 8 (`space-8` /
         `space-24`), with a 4px gap (`space-4`) between label and value;
       - a 0.5px divider at `--foreground` 50% on the right of every cell
         but the last;
       - labels in `--font-heading` (Fraunces Regular), values in
         `--font-sans` (Roboto Light), both at `--text-small-size` (14px).
-    - **Phone:** the cover sits above the title at 16:9 (Super's own
-      position), and the hero below it takes `--hero-bg`.
-    - **Overlap.** In Katy's frame the cover starts at 519px, so the end of
-      the summary runs over the lightsaber, and it reads because that cover
-      is dark. The rule here starts the cover where the text column ends
-      instead, so a light cover can't land under text. Which way to go is
-      the open question for Katy.
+    - **Phone:** the cover stays above the title at 16:9 (Super's own
+      position). Katy hasn't drawn a phone case-study hero yet, so this
+      is a placeholder.
 
 16. **No cover: no box.** `.no-cover` drops from §4's 3rem cap to `0`, and
     the band's top padding (64px, or 48px on a phone) gives the title its
@@ -402,12 +396,11 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
     - **Figma:** the local collection "Portfolio — MVDS brand preset"
       holds those values under the MVDS role names. Every MVDS instance
       on page 04 has its colour roles bound to it, so the stock components
-      render as the portfolio. The final hero pattern (`22:81`, row D) is
-      built from plain auto-layout frames, not MVDS Hero or Section,
-      because neither has a slot for it. Those frames bind MVDS spacing,
-      and row D also binds the preset's colours, fonts and sizes and uses
-      MVDS Button. The hero colour itself is left unbound on purpose: it
-      is data taken from the picture, not a token. Type uses MVDS size variables with the
+      render as the portfolio. The final hero pattern (`22:81`, rows D and
+      04.1) is built from plain auto-layout frames, not MVDS Hero or
+      Section, because neither has a slot for art placed this way. Those
+      frames bind MVDS spacing, the preset's colours, fonts and sizes, and
+      the hero colour `portfolio/hero-bg`, and they use MVDS Button. Type uses MVDS size variables with the
       preset's font variables. MVDS's text styles are Inter Semi Bold, so
       they aren't applied.
     - **Code:** `site.css` §1 declares the preset under the same CSS names
@@ -433,8 +426,8 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       - the 56px compact bar (MVDS `chrome-top-height` is 64);
       - the pill button radius (MVDS radius tops out at 14);
       - the 18px site gutter (`space-16` is the nearest);
-      - the scrim gradient (Figma can't bind a colour variable to a
-        gradient stop without losing its alpha).
+      - the hero colour `#2F3636` (`portfolio/hero-bg`; no MVDS role
+        matches, and the nearest is `card`).
       Missing slots: Hero has no actions slot, Section has none between
       heading and body, and Chrome has no content slot. Each is drawn on
       page 04 as a local frame on preset colours, and each is a candidate
@@ -456,16 +449,18 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
   the homepage would be banded as a case study until it is added to the
   list. The comment beside §4's list covers it, and the risk is cosmetic
   (a band where none was planned).
-- **A light picture pulls the hero away from the greens.** The W&H pattern
-  gives `#4E5D59`, a warm grey-green, not the site's teal. That is the
-  pattern working as designed: the hero belongs to its picture. But a
-  very light or busy edge gives a muddier colour. Pick pictures whose
-  facing edge is calm.
-- **The hero colour depends on the script.** Without it, every hero falls
-  back to the band colour, and case-study covers fall back to a banner
-  above the title. Both are clean, but they aren't the design. If Super's
-  image host ever drops its open CORS header, the canvas read fails
-  silently, the same fallback applies, and the loader logs a warning.
+- **Readable text depends on the art.** The site no longer dims or masks
+  anything, so art that is bright or busy where the text sits can fail
+  4.5:1. The placeholder passes at 6.46:1. Check each new piece of art
+  against the spec's contrast scenario before it goes live. A wide,
+  opaque photo would need its own fade built in.
+- **On a phone the art fills the hero behind the text.** That is the rule
+  as given: 110% of a 764px hero is 840 by 1010px. It reads well with the
+  translucent placeholder. A denser piece of art may want a phone-only
+  size later.
+- **Case-study placement needs the loader;** the homepage doesn't. Without
+  the script, case-study covers fall back to Super's banner above the
+  title.
 - **`border-image` with a 100vmax outset** is supported everywhere current,
   but it is less familiar than `box-shadow`. The comment in §4 needs to
   say why it was chosen (decision 13), or the next editor will "simplify"
