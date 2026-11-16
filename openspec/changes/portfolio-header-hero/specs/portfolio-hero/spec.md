@@ -31,14 +31,14 @@ The homepage hero SHALL use a display size larger than any subpage title, carry 
 
 ### Requirement: The homepage hero carries a personal visual that Katy can swap
 
-The homepage hero SHALL run the full width of the screen with its personal visual (pattern, photo or doodle) as hero art behind the content, anchored to the right-hand third. The art SHALL come from Notion so it can be changed without a code change, and it arrives finished, with its own edges.
+The homepage hero SHALL run the full width of the screen with its personal visual (pattern, photo or doodle) as hero art behind the content, anchored to the right of the content grid. The art SHALL come from Notion so it can be changed without a code change, and it arrives finished, with its own edges.
 
 **Fails until:** At 1440 wide, the right half of the homepage hero is empty.
 
-#### Scenario: Hero art is anchored to the right third, behind the content
+#### Scenario: Hero art is anchored to the content grid, behind the content
 
 - **WHEN** the homepage opens at any width
-- **THEN** the hero SHALL span the full viewport width in the hero colour, and the art SHALL sit behind the title, supporting line and call to action, centred horizontally on the right-hand third of the hero and vertically on the hero, at 110% of the hero's height, clipped to the hero
+- **THEN** the hero SHALL span the full viewport width in the hero colour, and the art SHALL sit behind the title, supporting line and call to action, at 150% of the hero's height, centred vertically on the hero and horizontally on the gutter between the second and third columns of a three-column grid as wide as the content at that breakpoint, clipped to the hero
 - **AND** the site SHALL add no mask, wash or colour taken from the art
 
 #### Scenario: Hero text stays readable over the art
@@ -72,10 +72,10 @@ Subpage heroes SHALL sit on a band a step off the page colour, and a case study 
 - **WHEN** a reader opens Consulting, About or a case study
 - **THEN** the hero SHALL sit on a full-width band in a colour distinct from the page body, and the band SHALL end before the first body section
 
-#### Scenario: Case study cover is hero art on the right third
+#### Scenario: Case study cover is hero art on the content grid
 
 - **WHEN** a case study has a Notion cover image and is opened at 1024px wide or more
-- **THEN** the hero SHALL span the full viewport width in the hero colour, and the cover SHALL sit behind the title, properties and summary, centred on the right-hand third of the hero at 110% of the hero's height, clipped to the hero, with the title starting in the first screen
+- **THEN** the hero SHALL span the full viewport width in the hero colour, and the cover SHALL sit behind the title, properties and summary, at 150% of the hero's height, centred on the same column 2/3 gutter, clipped to the hero, with the title starting in the first screen
 
 #### Scenario: Case study without a cover shows no empty box
 
