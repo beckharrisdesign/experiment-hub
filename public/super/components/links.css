@@ -1,6 +1,6 @@
 /* ::links — styles for public/super/components/links.js
    Lives inside the component's shadow root, so nothing here leaks out and
-   nothing of Super's leaks in. Fonts, text colour and --accent are inherited
+   nothing of Super's leaks in. Fonts, text colour and --accent-rgb are inherited
    from the page on purpose: the component should read as part of the site.
    The host <aside> (its margins, width) is styled in site.css §11. */
 :host {
@@ -11,7 +11,7 @@
 }
 .bhd-links__wrap {
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgb(var(--accent, 173 223 227) / 0.25);
+  border: 1px solid rgb(var(--accent-rgb, 173 223 227) / 0.25);
   border-radius: 0.5rem;
   padding: 1.25rem 1.5rem 1.5rem;
 }
@@ -20,7 +20,7 @@
   font-size: 0.75em;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgb(var(--accent, 173 223 227) / 0.85);
+  color: rgb(var(--accent-rgb, 173 223 227) / 0.85);
 }
 .bhd-links__rows {
   list-style: none;
@@ -54,7 +54,7 @@
   cursor: zoom-in;
 }
 .bhd-links__thumb[data-bhd-lb]:focus-visible {
-  outline: 2px solid rgb(var(--accent, 173 223 227));
+  outline: 2px solid rgb(var(--accent-rgb, 173 223 227));
   outline-offset: 3px;
 }
 .bhd-links__body {
@@ -67,19 +67,19 @@
   text-decoration: none;
 }
 a.bhd-links__name {
-  border-bottom: 1px solid rgb(var(--accent, 173 223 227) / 0.5);
+  border-bottom: 1px solid rgb(var(--accent-rgb, 173 223 227) / 0.5);
 }
 a.bhd-links__name::after {
   content: " \2197\FE0E"; /* text-style arrow, never the emoji */
   font-weight: 400;
-  color: rgb(var(--accent, 173 223 227) / 0.85);
+  color: rgb(var(--accent-rgb, 173 223 227) / 0.85);
 }
 a.bhd-links__name:hover,
 a.bhd-links__name:focus-visible {
-  border-bottom-color: rgb(var(--accent, 173 223 227));
+  border-bottom-color: rgb(var(--accent-rgb, 173 223 227));
 }
 a.bhd-links__name:focus-visible {
-  outline: 2px solid rgb(var(--accent, 173 223 227));
+  outline: 2px solid rgb(var(--accent-rgb, 173 223 227));
   outline-offset: 3px;
 }
 .bhd-links__desc {

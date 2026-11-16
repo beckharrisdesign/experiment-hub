@@ -41,7 +41,7 @@
  *
  * Style isolation: Super's theme CSS leans on !important, so components render
  * inside a Shadow DOM. Inherited properties (font-family, color, line-height)
- * and custom properties (--accent, --primary-font) cross the boundary on
+ * and custom properties (--accent-rgb, --primary-font) cross the boundary on
  * their own; nothing else does. @font-face is document-level, so fonts work.
  *
  * Flash of raw content: a marked callout gets `data-bhd-pending` the moment
@@ -61,9 +61,15 @@
  *
  * Debugging on the live site: `bhdComponents.report()` in the console lists
  * every callout the loader saw and what it made of it.
+ *
+ * Navbar and hero behaviour (compact-on-scroll, the current nav link, and
+ * case-study hero measurements) live in ./chrome.js and run on the same
+ * passes; see that file.
  */
 
-export const VERSION = '6';
+import { chromePass, startChrome } from './chrome.js';
+
+export const VERSION = '7';
 
 /** Marker name → module file in this directory. Add new components here. */
 export const REGISTRY = {
@@ -377,8 +383,10 @@ export function boot() {
     requestAnimationFrame(() => {
       scheduled = false;
       enhance();
+      chromePass();
     });
   };
   new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
+  startChrome(window);
   enhance().then(() => console.debug(`[bhd] components v${VERSION}: ${seen.length} block(s) seen — bhdComponents.report() for detail`));
 }
