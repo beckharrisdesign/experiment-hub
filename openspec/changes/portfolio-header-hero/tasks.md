@@ -58,13 +58,13 @@ The site is Super rendering Notion, so there is no local copy of the
 pages. The shell loads the live pages in Playwright and swaps in the
 local files, which makes every check runnable before a merge.
 
-- [ ] 2.1 `scripts/super-css/preview.mjs`: opens beckharrisdesign.com
+- [x] 2.1 `scripts/super-css/preview.mjs`: opens beckharrisdesign.com
       pages in Playwright (Chromium). When `--local` is set, it routes
       `labs.beckharrisdesign.com/super/site.css` and `/super/components*`
       to the files in `public/super/`. Pages: `/`, `/bhd-consultation`,
       `/bhd-labs`, `/katy-harris`, `/rebuilding-a-design-function`, plus
       one Labs sub-page. Viewports: 1440×900, 1024×768 and 390×844.
-- [ ] 2.2 `scripts/super-css/measure-hero.mjs`: rebuilds the as-is
+- [x] 2.2 `scripts/super-css/measure-hero.mjs`: rebuilds the as-is
       measurement script that was never committed (described in
       `docs/portfolio-feedback-2026-11/README.md` §4). It adds one check
       per §1 outcome and prints a pass / fail table:
@@ -77,18 +77,18 @@ local files, which makes every check runnable before a merge.
         centre x on the column 2/3 gutter ±4px);
       - contrast sampled under the title, line and button;
       - whether a cover box exists without a cover.
-- [ ] 2.3 Run `measure-hero.mjs` against the live site as it is today.
+- [x] 2.3 Run `measure-hero.mjs` against the live site as it is today.
       Check that every "Fails until" line in the specs fails, and save the
       table as `docs/portfolio-feedback-2026-11/to-be/before.json`. This is
       the failing test the change ships against.
-- [ ] 2.4 Add `npm run super:preview` and `npm run super:measure` (both
+- [x] 2.4 Add `npm run super:preview` and `npm run super:measure` (both
       take `--local`).
 
 ## 3. Implementation
 
 Write the tests first, and see them fail before the code that passes them.
 
-- [ ] 3.1 jsdom tests in `tests/scripts/super-components.test.ts`, failing
+- [x] 3.1 jsdom tests in `tests/scripts/super-chrome.test.ts`, failing
       first:
       - the compact class goes on past `scrollY` 80 and comes off at the
         top;
@@ -98,14 +98,15 @@ Write the tests first, and see them fail before the code that passes them.
       - the mapping re-applies after a simulated client-side navigation;
       - `--hero-top` and `--hero-h` are set only on a case study with a
         cover.
-- [ ] 3.2 `public/super/components/loader.js`:
+- [x] 3.2 `public/super/components/loader.js`, with the behaviour in a new
+      sibling module `components/chrome.js`:
       - compact class on `<html>` from a passive `scroll` listener and
         `requestAnimationFrame`;
       - `aria-current="page"` from the class mapping (design.md decision
         4), re-run on the existing `MutationObserver` pass;
       - case-study hero measuring with a `ResizeObserver`.
       Bump `VERSION` from 6 to 7 in `loader.js` and `components.js`.
-- [ ] 3.3 `site.css` §1 tokens:
+- [x] 3.3 `site.css` §1 tokens:
       - the portfolio as an MVDS brand preset under MVDS names
         (`--background` … `--primary-1…5`, `--font-heading`,
         `--font-sans`);
@@ -114,7 +115,7 @@ Write the tests first, and see them fail before the code that passes them.
       - `--hero-accent`.
       Rename the existing `--accent` (bare RGB) to `--accent-rgb` across
       the file, and point `--callout-bg` at `var(--muted)`.
-- [ ] 3.4 §3 Navbar:
+- [x] 3.4 §3 Navbar:
       - the compact state: 56px high with a 24px margin, so the content
         doesn't jump; `--navbar-height`; 16px type; a 40px button;
         200ms ease-out; and none under `prefers-reduced-motion`;
@@ -122,7 +123,7 @@ Write the tests first, and see them fail before the code that passes them.
         offset; others at 75%);
       - breadcrumb hidden on `.parent-page__index` and
         `.page__all-projects`.
-- [ ] 3.5 §4 Homepage hero (`.page__index .notion-root >
+- [x] 3.5 §4 Homepage hero (`.page__index .notion-root >
       .notion-column-list:first-child`):
       - a 62 / 38 column split;
       - the display size and accent rule;
@@ -132,14 +133,14 @@ Write the tests first, and see them fail before the code that passes them.
         `left: calc((100% - 2rem) * 2 / 3 + 1.5rem)`, translate −50% /
         −50%, `clip-path: inset(calc(100% / 6) 0)`;
       - the dot pattern when column 2 has no image.
-- [ ] 3.6 §4 Subpage band:
+- [x] 3.6 §4 Subpage band:
       - the `border-image` band per hero block in `--card` (Consulting and
         About: blocks before the first divider, plus About's header
         content);
       - the first divider hidden;
       - padding 64px on desktop and 48px on a phone, and a 32px gap before
         the body.
-- [ ] 3.7 §4 Case study:
+- [x] 3.7 §4 Case study:
       - the hero block set (with the slug list beside §4's, comment
         included);
       - with a cover: band `--hero-bg`, the cover placed from

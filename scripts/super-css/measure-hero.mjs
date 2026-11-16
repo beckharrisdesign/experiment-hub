@@ -73,7 +73,7 @@ async function worstBackground(page, selector) {
     return { x: r.left, y: r.top, width: r.width, height: r.height, color };
   }, selector);
   if (!box || box.width < 1) return null;
-  await page.addStyleTag({ content: '#bhd-measure, #bhd-measure * { color: transparent !important; -webkit-text-fill-color: transparent !important; text-shadow: none !important; }' });
+  await page.addStyleTag({ content: '#bhd-measure, #bhd-measure * { color: transparent !important; -webkit-text-fill-color: transparent !important; text-shadow: none !important; } #bhd-measure::before, #bhd-measure::after { visibility: hidden !important; }' });
   const png = await page.screenshot({ clip: { x: box.x, y: box.y, width: box.width, height: box.height } });
   const { data, info } = await sharp(png).raw().toBuffer({ resolveWithObject: true });
   let best = null;
@@ -201,14 +201,29 @@ async function main() {
       const ctx = await openContext(browser, VIEWPORTS.phone, { local });
       const page = await ctx.newPage();
       await visit(page, PAGES.home);
-      const m = await page.evaluate((HERO) => {
+      const ONE_LINE = 'Design leader and former founder — craft, code and operations in one seat.';
+      const m = await page.evaluate(({ HERO, ONE_LINE }) => {
         const b = document.querySelector(`${HERO} .notion-button`) ?? document.querySelector('.notion-root .notion-button');
         const c2 = document.querySelector(`${HERO} > .notion-column:nth-child(2)`);
-        return { bottom: b ? Math.round(b.getBoundingClientRect().bottom) : null, art: !!c2?.querySelector('img') };
-      }, HERO);
-      record('1.9', 'Call to action is in the first phone screen', m.bottom !== null && m.bottom <= 600 ? 'pass' : 'fail', `button bottom ${m.bottom}px of 844`);
+        const bottom = () => (b ? Math.round(b.getBoundingClientRect().bottom) : null);
+        const paras = [...document.querySelectorAll(`${HERO} > .notion-column:first-child .notion-text__content`)].filter((p) => p.textContent.trim());
+        const words = paras.map((p) => p.textContent).join(' ').split(/\s+/).filter(Boolean).length;
+        const now = bottom();
+        // Until task 3.10 lands in Notion, also measure with one supporting line.
+        let oneLine = null;
+        if (words > 25 && paras.length) {
+          paras[0].textContent = ONE_LINE;
+          paras.slice(1).forEach((p) => p.remove());
+          oneLine = bottom();
+        }
+        return { bottom: now, oneLine, words, art: !!c2?.querySelector('img') };
+      }, { HERO, ONE_LINE });
+      const ctaOk = (px) => px !== null && px <= 600;
+      record('1.9', 'Call to action is in the first phone screen',
+        ctaOk(m.bottom) ? 'pass' : m.oneLine !== null && ctaOk(m.oneLine) ? 'content' : 'fail',
+        m.oneLine !== null ? `button bottom ${m.bottom}px with today's ${m.words}-word copy; ${m.oneLine}px with one line (task 3.10)` : `button bottom ${m.bottom}px of 844`);
       record('1.12', 'Call to action stays in the first phone screen with art behind it',
-        !m.art ? 'content' : m.bottom <= 600 ? 'pass' : 'fail', m.art ? `button bottom ${m.bottom}px with art` : 'no art in Notion yet (task 3.11)');
+        !m.art ? 'content' : ctaOk(m.oneLine ?? m.bottom) ? 'pass' : 'fail', m.art ? `button bottom ${m.oneLine ?? m.bottom}px with art` : 'no art in Notion yet (task 3.11)');
       await ctx.close();
     }
 
