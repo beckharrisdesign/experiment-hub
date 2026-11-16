@@ -170,7 +170,7 @@ Write the tests first, and see them fail before the code that passes them.
 
 - [x] 4.1 Automated smoke: `npm test` is green, and the new jsdom tests run
       in CI.
-- [ ] 4.2 Before merge: `npm run super:measure -- --local` passes every
+- [x] 4.2 Before merge: `npm run super:measure -- --local` passes every
       §1 check at 1440×900, 1024×768 and 390×844. In the PR, show one
       screenshot (homepage, 1440) and put the rest in a collapsed
       `<details>`.
