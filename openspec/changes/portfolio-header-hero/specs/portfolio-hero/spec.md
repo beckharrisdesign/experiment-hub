@@ -50,6 +50,11 @@ The homepage hero SHALL have a slot for a personal visual (pattern, photo or doo
 - **WHEN** Katy replaces the hero image in Notion and Super republishes
 - **THEN** the live hero SHALL show the new image with no change to `public/super/`
 
+#### Scenario: No image yet shows a built-in pattern, not an empty half
+
+- **WHEN** the homepage hero has no personal image in Notion
+- **THEN** the slot SHALL show a placeholder pattern drawn by `site.css` in the site's own colours, at the same size and position the image would take, and SHALL NOT show an empty column or a broken-image box
+
 ### Requirement: Subpage heroes read as heroes
 
 Subpage heroes SHALL sit on a band a step off the page colour, and a case study SHALL show its project visual beside the title instead of an empty box above it.
