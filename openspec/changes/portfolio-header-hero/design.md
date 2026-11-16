@@ -84,13 +84,38 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 | ------------------- | ----- |
 | Primary file URL    | https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy (`portfolio-header-hero`) |
 | As-is frame(s)      | Page `01 As-is` (`0:1`): live captures. Homepage at load `1:3`, scrolled `1:4`, phone `1:5`; Consulting `1:6`, case study `1:7`, About `1:8`. Captured from the running site, so the pixels are real; the labels and measurements come from `as-is/measurements.json`. |
-| Proposed frame(s)   | Page `02 Proposed` (`1:2`), round 1 from the proposal: header `2:5` / `2:14` / `2:23` / `2:28`, homepage `3:12` / `3:27`, Consulting `4:3` / `4:20`, case study `4:32` / `4:59`. Page [`03 Design`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=13-2) (`13:2`), round 2, for this artifact. **A. Navbar, current link and compact sizes:** 1440 at 80px `13:6`, compact 56px `13:15`; 390 at 80px `13:24`, compact `13:29`. **B. Homepage with no image yet** (the pattern, the 86px title, Projects current): `13:37` / `13:832`; the phone frame marks the 600px CTA limit (CTA ends at 521px). **C. Case study:** with cover `13:1183`, no cover `13:1212`. Notes `13:1239`–`13:1241`. One change from round 1: phone frames at the top of a page show the 80px bar, as the spec requires. Page [`03.1 Design — real imagery + callout colour`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=17-2) (`17:2`), round 2.1, shows the same layouts with real pictures. **B.** The homepage with your W&H hand-drawn pattern as the visual: `17:6` / `17:800`. **C.** Case studies with live gallery images as covers: Rebuilding `17:1145`, Connected China `17:1173`, phone `17:1201`. **E.** Four callout colours: `17:1219` (today), `17:1249` (hero band, recommended), `17:1279` (a step lighter), `17:1309` (pill tint). |
+| Proposed frame(s)   | Page `02 Proposed` (`1:2`), round 1 from the proposal: header `2:5` / `2:14` / `2:23` / `2:28`, homepage `3:12` / `3:27`, Consulting `4:3` / `4:20`, case study `4:32` / `4:59`. Page [`03 Design`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=13-2) (`13:2`), round 2, for this artifact. **A. Navbar, current link and compact sizes:** 1440 at 80px `13:6`, compact 56px `13:15`; 390 at 80px `13:24`, compact `13:29`. **B. Homepage with no image yet** (the pattern, the 86px title, Projects current): `13:37` / `13:832`; the phone frame marks the 600px CTA limit (CTA ends at 521px). **C. Case study:** with cover `13:1183`, no cover `13:1212`. Notes `13:1239`–`13:1241`. One change from round 1: phone frames at the top of a page show the 80px bar, as the spec requires. Page [`03.1 Design — real imagery + callout colour`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=17-2) (`17:2`), round 2.1, shows the same layouts with real pictures. **B.** The homepage with your W&H hand-drawn pattern as the visual: `17:6` / `17:800`. **C.** Case studies with live gallery images as covers: Rebuilding `17:1145`, Connected China `17:1173`, phone `17:1201`. **E.** Four callout colours: `17:1219` (today), `17:1249` (hero band, recommended), `17:1279` (a step lighter), `17:1309` (pill tint). Page [`03.2 Design — full-bleed heroes`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=19-2) (`19:2`), round 2.2, runs the hero image edge to edge. **H-A.** Homepage with the image behind the text and a scrim: `19:6` / `19:26`. **H-B.** Homepage with the image as a full-width band under the text: `19:42` / `19:62`. **C.** Case-study cover as a full-width band above the title: Rebuilding `19:77`, Connected China `19:105`, phone `19:133`. |
 | Libraries / version | None. This is the Super/Notion portfolio, not a hub surface. It uses the live `site.css` tokens instead of MVDS: navbar `#102D2F`, accent `#ADDFE3`, button text `#143639`, page `#143639` (Super's own `--color-bg-default`, read from the live page; rounds 1 and 2 used the estimate `#15373A`), the new hero band `#1E474B`, and the callout, which is `#2C4A4D` today and becomes the hero band colour (decision 19). Fraunces 300 for display, Roboto Variable 300 for body. |
 | Code Connect        | N/A. There is no React component; the surface is Notion blocks styled by `site.css`. |
 | Breakpoints         | S · 480px / L · 1024px (BHD Content Types). The site's own steps also apply: 600px (phone button size), 760–860px (nav links stay in the bar), and Super's column stack. Designs are drawn at 1440 and 390. |
 | Status              | Draft, awaiting approval. |
 
 ## Decisions
+
+> **Open: full-bleed heroes (round 2.2, page 03.2).** Katy asked for full-bleed
+> hero images. If they are adopted:
+>
+> - **Decisions 10–12** (the visual in column 2) are replaced by the chosen
+>   homepage treatment.
+>   - **H-A, image behind the text:** column 2's image block is positioned
+>     absolutely behind the column list, full width
+>     (`inset: 0 calc(50% - 50vw)`), with a scrim in the page colour. The
+>     scrim goes from 94% to 0% left to right on desktop. On a phone it is
+>     92% behind the text and fades to 10% below the CTA.
+>   - **H-B, full-width band under the text:** a Notion image block after
+>     the hero column list, made full width with the same
+>     `calc(50% - 50vw)` trick the callouts use.
+> - **Decision 15** (cover beside the title, positioned absolutely) is
+>   replaced by Super's own cover position: a full-width band above the
+>   title. The live covers are 1470×500 originals, so at 1440 they need
+>   almost no crop, and the 4:3 crop risk goes away. The cover's height
+>   should be capped around 50vh: at 490px tall, the summary ends at 932px,
+>   just past a 900px screen.
+> - **Approved spec scenarios that change:** "Visual fills the right column
+>   on desktop" (becomes full width), "Visual stacks under the text on a
+>   phone" (only true for H-B), and "Case study cover shows beside the
+>   title" (becomes "above the title, full width"). The specs need a small
+>   revision and a re-approval before tasks.
 
 ### Header
 
