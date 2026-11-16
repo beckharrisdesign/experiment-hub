@@ -131,13 +131,29 @@ change adds styles to it and does not change how they ship.
 - **Tests:** a jsdom test for the scroll trigger if it is JS. The selector
   check covers the CSS hooks. The manual pass runs on the live site at
   1440 and 390 widths.
-- **Figma (required round, blocked this session):** the proposal round
-  belongs in a **design file** titled `portfolio-header-hero` (this is a
-  surface question), page `02 Proposed`. The Figma MCP server failed to
-  connect in the session that wrote this proposal, so the round has not been
-  made yet. The as-is captures are ready to place on `01 As-is` once it
-  reconnects:
-  [`portfolio-feedback-2026-11/as-is/`](../../../experiments/super-css-control/docs/portfolio-feedback-2026-11/as-is/).
+- **Figma (round 1, made 2026-11-16):** design file
+  [`portfolio-header-hero`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy)
+  (a surface question, so a design file rather than a board). It is built on
+  the live site's own tokens (navbar `#102D2F`, accent `#ADDFE3`, button text
+  `#143639`, Fraunces 300 display, Roboto body), not MVDS, because this is
+  the Super/Notion portfolio styled by `site.css`.
+  - [`01 As-is`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=0-1)
+    (page `0:1`): the six live captures from
+    [`as-is/`](../../../experiments/super-css-control/docs/portfolio-feedback-2026-11/as-is/),
+    each labelled with its note IDs and measurements. Homepage at load `1:3`,
+    scrolled `1:4`, phone `1:5`; Consulting `1:6`, case study `1:7`,
+    About `1:8`.
+  - [`02 Proposed`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=1-2)
+    (page `1:2`): a rough first round at 1440 and 390.
+    **A. Header:** 80px at rest `2:5`, 56px scrolled `2:14`, with Consulting
+    active and no breadcrumb; phone `2:23` / `2:28`.
+    **B. Homepage front door:** `3:12` / `3:27`. 88px / 48px H1, one
+    placeholder line, personal-visual slot, and a neutral rule as the
+    warm-accent slot.
+    **C. Consulting hero band:** `4:3` / `4:20`.
+    **D. Case study, project visual beside the title:** `4:32` / `4:59`.
+    Open questions sit in the pink notes beside each row: `5:2`, `5:5`,
+    `5:8`, `5:11`.
 
 ## Optional links
 
