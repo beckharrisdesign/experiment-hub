@@ -222,6 +222,15 @@ html {
                          a clip on <body> would not catch it: <html> would
                          scroll sideways instead. */
 }
+/* …and the same guard on <main>, which spans the viewport. On <html>, `clip`
+   is propagated to the viewport and becomes `hidden`: no scrollbar, but the
+   page can still be panned sideways (iOS) or scrolled from script. The hero
+   art (portfolio-header-hero, decision 11) runs hundreds of px past the
+   right edge by design, so clip it here. `clip`, unlike `hidden`, makes no
+   scroll container, so sticky children still stick. */
+main.super-content {
+  overflow-x: clip;
+}
 /* Cap and center the whole page, with breathing room at the edges */
 .notion-root {
   max-width: var(--site-max-width);
@@ -581,6 +590,16 @@ h1.notion-heading,
   font-size: var(--home-display-size);
   line-height: 1.1;
 }
+/* The title carries a hand-set line break from when it was 45px
+   ("…leadership / for modern…"). At display size it splits the title into
+   four ragged lines on desktop and five on a phone; let it collapse so the
+   title wraps on its own, three lines at 1440 as in Figma. */
+.page__index .notion-root > .notion-column-list:first-child h1.notion-heading {
+  white-space: normal !important;
+}
+.page__index .notion-root > .notion-column-list:first-child h1.notion-heading br {
+  display: none;
+}
 .page__index .notion-root > .notion-column-list:first-child h1.notion-heading::before {
   content: "";
   display: block;
@@ -651,15 +670,6 @@ h1.notion-heading,
   }
   .page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child .notion-text__content {
     font-size: var(--text-body-lg-size);
-  }
-  /* The title carries a hand-set line break for desktop ("…leadership /
-     for modern…"). On a 354px column it forces a fifth line; let it
-     collapse so the title wraps on its own. */
-  .page__index .notion-root > .notion-column-list:first-child h1.notion-heading {
-    white-space: normal !important;
-  }
-  .page__index .notion-root > .notion-column-list:first-child h1.notion-heading br {
-    display: none;
   }
 }
 

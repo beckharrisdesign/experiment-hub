@@ -148,9 +148,12 @@ Write the tests first, and see them fail before the code that passes them.
         column, and Katy's properties cells (design.md decision 15);
       - with no cover: `.no-cover` set to 0;
       - on a phone: the cover above the title at 16:9.
-- [ ] 3.8 §2 guard: confirm `overflow-x` clipping covers art that runs
-      past the right edge of the viewport, at 1024 and 1440.
-- [ ] 3.9 Run `npm test`, and `npm run super:measure -- --local` at all
+- [x] 3.8 §2 guard: confirm `overflow-x` clipping covers art that runs
+      past the right edge of the viewport, at 1024 and 1440. It didn't:
+      on `<html>` the clip becomes `hidden` on the viewport, which still
+      pans. `main.super-content` now clips too, and nothing scrolls
+      sideways at 1440, 1024 or 390.
+- [x] 3.9 Run `npm test`, and `npm run super:measure -- --local` at all
       three viewports, until every §1 check passes.
 
 **Content, in Notion (Katy):**
@@ -165,7 +168,7 @@ Write the tests first, and see them fail before the code that passes them.
 
 ## 4. QA
 
-- [ ] 4.1 Automated smoke: `npm test` is green, and the new jsdom tests run
+- [x] 4.1 Automated smoke: `npm test` is green, and the new jsdom tests run
       in CI.
 - [ ] 4.2 Before merge: `npm run super:measure -- --local` passes every
       §1 check at 1440×900, 1024×768 and 390×844. In the PR, show one
