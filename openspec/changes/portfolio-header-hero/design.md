@@ -84,8 +84,8 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 | ------------------- | ----- |
 | Primary file URL    | https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy (`portfolio-header-hero`) |
 | As-is frame(s)      | Page `01 As-is` (`0:1`): live captures. Homepage at load `1:3`, scrolled `1:4`, phone `1:5`; Consulting `1:6`, case study `1:7`, About `1:8`. Captured from the running site, so the pixels are real; the labels and measurements come from `as-is/measurements.json`. |
-| Proposed frame(s)   | Page `02 Proposed` (`1:2`), round 1 from the proposal: header `2:5` / `2:14` / `2:23` / `2:28`, homepage `3:12` / `3:27`, Consulting `4:3` / `4:20`, case study `4:32` / `4:59`. Page [`03 Design`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=13-2) (`13:2`), round 2, for this artifact. **A. Navbar, current link and compact sizes:** 1440 at 80px `13:6`, compact 56px `13:15`; 390 at 80px `13:24`, compact `13:29`. **B. Homepage with no image yet** (the pattern, the 86px title, Projects current): `13:37` / `13:832`; the phone frame marks the 600px CTA limit (CTA ends at 521px). **C. Case study:** with cover `13:1183`, no cover `13:1212`. Notes `13:1239`–`13:1241`. One change from round 1: phone frames at the top of a page show the 80px bar, as the spec requires. |
-| Libraries / version | None. This is the Super/Notion portfolio, not a hub surface. It uses the live `site.css` tokens instead of MVDS: navbar `#102D2F`, accent `#ADDFE3`, button text `#143639`, page about `#15373A` (estimate; Figma had no colour sampler), the new hero band `#1E474B`, and the callout band `#2C4A4E`. Fraunces 300 for display, Roboto Variable 300 for body. |
+| Proposed frame(s)   | Page `02 Proposed` (`1:2`), round 1 from the proposal: header `2:5` / `2:14` / `2:23` / `2:28`, homepage `3:12` / `3:27`, Consulting `4:3` / `4:20`, case study `4:32` / `4:59`. Page [`03 Design`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=13-2) (`13:2`), round 2, for this artifact. **A. Navbar, current link and compact sizes:** 1440 at 80px `13:6`, compact 56px `13:15`; 390 at 80px `13:24`, compact `13:29`. **B. Homepage with no image yet** (the pattern, the 86px title, Projects current): `13:37` / `13:832`; the phone frame marks the 600px CTA limit (CTA ends at 521px). **C. Case study:** with cover `13:1183`, no cover `13:1212`. Notes `13:1239`–`13:1241`. One change from round 1: phone frames at the top of a page show the 80px bar, as the spec requires. Page [`03.1 Design — real imagery + callout colour`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=17-2) (`17:2`), round 2.1, shows the same layouts with real pictures. **B.** The homepage with your W&H hand-drawn pattern as the visual: `17:6` / `17:800`. **C.** Case studies with live gallery images as covers: Rebuilding `17:1145`, Connected China `17:1173`, phone `17:1201`. **E.** Four callout colours: `17:1219` (today), `17:1249` (hero band, recommended), `17:1279` (a step lighter), `17:1309` (pill tint). |
+| Libraries / version | None. This is the Super/Notion portfolio, not a hub surface. It uses the live `site.css` tokens instead of MVDS: navbar `#102D2F`, accent `#ADDFE3`, button text `#143639`, page `#143639` (Super's own `--color-bg-default`, read from the live page; rounds 1 and 2 used the estimate `#15373A`), the new hero band `#1E474B`, and the callout, which is `#2C4A4D` today and becomes the hero band colour (decision 19). Fraunces 300 for display, Roboto Variable 300 for body. |
 | Code Connect        | N/A. There is no React component; the surface is Notion blocks styled by `site.css`. |
 | Breakpoints         | S · 480px / L · 1024px (BHD Content Types). The site's own steps also apply: 600px (phone button size), 760–860px (nav links stay in the bar), and Super's column stack. Designs are drawn at 1440 and 390. |
 | Status              | Draft, awaiting approval. |
@@ -245,9 +245,9 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       hand-kept slug list in the change. It sits beside §4's existing
       list, with the same comment telling the next editor to add new
       top-level pages to both.
-    - The Challenges callout keeps its own `#2C4A4E` fill. The 2rem of
-      page colour between the two bands keeps them reading as separate
-      things.
+    - The Challenges callout takes the same colour as the hero band
+      (decision 19). The 2rem of page colour between the two bands keeps
+      them reading as separate things.
 15. **Case-study cover beside the title, at 1024px and wider.**
     - The cover lives inside `.notion-header`, while the properties and
       summary live in `.notion-root`, a different parent. No CSS grid can
@@ -286,6 +286,28 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       `as-is/measurements.json`, re-run to check every "Fails until" line
       now passes.
 
+### Callout colour
+
+19. **The callout matches the hero band: `--callout-bg: var(--hero-band)`.**
+    - Every green on the site is the same hue, about 185°. The navbar
+      (`#102D2F`, saturation 49%), the page (`#143639`, 48%) and the hero
+      band (`#1E474B`, 43%) all sit close together on saturation too.
+      Today's callout is 10% white laid over the page, which pulls its
+      saturation down to 27% (`#2C4A4D`). That is why it reads grey next
+      to the hero.
+    - Four options are drawn on page 03.1, row E:
+      - **A. Today:** `#2C4A4D`.
+      - **B. The hero band:** `#1E474B`, 7.02:1 for accent text.
+        Recommended: one colour for every surface set apart from the page,
+        and one token fewer.
+      - **C. One step lighter on the same scale:** `#24575B`, 5.58:1. This
+        draws more attention than the hero above it.
+      - **D. The pill tint (accent at 10%):** `#23474A`. Close to B, but a
+        little greyer.
+    - `--callout-bg` styles every `.notion-callout`, so this changes all
+      callouts across the site, not only on case studies. That is the
+      intent: one set of greens everywhere.
+
 ## Risks / Trade-offs
 
 - **The active state and the compact bar depend on an external script.**
@@ -308,10 +330,14 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
   but it is less familiar than `box-shadow`. The comment in §4 needs to
   say why it was chosen (decision 13), or the next editor will "simplify"
   it into the version that covers descenders.
-- **The page colour `#15373A` is an estimate** (no colour sampler during
-  round 1). The band is set by its own token, so the risk is only that
-  the step between page and band looks larger or smaller than drawn. It
-  is checked on the live site, and the token is tuned there.
+- **The Rebuilding gallery image is two lightsabers.** Page 03.1 uses the
+  images the live gallery shows today. On the Rebuilding card that is a
+  lightsaber picture, which may belong to "Use the force, Luke". Check the
+  image before it becomes the case study's cover.
+- **Real covers are 2.8:1 banners.** On page 03.1 the Connected China
+  cover keeps the iPad and cuts most of the red background. Rebuilding
+  keeps the crossing point and loses the outer edges. Both read well, but
+  a cover with its subject near one edge would lose it.
 - **Fluid type at 1024–1440** has not been drawn at the in-between widths.
   The `clamp()` keeps it monotonic, and the manual pass checks 1024 and
   1280 as well as 1440 and 390.
