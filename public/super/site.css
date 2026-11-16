@@ -592,6 +592,22 @@ h1.notion-heading,
 .page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child .notion-text__content {
   font-size: var(--text-h3-size);
   line-height: 1.5;
+  padding-bottom: 0;
+}
+/* The text stack, spaced as Katy's frame (22:81): title and line 16px
+   apart, then 32px to the button. Notion's empty spacer blocks go — they
+   added ~90px on a phone and pushed the button out of the first screen. */
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child {
+  padding-block: 0 !important;
+}
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child > div.notion-text:not(.notion-text__content) {
+  display: none;
+}
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child > h1.notion-heading {
+  margin: 0 0 calc(var(--spacing) * 4) !important;   /* space-16 */
+}
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child > .notion-button {
+  margin-top: calc(var(--spacing) * 8);              /* space-32 */
 }
 /* The art: column 2, lifted out of the flow. */
 .page__index .notion-root > .notion-column-list:first-child > .notion-column:nth-child(2) {
@@ -635,6 +651,15 @@ h1.notion-heading,
   }
   .page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child .notion-text__content {
     font-size: var(--text-body-lg-size);
+  }
+  /* The title carries a hand-set line break for desktop ("…leadership /
+     for modern…"). On a 354px column it forces a fifth line; let it
+     collapse so the title wraps on its own. */
+  .page__index .notion-root > .notion-column-list:first-child h1.notion-heading {
+    white-space: normal !important;
+  }
+  .page__index .notion-root > .notion-column-list:first-child h1.notion-heading br {
+    display: none;
   }
 }
 
