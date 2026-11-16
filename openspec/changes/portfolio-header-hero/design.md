@@ -46,6 +46,8 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
   inside the first phone screen.
 - Katy can change the hero visual and the case-study covers in Notion
   alone.
+- Built on MVDS: the portfolio is an MVDS brand preset, and the new styles
+  use MVDS tokens and, in Figma, MVDS components (decision 20).
 - No wrappers injected into Super's React tree. Everything is CSS on
   existing blocks, except one class and one attribute set by the loader.
 
@@ -68,13 +70,15 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
    button step down one size. The page content doesn't move. With reduced
    motion, the change is instant.
 3. **Scroll back to the top.** The bar returns to 80px.
-4. **Homepage.** A big display title, one line, the CTA. On the right is
-   the personal visual (stacked under the CTA on a phone), or a pattern
-   drawn by `site.css` until Katy adds an image.
+4. **Homepage.** A big display title, one line, the CTA, over the personal
+   visual, which runs edge to edge behind them. A wash of the page colour
+   keeps the text readable. It fades out to the right on desktop; on a
+   phone, the picture shows clearly below the CTA. Until Katy adds an
+   image, the same area shows a dot pattern drawn by `site.css`.
 5. **Consulting / About / case study.** The hero sits on a band a step
    lighter than the page, and the band ends before the first body section.
-   On a case study with a cover, the cover sits on the right of the band at
-   1024px and wider.
+   On a case study with a cover, the cover runs full width under the
+   navbar, above the title and band.
 6. **Deeper pages** (a Labs sub-page, or a page under a collection) keep
    the breadcrumb. It shows a level the nav can't.
 
@@ -84,38 +88,19 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 | ------------------- | ----- |
 | Primary file URL    | https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy (`portfolio-header-hero`) |
 | As-is frame(s)      | Page `01 As-is` (`0:1`): live captures. Homepage at load `1:3`, scrolled `1:4`, phone `1:5`; Consulting `1:6`, case study `1:7`, About `1:8`. Captured from the running site, so the pixels are real; the labels and measurements come from `as-is/measurements.json`. |
-| Proposed frame(s)   | Page `02 Proposed` (`1:2`), round 1 from the proposal: header `2:5` / `2:14` / `2:23` / `2:28`, homepage `3:12` / `3:27`, Consulting `4:3` / `4:20`, case study `4:32` / `4:59`. Page [`03 Design`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=13-2) (`13:2`), round 2, for this artifact. **A. Navbar, current link and compact sizes:** 1440 at 80px `13:6`, compact 56px `13:15`; 390 at 80px `13:24`, compact `13:29`. **B. Homepage with no image yet** (the pattern, the 86px title, Projects current): `13:37` / `13:832`; the phone frame marks the 600px CTA limit (CTA ends at 521px). **C. Case study:** with cover `13:1183`, no cover `13:1212`. Notes `13:1239`–`13:1241`. One change from round 1: phone frames at the top of a page show the 80px bar, as the spec requires. Page [`03.1 Design — real imagery + callout colour`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=17-2) (`17:2`), round 2.1, shows the same layouts with real pictures. **B.** The homepage with your W&H hand-drawn pattern as the visual: `17:6` / `17:800`. **C.** Case studies with live gallery images as covers: Rebuilding `17:1145`, Connected China `17:1173`, phone `17:1201`. **E.** Four callout colours: `17:1219` (today), `17:1249` (hero band, recommended), `17:1279` (a step lighter), `17:1309` (pill tint). Page [`03.2 Design — full-bleed heroes`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=19-2) (`19:2`), round 2.2, runs the hero image edge to edge. **H-A.** Homepage with the image behind the text and a scrim: `19:6` / `19:26`. **H-B.** Homepage with the image as a full-width band under the text: `19:42` / `19:62`. **C.** Case-study cover as a full-width band above the title: Rebuilding `19:77`, Connected China `19:105`, phone `19:133`. |
-| Libraries / version | None. This is the Super/Notion portfolio, not a hub surface. It uses the live `site.css` tokens instead of MVDS: navbar `#102D2F`, accent `#ADDFE3`, button text `#143639`, page `#143639` (Super's own `--color-bg-default`, read from the live page; rounds 1 and 2 used the estimate `#15373A`), the new hero band `#1E474B`, and the callout, which is `#2C4A4D` today and becomes the hero band colour (decision 19). Fraunces 300 for display, Roboto Variable 300 for body. |
+| Proposed frame(s)   | Page `02 Proposed` (`1:2`), round 1 from the proposal: header `2:5` / `2:14` / `2:23` / `2:28`, homepage `3:12` / `3:27`, Consulting `4:3` / `4:20`, case study `4:32` / `4:59`. Page [`03 Design`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=13-2) (`13:2`), round 2, for this artifact. **A. Navbar, current link and compact sizes:** 1440 at 80px `13:6`, compact 56px `13:15`; 390 at 80px `13:24`, compact `13:29`. **B. Homepage with no image yet** (the pattern, the 86px title, Projects current): `13:37` / `13:832`; the phone frame marks the 600px CTA limit (CTA ends at 521px). **C. Case study:** with cover `13:1183`, no cover `13:1212`. Notes `13:1239`–`13:1241`. One change from round 1: phone frames at the top of a page show the 80px bar, as the spec requires. Page [`03.1 Design — real imagery + callout colour`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=17-2) (`17:2`), round 2.1, shows the same layouts with real pictures. **B.** The homepage with your W&H hand-drawn pattern as the visual: `17:6` / `17:800`. **C.** Case studies with live gallery images as covers: Rebuilding `17:1145`, Connected China `17:1173`, phone `17:1201`. **E.** Four callout colours: `17:1219` (today), `17:1249` (hero band, recommended), `17:1279` (a step lighter), `17:1309` (pill tint). Page [`03.2 Design — full-bleed heroes`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=19-2) (`19:2`), round 2.2, runs the hero image edge to edge. **H-A.** Homepage with the image behind the text and a scrim: `19:6` / `19:26`. **H-B.** Homepage with the image as a full-width band under the text: `19:42` / `19:62`. **C.** Case-study cover as a full-width band above the title: Rebuilding `19:77`, Connected China `19:105`, phone `19:133`. Page [`04 Design — on MVDS (round 3)`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=24-6) (`24:6`) is the build reference, the chosen design rebuilt on MVDS. **A.** Navbar: `24:10` (80px), `24:20` (56px), `24:30` (phone). **B.** Homepage H-A: `25:7` / `25:24`. **C.** Case study: `27:18` / `27:52`. The mapping and gaps are written on the page beside the frames. |
+| Libraries / version | **MVDS Core** (team library, subscribed; `@beckharrisdesign/mvds@0.5.0` in code). From round 3 (page 04) the frames use MVDS Button, Hero, MediaFrame and Section instances, MVDS spacing and type-size variables, and a local collection, **"Portfolio — MVDS brand preset"**. That collection gives each MVDS colour and font role its portfolio value: background `#143639` (Super's `--color-bg-default`), foreground and primary `#ADDFE3`, card and muted `#1E474B`, secondary `#102D2F` (navbar), primary-foreground `#143639`, font-heading Fraunces, font-sans Roboto (decision 20). Binding audit across the seven page-04 frames: 42 of 42 text layers have size and family bound, and 68 of 69 solid fills are bound. The exception is a pink annotation line. Rounds 1–2.2 (pages 02–03.2) predate this and use raw values. |
 | Code Connect        | N/A. There is no React component; the surface is Notion blocks styled by `site.css`. |
 | Breakpoints         | S · 480px / L · 1024px (BHD Content Types). The site's own steps also apply: 600px (phone button size), 760–860px (nav links stay in the bar), and Super's column stack. Designs are drawn at 1440 and 390. |
-| Status              | Draft, awaiting approval. |
+| Status              | Draft, awaiting approval. **Build from page 04** (the chosen design on MVDS). **Chosen:** on page 03.2, H-A (homepage image behind the text) and C (full-width case-study cover). Superseded, but kept as the record: the column visual (03 B, 03.1 B) and the cover beside the title (03 C, 03.1 C). The header rows (03 A) and the callout colours (03.1 E) still stand. |
 
 ## Decisions
 
-> **Open: full-bleed heroes (round 2.2, page 03.2).** Katy asked for full-bleed
-> hero images. If they are adopted:
->
-> - **Decisions 10–12** (the visual in column 2) are replaced by the chosen
->   homepage treatment.
->   - **H-A, image behind the text:** column 2's image block is positioned
->     absolutely behind the column list, full width
->     (`inset: 0 calc(50% - 50vw)`), with a scrim in the page colour. The
->     scrim goes from 94% to 0% left to right on desktop. On a phone it is
->     92% behind the text and fades to 10% below the CTA.
->   - **H-B, full-width band under the text:** a Notion image block after
->     the hero column list, made full width with the same
->     `calc(50% - 50vw)` trick the callouts use.
-> - **Decision 15** (cover beside the title, positioned absolutely) is
->   replaced by Super's own cover position: a full-width band above the
->   title. The live covers are 1470×500 originals, so at 1440 they need
->   almost no crop, and the 4:3 crop risk goes away. The cover's height
->   should be capped around 50vh: at 490px tall, the summary ends at 932px,
->   just past a 900px screen.
-> - **Approved spec scenarios that change:** "Visual fills the right column
->   on desktop" (becomes full width), "Visual stacks under the text on a
->   phone" (only true for H-B), and "Case study cover shows beside the
->   title" (becomes "above the title, full width"). The specs need a small
->   revision and a re-approval before tasks.
+> **Full-bleed heroes (chosen 2026-11-16).** Katy picked treatment H-A on page
+> 03.2, the image behind the text. Decisions 10–12 and 15 below describe it.
+> The `portfolio-hero` spec was revised to match: three scenarios now say
+> "full width" in place of "right column" and "beside the title". The specs
+> go back for re-approval with this design.
 
 ### Header
 
@@ -144,8 +129,9 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
    - Bar: 80 → 56px.
    - Logo and links: 18 → 16px (`.889rem`). Link padding goes to 8px
      top and bottom, so the hit area still fills the bar.
-   - The navbar button text goes to 16px, with padding `.3rem .875rem`
-     (about 38px tall).
+   - The navbar button is 48px tall at rest and 40px compact (MVDS
+     `space-48` / `space-40`), with 16px side padding. Its text is 18px
+     at rest and 16px compact.
    - Only `height`, `font-size` and `padding` transition, over 200ms
      ease-out. `@media (prefers-reduced-motion: reduce)` sets
      `transition: none`.
@@ -220,29 +206,54 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 
 ### Personal visual
 
-10. **The visual is a Notion image block in the hero's second column.**
-    - `.notion-column:nth-child(2):has(.notion-image)`: the image fills
-      the column at a 4:5 aspect ratio, `object-fit: cover`, with the
-      site's 8px radius. Column 2's empty spacer text blocks are hidden.
-    - To swap it, Katy replaces the image in Notion and Super republishes.
-      No pull request is needed.
+10. **The visual is a Notion image block in the hero's second column,
+    lifted out to run full width behind the text.**
+    - The hero column list gets `position: relative`, `isolation: isolate`
+      and its own top and bottom padding, so the picture has a box to
+      fill that starts right under the navbar.
+    - Column 2 becomes the picture layer: `position: absolute`,
+      `inset: 0 calc(50% - 50vw)`, `z-index: -2`. This is the same
+      `calc(50% - 50vw)` trick the full-width callouts already use, and it
+      reaches both edges of the viewport. Its image is `width: 100%`,
+      `height: 100%`, `object-fit: cover`. Column 2's empty spacer text
+      blocks are hidden.
+    - To swap the picture, Katy replaces the image in Notion and Super
+      republishes. No pull request is needed.
     - The page cover was rejected: Super renders the homepage cover as a
-      full-width banner above the hero, not in the column. A hard-coded
-      asset was rejected because it breaks the "no pull request" scenario.
-11. **No image yet: the column draws a pattern.**
-    - `.notion-column:nth-child(2):not(:has(.notion-image))` gets a dot
-      grid as a CSS `radial-gradient` background. Dots are
-      `rgb(var(--accent) / .14)` at a 16px pitch, on a 4:5 box with the
-      same 8px radius.
-    - It takes the same size and position the image would. It is
+      banner above the hero, and §4 hides the homepage header. A
+      hard-coded asset was rejected because it breaks the "no pull
+      request" scenario.
+11. **A scrim in the page colour keeps the text readable on any picture.**
+    - It is the column list's `::before`, at `z-index: -1`, so it sits
+      over the picture and under the text.
+    - **Desktop:** `linear-gradient(to right, …)` in the page colour,
+      94% at the left edge, 90% at 60% across (where column 1's text
+      ends), 30% at 80%, and 0% at the right edge.
+    - Checked against the worst case, a white picture: under the title
+      and supporting line the mix is no lighter than `#2B4A4D`. That
+      keeps accent text at 6.6:1 or more, and the spec asks for 4.5:1. The
+      earlier draft on page 03.2 had a stop at 42%; it let the end of the
+      supporting line drop to about 2.6:1 on white, so the stops moved.
+    - **Phone:** the text covers the full width, so the scrim runs top to
+      bottom: 92% behind the text, easing over 80px to 10% for the
+      bottom 200px. The column list gets 200px of extra bottom padding,
+      so that strip shows the picture almost undimmed below the CTA.
+      These stops are in pixels from the bottom, not percentages, so the
+      text area stays covered however tall the title wraps.
+    - The trade-off: under the text, the picture is always dimmed. That
+      is what keeps the title readable whatever image Katy chooses.
+12. **No image yet: the same layer draws a pattern.**
+    - When column 2 has no image
+      (`.notion-column:nth-child(2):not(:has(.notion-image))`), the same
+      full-width layer gets a dot grid as a CSS `radial-gradient`
+      background. Dots are `rgb(var(--accent) / .14)` at a 16px pitch.
+    - It covers the same full-width area the picture would. It is
       decorative, so it is a background, with no `alt` and nothing for
-      screen readers.
-    - It is the same rule §9 uses (`.notion-callout:has(.notion-image)`): a
-      selector that keys on content, already guarded by `check.mjs`.
-12. **Phone: the visual stacks under the CTA.**
-    - Super stacks columns at phone width. The visual becomes 3:2 with a
-      maximum height of 240px.
-    - It comes after the CTA in the DOM, so it can't push the button down.
+      screen readers. The scrim stays on, so the hero looks the same
+      before and after the picture arrives.
+    - It keys on content the way §9 already does
+      (`.notion-callout:has(.notion-image)`), and `check.mjs` guards the
+      class.
 
 ### Subpage hero band
 
@@ -255,17 +266,19 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       block's text. Unlike the `box-shadow` + `clip-path` trick, it can't
       cover a neighbour's descenders, and it creates no stacking context.
     - New §1 token: `--hero-band: #1E474B`.
-    - The band ends 2rem before the first body block, through padding on
-      the last hero block, so the page colour shows between the band and
-      the body.
+    - The band ends 32px (MVDS `space-32`) before the first body block,
+      through padding on the last hero block, so the page colour shows
+      between the band and the body. Band padding is 64px on desktop and
+      48px on a phone (decision 20).
 14. **Which blocks are "the hero", by page shape:**
     - **Consulting, About:** every `.notion-root` child before the first
       `.notion-divider` (`:not(.notion-divider, .notion-divider ~ *)`),
-      plus About's `.notion-header`. That first divider is hidden, because
-      the band's edge replaces it.
+      plus About's `.notion-header__content`. That first divider is hidden,
+      because the band's edge replaces it.
     - **Case study** (`.parent-page__index` that is not
       `page__bhd-consultation`, `page__bhd-labs` or `page__katy-harris`):
-      `.notion-header`, the properties list, and the paragraph after it,
+      `.notion-header__content` (the title, not the cover, which keeps its
+      own picture), the properties list, and the paragraph after it,
       ending before the first `.notion-callout` or `h2`. This is the one
       hand-kept slug list in the change. It sits beside §4's existing
       list, with the same comment telling the next editor to add new
@@ -273,22 +286,31 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
     - The Challenges callout takes the same colour as the hero band
       (decision 19). The 2rem of page colour between the two bands keeps
       them reading as separate things.
-15. **Case-study cover beside the title, at 1024px and wider.**
-    - The cover lives inside `.notion-header`, while the properties and
-      summary live in `.notion-root`, a different parent. No CSS grid can
-      place them side by side without restructuring Super's DOM.
-    - So on `main:has(.notion-header__cover.has-cover)` the cover is
-      positioned absolutely in the top right of the band. It takes 40% of
-      the site width at a 4:3 aspect ratio, `object-fit: cover`, and keeps
-      Notion's own reposition through its inline `object-position`.
-    - Title, properties and summary get `max-width: 56%`, so they never
-      run under it.
-    - If the cover is taller than the text, it hangs past the bottom of
-      the band, on purpose: an editorial overlap, not a clipped image.
-    - Below 1024px, the cover goes back above the title at 16:9 instead of
-      Super's banner crop.
+15. **Case-study cover: a full-width band above the title, where Super
+    already puts it.**
+    - `.notion-header__cover.has-cover` stays in Super's own position, as
+      the first thing under the navbar. It is sized
+      `aspect-ratio: 2.94 / 1` with `max-height: 50vh`, and the image uses
+      `object-fit: cover`. Notion's reposition still works through its
+      inline `object-position`.
+    - The live covers are 1470×500 originals, so at 1440 they show almost
+      whole. Capped at 50vh, the title starts by about 590px on a 900px
+      screen; at the uncapped 490px the summary ended at 932px, just past
+      the first screen.
+    - At 600px and narrower it is 16:9, which crops the sides of a banner
+      but keeps the picture big enough to read on a phone.
+    - The cover must reach both edges of the viewport. If Super's header
+      turns out to sit inside the site width on case studies, the cover
+      gets the `calc(50% - 50vw)` margins. Implementation checks this
+      first.
+    - The band (decision 13) starts under the cover, at the title.
+    - This replaces the earlier "cover beside the title" plan. That plan
+      needed absolute positioning, because the cover and the text live in
+      different parents, plus a 56% text cap and a 4:3 crop of
+      banner-shaped images. Full bleed needs none of that.
 16. **No cover: no box.** `.no-cover` drops from §4's 3rem cap to `0`, and
-    the band's 3rem top padding gives the title its room. This replaces
+    the band's top padding (64px, or 48px on a phone) gives the title its
+    room. This replaces
     §4's cap on every page with a Notion header, which is the point: the
     54px empty box is the defect the spec names.
 
@@ -333,6 +355,62 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       callouts across the site, not only on case studies. That is the
       intent: one set of greens everywhere.
 
+### Built on MVDS
+
+20. **The portfolio is an MVDS brand preset, and the new styles use MVDS
+    tokens.**
+    - **The model is MVDS's own.** `themes/terracotta.css` sets only the
+      semantic colour roles, the five authored `primary-1…5` steps, and
+      (per `themeable-typography`) `--font-heading` / `--font-sans`.
+      Spacing, radius and the type ramp stay MVDS's. The portfolio follows
+      the same contract:
+      - `--background` `#143639`, `--foreground` `#ADDFE3`
+      - `--card` and `--muted` `#1E474B` (the hero band and, by decision
+        19, the callout)
+      - `--muted-foreground` `#ADDFE3` at 75% (the non-current nav links)
+      - `--primary` `#ADDFE3`, `--primary-foreground` `#143639` (the
+        button)
+      - `--secondary` `#102D2F` (the navbar)
+      - `--accent` `#23474A`, `--border` `#ADDFE3` at 20%
+      - `--primary-1…5` on the same 185° hue
+      - `--font-heading` Fraunces, `--font-sans` Roboto
+    - **Figma:** the local collection "Portfolio — MVDS brand preset"
+      holds those values under the MVDS role names. Every MVDS instance
+      on page 04 has its colour roles bound to it, so the stock components
+      render as the portfolio. Type uses MVDS size variables with the
+      preset's font variables. MVDS's text styles are Inter Semi Bold, so
+      they aren't applied.
+    - **Code:** `site.css` §1 declares the preset under the same CSS names
+      MVDS uses, and every rule this change adds reads them. Spacing
+      follows the MVDS scale:
+      - the band-to-callout gap is 32px (`space-32`), not 2rem;
+      - band padding is 64px on desktop and 48px on a phone (Section
+        `py=64` / `space-48`), not 3rem;
+      - the navbar is 80px (`space-80`);
+      - button heights are 48px and 40px (`space-48` / `space-40`).
+      Type sizes use `--text-body-lg-size`, `--text-body-size`,
+      `--text-small-size` and `--text-display-size`. These names don't
+      collide with Super's CSS (checked against the live page).
+    - **One collision, in `site.css` itself:** its `--accent` holds bare
+      RGB numbers (`173 223 227`), used as `rgb(var(--accent) / α)` across
+      the file. MVDS `--accent` is a full colour with a different meaning,
+      a subtle surface. This change renames `site.css`'s token to
+      `--accent-rgb`. The rename is mechanical, and every use is in the one
+      file.
+    - **Gaps (MVDS has no token or slot; local `portfolio/*` values):**
+      - the 86px homepage display size (the MVDS ramp tops out at 48);
+      - the 45px subpage title (between `h1` 36 and `display` 48);
+      - the 56px compact bar (MVDS `chrome-top-height` is 64);
+      - the pill button radius (MVDS radius tops out at 14);
+      - the 18px site gutter (`space-16` is the nearest);
+      - the scrim gradient (Figma can't bind a colour variable to a
+        gradient stop without losing its alpha).
+      Missing slots: Hero has no actions slot, Section has none between
+      heading and body, and Chrome has no content slot. Each is drawn on
+      page 04 as a local frame on preset colours, and each is a candidate
+      for MVDS itself. They stay local here rather than bending this
+      change around them.
+
 ## Risks / Trade-offs
 
 - **The active state and the compact bar depend on an external script.**
@@ -348,9 +426,11 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
   the homepage would be banded as a case study until it is added to the
   list. The comment beside §4's list covers it, and the risk is cosmetic
   (a band where none was planned).
-- **Notion covers are wide banners.** The 4:3 crop cuts the sides of the
-  covers set today. Katy picks or repositions covers where the project
-  visual matters. This is a Notion task in `tasks.md`, not code.
+- **The homepage picture is always dimmed under the text.** That is the
+  cost of full bleed with a scrim. A busy or very light picture shows most
+  clearly on the right on desktop, and in the strip below the CTA on a
+  phone. Pick pictures with their interest on the right, or in the lower
+  part for phones.
 - **`border-image` with a 100vmax outset** is supported everywhere current,
   but it is less familiar than `box-shadow`. The comment in §4 needs to
   say why it was chosen (decision 13), or the next editor will "simplify"
@@ -359,10 +439,11 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
   images the live gallery shows today. On the Rebuilding card that is a
   lightsaber picture, which may belong to "Use the force, Luke". Check the
   image before it becomes the case study's cover.
-- **Real covers are 2.8:1 banners.** On page 03.1 the Connected China
-  cover keeps the iPad and cuts most of the red background. Rebuilding
-  keeps the crossing point and loses the outer edges. Both read well, but
-  a cover with its subject near one edge would lose it.
+- **Cover shapes vary.** The covers seen so far are 2.94:1 banners, which
+  show almost whole at full width. A taller cover would be cut top and
+  bottom by the 50vh cap, and every cover loses its sides at 16:9 on a
+  phone. Notion's reposition handles both cases. Checking each cover is a
+  Notion task in `tasks.md`, not code.
 - **Fluid type at 1024–1440** has not been drawn at the in-between widths.
   The `clamp()` keeps it monotonic, and the manual pass checks 1024 and
   1280 as well as 1440 and 390.

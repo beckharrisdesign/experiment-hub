@@ -91,14 +91,15 @@ starts here. It is the cheapest high-leverage change in the log.
    line, and the hero sized to take most of the first screen. Copy edits
    happen in Notion. Katy writes the line, and the current paragraph moves
    to About, where it fits better.
-4. **Personal visual element.** A slot in the hero's right column (stacked
-   under the text on a phone) for a pattern, photo or doodle. Built so the
+4. **Personal visual element.** A pattern, photo or doodle running full
+   width behind the hero text, with a wash of the page colour that keeps the
+   text readable (revised 2026-11-16 from a right-column slot). Built so the
    artwork is a Notion image, not hard-coded, so Katy can swap it without a
    PR.
 5. **Subpage hero band.** A background band, a step off the page colour,
    behind subpage heroes (Consulting, About, case studies). Case studies get
-   a project visual on the right, using the Notion cover image they can
-   already carry, laid out beside the title instead of above it.
+   a project visual: the Notion cover image they can already carry, shown
+   full width above the title (revised 2026-11-16 from beside the title).
 
 ## Capabilities
 
@@ -133,10 +134,11 @@ change adds styles to it and does not change how they ship.
   1440 and 390 widths.
 - **Figma (round 1, made 2026-11-16):** design file
   [`portfolio-header-hero`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy)
-  (a surface question, so a design file rather than a board). It is built on
-  the live site's own tokens (navbar `#102D2F`, accent `#ADDFE3`, button text
-  `#143639`, Fraunces 300 display, Roboto body), not MVDS, because this is
-  the Super/Notion portfolio styled by `site.css`.
+  (a surface question, so a design file rather than a board). Rounds 1–2.2
+  use the live site's own values (navbar `#102D2F`, accent `#ADDFE3`, button
+  text `#143639`, Fraunces 300 display, Roboto body). From round 3 (page
+  `04 Design — on MVDS`) the frames are MVDS Core components and variables,
+  with the portfolio as an MVDS brand preset (see design.md, decision 20).
   - [`01 As-is`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=0-1)
     (page `0:1`): the six live captures from
     [`as-is/`](../../../experiments/super-css-control/docs/portfolio-feedback-2026-11/as-is/),
