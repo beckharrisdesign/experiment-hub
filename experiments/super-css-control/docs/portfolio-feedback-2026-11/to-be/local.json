@@ -1,5 +1,5 @@
 {
-  "when": "2026-11-17T22:14:07.192Z",
+  "when": "2026-11-17T22:17:39.662Z",
   "source": "local",
   "results": [
     {
@@ -53,16 +53,16 @@
     },
     {
       "id": "1.8",
-      "scenario": "One supporting line under the title",
+      "scenario": "The hero holds the title alone",
       "state": "content",
-      "value": "1 paragraph(s), 51 words (task 3.10)",
+      "value": "2 paragraph/button block(s) still inside the hero (task 3.10)",
       "note": ""
     },
     {
       "id": "1.9",
-      "scenario": "Call to action is in the first phone screen",
-      "state": "content",
-      "value": "button bottom 694px with today's 51-word copy; 505px with one line (task 3.10)",
+      "scenario": "A \"Book a 30m call\" button is in the first phone screen",
+      "state": "pass",
+      "value": "first one ends at 60px of 844 (3 visible)",
       "note": ""
     },
     {
@@ -81,9 +81,9 @@
     },
     {
       "id": "1.12",
-      "scenario": "Call to action stays in the first phone screen with art behind it",
+      "scenario": "Hero art never moves the intro or the button",
       "state": "pass",
-      "value": "button bottom 505px with art",
+      "value": "same positions with and without the art",
       "note": ""
     },
     {

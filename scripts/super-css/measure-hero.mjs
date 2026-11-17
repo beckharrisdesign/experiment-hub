@@ -153,7 +153,16 @@ async function main() {
         const ar = c2?.getBoundingClientRect();
         const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
         const paras = [...c1.querySelectorAll('.notion-text__content')].map((p) => p.textContent.trim()).filter(Boolean);
+        const visible = (el) => getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().height > 0;
+        const inHero = [...c1.querySelectorAll('.notion-text__content, .notion-button')].filter(visible).length;
+        // The intro: the first text block after the hero, before the first divider.
+        let intro = null;
+        for (let el = list.nextElementSibling; el && !el.matches('.notion-divider'); el = el.nextElementSibling) {
+          if (el.matches('.notion-text__content') && el.textContent.trim()) { intro = el; break; }
+        }
         return {
+          inHero,
+          introBelow: !!intro,
           h1: parseFloat(getComputedStyle(c1.querySelector('h1')).fontSize),
           paras: paras.length,
           words: paras.join(' ').split(/\s+/).filter(Boolean).length,
@@ -173,7 +182,8 @@ async function main() {
         record('1.7', 'Homepage title is larger than any subpage title', 'fail', 'hero column list not found');
       } else {
         record('1.7', 'Homepage title is larger than any subpage title', hero.h1 > subH1 ? 'pass' : 'fail', `home ${hero.h1}px vs case study ${subH1}px`);
-        record('1.8', 'One supporting line under the title', hero.paras <= 1 && hero.words <= 25 ? 'pass' : 'content', `${hero.paras} paragraph(s), ${hero.words} words (task 3.10)`);
+        record('1.8', 'The hero holds the title alone', hero.inHero === 0 ? 'pass' : 'content',
+          hero.inHero === 0 ? `title only; intro ${hero.introBelow ? 'directly below the hero' : 'not found below the hero'}` : `${hero.inHero} paragraph/button block(s) still inside the hero (task 3.10)`);
         const sharpOk = !hero.sharp || hero.sharp.natural >= hero.sharp.drawn * 0.95;
         // The browser asked for a file at least as wide as the art is drawn, and
         // got a smaller one: the upload itself is too small. Content, not code.
@@ -220,29 +230,29 @@ async function main() {
       const ctx = await openContext(browser, VIEWPORTS.phone, { local });
       const page = await ctx.newPage();
       await visit(page, PAGES.home);
-      const ONE_LINE = 'Design leader and former founder — craft, code and operations in one seat.';
-      const m = await page.evaluate(({ HERO, ONE_LINE }) => {
-        const b = document.querySelector(`${HERO} .notion-button`) ?? document.querySelector('.notion-root .notion-button');
-        const c2 = document.querySelector(`${HERO} > .notion-column:nth-child(2)`);
-        const bottom = () => (b ? Math.round(b.getBoundingClientRect().bottom) : null);
-        const paras = [...document.querySelectorAll(`${HERO} > .notion-column:first-child .notion-text__content`)].filter((p) => p.textContent.trim());
-        const words = paras.map((p) => p.textContent).join(' ').split(/\s+/).filter(Boolean).length;
-        const now = bottom();
-        // Until task 3.10 lands in Notion, also measure with one supporting line.
-        let oneLine = null;
-        if (words > 25 && paras.length) {
-          paras[0].textContent = ONE_LINE;
-          paras.slice(1).forEach((p) => p.remove());
-          oneLine = bottom();
+      const m = await page.evaluate((HERO) => {
+        const visible = (el) => getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().height > 0;
+        // Any "Book a 30m call" button the reader can see: the navbar's or the hero's.
+        const ctas = [...document.querySelectorAll('a, button')].filter((el) => /book a 30m call/i.test(el.textContent) && visible(el));
+        const first = Math.min(...ctas.map((el) => Math.round(el.getBoundingClientRect().bottom)));
+        // What hero art could move: the intro and the button, wherever they sit.
+        const list = document.querySelector(HERO);
+        const c2 = list?.querySelector(':scope > .notion-column:nth-child(2)');
+        const watched = [...document.querySelectorAll('.notion-root .notion-text__content, .notion-root .notion-button')].filter(visible).slice(0, 4);
+        const tops = () => watched.map((el) => Math.round(el.getBoundingClientRect().top));
+        const withArt = tops();
+        let without = withArt;
+        if (c2) {
+          c2.style.display = 'none';
+          without = tops();
+          c2.style.display = '';
         }
-        return { bottom: now, oneLine, words, art: !!c2?.querySelector('img') };
-      }, { HERO, ONE_LINE });
-      const ctaOk = (px) => px !== null && px <= 600;
-      record('1.9', 'Call to action is in the first phone screen',
-        ctaOk(m.bottom) ? 'pass' : m.oneLine !== null && ctaOk(m.oneLine) ? 'content' : 'fail',
-        m.oneLine !== null ? `button bottom ${m.bottom}px with today's ${m.words}-word copy; ${m.oneLine}px with one line (task 3.10)` : `button bottom ${m.bottom}px of 844`);
-      record('1.12', 'Call to action stays in the first phone screen with art behind it',
-        !m.art ? 'content' : ctaOk(m.oneLine ?? m.bottom) ? 'pass' : 'fail', m.art ? `button bottom ${m.oneLine ?? m.bottom}px with art` : 'no art in Notion yet (task 3.11)');
+        return { ctas: ctas.length, first, art: !!c2?.querySelector('img'), moved: withArt.some((t, i) => t !== without[i]) };
+      }, HERO);
+      record('1.9', 'A "Book a 30m call" button is in the first phone screen', m.ctas && m.first <= 600 ? 'pass' : 'fail',
+        m.ctas ? `first one ends at ${m.first}px of 844 (${m.ctas} visible)` : 'none visible');
+      record('1.12', 'Hero art never moves the intro or the button',
+        !m.art ? 'content' : m.moved ? 'fail' : 'pass', m.art ? (m.moved ? 'blocks moved when the art was removed' : 'same positions with and without the art') : 'no art in Notion yet (task 3.11)');
       await ctx.close();
     }
 

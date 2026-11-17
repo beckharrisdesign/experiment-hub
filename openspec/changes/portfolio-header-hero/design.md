@@ -70,8 +70,9 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
    button step down one size. The page content doesn't move. With reduced
    motion, the change is instant.
 3. **Scroll back to the top.** The bar returns to 80px.
-4. **Homepage.** A big display title, one line and the CTA, on a
-   full-width hero in the hero colour. The hero art sits behind them,
+4. **Homepage.** A big display title on a full-width hero in the hero
+   colour, with the intro paragraph and the CTA directly below it on the
+   page colour. The hero art sits behind the title,
    at 150% of the hero's height, centred on the gutter between the second
    and third columns of the content grid, the same on every width. Until Katy adds art, the hero shows its colour alone.
 5. **Consulting / About / case study.** The hero sits on a band a step
@@ -199,11 +200,16 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
      1024 and about 86px at 1440.
    - It applies only to the H1 in the homepage hero; subpage H1s stay at
      2.5rem (45px).
-   - The supporting paragraph shrinks to one line. That is a Notion edit
-     Katy makes, and the current paragraph moves to About.
-   - With the 48px title on four lines and one line of copy, the phone CTA
-     lands at about 500px, against the spec's ≤600px. That figure is a
-     prediction from Figma `3:27`; implementation measures it.
+   - **The intro sits below the hero, not in it** (Katy, 2026-11-17: "this
+     full intro blows out the hero section"). The earlier plan cut the
+     paragraph to one line; instead the full paragraph and the button move
+     out of the hero's column in Notion, to just after the column list.
+     §4 gives them the hero's text width (two of three grid columns), the
+     24px / 18px line, 48px (32px on a phone) below the hero and 32px to
+     the button, and hides Notion's empty spacer blocks among them.
+   - The navbar's "Book a 30m call" stays in view on every page, so the
+     spec's phone-screen scenario now counts it; the hero's own button
+     follows the intro.
 8. **Warm-accent slot: removed.**
    - This drew a 48 × 2px rule above the homepage H1 from a §1 token,
      `--hero-accent`, which `portfolio-warm-accents` was to change.
@@ -266,10 +272,8 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       is centred. It was 62 / 38 at first, which put the button below a
       laptop's first screen (924px on 1512 × 860), and then the full width
       for a day, which Katy found too wide. At two columns the title is 3
-      lines. With one line of copy (task 3.10) the button ends at 652px on
-      1440 × 900, 657px on 1512 × 860, 628px on 1280 × 720 and 590px on
-      1024 × 768, inside the first screen at all four. With today's 51-word
-      paragraph it ends at 796px on 1440 × 900.
+      lines. With the intro moved below the hero (decision 7), the hero is
+      499px tall at 1440 × 900 and 329px on a phone.
     - **The art must be sharp.** Notion's column 2 is about 6% of the
       page, so Super writes `sizes="… 6vw"` on the image, and the browser
       downloads the 96px file for art drawn about 1,500px wide.

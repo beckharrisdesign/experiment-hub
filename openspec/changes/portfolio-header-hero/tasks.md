@@ -21,10 +21,12 @@
 - [ ] 1.7 **Homepage title is larger than any subpage title**: the
       homepage title is visibly bigger than any subpage title at the same
       width.
-- [ ] 1.8 **One supporting line under the title**: the homepage hero shows
-      the title, one short line and the button, with no paragraph.
-- [ ] 1.9 **Call to action is in the first phone screen**: at 390×844 the
-      "Book a 30m call" button ends at or above 600px.
+- [ ] 1.8 **The hero holds the title alone**: the homepage hero shows the
+      title over its art; the intro paragraph and the button follow
+      directly below it. (Was "one supporting line" until 2026-11-17;
+      Katy moved the full intro below the hero instead.)
+- [ ] 1.9 **A "Book a 30m call" button is in the first phone screen**: at
+      390×844 one ends at or above 600px; the navbar's counts.
 - [ ] 1.10 **Hero art is anchored to the content grid, behind the content**:
       the hero runs full width in its colour. The art sits
       behind the text at 150% of the hero's height, centred on the gutter
@@ -33,9 +35,8 @@
 - [ ] 1.11 **Hero text stays readable over the art**: title, line and
       button label each hold at least 4.5:1 against whatever is behind
       them.
-- [ ] 1.12 **Call to action stays in the first phone screen with art behind it**:
-      at 390×844, with art in place, the button still ends at
-      or above 600px.
+- [ ] 1.12 **Hero art never moves the intro or the button**: at 390×844
+      the intro and the button sit where they would without the art.
 - [ ] 1.13 **Swapping the visual needs no pull request**: Katy replaces
       the hero image in Notion, and the live hero shows it with no change
       to `public/super/`.
@@ -185,8 +186,12 @@ Write the tests first, and see them fail before the code that passes them.
 
 **Content, in Notion (Katy):**
 
-- [ ] 3.10 Shorten the homepage hero copy to one supporting line, and move
-      the current 70-word paragraph to About.
+- [ ] 3.10 In Notion, drag the intro paragraph and the "Book a 30m call"
+      button out of the hero's left column, to just below the two-column
+      block (above the synced block). The paragraph stays as written.
+      (Was "shorten to one line" until 2026-11-17. The button can't be
+      moved through Notion's API: it reads as an unknown block, and
+      rewriting the column would delete it.)
 - [x] 3.11 Put the hero art as an image block in column 2 of the homepage
       hero. (Live 2026-11-17: check 1.12 passes, and text contrast over
       the art is 6.51–6.61:1.)
