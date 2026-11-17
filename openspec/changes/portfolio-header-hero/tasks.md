@@ -39,9 +39,10 @@
 - [ ] 1.13 **Swapping the visual needs no pull request**: Katy replaces
       the hero image in Notion, and the live hero shows it with no change
       to `public/super/`.
-- [ ] 1.14 **No image yet shows a built-in pattern, not an empty half**:
-      with no image in Notion, the art's box shows a dot pattern, never an
-      empty area or a broken image.
+- [ ] 1.14 **No image yet shows the plain hero, not a placeholder**:
+      with no image in Notion, the hero shows only its colour behind the
+      text: no pattern, no empty box, no broken image. (Was a dot pattern
+      until 2026-11-17; Katy asked for it to go.)
 - [ ] 1.15 **Consulting hero sits on a band**: Consulting and About, and
       case studies narrower than 1024px, open on a full-width band that
       ends before the first body section.
@@ -138,7 +139,8 @@ Write the tests first, and see them fail before the code that passes them.
       - art in column 2 placed by design.md decision 11: `height: 150%`,
         `left: calc((100% - 2rem) * 2 / 3 + 1.5rem)`, translate −50% /
         −50%, `clip-path: inset(calc(100% / 6) 0)`;
-      - the dot pattern when column 2 has no image.
+      - the dot pattern when column 2 has no image (removed 2026-11-17,
+        Katy's call: the hero shows its colour alone).
 - [x] 3.6 §4 Subpage band:
       - the `border-image` band per hero block in `--card` (Consulting and
         About: blocks before the first divider, plus About's header

@@ -1,5 +1,5 @@
 {
-  "when": "2026-11-17T20:04:35.163Z",
+  "when": "2026-11-17T21:26:28.606Z",
   "source": "local",
   "results": [
     {
@@ -76,7 +76,7 @@
       "id": "1.11",
       "scenario": "Hero text stays readable over the art",
       "state": "pass",
-      "value": "title 5.09:1, line 5.09:1, button 8.93:1",
+      "value": "title 7.02:1, line 7.02:1, button 8.93:1",
       "note": ""
     },
     {
@@ -95,9 +95,9 @@
     },
     {
       "id": "1.14",
-      "scenario": "No image yet shows a built-in pattern, not an empty half",
+      "scenario": "No image yet shows the plain hero, not a placeholder",
       "state": "pass",
-      "value": "radial-gradient(rgba(173, 223,…, 1.500× hero height",
+      "value": "column 2: background none, 0px wide, 0 visible block(s)",
       "note": ""
     },
     {

@@ -657,12 +657,9 @@ h1.notion-heading,
 .page__index .notion-root > .notion-column-list:first-child > .notion-column:nth-child(2) img {
   object-fit: contain;
 }
-/* No image yet (decision 12): the same box, a 6:5 dot grid. Decorative. */
-.page__index .notion-root > .notion-column-list:first-child > .notion-column:nth-child(2):not(:has(.notion-image)) {
-  aspect-ratio: 6 / 5;
-  background-image: radial-gradient(rgb(var(--accent-rgb) / 0.14) 1.5px, transparent 1.6px);
-  background-size: 16px 16px;
-}
+/* No image yet (decision 12): nothing. With its other blocks hidden,
+   column 2 has no width, so the hero shows its colour alone. The dot-grid
+   placeholder was removed on 2026-11-17 at Katy's request. */
 @media only screen and (max-width: 680px) {
   .page__index .notion-root > .notion-column-list:first-child {
     padding-block: calc(var(--spacing) * 12);  /* space-48 */

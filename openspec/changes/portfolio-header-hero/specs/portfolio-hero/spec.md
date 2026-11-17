@@ -56,10 +56,10 @@ The homepage hero SHALL run the full width of the screen with its personal visua
 - **WHEN** Katy replaces the hero image in Notion and Super republishes
 - **THEN** the live hero SHALL show the new image with no change to `public/super/`
 
-#### Scenario: No image yet shows a built-in pattern, not an empty half
+#### Scenario: No image yet shows the plain hero, not a placeholder
 
 - **WHEN** the homepage hero has no personal image in Notion
-- **THEN** the hero SHALL show a placeholder pattern drawn by `site.css` in the box the art would take, and SHALL NOT show an empty area or a broken-image box
+- **THEN** the hero SHALL show only its colour behind the title, supporting line and call to action, with no placeholder pattern, empty box or broken-image box
 
 ### Requirement: Subpage heroes read as heroes
 

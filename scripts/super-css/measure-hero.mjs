@@ -165,7 +165,7 @@ async function main() {
         record('1.8', 'One supporting line under the title', hero.paras <= 1 && hero.words <= 25 ? 'pass' : 'content', `${hero.paras} paragraph(s), ${hero.words} words (task 3.10)`);
         const artOk = hero.art && near(hero.art.h / hero.hero.h, 1.5, 0.02) && near(hero.art.cx, hero.gutterCx, 4);
         record('1.10', 'Hero art is anchored to the content grid, behind the content', artOk ? 'pass' : 'fail',
-          hero.art ? `art ${(hero.art.h / hero.hero.h).toFixed(3)}× hero height, centre x ${Math.round(hero.art.cx)} vs gutter ${Math.round(hero.gutterCx)}${hero.hasImage ? '' : ' (pattern; no image yet)'}` : 'no column 2');
+          hero.art ? `art ${(hero.art.h / hero.hero.h).toFixed(3)}× hero height, centre x ${Math.round(hero.art.cx)} vs gutter ${Math.round(hero.gutterCx)}${hero.hasImage ? '' : ' (no image yet: the empty art box)'}` : 'no column 2');
         const checks = [];
         for (const [name, sel] of [['title', `${HERO} h1`], ['line', `${HERO} .notion-text__content`]]) {
           const w = await worstBackground(page, sel);
@@ -180,17 +180,20 @@ async function main() {
         const worst = Math.min(...checks.map(([, r]) => r));
         record('1.11', 'Hero text stays readable over the art', worst >= 4.5 ? 'pass' : 'fail', checks.map(([n, r]) => `${n} ${r.toFixed(2)}:1`).join(', '));
         if (hero.hasImage) {
-          // 1.14: take the image out and check the pattern fills the same box.
+          // 1.14: take the image out and check nothing stands in for it.
           await page.evaluate((HERO) => document.querySelectorAll(`${HERO} > .notion-column:nth-child(2) .notion-image`).forEach((n) => n.remove()), HERO);
           await page.waitForTimeout(100);
         }
         const empty = await page.evaluate((HERO) => {
           const c2 = document.querySelector(`${HERO} > .notion-column:nth-child(2)`);
           const lr = document.querySelector(HERO).getBoundingClientRect();
-          return c2 && { bg: getComputedStyle(c2).backgroundImage, h: c2.getBoundingClientRect().height / lr.height };
+          if (!c2) return null;
+          const shown = [...c2.querySelectorAll('*')].filter((el) => getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 1);
+          return { bg: getComputedStyle(c2).backgroundImage, w: c2.getBoundingClientRect().width, shown: shown.length, heroW: lr.width };
         }, HERO);
-        const patOk = empty && empty.bg.includes('radial-gradient') && near(empty.h, 1.5, 0.02);
-        record('1.14', 'No image yet shows a built-in pattern, not an empty half', patOk ? 'pass' : 'fail', empty ? `${empty.bg.slice(0, 30)}…, ${empty.h.toFixed(3)}× hero height` : 'no column 2');
+        const plainOk = !empty || (empty.bg === 'none' && empty.w <= 1 && empty.shown === 0);
+        record('1.14', 'No image yet shows the plain hero, not a placeholder', plainOk ? 'pass' : 'fail',
+          empty ? `column 2: background ${empty.bg === 'none' ? 'none' : empty.bg.slice(0, 30)}, ${Math.round(empty.w)}px wide, ${empty.shown} visible block(s)` : 'no column 2');
       }
       record('1.13', 'Swapping the visual needs no pull request', 'manual', 'swap the image in Notion, see it live (QA 4.4)');
       await ctx.close();

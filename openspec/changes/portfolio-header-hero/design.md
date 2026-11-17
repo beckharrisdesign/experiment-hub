@@ -73,8 +73,7 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 4. **Homepage.** A big display title, one line and the CTA, on a
    full-width hero in the hero colour. The hero art sits behind them,
    at 150% of the hero's height, centred on the gutter between the second
-   and third columns of the content grid, the same on every width. Until Katy adds art, a dot pattern drawn by `site.css`
-   fills the same box.
+   and third columns of the content grid, the same on every width. Until Katy adds art, the hero shows its colour alone.
 5. **Consulting / About / case study.** The hero sits on a band a step
    lighter than the page, and the band ends before the first body section.
    A case study at 1024px and wider is different: its cover fills the hero
@@ -273,14 +272,13 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       48px on a phone, and a 24px / 18px supporting line.
     - **To swap the art:** Katy replaces the image in Notion, and Super
       republishes. No pull request is needed.
-12. **No image yet: a pattern in the art's box.** When column 2 has no
-    image (`.notion-column:nth-child(2):not(:has(.notion-image))`):
-    - Column 2 takes the same box: absolutely placed, 150% of the hero's
-      height, centred on the column 2/3 gutter, with a 6:5 aspect ratio
-      like the placeholder.
-    - It draws a dot grid: a CSS `radial-gradient` of `--foreground` at
-      14% on a 16px pitch.
-    - It is decorative: no `alt`, and nothing for screen readers.
+12. **No image yet: nothing.** When column 2 has no image, its other
+    blocks are hidden, so it has no width, and the hero shows its colour
+    alone.
+    - Until 2026-11-17 this drew a dot grid (a `radial-gradient` of
+      `--foreground` at 14% on a 16px pitch, in a 6:5 box). Once it was
+      live, Katy asked for it to go: a plain hero reads better than a
+      pattern standing in for art.
 
 ### Subpage hero band
 
