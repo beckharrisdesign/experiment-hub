@@ -190,11 +190,11 @@ Write the tests first, and see them fail before the code that passes them.
 - [x] 3.11 Put the hero art as an image block in column 2 of the homepage
       hero. (Live 2026-11-17: check 1.12 passes, and text contrast over
       the art is 6.51–6.61:1.) Use the diamond placeholder until the final art is ready.
-      **Re-upload at 3200px wide:** the file in Notion is 1200px, softer
+      **Re-upload at 3840px wide:** the file in Notion is 1200px, softer
       than the ~1,440px it is drawn at (check 1.10).
 - [ ] 3.12 Set covers on the case studies that have a project visual.
       Export each from Figma page 05 (`hero-art/<slug>`, preset to PNG at
-      3200px wide) and set it as that page's cover. First check whether the
+      3840px wide) and set it as that page's cover. First check whether the
       Rebuilding image (lightsabers) belongs to that project.
 - [ ] 3.14 Case-study page layout in Notion: show **Company** where
       **Reported to** is today (Katy's frame `55:328`).
