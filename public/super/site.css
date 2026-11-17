@@ -104,7 +104,6 @@
 
   /* Hero (portfolio-header-hero, decisions 7–11, 15). */
   --home-display-size: clamp(2.667rem, 1.2rem + 4.5vw, 4.889rem); /* 48px → ~86px at 1440 */
-  --hero-accent: rgb(var(--accent-rgb) / 0.4);  /* warm-accent slot; portfolio-warm-accents changes this */
   --hero-band: var(--card);      /* subpage hero band */
   --hero-bg: #2F3636;            /* case-study card and phone band (Katy, Figma 55:328) */
   --home-hero-bg: var(--primary-1);
@@ -586,7 +585,10 @@ h1.notion-heading,
   border-image: conic-gradient(var(--home-hero-bg) 0 0) fill 0 / / 0 100vmax;
 }
 .page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child {
-  width: 62% !important;               /* Super writes the Notion split inline */
+  /* Super writes the Notion split inline. Two of the three grid columns and
+     the gutter between them, so the text ends where the art is centred:
+     770px at 1440 (Katy's frame 55:72, 2026-11-17). */
+  width: calc((100% - 2rem) * 2 / 3 + 1rem) !important;
 }
 .page__index .notion-root > .notion-column-list:first-child h1.notion-heading {
   font-size: var(--home-display-size);
@@ -601,14 +603,6 @@ h1.notion-heading,
 }
 .page__index .notion-root > .notion-column-list:first-child h1.notion-heading br {
   display: none;
-}
-.page__index .notion-root > .notion-column-list:first-child h1.notion-heading::before {
-  content: "";
-  display: block;
-  width: 48px;
-  height: 2px;
-  margin-bottom: calc(var(--spacing) * 6);
-  background: var(--hero-accent);
 }
 .page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child .notion-text__content {
   font-size: var(--text-h3-size);
@@ -657,12 +651,9 @@ h1.notion-heading,
 .page__index .notion-root > .notion-column-list:first-child > .notion-column:nth-child(2) img {
   object-fit: contain;
 }
-/* No image yet (decision 12): the same box, a 6:5 dot grid. Decorative. */
-.page__index .notion-root > .notion-column-list:first-child > .notion-column:nth-child(2):not(:has(.notion-image)) {
-  aspect-ratio: 6 / 5;
-  background-image: radial-gradient(rgb(var(--accent-rgb) / 0.14) 1.5px, transparent 1.6px);
-  background-size: 16px 16px;
-}
+/* No image yet (decision 12): nothing. With its other blocks hidden,
+   column 2 has no width, so the hero shows its colour alone. The dot-grid
+   placeholder was removed on 2026-11-17 at Katy's request. */
 @media only screen and (max-width: 680px) {
   .page__index .notion-root > .notion-column-list:first-child {
     padding-block: calc(var(--spacing) * 12);  /* space-48 */
@@ -773,7 +764,12 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
     padding-bottom: calc(var(--spacing) * 4) !important;       /* space-16 card padding */
     margin-bottom: var(--hero-pad) !important;
   }
-  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :is(.notion-callout, h2):not(.notion-callout ~ *, h2 ~ *) {
+  /* The first callout meets the hero's bottom edge: no strip of page colour
+     between them (Katy, 2026-11-17). A heading still gets space-32. */
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-callout:not(.notion-callout ~ *, h2 ~ *) {
+    margin-top: 0 !important;
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > h2:not(.notion-callout ~ *, h2 ~ *) {
     margin-top: calc(var(--spacing) * 8) !important;          /* space-32 after the hero */
   }
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-text:not(.notion-callout ~ *, h2 ~ *) {

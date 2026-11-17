@@ -39,9 +39,10 @@
 - [ ] 1.13 **Swapping the visual needs no pull request**: Katy replaces
       the hero image in Notion, and the live hero shows it with no change
       to `public/super/`.
-- [ ] 1.14 **No image yet shows a built-in pattern, not an empty half**:
-      with no image in Notion, the art's box shows a dot pattern, never an
-      empty area or a broken image.
+- [ ] 1.14 **No image yet shows the plain hero, not a placeholder**:
+      with no image in Notion, the hero shows only its colour behind the
+      text: no pattern, no empty box, no broken image. (Was a dot pattern
+      until 2026-11-17; Katy asked for it to go.)
 - [ ] 1.15 **Consulting hero sits on a band**: Consulting and About, and
       case studies narrower than 1024px, open on a full-width band that
       ends before the first body section.
@@ -131,14 +132,18 @@ Write the tests first, and see them fail before the code that passes them.
         `.page__all-projects`.
 - [x] 3.5 §4 Homepage hero (`.page__index .notion-root >
       .notion-column-list:first-child`):
-      - a 62 / 38 column split;
-      - the display size and accent rule;
+      - a 62 / 38 column split (on 2026-11-17: two of three grid columns,
+        770px at 1440, per Katy's frame `55:72`);
+      - the display size and accent rule (rule removed 2026-11-17, `55:72`);
+      - sharp art: `chrome.js` `fitArtSizes` rewrites the image's `sizes`
+        from Notion's "6vw" to its drawn width (added 2026-11-17);
       - a 24px / 18px supporting line;
       - full-width `--primary-1` band;
       - art in column 2 placed by design.md decision 11: `height: 150%`,
         `left: calc((100% - 2rem) * 2 / 3 + 1.5rem)`, translate −50% /
         −50%, `clip-path: inset(calc(100% / 6) 0)`;
-      - the dot pattern when column 2 has no image.
+      - the dot pattern when column 2 has no image (removed 2026-11-17,
+        Katy's call: the hero shows its colour alone).
 - [x] 3.6 §4 Subpage band:
       - the `border-image` band per hero block in `--card` (Consulting and
         About: blocks before the first divider, plus About's header
@@ -182,11 +187,16 @@ Write the tests first, and see them fail before the code that passes them.
 
 - [ ] 3.10 Shorten the homepage hero copy to one supporting line, and move
       the current 70-word paragraph to About.
-- [ ] 3.11 Put the hero art as an image block in column 2 of the homepage
-      hero. Use the diamond placeholder until the final art is ready.
+- [x] 3.11 Put the hero art as an image block in column 2 of the homepage
+      hero. (Live 2026-11-17: check 1.12 passes, and text contrast over
+      the art is 6.51–6.61:1.)
+- [ ] 3.11a Re-upload the homepage art at 3840px wide (the `hero-art/home`
+      export preset). The file in Notion is 1200px, softer than the
+      ~1,440px it is drawn at, so check 1.10 reads `content` until this
+      is done.
 - [ ] 3.12 Set covers on the case studies that have a project visual.
       Export each from Figma page 05 (`hero-art/<slug>`, preset to PNG at
-      1600px) and set it as that page's cover. First check whether the
+      3840px wide) and set it as that page's cover. First check whether the
       Rebuilding image (lightsabers) belongs to that project.
 - [ ] 3.14 Case-study page layout in Notion: show **Company** where
       **Reported to** is today (Katy's frame `55:328`).
@@ -199,11 +209,23 @@ Write the tests first, and see them fail before the code that passes them.
       §1 check at 1440×900, 1024×768 and 390×844. In the PR, show one
       screenshot (homepage, 1440) and put the rest in a collapsed
       `<details>`.
-- [ ] 4.3 After merge and deploy:
-      - `node scripts/super-css/check.mjs` reports that the served bytes
-        match the repo and every class hook is present on the live pages;
-      - `npm run super:measure` against the live site passes;
-      - save the table as `to-be/after.json`, next to `before.json`.
+- [x] 4.3 After merge and deploy (2026-11-17, #595 merged):
+      - the served `site.css`, `components.js`, `loader.js` and
+        `chrome.js` match `main` byte for byte;
+      - `node scripts/super-css/check.mjs`: in sync. It first reported
+        `--hero-h` / `--hero-top` (set at runtime by `chrome.js`, so now
+        listed as self-defined) and `.page__katy-harris` (About wasn't a
+        sampled route; it is now). Two misses remain, neither from this
+        change: `.page__all-projects` (`/all-projects` now redirects to
+        `/`, so that page class no longer exists) and
+        `.notion-property__number` (#537's Labs score pill, on a table
+        no sampled route shows);
+      - `npm run super:measure` against the live site
+        (`to-be/after.json`): 14 pass, 0 fail, 3 waiting on Notion
+        (3.10, 3.11), 1 manual. Same as the branch measured before merge.
+        This file is a snapshot of #595 as deployed. The touch-ups in #596
+        (homepage text width, no dot pattern, sharp art) aren't live until
+        it merges; 4.6 reruns it then.
 - [ ] 4.4 Manual walkthrough on the live site, at 1440 and on a phone:
       - scroll each page and watch the bar shrink and grow back;
       - turn on reduced motion and repeat;
@@ -211,9 +233,13 @@ Write the tests first, and see them fail before the code that passes them.
         link follows;
       - check that VoiceOver reads "current page" on the active link;
       - swap the homepage art in Notion and see it live without a PR;
-      - remove it and see the pattern.
+      - remove it and see the plain hero (no pattern since 2026-11-17).
 - [ ] 4.5 Compare the live site with Figma page 04 row A (navbar), page
       04.2 (homepage hero) and page 05 `55:328` / `55:353` (case-study
       hero) at 1440 and 390, and note any differences in the PR. Known:
       the card's 2px corner radius isn't drawn (each block paints its own
       slice, so there is no single box to round).
+- [ ] 4.6 After #596 merges and deploys, rerun `npm run super:measure`
+      against the live site and replace `to-be/after.json`, so the saved
+      result includes the touch-ups (plain hero for 1.14, the art-size
+      check in 1.10, the art now in Notion for 1.12).

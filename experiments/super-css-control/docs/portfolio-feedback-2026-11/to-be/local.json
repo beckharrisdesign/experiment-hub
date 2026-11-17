@@ -1,5 +1,5 @@
 {
-  "when": "2026-11-17T20:04:35.163Z",
+  "when": "2026-11-17T21:43:06.262Z",
   "source": "local",
   "results": [
     {
@@ -62,28 +62,28 @@
       "id": "1.9",
       "scenario": "Call to action is in the first phone screen",
       "state": "content",
-      "value": "button bottom 720px with today's 51-word copy; 531px with one line (task 3.10)",
+      "value": "button bottom 694px with today's 51-word copy; 505px with one line (task 3.10)",
       "note": ""
     },
     {
       "id": "1.10",
       "scenario": "Hero art is anchored to the content grid, behind the content",
-      "state": "pass",
-      "value": "art 1.500× hero height, centre x 917 vs gutter 917 (pattern; no image yet)",
+      "state": "content",
+      "value": "art 1.500× hero height, centre x 917 vs gutter 917, file 1200px for 1440px drawn (the upload is smaller than that; task 3.11)",
       "note": ""
     },
     {
       "id": "1.11",
       "scenario": "Hero text stays readable over the art",
       "state": "pass",
-      "value": "title 5.09:1, line 5.09:1, button 8.93:1",
+      "value": "title 5.26:1, line 5.19:1, button 8.93:1",
       "note": ""
     },
     {
       "id": "1.12",
       "scenario": "Call to action stays in the first phone screen with art behind it",
-      "state": "content",
-      "value": "no art in Notion yet (task 3.11)",
+      "state": "pass",
+      "value": "button bottom 505px with art",
       "note": ""
     },
     {
@@ -95,9 +95,9 @@
     },
     {
       "id": "1.14",
-      "scenario": "No image yet shows a built-in pattern, not an empty half",
+      "scenario": "No image yet shows the plain hero, not a placeholder",
       "state": "pass",
-      "value": "radial-gradient(rgba(173, 223,…, 1.500× hero height",
+      "value": "column 2: background none, 0px wide, 0 visible block(s)",
       "note": ""
     },
     {

@@ -73,8 +73,7 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 4. **Homepage.** A big display title, one line and the CTA, on a
    full-width hero in the hero colour. The hero art sits behind them,
    at 150% of the hero's height, centred on the gutter between the second
-   and third columns of the content grid, the same on every width. Until Katy adds art, a dot pattern drawn by `site.css`
-   fills the same box.
+   and third columns of the content grid, the same on every width. Until Katy adds art, the hero shows its colour alone.
 5. **Consulting / About / case study.** The hero sits on a band a step
    lighter than the page, and the band ends before the first body section.
    A case study at 1024px and wider is different: its cover fills the hero
@@ -89,7 +88,7 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 | ------------------- | ----- |
 | Primary file URL    | https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy (`portfolio-header-hero`) |
 | As-is frame(s)      | Page `01 As-is` (`0:1`): live captures. Homepage at load `1:3`, scrolled `1:4`, phone `1:5`; Consulting `1:6`, case study `1:7`, About `1:8`. Captured from the running site, so the pixels are real; the labels and measurements come from `as-is/measurements.json`. |
-| Proposed frame(s)   | Page `02 Proposed` (`1:2`), round 1 from the proposal: header `2:5` / `2:14` / `2:23` / `2:28`, homepage `3:12` / `3:27`, Consulting `4:3` / `4:20`, case study `4:32` / `4:59`. Page [`03 Design`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=13-2) (`13:2`), round 2, for this artifact. **A. Navbar, current link and compact sizes:** 1440 at 80px `13:6`, compact 56px `13:15`; 390 at 80px `13:24`, compact `13:29`. **B. Homepage with no image yet** (the pattern, the 86px title, Projects current): `13:37` / `13:832`; the phone frame marks the 600px CTA limit (CTA ends at 521px). **C. Case study:** with cover `13:1183`, no cover `13:1212`. Notes `13:1239`–`13:1241`. One change from round 1: phone frames at the top of a page show the 80px bar, as the spec requires. Page [`03.1 Design — real imagery + callout colour`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=17-2) (`17:2`), round 2.1, shows the same layouts with real pictures. **B.** The homepage with your W&H hand-drawn pattern as the visual: `17:6` / `17:800`. **C.** Case studies with live gallery images as covers: Rebuilding `17:1145`, Connected China `17:1173`, phone `17:1201`. **E.** Four callout colours: `17:1219` (today), `17:1249` (hero band, recommended), `17:1279` (a step lighter), `17:1309` (pill tint). Page [`03.2 Design — full-bleed heroes`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=19-2) (`19:2`), round 2.2, runs the hero image edge to edge. **H-A.** Homepage with the image behind the text and a scrim: `19:6` / `19:26`. **H-B.** Homepage with the image as a full-width band under the text: `19:42` / `19:62`. **C.** Case-study cover as a full-width band above the title: Rebuilding `19:77`, Connected China `19:105`, phone `19:133`. Page [`04 Design — on MVDS (round 3)`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=24-6) (`24:6`) is the build reference, the chosen design rebuilt on MVDS. **A.** Navbar: `24:10` (80px), `24:20` (56px), `24:30` (phone). **B.** Homepage H-A: `25:7` / `25:24`. **C.** Case study: `27:18` / `27:52`. The mapping and gaps are written on the page beside the frames. **Katy's case-study hero** `22:81` (her hand rework: the hero colour comes from the cover, the cover bleeds off the right, and the properties sit in divided cells). **D.** The same pattern on the homepage, keeping homepage type sizes: `31:33` (1440) / `31:53` (390; CTA ends at 500px). Page [`04.1 Design — hero art anchored to the right third`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=33-30) (`33:30`) applies the anchoring rule with Katy's placeholder art: case study `33:34`, homepage `33:60` / `33:85`. A dashed box marks the right third. Page [`04.2 Design — hero art on the content grid, 150%`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=37-2) (`37:2`) applies Katy's final rule from her logic Frames 10–12 (page 04, `32:184`, `32:185`, `32:197`): case study `37:6`, homepage `37:31` / `37:55`, with the three-column content grid drawn on. Page [`05 Hero imagery — components to fill`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=55-6) (`55:6`) holds the art: a base **Hero art** component (`65:26`) with an **Art** slot, and one `hero-art/<page>` component per hero (`hero-art/home`, and `hero-art/<slug>` for each of the nine case studies). Each one carries its export preset (PNG, 1600px wide). Its previews are instances of those components. **Katy's final case-study hero:** Connected China, [`55:328`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=55-328) (1440) and `55:353` (390). The other eight case studies on the page copy it. |
+| Proposed frame(s)   | Page `02 Proposed` (`1:2`), round 1 from the proposal: header `2:5` / `2:14` / `2:23` / `2:28`, homepage `3:12` / `3:27`, Consulting `4:3` / `4:20`, case study `4:32` / `4:59`. Page [`03 Design`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=13-2) (`13:2`), round 2, for this artifact. **A. Navbar, current link and compact sizes:** 1440 at 80px `13:6`, compact 56px `13:15`; 390 at 80px `13:24`, compact `13:29`. **B. Homepage with no image yet** (the pattern, the 86px title, Projects current): `13:37` / `13:832`; the phone frame marks the 600px CTA limit (CTA ends at 521px). **C. Case study:** with cover `13:1183`, no cover `13:1212`. Notes `13:1239`–`13:1241`. One change from round 1: phone frames at the top of a page show the 80px bar, as the spec requires. Page [`03.1 Design — real imagery + callout colour`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=17-2) (`17:2`), round 2.1, shows the same layouts with real pictures. **B.** The homepage with your W&H hand-drawn pattern as the visual: `17:6` / `17:800`. **C.** Case studies with live gallery images as covers: Rebuilding `17:1145`, Connected China `17:1173`, phone `17:1201`. **E.** Four callout colours: `17:1219` (today), `17:1249` (hero band, recommended), `17:1279` (a step lighter), `17:1309` (pill tint). Page [`03.2 Design — full-bleed heroes`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=19-2) (`19:2`), round 2.2, runs the hero image edge to edge. **H-A.** Homepage with the image behind the text and a scrim: `19:6` / `19:26`. **H-B.** Homepage with the image as a full-width band under the text: `19:42` / `19:62`. **C.** Case-study cover as a full-width band above the title: Rebuilding `19:77`, Connected China `19:105`, phone `19:133`. Page [`04 Design — on MVDS (round 3)`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=24-6) (`24:6`) is the build reference, the chosen design rebuilt on MVDS. **A.** Navbar: `24:10` (80px), `24:20` (56px), `24:30` (phone). **B.** Homepage H-A: `25:7` / `25:24`. **C.** Case study: `27:18` / `27:52`. The mapping and gaps are written on the page beside the frames. **Katy's case-study hero** `22:81` (her hand rework: the hero colour comes from the cover, the cover bleeds off the right, and the properties sit in divided cells). **D.** The same pattern on the homepage, keeping homepage type sizes: `31:33` (1440) / `31:53` (390; CTA ends at 500px). Page [`04.1 Design — hero art anchored to the right third`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=33-30) (`33:30`) applies the anchoring rule with Katy's placeholder art: case study `33:34`, homepage `33:60` / `33:85`. A dashed box marks the right third. Page [`04.2 Design — hero art on the content grid, 150%`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=37-2) (`37:2`) applies Katy's final rule from her logic Frames 10–12 (page 04, `32:184`, `32:185`, `32:197`): case study `37:6`, homepage `37:31` / `37:55`, with the three-column content grid drawn on. Page [`05 Hero imagery — components to fill`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=55-6) (`55:6`) holds the art: a base **Hero art** component (`65:26`) with an **Art** slot, and one `hero-art/<page>` component per hero (`hero-art/home`, and `hero-art/<slug>` for each of the nine case studies). Each one carries its export preset (PNG, 3840px wide). Its previews are instances of those components. **Katy's final case-study hero:** Connected China, [`55:328`](https://www.figma.com/design/1oYatzomx4nNMt6HJkChxy?node-id=55-328) (1440) and `55:353` (390). The other eight case studies on the page copy it. |
 | Libraries / version | **MVDS Core** (team library, subscribed; `@beckharrisdesign/mvds@0.5.0` in code). From round 3 (page 04) the frames use MVDS Button, Hero, MediaFrame and Section instances, MVDS spacing and type-size variables, and a local collection, **"Portfolio — MVDS brand preset"**. That collection gives each MVDS colour and font role its portfolio value: background `#143639` (Super's `--color-bg-default`), foreground and primary `#ADDFE3`, card and muted `#1E474B`, secondary `#102D2F` (navbar), primary-foreground `#143639`, font-heading Fraunces, font-sans Roboto (decision 20). Binding audit across the seven page-04 frames: 42 of 42 text layers have size and family bound, and 68 of 69 solid fills are bound. The exception is a pink annotation line. Rounds 1–2.2 (pages 02–03.2) predate this and use raw values. |
 | Code Connect        | N/A. There is no React component; the surface is Notion blocks styled by `site.css`. |
 | Breakpoints         | S · 480px / L · 1024px (BHD Content Types). The site's own steps also apply: 600px (phone button size), 760–860px (nav links stay in the bar), and Super's column stack. Designs are drawn at 1440 and 390. |
@@ -205,10 +204,12 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
    - With the 48px title on four lines and one line of copy, the phone CTA
      lands at about 500px, against the spec's ≤600px. That figure is a
      prediction from Figma `3:27`; implementation measures it.
-8. **Warm-accent slot.**
-   - A 48 × 2px rule sits above the homepage H1, drawn as `::before` in a
-     new §1 token: `--hero-accent: rgb(var(--accent) / .4)`.
-   - `portfolio-warm-accents` changes that one value.
+8. **Warm-accent slot: removed.**
+   - This drew a 48 × 2px rule above the homepage H1 from a §1 token,
+     `--hero-accent`, which `portfolio-warm-accents` was to change.
+   - Katy removed the rule from her homepage frames (`55:72`, 2026-11-17),
+     so the rule and the token are gone. `portfolio-warm-accents` needs
+     another place for its accent.
 9. **The homepage hero gets no band.** The band marks subpage heroes. Leaving
    it off the homepage is one more way the front door differs from the
    rooms behind it, and the larger type already gives it the weight.
@@ -259,9 +260,24 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       frame `22:81` clips it, and this follows the hero frame. Overflow
       past the right edge of the viewport relies on §2's existing
       `overflow-x` guard.
-    - **The text column stays 62 / 38** of the column list, so the 86px
-      title's three lines fit. The art sits behind the title and summary,
-      as on page 04.2.
+    - **The text column spans two of the three grid columns and the
+      gutter between them:** `calc((100% - 2rem) * 2 / 3 + 1rem)`, which is
+      770px at 1440, as in Katy's frame `55:72`. The text ends where the art
+      is centred. It was 62 / 38 at first, which put the button below a
+      laptop's first screen (924px on 1512 × 860), and then the full width
+      for a day, which Katy found too wide. At two columns the title is 3
+      lines. With one line of copy (task 3.10) the button ends at 652px on
+      1440 × 900, 657px on 1512 × 860, 628px on 1280 × 720 and 590px on
+      1024 × 768, inside the first screen at all four. With today's 51-word
+      paragraph it ends at 796px on 1440 × 900.
+    - **The art must be sharp.** Notion's column 2 is about 6% of the
+      page, so Super writes `sizes="… 6vw"` on the image, and the browser
+      downloads the 96px file for art drawn about 1,500px wide.
+      `components/chrome.js` (`fitArtSizes`) rewrites `sizes` to the width
+      the art is drawn at, so the browser picks a sharp file from Super's
+      srcset, which goes to 3840w. The upload must be big enough too: the
+      `hero-art/*` exports on page 05 are 3840px wide, the largest size in Super's srcset. Check 1.10 marks a
+      too-small upload as content, not as a code failure.
     - **Phone: the same rule.** At 390 wide and a 764px hero, the art is
       1146px tall and 1378px wide, centred at x 257, so it fills the hero
       behind the text. The CTA doesn't
@@ -273,14 +289,13 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       48px on a phone, and a 24px / 18px supporting line.
     - **To swap the art:** Katy replaces the image in Notion, and Super
       republishes. No pull request is needed.
-12. **No image yet: a pattern in the art's box.** When column 2 has no
-    image (`.notion-column:nth-child(2):not(:has(.notion-image))`):
-    - Column 2 takes the same box: absolutely placed, 150% of the hero's
-      height, centred on the column 2/3 gutter, with a 6:5 aspect ratio
-      like the placeholder.
-    - It draws a dot grid: a CSS `radial-gradient` of `--foreground` at
-      14% on a 16px pitch.
-    - It is decorative: no `alt`, and nothing for screen readers.
+12. **No image yet: nothing.** When column 2 has no image, its other
+    blocks are hidden, so it has no width, and the hero shows its colour
+    alone.
+    - Until 2026-11-17 this drew a dot grid (a `radial-gradient` of
+      `--foreground` at 14% on a 16px pitch, in a 6:5 box). Once it was
+      live, Katy asked for it to go: a plain hero reads better than a
+      pattern standing in for art.
 
 ### Subpage hero band
 
@@ -329,6 +344,10 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
         runs 16px past the text on each side.
       - `.notion-header`'s 16px bottom margin goes to 0, so the title's
         slice meets the properties' slice.
+    - **The first callout meets the hero.** At 1024px and wider it starts
+      at the hero's bottom edge, with no strip of page colour between them
+      (Katy, 2026-11-17, after the live check). A heading that comes first
+      instead keeps `space-32`.
     - **Card spacing,** as drawn: 16px padding (`space-16`), 4px from the
       title to the properties (`space-4`), 32px from the properties to
       the summary (`space-32`). Katy's 2px corner radius isn't drawn:
@@ -373,7 +392,9 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 
 ### Guards and tests
 
-17. **`check.mjs` needs no new code.** It already collects every `.notion-*`,
+17. **`check.mjs` needed two lines, found after merge** (tasks.md 4.3): the
+    runtime `--hero-h` / `--hero-top` go in its self-defined list, and About
+    joins its routes. Otherwise it already collects every `.notion-*`,
     `.super-*`, `.page__*` and `.parent-page__*` class in `site.css` and
     checks each against the live pages. New hooks such as
     `.notion-column`, `.notion-divider`, `.notion-page__properties-layout`

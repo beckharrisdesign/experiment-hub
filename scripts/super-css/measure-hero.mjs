@@ -139,6 +139,12 @@ async function main() {
       await visit(page, PAGES.caseStudy);
       const subH1 = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.notion-header__title')).fontSize));
       await visit(page, PAGES.home);
+      // The art must be sharp: chrome.js rewrites its `sizes`, and the browser
+      // then fetches a bigger file. Give that fetch time to land.
+      await page.waitForFunction((HERO) => {
+        const img = document.querySelector(`${HERO} > .notion-column:nth-child(2) img`);
+        return !img || (img.complete && img.naturalWidth >= img.getBoundingClientRect().width * 0.95);
+      }, HERO, { timeout: 8000 }).catch(() => {});
       const hero = await page.evaluate((HERO) => {
         const list = document.querySelector(HERO);
         if (!list) return null;
@@ -152,6 +158,11 @@ async function main() {
           paras: paras.length,
           words: paras.join(' ').split(/\s+/).filter(Boolean).length,
           hasImage: !!c2?.querySelector('.notion-image img, img'),
+          sharp: (() => {
+            const img = c2?.querySelector('img');
+            const asked = Number(new URL(img?.currentSrc || 'about:blank', location.href).searchParams.get('width')) || 0;
+            return img && { natural: img.naturalWidth, drawn: Math.round(img.getBoundingClientRect().width), asked };
+          })(),
           art: ar && { h: ar.height, cx: ar.left + ar.width / 2 },
           hero: { h: lr.height, left: lr.left, w: lr.width },
           gutterCx: lr.left + ((lr.width - 2 * rem) * 2) / 3 + 1.5 * rem,
@@ -163,9 +174,14 @@ async function main() {
       } else {
         record('1.7', 'Homepage title is larger than any subpage title', hero.h1 > subH1 ? 'pass' : 'fail', `home ${hero.h1}px vs case study ${subH1}px`);
         record('1.8', 'One supporting line under the title', hero.paras <= 1 && hero.words <= 25 ? 'pass' : 'content', `${hero.paras} paragraph(s), ${hero.words} words (task 3.10)`);
-        const artOk = hero.art && near(hero.art.h / hero.hero.h, 1.5, 0.02) && near(hero.art.cx, hero.gutterCx, 4);
-        record('1.10', 'Hero art is anchored to the content grid, behind the content', artOk ? 'pass' : 'fail',
-          hero.art ? `art ${(hero.art.h / hero.hero.h).toFixed(3)}× hero height, centre x ${Math.round(hero.art.cx)} vs gutter ${Math.round(hero.gutterCx)}${hero.hasImage ? '' : ' (pattern; no image yet)'}` : 'no column 2');
+        const sharpOk = !hero.sharp || hero.sharp.natural >= hero.sharp.drawn * 0.95;
+        // The browser asked for a file at least as wide as the art is drawn, and
+        // got a smaller one: the upload itself is too small. Content, not code.
+        const sourceSmall = hero.sharp && !sharpOk && hero.sharp.asked > hero.sharp.natural + 1;
+        const placed = hero.art && near(hero.art.h / hero.hero.h, 1.5, 0.02) && near(hero.art.cx, hero.gutterCx, 4);
+        const artOk = placed && sharpOk;
+        record('1.10', 'Hero art is anchored to the content grid, behind the content', artOk ? 'pass' : placed && sourceSmall ? 'content' : 'fail',
+          hero.art ? `art ${(hero.art.h / hero.hero.h).toFixed(3)}× hero height, centre x ${Math.round(hero.art.cx)} vs gutter ${Math.round(hero.gutterCx)}${hero.sharp ? `, file ${hero.sharp.natural}px for ${hero.sharp.drawn}px drawn${sourceSmall ? ' (the upload is smaller than that; task 3.11)' : ''}` : ' (no image yet: the empty art box)'}` : 'no column 2');
         const checks = [];
         for (const [name, sel] of [['title', `${HERO} h1`], ['line', `${HERO} .notion-text__content`]]) {
           const w = await worstBackground(page, sel);
@@ -180,17 +196,20 @@ async function main() {
         const worst = Math.min(...checks.map(([, r]) => r));
         record('1.11', 'Hero text stays readable over the art', worst >= 4.5 ? 'pass' : 'fail', checks.map(([n, r]) => `${n} ${r.toFixed(2)}:1`).join(', '));
         if (hero.hasImage) {
-          // 1.14: take the image out and check the pattern fills the same box.
+          // 1.14: take the image out and check nothing stands in for it.
           await page.evaluate((HERO) => document.querySelectorAll(`${HERO} > .notion-column:nth-child(2) .notion-image`).forEach((n) => n.remove()), HERO);
           await page.waitForTimeout(100);
         }
         const empty = await page.evaluate((HERO) => {
           const c2 = document.querySelector(`${HERO} > .notion-column:nth-child(2)`);
           const lr = document.querySelector(HERO).getBoundingClientRect();
-          return c2 && { bg: getComputedStyle(c2).backgroundImage, h: c2.getBoundingClientRect().height / lr.height };
+          if (!c2) return null;
+          const shown = [...c2.querySelectorAll('*')].filter((el) => getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 1);
+          return { bg: getComputedStyle(c2).backgroundImage, w: c2.getBoundingClientRect().width, shown: shown.length, heroW: lr.width };
         }, HERO);
-        const patOk = empty && empty.bg.includes('radial-gradient') && near(empty.h, 1.5, 0.02);
-        record('1.14', 'No image yet shows a built-in pattern, not an empty half', patOk ? 'pass' : 'fail', empty ? `${empty.bg.slice(0, 30)}…, ${empty.h.toFixed(3)}× hero height` : 'no column 2');
+        const plainOk = !empty || (empty.bg === 'none' && empty.w <= 1 && empty.shown === 0);
+        record('1.14', 'No image yet shows the plain hero, not a placeholder', plainOk ? 'pass' : 'fail',
+          empty ? `column 2: background ${empty.bg === 'none' ? 'none' : empty.bg.slice(0, 30)}, ${Math.round(empty.w)}px wide, ${empty.shown} visible block(s)` : 'no column 2');
       }
       record('1.13', 'Swapping the visual needs no pull request', 'manual', 'swap the image in Notion, see it live (QA 4.4)');
       await ctx.close();
