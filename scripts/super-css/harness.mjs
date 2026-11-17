@@ -33,6 +33,9 @@ export const PAGES = {
   labs: '/bhd-labs',
   about: '/katy-harris',
   caseStudy: '/rebuilding-a-design-function',
+  // A Labs sub-page (parent-page__bhd-labs): the one kind of page that keeps
+  // its breadcrumb, and that lights up Labs through its parent class.
+  labsSubPage: '/bhd-labs/experiment-hub',
 };
 
 /** Parse `--local`, `--out <file>`, `--only <a,b>` from argv. */
@@ -50,34 +53,42 @@ export async function launch() {
 }
 
 /**
- * A page at one viewport, optionally serving public/super/ locally.
+ * A page at one viewport, optionally serving public/super/ locally. With
+ * `local`, a /super/* file the repo doesn't have is answered with a 404 and
+ * recorded, never fetched from the live site: a missing or misnamed file
+ * must not let production code stand in for this branch. `visit()` throws
+ * when any were recorded.
  * @param {import('@playwright/test').Browser} browser
  * @param {{ width: number, height: number }} viewport
  * @param {{ local?: boolean, reducedMotion?: 'reduce' | 'no-preference' }} [opts]
  */
 export async function openContext(browser, viewport, { local = false, reducedMotion = 'no-preference' } = {}) {
   const context = await browser.newContext({ viewport, reducedMotion, deviceScaleFactor: 1 });
+  const missingLocal = [];
   if (local) {
     await context.route(LABS, async (route) => {
       const [, file] = route.request().url().match(LABS);
       const full = path.join(PUBLIC_SUPER, file);
       if (!full.startsWith(PUBLIC_SUPER)) return route.abort();
+      let body;
       try {
-        const body = await readFile(full);
-        await route.fulfill({
-          status: 200,
-          body,
-          headers: {
-            'content-type': TYPES[path.extname(full)] ?? 'application/octet-stream',
-            'access-control-allow-origin': '*',
-            'cache-control': 'no-store',
-          },
-        });
+        body = await readFile(full);
       } catch {
-        await route.continue(); // not in the repo (e.g. lightbox fonts) — use live
+        missingLocal.push(file);
+        return route.fulfill({ status: 404, body: `not in public/super/: ${file}` });
       }
+      await route.fulfill({
+        status: 200,
+        body,
+        headers: {
+          'content-type': TYPES[path.extname(full)] ?? 'application/octet-stream',
+          'access-control-allow-origin': '*',
+          'cache-control': 'no-store',
+        },
+      });
     });
   }
+  context.missingLocal = missingLocal;
   return context;
 }
 
@@ -88,4 +99,8 @@ export async function visit(page, pathname) {
   await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {});
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(600); // loader's first pass + rAF
+  const missing = page.context().missingLocal ?? [];
+  if (missing.length) {
+    throw new Error(`--local: requested but not in public/super/: ${[...new Set(missing)].join(', ')}`);
+  }
 }

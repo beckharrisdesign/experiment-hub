@@ -392,7 +392,13 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 
 ### Callout colour
 
-19. **The callout matches the hero band: `--callout-bg: var(--hero-band)`.**
+19. **The callout takes option B, `#1E474B`: `--callout-bg: var(--muted)`.**
+    - When this was decided, `#1E474B` was the hero band on every subpage.
+      Since 2026-11-17 the case-study hero is `--hero-bg` `#2F3636`
+      (decision 15), and the callout deliberately stays `#1E474B`. Pointing
+      it at `--hero-band` would turn case-study callouts `#2F3636`, a colour
+      nobody chose for them. Consulting and About still use `#1E474B` for
+      their band, so there the callout and the band still match.
     - Every green on the site is the same hue, about 185°. The navbar
       (`#102D2F`, saturation 49%), the page (`#143639`, 48%) and the hero
       band (`#1E474B`, 43%) all sit close together on saturation too.

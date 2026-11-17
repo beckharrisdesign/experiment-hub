@@ -67,7 +67,9 @@ local files, which makes every check runnable before a merge.
       `labs.beckharrisdesign.com/super/site.css` and `/super/components*`
       to the files in `public/super/`. Pages: `/`, `/bhd-consultation`,
       `/bhd-labs`, `/katy-harris`, `/rebuilding-a-design-function`, plus
-      one Labs sub-page. Viewports: 1440×900, 1024×768 and 390×844.
+      one Labs sub-page (`/bhd-labs/experiment-hub`). Viewports: 1440×900,
+      1024×768 and 390×844. A `/super/*` file missing from the repo fails
+      the run instead of falling back to the live file.
 - [x] 2.2 `scripts/super-css/measure-hero.mjs`: rebuilds the as-is
       measurement script that was never committed (described in
       `docs/portfolio-feedback-2026-11/README.md` §4). It adds one check
