@@ -42,15 +42,19 @@
 - [ ] 1.14 **No image yet shows a built-in pattern, not an empty half**:
       with no image in Notion, the art's box shows a dot pattern, never an
       empty area or a broken image.
-- [ ] 1.15 **Consulting hero sits on a band**: Consulting, About and case
-      studies open on a full-width band that ends before the first body
-      section.
-- [ ] 1.16 **Case study cover is hero art on the content grid**: on a case
-      study with a cover, at 1024px and wider, the cover sits behind the
-      title, properties and summary under the same 150% / gutter rule,
-      and the title starts in the first screen.
+- [ ] 1.15 **Consulting hero sits on a band**: Consulting and About, and
+      case studies narrower than 1024px, open on a full-width band that
+      ends before the first body section.
+- [ ] 1.16 **Case study cover fills the hero behind a text card**: on a
+      case study with a cover, at 1024px and wider, the cover fills a
+      full-width hero at least 480px tall, the title, properties and
+      summary sit on a card in the hero colour, and the title starts in
+      the first screen.
 - [ ] 1.17 **Case study without a cover shows no empty box**: no empty
-      cover box is drawn, and the title starts at the top of the band.
+      cover box is drawn; on desktop the card sits on the placeholder
+      colour, and on a phone the title starts at the top of the band.
+- [ ] 1.18 **Case study cover sits above the title on narrower screens**:
+      below 1024px the cover runs full width above the title at 39:20.
 
 ## 2. Prototype shell: preview and measure against the live site
 
@@ -156,6 +160,22 @@ Write the tests first, and see them fail before the code that passes them.
 - [x] 3.9 Run `npm test`, and `npm run super:measure -- --local` at all
       three viewports, until every §1 check passes.
 
+- [x] 3.13 Case-study hero to Katy's final frame (`55:328` / `55:353`,
+      design.md decisions 15–16, 2026-11-17):
+      - §4: the cover fills a hero at least 480px tall behind a card in
+        `--hero-bg`, painted per block; four equal property cells with no
+        dividers; the `--accent` placeholder when there is no cover; below
+        1024px the band stays and the cover sits above the title at 39:20;
+      - §1: `--text-h1-size` (36) and `--text-caption-size` (12, a
+        portfolio gap);
+      - `chrome.js`: measures every case study that §4 marks with
+        `--bhd-hero: card`, marks it `cover` or `plain`, and sets the mark
+        before measuring, so a cover lifted out of the flow isn't counted;
+      - tests rewritten for the marker, the plain state and the
+        cover → no-cover change; `VERSION` 7 → 8;
+      - `measure-hero.mjs`: 1.15–1.17 rewritten and 1.18 added.
+      Local run: 14 pass, 0 fail, 3 waiting on Notion, 1 manual.
+
 **Content, in Notion (Katy):**
 
 - [ ] 3.10 Shorten the homepage hero copy to one supporting line, and move
@@ -163,8 +183,11 @@ Write the tests first, and see them fail before the code that passes them.
 - [ ] 3.11 Put the hero art as an image block in column 2 of the homepage
       hero. Use the diamond placeholder until the final art is ready.
 - [ ] 3.12 Set covers on the case studies that have a project visual.
-      First check whether the Rebuilding image (lightsabers) belongs to
-      that project.
+      Export each from Figma page 05 (`hero-art/<slug>`, preset to PNG at
+      1600px) and set it as that page's cover. First check whether the
+      Rebuilding image (lightsabers) belongs to that project.
+- [ ] 3.14 Case-study page layout in Notion: show **Company** where
+      **Reported to** is today (Katy's frame `55:328`).
 
 ## 4. QA
 
@@ -187,5 +210,8 @@ Write the tests first, and see them fail before the code that passes them.
       - check that VoiceOver reads "current page" on the active link;
       - swap the homepage art in Notion and see it live without a PR;
       - remove it and see the pattern.
-- [ ] 4.5 Compare the live site with Figma page 04 row A (navbar) and page
-      04.2 (heroes) at 1440 and 390, and note any differences in the PR.
+- [ ] 4.5 Compare the live site with Figma page 04 row A (navbar), page
+      04.2 (homepage hero) and page 05 `55:328` / `55:353` (case-study
+      hero) at 1440 and 390, and note any differences in the PR. Known:
+      the card's 2px corner radius isn't drawn (each block paints its own
+      slice, so there is no single box to round).

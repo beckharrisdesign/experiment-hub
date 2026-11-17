@@ -63,21 +63,27 @@ The homepage hero SHALL run the full width of the screen with its personal visua
 
 ### Requirement: Subpage heroes read as heroes
 
-Subpage heroes SHALL sit on a band a step off the page colour, and a case study with a cover SHALL show the cover as hero art behind its title, anchored the same way as the homepage, instead of an empty box above it.
+Consulting and About heroes SHALL sit on a band a step off the page colour. A case study SHALL set its title, properties and summary on a card in the hero colour, over hero art that fills the hero, and the art SHALL be the page's Notion cover, instead of an empty box above the title.
 
 **Fails until:** The Consulting hero sits straight on the page colour, and the case study draws an empty 54px cover box above the title (`measurements.json` → `casestudy-desktop.cover.h`).
 
 #### Scenario: Consulting hero sits on a band
 
-- **WHEN** a reader opens Consulting, About or a case study
+- **WHEN** a reader opens Consulting or About, or a case study narrower than 1024px
 - **THEN** the hero SHALL sit on a full-width band in a colour distinct from the page body, and the band SHALL end before the first body section
 
-#### Scenario: Case study cover is hero art on the content grid
+#### Scenario: Case study cover fills the hero behind a text card
 
 - **WHEN** a case study has a Notion cover image and is opened at 1024px wide or more
-- **THEN** the hero SHALL span the full viewport width in the hero colour, and the cover SHALL sit behind the title, properties and summary, at 150% of the hero's height, centred on the same column 2/3 gutter, clipped to the hero, with the title starting in the first screen
+- **THEN** the cover SHALL fill a full-width hero area at least 480px tall, scaled to cover it and centred, and the title, properties and summary SHALL sit on a card in the hero colour, aligned to the content's left edge, with the title starting in the first screen
+- **AND** the site SHALL add no mask, wash or colour taken from the cover
+
+#### Scenario: Case study cover sits above the title on narrower screens
+
+- **WHEN** a case study has a Notion cover image and is opened narrower than 1024px
+- **THEN** the cover SHALL run the full width above the title at a 39:20 ratio, and the title, properties and summary SHALL follow on the band
 
 #### Scenario: Case study without a cover shows no empty box
 
 - **WHEN** a case study has no cover image
-- **THEN** no empty cover box SHALL be drawn, and the title SHALL start at the top of the band
+- **THEN** no empty cover box SHALL be drawn; at 1024px wide or more the card SHALL sit on a flat placeholder colour where the art would be, and narrower than that the title SHALL start at the top of the band

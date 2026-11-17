@@ -98,8 +98,11 @@ starts here. It is the cheapest high-leverage change in the log.
    PR.
 5. **Subpage hero band.** A background band, a step off the page colour,
    behind subpage heroes (Consulting, About, case studies). Case studies get
-   a project visual: the Notion cover image they can already carry, shown
-   full width above the title (revised 2026-11-16 from beside the title).
+   a project visual: the Notion cover image they can already carry. On
+   desktop it fills the hero behind a card holding the title, properties
+   and summary; on a phone it runs full width above the title (revised
+   2026-11-17 to Katy's final frame `55:328`, after "above the title" on
+   2026-11-16 and "beside the title" before that).
 
 ## Capabilities
 
@@ -119,7 +122,7 @@ change adds styles to it and does not change how they ship.
 
 - **`public/super/site.css`**: §3 Navbar (compact state, active link,
   breadcrumb visibility) and §4 Page headers (homepage hero scale, hero
-  band, case-study cover-beside-title layout). New homepage display size in
+  band, case-study cover-and-card hero). New homepage display size in
   §1 tokens.
 - **`public/super/components.js` / `components/loader.js`**, only if design
   picks the script trigger. Folding it in keeps the promise that the Super
