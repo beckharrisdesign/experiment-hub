@@ -182,8 +182,11 @@ async function main() {
         record('1.7', 'Homepage title is larger than any subpage title', 'fail', 'hero column list not found');
       } else {
         record('1.7', 'Homepage title is larger than any subpage title', hero.h1 > subH1 ? 'pass' : 'fail', `home ${hero.h1}px vs case study ${subH1}px`);
-        record('1.8', 'The hero holds the title alone', hero.inHero === 0 ? 'pass' : 'content',
-          hero.inHero === 0 ? `title only; intro ${hero.introBelow ? 'directly below the hero' : 'not found below the hero'}` : `${hero.inHero} paragraph/button block(s) still inside the hero (task 3.10)`);
+        // Pass only when the hero is title-only AND the intro follows it. Still
+        // inside the hero: waiting on the Notion move. Neither: the intro is lost.
+        record('1.8', 'The hero holds the title alone',
+          hero.inHero > 0 ? 'content' : hero.introBelow ? 'pass' : 'fail',
+          hero.inHero > 0 ? `${hero.inHero} paragraph/button block(s) still inside the hero (task 3.10)` : `title only; intro ${hero.introBelow ? 'directly below the hero' : 'NOT found between the hero and the first divider'}`);
         const sharpOk = !hero.sharp || hero.sharp.natural >= hero.sharp.drawn * 0.95;
         // The browser asked for a file at least as wide as the art is drawn, and
         // got a smaller one: the upload itself is too small. Content, not code.
