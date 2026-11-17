@@ -1,0 +1,452 @@
+{
+  "home-desktop": {
+    "navbar": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky",
+      "bg": "rgb(16, 45, 47)"
+    },
+    "breadcrumbs": null,
+    "header": {
+      "h": 0,
+      "top": 0,
+      "pos": "static",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "cover": {
+      "h": 0,
+      "top": 0,
+      "pos": "relative",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "h1": {
+      "text": "Beck Harris Design",
+      "size": "45px",
+      "top": 0
+    },
+    "firstCtaBottom": 502,
+    "bodyClass": "super-content page__index",
+    "vars": {
+      "--navbar-background-color": "#102D2F",
+      "--navbar-button-background-color": "#ADDFE3",
+      "--navbar-button-text-color": "#143639",
+      "--bg-color": "",
+      "--color-text-default": "#ADDFE3",
+      "--navbar-height": "80px"
+    },
+    "navbarScrolled": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky"
+    }
+  },
+  "consulting-desktop": {
+    "navbar": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky",
+      "bg": "rgb(16, 45, 47)"
+    },
+    "breadcrumbs": {
+      "h": 32,
+      "top": 80,
+      "pos": "sticky",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "header": {
+      "h": 0,
+      "top": 0,
+      "pos": "static",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "cover": {
+      "h": 0,
+      "top": 0,
+      "pos": "relative",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "h1": {
+      "text": "Consulting",
+      "size": "45px",
+      "top": 0
+    },
+    "firstCtaBottom": 362,
+    "bodyClass": "super-content page__bhd-consultation parent-page__index",
+    "vars": {
+      "--navbar-background-color": "#102D2F",
+      "--navbar-button-background-color": "#ADDFE3",
+      "--navbar-button-text-color": "#143639",
+      "--bg-color": "",
+      "--color-text-default": "#ADDFE3",
+      "--navbar-height": "80px"
+    },
+    "navbarScrolled": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky"
+    }
+  },
+  "labs-desktop": {
+    "navbar": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky",
+      "bg": "rgb(16, 45, 47)"
+    },
+    "breadcrumbs": {
+      "h": 32,
+      "top": 80,
+      "pos": "sticky",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "header": {
+      "h": 0,
+      "top": 0,
+      "pos": "static",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "cover": {
+      "h": 0,
+      "top": 0,
+      "pos": "relative",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "h1": {
+      "text": "Labs",
+      "size": "45px",
+      "top": 0
+    },
+    "firstCtaBottom": null,
+    "bodyClass": "super-content page__bhd-labs parent-page__index",
+    "vars": {
+      "--navbar-background-color": "#102D2F",
+      "--navbar-button-background-color": "#ADDFE3",
+      "--navbar-button-text-color": "#143639",
+      "--bg-color": "",
+      "--color-text-default": "#ADDFE3",
+      "--navbar-height": "80px"
+    },
+    "navbarScrolled": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky"
+    }
+  },
+  "about-desktop": {
+    "navbar": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky",
+      "bg": "rgb(16, 45, 47)"
+    },
+    "breadcrumbs": {
+      "h": 32,
+      "top": 80,
+      "pos": "sticky",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "header": {
+      "h": 176,
+      "top": 112,
+      "pos": "static",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "cover": {
+      "h": 54,
+      "top": 112,
+      "pos": "relative",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "h1": {
+      "text": "Katy Harris",
+      "size": "45px",
+      "top": 202
+    },
+    "firstCtaBottom": null,
+    "bodyClass": "super-content page__katy-harris parent-page__index",
+    "vars": {
+      "--navbar-background-color": "#102D2F",
+      "--navbar-button-background-color": "#ADDFE3",
+      "--navbar-button-text-color": "#143639",
+      "--bg-color": "",
+      "--color-text-default": "#ADDFE3",
+      "--navbar-height": "80px"
+    },
+    "navbarScrolled": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky"
+    }
+  },
+  "casestudy-desktop": {
+    "navbar": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky",
+      "bg": "rgb(16, 45, 47)"
+    },
+    "breadcrumbs": {
+      "h": 32,
+      "top": 80,
+      "pos": "sticky",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "header": {
+      "h": 176,
+      "top": 112,
+      "pos": "static",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "cover": {
+      "h": 54,
+      "top": 112,
+      "pos": "relative",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "h1": {
+      "text": "Rebuilding a design function",
+      "size": "45px",
+      "top": 202
+    },
+    "firstCtaBottom": null,
+    "bodyClass": "super-content page__rebuilding-a-design-function parent-page__index",
+    "vars": {
+      "--navbar-background-color": "#102D2F",
+      "--navbar-button-background-color": "#ADDFE3",
+      "--navbar-button-text-color": "#143639",
+      "--bg-color": "",
+      "--color-text-default": "#ADDFE3",
+      "--navbar-height": "80px"
+    },
+    "navbarScrolled": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky"
+    }
+  },
+  "home-mobile": {
+    "navbar": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky",
+      "bg": "rgb(16, 45, 47)"
+    },
+    "breadcrumbs": null,
+    "header": {
+      "h": 0,
+      "top": 0,
+      "pos": "static",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "cover": {
+      "h": 0,
+      "top": 0,
+      "pos": "relative",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "h1": {
+      "text": "Beck Harris Design",
+      "size": "45px",
+      "top": 0
+    },
+    "firstCtaBottom": 778,
+    "bodyClass": "super-content page__index",
+    "vars": {
+      "--navbar-background-color": "#102D2F",
+      "--navbar-button-background-color": "#ADDFE3",
+      "--navbar-button-text-color": "#143639",
+      "--bg-color": "",
+      "--color-text-default": "#ADDFE3",
+      "--navbar-height": "80px"
+    },
+    "navbarScrolled": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky"
+    }
+  },
+  "consulting-mobile": {
+    "navbar": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky",
+      "bg": "rgb(16, 45, 47)"
+    },
+    "breadcrumbs": {
+      "h": 32,
+      "top": 80,
+      "pos": "sticky",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "header": {
+      "h": 0,
+      "top": 0,
+      "pos": "static",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "cover": {
+      "h": 0,
+      "top": 0,
+      "pos": "relative",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "h1": {
+      "text": "Consulting",
+      "size": "45px",
+      "top": 0
+    },
+    "firstCtaBottom": 646,
+    "bodyClass": "super-content page__bhd-consultation parent-page__index",
+    "vars": {
+      "--navbar-background-color": "#102D2F",
+      "--navbar-button-background-color": "#ADDFE3",
+      "--navbar-button-text-color": "#143639",
+      "--bg-color": "",
+      "--color-text-default": "#ADDFE3",
+      "--navbar-height": "80px"
+    },
+    "navbarScrolled": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky"
+    }
+  },
+  "labs-mobile": {
+    "navbar": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky",
+      "bg": "rgb(16, 45, 47)"
+    },
+    "breadcrumbs": {
+      "h": 32,
+      "top": 80,
+      "pos": "sticky",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "header": {
+      "h": 0,
+      "top": 0,
+      "pos": "static",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "cover": {
+      "h": 0,
+      "top": 0,
+      "pos": "relative",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "h1": {
+      "text": "Labs",
+      "size": "45px",
+      "top": 0
+    },
+    "firstCtaBottom": null,
+    "bodyClass": "super-content page__bhd-labs parent-page__index",
+    "vars": {
+      "--navbar-background-color": "#102D2F",
+      "--navbar-button-background-color": "#ADDFE3",
+      "--navbar-button-text-color": "#143639",
+      "--bg-color": "",
+      "--color-text-default": "#ADDFE3",
+      "--navbar-height": "80px"
+    },
+    "navbarScrolled": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky"
+    }
+  },
+  "about-mobile": {
+    "navbar": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky",
+      "bg": "rgb(16, 45, 47)"
+    },
+    "breadcrumbs": {
+      "h": 32,
+      "top": 80,
+      "pos": "sticky",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "header": {
+      "h": 176,
+      "top": 112,
+      "pos": "static",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "cover": {
+      "h": 54,
+      "top": 112,
+      "pos": "relative",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "h1": {
+      "text": "Katy Harris",
+      "size": "45px",
+      "top": 202
+    },
+    "firstCtaBottom": null,
+    "bodyClass": "super-content page__katy-harris parent-page__index",
+    "vars": {
+      "--navbar-background-color": "#102D2F",
+      "--navbar-button-background-color": "#ADDFE3",
+      "--navbar-button-text-color": "#143639",
+      "--bg-color": "",
+      "--color-text-default": "#ADDFE3",
+      "--navbar-height": "80px"
+    },
+    "navbarScrolled": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky"
+    }
+  },
+  "casestudy-mobile": {
+    "navbar": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky",
+      "bg": "rgb(16, 45, 47)"
+    },
+    "breadcrumbs": {
+      "h": 32,
+      "top": 80,
+      "pos": "sticky",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "header": {
+      "h": 236,
+      "top": 112,
+      "pos": "static",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "cover": {
+      "h": 54,
+      "top": 112,
+      "pos": "relative",
+      "bg": "rgba(0, 0, 0, 0)"
+    },
+    "h1": {
+      "text": "Rebuilding a design function",
+      "size": "45px",
+      "top": 202
+    },
+    "firstCtaBottom": null,
+    "bodyClass": "super-content page__rebuilding-a-design-function parent-page__index",
+    "vars": {
+      "--navbar-background-color": "#102D2F",
+      "--navbar-button-background-color": "#ADDFE3",
+      "--navbar-button-text-color": "#143639",
+      "--bg-color": "",
+      "--color-text-default": "#ADDFE3",
+      "--navbar-height": "80px"
+    },
+    "navbarScrolled": {
+      "h": 80,
+      "top": 0,
+      "pos": "sticky"
+    }
+  }
+}

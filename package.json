@@ -12,6 +12,8 @@
     "test:live": "vitest run --config vitest.live.config.ts",
     "test:watch": "vitest",
     "test:pbn": "bash scripts/test-pbn.sh",
+    "super:preview": "node scripts/super-css/preview.mjs",
+    "super:measure": "node scripts/super-css/measure-hero.mjs",
     "pbn:ui": "bash scripts/pbn-ui.sh",
     "lint": "turbo run lint --concurrency=2",
     "lint:app": "eslint .",

@@ -51,11 +51,63 @@
   --content-max-width: 66ch;     /* reading width for body text & property text.
                                     66ch ≈ 66 characters a line in the element's
                                     own font; 45rem ran ~100 (review 2026-11-10). */
-  --accent: 173 223 227;         /* brand aqua, #ADDFE3 — same as navbar button bg.
+  --accent-rgb: 173 223 227;     /* brand aqua, #ADDFE3 — same as navbar button bg.
                                     Written as bare RGB numbers so alpha can vary
-                                    per use: rgb(var(--accent) / 0.5) etc. */
-  --pill-bg: rgb(var(--accent) / 0.1);      /* tag pill background */
-  --callout-bg: rgba(255, 255, 255, 0.1);   /* callout background */
+                                    per use: rgb(var(--accent-rgb) / 0.5) etc.
+                                    Was --accent until 2026-11: MVDS uses that name
+                                    for a full colour (the brand preset below). */
+  --pill-bg: rgb(var(--accent-rgb) / 0.1);      /* tag pill background */
+  --callout-bg: var(--muted);    /* callout background: the hero band colour.
+                                    Was white at 10%, which pulled the 185° greens
+                                    down to 27% saturation and read grey
+                                    (portfolio-header-hero, decision 19). */
+
+  /* PORTFOLIO AS AN MVDS BRAND PRESET (portfolio-header-hero, decision 20).
+     The same contract as MVDS themes/terracotta.css: the semantic colour
+     roles, the five authored primary steps, and the two font roles, under
+     MVDS's own names. Spacing and type sizes follow the MVDS scale below.
+     Figma: the "Portfolio — MVDS brand preset" collection in the
+     portfolio-header-hero file holds the same values. None of these names
+     collide with Super's CSS (checked against the live page, 2026-11-16). */
+  --background: #143639;         /* = Super's --color-bg-default */
+  --foreground: #ADDFE3;
+  --card: #1E474B;
+  --card-foreground: #ADDFE3;
+  --popover: #1E474B;
+  --popover-foreground: #ADDFE3;
+  --muted: #1E474B;
+  --muted-foreground: rgb(173 223 227 / 0.75);  /* 5.76:1 on the page */
+  --border: rgb(173 223 227 / 0.2);
+  --input: rgb(173 223 227 / 0.2);
+  --ring: #ADDFE3;
+  --primary: #ADDFE3;
+  --primary-foreground: #143639;
+  --secondary: #102D2F;          /* the navbar */
+  --secondary-foreground: #ADDFE3;
+  --accent: #23474A;             /* MVDS: a subtle surface, not the brand aqua */
+  --accent-foreground: #ADDFE3;
+  --primary-1: #1E474B;
+  --primary-2: #24575B;
+  --primary-3: #4F7F84;
+  --primary-4: #8CC4C9;
+  --primary-5: #ADDFE3;
+
+  /* MVDS scale, in px so it holds on this site's 18px root. */
+  --spacing: 4px;                /* space-N = calc(var(--spacing) * N / 4) */
+  --text-caption-size: 12px;     /* portfolio gap: the MVDS ramp starts at 14 (case-study property labels) */
+  --text-small-size: 14px;
+  --text-body-size: 16px;
+  --text-body-lg-size: 18px;
+  --text-h3-size: 24px;
+  --text-h1-size: 36px;
+  --text-display-size: 48px;
+
+  /* Hero (portfolio-header-hero, decisions 7–11, 15). */
+  --home-display-size: clamp(2.667rem, 1.2rem + 4.5vw, 4.889rem); /* 48px → ~86px at 1440 */
+  --hero-accent: rgb(var(--accent-rgb) / 0.4);  /* warm-accent slot; portfolio-warm-accents changes this */
+  --hero-band: var(--card);      /* subpage hero band */
+  --hero-bg: #2F3636;            /* case-study card and phone band (Katy, Figma 55:328) */
+  --home-hero-bg: var(--primary-1);
   font-size: 18px;               /* base font size for the whole site */
   line-height: 1.6;              /* unitless so headings scale correctly */
 }
@@ -138,6 +190,9 @@ html:root {
      a nominal 8.93:1. 300 is the lightest weight that holds up; both the
      design critique and the accessibility review recommended 300–400. */
   --text-weight: 300;
+  /* MVDS font roles (themeable-typography), pointing at the two above. */
+  --font-heading: var(--primary-font);
+  --font-sans: var(--secondary-font);
 }
 /* LARGE SCREENS (1680px+). Below this the page caps at 1200px and wide
    laptops just grow the side margins. From 1680 the page widens to 1440px
@@ -168,6 +223,15 @@ html {
                          conversation". A longer label brings that back, and
                          a clip on <body> would not catch it: <html> would
                          scroll sideways instead. */
+}
+/* …and the same guard on <main>, which spans the viewport. On <html>, `clip`
+   is propagated to the viewport and becomes `hidden`: no scrollbar, but the
+   page can still be panned sideways (iOS) or scrolled from script. The hero
+   art (portfolio-header-hero, decision 11) runs hundreds of px past the
+   right edge by design, so clip it here. `clip`, unlike `hidden`, makes no
+   scroll container, so sticky children still stick. */
+main.super-content {
+  overflow-x: clip;
 }
 /* Cap and center the whole page, with breathing room at the edges */
 .notion-root {
@@ -325,7 +389,7 @@ a.notion-link.notion-button__content {
 .super-navbar__breadcrumbs .notion-breadcrumb__divider {
   padding: 0;
   margin: 0 .5rem 0 0;
-  color: rgb(var(--accent) / 0.75);  /* subdued but legible: 0.5 measured
+  color: rgb(var(--accent-rgb) / 0.75);  /* subdued but legible: 0.5 measured
                                         3.44:1 (fails AA); 0.75 is 5.76:1 */
   font-weight: 400;                  /* italic at the 300 body weight is
                                         hairline-thin at this size */
@@ -356,12 +420,76 @@ a.notion-link.notion-button__content {
 }
 .super-content:has(.notion-header.page .notion-header__cover.has-cover)
   .super-navbar__breadcrumbs :is(.notion-breadcrumb__item, .notion-breadcrumb__divider) {
-  color: rgb(var(--accent) / 0.85);
+  color: rgb(var(--accent-rgb) / 0.85);
 }
 /* Let long breadcrumb titles show in full instead of truncating with … */
 .super-navbar__breadcrumbs .notion-breadcrumb__item .notion-breadcrumb__title {
   text-overflow: unset !important;
   max-width: unset !important;
+}
+/* COMPACT ON SCROLL (portfolio-header-hero, decisions 1–3).
+   components/chrome.js puts .bhd-nav-compact on <html> once the reader is
+   past 80px. Super already sizes the bar from --navbar-height and animates
+   its height over 200ms, so the compact state only moves that variable —
+   and everything Super positions against it (dropdowns, sticky panels)
+   follows.
+
+   The bar is sticky and in the page flow: losing 24px of height would pull
+   the whole page up 24px at the moment of scrolling. The matching
+   margin-bottom keeps its footprint at 80px. That footprint is above the
+   viewport by then, so the margin is never seen. No script: the bar stays
+   80px, as before. */
+.super-navbar {
+  transition: height 200ms ease-out, margin-bottom 200ms ease-out;
+}
+html.bhd-nav-compact {
+  --navbar-height: 56px;
+}
+html.bhd-nav-compact .super-navbar {
+  margin-bottom: 24px;
+}
+html.bhd-nav-compact .super-navbar__logo-text,
+html.bhd-nav-compact .super-navbar__item {
+  font-size: var(--text-body-size) !important;   /* 18 → 16px; Super writes
+                                                    the logo size inline */
+}
+html.bhd-nav-compact .super-navbar__item-list .super-navbar__item {
+  padding-block: 8px;
+}
+html.bhd-nav-compact .super-navbar__actions .super-navbar__cta {
+  font-size: var(--text-body-size);
+  padding: 7px 16px;               /* 40px tall: MVDS space-40 */
+}
+@media (prefers-reduced-motion: reduce) {
+  .super-navbar,
+  .super-navbar * {
+    transition: none !important;
+  }
+}
+/* CURRENT SECTION (decision 4). chrome.js sets aria-current="page" on the
+   link for the section the reader is in; the nav sits outside <main>, so CSS
+   alone cannot see the page classes. Full colour plus an underline, so the
+   state is not carried by colour alone. Other links step back to 75%
+   (5.76:1) — only when some link is current, so a page with no match, or a
+   visit without the script, looks exactly as before. */
+.super-navbar:has(.super-navbar__item[aria-current="page"]) .super-navbar__item:not([aria-current="page"]) {
+  color: var(--muted-foreground);
+}
+.super-navbar .super-navbar__item[aria-current="page"] {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+.super-navbar .super-navbar__item:hover {
+  color: var(--foreground);
+}
+/* NO BREADCRUMB under the homepage (decision 5). Consulting, Labs, About and
+   every case study are children of the homepage; with the current section
+   highlighted, the trail only repeats it. Deeper pages (a Labs sub-page, a
+   page under a collection) keep it: it shows a level the nav cannot. */
+:is(.parent-page__index, .page__all-projects) .super-navbar__breadcrumbs {
+  display: none !important;
 }
 /* ============================================================
    4. PAGE HEADERS
@@ -416,12 +544,12 @@ h1.notion-heading,
   padding: 0 1rem 1rem 1rem !important;
 }
 /* No cover image: Super still draws an empty 140px cover box (90px on its
-   mobile renderer), which with the title's 2rem margin left ~176px of
-   dead space under the breadcrumb. 3rem halves it (~90px total) without
-   jamming the title up against the nav. */
+   mobile renderer). It used to be capped at 3rem; with the hero band's own
+   top padding giving the title its room, the box goes entirely
+   (portfolio-header-hero, decision 16). */
 .notion-header.page .notion-header__cover.no-cover {
-  height: 3rem !important;
-  max-height: 3rem !important;
+  height: 0 !important;
+  max-height: 0 !important;
 }
 /* Project page title: left-aligned, big, with space above the title */
 .notion-header__title {
@@ -430,6 +558,313 @@ h1.notion-heading,
   text-align: left !important;
   font-size: 2.5rem !important;
 }
+/* ------------------------------------------------------------
+   HEROES (OpenSpec portfolio-header-hero, design.md decisions 6–16)
+   ------------------------------------------------------------
+   One rule places all hero art (decision 11): it arrives finished — its own
+   borders, feathers, transparency — so the site adds no mask, no wash and
+   reads no colour from it. It sits behind the hero content at 150% of the
+   hero's height, centred vertically, and horizontally on the gutter between
+   columns 2 and 3 of a three-column grid as wide as the content (Katy's
+   Frames 10–12 in the Figma file). With 1rem gutters that centre is
+   (C − 2rem) × 2/3 + 1.5rem from the content's left edge. The art clips its
+   own top and bottom overflow (one-sixth of the art each side), so the hero
+   box never needs overflow and the full-width band behind it is not cut.
+   Art past the viewport's right edge is caught by §2's overflow-x guard.
+
+   Full-width bands use border-image with a 100vmax side outset: it paints
+   with the block's background (under every block's text, unlike the
+   box-shadow + clip-path trick, which can cover a neighbour's descenders)
+   and creates no stacking context. Keep it that way. */
+
+/* --- Homepage (decisions 6–12). The hero is the first column list; the
+   page class, not #page-index, so check.mjs guards the hook. --- */
+.page__index .notion-root > .notion-column-list:first-child {
+  position: relative;
+  isolation: isolate;                  /* the art's z-index stays inside */
+  padding-block: calc(var(--spacing) * 24);   /* space-96 */
+  border-image: conic-gradient(var(--home-hero-bg) 0 0) fill 0 / / 0 100vmax;
+}
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child {
+  width: 62% !important;               /* Super writes the Notion split inline */
+}
+.page__index .notion-root > .notion-column-list:first-child h1.notion-heading {
+  font-size: var(--home-display-size);
+  line-height: 1.1;
+}
+/* The title carries a hand-set line break from when it was 45px
+   ("…leadership / for modern…"). At display size it splits the title into
+   four ragged lines on desktop and five on a phone; let it collapse so the
+   title wraps on its own, three lines at 1440 as in Figma. */
+.page__index .notion-root > .notion-column-list:first-child h1.notion-heading {
+  white-space: normal !important;
+}
+.page__index .notion-root > .notion-column-list:first-child h1.notion-heading br {
+  display: none;
+}
+.page__index .notion-root > .notion-column-list:first-child h1.notion-heading::before {
+  content: "";
+  display: block;
+  width: 48px;
+  height: 2px;
+  margin-bottom: calc(var(--spacing) * 6);
+  background: var(--hero-accent);
+}
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child .notion-text__content {
+  font-size: var(--text-h3-size);
+  line-height: 1.5;
+  padding-bottom: 0;
+}
+/* The text stack, spaced as Katy's frame (22:81): title and line 16px
+   apart, then 32px to the button. Notion's empty spacer blocks go — they
+   added ~90px on a phone and pushed the button out of the first screen. */
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child {
+  padding-block: 0 !important;
+}
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child > div.notion-text:not(.notion-text__content) {
+  display: none;
+}
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child > h1.notion-heading {
+  margin: 0 0 calc(var(--spacing) * 4) !important;   /* space-16 */
+}
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child > .notion-button {
+  margin-top: calc(var(--spacing) * 8);              /* space-32 */
+}
+/* The art: column 2, lifted out of the flow. */
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:nth-child(2) {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: calc((100% - 2rem) * 2 / 3 + 1.5rem);
+  width: auto !important;
+  height: 150%;
+  margin: 0 !important;
+  transform: translate(-50%, -50%);
+  clip-path: inset(calc(100% / 6) -100vmax);
+  pointer-events: none;
+}
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:nth-child(2) > :not(.notion-image) {
+  display: none;                       /* the empty spacer text blocks */
+}
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:nth-child(2) .notion-image,
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:nth-child(2) .notion-image * {
+  height: 100% !important;
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:nth-child(2) img {
+  object-fit: contain;
+}
+/* No image yet (decision 12): the same box, a 6:5 dot grid. Decorative. */
+.page__index .notion-root > .notion-column-list:first-child > .notion-column:nth-child(2):not(:has(.notion-image)) {
+  aspect-ratio: 6 / 5;
+  background-image: radial-gradient(rgb(var(--accent-rgb) / 0.14) 1.5px, transparent 1.6px);
+  background-size: 16px 16px;
+}
+@media only screen and (max-width: 680px) {
+  .page__index .notion-root > .notion-column-list:first-child {
+    padding-block: calc(var(--spacing) * 12);  /* space-48 */
+  }
+  .page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child {
+    width: 100% !important;
+  }
+  .page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child .notion-text__content {
+    font-size: var(--text-body-lg-size);
+  }
+}
+
+/* --- Subpage hero band (decisions 13–14). Painted per block, no wrapper.
+   Consulting and About: every block before the first divider (that divider
+   goes; the band's edge replaces it), plus About's title. Case study: the
+   title, then every block before the first callout or h2. The case-study
+   list names the top-level slugs to exclude — beside §4's list above, and
+   like it, add a new top-level page to both. --- */
+:is(.page__bhd-consultation, .page__katy-harris) .notion-root > :not(.notion-divider, .notion-divider ~ *),
+.page__katy-harris .notion-header__content,
+.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris)
+  :is(.notion-header__content, .notion-root > :not(.notion-callout, .notion-callout ~ *, h2, h2 ~ *)) {
+  border-image: conic-gradient(var(--hero-band) 0 0) fill 0 / / 0.75rem 100vmax;
+}
+/* Band padding: 64px top and bottom (48px on a phone), and 32px of page
+   colour before the body. */
+:is(.page__bhd-consultation) .notion-root > :first-child,
+:is(.page__katy-harris, .parent-page__index:not(.page__bhd-consultation, .page__bhd-labs)) .notion-header__content {
+  padding-top: calc(var(--spacing) * 16) !important;
+}
+:is(.page__bhd-consultation, .page__katy-harris) .notion-root > :has(+ .notion-divider):not(.notion-divider ~ *),
+.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris)
+  .notion-root > :has(+ :is(.notion-callout, h2)):not(.notion-callout ~ *, h2 ~ *) {
+  padding-bottom: calc(var(--spacing) * 16) !important;
+}
+:is(.page__bhd-consultation, .page__katy-harris) .notion-root > .notion-divider:not(.notion-divider ~ .notion-divider) {
+  display: none;
+}
+:is(.page__bhd-consultation, .page__katy-harris) .notion-root > .notion-divider:not(.notion-divider ~ .notion-divider) + *,
+.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris)
+  .notion-root > :is(.notion-callout, h2):not(.notion-callout ~ *, h2 ~ *) {
+  margin-top: calc(var(--spacing) * 8 + 0.75rem) !important;  /* space-32 past the band's outset */
+}
+.parent-page__index .notion-header__title {
+  margin-top: 0 !important;            /* the band's padding gives it room */
+}
+@media only screen and (max-width: 680px) {
+  :is(.page__bhd-consultation) .notion-root > :first-child,
+  :is(.page__katy-harris, .parent-page__index:not(.page__bhd-consultation, .page__bhd-labs)) .notion-header__content {
+    padding-top: calc(var(--spacing) * 12) !important;
+  }
+  :is(.page__bhd-consultation, .page__katy-harris) .notion-root > :has(+ .notion-divider):not(.notion-divider ~ *),
+  .parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris)
+    .notion-root > :has(+ :is(.notion-callout, h2)):not(.notion-callout ~ *, h2 ~ *) {
+    padding-bottom: calc(var(--spacing) * 12) !important;
+  }
+}
+
+/* --- Case study (decisions 15–16; Katy's frames 55:328 and 55:353 in
+   Figma). From 1024px the cover fills the hero edge to edge, and the title,
+   properties and summary sit on a card in the hero colour over it. The card
+   is painted per block, like the band, because its blocks live in two
+   parents (.notion-header__content and .notion-root): the title's block
+   paints a 786px strip starting 16px left of the text, and each .notion-root
+   block, capped at Katy's 754px text width, paints with a 16px border-image
+   outset on each side. Narrower than 1024px the band stays, and the cover
+   runs full width above the title.
+
+   This selector is the third copy of the top-level slug list (with §4's
+   and the band's above): add a new top-level page to all three. It also
+   tells components/chrome.js which pages to measure, through --bhd-hero,
+   so the list exists only in CSS. --- */
+main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) {
+  --hero-band: var(--hero-bg);
+}
+@media only screen and (min-width: 1024px) {
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) {
+    --bhd-hero: card;
+    /* At least 480px of hero, the card centred in it (Katy's frame). The
+       loader measures the card into --hero-h; without it, 64px. */
+    --hero-pad: max(calc(var(--spacing) * 16), calc((480px - var(--hero-h, 480px)) / 2));
+    position: relative;
+    isolation: isolate;
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header {
+    margin-bottom: 0 !important;
+  }
+  /* .notion-header in the selector outranks the band rule above (0,4,0). */
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header .notion-header__content {
+    border-image: none;
+    margin-top: var(--hero-pad) !important;   /* Super centres it with margin: auto */
+    padding-top: calc(var(--spacing) * 4) !important;          /* space-16 card padding */
+    padding-bottom: calc(var(--spacing) * 1) !important;       /* space-4 to the properties, inside the card */
+    background: linear-gradient(var(--hero-bg) 0 0) 2px 0 / 786px 100% no-repeat;
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header__title-wrapper {
+    max-width: 754px;
+    margin-bottom: 0 !important;         /* a margin here would escape the card */
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header__title {
+    line-height: calc(56 / 45);
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :not(.notion-callout, .notion-callout ~ *, h2, h2 ~ *) {
+    max-width: 754px !important;
+    border-image: conic-gradient(var(--hero-bg) 0 0) fill 0 / / 0 calc(var(--spacing) * 4);
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :has(+ :is(.notion-callout, h2)):not(.notion-callout ~ *, h2 ~ *) {
+    padding-bottom: calc(var(--spacing) * 4) !important;       /* space-16 card padding */
+    margin-bottom: var(--hero-pad) !important;
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :is(.notion-callout, h2):not(.notion-callout ~ *, h2 ~ *) {
+    margin-top: calc(var(--spacing) * 8) !important;          /* space-32 after the hero */
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-text:not(.notion-callout ~ *, h2 ~ *) {
+    font-size: var(--text-body-lg-size);
+    line-height: calc(28 / 18);
+  }
+  /* Properties: four equal cells, no dividers (Katy's frame). */
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-page__properties-layout {
+    display: flex !important;
+    flex-wrap: nowrap;
+    gap: 0 !important;
+    padding: 0 0 calc(var(--spacing) * 8) 0 !important;      /* space-32 to the summary */
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-page__properties-layout .notion-page__layout-property {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: calc(var(--spacing) * 2) calc(var(--spacing) * 2) calc(var(--spacing) * 2) 0 !important;
+    border: 0 !important;
+  }
+  /* Label, 4px, value; Super's own padding and margins go. */
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-page__property-name-wrapper {
+    padding: 0 !important;
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-page__property-name {
+    font-family: var(--font-heading);
+    font-size: var(--text-caption-size);
+    font-weight: 400;
+    line-height: 1.25;
+    margin: 0 0 calc(var(--spacing) * 1) !important;          /* space-4 */
+    padding: 0 !important;
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-page__property-name span {
+    font-size: inherit !important;
+    line-height: inherit !important;
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-page__property .notion-property {
+    font-size: var(--text-small-size);
+    font-weight: 300;
+    line-height: 1.2;
+    margin: 0 !important;
+  }
+  /* The art layer, behind the card, over the measured hero. With a cover,
+     the cover; without one, the placeholder colour. Both need the loader's
+     measurements, so neither draws without it. */
+  main[data-bhd-hero="plain"]::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    right: 0;
+    top: calc(var(--hero-top) - var(--hero-pad));
+    height: calc(var(--hero-h) + 2 * var(--hero-pad));
+    background: var(--accent);
+    pointer-events: none;
+  }
+  main[data-bhd-hero="cover"] .notion-header__cover.has-cover {
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    right: 0;
+    top: calc(var(--hero-top) - var(--hero-pad));
+    width: auto;
+    height: calc(var(--hero-h) + 2 * var(--hero-pad));
+    max-height: none;
+    margin: 0;
+    pointer-events: none;
+  }
+  main[data-bhd-hero="cover"] .notion-header__cover.has-cover img {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    object-fit: cover !important;
+    object-position: center !important;
+  }
+}
+@media only screen and (max-width: 1023px) {
+  .notion-header__cover.has-cover {
+    height: auto !important;
+    aspect-ratio: 39 / 20;                /* Katy's 390 × 200 phone frame */
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects):has(.notion-header__cover.has-cover) .notion-header__content {
+    padding-top: calc(var(--spacing) * 4) !important;          /* space-16 below the cover */
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header__title {
+    font-size: var(--text-h1-size);
+    line-height: calc(49 / 36);
+  }
+}
+
 /* ============================================================
    5. BLOCKS
    ============================================================ */
@@ -439,7 +874,7 @@ h1.notion-heading,
   border: 0;
   border-radius: 0.25rem;
   background: var(--pill-bg);
-  color: rgb(var(--accent) / 0.85);  /* 0.7 measured 4.33:1 on the page and
+  color: rgb(var(--accent-rgb) / 0.85);  /* 0.7 measured 4.33:1 on the page and
                                         3.75:1 inside cards (fail AA); 0.85
                                         gives 5.55 / 4.67 */
   font-weight: 400;
@@ -859,7 +1294,7 @@ tbody.notion-collection-table__body tr:last-child td {
 thead th.status .notion-collection-table__head-cell-content::after {
   content: " \2191";                              /* ↑, for browsers without alt text */
   content: " \2191" / ", sorted ascending";       /* screen readers hear the sort */
-  color: rgb(var(--accent));
+  color: rgb(var(--accent-rgb));
 }
 /* Rows are not links (2026-10-15). Super links each table row's name to
    the item's own page; Labs experiments have no detail pages to keep up,
@@ -886,7 +1321,7 @@ tbody.notion-collection-table__body td.number .notion-property__number {
   padding: 1px 6px;
   border-radius: 0.25rem;
   background: var(--pill-bg);
-  color: rgb(var(--accent) / 0.85);  /* matches the pills (section 5) */
+  color: rgb(var(--accent-rgb) / 0.85);  /* matches the pills (section 5) */
   font-weight: 400;
   line-height: 20.25px;
   margin-top: 3px;
@@ -1084,10 +1519,10 @@ tbody.notion-collection-table__body .notion-pill {
   .notion-text .notion-link {
   display: inline-block;
   padding: .5rem 1.1rem;
-  border: 1px solid rgb(var(--accent) / 0.4);
+  border: 1px solid rgb(var(--accent-rgb) / 0.4);
   border-radius: var(--navbar-button-border-radii, .375rem);
-  background: rgb(var(--accent) / 0.08);
-  color: rgb(var(--accent));
+  background: rgb(var(--accent-rgb) / 0.08);
+  color: rgb(var(--accent-rgb));
   font-size: .85rem;
   font-weight: 500;
   text-decoration: none;
@@ -1095,8 +1530,8 @@ tbody.notion-collection-table__body .notion-pill {
 }
 [class*="page__for-"] .notion-callout:has(.notion-image)
   .notion-text .notion-link:hover {
-  background: rgb(var(--accent) / 0.18);
-  border-color: rgb(var(--accent) / 0.7);
+  background: rgb(var(--accent-rgb) / 0.18);
+  border-color: rgb(var(--accent-rgb) / 0.7);
 }
 /* --- Defensive: nested callouts -----------------------------
    If a CTA is still wrapped in its own callout, flatten it so it
@@ -1147,7 +1582,7 @@ tbody.notion-collection-table__body .notion-pill {
   cursor: zoom-in;
 }
 .notion-image img[data-bhd-lb]:focus-visible {
-  outline: 2px solid rgb(var(--accent));
+  outline: 2px solid rgb(var(--accent-rgb));
   outline-offset: 4px;
 }
 /* Page scroll is locked while the viewer is open. Overrides the global
@@ -1223,7 +1658,7 @@ html.bhd-lb-open {
   margin: 0 0 0.25rem;
   font-size: 0.75rem;
   letter-spacing: 0.08em;
-  color: rgb(var(--accent));
+  color: rgb(var(--accent-rgb));
   font-variant-numeric: tabular-nums;
 }
 .bhd-lb__caption {
@@ -1255,11 +1690,11 @@ html.bhd-lb-open {
 }
 .bhd-lb__btn[hidden] { display: none; }
 .bhd-lb__btn:hover {
-  background: rgb(var(--accent));
+  background: rgb(var(--accent-rgb));
   color: #112829;
 }
 .bhd-lb__btn:focus-visible {
-  outline: 2px solid rgb(var(--accent));
+  outline: 2px solid rgb(var(--accent-rgb));
   outline-offset: 3px;
 }
 .bhd-lb__close { top: 1rem; right: 1rem; }
@@ -1325,7 +1760,7 @@ html.bhd-lb-open {
    ring that disappears on this theme, and on nav items at y=0 its top
    edge was clipped. Accent measures 8.93:1 on the page background. */
 :focus-visible {
-  outline: 2px solid rgb(var(--accent));
+  outline: 2px solid rgb(var(--accent-rgb));
   outline-offset: 2px;
 }
 .super-navbar :focus-visible {
@@ -1336,7 +1771,7 @@ html.bhd-lb-open {
    (a pixel diff showed 0 changed pixels on focus). Ring the card instead. */
 .notion-collection-card:has(> .notion-collection-card__anchor:focus-visible),
 .notion-collection-card:has(.notion-collection-card__anchor:focus-visible) {
-  outline: 2px solid rgb(var(--accent));
+  outline: 2px solid rgb(var(--accent-rgb));
   outline-offset: 3px;
 }
 /* Links inside callouts were dimmed below AA (4.14:1). Full colour; the
