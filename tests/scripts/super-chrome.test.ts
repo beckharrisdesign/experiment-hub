@@ -7,6 +7,7 @@ import {
   applyNav,
   measureHero,
   updateCompact,
+  fitArtSizes,
 } from '../../public/super/components/chrome.js';
 
 /**
@@ -159,5 +160,43 @@ describe('case-study hero measuring (decision 15)', () => {
     measureHero(document);
     expect(main().style.getPropertyValue('--hero-h')).toBe('');
     expect(main().dataset.bhdHero).toBeUndefined();
+  });
+});
+
+describe('sharp homepage art (decision 11)', () => {
+  // Super writes sizes from the Notion column split: column 2 is ~6% wide.
+  const home = (w: number) => {
+    page(
+      'page__index',
+      `<article class="notion-root"><div class="notion-column-list">` +
+        `<div class="notion-column"><h1>Title</h1></div>` +
+        `<div class="notion-column"><div class="notion-image"><img sizes="(max-width: 546px) 100vw, 6vw" ` +
+        `srcset="a.png?width=96 96w, a.png?width=1920 1920w" src="a.png?width=1600"></div></div>` +
+        `</div></article>`,
+    );
+    const img = document.querySelector('img') as HTMLImageElement;
+    vi.spyOn(img, 'getBoundingClientRect').mockReturnValue({ width: w } as DOMRect);
+    return img;
+  };
+
+  beforeEach(() => vi.restoreAllMocks());
+
+  it('rewrites sizes to the width the art is drawn at', () => {
+    const img = home(1486.4);
+    fitArtSizes(document);
+    expect(img.getAttribute('sizes')).toBe('1487px');
+  });
+
+  it('leaves an image that is not laid out yet alone', () => {
+    const img = home(0);
+    fitArtSizes(document);
+    expect(img.getAttribute('sizes')).toBe('(max-width: 546px) 100vw, 6vw');
+  });
+
+  it('touches only the homepage hero art', () => {
+    const img = home(1487);
+    (document.querySelector('main') as HTMLElement).className = 'super-content page__katy-harris parent-page__index';
+    fitArtSizes(document);
+    expect(img.getAttribute('sizes')).toBe('(max-width: 546px) 100vw, 6vw');
   });
 });

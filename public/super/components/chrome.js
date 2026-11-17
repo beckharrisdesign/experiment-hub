@@ -21,6 +21,12 @@
  *      their <main>, so the slug list lives in one place. No script: the
  *      card still draws, and the cover stays where Super puts it.
  *
+ *   4. Sharp homepage art. Notion's art column is about 6% of the page, so
+ *      Super's <img sizes> says "6vw" and the browser downloads a 96px file,
+ *      which site.css then shows at about 1,500px. `fitArtSizes()` rewrites
+ *      `sizes` to the width the art is actually drawn at, so the browser
+ *      picks a sharp file from the srcset Super already provides.
+ *
  * The loader (loader.js) calls `chromePass()` on every DOM pass, because
  * Super is a Next.js app and swaps <main> on navigation without a reload.
  */
@@ -143,10 +149,29 @@ export function measureHero(doc) {
   main.style.setProperty('--hero-h', `${Math.round(bottom - top)}px`);
 }
 
+/** The homepage art images: column 2 of the hero column list. */
+const HOME_ART = '.page__index .notion-root > .notion-column-list:first-child > .notion-column:nth-child(2) img[srcset]';
+
+/**
+ * Tell the browser how wide the homepage art is really drawn, so it picks a
+ * file from the srcset that matches (decision 11). Only touches images that
+ * are laid out, and only when the value changes.
+ * @param {Document} doc
+ */
+export function fitArtSizes(doc) {
+  for (const img of doc.querySelectorAll(HOME_ART)) {
+    const w = Math.ceil(img.getBoundingClientRect().width);
+    if (w < 1) continue;
+    const sizes = `${w}px`;
+    if (img.getAttribute('sizes') !== sizes) img.setAttribute('sizes', sizes);
+  }
+}
+
 /** Everything that depends on the page's DOM; safe to run on every pass. */
 export function chromePass(doc = document) {
   applyNav(doc);
   measureHero(doc);
+  fitArtSizes(doc);
 }
 
 /**
@@ -168,7 +193,10 @@ export function startChrome(win = window) {
   win.addEventListener('scroll', onScroll, { passive: true });
   updateCompact(doc.documentElement, win.scrollY);
   if ('ResizeObserver' in win) {
-    const ro = new win.ResizeObserver(() => measureHero(doc));
+    const ro = new win.ResizeObserver(() => {
+      measureHero(doc);
+      fitArtSizes(doc);
+    });
     ro.observe(doc.documentElement);
   }
   chromePass(doc);

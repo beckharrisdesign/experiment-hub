@@ -132,9 +132,11 @@ Write the tests first, and see them fail before the code that passes them.
         `.page__all-projects`.
 - [x] 3.5 §4 Homepage hero (`.page__index .notion-root >
       .notion-column-list:first-child`):
-      - a 62 / 38 column split (widened to the full content width on
-        2026-11-17: at 62% the button fell below a laptop's first screen);
-      - the display size and accent rule;
+      - a 62 / 38 column split (on 2026-11-17: two of three grid columns,
+        770px at 1440, per Katy's frame `55:72`);
+      - the display size and accent rule (rule removed 2026-11-17, `55:72`);
+      - sharp art: `chrome.js` `fitArtSizes` rewrites the image's `sizes`
+        from Notion's "6vw" to its drawn width (added 2026-11-17);
       - a 24px / 18px supporting line;
       - full-width `--primary-1` band;
       - art in column 2 placed by design.md decision 11: `height: 150%`,
@@ -188,9 +190,11 @@ Write the tests first, and see them fail before the code that passes them.
 - [x] 3.11 Put the hero art as an image block in column 2 of the homepage
       hero. (Live 2026-11-17: check 1.12 passes, and text contrast over
       the art is 6.51–6.61:1.) Use the diamond placeholder until the final art is ready.
+      **Re-upload at 3200px wide:** the file in Notion is 1200px, softer
+      than the ~1,440px it is drawn at (check 1.10).
 - [ ] 3.12 Set covers on the case studies that have a project visual.
       Export each from Figma page 05 (`hero-art/<slug>`, preset to PNG at
-      1600px) and set it as that page's cover. First check whether the
+      3200px wide) and set it as that page's cover. First check whether the
       Rebuilding image (lightsabers) belongs to that project.
 - [ ] 3.14 Case-study page layout in Notion: show **Company** where
       **Reported to** is today (Katy's frame `55:328`).

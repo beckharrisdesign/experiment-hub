@@ -104,7 +104,6 @@
 
   /* Hero (portfolio-header-hero, decisions 7–11, 15). */
   --home-display-size: clamp(2.667rem, 1.2rem + 4.5vw, 4.889rem); /* 48px → ~86px at 1440 */
-  --hero-accent: rgb(var(--accent-rgb) / 0.4);  /* warm-accent slot; portfolio-warm-accents changes this */
   --hero-band: var(--card);      /* subpage hero band */
   --hero-bg: #2F3636;            /* case-study card and phone band (Katy, Figma 55:328) */
   --home-hero-bg: var(--primary-1);
@@ -586,10 +585,10 @@ h1.notion-heading,
   border-image: conic-gradient(var(--home-hero-bg) 0 0) fill 0 / / 0 100vmax;
 }
 .page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child {
-  width: 100% !important;              /* Super writes the Notion split inline. The full content width:
-                                          at 62% the title ran to 3–4 lines and pushed the button below
-                                          the first screen on a laptop (Katy, 2026-11-17). The art sits
-                                          behind the text, so it needs no column of its own. */
+  /* Super writes the Notion split inline. Two of the three grid columns and
+     the gutter between them, so the text ends where the art is centred:
+     770px at 1440 (Katy's frame 55:72, 2026-11-17). */
+  width: calc((100% - 2rem) * 2 / 3 + 1rem) !important;
 }
 .page__index .notion-root > .notion-column-list:first-child h1.notion-heading {
   font-size: var(--home-display-size);
@@ -604,14 +603,6 @@ h1.notion-heading,
 }
 .page__index .notion-root > .notion-column-list:first-child h1.notion-heading br {
   display: none;
-}
-.page__index .notion-root > .notion-column-list:first-child h1.notion-heading::before {
-  content: "";
-  display: block;
-  width: 48px;
-  height: 2px;
-  margin-bottom: calc(var(--spacing) * 6);
-  background: var(--hero-accent);
 }
 .page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child .notion-text__content {
   font-size: var(--text-h3-size);
