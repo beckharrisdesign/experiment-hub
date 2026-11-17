@@ -98,7 +98,9 @@ describe('current nav link (decision 4)', () => {
 });
 
 describe('case-study hero measuring (decision 15)', () => {
-  const caseStudy = (cover: 'has-cover' | 'no-cover') =>
+  // site.css §4 marks case studies with `--bhd-hero: card` on <main>; the
+  // tests set it inline, which is what getComputedStyle reads back.
+  const caseStudy = (cover: 'has-cover' | 'no-cover', marked = true) => {
     page(
       'page__rebuilding-a-design-function parent-page__index',
       `<div class="notion-header page"><div class="notion-header__cover ${cover}"></div>` +
@@ -106,47 +108,56 @@ describe('case-study hero measuring (decision 15)', () => {
         `<article class="notion-root"><div class="notion-page__properties-layout"></div>` +
         `<p class="notion-text">Summary.</p><div class="notion-callout"></div><h2>Next</h2></article>`,
     );
+    if (marked) (document.querySelector('main') as HTMLElement).style.setProperty('--bhd-hero', 'card');
+  };
+  const main = () => document.querySelector('main') as HTMLElement;
 
   beforeEach(() => vi.restoreAllMocks());
 
-  it('sets --hero-top and --hero-h on <main> when the case study has a cover', () => {
+  it('sets --hero-top and --hero-h to the text card, and marks a cover', () => {
     caseStudy('has-cover');
-    const main = document.querySelector('main') as HTMLElement;
-    vi.spyOn(main, 'getBoundingClientRect').mockReturnValue({ top: 80, bottom: 2000 } as DOMRect);
+    vi.spyOn(main(), 'getBoundingClientRect').mockReturnValue({ top: 80, bottom: 2000 } as DOMRect);
     const box = (sel: string, top: number, bottom: number) =>
       vi.spyOn(document.querySelector(sel)!, 'getBoundingClientRect').mockReturnValue({ top, bottom } as DOMRect);
-    box('.notion-header__content', 80, 200);
-    box('.notion-page__properties-layout', 200, 260);
-    box('p.notion-text', 260, 523);
+    box('.notion-header__content', 190, 310);
+    box('.notion-page__properties-layout', 310, 370);
+    box('p.notion-text', 370, 449);
     measureHero(document);
-    expect(main.style.getPropertyValue('--hero-top')).toBe('0px');
-    expect(main.style.getPropertyValue('--hero-h')).toBe('443px');
-    expect(main.dataset.bhdHero).toBe('cover');
+    expect(main().style.getPropertyValue('--hero-top')).toBe('110px');
+    expect(main().style.getPropertyValue('--hero-h')).toBe('259px');
+    expect(main().dataset.bhdHero).toBe('cover');
   });
 
-  it('leaves <main> alone when there is no cover', () => {
+  it('marks a case study with no cover as plain, so the placeholder colour draws', () => {
     caseStudy('no-cover');
     measureHero(document);
-    const main = document.querySelector('main') as HTMLElement;
-    expect(main.style.getPropertyValue('--hero-top')).toBe('');
-    expect(main.style.getPropertyValue('--hero-h')).toBe('');
-    expect(main.dataset.bhdHero).toBeUndefined();
+    expect(main().dataset.bhdHero).toBe('plain');
+    expect(main().style.getPropertyValue('--hero-h')).not.toBe('');
   });
 
-  it('clears the mark after navigating from a cover to a page without one', () => {
+  it('follows a client-side change from a cover to no cover', () => {
     caseStudy('has-cover');
     measureHero(document);
-    const main = document.querySelector('main') as HTMLElement;
-    expect(main.dataset.bhdHero).toBe('cover');
-    main.querySelector('.notion-header__cover')!.className = 'notion-header__cover no-cover';
+    expect(main().dataset.bhdHero).toBe('cover');
+    main().querySelector('.notion-header__cover')!.className = 'notion-header__cover no-cover';
     measureHero(document);
-    expect(main.dataset.bhdHero).toBeUndefined();
-    expect(main.style.getPropertyValue('--hero-h')).toBe('');
+    expect(main().dataset.bhdHero).toBe('plain');
+  });
+
+  it('leaves a page site.css does not mark alone, and clears stale values', () => {
+    caseStudy('has-cover');
+    measureHero(document);
+    main().style.removeProperty('--bhd-hero'); // e.g. Super swapped in Consulting
+    measureHero(document);
+    expect(main().dataset.bhdHero).toBeUndefined();
+    expect(main().style.getPropertyValue('--hero-top')).toBe('');
+    expect(main().style.getPropertyValue('--hero-h')).toBe('');
   });
 
   it('ignores the homepage, which places its art in CSS alone', () => {
     page('page__index', `<div class="notion-header page"><div class="notion-header__cover has-cover"></div></div>`);
     measureHero(document);
-    expect((document.querySelector('main') as HTMLElement).style.getPropertyValue('--hero-h')).toBe('');
+    expect(main().style.getPropertyValue('--hero-h')).toBe('');
+    expect(main().dataset.bhdHero).toBeUndefined();
   });
 });

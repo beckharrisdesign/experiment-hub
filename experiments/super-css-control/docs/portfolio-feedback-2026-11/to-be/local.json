@@ -1,5 +1,5 @@
 {
-  "when": "2026-11-16T23:47:44.713Z",
+  "when": "2026-11-17T20:04:35.163Z",
   "source": "local",
   "results": [
     {
@@ -104,21 +104,28 @@
       "id": "1.15",
       "scenario": "Consulting hero sits on a band",
       "state": "pass",
-      "value": "consulting: 5 banded block(s), 46px to the body; about: 6 banded block(s), 64px to the body; caseStudy: 3 banded block(s), 46px to the body",
+      "value": "consulting: 5 banded block(s), 46px to the body; about: 6 banded block(s), 64px to the body; case study @390: 3 banded block(s), 46px to the body",
       "note": ""
     },
     {
       "id": "1.16",
-      "scenario": "Case study cover is hero art on the content grid",
+      "scenario": "Case study cover fills the hero behind a text card",
       "state": "pass",
-      "value": "cover 1.500× hero, centre 917 vs gutter 917, title at 144px",
+      "value": "cover; cover 1440×480 at x 0 (cover), card 292px painted, title at 190px",
       "note": ""
     },
     {
       "id": "1.17",
       "scenario": "Case study without a cover shows no empty box",
       "state": "pass",
-      "value": "cover box 0px (notion-header__cover no-cover no-icon)",
+      "value": "cover box 0px; plain; placeholder 480px in rgb(35, 71, 74)",
+      "note": ""
+    },
+    {
+      "id": "1.18",
+      "scenario": "Case study cover sits above the title on narrower screens",
+      "state": "pass",
+      "value": "cover 390×200 (39:20 → 200), 16px to the title",
       "note": ""
     }
   ]

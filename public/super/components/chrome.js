@@ -10,13 +10,16 @@
  *   2. The current nav link. `aria-current="page"` on the link for the
  *      section the reader is in; site.css §3 styles that attribute. The nav
  *      sits OUTSIDE <main>, so CSS alone cannot see the page classes.
- *   3. Case-study hero measurements. On a case study with a Notion cover,
- *      `--hero-top` and `--hero-h` on <main>, so site.css §4 can place the
- *      cover as hero art: the cover lives in .notion-header and the text in
- *      .notion-root, two different parents, so no CSS box spans the hero.
- *      It also marks <main data-bhd-hero="cover">, which is what site.css
- *      keys the placement on. No script: the cover stays where Super puts
- *      it, above the title.
+ *   3. Case-study hero measurements. On a case study, `--hero-top` and
+ *      `--hero-h` on <main> (the text card's top and height), so site.css §4
+ *      can lay the art, or the placeholder colour, behind the card: the
+ *      cover lives in .notion-header and the text in .notion-root, two
+ *      different parents, so no CSS box spans the hero. It marks
+ *      <main data-bhd-hero="cover"> or "plain" (no cover), which is what
+ *      site.css keys the art layer on. Which pages are case studies is
+ *      site.css's call, not this file's: §4 sets `--bhd-hero: card` on
+ *      their <main>, so the slug list lives in one place. No script: the
+ *      card still draws, and the cover stays where Super puts it.
  *
  * The loader (loader.js) calls `chromePass()` on every DOM pass, because
  * Super is a Next.js app and swaps <main> on navigation without a reload.
@@ -104,32 +107,40 @@ function heroBlocks(main) {
   return blocks;
 }
 
+/** True when site.css marks <main> as a case study with a card hero. */
+function isCardHero(doc, main) {
+  const view = doc.defaultView;
+  return !!view && view.getComputedStyle(main).getPropertyValue('--bhd-hero').trim() === 'card';
+}
+
 /**
- * On a case study with a cover (any page that is not the homepage and has
- * `.notion-header__cover.has-cover`), write the hero's top and height,
- * relative to <main>, as custom properties. Removes them otherwise, so a
- * client-side navigation away from a cover never leaves stale values.
+ * On a case study (site.css sets `--bhd-hero: card` on its <main>), write
+ * the text card's top and height, relative to <main>, as custom properties,
+ * and mark whether it has a cover. Removes all three otherwise, so a
+ * client-side navigation to another kind of page never leaves stale values.
  * @param {Document} doc
  */
 export function measureHero(doc) {
   const main = /** @type {HTMLElement | null} */ (doc.querySelector('main.super-content'));
   if (!main) return;
-  const hasCover = !main.classList.contains('page__index') && !!main.querySelector('.notion-header__cover.has-cover');
-  const blocks = hasCover ? heroBlocks(main) : [];
+  const blocks = isCardHero(doc, main) ? heroBlocks(main) : [];
   if (!blocks.length) {
     main.style.removeProperty('--hero-top');
     main.style.removeProperty('--hero-h');
     delete main.dataset.bhdHero;
     return;
   }
+  // site.css §4 draws the art layer only under this attribute, so without
+  // the script the cover stays where Super puts it and no placeholder colour
+  // is drawn. Set it before measuring: it lifts the cover out of the flow,
+  // and reading the boxes afterwards measures the card where it ends up.
+  const state = main.querySelector('.notion-header__cover.has-cover') ? 'cover' : 'plain';
+  if (main.dataset.bhdHero !== state) main.dataset.bhdHero = state;
   const origin = main.getBoundingClientRect().top;
   const top = blocks[0].getBoundingClientRect().top;
   const bottom = Math.max(...blocks.map((b) => b.getBoundingClientRect().bottom));
   main.style.setProperty('--hero-top', `${Math.round(top - origin)}px`);
   main.style.setProperty('--hero-h', `${Math.round(bottom - top)}px`);
-  // site.css §4 places the cover only under this attribute, so without the
-  // script (or before the first measure) the cover stays where Super puts it.
-  main.dataset.bhdHero = 'cover';
 }
 
 /** Everything that depends on the page's DOM; safe to run on every pass. */
