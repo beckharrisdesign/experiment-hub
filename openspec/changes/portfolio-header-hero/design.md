@@ -348,6 +348,13 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       at the hero's bottom edge, with no strip of page colour between them
       (Katy, 2026-11-17, after the live check). A heading that comes first
       instead keeps `space-32`.
+    - **Even padding.** One value, `--hero-card-pad` (`space-16`), pads
+      all four sides. The title is trimmed to its capitals
+      (`text-box: trim-start cap alphabetic`) and the summary to its
+      descenders (`trim-end cap text`), so the visible gap is 16px on every
+      side. Measured on the live page's pixels: 16 / 16 / 16. Before the
+      trim, the line heights added about 10px above the title and 5px below
+      the summary. Browsers without `text-box` fall back to those.
     - **Card spacing,** as drawn: 16px padding (`space-16`), 4px from the
       title to the properties (`space-4`), 32px from the properties to
       the summary (`space-32`). Katy's 2px corner radius isn't drawn:

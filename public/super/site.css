@@ -742,6 +742,10 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
     /* At least 480px of hero, the card centred in it (Katy's frame). The
        loader measures the card into --hero-h; without it, 64px. */
     --hero-pad: max(calc(var(--spacing) * 16), calc((480px - var(--hero-h, 480px)) / 2));
+    /* The card's padding, one value for all four sides (space-16, Katy's
+       frame). The title's top and the summary's bottom are trimmed to the
+       ink (text-box), so the gap you see is this value on every side. */
+    --hero-card-pad: calc(var(--spacing) * 4);
     position: relative;
     isolation: isolate;
   }
@@ -752,9 +756,11 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header .notion-header__content {
     border-image: none;
     margin-top: var(--hero-pad) !important;   /* Super centres it with margin: auto */
-    padding-top: calc(var(--spacing) * 4) !important;          /* space-16 card padding */
+    padding-top: var(--hero-card-pad) !important;
     padding-bottom: calc(var(--spacing) * 1) !important;       /* space-4 to the properties, inside the card */
-    background: linear-gradient(var(--hero-bg) 0 0) 2px 0 / 786px 100% no-repeat;
+    /* The strip starts --hero-card-pad left of the text (the block's own
+       padding is 1rem) and runs the 754px text width plus both pads. */
+    background: linear-gradient(var(--hero-bg) 0 0) calc(1rem - var(--hero-card-pad)) 0 / calc(754px + 2 * var(--hero-card-pad)) 100% no-repeat;
   }
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header__title-wrapper {
     max-width: 754px;
@@ -762,14 +768,16 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
   }
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header__title {
     line-height: calc(56 / 45);
+    text-box: trim-start cap alphabetic;  /* no leading above the capitals */
   }
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :not(.notion-callout, .notion-callout ~ *, h2, h2 ~ *) {
     max-width: 754px !important;
-    border-image: conic-gradient(var(--hero-bg) 0 0) fill 0 / / 0 calc(var(--spacing) * 4);
+    border-image: conic-gradient(var(--hero-bg) 0 0) fill 0 / / 0 var(--hero-card-pad);
   }
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :has(+ :is(.notion-callout, h2)):not(.notion-callout ~ *, h2 ~ *) {
-    padding-bottom: calc(var(--spacing) * 4) !important;       /* space-16 card padding */
+    padding-bottom: var(--hero-card-pad) !important;
     margin-bottom: var(--hero-pad) !important;
+    text-box: trim-end cap text;         /* no leading below the descenders */
   }
   /* The first callout meets the hero's bottom edge: no strip of page colour
      between them (Katy, 2026-11-17). A heading still gets space-32. */
