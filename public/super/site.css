@@ -773,7 +773,12 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
     padding-bottom: calc(var(--spacing) * 4) !important;       /* space-16 card padding */
     margin-bottom: var(--hero-pad) !important;
   }
-  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :is(.notion-callout, h2):not(.notion-callout ~ *, h2 ~ *) {
+  /* The first callout meets the hero's bottom edge: no strip of page colour
+     between them (Katy, 2026-11-17). A heading still gets space-32. */
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-callout:not(.notion-callout ~ *, h2 ~ *) {
+    margin-top: 0 !important;
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > h2:not(.notion-callout ~ *, h2 ~ *) {
     margin-top: calc(var(--spacing) * 8) !important;          /* space-32 after the hero */
   }
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-text:not(.notion-callout ~ *, h2 ~ *) {

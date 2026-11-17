@@ -329,6 +329,10 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
         runs 16px past the text on each side.
       - `.notion-header`'s 16px bottom margin goes to 0, so the title's
         slice meets the properties' slice.
+    - **The first callout meets the hero.** At 1024px and wider it starts
+      at the hero's bottom edge, with no strip of page colour between them
+      (Katy, 2026-11-17, after the live check). A heading that comes first
+      instead keeps `space-32`.
     - **Card spacing,** as drawn: 16px padding (`space-16`), 4px from the
       title to the properties (`space-4`), 32px from the properties to
       the summary (`space-32`). Katy's 2px corner radius isn't drawn:
