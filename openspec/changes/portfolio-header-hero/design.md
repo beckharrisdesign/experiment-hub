@@ -258,9 +258,13 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       frame `22:81` clips it, and this follows the hero frame. Overflow
       past the right edge of the viewport relies on §2's existing
       `overflow-x` guard.
-    - **The text column stays 62 / 38** of the column list, so the 86px
-      title's three lines fit. The art sits behind the title and summary,
-      as on page 04.2.
+    - **The text column takes the full content width** (it was 62 / 38
+      until 2026-11-17). At 62% the 86px title ran to 3–4 lines and the
+      button landed below the first screen on a laptop: at 924px on a
+      1512 × 860 window. At full width the title is 2 lines, and the
+      button ends at 691px on 1440 × 800 and 675px on 1280 × 720, even
+      with today's 51-word paragraph. The art sits behind the text, so it
+      needs no column of its own.
     - **Phone: the same rule.** At 390 wide and a 764px hero, the art is
       1146px tall and 1378px wide, centred at x 257, so it fills the hero
       behind the text. The CTA doesn't

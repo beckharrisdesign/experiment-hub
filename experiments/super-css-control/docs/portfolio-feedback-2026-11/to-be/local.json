@@ -1,5 +1,5 @@
 {
-  "when": "2026-11-17T21:26:28.606Z",
+  "when": "2026-11-17T21:31:31.470Z",
   "source": "local",
   "results": [
     {
@@ -69,21 +69,21 @@
       "id": "1.10",
       "scenario": "Hero art is anchored to the content grid, behind the content",
       "state": "pass",
-      "value": "art 1.500× hero height, centre x 917 vs gutter 917 (pattern; no image yet)",
+      "value": "art 1.500× hero height, centre x 917 vs gutter 917",
       "note": ""
     },
     {
       "id": "1.11",
       "scenario": "Hero text stays readable over the art",
       "state": "pass",
-      "value": "title 7.02:1, line 7.02:1, button 8.93:1",
+      "value": "title 6.61:1, line 6.51:1, button 8.93:1",
       "note": ""
     },
     {
       "id": "1.12",
       "scenario": "Call to action stays in the first phone screen with art behind it",
-      "state": "content",
-      "value": "no art in Notion yet (task 3.11)",
+      "state": "pass",
+      "value": "button bottom 531px with art",
       "note": ""
     },
     {

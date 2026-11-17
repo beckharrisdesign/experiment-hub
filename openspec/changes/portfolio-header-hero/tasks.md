@@ -132,7 +132,8 @@ Write the tests first, and see them fail before the code that passes them.
         `.page__all-projects`.
 - [x] 3.5 §4 Homepage hero (`.page__index .notion-root >
       .notion-column-list:first-child`):
-      - a 62 / 38 column split;
+      - a 62 / 38 column split (widened to the full content width on
+        2026-11-17: at 62% the button fell below a laptop's first screen);
       - the display size and accent rule;
       - a 24px / 18px supporting line;
       - full-width `--primary-1` band;
@@ -184,8 +185,9 @@ Write the tests first, and see them fail before the code that passes them.
 
 - [ ] 3.10 Shorten the homepage hero copy to one supporting line, and move
       the current 70-word paragraph to About.
-- [ ] 3.11 Put the hero art as an image block in column 2 of the homepage
-      hero. Use the diamond placeholder until the final art is ready.
+- [x] 3.11 Put the hero art as an image block in column 2 of the homepage
+      hero. (Live 2026-11-17: check 1.12 passes, and text contrast over
+      the art is 6.51–6.61:1.) Use the diamond placeholder until the final art is ready.
 - [ ] 3.12 Set covers on the case studies that have a project visual.
       Export each from Figma page 05 (`hero-art/<slug>`, preset to PNG at
       1600px) and set it as that page's cover. First check whether the

@@ -586,7 +586,10 @@ h1.notion-heading,
   border-image: conic-gradient(var(--home-hero-bg) 0 0) fill 0 / / 0 100vmax;
 }
 .page__index .notion-root > .notion-column-list:first-child > .notion-column:first-child {
-  width: 62% !important;               /* Super writes the Notion split inline */
+  width: 100% !important;              /* Super writes the Notion split inline. The full content width:
+                                          at 62% the title ran to 3–4 lines and pushed the button below
+                                          the first screen on a laptop (Katy, 2026-11-17). The art sits
+                                          behind the text, so it needs no column of its own. */
 }
 .page__index .notion-root > .notion-column-list:first-child h1.notion-heading {
   font-size: var(--home-display-size);
