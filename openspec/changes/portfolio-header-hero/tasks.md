@@ -199,11 +199,20 @@ Write the tests first, and see them fail before the code that passes them.
       §1 check at 1440×900, 1024×768 and 390×844. In the PR, show one
       screenshot (homepage, 1440) and put the rest in a collapsed
       `<details>`.
-- [ ] 4.3 After merge and deploy:
-      - `node scripts/super-css/check.mjs` reports that the served bytes
-        match the repo and every class hook is present on the live pages;
-      - `npm run super:measure` against the live site passes;
-      - save the table as `to-be/after.json`, next to `before.json`.
+- [x] 4.3 After merge and deploy (2026-11-17, #595 merged):
+      - the served `site.css`, `components.js`, `loader.js` and
+        `chrome.js` match `main` byte for byte;
+      - `node scripts/super-css/check.mjs`: in sync. It first reported
+        `--hero-h` / `--hero-top` (set at runtime by `chrome.js`, so now
+        listed as self-defined) and `.page__katy-harris` (About wasn't a
+        sampled route; it is now). Two misses remain, neither from this
+        change: `.page__all-projects` (`/all-projects` now redirects to
+        `/`, so that page class no longer exists) and
+        `.notion-property__number` (#537's Labs score pill, on a table
+        no sampled route shows);
+      - `npm run super:measure` against the live site
+        (`to-be/after.json`): 14 pass, 0 fail, 3 waiting on Notion
+        (3.10, 3.11), 1 manual. Same as the branch measured before merge.
 - [ ] 4.4 Manual walkthrough on the live site, at 1440 and on a phone:
       - scroll each page and watch the bar shrink and grow back;
       - turn on reduced motion and repeat;

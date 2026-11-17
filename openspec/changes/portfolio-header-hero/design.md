@@ -373,7 +373,9 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 
 ### Guards and tests
 
-17. **`check.mjs` needs no new code.** It already collects every `.notion-*`,
+17. **`check.mjs` needed two lines, found after merge** (tasks.md 4.3): the
+    runtime `--hero-h` / `--hero-top` go in its self-defined list, and About
+    joins its routes. Otherwise it already collects every `.notion-*`,
     `.super-*`, `.page__*` and `.parent-page__*` class in `site.css` and
     checks each against the live pages. New hooks such as
     `.notion-column`, `.notion-divider`, `.notion-page__properties-layout`

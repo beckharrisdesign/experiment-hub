@@ -59,6 +59,7 @@ const ROUTES = [
   '/bhd-labs/mvds', // project page: header, page properties
   '/for-babylist', // section 9: the curated card row
   '/bhd-consultation', // section 5: the accent-coloured H2 labels
+  '/katy-harris', // About: the subpage hero band (portfolio-header-hero)
   '/bhd-labs/figma-grabber', // section 7: a page carrying URL properties
 ];
 
@@ -70,6 +71,10 @@ const SELF_DEFINED = new Set([
   '--pill-bg',
   '--callout-bg',
   '--collection-gap',
+  // Set at runtime by components/chrome.js on the case-study <main>
+  // (portfolio-header-hero, decision 15), so no stylesheet defines them.
+  '--hero-h',
+  '--hero-top',
 ]);
 
 const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
