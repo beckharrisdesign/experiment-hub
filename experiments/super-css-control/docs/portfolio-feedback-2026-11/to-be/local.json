@@ -1,5 +1,5 @@
 {
-  "when": "2026-11-17T21:43:06.262Z",
+  "when": "2026-11-17T22:10:00.537Z",
   "source": "local",
   "results": [
     {
@@ -69,14 +69,14 @@
       "id": "1.10",
       "scenario": "Hero art is anchored to the content grid, behind the content",
       "state": "content",
-      "value": "art 1.500× hero height, centre x 917 vs gutter 917, file 1200px for 1440px drawn (the upload is smaller than that; task 3.11)",
+      "value": "art 1.500× hero height, centre x 917 vs gutter 917, file 1563px for 2000px drawn (the upload is smaller than that; task 3.11a)",
       "note": ""
     },
     {
       "id": "1.11",
       "scenario": "Hero text stays readable over the art",
       "state": "pass",
-      "value": "title 5.26:1, line 5.19:1, button 8.93:1",
+      "value": "title 5.03:1, line 5.15:1, button 8.93:1",
       "note": ""
     },
     {

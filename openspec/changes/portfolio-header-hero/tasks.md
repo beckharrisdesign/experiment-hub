@@ -239,7 +239,22 @@ Write the tests first, and see them fail before the code that passes them.
       hero) at 1440 and 390, and note any differences in the PR. Known:
       the card's 2px corner radius isn't drawn (each block paints its own
       slice, so there is no single box to round).
-- [ ] 4.6 After #596 merges and deploys, rerun `npm run super:measure`
+- [x] 4.6 After #596 merges and deploys, rerun `npm run super:measure`
       against the live site and replace `to-be/after.json`, so the saved
       result includes the touch-ups (plain hero for 1.14, the art-size
       check in 1.10, the art now in Notion for 1.12).
+      Done 2026-11-17, after Deploy Hub finished and the served files
+      matched `main`: 13 pass, 1 fail, 3 waiting on Notion, 1 manual.
+      Rebuilding now has a real cover, which showed two things:
+      - **A real bug, fixed in this PR:** with a cover, Super adds 48px
+        above the title (`.has-cover.no-icon .notion-header__title-wrapper`).
+        It made the desktop card 340px instead of 292px, and the phone gap
+        under the cover 64px instead of 16px. §4 now zeroes it on case
+        studies. Check 1.18 now requires a gap of 24px or less, which is
+        why it fails live until this ships.
+      - **A check bug, fixed:** 1.17 assumed the case study had no cover.
+        It now removes the cover itself, and 1.16 / 1.18 use the page's own
+        cover when there is one.
+      This branch measures 14 pass, 0 fail.
+- [ ] 4.7 After this follow-up merges and deploys, rerun the live
+      measurement into `to-be/after.json` and confirm 1.18 passes.

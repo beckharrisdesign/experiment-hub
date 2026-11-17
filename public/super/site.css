@@ -729,6 +729,13 @@ h1.notion-heading,
 main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) {
   --hero-band: var(--hero-bg);
 }
+/* Super pushes the title down 48px when the page has a cover
+   (.has-cover.no-icon .notion-header__title-wrapper; 74px with an icon).
+   The cover isn't above the title on desktop, and on a phone the 16px
+   below the cover is the gap, so the push goes at every width. */
+main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header__content .notion-header__title-wrapper {
+  margin-top: 0 !important;
+}
 @media only screen and (min-width: 1024px) {
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) {
     --bhd-hero: card;
