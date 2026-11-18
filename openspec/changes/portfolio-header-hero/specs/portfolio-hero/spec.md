@@ -75,7 +75,7 @@ Consulting and About heroes SHALL sit on a band a step off the page colour. A ca
 #### Scenario: Case study cover fills the hero behind a text card
 
 - **WHEN** a case study has a Notion cover image and is opened at 1024px wide or more
-- **THEN** the cover SHALL fill a hero area at least 480px tall and as wide as the screen up to 1920px, scaled to cover it and centred, with the page colour either side on wider screens, and the title, properties and summary SHALL sit on a card in the hero colour, aligned to the content's left edge, with the title starting in the first screen
+- **THEN** the cover SHALL fill a hero area at least 480px tall and as wide as the screen, scaled to cover it and centred, at most 1920px per copy of the image, repeated sideways on wider screens, and the title, properties and summary SHALL sit on a card in the hero colour, aligned to the content's left edge, with the title starting in the first screen
 - **AND** the site SHALL add no mask, wash or colour taken from the cover
 
 #### Scenario: Case study cover sits above the title on narrower screens

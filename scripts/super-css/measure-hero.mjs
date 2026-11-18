@@ -357,13 +357,15 @@ async function main() {
       await giveCover(wp);
       await wp.waitForTimeout(1200);
       const w = await wp.evaluate(() => {
-        const c = document.querySelector('.notion-header__cover').getBoundingClientRect();
-        return { l: c.left, w: c.width, vw: document.documentElement.clientWidth };
+        const el = document.querySelector('.notion-header__cover');
+        const c = el.getBoundingClientRect(); const cs = getComputedStyle(el);
+        return { l: c.left, w: c.width, vw: document.documentElement.clientWidth, bg: cs.backgroundImage, size: cs.backgroundSize, repeat: cs.backgroundRepeat, img: getComputedStyle(el.querySelector('img')).visibility };
       });
       await wide.close();
-      const capOk = near(w.w, 1920, 1) && near(w.l, (w.vw - 1920) / 2, 1);
+      // Past 1920px: full width, the image tiled sideways at 1920px a tile.
+      const capOk = near(w.w, w.vw, 1) && near(w.l, 0, 1) && w.bg.startsWith('url(') && w.size.startsWith('1920px') && w.repeat.startsWith('repeat-x') && w.img === 'hidden';
       record('1.16', 'Case study cover fills the hero behind a text card', coverOk && capOk ? 'pass' : 'fail',
-        `${cover.state ?? 'not measured'}; cover ${Math.round(cover.c.w)}×${Math.round(cover.c.h)} at x ${Math.round(cover.c.l)} (${cover.fit}), card ${Math.round(cover.cardBottom - cover.cardTop)}px ${cover.painted ? 'painted' : 'NOT painted'}, title at ${Math.round(cover.titleTop)}px; at 2560: ${Math.round(w.w)}px at x ${Math.round(w.l)}`);
+        `${cover.state ?? 'not measured'}; cover ${Math.round(cover.c.w)}×${Math.round(cover.c.h)} at x ${Math.round(cover.c.l)} (${cover.fit}), card ${Math.round(cover.cardBottom - cover.cardTop)}px ${cover.painted ? 'painted' : 'NOT painted'}, title at ${Math.round(cover.titleTop)}px; at 2560: ${Math.round(w.w)}px at x ${Math.round(w.l)}, ${w.bg.startsWith('url(') ? `tiled ${w.size} ${w.repeat}` : 'NOT tiled'}`);
 
       // 1.18: the same cover on a phone sits above the title at 39:20.
       await giveCover(pp);

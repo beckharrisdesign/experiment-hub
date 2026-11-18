@@ -140,6 +140,7 @@ export function measureHero(doc) {
     main.style.removeProperty('--hero-top');
     main.style.removeProperty('--hero-h');
     delete main.dataset.bhdHero;
+    tileCover(main);
     return;
   }
   // site.css §4 draws the art layer only under this attribute, so without
@@ -153,6 +154,35 @@ export function measureHero(doc) {
   const bottom = Math.max(...blocks.map((b) => b.getBoundingClientRect().bottom));
   main.style.setProperty('--hero-top', `${Math.round(top - origin)}px`);
   main.style.setProperty('--hero-h', `${Math.round(bottom - top)}px`);
+  tileCover(main);
+}
+
+/**
+ * Hand the cover's image to CSS, so site.css §4 can tile it past 1920px.
+ * CSS can't read an <img>'s address, so the address goes on <main> as
+ * `--hero-cover-url`, and `data-bhd-cover-tile` tells site.css it may hide
+ * the <img> and paint the tiles instead. Without either (no script, or no
+ * cover), the cover stays one centred 1920px image. Re-runs when the image
+ * loads, because the browser picks its srcset file only then.
+ * @param {HTMLElement} main
+ */
+export function tileCover(main) {
+  const img = main.dataset.bhdHero === 'cover'
+    ? /** @type {HTMLImageElement | null} */ (main.querySelector('.notion-header__cover.has-cover img'))
+    : null;
+  const src = img ? img.currentSrc || img.getAttribute('src') || '' : '';
+  if (!src) {
+    main.style.removeProperty('--hero-cover-url');
+    delete main.dataset.bhdCoverTile;
+    return;
+  }
+  const value = `url("${src.replace(/["\\]/g, '\\$&')}")`;
+  if (main.style.getPropertyValue('--hero-cover-url') !== value) main.style.setProperty('--hero-cover-url', value);
+  if (main.dataset.bhdCoverTile !== '') main.dataset.bhdCoverTile = '';
+  if (img && !img.dataset.bhdTileWatch) {
+    img.dataset.bhdTileWatch = '';
+    img.addEventListener('load', () => tileCover(main));
+  }
 }
 
 /** The homepage art images: column 2 of the hero column list. */

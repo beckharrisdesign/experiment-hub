@@ -78,7 +78,7 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 5. **Consulting / About / case study.** The hero sits on a band a step
    lighter than the page, and the band ends before the first body section.
    A case study at 1024px and wider is different: its cover fills the hero
-   edge to edge up to 1920px wide (centred, page colour beyond), and the title, properties and summary sit on a card in
+   edge to edge (1920px per copy of the image, repeated sideways beyond that), and the title, properties and summary sit on a card in
    the hero colour over it (Katy's frame `55:328`).
 6. **Deeper pages** (a Labs sub-page, or a page under a collection) keep
    the breadcrumb. It shows a level the nav can't.
@@ -107,7 +107,7 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 >
 > **Case-study hero (2026-11-17).** Katy's final case-study hero (Figma
 > `55:328`) replaces the 150% rule for case studies. The cover fills the
-> hero edge to edge (capped at 1920px wide from 2026-11-18), and the text
+> hero edge to edge (one 1920px image, tiled beyond that, from 2026-11-18), and the text
 > sits on a card in the hero colour.
 > Decisions 15 and 16 describe it, and the spec's third requirement was
 > revised to match. The homepage keeps decision 11.
@@ -388,11 +388,16 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       The art layer spans `--hero-top − --hero-pad` for
       `--hero-h + 2 × --hero-pad`. Without the script, `--hero-pad` falls
       back to 64px.
-    - **Capped at 1920px** (Katy, 2026-11-18). On a wider screen the
-      cover stays 1920px wide and centred, with the page colour
-      (`#143639`) either side, so a wide monitor doesn't blow the art up
-      past its resolution. 1920px is the 3840px export on a 2× screen, and
-      3840w is the largest file in Super's srcset (`--hero-art-max`).
+    - **Capped at 1920px, tiled beyond** (Katy, 2026-11-18). The image is
+      never drawn wider than 1920px (`--hero-art-max`): the 3840px export
+      on a 2× screen, and the largest file in Super's srcset. On a wider
+      screen the cover repeats sideways (`repeat-x`, 1920px per tile,
+      centred), so the middle tile is exactly the single image, and a wide
+      monitor shows more art instead of a hard edge. CSS can't read an
+      `<img>`'s address, so `chrome.js` (`tileCover`) puts it on `<main>`
+      as `--hero-cover-url` and sets `data-bhd-cover-tile`. Without the
+      script, the cover stays one centred 1920px image on the page colour.
+      Tiles meet at visible seams unless the art is drawn to repeat.
     - **The art:** with a cover (`main[data-bhd-hero="cover"]`), the cover
       is lifted out of the header. It is placed over that span, as wide as
       `<main>` up to `--hero-art-max` (1920px) and centred, with

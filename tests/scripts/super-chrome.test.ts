@@ -9,6 +9,7 @@ import {
   updateCompact,
   fitArtSizes,
   heroBlocks,
+  tileCover,
 } from '../../public/super/components/chrome.js';
 
 /**
@@ -230,5 +231,49 @@ describe('where the case-study hero ends (decision 14)', () => {
   it('passes over a heading anchor and stops at the heading', () => {
     expect(root(props + para + '<span class="notion-heading__anchor"></span><h2>Next</h2>'))
       .toEqual(['notion-header__content', 'notion-page__properties-layout', 'notion-text__content']);
+  });
+});
+
+describe('tiling the cover on wide screens (decision 15)', () => {
+  const caseStudy = (cover: string) => {
+    page('page__rebuilding-a-design-function parent-page__index',
+      `<div class="notion-header page"><div class="notion-header__cover ${cover}">` +
+      (cover === 'has-cover' ? '<img src="https://assets.super.so/a/cover.png?width=1600">' : '') +
+      `</div><div class="notion-header__content"><h1>T</h1></div></div>` +
+      `<article class="notion-root"><p class="notion-text notion-text__content">S.</p><div class="notion-callout"></div></article>`);
+    const main = document.querySelector('main') as HTMLElement;
+    main.style.setProperty('--bhd-hero', 'card');
+    return main;
+  };
+
+  it('hands the cover image to CSS and marks the page for tiling', () => {
+    const main = caseStudy('has-cover');
+    measureHero(document);
+    expect(main.style.getPropertyValue('--hero-cover-url')).toBe('url("https://assets.super.so/a/cover.png?width=1600")');
+    expect(main.dataset.bhdCoverTile).toBe('');
+  });
+
+  it('marks nothing on a case study without a cover', () => {
+    const main = caseStudy('no-cover');
+    measureHero(document);
+    expect(main.style.getPropertyValue('--hero-cover-url')).toBe('');
+    expect(main.dataset.bhdCoverTile).toBeUndefined();
+  });
+
+  it('clears the image when the page stops being a cover case study', () => {
+    const main = caseStudy('has-cover');
+    measureHero(document);
+    main.style.removeProperty('--bhd-hero');
+    measureHero(document);
+    expect(main.style.getPropertyValue('--hero-cover-url')).toBe('');
+    expect(main.dataset.bhdCoverTile).toBeUndefined();
+  });
+
+  it('escapes quotes in the address', () => {
+    const main = caseStudy('has-cover');
+    main.querySelector('img')!.setAttribute('src', 'https://x/a"b.png');
+    main.dataset.bhdHero = 'cover';
+    tileCover(main);
+    expect(main.style.getPropertyValue('--hero-cover-url')).toBe('url("https://x/a\\"b.png")');
   });
 });

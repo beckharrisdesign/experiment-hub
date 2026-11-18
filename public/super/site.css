@@ -915,6 +915,22 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
     object-position: center !important;
   }
 }
+/* Past 1920px, tile the cover instead of stopping at a hard edge (Katy,
+   2026-11-18: "tile the hero imagery on super wide screens so that it
+   doesn't look so broken"). The middle tile sits exactly where the single
+   capped image did: 1920px wide, centred, cropped top and bottom like
+   object-fit: cover. components/chrome.js hands over the image as
+   --hero-cover-url and sets data-bhd-cover-tile; without the script the
+   cover stays one centred 1920px image. */
+@media only screen and (min-width: 1921px) {
+  main[data-bhd-hero="cover"][data-bhd-cover-tile] .notion-header__cover.has-cover {
+    width: 100%;
+    background: var(--hero-cover-url) center / var(--hero-art-max) auto repeat-x;
+  }
+  main[data-bhd-hero="cover"][data-bhd-cover-tile] .notion-header__cover.has-cover img {
+    visibility: hidden;
+  }
+}
 @media only screen and (max-width: 1023px) {
   .notion-header__cover.has-cover {
     height: auto !important;
