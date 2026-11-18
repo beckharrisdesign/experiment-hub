@@ -78,7 +78,7 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 5. **Consulting / About / case study.** The hero sits on a band a step
    lighter than the page, and the band ends before the first body section.
    A case study at 1024px and wider is different: its cover fills the hero
-   edge to edge, and the title, properties and summary sit on a card in
+   edge to edge up to 1920px wide (centred, page colour beyond), and the title, properties and summary sit on a card in
    the hero colour over it (Katy's frame `55:328`).
 6. **Deeper pages** (a Labs sub-page, or a page under a collection) keep
    the breadcrumb. It shows a level the nav can't.
@@ -107,7 +107,8 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 >
 > **Case-study hero (2026-11-17).** Katy's final case-study hero (Figma
 > `55:328`) replaces the 150% rule for case studies. The cover fills the
-> hero edge to edge, and the text sits on a card in the hero colour.
+> hero edge to edge (capped at 1920px wide from 2026-11-18), and the text
+> sits on a card in the hero colour.
 > Decisions 15 and 16 describe it, and the spec's third requirement was
 > revised to match. The homepage keeps decision 11.
 
@@ -387,8 +388,9 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       past its resolution. 1920px is the 3840px export on a 2× screen, and
       3840w is the largest file in Super's srcset (`--hero-art-max`).
     - **The art:** with a cover (`main[data-bhd-hero="cover"]`), the cover
-      is lifted out of the header. It is placed across the full width of
-      `<main>` over that span, with `object-fit: cover` centred. As on the
+      is lifted out of the header. It is placed over that span, as wide as
+      `<main>` up to `--hero-art-max` (1920px) and centred, with
+      `object-fit: cover` centred. As on the
       homepage, the site adds nothing to it.
     - **No cover** (`main[data-bhd-hero="plain"]`): the same span is
       painted `--accent` (`#23474A`). That is the placeholder colour on
