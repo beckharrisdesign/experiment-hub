@@ -1,5 +1,5 @@
 {
-  "when": "2026-11-18T12:16:53.416Z",
+  "when": "2026-11-18T15:00:42.643Z",
   "source": "live",
   "results": [
     {
@@ -76,7 +76,7 @@
       "id": "1.11",
       "scenario": "Hero text stays readable over the art",
       "state": "pass",
-      "value": "title 5.05:1",
+      "value": "title 5.05:1 (intro and button sit below the hero, on the page colour)",
       "note": ""
     },
     {

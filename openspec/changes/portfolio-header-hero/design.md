@@ -78,7 +78,7 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 5. **Consulting / About / case study.** The hero sits on a band a step
    lighter than the page, and the band ends before the first body section.
    A case study at 1024px and wider is different: its cover fills the hero
-   edge to edge, and the title, properties and summary sit on a card in
+   edge to edge up to 1920px wide (centred, page colour beyond), and the title, properties and summary sit on a card in
    the hero colour over it (Katy's frame `55:328`).
 6. **Deeper pages** (a Labs sub-page, or a page under a collection) keep
    the breadcrumb. It shows a level the nav can't.
@@ -107,7 +107,8 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 >
 > **Case-study hero (2026-11-17).** Katy's final case-study hero (Figma
 > `55:328`) replaces the 150% rule for case studies. The cover fills the
-> hero edge to edge, and the text sits on a card in the hero colour.
+> hero edge to edge (capped at 1920px wide from 2026-11-18), and the text
+> sits on a card in the hero colour.
 > Decisions 15 and 16 describe it, and the spec's third requirement was
 > revised to match. The homepage keeps decision 11.
 
@@ -359,6 +360,11 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       side. Measured on the live page's pixels: 16 / 16 / 16. Before the
       trim, the line heights added about 10px above the title and 5px below
       the summary. Browsers without `text-box` fall back to those.
+    - **No seams.** Blocks inside the card have no top margin, so their
+      slices meet. A hero button (Datlas's "Explore the Atlas") follows the
+      summary at the paragraph's own 1rem; Super's 4px margin and 9px
+      padding go. The descender trim applies only when the card ends in
+      text (2026-11-18).
     - **Card spacing,** as drawn: 16px padding (`space-16`), 4px from the
       title to the properties (`space-4`), 32px from the properties to
       the summary (`space-32`). Katy's 2px corner radius isn't drawn:
@@ -376,9 +382,15 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       The art layer spans `--hero-top − --hero-pad` for
       `--hero-h + 2 × --hero-pad`. Without the script, `--hero-pad` falls
       back to 64px.
+    - **Capped at 1920px** (Katy, 2026-11-18). On a wider screen the
+      cover stays 1920px wide and centred, with the page colour
+      (`#143639`) either side, so a wide monitor doesn't blow the art up
+      past its resolution. 1920px is the 3840px export on a 2× screen, and
+      3840w is the largest file in Super's srcset (`--hero-art-max`).
     - **The art:** with a cover (`main[data-bhd-hero="cover"]`), the cover
-      is lifted out of the header. It is placed across the full width of
-      `<main>` over that span, with `object-fit: cover` centred. As on the
+      is lifted out of the header. It is placed over that span, as wide as
+      `<main>` up to `--hero-art-max` (1920px) and centred, with
+      `object-fit: cover` centred. As on the
       homepage, the site adds nothing to it.
     - **No cover** (`main[data-bhd-hero="plain"]`): the same span is
       painted `--accent` (`#23474A`). That is the placeholder colour on

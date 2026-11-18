@@ -207,7 +207,10 @@ async function main() {
         }, HERO);
         if (btn) checks.push(['button', ratio(rgb(btn.fg), rgb(btn.bg))]);
         const worst = Math.min(...checks.map(([, r]) => r));
-        record('1.11', 'Hero text stays readable over the art', worst >= 4.5 ? 'pass' : 'fail', checks.map(([n, r]) => `${n} ${r.toFixed(2)}:1`).join(', '));
+        // Only text inside the hero sits over the art. Once the intro and the
+        // button move below the hero (1.8), the title is the one thing to check.
+        const below = hero.inHero === 0 ? ' (intro and button sit below the hero, on the page colour)' : '';
+        record('1.11', 'Hero text stays readable over the art', worst >= 4.5 ? 'pass' : 'fail', checks.map(([n, r]) => `${n} ${r.toFixed(2)}:1`).join(', ') + below);
         if (hero.hasImage) {
           // 1.14: take the image out and check nothing stands in for it.
           await page.evaluate((HERO) => document.querySelectorAll(`${HERO} > .notion-column:nth-child(2) .notion-image`).forEach((n) => n.remove()), HERO);
@@ -340,10 +343,24 @@ async function main() {
           textLeft: title.left, titleTop: title.top + window.scrollY,
         };
       });
-      const coverOk = cover.state === 'cover' && near(cover.c.l, 0, 1) && near(cover.c.w, cover.vw, 1) && cover.c.h >= 479
+      // Full width up to 1920px, centred (design.md decision 15).
+      const coverW = Math.min(cover.vw, 1920);
+      const coverOk = cover.state === 'cover' && near(cover.c.w, coverW, 1) && near(cover.c.l, (cover.vw - coverW) / 2, 1) && cover.c.h >= 479
         && cover.c.t <= cover.cardTop && cover.c.b >= cover.cardBottom && cover.fit === 'cover' && cover.painted && cover.titleTop < 900;
-      record('1.16', 'Case study cover fills the hero behind a text card', coverOk ? 'pass' : 'fail',
-        `${cover.state ?? 'not measured'}; cover ${Math.round(cover.c.w)}×${Math.round(cover.c.h)} at x ${Math.round(cover.c.l)} (${cover.fit}), card ${Math.round(cover.cardBottom - cover.cardTop)}px ${cover.painted ? 'painted' : 'NOT painted'}, title at ${Math.round(cover.titleTop)}px`);
+      // The 1920px cap only shows on a wider screen: measure it at 2560.
+      const wide = await openContext(browser, { width: 2560, height: 900 }, { local });
+      const wp = await wide.newPage();
+      await visit(wp, PAGES.caseStudy);
+      await giveCover(wp);
+      await wp.waitForTimeout(1200);
+      const w = await wp.evaluate(() => {
+        const c = document.querySelector('.notion-header__cover').getBoundingClientRect();
+        return { l: c.left, w: c.width, vw: document.documentElement.clientWidth };
+      });
+      await wide.close();
+      const capOk = near(w.w, 1920, 1) && near(w.l, (w.vw - 1920) / 2, 1);
+      record('1.16', 'Case study cover fills the hero behind a text card', coverOk && capOk ? 'pass' : 'fail',
+        `${cover.state ?? 'not measured'}; cover ${Math.round(cover.c.w)}×${Math.round(cover.c.h)} at x ${Math.round(cover.c.l)} (${cover.fit}), card ${Math.round(cover.cardBottom - cover.cardTop)}px ${cover.painted ? 'painted' : 'NOT painted'}, title at ${Math.round(cover.titleTop)}px; at 2560: ${Math.round(w.w)}px at x ${Math.round(w.l)}`);
 
       // 1.18: the same cover on a phone sits above the title at 39:20.
       await giveCover(pp);

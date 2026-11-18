@@ -49,7 +49,8 @@
       ends before the first body section.
 - [ ] 1.16 **Case study cover fills the hero behind a text card**: on a
       case study with a cover, at 1024px and wider, the cover fills a
-      full-width hero at least 480px tall, the title, properties and
+      hero at least 480px tall and up to 1920px wide (centred, page colour
+      beyond), the title, properties and
       summary sit on a card in the hero colour, and the title starts in
       the first screen.
 - [ ] 1.17 **Case study without a cover shows no empty box**: no empty

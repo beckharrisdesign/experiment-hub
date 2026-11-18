@@ -800,10 +800,20 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :not(.notion-callout, .notion-callout ~ *, h2, h2 ~ *) {
     max-width: 754px !important;
     border-image: conic-gradient(var(--hero-bg) 0 0) fill 0 / / 0 var(--hero-card-pad);
+    margin-top: 0 !important;            /* a margin opens a seam in the card */
+  }
+  /* A button in the hero (e.g. "Explore the Atlas") follows the summary at
+     the paragraph's own 1rem; Super's 4px margin and 9px padding go. */
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-button:not(.notion-callout ~ *, h2 ~ *) {
+    padding-top: 0 !important;
   }
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :has(+ :is(.notion-callout, h2)):not(.notion-callout ~ *, h2 ~ *) {
     padding-bottom: var(--hero-card-pad) !important;
     margin-bottom: var(--hero-pad) !important;
+  }
+  /* Trim the last line's leading only when the card ends in text; a button
+     already sits in its own box. */
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-text:has(+ :is(.notion-callout, h2)):not(.notion-callout ~ *, h2 ~ *) {
     text-box: trim-end cap text;         /* no leading below the descenders */
   }
   /* The first callout meets the hero's bottom edge: no strip of page colour
@@ -867,13 +877,20 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
     background: var(--accent);
     pointer-events: none;
   }
+  /* The cover fills the hero up to 1920px wide, centred; past that the page
+     colour shows either side, so a wide monitor doesn't blow the art up
+     beyond its resolution. 1920px is the art's export (3840px) on a 2×
+     screen, and 3840w is the largest file in Super's srcset (Katy,
+     2026-11-18). */
   main[data-bhd-hero="cover"] .notion-header__cover.has-cover {
+    --hero-art-max: 1920px;
     position: absolute;
     z-index: -1;
-    left: 0;
-    right: 0;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
     top: calc(var(--hero-top) - var(--hero-pad));
-    width: auto;
+    width: min(100%, var(--hero-art-max));
     height: calc(var(--hero-h) + 2 * var(--hero-pad));
     max-height: none;
     margin: 0;
