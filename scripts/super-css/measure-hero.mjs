@@ -207,7 +207,10 @@ async function main() {
         }, HERO);
         if (btn) checks.push(['button', ratio(rgb(btn.fg), rgb(btn.bg))]);
         const worst = Math.min(...checks.map(([, r]) => r));
-        record('1.11', 'Hero text stays readable over the art', worst >= 4.5 ? 'pass' : 'fail', checks.map(([n, r]) => `${n} ${r.toFixed(2)}:1`).join(', '));
+        // Only text inside the hero sits over the art. Once the intro and the
+        // button move below the hero (1.8), the title is the one thing to check.
+        const below = hero.inHero === 0 ? ' (intro and button sit below the hero, on the page colour)' : '';
+        record('1.11', 'Hero text stays readable over the art', worst >= 4.5 ? 'pass' : 'fail', checks.map(([n, r]) => `${n} ${r.toFixed(2)}:1`).join(', ') + below);
         if (hero.hasImage) {
           // 1.14: take the image out and check nothing stands in for it.
           await page.evaluate((HERO) => document.querySelectorAll(`${HERO} > .notion-column:nth-child(2) .notion-image`).forEach((n) => n.remove()), HERO);
