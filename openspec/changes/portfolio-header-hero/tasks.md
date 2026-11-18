@@ -271,3 +271,9 @@ Write the tests first, and see them fail before the code that passes them.
       `main`: 17 pass, 0 fail, 0 waiting on Notion, 1 manual (1.13).
       `check.mjs` is in sync with 29/29 variables; the two old selector
       misses remain (see 4.3).
+- [x] 4.8 After #601 (cover tiled past 1920px) deploys, rerun the live
+      measurement into `to-be/after.json` and confirm 1.16 sees the tiles.
+      Done 2026-11-18, with the served files matching `main`: 17 pass,
+      0 fail, 1 manual (1.13). At 2560, 1.16 reads "tiled 1920px 1081px
+      repeat-x", full width, image hidden. Known: the tiles meet at a
+      visible seam, because the art isn't drawn to repeat.
