@@ -269,6 +269,33 @@ describe('tiling the cover on wide screens (decision 15)', () => {
     expect(main.dataset.bhdCoverTile).toBeUndefined();
   });
 
+  it('swaps in the file the browser picked once the image loads', () => {
+    const main = caseStudy('has-cover');
+    measureHero(document);
+    const img = main.querySelector('img') as HTMLImageElement;
+    Object.defineProperty(img, 'currentSrc', { configurable: true, get: () => 'https://assets.super.so/a/cover.png?width=3840' });
+    img.dispatchEvent(new Event('load'));
+    expect(main.style.getPropertyValue('--hero-cover-url')).toBe('url("https://assets.super.so/a/cover.png?width=3840")');
+  });
+
+  it('sizes each tile like object-fit: cover, so a tall hero is filled', () => {
+    const main = caseStudy('has-cover');
+    main.dataset.bhdHero = 'cover';
+    const img = main.querySelector('img') as HTMLImageElement;
+    Object.defineProperty(img, 'naturalWidth', { configurable: true, get: () => 1600 });
+    Object.defineProperty(img, 'naturalHeight', { configurable: true, get: () => 900 });
+    const box = main.querySelector('.notion-header__cover') as HTMLElement;
+    box.style.setProperty('--hero-art-max', '1920px');
+    // A short hero: 1920px wide wins (1600 × 1.2 = 1920, 900 × 1.2 = 1080).
+    vi.spyOn(box, 'getBoundingClientRect').mockReturnValue({ height: 480 } as DOMRect);
+    tileCover(main);
+    expect(main.style.getPropertyValue('--hero-cover-tile')).toBe('1920px 1080px');
+    // A tall hero: the height wins (1400 / 900 = 1.556 → 2489 × 1400).
+    vi.spyOn(box, 'getBoundingClientRect').mockReturnValue({ height: 1400 } as DOMRect);
+    tileCover(main);
+    expect(main.style.getPropertyValue('--hero-cover-tile')).toBe('2489px 1400px');
+  });
+
   it('escapes quotes in the address', () => {
     const main = caseStudy('has-cover');
     main.querySelector('img')!.setAttribute('src', 'https://x/a"b.png');

@@ -173,11 +173,26 @@ export function tileCover(main) {
   const src = img ? img.currentSrc || img.getAttribute('src') || '' : '';
   if (!src) {
     main.style.removeProperty('--hero-cover-url');
+    main.style.removeProperty('--hero-cover-tile');
     delete main.dataset.bhdCoverTile;
     return;
   }
   const value = `url("${src.replace(/["\\]/g, '\\$&')}")`;
   if (main.style.getPropertyValue('--hero-cover-url') !== value) main.style.setProperty('--hero-cover-url', value);
+  // Size each tile the way object-fit: cover sizes the single image: at
+  // least --hero-art-max wide AND at least as tall as the cover box, so a
+  // tall hero is never left with an unfilled strip.
+  const box = /** @type {HTMLElement} */ (img.closest('.notion-header__cover'));
+  const view = main.ownerDocument.defaultView;
+  const max = parseFloat(view ? view.getComputedStyle(box).getPropertyValue('--hero-art-max') : '') || 1920;
+  const boxH = box.getBoundingClientRect().height;
+  if (img.naturalWidth && img.naturalHeight && boxH) {
+    const scale = Math.max(max / img.naturalWidth, boxH / img.naturalHeight);
+    const tile = `${Math.round(img.naturalWidth * scale)}px ${Math.round(img.naturalHeight * scale)}px`;
+    if (main.style.getPropertyValue('--hero-cover-tile') !== tile) main.style.setProperty('--hero-cover-tile', tile);
+  } else {
+    main.style.removeProperty('--hero-cover-tile');
+  }
   if (main.dataset.bhdCoverTile !== '') main.dataset.bhdCoverTile = '';
   if (img && !img.dataset.bhdTileWatch) {
     img.dataset.bhdTileWatch = '';

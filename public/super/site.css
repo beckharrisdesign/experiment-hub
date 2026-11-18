@@ -925,7 +925,9 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
 @media only screen and (min-width: 1921px) {
   main[data-bhd-hero="cover"][data-bhd-cover-tile] .notion-header__cover.has-cover {
     width: 100%;
-    background: var(--hero-cover-url) center / var(--hero-art-max) auto repeat-x;
+    /* --hero-cover-tile (from chrome.js) keeps each tile covering a tall
+       hero; until the image has loaded, 1920px wide. */
+    background: var(--hero-cover-url) center / var(--hero-cover-tile, var(--hero-art-max) auto) repeat-x;
   }
   main[data-bhd-hero="cover"][data-bhd-cover-tile] .notion-header__cover.has-cover img {
     visibility: hidden;
