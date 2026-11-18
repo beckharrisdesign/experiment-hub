@@ -1,5 +1,5 @@
 {
-  "when": "2026-11-18T15:33:08.895Z",
+  "when": "2026-11-18T18:43:09.075Z",
   "source": "local",
   "results": [
     {
@@ -111,14 +111,14 @@
       "id": "1.16",
       "scenario": "Case study cover fills the hero behind a text card",
       "state": "pass",
-      "value": "cover; cover 1440×480 at x 0 (cover), card 276px painted, title at 198px; at 2560: 1920px at x 320",
+      "value": "cover; cover 1440×480 at x 0 (cover), card 276px painted, title at 198px; at 2560: 2560px at x 0, tiled 1920px 1081px repeat-x",
       "note": ""
     },
     {
       "id": "1.17",
-      "scenario": "Case study without a cover shows no empty box",
+      "scenario": "Case study without a cover shows the default art",
       "state": "pass",
-      "value": "cover box 0px; plain; placeholder 480px in rgb(35, 71, 74)",
+      "value": "cover box 0px; plain; generic.png 480px tall, tile max(min(100%, 1920px), 853.333px); @390: generic.png 390×200, 16px to the title",
       "note": ""
     },
     {

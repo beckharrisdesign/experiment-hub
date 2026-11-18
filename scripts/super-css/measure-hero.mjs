@@ -314,11 +314,28 @@ async function main() {
         const main = document.querySelector('main.super-content');
         const c = document.querySelector('.notion-header__cover');
         const before = getComputedStyle(main, '::before');
-        return { h: c ? Math.round(c.getBoundingClientRect().height) : 0, state: main.dataset.bhdHero ?? 'none', layerH: parseFloat(before.height) || 0, layerBg: before.backgroundColor };
+        return { h: c ? Math.round(c.getBoundingClientRect().height) : 0, state: main.dataset.bhdHero ?? 'none', layerH: parseFloat(before.height) || 0, layerBg: before.backgroundImage, layerSize: before.backgroundSize };
       });
-      const plainOk = plain.h <= 1 && plain.state === 'plain' && plain.layerH >= 479 && plain.layerBg === 'rgb(35, 71, 74)';
-      record('1.17', 'Case study without a cover shows no empty box', plainOk ? 'pass' : 'fail',
-        `cover box ${plain.h}px; ${plain.state}; placeholder ${Math.round(plain.layerH)}px in ${plain.layerBg}`);
+      // On a phone the default art stands in for the cover: 39:20 above the title.
+      const phoneNoCover = await openContext(browser, VIEWPORTS.phone, { local });
+      const np = await phoneNoCover.newPage();
+      await visit(np, PAGES.caseStudy);
+      const strip = await np.evaluate(() => {
+        const c = document.querySelector('.notion-header__cover');
+        if (c?.classList.contains('has-cover')) {
+          c.classList.replace('has-cover', 'no-cover');
+          c.innerHTML = '';
+        }
+        const r = c.getBoundingClientRect();
+        const t = document.querySelector('.notion-header__title').getBoundingClientRect();
+        return { w: r.width, h: r.height, b: r.bottom, titleTop: t.top, bg: getComputedStyle(c).backgroundImage, vw: document.documentElement.clientWidth };
+      });
+      await phoneNoCover.close();
+      const generic = (bg) => /hero\/generic\.png/.test(bg);
+      const stripOk = generic(strip.bg) && near(strip.w, strip.vw, 1) && near(strip.h, (strip.w * 20) / 39, 1.5) && strip.b <= strip.titleTop && strip.titleTop - strip.b <= 24;
+      const plainOk = plain.h <= 1 && plain.state === 'plain' && plain.layerH >= 479 && generic(plain.layerBg) && stripOk;
+      record('1.17', 'Case study without a cover shows the default art', plainOk ? 'pass' : 'fail',
+        `cover box ${plain.h}px; ${plain.state}; ${generic(plain.layerBg) ? 'generic.png' : 'NO default art'} ${Math.round(plain.layerH)}px tall, tile ${plain.layerSize}; @390: ${generic(strip.bg) ? 'generic.png' : 'NO default art'} ${Math.round(strip.w)}×${Math.round(strip.h)}, ${Math.round(strip.titleTop - strip.b)}px to the title`);
 
       // 1.16: give the case study a cover, the way Super marks one, and measure.
       await visit(dp, PAGES.caseStudy);

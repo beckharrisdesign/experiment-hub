@@ -75,6 +75,8 @@ const SELF_DEFINED = new Set([
   // (portfolio-header-hero, decision 15), so no stylesheet defines them.
   '--hero-h',
   '--hero-top',
+  // Defined in site.css §4 on the plain hero's ::before (the art layer's height).
+  '--hero-layer-h',
 ]);
 
 const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');

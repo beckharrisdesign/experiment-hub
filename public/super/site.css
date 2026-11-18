@@ -873,17 +873,24 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
     margin: 0 !important;
   }
   /* The art layer, behind the card, over the measured hero. With a cover,
-     the cover; without one, the placeholder colour. Both need the loader's
-     measurements, so neither draws without it. */
+     the cover; without one, the default art, hero/generic.png (Katy,
+     2026-11-18: "put it as the default hero image when there isn't one
+     specified"). Both need the loader's measurements, so neither draws
+     without it.
+     The default art is sized like the cover: each tile at least as wide as
+     the hero (up to 1920px) and at least as tall, cropped top and bottom,
+     then tiled sideways past 1920px. The art is 16:9 (2000 × 1125). The
+     colour underneath shows only while the image loads. */
   main[data-bhd-hero="plain"]::before {
+    --hero-layer-h: calc(var(--hero-h) + 2 * var(--hero-pad));
     content: "";
     position: absolute;
     z-index: -1;
     left: 0;
     right: 0;
     top: calc(var(--hero-top) - var(--hero-pad));
-    height: calc(var(--hero-h) + 2 * var(--hero-pad));
-    background: var(--accent);
+    height: var(--hero-layer-h);
+    background: var(--accent) url("hero/generic.png") center / max(min(100%, 1920px), calc(var(--hero-layer-h) * 16 / 9)) auto repeat-x;
     pointer-events: none;
   }
   /* The cover fills the hero up to 1920px wide, centred; past that the page
@@ -938,8 +945,17 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
     height: auto !important;
     aspect-ratio: 39 / 20;                /* Katy's 390 × 200 phone frame */
   }
-  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects):has(.notion-header__cover.has-cover) .notion-header__content {
-    padding-top: calc(var(--spacing) * 4) !important;          /* space-16 below the cover */
+  /* No cover in Notion: the default art takes the cover's place, the same
+     39:20 strip above the title (see the plain art layer in §4). Pure CSS,
+     so it draws with or without the loader. */
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header__cover.no-cover {
+    height: auto !important;
+    max-height: none !important;          /* §2 collapses the empty box to 0 */
+    aspect-ratio: 39 / 20;
+    background: var(--accent) url("hero/generic.png") center / cover no-repeat;
+  }
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header__content {
+    padding-top: calc(var(--spacing) * 4) !important;          /* space-16 below the cover or the default art */
   }
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header__title {
     font-size: var(--text-h1-size);
