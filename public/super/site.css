@@ -665,6 +665,33 @@ h1.notion-heading,
     font-size: var(--text-body-lg-size);
   }
 }
+/* The intro below the hero (Katy, 2026-11-17: "pull the paragraph and CTA
+   below the hero"). In Notion the paragraph and button sit after the hero's
+   column list, before the first divider; here they get the hero's measure
+   (two of three grid columns) and type, on the page colour. */
+.page__index .notion-root > .notion-column-list:first-child ~ :not(.notion-divider, .notion-divider ~ *).notion-text:not(.notion-text__content) {
+  display: none;                       /* Notion's empty spacer blocks */
+}
+.page__index .notion-root > .notion-column-list:first-child ~ .notion-text__content:not(.notion-divider ~ *) {
+  max-width: calc((100% - 2rem) * 2 / 3 + 1rem) !important;
+  font-size: var(--text-h3-size);
+  line-height: 1.5;
+  margin-top: calc(var(--spacing) * 12) !important;   /* space-48 below the hero */
+  padding-bottom: 0;
+}
+.page__index .notion-root > .notion-column-list:first-child ~ .notion-text__content:not(.notion-divider ~ *) + .notion-text__content {
+  margin-top: calc(var(--spacing) * 4) !important;    /* space-16 between paragraphs */
+}
+.page__index .notion-root > .notion-column-list:first-child ~ .notion-button:not(.notion-divider ~ *) {
+  margin-top: calc(var(--spacing) * 8) !important;    /* space-32 to the button */
+}
+@media only screen and (max-width: 680px) {
+  .page__index .notion-root > .notion-column-list:first-child ~ .notion-text__content:not(.notion-divider ~ *) {
+    max-width: none !important;
+    font-size: var(--text-body-lg-size);
+    margin-top: calc(var(--spacing) * 8) !important;  /* space-32 */
+  }
+}
 
 /* --- Subpage hero band (decisions 13–14). Painted per block, no wrapper.
    Consulting and About: every block before the first divider (that divider
@@ -729,12 +756,23 @@ h1.notion-heading,
 main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) {
   --hero-band: var(--hero-bg);
 }
+/* Super pushes the title down 48px when the page has a cover
+   (.has-cover.no-icon .notion-header__title-wrapper; 74px with an icon).
+   The cover isn't above the title on desktop, and on a phone the 16px
+   below the cover is the gap, so the push goes at every width. */
+main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header__content .notion-header__title-wrapper {
+  margin-top: 0 !important;
+}
 @media only screen and (min-width: 1024px) {
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) {
     --bhd-hero: card;
     /* At least 480px of hero, the card centred in it (Katy's frame). The
        loader measures the card into --hero-h; without it, 64px. */
     --hero-pad: max(calc(var(--spacing) * 16), calc((480px - var(--hero-h, 480px)) / 2));
+    /* The card's padding, one value for all four sides (space-16, Katy's
+       frame). The title's top and the summary's bottom are trimmed to the
+       ink (text-box), so the gap you see is this value on every side. */
+    --hero-card-pad: calc(var(--spacing) * 4);
     position: relative;
     isolation: isolate;
   }
@@ -745,9 +783,11 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header .notion-header__content {
     border-image: none;
     margin-top: var(--hero-pad) !important;   /* Super centres it with margin: auto */
-    padding-top: calc(var(--spacing) * 4) !important;          /* space-16 card padding */
+    padding-top: var(--hero-card-pad) !important;
     padding-bottom: calc(var(--spacing) * 1) !important;       /* space-4 to the properties, inside the card */
-    background: linear-gradient(var(--hero-bg) 0 0) 2px 0 / 786px 100% no-repeat;
+    /* The strip starts --hero-card-pad left of the text (the block's own
+       padding is 1rem) and runs the 754px text width plus both pads. */
+    background: linear-gradient(var(--hero-bg) 0 0) calc(1rem - var(--hero-card-pad)) 0 / calc(754px + 2 * var(--hero-card-pad)) 100% no-repeat;
   }
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header__title-wrapper {
     max-width: 754px;
@@ -755,14 +795,16 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
   }
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-header__title {
     line-height: calc(56 / 45);
+    text-box: trim-start cap alphabetic;  /* no leading above the capitals */
   }
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :not(.notion-callout, .notion-callout ~ *, h2, h2 ~ *) {
     max-width: 754px !important;
-    border-image: conic-gradient(var(--hero-bg) 0 0) fill 0 / / 0 calc(var(--spacing) * 4);
+    border-image: conic-gradient(var(--hero-bg) 0 0) fill 0 / / 0 var(--hero-card-pad);
   }
   main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :has(+ :is(.notion-callout, h2)):not(.notion-callout ~ *, h2 ~ *) {
-    padding-bottom: calc(var(--spacing) * 4) !important;       /* space-16 card padding */
+    padding-bottom: var(--hero-card-pad) !important;
     margin-bottom: var(--hero-pad) !important;
+    text-box: trim-end cap text;         /* no leading below the descenders */
   }
   /* The first callout meets the hero's bottom edge: no strip of page colour
      between them (Katy, 2026-11-17). A heading still gets space-32. */

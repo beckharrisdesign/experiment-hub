@@ -21,10 +21,12 @@
 - [ ] 1.7 **Homepage title is larger than any subpage title**: the
       homepage title is visibly bigger than any subpage title at the same
       width.
-- [ ] 1.8 **One supporting line under the title**: the homepage hero shows
-      the title, one short line and the button, with no paragraph.
-- [ ] 1.9 **Call to action is in the first phone screen**: at 390×844 the
-      "Book a 30m call" button ends at or above 600px.
+- [ ] 1.8 **The hero holds the title alone**: the homepage hero shows the
+      title over its art; the intro paragraph and the button follow
+      directly below it. (Was "one supporting line" until 2026-11-17;
+      Katy moved the full intro below the hero instead.)
+- [ ] 1.9 **A "Book a 30m call" button is in the first phone screen**: at
+      390×844 one ends at or above 600px; the navbar's counts.
 - [ ] 1.10 **Hero art is anchored to the content grid, behind the content**:
       the hero runs full width in its colour. The art sits
       behind the text at 150% of the hero's height, centred on the gutter
@@ -33,9 +35,8 @@
 - [ ] 1.11 **Hero text stays readable over the art**: title, line and
       button label each hold at least 4.5:1 against whatever is behind
       them.
-- [ ] 1.12 **Call to action stays in the first phone screen with art behind it**:
-      at 390×844, with art in place, the button still ends at
-      or above 600px.
+- [ ] 1.12 **Hero art never moves the intro or the button**: at 390×844
+      the intro and the button sit where they would without the art.
 - [ ] 1.13 **Swapping the visual needs no pull request**: Katy replaces
       the hero image in Notion, and the live hero shows it with no change
       to `public/super/`.
@@ -185,8 +186,12 @@ Write the tests first, and see them fail before the code that passes them.
 
 **Content, in Notion (Katy):**
 
-- [ ] 3.10 Shorten the homepage hero copy to one supporting line, and move
-      the current 70-word paragraph to About.
+- [ ] 3.10 In Notion, drag the intro paragraph and the "Book a 30m call"
+      button out of the hero's left column, to just below the two-column
+      block (above the synced block). The paragraph stays as written.
+      (Was "shorten to one line" until 2026-11-17. The button can't be
+      moved through Notion's API: it reads as an unknown block, and
+      rewriting the column would delete it.)
 - [x] 3.11 Put the hero art as an image block in column 2 of the homepage
       hero. (Live 2026-11-17: check 1.12 passes, and text contrast over
       the art is 6.51–6.61:1.)
@@ -239,7 +244,22 @@ Write the tests first, and see them fail before the code that passes them.
       hero) at 1440 and 390, and note any differences in the PR. Known:
       the card's 2px corner radius isn't drawn (each block paints its own
       slice, so there is no single box to round).
-- [ ] 4.6 After #596 merges and deploys, rerun `npm run super:measure`
+- [x] 4.6 After #596 merges and deploys, rerun `npm run super:measure`
       against the live site and replace `to-be/after.json`, so the saved
       result includes the touch-ups (plain hero for 1.14, the art-size
       check in 1.10, the art now in Notion for 1.12).
+      Done 2026-11-17, after Deploy Hub finished and the served files
+      matched `main`: 13 pass, 1 fail, 3 waiting on Notion, 1 manual.
+      Rebuilding now has a real cover, which showed two things:
+      - **A real bug, fixed in this PR:** with a cover, Super adds 48px
+        above the title (`.has-cover.no-icon .notion-header__title-wrapper`).
+        It made the desktop card 340px instead of 292px, and the phone gap
+        under the cover 64px instead of 16px. §4 now zeroes it on case
+        studies. Check 1.18 now requires a gap of 24px or less, which is
+        why it fails live until this ships.
+      - **A check bug, fixed:** 1.17 assumed the case study had no cover.
+        It now removes the cover itself, and 1.16 / 1.18 use the page's own
+        cover when there is one.
+      This branch measures 14 pass, 0 fail.
+- [ ] 4.7 After this follow-up merges and deploys, rerun the live
+      measurement into `to-be/after.json` and confirm 1.18 passes.

@@ -10,7 +10,7 @@ This capability covers HR-1, HR-2, HR-3 and HR-4 from the
 
 ### Requirement: The homepage hero is the front door, not another subpage
 
-The homepage hero SHALL use a display size larger than any subpage title, carry one supporting line instead of a paragraph, and keep its call to action well inside the first phone screen.
+The homepage hero SHALL use a display size larger than any subpage title and hold the title alone. The intro paragraph and the call to action SHALL follow directly below the hero, and a "Book a 30m call" button SHALL stay in the first phone screen.
 
 **Fails until:** The homepage H1 is 45px, the same as every subpage H1, and the phone CTA ends at 778px of an 844px screen (`measurements.json` → `home-desktop.h1.size`, `home-mobile.firstCtaBottom`).
 
@@ -19,15 +19,15 @@ The homepage hero SHALL use a display size larger than any subpage title, carry 
 - **WHEN** the homepage and any subpage are opened at the same width
 - **THEN** the homepage H1 SHALL be set in a homepage-only display size that is larger than the subpage H1
 
-#### Scenario: One supporting line under the title
+#### Scenario: The hero holds the title alone
 
 - **WHEN** the homepage hero renders
-- **THEN** it SHALL show the title, one short supporting line and the call to action, and no multi-sentence paragraph
+- **THEN** the hero SHALL show the title over its art, and the intro paragraph and the "Book a 30m call" button SHALL follow directly below the hero, on the page colour, at the hero's text width
 
-#### Scenario: Call to action is in the first phone screen
+#### Scenario: A "Book a 30m call" button is in the first phone screen
 
 - **WHEN** the homepage opens at 390×844
-- **THEN** the bottom of the "Book a 30m call" button SHALL sit at or above 600px
+- **THEN** a "Book a 30m call" button SHALL be visible with its bottom at or above 600px (the navbar's button counts)
 
 ### Requirement: The homepage hero carries a personal visual that Katy can swap
 
@@ -46,10 +46,10 @@ The homepage hero SHALL run the full width of the screen with its personal visua
 - **WHEN** hero art sits behind hero text
 - **THEN** the title, supporting line and button label SHALL each keep at least 4.5:1 contrast against what is behind them
 
-#### Scenario: Call to action stays in the first phone screen with art behind it
+#### Scenario: Hero art never moves the intro or the button
 
 - **WHEN** the homepage opens at 390×844 with hero art
-- **THEN** the art SHALL follow the same anchoring and SHALL NOT move the button, whose bottom SHALL stay at or above 600px
+- **THEN** the art SHALL follow the same anchoring, and the intro and the button SHALL sit where they would without it
 
 #### Scenario: Swapping the visual needs no pull request
 
