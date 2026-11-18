@@ -1,5 +1,5 @@
 {
-  "when": "2026-11-17T22:09:00.205Z",
+  "when": "2026-11-18T12:16:53.416Z",
   "source": "live",
   "results": [
     {
@@ -53,37 +53,37 @@
     },
     {
       "id": "1.8",
-      "scenario": "One supporting line under the title",
-      "state": "content",
-      "value": "1 paragraph(s), 51 words (task 3.10)",
+      "scenario": "The hero holds the title alone",
+      "state": "pass",
+      "value": "title only; intro directly below the hero",
       "note": ""
     },
     {
       "id": "1.9",
-      "scenario": "Call to action is in the first phone screen",
-      "state": "content",
-      "value": "button bottom 694px with today's 51-word copy; 505px with one line (task 3.10)",
+      "scenario": "A \"Book a 30m call\" button is in the first phone screen",
+      "state": "pass",
+      "value": "first one ends at 60px of 844 (3 visible)",
       "note": ""
     },
     {
       "id": "1.10",
       "scenario": "Hero art is anchored to the content grid, behind the content",
-      "state": "content",
-      "value": "art 1.500× hero height, centre x 917 vs gutter 917, file 1552px for 2000px drawn (the upload is smaller than that; task 3.11a)",
+      "state": "pass",
+      "value": "art 1.500× hero height, centre x 917 vs gutter 917, file 1200px for 1208px drawn",
       "note": ""
     },
     {
       "id": "1.11",
       "scenario": "Hero text stays readable over the art",
       "state": "pass",
-      "value": "title 5.03:1, line 5.15:1, button 8.93:1",
+      "value": "title 5.05:1",
       "note": ""
     },
     {
       "id": "1.12",
-      "scenario": "Call to action stays in the first phone screen with art behind it",
+      "scenario": "Hero art never moves the intro or the button",
       "state": "pass",
-      "value": "button bottom 505px with art",
+      "value": "same positions with and without the art",
       "note": ""
     },
     {
@@ -111,7 +111,7 @@
       "id": "1.16",
       "scenario": "Case study cover fills the hero behind a text card",
       "state": "pass",
-      "value": "cover; cover 1440×480 at x 0 (cover), card 340px painted, title at 214px",
+      "value": "cover; cover 1440×480 at x 0 (cover), card 276px painted, title at 198px",
       "note": ""
     },
     {
@@ -124,8 +124,8 @@
     {
       "id": "1.18",
       "scenario": "Case study cover sits above the title on narrower screens",
-      "state": "fail",
-      "value": "cover 390×200 (39:20 → 200), 64px to the title",
+      "state": "pass",
+      "value": "cover 390×200 (39:20 → 200), 16px to the title",
       "note": ""
     }
   ]

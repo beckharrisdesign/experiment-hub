@@ -186,19 +186,22 @@ Write the tests first, and see them fail before the code that passes them.
 
 **Content, in Notion (Katy):**
 
-- [ ] 3.10 In Notion, drag the intro paragraph and the "Book a 30m call"
+- [x] 3.10 In Notion, drag the intro paragraph and the "Book a 30m call"
       button out of the hero's left column, to just below the two-column
       block (above the synced block). The paragraph stays as written.
       (Was "shorten to one line" until 2026-11-17. The button can't be
       moved through Notion's API: it reads as an unknown block, and
-      rewriting the column would delete it.)
+      rewriting the column would delete it.) Done by Katy; live check 1.8
+      passes on 2026-11-18.
 - [x] 3.11 Put the hero art as an image block in column 2 of the homepage
       hero. (Live 2026-11-17: check 1.12 passes, and text contrast over
       the art is 6.51–6.61:1.)
 - [ ] 3.11a Re-upload the homepage art at 3840px wide (the `hero-art/home`
       export preset). The file in Notion is 1200px, softer than the
       ~1,440px it is drawn at, so check 1.10 reads `content` until this
-      is done.
+      is done. (2026-11-18: with the intro moved out, the art is drawn
+      1,208px wide, so the 1200px file passes 1.10 at 1x. A Retina screen
+      still wants ~2,400px, so the re-upload is still worth doing.)
 - [ ] 3.12 Set covers on the case studies that have a project visual.
       Export each from Figma page 05 (`hero-art/<slug>`, preset to PNG at
       3840px wide) and set it as that page's cover. First check whether the
@@ -261,5 +264,9 @@ Write the tests first, and see them fail before the code that passes them.
         It now removes the cover itself, and 1.16 / 1.18 use the page's own
         cover when there is one.
       This branch measures 14 pass, 0 fail.
-- [ ] 4.7 After this follow-up merges and deploys, rerun the live
+- [x] 4.7 After this follow-up merges and deploys, rerun the live
       measurement into `to-be/after.json` and confirm 1.18 passes.
+      Done 2026-11-18 after #597 deployed, with the served files matching
+      `main`: 17 pass, 0 fail, 0 waiting on Notion, 1 manual (1.13).
+      `check.mjs` is in sync with 29/29 variables; the two old selector
+      misses remain (see 4.3).
