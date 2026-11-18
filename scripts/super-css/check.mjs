@@ -75,6 +75,9 @@ const SELF_DEFINED = new Set([
   // (portfolio-header-hero, decision 15), so no stylesheet defines them.
   '--hero-h',
   '--hero-top',
+  // Set at runtime by components/chrome.js on Consulting and Labs
+  // (decision 21): the height their hero needs to reach --top-hero-min.
+  '--top-hero-fill',
 ]);
 
 const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
