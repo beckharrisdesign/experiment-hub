@@ -343,7 +343,9 @@ async function main() {
           textLeft: title.left, titleTop: title.top + window.scrollY,
         };
       });
-      const coverOk = cover.state === 'cover' && near(cover.c.l, 0, 1) && near(cover.c.w, cover.vw, 1) && cover.c.h >= 479
+      // Full width up to 1920px, centred (design.md decision 15).
+      const coverW = Math.min(cover.vw, 1920);
+      const coverOk = cover.state === 'cover' && near(cover.c.w, coverW, 1) && near(cover.c.l, (cover.vw - coverW) / 2, 1) && cover.c.h >= 479
         && cover.c.t <= cover.cardTop && cover.c.b >= cover.cardBottom && cover.fit === 'cover' && cover.painted && cover.titleTop < 900;
       record('1.16', 'Case study cover fills the hero behind a text card', coverOk ? 'pass' : 'fail',
         `${cover.state ?? 'not measured'}; cover ${Math.round(cover.c.w)}×${Math.round(cover.c.h)} at x ${Math.round(cover.c.l)} (${cover.fit}), card ${Math.round(cover.cardBottom - cover.cardTop)}px ${cover.painted ? 'painted' : 'NOT painted'}, title at ${Math.round(cover.titleTop)}px`);

@@ -376,6 +376,11 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       The art layer spans `--hero-top − --hero-pad` for
       `--hero-h + 2 × --hero-pad`. Without the script, `--hero-pad` falls
       back to 64px.
+    - **Capped at 1920px** (Katy, 2026-11-18). On a wider screen the
+      cover stays 1920px wide and centred, with the page colour
+      (`#143639`) either side, so a wide monitor doesn't blow the art up
+      past its resolution. 1920px is the 3840px export on a 2× screen, and
+      3840w is the largest file in Super's srcset (`--hero-art-max`).
     - **The art:** with a cover (`main[data-bhd-hero="cover"]`), the cover
       is lifted out of the header. It is placed across the full width of
       `<main>` over that span, with `object-fit: cover` centred. As on the

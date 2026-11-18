@@ -867,13 +867,20 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
     background: var(--accent);
     pointer-events: none;
   }
+  /* The cover fills the hero up to 1920px wide, centred; past that the page
+     colour shows either side, so a wide monitor doesn't blow the art up
+     beyond its resolution. 1920px is the art's export (3840px) on a 2×
+     screen, and 3840w is the largest file in Super's srcset (Katy,
+     2026-11-18). */
   main[data-bhd-hero="cover"] .notion-header__cover.has-cover {
+    --hero-art-max: 1920px;
     position: absolute;
     z-index: -1;
-    left: 0;
-    right: 0;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
     top: calc(var(--hero-top) - var(--hero-pad));
-    width: auto;
+    width: min(100%, var(--hero-art-max));
     height: calc(var(--hero-h) + 2 * var(--hero-pad));
     max-height: none;
     margin: 0;
