@@ -232,8 +232,13 @@ html {
 main.super-content {
   overflow-x: clip;
 }
-/* Cap and center the whole page, with breathing room at the edges */
-.notion-root {
+/* Cap and center the whole page, with breathing room at the edges.
+   .super-content in the selector is load-bearing: Super's inline
+   `.notion-root { padding-left: var(--padding-left) }` (96px) has the same
+   specificity as a bare .notion-root, so whichever loads last won. On the
+   live site that was this file; in Super's dashboard preview it was Super's,
+   and the article sat 78px right of the title (2026-11-18). */
+.super-content .notion-root {
   max-width: var(--site-max-width);
   margin: 0 auto;
   padding-inline: 1rem;
