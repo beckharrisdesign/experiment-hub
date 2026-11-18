@@ -331,8 +331,11 @@ async function main() {
         const img = getComputedStyle(document.querySelector('.notion-header__cover img'));
         const head = document.querySelector('.notion-header__content');
         const root = [...document.querySelectorAll('.notion-root > *')];
-        const end = root.findIndex((el) => el.matches('.notion-callout, h2'));
-        const cardBlocks = root.slice(0, end < 0 ? root.length : end);
+        // The hero's run: details, paragraphs and buttons (heading anchors
+        // pass), ending at the first block of any other kind (design.md 14).
+        const kinds = '.notion-page__properties-layout, .notion-text__content, .notion-button';
+        const end = root.findIndex((el) => !el.matches(kinds) && !el.matches('.notion-heading__anchor'));
+        const cardBlocks = root.slice(0, end < 0 ? root.length : end).filter((el) => el.matches(kinds));
         const cardTop = box(head).top;
         const cardBottom = Math.max(...cardBlocks.map((b) => box(b).bottom));
         const title = box(document.querySelector('.notion-header__title'));

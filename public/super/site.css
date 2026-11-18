@@ -701,13 +701,17 @@ h1.notion-heading,
 /* --- Subpage hero band (decisions 13–14). Painted per block, no wrapper.
    Consulting and About: every block before the first divider (that divider
    goes; the band's edge replaces it), plus About's title. Case study: the
-   title, then every block before the first callout or h2. The case-study
+   title, then the run of details, paragraphs and buttons that follows it,
+   ending at the first block of any other kind (a callout, heading, image,
+   column list, divider…). A page with no callout or heading (a Highlight)
+   used to put its whole body in the hero (Katy, 2026-11-18). :where() keeps
+   these filters from adding specificity, so the card rules still win. The case-study
    list names the top-level slugs to exclude — beside §4's list above, and
    like it, add a new top-level page to both. --- */
 :is(.page__bhd-consultation, .page__katy-harris) .notion-root > :not(.notion-divider, .notion-divider ~ *),
 .page__katy-harris .notion-header__content,
 .parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris)
-  :is(.notion-header__content, .notion-root > :not(.notion-callout, .notion-callout ~ *, h2, h2 ~ *)) {
+  :is(.notion-header__content, .notion-root > :where(.notion-page__properties-layout, .notion-text__content, .notion-button):where(:not(:not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor) ~ *))) {
   border-image: conic-gradient(var(--hero-band) 0 0) fill 0 / / 0.75rem 100vmax;
 }
 /* Band padding: 64px top and bottom (48px on a phone), and 32px of page
@@ -718,7 +722,7 @@ h1.notion-heading,
 }
 :is(.page__bhd-consultation, .page__katy-harris) .notion-root > :has(+ .notion-divider):not(.notion-divider ~ *),
 .parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris)
-  .notion-root > :has(+ :is(.notion-callout, h2)):not(.notion-callout ~ *, h2 ~ *) {
+  .notion-root > :where(.notion-page__properties-layout, .notion-text__content, .notion-button):where(:not(:not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor) ~ *)):where(:has(+ :not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor)), :has(+ .notion-heading__anchor), :last-child) {
   padding-bottom: calc(var(--spacing) * 16) !important;
 }
 :is(.page__bhd-consultation, .page__katy-harris) .notion-root > .notion-divider:not(.notion-divider ~ .notion-divider) {
@@ -726,7 +730,7 @@ h1.notion-heading,
 }
 :is(.page__bhd-consultation, .page__katy-harris) .notion-root > .notion-divider:not(.notion-divider ~ .notion-divider) + *,
 .parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris)
-  .notion-root > :is(.notion-callout, h2):not(.notion-callout ~ *, h2 ~ *) {
+  .notion-root > :where(:not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor)):where(:not(:not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor) ~ *)) {
   margin-top: calc(var(--spacing) * 8 + 0.75rem) !important;  /* space-32 past the band's outset */
 }
 .parent-page__index .notion-header__title {
@@ -739,7 +743,7 @@ h1.notion-heading,
   }
   :is(.page__bhd-consultation, .page__katy-harris) .notion-root > :has(+ .notion-divider):not(.notion-divider ~ *),
   .parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris)
-    .notion-root > :has(+ :is(.notion-callout, h2)):not(.notion-callout ~ *, h2 ~ *) {
+    .notion-root > :where(.notion-page__properties-layout, .notion-text__content, .notion-button):where(:not(:not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor) ~ *)):where(:has(+ :not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor)), :has(+ .notion-heading__anchor), :last-child) {
     padding-bottom: calc(var(--spacing) * 12) !important;
   }
 }
@@ -802,34 +806,34 @@ main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__kat
     line-height: calc(56 / 45);
     text-box: trim-start cap alphabetic;  /* no leading above the capitals */
   }
-  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :not(.notion-callout, .notion-callout ~ *, h2, h2 ~ *) {
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :where(.notion-page__properties-layout, .notion-text__content, .notion-button):where(:not(:not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor) ~ *)) {
     max-width: 754px !important;
     border-image: conic-gradient(var(--hero-bg) 0 0) fill 0 / / 0 var(--hero-card-pad);
     margin-top: 0 !important;            /* a margin opens a seam in the card */
   }
   /* A button in the hero (e.g. "Explore the Atlas") follows the summary at
      the paragraph's own 1rem; Super's 4px margin and 9px padding go. */
-  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-button:not(.notion-callout ~ *, h2 ~ *) {
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-button:where(:not(:not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor) ~ *)) {
     padding-top: 0 !important;
   }
-  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :has(+ :is(.notion-callout, h2)):not(.notion-callout ~ *, h2 ~ *) {
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :where(.notion-page__properties-layout, .notion-text__content, .notion-button):where(:not(:not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor) ~ *)):where(:has(+ :not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor)), :has(+ .notion-heading__anchor), :last-child) {
     padding-bottom: var(--hero-card-pad) !important;
     margin-bottom: var(--hero-pad) !important;
   }
   /* Trim the last line's leading only when the card ends in text; a button
      already sits in its own box. */
-  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-text:has(+ :is(.notion-callout, h2)):not(.notion-callout ~ *, h2 ~ *) {
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-text__content:where(:not(:not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor) ~ *)):where(:has(+ :not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor)), :has(+ .notion-heading__anchor), :last-child) {
     text-box: trim-end cap text;         /* no leading below the descenders */
   }
   /* The first callout meets the hero's bottom edge: no strip of page colour
      between them (Katy, 2026-11-17). A heading still gets space-32. */
-  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-callout:not(.notion-callout ~ *, h2 ~ *) {
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-callout:where(:not(:not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor) ~ *)) {
     margin-top: 0 !important;
   }
-  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > h2:not(.notion-callout ~ *, h2 ~ *) {
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > :where(:not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor)):not(.notion-callout):where(:not(:not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor) ~ *)) {
     margin-top: calc(var(--spacing) * 8) !important;          /* space-32 after the hero */
   }
-  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-text:not(.notion-callout ~ *, h2 ~ *) {
+  main.parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris, .page__all-projects) .notion-root > .notion-text__content:where(:not(:not(.notion-page__properties-layout, .notion-text__content, .notion-button, .notion-heading__anchor) ~ *)) {
     font-size: var(--text-body-lg-size);
     line-height: calc(28 / 18);
   }
