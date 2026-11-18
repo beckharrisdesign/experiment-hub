@@ -359,6 +359,11 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
       side. Measured on the live page's pixels: 16 / 16 / 16. Before the
       trim, the line heights added about 10px above the title and 5px below
       the summary. Browsers without `text-box` fall back to those.
+    - **No seams.** Blocks inside the card have no top margin, so their
+      slices meet. A hero button (Datlas's "Explore the Atlas") follows the
+      summary at the paragraph's own 1rem; Super's 4px margin and 9px
+      padding go. The descender trim applies only when the card ends in
+      text (2026-11-18).
     - **Card spacing,** as drawn: 16px padding (`space-16`), 4px from the
       title to the properties (`space-4`), 32px from the properties to
       the summary (`space-32`). Katy's 2px corner radius isn't drawn:
