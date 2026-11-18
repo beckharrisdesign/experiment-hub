@@ -8,6 +8,7 @@ import {
   measureHero,
   updateCompact,
   fitArtSizes,
+  heroBlocks,
 } from '../../public/super/components/chrome.js';
 
 /**
@@ -107,7 +108,7 @@ describe('case-study hero measuring (decision 15)', () => {
       `<div class="notion-header page"><div class="notion-header__cover ${cover}"></div>` +
         `<div class="notion-header__content"><h1 class="notion-header__title">Rebuilding a design function</h1></div></div>` +
         `<article class="notion-root"><div class="notion-page__properties-layout"></div>` +
-        `<p class="notion-text">Summary.</p><div class="notion-callout"></div><h2>Next</h2></article>`,
+        `<p class="notion-text notion-text__content">Summary.</p><div class="notion-callout"></div><h2>Next</h2></article>`,
     );
     if (marked) (document.querySelector('main') as HTMLElement).style.setProperty('--bhd-hero', 'card');
   };
@@ -122,7 +123,7 @@ describe('case-study hero measuring (decision 15)', () => {
       vi.spyOn(document.querySelector(sel)!, 'getBoundingClientRect').mockReturnValue({ top, bottom } as DOMRect);
     box('.notion-header__content', 190, 310);
     box('.notion-page__properties-layout', 310, 370);
-    box('p.notion-text', 370, 449);
+    box('p.notion-text__content', 370, 449);
     measureHero(document);
     expect(main().style.getPropertyValue('--hero-top')).toBe('110px');
     expect(main().style.getPropertyValue('--hero-h')).toBe('259px');
@@ -198,5 +199,36 @@ describe('sharp homepage art (decision 11)', () => {
     (document.querySelector('main') as HTMLElement).className = 'super-content page__katy-harris parent-page__index';
     fitArtSizes(document);
     expect(img.getAttribute('sizes')).toBe('(max-width: 546px) 100vw, 6vw');
+  });
+});
+
+describe('where the case-study hero ends (decision 14)', () => {
+  const root = (body: string) => {
+    page('page__stalinism parent-page__index',
+      `<div class="notion-header page"><div class="notion-header__content"><h1>T</h1></div></div>` +
+      `<article class="notion-root">${body}</article>`);
+    return [...heroBlocks(document.querySelector('main')!)].map((el) => el.className.split(' ').pop());
+  };
+  const props = '<div class="notion-page__properties-layout"></div>';
+  const para = '<p class="notion-text notion-text__content">Summary.</p>';
+
+  it('stops at the first callout', () => {
+    expect(root(props + para + '<div class="notion-callout"></div><p class="notion-text notion-text__content">Body.</p>'))
+      .toEqual(['notion-header__content', 'notion-page__properties-layout', 'notion-text__content']);
+  });
+
+  it('stops at an image on a page with no callout or heading (a Highlight)', () => {
+    expect(root(props + para + '<div class="notion-image"></div><p class="notion-text notion-text__content">Caption.</p>'))
+      .toEqual(['notion-header__content', 'notion-page__properties-layout', 'notion-text__content']);
+  });
+
+  it('keeps a hero button, and stops at an empty spacer', () => {
+    expect(root(props + para + '<div class="notion-button"></div><div class="notion-text"></div><p class="notion-text notion-text__content">Later.</p>'))
+      .toEqual(['notion-header__content', 'notion-page__properties-layout', 'notion-text__content', 'notion-button']);
+  });
+
+  it('passes over a heading anchor and stops at the heading', () => {
+    expect(root(props + para + '<span class="notion-heading__anchor"></span><h2>Next</h2>'))
+      .toEqual(['notion-header__content', 'notion-page__properties-layout', 'notion-text__content']);
   });
 });

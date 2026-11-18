@@ -93,21 +93,27 @@ export function applyNav(doc) {
   }
 }
 
-/** Blocks that end a case-study hero: the first callout, heading or divider. */
-const HERO_END = '.notion-callout, h2, .notion-divider';
+/** What a case-study hero is made of: the details, paragraphs and buttons. */
+const HERO_KIND = '.notion-page__properties-layout, .notion-text__content, .notion-button';
+/** Heading anchors sit before headings; they neither join nor end the hero. */
+const PASS = '.notion-heading__anchor';
 
 /**
- * The case-study hero's blocks: the header's title block, then every
- * .notion-root child up to the first HERO_END (design.md 14).
+ * The case-study hero's blocks: the header's title block, then the run of
+ * HERO_KIND .notion-root children up to the first block of any other kind
+ * (a callout, heading, image, column list, divider, empty spacer…). The same
+ * rule as site.css §4, so a page with no callout or heading doesn't put its
+ * whole body in the hero (design.md 14).
  * @param {Element} main
  */
-function heroBlocks(main) {
+export function heroBlocks(main) {
   const blocks = [];
   const title = main.querySelector('.notion-header__content');
   if (title) blocks.push(title);
   const root = main.querySelector('.notion-root');
   for (const child of root ? root.children : []) {
-    if (child.matches(HERO_END)) break;
+    if (child.matches(PASS)) continue;
+    if (!child.matches(HERO_KIND)) break;
     blocks.push(child);
   }
   return blocks;

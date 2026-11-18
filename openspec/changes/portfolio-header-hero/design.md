@@ -325,8 +325,14 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
     - **Case study** (`.parent-page__index` that is not
       `page__bhd-consultation`, `page__bhd-labs` or `page__katy-harris`):
       `.notion-header__content` (the title, not the cover, which keeps its
-      own picture), the properties list, and the paragraph after it,
-      ending before the first `.notion-callout` or `h2`. This is the one
+      own picture), then the run of properties, paragraphs and buttons
+      that follows, ending at the first block of any other kind: a
+      callout, heading, image, column list, divider or empty spacer.
+      Heading anchors pass. Until 2026-11-18 it ended only at the first
+      callout or `h2`, so a Highlight page with neither put its whole body
+      in the hero card. `site.css` uses `:where()` for these filters so
+      they add no specificity, and `chrome.js` (`heroBlocks`) applies the
+      same rule when it measures. This is the one
       hand-kept slug list in the change. It sits beside §4's existing
       list, with the same comment telling the next editor to add new
       top-level pages to both.
