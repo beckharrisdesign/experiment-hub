@@ -140,6 +140,7 @@ export function measureHero(doc) {
     main.style.removeProperty('--hero-top');
     main.style.removeProperty('--hero-h');
     delete main.dataset.bhdHero;
+    tileCover(main);
     return;
   }
   // site.css §4 draws the art layer only under this attribute, so without
@@ -153,6 +154,50 @@ export function measureHero(doc) {
   const bottom = Math.max(...blocks.map((b) => b.getBoundingClientRect().bottom));
   main.style.setProperty('--hero-top', `${Math.round(top - origin)}px`);
   main.style.setProperty('--hero-h', `${Math.round(bottom - top)}px`);
+  tileCover(main);
+}
+
+/**
+ * Hand the cover's image to CSS, so site.css §4 can tile it past 1920px.
+ * CSS can't read an <img>'s address, so the address goes on <main> as
+ * `--hero-cover-url`, and `data-bhd-cover-tile` tells site.css it may hide
+ * the <img> and paint the tiles instead. Without either (no script, or no
+ * cover), the cover stays one centred 1920px image. Re-runs when the image
+ * loads, because the browser picks its srcset file only then.
+ * @param {HTMLElement} main
+ */
+export function tileCover(main) {
+  const img = main.dataset.bhdHero === 'cover'
+    ? /** @type {HTMLImageElement | null} */ (main.querySelector('.notion-header__cover.has-cover img'))
+    : null;
+  const src = img ? img.currentSrc || img.getAttribute('src') || '' : '';
+  if (!src) {
+    main.style.removeProperty('--hero-cover-url');
+    main.style.removeProperty('--hero-cover-tile');
+    delete main.dataset.bhdCoverTile;
+    return;
+  }
+  const value = `url("${src.replace(/["\\]/g, '\\$&')}")`;
+  if (main.style.getPropertyValue('--hero-cover-url') !== value) main.style.setProperty('--hero-cover-url', value);
+  // Size each tile the way object-fit: cover sizes the single image: at
+  // least --hero-art-max wide AND at least as tall as the cover box, so a
+  // tall hero is never left with an unfilled strip.
+  const box = /** @type {HTMLElement} */ (img.closest('.notion-header__cover'));
+  const view = main.ownerDocument.defaultView;
+  const max = parseFloat(view ? view.getComputedStyle(box).getPropertyValue('--hero-art-max') : '') || 1920;
+  const boxH = box.getBoundingClientRect().height;
+  if (img.naturalWidth && img.naturalHeight && boxH) {
+    const scale = Math.max(max / img.naturalWidth, boxH / img.naturalHeight);
+    const tile = `${Math.round(img.naturalWidth * scale)}px ${Math.round(img.naturalHeight * scale)}px`;
+    if (main.style.getPropertyValue('--hero-cover-tile') !== tile) main.style.setProperty('--hero-cover-tile', tile);
+  } else {
+    main.style.removeProperty('--hero-cover-tile');
+  }
+  if (main.dataset.bhdCoverTile !== '') main.dataset.bhdCoverTile = '';
+  if (img && !img.dataset.bhdTileWatch) {
+    img.dataset.bhdTileWatch = '';
+    img.addEventListener('load', () => tileCover(main));
+  }
 }
 
 /** The homepage art images: column 2 of the hero column list. */
