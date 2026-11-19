@@ -281,3 +281,10 @@ Write the tests first, and see them fail before the code that passes them.
       0 fail, 1 manual (1.13). At 2560, 1.16 reads "tiled 1920px 1081px
       repeat-x", full width, image hidden. Known: the tiles meet at a
       visible seam, because the art isn't drawn to repeat.
+- [x] 4.9 After #604 (Consulting seam, 500px Consulting and Labs heroes)
+      deploys, rerun the live measurement and check the hero heights.
+      Done 2026-11-19, with the served files matching `main`: 17 pass,
+      0 fail, 1 manual (1.13), the same readings as 4.8. Hero heights,
+      measured the way `fillTopHero` does: Consulting 501px and Labs
+      500px at 1440, 500px and 501px at 1920. No fill on phones, and
+      1.15 still finds Consulting's band unbroken (46px to the body).
