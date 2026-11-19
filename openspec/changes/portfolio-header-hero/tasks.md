@@ -209,6 +209,10 @@ Write the tests first, and see them fail before the code that passes them.
       Rebuilding image (lightsabers) belongs to that project.
 - [ ] 3.14 Case-study page layout in Notion: show **Company** where
       **Reported to** is today (Katy's frame `55:328`).
+- [x] 3.16 Consulting band seam and a 500px minimum hero on Consulting and
+      Labs, matching Home and About (design.md decision 21). Measured at
+      1440: Consulting 370 → 500px, Labs 351 → 500px, line gone; phones
+      unchanged. `fillTopHero()` has six tests (38 in all).
 
 ## 4. QA
 

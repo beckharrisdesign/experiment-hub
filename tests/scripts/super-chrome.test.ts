@@ -10,6 +10,8 @@ import {
   fitArtSizes,
   heroBlocks,
   tileCover,
+  topHeroBlocks,
+  fillTopHero,
 } from '../../public/super/components/chrome.js';
 
 /**
@@ -302,5 +304,95 @@ describe('tiling the cover on wide screens (decision 15)', () => {
     main.dataset.bhdHero = 'cover';
     tileCover(main);
     expect(main.style.getPropertyValue('--hero-cover-url')).toBe('url("https://x/a\\"b.png")');
+  });
+});
+
+describe('a minimum hero height for Consulting and Labs (decision 21)', () => {
+  // site.css sets --top-hero-min on <main> (500px from 1024px up); the tests
+  // set it inline, which is what getComputedStyle reads back.
+  const main = () => document.querySelector('main') as HTMLElement;
+  const box = (el: Element, top: number, bottom: number) =>
+    vi.spyOn(el, 'getBoundingClientRect').mockReturnValue({ top, bottom } as DOMRect);
+  const consulting = () =>
+    page(
+      'page__bhd-consultation parent-page__index',
+      `<article class="notion-root"><span class="notion-heading__anchor"></span><h1 class="notion-heading">I help ventures</h1>` +
+        `<div class="notion-text"></div><div class="notion-button">Book</div><div class="notion-text"></div>` +
+        `<div class="notion-divider"></div><p class="notion-text notion-text__content">Body.</p></article>`,
+    );
+  const labs = () =>
+    page(
+      'page__bhd-labs parent-page__index',
+      `<article class="notion-root"><span class="notion-heading__anchor"></span><h1 class="notion-heading">Welcome</h1>` +
+        `<p class="notion-text notion-text__content">Intro.</p><div class="notion-text"></div>` +
+        `<div class="notion-callout">Drives</div></article>`,
+    );
+  const kids = () => [...document.querySelector('.notion-root')!.children];
+
+  beforeEach(() => vi.restoreAllMocks());
+
+  it('takes the run of headings, text and buttons up to the first other block', () => {
+    consulting();
+    expect(topHeroBlocks(main()).map((e) => e.className)).toEqual([
+      'notion-heading__anchor', 'notion-heading', 'notion-text', 'notion-button', 'notion-text',
+    ]);
+    labs();
+    expect(topHeroBlocks(main()).length).toBe(4);
+  });
+
+  it('pads a short banded hero up to the minimum, counting the band below the last block', () => {
+    consulting();
+    main().style.setProperty('--top-hero-min', '500px');
+    const k = kids();
+    box(k[0], 80, 80);
+    box(k[4], 373, 437);
+    k[4].setAttribute('style', 'border-image-source: linear-gradient(red, red); border-image-outset: 13.5px 1440px');
+    fillTopHero(document);
+    // 80 → 437 + 13.5 = 370.5 drawn, so 130px more (rounded), split by CSS.
+    expect(main().style.getPropertyValue('--top-hero-fill')).toBe('130px');
+    expect(k[4].hasAttribute('data-bhd-top-hero-end')).toBe(true);
+  });
+
+  it('measures an unbanded hero to where the next block starts', () => {
+    labs();
+    main().style.setProperty('--top-hero-min', '500px');
+    const k = kids();
+    box(k[0], 80, 80);
+    box(k[3], 364, 400);
+    box(k[4], 431, 770);
+    fillTopHero(document);
+    expect(main().style.getPropertyValue('--top-hero-fill')).toBe('149px');
+  });
+
+  it('subtracts the fill it already added, so re-running is stable', () => {
+    labs();
+    main().style.setProperty('--top-hero-min', '500px');
+    main().style.setProperty('--top-hero-fill', '149px');
+    const k = kids();
+    box(k[0], 80, 80);
+    box(k[3], 364, 549);
+    box(k[4], 580, 919);
+    fillTopHero(document);
+    expect(main().style.getPropertyValue('--top-hero-fill')).toBe('149px');
+  });
+
+  it('adds nothing to a hero that is already tall enough', () => {
+    labs();
+    main().style.setProperty('--top-hero-min', '500px');
+    const k = kids();
+    box(k[0], 80, 80);
+    box(k[3], 364, 600);
+    box(k[4], 640, 900);
+    fillTopHero(document);
+    expect(main().style.getPropertyValue('--top-hero-fill')).toBe('0px');
+  });
+
+  it('clears the fill and the mark where no minimum is set (phones, other pages)', () => {
+    labs();
+    main().style.setProperty('--top-hero-fill', '149px');
+    kids()[3].setAttribute('data-bhd-top-hero-end', '');
+    fillTopHero(document);
+    expect(main().style.getPropertyValue('--top-hero-fill')).toBe('');
+    expect(document.querySelector('[data-bhd-top-hero-end]')).toBeNull();
   });
 });
