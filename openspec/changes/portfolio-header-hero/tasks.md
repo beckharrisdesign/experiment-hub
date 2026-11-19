@@ -213,6 +213,11 @@ Write the tests first, and see them fail before the code that passes them.
       Labs, matching Home and About (design.md decision 21). Measured at
       1440: Consulting 370 → 500px, Labs 351 → 500px, line gone; phones
       unchanged. `fillTopHero()` has six tests (38 in all).
+- [x] 3.17 Drop the All Projects page from the styles (Katy removed the
+      view on 2026-11-19, and its link now goes to the homepage):
+      `.page__all-projects` out of `site.css` and the nav-link mapping in
+      `chrome.js`, `/all-projects` out of `check.mjs`'s routes, and its
+      row out of the nav-link test. Loader v12.
 
 ## 4. QA
 

@@ -59,7 +59,6 @@ describe('compact navbar (decisions 1–3)', () => {
 describe('current nav link (decision 4)', () => {
   const table: [string, string, string | null][] = [
     ['homepage', 'page__index', '/'],
-    ['all projects', 'page__all-projects parent-page__index', '/'],
     ['Consulting', 'page__bhd-consultation parent-page__index', '/bhd-consultation'],
     ['Labs', 'page__bhd-labs parent-page__index', '/bhd-labs'],
     ['a Labs sub-page', 'page__bhd-labs-database parent-page__bhd-labs', '/bhd-labs'],
