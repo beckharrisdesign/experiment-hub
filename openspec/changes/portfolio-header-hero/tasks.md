@@ -215,6 +215,10 @@ Write the tests first, and see them fail before the code that passes them.
       projects-by-* listing pages, which already showed the placeholder.
 - [ ] 3.14 Case-study page layout in Notion: show **Company** where
       **Reported to** is today (Katy's frame `55:328`).
+- [x] 3.16 Consulting band seam and a 500px minimum hero on Consulting and
+      Labs, matching Home and About (design.md decision 21). Measured at
+      1440: Consulting 370 → 500px, Labs 351 → 500px, line gone; phones
+      unchanged. `fillTopHero()` has six tests (38 in all).
 
 ## 4. QA
 
@@ -277,3 +281,9 @@ Write the tests first, and see them fail before the code that passes them.
       `main`: 17 pass, 0 fail, 0 waiting on Notion, 1 manual (1.13).
       `check.mjs` is in sync with 29/29 variables; the two old selector
       misses remain (see 4.3).
+- [x] 4.8 After #601 (cover tiled past 1920px) deploys, rerun the live
+      measurement into `to-be/after.json` and confirm 1.16 sees the tiles.
+      Done 2026-11-18, with the served files matching `main`: 17 pass,
+      0 fail, 1 manual (1.13). At 2560, 1.16 reads "tiled 1920px 1081px
+      repeat-x", full width, image hidden. Known: the tiles meet at a
+      visible seam, because the art isn't drawn to repeat.

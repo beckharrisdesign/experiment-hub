@@ -1,5 +1,5 @@
 {
-  "when": "2026-11-18T15:00:42.643Z",
+  "when": "2026-11-18T18:35:50.062Z",
   "source": "live",
   "results": [
     {
@@ -111,7 +111,7 @@
       "id": "1.16",
       "scenario": "Case study cover fills the hero behind a text card",
       "state": "pass",
-      "value": "cover; cover 1440×480 at x 0 (cover), card 276px painted, title at 198px",
+      "value": "cover; cover 1440×480 at x 0 (cover), card 276px painted, title at 198px; at 2560: 2560px at x 0, tiled 1920px 1081px repeat-x",
       "note": ""
     },
     {

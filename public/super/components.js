@@ -18,7 +18,7 @@
   if (window.__bhdComponents) return; // loaded twice — keep the first
   window.__bhdComponents = true;
 
-  var VERSION = '10';
+  var VERSION = '11';
   var FALLBACK = 'https://labs.beckharrisdesign.com/super/components.js';
   /* currentScript is null when run as a module; the fallback covers that. */
   var self = (document.currentScript && document.currentScript.src) || FALLBACK;

@@ -27,6 +27,10 @@
  *      `sizes` to the width the art is actually drawn at, so the browser
  *      picks a sharp file from the srcset Super already provides.
  *
+ *   5. A minimum hero height on Consulting and Labs. `fillTopHero()` pads
+ *      their opening hero up to site.css's `--top-hero-min`, so it matches
+ *      Home's and About's (design.md decision 21). No script, no padding.
+ *
  * The loader (loader.js) calls `chromePass()` on every DOM pass, because
  * Super is a Next.js app and swaps <main> on navigation without a reload.
  */
@@ -218,10 +222,69 @@ export function fitArtSizes(doc) {
   }
 }
 
+/** What a top-level page's opening hero is made of (Consulting, Labs). */
+const TOP_HERO_KIND = '.notion-heading__anchor, .notion-heading, .notion-text, .notion-button';
+
+/**
+ * The opening run of headings, text and buttons on a top-level page, up to
+ * the first block of any other kind: Consulting's divider, Labs' callout.
+ * @param {Element} main
+ */
+export function topHeroBlocks(main) {
+  const blocks = [];
+  const root = main.querySelector('.notion-root');
+  for (const child of root ? root.children : []) {
+    if (!child.matches(TOP_HERO_KIND)) break;
+    blocks.push(child);
+  }
+  return blocks;
+}
+
+/**
+ * Give Consulting and Labs a hero at least as tall as Home's and About's
+ * (Katy, 2026-11-18; design.md decision 21). site.css sets the minimum as
+ * `--top-hero-min` on <main> (500px from 1024px up); this writes the
+ * missing height as `--top-hero-fill`, which site.css splits above and
+ * below the text, and marks the hero's last block for the lower half. The
+ * hero runs from the first block's top to the band's painted edge (a
+ * banded hero) or to where the next block starts (an unbanded one).
+ * Without the script, or without a minimum, the hero keeps its own height.
+ * @param {Document} doc
+ */
+export function fillTopHero(doc) {
+  const main = /** @type {HTMLElement | null} */ (doc.querySelector('main.super-content'));
+  if (!main) return;
+  const view = doc.defaultView;
+  const min = view ? parseFloat(view.getComputedStyle(main).getPropertyValue('--top-hero-min')) : NaN;
+  const blocks = min > 0 ? topHeroBlocks(main) : [];
+  for (const el of main.querySelectorAll('[data-bhd-top-hero-end]')) {
+    if (el !== blocks[blocks.length - 1]) el.removeAttribute('data-bhd-top-hero-end');
+  }
+  if (!blocks.length || !view) {
+    main.style.removeProperty('--top-hero-fill');
+    return;
+  }
+  const last = blocks[blocks.length - 1];
+  if (!last.hasAttribute('data-bhd-top-hero-end')) last.setAttribute('data-bhd-top-hero-end', '');
+  const style = view.getComputedStyle(last);
+  let bottom = last.getBoundingClientRect().bottom;
+  const banded = (style.getPropertyValue('border-image-source') || 'none') !== 'none';
+  if (banded) {
+    bottom += parseFloat(style.getPropertyValue('border-image-outset')) || 0;
+  } else if (last.nextElementSibling) {
+    bottom = last.nextElementSibling.getBoundingClientRect().top;
+  }
+  const added = parseFloat(main.style.getPropertyValue('--top-hero-fill')) || 0;
+  const drawn = bottom - blocks[0].getBoundingClientRect().top - added;
+  const fill = `${Math.max(0, Math.round(min - drawn))}px`;
+  if (main.style.getPropertyValue('--top-hero-fill') !== fill) main.style.setProperty('--top-hero-fill', fill);
+}
+
 /** Everything that depends on the page's DOM; safe to run on every pass. */
 export function chromePass(doc = document) {
   applyNav(doc);
   measureHero(doc);
+  fillTopHero(doc);
   fitArtSizes(doc);
 }
 
@@ -246,6 +309,7 @@ export function startChrome(win = window) {
   if ('ResizeObserver' in win) {
     const ro = new win.ResizeObserver(() => {
       measureHero(doc);
+      fillTopHero(doc);
       fitArtSizes(doc);
     });
     ro.observe(doc.documentElement);

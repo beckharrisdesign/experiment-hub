@@ -716,9 +716,18 @@ h1.notion-heading,
 }
 /* Band padding: 64px top and bottom (48px on a phone), and 32px of page
    colour before the body. */
-:is(.page__bhd-consultation) .notion-root > :first-child,
+/* Consulting's first block may be a heading, which Notion precedes with an
+   empty anchor <span>. The padding goes on the heading, not the anchor, and
+   the heading's own top margin goes: otherwise that margin leaves a strip of
+   page colour between the two blocks' band paint (Katy, 2026-11-18: "the odd
+   line across the consulting page"). */
+:is(.page__bhd-consultation) .notion-root > :first-child:not(.notion-heading__anchor),
+:is(.page__bhd-consultation) .notion-root > .notion-heading__anchor:first-child + *,
 :is(.page__katy-harris, .parent-page__index:not(.page__bhd-consultation, .page__bhd-labs)) .notion-header__content {
-  padding-top: calc(var(--spacing) * 16) !important;
+  padding-top: calc(var(--spacing) * 16 + var(--top-hero-fill, 0px) / 2) !important;
+}
+:is(.page__bhd-consultation) .notion-root > .notion-heading__anchor:first-child + * {
+  margin-top: 0 !important;
 }
 :is(.page__bhd-consultation, .page__katy-harris) .notion-root > :has(+ .notion-divider):not(.notion-divider ~ *),
 .parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris)
@@ -727,6 +736,28 @@ h1.notion-heading,
 }
 :is(.page__bhd-consultation, .page__katy-harris) .notion-root > .notion-divider:not(.notion-divider ~ .notion-divider) {
   display: none;
+}
+/* Consulting and Labs: at least as tall as the Home and About heroes, which
+   both measure ~500px at 1440 (Katy, 2026-11-18: "lets get consulting and
+   labs to at least have the same hero height"). The hero is several Notion
+   blocks with no box around them, so CSS can't give it a min-height:
+   components/chrome.js measures it and writes the shortfall as
+   --top-hero-fill, half above the text and half below, so it stays centred
+   like Home's. Phones keep their own height. Design.md decision 21. */
+@media only screen and (min-width: 1024px) {
+  :is(.page__bhd-consultation, .page__bhd-labs) {
+    --top-hero-min: 500px;
+  }
+  /* :not() matches the band-bottom rule's specificity, so this one wins. */
+  .page__bhd-consultation .notion-root > [data-bhd-top-hero-end]:not(.notion-divider ~ *) {
+    padding-bottom: calc(var(--spacing) * 16 + var(--top-hero-fill, 0px) / 2) !important;
+  }
+  .page__bhd-labs .notion-root > :first-child {
+    padding-top: calc(var(--top-hero-fill, 0px) / 2) !important;
+  }
+  .page__bhd-labs .notion-root > [data-bhd-top-hero-end] {
+    padding-bottom: calc(var(--top-hero-fill, 0px) / 2) !important;
+  }
 }
 :is(.page__bhd-consultation, .page__katy-harris) .notion-root > .notion-divider:not(.notion-divider ~ .notion-divider) + *,
 .parent-page__index:not(.page__bhd-consultation, .page__bhd-labs, .page__katy-harris)
@@ -737,7 +768,8 @@ h1.notion-heading,
   margin-top: 0 !important;            /* the band's padding gives it room */
 }
 @media only screen and (max-width: 680px) {
-  :is(.page__bhd-consultation) .notion-root > :first-child,
+  :is(.page__bhd-consultation) .notion-root > :first-child:not(.notion-heading__anchor),
+  :is(.page__bhd-consultation) .notion-root > .notion-heading__anchor:first-child + *,
   :is(.page__katy-harris, .parent-page__index:not(.page__bhd-consultation, .page__bhd-labs)) .notion-header__content {
     padding-top: calc(var(--spacing) * 12) !important;
   }

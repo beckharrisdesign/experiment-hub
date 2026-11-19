@@ -434,6 +434,26 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
     one with a cover. The phone strip is CSS only and draws without the
     loader; the desktop layer still needs the loader's measurements.
 
+21. **Consulting and Labs: at least as tall as Home and About** (Katy,
+    2026-11-18: "the home page and about page match one another in terms
+    of hero size … lets get consulting and labs to at least have the same
+    hero height"). Home and About both measure ~500px at 1440, from their
+    content rather than a set height; Consulting measured 370px and Labs
+    351px. `--top-hero-min: 500px` on their `<main>` from 1024px up.
+    Their hero is several Notion blocks with no box around them, so CSS
+    can't apply a min-height: `chrome.js` `fillTopHero()` measures the
+    opening run of headings, text and buttons (to Consulting's divider,
+    Labs' callout), writes the shortfall as `--top-hero-fill`, and site.css
+    puts half above the text and half below, so it stays centred like
+    Home. Consulting is measured to its band's painted edge; Labs, which
+    has no band, to where its callout starts. Phones keep their own
+    height. Without the script, each hero keeps its own height.
+    Same pass: Consulting now opens with a heading, which Notion precedes
+    with an empty anchor `<span>`. The band's 64px top padding went on the
+    anchor, and the heading's 30px top margin showed as a 6px strip of
+    page colour across the band. The padding now goes on the heading, with
+    no margin.
+
 ### Guards and tests
 
 17. **`check.mjs` needed two lines, found after merge** (tasks.md 4.3): the
