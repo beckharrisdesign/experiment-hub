@@ -83,7 +83,7 @@ Consulting and About heroes SHALL sit on a band a step off the page colour. A ca
 - **WHEN** a case study has a Notion cover image and is opened narrower than 1024px
 - **THEN** the cover SHALL run the full width above the title at a 39:20 ratio, and the title, properties and summary SHALL follow on the band
 
-#### Scenario: Case study without a cover shows no empty box
+#### Scenario: Case study without a cover shows the default art
 
 - **WHEN** a case study has no cover image
-- **THEN** no empty cover box SHALL be drawn; at 1024px wide or more the card SHALL sit on a flat placeholder colour where the art would be, and narrower than that the title SHALL start at the top of the band
+- **THEN** no empty cover box SHALL be drawn, and the default art (`hero/generic.png`) SHALL stand in for the cover: at 1024px wide or more the card SHALL sit on it, sized and tiled like a cover; narrower than that it SHALL run the full width above the title at 39:20, 16px above the title

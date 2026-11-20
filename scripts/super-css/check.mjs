@@ -74,6 +74,12 @@ const SELF_DEFINED = new Set([
   // (portfolio-header-hero, decision 15), so no stylesheet defines them.
   '--hero-h',
   '--hero-top',
+  // Set at runtime by components/chrome.js on the case-study <main> when the
+  // cover must tile past 1920px (decision 15, "capped at 1920px").
+  '--hero-cover-url',
+  '--hero-cover-tile',
+  // Defined in site.css §4 on the plain hero's ::before (the art layer's height).
+  '--hero-layer-h',
   // Set at runtime by components/chrome.js on Consulting and Labs
   // (decision 21): the height their hero needs to reach --top-hero-min.
   '--top-hero-fill',
