@@ -98,6 +98,20 @@ describe("listPdfDocuments", () => {
     expect(c.__builder.is).toHaveBeenCalledWith("deleted_at", null);
   });
 
+  it("lists every document when no folder is given", async () => {
+    const c = client({ data: [], error: null });
+    mockGetAdminClient.mockReturnValue(c);
+    await listPdfDocuments();
+    expect(c.__builder.eq).not.toHaveBeenCalled();
+  });
+
+  it("lists only the chosen folder's documents when one is given", async () => {
+    const c = client({ data: [], error: null });
+    mockGetAdminClient.mockReturnValue(c);
+    await listPdfDocuments("folder-1");
+    expect(c.__builder.eq).toHaveBeenCalledWith("drive_folder_id", "folder-1");
+  });
+
   it("never selects the bytes or the Drive token columns", async () => {
     const c = client({ data: [], error: null });
     mockGetAdminClient.mockReturnValue(c);

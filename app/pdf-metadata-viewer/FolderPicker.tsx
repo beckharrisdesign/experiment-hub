@@ -64,7 +64,13 @@ type Status =
   | { kind: "done"; imported: number; total: number }
   | { kind: "error"; message: string };
 
-export default function FolderPicker() {
+export default function FolderPicker({
+  label = "Choose a folder",
+  variant = "default",
+}: {
+  label?: string;
+  variant?: "default" | "outline";
+} = {}) {
   const [status, setStatus] = useState<Status>({ kind: "idle" });
 
   const pick = useCallback(async () => {
@@ -129,7 +135,7 @@ export default function FolderPicker() {
 
           const { imported, total } = (await importRes.json()) as {
             imported: number;
-            skipped: number;
+            added: number;
             total: number;
           };
           setStatus({ kind: "done", imported, total });
@@ -159,8 +165,8 @@ export default function FolderPicker() {
   return (
     <Stack gap={8}>
       <div>
-        <Button onClick={pick} disabled={busy}>
-          {status.kind === "importing" ? "Importing…" : "Choose a folder"}
+        <Button variant={variant} className="min-h-11" onClick={pick} disabled={busy}>
+          {status.kind === "importing" ? "Importing…" : label}
         </Button>
       </div>
 

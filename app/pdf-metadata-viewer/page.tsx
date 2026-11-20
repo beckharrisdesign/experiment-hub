@@ -1,6 +1,6 @@
 import { Badge, Button, Container, Inline, Stack } from "@beckharrisdesign/mvds";
 import { listPdfDocuments, type PdfDocument } from "@/lib/pdf-documents";
-import { getDriveConnection } from "@/lib/pdf-drive";
+import { getDriveConnection, type DriveConnection } from "@/lib/pdf-drive";
 import FolderPicker from "./FolderPicker";
 
 /**
@@ -111,13 +111,17 @@ function DocumentsTable({ documents }: { documents: PdfDocument[] }) {
 export default async function PdfMetadataViewerPage() {
   let documents: PdfDocument[] = [];
   let loadError: string | null = null;
-  let drive = { connected: false, email: null as string | null, hasRefreshToken: false };
+  let drive: DriveConnection = {
+    connected: false,
+    email: null,
+    hasRefreshToken: false,
+    folder: null,
+  };
 
   try {
-    [documents, drive] = await Promise.all([
-      listPdfDocuments(),
-      getDriveConnection(),
-    ]);
+    drive = await getDriveConnection();
+    // Only the chosen folder's documents (migration 026).
+    documents = await listPdfDocuments(drive.folder?.id ?? null);
   } catch (error) {
     // Surfaced rather than rendered as an empty archive — with RLS on and no
     // policies, a configuration problem would otherwise look like "no documents".
@@ -148,6 +152,32 @@ export default async function PdfMetadataViewerPage() {
             )}
           </Inline>
 
+          {drive.connected && (drive.folder || documents.length > 0) ? (
+            // Which folder the archive is showing, and the way to change it.
+            // Not in frame 34:172, which predates the folder being stored.
+            <Inline gap={16} align="center">
+              <span className="text-sm text-text-muted">
+                Folder:{" "}
+                {drive.folder ? (
+                  <a
+                    href={`https://drive.google.com/drive/folders/${encodeURIComponent(drive.folder.id)}`}
+                    target="_blank"
+                    rel="noopener"
+                    className="text-text-primary hover:underline"
+                  >
+                    {drive.folder.name ?? "(unnamed folder)"}
+                  </a>
+                ) : (
+                  <span className="text-text-primary">not recorded yet</span>
+                )}
+              </span>
+              <FolderPicker
+                label={drive.folder ? "Change folder" : "Choose folder"}
+                variant="outline"
+              />
+            </Inline>
+          ) : null}
+
           {loadError ? (
             <div className="rounded-lg border-l-2 border-error bg-background-secondary p-4">
               <Stack gap={4}>
@@ -173,7 +203,17 @@ export default async function PdfMetadataViewerPage() {
 
               {documents.length === 0 ? (
                 <div className="rounded-lg bg-background-secondary p-8">
-                  {drive.connected ? (
+                  {drive.connected && drive.folder ? (
+                    <Stack gap={8}>
+                      <span className="font-semibold text-text-primary">
+                        No PDFs in {drive.folder.name ?? "this folder"} yet
+                      </span>
+                      <span className="text-sm text-text-muted">
+                        Add scans to the folder in Drive and choose it again to
+                        bring them in, or change to another folder above.
+                      </span>
+                    </Stack>
+                  ) : drive.connected ? (
                     <Stack gap={8}>
                       <span className="font-semibold text-text-primary">
                         Drive is connected — now choose a folder

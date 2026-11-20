@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  DriveFolderNotFound,
   DriveReauthorizationRequired,
+  getDriveFolder,
   getValidAccessToken,
   listPdfsInFolder,
 } from "@/lib/pdf-drive";
 import { getPdfAdminClient } from "@/lib/pdf-documents";
 
 /**
- * Import a granted folder into reference rows.
+ * Make a folder the one the archive shows, and import its PDFs as references.
  *
- * Copies no bytes. A row records where a document lives and what its metadata
- * currently is; the PDF itself stays in Drive.
+ * Copies no bytes. A row records where a document lives and what Drive's
+ * listing says about it; the PDF itself stays in Drive. Choosing a folder again
+ * (the same one, or a different one) runs this again: new PDFs are added, and
+ * existing documents keep their staged edits and baseline (migration 026).
  */
 export async function POST(request: NextRequest) {
   let body: unknown;
@@ -29,19 +33,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "folderId is required" }, { status: 400 });
   }
 
+  let folder;
   let files;
   try {
     const accessToken = await getValidAccessToken();
-    files = await listPdfsInFolder(accessToken, folderId);
+    folder = await getDriveFolder(accessToken, folderId);
+    files = await listPdfsInFolder(accessToken, folder.id);
   } catch (error) {
     if (error instanceof DriveReauthorizationRequired) {
       return NextResponse.json(
-        // Human-readable, because FolderPicker renders `detail.error` straight
-        // into the status line — the previous shape showed the user the literal
-        // word "reauthorize". The 409 remains the machine-readable signal.
+        // Human-readable: FolderPicker renders `error` straight into its status
+        // line. The 409 remains the machine-readable signal.
         { error: "Drive access needs re-authorizing. Sign in again." },
         { status: 409 },
       );
+    }
+    if (error instanceof DriveFolderNotFound) {
+      return NextResponse.json({ error: error.message }, { status: 404 });
     }
     console.error("pdf-drive import: could not list folder:", error);
     return NextResponse.json(
@@ -50,30 +58,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (files.length === 0) {
-    return NextResponse.json({
-      success: true,
-      imported: 0,
-      skipped: 0,
-      total: 0,
-    });
-  }
-
-  // `drive_file_id` is unique, so re-importing a folder updates the reference
-  // rather than duplicating the document. Metadata columns are deliberately not
-  // overwritten here — a re-import must not clobber staged edits.
-  const rows = files.map((f) => ({
-    drive_file_id: f.id,
-    filename: f.name,
-    drive_head_revision_id: f.headRevisionId ?? null,
-    file_snapshot: f.snapshot,
-    updated_at: new Date().toISOString(),
-  }));
-
-  const { data, error } = await getPdfAdminClient()
-    .from("pdf_documents")
-    .upsert(rows, { onConflict: "drive_file_id", ignoreDuplicates: false })
-    .select("id");
+  // One transaction: record the folder, then add or refresh each reference
+  // without touching staged edits or a captured baseline.
+  const { data, error } = await getPdfAdminClient().rpc("pdf_import_folder", {
+    folder_id: folder.id,
+    folder_name: folder.name,
+    files,
+  });
 
   if (error) {
     console.error("pdf-drive import: could not store references:", error);
@@ -83,14 +74,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Same shape as the empty-folder branch above: a caller should not have to
-  // discover which fields exist by checking whether the folder had anything in
-  // it. `skipped` is what the upsert did not return a row for.
-  const imported = data?.length ?? 0;
+  const result = (data ?? {}) as { inserted?: number; total?: number };
   return NextResponse.json({
     success: true,
-    imported,
-    skipped: files.length - imported,
+    folder,
+    imported: result.total ?? files.length,
+    added: result.inserted ?? 0,
     total: files.length,
   });
 }

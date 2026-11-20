@@ -10,6 +10,7 @@ import {
   DriveFileMissing,
   DriveReauthorizationRequired,
   downloadDriveFile,
+  getDriveConnection,
   getValidAccessToken,
 } from "@/lib/pdf-drive";
 import { readEmbeddedMetadata, type EmbeddedMetadata } from "@/lib/pdf-embedded";
@@ -90,9 +91,10 @@ export default async function PdfDocumentDetailPage({
   const { id } = await params;
   if (!isUuid(id)) notFound();
 
+  const { folder } = await getDriveConnection();
   const [document, all] = await Promise.all([
     getPdfDocument(id),
-    listPdfDocuments(),
+    listPdfDocuments(folder?.id ?? null),
   ]);
   if (!document) notFound();
 

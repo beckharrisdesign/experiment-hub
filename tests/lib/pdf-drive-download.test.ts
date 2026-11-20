@@ -8,7 +8,9 @@ import {
   DriveFileMissing,
   DriveReauthorizationRequired,
   downloadDriveFile,
+  DriveFolderNotFound,
   DriveWriteRefused,
+  getDriveFolder,
   getDriveHeadRevisionId,
   uploadDriveFile,
 } from "@/lib/pdf-drive";
@@ -154,5 +156,27 @@ describe("uploadDriveFile", () => {
   it("fails when Drive opens no upload session", async () => {
     respond(200);
     await expect(uploadDriveFile("t", "x", new Uint8Array(1))).rejects.toThrow(/upload session/);
+  });
+});
+
+describe("getDriveFolder", () => {
+  it("returns the folder's id and name as Drive reports them", async () => {
+    const fetchMock = respond(
+      200,
+      JSON.stringify({ id: "f-1", name: "Scans", mimeType: "application/vnd.google-apps.folder" }),
+    );
+    await expect(getDriveFolder("t", "f-1")).resolves.toEqual({ id: "f-1", name: "Scans" });
+    const [url] = fetchMock.mock.calls[0] as unknown as [string];
+    expect(url).toBe("https://www.googleapis.com/drive/v3/files/f-1?fields=id,name,mimeType");
+  });
+
+  it("refuses an id that is a file, not a folder", async () => {
+    respond(200, JSON.stringify({ id: "x", name: "a.pdf", mimeType: "application/pdf" }));
+    await expect(getDriveFolder("t", "x")).rejects.toBeInstanceOf(DriveFolderNotFound);
+  });
+
+  it("reports a missing folder as not found", async () => {
+    respond(404);
+    await expect(getDriveFolder("t", "x")).rejects.toBeInstanceOf(DriveFolderNotFound);
   });
 });
