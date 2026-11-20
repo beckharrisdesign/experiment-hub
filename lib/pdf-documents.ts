@@ -8,6 +8,7 @@
  * network. Bytes are fetched only to render a preview, by a separate route.
  */
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { EmbeddedMetadata } from "@/lib/pdf-embedded";
 
 /**
  * Service-role client, following the per-feature pattern already used by
@@ -45,6 +46,12 @@ export interface PdfDocument {
   splitFromDocumentId: string | null;
   splitIndex: number | null;
   supersededAt: string | null;
+  /**
+   * What the file itself said when editing started — `file_snapshot.embedded`.
+   * Null until the first edit is staged; from then on the field columns above
+   * are authoritative, and null in them means empty rather than unread.
+   */
+  fileBaseline: EmbeddedMetadata | null;
 }
 
 export interface PdfHistoryEntry {
@@ -61,7 +68,9 @@ type Row = Record<string, unknown>;
 const COLUMNS =
   "id, drive_file_id, filename, title, subject, author, keywords, page_count, " +
   "has_pending_edits, committed_at, marked_for_deletion, split_not_needed, " +
-  "split_from_document_id, split_index, superseded_at";
+  "split_from_document_id, split_index, superseded_at, " +
+  // Only the baseline, not the whole snapshot: the rest is Drive's listing.
+  "file_baseline:file_snapshot->embedded";
 
 function toDocument(row: Row): PdfDocument {
   return {
@@ -80,6 +89,20 @@ function toDocument(row: Row): PdfDocument {
     splitFromDocumentId: (row.split_from_document_id as string) ?? null,
     splitIndex: (row.split_index as number) ?? null,
     supersededAt: (row.superseded_at as string) ?? null,
+    fileBaseline: toBaseline(row.file_baseline),
+  };
+}
+
+function toBaseline(embedded: unknown): EmbeddedMetadata | null {
+  if (!embedded || typeof embedded !== "object") return null;
+  const e = embedded as Record<string, unknown>;
+  const text = (v: unknown) => (typeof v === "string" && v ? v : null);
+  return {
+    title: text(e.title),
+    subject: text(e.subject),
+    author: text(e.author),
+    keywords: Array.isArray(e.keywords) ? e.keywords.map(String) : [],
+    pageCount: typeof e.pageCount === "number" ? e.pageCount : 0,
   };
 }
 

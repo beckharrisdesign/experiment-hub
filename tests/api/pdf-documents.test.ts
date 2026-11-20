@@ -104,7 +104,10 @@ describe("listPdfDocuments", () => {
     await listPdfDocuments();
     const selected = (c.__builder.select as ReturnType<typeof vi.fn>).mock
       .calls[0][0] as string;
-    expect(selected).not.toMatch(/access_token|refresh_token|file_snapshot/);
+    expect(selected).not.toMatch(/access_token|refresh_token/);
+    // The baseline is read as `file_snapshot->embedded`; the whole snapshot,
+    // which carries Drive's listing, is never selected.
+    expect(selected).not.toMatch(/(^|,)\s*file_snapshot\s*(,|$)/);
   });
 
   it("surfaces a query failure rather than returning an empty archive", async () => {
