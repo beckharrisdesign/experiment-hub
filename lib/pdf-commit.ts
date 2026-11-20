@@ -26,6 +26,7 @@ import {
 } from "@/lib/pdf-drive";
 import { readEmbeddedMetadata, writeEmbeddedMetadata } from "@/lib/pdf-embedded";
 import { stagePdfEdits } from "@/lib/pdf-staging";
+import { clearAttention, recordAttention } from "@/lib/pdf-attention";
 
 /** The file in Drive is no longer the version editing started from. */
 export class CommitConflict extends Error {
@@ -51,8 +52,25 @@ export type CommitResult =
   | { status: "committed"; document: PdfDocument; changed: number }
   | { status: "nothing-pending"; document: PdfDocument };
 
-/** Commit staged edits. Null when there is no such document. */
+/**
+ * Commit staged edits. Null when there is no such document.
+ *
+ * A failure is recorded as the document's Needs attention instance before it
+ * propagates (task 8.8), and a success clears whatever was there, so a retry
+ * that works leaves nothing behind.
+ */
 export async function commitPdfDocument(id: string): Promise<CommitResult | null> {
+  try {
+    const result = await commitOnce(id);
+    if (result?.status === "committed") await clearAttention(id);
+    return result;
+  } catch (error) {
+    await recordAttention(id, error);
+    throw error;
+  }
+}
+
+async function commitOnce(id: string): Promise<CommitResult | null> {
   const document = await getPdfDocument(id);
   if (!document) return null;
   // Spec: committing with nothing pending makes no write to storage.
@@ -117,6 +135,8 @@ export async function discardPdfEdits(id: string): Promise<PdfDocument | null> {
   const baseline = document.fileBaseline;
   if (!document.hasPendingEdits || !baseline) return document;
 
+  // Nothing is left to write, so whatever went wrong writing it is moot.
+  await clearAttention(id);
   return stagePdfEdits(id, {
     title: baseline.title,
     subject: baseline.subject,
