@@ -208,6 +208,12 @@ Write the tests first, and see them fail before the code that passes them.
       Export each from Figma page 05 (`hero-art/<slug>`, preset to PNG at
       3840px wide) and set it as that page's cover. First check whether the
       Rebuilding image (lightsabers) belongs to that project.
+- [x] 3.15 Default art for case studies without a cover (Katy,
+      2026-11-18): `public/super/hero/generic.png`, painted on the plain
+      hero layer at 1024px and wider (sized like a cover, tiled past
+      1920px) and as a 39:20 strip above the title on a phone. Check 1.17
+      now expects it at both widths. Also applies to the three
+      projects-by-* listing pages, which already showed the placeholder.
 - [ ] 3.14 Case-study page layout in Notion: show **Company** where
       **Reported to** is today (Katy's frame `55:328`).
 - [x] 3.16 Consulting band seam and a 500px minimum hero on Consulting and

@@ -424,6 +424,16 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
     phone the band's top padding (48px) gives the title its room. This
     replaces §4's cap on every page with a Notion header, which is the
     point: the 54px empty box is the defect the spec names.
+    **Revised 2026-11-18:** the placeholder colour became default art.
+    Katy supplied `public/super/hero/generic.png` (2000 × 1125, 16:9) "as
+    the default hero image when there isn't one specified". On desktop the
+    plain layer paints it like a cover: each tile
+    `max(min(100%, 1920px), layer height × 16/9)` wide, centred, tiled
+    sideways past 1920px, all in CSS because the layer is a pseudo-element
+    (no `<img>` for `chrome.js` to read). On a phone the empty cover box
+    becomes a 39:20 strip with the art, so a page with no cover looks like
+    one with a cover. The phone strip is CSS only and draws without the
+    loader; the desktop layer still needs the loader's measurements.
 
 21. **Consulting and Labs: at least as tall as Home and About** (Katy,
     2026-11-18: "the home page and about page match one another in terms
