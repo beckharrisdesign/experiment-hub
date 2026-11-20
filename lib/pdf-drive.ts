@@ -409,7 +409,42 @@ export async function downloadDriveFile(
   accessToken: string,
   fileId: string,
 ): Promise<ArrayBuffer> {
-  const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`;
+  const response = await driveFileRequest(accessToken, fileId, "alt=media", "download");
+  return response.arrayBuffer();
+}
+
+/**
+ * The file's current head revision, without its bytes.
+ *
+ * Read on both sides of a download so the baseline can be pinned to the
+ * revision those bytes came from (design.md D8, "captured on first edit").
+ */
+export async function getDriveHeadRevisionId(
+  accessToken: string,
+  fileId: string,
+): Promise<string | null> {
+  const response = await driveFileRequest(
+    accessToken,
+    fileId,
+    "fields=headRevisionId",
+    "metadata read",
+  );
+  const data = (await response.json()) as { headRevisionId?: string };
+  return data.headRevisionId ?? null;
+}
+
+/**
+ * GET one file resource, mapping Drive's refusals onto the errors the routes
+ * translate. The id goes into the path, so it is encoded: it comes from the
+ * database, not the request, but nothing should be trusted to be path-safe.
+ */
+async function driveFileRequest(
+  accessToken: string,
+  fileId: string,
+  query: string,
+  what: string,
+): Promise<Response> {
+  const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?${query}`;
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
@@ -430,8 +465,7 @@ export async function downloadDriveFile(
     );
   }
   if (!response.ok) {
-    throw new Error(`Drive download failed (${response.status})`);
+    throw new Error(`Drive ${what} failed (${response.status})`);
   }
-
-  return response.arrayBuffer();
+  return response;
 }

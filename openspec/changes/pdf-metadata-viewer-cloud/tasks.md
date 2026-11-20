@@ -81,6 +81,7 @@ Each one changes work below it, so none should be discovered mid-build.
 
 ## 8. Write path
 
+- [ ] 8.0 Capture the baseline on the first staged edit — read the file once, store `file_snapshot.embedded` and `drive_head_revision_id` together, fill the field columns; never re-capture while edits are pending. See `design.md` D8, "captured on first edit"
 - [ ] 8.1 `PATCH .../id/[id]` — stage edits, writing history rows, touching no PDF
 - [ ] 8.2 `POST .../commit` — revision check, read-modify-write, same `drive_file_id`
 - [ ] 8.3 Conflict path: surface rather than overwrite, and leave staged edits intact

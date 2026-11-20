@@ -1029,6 +1029,31 @@ as last read from Drive, captured in the same operation that sets
 `drive_head_revision_id` so the snapshot and the revision it describes can never
 disagree. Compare then reads three explicit values rather than reconstructing one.
 
+**The baseline is captured on first edit, not at import (2026-11-20).** The
+folder import is references only: it lists the folder and reads no bytes, so the
+`file_snapshot` it writes holds Drive's listing (`name`, `description`, `size`,
+`modifiedTime`), not the PDF's own fields. All 45 imported rows were in that
+state on 2026-11-20, with `title`/`subject`/`author`/`keywords` null. Reading
+every file at import would capture it up front, at the cost of downloading the
+whole archive to tag a handful of documents.
+
+Instead, staging the first edit on a document with nothing pending reads the
+file once: `headRevisionId`, then the bytes, then `headRevisionId` again. If the
+two revision ids differ, the file changed mid-read and the read is retried. In
+the same update it writes:
+
+- `file_snapshot.embedded` — `{ title, subject, author, keywords, pageCount }`
+  as `pdf-lib` reads them, beside the listing keys the import wrote
+- `drive_head_revision_id` — the revision those bytes came from
+- `title`, `subject`, `author`, `keywords`, `page_count` — filled from the file,
+  so a stored value means the same thing on every row from then on
+
+Only then are the edit's `stage` history rows written. While edits are pending,
+the baseline is never re-captured: that is the silent re-baselining the paragraph
+on inspection above forbids. A document that is never edited is never read here,
+and its null columns keep meaning "not read yet". The detail page already falls
+back to the file's own values for those.
+
 ### Frames and tokens
 
 All fills on the proposed frames are bound to `hub tokens` variables rather than

@@ -12,22 +12,22 @@ import {
   downloadDriveFile,
   getValidAccessToken,
 } from "@/lib/pdf-drive";
-import {
-  keywordsDiffer,
-  readEmbeddedMetadata,
-  type EmbeddedMetadata,
-} from "@/lib/pdf-embedded";
+import { readEmbeddedMetadata, type EmbeddedMetadata } from "@/lib/pdf-embedded";
+import { summarizePending } from "@/lib/pdf-staging";
+import { DetailsEditor } from "./DetailsEditor";
 
 /**
- * Hosted pdf-metadata-viewer — document detail, view only.
+ * Hosted pdf-metadata-viewer — document detail.
  * openspec/changes/pdf-metadata-viewer-cloud — Figma `02.9` frame `34:289`
  * (desktop) and `02.10` frame `40:3` (phone).
  *
- * The approved frames minus everything that writes: no Suggest metadata, no
- * editable inputs, no commit bar. Those land with the write path (group 8);
- * until then each field shows what the working store holds, falling back to
- * what the file itself says, and the "In the file" line appears only where the
- * two differ — the same rule the editable version will use.
+ * Fields are editable and save as staged edits (task 8.1): saved here, not yet
+ * in the file. Not yet built from the approved frames: Suggest metadata (needs
+ * the vision route) and the commit bar (task 8.2).
+ *
+ * Until a document's first edit, its stored fields are unread nulls and the
+ * page shows what the file itself says. From the first edit on, the stored
+ * fields are authoritative (design.md D8, "captured on first edit").
  *
  * Gated by middleware.ts, which returns before this renders.
  */
@@ -79,85 +79,6 @@ const FILE_PROBLEM: Record<
 };
 
 // ---------------------------------------------------------------------------
-// Fields
-// ---------------------------------------------------------------------------
-
-function ReadOnlyField({
-  label,
-  stored,
-  inFile,
-}: {
-  label: string;
-  stored: string | null;
-  /** Undefined when the file could not be read — nothing to compare against. */
-  inFile: string | null | undefined;
-}) {
-  const shown = stored ?? inFile ?? null;
-  // Only a value staged here can differ from the file; with nothing staged the
-  // field is showing the file's own value, and repeating it would be noise.
-  const differs = stored !== null && inFile !== undefined && stored !== inFile;
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-text-secondary">{label}</span>
-      <div className="min-h-11 rounded-md bg-background-primary px-3 py-2.5 text-sm text-text-primary break-words">
-        {shown ?? "—"}
-      </div>
-      {differs ? (
-        <span className="text-xs text-text-muted">
-          In the file: {inFile ?? "(empty)"}
-        </span>
-      ) : null}
-    </div>
-  );
-}
-
-function KeywordChips({ keywords }: { keywords: string[] }) {
-  return (
-    <ul className="flex flex-wrap gap-2" aria-label="Keywords">
-      {keywords.map((k) => (
-        <li
-          key={k}
-          className="rounded-full bg-background-primary px-3 py-1 text-xs text-text-primary"
-        >
-          {k}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-/** Same rule as ReadOnlyField, for a list: staged wins, file shown when they differ. */
-function KeywordList({
-  stored,
-  inFile,
-}: {
-  stored: string[];
-  /** Undefined when the file could not be read — nothing to compare against. */
-  inFile: string[] | undefined;
-}) {
-  const shown = stored.length > 0 ? stored : (inFile ?? []);
-  const differs =
-    stored.length > 0 && inFile !== undefined && keywordsDiffer(stored, inFile);
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-text-secondary">Keywords</span>
-      {shown.length === 0 ? (
-        <span className="text-sm text-text-muted">None</span>
-      ) : (
-        <KeywordChips keywords={shown} />
-      )}
-      {differs && inFile ? (
-        <span className="text-xs text-text-muted">
-          In the file: {inFile.length > 0 ? inFile.join(", ") : "(empty)"}
-        </span>
-      ) : null}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -184,6 +105,17 @@ export default async function PdfDocumentDetailPage({
   const previous = index > 0 ? all[index - 1] : null;
   const next = index >= 0 && index < all.length - 1 ? all[index + 1] : null;
 
+  const baselined = document.fileBaseline !== null;
+  const values = baselined
+    ? document
+    : {
+        title: document.title ?? embedded?.title ?? null,
+        subject: document.subject ?? embedded?.subject ?? null,
+        author: document.author ?? embedded?.author ?? null,
+        keywords:
+          document.keywords.length > 0 ? document.keywords : (embedded?.keywords ?? []),
+      };
+  const pending = summarizePending(document);
   const pageCount = document.pageCount ?? embedded?.pageCount ?? null;
   const contentUrl = `/api/pdf-documents/id/${document.id}/content`;
   const filename = document.filename ?? "(unnamed)";
@@ -215,9 +147,9 @@ export default async function PdfDocumentDetailPage({
             <Button asChild variant="secondary" size="sm" className="lg:order-1">
               <a href="/pdf-metadata-viewer">← All documents</a>
             </Button>
-            {document.hasPendingEdits ? (
+            {pending.count > 0 ? (
               <Badge variant="default" className="lg:order-5 lg:ml-auto">
-                Pending edits
+                {pending.count} pending {pending.count === 1 ? "edit" : "edits"}
               </Badge>
             ) : null}
           </div>
@@ -286,31 +218,22 @@ export default async function PdfDocumentDetailPage({
           className="flex flex-col rounded-lg bg-background-secondary lg:w-[428px] lg:shrink-0 lg:rounded-none"
           aria-label="Details"
         >
-          <div className="flex flex-col gap-5 p-5">
-            <ReadOnlyField
-              label="Title"
-              stored={document.title}
-              inFile={embedded ? embedded.title : undefined}
-            />
-            <ReadOnlyField
-              label="Subject"
-              stored={document.subject}
-              inFile={embedded ? embedded.subject : undefined}
-            />
-            <ReadOnlyField
-              label="Author"
-              stored={document.author}
-              inFile={embedded ? embedded.author : undefined}
-            />
-            <KeywordList
-              stored={document.keywords}
-              inFile={embedded ? embedded.keywords : undefined}
-            />
-          </div>
-          <p className="mt-auto border-t border-border p-5 text-xs text-text-muted">
-            View only for now. Editing, and saving changes back to Drive, come
-            next.
-          </p>
+          <DetailsEditor
+            documentId={document.id}
+            values={{
+              title: values.title,
+              subject: values.subject,
+              author: values.author,
+              keywords: values.keywords,
+            }}
+            inFile={embedded}
+            edited={{
+              fields: pending.fields,
+              keywordsAdded: pending.keywordsAdded,
+              keywordsRemoved: pending.keywordsRemoved,
+            }}
+            disabled={!file.ok && !baselined}
+          />
         </section>
       </div>
     </div>

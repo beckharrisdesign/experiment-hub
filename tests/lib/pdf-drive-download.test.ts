@@ -8,6 +8,7 @@ import {
   DriveFileMissing,
   DriveReauthorizationRequired,
   downloadDriveFile,
+  getDriveHeadRevisionId,
 } from "@/lib/pdf-drive";
 
 function respond(status: number, body: BodyInit = "") {
@@ -69,5 +70,30 @@ describe("downloadDriveFile", () => {
     expect(error).toBeInstanceOf(Error);
     expect(error).not.toBeInstanceOf(DriveReauthorizationRequired);
     expect(error).not.toBeInstanceOf(DriveFileMissing);
+  });
+});
+
+describe("getDriveHeadRevisionId", () => {
+  it("asks for the head revision only, not the bytes", async () => {
+    const fetchMock = respond(200, JSON.stringify({ headRevisionId: "rev-7" }));
+    await expect(getDriveHeadRevisionId("t", "drive-123")).resolves.toBe("rev-7");
+    const [url] = fetchMock.mock.calls[0] as unknown as [string];
+    expect(url).toBe(
+      "https://www.googleapis.com/drive/v3/files/drive-123?fields=headRevisionId",
+    );
+  });
+
+  it("returns null when Drive reports no revision", async () => {
+    respond(200, "{}");
+    await expect(getDriveHeadRevisionId("t", "drive-123")).resolves.toBeNull();
+  });
+
+  it("maps refusals the same way as a download", async () => {
+    respond(404);
+    await expect(getDriveHeadRevisionId("t", "x")).rejects.toBeInstanceOf(DriveFileMissing);
+    respond(401);
+    await expect(getDriveHeadRevisionId("t", "x")).rejects.toBeInstanceOf(
+      DriveReauthorizationRequired,
+    );
   });
 });
