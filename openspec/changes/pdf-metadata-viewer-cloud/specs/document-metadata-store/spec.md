@@ -26,6 +26,12 @@ remote storage.
 - **THEN** all three values are persisted
 - **AND** exactly zero writes are made to the PDF
 
+#### Scenario: Undoing an edit by hand
+
+- **WHEN** a user changes a field and then changes it back to the file's own value
+- **THEN** the document is no longer reported as having pending edits
+- **AND** both changes remain in the document's history
+
 #### Scenario: Reopening a document with pending edits
 
 - **WHEN** a user opens a document whose staged values differ from the file
