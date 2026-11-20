@@ -72,3 +72,53 @@ export async function readEmbeddedMetadata(
     pageCount: pdf.getPageCount(),
   };
 }
+
+/** The file cannot be rewritten without damaging it. */
+export class PdfNotWritable extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PdfNotWritable";
+  }
+}
+
+export interface MetadataValues {
+  title: string | null;
+  subject: string | null;
+  author: string | null;
+  keywords: string[];
+}
+
+/**
+ * Write the four fields into a copy of the PDF and return the new bytes.
+ * openspec/changes/pdf-metadata-viewer-cloud — task 8.2, design.md D0, D4.
+ *
+ * A cleared field is written as an empty string, which reads back as null.
+ * Keywords are joined on a space by pdf-lib; staging refuses any containing
+ * whitespace, so the round trip is exact (D0).
+ *
+ * `updateMetadata: false` leaves the Producer and Creator the file already
+ * names; only the modification date is set, because the file did change.
+ * Encrypted files are refused: pdf-lib loads them when told to ignore the
+ * encryption, but saves a file no reader can open.
+ */
+export async function writeEmbeddedMetadata(
+  bytes: ArrayBuffer | Uint8Array,
+  values: MetadataValues,
+  now: Date = new Date(),
+): Promise<Uint8Array> {
+  const pdf = await PDFDocument.load(bytes, {
+    ignoreEncryption: true,
+    updateMetadata: false,
+  });
+  if (pdf.isEncrypted) {
+    throw new PdfNotWritable(
+      "This PDF is encrypted, so its details can't be rewritten without damaging it",
+    );
+  }
+  pdf.setTitle(values.title ?? "");
+  pdf.setSubject(values.subject ?? "");
+  pdf.setAuthor(values.author ?? "");
+  pdf.setKeywords(values.keywords);
+  pdf.setModificationDate(now);
+  return pdf.save();
+}

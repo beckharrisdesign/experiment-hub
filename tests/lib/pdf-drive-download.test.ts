@@ -8,7 +8,9 @@ import {
   DriveFileMissing,
   DriveReauthorizationRequired,
   downloadDriveFile,
+  DriveWriteRefused,
   getDriveHeadRevisionId,
+  uploadDriveFile,
 } from "@/lib/pdf-drive";
 
 function respond(status: number, body: BodyInit = "") {
@@ -95,5 +97,62 @@ describe("getDriveHeadRevisionId", () => {
     await expect(getDriveHeadRevisionId("t", "x")).rejects.toBeInstanceOf(
       DriveReauthorizationRequired,
     );
+  });
+});
+
+describe("uploadDriveFile", () => {
+  function session(putStatus = 200, putBody = JSON.stringify({ headRevisionId: "rev-9" })) {
+    const fetchMock = vi.fn(async (url: string) =>
+      url.startsWith("https://www.googleapis.com/upload/")
+        ? new Response("", { status: 200, headers: { Location: "https://upload.example/session-1" } })
+        : new Response(putBody, { status: putStatus }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    return fetchMock;
+  }
+
+  it("updates the same file id through a resumable session and returns the new revision", async () => {
+    const fetchMock = session();
+    const bytes = new Uint8Array([37, 80, 68, 70]);
+    await expect(uploadDriveFile("token-abc", "drive-123", bytes)).resolves.toBe("rev-9");
+
+    const [startUrl, startInit] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(startUrl).toBe(
+      "https://www.googleapis.com/upload/drive/v3/files/drive-123?uploadType=resumable&fields=headRevisionId",
+    );
+    expect(startInit.method).toBe("PATCH");
+    const headers = startInit.headers as Record<string, string>;
+    expect(headers.Authorization).toBe("Bearer token-abc");
+    expect(headers["X-Upload-Content-Type"]).toBe("application/pdf");
+    expect(headers["X-Upload-Content-Length"]).toBe("4");
+
+    const [putUrl, putInit] = fetchMock.mock.calls[1] as unknown as [string, RequestInit];
+    expect(putUrl).toBe("https://upload.example/session-1");
+    expect(putInit.method).toBe("PUT");
+    expect(putInit.body).toBe(bytes);
+  });
+
+  it("reports a 403 as a refused write, not a lapsed grant", async () => {
+    respond(403);
+    await expect(uploadDriveFile("t", "x", new Uint8Array(1))).rejects.toBeInstanceOf(
+      DriveWriteRefused,
+    );
+  });
+
+  it("reports a 401 as a lapsed grant", async () => {
+    respond(401);
+    await expect(uploadDriveFile("t", "x", new Uint8Array(1))).rejects.toBeInstanceOf(
+      DriveReauthorizationRequired,
+    );
+  });
+
+  it("fails when the upload itself is refused", async () => {
+    session(500, "");
+    await expect(uploadDriveFile("t", "x", new Uint8Array(1))).rejects.toThrow(/upload the file \(500\)/);
+  });
+
+  it("fails when Drive opens no upload session", async () => {
+    respond(200);
+    await expect(uploadDriveFile("t", "x", new Uint8Array(1))).rejects.toThrow(/upload session/);
   });
 });

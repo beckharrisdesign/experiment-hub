@@ -83,12 +83,12 @@ Each one changes work below it, so none should be discovered mid-build.
 
 - [x] 8.0 Capture the baseline on the first staged edit — read the file once, store `file_snapshot.embedded` and `drive_head_revision_id` together, fill the field columns; never re-capture while edits are pending. See `design.md` D8, "captured on first edit". **Done in #608, verified live 2026-11-20:** the first edit stored the file's five fields and its revision, and filled the title column from the file
 - [x] 8.1 `PATCH .../id/[id]` — stage edits, writing history rows, touching no PDF — **#608, verified live 2026-11-20:** a Subject and a keyword staged, one history row each, nothing written to Drive
-- [ ] 8.1a Undoing an edit by hand clears pending — migration 024; rolled-back test against the hub database passed, not yet applied
-- [ ] 8.2 `POST .../commit` — revision check, read-modify-write, same `drive_file_id`
-- [ ] 8.3 Conflict path: surface rather than overwrite, and leave staged edits intact
+- [x] 8.1a Undoing an edit by hand clears pending — migration 024, #609; **verified live 2026-11-20:** an Author typed and cleared again showed pending, then not, on both the detail page and the dashboard
+- [x] 8.2 `POST .../commit` — revision check, read-modify-write, same `drive_file_id` — resumable upload (Drive caps simple uploads at 5 MB); recorded from the bytes uploaded, read back, by `pdf_record_commit` (migration 025). Encrypted PDFs are refused: pdf-lib saves them unreadable. Unit-covered and tested against the hub database in a rolled-back transaction; **not yet run against a real file**
+- [~] 8.3 Conflict path: surface rather than overwrite, and leave staged edits intact — **surfaces and keeps edits**: the revision is checked before and after the download, and a mismatch writes nothing and says so on the page. Resolving it waits on 8.4; until then the only way forward from a conflict is Discard
 - [ ] 8.4 Three-way classification per field against `file_snapshot` — only both-changed-differently asks for a decision
 - [ ] 8.5 Content-change detection surfaced separately from field conflicts
-- [ ] 8.6 Failure paths: storage error and permission error both preserve staged edits
+- [x] 8.6 Failure paths: storage error and permission error both preserve staged edits — nothing in the database changes unless the upload succeeded; a read-only file (Drive 403) is reported as refused rather than as a lapsed sign-in. One unclean case is named rather than hidden: written to Drive but not recorded (`CommitNotRecorded`)
 - [ ] 8.7 Bulk commit as N independent cycles, with per-document success and failure
 - [ ] 8.8 Every bulk-commit failure lands as an instance in Needs attention
 - [ ] 8.9 Verify keywords committed through the full path still read back externally (1.1 repeated end to end)

@@ -246,6 +246,24 @@ boundary where `pdf-lib` demands it.
 Staged edits are never cleared by a failed commit. That is the difference between
 a retry and lost work.
 
+**As built (2026-11-20):** step 1 runs twice, before and after the download,
+because a change landing mid-download would otherwise be overwritten from stale
+bytes. Step 3 is a resumable upload, since Drive caps a simple upload at 5 MB.
+Step 4 records what the uploaded bytes actually say, read back with `pdf-lib`,
+not what was meant to be written. The new baseline is therefore the file's own
+word, and the pending rule (D2 amendment) clears itself. An edit staged while the
+upload ran differs from what was written and stays pending.
+
+Two refusals the design did not anticipate. An **encrypted PDF** is refused
+before writing: `pdf-lib` loads one when told to ignore encryption, but saves a
+file no reader can open. A **read-only file** (Drive 403 on upload) is reported
+as refused, not as a lapsed sign-in, because signing in again would not help.
+
+One failure is not clean, and is named rather than hidden: the upload succeeds
+but recording it fails. Drive then holds the new file while the database still
+names the old revision, so the next commit reports a conflict. It is logged with
+both revision ids.
+
 **Failures accumulate on the dashboard; they do not interrupt.** A conflict, a
 refused write, or a vanished file becomes an *instance* in a **Needs attention**
 list on the document dashboard, reviewed when the user chooses. Nothing blocks
@@ -603,6 +621,7 @@ where a literal `id/` segment separates the collection from the dynamic param.
 | `GET /api/pdf-documents/id/[id]` | Metadata + pending state |
 | `PATCH /api/pdf-documents/id/[id]` | Stage field edits |
 | `POST /api/pdf-documents/id/[id]/commit` | Write the batch to Drive |
+| `POST /api/pdf-documents/id/[id]/discard` | Put staged fields back to the baseline — added 2026-11-20. Writes nothing to Drive; the reversal is staged, so history keeps both |
 | `GET /api/pdf-documents/id/[id]/history` | Field-level history |
 | `GET /api/pdf-documents/id/[id]/content` | Proxy Drive bytes for preview |
 | `POST /api/pdf-documents/id/[id]/suggestions` | Vision suggestions |

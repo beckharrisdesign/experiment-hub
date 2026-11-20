@@ -22,8 +22,8 @@ import { DetailsEditor } from "./DetailsEditor";
  * (desktop) and `02.10` frame `40:3` (phone).
  *
  * Fields are editable and save as staged edits (task 8.1): saved here, not yet
- * in the file. Not yet built from the approved frames: Suggest metadata (needs
- * the vision route) and the commit bar (task 8.2).
+ * in the file. The commit bar writes them into the PDF in Drive (task 8.2). Not
+ * yet built from the approved frames: Suggest metadata (needs the vision route).
  *
  * Until a document's first edit, its stored fields are unread nulls and the
  * page shows what the file itself says. From the first edit on, the stored
@@ -175,6 +175,9 @@ export default async function PdfDocumentDetailPage({
           {file.ok ? (
             <>
               <iframe
+                // A commit uploads a new revision at the same URL; remount so
+                // the preview shows the file as it now is.
+                key={document.driveRevisionId ?? "initial"}
                 src={contentUrl}
                 title={`Preview of ${filename}`}
                 className="h-[420px] w-full rounded-md bg-white lg:h-[calc(100vh-7rem)]"
@@ -236,6 +239,7 @@ export default async function PdfDocumentDetailPage({
               keywordsRemoved: pending.keywordsRemoved,
             }}
             disabled={!file.ok && !baselined}
+            pendingCount={pending.count}
           />
         </section>
       </div>
