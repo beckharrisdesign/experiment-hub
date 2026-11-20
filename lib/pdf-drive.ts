@@ -61,6 +61,9 @@ export interface DriveGrant {
   expiresAt: string | null;
   scope: string | null;
   googleAccountEmail: string | null;
+  /** The folder the archive shows. Null until one is chosen (migration 026). */
+  folderId: string | null;
+  folderName: string | null;
 }
 
 function requireConfig() {
@@ -199,7 +202,9 @@ export async function storeDriveGrant(input: {
 export async function readDriveGrant(): Promise<DriveGrant | null> {
   const { data, error } = await getPdfAdminClient()
     .from("pdf_drive_grant")
-    .select("access_token, refresh_token, expires_at, scope, google_account_email")
+    .select(
+      "access_token, refresh_token, expires_at, scope, google_account_email, folder_id, folder_name",
+    )
     .maybeSingle();
 
   if (error) throw new Error(`Failed to read Drive grant: ${error.message}`);
@@ -212,6 +217,8 @@ export async function readDriveGrant(): Promise<DriveGrant | null> {
     expiresAt: (row.expires_at as string) ?? null,
     scope: (row.scope as string) ?? null,
     googleAccountEmail: (row.google_account_email as string) ?? null,
+    folderId: (row.folder_id as string) ?? null,
+    folderName: (row.folder_name as string) ?? null,
   };
 }
 
@@ -298,20 +305,57 @@ export async function listPdfsInFolder(
  * holding an access token, and the easiest way to guarantee that is to give it
  * a shape that cannot contain one.
  */
-export async function getDriveConnection(): Promise<{
+export interface DriveConnection {
   connected: boolean;
   email: string | null;
   hasRefreshToken: boolean;
-}> {
+  /** The folder the archive shows; null when none has been recorded yet. */
+  folder: { id: string; name: string | null } | null;
+}
+
+export async function getDriveConnection(): Promise<DriveConnection> {
   const grant = await readDriveGrant();
   if (!grant?.accessToken) {
-    return { connected: false, email: null, hasRefreshToken: false };
+    return { connected: false, email: null, hasRefreshToken: false, folder: null };
   }
   return {
     connected: true,
     email: grant.googleAccountEmail,
     hasRefreshToken: Boolean(grant.refreshToken),
+    folder: grant.folderId ? { id: grant.folderId, name: grant.folderName } : null,
   };
+}
+
+/** The id given is not a folder this account can see. */
+export class DriveFolderNotFound extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "DriveFolderNotFound";
+  }
+}
+
+/**
+ * A folder's name, read from Drive rather than taken from the browser, which
+ * also confirms the id is a folder before anything is imported from it.
+ */
+export async function getDriveFolder(
+  accessToken: string,
+  folderId: string,
+): Promise<{ id: string; name: string }> {
+  let response: Response;
+  try {
+    response = await driveFileRequest(accessToken, folderId, "fields=id,name,mimeType", "folder read");
+  } catch (error) {
+    if (error instanceof DriveFileMissing) {
+      throw new DriveFolderNotFound("That folder is not in this Drive");
+    }
+    throw error;
+  }
+  const data = (await response.json()) as { id?: string; name?: string; mimeType?: string };
+  if (data.mimeType !== "application/vnd.google-apps.folder" || !data.id) {
+    throw new DriveFolderNotFound("That is not a folder");
+  }
+  return { id: data.id, name: data.name ?? "(unnamed folder)" };
 }
 
 /** Distinguishes "you never connected" from "your grant stopped working". */

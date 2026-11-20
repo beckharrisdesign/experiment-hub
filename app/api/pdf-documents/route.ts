@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { listPdfDocuments } from "@/lib/pdf-documents";
+import { getDriveConnection } from "@/lib/pdf-drive";
 
 /**
  * List documents for the dashboard.
@@ -9,11 +10,13 @@ import { listPdfDocuments } from "@/lib/pdf-documents";
  * storage, database, or third-party call" true structurally rather than by each
  * handler remembering to check.
  *
- * Serves entirely from Postgres. Nothing here touches Drive.
+ * Serves entirely from Postgres. Nothing here touches Drive. Lists the chosen
+ * folder's documents, the same set the dashboard shows.
  */
 export async function GET() {
   try {
-    const documents = await listPdfDocuments();
+    const { folder } = await getDriveConnection();
+    const documents = await listPdfDocuments(folder?.id ?? null);
     return NextResponse.json({
       success: true,
       documents,

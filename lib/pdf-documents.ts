@@ -113,12 +113,22 @@ function toBaseline(embedded: unknown): EmbeddedMetadata | null {
  * List documents. Soft-deleted rows are excluded — their history survives and
  * stays queryable, but they are not part of the archive any more.
  */
-export async function listPdfDocuments(): Promise<PdfDocument[]> {
-  const { data, error } = await getPdfAdminClient()
+export async function listPdfDocuments(
+  /**
+   * The folder the archive shows (`getDriveConnection().folder`). When given,
+   * only documents imported from it are listed; documents from a folder no
+   * longer chosen keep their rows and history but leave the list. Omitted or
+   * null lists every document, which is also what rows imported before folders
+   * were recorded need until a folder is next chosen.
+   */
+  folderId: string | null = null,
+): Promise<PdfDocument[]> {
+  let query = getPdfAdminClient()
     .from("pdf_documents")
     .select(COLUMNS)
-    .is("deleted_at", null)
-    .order("filename", { ascending: false });
+    .is("deleted_at", null);
+  if (folderId) query = query.eq("drive_folder_id", folderId);
+  const { data, error } = await query.order("filename", { ascending: false });
 
   if (error) throw new Error(`Failed to list documents: ${error.message}`);
   // The generated client cannot infer a shape from a concatenated column list,

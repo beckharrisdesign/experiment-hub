@@ -551,6 +551,17 @@ beckharrisdesign.com — I'm ok with the future lift."* The lift is real: an
 assessment, not paperwork. Accepting it buys the folder workflow now without
 foreclosing an outside account later.
 
+**Amended 2026-11-20: the folder is stored, shown, and changeable.** The Picker
+grant was used once, for the import, and then forgotten. Nothing could show
+which folder the archive came from or point it at another. The connection row
+(`pdf_drive_grant`) now holds `folder_id` and `folder_name`, one folder at a
+time, and each document records the `drive_folder_id` it was imported from. The
+dashboard shows the folder, linked to it in Drive, with **Change folder**, which
+opens the same Picker. Only that folder's documents are listed. Documents from
+a folder no longer chosen keep their rows and history, and come back if it is
+chosen again. The folder name is read from Drive, not taken from the browser,
+which also confirms the id is a folder. Migration 026.
+
 ### D10 — The splitter belongs in v2; its schema lands now, its screen later
 
 Splitting is not optional and not peripheral. An earlier draft here framed it as
