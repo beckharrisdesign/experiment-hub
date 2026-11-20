@@ -434,6 +434,24 @@ export async function getDriveHeadRevisionId(
 }
 
 /**
+ * The head revision and when the file last changed, for saying how long ago
+ * Drive's copy moved on (Compare, task 8.4). Drive does not say who changed it.
+ */
+export async function getDriveRevision(
+  accessToken: string,
+  fileId: string,
+): Promise<{ revision: string | null; modifiedTime: string | null }> {
+  const response = await driveFileRequest(
+    accessToken,
+    fileId,
+    "fields=headRevisionId,modifiedTime",
+    "metadata read",
+  );
+  const data = (await response.json()) as { headRevisionId?: string; modifiedTime?: string };
+  return { revision: data.headRevisionId ?? null, modifiedTime: data.modifiedTime ?? null };
+}
+
+/**
  * GET one file resource, mapping Drive's refusals onto the errors the routes
  * translate. The id goes into the path, so it is encoded: it comes from the
  * database, not the request, but nothing should be trusted to be path-safe.
