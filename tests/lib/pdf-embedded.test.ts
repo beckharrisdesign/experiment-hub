@@ -82,10 +82,8 @@ describe("readEmbeddedMetadata", () => {
 
   it("accepts an ArrayBuffer, which is what a Drive download yields", async () => {
     const bytes = await pdfWith({ title: "From Drive" });
-    const buffer = bytes.buffer.slice(
-      bytes.byteOffset,
-      bytes.byteOffset + bytes.byteLength,
-    );
+    // A copy, so the buffer is a plain ArrayBuffer rather than ArrayBufferLike.
+    const buffer = new Uint8Array(bytes).buffer;
     expect((await readEmbeddedMetadata(buffer)).title).toBe("From Drive");
   });
 

@@ -145,10 +145,12 @@ describe("findings", () => {
   });
 
   it("catches a task still waiting on a pull request that merged", async () => {
-    const page = (await loadChangePage("pdf-metadata-viewer-cloud", repo))!;
-    const finding = page.findings.find((f) => f.taskId === "2.1b");
+    // Live data, not a fixture: this points at whichever real task is still
+    // stale. pdf-metadata-viewer-cloud 2.1b served until it was closed out.
+    const page = (await loadChangePage("tell-the-story", repo))!;
+    const finding = page.findings.find((f) => f.taskId === "4.3");
     expect(finding).toBeDefined();
-    expect(finding!.record).toMatch(/#389 merged on 2026-08-18/);
+    expect(finding!.record).toMatch(/#541 merged on 2026-10-16/);
   });
 
   it("states both readings and never picks one", async () => {
