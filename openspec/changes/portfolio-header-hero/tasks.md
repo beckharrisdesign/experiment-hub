@@ -103,7 +103,8 @@ Write the tests first, and see them fail before the code that passes them.
         top;
       - the `aria-current` mapping across 8 `<main>` class sets: homepage,
         all-projects, Consulting, Labs, a Labs sub-page, About, a case
-        study, and a grandchild with no match;
+        study, and a grandchild with no match (all-projects dropped in
+        3.17, leaving 7);
       - the mapping re-applies after a simulated client-side navigation;
       - `--hero-top` and `--hero-h` are set only on a case study with a
         cover.
@@ -131,7 +132,7 @@ Write the tests first, and see them fail before the code that passes them.
       - current-link styles (full `--foreground`, a 2px underline at a 6px
         offset; others at 75%);
       - breadcrumb hidden on `.parent-page__index` and
-        `.page__all-projects`.
+        `.page__all-projects` (the latter removed in 3.17).
 - [x] 3.5 §4 Homepage hero (`.page__index .notion-root >
       .notion-column-list:first-child`):
       - a 62 / 38 column split (on 2026-11-17: two of three grid columns,
@@ -239,7 +240,7 @@ Write the tests first, and see them fail before the code that passes them.
         change: `.page__all-projects` (`/all-projects` now redirects to
         `/`, so that page class no longer exists) and
         `.notion-property__number` (#537's Labs score pill, on a table
-        no sampled route shows);
+        no sampled route shows). Both rules were removed in 3.17;
       - `npm run super:measure` against the live site
         (`to-be/after.json`): 14 pass, 0 fail, 3 waiting on Notion
         (3.10, 3.11), 1 manual. Same as the branch measured before merge.
