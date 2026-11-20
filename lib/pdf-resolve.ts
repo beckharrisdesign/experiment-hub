@@ -27,6 +27,7 @@ import {
 } from "@/lib/pdf-conflict";
 import { commitPdfDocument, discardPdfEdits, type CommitResult } from "@/lib/pdf-commit";
 import { DriveFileUnstable } from "@/lib/pdf-staging";
+import { clearAttention } from "@/lib/pdf-attention";
 
 export interface DriveVersion {
   revision: string | null;
@@ -190,6 +191,9 @@ export async function resolveConflict(
     throw new Error(`Failed to resolve conflict: ${error.message}`);
   }
 
+  // The conflict is resolved: the edits now sit on Drive's current version. If
+  // the commit below fails, it records its own instance.
+  await clearAttention(id);
   if (input.action === "discard") {
     const document = await getPdfDocument(id);
     return document ? { status: "discarded", document } : null;
