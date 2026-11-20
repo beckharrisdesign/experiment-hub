@@ -309,3 +309,10 @@ Write the tests first, and see them fail before the code that passes them.
       `--hero-cover-tile`, which #603 lists as self-defined. Measurement:
       17 pass, 0 fail, 1 manual (1.13); nav highlight and breadcrumbs
       (1.4–1.6) unchanged.
+- [x] 4.11 After #603 (default art for case studies without a cover)
+      deploys, rerun the live check and measurement. Done 2026-11-20, with
+      the served files and `hero/generic.png` matching `main`: `check.mjs`
+      in sync with 30/30 variables and 67/67 selectors, no misses.
+      Measurement: 17 pass, 0 fail, 1 manual (1.13). 1.17 reads
+      "generic.png 480px tall" at 1440 and "generic.png 390×200, 16px to
+      the title" at 390.

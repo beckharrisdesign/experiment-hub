@@ -1,5 +1,5 @@
 {
-  "when": "2026-11-20T16:59:18.591Z",
+  "when": "2026-11-20T17:14:43.615Z",
   "source": "live",
   "results": [
     {
@@ -116,9 +116,9 @@
     },
     {
       "id": "1.17",
-      "scenario": "Case study without a cover shows no empty box",
+      "scenario": "Case study without a cover shows the default art",
       "state": "pass",
-      "value": "cover box 0px; plain; placeholder 480px in rgb(35, 71, 74)",
+      "value": "cover box 0px; plain; generic.png 480px tall, tile max(min(100%, 1920px), 853.333px); @390: generic.png 390×200, 16px to the title",
       "note": ""
     },
     {
