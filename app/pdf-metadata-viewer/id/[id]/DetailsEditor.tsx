@@ -53,7 +53,7 @@ type Status =
   | { kind: "committed" }
   | { kind: "discarding" }
   | { kind: "discarded" }
-  | { kind: "error"; message: string; reauthorize?: boolean };
+  | { kind: "error"; message: string; reauthorize?: boolean; conflict?: boolean };
 
 const BUSY = new Set<Status["kind"]>(["saving", "committing", "discarding"]);
 
@@ -88,11 +88,13 @@ export function DetailsEditor({
           const body = (await res.json().catch(() => ({}))) as {
             error?: string;
             reauthorize?: boolean;
+            conflict?: boolean;
           };
           setStatus({
             kind: "error",
             message: body.error ?? fallback,
             reauthorize: body.reauthorize,
+            conflict: body.conflict,
           });
           return false;
         }
@@ -244,6 +246,14 @@ export function DetailsEditor({
                   {" "}
                   <a href="/api/pdf-drive/connect" className="underline">
                     Sign in again
+                  </a>
+                </>
+              ) : null}
+              {status.conflict ? (
+                <>
+                  {" "}
+                  <a href={`/pdf-metadata-viewer/id/${documentId}/compare`} className="underline">
+                    Compare the two versions
                   </a>
                 </>
               ) : null}
