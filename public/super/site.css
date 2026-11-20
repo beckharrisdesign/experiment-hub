@@ -1420,31 +1420,16 @@ thead th.status .notion-collection-table__head-cell-content::after {
   pointer-events: none;
   cursor: default;
 }
-/* Pill and score cells share one top padding so every badge in a row
-   sits on the same line. Super gives multi-select cells only 3px. */
+/* Pill cells share one top padding so every badge in a row sits on the
+   same line. Super gives multi-select cells only 3px. */
 tbody.notion-collection-table__body td.multi_select,
-tbody.notion-collection-table__body td.number,
 tbody.notion-collection-table__body td:last-child {
   padding-top: 1rem !important;
-}
-/* Score components (number properties) render as badges matching the
-   Final Score pill: same tint, padding, radius and line height as
-   Super's table pills (1px 6px, 20.25px line). Asked for 2026-10-15. */
-tbody.notion-collection-table__body td.number .notion-property__number {
-  display: inline-block;
-  padding: 1px 6px;
-  border-radius: 0.25rem;
-  background: var(--pill-bg);
-  color: rgb(var(--accent-rgb) / 0.85);  /* matches the pills (section 5) */
-  font-weight: 400;
-  line-height: 20.25px;
-  margin-top: 3px;
-  white-space: nowrap;
 }
 tbody.notion-collection-table__body .notion-pill {
   white-space: nowrap;
 }
-/* Status pills in tables match the score and select badges exactly.
+/* Status pills in tables match the select badges exactly.
    site.css section 5 gives every pill 0.2rem 0.5rem padding, but Super
    overrides that to 1px 6px only for select pills, so Status came out
    ~5px taller than the badges beside it (2026-10-15). */

@@ -217,7 +217,9 @@ Write the tests first, and see them fail before the code that passes them.
       view on 2026-11-19, and its link now goes to the homepage):
       `.page__all-projects` out of `site.css` and the nav-link mapping in
       `chrome.js`, `/all-projects` out of `check.mjs`'s routes, and its
-      row out of the nav-link test. Loader v12.
+      row out of the nav-link test. Loader v12. Also the Labs score-pill
+      rule from #537 (`.notion-property__number`): the Labs table has no
+      score column any more (Katy, 2026-11-20).
 
 ## 4. QA
 
