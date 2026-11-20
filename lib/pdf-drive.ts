@@ -469,3 +469,78 @@ async function driveFileRequest(
   }
   return response;
 }
+
+/**
+ * Drive accepted the request but refused to change the file — usually a file
+ * shared read-only, or storage quota. Distinct from a lapsed grant: signing in
+ * again will not help, and the staged edits are untouched.
+ */
+export class DriveWriteRefused extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "DriveWriteRefused";
+  }
+}
+
+/**
+ * Replace a file's bytes in place, returning the new head revision.
+ * openspec/changes/pdf-metadata-viewer-cloud — task 8.2, design.md D4 step 3.
+ *
+ * An update to the same file id, never a create, so links, sharing and the
+ * revision history all survive. Resumable rather than simple upload: Drive caps
+ * a simple upload at 5 MB, and a scanned PDF is routinely larger.
+ */
+export async function uploadDriveFile(
+  accessToken: string,
+  fileId: string,
+  bytes: Uint8Array,
+): Promise<string | null> {
+  const start = await fetch(
+    `https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(fileId)}` +
+      "?uploadType=resumable&fields=headRevisionId",
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json; charset=UTF-8",
+        "X-Upload-Content-Type": "application/pdf",
+        "X-Upload-Content-Length": String(bytes.byteLength),
+      },
+      body: "{}",
+    },
+  );
+  throwForWrite(start, "start the upload");
+  const session = start.headers.get("Location");
+  if (!session) throw new Error("Drive did not return an upload session");
+
+  const put = await fetch(session, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Length": String(bytes.byteLength),
+    },
+    // pdf-lib's save() returns an ArrayBuffer-backed array; the cast narrows
+    // the type to what fetch accepts without copying a file that may be large.
+    body: bytes as Uint8Array<ArrayBuffer>,
+  });
+  throwForWrite(put, "upload the file");
+  const data = (await put.json()) as { headRevisionId?: string };
+  return data.headRevisionId ?? null;
+}
+
+function throwForWrite(response: Response, what: string): void {
+  if (response.status === 401) {
+    throw new DriveReauthorizationRequired(
+      "Drive refused the request; the grant may have been revoked",
+    );
+  }
+  if (response.status === 404) {
+    throw new DriveFileMissing("The file is no longer in Drive");
+  }
+  if (response.status === 403) {
+    throw new DriveWriteRefused(`Drive refused to ${what} (403)`);
+  }
+  if (!response.ok) {
+    throw new Error(`Drive could not ${what} (${response.status})`);
+  }
+}

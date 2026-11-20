@@ -1,9 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, PDFName, PDFDict } from "pdf-lib";
 import {
   keywordsDiffer,
+  PdfNotWritable,
   readEmbeddedMetadata,
   splitKeywords,
+  writeEmbeddedMetadata,
 } from "@/lib/pdf-embedded";
 
 async function pdfWith(meta: {
@@ -111,5 +113,66 @@ describe("keywordsDiffer", () => {
 
   it("is true against an empty file list", () => {
     expect(keywordsDiffer(["tax"], [])).toBe(true);
+  });
+});
+
+describe("writeEmbeddedMetadata", () => {
+  it("writes the four fields so they read back exactly (spec: keywords survive a commit)", async () => {
+    const original = await pdfWith({ title: "Untitled", pages: 2 });
+    const written = await writeEmbeddedMetadata(original, {
+      title: "March electricity invoice",
+      subject: "Utility bill",
+      author: "Katy",
+      keywords: ["invoice", "utilities", "paid", "year-2026"],
+    });
+    expect(await readEmbeddedMetadata(written)).toEqual({
+      title: "March electricity invoice",
+      subject: "Utility bill",
+      author: "Katy",
+      keywords: ["invoice", "utilities", "paid", "year-2026"],
+      pageCount: 2,
+    });
+  });
+
+  it("clears a field set to null, which reads back as null", async () => {
+    const original = await pdfWith({ title: "Old", subject: "Old", keywords: ["a"] });
+    const written = await writeEmbeddedMetadata(original, {
+      title: null,
+      subject: null,
+      author: null,
+      keywords: [],
+    });
+    expect(await readEmbeddedMetadata(written)).toMatchObject({
+      title: null,
+      subject: null,
+      author: null,
+      keywords: [],
+    });
+  });
+
+  it("keeps the producer the file already names", async () => {
+    const pdf = await PDFDocument.create();
+    pdf.addPage();
+    pdf.setProducer("ScanSnap Manager");
+    const original = await pdf.save({ updateFieldAppearances: false });
+    const written = await writeEmbeddedMetadata(original, {
+      title: "x",
+      subject: null,
+      author: null,
+      keywords: [],
+    });
+    const reread = await PDFDocument.load(written, { updateMetadata: false });
+    expect(reread.getProducer()).toBe("ScanSnap Manager");
+  });
+
+  it("refuses an encrypted file rather than saving one no reader can open", async () => {
+    const pdf = await PDFDocument.create();
+    pdf.addPage();
+    // pdf-lib cannot encrypt, so mark the trailer the way an encrypted file is.
+    pdf.context.trailerInfo.Encrypt = pdf.context.obj({ Filter: PDFName.of("Standard") }) as PDFDict;
+    const original = await pdf.save({ useObjectStreams: false });
+    await expect(
+      writeEmbeddedMetadata(original, { title: "x", subject: null, author: null, keywords: [] }),
+    ).rejects.toBeInstanceOf(PdfNotWritable);
   });
 });

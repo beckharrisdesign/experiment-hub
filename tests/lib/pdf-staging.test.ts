@@ -58,6 +58,7 @@ function doc(overrides: Partial<PdfDocument> = {}): PdfDocument {
     splitIndex: null,
     supersededAt: null,
     fileBaseline: null,
+    driveRevisionId: null,
     ...overrides,
   };
 }

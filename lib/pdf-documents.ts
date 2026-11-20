@@ -52,6 +52,8 @@ export interface PdfDocument {
    * are authoritative, and null in them means empty rather than unread.
    */
   fileBaseline: EmbeddedMetadata | null;
+  /** The Drive revision `fileBaseline` was read from, compared at commit. */
+  driveRevisionId: string | null;
 }
 
 export interface PdfHistoryEntry {
@@ -68,7 +70,7 @@ type Row = Record<string, unknown>;
 const COLUMNS =
   "id, drive_file_id, filename, title, subject, author, keywords, page_count, " +
   "has_pending_edits, committed_at, marked_for_deletion, split_not_needed, " +
-  "split_from_document_id, split_index, superseded_at, " +
+  "split_from_document_id, split_index, superseded_at, drive_head_revision_id, " +
   // Only the baseline, not the whole snapshot: the rest is Drive's listing.
   "file_baseline:file_snapshot->embedded";
 
@@ -90,6 +92,7 @@ function toDocument(row: Row): PdfDocument {
     splitIndex: (row.split_index as number) ?? null,
     supersededAt: (row.superseded_at as string) ?? null,
     fileBaseline: toBaseline(row.file_baseline),
+    driveRevisionId: (row.drive_head_revision_id as string) ?? null,
   };
 }
 

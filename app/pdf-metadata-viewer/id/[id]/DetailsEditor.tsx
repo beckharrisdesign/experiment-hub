@@ -2,16 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Input, Label } from "@beckharrisdesign/mvds";
+import { Button, Input, Label } from "@beckharrisdesign/mvds";
 
 /**
  * Editable details panel — Figma `02.9` frame `34:289`, `02.10` frame `40:3`.
- * openspec/changes/pdf-metadata-viewer-cloud — tasks 8.1, 9.4.
+ * openspec/changes/pdf-metadata-viewer-cloud — tasks 8.1, 8.2, 9.4.
  *
  * Every change saves as it is made (a text field on blur or Enter, a keyword on
  * add or remove) and lands as a staged edit: saved here, not yet in the file.
- * Writing to Drive is a separate, explicit step that this panel does not offer
- * yet. Suggest metadata is out of scope until the vision route exists.
+ * The commit bar writes them into the PDF in Drive, or discards them. Suggest
+ * metadata is out of scope until the vision route exists.
  */
 
 type TextField = "title" | "subject" | "author";
@@ -35,6 +35,8 @@ export interface DetailsEditorProps {
   };
   /** Nothing staged yet and the file unreadable: the first edit would fail. */
   disabled: boolean;
+  /** Fields and keywords that differ from the file, as the header counts them. */
+  pendingCount: number;
 }
 
 const LABELS: Record<TextField, string> = {
@@ -47,24 +49,41 @@ type Status =
   | { kind: "idle" }
   | { kind: "saving" }
   | { kind: "saved" }
+  | { kind: "committing" }
+  | { kind: "committed" }
+  | { kind: "discarding" }
+  | { kind: "discarded" }
   | { kind: "error"; message: string; reauthorize?: boolean };
 
-export function DetailsEditor({ documentId, values, inFile, edited, disabled }: DetailsEditorProps) {
+const BUSY = new Set<Status["kind"]>(["saving", "committing", "discarding"]);
+
+export function DetailsEditor({
+  documentId,
+  values,
+  inFile,
+  edited,
+  disabled,
+  pendingCount,
+}: DetailsEditorProps) {
   const router = useRouter();
   const [status, setStatus] = useState<Status>({ kind: "idle" });
-  // Saves run one at a time, in the order made: two quick edits must not land
-  // out of order, and the first edit's baseline read must finish before the next.
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
+  // Requests run one at a time, in the order made: two quick edits must not
+  // land out of order, the first edit's baseline read must finish before the
+  // next, and a commit clicked straight after typing must include that edit.
   const queue = useRef<Promise<boolean>>(Promise.resolve(true));
 
-  function save(edits: Partial<Values>): Promise<boolean> {
+  function enqueue(
+    path: string,
+    init: RequestInit,
+    busy: Status,
+    done: Status,
+    fallback: string,
+  ): Promise<boolean> {
     const run = async (): Promise<boolean> => {
-      setStatus({ kind: "saving" });
+      setStatus(busy);
       try {
-        const res = await fetch(`/api/pdf-documents/id/${documentId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(edits),
-        });
+        const res = await fetch(`/api/pdf-documents/id/${documentId}${path}`, init);
         if (!res.ok) {
           const body = (await res.json().catch(() => ({}))) as {
             error?: string;
@@ -72,22 +91,58 @@ export function DetailsEditor({ documentId, values, inFile, edited, disabled }: 
           };
           setStatus({
             kind: "error",
-            message: body.error ?? "Could not save the change",
+            message: body.error ?? fallback,
             reauthorize: body.reauthorize,
           });
           return false;
         }
-        setStatus({ kind: "saved" });
+        setStatus(done);
         router.refresh();
         return true;
       } catch {
-        setStatus({ kind: "error", message: "Could not reach the server. The change was not saved." });
+        setStatus({ kind: "error", message: `Could not reach the server. ${fallback}` });
         return false;
       }
     };
     queue.current = queue.current.then(run, run);
     return queue.current;
   }
+
+  const save = (edits: Partial<Values>) =>
+    enqueue(
+      "",
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(edits),
+      },
+      { kind: "saving" },
+      { kind: "saved" },
+      "The change was not saved.",
+    );
+
+  const commit = () =>
+    enqueue(
+      "/commit",
+      { method: "POST" },
+      { kind: "committing" },
+      { kind: "committed" },
+      "Nothing was written. Your edits are kept.",
+    );
+
+  const discard = () => {
+    setConfirmingDiscard(false);
+    return enqueue(
+      "/discard",
+      { method: "POST" },
+      { kind: "discarding" },
+      { kind: "discarded" },
+      "Nothing was discarded.",
+    );
+  };
+
+  const busy = BUSY.has(status.kind);
+  const changes = `${pendingCount} ${pendingCount === 1 ? "change" : "changes"}`;
 
   return (
     <>
@@ -113,15 +168,74 @@ export function DetailsEditor({ documentId, values, inFile, edited, disabled }: 
         />
       </div>
 
-      <div className="mt-auto flex flex-col gap-1 border-t border-border p-5 text-xs">
-        <p className="text-text-muted">
-          Saved here, not yet in the file. Writing changes to Drive comes next.
-        </p>
+      {/* Pinned to the bottom on a phone (frame 40:3), at the panel's foot on desktop. */}
+      <div className="sticky bottom-0 mt-auto flex flex-col gap-3 border-t border-border bg-background-secondary p-5 text-xs lg:static">
+        {pendingCount > 0 ? (
+          <>
+            <p className="text-text-muted">
+              Saved here, not yet in the file. Nothing is written to Drive until you commit.
+            </p>
+            {confirmingDiscard ? (
+              <div className="flex flex-col gap-3">
+                <p className="text-text-primary">
+                  Discard {changes}? Every field goes back to what the file says.
+                </p>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    className="min-h-11"
+                    onClick={() => setConfirmingDiscard(false)}
+                  >
+                    Keep editing
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="min-h-11 flex-1"
+                    disabled={busy}
+                    onClick={() => void discard()}
+                  >
+                    Discard {changes}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="min-h-11"
+                  disabled={busy}
+                  onClick={() => setConfirmingDiscard(true)}
+                >
+                  Discard
+                </Button>
+                <Button
+                  className="min-h-11 flex-1"
+                  disabled={busy}
+                  onClick={() => void commit()}
+                >
+                  {status.kind === "committing" ? "Writing to Drive…" : `Commit ${changes}`}
+                </Button>
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="text-text-muted">
+            Changes save here as you make them. Nothing is written to Drive until you commit.
+          </p>
+        )}
         <p aria-live="polite" className="min-h-4">
           {status.kind === "saving" ? (
             <span className="text-text-muted">Saving…</span>
           ) : status.kind === "saved" ? (
             <span className="text-text-secondary">Saved</span>
+          ) : status.kind === "committing" ? (
+            <span className="text-text-muted">Writing to Drive…</span>
+          ) : status.kind === "committed" ? (
+            <span className="text-text-secondary">Written to Drive</span>
+          ) : status.kind === "discarding" ? (
+            <span className="text-text-muted">Discarding…</span>
+          ) : status.kind === "discarded" ? (
+            <span className="text-text-secondary">Discarded. The fields match the file again.</span>
           ) : status.kind === "error" ? (
             <span role="alert" className="text-warning">
               {status.message}
