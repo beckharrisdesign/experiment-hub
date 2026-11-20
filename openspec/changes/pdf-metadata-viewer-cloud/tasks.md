@@ -55,14 +55,14 @@ Each one changes work below it, so none should be discovered mid-build.
 - [x] 5.3 Re-authorization prompt on a revoked grant — `DriveReauthorizationRequired` separates revoked from never-connected from missing document
 - [x] 5.4 Folder grant via the Google Picker — folders, never individual files — into reference rows, copying no bytes. **Tested against a real folder 2026-08-18:** the Picker works and the grant stores, but under `drive.file` it conveyed no files. Re-verify end to end once the scope change is live
 - [ ] ~~5.5 Detect documents in a granted folder that the grant does not cover, and surface them as a Needs attention instance with a re-grant action~~ — **dropped by D9a.** Full `drive` cannot have a covered/uncovered split within a folder, so the gap this detects no longer exists. The broken-reference case in 5.6 is separate and still stands
-- [ ] 5.6 Broken reference surfaces as such while metadata and history survive
+- [~] 5.6 Broken reference surfaces as such while metadata and history survive — **partly, 2026-11-20:** Drive's 404 becomes `DriveFileMissing`, the content route answers 410 rather than 404, and the detail page says the file is no longer in Drive while still showing the stored fields. Not yet seen against a file actually moved out of the folder
 
 ## 6. Read path
 
 - [x] 6.1 `GET /api/pdf-documents` — list from the database, fetching no bytes. **Verified against the live schema:** 200 `{documents:[],total:0}`
 - [x] 6.2 `GET /api/pdf-documents/id/[id]` — metadata and pending state. **Verified:** malformed and nonexistent uuids both 404 identically, no 22P02 leaking as a 500
 - [x] 6.3 `GET .../history` — full field-level history, newest first, uncapped. **Verified** against the live schema
-- [ ] 6.4 `GET .../content` — proxy bytes through the session, minting no Drive URL — blocked on the Drive client (group 5)
+- [x] 6.4 `GET .../content` — proxy bytes through the session, minting no Drive URL — **done 2026-11-20.** `downloadDriveFile` streams `alt=media`; the response is `private, no-store`, and `/api/pdf-documents/*` carries `frame-ancestors 'self'` (no `X-Frame-Options`) so the detail page can frame it while the rest of the hub stays `'none'`. Unit-covered; not yet exercised against live Drive
 - [ ] 6.5 Port `taxonomy-loader.js` and `entities-notion.js`, keeping the field allowlist intact
 - [ ] 6.6 Run `test-entity-projection.js` against the ported module
 
@@ -96,7 +96,7 @@ Each one changes work below it, so none should be discovered mid-build.
 - [ ] 9.1 Add `input` and `table` via `npx shadcn@latest add`, landing inside MVDS tokens
 - [ ] 9.2 Author `Stat` in MVDS — `<Stat label value tone />`, tone in default/warning/success/danger/muted. No shadcn equivalent exists; the Figma variant set at `19:17` is the reference
 - [x] 9.3 Dashboard: stats, state column, table actions. Needs attention list and live bulk commit wait on the Drive client
-- [ ] 9.4 Detail: `Field` with `help` carrying the in-the-file value and `error` carrying a conflict
+- [ ] 9.4 Detail: `Field` with `help` carrying the in-the-file value and `error` carrying a conflict — **view-only first, 2026-11-20:** the detail page ships read-only off frames `34:289` and `40:3`, without Suggest, inputs, or the commit bar; each field falls back to the file's own value (read with `pdf-lib`) and shows "In the file" only where a stored value differs. The editable version replaces it with the write path
 - [ ] 9.5 Pending state visible at rest, not only during editing
 - [ ] 9.6 Import MVDS components into `00 Components` so Figma and code share a source
 
