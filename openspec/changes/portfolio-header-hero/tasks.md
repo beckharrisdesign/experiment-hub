@@ -296,3 +296,10 @@ Write the tests first, and see them fail before the code that passes them.
       measured the way `fillTopHero` does: Consulting 501px and Labs
       500px at 1440, 500px and 501px at 1920. No fill on phones, and
       1.15 still finds Consulting's band unbroken (46px to the body).
+- [x] 4.10 After #606 (All Projects and the Labs score pill removed)
+      deploys, rerun the live check and measurement. Done 2026-11-20, with
+      the served files matching `main`: `check.mjs` in sync, 67/67
+      selectors present; the only misses are `--hero-cover-url` and
+      `--hero-cover-tile`, which #603 lists as self-defined. Measurement:
+      17 pass, 0 fail, 1 manual (1.13); nav highlight and breadcrumbs
+      (1.4–1.6) unchanged.
