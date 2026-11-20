@@ -65,7 +65,7 @@ function pathOf(href) {
  * own hrefs, so a new nav item joins with no code change (design.md 4):
  *   1. page__<slug>         with a link to /<slug>  → that link
  *   2. parent-page__<slug>  with a link to /<slug>  → that link (Labs sub-pages)
- *   3. page__index, page__all-projects, parent-page__index → Projects ("/")
+ *   3. page__index, parent-page__index → Projects ("/")
  *   4. anything else → none (grandchildren keep their breadcrumb)
  * @param {Iterable<string>} classes  <main>'s class list
  * @param {string[]} hrefs  the nav links' paths
@@ -78,7 +78,7 @@ export function currentHref(classes, hrefs) {
   const parent = list.find((c) => c.startsWith('parent-page__'))?.slice('parent-page__'.length);
   if (page && paths.has(`/${page}`)) return `/${page}`;
   if (parent && paths.has(`/${parent}`)) return `/${parent}`;
-  if ((page === 'index' || page === 'all-projects' || parent === 'index') && paths.has('/')) return '/';
+  if ((page === 'index' || parent === 'index') && paths.has('/')) return '/';
   return null;
 }
 

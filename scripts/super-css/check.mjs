@@ -54,7 +54,6 @@ const ASSET_URL = 'https://labs.beckharrisdesign.com/super/site.css';
 /** Representative routes — one of each page shape the library styles. */
 const ROUTES = [
   '/', // homepage: tokens, navbar, full-bleed callouts
-  '/all-projects', // gallery collection
   '/bhd-labs', // labs cards + borderless tables
   '/bhd-labs/mvds', // project page: header, page properties
   '/for-babylist', // section 9: the curated card row

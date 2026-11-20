@@ -159,8 +159,9 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
      1. `page__<slug>` where a nav link points to `/<slug>` → that link.
      2. `parent-page__<slug>` where a nav link points to `/<slug>` → that
         link. This is how Labs sub-pages light up Labs.
-     3. `page__index`, `page__all-projects` or `parent-page__index` →
-        Projects (`/`).
+     3. `page__index` or `parent-page__index` → Projects (`/`). (An
+        All Projects page was on this list until Katy removed it on
+        2026-11-19; its link now goes to the homepage.)
      4. Anything else → no current link.
    - A new nav item joins with no code change. A grandchild page
      (two levels down) gets no highlight. That is acceptable, and those
@@ -176,8 +177,8 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
      nothing else breaks.
 5. **Breadcrumb: hidden on every child of the homepage, kept on deeper
    pages.**
-   - Rule: `:is(.parent-page__index, .page__all-projects)
-     .super-navbar__breadcrumbs { display: none }`. This is pure CSS, in
+   - Rule: `.parent-page__index .super-navbar__breadcrumbs
+     { display: none }`. This is pure CSS, in
      §3, with no dependency on the script.
    - It covers Consulting, Labs, About and the case studies in one rule.
      Labs sub-pages (`parent-page__bhd-labs`) and pages under a collection
@@ -458,7 +459,7 @@ What the live DOM says (fetched 2026-11-16). This shapes every decision below:
 18. **Tests: jsdom in `tests/scripts/super-components.test.ts`.**
     - The scroll class goes on past 80px and comes off at the top.
     - The `aria-current` mapping is checked against a table of `<main>`
-      class sets: homepage, all-projects, Consulting, Labs, a Labs
+      class sets: homepage, Consulting, Labs, a Labs
       sub-page, About, a case study, and a grandchild.
     - The CSS is verified by the manual pass at 1440 and 390 on the live
       site, using the measurement script that produced
