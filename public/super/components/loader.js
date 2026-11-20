@@ -69,7 +69,7 @@
 
 import { chromePass, startChrome } from './chrome.js';
 
-export const VERSION = '11';
+export const VERSION = '12';
 
 /** Marker name → module file in this directory. Add new components here. */
 export const REGISTRY = {
