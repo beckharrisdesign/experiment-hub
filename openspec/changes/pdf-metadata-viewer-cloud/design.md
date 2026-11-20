@@ -143,6 +143,29 @@ a maintenance task rather than existing only in this document.
 Index `pdf_document_history (document_id, changed_at)` regardless — the repair
 statement and the per-document history view both want it.
 
+**Amended 2026-11-20: pending means "differs from the file", not "edited since
+commit".** Found on the first live edit (#608): typing a field back to the
+file's own value, or removing a keyword just added, left a `stage` row behind.
+Under the rule above the dashboard kept calling the document pending while the
+detail page showed nothing to write, and a commit would have rewritten the file
+for no change.
+
+Pending is now computed from the row itself. It is true when the staged
+`title`, `subject`, `author` or keyword set differs from `file_snapshot.embedded`,
+the baseline captured on first edit (D8). A row with no baseline has never been
+edited and is never pending. Keywords compare as a set, so a reorder alone is
+not pending. That matches the detail page's added/removed count.
+
+The flag is still written only by the database, now by one `BEFORE INSERT OR
+UPDATE` trigger on `pdf_documents` (migration 024). It replaces the two
+cross-table triggers above. `pdf_documents_rebuild_pending()` keeps its name and
+contract, and a no-op update is enough to rebuild, because the trigger recomputes
+on every write. History is unchanged and remains the full record of every edit,
+including ones later undone; it no longer decides pending.
+
+Commit (D4) follows from this: after a successful write the baseline moves to
+the values just written, so the same rule clears pending without a separate step.
+
 **Why not `committed_title` / `committed_subject` shadow columns:** doubles the
 column count, and still can't express "which fields are pending" without
 comparing each one. History already answers it.

@@ -12,7 +12,7 @@ schema, and no OAuth: the v1 prototype and one PDF are enough.
 - [x] 1.3 Record the finding — see `design.md` D0. The roadmap's diagnosis was inverted: the loss is on write, not read
 - [x] 1.4 Decision: **keep `pdf-lib`**. It joins on a space and stores one flat string, but every taxonomy tag is a space-free slug, so the round trip is lossless for real data
 - [ ] 1.5 Confirm once in a third-party reader that the stored string displays as written — lower priority now the failure mode is understood, and no reader is installed here
-- [ ] 1.6 Enforce the constraint the decision depends on: reject keywords containing whitespace, including slugs arriving from Notion
+- [~] 1.6 Enforce the constraint the decision depends on: reject keywords containing whitespace, including slugs arriving from Notion — **editing path done in #608**: refused on the page and by `PATCH` with the hyphenated form suggested, and by the table's check constraint. The Notion path waits on 6.5
 
 ## 2. Resolve the open questions
 
@@ -30,7 +30,7 @@ Each one changes work below it, so none should be discovered mid-build.
 
 - [x] 3.1 Migration: `pdf_documents`, `pdf_document_history`, `pdf_drive_grant` — including `file_snapshot jsonb`, the merge baseline Compare depends on
 - [x] 3.2 Index `pdf_document_history (document_id, changed_at)`
-- [x] 3.3 Triggers maintaining `has_pending_edits` — on history insert, and on `committed_at` update
+- [x] 3.3 Triggers maintaining `has_pending_edits` — on history insert, and on `committed_at` update. **Replaced 2026-11-20** by one row trigger computing pending as "differs from the file's baseline" (migration 024, D2 amendment)
 - [x] 3.4 Ship the one-statement rebuild as a maintenance task, not just a snippet in `design.md`
 - [x] 3.5 Enable RLS on all three tables with no permissive policies
 - [ ] 3.6 Verify from a client-key context that all three tables are unreachable — service-role reads confirmed working; the publishable-key denial is the half still untested
@@ -81,8 +81,9 @@ Each one changes work below it, so none should be discovered mid-build.
 
 ## 8. Write path
 
-- [ ] 8.0 Capture the baseline on the first staged edit — read the file once, store `file_snapshot.embedded` and `drive_head_revision_id` together, fill the field columns; never re-capture while edits are pending. See `design.md` D8, "captured on first edit"
-- [ ] 8.1 `PATCH .../id/[id]` — stage edits, writing history rows, touching no PDF
+- [x] 8.0 Capture the baseline on the first staged edit — read the file once, store `file_snapshot.embedded` and `drive_head_revision_id` together, fill the field columns; never re-capture while edits are pending. See `design.md` D8, "captured on first edit". **Done in #608, verified live 2026-11-20:** the first edit stored the file's five fields and its revision, and filled the title column from the file
+- [x] 8.1 `PATCH .../id/[id]` — stage edits, writing history rows, touching no PDF — **#608, verified live 2026-11-20:** a Subject and a keyword staged, one history row each, nothing written to Drive
+- [ ] 8.1a Undoing an edit by hand clears pending — migration 024; rolled-back test against the hub database passed, not yet applied
 - [ ] 8.2 `POST .../commit` — revision check, read-modify-write, same `drive_file_id`
 - [ ] 8.3 Conflict path: surface rather than overwrite, and leave staged edits intact
 - [ ] 8.4 Three-way classification per field against `file_snapshot` — only both-changed-differently asks for a decision

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Badge, Button } from "@beckharrisdesign/mvds";
+import { Button } from "@beckharrisdesign/mvds";
 import {
   getPdfDocument,
   isUuid,
@@ -148,9 +148,12 @@ export default async function PdfDocumentDetailPage({
               <a href="/pdf-metadata-viewer">← All documents</a>
             </Button>
             {pending.count > 0 ? (
-              <Badge variant="default" className="lg:order-5 lg:ml-auto">
+              // Frame 34:289: a warning dot and label on the dark pill. MVDS
+              // Badge has no warning variant, so this is drawn here.
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-background-primary px-3 py-1 text-xs text-warning lg:order-5 lg:ml-auto">
+                <span aria-hidden className="size-1.5 rounded-full bg-warning" />
                 {pending.count} pending {pending.count === 1 ? "edit" : "edits"}
-              </Badge>
+              </span>
             ) : null}
           </div>
 
