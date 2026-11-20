@@ -36,6 +36,19 @@ export function splitKeywords(raw: string | undefined | null): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Whether a staged keyword list says something different from the file's.
+ *
+ * Order-insensitive: the detail view shows tags as a set, so a reorder alone is
+ * not a discrepancy worth an "In the file" line.
+ */
+export function keywordsDiffer(stored: string[], inFile: string[]): boolean {
+  if (stored.length !== inFile.length) return true;
+  const a = [...stored].sort();
+  const b = [...inFile].sort();
+  return a.some((k, i) => k !== b[i]);
+}
+
 function clean(value: string | undefined): string | null {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;

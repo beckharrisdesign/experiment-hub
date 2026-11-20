@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { PDFDocument } from "pdf-lib";
-import { readEmbeddedMetadata, splitKeywords } from "@/lib/pdf-embedded";
+import {
+  keywordsDiffer,
+  readEmbeddedMetadata,
+  splitKeywords,
+} from "@/lib/pdf-embedded";
 
 async function pdfWith(meta: {
   title?: string;
@@ -91,5 +95,21 @@ describe("readEmbeddedMetadata", () => {
     await expect(
       readEmbeddedMetadata(new TextEncoder().encode("not a pdf")),
     ).rejects.toThrow();
+  });
+});
+
+describe("keywordsDiffer", () => {
+  it("is false for the same tags in any order", () => {
+    expect(keywordsDiffer(["tax", "2024"], ["2024", "tax"])).toBe(false);
+  });
+
+  it("is true when a tag is added, removed or changed", () => {
+    expect(keywordsDiffer(["tax", "2024"], ["tax"])).toBe(true);
+    expect(keywordsDiffer(["tax"], ["tax", "2024"])).toBe(true);
+    expect(keywordsDiffer(["tax", "2024"], ["tax", "2025"])).toBe(true);
+  });
+
+  it("is true against an empty file list", () => {
+    expect(keywordsDiffer(["tax"], [])).toBe(true);
   });
 });

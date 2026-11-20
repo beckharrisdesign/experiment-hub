@@ -12,7 +12,11 @@ import {
   downloadDriveFile,
   getValidAccessToken,
 } from "@/lib/pdf-drive";
-import { readEmbeddedMetadata, type EmbeddedMetadata } from "@/lib/pdf-embedded";
+import {
+  keywordsDiffer,
+  readEmbeddedMetadata,
+  type EmbeddedMetadata,
+} from "@/lib/pdf-embedded";
 
 /**
  * Hosted pdf-metadata-viewer — document detail, view only.
@@ -108,24 +112,47 @@ function ReadOnlyField({
   );
 }
 
-function KeywordList({ keywords }: { keywords: string[] }) {
+function KeywordChips({ keywords }: { keywords: string[] }) {
+  return (
+    <ul className="flex flex-wrap gap-2" aria-label="Keywords">
+      {keywords.map((k) => (
+        <li
+          key={k}
+          className="rounded-full bg-background-primary px-3 py-1 text-xs text-text-primary"
+        >
+          {k}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Same rule as ReadOnlyField, for a list: staged wins, file shown when they differ. */
+function KeywordList({
+  stored,
+  inFile,
+}: {
+  stored: string[];
+  /** Undefined when the file could not be read — nothing to compare against. */
+  inFile: string[] | undefined;
+}) {
+  const shown = stored.length > 0 ? stored : (inFile ?? []);
+  const differs =
+    stored.length > 0 && inFile !== undefined && keywordsDiffer(stored, inFile);
+
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-xs font-medium text-text-secondary">Keywords</span>
-      {keywords.length === 0 ? (
+      {shown.length === 0 ? (
         <span className="text-sm text-text-muted">None</span>
       ) : (
-        <ul className="flex flex-wrap gap-2" aria-label="Keywords">
-          {keywords.map((k) => (
-            <li
-              key={k}
-              className="rounded-full bg-background-primary px-3 py-1 text-xs text-text-primary"
-            >
-              {k}
-            </li>
-          ))}
-        </ul>
+        <KeywordChips keywords={shown} />
       )}
+      {differs && inFile ? (
+        <span className="text-xs text-text-muted">
+          In the file: {inFile.length > 0 ? inFile.join(", ") : "(empty)"}
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -157,8 +184,6 @@ export default async function PdfDocumentDetailPage({
   const previous = index > 0 ? all[index - 1] : null;
   const next = index >= 0 && index < all.length - 1 ? all[index + 1] : null;
 
-  const keywords =
-    document.keywords.length > 0 ? document.keywords : (embedded?.keywords ?? []);
   const pageCount = document.pageCount ?? embedded?.pageCount ?? null;
   const contentUrl = `/api/pdf-documents/id/${document.id}/content`;
   const filename = document.filename ?? "(unnamed)";
@@ -277,7 +302,10 @@ export default async function PdfDocumentDetailPage({
               stored={document.author}
               inFile={embedded ? embedded.author : undefined}
             />
-            <KeywordList keywords={keywords} />
+            <KeywordList
+              stored={document.keywords}
+              inFile={embedded ? embedded.keywords : undefined}
+            />
           </div>
           <p className="mt-auto border-t border-border p-5 text-xs text-text-muted">
             View only for now. Editing, and saving changes back to Drive, come
