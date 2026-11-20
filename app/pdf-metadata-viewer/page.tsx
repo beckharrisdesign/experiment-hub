@@ -1,7 +1,9 @@
 import { Badge, Button, Container, Inline, Stack } from "@beckharrisdesign/mvds";
 import { listPdfDocuments, type PdfDocument } from "@/lib/pdf-documents";
 import { getDriveConnection, type DriveConnection } from "@/lib/pdf-drive";
+import { summarizePending } from "@/lib/pdf-staging";
 import FolderPicker from "./FolderPicker";
+import { DocumentsSection } from "./DocumentsSection";
 
 /**
  * Hosted pdf-metadata-viewer dashboard.
@@ -52,7 +54,13 @@ function Stat({ label, value, tone = "default" }: StatProps) {
 
 function StateCell({ document }: { document: PdfDocument }) {
   if (document.hasPendingEdits) {
-    return <Badge variant="default">Pending edits</Badge>;
+    // Frame 34:172: the count in a warning pill, as on the detail page header.
+    const count = summarizePending(document).count;
+    return (
+      <span className="inline-flex items-center rounded-full bg-background-primary px-3 py-1 text-xs whitespace-nowrap text-warning">
+        {count > 0 ? `${count} pending ${count === 1 ? "edit" : "edits"}` : "Pending edits"}
+      </span>
+    );
   }
   if (document.committedAt) {
     return <Badge variant="muted">Committed</Badge>;
@@ -108,7 +116,13 @@ function DocumentsTable({ documents }: { documents: PdfDocument[] }) {
 // Page
 // ---------------------------------------------------------------------------
 
-export default async function PdfMetadataViewerPage() {
+export default async function PdfMetadataViewerPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pending?: string }>;
+}) {
+  // "Review pending" narrows the table to documents with edits to write.
+  const reviewing = (await searchParams).pending === "1";
   let documents: PdfDocument[] = [];
   let loadError: string | null = null;
   let drive: DriveConnection = {
@@ -244,23 +258,17 @@ export default async function PdfMetadataViewerPage() {
                   )}
                 </div>
               ) : (
-                <Stack gap={16}>
-                  <Inline gap={16} align="center" justify="between">
-                    <h2 className="text-base font-semibold text-text-primary">
-                      Documents
-                    </h2>
-                    <Inline gap={16} align="center">
-                      <span className="text-xs text-text-muted">
-                        {documents.length} documents · {pending} pending
-                      </span>
-                      <Button variant="outline" disabled>
-                        Review pending
-                      </Button>
-                      <Button disabled>Commit {pending} to Drive</Button>
-                    </Inline>
-                  </Inline>
-                  <DocumentsTable documents={documents} />
-                </Stack>
+                <DocumentsSection
+                  pending={documents
+                    .filter((d) => d.hasPendingEdits)
+                    .map((d) => ({ id: d.id, filename: d.filename ?? "(unnamed)" }))}
+                  totalDocuments={documents.length}
+                  reviewing={reviewing}
+                >
+                  <DocumentsTable
+                    documents={reviewing ? documents.filter((d) => d.hasPendingEdits) : documents}
+                  />
+                </DocumentsSection>
               )}
             </>
           )}
