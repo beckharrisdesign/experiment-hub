@@ -63,9 +63,10 @@ describe("a runtime with no git", () => {
   });
 
   it("still finds a task waiting on a pull request that merged", async () => {
-    const page = (await loadChangePage("pdf-metadata-viewer-cloud", noGit))!;
-    const finding = page.findings.find((f) => f.taskId === "2.1b");
-    expect(finding?.record).toMatch(/#389 merged on 2026-08-18/);
+    // Same live task as page.test.ts — repoint both together.
+    const page = (await loadChangePage("tell-the-story", noGit))!;
+    const finding = page.findings.find((f) => f.taskId === "4.3");
+    expect(finding?.record).toMatch(/#541 merged on 2026-10-16/);
   });
 
   it("names the manifest as its source", async () => {

@@ -20,8 +20,8 @@ Each one changes work below it, so none should be discovered mid-build.
 
 - [x] 2.1 Drive OAuth scope decided — **superseded 2026-08-18.** `drive.file` was chosen for being non-sensitive; it cannot list a folder's contents, so the scope is now full `drive` on an **External** consent screen in **Testing**, where a listed test user can consent to a restricted scope without verification. Costs accepted: refresh tokens expire every seven days, and publishing later requires verification plus CASA. See `design.md` D9a
 - [x] 2.1a **Spike — run 2026-08-18, and it FAILED.** A `drive.file` Picker folder grant covers the folder and nothing inside it, so the question of whether it extends to files added *later* never arises: it does not reach the files there at the time. Probed against the live grant — all accessible items: **1**, the folder itself; PDFs: **0**. Drive answers an uncovered listing with an empty list rather than a 403, so the import returned `success: true, imported: 0` and was indistinguishable from an empty folder. Resolved by D9a (full `drive`), not by a workaround
-- [~] 2.1b Register the scope and re-consent. **Console done 2026-08-18:** `.../auth/drive` now listed under *Your restricted scopes* on the Data Access page ("See, edit, create, and delete all of your Google Drive files"), `drive.file` removed, consent screen External/Testing with the founder as sole test user. No verification prompt appeared. **Remaining:** deploy PR #389, then re-consent — the stored grant predates the change and `include_granted_scopes` will not retroactively widen it
-- [ ] 2.1c Re-run the folder import after re-consent and confirm documents actually land — the 2026-08-18 run returned `imported: 0` under the old scope
+- [x] 2.1b Register the scope and re-consent. **Console done 2026-08-18:** `.../auth/drive` now listed under *Your restricted scopes* on the Data Access page ("See, edit, create, and delete all of your Google Drive files"), `drive.file` removed, consent screen External/Testing with the founder as sole test user. No verification prompt appeared. **Re-consent done 2026-11-20** on production (deploy of `06a8be71`, which carries #389): the stored grant was replaced, and its scope now includes `.../auth/drive` alongside the old `drive.file`, which `include_granted_scopes` carried forward
+- [x] 2.1c Re-run the folder import after re-consent and confirm documents actually land — **done 2026-11-20.** Same folder as the failed 2026-08-18 run: `pdf_documents` went from **0 to 45** rows, all 45 distinct Drive files, all PDFs, every row carrying `file_snapshot` and `drive_head_revision_id`. None pending, none committed — references only, as designed
 - [x] 2.2 Splitter **moves to v2** — schema now, interface after the write path. See `design.md` D10
 - [x] 2.3 Workflow flags become **columns** — `from-split`/`already-split` derive from lineage; `needs-deleting`/`no-split-needed` become `marked_for_deletion`/`split_not_needed`. See `design.md` D11
 - [x] 2.4 Confirm Actions is running again and CI verifies the MVDS 0.3 bump — **done 2026-08-14 on PR #371**, which carries `@beckharrisdesign/mvds ^0.3.0` and went green: Feature tests, Deploy hub, and the seed organizer's tests, lint and build all SUCCESS. Actions is running; the outstanding CI run named here has now happened
@@ -55,14 +55,14 @@ Each one changes work below it, so none should be discovered mid-build.
 - [x] 5.3 Re-authorization prompt on a revoked grant — `DriveReauthorizationRequired` separates revoked from never-connected from missing document
 - [x] 5.4 Folder grant via the Google Picker — folders, never individual files — into reference rows, copying no bytes. **Tested against a real folder 2026-08-18:** the Picker works and the grant stores, but under `drive.file` it conveyed no files. Re-verify end to end once the scope change is live
 - [ ] ~~5.5 Detect documents in a granted folder that the grant does not cover, and surface them as a Needs attention instance with a re-grant action~~ — **dropped by D9a.** Full `drive` cannot have a covered/uncovered split within a folder, so the gap this detects no longer exists. The broken-reference case in 5.6 is separate and still stands
-- [ ] 5.6 Broken reference surfaces as such while metadata and history survive
+- [~] 5.6 Broken reference surfaces as such while metadata and history survive — **partly, 2026-11-20:** Drive's 404 becomes `DriveFileMissing`, the content route answers 410 rather than 404, and the detail page says the file is no longer in Drive while still showing the stored fields. Not yet seen against a file actually moved out of the folder
 
 ## 6. Read path
 
 - [x] 6.1 `GET /api/pdf-documents` — list from the database, fetching no bytes. **Verified against the live schema:** 200 `{documents:[],total:0}`
 - [x] 6.2 `GET /api/pdf-documents/id/[id]` — metadata and pending state. **Verified:** malformed and nonexistent uuids both 404 identically, no 22P02 leaking as a 500
 - [x] 6.3 `GET .../history` — full field-level history, newest first, uncapped. **Verified** against the live schema
-- [ ] 6.4 `GET .../content` — proxy bytes through the session, minting no Drive URL — blocked on the Drive client (group 5)
+- [x] 6.4 `GET .../content` — proxy bytes through the session, minting no Drive URL — **done 2026-11-20.** `downloadDriveFile` streams `alt=media`; the response is `private, no-store`, and `/api/pdf-documents/*` carries `frame-ancestors 'self'` (no `X-Frame-Options`) so the detail page can frame it while the rest of the hub stays `'none'`. Unit-covered; not yet exercised against live Drive
 - [ ] 6.5 Port `taxonomy-loader.js` and `entities-notion.js`, keeping the field allowlist intact
 - [ ] 6.6 Run `test-entity-projection.js` against the ported module
 
@@ -96,7 +96,7 @@ Each one changes work below it, so none should be discovered mid-build.
 - [ ] 9.1 Add `input` and `table` via `npx shadcn@latest add`, landing inside MVDS tokens
 - [ ] 9.2 Author `Stat` in MVDS — `<Stat label value tone />`, tone in default/warning/success/danger/muted. No shadcn equivalent exists; the Figma variant set at `19:17` is the reference
 - [x] 9.3 Dashboard: stats, state column, table actions. Needs attention list and live bulk commit wait on the Drive client
-- [ ] 9.4 Detail: `Field` with `help` carrying the in-the-file value and `error` carrying a conflict
+- [ ] 9.4 Detail: `Field` with `help` carrying the in-the-file value and `error` carrying a conflict — **view-only first, 2026-11-20:** the detail page ships read-only off frames `34:289` and `40:3`, without Suggest, inputs, or the commit bar; each field falls back to the file's own value (read with `pdf-lib`) and shows "In the file" only where a stored value differs. The editable version replaces it with the write path
 - [ ] 9.5 Pending state visible at rest, not only during editing
 - [ ] 9.6 Import MVDS components into `00 Components` so Figma and code share a source
 

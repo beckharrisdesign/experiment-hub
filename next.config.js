@@ -109,12 +109,21 @@ const nextConfig = {
       { source: '/pdf-metadata-viewer', headers: securityHeaders(pickerCsp) },
       { source: '/pdf-metadata-viewer/:path*', headers: securityHeaders(pickerCsp) },
 
+      // The document API. The detail page frames a document's bytes from
+      // /api/pdf-documents/id/:id/content, so these responses may be framed by
+      // this origin — and only this one. JSON responses being same-origin
+      // frameable exposes nothing the session could not already read.
+      {
+        source: '/api/pdf-documents/:path*',
+        headers: securityHeaders({ ...baseCsp, 'frame-ancestors': ["'self'"] }),
+      },
+
       // Everything else keeps the original policy. The negative lookahead stops
       // two CSP headers landing on one response — browsers enforce the
       // intersection of multiple policies, which would silently re-block the
       // Picker.
       {
-        source: '/((?!pdf-metadata-viewer).*)',
+        source: '/((?!pdf-metadata-viewer|api/pdf-documents).*)',
         headers: [
           {
             key: 'X-Frame-Options',

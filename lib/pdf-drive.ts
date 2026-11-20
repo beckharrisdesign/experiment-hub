@@ -385,3 +385,53 @@ export async function getValidAccessToken(): Promise<string> {
 
   return data.access_token;
 }
+
+/**
+ * The referenced file is gone from Drive — trashed, deleted, or moved out of
+ * reach. Distinct from a revoked grant: signing in again will not bring it back,
+ * and the document's metadata and history in the working store still stand.
+ */
+export class DriveFileMissing extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "DriveFileMissing";
+  }
+}
+
+/**
+ * Download a file's bytes. Task 6.4: the caller proxies these through the
+ * session; no Drive URL is ever handed to the browser.
+ *
+ * The id goes into the path, so it is encoded — it comes from the database, not
+ * the request, but nothing should be trusted to be path-safe.
+ */
+export async function downloadDriveFile(
+  accessToken: string,
+  fileId: string,
+): Promise<ArrayBuffer> {
+  const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`;
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (response.status === 401) {
+    throw new DriveReauthorizationRequired(
+      "Drive refused the request; the grant may have been revoked",
+    );
+  }
+  // Drive answers 404 for a file the grant cannot see as well as one that is
+  // gone. Under the full `drive` scope those are the same situation.
+  if (response.status === 404) {
+    throw new DriveFileMissing("The file is no longer in Drive");
+  }
+  if (response.status === 403) {
+    throw new DriveReauthorizationRequired(
+      "Drive refused access to this file",
+    );
+  }
+  if (!response.ok) {
+    throw new Error(`Drive download failed (${response.status})`);
+  }
+
+  return response.arrayBuffer();
+}
