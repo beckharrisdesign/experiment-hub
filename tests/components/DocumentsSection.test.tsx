@@ -30,7 +30,7 @@ function confirm(name: string) {
 
 function renderSection(pending = PENDING, excluded = 0) {
   return render(
-    <DocumentsSection pending={pending} excluded={excluded} totalDocuments={10} reviewing={false}>
+    <DocumentsSection pending={pending} excluded={excluded} reviewing={false}>
       <table />
     </DocumentsSection>,
   );
@@ -94,7 +94,8 @@ describe("DocumentsSection bulk commit (task 8.7)", () => {
     renderSection(PENDING.slice(0, 2), 1);
     expect(screen.getAllByRole("button", { name: "Commit 2 documents to Drive" }).length).toBeGreaterThan(0);
     expect(screen.getByText("1 excluded — see Needs attention")).toBeTruthy();
-    expect(screen.getByText("10 documents · 3 pending")).toBeTruthy();
+    // The stats above the list already give the totals; the list doesn't repeat them.
+    expect(screen.queryByText(/documents · \d+ pending/)).toBeNull();
   });
 
   it("links Review pending to the filtered list", () => {

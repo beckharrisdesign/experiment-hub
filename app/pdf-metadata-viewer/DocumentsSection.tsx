@@ -45,13 +45,12 @@ interface Props {
   pending: PendingDocument[];
   /** Pending documents left out because a conflict or missing file needs you first. */
   excluded: number;
-  totalDocuments: number;
   /** The table is showing pending documents only. */
   reviewing: boolean;
   children: ReactNode;
 }
 
-export function DocumentsSection({ pending, excluded, totalDocuments, reviewing, children }: Props) {
+export function DocumentsSection({ pending, excluded, reviewing, children }: Props) {
   const router = useRouter();
   const [run, setRun] = useState<Run>({ kind: "idle" });
   const count = pending.length;
@@ -114,12 +113,7 @@ export function DocumentsSection({ pending, excluded, totalDocuments, reviewing,
         <h2 className="text-base font-semibold text-text-primary">
           {reviewing ? "Pending documents" : "Documents"}
         </h2>
-        <div className="flex flex-wrap items-center gap-4">
-          <span className="text-xs text-text-muted">
-            {totalDocuments} documents · {count + excluded} pending
-          </span>
-          {actions}
-        </div>
+        {actions}
       </div>
 
       {run.kind === "confirming" ? (

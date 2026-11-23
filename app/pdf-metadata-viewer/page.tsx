@@ -297,7 +297,6 @@ export default async function PdfMetadataViewerPage({
                   pending={documents
                     .filter((d) => d.hasPendingEdits && !excludedFromBulk(d))
                     .map((d) => ({ id: d.id, filename: d.filename ?? "(unnamed)" }))}
-                  totalDocuments={documents.length}
                   reviewing={reviewing}
                 >
                   <DocumentsTable
