@@ -19,6 +19,8 @@ const nextConfig = {
     // follow it. Without it the deployed runtime has no history at all and the
     // pages render every date as a dash (change-history-manifest).
     '/changes/**': ['data/change-history.json'],
+    // AI suggestions read the tag vocabulary by a runtime path (lib/pdf-taxonomy.ts).
+    '/api/pdf-documents/**': ['config/pdf-metadata-viewer/tag-vocabulary.md'],
     '/etsy-listing-kit/**': [
       'node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/node_modules/@img/sharp-libvips-linux-x64/**',
       // Bundled fonts — serverless has none; without these, SVG text renders
