@@ -107,6 +107,12 @@ NOTION_TOKEN|op://BHD Labs/Notion/token|gh
 NOTION_INVENTORY_DB_ID|op://BHD Labs/Notion/inventory db id|gh
 NOTION_EXPERIMENTS_DATA_SOURCE_ID|op://BHD Labs/Notion/experiments data source id|vercel,gh
 NOTION_HISTORY_DATA_SOURCE_ID|op://BHD Labs/Notion/history data source id|vercel,gh
+# PDF Organizer AI suggestions: the people and organisations tags are matched
+# against ("Entities", KBH Second Brain -> Databases). Not a secret; vaulted so
+# production config has one master copy. Absent on Vercel, Suggest metadata
+# answers "Notion is not configured" and everything else still works. The
+# token that reads it must be shared with that database too. Added 2026-11-23.
+NOTION_ENTITIES_DATA_SOURCE_ID|op://BHD Labs/Notion/entities data source id|vercel
 # Estate Sale Planner sold-price lookups (/estate-sale-planner/api/comps). Absent
 # on Vercel means every lookup answers "not-configured" and items keep the
 # model's price — safe, but silent. Item added 2026-11-03.
