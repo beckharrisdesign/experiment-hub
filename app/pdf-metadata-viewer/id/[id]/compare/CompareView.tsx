@@ -214,15 +214,14 @@ export function CompareView({ documentId, fields, pages, seenRevision, contentUr
         </p>
       ) : null}
 
-      <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center justify-between gap-4 border-t border-border bg-background-secondary px-4 py-4 lg:-mx-24 lg:px-24">
-        <span className="text-xs text-text-muted">
-          {needsDocumentDecision
-            ? "Decide about the document above first. "
-            : undecided > 0
-              ? `Choose a value for ${undecided} ${undecided === 1 ? "field" : "fields"}. `
-              : ""}
-          Nothing is written until you choose. Leaving this page keeps your edits staged.
-        </span>
+      <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center justify-end gap-4 border-t border-border bg-background-secondary px-4 py-4 lg:-mx-24 lg:px-24">
+        {needsDocumentDecision || undecided > 0 ? (
+          <span className="mr-auto text-xs text-text-muted">
+            {needsDocumentDecision
+              ? "Decide about the document above first."
+              : `Choose a value for ${undecided} ${undecided === 1 ? "field" : "fields"}.`}
+          </span>
+        ) : null}
         {actions}
       </div>
     </div>
