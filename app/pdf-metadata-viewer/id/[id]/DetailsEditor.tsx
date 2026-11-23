@@ -10,8 +10,12 @@ import { Button, Input, Label } from "@beckharrisdesign/mvds";
  *
  * Every change saves as it is made (a text field on blur or Enter, a keyword on
  * add or remove) and lands as a staged edit: saved here, not yet in the file.
- * The commit bar writes them into the PDF in Drive, or discards them. Suggest
- * metadata is out of scope until the vision route exists.
+ * The commit bar writes them into the PDF in Drive, or discards them.
+ *
+ * Suggest metadata asks the vision route for a title, subject and keywords and
+ * puts them straight into the fields as one staged edit (Katy's call,
+ * 2026-11-23, as frame 34:289 shows): reviewing them is the ordinary pending
+ * state, and Discard undoes them. Keywords are added to the ones already there.
  */
 
 type TextField = "title" | "subject" | "author";
@@ -53,9 +57,29 @@ type Status =
   | { kind: "committed" }
   | { kind: "discarding" }
   | { kind: "discarded" }
+  | { kind: "suggesting" }
+  | { kind: "suggested"; changed: boolean }
   | { kind: "error"; message: string; reauthorize?: boolean; conflict?: boolean };
 
-const BUSY = new Set<Status["kind"]>(["saving", "committing", "discarding"]);
+const BUSY = new Set<Status["kind"]>(["saving", "committing", "discarding", "suggesting"]);
+
+interface Suggestions {
+  title: string;
+  subject: string;
+  keywords: string[];
+}
+
+/** The edit a set of suggestions makes to the current values; empty when none. */
+export function suggestionEdits(current: Values, s: Suggestions): Partial<Values> {
+  const edits: Partial<Values> = {};
+  const title = s.title.trim();
+  if (title && title !== (current.title ?? "")) edits.title = title;
+  const subject = s.subject.trim();
+  if (subject && subject !== (current.subject ?? "")) edits.subject = subject;
+  const added = s.keywords.filter((k) => !current.keywords.includes(k));
+  if (added.length > 0) edits.keywords = [...current.keywords, ...added];
+  return edits;
+}
 
 export function DetailsEditor({
   documentId,
@@ -72,6 +96,11 @@ export function DetailsEditor({
   // land out of order, the first edit's baseline read must finish before the
   // next, and a commit clicked straight after typing must include that edit.
   const queue = useRef<Promise<boolean>>(Promise.resolve(true));
+  // The latest saved values, for a suggestion that lands after other edits.
+  const latest = useRef(values);
+  useEffect(() => {
+    latest.current = values;
+  }, [values]);
 
   function enqueue(
     path: string,
@@ -143,12 +172,66 @@ export function DetailsEditor({
     );
   };
 
+  const suggest = () => {
+    const run = async (): Promise<boolean> => {
+      setStatus({ kind: "suggesting" });
+      try {
+        const res = await fetch(`/api/pdf-documents/id/${documentId}/suggestions`, { method: "POST" });
+        const body = (await res.json().catch(() => ({}))) as {
+          suggestions?: Suggestions;
+          error?: string;
+          reauthorize?: boolean;
+        };
+        if (!res.ok || !body.suggestions) {
+          setStatus({
+            kind: "error",
+            message: body.error ?? "No suggestions this time. Try again.",
+            reauthorize: body.reauthorize,
+          });
+          return false;
+        }
+        const edits = suggestionEdits(latest.current, body.suggestions);
+        if (Object.keys(edits).length === 0) {
+          setStatus({ kind: "suggested", changed: false });
+          return true;
+        }
+        const saved = await fetch(`/api/pdf-documents/id/${documentId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(edits),
+        });
+        if (!saved.ok) {
+          const err = (await saved.json().catch(() => ({}))) as { error?: string };
+          setStatus({ kind: "error", message: err.error ?? "The suggestions were not saved." });
+          return false;
+        }
+        setStatus({ kind: "suggested", changed: true });
+        router.refresh();
+        return true;
+      } catch {
+        setStatus({ kind: "error", message: "Could not reach the server. Nothing was changed." });
+        return false;
+      }
+    };
+    queue.current = queue.current.then(run, run);
+    return queue.current;
+  };
+
   const busy = BUSY.has(status.kind);
   const changes = `${pendingCount} ${pendingCount === 1 ? "change" : "changes"}`;
 
   return (
     <>
       <div className="flex flex-col gap-5 p-5">
+        <Button
+          variant="secondary"
+          className="min-h-11 w-full text-accent-primary"
+          disabled={disabled || busy}
+          onClick={() => void suggest()}
+        >
+          <span aria-hidden>✦</span>
+          {status.kind === "suggesting" ? "Reading the document…" : "Suggest metadata"}
+        </Button>
         {(Object.keys(LABELS) as TextField[]).map((field) => (
           <TextFieldEditor
             key={field}
@@ -236,6 +319,14 @@ export function DetailsEditor({
             <span className="text-text-secondary">Written to Drive</span>
           ) : status.kind === "discarding" ? (
             <span className="text-text-muted">Discarding…</span>
+          ) : status.kind === "suggesting" ? (
+            <span className="text-text-muted">Reading the document for suggestions…</span>
+          ) : status.kind === "suggested" ? (
+            <span className="text-text-secondary">
+              {status.changed
+                ? "Suggestions added. Review them, then commit or discard."
+                : "Nothing to change: the suggestions match what's here."}
+            </span>
           ) : status.kind === "discarded" ? (
             <span className="text-text-secondary">Discarded. The fields match the file again.</span>
           ) : status.kind === "error" ? (
