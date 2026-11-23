@@ -86,4 +86,11 @@ describe("Suggest metadata", () => {
     render(<DetailsEditor {...PROPS} disabled />);
     expect((screen.getByRole("button", { name: /Suggest metadata/ }) as HTMLButtonElement).disabled).toBe(true);
   });
+
+  it("is read-only with a note instead of the commit bar when locked", () => {
+    render(<DetailsEditor {...PROPS} pendingCount={1} locked="This scan was split into parts. Edit the parts instead." />);
+    expect((screen.getByRole("button", { name: /Suggest metadata/ }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByText("This scan was split into parts. Edit the parts instead.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Commit/ })).toBeNull();
+  });
 });

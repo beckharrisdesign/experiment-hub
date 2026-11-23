@@ -13,6 +13,7 @@ vi.mock("@/lib/pdf-staging", async () => {
 import { PATCH } from "@/app/api/pdf-documents/id/[id]/route";
 import { DriveFileMissing, DriveReauthorizationRequired } from "@/lib/pdf-drive";
 import { DriveFileUnstable } from "@/lib/pdf-staging";
+import { DocumentReplaced } from "@/lib/pdf-split-plan";
 
 const ID = "8f2b1c3d-4e5f-4a6b-8c9d-0e1f2a3b4c5d";
 
@@ -45,6 +46,13 @@ describe("PATCH /api/pdf-documents/id/[id]", () => {
     expect(res.status).toBe(400);
     expect((await res.json()).error).toContain("year-2026");
     expect(mocks.stagePdfEdits).not.toHaveBeenCalled();
+  });
+
+  it("409s a split original with a plain reason", async () => {
+    mocks.stagePdfEdits.mockRejectedValue(new DocumentReplaced());
+    const res = await patch(ID, JSON.stringify({ title: "x" }));
+    expect(res.status).toBe(409);
+    expect((await res.json()).error).toContain("Edit the parts instead");
   });
 
   it("404s a document that does not exist", async () => {

@@ -7,6 +7,7 @@
  * editing started, pinned to the revision those bytes came from.
  */
 import { getPdfAdminClient, getPdfDocument, type PdfDocument } from "@/lib/pdf-documents";
+import { DocumentReplaced } from "@/lib/pdf-split-plan";
 import {
   downloadDriveFile,
   getDriveHeadRevisionId,
@@ -140,6 +141,7 @@ export async function stagePdfEdits(
 ): Promise<PdfDocument | null> {
   const document = await getPdfDocument(id);
   if (!document) return null;
+  if (document.supersededAt) throw new DocumentReplaced();
 
   // While edits are pending the baseline stands; the function ignores one
   // passed anyway, so a request racing another's first edit is still safe.

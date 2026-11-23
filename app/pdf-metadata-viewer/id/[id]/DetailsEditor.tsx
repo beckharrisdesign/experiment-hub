@@ -41,6 +41,11 @@ export interface DetailsEditorProps {
   disabled: boolean;
   /** Fields and keywords that differ from the file, as the header counts them. */
   pendingCount: number;
+  /**
+   * Shown in place of the commit bar when this document can't be edited at
+   * all: a split original, whose parts are the documents now.
+   */
+  locked?: string;
 }
 
 const LABELS: Record<TextField, string> = {
@@ -86,9 +91,11 @@ export function DetailsEditor({
   values,
   inFile,
   edited,
-  disabled,
+  disabled: notReadable,
   pendingCount,
+  locked,
 }: DetailsEditorProps) {
+  const disabled = notReadable || Boolean(locked);
   const router = useRouter();
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [confirmingDiscard, setConfirmingDiscard] = useState(false);
@@ -255,7 +262,9 @@ export function DetailsEditor({
 
       {/* Pinned to the bottom on a phone (frame 40:3), at the panel's foot on desktop. */}
       <div className="sticky bottom-0 mt-auto flex flex-col gap-3 border-t border-border bg-background-secondary p-5 text-xs lg:static">
-        {pendingCount > 0 ? (
+        {locked ? (
+          <p className="text-text-muted">{locked}</p>
+        ) : pendingCount > 0 ? (
           <>
             <p className="text-text-muted">
               Saved here, not yet in the file. Nothing is written to Drive until you commit.

@@ -41,6 +41,7 @@ import {
   discardPdfEdits,
 } from "@/lib/pdf-commit";
 import type { PdfDocument } from "@/lib/pdf-documents";
+import { DocumentReplaced } from "@/lib/pdf-split-plan";
 
 const ID = "8f2b1c3d-4e5f-4a6b-8c9d-0e1f2a3b4c5d";
 const BASELINE = { title: "Untitled", subject: null, author: null, keywords: ["invoice"], pageCount: 2 };
@@ -89,6 +90,14 @@ describe("commitPdfDocument", () => {
     mocks.getPdfDocument.mockResolvedValue(null);
     await expect(commitPdfDocument(ID)).resolves.toBeNull();
     expect(mocks.getValidAccessToken).not.toHaveBeenCalled();
+  });
+
+  it("refuses a split original before touching Drive, and raises no attention card", async () => {
+    mocks.getPdfDocument.mockResolvedValue(doc({ supersededAt: "2026-11-23T23:00:00Z" }));
+    await expect(commitPdfDocument(ID)).rejects.toBeInstanceOf(DocumentReplaced);
+    expect(mocks.getValidAccessToken).not.toHaveBeenCalled();
+    expect(mocks.uploadDriveFile).not.toHaveBeenCalled();
+    expect(mocks.recordAttention).not.toHaveBeenCalled();
   });
 
   it("makes no write when nothing is pending (spec)", async () => {

@@ -30,6 +30,7 @@ import {
   summarizePending,
 } from "@/lib/pdf-staging";
 import type { PdfDocument } from "@/lib/pdf-documents";
+import { DocumentReplaced } from "@/lib/pdf-split-plan";
 
 const ID = "8f2b1c3d-4e5f-4a6b-8c9d-0e1f2a3b4c5d";
 const EMBEDDED = {
@@ -251,5 +252,14 @@ describe("summarizePending", () => {
         doc({ fileBaseline: EMBEDDED, title: "Untitled", keywords: ["invoice"] }),
       ).count,
     ).toBe(0);
+  });
+});
+
+describe("stagePdfEdits on a split original", () => {
+  it("refuses, saving nothing and reading nothing from Drive", async () => {
+    mocks.getPdfDocument.mockResolvedValue(doc({ supersededAt: "2026-11-23T23:00:00Z" }));
+    await expect(stagePdfEdits(ID, { title: "x" })).rejects.toBeInstanceOf(DocumentReplaced);
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(mocks.getValidAccessToken).not.toHaveBeenCalled();
   });
 });
