@@ -169,7 +169,16 @@ export function CompareView({ documentId, fields, pages, seenRevision, contentUr
         </div>
 
         <div className="overflow-x-auto rounded-lg bg-background-secondary">
-          <table className="w-full text-left text-sm">
+          {/* Fixed layout: column widths never follow their content, so picking a
+              value (or "Needs decision" becoming "Decided") moves nothing. */}
+          <table className="w-full min-w-[40rem] table-fixed text-left text-sm">
+            <colgroup>
+              <col className="w-[12%]" />
+              <col className="w-[18%]" />
+              <col className="w-[26%]" />
+              <col className="w-[26%]" />
+              <col className="w-[18%]" />
+            </colgroup>
             <thead>
               <tr className="border-b border-border">
                 {["Field", "Was", "Yours", "In Drive", "State"].map((h) => (
@@ -271,8 +280,11 @@ function ValueCell({
               : "text-text-primary hover:bg-background-active"
           }`}
         >
-          {show(value)}
-          {selected ? <span aria-hidden>✓</span> : null}
+          <span className="min-w-0 break-words">{show(value)}</span>
+          {/* Always there, only shown when chosen, so choosing never reflows. */}
+          <span aria-hidden className={`shrink-0 ${selected ? "" : "invisible"}`}>
+            ✓
+          </span>
         </button>
       </td>
     );
