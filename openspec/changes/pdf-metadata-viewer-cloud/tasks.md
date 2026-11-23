@@ -64,8 +64,8 @@ Each one changes work below it, so none should be discovered mid-build.
 - [x] 6.2 `GET /api/pdf-documents/id/[id]` — metadata and pending state. **Verified:** malformed and nonexistent uuids both 404 identically, no 22P02 leaking as a 500
 - [x] 6.3 `GET .../history` — full field-level history, newest first, uncapped. **Verified** against the live schema
 - [x] 6.4 `GET .../content` — proxy bytes through the session, minting no Drive URL — **done 2026-11-20.** `downloadDriveFile` streams `alt=media`; the response is `private, no-store`, and `/api/pdf-documents/*` carries `frame-ancestors 'self'` (no `X-Frame-Options`) so the detail page can frame it while the rest of the hub stays `'none'`. Unit-covered; not yet exercised against live Drive
-- [ ] 6.5 Port `taxonomy-loader.js` and `entities-notion.js`, keeping the field allowlist intact
-- [ ] 6.6 Run `test-entity-projection.js` against the ported module
+- [x] 6.5 Port `taxonomy-loader.js` and `entities-notion.js`, keeping the field allowlist intact — **done 2026-11-23** as `lib/pdf-taxonomy.ts` and `lib/pdf-entities.ts`; the vocabulary moved to `config/pdf-metadata-viewer/`. Two changes: no disk snapshot (cache-or-error, as design.md allows), and the four decision tags are no longer offered. Feeds `POST …/suggestions` and the detail page's Suggest metadata, which fills the fields as one staged edit (Katy's call)
+- [x] 6.6 Run `test-entity-projection.js` against the ported module — ported as `tests/lib/pdf-entities.test.ts`; every v1 assertion kept
 
 ## 7. Design gate — before any write path
 
