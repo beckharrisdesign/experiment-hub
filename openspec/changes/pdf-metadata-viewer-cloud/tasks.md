@@ -75,9 +75,9 @@ Each one changes work below it, so none should be discovered mid-build.
 
 ## 7b. Splitter — after the write path
 
-- [ ] 7b.1 Design the splitter on a numbered Figma page: thumbnail grid, break markers, output preview
-- [ ] 7b.2 Split creates outputs in Drive with lineage rows, and marks the original superseded
-- [ ] 7b.3 Outputs inherit metadata; the original keeps its history
+- [x] 7b.1 Design the splitter on a numbered Figma page: thumbnail grid, break markers, output preview — **done 2026-11-23**: `02.11 Proposed — Splitter` (frames 69:9 breaks chosen, 69:132 no breaks yet), approved by Katy
+- [x] 7b.2 Split creates outputs in Drive with lineage rows, and marks the original superseded — `lib/pdf-split.ts` + migration 030 `pdf_record_split`. Parts are new files beside the original named as v1 did (`-001`, `-002`); all are uploaded before anything is recorded, and a failure partway trashes the ones made. The original's file is left untouched (no `already-split` / `needs-deleting` rewrite)
+- [x] 7b.3 Outputs inherit metadata; the original keeps its history — parts carry the original's title, subject, author and keywords as shown (staged values included), written into their bytes so they start clean; each part's history opens with a `split` row naming the original
 - [ ] 7b.4 On import, read v1's `from-split` / `already-split` / `needs-deleting` / `no-split-needed` keywords into columns and drop them from the keyword list
 
 ## 8. Write path
