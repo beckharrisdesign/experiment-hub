@@ -135,6 +135,41 @@ describe("splitPdfDocument", () => {
     ]);
   });
 
+  // Found live: a scan never edited here has null stored fields; the parts
+  // must carry what the file itself says, as the detail page shows it.
+  it("carries the file's own values when the document was never edited here", async () => {
+    const source = await PDFDocument.load(await pdfOf(2));
+    source.setTitle("Split test");
+    source.setKeywords(["split-test"]);
+    const bytes = await source.save();
+    mocks.getPdfDocument.mockResolvedValue(doc({ title: null, keywords: [] }));
+    mocks.downloadDriveFile.mockResolvedValue(
+      bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+    );
+
+    await splitPdfDocument(ID, [1]);
+
+    const part = await PDFDocument.load(mocks.createDriveFile.mock.calls[0][1].bytes, { updateMetadata: false });
+    expect(part.getTitle()).toBe("Split test");
+    expect(part.getKeywords()).toBe("split-test");
+    expect(mocks.rpc.mock.calls[0][1].outputs[0].embedded.keywords).toEqual(["split-test"]);
+  });
+
+  it("uses only the stored values once editing has started", async () => {
+    const source = await PDFDocument.load(await pdfOf(2));
+    source.setTitle("Old title in the file");
+    const bytes = await source.save();
+    mocks.getPdfDocument.mockResolvedValue(doc({ title: null, fileBaseline: { title: "Old title in the file" } }));
+    mocks.downloadDriveFile.mockResolvedValue(
+      bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+    );
+
+    await splitPdfDocument(ID, [1]);
+
+    const part = await PDFDocument.load(mocks.createDriveFile.mock.calls[0][1].bytes, { updateMetadata: false });
+    expect(part.getTitle() || null).toBeNull();
+  });
+
   it("finds the folder in Drive for a document imported before folders were recorded", async () => {
     mocks.getPdfDocument.mockResolvedValue(doc({ driveFolderId: null }));
     mocks.downloadDriveFile.mockResolvedValue(await pdfOf(2));
