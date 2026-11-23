@@ -248,6 +248,16 @@ export async function suggestMetadata(
     if (error instanceof Error && error.name === "EntitiesUnavailable") {
       throw new SuggestionsUnavailable(`AI suggestions are off: ${error.message}`);
     }
+    // Notion grants access per database, not per workspace: a token that works
+    // for the hub's other databases still gets object_not_found here until the
+    // Entities database is shared with its connection.
+    const code = (error as { code?: unknown } | null)?.code;
+    if (code === "object_not_found" || code === "unauthorized" || code === "restricted_resource") {
+      console.error("pdf suggest: Notion refused the Entities database:", error);
+      throw new SuggestionsUnavailable(
+        "AI suggestions are off: the hub's Notion connection can't read the Entities database. Share it with that connection in Notion",
+      );
+    }
     throw error;
   }
 

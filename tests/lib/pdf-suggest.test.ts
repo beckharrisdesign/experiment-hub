@@ -147,6 +147,24 @@ describe("suggestMetadata", () => {
     expect(error.message).toContain("NOTION_TOKEN");
   });
 
+  // Found live 2026-11-23: the token worked for the hub's other databases but
+  // the Entities database wasn't shared with it, and the button said only
+  // "No suggestions this time".
+  it("says the Entities database isn't shared when Notion can't find it", async () => {
+    process.env.OPENAI_API_KEY = "sk-test";
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const notFound = Object.assign(new Error("Could not find data_source with ID: x"), {
+      code: "object_not_found",
+    });
+    const fetchMock = reply({});
+    const error = await suggestMetadata(PDF, INPUT, fetchMock, async () => {
+      throw notFound;
+    }).catch((e) => e);
+    expect(error).toBeInstanceOf(SuggestionsUnavailable);
+    expect(error.message).toContain("can't read the Entities database");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("posts to the Responses API with the key and returns the cleaned answer", async () => {
     process.env.OPENAI_API_KEY = "sk-test";
     const fetchMock = reply(answer({ title: "HEB grocery receipt", subject: "Groceries", keywords: ["Receipt", "heb"] }));
