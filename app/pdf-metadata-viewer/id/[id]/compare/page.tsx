@@ -63,7 +63,7 @@ export default async function ComparePage({ params }: { params: Promise<{ id: st
   const filename = comparison?.document.filename ?? "document";
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex flex-1 flex-col">
       <header className="bg-background-secondary px-4 py-4 lg:px-24">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-6">
           <div>

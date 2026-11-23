@@ -39,7 +39,7 @@ export default async function SignInPage({
     <div className="py-6">
       <Container size="xl">
         <Stack gap={24}>
-          <h1 className="font-heading text-2xl">PDF Metadata Viewer</h1>
+          <h1 className="sr-only">PDF Metadata Viewer</h1>
 
           {message ? (
             <div className="rounded-lg border-l-2 border-warning bg-background-secondary p-4">

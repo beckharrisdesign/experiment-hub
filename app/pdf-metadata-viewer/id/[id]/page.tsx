@@ -144,7 +144,7 @@ export default async function PdfDocumentDetailPage({
     );
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex flex-1 flex-col">
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="bg-background-secondary px-4 py-4 lg:px-24">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-6">
