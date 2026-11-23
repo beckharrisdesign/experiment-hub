@@ -127,16 +127,32 @@ ${taxonomyText(taxonomy)}
 Guidelines:
 
 Title:
-- Concise and descriptive, at most 100 characters, sentence case (proper nouns capitalized).
+- Concise and descriptive, at most 100 characters.
+- Sentence case: capitalize the first word and proper nouns only.
 - Specific, not generic: "Foodmart grocery receipt", not "Receipt".
+- No commas, no dates and no places. The date and location belong in the keywords (year-YYYY, month-MM, location-*), not the title.
+- Examples:
+  - GOOD: "Foodmart grocery receipt"
+  - GOOD: "AutoDealer appraisal offer for vehicle sale"
+  - BAD: "FOODMART GROCERY RECEIPT" (all caps)
+  - BAD: "Foodmart Grocery Receipt" (title case)
+  - BAD: "Foodmart grocery receipt, Austin TX — March 3, 2025" (comma, place and date)
 
 Subject:
-- What the document is about, from its content. At most 10 words and 50 characters.
+- What the document is about, from its content. At most 10 words and 50 characters. No commas.
+- Examples:
+  - GOOD: "Foodmart grocery receipt for household items"
+  - BAD: "Document" (too generic)
+  - BAD: "Receipt from Foodmart grocery store for household items and groceries purchased on February 27th" (over 10 words)
 
 Keywords:
 - 3 to 10 tags, all lowercase and hyphenated, using EXACT slugs from the taxonomy above. Never invent a tag.
 - Include: document type (required), category (required), vendor if recognized, person if found, action or status tags if they apply, and time-period tags (year-YYYY, month-MM) if the date is clear.
 - No duplicates.
+- Examples:
+  - GOOD: receipt, grocery, retail, foodmart, firstname-m-lastname, keep-annual, year-2025, month-02
+  - BAD: "Receipt", "Keep Annual" (capitals, spaces)
+  - BAD: grocery-receipt, foodmart-store (invented tags)
 
 Entity matching:
 - When you see a person's name, find the matching entry in PEOPLE by full name, partial name or alias, and use its EXACT slug. If they are not listed, leave them out.
