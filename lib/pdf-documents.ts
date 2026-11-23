@@ -140,10 +140,13 @@ export async function listPdfDocuments(
    */
   folderId: string | null = null,
 ): Promise<PdfDocument[]> {
+  // A split original is left out: its parts are the documents now. It keeps
+  // its row, history and file in Drive, and its own page still opens.
   let query = getPdfAdminClient()
     .from("pdf_documents")
     .select(COLUMNS)
-    .is("deleted_at", null);
+    .is("deleted_at", null)
+    .is("superseded_at", null);
   if (folderId) query = query.eq("drive_folder_id", folderId);
   const { data, error } = await query.order("filename", { ascending: false });
 

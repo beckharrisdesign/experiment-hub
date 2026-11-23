@@ -98,6 +98,14 @@ describe("listPdfDocuments", () => {
     expect(c.__builder.is).toHaveBeenCalledWith("deleted_at", null);
   });
 
+  // Found live after #625: originals sat above their parts as "Split into parts".
+  it("leaves out a split original; its parts are listed instead", async () => {
+    const c = client({ data: [], error: null });
+    mockGetAdminClient.mockReturnValue(c);
+    await listPdfDocuments();
+    expect(c.__builder.is).toHaveBeenCalledWith("superseded_at", null);
+  });
+
   it("lists every document when no folder is given", async () => {
     const c = client({ data: [], error: null });
     mockGetAdminClient.mockReturnValue(c);
