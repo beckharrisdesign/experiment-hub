@@ -182,10 +182,13 @@ export default async function PdfDocumentDetailPage({
               <iframe
                 // A commit uploads a new revision at the same URL; remount so
                 // the preview shows the file as it now is.
+                // On wide screens the page fits one screen: 185px is the app bar
+                // (53), this view's header (76) and the page-count row with its
+                // gap (56). Measured on the live page; adjust if any of those change.
                 key={document.driveRevisionId ?? "initial"}
                 src={contentUrl}
                 title={`Preview of ${filename}`}
-                className="h-[420px] w-full rounded-md bg-white lg:h-[calc(100vh-7rem)]"
+                className="h-[420px] w-full rounded-md bg-white lg:h-[calc(100vh-185px)]"
               />
               <div className="flex items-center justify-between text-xs text-text-muted">
                 <span>
