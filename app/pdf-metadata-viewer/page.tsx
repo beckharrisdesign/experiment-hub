@@ -4,6 +4,7 @@ import { getDriveConnection, type DriveConnection } from "@/lib/pdf-drive";
 import { summarizePending } from "@/lib/pdf-staging";
 import FolderPicker from "./FolderPicker";
 import { DocumentsSection } from "./DocumentsSection";
+import { RetryCommit } from "./RetryCommit";
 
 /**
  * Hosted pdf-metadata-viewer dashboard.
@@ -113,6 +114,105 @@ function DocumentsTable({ documents }: { documents: PdfDocument[] }) {
 }
 
 // ---------------------------------------------------------------------------
+// Needs attention — task 8.8, design.md D4, frame 34:172
+// ---------------------------------------------------------------------------
+
+const ATTENTION_LABEL = {
+  conflict: { label: "Conflict", text: "text-warning", dot: "bg-warning" },
+  commit_failed: { label: "Commit failed", text: "text-error", dot: "bg-error" },
+  file_missing: { label: "File missing", text: "text-success", dot: "bg-success" },
+} as const;
+
+function ago(iso: string): string {
+  const minutes = Math.round((Date.now() - Date.parse(iso)) / 60000);
+  if (!Number.isFinite(minutes) || minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  const days = Math.round(hours / 24);
+  return days === 1 ? "Yesterday" : `${days} days ago`;
+}
+
+/**
+ * An instance stays while it still means something: a missing file always
+ * does; a conflict or failed commit only while there are edits left to write.
+ * Edits undone by hand resolve it as surely as a commit would.
+ */
+function isOpen(d: PdfDocument): boolean {
+  if (!d.attention) return false;
+  return d.attention.kind === "file_missing" || d.hasPendingEdits;
+}
+
+/** Retrying cannot help these, so bulk commit leaves them out and says so. */
+function excludedFromBulk(d: PdfDocument): boolean {
+  return isOpen(d) && d.attention?.kind !== "commit_failed";
+}
+
+function AttentionAction({ document }: { document: PdfDocument }) {
+  switch (document.attention?.kind) {
+    case "conflict":
+      return (
+        <Button asChild variant="secondary" size="sm" className="min-h-11">
+          <a href={`/pdf-metadata-viewer/id/${document.id}/compare`}>Compare</a>
+        </Button>
+      );
+    case "commit_failed":
+      return <RetryCommit documentId={document.id} />;
+    case "file_missing":
+      return (
+        <Button asChild variant="secondary" size="sm" className="min-h-11">
+          <a
+            href={`https://drive.google.com/drive/search?q=${encodeURIComponent(document.filename ?? "")}`}
+            target="_blank"
+            rel="noopener"
+          >
+            Locate
+          </a>
+        </Button>
+      );
+    default:
+      return null;
+  }
+}
+
+function NeedsAttention({ documents }: { documents: PdfDocument[] }) {
+  return (
+    <Stack gap={16}>
+      <h2 className="text-base font-semibold text-text-primary">Needs attention</h2>
+      <ul className="flex flex-col gap-3">
+        {documents.map((d) => {
+          const a = d.attention!;
+          const style = ATTENTION_LABEL[a.kind];
+          return (
+            <li
+              key={d.id}
+              className="flex flex-col gap-3 rounded-lg bg-background-secondary p-4 sm:flex-row sm:items-start sm:justify-between"
+            >
+              <div className="flex min-w-0 gap-3">
+                <span aria-hidden className={`mt-1.5 size-2 shrink-0 rounded-full ${style.dot}`} />
+                <div className="flex min-w-0 flex-col gap-1">
+                  <span className="break-words text-sm">
+                    <span className={`font-semibold ${style.text}`}>{style.label}</span>{" "}
+                    <a href={`/pdf-metadata-viewer/id/${d.id}`} className="text-text-primary hover:underline">
+                      {d.filename ?? "(unnamed)"}
+                    </a>
+                  </span>
+                  <span className="text-sm text-text-muted">{a.message}</span>
+                </div>
+              </div>
+              <div className="flex shrink-0 items-start gap-4 sm:pl-4">
+                <span className="pt-3 text-xs whitespace-nowrap text-text-muted">{ago(a.at)}</span>
+                <AttentionAction document={d} />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </Stack>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -143,6 +243,7 @@ export default async function PdfMetadataViewerPage({
   }
 
   const pending = documents.filter((d) => d.hasPendingEdits).length;
+  const attention = documents.filter(isOpen);
 
   // MVDS `Section` is deliberately not used here. It applies `bg-background`
   // unconditionally — there is no transparent option, and all four SurfaceBg
@@ -212,7 +313,11 @@ export default async function PdfMetadataViewerPage({
                   value={String(pending)}
                   tone={pending > 0 ? "warning" : "default"}
                 />
-                <Stat label="Needs attention" value="0" />
+                <Stat
+                  label="Needs attention"
+                  value={String(attention.length)}
+                  tone={attention.length > 0 ? "danger" : "default"}
+                />
               </Inline>
 
               {documents.length === 0 ? (
@@ -258,9 +363,12 @@ export default async function PdfMetadataViewerPage({
                   )}
                 </div>
               ) : (
+                <>
+                {attention.length > 0 ? <NeedsAttention documents={attention} /> : null}
                 <DocumentsSection
+                  excluded={documents.filter((d) => d.hasPendingEdits && excludedFromBulk(d)).length}
                   pending={documents
-                    .filter((d) => d.hasPendingEdits)
+                    .filter((d) => d.hasPendingEdits && !excludedFromBulk(d))
                     .map((d) => ({ id: d.id, filename: d.filename ?? "(unnamed)" }))}
                   totalDocuments={documents.length}
                   reviewing={reviewing}
@@ -269,6 +377,7 @@ export default async function PdfMetadataViewerPage({
                     documents={reviewing ? documents.filter((d) => d.hasPendingEdits) : documents}
                   />
                 </DocumentsSection>
+                </>
               )}
             </>
           )}

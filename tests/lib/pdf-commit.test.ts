@@ -10,6 +10,8 @@ const mocks = vi.hoisted(() => ({
   readEmbeddedMetadata: vi.fn(),
   writeEmbeddedMetadata: vi.fn(),
   stagePdfEdits: vi.fn(),
+  recordAttention: vi.fn(),
+  clearAttention: vi.fn(),
 }));
 
 vi.mock("@/lib/pdf-documents", () => ({
@@ -27,6 +29,10 @@ vi.mock("@/lib/pdf-embedded", () => ({
   writeEmbeddedMetadata: mocks.writeEmbeddedMetadata,
 }));
 vi.mock("@/lib/pdf-staging", () => ({ stagePdfEdits: mocks.stagePdfEdits }));
+vi.mock("@/lib/pdf-attention", () => ({
+  recordAttention: mocks.recordAttention,
+  clearAttention: mocks.clearAttention,
+}));
 
 import {
   CommitConflict,
@@ -60,6 +66,7 @@ function doc(overrides: Partial<PdfDocument> = {}): PdfDocument {
     supersededAt: null,
     fileBaseline: BASELINE,
     driveRevisionId: "rev-7",
+    attention: null,
     ...overrides,
   };
 }
@@ -142,6 +149,33 @@ describe("commitPdfDocument", () => {
     mocks.rpc.mockResolvedValue({ data: null, error: { code: "40001", message: "moved" } });
     vi.spyOn(console, "error").mockImplementation(() => {});
     await expect(commitPdfDocument(ID)).rejects.toBeInstanceOf(CommitNotRecorded);
+  });
+});
+
+describe("Needs attention (task 8.8)", () => {
+  it("clears the document's instance when a commit succeeds", async () => {
+    await commitPdfDocument(ID);
+    expect(mocks.clearAttention).toHaveBeenCalledWith(ID);
+    expect(mocks.recordAttention).not.toHaveBeenCalled();
+  });
+
+  it("records a failure against the document, then still reports it", async () => {
+    mocks.getDriveHeadRevisionId.mockResolvedValue("rev-other");
+    await expect(commitPdfDocument(ID)).rejects.toBeInstanceOf(CommitConflict);
+    expect(mocks.recordAttention).toHaveBeenCalledWith(ID, expect.any(CommitConflict));
+    expect(mocks.clearAttention).not.toHaveBeenCalled();
+  });
+
+  it("leaves an instance alone when there was nothing to write", async () => {
+    mocks.getPdfDocument.mockResolvedValue(doc({ hasPendingEdits: false }));
+    await commitPdfDocument(ID);
+    expect(mocks.clearAttention).not.toHaveBeenCalled();
+  });
+
+  it("clears it on discard, since nothing is left to write", async () => {
+    mocks.stagePdfEdits.mockResolvedValue(doc({ hasPendingEdits: false }));
+    await discardPdfEdits(ID);
+    expect(mocks.clearAttention).toHaveBeenCalledWith(ID);
   });
 });
 

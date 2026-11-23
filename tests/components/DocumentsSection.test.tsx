@@ -28,9 +28,9 @@ function confirm(name: string) {
   fireEvent.click(within(box).getByRole("button", { name }));
 }
 
-function renderSection(pending = PENDING) {
+function renderSection(pending = PENDING, excluded = 0) {
   return render(
-    <DocumentsSection pending={pending} totalDocuments={10} reviewing={false}>
+    <DocumentsSection pending={pending} excluded={excluded} totalDocuments={10} reviewing={false}>
       <table />
     </DocumentsSection>,
   );
@@ -88,6 +88,13 @@ describe("DocumentsSection bulk commit (task 8.7)", () => {
     renderSection([]);
     const button = screen.getByRole("button", { name: "Commit 0 documents to Drive" }) as HTMLButtonElement;
     expect(button.disabled).toBe(true);
+  });
+
+  it("says how many pending documents it leaves out, so the button count is what it attempts", () => {
+    renderSection(PENDING.slice(0, 2), 1);
+    expect(screen.getAllByRole("button", { name: "Commit 2 documents to Drive" }).length).toBeGreaterThan(0);
+    expect(screen.getByText("1 excluded — see Needs attention")).toBeTruthy();
+    expect(screen.getByText("10 documents · 3 pending")).toBeTruthy();
   });
 
   it("links Review pending to the filtered list", () => {

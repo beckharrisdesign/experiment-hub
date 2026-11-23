@@ -58,6 +58,7 @@ function doc(overrides: Partial<PdfDocument> = {}): PdfDocument {
     supersededAt: null,
     fileBaseline: BASELINE,
     driveRevisionId: "rev-7",
+    attention: null,
     ...overrides,
   };
 }

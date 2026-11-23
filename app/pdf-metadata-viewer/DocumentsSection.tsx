@@ -41,14 +41,17 @@ type Run =
   | { kind: "finished"; results: Array<PendingDocument & { outcome: Outcome }> };
 
 interface Props {
+  /** Pending documents bulk commit will attempt. */
   pending: PendingDocument[];
+  /** Pending documents left out because a conflict or missing file needs you first. */
+  excluded: number;
   totalDocuments: number;
   /** The table is showing pending documents only. */
   reviewing: boolean;
   children: ReactNode;
 }
 
-export function DocumentsSection({ pending, totalDocuments, reviewing, children }: Props) {
+export function DocumentsSection({ pending, excluded, totalDocuments, reviewing, children }: Props) {
   const router = useRouter();
   const [run, setRun] = useState<Run>({ kind: "idle" });
   const count = pending.length;
@@ -113,7 +116,7 @@ export function DocumentsSection({ pending, totalDocuments, reviewing, children 
         </h2>
         <div className="flex flex-wrap items-center gap-4">
           <span className="text-xs text-text-muted">
-            {totalDocuments} documents · {count} pending
+            {totalDocuments} documents · {count + excluded} pending
           </span>
           {actions}
         </div>
@@ -144,7 +147,15 @@ export function DocumentsSection({ pending, totalDocuments, reviewing, children 
 
       {children}
 
-      {count > 0 ? <div className="flex justify-end">{actions}</div> : null}
+      {count > 0 || excluded > 0 ? (
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {/* D4: the count on the button always matches what will be attempted. */}
+          <span className="text-xs text-text-muted">
+            {excluded > 0 ? `${excluded} excluded — see Needs attention` : ""}
+          </span>
+          {actions}
+        </div>
+      ) : null}
     </div>
   );
 }
