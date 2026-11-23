@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   getPdfDocument: vi.fn(),
   getValidAccessToken: vi.fn(),
   downloadDriveFile: vi.fn(),
+  getDriveHeadRevisionId: vi.fn(),
 }));
 
 vi.mock("@/lib/pdf-documents", async () => {
@@ -22,6 +23,7 @@ vi.mock("@/lib/pdf-drive", async () => {
     ...actual,
     getValidAccessToken: mocks.getValidAccessToken,
     downloadDriveFile: mocks.downloadDriveFile,
+    getDriveHeadRevisionId: mocks.getDriveHeadRevisionId,
   };
 });
 
@@ -47,6 +49,7 @@ function call(id: string) {
 beforeEach(() => {
   for (const m of Object.values(mocks)) m.mockReset();
   mocks.getValidAccessToken.mockResolvedValue("token-abc");
+  mocks.getDriveHeadRevisionId.mockResolvedValue("rev-1");
 });
 
 describe("GET /api/pdf-documents/id/[id]/content", () => {
@@ -103,6 +106,15 @@ describe("GET /api/pdf-documents/id/[id]/content", () => {
     mocks.getPdfDocument.mockResolvedValue(DOC);
     mocks.downloadDriveFile.mockRejectedValue(new DriveFileMissing("gone"));
     expect((await call(ID)).status).toBe(410);
+  });
+
+  // A trashed file is still downloadable; the revision read is what says it
+  // is gone, so it has to come first (and the bytes are never fetched).
+  it("410s a trashed file without downloading it", async () => {
+    mocks.getPdfDocument.mockResolvedValue(DOC);
+    mocks.getDriveHeadRevisionId.mockRejectedValue(new DriveFileMissing("trashed"));
+    expect((await call(ID)).status).toBe(410);
+    expect(mocks.downloadDriveFile).not.toHaveBeenCalled();
   });
 
   it("502s any other Drive failure", async () => {

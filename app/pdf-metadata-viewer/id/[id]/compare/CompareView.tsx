@@ -165,13 +165,7 @@ export function CompareView({ documentId, fields, pages, seenRevision, contentUr
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h2 className="text-base font-semibold text-text-primary">Changes</h2>
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="text-xs text-text-muted">
-              {resolving.length} {resolving.length === 1 ? "change" : "changes"}
-              {conflicts.length > 0 ? ` · ${undecided} need${undecided === 1 ? "s" : ""} you` : ""}
-            </span>
-            {actions}
-          </div>
+          {actions}
         </div>
 
         <div className="overflow-x-auto rounded-lg bg-background-secondary">
@@ -278,8 +272,8 @@ function ValueCell({
               : "text-text-primary hover:bg-background-active"
           }`}
         >
-          <span aria-hidden className="w-3">{selected ? "✓" : ""}</span>
           {show(value)}
+          {selected ? <span aria-hidden>✓</span> : null}
         </button>
       </td>
     );
@@ -290,8 +284,8 @@ function ValueCell({
   }
   return (
     <td className="px-4 py-3 text-text-primary">
-      <span aria-hidden className="mr-2">✓</span>
       {show(value)}
+      <span aria-hidden className="ml-2">✓</span>
     </td>
   );
 }

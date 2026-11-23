@@ -11,6 +11,7 @@ import {
   DriveReauthorizationRequired,
   downloadDriveFile,
   getDriveConnection,
+  getDriveHeadRevisionId,
   getValidAccessToken,
 } from "@/lib/pdf-drive";
 import { readEmbeddedMetadata, type EmbeddedMetadata } from "@/lib/pdf-embedded";
@@ -47,6 +48,8 @@ type FileState =
 async function readFile(document: PdfDocument): Promise<FileState> {
   try {
     const accessToken = await getValidAccessToken();
+    // A trashed file still downloads; only the revision read reports it gone.
+    await getDriveHeadRevisionId(accessToken, document.driveFileId);
     const bytes = await downloadDriveFile(accessToken, document.driveFileId);
     return { ok: true, embedded: await readEmbeddedMetadata(bytes) };
   } catch (error) {
@@ -71,7 +74,7 @@ const FILE_PROBLEM: Record<
   },
   missing: {
     heading: "This file is no longer in Google Drive",
-    body: "It may have been moved or deleted. Its details and history here are kept.",
+    body: "It may have been moved, deleted or put in the trash. Its details and history here are kept.",
   },
   unreadable: {
     heading: "Could not read this file from Drive",

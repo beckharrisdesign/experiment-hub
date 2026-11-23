@@ -432,7 +432,9 @@ export async function getValidAccessToken(): Promise<string> {
 
 /**
  * The referenced file is gone from Drive — trashed, deleted, or moved out of
- * reach. Distinct from a revoked grant: signing in again will not bring it back,
+ * reach. A download alone cannot tell a trashed file apart (Drive serves it);
+ * the revision reads can, so callers that only view a file read the revision
+ * first. Distinct from a revoked grant: signing in again will not bring it back,
  * and the document's metadata and history in the working store still stand.
  */
 export class DriveFileMissing extends Error {
@@ -470,10 +472,10 @@ export async function getDriveHeadRevisionId(
   const response = await driveFileRequest(
     accessToken,
     fileId,
-    "fields=headRevisionId",
+    "fields=headRevisionId,trashed",
     "metadata read",
   );
-  const data = (await response.json()) as { headRevisionId?: string };
+  const data = present((await response.json()) as { headRevisionId?: string; trashed?: boolean });
   return data.headRevisionId ?? null;
 }
 
@@ -488,11 +490,26 @@ export async function getDriveRevision(
   const response = await driveFileRequest(
     accessToken,
     fileId,
-    "fields=headRevisionId,modifiedTime",
+    "fields=headRevisionId,modifiedTime,trashed",
     "metadata read",
   );
-  const data = (await response.json()) as { headRevisionId?: string; modifiedTime?: string };
+  const data = present(
+    (await response.json()) as { headRevisionId?: string; modifiedTime?: string; trashed?: boolean },
+  );
   return { revision: data.headRevisionId ?? null, modifiedTime: data.modifiedTime ?? null };
+}
+
+/**
+ * A trashed file is gone as far as the user is concerned: it is how people
+ * throw a file away, and pasting a replacement into a folder in Drive trashes
+ * the original. Drive still serves it and still accepts writes to it, though,
+ * so without this a commit lands in the trash and reports success. Every
+ * revision read goes through here, and each commit, stage and comparison
+ * starts with one.
+ */
+function present<T extends { trashed?: boolean }>(file: T): T {
+  if (file.trashed) throw new DriveFileMissing("The file is in the Drive trash");
+  return file;
 }
 
 /**
