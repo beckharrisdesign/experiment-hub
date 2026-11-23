@@ -74,6 +74,14 @@ describe("buildPrompt", () => {
     expect(prompt).toContain("2025-05-01");
   });
 
+  // v1's title rules, examples included. Dropping the examples in the port
+  // produced "Target return receipt, Cedar Park TX — May 1, 2025" live.
+  it("carries v1's title rules: sentence case, no commas, dates or places", () => {
+    expect(prompt).toContain("No commas, no dates and no places");
+    expect(prompt).toContain('GOOD: "Foodmart grocery receipt"');
+    expect(prompt).toContain('BAD: "Foodmart Grocery Receipt" (title case)');
+  });
+
   // Renaming isn't ported, so a suggested filename would have nowhere to go.
   it("asks for no filename", () => {
     expect(prompt).not.toMatch(/suggested[- ]filename/i);
