@@ -46,6 +46,8 @@ export interface PdfDocument {
   splitFromDocumentId: string | null;
   splitIndex: number | null;
   supersededAt: string | null;
+  /** The Drive folder it was imported from; null for rows imported before folders. */
+  driveFolderId: string | null;
   /**
    * What the file itself said when editing started — `file_snapshot.embedded`.
    * Null until the first edit is staged; from then on the field columns above
@@ -76,7 +78,7 @@ type Row = Record<string, unknown>;
 const COLUMNS =
   "id, drive_file_id, filename, title, subject, author, keywords, page_count, " +
   "has_pending_edits, committed_at, marked_for_deletion, split_not_needed, " +
-  "split_from_document_id, split_index, superseded_at, drive_head_revision_id, " +
+  "split_from_document_id, split_index, superseded_at, drive_head_revision_id, drive_folder_id, " +
   "attention_kind, attention_message, attention_at, " +
   // Only the baseline, not the whole snapshot: the rest is Drive's listing.
   "file_baseline:file_snapshot->embedded";
@@ -98,6 +100,7 @@ function toDocument(row: Row): PdfDocument {
     splitFromDocumentId: (row.split_from_document_id as string) ?? null,
     splitIndex: (row.split_index as number) ?? null,
     supersededAt: (row.superseded_at as string) ?? null,
+    driveFolderId: (row.drive_folder_id as string) ?? null,
     fileBaseline: toBaseline(row.file_baseline),
     driveRevisionId: (row.drive_head_revision_id as string) ?? null,
     attention: row.attention_kind
@@ -162,6 +165,18 @@ export async function getPdfDocument(id: string): Promise<PdfDocument | null> {
 
   if (error) throw new Error(`Failed to load document: ${error.message}`);
   return data ? toDocument(data as unknown as Row) : null;
+}
+
+/** The documents a split produced from `id`, in page order (task 7b.2). */
+export async function listSplitParts(id: string): Promise<PdfDocument[]> {
+  const { data, error } = await getPdfAdminClient()
+    .from("pdf_documents")
+    .select(COLUMNS)
+    .eq("split_from_document_id", id)
+    .is("deleted_at", null)
+    .order("split_index", { ascending: true });
+  if (error) throw new Error(`Failed to list split parts: ${error.message}`);
+  return ((data ?? []) as unknown as Row[]).map(toDocument);
 }
 
 /**

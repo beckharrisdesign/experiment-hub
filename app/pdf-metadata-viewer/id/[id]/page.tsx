@@ -191,10 +191,28 @@ export default async function PdfDocumentDetailPage({
                 className="h-[420px] w-full rounded-md bg-white lg:h-[calc(100vh-185px)]"
               />
               <div className="flex items-center justify-between text-xs text-text-muted">
-                <span>
-                  {pageCount === null
-                    ? ""
-                    : `${pageCount} ${pageCount === 1 ? "page" : "pages"}`}
+                <span className="flex items-center gap-4">
+                  <span>
+                    {pageCount === null
+                      ? ""
+                      : `${pageCount} ${pageCount === 1 ? "page" : "pages"}`}
+                  </span>
+                  {/* Split (Figma 02.11): offered for any multi-page scan not already split. */}
+                  {document.supersededAt ? (
+                    <a
+                      href={`/pdf-metadata-viewer/id/${document.id}/split`}
+                      className="inline-flex min-h-11 items-center text-warning hover:underline"
+                    >
+                      Split into parts — see them
+                    </a>
+                  ) : pageCount !== null && pageCount > 1 ? (
+                    <a
+                      href={`/pdf-metadata-viewer/id/${document.id}/split`}
+                      className="inline-flex min-h-11 items-center text-text-secondary hover:underline"
+                    >
+                      Split pages
+                    </a>
+                  ) : null}
                 </span>
                 <a
                   href={contentUrl}

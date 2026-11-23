@@ -607,6 +607,77 @@ export async function uploadDriveFile(
   return data.headRevisionId ?? null;
 }
 
+/**
+ * Create a new PDF in Drive, in `parentId` when given, returning its id and
+ * first revision. The split's outputs (task 7b.2); same resumable session as
+ * uploadDriveFile, but POSTed with the file's name and folder.
+ */
+export async function createDriveFile(
+  accessToken: string,
+  file: { name: string; parentId: string | null; bytes: Uint8Array },
+): Promise<{ id: string; revision: string | null }> {
+  const start = await fetch(
+    "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,headRevisionId",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json; charset=UTF-8",
+        "X-Upload-Content-Type": "application/pdf",
+        "X-Upload-Content-Length": String(file.bytes.byteLength),
+      },
+      body: JSON.stringify({
+        name: file.name,
+        mimeType: "application/pdf",
+        ...(file.parentId ? { parents: [file.parentId] } : {}),
+      }),
+    },
+  );
+  throwForWrite(start, "start creating a file");
+  const session = start.headers.get("Location");
+  if (!session) throw new Error("Drive did not return an upload session");
+
+  const put = await fetch(session, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Length": String(file.bytes.byteLength),
+    },
+    body: file.bytes as Uint8Array<ArrayBuffer>,
+  });
+  throwForWrite(put, "create the file");
+  const data = (await put.json()) as { id?: string; headRevisionId?: string };
+  if (!data.id) throw new Error("Drive created a file but did not return its id");
+  return { id: data.id, revision: data.headRevisionId ?? null };
+}
+
+/**
+ * Move a file to the Drive trash. Used only to take back the parts of a split
+ * that failed partway, so a failure never leaves half a split behind. Trash,
+ * not delete: Drive keeps it for 30 days.
+ */
+export async function trashDriveFile(accessToken: string, fileId: string): Promise<void> {
+  const response = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?fields=id`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json; charset=UTF-8",
+      },
+      body: JSON.stringify({ trashed: true }),
+    },
+  );
+  throwForWrite(response, "move a file to the trash");
+}
+
+/** The folder a file sits in, for placing a split's parts beside it. */
+export async function getDriveParent(accessToken: string, fileId: string): Promise<string | null> {
+  const response = await driveFileRequest(accessToken, fileId, "fields=parents,trashed", "metadata read");
+  const data = present((await response.json()) as { parents?: string[]; trashed?: boolean });
+  return data.parents?.[0] ?? null;
+}
+
 function throwForWrite(response: Response, what: string): void {
   if (response.status === 401) {
     throw new DriveReauthorizationRequired(

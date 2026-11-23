@@ -64,6 +64,7 @@ function doc(overrides: Partial<PdfDocument> = {}): PdfDocument {
     splitFromDocumentId: null,
     splitIndex: null,
     supersededAt: null,
+    driveFolderId: null,
     fileBaseline: BASELINE,
     driveRevisionId: "rev-7",
     attention: null,

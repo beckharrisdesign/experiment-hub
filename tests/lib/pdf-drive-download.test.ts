@@ -14,6 +14,9 @@ import {
   getDriveHeadRevisionId,
   getDriveRevision,
   uploadDriveFile,
+  createDriveFile,
+  trashDriveFile,
+  getDriveParent,
 } from "@/lib/pdf-drive";
 
 function respond(status: number, body: BodyInit = "") {
@@ -211,5 +214,64 @@ describe("getDriveFolder", () => {
   it("reports a missing folder as not found", async () => {
     respond(404);
     await expect(getDriveFolder("t", "x")).rejects.toBeInstanceOf(DriveFolderNotFound);
+  });
+});
+
+describe("createDriveFile", () => {
+  it("creates a new PDF in the given folder through a resumable session", async () => {
+    const fetchMock = vi.fn(async (url: string) =>
+      url.startsWith("https://www.googleapis.com/upload/")
+        ? new Response("", { status: 200, headers: { Location: "https://upload.example/s-1" } })
+        : new Response(JSON.stringify({ id: "new-1", headRevisionId: "r-1" }), { status: 200 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const bytes = new Uint8Array([37, 80, 68, 70]);
+    await expect(
+      createDriveFile("t", { name: "Scan-001.pdf", parentId: "folder-1", bytes }),
+    ).resolves.toEqual({ id: "new-1", revision: "r-1" });
+
+    const [startUrl, startInit] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(startUrl).toBe(
+      "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,headRevisionId",
+    );
+    expect(startInit.method).toBe("POST");
+    expect(JSON.parse(startInit.body as string)).toEqual({
+      name: "Scan-001.pdf",
+      mimeType: "application/pdf",
+      parents: ["folder-1"],
+    });
+    const [putUrl, putInit] = fetchMock.mock.calls[1] as unknown as [string, RequestInit];
+    expect(putUrl).toBe("https://upload.example/s-1");
+    expect(putInit.body).toBe(bytes);
+  });
+
+  it("reports a 403 as a refused write", async () => {
+    respond(403);
+    await expect(
+      createDriveFile("t", { name: "a.pdf", parentId: null, bytes: new Uint8Array(1) }),
+    ).rejects.toBeInstanceOf(DriveWriteRefused);
+  });
+});
+
+describe("trashDriveFile", () => {
+  it("moves the file to the trash rather than deleting it", async () => {
+    const fetchMock = respond(200, "{}");
+    await trashDriveFile("t", "drive-9");
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe("https://www.googleapis.com/drive/v3/files/drive-9?fields=id");
+    expect(init.method).toBe("PATCH");
+    expect(JSON.parse(init.body as string)).toEqual({ trashed: true });
+  });
+});
+
+describe("getDriveParent", () => {
+  it("returns the file's folder", async () => {
+    respond(200, JSON.stringify({ parents: ["folder-7"], trashed: false }));
+    await expect(getDriveParent("t", "f")).resolves.toBe("folder-7");
+  });
+
+  it("treats a trashed file as missing", async () => {
+    respond(200, JSON.stringify({ parents: ["folder-7"], trashed: true }));
+    await expect(getDriveParent("t", "f")).rejects.toBeInstanceOf(DriveFileMissing);
   });
 });
