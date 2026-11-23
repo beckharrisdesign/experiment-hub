@@ -54,11 +54,6 @@ function Stat({ label, value, tone = "default" }: StatProps) {
 // ---------------------------------------------------------------------------
 
 function StateCell({ document }: { document: PdfDocument }) {
-  // A split original stays listed (its file is still in Drive) but its parts
-  // are the documents now.
-  if (document.supersededAt) {
-    return <Badge variant="muted">Split into parts</Badge>;
-  }
   if (document.hasPendingEdits) {
     // Frame 34:172: the count in a warning pill, as on the detail page header.
     const count = summarizePending(document).count;
