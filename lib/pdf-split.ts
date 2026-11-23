@@ -110,12 +110,22 @@ export async function splitPdfDocument(id: string, breaks: number[]): Promise<Sp
   if (source.isEncrypted) throw new PdfNotWritable("This PDF is encrypted, so it can't be split here");
   const parts = planParts(source.getPageCount(), breaks);
 
-  const values: MetadataValues = {
-    title: document.title,
-    subject: document.subject,
-    author: document.author,
-    keywords: document.keywords,
-  };
+  // The values the detail page shows. Until a document's first edit its stored
+  // fields are unread nulls, so the file's own metadata stands in (design D8).
+  const inFile = document.fileBaseline ? null : await readEmbeddedMetadata(original);
+  const values: MetadataValues = inFile
+    ? {
+        title: document.title ?? inFile.title,
+        subject: document.subject ?? inFile.subject,
+        author: document.author ?? inFile.author,
+        keywords: document.keywords.length > 0 ? document.keywords : inFile.keywords,
+      }
+    : {
+        title: document.title,
+        subject: document.subject,
+        author: document.author,
+        keywords: document.keywords,
+      };
   const parentId = document.driveFolderId ?? (await getDriveParent(accessToken, document.driveFileId));
 
   const created: Array<{ driveFileId: string; filename: string; revision: string | null; index: number; embedded: EmbeddedMetadata }> = [];
