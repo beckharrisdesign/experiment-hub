@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { Button, Container, Stack } from "@beckharrisdesign/mvds";
+import { Button, Stack } from "@beckharrisdesign/mvds";
 import { REFUSED_SUB_COOKIE } from "@/lib/pdf-drive";
 
 /**
@@ -36,10 +36,9 @@ export default async function SignInPage({
       : null;
 
   return (
-    <div className="py-6">
-      <Container size="xl">
+    <div className="px-4 py-6 lg:px-24">
         <Stack gap={24}>
-          <h1 className="font-heading text-2xl">PDF Metadata Viewer</h1>
+          <h1 className="sr-only">PDF Metadata Viewer</h1>
 
           {message ? (
             <div className="rounded-lg border-l-2 border-warning bg-background-secondary p-4">
@@ -92,7 +91,6 @@ export default async function SignInPage({
             </Stack>
           </div>
         </Stack>
-      </Container>
     </div>
   );
 }
