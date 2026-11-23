@@ -1,4 +1,4 @@
-import { Badge, Button, Container, Inline, Stack } from "@beckharrisdesign/mvds";
+import { Badge, Button, Inline, Stack } from "@beckharrisdesign/mvds";
 import { listPdfDocuments, type PdfDocument } from "@/lib/pdf-documents";
 import { getDriveConnection, type DriveConnection } from "@/lib/pdf-drive";
 import { summarizePending } from "@/lib/pdf-staging";
@@ -185,11 +185,12 @@ export default async function PdfMetadataViewerPage({
   // values resolve to MVDS tokens. In the hub's dark mode that is near-black
   // (lab 2.75), not the hub's --color-background-primary green (rgb 25 75 49),
   // so it paints a visible black band across the top of an otherwise green page.
-  // Token reconciliation with MVDS is issue #285. Until then `Container` gives
-  // the same width cap and gutters without bringing a background with it.
+  // Token reconciliation with MVDS is issue #285.
+  //
+  // Gutters match the bar above (AppBar) and the document and Compare views, so
+  // every view's content starts on the same edge as the bar.
   return (
-    <div className="py-6">
-      <Container size="xl">
+    <div className="px-4 py-6 lg:px-24">
         <Stack gap={32}>
           {/* The app name and Drive account are in the bar above (AppBar). */}
           <h1 className="sr-only">PDF Metadata Viewer</h1>
@@ -308,7 +309,6 @@ export default async function PdfMetadataViewerPage({
             </>
           )}
         </Stack>
-      </Container>
     </div>
   );
 }
