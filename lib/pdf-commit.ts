@@ -27,6 +27,7 @@ import {
 import { readEmbeddedMetadata, writeEmbeddedMetadata } from "@/lib/pdf-embedded";
 import { stagePdfEdits } from "@/lib/pdf-staging";
 import { clearAttention, recordAttention } from "@/lib/pdf-attention";
+import { DocumentReplaced } from "@/lib/pdf-split-plan";
 
 /** The file in Drive is no longer the version editing started from. */
 export class CommitConflict extends Error {
@@ -65,7 +66,7 @@ export async function commitPdfDocument(id: string): Promise<CommitResult | null
     if (result?.status === "committed") await clearAttention(id);
     return result;
   } catch (error) {
-    await recordAttention(id, error);
+    if (!(error instanceof DocumentReplaced)) await recordAttention(id, error);
     throw error;
   }
 }
@@ -73,6 +74,7 @@ export async function commitPdfDocument(id: string): Promise<CommitResult | null
 async function commitOnce(id: string): Promise<CommitResult | null> {
   const document = await getPdfDocument(id);
   if (!document) return null;
+  if (document.supersededAt) throw new DocumentReplaced();
   // Spec: committing with nothing pending makes no write to storage.
   if (!document.hasPendingEdits) return { status: "nothing-pending", document };
 

@@ -266,6 +266,11 @@ export default async function PdfDocumentDetailPage({
             }}
             disabled={!file.ok && !baselined}
             pendingCount={pending.count}
+            locked={
+              document.supersededAt
+                ? "This scan was split into parts. Edit the parts instead."
+                : undefined
+            }
           />
         </section>
       </div>

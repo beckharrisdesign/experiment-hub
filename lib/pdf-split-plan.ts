@@ -42,3 +42,14 @@ export function partName(filename: string | null, index: number): string {
   const base = (filename ?? "document.pdf").replace(/\.pdf$/i, "");
   return `${base}-${String(index).padStart(3, "0")}.pdf`;
 }
+
+/**
+ * This document was split; its parts are the documents now. Editing or
+ * committing the original would change a file nothing lists any more.
+ */
+export class DocumentReplaced extends Error {
+  constructor(message = "This document was split into parts. Edit the parts instead.") {
+    super(message);
+    this.name = "DocumentReplaced";
+  }
+}

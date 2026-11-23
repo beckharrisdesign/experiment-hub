@@ -21,6 +21,7 @@ import {
   DriveWriteRefused,
 } from "@/lib/pdf-drive";
 import { PdfNotWritable } from "@/lib/pdf-embedded";
+import { DocumentReplaced } from "@/lib/pdf-split-plan";
 
 const ID = "8f2b1c3d-4e5f-4a6b-8c9d-0e1f2a3b4c5d";
 
@@ -44,6 +45,13 @@ describe("POST .../commit", () => {
   it("404s a malformed id without committing", async () => {
     expect((await call(COMMIT, "nope")).status).toBe(404);
     expect(mocks.commitPdfDocument).not.toHaveBeenCalled();
+  });
+
+  it("409s a split original without claiming edits are kept", async () => {
+    mocks.commitPdfDocument.mockRejectedValue(new DocumentReplaced());
+    const res = await call(COMMIT, ID);
+    expect(res.status).toBe(409);
+    expect((await res.json()).error).toBe("This document was split into parts. Edit the parts instead.");
   });
 
   it("404s a document that does not exist", async () => {

@@ -7,6 +7,7 @@ import {
 } from "@/lib/pdf-drive";
 import { PdfNotWritable } from "@/lib/pdf-embedded";
 import { CommitConflict, CommitNotRecorded, commitPdfDocument } from "@/lib/pdf-commit";
+import { DocumentReplaced } from "@/lib/pdf-split-plan";
 
 /**
  * Write a document's staged edits into its PDF in Drive (task 8.2).
@@ -36,6 +37,9 @@ export async function POST(
     }
     return NextResponse.json({ success: true, ...result });
   } catch (error) {
+    if (error instanceof DocumentReplaced) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
     if (error instanceof CommitConflict) {
       return NextResponse.json(
         {

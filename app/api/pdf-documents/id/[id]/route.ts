@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPdfDocument, isUuid } from "@/lib/pdf-documents";
 import { DriveFileMissing, DriveReauthorizationRequired } from "@/lib/pdf-drive";
 import { DriveFileUnstable, parseEdits, stagePdfEdits } from "@/lib/pdf-staging";
+import { DocumentReplaced } from "@/lib/pdf-split-plan";
 
 /**
  * One document's metadata and pending state.
@@ -75,6 +76,9 @@ export async function PATCH(
     }
     return NextResponse.json({ success: true, document });
   } catch (error) {
+    if (error instanceof DocumentReplaced) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
     if (error instanceof DriveReauthorizationRequired) {
       return NextResponse.json(
         { error: "Drive access needs re-authorizing", reauthorize: true },
