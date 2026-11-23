@@ -96,6 +96,15 @@ copy of the PDF. Drive remains the only home for the bytes.
 - **THEN** the reference is reported as broken
 - **AND** the document's metadata and history remain intact
 
+#### Scenario: A referenced file is moved to the Drive trash
+
+- **WHEN** the Drive file a document refers to is in the trash, including when
+  a replacement was pasted into the folder in its place
+- **THEN** it is treated as no longer existing: opening it reports a broken
+  reference, and a commit writes nothing to it
+- **AND** the commit lands in Needs attention as a file that is no longer in
+  Drive, rather than reporting success
+
 ### Requirement: Commit writes back to the original Drive file
 
 On commit the system SHALL write the modified PDF back to the same Drive file

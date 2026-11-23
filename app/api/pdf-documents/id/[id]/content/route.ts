@@ -4,6 +4,7 @@ import {
   DriveFileMissing,
   DriveReauthorizationRequired,
   downloadDriveFile,
+  getDriveHeadRevisionId,
   getValidAccessToken,
 } from "@/lib/pdf-drive";
 
@@ -41,6 +42,9 @@ export async function GET(
   let bytes: ArrayBuffer;
   try {
     const accessToken = await getValidAccessToken();
+    // Drive serves a trashed file's bytes; the revision read is what says it
+    // is gone (DriveFileMissing), so it comes first.
+    await getDriveHeadRevisionId(accessToken, document.driveFileId);
     bytes = await downloadDriveFile(accessToken, document.driveFileId);
   } catch (error) {
     if (error instanceof DriveReauthorizationRequired) {

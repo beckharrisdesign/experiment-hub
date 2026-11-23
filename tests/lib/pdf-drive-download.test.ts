@@ -12,6 +12,7 @@ import {
   DriveWriteRefused,
   getDriveFolder,
   getDriveHeadRevisionId,
+  getDriveRevision,
   uploadDriveFile,
 } from "@/lib/pdf-drive";
 
@@ -78,12 +79,22 @@ describe("downloadDriveFile", () => {
 });
 
 describe("getDriveHeadRevisionId", () => {
-  it("asks for the head revision only, not the bytes", async () => {
-    const fetchMock = respond(200, JSON.stringify({ headRevisionId: "rev-7" }));
+  it("asks for the head revision and trash state only, not the bytes", async () => {
+    const fetchMock = respond(200, JSON.stringify({ headRevisionId: "rev-7", trashed: false }));
     await expect(getDriveHeadRevisionId("t", "drive-123")).resolves.toBe("rev-7");
     const [url] = fetchMock.mock.calls[0] as unknown as [string];
     expect(url).toBe(
-      "https://www.googleapis.com/drive/v3/files/drive-123?fields=headRevisionId",
+      "https://www.googleapis.com/drive/v3/files/drive-123?fields=headRevisionId,trashed",
+    );
+  });
+
+  // Drive still serves a trashed file and still accepts writes to it, so a
+  // commit would land in the trash and report success. Moving a file to the
+  // trash is how people throw it away: it counts as gone.
+  it("treats a trashed file as missing", async () => {
+    respond(200, JSON.stringify({ headRevisionId: "rev-7", trashed: true }));
+    await expect(getDriveHeadRevisionId("t", "drive-123")).rejects.toBeInstanceOf(
+      DriveFileMissing,
     );
   });
 
@@ -99,6 +110,28 @@ describe("getDriveHeadRevisionId", () => {
     await expect(getDriveHeadRevisionId("t", "x")).rejects.toBeInstanceOf(
       DriveReauthorizationRequired,
     );
+  });
+});
+
+describe("getDriveRevision", () => {
+  it("asks for the revision, modified time and trash state", async () => {
+    const fetchMock = respond(
+      200,
+      JSON.stringify({ headRevisionId: "rev-7", modifiedTime: "2026-11-23T17:38:52Z", trashed: false }),
+    );
+    await expect(getDriveRevision("t", "drive-123")).resolves.toEqual({
+      revision: "rev-7",
+      modifiedTime: "2026-11-23T17:38:52Z",
+    });
+    const [url] = fetchMock.mock.calls[0] as unknown as [string];
+    expect(url).toBe(
+      "https://www.googleapis.com/drive/v3/files/drive-123?fields=headRevisionId,modifiedTime,trashed",
+    );
+  });
+
+  it("treats a trashed file as missing", async () => {
+    respond(200, JSON.stringify({ headRevisionId: "rev-7", trashed: true }));
+    await expect(getDriveRevision("t", "drive-123")).rejects.toBeInstanceOf(DriveFileMissing);
   });
 });
 

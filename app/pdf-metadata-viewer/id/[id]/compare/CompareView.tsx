@@ -165,13 +165,7 @@ export function CompareView({ documentId, fields, pages, seenRevision, contentUr
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h2 className="text-base font-semibold text-text-primary">Changes</h2>
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="text-xs text-text-muted">
-              {resolving.length} {resolving.length === 1 ? "change" : "changes"}
-              {conflicts.length > 0 ? ` · ${undecided} need${undecided === 1 ? "s" : ""} you` : ""}
-            </span>
-            {actions}
-          </div>
+          {actions}
         </div>
 
         <div className="overflow-x-auto rounded-lg bg-background-secondary">
@@ -220,15 +214,14 @@ export function CompareView({ documentId, fields, pages, seenRevision, contentUr
         </p>
       ) : null}
 
-      <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center justify-between gap-4 border-t border-border bg-background-secondary px-4 py-4 lg:-mx-24 lg:px-24">
-        <span className="text-xs text-text-muted">
-          {needsDocumentDecision
-            ? "Decide about the document above first. "
-            : undecided > 0
-              ? `Choose a value for ${undecided} ${undecided === 1 ? "field" : "fields"}. `
-              : ""}
-          Nothing is written until you choose. Leaving this page keeps your edits staged.
-        </span>
+      <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center justify-end gap-4 border-t border-border bg-background-secondary px-4 py-4 lg:-mx-24 lg:px-24">
+        {needsDocumentDecision || undecided > 0 ? (
+          <span className="mr-auto text-xs text-text-muted">
+            {needsDocumentDecision
+              ? "Decide about the document above first."
+              : `Choose a value for ${undecided} ${undecided === 1 ? "field" : "fields"}.`}
+          </span>
+        ) : null}
         {actions}
       </div>
     </div>
@@ -278,8 +271,8 @@ function ValueCell({
               : "text-text-primary hover:bg-background-active"
           }`}
         >
-          <span aria-hidden className="w-3">{selected ? "✓" : ""}</span>
           {show(value)}
+          {selected ? <span aria-hidden>✓</span> : null}
         </button>
       </td>
     );
@@ -290,8 +283,8 @@ function ValueCell({
   }
   return (
     <td className="px-4 py-3 text-text-primary">
-      <span aria-hidden className="mr-2">✓</span>
       {show(value)}
+      <span aria-hidden className="ml-2">✓</span>
     </td>
   );
 }
