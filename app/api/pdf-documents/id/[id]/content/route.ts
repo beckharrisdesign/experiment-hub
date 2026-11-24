@@ -15,8 +15,11 @@ import {
  * this route is the only way bytes reach it, so revoking the session revokes
  * the preview too.
  *
- * Framed by the detail page, so `next.config.js` gives `/api/pdf-documents/*`
- * `frame-ancestors 'self'` rather than the hub-wide `'none'`.
+ * pdf.js fetches it to draw the detail preview and the splitter's pages
+ * (task 7c.3); "Open full size" opens it in a tab of its own. It was once
+ * framed by the detail page, which is why `next.config.js` still gives
+ * `/api/pdf-documents/*` `frame-ancestors 'self'` rather than the hub-wide
+ * `'none'`; nothing frames it now.
  */
 export async function GET(
   request: NextRequest,

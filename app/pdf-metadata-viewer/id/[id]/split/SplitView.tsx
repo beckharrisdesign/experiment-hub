@@ -4,6 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@beckharrisdesign/mvds";
 import { partName, planParts } from "@/lib/pdf-split-plan";
+import { loadWithPdfJs, type LoadedPdf, type PdfLoader } from "@/app/pdf-metadata-viewer/pdfjs";
 
 /**
  * The interactive half of Split — Figma `02.11`, frames 69:9 (breaks chosen)
@@ -15,36 +16,9 @@ import { partName, planParts } from "@/lib/pdf-split-plan";
  * until "Split into N files".
  */
 
-/** What the view needs from a PDF; pdf.js in the browser, a stub in tests. */
-export interface LoadedPdf {
-  numPages: number;
-  renderPage(pageNumber: number, canvas: HTMLCanvasElement, width: number): Promise<void>;
-}
-
-export type PdfLoader = (url: string) => Promise<LoadedPdf>;
+export type { LoadedPdf, PdfLoader } from "@/app/pdf-metadata-viewer/pdfjs";
 
 const THUMB_WIDTH = 148;
-
-/** pdf.js, loaded only in the browser and only on this page. */
-const loadWithPdfJs: PdfLoader = async (url) => {
-  const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-    "pdfjs-dist/build/pdf.worker.min.mjs",
-    import.meta.url,
-  ).toString();
-  const doc = await pdfjs.getDocument({ url, withCredentials: true }).promise;
-  return {
-    numPages: doc.numPages,
-    async renderPage(pageNumber, canvas, width) {
-      const page = await doc.getPage(pageNumber);
-      const base = page.getViewport({ scale: 1 });
-      const viewport = page.getViewport({ scale: (width / base.width) * (window.devicePixelRatio || 1) });
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      await page.render({ canvas, viewport }).promise;
-    },
-  };
-};
 
 function Thumbnail({ pdf, pageNumber }: { pdf: LoadedPdf; pageNumber: number }) {
   const ref = useRef<HTMLCanvasElement>(null);

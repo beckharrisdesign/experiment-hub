@@ -11,7 +11,8 @@ import { checkFile, storedFileValues, type Problem } from "@/lib/pdf-file-read";
 import { shownValues } from "@/lib/pdf-shown-values";
 import { summarizePending } from "@/lib/pdf-staging";
 import { DetailsEditor } from "./DetailsEditor";
-import { DetailsFromFile, PreviewFooter } from "./FromFile";
+import { DetailsFromFile } from "./FromFile";
+import { PagePreview } from "./PagePreview";
 
 /**
  * Hosted pdf-metadata-viewer — document detail.
@@ -57,7 +58,7 @@ const LOCKED_SPLIT = "This scan was split into parts. Edit the parts instead.";
 // On wide screens the page fits one screen: 185px is the app bar (53), this
 // view's header (76) and the page-count row with its gap (56). Measured on the
 // live page; adjust if any of those change.
-const FRAME = "h-[420px] w-full rounded-md lg:h-[calc(100vh-185px)]";
+const FRAME = "h-[420px] w-full lg:h-[calc(100vh-185px)]";
 
 // ---------------------------------------------------------------------------
 // Page
@@ -158,23 +159,17 @@ export default async function PdfDocumentDetailPage({
       <div className="flex flex-1 flex-col gap-6 px-4 py-6 lg:flex-row lg:gap-12 lg:px-24 lg:py-0">
         <section className="flex flex-col gap-3 lg:flex-1 lg:py-0" aria-label="Preview">
           {access.ok ? (
-            <>
-              <iframe
-                // A commit uploads a new revision at the same URL; remount so
-                // the preview shows the file as it now is.
-                key={document.driveRevisionId ?? "initial"}
-                src={contentUrl}
-                title={`Preview of ${filename}`}
-                className={`${FRAME} bg-white`}
-              />
-              <PreviewFooter
-                documentId={document.id}
-                revision={revision}
-                storedPageCount={document.pageCount ?? fresh?.pageCount ?? null}
-                wasSplit={document.supersededAt !== null}
-                contentUrl={contentUrl}
-              />
-            </>
+            <PagePreview
+              // A commit uploads a new revision at the same URL; remount so
+              // the preview draws the file as it now is.
+              key={document.driveRevisionId ?? "initial"}
+              documentId={document.id}
+              contentUrl={contentUrl}
+              filename={filename}
+              storedPageCount={document.pageCount ?? fresh?.pageCount ?? null}
+              wasSplit={document.supersededAt !== null}
+              frameClass={FRAME}
+            />
           ) : (
             <div className="rounded-lg border-l-2 border-warning bg-background-secondary p-4">
               <div className="flex flex-col gap-2">

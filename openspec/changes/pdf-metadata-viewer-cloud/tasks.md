@@ -80,6 +80,14 @@ Each one changes work below it, so none should be discovered mid-build.
 - [x] 7b.3 Outputs inherit metadata; the original keeps its history — parts carry the original's title, subject, author and keywords as shown (staged values included), written into their bytes so they start clean; each part's history opens with a `split` row naming the original
 - [ ] 7b.4 On import, read v1's `from-split` / `already-split` / `needs-deleting` / `no-split-needed` keywords into columns and drop them from the keyword list
 
+## 7c. Image preview
+
+design.md said the detail preview already drew page images with pdf.js (§ content route, § Risks). It never did: the detail page frames the content route in an `<iframe>`, so the browser's own PDF viewer draws it, with its toolbar and page sidebar. Only the splitter (7b) draws page images. Added 2026-11-23, after the load-time work (#628–#630).
+
+- [x] 7c.1 Design the image preview on a numbered Figma page (`02.12`), desktop and phone, from the approved detail frames (`02.9` 34:289, `02.10` 40:3) — **drawn 2026-11-23**: `02.12 Proposed — Image preview` (73:8), frames 73:44 (pages drawn), 73:104 (loading), 73:164 (phone), with a behaviour note. The approved frames already named their preview layer "pdf.js canvas — page 1 of 2"
+- [x] 7c.2 Explicit go on the rendered frames — **"Looks right, build it", 2026-11-23**
+- [ ] 7c.3 Build it with the splitter's pdf.js loader: pages drawn as images as they arrive, first page first; "Open full size" keeps the browser's viewer in a new tab — built: `PagePreview.tsx`, the loader shared from `app/pdf-metadata-viewer/pdfjs.ts`. The phone preview keeps the live 420px height rather than frame 40:3's 181pt, which the live page outgrew before this change. Tick once verified live
+
 ## 8. Write path
 
 - [x] 8.0 Capture the baseline on the first staged edit — read the file once, store `file_snapshot.embedded` and `drive_head_revision_id` together, fill the field columns; never re-capture while edits are pending. See `design.md` D8, "captured on first edit". **Done in #608, verified live 2026-11-20:** the first edit stored the file's five fields and its revision, and filled the title column from the file
