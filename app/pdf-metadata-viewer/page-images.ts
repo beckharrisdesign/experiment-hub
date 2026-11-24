@@ -62,6 +62,8 @@ export function serverPageLoader(
     const pump = () => {
       while (!stopped && inFlight < PAGES_IN_FLIGHT && next <= count) {
         const n = next++;
+        // Already asked for out of turn (renderPage): never fetch a page twice.
+        if (pages.has(n)) continue;
         inFlight += 1;
         const page = get(n).then(decode);
         pages.set(n, page);
@@ -96,10 +98,10 @@ export function serverPageLoader(
         canvas.height = page.height;
         canvas.getContext("2d")?.drawImage(page.source, 0, 0);
       },
-      async pageSize(n) {
-        const page = await pageAt(n);
-        return { width: page.width, height: page.height };
-      },
+      // No pageSize: asking every placeholder's size up front fetched all the
+      // pages at once, around the queue, and the queue then fetched them again
+      // (28 requests for 16 pages, live). Placeholders keep the default page
+      // shape until their image arrives.
       destroy() {
         stopped = true;
         for (const page of pages.values()) {
