@@ -1,14 +1,15 @@
 import { notFound } from "next/navigation";
 import { Button } from "@beckharrisdesign/mvds";
 import { getPdfDocument, isUuid, listSplitParts } from "@/lib/pdf-documents";
+import { checkFile } from "@/lib/pdf-file-read";
 import { listViewQuery, parseListView, type RawParams } from "@/lib/pdf-list-view";
 import { SplitView } from "./SplitView";
 
 /**
  * Split — break one scan into several documents.
  * openspec/changes/pdf-metadata-viewer-cloud — tasks 7b.1–7b.3; Figma `02.11`
- * (frames 69:9, 69:132). Opening it reads nothing from Drive on the server:
- * the page thumbnails are drawn in the browser from the content route.
+ * (frames 69:9, 69:132). The thumbnails are the detail preview's images (task
+ * 7f), found by the revision Drive holds now; only that is read on the server.
  */
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ export default async function SplitPage({
   const detailUrl = `/pdf-metadata-viewer/id/${id}${listQuery}`;
   const filename = document.filename ?? "document";
   const parts = document.supersededAt ? await listSplitParts(id) : [];
+  const access = document.supersededAt ? null : await checkFile(document);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -69,6 +71,7 @@ export default async function SplitPage({
           listQuery={listQuery}
           filename={document.filename}
           contentUrl={`/api/pdf-documents/id/${id}/content`}
+          revision={access?.ok ? access.head : null}
         />
       )}
     </div>

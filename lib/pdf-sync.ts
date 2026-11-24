@@ -12,17 +12,25 @@
  *      listed, download it, read it (`readFile`, the detail page's read), and
  *      save the read (migration 031). Nothing is kept but the values.
  *
- * Step 2 stops at a time budget, so a big backlog drains over several runs
- * instead of timing out in one. Never-read files go first.
+ *   3. Draw ahead: keep images of the pages of each document whose pages aren't
+ *      kept yet, and clear out the ones whose file or version is gone (task 7f,
+ *      lib/pdf-page-store.ts). It uses what time step 2 leaves.
+ *
+ * Steps 2 and 3 stop at a time budget, so a big backlog drains over several
+ * runs instead of timing out in one. Never-read files go first.
  */
 import { listPdfDocuments, getPdfAdminClient, type PdfDocument } from "@/lib/pdf-documents";
 import {
+  downloadDriveFile,
   getDriveConnection,
+  getDriveHeadRevisionId,
   getValidAccessToken,
   listPdfsInFolder,
   type DriveFile,
 } from "@/lib/pdf-drive";
 import { readFile, storedFileValues } from "@/lib/pdf-file-read";
+import { syncPages, type PageSyncResult, type WantedDocument } from "@/lib/pdf-page-store";
+import { listedValues } from "@/lib/pdf-shown-values";
 
 export interface SyncResult {
   /** Why nothing ran, when nothing did. */
@@ -37,6 +45,8 @@ export interface SyncResult {
   failed: number;
   /** Files still waiting for a read when the time ran out. */
   remaining: number;
+  /** Drawing ahead; absent when it couldn't run, which never fails the sync. */
+  pages?: PageSyncResult;
 }
 
 export interface SyncOptions {
@@ -58,6 +68,7 @@ export async function syncFolder({
   now = () => performance.now(),
 }: SyncOptions = {}): Promise<SyncResult> {
   const started = now();
+  const startedAt = new Date();
   const { folder } = await getDriveConnection();
   if (!folder) {
     return { skipped: "no-folder", inFolder: 0, added: 0, read: 0, failed: 0, remaining: 0 };
@@ -100,11 +111,37 @@ export async function syncFolder({
   };
   await Promise.all(Array.from({ length: Math.min(concurrency, queue.length) }, worker));
 
+  const wanted: WantedDocument[] = [];
+  for (const file of files) {
+    const document = documents.get(file.id);
+    if (document && file.headRevisionId) {
+      wanted.push({
+        id: document.id,
+        driveFileId: file.id,
+        revision: file.headRevisionId,
+        pageCount: listedValues(document).pageCount,
+      });
+    }
+  }
+  let pages: PageSyncResult | undefined;
+  try {
+    pages = await syncPages({
+      wanted,
+      download: (id) => downloadDriveFile(accessToken, id),
+      headRevision: (id) => getDriveHeadRevisionId(accessToken, id),
+      outOfTime: () => now() - started >= budgetMs,
+      startedAt,
+    });
+  } catch (error) {
+    console.error("pdf sync: could not draw pages ahead:", error);
+  }
+
   return {
     inFolder: files.length,
     added,
     read,
     failed,
     remaining: queue.length - read - failed,
+    ...(pages ? { pages } : {}),
   };
 }

@@ -31,6 +31,18 @@ describe("SplitView", () => {
     expect(screen.queryByRole("button", { name: "Clear breaks" })).toBeNull();
   });
 
+  it("keeps its actions on screen while the pages load, and beside them anything that goes wrong", async () => {
+    const never: PdfLoader = () => new Promise(() => {});
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ error: "Drive said no." }), { status: 502 })));
+    render(<SplitView documentId="doc-1" filename="a.pdf" contentUrl="/c" loadPdf={never} />);
+    expect(screen.getByText("Loading pages…")).toBeTruthy();
+    const oneDocument = screen.getByRole("button", { name: "It's one document" });
+    const bar = oneDocument.parentElement as HTMLElement;
+    expect(bar.className).toContain("sticky bottom-0");
+    fireEvent.click(oneDocument);
+    expect(bar.contains(await screen.findByText(/Drive said no\./))).toBe(true);
+  });
+
   // Frame 69:9.
   it("lists the files a split would create as gaps are chosen", async () => {
     renderView();

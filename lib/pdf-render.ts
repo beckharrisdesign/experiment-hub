@@ -5,8 +5,8 @@
  * Why the server: measured live, Drive hands a 9.35 MB scan to the function
  * in under half a second once it starts, but the function sends it on to the
  * browser at about 0.85 MB/s. A page drawn here is 100–300 KB instead of the
- * megabytes of PDF pdf.js needs to draw it in the browser. Nothing is kept:
- * each image is drawn from Drive's bytes and sent, as the preview always was.
+ * megabytes of PDF pdf.js needs to draw it in the browser. Keeping the images
+ * is lib/pdf-page-store.ts's business (task 7f).
  */
 import path from "node:path";
 import { existsSync, readdirSync } from "node:fs";
@@ -61,11 +61,14 @@ export interface RenderedPage {
   height: number;
 }
 
-export async function renderPdfPage(
-  bytes: ArrayBuffer | Uint8Array,
-  pageNumber: number,
-  width: number,
-): Promise<RenderedPage> {
+export interface OpenPdf {
+  pageCount: number;
+  draw(pageNumber: number, width: number): Promise<RenderedPage>;
+  close(): Promise<void>;
+}
+
+/** Open a PDF to draw any of its pages; opening is the part worth sharing. */
+export async function openPdf(bytes: ArrayBuffer | Uint8Array): Promise<OpenPdf> {
   const pdfjs = await loadPdfjs();
   const data = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
   const task = pdfjs.getDocument({
@@ -75,25 +78,58 @@ export async function renderPdfPage(
     wasmUrl: pdfjsFolder("wasm"),
     iccUrl: pdfjsFolder("iccs"),
   });
+  let doc: Awaited<typeof task.promise>;
   try {
-    const doc = await task.promise;
-    if (pageNumber > doc.numPages) throw new PageOutOfRange(doc.numPages);
-    const page = await doc.getPage(pageNumber);
-    const base = page.getViewport({ scale: 1 });
-    const viewport = page.getViewport({ scale: width / base.width });
-    const canvas = createCanvas(Math.round(viewport.width), Math.round(viewport.height));
-    const context = canvas.getContext("2d");
-    // A page with no background of its own is white paper, not transparent.
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    await page.render({
-      canvas: canvas as unknown as HTMLCanvasElement,
-      canvasContext: context as unknown as CanvasRenderingContext2D,
-      viewport,
-    }).promise;
-    const jpeg = await canvas.encode("jpeg", 82);
-    return { jpeg: new Uint8Array(jpeg), pageCount: doc.numPages, width: canvas.width, height: canvas.height };
-  } finally {
+    doc = await task.promise;
+  } catch (error) {
     await task.destroy();
+    throw error;
+  }
+  return {
+    pageCount: doc.numPages,
+    async draw(pageNumber, width) {
+      if (pageNumber > doc.numPages) throw new PageOutOfRange(doc.numPages);
+      const page = await doc.getPage(pageNumber);
+      try {
+        const base = page.getViewport({ scale: 1 });
+        const viewport = page.getViewport({ scale: width / base.width });
+        const canvas = createCanvas(Math.round(viewport.width), Math.round(viewport.height));
+        const context = canvas.getContext("2d");
+        // A page with no background of its own is white paper, not transparent.
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        await page.render({
+          canvas: canvas as unknown as HTMLCanvasElement,
+          canvasContext: context as unknown as CanvasRenderingContext2D,
+          viewport,
+        }).promise;
+        const jpeg = await canvas.encode("jpeg", 82);
+        return {
+          jpeg: new Uint8Array(jpeg),
+          pageCount: doc.numPages,
+          width: canvas.width,
+          height: canvas.height,
+        };
+      } finally {
+        // A long scan's decoded images would otherwise pile up page by page.
+        page.cleanup();
+      }
+    },
+    async close() {
+      await task.destroy();
+    },
+  };
+}
+
+export async function renderPdfPage(
+  bytes: ArrayBuffer | Uint8Array,
+  pageNumber: number,
+  width: number,
+): Promise<RenderedPage> {
+  const pdf = await openPdf(bytes);
+  try {
+    return await pdf.draw(pageNumber, width);
+  } finally {
+    await pdf.close();
   }
 }

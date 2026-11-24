@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   stagePdfEdits: vi.fn(),
   recordAttention: vi.fn(),
   clearAttention: vi.fn(),
+  carryPages: vi.fn(),
 }));
 
 vi.mock("@/lib/pdf-documents", () => ({
@@ -28,6 +29,7 @@ vi.mock("@/lib/pdf-embedded", () => ({
   readEmbeddedMetadata: mocks.readEmbeddedMetadata,
   writeEmbeddedMetadata: mocks.writeEmbeddedMetadata,
 }));
+vi.mock("@/lib/pdf-page-store", () => ({ carryPages: mocks.carryPages }));
 vi.mock("@/lib/pdf-staging", () => ({ stagePdfEdits: mocks.stagePdfEdits }));
 vi.mock("@/lib/pdf-attention", () => ({
   recordAttention: mocks.recordAttention,
@@ -120,6 +122,8 @@ describe("commitPdfDocument", () => {
     });
     expect(mocks.uploadDriveFile).toHaveBeenCalledWith("token", "drive-abc", WRITTEN);
     expect(mocks.readEmbeddedMetadata).toHaveBeenCalledWith(WRITTEN);
+    // The pages didn't change, so their drawn images go along (task 7f).
+    expect(mocks.carryPages).toHaveBeenCalledWith(ID, "rev-7", expect.any(String));
     expect(mocks.rpc).toHaveBeenCalledWith("pdf_record_commit", {
       doc: ID,
       expected_revision: "rev-7",

@@ -25,6 +25,7 @@ import {
   uploadDriveFile,
 } from "@/lib/pdf-drive";
 import { readEmbeddedMetadata, writeEmbeddedMetadata } from "@/lib/pdf-embedded";
+import { carryPages } from "@/lib/pdf-page-store";
 import { stagePdfEdits } from "@/lib/pdf-staging";
 import { clearAttention, recordAttention } from "@/lib/pdf-attention";
 import { DocumentReplaced } from "@/lib/pdf-split-plan";
@@ -116,6 +117,9 @@ async function commitOnce(id: string): Promise<CommitResult | null> {
     );
     throw new CommitNotRecorded(`Written to Drive but not recorded: ${error.message}`);
   }
+
+  // Only the metadata changed, so the drawn pages still stand (design.md D14).
+  await carryPages(id, expected, newRevision);
 
   const updated = await getPdfDocument(id);
   if (!updated) throw new CommitNotRecorded("Document disappeared after commit");

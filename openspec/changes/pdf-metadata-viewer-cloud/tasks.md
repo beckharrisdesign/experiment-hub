@@ -108,6 +108,15 @@ The original list had sortable headers, a filter on every data column, and click
 - [x] 7e.5 Table alignment — Katy, 2026-11-24: cell text top left unless a date or a number, headers matching their column. Text cells are top left, Pages and its header align right, and Committed / Not yet tagged lost the invisible pill that indented them from State. Compare's cells are top-aligned too. Recorded in `rules/design-guidelines.mdc`. `02.13` still shows the old alignment
 - [x] 7e.4 Verify live — **verified 2026-11-24** (#642) on the 39 files in PDF Tests: Pages sorts as numbers both ways (119, 53, 43, …); a clicked keyword gave 2 rows, adding a search gave "1 of 39 documents", and the address carried both; nothing-matches message and Clear all work, and clearing keeps the sort; search and column names stay put while scrolling. Opened from a filtered list, a document's only step was the other matching document, and its Previous / Next, All documents, and Split links all carried the list. Not exercised live: Review pending with a search, Compare, and the phone list (nothing was pending; the phone layout was looked at locally)
 
+## 7f. Keep drawn pages
+
+Katy, 2026-11-24: "looking at a single doc seems to be generating images of the pdf each time… same for the split view. this 19 page pdf took more than 30s". Measured: each page request took 4.1–5.9 s, of which about 2.4 s was downloading the whole PDF again; three at a time, 19 pages come to about 36 s. Nothing was kept, so a second visit took as long. Her choice of where to keep them: private storage.
+
+- [x] 7f.1 Spec and design: requirement "Drawn pages are kept privately" (drive-document-source), the exception in "Documents are referenced, not copied", design.md D14
+- [x] 7f.2 Store, page route, commit carry-over, drawing ahead and clearing out in the sync (`lib/pdf-page-store.ts`, migration 032); the splitter uses the same images
+- [x] 7f.3 Apply migration 032 to the hub database — **applied 2026-11-24** with Katy's go: bucket private and JPEG only, row level security on, no policies on it or the table, no grants to the public keys
+- [ ] 7f.4 Verify live: run the sync until no pages wait; time a 19-page scan, first and second open, and the splitter; commit an edit and see the pages not redrawn; check an image can't be had without a session
+
 ## 8. Write path
 
 - [x] 8.0 Capture the baseline on the first staged edit — read the file once, store `file_snapshot.embedded` and `drive_head_revision_id` together, fill the field columns; never re-capture while edits are pending. See `design.md` D8, "captured on first edit". **Done in #608, verified live 2026-11-20:** the first edit stored the file's five fields and its revision, and filled the title column from the file

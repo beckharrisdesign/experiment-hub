@@ -73,11 +73,66 @@ sharing when it is actually wanted.
 - **THEN** it is refused
 - **AND** no request for the bytes is made to Drive
 
+### Requirement: Drawn pages are kept privately
+
+The system SHALL keep images of each listed document's pages so that opening a
+document or splitting it does not draw them again. The images MUST be kept in
+private storage that only the server can reach, MUST be served only through the
+authenticated session, and MUST NOT be reachable by any signed or public URL.
+They are disposable: each can be drawn again from Drive, and losing them loses
+nothing but time.
+
+Chosen by Katy on 2026-11-24 over keeping nothing outside Drive, knowing that it
+puts images of household documents, medical ones included, in the hub's own
+storage.
+
+#### Scenario: Opening a document whose pages are kept
+
+- **WHEN** a user opens a document, or splits it, and its pages are kept for the
+  version Drive holds
+- **THEN** the kept images are shown
+- **AND** the PDF is not downloaded from Drive to draw them
+
+#### Scenario: Opening a document whose pages are not kept yet
+
+- **WHEN** a user opens a document before its pages have been drawn
+- **THEN** each page is drawn and shown, and kept for next time
+
+#### Scenario: Pages are drawn ahead
+
+- **WHEN** the scheduled sync finds a listed document whose pages are not kept
+- **THEN** it draws and keeps them, over several runs if it must
+
+#### Scenario: Metadata is committed
+
+- **WHEN** a commit writes a document's metadata to its file
+- **THEN** its kept pages serve the new version without being drawn again
+
+#### Scenario: The file changes in Drive
+
+- **WHEN** a document's file is changed in Drive by anything else
+- **THEN** images of the earlier version are not shown for it
+- **AND** the next scheduled sync deletes them and draws the new version
+
+#### Scenario: The document leaves
+
+- **WHEN** a document's file is removed from the folder or replaced by its split
+  parts
+- **THEN** the next scheduled sync deletes its images
+
+#### Scenario: A request without a session
+
+- **WHEN** a kept page is requested without a valid session
+- **THEN** it is refused
+
 ### Requirement: Documents are referenced, not copied
 
 The system SHALL record a reference to each document — the Drive file id plus
 what is needed to display and re-fetch it — and MUST NOT keep a second durable
 copy of the PDF. Drive remains the only home for the bytes.
+
+Images of a document's pages are not copies of the PDF in this sense and may be
+kept, under "Drawn pages are kept privately" below.
 
 #### Scenario: Bringing a folder into the tool
 
