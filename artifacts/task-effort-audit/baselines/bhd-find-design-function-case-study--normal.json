@@ -1,0 +1,52 @@
+{
+  "current": {
+    "taskId": "bhd-find-design-function-case-study",
+    "scenario": "normal",
+    "runId": "20261124T185055Z-bhd-find-design-function-case-study-normal-e700",
+    "approvedAt": "2026-11-24T18:55:09.732Z",
+    "approvedBy": "unspecified",
+    "note": "First live run; read-only; /api/view suppressed",
+    "definitionHash": "95bfa8ccff15ceaa6d79faf10f5cf5e2ef890dac936be3996dbeee7b73906857",
+    "comparisonContext": "2026-11-live-v1",
+    "propertyId": "beckharrisdesign",
+    "propertyContextHash": "814da0afc2aaf35852c13e75533304128e34c6ba735e2f31e696e7dd399e3ec3",
+    "metrics": {
+      "path": {
+        "actions": 2,
+        "repeatedEntryFields": 0,
+        "contextSwitches": 0
+      },
+      "recovery": {
+        "actions": 0,
+        "repeatedEntryFields": 0,
+        "contextSwitches": 0
+      },
+      "conditional": {
+        "performed": 0,
+        "skipped": 0
+      },
+      "scrolls": 0
+    },
+    "findingKeys": [],
+    "verification": "pass",
+    "tooling": {
+      "tool": "0.1.0",
+      "node": "v22.23.5",
+      "playwright": "1.59.1",
+      "browser": "chromium 158.0.8127.36",
+      "os": "linux 6.18.44-fc-v819",
+      "gitCommit": "83fd135"
+    },
+    "fixtureVariant": null
+  },
+  "history": [
+    {
+      "action": "approved",
+      "runId": "20261124T185055Z-bhd-find-design-function-case-study-normal-e700",
+      "approvedAt": "2026-11-24T18:55:09.732Z",
+      "approvedBy": "unspecified",
+      "note": "First live run; read-only; /api/view suppressed",
+      "supersedes": null
+    }
+  ]
+}
