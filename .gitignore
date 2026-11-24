@@ -110,6 +110,9 @@ worktrees/
 .cache/
 .site-map/
 artifacts/site-map/
+# task-effort-audit runs: screenshots, traces, ledgers, auth state, baselines.
+# Browser evidence can contain sensitive data and is not sanitized.
+artifacts/task-effort-audit/
 
 # Logs
 logs/

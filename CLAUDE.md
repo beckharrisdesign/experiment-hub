@@ -61,6 +61,7 @@ discovers (flat `skills/<name>.md` files are ignored).
 - Code review: `.github/skills/code-review/SKILL.md` — PR autonomy rules; lives under `.github/skills/` so every IDE and GitHub Copilot read it, and `skills/code-review` symlinks to it
 - Lineage proposals: `skills/lineage-proposals/SKILL.md` — evidence-backed corrections to the Idea Lineage graph, written as proposals Katy accepts in the graph; Notion first, git for dates
 - Theme proposals: `skills/theme-proposals/SKILL.md` — sharper, split, or missing themes on the Idea Lineage graph, written as proposals Katy accepts in the graph
+- Task-effort audit: `skills/task-effort-audit/SKILL.md` — deterministic regression audit of interface-imposed work along reviewed task paths; CLI in `scripts/task-effort-audit/`, explicit baseline approval, no runtime LLM
 - Linked repos: `skills/linked-repo-session/SKILL.md` — GitHub MCP is the standard access path for linked-repo code from hub sessions; primer format; opt-in local clones
 
 ## Hooks (Claude Code only)

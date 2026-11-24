@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "local-fixture",
+  "name": "Northwind (local fixture)",
+  "baseUrl": "http://127.0.0.1:4789",
+  "environment": "local",
+  "writesApproved": true,
+  "writesApprovalNote": "In-memory local fixture; state resets on restart and via /__fixture/reset. No real data.",
+  "fixture": { "module": "../../fixture/server.mjs", "note": "Started by `run --fixture <variant>`." },
+  "fixtureApi": { "pathPrefix": "/__fixture/" },
+  "readOnlyRequestAllowlist": [],
+  "authProfiles": {
+    "fixture-owner": { "type": "none", "note": "The fixture has no login; every visitor is the test account owner." }
+  }
+}
