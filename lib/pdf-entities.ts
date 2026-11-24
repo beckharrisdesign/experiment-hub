@@ -73,6 +73,9 @@ export interface NamedSlug {
   name: string;
   slug: string;
   aliases: string[];
+  /** A vendor's own, for prefilling (task 7i). Never put in the prompt. */
+  categories?: string[];
+  location?: string;
 }
 
 export interface Entities {
@@ -150,7 +153,11 @@ export function shapeEntities(entities: Entity[]): Entities {
     people: people.map((entity) => entity.slug),
     peopleWithNames: people.map(named),
     vendors: organizations.map((entity) => entity.slug),
-    vendorsWithNames: organizations.map(named),
+    vendorsWithNames: organizations.map((entity) => ({
+      ...named(entity),
+      categories: entity.categories,
+      location: entity.location,
+    })),
     locations,
     fetchedAt: new Date().toISOString(),
   };

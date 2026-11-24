@@ -192,6 +192,54 @@ tagged first, and MUST NOT give two parts of a split the same file name.
 - **WHEN** a user chooses not to copy a field
 - **THEN** the parts are made without it, and the scan keeps it
 
+### Requirement: What a document's text says is prefilled for review
+
+The system SHALL work out a title and keywords from the kept text of a document
+nobody has touched, by matching alone, and show them as prefilled until a person
+accepts or dismisses them. Prefilled values MUST NOT be pending edits, MUST NOT
+be written to Drive, and MUST NOT be made by sending the document or its text to
+any service. Each value SHALL say where it came from.
+
+#### Scenario: Reviewing a prefilled document
+
+- **WHEN** a user opens a document whose text names a known vendor
+- **THEN** its title and keywords are filled in, marked prefilled, with the
+  reason for each, and nothing has been saved
+
+#### Scenario: Accepting
+
+- **WHEN** a user accepts, having changed what they like
+- **THEN** what is shown becomes ordinary pending edits, and the document is no
+  longer prefilled
+
+#### Scenario: Dismissing
+
+- **WHEN** a user dismisses what was prefilled
+- **THEN** the document is as it was, and isn't prefilled again for that version
+  of the file
+
+#### Scenario: Committing while something is prefilled
+
+- **WHEN** a user commits every pending document
+- **THEN** documents that are only prefilled are left out
+
+#### Scenario: A document already touched
+
+- **WHEN** a document has tags, edits or a commit of its own, or its file hasn't
+  been read since it changed
+- **THEN** nothing is prefilled for it
+
+#### Scenario: A long scan
+
+- **WHEN** an untouched document has more than five pages
+- **THEN** nothing is prefilled, and the user is asked whether to split it, until
+  it is split or they say it is one document
+
+#### Scenario: Asking the AI instead
+
+- **WHEN** a user presses Suggest with AI on a prefilled document
+- **THEN** the AI's answer becomes pending edits in place of what was prefilled
+
 ### Requirement: Keyword values round-trip without corruption
 
 The system SHALL store keywords as a discrete ordered list rather than a

@@ -49,6 +49,8 @@ interface Props {
   reviewing: boolean;
   /** Where Review pending / Show all goes, keeping the list's other choices. */
   toggleHref?: string;
+  /** Review prefilled, once there is something prefilled (task 7i). */
+  prefilled?: { count: number; reviewing: boolean; href: string };
   children: ReactNode;
 }
 
@@ -57,6 +59,7 @@ export function DocumentsSection({
   excluded,
   reviewing,
   toggleHref = reviewing ? "/pdf-metadata-viewer" : "/pdf-metadata-viewer?pending=1",
+  prefilled,
   children,
 }: Props) {
   const router = useRouter();
@@ -99,7 +102,12 @@ export function DocumentsSection({
   }
 
   const actions = (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center justify-end gap-3">
+      {prefilled && (prefilled.count > 0 || prefilled.reviewing) ? (
+        <Button asChild variant="outline" className="min-h-11">
+          <a href={prefilled.href}>{prefilled.reviewing ? "Show all documents" : "Review prefilled"}</a>
+        </Button>
+      ) : null}
       <Button asChild variant="outline" className="min-h-11">
         <a href={toggleHref}>
           {reviewing ? "Show all documents" : "Review pending"}
@@ -119,7 +127,7 @@ export function DocumentsSection({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-base font-semibold text-text-primary">
-          {reviewing ? "Pending documents" : "Documents"}
+          {reviewing ? "Pending documents" : prefilled?.reviewing ? "Prefilled documents" : "Documents"}
         </h2>
         {actions}
       </div>

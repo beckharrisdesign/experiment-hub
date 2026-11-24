@@ -144,15 +144,15 @@ Katy, 2026-11-24: "or caching the ocr version of the pages for ai synthesis so t
 
 Later, not part of this: searching inside documents, which the kept text would make possible.
 
-## 7i. Suggestions waiting to be reviewed (proposed, not approved)
+## 7i. Prefilled, waiting to be reviewed
 
 Katy, 2026-11-24: "auto applying ocr based metadata suggestions but not committing them to drive -- making it possible to just review them without having to kick them off. For longer pdfs, clearly some splitting or adjustment might be a better first step", and "full ai completions could still be manually kicked off". design.md D16. The roadmap's "review-and-refine rather than click-then-wait", without a model.
 
 - [x] 7i.1 Katy's call: suggestions wait apart from pending edits until accepted — **"Yes, keep them apart", 2026-11-24**
-- [~] 7i.2 Draw it on a numbered Figma page — **drawn 2026-11-24**: `02.16 Proposed — Suggested, waiting for review` (85:335), frames 85:336 (list), 86:169 (document), 86:237 (long document), 86:305 (phone), note 86:694. Then, as "suggested" beside the AI's "Suggest metadata" was confusing (Katy), `02.17 Proposed — Prefilled, and Suggest with AI` (88:302): **Prefilled** is what the text says, **Suggest** is only ever the AI; frames 88:303, 88:475, 88:546, 88:604, note 88:682. Words agreed (**"Yes, use those", 2026-11-24**). Awaiting an explicit go on the frames
-- [ ] 7i.3 Spec; the rules, pure and tested; migration 034 (applied only on her go)
-- [ ] 7i.4 Make them in the sync, after text; nothing sent anywhere
-- [ ] 7i.5 Review on the document and in the list; Suggest (full AI) unchanged and by hand
+- [x] 7i.2 Draw it on a numbered Figma page — **drawn 2026-11-24**: `02.16 Proposed — Suggested, waiting for review` (85:335), frames 85:336 (list), 86:169 (document), 86:237 (long document), 86:305 (phone), note 86:694. Then, as "suggested" beside the AI's "Suggest metadata" was confusing (Katy), `02.17 Proposed — Prefilled, and Suggest with AI` (88:302): **Prefilled** is what the text says, **Suggest** is only ever the AI; frames 88:303, 88:475, 88:546, 88:604, note 88:682. Words agreed (**"Yes, use those", 2026-11-24**). **"Yes, build it" (2026-11-24)**
+- [~] 7i.3 Spec; the rules, pure and tested — requirement "What a document's text says is prefilled for review" (document-metadata-store), `lib/pdf-prefill.ts`. Only a file read at its current version counts as untagged, as an unread one may have tags Accept would drop. Migration 034 written, **not applied**: the screens work without it, with nothing prefilled
+- [x] 7i.4 Make them in the sync, after text; nothing sent anywhere — `lib/pdf-prefills.ts`, worked out again each run, so a vendor added to Entities is found on documents already here
+- [x] 7i.5 Review on the document and in the list; Suggest (full AI) by hand, now **Suggest with AI** — `PrefillReview.tsx`, `SplitFirst.tsx`, `POST .../prefill/dismiss`. Not on the frames: after the last one the main button reads "Accept and finish" and goes back to the list
 - [ ] 7i.6 Verify live; measure how many are accepted as they are
 
 ## 8. Write path

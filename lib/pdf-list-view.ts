@@ -18,6 +18,8 @@ export interface ListView {
   dir: SortDir;
   /** Review pending: only documents with edits to write. */
   pending: boolean;
+  /** Review prefilled: only documents with prefilled values to review (task 7i). */
+  prefilled: boolean;
 }
 
 /** One document as the list shows it. Rows arrive Filename, Z to A. */
@@ -29,8 +31,11 @@ export interface ListRow {
   author: string | null;
   keywords: string[];
   pageCount: number | null;
-  state: "pending" | "untagged" | "committed";
+  state: "pending" | "prefilled" | "split" | "untagged" | "committed";
   stateLabel: string;
+  /** Its title or keywords are prefilled, not yet anyone's. */
+  prefilledTitle?: boolean;
+  prefilledKeywords?: boolean;
 }
 
 export const DEFAULT_VIEW: ListView = {
@@ -39,6 +44,7 @@ export const DEFAULT_VIEW: ListView = {
   sort: "filename",
   dir: "desc",
   pending: false,
+  prefilled: false,
 };
 
 const MAX_Q = 200;
@@ -71,6 +77,8 @@ export function parseListView(params: RawParams): ListView {
           ? "asc"
           : DEFAULT_VIEW.dir,
     pending: all(params.pending)[0] === "1",
+    // One review at a time; pending came first, so it wins.
+    prefilled: all(params.prefilled)[0] === "1" && all(params.pending)[0] !== "1",
   };
 }
 
@@ -85,6 +93,7 @@ export function listViewQuery(view: ListView): string {
     p.set("dir", view.dir);
   }
   if (view.pending) p.set("pending", "1");
+  else if (view.prefilled) p.set("prefilled", "1");
   const s = p.toString();
   return s ? `?${s}` : "";
 }
@@ -127,7 +136,13 @@ function matches(row: ListRow, view: ListView): boolean {
   return words.every((w) => text.includes(w));
 }
 
-const STATE_RANK: Record<ListRow["state"], number> = { pending: 0, untagged: 1, committed: 2 };
+const STATE_RANK: Record<ListRow["state"], number> = {
+  pending: 0,
+  prefilled: 1,
+  split: 2,
+  untagged: 3,
+  committed: 4,
+};
 
 const collator = new Intl.Collator("en", { sensitivity: "base", numeric: true });
 
@@ -159,7 +174,10 @@ export function applyListView<T extends ListRow>(rows: T[], view: ListView, keep
     .map((row, i) => ({ row, i }))
     .filter(
       ({ row }) =>
-        row.id === keepId || ((!view.pending || row.state === "pending") && matches(row, view)),
+        row.id === keepId ||
+        ((!view.pending || row.state === "pending") &&
+          (!view.prefilled || row.state === "prefilled") &&
+          matches(row, view)),
     );
   const flip = view.dir === "asc" ? 1 : -1;
   indexed.sort((a, b) => {

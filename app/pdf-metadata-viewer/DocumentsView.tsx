@@ -77,26 +77,30 @@ function nothingMatches(view: ListView): string {
     view.keywords.length === 0
       ? ""
       : `the ${view.keywords.length === 1 ? "keyword" : "keywords"} ${list(view.keywords)}`;
-  const noun = view.pending ? "pending documents" : "documents";
+  const noun = view.pending ? "pending documents" : view.prefilled ? "prefilled documents" : "documents";
   if (q && kw) return `No ${noun} match “${q}” with ${kw}`;
   if (q) return `No ${noun} match “${q}”`;
   if (kw) return `No ${noun} have ${kw}`;
-  return "No documents have pending edits";
+  return view.prefilled ? "Nothing is prefilled right now" : "No documents have pending edits";
 }
 
 interface KeywordProps {
   keyword: string;
   on: boolean;
+  /** Not yet anyone's: outlined, as on the document (Figma 02.17). */
+  prefilled?: boolean;
   onToggle: () => void;
 }
 
-function Keyword({ keyword, on, onToggle }: KeywordProps) {
+function Keyword({ keyword, on, prefilled, onToggle }: KeywordProps) {
   const warning = hasKeyword(WARNING_KEYWORDS, keyword);
   const tone = on
     ? ""
-    : warning
-      ? "border-warning bg-transparent text-warning hover:bg-background-active"
-      : "bg-background-active text-text-secondary hover:bg-background-overlay";
+    : prefilled
+      ? "border-dashed border-muted-foreground bg-transparent text-text-secondary hover:bg-background-active"
+      : warning
+        ? "border-warning bg-transparent text-warning hover:bg-background-active"
+        : "bg-background-active text-text-secondary hover:bg-background-overlay";
   return (
     <Badge
       asChild
@@ -119,6 +123,17 @@ function StatePill({ row }: { row: ListRow }) {
       </span>
     );
   }
+  if (row.state === "prefilled" || row.state === "split") {
+    return (
+      <span
+        className={`inline-flex items-center rounded-full px-3 py-1 text-xs whitespace-nowrap ${
+          row.state === "split" ? "bg-background-primary text-warning" : "bg-background-active text-text-secondary"
+        }`}
+      >
+        {row.stateLabel}
+      </span>
+    );
+  }
   // Plain text: a pill the colour of its row would only indent the words from
   // their column name.
   return <span className="text-xs font-medium text-text-primary">{row.stateLabel}</span>;
@@ -136,7 +151,12 @@ interface DocumentsViewProps {
 export default function DocumentsView({ rows, pending, excluded, initialView }: DocumentsViewProps) {
   const [view, setView] = useState(initialView);
   const shown = useMemo(() => applyListView(rows, view), [rows, view]);
-  const total = view.pending ? rows.filter((r) => r.state === "pending").length : rows.length;
+  const prefilledCount = rows.filter((r) => r.state === "prefilled").length;
+  const total = view.pending
+    ? rows.filter((r) => r.state === "pending").length
+    : view.prefilled
+      ? prefilledCount
+      : rows.length;
   const filtering = isFiltering(view);
   const query = listViewQuery(view);
   const href = (row: ListRow) => `${LIST_URL}/id/${row.id}${query}`;
@@ -181,6 +201,7 @@ export default function DocumentsView({ rows, pending, excluded, initialView }: 
         key={k}
         keyword={k}
         on={hasKeyword(view.keywords, k)}
+        prefilled={row.prefilledKeywords}
         onToggle={() => toggle(k)}
       />
     ));
@@ -202,7 +223,12 @@ export default function DocumentsView({ rows, pending, excluded, initialView }: 
       pending={pending}
       excluded={excluded}
       reviewing={view.pending}
-      toggleHref={`${LIST_URL}${listViewQuery({ ...view, pending: !view.pending })}`}
+      toggleHref={`${LIST_URL}${listViewQuery({ ...view, pending: !view.pending, prefilled: false })}`}
+      prefilled={{
+        count: prefilledCount,
+        reviewing: view.prefilled,
+        href: `${LIST_URL}${listViewQuery({ ...view, prefilled: !view.prefilled, pending: false })}`,
+      }}
     >
       <div>
         {/* ── Find ─────────────────────────────────────────────────────── */}
@@ -343,7 +369,11 @@ export default function DocumentsView({ rows, pending, excluded, initialView }: 
                       {row.filename ?? "(unnamed)"}
                     </a>
                   </td>
-                  <td className="px-4 py-3 leading-6 [overflow-wrap:anywhere] text-muted-foreground">
+                  <td
+                    className={`px-4 py-3 leading-6 [overflow-wrap:anywhere] ${
+                      row.prefilledTitle ? "text-text-secondary" : "text-muted-foreground"
+                    }`}
+                  >
                     {row.title ?? "—"}
                   </td>
                   <td className="px-4 py-3 leading-6 text-muted-foreground">
@@ -380,7 +410,9 @@ export default function DocumentsView({ rows, pending, excluded, initialView }: 
                 >
                   {row.filename ?? "(unnamed)"}
                 </a>
-                {row.title ? <span className="text-muted-foreground">{row.title}</span> : null}
+                {row.title ? (
+                  <span className={row.prefilledTitle ? "text-text-secondary" : "text-muted-foreground"}>{row.title}</span>
+                ) : null}
                 {row.keywords.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">{keywordTags(row)}</div>
                 ) : null}
