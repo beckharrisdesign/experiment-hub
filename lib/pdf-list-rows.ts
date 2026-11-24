@@ -37,6 +37,10 @@ export function toListRow(d: PdfDocument, prefill?: Prefill): ListRow {
   } else if (asksToSplit(d)) {
     state = "split";
     stateLabel = "Split first?";
+  } else if (keywords.length > 0) {
+    // Its file came with tags; nothing has been committed from here.
+    state = "tagged";
+    stateLabel = "Already tagged";
   }
   return { id: d.id, filename: d.filename, title, subject, author, keywords, pageCount, state, stateLabel };
 }

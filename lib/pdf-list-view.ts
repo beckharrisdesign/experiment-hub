@@ -31,7 +31,7 @@ export interface ListRow {
   author: string | null;
   keywords: string[];
   pageCount: number | null;
-  state: "pending" | "prefilled" | "split" | "untagged" | "committed";
+  state: "pending" | "prefilled" | "split" | "untagged" | "tagged" | "committed";
   stateLabel: string;
   /** Its title or keywords are prefilled, not yet anyone's. */
   prefilledTitle?: boolean;
@@ -141,7 +141,8 @@ const STATE_RANK: Record<ListRow["state"], number> = {
   prefilled: 1,
   split: 2,
   untagged: 3,
-  committed: 4,
+  tagged: 4,
+  committed: 5,
 };
 
 const collator = new Intl.Collator("en", { sensitivity: "base", numeric: true });
