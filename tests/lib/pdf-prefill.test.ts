@@ -130,6 +130,12 @@ describe("what it leaves alone", () => {
     expect(makePrefill({ filename: null, title: null, pages: [page(TILL)] }, odd)).toBeNull();
   });
 
+  it("leaves out a date still to come, and keeps the rest", () => {
+    const found = make(TILL, { filename: "04252999_FOODMART.pdf" })!;
+    expect(found.keywords).toContain("foodmart");
+    expect(found.keywords.some((k) => /^(year|month)-/.test(k))).toBe(false);
+  });
+
   it("never writes a subject", () => {
     expect(Object.keys(make(TILL)!)).toEqual(["title", "keywords", "why"]);
   });

@@ -75,8 +75,19 @@ export interface SuggestInput {
 /**
  * A date at the start of the filename: `YYYY-MM-DD…` (v1's naming) or the
  * scanner's `MMDDYYYY_…`. Returned as YYYY-MM-DD, or null.
+ *
+ * A date still to come is a misread, so it is no date. Today is UTC's, which is
+ * never behind Katy's.
  */
-export function filenameDate(filename: string | null): string | null {
+export function filenameDate(
+  filename: string | null,
+  today: string = new Date().toISOString().slice(0, 10),
+): string | null {
+  const date = writtenDate(filename);
+  return date !== null && date <= today ? date : null;
+}
+
+function writtenDate(filename: string | null): string | null {
   if (!filename) return null;
   const iso = filename.match(/(\d{4})-(\d{2})-(\d{2})/);
   if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
