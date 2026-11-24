@@ -96,7 +96,7 @@ New files reached the list only when the folder was chosen again, and their own 
 - [x] 7d.2 The sync: import the folder, then read files with nothing stored for Drive's current revision, never-read first, three at a time, stopping after 40 s (`lib/pdf-sync.ts`, `POST /api/pdf-drive/sync`)
 - [x] 7d.3 The list shows a never-edited file's own values from the saved read (`listedValues`); edited files unchanged
 - [x] 7d.4 Hourly schedule (`.github/workflows/pdf-folder-sync.yml`), let in by a key derived from the service-role key, on that route and by POST only (`verifySyncKey`, middleware)
-- [ ] 7d.5 Verify live: run the workflow by hand until the backlog drains and the list shows page counts; add a test PDF to the folder and see it arrive on the next run
+- [x] 7d.5 Verify live: run the workflow by hand until the backlog drains and the list shows page counts; add a test PDF to the folder and see it arrive on the next run — **verified 2026-11-24** (#640). First run: 40 files in PDF Tests, 17 read, 0 failed, 0 left; the list went to a page count on all 38 rows (it had shown one for a minority). A made-up `Sync-test-3-pages.pdf` added to the folder arrived on the next run (`added: 1, read: 1`) listed with its title, keywords, and 3 pages, never opened. The 45 rows with no folder recorded (imports before 026) stay unread; the list doesn't show them
 
 ## 8. Write path
 
