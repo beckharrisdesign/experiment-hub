@@ -24,6 +24,7 @@ const nextConfig = {
     '/changes/**': ['data/change-history.json'],
     // AI suggestions read the tag vocabulary by a runtime path (lib/pdf-taxonomy.ts).
     // pdf.js's standard fonts are read by a runtime path (lib/pdf-render.ts).
+    // (Its worker is imported by name there, so tracing finds that by itself.)
     // The pnpm store path, not node_modules/pdfjs-dist/…: that is a symlink,
     // and including through it makes the deploy packager materialise the
     // folder twice (the same EEXIST as sharp, above) — Vercel then fails at
@@ -31,6 +32,9 @@ const nextConfig = {
     '/api/pdf-documents/**': [
       'config/pdf-metadata-viewer/tag-vocabulary.md',
       'node_modules/.pnpm/pdfjs-dist@*/node_modules/pdfjs-dist/standard_fonts/**',
+      // And its WebAssembly decoders (JBIG2, JPEG 2000) and colour profiles.
+      'node_modules/.pnpm/pdfjs-dist@*/node_modules/pdfjs-dist/wasm/**',
+      'node_modules/.pnpm/pdfjs-dist@*/node_modules/pdfjs-dist/iccs/**',
     ],
     '/etsy-listing-kit/**': [
       'node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/node_modules/@img/sharp-libvips-linux-x64/**',

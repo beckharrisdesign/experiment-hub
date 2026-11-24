@@ -24,6 +24,13 @@ describe("renderPdfPage", () => {
     expect([...page.jpeg.slice(0, 3)]).toEqual([0xff, 0xd8, 0xff]);
   });
 
+  // Deployed, pdf.js couldn't find its worker by path (#636); it's handed over instead.
+  it("hands pdf.js its worker, rather than leaving pdf.js to find it by path", async () => {
+    await renderPdfPage(await samplePdf(1), 1, 200);
+    const worker = (globalThis as { pdfjsWorker?: { WorkerMessageHandler?: unknown } }).pdfjsWorker;
+    expect(worker?.WorkerMessageHandler).toBeDefined();
+  });
+
   it("refuses a page past the end, saying how many there are", async () => {
     const error = await renderPdfPage(await samplePdf(2), 3, 560).catch((e) => e);
     expect(error).toBeInstanceOf(PageOutOfRange);
