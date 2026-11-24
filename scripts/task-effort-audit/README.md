@@ -74,7 +74,7 @@ pnpm audit:effort list
 
 ## What a run records
 
-Each run lives in `artifacts/task-effort-audit/runs/<runId>/` (gitignored):
+Each run lives in `artifacts/task-effort-audit/runs/<runId>/` (gitignored; only `baselines/` is committed):
 
 | File | Contents |
 |---|---|
@@ -129,7 +129,9 @@ Optional design suggestions are labelled *"Suggestion — not an observed fact."
 - **Replacing:** if a baseline exists, `--supersede` is required
 - **History:** every approval is kept in history, including what it superseded
 
-`baselines/<taskId>--<scenario>.json` holds metrics, finding keys, and hashes. It holds no screenshots, so it could be committed later if you want baselines in git.
+`baselines/<taskId>--<scenario>.json` holds metrics, finding keys, hashes, and tool versions. No screenshots, page content, or entered values.
+
+> **Baselines are committed to git** so they survive sessions and machines. After `approve`, commit the changed baseline file. The baseline's own run evidence (screenshots, trace) stays local, so the record carries everything a comparison needs.
 
 ### Compatibility
 
@@ -250,7 +252,7 @@ Two JSON files: a **property** and a **task** (see `audits/` for the working exa
 
 ### Privacy and retention
 
-- **Gitignored:** screenshots, traces, ledgers, and auth state all live under `artifacts/task-effort-audit/`
+- **Gitignored:** screenshots, traces, ledgers, the run index, and auth state all live under `artifacts/task-effort-audit/`. Only `baselines/` is tracked.
 - **Not sanitized:** browser evidence can contain whatever the page showed
 - **No automatic deletion in v1.** Review and delete old `runs/<runId>/` directories by hand. Keep any run that a current or historical baseline points to, if you want its evidence.
 - **Suggested habit:** prune runs older than ~30 days that aren't baselines
@@ -275,7 +277,7 @@ Two JSON files: a **property** and a **task** (see `audits/` for the working exa
 5. **Validate and dry-run:**
    - `validate --task …`
    - `run --task … --headed` to watch it once
-6. **Approve a baseline:** once a run completes and verifies, `approve --run <id>`. Later runs compare automatically.
+6. **Approve a baseline:** once a run completes and verifies, `approve --run <id>`, then commit `artifacts/task-effort-audit/baselines/<task>--<scenario>.json`. Later runs compare automatically.
 
 ## Tests
 

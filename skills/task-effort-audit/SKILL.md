@@ -25,7 +25,7 @@ description: >-
 
 - **No LLM at runtime.** The CLI executes reviewed JSON paths deterministically. You (Claude) help *author and maintain* paths; you never sit inside a run.
 - **Never repair a broken path during a run.** No selector healing, alternative routes, or retries. A stopped run is evidence. Report it and propose a path edit for Katy to review *separately*.
-- **Never approve a baseline on your own.** `approve` is Katy's call. Draft the command and say why the run qualifies (completed + verified + reviewed).
+- **Never approve a baseline on your own.** `approve` is Katy's call. Draft the command and say why the run qualifies (completed + verified + reviewed). Once she approves, commit the updated file in `artifacts/task-effort-audit/baselines/` (that folder is tracked; runs are not).
 - **Writes:** only with `allowedMutations`, a `writesApproved` local/test property, and `--allow-writes`. Never against production. Never demo write scenarios on a live property; use the fixture (`--fixture v1`).
 - **Credentials:** never in config. Auth is a `storageState` file referenced by an env var name.
 - **Language discipline when reporting:**
