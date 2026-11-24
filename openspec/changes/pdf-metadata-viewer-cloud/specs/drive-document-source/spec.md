@@ -132,6 +132,42 @@ storage.
 - **WHEN** a kept page is requested without a valid session
 - **THEN** it is refused
 
+### Requirement: Page text is kept privately
+
+The system SHALL keep the text of each drawn page: what the PDF itself says, or,
+for a page with no text of its own, what is read from its image on the hub's own
+server. The text MUST be reachable only by the server, MUST NOT be sent to any
+other service in order to be read, and is kept and deleted with the page's image.
+
+Chosen by Katy on 2026-11-24, knowing that it puts the words of household
+documents, medical ones included, in the hub's own database.
+
+#### Scenario: A page that carries text
+
+- **WHEN** the scheduled sync reaches a drawn page whose PDF has text on it
+- **THEN** that text is kept, as the PDF's own
+
+#### Scenario: A scanned page
+
+- **WHEN** the scheduled sync reaches a drawn page with no text of its own
+- **THEN** its image is read on the hub's own server
+- **AND** the words are kept with how confident the reading was
+
+#### Scenario: A page that can't be read
+
+- **WHEN** a page has nothing on it that can be read
+- **THEN** that is kept as such, and it is not read again every hour
+
+#### Scenario: Metadata is committed
+
+- **WHEN** a commit writes a document's metadata to its file
+- **THEN** its kept text serves the new version without being read again
+
+#### Scenario: The document changes or leaves
+
+- **WHEN** a document's images are deleted
+- **THEN** its text is deleted with them
+
 ### Requirement: Documents are referenced, not copied
 
 The system SHALL record a reference to each document — the Drive file id plus

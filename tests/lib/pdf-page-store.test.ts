@@ -6,6 +6,7 @@ type Row = {
   set_id: string;
   page_count: number | null;
   drawn_at: string | null;
+  text_at?: string | null;
   created_at: string;
 };
 
@@ -16,6 +17,7 @@ const db = vi.hoisted(() => ({
   failUploads: false,
   down: false,
   nextSet: 1,
+  textCleared: [] as unknown[],
 }));
 
 const { openPdf, shrinkJpeg } = vi.hoisted(() => ({ openPdf: vi.fn(), shrinkJpeg: vi.fn() }));
@@ -81,7 +83,15 @@ vi.mock("@/lib/pdf-documents", () => {
     }),
     remove: async (paths: string[]) => (paths.forEach((p) => db.objects.delete(p)), { error: null }),
   };
-  return { getPdfAdminClient: () => ({ from: table, storage: { from: () => bucket } }) };
+  const text = {
+    delete: () => ({ eq: async (_k: string, v: unknown) => (db.textCleared.push(v), { error: null }) }),
+  };
+  return {
+    getPdfAdminClient: () => ({
+      from: (name: string) => (name === "pdf_page_text" ? text : table()),
+      storage: { from: () => bucket },
+    }),
+  };
 });
 
 import {
@@ -127,6 +137,7 @@ beforeEach(() => {
   db.failUploads = false;
   db.down = false;
   db.nextSet = 1;
+  db.textCleared = [];
   vi.spyOn(console, "warn").mockImplementation(() => {});
   draw.mockReset().mockImplementation(async () => ({ jpeg: JPEG, pageCount: 2, width: 1, height: 1 }));
   close.mockReset().mockResolvedValue(undefined);
@@ -207,7 +218,10 @@ describe("a commit", () => {
   it("takes the drawn pages along to the new revision, copying nothing", async () => {
     await sync({ wanted: [want("d")] });
     const before = [...db.objects.keys()];
+    db.rows[0].text_at = "2026-11-24T13:00:00Z";
     await carryPages("d", "r1", "r2");
+    // Its text is of the same pages, so it isn't read again either.
+    expect(db.rows[1].text_at).toBe("2026-11-24T13:00:00Z");
     expect((await getKeptPage("d", "r2", 2))?.jpeg).not.toBeNull();
     expect([...db.objects.keys()]).toEqual(before);
   });
@@ -221,6 +235,7 @@ describe("a commit", () => {
     expect(draw).not.toHaveBeenCalled();
     expect(pagesIn()).toBe(2);
     expect(db.rows.map((r) => r.drive_revision)).toEqual(["r2"]);
+    expect(db.textCleared).toEqual([]);
   });
 
   it("does nothing without both revisions, or when nothing was kept", async () => {
@@ -292,6 +307,8 @@ describe("clearing out", () => {
     expect(db.rows.map((r) => r.document_id)).toEqual(["b"]);
     // Pages and small copies both: two of each are left, of b's.
     expect(db.objects.size).toBe(4);
+    // And the text of its pages.
+    expect(db.textCleared).toEqual(["set-1"]);
   });
 
   it("replaces the images of a file that changed in Drive", async () => {

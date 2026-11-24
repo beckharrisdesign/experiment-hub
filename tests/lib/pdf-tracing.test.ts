@@ -52,6 +52,11 @@ describe("what's packaged for drawing pages", () => {
     }
   });
 
+  it("gives the sync the language tesseract reads", () => {
+    expect(covering("/api/pdf-drive/sync")).toContain("assets/ocr/**");
+    expect(existsSync(path.join(process.cwd(), "assets/ocr/eng.traineddata.gz"))).toBe(true);
+  });
+
   it("names folders that exist", () => {
     for (const folder of FOLDERS) {
       expect(existsSync(path.join(process.cwd(), "node_modules/pdfjs-dist", folder))).toBe(true);

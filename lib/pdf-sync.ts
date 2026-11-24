@@ -16,7 +16,10 @@
  *      kept yet, and clear out the ones whose file or version is gone (task 7f,
  *      lib/pdf-page-store.ts). It uses what time step 2 leaves.
  *
- * Steps 2 and 3 stop at a time budget, so a big backlog drains over several
+ *   4. Keep the text of drawn pages (task 7h, lib/pdf-page-text.ts), in what time
+ *      is left after that.
+ *
+ * Steps 2 to 4 stop at a time budget, so a big backlog drains over several
  * runs instead of timing out in one. Never-read files go first.
  */
 import { listPdfDocuments, getPdfAdminClient, type PdfDocument } from "@/lib/pdf-documents";
@@ -30,6 +33,7 @@ import {
 } from "@/lib/pdf-drive";
 import { readFile, storedFileValues } from "@/lib/pdf-file-read";
 import { syncPages, type PageSyncResult, type WantedDocument } from "@/lib/pdf-page-store";
+import { syncText, type TextSyncResult } from "@/lib/pdf-page-text";
 import { listedValues } from "@/lib/pdf-shown-values";
 
 export interface SyncResult {
@@ -47,6 +51,8 @@ export interface SyncResult {
   remaining: number;
   /** Drawing ahead; absent when it couldn't run, which never fails the sync. */
   pages?: PageSyncResult;
+  /** Keeping text; absent when it couldn't run, which never fails the sync. */
+  text?: TextSyncResult;
 }
 
 export interface SyncOptions {
@@ -123,17 +129,23 @@ export async function syncFolder({
       });
     }
   }
+  const work = {
+    wanted,
+    download: (id: string) => downloadDriveFile(accessToken, id),
+    headRevision: (id: string) => getDriveHeadRevisionId(accessToken, id),
+    outOfTime: () => now() - started >= budgetMs,
+  };
   let pages: PageSyncResult | undefined;
   try {
-    pages = await syncPages({
-      wanted,
-      download: (id) => downloadDriveFile(accessToken, id),
-      headRevision: (id) => getDriveHeadRevisionId(accessToken, id),
-      outOfTime: () => now() - started >= budgetMs,
-      startedAt,
-    });
+    pages = await syncPages({ ...work, startedAt });
   } catch (error) {
     console.error("pdf sync: could not draw pages ahead:", error);
+  }
+  let text: TextSyncResult | undefined;
+  try {
+    text = await syncText(work);
+  } catch (error) {
+    console.error("pdf sync: could not keep pages' text:", error);
   }
 
   return {
@@ -143,5 +155,6 @@ export async function syncFolder({
     failed,
     remaining: queue.length - read - failed,
     ...(pages ? { pages } : {}),
+    ...(text ? { text } : {}),
   };
 }

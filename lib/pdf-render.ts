@@ -64,6 +64,8 @@ export interface RenderedPage {
 export interface OpenPdf {
   pageCount: number;
   draw(pageNumber: number, width: number): Promise<RenderedPage>;
+  /** What the page itself says; empty for a scan with no text. */
+  text(pageNumber: number): Promise<string>;
   close(): Promise<void>;
 }
 
@@ -112,6 +114,17 @@ export async function openPdf(bytes: ArrayBuffer | Uint8Array): Promise<OpenPdf>
         };
       } finally {
         // A long scan's decoded images would otherwise pile up page by page.
+        page.cleanup();
+      }
+    },
+    async text(pageNumber) {
+      const page = await doc.getPage(pageNumber);
+      try {
+        const { items } = await page.getTextContent();
+        return items
+          .map((item) => ("str" in item ? item.str + (item.hasEOL ? "\n" : " ") : ""))
+          .join("");
+      } finally {
         page.cleanup();
       }
     },

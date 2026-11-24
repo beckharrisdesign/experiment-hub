@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
   readFile: vi.fn(),
   syncPages: vi.fn(),
+  syncText: vi.fn(),
 }));
 
 vi.mock("@/lib/pdf-documents", () => ({
@@ -22,6 +23,7 @@ vi.mock("@/lib/pdf-drive", () => ({
   getDriveHeadRevisionId: vi.fn(),
 }));
 vi.mock("@/lib/pdf-page-store", () => ({ syncPages: mocks.syncPages }));
+vi.mock("@/lib/pdf-page-text", () => ({ syncText: mocks.syncText }));
 vi.mock("@/lib/pdf-file-read", async () => {
   const actual = await vi.importActual<typeof import("@/lib/pdf-file-read")>("@/lib/pdf-file-read");
   return { ...actual, readFile: mocks.readFile };
@@ -31,6 +33,7 @@ import { needsRead, syncFolder } from "@/lib/pdf-sync";
 import type { PdfDocument } from "@/lib/pdf-documents";
 
 const PAGES = { pagesDrawn: 5, pagesWaiting: 0, setsRemoved: 0 };
+const TEXT = { textPages: 3, scansRead: 1, textWaiting: 0 };
 const VALUES = { title: "T", subject: null, author: null, keywords: [], pageCount: 2 };
 
 function file(id: string, head = `rev-${id}`) {
@@ -59,6 +62,7 @@ beforeEach(() => {
   mocks.rpc.mockResolvedValue({ data: { inserted: 1, total: 3 }, error: null });
   mocks.readFile.mockResolvedValue({ ok: true, embedded: VALUES });
   mocks.syncPages.mockResolvedValue(PAGES);
+  mocks.syncText.mockResolvedValue(TEXT);
 });
 
 describe("needsRead", () => {
@@ -113,7 +117,7 @@ describe("syncFolder", () => {
       accessToken: "token",
       head: "rev-a",
     });
-    expect(result).toEqual({ inFolder: 3, added: 1, read: 2, failed: 0, remaining: 0, pages: PAGES });
+    expect(result).toEqual({ inFolder: 3, added: 1, read: 2, failed: 0, remaining: 0, pages: PAGES, text: TEXT });
   });
 
   it("reads never-read files before changed ones", async () => {
@@ -180,7 +184,10 @@ describe("syncFolder", () => {
     mocks.listPdfDocuments.mockResolvedValue([doc("a")]);
     mocks.syncPages.mockRejectedValue(new Error("no such table"));
     const result = await syncFolder();
-    expect(result).toEqual({ inFolder: 1, added: 1, read: 1, failed: 0, remaining: 0 });
+    expect(result).toEqual({ inFolder: 1, added: 1, read: 1, failed: 0, remaining: 0, text: TEXT });
+    mocks.syncPages.mockResolvedValue(PAGES);
+    mocks.syncText.mockRejectedValue(new Error("no such table"));
+    expect(await syncFolder()).toEqual({ inFolder: 1, added: 1, read: 1, failed: 0, remaining: 0, pages: PAGES });
   });
 
   it("fails loudly when the references can't be stored", async () => {

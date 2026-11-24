@@ -103,7 +103,7 @@ describe("outcomes and capabilities", () => {
       "drive-document-source",
       "hosted-instance-access",
     ]);
-    expect(page.capabilities.map((c) => c.requirements.length)).toEqual([8, 8, 5]);
+    expect(page.capabilities.map((c) => c.requirements.length)).toEqual([8, 9, 5]);
   });
 
   it("says a workstream task list cannot be split, instead of splitting it", async () => {
