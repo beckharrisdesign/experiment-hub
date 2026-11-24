@@ -56,6 +56,7 @@ pnpm audit:effort list
 | `dashboard` | Rebuilds `index.html`, the runs page: every task's latest run against its baseline, plus all runs, linking to each report. Also rebuilt after every run. |
 | `report --run <runId>` | Regenerates `report.md` and `report.html` from `run.json` + `actions.json` (e.g. for older runs) |
 | `compare --run <runId>` | Re-compares a run against the *current* baseline; writes `comparison-vs-<baselineRunId>.{json,md}` into the run dir |
+| `auth-capture --property <file> --profile <name> [--start <path>]` | Opens a real browser; **you** sign in; saves the session to `artifacts/task-effort-audit/auth/` (gitignored, never printed). Refuses any path git would commit. Prefers installed Chrome, since Google may block sign-in in automated browsers (`--browser chromium` to skip). |
 | `list [--limit 20] [--task id]` | Recent runs from the append-only index |
 | `baselines --task <id> [--scenario name]` | Current baseline + full approval history |
 
@@ -227,6 +228,8 @@ Two JSON files: a **property** and a **task** (see `audits/` for the working exa
 - **Path steps:** `click fill select check uncheck press switchPage read waitFor scroll screenshot assertVisible assertText assertValue expectError`
 - **Verify-only steps:** `goto reload httpJson`. They'd bypass the UI if used in the path.
 - **Targets:** exactly one of `role`(+`name`) · `label` · `text` · `testId` · `placeholder` · `css`, optionally scoped with `within`. Prefer semantic locators (role/label).
+  - `nth: 0` picks one of several matches, in page order. Use it only when the page offers no unique name, since it depends on order.
+  - Target text and verify `path` can use `{{data.x}}` and `{{saved.x}}`. For example, `read` a keyword, then click `{{saved.keyword}}` and verify at `/list?kw={{saved.keyword}}`. Validation checks that each `saved` value is read earlier.
 - **Templates:**
   - `{{data.key}}` — logged
   - `{{saved.key}}` (from a `read` step) — redacted in the ledger
@@ -307,6 +310,36 @@ A task is only as realistic as the person and the evidence behind it. Examples: 
 6. **Run it once with `--headed`, then approve the baseline.**
 
 > **What this can't tell you:** whether that person would choose this path, or find the content convincing. Pair it with real people (first-click or five-second tests) before drawing conclusions about discoverability.
+
+## PDF Organizer (signed-in, production)
+
+`audits/properties/pdf-organizer.json` plus five read-only `pdfo-*` tasks. Every task is pointed at `Sync-test-3-pages.pdf` in the **PDF Tests** folder, which holds made-up documents only (confirmed by Katy).
+
+| Task | Path | Evidence |
+|---|---|---|
+| `pdfo-find-by-name` | Search "Sync-test" → open | Fresh load shows the file's heading and "Page 1 of 3" |
+| `pdfo-find-by-name-phone` | Same at 390×844 | Same |
+| `pdfo-find-by-keyword` | Read the file's first keyword → filter by it → open | Fresh load of `?kw=<keyword>` shows the filter chip and the file |
+| `pdfo-check-pages` | Search → open → page 1 drawn → **Open full size** (new tab) → back | Fresh load draws page 1 and shows "Page 1 of 3" |
+| `pdfo-step-through-results` | Search "pdf" → open → **Next** → **All documents** | Fresh load keeps the search |
+
+**These tasks run on your machine.** Google sign-in can't be automated, and the session lasts 8 hours.
+
+```bash
+pnpm audit:effort auth-capture --property scripts/task-effort-audit/audits/properties/pdf-organizer.json --profile katy-google --start /pdf-metadata-viewer
+```
+
+```bash
+export TEA_AUTH_PDF_ORGANIZER="$PWD/artifacts/task-effort-audit/auth/pdf-organizer--katy-google.json"
+```
+
+```bash
+for t in pdfo-find-by-name pdfo-find-by-name-phone pdfo-find-by-keyword pdfo-check-pages pdfo-step-through-results; do pnpm -s audit:effort run --task scripts/task-effort-audit/audits/tasks/$t.json; done
+```
+
+- **When the session expires,** runs stop as **authentication** failures (exit 3). Capture again.
+- **Google Analytics and Ads hits** are listed in `suppressRequests`, so audits don't count as visits.
+- **Write tasks are parked:** tag and commit, Suggest metadata, discard, the space-in-keyword error, split, and Compare. They need a test setup first (a separate folder and database), because production writes are never allowed.
 
 ## Adding a real property and task
 

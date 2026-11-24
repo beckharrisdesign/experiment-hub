@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "pdf-organizer",
+  "name": "PDF Organizer (production)",
+  "baseUrl": "https://labs.beckharrisdesign.com",
+  "environment": "production",
+  "writesApproved": false,
+  "notes": "Hosted single-user PDF Organizer at /pdf-metadata-viewer, signed in with Google, documents in Drive. Read-only tasks only, pointed at the made-up files in the PDF Tests folder. Write tasks need a test setup first (separate folder and database).",
+  "suppressRequests": [
+    "https://www.google-analytics.com/",
+    "https://region1.google-analytics.com/",
+    "https://analytics.google.com/",
+    "https://stats.g.doubleclick.net/",
+    "https://googleads.g.doubleclick.net/",
+    "https://www.google.com/ccm/",
+    "https://www.googleadservices.com/"
+  ],
+  "readOnlyRequestAllowlist": [],
+  "authProfiles": {
+    "katy-google": {
+      "type": "storageState",
+      "pathEnv": "TEA_AUTH_PDF_ORGANIZER",
+      "signedInCheck": { "role": "searchbox", "name": "Search documents" },
+      "loginUrlPattern": "/pdf-metadata-viewer/sign-in",
+      "note": "Capture with: pnpm audit:effort auth-capture --property scripts/task-effort-audit/audits/properties/pdf-organizer.json --profile katy-google --start /pdf-metadata-viewer. The session lasts 8 hours."
+    }
+  }
+}

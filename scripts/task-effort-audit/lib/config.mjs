@@ -50,6 +50,9 @@ const Target = z.lazy(() =>
       placeholder: z.string().optional(),
       css: z.string().optional(),
       within: Target.optional(),
+      // Pick one of several matches, as reviewed (0 = first). Use sparingly: it
+      // depends on order, so prefer a unique name when the page offers one.
+      nth: z.number().int().min(0).optional(),
     })
     .strict()
     .refine(
@@ -191,6 +194,12 @@ function zodProblems(prefix, error) {
 // Semantic checks the schema can't express
 // ---------------------------------------------------------------------------
 
+/** Template refs in a target's text fields, including any `within` scope. */
+function targetRefs(t) {
+  if (!t) return [];
+  return [...templateRefs(t.name), ...templateRefs(t.label), ...templateRefs(t.text), ...templateRefs(t.placeholder), ...targetRefs(t.within)];
+}
+
 function templateRefs(str) {
   return [...String(str ?? '').matchAll(TEMPLATE)].map((m) => ({ ns: m[1], key: m[2] }));
 }
@@ -262,12 +271,13 @@ export function semanticProblems(task, property) {
         sawRecovery = true;
         if (!sawExpectError) p.push(`${where(s)}: recovery steps must follow the expectError step that confirms the intended error`);
       }
-      for (const ref of [...templateRefs(s.value), ...templateRefs(s.path)]) {
+      for (const ref of [...templateRefs(s.value), ...templateRefs(s.path), ...targetRefs(s.target)]) {
         if (ref.ns === 'data' && !(ref.key in task.testData)) p.push(`${where(s)}: {{data.${ref.key}}} is not in testData`);
         if (ref.ns === 'saved' && !saved.has(ref.key)) p.push(`${where(s)}: {{saved.${ref.key}}} is not saved by an earlier read step`);
       }
       if (s.saveAs) saved.add(s.saveAs);
     }
+    const savedByPath = new Set(saved);
 
     if (sc.kind === 'recovery' && (!sawExpectError || !sawRecovery)) {
       p.push(`scenario "${name}": a recovery scenario needs an expectError step (the controlled error) followed by phase "recovery" steps`);
@@ -282,6 +292,10 @@ export function semanticProblems(task, property) {
           p.push(`scenario "${name}" verify step "${s.id}": "${s.do}" is not allowed in verify — use goto/reload + assertions or httpJson`);
         }
         if (s.do === 'httpJson' && (!s.path || !s.expect)) p.push(`scenario "${name}" verify step "${s.id}": httpJson needs path and expect`);
+        for (const ref of [...templateRefs(s.value), ...templateRefs(s.path), ...targetRefs(s.target)]) {
+          if (ref.ns === 'data' && !(ref.key in task.testData)) p.push(`scenario "${name}" verify step "${s.id}": {{data.${ref.key}}} is not in testData`);
+          if (ref.ns === 'saved' && !savedByPath.has(ref.key)) p.push(`scenario "${name}" verify step "${s.id}": {{saved.${ref.key}}} is not saved by a read step in the path`);
+        }
       }
       if (!isIndependentVerify(verify)) {
         p.push(

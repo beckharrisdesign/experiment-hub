@@ -322,3 +322,42 @@ describe("runtime dependencies", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// nth and templates in targets
+// ---------------------------------------------------------------------------
+
+describe("targets with nth and templates", () => {
+  const withSteps = (steps: any[], verify?: any[]) =>
+    rawTask({ allowedMutations: [], scenarios: { normal: { kind: "normal", steps, ...(verify ? { verify } : {}) } } });
+  const read = { id: "read-first", do: "read", target: { role: "button", nth: 0, within: { role: "row", name: "Doc", exact: false } }, saveAs: "keyword" };
+
+  it("accepts nth and a saved value used in a later target and a verify path", () => {
+    const task = withSteps(
+      [read, { id: "pick", do: "click", target: { role: "button", name: "{{saved.keyword}}" } }],
+      [
+        { id: "load", do: "goto", path: "/list?kw={{saved.keyword}}" },
+        { id: "chip", do: "assertVisible", target: { role: "button", name: "Remove {{saved.keyword}}" } },
+      ],
+    );
+    expect(problemsOf(task)).toEqual([]);
+  });
+
+  it("rejects a target that uses a value not read yet", () => {
+    const task = withSteps([{ id: "pick", do: "click", target: { role: "button", name: "{{saved.keyword}}" } }, read]);
+    expect(problemsOf(task).join("\n")).toMatch(/\{\{saved\.keyword\}\} is not saved by an earlier read step/);
+  });
+
+  it("rejects a verify step that uses a value the path never reads", () => {
+    const task = withSteps(
+      [{ id: "open", do: "click", target: { role: "link", name: "Thing" } }],
+      [{ id: "load", do: "goto", path: "/list?kw={{saved.nope}}" }, { id: "x", do: "assertVisible", target: { text: "x" } }],
+    );
+    expect(problemsOf(task).join("\n")).toMatch(/\{\{saved\.nope\}\} is not saved by a read step in the path/);
+  });
+
+  it("rejects a negative nth", () => {
+    const task = withSteps([{ id: "open", do: "click", target: { role: "link", name: "Thing", nth: -1 } }]);
+    expect(problemsOf(task).length).toBeGreaterThan(0);
+  });
+});

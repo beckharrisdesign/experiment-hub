@@ -25,7 +25,8 @@ export function describeTarget(t) {
           : t.placeholder
             ? `placeholder "${t.placeholder}"`
             : `css ${t.css}`;
-  return t.within ? `${base} in ${describeTarget(t.within)}` : base;
+  const pick = t.nth !== undefined ? ` (match #${t.nth + 1})` : '';
+  return t.within ? `${base}${pick} in ${describeTarget(t.within)}` : `${base}${pick}`;
 }
 
 export function stepKind(step) {

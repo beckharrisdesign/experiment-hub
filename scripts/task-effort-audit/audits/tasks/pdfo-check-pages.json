@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "propertyRef": "../properties/pdf-organizer.json",
+  "userRole": "Household admin (Katy), signed in",
+  "startingState": {
+    "path": "/pdf-metadata-viewer",
+    "description": "Document list for the PDF Tests folder, no search or filter"
+  },
+  "testData": {
+    "file": "Sync-test-3-pages.pdf",
+    "fileSearch": "Sync-test"
+  },
+  "fixtureRef": "PDF Tests folder in Drive: made-up documents only (confirmed by Katy, 2026-11-24)",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "locale": "en-US",
+  "authRef": "katy-google",
+  "limits": {
+    "maxDurationMs": 90000,
+    "maxActions": 10,
+    "stepTimeoutMs": 20000
+  },
+  "allowedMutations": [],
+  "comparisonContext": "2026-11-pdf-v1",
+  "id": "pdfo-check-pages",
+  "name": "Check what a document actually is",
+  "familiarity": "Has the file in front of them but isn't sure what it contains",
+  "goal": "Look at the document's pages, then at the full file",
+  "verify": [
+    {
+      "id": "reload-detail",
+      "do": "reload"
+    },
+    {
+      "id": "page-one-drawn",
+      "do": "assertVisible",
+      "target": {
+        "role": "img",
+        "name": "Page 1 of {{data.file}}"
+      },
+      "principles": [
+        "visibility-of-system-status"
+      ]
+    },
+    {
+      "id": "three-pages",
+      "do": "assertVisible",
+      "target": {
+        "text": "Page 1 of 3"
+      }
+    }
+  ],
+  "scenarios": {
+    "normal": {
+      "kind": "normal",
+      "description": "List \u2192 search \u2192 open \u2192 pages drawn \u2192 full size in a new tab \u2192 back",
+      "steps": [
+        {
+          "id": "search-by-name",
+          "do": "fill",
+          "target": {
+            "role": "searchbox",
+            "name": "Search documents"
+          },
+          "value": "{{data.fileSearch}}"
+        },
+        {
+          "id": "open-document",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "{{data.file}}"
+          }
+        },
+        {
+          "id": "page-one-shown",
+          "do": "assertVisible",
+          "target": {
+            "role": "img",
+            "name": "Page 1 of {{data.file}}"
+          },
+          "screenshot": true,
+          "principles": [
+            "visibility-of-system-status"
+          ]
+        },
+        {
+          "id": "open-full-size",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "Open full size"
+          },
+          "opensPage": "full-size",
+          "annotations": {
+            "contextSwitch": {
+              "from": "Document page (preview and details)",
+              "to": "The browser's PDF viewer",
+              "boundary": "new-browser-tab"
+            }
+          }
+        },
+        {
+          "id": "back-to-document",
+          "do": "switchPage",
+          "to": "main",
+          "annotations": {
+            "contextSwitch": {
+              "from": "The browser's PDF viewer",
+              "to": "Document page (preview and details)",
+              "boundary": "new-browser-tab"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

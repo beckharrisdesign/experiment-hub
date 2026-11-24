@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "propertyRef": "../properties/pdf-organizer.json",
+  "userRole": "Household admin (Katy), signed in",
+  "startingState": {
+    "path": "/pdf-metadata-viewer",
+    "description": "Document list for the PDF Tests folder, no search or filter"
+  },
+  "testData": {
+    "file": "Sync-test-3-pages.pdf",
+    "fileSearch": "Sync-test"
+  },
+  "fixtureRef": "PDF Tests folder in Drive: made-up documents only (confirmed by Katy, 2026-11-24)",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "locale": "en-US",
+  "authRef": "katy-google",
+  "limits": {
+    "maxDurationMs": 90000,
+    "maxActions": 10,
+    "stepTimeoutMs": 20000
+  },
+  "allowedMutations": [],
+  "comparisonContext": "2026-11-pdf-v1",
+  "id": "pdfo-find-by-name",
+  "name": "Find a document by name",
+  "familiarity": "Knows roughly what the file is called",
+  "goal": "Find a specific document and open it",
+  "verify": [
+    {
+      "id": "reload-detail",
+      "do": "reload",
+      "note": "Fresh load of the document page the path ended on"
+    },
+    {
+      "id": "heading-is-file",
+      "do": "assertVisible",
+      "target": {
+        "role": "heading",
+        "name": "{{data.file}}"
+      }
+    },
+    {
+      "id": "three-pages",
+      "do": "assertVisible",
+      "target": {
+        "text": "Page 1 of 3"
+      },
+      "note": "Shown once the file's pages are counted"
+    }
+  ],
+  "scenarios": {
+    "normal": {
+      "kind": "normal",
+      "description": "List \u2192 search \u2192 open",
+      "steps": [
+        {
+          "id": "search-by-name",
+          "do": "fill",
+          "target": {
+            "role": "searchbox",
+            "name": "Search documents"
+          },
+          "value": "{{data.fileSearch}}"
+        },
+        {
+          "id": "open-document",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "{{data.file}}"
+          }
+        },
+        {
+          "id": "detail-shown",
+          "do": "assertVisible",
+          "target": {
+            "role": "heading",
+            "name": "{{data.file}}"
+          },
+          "screenshot": true
+        }
+      ]
+    }
+  }
+}

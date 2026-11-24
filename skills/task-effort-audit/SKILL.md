@@ -70,6 +70,11 @@ pnpm audit:effort run --task scripts/task-effort-audit/audits/tasks/<task>.json 
 - Report them as "evidence tagged for X", never as a pass/fail on the principle.
 - If MVDS principles changed, run `pnpm audit:effort:sync-principles` and commit the snapshot.
 
+### Signed-in properties (e.g. the PDF Organizer)
+- **Katy signs in herself:** `pnpm audit:effort auth-capture …`. Never automate a sign-in, and never handle a session value.
+- **Where they run:** signed-in runs happen on her machine. A cloud session can only run them against a mock or fixture.
+- **On an auth stop** (exit 3), the session expired. Ask her to capture again.
+
 ### See all results
 - Point Katy at `artifacts/task-effort-audit/index.html`. It's rebuilt after every run, or run `pnpm audit:effort dashboard`.
 

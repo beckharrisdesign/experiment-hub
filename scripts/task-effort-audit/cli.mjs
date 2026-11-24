@@ -8,6 +8,8 @@
  *   compare   --run <runId>
  *   report    --run <runId>          (regenerate report.md + report.html)
  *   dashboard                        (regenerate index.html: every task's latest run vs baseline)
+ *   auth-capture --property <file> --profile <name> [--start <path>] [--out <file>] [--browser chromium]
+ *             (sign in yourself in a real browser; saves the session to a gitignored file)
  *   list      [--limit 20] [--task <taskId>]
  *   baselines --task <taskId> [--scenario normal]
  *
@@ -25,6 +27,8 @@ import { compareToBaseline } from './lib/compare.mjs';
 import { renderComparison, renderReport } from './lib/report.mjs';
 import { writeHtmlReport } from './lib/report-html.mjs';
 import { writeDashboard } from './lib/dashboard.mjs';
+import { captureSession } from './lib/auth-capture.mjs';
+import { PropertySchema } from './lib/config.mjs';
 import { ApprovalError, approveBaseline, listRuns, loadBaselines, loadRun, readJson, resolveDataDir, runDirOf, writeJson } from './lib/store.mjs';
 import { AuthError, ConfigError, SafetyError } from './lib/util.mjs';
 
@@ -92,7 +96,7 @@ async function cmdRun(flags, dataDir) {
 
 async function cmdValidate(flags) {
   const scenario = flags.scenario ?? 'normal';
-  const { task, property } = await preflight({ taskPath: path.resolve(need(flags, 'task')), scenario, allowWrites: true });
+  const { task, property } = await preflight({ taskPath: path.resolve(need(flags, 'task')), scenario, allowWrites: true, checkAuth: false });
   const sc = task.scenarios[scenario];
   console.log(`${task.name} — ${property.name} (${property.environment})`);
   console.log(`definition hash ${definitionHash(task, scenario).slice(0, 16)} · comparison context ${task.comparisonContext}`);
@@ -101,6 +105,10 @@ async function cmdValidate(flags) {
     const counts = COUNTED_ACTIONS.includes(s.do) ? (s.conditional ? 'counts if shown' : 'counts 1') : 'not counted';
     const tags = [s.phase && s.phase !== 'path' ? s.phase : null, s.annotations?.repeatedEntry ? 'repeated-entry' : null, s.annotations?.contextSwitch ? 'context-switch' : null, s.mutates ? `mutates ${s.mutates}` : null].filter(Boolean);
     console.log(`  ${s.id.padEnd(28)} ${s.do.padEnd(12)} ${counts.padEnd(16)} ${describeTarget(s.target) || s.to || ''}${tags.length ? `  [${tags.join(', ')}]` : ''}`);
+  }
+  const profile = property.authProfiles[task.authRef];
+  if (profile.type === 'storageState') {
+    console.log(`login: profile "${task.authRef}" reads a saved session from env var ${profile.pathEnv} at run time (not checked here)`);
   }
   console.log('valid ✓ (write authorization is checked again at run time)');
   return EXIT.OK;
@@ -159,6 +167,23 @@ async function cmdDashboard(flags, dataDir) {
   return EXIT.OK;
 }
 
+async function cmdAuthCapture(flags, dataDir) {
+  const file = path.resolve(need(flags, 'property'));
+  const parsed = PropertySchema.safeParse(await readJson(file).catch(() => null));
+  if (!parsed.success) throw new ConfigError(`not a valid property file: ${file}`);
+  await captureSession({
+    property: parsed.data,
+    profileName: need(flags, 'profile'),
+    dataDir,
+    start: typeof flags.start === 'string' ? flags.start : '/',
+    out: typeof flags.out === 'string' ? flags.out : undefined,
+    headless: Boolean(flags.headless),
+    channel: flags.browser === 'chromium' ? null : 'chrome',
+    timeoutMs: flags.timeout ? Number(flags.timeout) * 1000 : undefined,
+  });
+  return EXIT.OK;
+}
+
 async function cmdList(flags, dataDir) {
   const runs = await listRuns(dataDir, { limit: Number(flags.limit ?? 20), taskId: typeof flags.task === 'string' ? flags.task : undefined });
   if (!runs.length) console.log(`no runs under ${dataDir}`);
@@ -183,9 +208,9 @@ async function cmdBaselines(flags, dataDir) {
 async function main() {
   const { cmd, flags } = parseArgs(process.argv.slice(2));
   const dataDir = resolveDataDir(typeof flags['data-dir'] === 'string' ? flags['data-dir'] : undefined);
-  const commands = { run: cmdRun, validate: cmdValidate, approve: cmdApprove, compare: cmdCompare, report: cmdReport, dashboard: cmdDashboard, list: cmdList, baselines: cmdBaselines };
+  const commands = { run: cmdRun, validate: cmdValidate, approve: cmdApprove, compare: cmdCompare, report: cmdReport, dashboard: cmdDashboard, 'auth-capture': cmdAuthCapture, list: cmdList, baselines: cmdBaselines };
   if (!commands[cmd]) {
-    console.error('usage: cli.mjs <run|validate|approve|compare|report|dashboard|list|baselines> [flags] — see scripts/task-effort-audit/README.md');
+    console.error('usage: cli.mjs <run|validate|approve|compare|report|dashboard|auth-capture|list|baselines> [flags] — see scripts/task-effort-audit/README.md');
     return EXIT.CONFIG;
   }
   try {

@@ -32,14 +32,17 @@ export const EXIT = { OK: 0, RUN_FAILED: 1, CONFIG: 2, AUTH: 3 };
 const require = createRequire(import.meta.url);
 const SETTLE_MS = 150; // lets a request fired by an action reach the guard before the next step
 
-function locate(scope, t) {
-  const base = t.within ? locate(scope, t.within) : scope;
-  if (t.role) return base.getByRole(t.role, { name: t.name, exact: t.exact ?? true });
-  if (t.label) return base.getByLabel(t.label, { exact: t.exact ?? true });
-  if (t.text) return base.getByText(t.text, { exact: t.exact ?? true });
-  if (t.testId) return base.getByTestId(t.testId);
-  if (t.placeholder) return base.getByPlaceholder(t.placeholder, { exact: t.exact ?? true });
-  return base.locator(t.css);
+/** Build a Playwright locator. `fill` resolves {{…}} templates in text fields. */
+export function locate(scope, t, fill = (s) => s) {
+  const base = t.within ? locate(scope, t.within, fill) : scope;
+  const at = (loc) => (t.nth !== undefined ? loc.nth(t.nth) : loc);
+  const exact = t.exact ?? true;
+  if (t.role) return at(base.getByRole(t.role, { name: t.name === undefined ? undefined : fill(t.name), exact }));
+  if (t.label) return at(base.getByLabel(fill(t.label), { exact }));
+  if (t.text) return at(base.getByText(fill(t.text), { exact }));
+  if (t.testId) return at(base.getByTestId(t.testId));
+  if (t.placeholder) return at(base.getByPlaceholder(fill(t.placeholder), { exact }));
+  return at(base.locator(t.css));
 }
 
 async function pollUntil(read, want, timeout) {
@@ -94,7 +97,7 @@ function resolveAuth(property, authRef) {
  * Validate everything that can be checked before a browser starts.
  * Throws ConfigError / SafetyError / AuthError.
  */
-export async function preflight({ taskPath, scenario = 'normal', allowWrites = false, fixtureVariant = null }) {
+export async function preflight({ taskPath, scenario = 'normal', allowWrites = false, fixtureVariant = null, checkAuth = true }) {
   const loaded = await loadTask(taskPath);
   const { task, property } = loaded;
   if (!task.scenarios[scenario]) {
@@ -108,7 +111,8 @@ export async function preflight({ taskPath, scenario = 'normal', allowWrites = f
   if (fixtureVariant && (!property.fixture || property.environment !== 'local')) {
     throw new ConfigError(`--fixture needs a local property with a "fixture" entry; "${property.id}" has none`);
   }
-  const auth = resolveAuth(property, task.authRef);
+  // `validate` checks the task file without a saved login; `run` always needs one.
+  const auth = checkAuth ? resolveAuth(property, task.authRef) : null;
   return { ...loaded, auth };
 }
 
@@ -217,6 +221,7 @@ export async function executeRun(opts) {
 
   const timeoutLeft = () => Math.min(limits.stepTimeoutMs, deadline - Date.now());
   const value = (s) => resolveTemplate(s, { data: task.testData, saved });
+  const fillText = (s) => value(s).value;
   const fixtureCall = async (c) => {
     const res = await fetch(new URL(c.path, baseUrl), { method: c.method });
     if (!res.ok) throw new Error(`${c.method} ${c.path} → HTTP ${res.status}`);
@@ -283,7 +288,7 @@ export async function executeRun(opts) {
         const isAction = COUNTED_ACTIONS.includes(step.do);
 
         if (step.conditional) {
-          const appears = await locate(pg, step.conditional.ifVisible)
+          const appears = await locate(pg, step.conditional.ifVisible, fillText)
             .waitFor({ state: 'visible', timeout: Math.min(step.conditional.waitMs, Math.max(1, deadline - Date.now())) })
             .then(() => true, () => false);
           if (!appears) {
@@ -297,7 +302,7 @@ export async function executeRun(opts) {
         }
 
         let logged;
-        const loc = step.target ? locate(pg, step.target) : null;
+        const loc = step.target ? locate(pg, step.target, fillText) : null;
         const to = timeoutLeft();
         switch (step.do) {
           case 'click':
@@ -397,12 +402,12 @@ export async function executeRun(opts) {
         currentStep = step;
         const at = Date.now() - t0;
         const to = Math.max(1, timeoutLeft());
-        const loc = step.target ? locate(vp, step.target) : null;
+        const loc = step.target ? locate(vp, step.target, fillText) : null;
         try {
           if (step.do === 'reload') await vp.reload({ timeout: to });
-          else if (step.do === 'goto') await vp.goto(new URL(step.path, baseUrl).href, { timeout: to });
+          else if (step.do === 'goto') await vp.goto(new URL(fillText(step.path), baseUrl).href, { timeout: to });
           else if (step.do === 'httpJson') {
-            const res = await context.request.get(new URL(step.path, baseUrl).href, { timeout: to });
+            const res = await context.request.get(new URL(fillText(step.path), baseUrl).href, { timeout: to });
             const body = await res.json();
             const expected = Object.fromEntries(Object.entries(step.expect).map(([k, v]) => [k, typeof v === 'string' ? value(v).value : v]));
             const mismatch = subsetMismatch(body, expected);
