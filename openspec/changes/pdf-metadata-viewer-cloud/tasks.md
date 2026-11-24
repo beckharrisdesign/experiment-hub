@@ -114,7 +114,7 @@ Katy, 2026-11-24: "looking at a single doc seems to be generating images of the 
 
 - [x] 7f.1 Spec and design: requirement "Drawn pages are kept privately" (drive-document-source), the exception in "Documents are referenced, not copied", design.md D14
 - [x] 7f.2 Store, page route, commit carry-over, drawing ahead and clearing out in the sync (`lib/pdf-page-store.ts`, migration 032); the splitter uses the same images
-- [ ] 7f.3 Apply migration 032 to the hub database
+- [x] 7f.3 Apply migration 032 to the hub database — **applied 2026-11-24** with Katy's go: bucket private and JPEG only, row level security on, no policies on it or the table, no grants to the public keys
 - [ ] 7f.4 Verify live: run the sync until no pages wait; time a 19-page scan, first and second open, and the splitter; commit an edit and see the pages not redrawn; check an image can't be had without a session
 
 ## 8. Write path
