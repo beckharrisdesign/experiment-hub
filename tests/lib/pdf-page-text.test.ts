@@ -9,9 +9,13 @@ const db = vi.hoisted(() => ({
   images: new Map<string, Uint8Array>(),
   failText: false,
 }));
-const { openPdf, openReader } = vi.hoisted(() => ({ openPdf: vi.fn(), openReader: vi.fn() }));
+const { openPdf, openReader, shrinkJpeg } = vi.hoisted(() => ({
+  openPdf: vi.fn(),
+  openReader: vi.fn(),
+  shrinkJpeg: vi.fn(),
+}));
 
-vi.mock("@/lib/pdf-render", () => ({ openPdf }));
+vi.mock("@/lib/pdf-render", () => ({ openPdf, shrinkJpeg }));
 vi.mock("@/lib/pdf-ocr", () => ({ openReader }));
 vi.mock("@/lib/pdf-page-store", () => ({ PAGE_BUCKET: "pdf-pages", STORED_WIDTH: 1120 }));
 vi.mock("@/lib/pdf-documents", () => {
@@ -32,6 +36,7 @@ vi.mock("@/lib/pdf-documents", () => {
         else db.text[i] = { ...r };
         return { error: null };
       },
+      maybeSingle: async () => ({ data: rows().find((r) => tests.every((t) => t(r))) ?? null, error: null }),
       then: (ok: (v: unknown) => unknown) => {
         const hit = rows().filter((r) => tests.every((t) => t(r)));
         if (patch) hit.forEach((r) => Object.assign(r, patch));
@@ -49,7 +54,16 @@ vi.mock("@/lib/pdf-documents", () => {
   return { getPdfAdminClient: () => ({ from, storage }) };
 });
 
-import { hasEnoughText, syncText, tidyText, type TextSyncOptions } from "@/lib/pdf-page-text";
+import {
+  getDocumentText,
+  hasEnoughText,
+  MAX_TEXT,
+  syncText,
+  textToSend,
+  tidyText,
+  type KeptPageText,
+  type TextSyncOptions,
+} from "@/lib/pdf-page-text";
 
 const OWN = "Dear families, the winter concert is on Thursday.";
 const want = (id: string, revision = "r1") => ({ id, driveFileId: `file-${id}`, revision, pageCount: null });
@@ -205,5 +219,67 @@ describe("hasEnoughText", () => {
     expect(hasEnoughText("- - - - - - - - - - - - - - - - -")).toBe(false);
     expect(hasEnoughText(OWN)).toBe(true);
     expect(hasEnoughText("Vielen Dank für Ihren Einkauf")).toBe(true);
+  });
+});
+
+describe("textToSend", () => {
+  const page = (n: number, o: Partial<KeptPageText> = {}): KeptPageText => ({
+    page: n,
+    text: `${OWN} Page ${n}.`,
+    source: "file",
+    confidence: null,
+    ...o,
+  });
+
+  it("gives the pages in order, each under its number", () => {
+    expect(textToSend([page(2), page(1)])).toBe(`--- Page 1 ---\n${OWN} Page 1.\n\n--- Page 2 ---\n${OWN} Page 2.`);
+  });
+
+  it("leaves out pages tesseract wasn't sure of, or that say nothing", () => {
+    const sent = textToSend([
+      page(1, { source: "ocr", confidence: 57 }),
+      page(2, { source: "ocr", confidence: 35 }),
+      page(3),
+      page(4, { text: "4" }),
+    ])!;
+    expect(sent).toContain("Page 1 ---");
+    expect(sent).toContain("Page 3 ---");
+    expect(sent).not.toContain("Page 2 ---");
+    expect(sent).not.toContain("Page 4 ---");
+  });
+
+  it("is nothing when most pages can't be read: a drawing goes as a picture", () => {
+    expect(textToSend([page(1, { source: "ocr", confidence: 24 })])).toBeNull();
+    expect(textToSend([page(1), page(2, { text: "" }), page(3, { text: "" })])).toBeNull();
+    expect(textToSend([])).toBeNull();
+  });
+
+  it("stops at enough", () => {
+    const sent = textToSend([page(1, { text: "word ".repeat(10_000) })])!;
+    expect(sent.length).toBeLessThan(MAX_TEXT + 10);
+    expect(sent.endsWith("[…]")).toBe(true);
+  });
+});
+
+describe("getDocumentText", () => {
+  beforeEach(() => {
+    shrinkJpeg.mockReset().mockResolvedValue(new Uint8Array([5]));
+    db.sets = [set("a", { text_at: "2026-11-24T13:00:00Z" })];
+    db.text = [{ set_id: "set-a", page: 1, text: OWN, source: "file", confidence: null }];
+    db.images.set("set-a/1.jpg", new Uint8Array([7]));
+  });
+
+  it("gives the text of that version and a small look at page 1", async () => {
+    expect(await getDocumentText("a", "r1")).toEqual({ text: `--- Page 1 ---\n${OWN}`, look: new Uint8Array([5]) });
+    expect(shrinkJpeg).toHaveBeenCalledWith(new Uint8Array([7]), 768);
+  });
+
+  it("is null for another version, text not all kept, or no image", async () => {
+    expect(await getDocumentText("a", "r2")).toBeNull();
+    expect(await getDocumentText("a", null)).toBeNull();
+    db.images.clear();
+    expect(await getDocumentText("a", "r1")).toBeNull();
+    db.sets[0].text_at = null;
+    expect(await getDocumentText("a", "r1")).toBeNull();
   });
 });

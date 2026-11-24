@@ -781,6 +781,12 @@ in the sync, last, in the time drawing leaves. A page needs twenty letters or
 digits of its own to count as carrying text; fewer is a stamp or a page number.
 Tesseract's confidence is kept with what it read, to judge it by later.
 
+**Where to draw the line.** 70 was the guess from made-up pages. On the first 61
+real scans nothing fell between 36 and 56: art at 35 and below, documents at 57
+and above among one-page files. 70 would throw away six of twenty readable
+one-page documents; 50 separates the two groups. To be settled by 7h.6's
+comparison, not by this.
+
 **The rule it changes.** The text of household documents would sit in the hub's
 database, behind row level security with no policies, reachable by the server
 alone. Text is easier to search and to leak than an image, so this is its own
