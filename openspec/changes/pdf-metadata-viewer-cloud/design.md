@@ -796,7 +796,7 @@ decision, not implied by D14.
 first against the existing rubric; if they are, the answer is to send the kept
 page images instead of the PDF, which still saves the Drive download.
 
-### D16 — Suggestions made from kept text, waiting to be reviewed (proposed, task 7i)
+### D16 — Suggestions made from kept text, waiting to be reviewed (being designed, task 7i)
 
 **What.** Once a document's text is kept (D15), the sync works out what it can
 from that text alone, on the hub's own server, and leaves it waiting on the
