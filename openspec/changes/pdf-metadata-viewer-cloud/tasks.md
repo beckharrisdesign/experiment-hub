@@ -157,6 +157,18 @@ Katy, 2026-11-24: "auto applying ocr based metadata suggestions but not committi
 - [~] 7i.6 Verify live; measure how many are accepted as they are — **live 2026-11-24** (#652): 11 prefilled, 4 asked to split, 2 with too little text. All 11 have a vendor (5 from the filename, 6 from the page), a category and a date; 10 a title and type; 9 the scan flag; none a location, as 20 of 232 active organisations in Entities have one. List, review panel, split question and the dismiss route's gate checked on the real pages; a real Dismiss is not. **Katy accepted and committed all 11 the same day:** 9 exactly as prefilled, 1 with its year changed, 1 replaced entirely (title, subject and all tags). Of 68 tags 63 kept: scan 9 of 9, type 10 of 10, vendor 10 of 11 (filename 5 of 5, page 5 of 6), category 15 of 16, month 10 of 11, year 9 of 11; 10 of 10 titles. Nothing was added to the 9, but that does not mean nothing was missing: the text of 6 of the 11 names Austin and 1 ended with a location tag, where 6 of the 7 tagged so by other means say it; no action tag (keep-annual and the like) was prefilled, where 8 of 14 tagged before have one, none of them findable in the text. Both wrong years were in the filename itself, one of them in the future (2028); a filename date still to come is now ignored, here and in what the AI is told (Katy, "Yes, fix it"). Requiring the year to be in the text would not help: both wrong years are in it, and four of the nine right ones are not. Kept is not the same as checked: eight were accepted in under a minute
 - [~] 7i.7 Locations from the page (Katy, "Yes, add locations", 2026-11-24) — a city with its state right after, on the first readable page, where the vendor's row has no location. On the documents tagged before: found on 6 of the 7 tagged `location-austin-tx`, and on 2 of the 6 tagged without a place (the city alone would be 3). It would have filled 5 of the first 11. A state alone is not used: it is on 10 of those 11. Suggestions by the AI are unchanged
 
+## 7j. Acting on "Split first?" from the list (proposed, not approved)
+
+Katy, 2026-11-24: "the split first callouts are useful - but I can't take action without loading the doc page and waiting for all the page images to load."
+
+Measured live on a 36-page scan: the document page has its buttons at 0.6 s, its first page at 1.2 s (1.8 s sharp) and fetches three pages; the split page shows nothing to press on until its first small copy at 1.2 s, and its last of 36 arrives at 5.8 s (765 KB). One run, in a browser that had been there before.
+
+- [~] 7j.1 Draw it on a numbered Figma page — **drawn 2026-11-24**: `02.18 Proposed — Split first, from the list` (89:483), frames 89:484 (list, row open), 89:967 (phone), 89:760 (split page before its images), note 89:1158. Awaiting an explicit go
+- [ ] 7j.2 The list: the pill opens its row; question, both buttons and a strip of small copies, fetched as they come into view
+- [ ] 7j.3 "It's one document" saves in place; "Split pages" goes straight to the split page, whose ways back are the list
+- [ ] 7j.4 The split page is usable before its images: places, gaps and names from the page count already known
+- [ ] 7j.5 Verify live, timed the same way
+
 ## 8. Write path
 
 - [x] 8.0 Capture the baseline on the first staged edit — read the file once, store `file_snapshot.embedded` and `drive_head_revision_id` together, fill the field columns; never re-capture while edits are pending. See `design.md` D8, "captured on first edit". **Done in #608, verified live 2026-11-20:** the first edit stored the file's five fields and its revision, and filled the title column from the file
