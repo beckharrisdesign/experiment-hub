@@ -1,0 +1,52 @@
+{
+  "current": {
+    "taskId": "bhd-design-manager-process-phone",
+    "scenario": "normal",
+    "runId": "20261124T190649Z-bhd-design-manager-process-phone-normal-f89b",
+    "approvedAt": "2026-11-24T19:37:30.999Z",
+    "approvedBy": "unspecified",
+    "note": "First phone-width live run; read-only; /api/view suppressed",
+    "definitionHash": "dce89b0877eee95e19d4c59e10794022f91083d1e8e9aafdde5c6f33b318c8a7",
+    "comparisonContext": "2026-11-live-v1",
+    "propertyId": "beckharrisdesign",
+    "propertyContextHash": "814da0afc2aaf35852c13e75533304128e34c6ba735e2f31e696e7dd399e3ec3",
+    "metrics": {
+      "path": {
+        "actions": 2,
+        "repeatedEntryFields": 0,
+        "contextSwitches": 0
+      },
+      "recovery": {
+        "actions": 0,
+        "repeatedEntryFields": 0,
+        "contextSwitches": 0
+      },
+      "conditional": {
+        "performed": 0,
+        "skipped": 0
+      },
+      "scrolls": 0
+    },
+    "findingKeys": [],
+    "verification": "pass",
+    "tooling": {
+      "tool": "0.1.0",
+      "node": "v22.23.5",
+      "playwright": "1.59.1",
+      "browser": "chromium 158.0.8127.36",
+      "os": "linux 6.18.44-fc-v819",
+      "gitCommit": "5e95cba"
+    },
+    "fixtureVariant": null
+  },
+  "history": [
+    {
+      "action": "approved",
+      "runId": "20261124T190649Z-bhd-design-manager-process-phone-normal-f89b",
+      "approvedAt": "2026-11-24T19:37:30.999Z",
+      "approvedBy": "unspecified",
+      "note": "First phone-width live run; read-only; /api/view suppressed",
+      "supersedes": null
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "bhd-find-design-function-case-study",
+  "name": "Find the design-leadership case study from the home page",
+  "propertyRef": "../properties/beckharrisdesign.json",
+  "userRole": "Prospective consulting client (founder or product leader)",
+  "familiarity": "First visit; arrived on the home page",
+  "goal": "See what consulting looks like, then read an example of rebuilding a design function",
+  "startingState": { "path": "/", "description": "Home page, public visitor, no session" },
+  "testData": {},
+  "viewport": { "width": 1280, "height": 800 },
+  "locale": "en-US",
+  "authRef": "public-visitor",
+  "limits": { "maxDurationMs": 45000, "maxActions": 6, "stepTimeoutMs": 10000 },
+  "allowedMutations": [],
+  "comparisonContext": "2026-11-live-v1",
+  "verify": [
+    { "id": "load-case-study", "do": "goto", "path": "/rebuilding-a-design-function", "note": "Fresh load of the destination" },
+    { "id": "case-study-title", "do": "assertVisible", "target": { "role": "heading", "name": "Rebuilding a design function" } },
+    { "id": "case-study-outcomes", "do": "assertVisible", "target": { "role": "heading", "name": "Outcomes" } }
+  ],
+  "scenarios": {
+    "normal": {
+      "kind": "normal",
+      "description": "Home → Consulting → case study",
+      "steps": [
+        { "id": "open-consulting", "do": "click", "target": { "role": "link", "name": "Consulting" } },
+        { "id": "consulting-loaded", "do": "assertVisible", "target": { "role": "heading", "name": "Typical engagement" }, "screenshot": true },
+        { "id": "open-case-study", "do": "click", "target": { "role": "link", "name": "Rebuilding a design function" } },
+        { "id": "case-study-loaded", "do": "assertVisible", "target": { "role": "heading", "name": "Rebuilding a design function" }, "screenshot": true }
+      ]
+    }
+  }
+}

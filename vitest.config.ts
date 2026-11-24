@@ -9,7 +9,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./tests/setup.ts"],
     include: ["tests/**/*.test.{ts,tsx}"],
-    exclude: ["tests/**/*.live.test.{ts,tsx}", "node_modules"],
+    // *.e2e.test.ts launch a browser; they run via `pnpm test:effort-audit`.
+    exclude: ["tests/**/*.live.test.{ts,tsx}", "tests/**/*.e2e.test.{ts,tsx}", "node_modules"],
   },
   resolve: {
     alias: {

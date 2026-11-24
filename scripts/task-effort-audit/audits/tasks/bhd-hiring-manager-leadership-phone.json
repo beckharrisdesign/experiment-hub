@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "id": "bhd-hiring-manager-leadership-phone",
+  "name": "Hiring manager checks design-leadership experience (phone)",
+  "propertyRef": "../properties/beckharrisdesign.json",
+  "userRole": "Hiring manager filling a Head of Design / Director role",
+  "familiarity": "First visit on a phone, tapped through from LinkedIn to the home page",
+  "goal": "Confirm she has led design teams: the roles she held, and one example of building a design function",
+  "startingState": {
+    "path": "/",
+    "description": "Home page, public visitor, no session"
+  },
+  "testData": {},
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "locale": "en-US",
+  "authRef": "public-visitor",
+  "limits": {
+    "maxDurationMs": 60000,
+    "maxActions": 8,
+    "stepTimeoutMs": 10000
+  },
+  "allowedMutations": [],
+  "comparisonContext": "2026-11-live-v1",
+  "notes": "Phone-width version of bhd-hiring-manager-leadership. Viewport-width emulation only: no touch events or mobile user agent.",
+  "verify": [
+    {
+      "id": "load-about",
+      "do": "goto",
+      "path": "/katy-harris"
+    },
+    {
+      "id": "role-history-present",
+      "do": "assertVisible",
+      "target": {
+        "role": "heading",
+        "name": "Cisco"
+      },
+      "note": "A leadership role in the history"
+    },
+    {
+      "id": "load-case-study",
+      "do": "goto",
+      "path": "/rebuilding-a-design-function"
+    },
+    {
+      "id": "team-roles-section",
+      "do": "assertVisible",
+      "target": {
+        "role": "heading",
+        "name": "Clarify team roles and skills"
+      }
+    },
+    {
+      "id": "outcomes-section",
+      "do": "assertVisible",
+      "target": {
+        "role": "heading",
+        "name": "Outcomes"
+      }
+    }
+  ],
+  "scenarios": {
+    "normal": {
+      "kind": "normal",
+      "description": "Home \u2192 Menu \u2192 About \u2192 Menu \u2192 Projects \u2192 Rebuilding a design function",
+      "steps": [
+        {
+          "id": "open-menu",
+          "do": "click",
+          "target": {
+            "role": "button",
+            "name": "Menu"
+          },
+          "note": "At phone width the nav links are hidden behind the Menu button."
+        },
+        {
+          "id": "open-about",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "About"
+          }
+        },
+        {
+          "id": "role-history-shown",
+          "do": "assertVisible",
+          "target": {
+            "role": "heading",
+            "name": "Katy Harris"
+          },
+          "screenshot": true
+        },
+        {
+          "id": "open-menu-again",
+          "do": "click",
+          "target": {
+            "role": "button",
+            "name": "Menu"
+          },
+          "note": "At phone width the nav links are hidden behind the Menu button."
+        },
+        {
+          "id": "back-to-projects",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "Projects"
+          },
+          "note": "About has no link to leadership case studies, so the visitor returns through the nav. Projects goes to the home page."
+        },
+        {
+          "id": "open-leadership-case-study",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "Rebuilding a design function"
+          }
+        },
+        {
+          "id": "case-study-shown",
+          "do": "assertVisible",
+          "target": {
+            "role": "heading",
+            "name": "Rebuilding a design function"
+          },
+          "screenshot": true
+        }
+      ]
+    }
+  }
+}

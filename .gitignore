@@ -110,6 +110,12 @@ worktrees/
 .cache/
 .site-map/
 artifacts/site-map/
+# task-effort-audit: runs (screenshots, traces, ledgers), the run index, and
+# auth state stay local — browser evidence can contain sensitive data and is not
+# sanitized. baselines/ IS committed so approved baselines survive sessions; a
+# baseline record holds only metrics, finding keys, hashes, and tool versions.
+artifacts/task-effort-audit/*
+!artifacts/task-effort-audit/baselines/
 
 # Logs
 logs/

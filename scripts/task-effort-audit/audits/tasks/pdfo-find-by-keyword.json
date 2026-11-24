@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "propertyRef": "../properties/pdf-organizer.json",
+  "userRole": "Household admin (Katy), signed in",
+  "startingState": {
+    "path": "/pdf-metadata-viewer",
+    "description": "Document list for the PDF Tests folder, no search or filter"
+  },
+  "testData": {
+    "file": "Sync-test-3-pages.pdf",
+    "fileSearch": "Sync-test"
+  },
+  "fixtureRef": "PDF Tests folder in Drive: made-up documents only (confirmed by Katy, 2026-11-24)",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "locale": "en-US",
+  "authRef": "katy-google",
+  "limits": {
+    "maxDurationMs": 90000,
+    "maxActions": 10,
+    "stepTimeoutMs": 20000
+  },
+  "allowedMutations": [],
+  "comparisonContext": "2026-11-pdf-v1",
+  "id": "pdfo-find-by-keyword",
+  "name": "Find everything with a keyword",
+  "familiarity": "Remembers how a document was tagged, not its name",
+  "goal": "See every document with one keyword, then open one",
+  "notes": "The keyword is read from the test file's row at run time (its first keyword), so the task doesn't hard-code a tag. If that file's keywords change, the keyword used changes with them.",
+  "verify": [
+    {
+      "id": "load-filtered-list",
+      "do": "goto",
+      "path": "/pdf-metadata-viewer?kw={{saved.keyword}}",
+      "note": "Fresh load of the list with that keyword filter"
+    },
+    {
+      "id": "filter-applied",
+      "do": "assertVisible",
+      "target": {
+        "role": "button",
+        "name": "Remove {{saved.keyword}}"
+      }
+    },
+    {
+      "id": "file-in-results",
+      "do": "assertVisible",
+      "target": {
+        "role": "link",
+        "name": "{{data.file}}"
+      }
+    }
+  ],
+  "scenarios": {
+    "normal": {
+      "kind": "normal",
+      "description": "List \u2192 keyword on the file's row \u2192 open",
+      "steps": [
+        {
+          "id": "read-keyword",
+          "do": "read",
+          "target": {
+            "role": "button",
+            "nth": 0,
+            "within": {
+              "role": "row",
+              "name": "{{data.file}}",
+              "exact": false
+            }
+          },
+          "saveAs": "keyword",
+          "note": "Which keyword to use; not counted"
+        },
+        {
+          "id": "filter-by-keyword",
+          "do": "click",
+          "target": {
+            "role": "button",
+            "name": "{{saved.keyword}}",
+            "within": {
+              "role": "row",
+              "name": "{{data.file}}",
+              "exact": false
+            }
+          }
+        },
+        {
+          "id": "filter-shown",
+          "do": "assertVisible",
+          "target": {
+            "role": "button",
+            "name": "Remove {{saved.keyword}}"
+          },
+          "screenshot": true
+        },
+        {
+          "id": "open-document",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "{{data.file}}"
+          }
+        },
+        {
+          "id": "detail-shown",
+          "do": "assertVisible",
+          "target": {
+            "role": "heading",
+            "name": "{{data.file}}"
+          },
+          "screenshot": true
+        }
+      ]
+    }
+  }
+}

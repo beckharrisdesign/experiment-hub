@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "id": "bhd-design-manager-process-phone",
+  "name": "Design manager looks for design-process examples (phone)",
+  "propertyRef": "../properties/beckharrisdesign.json",
+  "userRole": "Design manager hiring a principal designer or design lead",
+  "familiarity": "First visit on a phone, arrived on the home page from a referral",
+  "goal": "See how she works: how problems were framed and decisions made, across more than one project",
+  "startingState": {
+    "path": "/",
+    "description": "Home page, public visitor, no session"
+  },
+  "testData": {},
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "locale": "en-US",
+  "authRef": "public-visitor",
+  "limits": {
+    "maxDurationMs": 60000,
+    "maxActions": 8,
+    "stepTimeoutMs": 10000
+  },
+  "allowedMutations": [],
+  "comparisonContext": "2026-11-live-v1",
+  "notes": "Phone-width version of bhd-design-manager-process. The case-study links are in the home page body, so no menu is needed. Viewport-width emulation only: no touch events or mobile user agent.",
+  "verify": [
+    {
+      "id": "load-first-case-study",
+      "do": "goto",
+      "path": "/atlas-document-governance"
+    },
+    {
+      "id": "process-section",
+      "do": "assertVisible",
+      "target": {
+        "role": "heading",
+        "name": "Make version control legible to non-engineers"
+      }
+    },
+    {
+      "id": "outcome-section",
+      "do": "assertVisible",
+      "target": {
+        "role": "heading",
+        "name": "Outcome"
+      }
+    },
+    {
+      "id": "related-projects-offered",
+      "do": "assertVisible",
+      "target": {
+        "role": "heading",
+        "name": "Related projects"
+      }
+    }
+  ],
+  "scenarios": {
+    "normal": {
+      "kind": "normal",
+      "description": "Home \u2192 Atlas case study \u2192 a related case study",
+      "steps": [
+        {
+          "id": "open-first-case-study",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "Zero-to-one in the enterprise: Atlas Document Management"
+          }
+        },
+        {
+          "id": "first-case-study-shown",
+          "do": "assertVisible",
+          "target": {
+            "role": "heading",
+            "name": "Make version control legible to non-engineers"
+          },
+          "screenshot": true
+        },
+        {
+          "id": "open-related-case-study",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "Zero-to-one in the mid-market: Unified Data Protection"
+          }
+        },
+        {
+          "id": "second-case-study-shown",
+          "do": "assertVisible",
+          "target": {
+            "role": "heading",
+            "name": "Zero-to-one in the mid-market: Unified Data Protection"
+          },
+          "screenshot": true
+        }
+      ]
+    }
+  }
+}

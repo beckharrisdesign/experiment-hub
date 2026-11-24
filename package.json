@@ -23,7 +23,10 @@
     "dev:photo-filters-banner": "cd experiments/photo-filters-banner/prototype && npm install && npm run dev",
     "skills:sync": "node scripts/sync-skills.js",
     "revenue:test": "node scripts/revenue-test.mjs",
-    "history:manifest": "tsx scripts/generate-change-history.ts"
+    "history:manifest": "tsx scripts/generate-change-history.ts",
+    "audit:effort": "node scripts/task-effort-audit/cli.mjs",
+    "audit:effort:sync-principles": "node scripts/task-effort-audit/sync-mvds-principles.mjs",
+    "test:effort-audit": "vitest run --config vitest.effort-audit.config.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",

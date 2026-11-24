@@ -1,0 +1,442 @@
+{
+  "schemaVersion": 1,
+  "id": "update-contact-email",
+  "name": "Update the account's contact email",
+  "propertyRef": "../properties/local-fixture.json",
+  "userRole": "Account owner, already signed in",
+  "familiarity": "Returning user who knows Settings exists but rarely changes contact details",
+  "goal": "Change my contact email so future notices reach my new address",
+  "startingState": {
+    "path": "/",
+    "description": "Signed-in dashboard; fixture reset to the default test account"
+  },
+  "testData": {
+    "newEmail": "alex.new@example.test",
+    "typoEmail": "alex.nwe@example.test"
+  },
+  "fixtureRef": "scripts/task-effort-audit/fixture/server.mjs (Northwind test account, in-memory)",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "locale": "en-US",
+  "authRef": "fixture-owner",
+  "limits": {
+    "maxDurationMs": 30000,
+    "maxActions": 20,
+    "stepTimeoutMs": 4000
+  },
+  "allowedMutations": [
+    {
+      "id": "contact.email",
+      "kind": "update",
+      "description": "Contact email of the fixture's test account"
+    }
+  ],
+  "comparisonContext": "2026-11-v1",
+  "setup": [
+    {
+      "type": "fixtureApi",
+      "method": "POST",
+      "path": "/__fixture/reset",
+      "note": "Fixed starting state (non-UI setup)"
+    }
+  ],
+  "verify": [
+    {
+      "id": "reload-contact",
+      "do": "goto",
+      "path": "/settings/contact",
+      "note": "Fresh page load from the server, not the toast left by the path"
+    },
+    {
+      "id": "email-persisted",
+      "do": "assertText",
+      "target": {
+        "testId": "contact-email"
+      },
+      "value": "{{data.newEmail}}",
+      "principles": [
+        "visibility-of-system-status"
+      ]
+    },
+    {
+      "id": "state-check",
+      "do": "httpJson",
+      "path": "/api/account",
+      "expect": {
+        "email": "{{data.newEmail}}"
+      },
+      "note": "Non-UI verification of stored state"
+    }
+  ],
+  "cleanup": [
+    {
+      "type": "fixtureApi",
+      "method": "POST",
+      "path": "/__fixture/reset",
+      "note": "Restore the default test account"
+    }
+  ],
+  "scenarios": {
+    "normal": {
+      "kind": "normal",
+      "description": "Reviewed reference path for a successful email change",
+      "steps": [
+        {
+          "id": "open-settings",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "Settings"
+          }
+        },
+        {
+          "id": "open-contact-tab",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "Contact details"
+          }
+        },
+        {
+          "id": "start-editing",
+          "do": "click",
+          "target": {
+            "role": "button",
+            "name": "Edit contact details"
+          }
+        },
+        {
+          "id": "enter-email",
+          "do": "fill",
+          "target": {
+            "label": "Email address"
+          },
+          "value": "{{data.newEmail}}"
+        },
+        {
+          "id": "confirm-email",
+          "do": "fill",
+          "target": {
+            "label": "Confirm email address"
+          },
+          "value": "{{data.newEmail}}",
+          "annotations": {
+            "repeatedEntry": {
+              "source": "entered at step enter-email",
+              "explanation": "The same email must be typed a second time."
+            },
+            "suggestion": "Consider whether a single field with a clear review step would prevent typos with less entry."
+          },
+          "principles": [
+            "error-prevention"
+          ]
+        },
+        {
+          "id": "open-billing-lookup",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "Look up account number"
+          },
+          "opensPage": "billing",
+          "annotations": {
+            "contextSwitch": {
+              "from": "Contact details form (Settings tab)",
+              "to": "Billing portal",
+              "boundary": "new-browser-tab"
+            }
+          },
+          "principles": [
+            "recognition-rather-than-recall"
+          ]
+        },
+        {
+          "id": "read-account-number",
+          "do": "read",
+          "page": "billing",
+          "target": {
+            "testId": "account-number"
+          },
+          "saveAs": "accountNumber"
+        },
+        {
+          "id": "return-to-form",
+          "do": "switchPage",
+          "to": "main",
+          "annotations": {
+            "contextSwitch": {
+              "from": "Billing portal",
+              "to": "Contact details form (Settings tab)",
+              "boundary": "new-browser-tab"
+            }
+          },
+          "principles": [
+            "recognition-rather-than-recall"
+          ]
+        },
+        {
+          "id": "enter-account-number",
+          "do": "fill",
+          "target": {
+            "label": "Account number"
+          },
+          "value": "{{saved.accountNumber}}",
+          "annotations": {
+            "repeatedEntry": {
+              "source": "shown in the Billing portal; the signed-in account already identifies it",
+              "explanation": "The user copies a value the system already has."
+            }
+          },
+          "principles": [
+            "recognition-rather-than-recall"
+          ]
+        },
+        {
+          "id": "save",
+          "do": "click",
+          "target": {
+            "role": "button",
+            "name": "Save changes"
+          },
+          "mutates": "contact.email"
+        },
+        {
+          "id": "confirm-change-if-asked",
+          "do": "click",
+          "target": {
+            "role": "button",
+            "name": "Confirm change",
+            "within": {
+              "role": "dialog",
+              "name": "Confirm email change?"
+            }
+          },
+          "conditional": {
+            "ifVisible": {
+              "role": "dialog",
+              "name": "Confirm email change?"
+            },
+            "waitMs": 1500,
+            "reason": "a confirmation dialog appeared after Save"
+          },
+          "mutates": "contact.email",
+          "principles": [
+            "error-prevention"
+          ]
+        },
+        {
+          "id": "saved-message",
+          "do": "assertText",
+          "target": {
+            "role": "status"
+          },
+          "value": "Contact details saved",
+          "note": "Path checkpoint only \u2014 not completion proof"
+        }
+      ]
+    },
+    "recovery": {
+      "kind": "recovery",
+      "description": "Controlled error: a typo in the confirmation field, then recovery",
+      "steps": [
+        {
+          "id": "open-settings",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "Settings"
+          }
+        },
+        {
+          "id": "open-contact-tab",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "Contact details"
+          }
+        },
+        {
+          "id": "start-editing",
+          "do": "click",
+          "target": {
+            "role": "button",
+            "name": "Edit contact details"
+          }
+        },
+        {
+          "id": "enter-email",
+          "do": "fill",
+          "target": {
+            "label": "Email address"
+          },
+          "value": "{{data.newEmail}}"
+        },
+        {
+          "id": "confirm-email-typo",
+          "do": "fill",
+          "target": {
+            "label": "Confirm email address"
+          },
+          "value": "{{data.typoEmail}}",
+          "phase": "error-induction",
+          "annotations": {
+            "repeatedEntry": {
+              "source": "entered at step enter-email",
+              "explanation": "The same email must be typed a second time (here, with a deliberate typo)."
+            }
+          },
+          "principles": [
+            "error-prevention"
+          ]
+        },
+        {
+          "id": "open-billing-lookup",
+          "do": "click",
+          "target": {
+            "role": "link",
+            "name": "Look up account number"
+          },
+          "opensPage": "billing",
+          "annotations": {
+            "contextSwitch": {
+              "from": "Contact details form (Settings tab)",
+              "to": "Billing portal",
+              "boundary": "new-browser-tab"
+            }
+          },
+          "principles": [
+            "recognition-rather-than-recall"
+          ]
+        },
+        {
+          "id": "read-account-number",
+          "do": "read",
+          "page": "billing",
+          "target": {
+            "testId": "account-number"
+          },
+          "saveAs": "accountNumber"
+        },
+        {
+          "id": "return-to-form",
+          "do": "switchPage",
+          "to": "main",
+          "annotations": {
+            "contextSwitch": {
+              "from": "Billing portal",
+              "to": "Contact details form (Settings tab)",
+              "boundary": "new-browser-tab"
+            }
+          },
+          "principles": [
+            "recognition-rather-than-recall"
+          ]
+        },
+        {
+          "id": "enter-account-number",
+          "do": "fill",
+          "target": {
+            "label": "Account number"
+          },
+          "value": "{{saved.accountNumber}}",
+          "annotations": {
+            "repeatedEntry": {
+              "source": "shown in the Billing portal; the signed-in account already identifies it",
+              "explanation": "The user copies a value the system already has."
+            }
+          },
+          "principles": [
+            "recognition-rather-than-recall"
+          ]
+        },
+        {
+          "id": "save-with-typo",
+          "do": "click",
+          "target": {
+            "role": "button",
+            "name": "Save changes"
+          },
+          "phase": "error-induction",
+          "mutates": "contact.email"
+        },
+        {
+          "id": "mismatch-error-shown",
+          "do": "expectError",
+          "phase": "error-induction",
+          "target": {
+            "role": "alert"
+          },
+          "value": "Email addresses don't match",
+          "note": "Intentional validation error \u2014 confirms the controlled scenario, not a failure",
+          "principles": [
+            "error-recovery"
+          ]
+        },
+        {
+          "id": "retype-confirmation",
+          "do": "fill",
+          "target": {
+            "label": "Confirm email address"
+          },
+          "value": "{{data.newEmail}}",
+          "phase": "recovery",
+          "annotations": {
+            "repeatedEntry": {
+              "source": "entered at step enter-email (third entry)",
+              "explanation": "Recovering means typing the email again."
+            }
+          }
+        },
+        {
+          "id": "save-again",
+          "do": "click",
+          "target": {
+            "role": "button",
+            "name": "Save changes"
+          },
+          "phase": "recovery",
+          "mutates": "contact.email"
+        },
+        {
+          "id": "confirm-change-if-asked",
+          "do": "click",
+          "phase": "recovery",
+          "target": {
+            "role": "button",
+            "name": "Confirm change",
+            "within": {
+              "role": "dialog",
+              "name": "Confirm email change?"
+            }
+          },
+          "conditional": {
+            "ifVisible": {
+              "role": "dialog",
+              "name": "Confirm email change?"
+            },
+            "waitMs": 1500,
+            "reason": "a confirmation dialog appeared after Save"
+          },
+          "mutates": "contact.email",
+          "principles": [
+            "error-prevention"
+          ]
+        },
+        {
+          "id": "saved-message",
+          "do": "assertText",
+          "target": {
+            "role": "status"
+          },
+          "value": "Contact details saved"
+        }
+      ],
+      "principles": [
+        "user-control-and-freedom",
+        "error-recovery"
+      ]
+    }
+  }
+}
