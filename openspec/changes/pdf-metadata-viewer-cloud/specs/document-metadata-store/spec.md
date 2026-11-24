@@ -102,6 +102,13 @@ untenable once the bytes live behind a network.
 - **THEN** metadata columns are populated for every row
 - **AND** no PDF bytes are fetched from storage
 
+#### Scenario: A file nobody has opened yet
+
+- **WHEN** a file has been imported but never opened or edited
+- **THEN** after the next scheduled sync its row shows the file's own page
+  count, title, and keywords
+- **AND** listing still fetches no bytes — the sync read them earlier
+
 #### Scenario: Opening a document's metadata panel
 
 - **WHEN** a user opens a document

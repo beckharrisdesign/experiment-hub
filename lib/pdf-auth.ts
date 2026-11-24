@@ -197,6 +197,52 @@ export function acceptGoogleIdentity(
   };
 }
 
+// --- scheduled sync ---------------------------------------------------------
+
+/**
+ * The folder sync's own way in (task 7d, design.md D12). A schedule has no
+ * Google session, so the one route it calls accepts a key instead — and only
+ * that route, and only to start a sync whose answer is counts, never document
+ * data.
+ *
+ * The key is DERIVED from SUPABASE_SERVICE_ROLE_KEY, never that key itself:
+ * HMAC-SHA256 over SYNC_KEY_LABEL, as hex. It grants strictly less than its
+ * root (which already opens the tables directly), and both sides already hold
+ * the root from the vault, so nothing new is provisioned. The pattern is the
+ * exec-function cron's (lib/exec-function/access.ts); the label keeps the two
+ * keys apart. Keep the label in step with .github/workflows/pdf-folder-sync.yml.
+ */
+export const PDF_SYNC_PATH = "/api/pdf-drive/sync";
+export const PDF_SYNC_KEY_HEADER = "x-pdf-sync-key";
+export const SYNC_KEY_LABEL = "pdf-metadata-viewer/folder-sync/v1";
+
+/** Hex for what the schedule sends; tests and local runs use it. */
+export async function deriveSyncKey(root: string): Promise<string> {
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    await hmacKey(root),
+    new TextEncoder().encode(SYNC_KEY_LABEL),
+  );
+  return Array.from(new Uint8Array(signature), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** Constant-time, via `crypto.subtle.verify`; false for anything malformed. */
+export async function verifySyncKey(key: string | null, root: string): Promise<boolean> {
+  if (!key || !root || !/^[0-9a-f]{64}$/.test(key)) return false;
+  const bytes = new Uint8Array(new ArrayBuffer(32));
+  for (let i = 0; i < 32; i += 1) bytes[i] = parseInt(key.slice(i * 2, i * 2 + 2), 16);
+  try {
+    return await crypto.subtle.verify(
+      "HMAC",
+      await hmacKey(root),
+      bytes,
+      new TextEncoder().encode(SYNC_KEY_LABEL),
+    );
+  } catch {
+    return false;
+  }
+}
+
 // --- route matching ---------------------------------------------------------
 
 /** Every surface the gate covers. */

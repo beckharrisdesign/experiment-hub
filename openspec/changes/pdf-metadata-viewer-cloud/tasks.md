@@ -88,6 +88,16 @@ design.md said the detail preview already drew page images with pdf.js (§ conte
 - [x] 7c.2 Explicit go on the rendered frames — **"Looks right, build it", 2026-11-23**
 - [x] 7c.3 Build it: pages drawn as images, first page first; "Open full size" keeps the browser's viewer in a new tab — **done, verified live 2026-11-24** (#631–#638). Built first with the splitter's pdf.js loader (#631), then, after measuring, the pages are drawn **on the server** (`GET …/pages/[n]`, `lib/pdf-render.ts`, nothing stored) with pdf.js in the browser kept as the fallback. Why: Drive hands the function a 9.35 MB scan in under 0.5 s once it starts, but the function sends to the browser at about 0.85 MB/s (#635's timings), so byte ranges (#632) and parallel fetching (#633, reverted #634) couldn't help. On that 16-page scan, page 1 went 14.5 s → 2.5–4.0 s, and 539 KB of images replace 9.6 MB of PDF. The phone preview keeps the live 420px height rather than frame 40:3's 181pt. CI moved to Node 24, as Vercel runs it (#636). Left: Drive's own start-up (1–3.5 s per request) now dominates page 1; the splitter still draws in the browser
 
+## 7d. Folder sync
+
+New files reached the list only when the folder was chosen again, and their own values only when opened: 65 of 83 live rows listed no page count. Katy asked for the folder's new files and their metadata to come in on their own, on a schedule (2026-11-24). design.md D12.
+
+- [x] 7d.1 Spec and design: D12; scenarios in all three specs, including the one narrow exception to the session gate
+- [x] 7d.2 The sync: import the folder, then read files with nothing stored for Drive's current revision, never-read first, three at a time, stopping after 40 s (`lib/pdf-sync.ts`, `POST /api/pdf-drive/sync`)
+- [x] 7d.3 The list shows a never-edited file's own values from the saved read (`listedValues`); edited files unchanged
+- [x] 7d.4 Hourly schedule (`.github/workflows/pdf-folder-sync.yml`), let in by a key derived from the service-role key, on that route and by POST only (`verifySyncKey`, middleware)
+- [ ] 7d.5 Verify live: run the workflow by hand until the backlog drains and the list shows page counts; add a test PDF to the folder and see it arrive on the next run
+
 ## 8. Write path
 
 - [x] 8.0 Capture the baseline on the first staged edit — read the file once, store `file_snapshot.embedded` and `drive_head_revision_id` together, fill the field columns; never re-capture while edits are pending. See `design.md` D8, "captured on first edit". **Done in #608, verified live 2026-11-20:** the first edit stored the file's five fields and its revision, and filled the title column from the file

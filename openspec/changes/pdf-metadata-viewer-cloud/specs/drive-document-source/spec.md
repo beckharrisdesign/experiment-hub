@@ -85,6 +85,13 @@ copy of the PDF. Drive remains the only home for the bytes.
 - **THEN** a reference row is created for each PDF found
 - **AND** no PDF is copied into other storage
 
+#### Scenario: A file is added to the folder later
+
+- **WHEN** a PDF is added to the chosen folder in Drive
+- **THEN** within the hour a reference row is created for it, without anyone
+  choosing the folder again
+- **AND** no PDF is copied into other storage
+
 #### Scenario: A referenced file is opened
 
 - **WHEN** a user opens a document for preview

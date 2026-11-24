@@ -54,6 +54,14 @@ In v1 nothing was authenticated, which was defensible when the server bound to
 localhost and read a local directory. On a public URL the same routes are an
 open read and an open delete over the household archive.
 
+One route is the exception: the scheduled folder sync (design.md D12). It MAY
+also accept a key derived from the service-role key, checked before any other
+call as the session is. That key MUST open only that route, by POST only, and
+the route MUST answer with counts alone — no filename, metadata value, or bytes
+— so the key can start a sync but cannot read, edit, or delete anything. It
+identifies no one, so it is not the "proof of identity" the first requirement
+forbids.
+
 #### Scenario: Unauthenticated read
 
 - **WHEN** an unauthenticated request asks for a document's metadata
@@ -71,6 +79,13 @@ open read and an open delete over the household archive.
 - **WHEN** an unauthenticated request names a document that exists and one that
   does not
 - **THEN** the two responses are indistinguishable
+
+#### Scenario: The scheduled sync starts without a session
+
+- **WHEN** the schedule calls the sync route with its derived key
+- **THEN** the sync runs and answers with counts only
+- **AND** the same key on any other route, or by GET, is refused as an
+  unauthenticated request
 
 #### Scenario: Session expires mid-session
 

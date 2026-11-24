@@ -2,6 +2,7 @@ import { Badge, Button, Inline, Stack } from "@beckharrisdesign/mvds";
 import { listPdfDocuments, type PdfDocument } from "@/lib/pdf-documents";
 import { getDriveConnection, type DriveConnection } from "@/lib/pdf-drive";
 import { summarizePending } from "@/lib/pdf-staging";
+import { listedValues } from "@/lib/pdf-shown-values";
 import FolderPicker from "./FolderPicker";
 import { DocumentsSection } from "./DocumentsSection";
 import { AttentionCard } from "./AttentionCard";
@@ -87,7 +88,10 @@ function DocumentsTable({ documents }: { documents: PdfDocument[] }) {
           </tr>
         </thead>
         <tbody>
-          {documents.map((d) => (
+          {documents.map((d) => {
+            // What the file says fills a never-edited row (task 7d.3).
+            const shown = listedValues(d);
+            return (
             <tr key={d.id} className="border-b border-border last:border-0">
               <td className="px-4 py-3 text-text-primary">
                 <a
@@ -97,16 +101,17 @@ function DocumentsTable({ documents }: { documents: PdfDocument[] }) {
                   {d.filename ?? "(unnamed)"}
                 </a>
               </td>
-              <td className="px-4 py-3 text-text-muted">{d.title ?? "—"}</td>
+              <td className="px-4 py-3 text-text-muted">{shown.title ?? "—"}</td>
               <td className="px-4 py-3 text-text-muted">
-                {d.keywords.length > 0 ? d.keywords.join(", ") : "—"}
+                {shown.keywords.length > 0 ? shown.keywords.join(", ") : "—"}
               </td>
-              <td className="px-4 py-3 text-text-muted">{d.pageCount ?? "—"}</td>
+              <td className="px-4 py-3 text-text-muted">{shown.pageCount ?? "—"}</td>
               <td className="px-4 py-3">
                 <StateCell document={d} />
               </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>
