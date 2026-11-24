@@ -7,6 +7,8 @@ const mocks = vi.hoisted(() => ({
   getDriveHeadRevisionId: vi.fn(),
   downloadDriveFile: vi.fn(),
   suggestMetadata: vi.fn(),
+  suggestWithUsage: vi.fn(),
+  getDocumentText: vi.fn(),
 }));
 
 vi.mock("@/lib/pdf-documents", async () => {
@@ -24,8 +26,9 @@ vi.mock("@/lib/pdf-drive", async () => {
 });
 vi.mock("@/lib/pdf-suggest", async () => {
   const actual = await vi.importActual<typeof import("@/lib/pdf-suggest")>("@/lib/pdf-suggest");
-  return { ...actual, suggestMetadata: mocks.suggestMetadata };
+  return { ...actual, suggestMetadata: mocks.suggestMetadata, suggestWithUsage: mocks.suggestWithUsage };
 });
+vi.mock("@/lib/pdf-page-text", () => ({ getDocumentText: mocks.getDocumentText }));
 
 import { POST } from "@/app/api/pdf-documents/id/[id]/suggestions/route";
 import { DriveFileMissing } from "@/lib/pdf-drive";
@@ -39,10 +42,11 @@ const DOC = {
   title: "HEB",
   subject: null,
   keywords: ["heb"],
+  driveRevisionId: "rev-1",
 };
 
-function call(id: string) {
-  return POST(new NextRequest(`http://localhost/api/pdf-documents/id/${id}/suggestions`, { method: "POST" }), {
+function call(id: string, query = "") {
+  return POST(new NextRequest(`http://localhost/api/pdf-documents/id/${id}/suggestions${query}`, { method: "POST" }), {
     params: Promise.resolve({ id }),
   });
 }
@@ -93,6 +97,53 @@ describe("POST /api/pdf-documents/id/[id]/suggestions", () => {
     mocks.getDriveHeadRevisionId.mockRejectedValue(new DriveFileMissing("trashed"));
     expect((await call(ID)).status).toBe(410);
     expect(mocks.suggestMetadata).not.toHaveBeenCalled();
+  });
+
+  // Task 7h.6.
+  describe("comparing sources", () => {
+    const ANSWER = {
+      suggestions: { title: "HEB grocery receipt", subject: "Groceries", keywords: ["receipt"] },
+      usage: { inputTokens: 900, outputTokens: 80 },
+    };
+    beforeEach(() => {
+      mocks.getPdfDocument.mockResolvedValue(DOC);
+      mocks.suggestWithUsage.mockResolvedValue(ANSWER);
+    });
+
+    it("answers from kept text alone, from a clean slate, without Drive", async () => {
+      const source = { text: "Total due", look: new Uint8Array([1]) };
+      mocks.getDocumentText.mockResolvedValue(source);
+      const res = await call(ID, "?compare=text");
+      expect(await res.json()).toMatchObject({ ...ANSWER, readMs: expect.any(Number), askMs: expect.any(Number) });
+      expect(mocks.getDocumentText).toHaveBeenCalledWith(ID, "rev-1");
+      expect(mocks.suggestWithUsage).toHaveBeenCalledWith(source, {
+        filename: DOC.filename,
+        title: null,
+        subject: null,
+        keywords: [],
+      });
+      expect(mocks.downloadDriveFile).not.toHaveBeenCalled();
+    });
+
+    it("answers from the PDF alone, from the same clean slate", async () => {
+      await call(ID, "?compare=pdf");
+      const [bytes, input] = mocks.suggestWithUsage.mock.calls[0];
+      expect(Array.from(bytes as Uint8Array)).toEqual([1, 2, 3]);
+      expect(input).toMatchObject({ title: null, keywords: [] });
+      expect(mocks.getDocumentText).not.toHaveBeenCalled();
+    });
+
+    it("says so when there's too little text, and asks nothing", async () => {
+      mocks.getDocumentText.mockResolvedValue(null);
+      expect((await call(ID, "?compare=text")).status).toBe(422);
+      expect(mocks.suggestWithUsage).not.toHaveBeenCalled();
+    });
+
+    it("leaves the button as it was", async () => {
+      mocks.suggestMetadata.mockResolvedValue(ANSWER.suggestions);
+      expect(await (await call(ID, "?compare=other")).json()).toEqual({ suggestions: ANSWER.suggestions });
+      expect(mocks.getDocumentText).not.toHaveBeenCalled();
+    });
   });
 
   it("502s when OpenAI fails", async () => {

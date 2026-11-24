@@ -10,7 +10,7 @@
 import { getPdfAdminClient } from "@/lib/pdf-documents";
 import { openReader, type PageReader } from "@/lib/pdf-ocr";
 import { PAGE_BUCKET, STORED_WIDTH, type WantedDocument } from "@/lib/pdf-page-store";
-import { openPdf, type OpenPdf } from "@/lib/pdf-render";
+import { openPdf, shrinkJpeg, type OpenPdf } from "@/lib/pdf-render";
 
 /** Fewer letters than this is a stamp or a page number, not a page's text. */
 export const ENOUGH_LETTERS = 20;
@@ -165,4 +165,78 @@ export async function syncText(options: TextSyncOptions): Promise<TextSyncResult
     (reader as PageReader | null)?.close();
   }
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// For suggestions
+// ---------------------------------------------------------------------------
+
+/**
+ * Below this, tesseract's reading isn't used. On the first 61 real scans nothing
+ * fell between 36 and 56: art below, documents above (design.md D15).
+ */
+export const SURE_ENOUGH = 50;
+
+/** As much as is sent: far more than says what a document is. */
+export const MAX_TEXT = 20_000;
+
+/** Wide enough to make out a letterhead, a layout or a drawing. */
+const LOOK_WIDTH = 768;
+
+export interface DocumentText {
+  /** The pages that could be read, in order, each under its number. */
+  text: string;
+  /** Page 1, small, for what words can't say. */
+  look: Uint8Array;
+}
+
+export interface KeptPageText {
+  page: number;
+  text: string;
+  source: "file" | "ocr";
+  confidence: number | null;
+}
+
+/**
+ * What to send, or null when there is too little to go on: most pages must be
+ * readable, so a drawing with a caption still goes as a picture.
+ */
+export function textToSend(pages: KeptPageText[]): string | null {
+  const readable = pages.filter(
+    (p) => hasEnoughText(p.text) && (p.source === "file" || (p.confidence ?? 0) >= SURE_ENOUGH),
+  );
+  if (readable.length === 0 || readable.length * 2 < pages.length) return null;
+  const all = [...readable]
+    .sort((a, b) => a.page - b.page)
+    .map((p) => `--- Page ${p.page} ---\n${p.text}`)
+    .join("\n\n");
+  return all.length > MAX_TEXT ? `${all.slice(0, MAX_TEXT)}\n[…]` : all;
+}
+
+/** A document's kept text and a look at its first page, or null: send the PDF. */
+export async function getDocumentText(
+  documentId: string,
+  revision: string | null,
+): Promise<DocumentText | null> {
+  if (!revision) return null;
+  const { data: set, error } = await sets()
+    .select("set_id, page_count")
+    .eq("document_id", documentId)
+    .eq("drive_revision", revision)
+    .not("text_at", "is", null)
+    .maybeSingle();
+  if (error) throw new Error(`Could not read page sets: ${error.message}`);
+  if (!set) return null;
+  const setId = String((set as Record<string, unknown>).set_id);
+  const { data, error: textError } = await texts()
+    .select("page, text, source, confidence")
+    .eq("set_id", setId);
+  if (textError) throw new Error(`Could not read kept text: ${textError.message}`);
+  const text = textToSend((data ?? []) as KeptPageText[]);
+  if (!text) return null;
+  const { data: image } = await getPdfAdminClient()
+    .storage.from(PAGE_BUCKET)
+    .download(`${setId}/1.jpg`);
+  if (!image) return null;
+  return { text, look: await shrinkJpeg(new Uint8Array(await image.arrayBuffer()), LOOK_WIDTH) };
 }
