@@ -1,5 +1,13 @@
 const path = require("path");
 
+// What pdf.js reads from disk at runtime to draw a page (lib/pdf-render.ts):
+// standard fonts, WebAssembly decoders (JBIG2 and JPEG 2000, common in scans)
+// and colour profiles. Every route that draws pages needs them; without them a
+// scan's images are left out of the page rather than failing it.
+const pdfjsRuntime = ['standard_fonts', 'wasm', 'iccs'].map(
+  (folder) => `node_modules/.pnpm/pdfjs-dist@*/node_modules/pdfjs-dist/${folder}/**`,
+);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Prevent Next from treating ~/package-lock.json as the monorepo root (breaks dev module resolution).
@@ -29,13 +37,9 @@ const nextConfig = {
     // and including through it makes the deploy packager materialise the
     // folder twice (the same EEXIST as sharp, above) — Vercel then fails at
     // build-container-init with "Unexpected error" (#636).
-    '/api/pdf-documents/**': [
-      'config/pdf-metadata-viewer/tag-vocabulary.md',
-      'node_modules/.pnpm/pdfjs-dist@*/node_modules/pdfjs-dist/standard_fonts/**',
-      // And its WebAssembly decoders (JBIG2, JPEG 2000) and colour profiles.
-      'node_modules/.pnpm/pdfjs-dist@*/node_modules/pdfjs-dist/wasm/**',
-      'node_modules/.pnpm/pdfjs-dist@*/node_modules/pdfjs-dist/iccs/**',
-    ],
+    '/api/pdf-documents/**': ['config/pdf-metadata-viewer/tag-vocabulary.md', ...pdfjsRuntime],
+    // The folder sync draws pages too (lib/pdf-page-store.ts).
+    '/api/pdf-drive/**': pdfjsRuntime,
     '/etsy-listing-kit/**': [
       'node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/node_modules/@img/sharp-libvips-linux-x64/**',
       // Bundled fonts — serverless has none; without these, SVG text renders

@@ -117,7 +117,8 @@ Katy, 2026-11-24: "looking at a single doc seems to be generating images of the 
 - [x] 7f.3 Apply migration 032 to the hub database — **applied 2026-11-24** with Katy's go: bucket private and JPEG only, row level security on, no policies on it or the table, no grants to the public keys
 - [~] 7f.4 Verify live — **2026-11-24** (#644), on PDF Tests. Right: the sync draws and keeps (208 images, 52 of 53 documents, part way through its first run); a 30-page scan's second open came wholly from storage; after a commit on `Sync-test-3-pages.pdf` its three pages were still kept ones, on one set; no session, no image (401). **Not fast enough:** that scan went from 58.6 s (first open, while the sync was also drawing) to 22.9 s, page 1 from 11.4 s to 2.6 s, and Split showed all 30 thumbnails in 18.1 s. Storage answers in about 0.4 s; the rest is the function sending full-size images at 0.35–0.6 MB/s (a static file on the same site: 2.5 MB/s). See 7f.5. Not checked: the clear-out of a changed or removed file
 - [x] 7f.5 Send less — a small copy of each page (296 px) kept beside it, for Split's thumbnails and for the preview to show first and sharpen (Katy, 2026-11-24: "grabbing the images at mid to low resolution to start"); the preview fetches only pages within a screen of what's in view. Pages kept before this get their small copy from the kept page the first time it's asked for; nothing is redrawn and no migration is needed
-- [ ] 7f.6 Time it live again: the 30-page scan, opening and Split
+- [x] 7f.7 The sync's route gets pdf.js's fonts and decoders too — `next.config` packaged them only for `/api/pdf-documents/**`, and since 7f.2 the sync draws pages under `/api/pdf-drive/**`. Found while planning 7h. No kept page was blank-sized (smallest of a real document 35 KB), and the made-up test file, whose text needs the standard fonts, had drawn, so it appears to have worked by how routes were bundled; now it's said outright, with a test
+- [x] 7f.6 Time it live again — **2026-11-24** (#646), the same 30-page scan: page 1 shows at 1.7 s and is sharp at 3.4 s (it was 2.6 s, sharp only); jumping to page 20 took 0.9 s; 8 fetches to open and 11 in all where 30 pages had gone (22.9 s). Split filled in 4.6 s, then 4.1 s, where it took 18.1 s; small copies average 21 KB
 
 ## 7g. Names and tags when splitting
 
@@ -126,9 +127,22 @@ Katy, 2026-11-24: "there's an interesting tension between splitting a pdf before
 - [x] 7g.1 Draw it: `02.14 Proposed — Split names and tags` (81:8), then with the actions pinned, `02.15 Proposed — Split, actions always on screen` (83:23): frames 83:24 (tagged), 83:189 (not tagged), 83:368 (19 pages, scrolled), 83:694 (loading), note 83:344
 - [x] 7g.2 Explicit go — **"Looks right, build it", 2026-11-24**
 - [x] 7g.3 Spec, rules shared by the page and the server (`lib/pdf-split-plan.ts`), the panel, and the split route
-- [ ] 7g.4 Verify live on a made-up scan
+- [x] 7g.4 Verify live on a made-up scan — **verified 2026-11-24** (#645): `Sync-test-3-pages.pdf` split after page 1, one title edited, Subject left behind. "Sync test document 1.pdf" (1 page, title "Sync test document, 1 of 2") and "Sync test last two.pdf" (2 pages, title "Sync test: last two"), both with the keywords and author and no subject, in the file as well as here. Not checked live: 19 parts, and a phone beyond looking
 
 Not covered: the 19 parts already made keep their names; and a split still makes its files one after another inside one 60-second request, so a very long one could run out of time (19 parts did not).
+
+## 7h. Cached text (being measured)
+
+Katy, 2026-11-24: "or caching the ocr version of the pages for ai synthesis so that full image transfer isn't needed at every completion". Suggest downloads the whole PDF from Drive and sends all of it to OpenAI on every press. design.md D15. OCR was a non-goal of this change; this moves it in.
+
+- [x] 7h.1 Katy's call on where scans are read (D15), which also settles that their text may be kept — **"Our own server", 2026-11-24**
+- [~] 7h.2 Measure before building — **made-up pages, 2026-11-24**, on an M1, at the 1120 px pages are kept at. Text a page already carries: 2 ms a page. tesseract.js (7.0, LSTM): 0.5–1.0 s a page, about 290 MB of memory, share of words found: clean 100 %, small type 95 % (100 % at 1600 px), tilted 2° 100 %, grey and speckled 94 %, very faint 86 %, a handwriting font 98 %, a script font 68 %. Its confidence tells them apart (95, 89, 93, 72, 59, 88, 60), and a drawing with no words gave 4 at 23. Needs about 7 MB in the function: one engine variant and the 3 MB English file. **Not measured:** real scans and real handwriting (only with Katy's go), the time and memory deployed, and whether suggestions are as good (7h.6)
+- [ ] 7h.3 Spec: text of pages may be kept; the same privacy rules as images
+- [ ] 7h.4 Keep text beside each page set (migration 033, applied only on her go); fill it in the sync after drawing
+- [ ] 7h.5 Suggest from text and one small page image, falling back to the PDF where there is too little text
+- [ ] 7h.6 Verify live; compare time and tokens per press
+
+Later, not part of this: searching inside documents, which the kept text would make possible.
 
 ## 8. Write path
 
