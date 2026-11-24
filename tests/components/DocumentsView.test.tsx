@@ -84,6 +84,15 @@ describe("DocumentsView (task 7e)", () => {
     expect(names()).toEqual(["b.pdf", "c.pdf", "a.pdf"]);
   });
 
+  it("aligns cells top left, with numbers and their column name to the right", () => {
+    renderView();
+    const cells = within(table().getAllByRole("row")[1]).getAllByRole("cell");
+    expect(cells.map((c) => c.className.includes("text-right"))).toEqual([false, false, false, true, false]);
+    expect(table().getAllByRole("row")[1].className).toContain("align-top");
+    expect(table().getByRole("button", { name: /Pages/ }).className).toContain("flex-row-reverse");
+    expect(table().getByRole("button", { name: /Title/ }).className).not.toContain("flex-row-reverse");
+  });
+
   it("says when nothing matches and clears it", () => {
     renderView({ keywords: ["utilities"] });
     fireEvent.change(search(), { target: { value: "watr bill" } });

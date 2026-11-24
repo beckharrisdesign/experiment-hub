@@ -40,11 +40,12 @@ const LIST_URL = "/pdf-metadata-viewer";
 /** Browsers cap how often the address may be rewritten; typing is faster. */
 const ADDRESS_DELAY = 250;
 
-const COLUMNS: { key: SortKey; label: string; width: string }[] = [
+/** Cells sit top left; numbers align right, and so does their column name. */
+const COLUMNS: { key: SortKey; label: string; width: string; numeric?: boolean }[] = [
   { key: "filename", label: "Filename", width: "" },
   { key: "title", label: "Title", width: "w-[18%]" },
   { key: "keywords", label: "Keywords", width: "w-[29%]" },
-  { key: "pages", label: "Pages", width: "w-[92px]" },
+  { key: "pages", label: "Pages", width: "w-[92px]", numeric: true },
   { key: "state", label: "State", width: "w-[158px]" },
 ];
 
@@ -118,7 +119,9 @@ function StatePill({ row }: { row: ListRow }) {
       </span>
     );
   }
-  return <Badge variant="muted">{row.stateLabel}</Badge>;
+  // Plain text: a pill the colour of its row would only indent the words from
+  // their column name.
+  return <span className="text-xs font-medium text-text-primary">{row.stateLabel}</span>;
 }
 
 interface DocumentsViewProps {
@@ -314,6 +317,9 @@ export default function DocumentsView({ rows, pending, excluded, initialView }: 
                         type="button"
                         onClick={() => setView((v) => toggleSort(v, c.key))}
                         className={`flex min-h-11 w-full cursor-pointer items-center gap-1.5 px-4 hover:text-text-primary ${
+                          // Reversed, so the name itself lines up with the numbers.
+                          c.numeric ? "flex-row-reverse" : ""
+                        } ${
                           on
                             ? "font-semibold text-text-primary"
                             : "font-medium text-muted-foreground"
@@ -331,24 +337,26 @@ export default function DocumentsView({ rows, pending, excluded, initialView }: 
             </thead>
             <tbody>
               {shown.map((row) => (
-                <tr key={row.id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-3 [overflow-wrap:anywhere] text-text-primary">
+                <tr key={row.id} className="border-b border-border align-top last:border-0">
+                  <td className="px-4 py-3 leading-6 [overflow-wrap:anywhere] text-text-primary">
                     <a href={href(row)} className="hover:underline">
                       {row.filename ?? "(unnamed)"}
                     </a>
                   </td>
-                  <td className="px-4 py-3 [overflow-wrap:anywhere] text-muted-foreground">
+                  <td className="px-4 py-3 leading-6 [overflow-wrap:anywhere] text-muted-foreground">
                     {row.title ?? "—"}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  <td className="px-4 py-3 leading-6 text-muted-foreground">
                     {row.keywords.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">{keywordTags(row)}</div>
                     ) : (
                       "—"
                     )}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">{row.pageCount ?? "—"}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-right leading-6 tabular-nums text-muted-foreground">
+                    {row.pageCount ?? "—"}
+                  </td>
+                  <td className="px-4 py-3 leading-6">
                     <StatePill row={row} />
                   </td>
                 </tr>
