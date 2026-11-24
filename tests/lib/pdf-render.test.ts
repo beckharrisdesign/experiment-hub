@@ -24,6 +24,19 @@ describe("renderPdfPage", () => {
     expect([...page.jpeg.slice(0, 3)]).toEqual([0xff, 0xd8, 0xff]);
   });
 
+  it("gives a page's own words, line by line, and nothing for a page without any", async () => {
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const page = doc.addPage([612, 792]);
+    page.drawText("First line", { x: 60, y: 700, size: 14, font });
+    page.drawText("Second line", { x: 60, y: 660, size: 14, font });
+    doc.addPage([612, 792]);
+    const pdf = await openPdf(await doc.save());
+    expect((await pdf.text(1)).split("\n").map((l) => l.trim()).filter(Boolean)).toEqual(["First line", "Second line"]);
+    expect((await pdf.text(2)).trim()).toBe("");
+    await pdf.close();
+  });
+
   it("makes a smaller copy of a drawn page, and never a bigger one", async () => {
     const { jpeg } = await renderPdfPage(await samplePdf(1), 1, 600);
     const small = await shrinkJpeg(jpeg, 296);

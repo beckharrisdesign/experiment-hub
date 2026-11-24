@@ -3,7 +3,7 @@
 # Finds new PDFs in the chosen Drive folder and reads each unread file's own
 # values (page count, title, author, subject, keywords), so the list fills in
 # without opening files one by one, then draws and keeps the pages of documents
-# not yet drawn (task 7f). The work happens in the hub's own function
+# not yet drawn (task 7f) and the text on them (task 7h). The work happens in the hub's own function
 # (POST /api/pdf-drive/sync, lib/pdf-sync.ts); this job only starts it, and no
 # document bytes or values pass through GitHub — the answer is counts.
 # openspec/changes/pdf-metadata-viewer-cloud — task 7d, design.md D12.
@@ -73,7 +73,7 @@ jobs:
               exit 1
             fi
 
-            left=$(jq '(.remaining // 0) + (.pages.pagesWaiting // 0)' response.json)
-            did=$(jq '(.read // 0) + (.pages.pagesDrawn // 0)' response.json)
+            left=$(jq '(.remaining // 0) + (.pages.pagesWaiting // 0) + (.text.textWaiting // 0)' response.json)
+            did=$(jq '(.read // 0) + (.pages.pagesDrawn // 0) + (.text.textPages // 0)' response.json)
             if [ "$left" = "0" ] || [ "$did" = "0" ]; then break; fi
           done

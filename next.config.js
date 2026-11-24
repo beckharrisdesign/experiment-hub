@@ -18,7 +18,9 @@ const nextConfig = {
   // pdf.js and its native canvas draw preview pages on the server
   // (lib/pdf-render.ts); kept external so their worker, fonts and .node binary
   // are loaded from node_modules at runtime rather than bundled.
-  serverExternalPackages: ['sharp', 'pdfjs-dist', '@napi-rs/canvas'],
+  // tesseract's engine reads scanned pages (lib/pdf-ocr.ts); external, as it is
+  // one large generated file there is nothing to gain from bundling.
+  serverExternalPackages: ['sharp', 'pdfjs-dist', '@napi-rs/canvas', 'tesseract.js-core'],
   // File tracing misses libvips (loaded at the binary level via rpath, never
   // require()d), so force ONLY the libvips store dir into the Etsy Listing Kit
   // bundles. Deliberately narrow: including the sharp/sharp-linux-x64 store
@@ -38,8 +40,9 @@ const nextConfig = {
     // folder twice (the same EEXIST as sharp, above) — Vercel then fails at
     // build-container-init with "Unexpected error" (#636).
     '/api/pdf-documents/**': ['config/pdf-metadata-viewer/tag-vocabulary.md', ...pdfjsRuntime],
-    // The folder sync draws pages too (lib/pdf-page-store.ts).
-    '/api/pdf-drive/**': pdfjsRuntime,
+    // The folder sync draws pages too (lib/pdf-page-store.ts), and reads scanned
+    // ones with tesseract's English data (lib/pdf-ocr.ts).
+    '/api/pdf-drive/**': [...pdfjsRuntime, 'assets/ocr/**'],
     '/etsy-listing-kit/**': [
       'node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/node_modules/@img/sharp-libvips-linux-x64/**',
       // Bundled fonts — serverless has none; without these, SVG text renders

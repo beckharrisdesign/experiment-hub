@@ -36,10 +36,12 @@ interface PageSet {
   setId: string;
   pageCount: number | null;
   drawnAt: string | null;
+  /** When every page's text was kept too (lib/pdf-page-text.ts). */
+  textAt: string | null;
   createdAt: string;
 }
 
-const COLUMNS = "document_id, drive_revision, set_id, page_count, drawn_at, created_at";
+const COLUMNS = "document_id, drive_revision, set_id, page_count, drawn_at, text_at, created_at";
 
 function toSet(row: Record<string, unknown>): PageSet {
   return {
@@ -48,6 +50,7 @@ function toSet(row: Record<string, unknown>): PageSet {
     setId: String(row.set_id),
     pageCount: (row.page_count as number) ?? null,
     drawnAt: (row.drawn_at as string) ?? null,
+    textAt: (row.text_at as string) ?? null,
     createdAt: String(row.created_at),
   };
 }
@@ -216,6 +219,7 @@ export async function carryPages(
         set_id: set.setId,
         page_count: set.pageCount,
         drawn_at: set.drawnAt,
+        text_at: set.textAt,
       },
       { onConflict: "document_id,drive_revision" },
     );
@@ -285,6 +289,11 @@ async function clearOut(
           const { error } = await bucket().remove(paths.slice(i, i + 500));
           if (error) throw new Error(error.message);
         }
+        const { error } = await getPdfAdminClient()
+          .from("pdf_page_text")
+          .delete()
+          .eq("set_id", set.setId);
+        if (error) throw new Error(error.message);
       }
       const { error } = await sets()
         .delete()

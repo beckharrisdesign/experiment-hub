@@ -742,7 +742,7 @@ for the pages kept before this.
 **Size.** About 260 KB a page; the 381 pages listed on 2026-11-24 come to about
 100 MB.
 
-### D15 — Cached text for suggestions (being measured, task 7h)
+### D15 — Cached text for suggestions (task 7h)
 
 **Today.** Each press of Suggest downloads the whole PDF from Drive and sends
 all of it, base64, to OpenAI, whose model reads it afresh. Nothing is reused
@@ -771,6 +771,15 @@ photographs lose nothing.
      someone presses Suggest on.
 
 Drive's own OCR was set aside: it works by making a Google Doc copy of each file.
+
+**How scans are read.** Tesseract's engine (`tesseract.js-core`, one module) runs
+inside the sync's own process, with its English data vendored in `assets/ocr`.
+Not through tesseract.js's worker threads: those start from a path built at
+runtime, which deployment tracing can't follow, the fault that broke pdf.js's
+worker in #636. It blocks while it reads, about a second a page, so it runs only
+in the sync, last, in the time drawing leaves. A page needs twenty letters or
+digits of its own to count as carrying text; fewer is a stamp or a page number.
+Tesseract's confidence is kept with what it read, to judge it by later.
 
 **The rule it changes.** The text of household documents would sit in the hub's
 database, behind row level security with no policies, reachable by the server
