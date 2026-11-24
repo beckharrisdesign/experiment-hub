@@ -21,6 +21,7 @@ const KNOWN: PrefillKnowledge = {
     peopleWithNames: [
       { name: "Firstname Lastname", slug: "firstname-m-lastname", aliases: ["Firstie", "F. M. Lastname"] },
     ],
+    locations: ["location-springfield-tx", "location-lake-made-up-ma", "location-tx"],
   },
   documentTypes: ["receipt", "invoice", "statement", "letter"],
   categories: ["grocery", "retail", "utilities"],
@@ -128,6 +129,35 @@ describe("what it leaves alone", () => {
       entities: { ...KNOWN.entities, vendorsWithNames: [vendor("Foodmart", "food mart", { location: "Home TX" })] },
     };
     expect(makePrefill({ filename: null, title: null, pages: [page(TILL)] }, odd)).toBeNull();
+  });
+
+  it("finds a place by its city and state together, as in an address", () => {
+    const tags = (text: string) => make(`${text}\nInvoice for the garden work`)!.keywords.filter((k) => k.startsWith("location-"));
+    expect(tags("12 Main St, Springfield, TX 70000")).toEqual(["location-springfield-tx"]);
+    expect(tags("SPRINGFIELD TEXAS")).toEqual(["location-springfield-tx"]);
+    expect(tags("Lake Made Up, Massachusetts")).toEqual(["location-lake-made-up-ma"]);
+    // The first on the page, and one only.
+    expect(tags("Lake Made-Up, MA to Springfield, TX")).toEqual(["location-lake-made-up-ma"]);
+    expect(make("Springfield, TX invoice for the garden work")!.why["location-springfield-tx"]).toBe("City and state on page 1");
+  });
+
+  it("doesn't take a city alone, a state alone, or another state's city for a place", () => {
+    const tags = (text: string) => make(`${text}\nInvoice for the garden work`)!.keywords.filter((k) => k.startsWith("location-"));
+    expect(tags("40 Springfield Avenue")).toEqual([]);
+    expect(tags("Elsewhere, TX 70000")).toEqual([]);
+    expect(tags("Springfield, MA 01000")).toEqual([]);
+  });
+
+  it("keeps the vendor's own place over the page's, and makes nothing of a place alone", () => {
+    const found = make(`${TILL}\nSpringfield, TX 70000`)!;
+    expect(found.keywords.filter((k) => k.startsWith("location-"))).toEqual(["location-home-tx"]);
+    expect(make("Some words that name nobody known, sent to Springfield, TX 70000")).toBeNull();
+  });
+
+  it("leaves out a date still to come, and keeps the rest", () => {
+    const found = make(TILL, { filename: "04252999_FOODMART.pdf" })!;
+    expect(found.keywords).toContain("foodmart");
+    expect(found.keywords.some((k) => /^(year|month)-/.test(k))).toBe(false);
   });
 
   it("never writes a subject", () => {

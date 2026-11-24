@@ -823,7 +823,7 @@ by reading it:
 | Year, month | 18 of 18 | Nearly all from the scanner's filename date |
 | Vendor, where one is tagged | 7 of 7 | Its name is on the page |
 | Document type | 6 of 9 | Its word is on the page; receipts often don't say "receipt" |
-| Category, location | 0 | Not on the page. The Entities database can give a vendor's own; not yet checked how often it does |
+| Category, location | 0 | The tag itself is not on the page. The Entities database gives a vendor's own: a category for all 11 first prefilled, a location for none. A place's city and state often are on the page (7i.7) |
 | Scanned original | 10 of 10 | The page had no text of its own (D15 records this); but so did 18 documents not tagged so, mostly art, so on its own it over-applies |
 | Paid, and other status | 0 | Would need a rule (a receipt is paid) or a person |
 

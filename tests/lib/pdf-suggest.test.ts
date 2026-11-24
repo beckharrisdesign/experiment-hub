@@ -58,6 +58,13 @@ describe("filenameDate", () => {
     expect(filenameDate("13452025_x.pdf")).toBeNull();
     expect(filenameDate(null)).toBeNull();
   });
+
+  it("takes a date still to come for a misread", () => {
+    expect(filenameDate("04012028_Store Hours.pdf", "2026-11-24")).toBeNull();
+    expect(filenameDate("2028-04-01 — Invoice.pdf", "2026-11-24")).toBeNull();
+    expect(filenameDate("11252026_x.pdf", "2026-11-24")).toBeNull();
+    expect(filenameDate("11242026_x.pdf", "2026-11-24")).toBe("2026-11-24");
+  });
 });
 
 describe("buildInstructions", () => {

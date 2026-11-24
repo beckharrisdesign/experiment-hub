@@ -93,6 +93,42 @@ function firstMention(text: string[], entity: NamedSlug): number {
 }
 
 // ---------------------------------------------------------------------------
+// Places
+// ---------------------------------------------------------------------------
+
+const STATES: Record<string, string> = Object.fromEntries(
+  (
+    "al Alabama,ak Alaska,az Arizona,ar Arkansas,ca California,co Colorado,ct Connecticut,de Delaware,dc District of Columbia," +
+    "fl Florida,ga Georgia,hi Hawaii,id Idaho,il Illinois,in Indiana,ia Iowa,ks Kansas,ky Kentucky,la Louisiana,me Maine," +
+    "md Maryland,ma Massachusetts,mi Michigan,mn Minnesota,ms Mississippi,mo Missouri,mt Montana,ne Nebraska,nv Nevada," +
+    "nh New Hampshire,nj New Jersey,nm New Mexico,ny New York,nc North Carolina,nd North Dakota,oh Ohio,ok Oklahoma," +
+    "or Oregon,pa Pennsylvania,ri Rhode Island,sc South Carolina,sd South Dakota,tn Tennessee,tx Texas,ut Utah,vt Vermont," +
+    "va Virginia,wa Washington,wv West Virginia,wi Wisconsin,wy Wyoming"
+  )
+    .split(",")
+    .map((s) => [s.slice(0, 2), s.slice(3)]),
+);
+
+/**
+ * The first place on the page that Entities has a tag for: its city with its state
+ * right after, as in an address. A city alone is too often a street or a name, and a
+ * state alone is on most pages (measured on the tagged documents; task 7i.7).
+ */
+function findLocation(text: string[], locations: string[]): string | null {
+  const found = locations
+    .flatMap((tag) => {
+      const [, city, state] = tag.match(/^location-(.+)-([a-z]{2})$/) ?? [];
+      if (!city || !STATES[state]) return [];
+      const at = [state, STATES[state]]
+        .map((s) => findName(text, `${city.replace(/-/g, " ")} ${s}`))
+        .filter((i) => i >= 0);
+      return at.length > 0 ? [{ tag, at: Math.min(...at) }] : [];
+    })
+    .sort((a, b) => a.at - b.at);
+  return found[0]?.tag ?? null;
+}
+
+// ---------------------------------------------------------------------------
 // Kinds of document
 // ---------------------------------------------------------------------------
 
@@ -144,7 +180,7 @@ export interface PrefillInput {
 }
 
 export interface PrefillKnowledge {
-  entities: Pick<Entities, "peopleWithNames" | "vendorsWithNames">;
+  entities: Pick<Entities, "peopleWithNames" | "vendorsWithNames" | "locations">;
   documentTypes: string[];
   categories: string[];
   specials: string[];
@@ -202,8 +238,11 @@ export function makePrefill(input: PrefillInput, known: PrefillKnowledge): Prefi
     }
     for (const c of categories) add(c, "Vendor’s category from Entities");
     add(vendor.v.slug, vendor.inName >= 0 ? "Vendor’s name in the filename" : `Vendor’s name on ${onPage}`);
-    if (vendor.v.location) add(vendor.v.location, "Vendor’s location from Entities");
   }
+
+  // One place: the vendor's own, else the one the page names.
+  const place = findLocation(onFirst, known.entities.locations);
+  if (vendor?.v.location) add(vendor.v.location, "Vendor’s location from Entities");
 
   // People by full name only: a first name alone could be anyone.
   let people = 0;
@@ -218,7 +257,9 @@ export function makePrefill(input: PrefillInput, known: PrefillKnowledge): Prefi
     }
   }
 
+  // A place, like a date or a scan, isn't worth reviewing on its own.
   if (keywords.length === 0) return null;
+  if (place && !vendor?.v.location) add(place, `City and state on ${onPage}`);
 
   if (known.specials.includes("original-scan") && input.pages.every((p) => p.source === "ocr")) {
     add("original-scan", "Every page is a picture");
