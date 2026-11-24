@@ -187,6 +187,17 @@ tagged first, and MUST NOT give two parts of a split the same file name.
 - **WHEN** a user edits one part's title
 - **THEN** it stays with the pages it was typed for, whatever else is changed
 
+#### Scenario: Splitting at every gap, or none
+
+- **WHEN** a user chooses Split all or Split none
+- **THEN** every gap is marked or cleared, nothing is written, and any gap can
+  still be changed on its own
+
+#### Scenario: Too many parts for one request
+
+- **WHEN** a split's parts can't all be made in the time the request has
+- **THEN** the ones made are taken back, nothing is recorded, and the user is told
+
 #### Scenario: Leaving something behind
 
 - **WHEN** a user chooses not to copy a field

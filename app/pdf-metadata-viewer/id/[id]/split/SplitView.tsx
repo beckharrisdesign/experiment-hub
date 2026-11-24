@@ -308,11 +308,18 @@ export function SplitView({
         </Button>
         {/* One group: it wraps as a whole and stays right, primary rightmost. */}
         <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
-          {sorted.length > 0 ? (
-            <Button variant="outline" className="min-h-11" disabled={busy} onClick={() => setBreaks([])}>
-              Clear breaks
-            </Button>
-          ) : null}
+          {/* Figma 02.21. Both only mark; nothing is written until Split. */}
+          <Button variant="outline" className="min-h-11" disabled={busy || sorted.length === 0} onClick={() => setBreaks([])}>
+            Split none
+          </Button>
+          <Button
+            variant="outline"
+            className="min-h-11"
+            disabled={busy || !usable || sorted.length >= pageCount - 1}
+            onClick={() => setBreaks(Array.from({ length: pageCount - 1 }, (_, i) => i + 1))}
+          >
+            Split all
+          </Button>
           <Button
             className="min-h-11"
             disabled={busy || sorted.length === 0}

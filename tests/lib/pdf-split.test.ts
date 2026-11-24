@@ -30,6 +30,9 @@ import {
   InvalidSplit,
   SplitConflict,
   SplitNotRecorded,
+  SplitTooLong,
+  START_WITHIN_MS,
+  UPLOADS_AT_ONCE,
   partName,
   planParts,
   splitPdfDocument,
@@ -335,6 +338,70 @@ describe("splitPdfDocument", () => {
     await expect(splitPdfDocument(ID, [1])).rejects.toThrow("500");
     expect(mocks.trashDriveFile).toHaveBeenCalledWith("token", "drive-part-1");
     expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  describe("many parts", () => {
+    const every = (pages: number) => Array.from({ length: pages - 1 }, (_, i) => i + 1);
+    const tick = () => new Promise((r) => setTimeout(r, 5));
+
+    it("sends a few at a time, and records them in page order whichever finishes first", async () => {
+      mocks.getPdfDocument.mockResolvedValue(doc());
+      mocks.downloadDriveFile.mockResolvedValue(await pdfOf(12));
+      let now = 0;
+      let most = 0;
+      let n = 0;
+      mocks.createDriveFile.mockImplementation(async () => {
+        const id = ++n;
+        most = Math.max(most, ++now);
+        // Later ones finish sooner.
+        await new Promise((r) => setTimeout(r, 40 - (id % 4) * 10));
+        now -= 1;
+        return { id: `drive-part-${id}`, revision: `r-${id}` };
+      });
+      await splitPdfDocument(ID, every(12));
+      expect(most).toBe(UPLOADS_AT_ONCE);
+      const outputs = mocks.rpc.mock.calls[0][1].outputs as { index: number; driveFileId: string }[];
+      expect(outputs.map((o) => o.index)).toEqual(Array.from({ length: 12 }, (_, i) => i + 1));
+      expect(outputs.map((o) => o.driveFileId)).toEqual(Array.from({ length: 12 }, (_, i) => `drive-part-${i + 1}`));
+    });
+
+    it("waits for uploads still going before taking back what was made", async () => {
+      mocks.getPdfDocument.mockResolvedValue(doc());
+      mocks.downloadDriveFile.mockResolvedValue(await pdfOf(8));
+      let n = 0;
+      let finishSlow: () => void = () => {};
+      mocks.createDriveFile.mockImplementation(async () => {
+        const id = ++n;
+        if (id === 1) await new Promise<void>((r) => (finishSlow = r));
+        if (id === 2) throw new Error("Drive could not create the file (500)");
+        return { id: `drive-part-${id}`, revision: null };
+      });
+      const outcome = splitPdfDocument(ID, every(8)).catch((e) => e);
+      for (let i = 0; i < 20; i++) await tick();
+      expect(mocks.trashDriveFile).not.toHaveBeenCalled();
+      finishSlow();
+      expect(String(await outcome)).toContain("500");
+      // Everything that was made, the slow one too, and nothing started after the failure.
+      const trashed = mocks.trashDriveFile.mock.calls.map(([, id]) => id).sort();
+      expect(trashed).toContain("drive-part-1");
+      expect(trashed).toHaveLength(mocks.createDriveFile.mock.calls.length - 1);
+      expect(mocks.createDriveFile.mock.calls.length).toBeLessThan(8);
+      expect(mocks.rpc).not.toHaveBeenCalled();
+    });
+
+    it("stops in time to take everything back, and says so", async () => {
+      mocks.getPdfDocument.mockResolvedValue(doc());
+      mocks.downloadDriveFile.mockResolvedValue(await pdfOf(6));
+      const clock = vi.spyOn(Date, "now");
+      const start = 1_000_000;
+      clock.mockImplementation(() => start + (mocks.createDriveFile.mock.calls.length >= 2 ? START_WITHIN_MS + 1 : 0));
+      const error = await splitPdfDocument(ID, every(6)).catch((e) => e);
+      clock.mockRestore();
+      expect(error).toBeInstanceOf(SplitTooLong);
+      expect(mocks.createDriveFile).toHaveBeenCalledTimes(2);
+      expect(mocks.trashDriveFile).toHaveBeenCalledTimes(2);
+      expect(mocks.rpc).not.toHaveBeenCalled();
+    });
   });
 
   it("says the parts weren't recorded when the database refuses", async () => {
