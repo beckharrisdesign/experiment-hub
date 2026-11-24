@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "bhd-hiring-manager-leadership",
+  "name": "Hiring manager checks design-leadership experience",
+  "propertyRef": "../properties/beckharrisdesign.json",
+  "userRole": "Hiring manager filling a Head of Design / Director role",
+  "familiarity": "First visit, arrived from LinkedIn on the home page, skimming for a few minutes",
+  "goal": "Confirm she has led design teams: the roles she held, and one example of building a design function",
+  "startingState": { "path": "/", "description": "Home page, public visitor, no session" },
+  "testData": {},
+  "viewport": { "width": 1280, "height": 800 },
+  "locale": "en-US",
+  "authRef": "public-visitor",
+  "limits": { "maxDurationMs": 60000, "maxActions": 8, "stepTimeoutMs": 10000 },
+  "allowedMutations": [],
+  "comparisonContext": "2026-11-live-v1",
+  "notes": "Evidence the persona needs is encoded in verify: role history on About, and team-building + outcome sections in the leadership case study.",
+  "verify": [
+    { "id": "load-about", "do": "goto", "path": "/katy-harris" },
+    { "id": "role-history-present", "do": "assertVisible", "target": { "role": "heading", "name": "Cisco" }, "note": "A leadership role in the history" },
+    { "id": "load-case-study", "do": "goto", "path": "/rebuilding-a-design-function" },
+    { "id": "team-roles-section", "do": "assertVisible", "target": { "role": "heading", "name": "Clarify team roles and skills" } },
+    { "id": "outcomes-section", "do": "assertVisible", "target": { "role": "heading", "name": "Outcomes" } }
+  ],
+  "scenarios": {
+    "normal": {
+      "kind": "normal",
+      "description": "Home → About (role history) → back to case studies → Rebuilding a design function",
+      "steps": [
+        { "id": "open-about", "do": "click", "target": { "role": "link", "name": "About" } },
+        { "id": "role-history-shown", "do": "assertVisible", "target": { "role": "heading", "name": "Katy Harris" }, "screenshot": true },
+        {
+          "id": "back-to-projects", "do": "click", "target": { "role": "link", "name": "Projects" },
+          "note": "About has no link to leadership case studies, so the visitor returns through the nav. Projects goes to the home page."
+        },
+        { "id": "open-leadership-case-study", "do": "click", "target": { "role": "link", "name": "Rebuilding a design function" } },
+        { "id": "case-study-shown", "do": "assertVisible", "target": { "role": "heading", "name": "Rebuilding a design function" }, "screenshot": true }
+      ]
+    }
+  }
+}

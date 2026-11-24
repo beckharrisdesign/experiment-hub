@@ -273,6 +273,19 @@ pnpm audit:effort run --task scripts/task-effort-audit/audits/tasks/bhd-find-des
 
 > **First run on any live site:** expect a safety stop if the page sends POSTs (analytics, view counters). Read `run.json#safety.blockedRequests`, decide what each one is, then add it to `suppressRequests` (a side effect to avoid) or `readOnlyRequestAllowlist` (harmless) on the property.
 
+## Authoring realistic tasks
+
+A task is only as realistic as the person and the evidence behind it. Examples: `bhd-hiring-manager-leadership.json`, `bhd-design-manager-process.json`.
+
+1. **Start from a person and a decision.** Who they are (`userRole`), how they arrive (`startingState`: home from LinkedIn, or straight onto a case study from a referral), and what they're trying to decide (`goal`, in their words).
+2. **Write the evidence first.** List what that person must see to make the decision, such as role history or a team-building section, and put it in `verify` as assertions on fresh page loads. The run passes only if the evidence is there, so removing or renaming it shows up as a verification failure.
+3. **Walk it as them, not as the author.** Follow visible labels a first-time visitor would pick, even when you know a shorter URL. Record backtracks and detours in a step `note` (e.g. "About has no link to case studies, so they return through the nav").
+4. **Annotate only real boundaries.** A PDF résumé, LinkedIn, or a new tab is a `contextSwitch`; moving between pages on the same site is not.
+5. **One context per task.** Make a separate task for phone width, or for a different entry point, rather than averaging them.
+6. **Run it once with `--headed`, then approve the baseline.**
+
+> **What this can't tell you:** whether that person would choose this path, or find the content convincing. Pair it with real people (first-click or five-second tests) before drawing conclusions about discoverability.
+
 ## Adding a real property and task
 
 1. **Create the property file.** Copy `audits/properties/local-fixture.json` → `audits/properties/<id>.json`:
