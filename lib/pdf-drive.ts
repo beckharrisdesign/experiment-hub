@@ -455,8 +455,17 @@ export async function downloadDriveFile(
   accessToken: string,
   fileId: string,
 ): Promise<ArrayBuffer> {
-  const response = await driveFileRequest(accessToken, fileId, "alt=media", "download");
+  const response = await openDriveFile(accessToken, fileId);
   return response.arrayBuffer();
+}
+
+/**
+ * A file's bytes as Drive sends them, unread. The preview passes the body
+ * straight through, so the first bytes reach the browser while the rest are
+ * still arriving, instead of after the whole file was held in memory.
+ */
+export async function openDriveFile(accessToken: string, fileId: string): Promise<Response> {
+  return driveFileRequest(accessToken, fileId, "alt=media", "download");
 }
 
 /**
