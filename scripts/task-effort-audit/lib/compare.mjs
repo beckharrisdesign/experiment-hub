@@ -9,7 +9,7 @@
 import { METRIC_LABELS, flattenMetrics } from './ledger.mjs';
 
 export const LIMITATIONS = [
-  'Counts interface-imposed work along one reviewed path — not human task time, emotion, discoverability, or real-user completion.',
+  'Counts interface-imposed work along one reviewed path. It does not measure human task time, emotion, discoverability, or real-user completion.',
   'Repeated-entry and context-switch counts come from reviewed annotations; the runner does not discover them.',
   'A change in count is a review signal, not a verdict: added steps can serve legitimate purposes.',
   'Product changes can break the reviewed path instead of changing a count; that stops the run for review.',
@@ -24,7 +24,7 @@ export function compatibilityProblems(baseline, run) {
   if (baseline.definitionHash !== run.task.definitionHash) {
     r.push(
       `task definition changed since the baseline (${baseline.definitionHash.slice(0, 10)} → ${run.task.definitionHash.slice(0, 10)}). ` +
-        'Differences could come from the script rather than the product — approve a new baseline from a run of the current definition.',
+        'Differences could come from the script rather than the product. Approve a new baseline from a run of the current definition.',
     );
   }
   if (baseline.comparisonContext !== run.task.comparisonContext) {
@@ -35,7 +35,7 @@ export function compatibilityProblems(baseline, run) {
   }
   if (run.execution.status !== 'completed') {
     const f = run.execution.failure;
-    r.push(`current run did not complete the reference path (stopped at "${f?.stepId}", ${f?.label ?? 'unknown'}) — partial execution is shown separately`);
+    r.push(`current run did not complete the reference path (stopped at "${f?.stepId}", ${f?.label ?? 'unknown'}). Partial execution is shown separately`);
   } else if (run.verification.status !== 'pass') {
     r.push(`current run's final state was not verified (verification: ${run.verification.status})`);
   }

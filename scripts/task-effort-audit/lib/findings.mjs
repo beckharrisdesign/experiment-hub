@@ -17,7 +17,7 @@ function evidenceFor(entry) {
 
 function suggestion(entry) {
   const text = entry.annotations?.suggestion;
-  return text ? { suggestion: { label: 'Suggestion — not an observed fact', text } } : {};
+  return text ? { suggestion: { label: 'Suggestion, not an observed fact', text } } : {};
 }
 
 /**
@@ -36,7 +36,7 @@ export function buildFindings({ taskId, scenario, entries, failure, verification
         key: `repeated-entry:${scenario}:${e.stepId}`,
         stepId: e.stepId,
         kind: 'annotation',
-        statement: `${e.target} asks for information that was already supplied or available — ${re.source}. ${re.explanation}`,
+        statement: `${e.target} asks for information that was already supplied or available: ${re.source}. ${re.explanation}`,
         evidence: evidenceFor(e),
         reviewRequired: true,
         reviewNote: 'Counted from a reviewed annotation, not detected by the runner. Confirm it still holds.',
@@ -90,7 +90,7 @@ export function buildFindings({ taskId, scenario, entries, failure, verification
       key: `path-stopped:${scenario}:${failure.stepId}:${failure.category}`,
       stepId: failure.stepId,
       kind: 'observation',
-      statement: `Reference path stopped at step "${failure.stepId}" — ${failure.label}. Observed: ${failure.observed}`,
+      statement: `Reference path stopped at step "${failure.stepId}": ${failure.label}. Observed: ${failure.observed}`,
       evidence: [
         ...(failureScreenshot ? [{ type: 'screenshot', ref: failureScreenshot }] : []),
         { type: 'ledger', ref: `actions.json#${entries.length - 1}` },

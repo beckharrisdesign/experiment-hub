@@ -22,6 +22,7 @@ import { compareToBaseline } from './compare.mjs';
 import { createRequestGuard, declaresWrites, definitionSafetyProblems, runAuthorizationProblems } from './safety.mjs';
 import { appendIndex, loadBaselines, runDirOf, writeJson } from './store.mjs';
 import { renderReport } from './report.mjs';
+import { writeHtmlReport } from './report-html.mjs';
 import { AuthError, ConfigError, SafetyError, TOOL_VERSION, makeRunId } from './util.mjs';
 
 export const EXIT = { OK: 0, RUN_FAILED: 1, CONFIG: 2, AUTH: 3 };
@@ -158,10 +159,10 @@ export async function executeRun(opts) {
       allowWrites: writesOn,
       fixtureVariant,
       nonUiSteps: [
-        ...task.setup.map((c) => `setup: ${c.method} ${c.path}${c.note ? ` — ${c.note}` : ''}`),
+        ...task.setup.map((c) => `setup: ${c.method} ${c.path}${c.note ? ` (${c.note})` : ''}`),
         `start: load ${task.startingState.path} (not counted)`,
         ...verifySteps.filter((s) => s.do === 'httpJson').map((s) => `verify: GET ${s.path} (state check outside the UI)`),
-        ...task.cleanup.map((c) => `cleanup: ${c.method} ${c.path}${c.note ? ` — ${c.note}` : ''}`),
+        ...task.cleanup.map((c) => `cleanup: ${c.method} ${c.path}${c.note ? ` (${c.note})` : ''}`),
       ],
       tooling: toolingVersions(null),
     },
@@ -290,7 +291,7 @@ export async function executeRun(opts) {
           }
         }
         if (isAction && counted >= limits.maxActions) {
-          throw new StopError('safety-stop', `maxActions ${limits.maxActions} reached — step "${step.id}" would exceed it`);
+          throw new StopError('safety-stop', `maxActions ${limits.maxActions} reached. Step "${step.id}" would exceed it`);
         }
 
         let logged;
@@ -434,16 +435,16 @@ export async function executeRun(opts) {
         await shoot(vp, 'verified');
       }
     } else {
-      run.verification.note = 'not run — the reference path did not complete';
+      run.verification.note = 'Not run: the reference path did not complete';
     }
   } catch (e) {
     // Stops before the path began: environment / authentication.
     const f = classifyFailure({ step: null, error: e });
     run.execution.failure = { ...f, stepId: e.setupPhase ? '(setup)' : '(start)' };
-    run.verification.note = 'not run — the reference path did not start';
+    run.verification.note = 'Not run: the reference path did not start';
     log(`${tag} ✗ ${f.label}: ${f.observed}`);
   } finally {
-    run.execution.diagnostics = { browserDurationMs: Date.now() - t0, note: 'Browser/runtime duration — diagnostic only; never human task time.' };
+    run.execution.diagnostics = { browserDurationMs: Date.now() - t0, note: 'Browser/runtime duration. Diagnostic only, never human task time.' };
     if (context) {
       await context.tracing.stop({ path: path.join(runDir, 'trace.zip') }).catch(() => {});
     }
@@ -495,10 +496,21 @@ export async function executeRun(opts) {
 
   await writeLedger(ledger.entries);
   await writeJson(path.join(runDir, 'run.json'), run);
+  // Each report is generated independently; a failure in either never touches
+  // run.json, actions.json, screenshots, or the trace.
+  const reportErrors = [];
   try {
     await writeFile(path.join(runDir, 'report.md'), renderReport(run));
   } catch (e) {
-    run.reportError = `report generation failed: ${e.message} — run.json, actions.json, screenshots and trace are intact`;
+    reportErrors.push(`report.md: ${e.message}`);
+  }
+  try {
+    await writeHtmlReport(runDir, run, ledger.entries);
+  } catch (e) {
+    reportErrors.push(`report.html: ${e.message}`);
+  }
+  if (reportErrors.length) {
+    run.reportError = `report generation failed (${reportErrors.join('; ')}). run.json, actions.json, screenshots and trace are intact`;
     await writeJson(path.join(runDir, 'run.json'), run);
   }
   await appendIndex(dataDir, {

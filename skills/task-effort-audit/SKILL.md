@@ -34,7 +34,7 @@ description: >-
   - A stopped path is **not** a confirmed product failure
   - Browser duration is **not** human task time
   - No severity, user emotion, or business impact. No composite score.
-  - Label design ideas *"Suggestion — not an observed fact."*
+  - Label design ideas *"Suggestion, not an observed fact."*
 
 ## Workflows
 
@@ -42,7 +42,7 @@ description: >-
 ```bash
 pnpm audit:effort run --task scripts/task-effort-audit/audits/tasks/<task>.json [--scenario normal] [--allow-writes]
 ```
-- Report from `report.md`, giving the three separate answers:
+- Report from `report.md` (point Katy at `report.html` to view it), giving the three separate answers:
   - **A.** execution
   - **B.** verified completion
   - **C.** comparison

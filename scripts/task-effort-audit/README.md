@@ -53,6 +53,7 @@ pnpm audit:effort list
 | `run --task <file> [--scenario normal] [--allow-writes] [--headed] [--slow-mo ms] [--fixture <variant>]` | Executes one scenario; writes a run directory; compares to the current baseline if one is compatible |
 | `validate --task <file> [--scenario name]` | Checks config + safety and prints each step and whether it counts |
 | `approve --run <runId> [--supersede] [--by name] [--note text]` | **The only way** a run becomes a baseline |
+| `report --run <runId>` | Regenerates `report.md` and `report.html` from `run.json` + `actions.json` (e.g. for older runs) |
 | `compare --run <runId>` | Re-compares a run against the *current* baseline; writes `comparison-vs-<baselineRunId>.{json,md}` into the run dir |
 | `list [--limit 20] [--task id]` | Recent runs from the append-only index |
 | `baselines --task <id> [--scenario name]` | Current baseline + full approval history |
@@ -80,7 +81,8 @@ Each run lives in `artifacts/task-effort-audit/runs/<runId>/` (gitignored; only 
 |---|---|
 | `run.json` | Context, tooling versions, definition hash, execution status, verification, metrics, safety, cleanup, findings, comparison |
 | `actions.json` | Ordered action ledger with annotations. Written after **every** step, so it survives a crash or report failure |
-| `report.md` | One-minute summary |
+| `report.html` | **Open this first.** Self-contained page: A/B/C status, baseline table, findings linked to evidence, the full action ledger with screenshots inline. Screenshots are embedded, so the file can be shared on its own (treat it as sensitive). |
+| `report.md` | The same summary as plain markdown |
 | `screenshots/` | Start, annotated/conditional/mutating steps, path end, verification, and failures |
 | `trace.zip` | Playwright trace: `npx playwright show-trace <runDir>/trace.zip` |
 
@@ -120,7 +122,7 @@ Each finding has:
 - **Evidence refs** (screenshot, `actions.json#<index>`, trace)
 - A **review note**
 
-Optional design suggestions are labelled *"Suggestion — not an observed fact."* No severity, user reaction, or business impact is ever generated.
+Optional design suggestions are labelled *"Suggestion, not an observed fact."* No severity, user reaction, or business impact is ever generated.
 
 ### Baselines
 

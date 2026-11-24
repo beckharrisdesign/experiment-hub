@@ -6,6 +6,7 @@
  *   validate  --task <file> [--scenario normal]
  *   approve   --run <runId> [--supersede] [--by <name>] [--note <text>]
  *   compare   --run <runId>
+ *   report    --run <runId>          (regenerate report.md + report.html)
  *   list      [--limit 20] [--task <taskId>]
  *   baselines --task <taskId> [--scenario normal]
  *
@@ -20,8 +21,9 @@ import { EXIT, executeRun, preflight } from './lib/runner.mjs';
 import { COUNTED_ACTIONS, definitionHash } from './lib/config.mjs';
 import { describeTarget } from './lib/ledger.mjs';
 import { compareToBaseline } from './lib/compare.mjs';
-import { renderComparison } from './lib/report.mjs';
-import { ApprovalError, approveBaseline, listRuns, loadBaselines, loadRun, resolveDataDir, runDirOf, writeJson } from './lib/store.mjs';
+import { renderComparison, renderReport } from './lib/report.mjs';
+import { writeHtmlReport } from './lib/report-html.mjs';
+import { ApprovalError, approveBaseline, listRuns, loadBaselines, loadRun, readJson, resolveDataDir, runDirOf, writeJson } from './lib/store.mjs';
 import { AuthError, ConfigError, SafetyError } from './lib/util.mjs';
 
 function parseArgs(argv) {
@@ -75,7 +77,7 @@ async function cmdRun(flags, dataDir) {
   if (run.cleanup.residualChanges) console.log(`  ⚠ RESIDUAL TEST CHANGES MAY REMAIN: ${run.cleanup.detail}`);
   if (run.reportError) console.log(`  ⚠ ${run.reportError}`);
   console.log(`  findings: ${run.findings.length}`);
-  console.log(`  report:   ${rel}/report.md`);
+  console.log(`  report:   ${rel}/report.html  (open in a browser; also report.md)`);
   console.log(`  ledger:   ${rel}/actions.json`);
   console.log(`  trace:    npx playwright show-trace ${rel}/trace.zip`);
   console.log(`  exit:     ${exitCode}`);
@@ -136,6 +138,18 @@ async function cmdCompare(flags, dataDir) {
   return EXIT.OK;
 }
 
+async function cmdReport(flags, dataDir) {
+  const runId = need(flags, 'run');
+  const run = await loadRun(dataDir, runId);
+  if (!run) throw new ConfigError(`no run ${runId} under ${dataDir}`);
+  const dir = runDirOf(dataDir, runId);
+  const { entries } = await readJson(path.join(dir, 'actions.json'));
+  await writeFile(path.join(dir, 'report.md'), renderReport(run));
+  await writeHtmlReport(dir, run, entries);
+  console.log(`written: ${path.relative(process.cwd(), dir)}/report.{md,html}`);
+  return EXIT.OK;
+}
+
 async function cmdList(flags, dataDir) {
   const runs = await listRuns(dataDir, { limit: Number(flags.limit ?? 20), taskId: typeof flags.task === 'string' ? flags.task : undefined });
   if (!runs.length) console.log(`no runs under ${dataDir}`);
@@ -160,9 +174,9 @@ async function cmdBaselines(flags, dataDir) {
 async function main() {
   const { cmd, flags } = parseArgs(process.argv.slice(2));
   const dataDir = resolveDataDir(typeof flags['data-dir'] === 'string' ? flags['data-dir'] : undefined);
-  const commands = { run: cmdRun, validate: cmdValidate, approve: cmdApprove, compare: cmdCompare, list: cmdList, baselines: cmdBaselines };
+  const commands = { run: cmdRun, validate: cmdValidate, approve: cmdApprove, compare: cmdCompare, report: cmdReport, list: cmdList, baselines: cmdBaselines };
   if (!commands[cmd]) {
-    console.error('usage: cli.mjs <run|validate|approve|compare|list|baselines> [flags] — see scripts/task-effort-audit/README.md');
+    console.error('usage: cli.mjs <run|validate|approve|compare|report|list|baselines> [flags] — see scripts/task-effort-audit/README.md');
     return EXIT.CONFIG;
   }
   try {

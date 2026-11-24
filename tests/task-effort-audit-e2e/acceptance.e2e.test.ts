@@ -252,6 +252,12 @@ describe("task-effort audit acceptance (local fixture)", () => {
           expect(existsSync(path.join(dir, e.ref))).toBe(true);
       }
     }
+    // The HTML report exists and every in-page link resolves.
+    const html = await readFile(path.join(dir, "report.html"), "utf8");
+    const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]));
+    const hrefs = [...html.matchAll(/href="#([^"]+)"/g)].map((m) => m[1]);
+    expect(hrefs.length).toBeGreaterThan(0);
+    expect(hrefs.filter((h) => !ids.has(h))).toEqual([]);
   });
 
   it("12 · audits execute with no LLM call — the browser only contacts the property", async () => {

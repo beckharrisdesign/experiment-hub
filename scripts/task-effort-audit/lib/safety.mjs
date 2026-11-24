@@ -148,7 +148,7 @@ export function createRequestGuard({ task, property, allowWrites, getCurrentStep
     const step = getCurrentStep();
     const at = step ? step.id : '(between steps)';
     let reason = null;
-    if (!writesOn) reason = 'write request blocked — this run is read-only';
+    if (!writesOn) reason = 'write request blocked: this run is read-only';
     else if (new URL(url).origin !== origin) reason = `write request to another origin (${new URL(url).origin}) blocked`;
     else if (!step || !step.mutates) reason = `write request during step "${at}", which declares no mutation`;
 
