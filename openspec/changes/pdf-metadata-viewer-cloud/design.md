@@ -798,6 +798,11 @@ page images instead of the PDF, which still saves the Drive download.
 
 ### D16 — Suggestions made from kept text, waiting to be reviewed (being designed, task 7i)
 
+**Words.** On screen these are **Prefilled**; **Suggest** is only ever the AI,
+whose button is **Suggest with AI** (Katy, 2026-11-24: "suggested" on the same
+page as the AI's button was confusing). This section says "suggestion" for both
+where it was written before that.
+
 **What.** Once a document's text is kept (D15), the sync works out what it can
 from that text alone, on the hub's own server, and leaves it waiting on the
 document. Nothing goes to OpenAI and nothing is written to Drive. A full AI
