@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Badge,
   Button,
@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from "@beckharrisdesign/mvds";
 import { DocumentsSection, type PendingDocument } from "./DocumentsSection";
-import SplitPeek from "./SplitPeek";
 import {
   applyListView,
   hasKeyword,
@@ -117,14 +116,11 @@ function Keyword({ keyword, on, prefilled, onToggle }: KeywordProps) {
 
 interface StatePillProps {
   row: ListRow;
-  /** For a row that asks to be split: whether it is open, and its toggle (task 7j). */
-  open: boolean;
-  onToggle: () => void;
-  /** What it opens. The table and the phone list each have their own. */
-  controls: string;
+  /** Where a row that asks to be split is answered (task 7j). */
+  splitHref: string;
 }
 
-function StatePill({ row, open, onToggle, controls }: StatePillProps) {
+function StatePill({ row, splitHref }: StatePillProps) {
   if (row.state === "pending") {
     // Frame 34:172: the count in a warning pill, as on the detail page header.
     return (
@@ -135,25 +131,16 @@ function StatePill({ row, open, onToggle, controls }: StatePillProps) {
   }
   if (row.state === "split") {
     return (
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-controls={open ? controls : undefined}
-        onClick={onToggle}
+      <a
+        href={splitHref}
+        aria-label={`Split first? ${row.filename ?? "(unnamed)"}`}
         // Taller than it looks, for a finger.
-        className="-my-2.5 inline-flex min-h-11 cursor-pointer items-center"
+        className="group -my-2.5 inline-flex min-h-11 items-center"
       >
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-background-primary px-3 py-1 text-xs whitespace-nowrap text-warning hover:bg-background-active">
+        <span className="inline-flex items-center rounded-full bg-background-primary px-3 py-1 text-xs whitespace-nowrap text-warning group-hover:bg-background-active">
           {row.stateLabel}
-          <svg
-            aria-hidden
-            viewBox="0 0 8 5"
-            className={`h-[5px] w-2 fill-current ${open ? "" : "rotate-180"}`}
-          >
-            <path d="M4 0 8 5H0z" />
-          </svg>
         </span>
-      </button>
+      </a>
     );
   }
   if (row.state === "prefilled") {
@@ -189,28 +176,7 @@ export default function DocumentsView({ rows, pending, excluded, initialView }: 
   const filtering = isFiltering(view);
   const query = listViewQuery(view);
   const href = (row: ListRow) => `${LIST_URL}/id/${row.id}${query}`;
-
-  // One row open at a time, and only while it still asks.
-  const [opened, setOpened] = useState<string | null>(null);
-  const isOpen = (row: ListRow) => row.state === "split" && row.id === opened;
-  const pill = (row: ListRow, where: string) => (
-    <StatePill
-      row={row}
-      open={isOpen(row)}
-      onToggle={() => setOpened((id) => (id === row.id ? null : row.id))}
-      controls={`split-${where}-${row.id}`}
-    />
-  );
-  const peek = (row: ListRow, where: string) => (
-    <SplitPeek
-      id={`split-${where}-${row.id}`}
-      documentId={row.id}
-      filename={row.filename ?? "this document"}
-      pageCount={row.pageCount ?? 0}
-      revision={row.revision ?? null}
-      splitUrl={`${LIST_URL}/id/${row.id}/split${query}`}
-    />
-  );
+  const splitHref = (row: ListRow) => `${LIST_URL}/id/${row.id}/split${query}`;
 
   // Keep the address in step, in place: Back should leave the list, not undo
   // keystrokes. The first render is already at its own address.
@@ -414,42 +380,33 @@ export default function DocumentsView({ rows, pending, excluded, initialView }: 
             </thead>
             <tbody>
               {shown.map((row) => (
-                <Fragment key={row.id}>
-                  <tr className={`align-top ${isOpen(row) ? "" : "border-b border-border last:border-0"}`}>
-                    <td className="px-4 py-3 leading-6 [overflow-wrap:anywhere] text-text-primary">
-                      <a href={href(row)} className="hover:underline">
-                        {row.filename ?? "(unnamed)"}
-                      </a>
-                    </td>
-                    <td
-                      className={`px-4 py-3 leading-6 [overflow-wrap:anywhere] ${
-                        row.prefilledTitle ? "text-text-secondary" : "text-muted-foreground"
-                      }`}
-                    >
-                      {row.title ?? "—"}
-                    </td>
-                    <td className="px-4 py-3 leading-6 text-muted-foreground">
-                      {row.keywords.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5">{keywordTags(row)}</div>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right leading-6 tabular-nums text-muted-foreground">
-                      {row.pageCount ?? "—"}
-                    </td>
-                    <td className="px-4 py-3 leading-6">
-                      {pill(row, "table")}
-                    </td>
-                  </tr>
-                  {isOpen(row) ? (
-                    <tr className="border-b border-border last:border-0">
-                      <td colSpan={COLUMNS.length} className="px-4 pt-1 pb-4">
-                        {peek(row, "table")}
-                      </td>
-                    </tr>
-                  ) : null}
-                </Fragment>
+                <tr key={row.id} className="border-b border-border align-top last:border-0">
+                  <td className="px-4 py-3 leading-6 [overflow-wrap:anywhere] text-text-primary">
+                    <a href={href(row)} className="hover:underline">
+                      {row.filename ?? "(unnamed)"}
+                    </a>
+                  </td>
+                  <td
+                    className={`px-4 py-3 leading-6 [overflow-wrap:anywhere] ${
+                      row.prefilledTitle ? "text-text-secondary" : "text-muted-foreground"
+                    }`}
+                  >
+                    {row.title ?? "—"}
+                  </td>
+                  <td className="px-4 py-3 leading-6 text-muted-foreground">
+                    {row.keywords.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">{keywordTags(row)}</div>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right leading-6 tabular-nums text-muted-foreground">
+                    {row.pageCount ?? "—"}
+                  </td>
+                  <td className="px-4 py-3 leading-6">
+                    <StatePill row={row} splitHref={splitHref(row)} />
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
@@ -482,9 +439,8 @@ export default function DocumentsView({ rows, pending, excluded, initialView }: 
                       ? "—"
                       : `${row.pageCount} ${row.pageCount === 1 ? "page" : "pages"}`}
                   </span>
-                  {pill(row, "list")}
+                  <StatePill row={row} splitHref={splitHref(row)} />
                 </div>
-                {isOpen(row) ? peek(row, "list") : null}
               </li>
             ))}
           </ul>

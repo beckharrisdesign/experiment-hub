@@ -36,8 +36,6 @@ export interface ListRow {
   /** Its title or keywords are prefilled, not yet anyone's. */
   prefilledTitle?: boolean;
   prefilledKeywords?: boolean;
-  /** Finds the kept pages of a row that asks to be split (task 7j). */
-  revision?: string | null;
 }
 
 export const DEFAULT_VIEW: ListView = {

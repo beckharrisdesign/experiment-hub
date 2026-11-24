@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 
-const refresh = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh, push: vi.fn() }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }) }));
 
 import DocumentsView from "@/app/pdf-metadata-viewer/DocumentsView";
 import { DEFAULT_VIEW, type ListRow, type ListView } from "@/lib/pdf-list-view";
@@ -142,7 +141,10 @@ describe("DocumentsView (task 7e)", () => {
     ];
     const props = { rows, pending: [{ id: "a", filename: "a.pdf" }], excluded: 0 };
     const { unmount } = render(<DocumentsView {...props} initialView={DEFAULT_VIEW} />);
-    expect(table().getByText("Split first?")).toBeTruthy();
+    // Straight to where it's answered (task 7j).
+    expect(table().getByRole("link", { name: "Split first? long.pdf" }).getAttribute("href")).toBe(
+      "/pdf-metadata-viewer/id/long/split",
+    );
     expect(table().getByRole("button", { name: "foodmart" }).className).toContain("border-dashed");
     expect(screen.getAllByRole("link", { name: "Review prefilled" })[0].getAttribute("href")).toBe(
       "/pdf-metadata-viewer?prefilled=1",
@@ -155,105 +157,6 @@ describe("DocumentsView (task 7e)", () => {
     expect(names()).toEqual(["p.pdf"]);
     expect(screen.getByText("Prefilled documents")).toBeTruthy();
     expect(table().getByRole("link", { name: "p.pdf" }).getAttribute("href")).toBe("/pdf-metadata-viewer/id/p?prefilled=1");
-  });
-
-  describe("a row that asks to be split (task 7j)", () => {
-    const long = row("long", { state: "split", stateLabel: "Split first?", pageCount: 30, revision: "r 1" });
-    const other = row("other", { state: "split", stateLabel: "Split first?", pageCount: 8, revision: "r2" });
-    const show = (rows = [long, other, ...ROWS], o: Partial<ListView> = {}) =>
-      render(<DocumentsView rows={rows} pending={[]} excluded={0} initialView={{ ...DEFAULT_VIEW, ...o }} />);
-    const pills = () => table().getAllByRole("button", { name: "Split first?" });
-    const question = () => table().queryByText("30 pages. Is this more than one document?");
-
-    beforeEach(() => refresh.mockClear());
-    afterEach(() => vi.unstubAllGlobals());
-
-    it("opens in place, with both buttons, and closes again", () => {
-      show(undefined, { q: "pdf" });
-      expect(question()).toBeNull();
-      fireEvent.click(pills()[0]);
-      expect(question()).toBeTruthy();
-      expect(pills()[0].getAttribute("aria-expanded")).toBe("true");
-      expect(table().getByRole("button", { name: "It's one document" })).toBeTruthy();
-      // Straight to the split page, with the list as it is.
-      expect(table().getByRole("link", { name: "Split pages" }).getAttribute("href")).toBe(
-        "/pdf-metadata-viewer/id/long/split?q=pdf",
-      );
-      fireEvent.click(pills()[0]);
-      expect(question()).toBeNull();
-    });
-
-    it("has one row open at a time", () => {
-      show();
-      fireEvent.click(pills()[0]);
-      fireEvent.click(pills()[1]);
-      expect(question()).toBeNull();
-      expect(table().getByText("8 pages. Is this more than one document?")).toBeTruthy();
-    });
-
-    it("shows a place for every page, and asks only for kept small copies", () => {
-      show();
-      fireEvent.click(pills()[0]);
-      const pages = within(table().getByRole("list", { name: "Pages" })).getAllByRole("listitem");
-      expect(pages).toHaveLength(30);
-      expect(table().getByAltText("Page 2").getAttribute("src")).toBe(
-        "/api/pdf-documents/id/long/pages/2?rev=r%201&size=thumb&kept=1",
-      );
-      // One that isn't kept keeps its empty place.
-      fireEvent.error(table().getByAltText("Page 2"));
-      expect(table().queryByAltText("Page 2")).toBeNull();
-    });
-
-    it("fetches a page only once it is near the strip's view", () => {
-      const seen: { el: Element; tell: (near: boolean) => void }[] = [];
-      vi.stubGlobal(
-        "IntersectionObserver",
-        class {
-          constructor(private done: (e: { isIntersecting: boolean }[]) => void) {}
-          observe(el: Element) {
-            seen.push({ el, tell: (near) => this.done([{ isIntersecting: near }]) });
-          }
-          disconnect() {}
-        },
-      );
-      show();
-      fireEvent.click(pills()[0]);
-      expect(table().queryAllByRole("img")).toHaveLength(0);
-      const mine = seen.filter((s) => screen.getByRole("table").contains(s.el));
-      act(() => mine[0].tell(true));
-      act(() => mine[1].tell(false));
-      expect(table().queryAllByRole("img", { hidden: true })).toHaveLength(1);
-    });
-
-    it("saves 'It's one document' in place", async () => {
-      vi.useRealTimers();
-      const fetchMock = vi.fn(async () => new Response("{}"));
-      vi.stubGlobal("fetch", fetchMock);
-      show();
-      fireEvent.click(pills()[0]);
-      fireEvent.click(table().getByRole("button", { name: "It's one document" }));
-      await waitFor(() => expect(refresh).toHaveBeenCalledOnce());
-      expect(fetchMock).toHaveBeenCalledWith("/api/pdf-documents/id/long/split/not-needed", { method: "POST" });
-    });
-
-    it("says what went wrong, and can be pressed again", async () => {
-      vi.useRealTimers();
-      vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ error: "Not now." }), { status: 500 })));
-      show();
-      fireEvent.click(pills()[0]);
-      fireEvent.click(table().getByRole("button", { name: "It's one document" }));
-      await waitFor(() => expect(table().getByRole("alert").textContent).toBe("Not now."));
-      expect((table().getByRole("button", { name: "It's one document" }) as HTMLButtonElement).disabled).toBe(false);
-      expect(refresh).not.toHaveBeenCalled();
-    });
-
-    it("isn't open once it no longer asks", () => {
-      const props = { pending: [], excluded: 0, initialView: DEFAULT_VIEW };
-      const { rerender } = render(<DocumentsView rows={[long]} {...props} />);
-      fireEvent.click(pills()[0]);
-      rerender(<DocumentsView rows={[row("long", { state: "untagged", stateLabel: "Not yet tagged" })]} {...props} />);
-      expect(question()).toBeNull();
-    });
   });
 
   it("has no Review prefilled when nothing is", () => {
