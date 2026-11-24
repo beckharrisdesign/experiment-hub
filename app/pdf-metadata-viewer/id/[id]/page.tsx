@@ -7,7 +7,7 @@ import {
   type PdfDocument,
 } from "@/lib/pdf-documents";
 import { getDriveConnection } from "@/lib/pdf-drive";
-import { checkFile, type Problem } from "@/lib/pdf-file-read";
+import { checkFile, storedFileValues, type Problem } from "@/lib/pdf-file-read";
 import { shownValues } from "@/lib/pdf-shown-values";
 import { summarizePending } from "@/lib/pdf-staging";
 import { DetailsEditor } from "./DetailsEditor";
@@ -29,8 +29,9 @@ import { DetailsFromFile, PreviewFooter } from "./FromFile";
  * the file still there, and at which revision?). What the file itself says is
  * needed only when the stored copy may be stale; then the browser asks for it
  * after the page is up (`FromFile.tsx`), because reading it means downloading
- * the whole file. A document edited here whose file hasn't changed in Drive
- * needs no download at all: its baseline is the file's own values.
+ * the whole file. No download is needed when the values are already stored
+ * for the revision Drive holds now: an edited document's baseline, or the read
+ * saved on an earlier visit (migration 031).
  *
  * Gated by middleware.ts, which returns before this renders.
  */
@@ -77,12 +78,9 @@ export default async function PdfDocumentDetailPage({
     checkFile(document),
     listPdfDocuments(folder?.id ?? null),
   ]);
-  // A baseline is the file's own values at driveRevisionId (first edit, commit
-  // and rebaseline move the two together). Unchanged in Drive: no download.
-  const fresh =
-    access.ok && document.fileBaseline !== null && access.head === document.driveRevisionId
-      ? document.fileBaseline
-      : null;
+  // The file's own values, when stored for the revision Drive holds now: the
+  // baseline of an edited document, or a read saved on an earlier visit.
+  const fresh = access.ok ? storedFileValues(document, access.head) : null;
   const revision = access.ok ? access.head : null;
   const baselined = document.fileBaseline !== null;
   const stored = {
