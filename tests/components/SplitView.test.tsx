@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 const push = vi.fn();
 const refresh = vi.fn();
@@ -41,6 +41,36 @@ describe("SplitView", () => {
     expect(bar.className).toContain("sticky bottom-0");
     fireEvent.click(oneDocument);
     expect(bar.contains(await screen.findByText(/Drive said no\./))).toBe(true);
+  });
+
+  // Frame 89:760.
+  it("can be split before any page arrives, when it's known how many there are (task 7j)", async () => {
+    const never: PdfLoader = () => new Promise(() => {});
+    render(<SplitView documentId="doc-1" filename="a.pdf" contentUrl="/c" loadPdf={never} knownPages={6} />);
+    expect(screen.queryByText("Loading pages…")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Split after page 2" }));
+    expect(screen.getByRole("button", { name: "Split into 2 files" })).toBeTruthy();
+  });
+
+  it("goes by the file's own count once it is here, and drops a break past its end", async () => {
+    let arrive: (pdf: Awaited<ReturnType<PdfLoader>>) => void = () => {};
+    const slow: PdfLoader = () => new Promise((resolve) => (arrive = resolve));
+    render(<SplitView documentId="doc-1" filename="a.pdf" contentUrl="/c" loadPdf={slow} knownPages={6} />);
+    fireEvent.click(screen.getByRole("button", { name: "Split after page 2" }));
+    fireEvent.click(screen.getByRole("button", { name: "Split after page 5" }));
+    await act(async () => arrive({ numPages: 4, renderPage: async () => {} }));
+    expect(screen.queryByRole("button", { name: "Split after page 5" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Split into 2 files" })).toBeTruthy();
+  });
+
+  it("offers no splitting when the pages can't be read, whatever was known", async () => {
+    const broken: PdfLoader = async () => {
+      throw new Error("no");
+    };
+    render(<SplitView documentId="doc-1" filename="a.pdf" contentUrl="/c" loadPdf={broken} knownPages={6} />);
+    expect(await screen.findByText(/Couldn't load this PDF's pages/)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Split after page 2" })).toBeNull();
+    expect((screen.getByRole("button", { name: "Choose where to split" }) as HTMLButtonElement).disabled).toBe(true);
   });
 
   // Frame 69:9.
@@ -163,12 +193,12 @@ describe("SplitView", () => {
     expect(push).not.toHaveBeenCalled();
   });
 
-  it("records 'It's one document' and goes back to the document", async () => {
+  it("records 'It's one document' and goes back to the list", async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ success: true })));
     vi.stubGlobal("fetch", fetchMock);
     renderView();
     fireEvent.click(await screen.findByRole("button", { name: "It's one document" }));
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/pdf-metadata-viewer/id/doc-1"));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/pdf-metadata-viewer"));
     expect((fetchMock.mock.calls[0] as unknown as [string])[0]).toBe("/api/pdf-documents/id/doc-1/split/not-needed");
   });
 });
