@@ -105,7 +105,7 @@ The original list had sortable headers, a filter on every data column, and click
 - [x] 7e.1 Draw it on a numbered Figma page (`02.13`), desktop and phone, from the live dashboard — **drawn 2026-11-24**: `02.13 Proposed — Find in the list` (76:8), frames 77:178 (at rest), 78:54 (filtered), 78:486 (scrolled), 78:268 (nothing matches), 79:157 (phone), and a behaviour note, 79:244
 - [x] 7e.2 Explicit go on the rendered frames — **"Looks right, build it", 2026-11-24**
 - [x] 7e.3 Spec scenarios, then build it — requirement "Documents can be found in the list" (document-metadata-store), design.md D13. The rules are pure and shared by the list and the detail page (`lib/pdf-list-view.ts`). Search needs every typed word, in any field, rather than the phrase. On a phone the search row scrolls with the page: pinned with its filters and sort menu it would cover a third of the screen
-- [ ] 7e.4 Verify live
+- [x] 7e.4 Verify live — **verified 2026-11-24** (#642) on the 39 files in PDF Tests: Pages sorts as numbers both ways (119, 53, 43, …); a clicked keyword gave 2 rows, adding a search gave "1 of 39 documents", and the address carried both; nothing-matches message and Clear all work, and clearing keeps the sort; search and column names stay put while scrolling. Opened from a filtered list, a document's only step was the other matching document, and its Previous / Next, All documents, and Split links all carried the list. Not exercised live: Review pending with a search, Compare, and the phone list (nothing was pending; the phone layout was looked at locally)
 
 ## 8. Write path
 
