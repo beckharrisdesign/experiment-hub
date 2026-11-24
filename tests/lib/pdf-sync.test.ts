@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   readFile: vi.fn(),
   syncPages: vi.fn(),
   syncText: vi.fn(),
+  syncPrefills: vi.fn(),
 }));
 
 vi.mock("@/lib/pdf-documents", () => ({
@@ -24,6 +25,7 @@ vi.mock("@/lib/pdf-drive", () => ({
 }));
 vi.mock("@/lib/pdf-page-store", () => ({ syncPages: mocks.syncPages }));
 vi.mock("@/lib/pdf-page-text", () => ({ syncText: mocks.syncText }));
+vi.mock("@/lib/pdf-prefills", () => ({ syncPrefills: mocks.syncPrefills }));
 vi.mock("@/lib/pdf-file-read", async () => {
   const actual = await vi.importActual<typeof import("@/lib/pdf-file-read")>("@/lib/pdf-file-read");
   return { ...actual, readFile: mocks.readFile };
@@ -34,6 +36,7 @@ import type { PdfDocument } from "@/lib/pdf-documents";
 
 const PAGES = { pagesDrawn: 5, pagesWaiting: 0, setsRemoved: 0 };
 const TEXT = { textPages: 3, scansRead: 1, textWaiting: 0 };
+const PREFILLS = { prefilled: 2 };
 const VALUES = { title: "T", subject: null, author: null, keywords: [], pageCount: 2 };
 
 function file(id: string, head = `rev-${id}`) {
@@ -63,6 +66,7 @@ beforeEach(() => {
   mocks.readFile.mockResolvedValue({ ok: true, embedded: VALUES });
   mocks.syncPages.mockResolvedValue(PAGES);
   mocks.syncText.mockResolvedValue(TEXT);
+  mocks.syncPrefills.mockResolvedValue(PREFILLS);
 });
 
 describe("needsRead", () => {
@@ -117,7 +121,7 @@ describe("syncFolder", () => {
       accessToken: "token",
       head: "rev-a",
     });
-    expect(result).toEqual({ inFolder: 3, added: 1, read: 2, failed: 0, remaining: 0, pages: PAGES, text: TEXT });
+    expect(result).toEqual({ inFolder: 3, added: 1, read: 2, failed: 0, remaining: 0, pages: PAGES, text: TEXT, prefills: PREFILLS });
   });
 
   it("reads never-read files before changed ones", async () => {
@@ -184,9 +188,10 @@ describe("syncFolder", () => {
     mocks.listPdfDocuments.mockResolvedValue([doc("a")]);
     mocks.syncPages.mockRejectedValue(new Error("no such table"));
     const result = await syncFolder();
-    expect(result).toEqual({ inFolder: 1, added: 1, read: 1, failed: 0, remaining: 0, text: TEXT });
+    expect(result).toEqual({ inFolder: 1, added: 1, read: 1, failed: 0, remaining: 0, text: TEXT, prefills: PREFILLS });
     mocks.syncPages.mockResolvedValue(PAGES);
     mocks.syncText.mockRejectedValue(new Error("no such table"));
+    mocks.syncPrefills.mockRejectedValue(new Error("Notion is down"));
     expect(await syncFolder()).toEqual({ inFolder: 1, added: 1, read: 1, failed: 0, remaining: 0, pages: PAGES });
   });
 

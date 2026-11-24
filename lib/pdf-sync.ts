@@ -19,6 +19,9 @@
  *   4. Keep the text of drawn pages (task 7h, lib/pdf-page-text.ts), in what time
  *      is left after that.
  *
+ *   5. Work out what the kept text says of untouched documents, and leave it for
+ *      a person (task 7i, lib/pdf-prefills.ts).
+ *
  * Steps 2 to 4 stop at a time budget, so a big backlog drains over several
  * runs instead of timing out in one. Never-read files go first.
  */
@@ -34,6 +37,7 @@ import {
 import { readFile, storedFileValues } from "@/lib/pdf-file-read";
 import { syncPages, type PageSyncResult, type WantedDocument } from "@/lib/pdf-page-store";
 import { syncText, type TextSyncResult } from "@/lib/pdf-page-text";
+import { syncPrefills, type PrefillSyncResult } from "@/lib/pdf-prefills";
 import { listedValues } from "@/lib/pdf-shown-values";
 
 export interface SyncResult {
@@ -53,6 +57,8 @@ export interface SyncResult {
   pages?: PageSyncResult;
   /** Keeping text; absent when it couldn't run, which never fails the sync. */
   text?: TextSyncResult;
+  /** Prefilling; absent when it couldn't run, which never fails the sync. */
+  prefills?: PrefillSyncResult;
 }
 
 export interface SyncOptions {
@@ -147,6 +153,13 @@ export async function syncFolder({
   } catch (error) {
     console.error("pdf sync: could not keep pages' text:", error);
   }
+  let prefills: PrefillSyncResult | undefined;
+  try {
+    // Read again: this run may have read files' own values since the first.
+    prefills = await syncPrefills(await listPdfDocuments(folder.id));
+  } catch (error) {
+    console.error("pdf sync: could not prefill:", error);
+  }
 
   return {
     inFolder: files.length,
@@ -156,5 +169,6 @@ export async function syncFolder({
     remaining: queue.length - read - failed,
     ...(pages ? { pages } : {}),
     ...(text ? { text } : {}),
+    ...(prefills ? { prefills } : {}),
   };
 }

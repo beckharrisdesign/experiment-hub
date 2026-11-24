@@ -64,6 +64,6 @@ describe("DetailsFromFile", () => {
       />,
     );
     await waitFor(() => expect(screen.queryByText("Reading the file from Drive…")).toBeNull());
-    expect((screen.getByRole("button", { name: /Suggest metadata/ }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole("button", { name: /Suggest with AI/ }) as HTMLButtonElement).disabled).toBe(true);
   });
 });

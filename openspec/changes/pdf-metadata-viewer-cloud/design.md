@@ -796,6 +796,55 @@ decision, not implied by D14.
 first against the existing rubric; if they are, the answer is to send the kept
 page images instead of the PDF, which still saves the Drive download.
 
+### D16 — Suggestions made from kept text, waiting to be reviewed (being designed, task 7i)
+
+**Words.** On screen these are **Prefilled**; **Suggest** is only ever the AI,
+whose button is **Suggest with AI** (Katy, 2026-11-24: "suggested" on the same
+page as the AI's button was confusing). This section says "suggestion" for both
+where it was written before that.
+
+**What.** Once a document's text is kept (D15), the sync works out what it can
+from that text alone, on the hub's own server, and leaves it waiting on the
+document. Nothing goes to OpenAI and nothing is written to Drive. A full AI
+suggestion stays what it is, a button.
+
+**What text can say without a model.** Measured on 16 tagged documents whose
+text is readable, by asking the database whether each tag is in the text, never
+by reading it:
+
+| Tag | Found | How |
+|---|---|---|
+| Year, month | 18 of 18 | Nearly all from the scanner's filename date |
+| Vendor, where one is tagged | 7 of 7 | Its name is on the page |
+| Document type | 6 of 9 | Its word is on the page; receipts often don't say "receipt" |
+| Category, location | 0 | Not on the page. The Entities database can give a vendor's own; not yet checked how often it does |
+| Scanned original | 10 of 10 | The page had no text of its own (D15 records this); but so did 18 documents not tagged so, mostly art, so on its own it over-applies |
+| Paid, and other status | 0 | Would need a rule (a receipt is paid) or a person |
+
+So the rules are: the filename's date; names and aliases from Entities found as
+whole words; that vendor's category and location; the scan flag; and document
+type by its words. Title is the vendor and type ("<vendor> <category> receipt").
+Subject is left blank: text alone doesn't say what a thing is about. One vendor's
+name was also on a page not tagged with it, so a match is a suggestion, not a
+fact, and each one says why it was made. A small sample, with test files in it.
+
+**Why they can't simply be staged.** A staged edit is pending, and Commit writes
+every pending document to Drive, whatever the list shows (D4, D13). Fifteen
+documents would join that count without anyone having looked. Proposed instead: a
+state of their own, not pending, shown on the document as filled-in values marked
+as suggested. Accepting stages them like typing would; dismissing drops them.
+They are never made for a document with edits or tags of its own, and never made
+again for a version they were dismissed on.
+
+**Long documents.** Of 20 untagged documents, 15 are five pages or fewer and
+readable now; 5 are longer. A long scan is often several documents, so it isn't
+suggested for: it says "Split first?" and offers Split, unless it has been marked
+as one document, which is the column that answer already has (D11).
+
+**How it would be stored.** One table keyed by document and revision: the values,
+why each was chosen, and when it was accepted or dismissed. Row level security,
+no policies, like the text.
+
 ### D6 — Route layout
 
 Follows the hub's existing collision-avoiding convention (`app/api/experiments/id/[id]`),

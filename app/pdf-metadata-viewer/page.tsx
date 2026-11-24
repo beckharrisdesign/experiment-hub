@@ -2,6 +2,8 @@ import { Button, Inline, Stack } from "@beckharrisdesign/mvds";
 import { listPdfDocuments, type PdfDocument } from "@/lib/pdf-documents";
 import { getDriveConnection, type DriveConnection } from "@/lib/pdf-drive";
 import { toListRow } from "@/lib/pdf-list-rows";
+import { openPrefills } from "@/lib/pdf-prefills";
+import type { Prefill } from "@/lib/pdf-prefill";
 import { listViewQuery, parseListView, type RawParams } from "@/lib/pdf-list-view";
 import FolderPicker from "./FolderPicker";
 import DocumentsView from "./DocumentsView";
@@ -25,10 +27,11 @@ export const dynamic = "force-dynamic";
 // (design.md, Figma variant set 19:17). Local until it lands there.
 // ---------------------------------------------------------------------------
 
-type Tone = "default" | "warning" | "danger";
+type Tone = "default" | "prefilled" | "warning" | "danger";
 
 const TONE_CLASS: Record<Tone, string> = {
   default: "text-text-primary",
+  prefilled: "text-text-secondary",
   warning: "text-warning",
   danger: "text-error",
 };
@@ -94,6 +97,7 @@ export default async function PdfMetadataViewerPage({
   // Search, keywords, sort, and Review pending (design.md D13).
   const view = parseListView(await searchParams);
   let documents: PdfDocument[] = [];
+  let prefills = new Map<string, Prefill>();
   let loadError: string | null = null;
   let drive: DriveConnection = {
     connected: false,
@@ -106,6 +110,7 @@ export default async function PdfMetadataViewerPage({
     drive = await getDriveConnection();
     // Only the chosen folder's documents (migration 026).
     documents = await listPdfDocuments(drive.folder?.id ?? null);
+    prefills = await openPrefills(documents);
   } catch (error) {
     // Surfaced rather than rendered as an empty archive — with RLS on and no
     // policies, a configuration problem would otherwise look like "no documents".
@@ -172,6 +177,11 @@ export default async function PdfMetadataViewerPage({
               <Inline gap={48}>
                 <Stat label="Documents" value={String(documents.length)} />
                 <Stat
+                  label="Prefilled"
+                  value={String(prefills.size)}
+                  tone={prefills.size > 0 ? "prefilled" : "default"}
+                />
+                <Stat
                   label="Pending edits"
                   value={String(pending)}
                   tone={pending > 0 ? "warning" : "default"}
@@ -229,7 +239,7 @@ export default async function PdfMetadataViewerPage({
                 <>
                 {attention.length > 0 ? <NeedsAttention documents={attention} /> : null}
                 <DocumentsView
-                  rows={documents.map(toListRow)}
+                  rows={documents.map((d) => toListRow(d, prefills.get(d.id)))}
                   excluded={documents.filter((d) => d.hasPendingEdits && excludedFromBulk(d)).length}
                   pending={documents
                     .filter((d) => d.hasPendingEdits && !excludedFromBulk(d))
