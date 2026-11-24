@@ -40,7 +40,40 @@ describe("POST /api/pdf-documents/id/[id]/split", () => {
     const res = await call({ breaks: [2] });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ success: true, outputs: ["a", "b"] });
-    expect(mocks.splitPdfDocument).toHaveBeenCalledWith(ID, [2]);
+    expect(mocks.splitPdfDocument).toHaveBeenCalledWith(ID, [2], {});
+  });
+
+  it("passes on what the parts are called and what they take (task 7g)", async () => {
+    mocks.splitPdfDocument.mockResolvedValue({ outputs: ["a", "b"] });
+    await call({
+      breaks: [2],
+      parts: [
+        { title: " Camp art, 1 of 2 ", filename: "Camp art 1.pdf" },
+        { title: "", filename: "Camp art 2.pdf" },
+      ],
+      copy: { subject: false, keywords: true },
+    });
+    expect(mocks.splitPdfDocument).toHaveBeenCalledWith(ID, [2], {
+      parts: [
+        { title: "Camp art, 1 of 2", filename: "Camp art 1.pdf" },
+        { title: null, filename: "Camp art 2.pdf" },
+      ],
+      copy: { subject: false, keywords: true },
+    });
+  });
+
+  it("400s names it can't make sense of, without splitting", async () => {
+    for (const bad of [
+      { parts: "Camp art" },
+      { parts: [{ title: 7, filename: "a.pdf" }] },
+      { parts: [{ title: null }] },
+      { parts: [{ title: "x".repeat(1001), filename: "a.pdf" }] },
+      { copy: { subject: "yes" } },
+      { copy: null },
+    ]) {
+      expect((await call({ breaks: [1], ...bad })).status).toBe(400);
+    }
+    expect(mocks.splitPdfDocument).not.toHaveBeenCalled();
   });
 
   it("maps each refusal to its status", async () => {

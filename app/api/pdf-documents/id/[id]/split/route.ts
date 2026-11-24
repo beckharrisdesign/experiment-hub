@@ -12,11 +12,14 @@ import {
   SplitConflict,
   SplitNotRecorded,
   splitPdfDocument,
+  type SplitOptions,
 } from "@/lib/pdf-split";
 
 /**
- * Split a document after the given pages (tasks 7b.2, 7b.3). Body:
- * `{ breaks: number[] }`, each "split after this page". Every refusal before
+ * Split a document after the given pages (tasks 7b.2, 7b.3, 7g). Body:
+ * `{ breaks: number[], parts?: { title, filename }[], copy?: { subject, author,
+ * keywords } }`. Each break is "split after this page"; `parts` names each file
+ * in order, and `copy` says what they take from the scan. Every refusal before
  * the record step leaves Drive and the database as they were.
  */
 
@@ -30,6 +33,36 @@ function parseBreaks(body: unknown): number[] | null {
   return breaks as number[];
 }
 
+const MAX_TITLE = 1000;
+const MAX_FILENAME = 255;
+
+/** Null when the request's naming isn't well formed. */
+function parseOptions(body: unknown): SplitOptions | null {
+  const { parts, copy } = (body ?? {}) as { parts?: unknown; copy?: unknown };
+  const options: SplitOptions = {};
+  if (parts !== undefined) {
+    if (!Array.isArray(parts)) return null;
+    options.parts = [];
+    for (const part of parts) {
+      const { title, filename } = (part ?? {}) as { title?: unknown; filename?: unknown };
+      if (title !== null && (typeof title !== "string" || title.length > MAX_TITLE)) return null;
+      if (typeof filename !== "string" || filename.length > MAX_FILENAME) return null;
+      options.parts.push({ title: title?.trim() || null, filename });
+    }
+  }
+  if (copy !== undefined) {
+    if (!copy || typeof copy !== "object") return null;
+    options.copy = {};
+    for (const field of ["subject", "author", "keywords"] as const) {
+      const value = (copy as Record<string, unknown>)[field];
+      if (value === undefined) continue;
+      if (typeof value !== "boolean") return null;
+      options.copy[field] = value;
+    }
+  }
+  return options;
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -38,13 +71,19 @@ export async function POST(
   if (!isUuid(id)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  const breaks = parseBreaks(await request.json().catch(() => null));
+  const body = await request.json().catch(() => null);
+  const breaks = parseBreaks(body);
   if (!breaks) {
     return NextResponse.json({ error: "Choose at least one place to split." }, { status: 400 });
   }
 
+  const options = parseOptions(body);
+  if (!options) {
+    return NextResponse.json({ error: "Those names can't be used. Nothing was created." }, { status: 400 });
+  }
+
   try {
-    const result = await splitPdfDocument(id, breaks);
+    const result = await splitPdfDocument(id, breaks, options);
     if (!result) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ success: true, ...result });
   } catch (error) {

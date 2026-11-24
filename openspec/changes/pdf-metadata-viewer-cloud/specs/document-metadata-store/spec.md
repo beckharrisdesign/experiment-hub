@@ -163,6 +163,35 @@ or next document all follow the list as the user left it.
 - **WHEN** a user commits all pending documents while the list is narrowed
 - **THEN** every pending document is attempted, including those not shown
 
+### Requirement: Split parts can be named and tagged as they are made
+
+The system SHALL let a user choose, when splitting, each part's title, whether
+files are named after their titles, and which of the scan's subject, author and
+keywords its parts take. It SHALL work the same whether or not the scan was
+tagged first, and MUST NOT give two parts of a split the same file name.
+
+#### Scenario: Splitting a tagged scan
+
+- **WHEN** a user splits a scan that has a title
+- **THEN** the parts are offered that title numbered in page order, with file
+  names to match, and the scan's subject, author and keywords
+
+#### Scenario: Splitting a scan not tagged yet
+
+- **WHEN** a user splits a scan with no title
+- **THEN** they can type one for the parts to share, or leave it and keep the
+  scan's name
+
+#### Scenario: Naming one part
+
+- **WHEN** a user edits one part's title
+- **THEN** it stays with the pages it was typed for, whatever else is changed
+
+#### Scenario: Leaving something behind
+
+- **WHEN** a user chooses not to copy a field
+- **THEN** the parts are made without it, and the scan keeps it
+
 ### Requirement: Keyword values round-trip without corruption
 
 The system SHALL store keywords as a discrete ordered list rather than a

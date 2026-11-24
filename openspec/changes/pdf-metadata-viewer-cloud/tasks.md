@@ -117,6 +117,17 @@ Katy, 2026-11-24: "looking at a single doc seems to be generating images of the 
 - [x] 7f.3 Apply migration 032 to the hub database — **applied 2026-11-24** with Katy's go: bucket private and JPEG only, row level security on, no policies on it or the table, no grants to the public keys
 - [ ] 7f.4 Verify live: run the sync until no pages wait; time a 19-page scan, first and second open, and the splitter; commit an edit and see the pages not redrawn; check an image can't be had without a session
 
+## 7g. Names and tags when splitting
+
+Katy, 2026-11-24: "there's an interesting tension between splitting a pdf before … you've tagged it or after. If I've labelled the multipage pdf, and tagged it, I want the option to extend that info to the split pages so I don't end up with this... 19 identical names." A split copied one title to every part and named files after the scan.
+
+- [x] 7g.1 Draw it: `02.14 Proposed — Split names and tags` (81:8), then with the actions pinned, `02.15 Proposed — Split, actions always on screen` (83:23): frames 83:24 (tagged), 83:189 (not tagged), 83:368 (19 pages, scrolled), 83:694 (loading), note 83:344
+- [x] 7g.2 Explicit go — **"Looks right, build it", 2026-11-24**
+- [x] 7g.3 Spec, rules shared by the page and the server (`lib/pdf-split-plan.ts`), the panel, and the split route
+- [ ] 7g.4 Verify live on a made-up scan
+
+Not covered: the 19 parts already made keep their names; and a split still makes its files one after another inside one 60-second request, so a very long one could run out of time (19 parts did not).
+
 ## 8. Write path
 
 - [x] 8.0 Capture the baseline on the first staged edit — read the file once, store `file_snapshot.embedded` and `drive_head_revision_id` together, fill the field columns; never re-capture while edits are pending. See `design.md` D8, "captured on first edit". **Done in #608, verified live 2026-11-20:** the first edit stored the file's five fields and its revision, and filled the title column from the file

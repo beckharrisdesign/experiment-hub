@@ -34,6 +34,7 @@ import {
   planParts,
   splitPdfDocument,
 } from "@/lib/pdf-split";
+import { namePartsOf, partTitles, safeFileName, type NamingChoices } from "@/lib/pdf-split-plan";
 
 const ID = "8f2b1c3d-4e5f-4a6b-8c9d-0e1f2a3b4c5d";
 
@@ -97,6 +98,132 @@ describe("partName", () => {
     expect(partName("04272025_Scan.pdf", 1)).toBe("04272025_Scan-001.pdf");
     expect(partName("Report.PDF", 12)).toBe("Report-012.pdf");
     expect(partName(null, 2)).toBe("document-002.pdf");
+  });
+});
+
+// Task 7g, Figma 02.15.
+describe("naming parts", () => {
+  const PARTS = planParts(6, [2, 5]);
+  const choose = (o: Partial<NamingChoices> = {}): NamingChoices => ({
+    title: "Camp art",
+    number: true,
+    nameFromTitle: true,
+    edited: new Map(),
+    ...o,
+  });
+  const names = (o: Partial<NamingChoices> = {}, parts = PARTS) =>
+    namePartsOf("04272025_Scan.pdf", parts, choose(o)).map((n) => `${n.title} | ${n.filename}`);
+
+  it("numbers titles and names the files to match", () => {
+    expect(names()).toEqual([
+      "Camp art, 1 of 3 | Camp art 1.pdf",
+      "Camp art, 2 of 3 | Camp art 2.pdf",
+      "Camp art, 3 of 3 | Camp art 3.pdf",
+    ]);
+  });
+
+  it("pads file numbers so nineteen files sort in page order", () => {
+    const nineteen = planParts(19, Array.from({ length: 18 }, (_, i) => i + 1));
+    const files = namePartsOf("s.pdf", nineteen, choose()).map((n) => n.filename);
+    expect(files[0]).toBe("Camp art 01.pdf");
+    expect([...files].sort()).toEqual(files);
+    expect(new Set(partTitles(nineteen, choose())).size).toBe(19);
+  });
+
+  it("keeps an edited title with its pages, however the rest changes", () => {
+    const edited = new Map([[6, "Clay fox"]]);
+    expect(names({ edited })[2]).toBe("Clay fox | Clay fox.pdf");
+    expect(names({ edited, title: "Something else", number: false })[2]).toBe("Clay fox | Clay fox.pdf");
+    // Another break earlier moves page 6 from the third part to the fourth.
+    expect(names({ edited }, planParts(6, [1, 2, 5]))[3]).toBe("Clay fox | Clay fox.pdf");
+  });
+
+  it("keeps the scan's name for a part with no title, or when asked to", () => {
+    expect(names({ title: "" })).toEqual([
+      "null | 04272025_Scan-001.pdf",
+      "null | 04272025_Scan-002.pdf",
+      "null | 04272025_Scan-003.pdf",
+    ]);
+    expect(names({ nameFromTitle: false })[1]).toBe("Camp art, 2 of 3 | 04272025_Scan-002.pdf");
+    expect(names({ edited: new Map([[3, ""]]) })[1]).toBe("null | 04272025_Scan-002.pdf");
+  });
+
+  it("never gives two files the same name", () => {
+    expect(names({ number: false })).toEqual([
+      "Camp art | Camp art.pdf",
+      "Camp art | Camp art 2.pdf",
+      "Camp art | Camp art 3.pdf",
+    ]);
+    expect(names({ number: false, edited: new Map([[3, "CAMP ART"], [6, "Camp art 2"]]) }).map((n) => n.split(" | ")[1].toLowerCase())).toEqual([
+      "camp art.pdf",
+      "camp art 2.pdf",
+      "camp art 2 2.pdf",
+    ]);
+  });
+
+  it("drops what a file name can't carry", () => {
+    expect(safeFileName('Q1/Q2: "What?" <a|b>*\\')).toBe("Q1 Q2 What a b");
+    expect(safeFileName("..hidden.")).toBe("hidden");
+    expect(safeFileName("tab\there\u0000")).toBe("tab here");
+    expect(safeFileName("///")).toBe("");
+    expect(safeFileName("x".repeat(400))).toHaveLength(150);
+    expect(names({ title: "???" })[0]).toBe("???, 1 of 3 | 04272025_Scan-001.pdf");
+  });
+});
+
+describe("splitPdfDocument with names and choices (task 7g)", () => {
+  const load = (i: number) =>
+    PDFDocument.load(mocks.createDriveFile.mock.calls[i][1].bytes, { updateMetadata: false });
+
+  beforeEach(async () => {
+    mocks.getPdfDocument.mockResolvedValue(doc({ subject: "Summer camp", author: "Somebody" }));
+    mocks.downloadDriveFile.mockResolvedValue(await pdfOf(2));
+  });
+
+  it("gives each part its own title and file name", async () => {
+    await splitPdfDocument(ID, [1], {
+      parts: [
+        { title: "Camp art, 1 of 2", filename: "Camp art 1.pdf" },
+        { title: null, filename: "Camp art 2.pdf" },
+      ],
+    });
+    expect(mocks.createDriveFile.mock.calls.map(([, f]) => f.name)).toEqual(["Camp art 1.pdf", "Camp art 2.pdf"]);
+    expect((await load(0)).getTitle()).toBe("Camp art, 1 of 2");
+    expect((await load(1)).getTitle() || null).toBeNull();
+    expect((await load(1)).getSubject()).toBe("Summer camp");
+    expect(mocks.rpc.mock.calls[0][1].outputs.map((o: { filename: string }) => o.filename)).toEqual([
+      "Camp art 1.pdf",
+      "Camp art 2.pdf",
+    ]);
+  });
+
+  it("copies only what was asked for", async () => {
+    await splitPdfDocument(ID, [1], { copy: { subject: false, keywords: false } });
+    const part = await load(0);
+    expect(part.getSubject() || null).toBeNull();
+    expect(part.getKeywords() || null).toBeNull();
+    expect(part.getAuthor()).toBe("Somebody");
+    expect(part.getTitle()).toBe("Groceries");
+  });
+
+  it("never takes an unsafe file name from the request", async () => {
+    await splitPdfDocument(ID, [1], {
+      parts: [
+        { title: "a", filename: "../../etc/passwd" },
+        { title: "b", filename: "///.pdf" },
+      ],
+    });
+    expect(mocks.createDriveFile.mock.calls.map(([, f]) => f.name)).toEqual([
+      "etc passwd.pdf",
+      "04272025_Scan-002.pdf",
+    ]);
+  });
+
+  it("refuses names for a different split, before uploading", async () => {
+    await expect(
+      splitPdfDocument(ID, [1], { parts: [{ title: "a", filename: "a.pdf" }] }),
+    ).rejects.toBeInstanceOf(InvalidSplit);
+    expect(mocks.createDriveFile).not.toHaveBeenCalled();
   });
 });
 

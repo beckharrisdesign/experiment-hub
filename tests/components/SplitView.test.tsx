@@ -73,7 +73,82 @@ describe("SplitView", () => {
     await waitFor(() => expect(push).toHaveBeenCalledWith("/pdf-metadata-viewer"));
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe("/api/pdf-documents/id/doc-1/split");
-    expect(JSON.parse(init.body as string)).toEqual({ breaks: [2, 5] });
+    expect(JSON.parse(init.body as string)).toEqual({
+      breaks: [2, 5],
+      parts: [
+        { title: null, filename: "04272025_Scan-001.pdf" },
+        { title: null, filename: "04272025_Scan-002.pdf" },
+        { title: null, filename: "04272025_Scan-003.pdf" },
+      ],
+      copy: { subject: true, author: true, keywords: true },
+    });
+  });
+
+  // Frame 83:24.
+  describe("names and copies (task 7g)", () => {
+    const tagged = { title: "Camp art", subject: "Summer camp", author: null, keywords: ["art", "school"] };
+    async function renderSplit(values = tagged) {
+      render(
+        <SplitView documentId="doc-1" filename="04272025_Scan.pdf" contentUrl="/c" loadPdf={sixPages} values={values} />,
+      );
+      fireEvent.click(await screen.findByRole("button", { name: "Split after page 2" }));
+      fireEvent.click(screen.getByRole("button", { name: "Split after page 5" }));
+    }
+    const titleOf = (n: number) => (screen.getByLabelText(`Title of file ${n}`) as HTMLInputElement).value;
+    const checked = (name: string) => screen.getByRole("checkbox", { name }).getAttribute("aria-checked");
+
+    it("starts from the scan's title, numbered, with files named to match", async () => {
+      await renderSplit();
+      expect([1, 2, 3].map(titleOf)).toEqual(["Camp art, 1 of 3", "Camp art, 2 of 3", "Camp art, 3 of 3"]);
+      expect(screen.getByText("Camp art 2.pdf")).toBeTruthy();
+      expect(checked("Number the parts")).toBe("true");
+      expect(checked("Name the files after their titles")).toBe("true");
+      expect(checked("Author")).toBe("false");
+    });
+
+    it("works the same for a scan not tagged yet: type a title and both choices turn on", async () => {
+      await renderSplit({ title: null as unknown as string, subject: null as unknown as string, author: null, keywords: [] });
+      expect(screen.getByText(/Nothing to copy: this scan has/)).toBeTruthy();
+      expect(screen.getByText(/files keep the scan's name/)).toBeTruthy();
+      expect(checked("Number the parts")).toBe("false");
+      fireEvent.change(screen.getByLabelText("Title"), { target: { value: "Camp art" } });
+      expect(titleOf(3)).toBe("Camp art, 3 of 3");
+      expect(checked("Number the parts")).toBe("true");
+      expect(screen.getByText("Camp art 3.pdf")).toBeTruthy();
+    });
+
+    it("keeps an edited title through the choices and through another break", async () => {
+      await renderSplit();
+      fireEvent.change(screen.getByLabelText("Title of file 3"), { target: { value: "Clay fox" } });
+      expect(screen.getByText("Clay fox.pdf")).toBeTruthy();
+      fireEvent.click(screen.getByRole("checkbox", { name: "Number the parts" }));
+      expect([1, 2, 3].map(titleOf)).toEqual(["Camp art", "Camp art", "Clay fox"]);
+      fireEvent.click(screen.getByRole("button", { name: "Split after page 1" }));
+      expect(titleOf(4)).toBe("Clay fox");
+    });
+
+    it("lets a title have spaces while it's being typed", async () => {
+      await renderSplit();
+      fireEvent.change(screen.getByLabelText("Title of file 1"), { target: { value: "Clay " } });
+      expect(titleOf(1)).toBe("Clay ");
+    });
+
+    it("sends what it shows", async () => {
+      const fetchMock = vi.fn(async () => new Response(JSON.stringify({ success: true, outputs: [] })));
+      vi.stubGlobal("fetch", fetchMock);
+      await renderSplit();
+      fireEvent.click(screen.getByRole("checkbox", { name: "Subject" }));
+      fireEvent.change(screen.getByLabelText("Title of file 3"), { target: { value: "Clay fox" } });
+      fireEvent.click(screen.getByRole("button", { name: "Split into 3 files" }));
+      await waitFor(() => expect(push).toHaveBeenCalled());
+      const body = JSON.parse((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
+      expect(body.parts).toEqual([
+        { title: "Camp art, 1 of 3", filename: "Camp art 1.pdf" },
+        { title: "Camp art, 2 of 3", filename: "Camp art 2.pdf" },
+        { title: "Clay fox", filename: "Clay fox.pdf" },
+      ]);
+      expect(body.copy).toEqual({ subject: false, author: true, keywords: true });
+    });
   });
 
   it("shows why a split was refused, and stays put", async () => {

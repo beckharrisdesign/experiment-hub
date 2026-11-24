@@ -3,7 +3,9 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@beckharrisdesign/mvds";
-import { partName, planParts } from "@/lib/pdf-split-plan";
+import { namePartsOf, partTitles, planParts } from "@/lib/pdf-split-plan";
+import type { ShownValues } from "@/lib/pdf-shown-values";
+import { SplitPanel, type Copied } from "./SplitPanel";
 import { serverPageLoader } from "@/app/pdf-metadata-viewer/page-images";
 import type { LoadedPdf, PdfLoader } from "@/app/pdf-metadata-viewer/pdfjs";
 
@@ -14,12 +16,14 @@ import type { LoadedPdf, PdfLoader } from "@/app/pdf-metadata-viewer/pdfjs";
  * Every gap between two pages is a toggle: on, the document splits there. The
  * pages under each part carry one bar, labelled on the part's first page, and
  * the result panel lists the files a split would create. Nothing is written
- * until "Split into N files".
+ * until "Split into N files". What the files are called and what they take from
+ * the scan is SplitPanel's (`02.15`).
  */
 
 export type { LoadedPdf, PdfLoader } from "@/app/pdf-metadata-viewer/pdfjs";
 
 const THUMB_WIDTH = 148;
+const NOTHING: ShownValues = { title: null, subject: null, author: null, keywords: [] };
 /** The size pages are kept at, so the preview's images serve here too. */
 const STORED_PAGE_WIDTH = 1120;
 
@@ -58,6 +62,7 @@ export function SplitView({
   listQuery = "",
   filename,
   contentUrl,
+  values = NOTHING,
   revision = null,
   loadPdf: givenLoader,
 }: {
@@ -66,6 +71,8 @@ export function SplitView({
   listQuery?: string;
   filename: string | null;
   contentUrl: string;
+  /** What the scan says, offered to its parts. */
+  values?: ShownValues;
   /** Drive's revision as the page found it; finds its kept images. */
   revision?: string | null;
   /** Pages drawn on the server by default (falling back to pdf.js); a stub in tests. */
@@ -75,6 +82,14 @@ export function SplitView({
   const [status, setStatus] = useState<Status>({ kind: "loading" });
   const [breaks, setBreaks] = useState<number[]>([]);
   const [action, setAction] = useState<Action>({ kind: "idle" });
+
+  // Naming and copying (task 7g). The two choices follow whether there is a
+  // title until someone sets them.
+  const [title, setTitle] = useState(values.title ?? "");
+  const [numberChoice, setNumberChoice] = useState<boolean | null>(null);
+  const [nameChoice, setNameChoice] = useState<boolean | null>(null);
+  const [edited, setEdited] = useState<ReadonlyMap<number, string>>(new Map());
+  const [copied, setCopied] = useState<Copied>({ subject: true, author: true, keywords: true });
 
   const loadPdf = useMemo<PdfLoader>(
     () =>
@@ -105,6 +120,11 @@ export function SplitView({
   const parts = sorted.length > 0 ? planParts(pageCount, sorted) : [[1, pageCount] as [number, number]];
   const partOf = (page: number) => parts.findIndex(([a, b]) => page >= a && page <= b);
   const busy = action.kind === "working";
+
+  const number = numberChoice ?? title.trim() !== "";
+  const anyTitle = partTitles(parts, { title, number, edited }).some(Boolean);
+  const nameFromTitle = nameChoice ?? anyTitle;
+  const naming = namePartsOf(filename, parts, { title, number, nameFromTitle, edited });
 
   const toggle = (afterPage: number) =>
     setBreaks((current) =>
@@ -220,28 +240,26 @@ export function SplitView({
               })}
             </ol>
 
-            <section className="flex flex-col gap-3 rounded-lg bg-background-secondary p-5" aria-live="polite">
+            <section className="flex flex-col gap-5 rounded-lg bg-background-secondary p-5">
               {sorted.length > 0 ? (
-                <>
-                  <h3 className="text-sm font-semibold text-text-primary">
-                    Creates {parts.length} files in the same Drive folder
-                  </h3>
-                  <ul className="flex flex-col">
-                    {parts.map((p, i) => (
-                      <li
-                        key={i}
-                        className="flex gap-4 border-t border-border py-2.5 text-sm first:border-t-0"
-                      >
-                        <span className="w-64 shrink-0 break-words text-text-primary">{partName(filename, i + 1)}</span>
-                        <span className="text-text-muted">{range(p)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="text-xs text-text-muted">
-                    Each file starts with the original&apos;s title, subject and keywords. Tag each one after, or press
-                    Suggest on it.
-                  </p>
-                </>
+                <SplitPanel
+                parts={parts}
+                naming={naming}
+                values={values}
+                title={title}
+                onTitle={setTitle}
+                number={number && title.trim() !== ""}
+                canNumber={title.trim() !== ""}
+                onNumber={setNumberChoice}
+                nameFromTitle={nameFromTitle && anyTitle}
+                canName={anyTitle}
+                onNameFromTitle={setNameChoice}
+                titleOf={(first, i) => edited.get(first) ?? naming[i].title ?? ""}
+                onPartTitle={(first, value) => setEdited((m) => new Map(m).set(first, value))}
+                copied={copied}
+                onCopied={setCopied}
+                disabled={busy}
+              />
               ) : (
                 <>
                   <h3 className="text-sm font-semibold text-text-primary">No breaks yet</h3>
@@ -287,7 +305,7 @@ export function SplitView({
           <Button
             className="min-h-11"
             disabled={busy || sorted.length === 0}
-            onClick={() => void post("/split", { breaks: sorted }, "split")}
+            onClick={() => void post("/split", { breaks: sorted, parts: naming, copy: copied }, "split")}
           >
             {action.kind === "working" && action.what === "split"
               ? "Splitting…"
