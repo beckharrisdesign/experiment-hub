@@ -99,18 +99,8 @@ export function SplitView({
     };
   }, [contentUrl, loadPdf]);
 
-  if (status.kind === "loading") {
-    return <main className="px-4 pt-6 text-sm text-text-muted lg:px-24">Loading pages…</main>;
-  }
-  if (status.kind === "unreadable") {
-    return (
-      <main className="px-4 pt-6 lg:px-24">
-        <p role="alert" className="text-sm text-warning">{status.message}</p>
-      </main>
-    );
-  }
-
-  const pageCount = status.pdf.numPages;
+  const pdf = status.kind === "ready" ? status.pdf : null;
+  const pageCount = pdf?.numPages ?? 1;
   const sorted = [...breaks].sort((a, b) => a - b);
   const parts = sorted.length > 0 ? planParts(pageCount, sorted) : [[1, pageCount] as [number, number]];
   const partOf = (page: number) => parts.findIndex(([a, b]) => page >= a && page <= b);
@@ -152,110 +142,125 @@ export function SplitView({
   return (
     <>
       <main className="flex flex-1 flex-col gap-6 px-4 pt-8 pb-8 lg:px-24">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-base font-semibold text-text-primary">
-            Where does one document end and the next begin?
-          </h2>
-          <p className="text-sm text-text-muted">
-            Click the gap between two pages to split there. Each part becomes its own file in Drive; the original
-            stays, marked as replaced.
-          </p>
-        </div>
-
-        <ol className="flex flex-wrap items-start gap-y-6" aria-label="Pages">
-          {Array.from({ length: pageCount }, (_, i) => i + 1).map((page) => {
-            const part = partOf(page);
-            const firstOfPart = parts[part][0] === page;
-            const split = breaks.includes(page);
-            return (
-              <Fragment key={page}>
-                <li className="flex flex-col items-center gap-2">
-                  <Thumbnail pdf={status.pdf} pageNumber={page} />
-                  <span className="text-xs text-text-muted">Page {page}</span>
-                  <span
-                    aria-hidden
-                    className={`h-0.5 w-full rounded ${sorted.length > 0 ? "bg-accent-primary" : "bg-border"}`}
-                  />
-                  <span className="min-h-4 self-start text-xs font-medium text-text-secondary">
-                    {firstOfPart
-                      ? sorted.length > 0
-                        ? `File ${part + 1} · ${range(parts[part])}`
-                        : `One file · ${range(parts[0])}`
-                      : ""}
-                  </span>
-                </li>
-                {page < pageCount ? (
-                  <li className="flex flex-col items-center">
-                    <button
-                      type="button"
-                      aria-pressed={split}
-                      aria-label={`Split after page ${page}`}
-                      disabled={busy}
-                      onClick={() => toggle(page)}
-                      className="group flex h-48 w-11 flex-col items-center justify-center gap-1.5"
-                    >
-                      <span
-                        aria-hidden
-                        className={
-                          split
-                            ? "h-36 w-1 rounded bg-accent-primary"
-                            : "h-36 w-px bg-border group-hover:w-0.5 group-hover:bg-accent-primary"
-                        }
-                      />
-                      <span
-                        aria-hidden
-                        className={`text-[11px] font-medium ${split ? "text-accent-primary" : "text-text-muted group-hover:text-accent-primary"}`}
-                      >
-                        {split ? "split" : "+"}
-                      </span>
-                    </button>
-                    {/* Joins the part's bar across a gap that isn't a split. */}
-                    <span
-                      aria-hidden
-                      className={`mt-7 h-0.5 w-11 ${split ? "" : sorted.length > 0 ? "bg-accent-primary" : "bg-border"}`}
-                    />
-                  </li>
-                ) : null}
-              </Fragment>
-            );
-          })}
-        </ol>
-
-        <section className="flex flex-col gap-3 rounded-lg bg-background-secondary p-5" aria-live="polite">
-          {sorted.length > 0 ? (
-            <>
-              <h3 className="text-sm font-semibold text-text-primary">
-                Creates {parts.length} files in the same Drive folder
-              </h3>
-              <ul className="flex flex-col">
-                {parts.map((p, i) => (
-                  <li
-                    key={i}
-                    className="flex gap-4 border-t border-border py-2.5 text-sm first:border-t-0"
-                  >
-                    <span className="w-64 shrink-0 break-words text-text-primary">{partName(filename, i + 1)}</span>
-                    <span className="text-text-muted">{range(p)}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="text-xs text-text-muted">
-                Each file starts with the original&apos;s title, subject and keywords. Tag each one after, or press
-                Suggest on it.
-              </p>
-            </>
-          ) : (
-            <>
-              <h3 className="text-sm font-semibold text-text-primary">No breaks yet</h3>
-              <p className="text-xs text-text-muted">
-                Click a gap between pages to split there. If this scan is one document, say so and it&apos;s
-                recorded as one document.
-              </p>
-            </>
-          )}
-        </section>
-
-        {action.kind === "error" ? (
+        {status.kind === "loading" ? (
+          <p className="text-sm text-text-muted">Loading pages…</p>
+        ) : status.kind === "unreadable" ? (
           <p role="alert" className="text-sm text-warning">
+            {status.message}
+          </p>
+        ) : null}
+        {pdf ? (
+          <>
+            <div className="flex flex-col gap-1">
+              <h2 className="text-base font-semibold text-text-primary">
+                Where does one document end and the next begin?
+              </h2>
+              <p className="text-sm text-text-muted">
+                Click the gap between two pages to split there. Each part becomes its own file in Drive; the original
+                stays, marked as replaced.
+              </p>
+            </div>
+
+            <ol className="flex flex-wrap items-start gap-y-6" aria-label="Pages">
+              {Array.from({ length: pageCount }, (_, i) => i + 1).map((page) => {
+                const part = partOf(page);
+                const firstOfPart = parts[part][0] === page;
+                const split = breaks.includes(page);
+                return (
+                  <Fragment key={page}>
+                    <li className="flex flex-col items-center gap-2">
+                      <Thumbnail pdf={pdf} pageNumber={page} />
+                      <span className="text-xs text-text-muted">Page {page}</span>
+                      <span
+                        aria-hidden
+                        className={`h-0.5 w-full rounded ${sorted.length > 0 ? "bg-accent-primary" : "bg-border"}`}
+                      />
+                      <span className="min-h-4 self-start text-xs font-medium text-text-secondary">
+                        {firstOfPart
+                          ? sorted.length > 0
+                            ? `File ${part + 1} · ${range(parts[part])}`
+                            : `One file · ${range(parts[0])}`
+                          : ""}
+                      </span>
+                    </li>
+                    {page < pageCount ? (
+                      <li className="flex flex-col items-center">
+                        <button
+                          type="button"
+                          aria-pressed={split}
+                          aria-label={`Split after page ${page}`}
+                          disabled={busy}
+                          onClick={() => toggle(page)}
+                          className="group flex h-48 w-11 flex-col items-center justify-center gap-1.5"
+                        >
+                          <span
+                            aria-hidden
+                            className={
+                              split
+                                ? "h-36 w-1 rounded bg-accent-primary"
+                                : "h-36 w-px bg-border group-hover:w-0.5 group-hover:bg-accent-primary"
+                            }
+                          />
+                          <span
+                            aria-hidden
+                            className={`text-[11px] font-medium ${split ? "text-accent-primary" : "text-text-muted group-hover:text-accent-primary"}`}
+                          >
+                            {split ? "split" : "+"}
+                          </span>
+                        </button>
+                        {/* Joins the part's bar across a gap that isn't a split. */}
+                        <span
+                          aria-hidden
+                          className={`mt-7 h-0.5 w-11 ${split ? "" : sorted.length > 0 ? "bg-accent-primary" : "bg-border"}`}
+                        />
+                      </li>
+                    ) : null}
+                  </Fragment>
+                );
+              })}
+            </ol>
+
+            <section className="flex flex-col gap-3 rounded-lg bg-background-secondary p-5" aria-live="polite">
+              {sorted.length > 0 ? (
+                <>
+                  <h3 className="text-sm font-semibold text-text-primary">
+                    Creates {parts.length} files in the same Drive folder
+                  </h3>
+                  <ul className="flex flex-col">
+                    {parts.map((p, i) => (
+                      <li
+                        key={i}
+                        className="flex gap-4 border-t border-border py-2.5 text-sm first:border-t-0"
+                      >
+                        <span className="w-64 shrink-0 break-words text-text-primary">{partName(filename, i + 1)}</span>
+                        <span className="text-text-muted">{range(p)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-text-muted">
+                    Each file starts with the original&apos;s title, subject and keywords. Tag each one after, or press
+                    Suggest on it.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-sm font-semibold text-text-primary">No breaks yet</h3>
+                  <p className="text-xs text-text-muted">
+                    Click a gap between pages to split there. If this scan is one document, say so and it&apos;s
+                    recorded as one document.
+                  </p>
+                </>
+              )}
+            </section>
+          </>
+        ) : null}
+      </main>
+
+      {/* Always on screen, however many pages there are and while they load, with
+          anything that went wrong beside the button that caused it. */}
+      <div className="sticky bottom-0 z-10 flex flex-wrap items-center gap-3 border-t border-border bg-background-secondary px-4 py-4 lg:px-24">
+        {action.kind === "error" ? (
+          <p role="alert" className="w-full text-sm text-warning">
             {action.message}{" "}
             {action.reauthorize ? (
               <a href="/api/pdf-drive/connect" className="underline">
@@ -264,9 +269,6 @@ export function SplitView({
             ) : null}
           </p>
         ) : null}
-      </main>
-
-      <div className="sticky bottom-0 flex flex-wrap items-center gap-3 border-t border-border bg-background-secondary px-4 py-4 lg:px-24">
         <Button
           variant="outline"
           className="min-h-11"
@@ -275,23 +277,25 @@ export function SplitView({
         >
           It&apos;s one document
         </Button>
-        <span className="flex-1" />
-        {sorted.length > 0 ? (
-          <Button variant="outline" className="min-h-11" disabled={busy} onClick={() => setBreaks([])}>
-            Clear breaks
+        {/* One group: it wraps as a whole and stays right, primary rightmost. */}
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
+          {sorted.length > 0 ? (
+            <Button variant="outline" className="min-h-11" disabled={busy} onClick={() => setBreaks([])}>
+              Clear breaks
+            </Button>
+          ) : null}
+          <Button
+            className="min-h-11"
+            disabled={busy || sorted.length === 0}
+            onClick={() => void post("/split", { breaks: sorted }, "split")}
+          >
+            {action.kind === "working" && action.what === "split"
+              ? "Splitting…"
+              : sorted.length > 0
+                ? `Split into ${parts.length} files`
+                : "Choose where to split"}
           </Button>
-        ) : null}
-        <Button
-          className="min-h-11"
-          disabled={busy || sorted.length === 0}
-          onClick={() => void post("/split", { breaks: sorted }, "split")}
-        >
-          {action.kind === "working" && action.what === "split"
-            ? "Splitting…"
-            : sorted.length > 0
-              ? `Split into ${parts.length} files`
-              : "Choose where to split"}
-        </Button>
+        </div>
       </div>
     </>
   );
