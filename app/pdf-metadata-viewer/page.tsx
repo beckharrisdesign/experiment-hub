@@ -3,11 +3,13 @@ import { listPdfDocuments, type PdfDocument } from "@/lib/pdf-documents";
 import { getDriveConnection, type DriveConnection } from "@/lib/pdf-drive";
 import { toListRow } from "@/lib/pdf-list-rows";
 import { openPrefills } from "@/lib/pdf-prefills";
-import type { Prefill } from "@/lib/pdf-prefill";
+import { asksToSplit, type Prefill } from "@/lib/pdf-prefill";
+import { listedValues } from "@/lib/pdf-shown-values";
 import { listViewQuery, parseListView, type RawParams } from "@/lib/pdf-list-view";
 import FolderPicker from "./FolderPicker";
 import DocumentsView from "./DocumentsView";
 import { AttentionCard } from "./AttentionCard";
+import SplitAlerts from "./SplitAlerts";
 
 /**
  * Hosted pdf-metadata-viewer dashboard.
@@ -119,6 +121,11 @@ export default async function PdfMetadataViewerPage({
 
   const pending = documents.filter((d) => d.hasPendingEdits).length;
   const attention = documents.filter(isOpen);
+  // May be more than one document (task 7j): the longest first.
+  const candidates = documents
+    .filter(asksToSplit)
+    .map((d) => ({ id: d.id, filename: d.filename, pageCount: listedValues(d).pageCount ?? 0 }))
+    .sort((a, b) => b.pageCount - a.pageCount);
 
   // MVDS `Section` is deliberately not used here. It applies `bg-background`
   // unconditionally — there is no transparent option, and all four SurfaceBg
@@ -176,6 +183,11 @@ export default async function PdfMetadataViewerPage({
             <>
               <Inline gap={48}>
                 <Stat label="Documents" value={String(documents.length)} />
+                <Stat
+                  label="Split first?"
+                  value={String(candidates.length)}
+                  tone={candidates.length > 0 ? "warning" : "default"}
+                />
                 <Stat
                   label="Prefilled"
                   value={String(prefills.size)}
@@ -238,6 +250,9 @@ export default async function PdfMetadataViewerPage({
               ) : (
                 <>
                 {attention.length > 0 ? <NeedsAttention documents={attention} /> : null}
+                {candidates.length > 0 ? (
+                  <SplitAlerts candidates={candidates} listQuery={listViewQuery(view)} />
+                ) : null}
                 <DocumentsView
                   rows={documents.map((d) => toListRow(d, prefills.get(d.id)))}
                   excluded={documents.filter((d) => d.hasPendingEdits && excludedFromBulk(d)).length}

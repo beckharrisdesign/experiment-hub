@@ -237,10 +237,10 @@ any service. Each value SHALL say where it came from.
 
 #### Scenario: Answering from the list
 
-- **WHEN** a user opens a row that asks whether to split
-- **THEN** the question, both answers and a place for every page are there without
-  waiting for any image, saying it is one document leaves them in the list, and
-  splitting goes straight to the split page
+- **WHEN** scans may be more than one document
+- **THEN** they are counted and called out above the list, each one link to the
+  split page, where both answers are there without waiting for any image and lead
+  back to the list
 
 #### Scenario: Asking the AI instead
 
