@@ -742,7 +742,7 @@ for the pages kept before this.
 **Size.** About 260 KB a page; the 381 pages listed on 2026-11-24 come to about
 100 MB.
 
-### D15 — Cached text for suggestions (proposed, task 7h)
+### D15 — Cached text for suggestions (being measured, task 7h)
 
 **Today.** Each press of Suggest downloads the whole PDF from Drive and sends
 all of it, base64, to OpenAI, whose model reads it afresh. Nothing is reused
@@ -762,7 +762,7 @@ photographs lose nothing.
 1. Pages that already carry text (digital PDFs, scans a scanner app has read):
    pdf.js reads it while the page is open to be drawn. Free, and exact.
 2. Scanned pages with none. Either:
-   - **On our own server** (recommended): tesseract.js on the kept page image, in
+   - **On our own server** (Katy, 2026-11-24): tesseract.js on the kept page image, in
      the sync's spare time. No cost per page and the image goes nowhere new. Weak
      on handwriting. The hub uses it elsewhere (simple-seed-organizer), not yet
      in this app; whether it fits the function's size and time is 7h.2's question.

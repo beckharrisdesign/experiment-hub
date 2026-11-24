@@ -117,7 +117,7 @@ Katy, 2026-11-24: "looking at a single doc seems to be generating images of the 
 - [x] 7f.3 Apply migration 032 to the hub database — **applied 2026-11-24** with Katy's go: bucket private and JPEG only, row level security on, no policies on it or the table, no grants to the public keys
 - [~] 7f.4 Verify live — **2026-11-24** (#644), on PDF Tests. Right: the sync draws and keeps (208 images, 52 of 53 documents, part way through its first run); a 30-page scan's second open came wholly from storage; after a commit on `Sync-test-3-pages.pdf` its three pages were still kept ones, on one set; no session, no image (401). **Not fast enough:** that scan went from 58.6 s (first open, while the sync was also drawing) to 22.9 s, page 1 from 11.4 s to 2.6 s, and Split showed all 30 thumbnails in 18.1 s. Storage answers in about 0.4 s; the rest is the function sending full-size images at 0.35–0.6 MB/s (a static file on the same site: 2.5 MB/s). See 7f.5. Not checked: the clear-out of a changed or removed file
 - [x] 7f.5 Send less — a small copy of each page (296 px) kept beside it, for Split's thumbnails and for the preview to show first and sharpen (Katy, 2026-11-24: "grabbing the images at mid to low resolution to start"); the preview fetches only pages within a screen of what's in view. Pages kept before this get their small copy from the kept page the first time it's asked for; nothing is redrawn and no migration is needed
-- [ ] 7f.6 Time it live again: the 30-page scan, opening and Split
+- [x] 7f.6 Time it live again — **2026-11-24** (#646), the same 30-page scan: page 1 shows at 1.7 s and is sharp at 3.4 s (it was 2.6 s, sharp only); jumping to page 20 took 0.9 s; 8 fetches to open and 11 in all where 30 pages had gone (22.9 s). Split filled in 4.6 s, then 4.1 s, where it took 18.1 s; small copies average 21 KB
 
 ## 7g. Names and tags when splitting
 
@@ -134,7 +134,7 @@ Not covered: the 19 parts already made keep their names; and a split still makes
 
 Katy, 2026-11-24: "or caching the ocr version of the pages for ai synthesis so that full image transfer isn't needed at every completion". Suggest downloads the whole PDF from Drive and sends all of it to OpenAI on every press. design.md D15. OCR was a non-goal of this change; this moves it in.
 
-- [ ] 7h.1 Katy's call on where scans are read (D15), which also settles that their text may be kept
+- [x] 7h.1 Katy's call on where scans are read (D15), which also settles that their text may be kept — **"Our own server", 2026-11-24**
 - [ ] 7h.2 Measure before building: how many pages already carry text; how long reading a kept page takes on the server; and, against `docs/ai-suggestions-rubric.md`, whether suggestions from text are as good as from the PDF. Real documents only with her go
 - [ ] 7h.3 Spec: text of pages may be kept; the same privacy rules as images
 - [ ] 7h.4 Keep text beside each page set (migration 033, applied only on her go); fill it in the sync after drawing
