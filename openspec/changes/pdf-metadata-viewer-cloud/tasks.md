@@ -144,6 +144,17 @@ Katy, 2026-11-24: "or caching the ocr version of the pages for ai synthesis so t
 
 Later, not part of this: searching inside documents, which the kept text would make possible.
 
+## 7i. Suggestions waiting to be reviewed (proposed, not approved)
+
+Katy, 2026-11-24: "auto applying ocr based metadata suggestions but not committing them to drive -- making it possible to just review them without having to kick them off. For longer pdfs, clearly some splitting or adjustment might be a better first step", and "full ai completions could still be manually kicked off". design.md D16. The roadmap's "review-and-refine rather than click-then-wait", without a model.
+
+- [ ] 7i.1 Katy's call: suggestions wait apart from pending edits until accepted, or are staged
+- [ ] 7i.2 Draw it on a numbered Figma page: the list's state and filter, the document's review, and the long-document prompt; explicit go
+- [ ] 7i.3 Spec; the rules, pure and tested; migration 034 (applied only on her go)
+- [ ] 7i.4 Make them in the sync, after text; nothing sent anywhere
+- [ ] 7i.5 Review on the document and in the list; Suggest (full AI) unchanged and by hand
+- [ ] 7i.6 Verify live; measure how many are accepted as they are
+
 ## 8. Write path
 
 - [x] 8.0 Capture the baseline on the first staged edit — read the file once, store `file_snapshot.embedded` and `drive_head_revision_id` together, fill the field columns; never re-capture while edits are pending. See `design.md` D8, "captured on first edit". **Done in #608, verified live 2026-11-20:** the first edit stored the file's five fields and its revision, and filled the title column from the file
