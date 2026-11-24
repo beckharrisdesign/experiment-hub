@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Button } from "@beckharrisdesign/mvds";
 import {
@@ -8,9 +7,11 @@ import {
   type PdfDocument,
 } from "@/lib/pdf-documents";
 import { getDriveConnection } from "@/lib/pdf-drive";
-import { checkFile, readFile, type Access, type FileState, type Problem } from "@/lib/pdf-file-read";
+import { checkFile, type Problem } from "@/lib/pdf-file-read";
+import { shownValues } from "@/lib/pdf-shown-values";
 import { summarizePending } from "@/lib/pdf-staging";
 import { DetailsEditor } from "./DetailsEditor";
+import { DetailsFromFile, PreviewFooter } from "./FromFile";
 
 /**
  * Hosted pdf-metadata-viewer — document detail.
@@ -24,13 +25,12 @@ import { DetailsEditor } from "./DetailsEditor";
  * page shows what the file itself says. From the first edit on, the stored
  * fields are authoritative (design.md D8, "captured on first edit").
  *
- * Loading: the header and layout render from the database alone. Drive is
- * read inside two Suspense boundaries, so the page appears at once:
- *
- * - the preview waits only for a metadata read (is the file still there?);
- * - the details panel waits for what the file says, which is read from Drive
- *   only when the stored baseline may be stale. Once a document has a baseline
- *   and Drive still holds that revision, nothing is downloaded at all.
+ * Loading: the page renders from the database and one small Drive read (is
+ * the file still there, and at which revision?). What the file itself says is
+ * needed only when the stored copy may be stale; then the browser asks for it
+ * after the page is up (`FromFile.tsx`), because reading it means downloading
+ * the whole file. A document edited here whose file hasn't changed in Drive
+ * needs no download at all: its baseline is the file's own values.
  *
  * Gated by middleware.ts, which returns before this renders.
  */
@@ -59,194 +59,6 @@ const LOCKED_SPLIT = "This scan was split into parts. Edit the parts instead.";
 const FRAME = "h-[420px] w-full rounded-md lg:h-[calc(100vh-185px)]";
 
 // ---------------------------------------------------------------------------
-// Preview
-// ---------------------------------------------------------------------------
-
-function PreviewFooter({
-  document,
-  pageCount,
-  contentUrl,
-}: {
-  document: PdfDocument;
-  pageCount: number | null;
-  contentUrl: string;
-}) {
-  return (
-    <div className="flex items-center justify-between text-xs text-text-muted">
-      <span className="flex items-center gap-4">
-        <span>
-          {pageCount === null ? "" : `${pageCount} ${pageCount === 1 ? "page" : "pages"}`}
-        </span>
-        {/* Split (Figma 02.11): offered for any multi-page scan not already split. */}
-        {document.supersededAt ? (
-          <a
-            href={`/pdf-metadata-viewer/id/${document.id}/split`}
-            className="inline-flex min-h-11 items-center text-warning hover:underline"
-          >
-            Split into parts — see them
-          </a>
-        ) : pageCount !== null && pageCount > 1 ? (
-          <a
-            href={`/pdf-metadata-viewer/id/${document.id}/split`}
-            className="inline-flex min-h-11 items-center text-text-secondary hover:underline"
-          >
-            Split pages
-          </a>
-        ) : null}
-      </span>
-      <a
-        href={contentUrl}
-        target="_blank"
-        rel="noopener"
-        className="inline-flex min-h-11 items-center text-text-secondary hover:underline"
-      >
-        Open full size
-      </a>
-    </div>
-  );
-}
-
-/** The page count comes from the file only when it isn't stored yet. */
-async function PreviewFooterFromFile({
-  document,
-  file,
-  contentUrl,
-}: {
-  document: PdfDocument;
-  file: Promise<FileState>;
-  contentUrl: string;
-}) {
-  const state = await file;
-  const pageCount = state.ok ? (state.embedded.pageCount ?? null) : null;
-  return <PreviewFooter document={document} pageCount={pageCount} contentUrl={contentUrl} />;
-}
-
-async function Preview({
-  document,
-  access,
-  file,
-  filename,
-  contentUrl,
-}: {
-  document: PdfDocument;
-  access: Promise<Access>;
-  file: Promise<FileState>;
-  filename: string;
-  contentUrl: string;
-}) {
-  const state = await access;
-  if (!state.ok) {
-    return (
-      <div className="rounded-lg border-l-2 border-warning bg-background-secondary p-4">
-        <div className="flex flex-col gap-2">
-          <span className="font-semibold text-warning">{FILE_PROBLEM[state.reason].heading}</span>
-          <span className="text-sm text-text-muted">{FILE_PROBLEM[state.reason].body}</span>
-          {state.reason === "reauthorize" ? (
-            <div>
-              <Button asChild size="sm">
-                <a href="/api/pdf-drive/connect">Sign in again</a>
-              </Button>
-            </div>
-          ) : null}
-        </div>
-      </div>
-    );
-  }
-  const footerNow = (
-    <PreviewFooter document={document} pageCount={document.pageCount} contentUrl={contentUrl} />
-  );
-  return (
-    <>
-      <iframe
-        // A commit uploads a new revision at the same URL; remount so the
-        // preview shows the file as it now is.
-        key={document.driveRevisionId ?? "initial"}
-        src={contentUrl}
-        title={`Preview of ${filename}`}
-        className={`${FRAME} bg-white`}
-      />
-      {document.pageCount !== null ? (
-        footerNow
-      ) : (
-        <Suspense fallback={footerNow}>
-          <PreviewFooterFromFile document={document} file={file} contentUrl={contentUrl} />
-        </Suspense>
-      )}
-    </>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Details
-// ---------------------------------------------------------------------------
-
-async function Details({
-  document,
-  file,
-}: {
-  document: PdfDocument;
-  file: Promise<FileState>;
-}) {
-  const state = await file;
-  const embedded = state.ok ? state.embedded : undefined;
-  const baselined = document.fileBaseline !== null;
-  const values = baselined
-    ? document
-    : {
-        title: document.title ?? embedded?.title ?? null,
-        subject: document.subject ?? embedded?.subject ?? null,
-        author: document.author ?? embedded?.author ?? null,
-        keywords: document.keywords.length > 0 ? document.keywords : (embedded?.keywords ?? []),
-      };
-  const pending = summarizePending(document);
-  return (
-    <DetailsEditor
-      documentId={document.id}
-      values={{
-        title: values.title,
-        subject: values.subject,
-        author: values.author,
-        keywords: values.keywords,
-      }}
-      inFile={embedded}
-      edited={{
-        fields: pending.fields,
-        keywordsAdded: pending.keywordsAdded,
-        keywordsRemoved: pending.keywordsRemoved,
-      }}
-      disabled={!state.ok && !baselined}
-      pendingCount={pending.count}
-      locked={document.supersededAt ? LOCKED_SPLIT : undefined}
-    />
-  );
-}
-
-/** Shown while the file is read: the stored values, not yet editable. */
-function DetailsWaiting({ document }: { document: PdfDocument }) {
-  const pending = summarizePending(document);
-  return (
-    <DetailsEditor
-      documentId={document.id}
-      values={{
-        title: document.title,
-        subject: document.subject,
-        author: document.author,
-        keywords: document.keywords,
-      }}
-      inFile={undefined}
-      edited={{
-        fields: pending.fields,
-        keywordsAdded: pending.keywordsAdded,
-        keywordsRemoved: pending.keywordsRemoved,
-      }}
-      disabled
-      pendingCount={pending.count}
-      locked={document.supersededAt ? LOCKED_SPLIT : "Reading the file from Drive…"}
-    />
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -261,11 +73,25 @@ export default async function PdfDocumentDetailPage({
   const [{ folder }, document] = await Promise.all([getDriveConnection(), getPdfDocument(id)]);
   if (!document) notFound();
 
-  // Started now, awaited inside the Suspense boundaries below. Neither rejects.
-  const access = checkFile(document);
-  const file = access.then((state) => readFile(document, state));
-
-  const all = await listPdfDocuments(folder?.id ?? null);
+  const [access, all] = await Promise.all([
+    checkFile(document),
+    listPdfDocuments(folder?.id ?? null),
+  ]);
+  // A baseline is the file's own values at driveRevisionId (first edit, commit
+  // and rebaseline move the two together). Unchanged in Drive: no download.
+  const fresh =
+    access.ok && document.fileBaseline !== null && access.head === document.driveRevisionId
+      ? document.fileBaseline
+      : null;
+  const revision = access.ok ? access.head : null;
+  const baselined = document.fileBaseline !== null;
+  const stored = {
+    title: document.title,
+    subject: document.subject,
+    author: document.author,
+    keywords: document.keywords,
+  };
+  const locked = document.supersededAt ? LOCKED_SPLIT : undefined;
 
   // Previous/next follow the dashboard's own order, so stepping through here
   // walks the same list the user just left.
@@ -274,6 +100,11 @@ export default async function PdfDocumentDetailPage({
   const next = index >= 0 && index < all.length - 1 ? all[index + 1] : null;
 
   const pending = summarizePending(document);
+  const edited = {
+    fields: pending.fields,
+    keywordsAdded: pending.keywordsAdded,
+    keywordsRemoved: pending.keywordsRemoved,
+  };
   const contentUrl = `/api/pdf-documents/id/${document.id}/content`;
   const filename = document.filename ?? "(unnamed)";
 
@@ -328,31 +159,70 @@ export default async function PdfDocumentDetailPage({
       {/* ── Body ───────────────────────────────────────────────────────── */}
       <div className="flex flex-1 flex-col gap-6 px-4 py-6 lg:flex-row lg:gap-12 lg:px-24 lg:py-0">
         <section className="flex flex-col gap-3 lg:flex-1 lg:py-0" aria-label="Preview">
-          <Suspense
-            fallback={
-              <>
-                <div aria-busy className={`${FRAME} bg-background-secondary`} />
-                <div className="min-h-11" />
-              </>
-            }
-          >
-            <Preview
-              document={document}
-              access={access}
-              file={file}
-              filename={filename}
-              contentUrl={contentUrl}
-            />
-          </Suspense>
+          {access.ok ? (
+            <>
+              <iframe
+                // A commit uploads a new revision at the same URL; remount so
+                // the preview shows the file as it now is.
+                key={document.driveRevisionId ?? "initial"}
+                src={contentUrl}
+                title={`Preview of ${filename}`}
+                className={`${FRAME} bg-white`}
+              />
+              <PreviewFooter
+                documentId={document.id}
+                revision={revision}
+                storedPageCount={document.pageCount ?? fresh?.pageCount ?? null}
+                wasSplit={document.supersededAt !== null}
+                contentUrl={contentUrl}
+              />
+            </>
+          ) : (
+            <div className="rounded-lg border-l-2 border-warning bg-background-secondary p-4">
+              <div className="flex flex-col gap-2">
+                <span className="font-semibold text-warning">
+                  {FILE_PROBLEM[access.reason].heading}
+                </span>
+                <span className="text-sm text-text-muted">{FILE_PROBLEM[access.reason].body}</span>
+                {access.reason === "reauthorize" ? (
+                  <div>
+                    <Button asChild size="sm">
+                      <a href="/api/pdf-drive/connect">Sign in again</a>
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          )}
         </section>
 
         <section
           className="flex flex-col rounded-lg bg-background-secondary lg:w-[428px] lg:shrink-0 lg:rounded-none"
           aria-label="Details"
         >
-          <Suspense fallback={<DetailsWaiting document={document} />}>
-            <Details document={document} file={file} />
-          </Suspense>
+          {access.ok && !fresh ? (
+            <DetailsFromFile
+              documentId={document.id}
+              revision={revision}
+              stored={stored}
+              baselined={baselined}
+              edited={edited}
+              pendingCount={pending.count}
+              locked={locked}
+            />
+          ) : (
+            <DetailsEditor
+              documentId={document.id}
+              values={shownValues(stored, baselined, fresh ?? undefined)}
+              inFile={fresh ?? undefined}
+              edited={edited}
+              // The file couldn't be reached: editable only once a baseline
+              // exists, since the first edit records what the file says.
+              disabled={!access.ok && !baselined}
+              pendingCount={pending.count}
+              locked={locked}
+            />
+          )}
         </section>
       </div>
     </div>
