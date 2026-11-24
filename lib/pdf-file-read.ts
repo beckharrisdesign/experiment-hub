@@ -3,7 +3,7 @@
  * page can show itself before either finishes.
  * openspec/changes/pdf-metadata-viewer-cloud — design.md D8.
  */
-import type { PdfDocument } from "@/lib/pdf-documents";
+import { getPdfAdminClient, type PdfDocument } from "@/lib/pdf-documents";
 import {
   DriveFileMissing,
   DriveReauthorizationRequired,
@@ -48,20 +48,54 @@ export async function checkFile(document: PdfDocument): Promise<Access> {
 }
 
 /**
- * What the file says. A baseline describes the file at `driveRevisionId`
- * (first edit, commit and rebaseline all move the two together), so while
- * Drive still holds that revision the stored copy is the file's own values
- * and the download is skipped.
+ * What the file says at Drive's head revision, if it is already stored: the
+ * baseline (first edit, commit and rebaseline move it and driveRevisionId
+ * together), or the last saved read (migration 031). Null means download.
+ */
+export function storedFileValues(
+  document: PdfDocument,
+  head: string | null,
+): EmbeddedMetadata | null {
+  if (head === null) return null;
+  if (document.fileBaseline && head === document.driveRevisionId) return document.fileBaseline;
+  if (document.fileRead && head === document.fileRead.revision) return document.fileRead.embedded;
+  return null;
+}
+
+/**
+ * Save a read so the next visit needs no download. Best effort: a failure
+ * costs only that, so it is logged and the values are still returned.
+ */
+async function recordFileRead(id: string, revision: string, embedded: EmbeddedMetadata) {
+  try {
+    const { error } = await getPdfAdminClient().rpc("pdf_record_file_read", {
+      doc: id,
+      revision,
+      embedded,
+    });
+    if (error) console.warn(`pdf file read: could not save the read of ${id}:`, error.message);
+  } catch (error) {
+    console.warn(`pdf file read: could not save the read of ${id}:`, error);
+  }
+}
+
+/**
+ * What the file says: stored if Drive still holds the revision it came from,
+ * otherwise downloaded, read, and saved against that revision.
  */
 export async function readFile(document: PdfDocument, access: Access): Promise<FileState> {
   if (!access.ok) return access;
-  if (document.fileBaseline && access.head === document.driveRevisionId) {
-    return { ok: true, embedded: document.fileBaseline };
-  }
+  const stored = storedFileValues(document, access.head);
+  if (stored) return { ok: true, embedded: stored };
+  let embedded: EmbeddedMetadata;
   try {
     const bytes = await downloadDriveFile(access.accessToken, document.driveFileId);
-    return { ok: true, embedded: await readEmbeddedMetadata(bytes) };
+    embedded = await readEmbeddedMetadata(bytes);
   } catch (error) {
     return problem(error, "read file from Drive");
   }
+  // Saved against the revision checked before the download. Had the file
+  // changed in between, Drive's head has moved on, so this entry never matches.
+  if (access.head) await recordFileRead(document.id, access.head, embedded);
+  return { ok: true, embedded };
 }

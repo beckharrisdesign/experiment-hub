@@ -91,6 +91,22 @@ describe("listPdfDocuments", () => {
     });
   });
 
+  it("maps a saved read with its revision, and ignores one without", async () => {
+    const read = { title: "T", subject: null, author: null, keywords: ["k"], pageCount: 4 };
+    mockGetAdminClient.mockReturnValue(
+      client({
+        data: [
+          { ...ROW, file_read: { ...read, revision: "rev-9" } },
+          { ...ROW, file_read: read },
+        ],
+        error: null,
+      }),
+    );
+    const [withRevision, without] = await listPdfDocuments();
+    expect(withRevision.fileRead).toEqual({ revision: "rev-9", embedded: read });
+    expect(without.fileRead).toBeNull();
+  });
+
   it("excludes soft-deleted documents", async () => {
     const c = client({ data: [], error: null });
     mockGetAdminClient.mockReturnValue(c);

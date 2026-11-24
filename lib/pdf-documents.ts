@@ -56,6 +56,12 @@ export interface PdfDocument {
   fileBaseline: EmbeddedMetadata | null;
   /** The Drive revision `fileBaseline` was read from, compared at commit. */
   driveRevisionId: string | null;
+  /**
+   * The last time the file's own values were read, and from which Drive
+   * revision — `file_snapshot.read` (migration 031). A cache for the detail
+   * page, not a baseline: valid only while Drive still reports that revision.
+   */
+  fileRead: { revision: string; embedded: EmbeddedMetadata } | null;
   /** The document's open Needs attention instance, if any (task 8.8). */
   attention: {
     kind: "conflict" | "commit_failed" | "file_missing";
@@ -81,7 +87,7 @@ const COLUMNS =
   "split_from_document_id, split_index, superseded_at, drive_head_revision_id, drive_folder_id, " +
   "attention_kind, attention_message, attention_at, " +
   // Only the baseline, not the whole snapshot: the rest is Drive's listing.
-  "file_baseline:file_snapshot->embedded";
+  "file_baseline:file_snapshot->embedded, file_read:file_snapshot->read";
 
 function toDocument(row: Row): PdfDocument {
   return {
@@ -103,6 +109,7 @@ function toDocument(row: Row): PdfDocument {
     driveFolderId: (row.drive_folder_id as string) ?? null,
     fileBaseline: toBaseline(row.file_baseline),
     driveRevisionId: (row.drive_head_revision_id as string) ?? null,
+    fileRead: toRead(row.file_read),
     attention: row.attention_kind
       ? {
           kind: row.attention_kind as "conflict" | "commit_failed" | "file_missing",
@@ -111,6 +118,13 @@ function toDocument(row: Row): PdfDocument {
         }
       : null,
   };
+}
+
+function toRead(read: unknown): PdfDocument["fileRead"] {
+  if (!read || typeof read !== "object") return null;
+  const revision = (read as Record<string, unknown>).revision;
+  const embedded = toBaseline(read);
+  return typeof revision === "string" && revision && embedded ? { revision, embedded } : null;
 }
 
 function toBaseline(embedded: unknown): EmbeddedMetadata | null {

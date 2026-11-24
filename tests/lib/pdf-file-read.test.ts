@@ -5,7 +5,10 @@ const mocks = vi.hoisted(() => ({
   getDriveHeadRevisionId: vi.fn(),
   downloadDriveFile: vi.fn(),
   readEmbeddedMetadata: vi.fn(),
+  rpc: vi.fn(),
 }));
+
+vi.mock("@/lib/pdf-documents", () => ({ getPdfAdminClient: () => ({ rpc: mocks.rpc }) }));
 
 vi.mock("@/lib/pdf-drive", async () => {
   const actual = await vi.importActual<typeof import("@/lib/pdf-drive")>("@/lib/pdf-drive");
@@ -31,8 +34,10 @@ const IN_FILE = { title: "From the file", subject: null, author: null, keywords:
 function doc(overrides: Partial<PdfDocument> = {}): PdfDocument {
   return {
     driveFileId: "drive-1",
+    id: "doc-1",
     fileBaseline: null,
     driveRevisionId: null,
+    fileRead: null,
     ...overrides,
   } as PdfDocument;
 }
@@ -43,6 +48,7 @@ beforeEach(() => {
   mocks.getDriveHeadRevisionId.mockResolvedValue("rev-1");
   mocks.downloadDriveFile.mockResolvedValue(new ArrayBuffer(8));
   mocks.readEmbeddedMetadata.mockResolvedValue(IN_FILE);
+  mocks.rpc.mockResolvedValue({ error: null });
 });
 
 describe("checkFile", () => {
@@ -79,8 +85,38 @@ describe("readFile", () => {
     expect(mocks.downloadDriveFile).toHaveBeenCalledWith("token", "drive-1");
   });
 
-  it("downloads a document never edited here", async () => {
+  it("downloads a document never edited here, and saves the read against its revision", async () => {
     expect(await readFile(doc(), access)).toEqual({ ok: true, embedded: IN_FILE });
+    expect(mocks.rpc).toHaveBeenCalledWith("pdf_record_file_read", {
+      doc: "doc-1",
+      revision: "rev-1",
+      embedded: IN_FILE,
+    });
+  });
+
+  // Migration 031: the next visit to a large unedited scan needs no download.
+  it("uses a saved read while Drive still holds that revision", async () => {
+    const state = await readFile(doc({ fileRead: { revision: "rev-1", embedded: IN_FILE } }), access);
+    expect(state).toEqual({ ok: true, embedded: IN_FILE });
+    expect(mocks.downloadDriveFile).not.toHaveBeenCalled();
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("reads again when the file changed in Drive since the saved read", async () => {
+    await readFile(doc({ fileRead: { revision: "rev-0", embedded: BASELINE } }), access);
+    expect(mocks.downloadDriveFile).toHaveBeenCalled();
+    expect(mocks.rpc.mock.calls[0][1].revision).toBe("rev-1");
+  });
+
+  it("still returns the values when saving the read fails", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    mocks.rpc.mockResolvedValue({ error: { message: "function does not exist" } });
+    expect(await readFile(doc(), access)).toEqual({ ok: true, embedded: IN_FILE });
+  });
+
+  it("saves nothing when Drive reported no revision", async () => {
+    await readFile(doc(), { ...access, head: null });
+    expect(mocks.rpc).not.toHaveBeenCalled();
   });
 
   it("passes on a failed check without touching Drive", async () => {

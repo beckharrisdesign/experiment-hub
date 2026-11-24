@@ -61,6 +61,7 @@ function doc(overrides: Partial<PdfDocument> = {}): PdfDocument {
     driveFolderId: null,
     fileBaseline: null,
     driveRevisionId: null,
+    fileRead: null,
     attention: null,
     ...overrides,
   };
