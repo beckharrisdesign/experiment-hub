@@ -9,12 +9,21 @@
  * a document, and nothing here is allowed to fail the thing that called it.
  */
 import { getPdfAdminClient } from "@/lib/pdf-documents";
-import { openPdf } from "@/lib/pdf-render";
+import { openPdf, shrinkJpeg } from "@/lib/pdf-render";
 
 export const PAGE_BUCKET = "pdf-pages";
 
-/** One size for everything kept: the preview at twice its width on screen. */
+/** The size a page is kept at: the preview at twice its width on screen. */
 export const STORED_WIDTH = 1120;
+
+/**
+ * And its small copy, for Split: 148 px thumbnails at twice that. Full pages
+ * are a quarter of a megabyte each and the function sends slowly, so thirty of
+ * them took 18 s to fill a screen of thumbnails (task 7f.5).
+ */
+export const THUMB_WIDTH = 296;
+
+export type PageSize = "page" | "thumb";
 
 /** Drive revision ids; also what keeps `?rev=` from being anything else. */
 export function isRevision(value: string | null | undefined): value is string {
@@ -45,7 +54,8 @@ function toSet(row: Record<string, unknown>): PageSet {
 
 const sets = () => getPdfAdminClient().from("pdf_page_sets");
 const bucket = () => getPdfAdminClient().storage.from(PAGE_BUCKET);
-const objectPath = (setId: string, page: number) => `${setId}/${page}.jpg`;
+const objectPath = (setId: string, page: number, size: PageSize = "page") =>
+  `${setId}/${page}${size === "thumb" ? ".t" : ""}.jpg`;
 
 async function findSet(documentId: string, revision: string): Promise<PageSet | null> {
   const { data, error } = await sets()
@@ -73,8 +83,13 @@ async function ensureSet(
   return set;
 }
 
-async function upload(setId: string, page: number, jpeg: Uint8Array): Promise<void> {
-  const { error } = await bucket().upload(objectPath(setId, page), jpeg, {
+async function upload(
+  setId: string,
+  page: number,
+  jpeg: Uint8Array,
+  size: PageSize = "page",
+): Promise<void> {
+  const { error } = await bucket().upload(objectPath(setId, page, size), jpeg, {
     contentType: "image/jpeg",
     upsert: true,
     // The bucket's own copy is the one copy: nothing in front of it keeps one.
@@ -83,17 +98,33 @@ async function upload(setId: string, page: number, jpeg: Uint8Array): Promise<vo
   if (error) throw new Error(`Could not keep page ${page}: ${error.message}`);
 }
 
-/** Page numbers already kept in a set. */
-async function pagesKept(setId: string): Promise<Set<number>> {
-  const kept = new Set<number>();
+/** Everything in a set: pages and their small copies. */
+async function objectsIn(setId: string): Promise<string[]> {
+  const names: string[] = [];
   for (let offset = 0; ; offset += 1000) {
     const { data, error } = await bucket().list(setId, { limit: 1000, offset });
     if (error) throw new Error(`Could not list kept pages: ${error.message}`);
-    for (const object of data ?? []) {
-      const n = Number(object.name.replace(/\.jpg$/, ""));
-      if (Number.isInteger(n) && n > 0) kept.add(n);
-    }
-    if ((data ?? []).length < 1000) return kept;
+    for (const object of data ?? []) names.push(object.name);
+    if ((data ?? []).length < 1000) return names;
+  }
+}
+
+/** Page numbers already kept in a set. */
+async function pagesKept(setId: string): Promise<Set<number>> {
+  const kept = new Set<number>();
+  for (const name of await objectsIn(setId)) {
+    const page = name.match(/^(\d+)\.jpg$/);
+    if (page) kept.add(Number(page[1]));
+  }
+  return kept;
+}
+
+/** A page's small copy. Never worth failing for: it can be made when asked for. */
+async function keepThumb(setId: string, page: number, jpeg: Uint8Array): Promise<void> {
+  try {
+    await upload(setId, page, await shrinkJpeg(jpeg, THUMB_WIDTH), "thumb");
+  } catch (error) {
+    console.warn(`pdf pages: could not keep the small copy of page ${page}:`, error);
   }
 }
 
@@ -105,6 +136,8 @@ export interface KeptPage {
   /** Null when the page asked for is past the end. */
   jpeg: Blob | null;
   pageCount: number;
+  /** Work for after the answer: keeping a small copy that had to be made. */
+  later?: () => Promise<void>;
 }
 
 /** A kept page, or null: draw it. */
@@ -112,14 +145,30 @@ export async function getKeptPage(
   documentId: string,
   revision: string,
   page: number,
+  size: PageSize = "page",
 ): Promise<KeptPage | null> {
   try {
     const set = await findSet(documentId, revision);
     if (!set || set.pageCount === null) return null;
     if (page > set.pageCount) return { jpeg: null, pageCount: set.pageCount };
+    if (size === "thumb") {
+      const small = await bucket().download(objectPath(set.setId, page, "thumb"));
+      if (!small.error && small.data) return { jpeg: small.data, pageCount: set.pageCount };
+    }
     const { data, error } = await bucket().download(objectPath(set.setId, page));
     if (error || !data) return null;
-    return { jpeg: data, pageCount: set.pageCount };
+    if (size === "page") return { jpeg: data, pageCount: set.pageCount };
+    // Kept before small copies were, or its small copy couldn't be: made from
+    // the page, with nothing asked of Drive.
+    const thumb = await shrinkJpeg(new Uint8Array(await data.arrayBuffer()), THUMB_WIDTH);
+    return {
+      jpeg: new Blob([thumb as BlobPart], { type: "image/jpeg" }),
+      pageCount: set.pageCount,
+      later: () =>
+        upload(set.setId, page, thumb, "thumb").catch((err) =>
+          console.warn(`pdf pages: could not keep the small copy of page ${page}:`, err),
+        ),
+    };
   } catch (error) {
     console.warn(`pdf pages: could not look for page ${page} of ${documentId}:`, error);
     return null;
@@ -136,6 +185,7 @@ export async function keepPage(
   try {
     const set = await ensureSet(documentId, revision, drawn.pageCount);
     await upload(set.setId, page, drawn.jpeg);
+    await keepThumb(set.setId, page, drawn.jpeg);
   } catch (error) {
     console.warn(`pdf pages: could not keep page ${page} of ${documentId}:`, error);
   }
@@ -230,7 +280,7 @@ async function clearOut(
   for (const set of stale) {
     try {
       if (!inUse.has(set.setId)) {
-        const paths = [...(await pagesKept(set.setId))].map((n) => objectPath(set.setId, n));
+        const paths = (await objectsIn(set.setId)).map((name) => `${set.setId}/${name}`);
         for (let i = 0; i < paths.length; i += 500) {
           const { error } = await bucket().remove(paths.slice(i, i + 500));
           if (error) throw new Error(error.message);
@@ -292,6 +342,7 @@ async function drawDocument(
         return true;
       }
       await upload(set.setId, n, jpeg);
+      await keepThumb(set.setId, n, jpeg);
       onPage();
     }
     await finishSet(set, pdf.pageCount);

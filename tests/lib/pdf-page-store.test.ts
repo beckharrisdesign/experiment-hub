@@ -18,8 +18,8 @@ const db = vi.hoisted(() => ({
   nextSet: 1,
 }));
 
-const { openPdf } = vi.hoisted(() => ({ openPdf: vi.fn() }));
-vi.mock("@/lib/pdf-render", () => ({ openPdf }));
+const { openPdf, shrinkJpeg } = vi.hoisted(() => ({ openPdf: vi.fn(), shrinkJpeg: vi.fn() }));
+vi.mock("@/lib/pdf-render", () => ({ openPdf, shrinkJpeg }));
 
 vi.mock("@/lib/pdf-documents", () => {
   const table = () => {
@@ -96,6 +96,8 @@ import {
 } from "@/lib/pdf-page-store";
 
 const JPEG = new Uint8Array([0xff, 0xd8, 0xff]);
+const SMALL = new Uint8Array([0xff]);
+const pagesIn = () => [...db.objects.keys()].filter((k) => !k.includes(".t.")).length;
 const STARTED = new Date("2026-11-24T12:00:00Z");
 
 const want = (id: string, revision = "r1", pageCount: number | null = 2): WantedDocument => ({
@@ -128,6 +130,7 @@ beforeEach(() => {
   vi.spyOn(console, "warn").mockImplementation(() => {});
   draw.mockReset().mockImplementation(async () => ({ jpeg: JPEG, pageCount: 2, width: 1, height: 1 }));
   close.mockReset().mockResolvedValue(undefined);
+  shrinkJpeg.mockReset().mockResolvedValue(SMALL);
   openPdf.mockReset().mockImplementation(async () => ({ pageCount: 2, draw, close }));
 });
 
@@ -169,6 +172,33 @@ describe("one page", () => {
   });
 });
 
+describe("a small copy", () => {
+  it("is kept with its page", async () => {
+    await keepPage("d", "r1", 1, { jpeg: JPEG, pageCount: 2 });
+    const small = await getKeptPage("d", "r1", 1, "thumb");
+    expect(small?.jpeg?.size).toBe(SMALL.length);
+    expect(small?.later).toBeUndefined();
+  });
+
+  it("is made from a page kept before small copies were, then kept", async () => {
+    await keepPage("d", "r1", 1, { jpeg: JPEG, pageCount: 2 });
+    for (const key of [...db.objects.keys()]) if (key.includes(".t.")) db.objects.delete(key);
+    const small = await getKeptPage("d", "r1", 1, "thumb");
+    expect(small?.jpeg?.size).toBe(SMALL.length);
+    await small!.later!();
+    expect((await getKeptPage("d", "r1", 1, "thumb"))?.later).toBeUndefined();
+  });
+
+  it("is null when the page isn't kept, and never stops a page being kept", async () => {
+    expect(await getKeptPage("d", "r1", 1, "thumb")).toBeNull();
+    shrinkJpeg.mockRejectedValue(new Error("no"));
+    await keepPage("d", "r1", 1, { jpeg: JPEG, pageCount: 2 });
+    expect((await getKeptPage("d", "r1", 1))?.jpeg?.size).toBe(3);
+    expect(await getKeptPage("d", "r1", 1, "thumb")).toBeNull();
+    expect(await sync({ wanted: [want("e")] })).toMatchObject({ pagesDrawn: 2, pagesWaiting: 0 });
+  });
+});
+
 // ---------------------------------------------------------------------------
 // A commit
 // ---------------------------------------------------------------------------
@@ -189,7 +219,7 @@ describe("a commit", () => {
     const result = await sync({ wanted: [want("d", "r2")] });
     expect(result).toEqual({ pagesDrawn: 0, pagesWaiting: 0, setsRemoved: 1 });
     expect(draw).not.toHaveBeenCalled();
-    expect(db.objects.size).toBe(2);
+    expect(pagesIn()).toBe(2);
     expect(db.rows.map((r) => r.drive_revision)).toEqual(["r2"]);
   });
 
@@ -260,13 +290,14 @@ describe("clearing out", () => {
     const result = await sync({ wanted: [want("b")] });
     expect(result.setsRemoved).toBe(1);
     expect(db.rows.map((r) => r.document_id)).toEqual(["b"]);
-    expect(db.objects.size).toBe(2);
+    // Pages and small copies both: two of each are left, of b's.
+    expect(db.objects.size).toBe(4);
   });
 
   it("replaces the images of a file that changed in Drive", async () => {
     await sync({ wanted: [want("a")] });
     expect(await sync({ wanted: [want("a", "r9")] })).toEqual({ pagesDrawn: 2, pagesWaiting: 0, setsRemoved: 1 });
-    expect(db.objects.size).toBe(2);
+    expect(db.objects.size).toBe(4);
     expect(await getKeptPage("a", "r1", 1)).toBeNull();
   });
 

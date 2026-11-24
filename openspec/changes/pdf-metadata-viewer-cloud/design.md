@@ -730,6 +730,15 @@ commit during it knows a newer revision than the listing does.
 **Failure.** Nothing here may fail what called it. With the store down, the
 table missing, or an upload refused, pages are drawn on request as before.
 
+**Sending less.** Measured live after the above: storage answers in about 0.4 s,
+but the function sends at 0.35–0.6 MB/s, so 30 kept pages still took 23 s, and
+18 s to fill Split with 148 px thumbnails. So each page also has a small copy
+(`<n>.t.jpg`, 296 px), and the preview asks only for pages near the screen,
+showing the small copy first. A small copy is never drawn for (`?kept=1`
+answers 204): drawing it takes as long as the page it would stand in for. One
+missing is made from the kept page when asked for, so nothing had to be redone
+for the pages kept before this.
+
 **Size.** About 260 KB a page; the 381 pages listed on 2026-11-24 come to about
 100 MB.
 

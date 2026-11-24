@@ -24,8 +24,6 @@ export type { LoadedPdf, PdfLoader } from "@/app/pdf-metadata-viewer/pdfjs";
 
 const THUMB_WIDTH = 148;
 const NOTHING: ShownValues = { title: null, subject: null, author: null, keywords: [] };
-/** The size pages are kept at, so the preview's images serve here too. */
-const STORED_PAGE_WIDTH = 1120;
 
 function Thumbnail({ pdf, pageNumber }: { pdf: LoadedPdf; pageNumber: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -96,10 +94,11 @@ export function SplitView({
       givenLoader ??
       serverPageLoader(
         `/api/pdf-documents/id/${documentId}/pages`,
-        STORED_PAGE_WIDTH,
+        THUMB_WIDTH * 2,
         undefined,
         undefined,
         revision,
+        { thumbs: true },
       ),
     [givenLoader, documentId, revision],
   );

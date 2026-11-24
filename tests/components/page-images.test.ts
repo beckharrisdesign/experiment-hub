@@ -25,7 +25,7 @@ describe("serverPageLoader", () => {
   it("names the revision on screen, so kept images can be found", async () => {
     const fetchImpl = vi.fn(async () => jpeg(1));
     await serverPageLoader(BASE, 1120, vi.fn(), fetchImpl as unknown as typeof fetch, "rev-1")("/c");
-    expect((fetchImpl.mock.calls[0] as unknown[])[0]).toBe(`${BASE}/1?w=1120&rev=rev-1`);
+    expect((fetchImpl.mock.calls[0] as unknown[])[0]).toContain(`${BASE}/1?w=1120&rev=rev-1`);
   });
 
   it("draws a thumbnail small, not at the page's full size", async () => {
@@ -52,11 +52,55 @@ describe("serverPageLoader", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(30);
   });
 
-  it("fetches the rest a few at a time", async () => {
+  it("fetches no other page until it's asked for", async () => {
     const fetchImpl = vi.fn(async () => jpeg(10));
-    await serverPageLoader(BASE, 1120, vi.fn(), fetchImpl as unknown as typeof fetch)("/c");
-    // Page 1, then no more than PAGES_IN_FLIGHT others at once.
-    expect(fetchImpl.mock.calls.length).toBe(1 + PAGES_IN_FLIGHT);
+    const pdf = await serverPageLoader(BASE, 1120, vi.fn(), fetchImpl as unknown as typeof fetch)("/c");
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    const canvas = { width: 0, height: 0, getContext: () => ({ drawImage: vi.fn() }) } as unknown as HTMLCanvasElement;
+    await pdf.renderPage(7, canvas, 560);
+    expect(fetchImpl.mock.calls.map((c) => String((c as unknown[])[0]).match(/pages\/(\d+)/)![1])).toEqual(["1", "7"]);
+  });
+
+  it("asks for small copies for a screen of thumbnails", async () => {
+    const fetchImpl = vi.fn(async () => jpeg(2));
+    const load = serverPageLoader(BASE, 296, vi.fn(), fetchImpl as unknown as typeof fetch, "rev-1", { thumbs: true });
+    expect((await load("/c")).previewPage).toBeUndefined();
+    expect(String((fetchImpl.mock.calls[0] as unknown[])[0])).toBe(`${BASE}/1?w=296&rev=rev-1&size=thumb`);
+  });
+
+  describe("with small copies kept", () => {
+    const canvas = () => ({ width: 0, height: 0, getContext: () => ({ drawImage: vi.fn() }) }) as unknown as HTMLCanvasElement;
+    const urls = (f: ReturnType<typeof vi.fn>) => f.mock.calls.map((c) => String(c[0]).replace(BASE, ""));
+
+    it("gets page 1's first, and the page itself only when it's drawn", async () => {
+      const fetchImpl = vi.fn(async () => jpeg(19));
+      const pdf = await serverPageLoader(BASE, 1120, vi.fn(), fetchImpl as unknown as typeof fetch, "r")("/c");
+      expect(pdf.numPages).toBe(19);
+      expect(urls(fetchImpl)).toEqual(["/1?w=1120&rev=r&size=thumb&kept=1"]);
+      await pdf.previewPage!(1, canvas(), 560);
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+      await pdf.previewPage!(4, canvas(), 560);
+      await pdf.renderPage(1, canvas(), 560);
+      expect(urls(fetchImpl).slice(1)).toEqual(["/4?w=1120&rev=r&size=thumb&kept=1", "/1?w=1120&rev=r"]);
+    });
+
+    it("goes straight to the page when nothing is kept, and asks for no more small copies", async () => {
+      const fetchImpl = vi.fn(async (url: string) =>
+        url.includes("kept=1") ? new Response(null, { status: 204 }) : jpeg(3),
+      );
+      const pdf = await serverPageLoader(BASE, 1120, vi.fn(), fetchImpl as unknown as typeof fetch, "r")("/c");
+      expect(pdf.numPages).toBe(3);
+      expect(pdf.previewPage).toBeUndefined();
+      expect(urls(fetchImpl)).toEqual(["/1?w=1120&rev=r&size=thumb&kept=1", "/1?w=1120&rev=r"]);
+    });
+
+    it("says so when one page's small copy is missing", async () => {
+      const fetchImpl = vi.fn(async (url: string) =>
+        url.includes("/2?") ? new Response(null, { status: 204 }) : jpeg(3),
+      );
+      const pdf = await serverPageLoader(BASE, 1120, vi.fn(), fetchImpl as unknown as typeof fetch, "r")("/c");
+      await expect(pdf.previewPage!(2, canvas(), 560)).rejects.toThrow("No small copy");
+    });
   });
 
   it("draws a fetched page onto the canvas at its own size", async () => {

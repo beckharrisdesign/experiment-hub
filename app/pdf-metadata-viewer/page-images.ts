@@ -5,16 +5,17 @@ import { loadWithPdfJs, type LoadedPdf, type PdfLoader } from "@/app/pdf-metadat
  * and the splitter's thumbnails (task 7f).
  *
  * `GET …/pages/N` returns page N as a JPEG and the page count in
- * `X-Page-Count`. Page 1 comes first and says how many there are; the rest are
- * fetched a few at a time, in order, while page 1 is already on screen. Should
- * the server not manage a file (a PDF its pdf.js can't draw), the browser's
- * pdf.js takes over, as before.
+ * `X-Page-Count`. Page 1 comes first and says how many there are; any other is
+ * fetched when a view asks to draw it, so what isn't looked at isn't sent (task
+ * 7f.5). Where small copies are kept, page 1's comes first of all, and any
+ * page's can be shown while the page itself is on its way. Should the server not manage a file (a PDF its pdf.js can't draw), the
+ * browser's pdf.js takes over, as before.
  *
  * The JPEGs are held as they came and decoded only to be drawn: decoded, a
  * 100-page scan would take hundreds of megabytes.
  */
 
-/** Pages in flight at once after the first; small images, so a few is plenty. */
+/** Pages in flight at once, however many a view asks for. */
 export const PAGES_IN_FLIGHT = 6;
 
 /** Canvas pixels per pixel asked for: sharp on a dense screen, and no more. */
@@ -44,6 +45,18 @@ async function decode(blob: Blob): Promise<Decoded> {
   };
 }
 
+async function draw(blob: Blob, canvas: HTMLCanvasElement, cssWidth: number): Promise<void> {
+  const image = await decode(blob);
+  try {
+    const scale = Math.min(1, (cssWidth * DENSITY) / image.width);
+    canvas.width = Math.round(image.width * scale);
+    canvas.height = Math.round(image.height * scale);
+    canvas.getContext("2d")?.drawImage(image.source, 0, 0, canvas.width, canvas.height);
+  } finally {
+    image.release();
+  }
+}
+
 export function serverPageLoader(
   pagesBase: string,
   width: number,
@@ -51,11 +64,14 @@ export function serverPageLoader(
   fetchImpl: typeof fetch = (...args) => fetch(...args),
   /** The Drive revision on screen, which finds its kept images (task 7f). */
   revision: string | null = null,
+  /** Small copies, for a screen of thumbnails. */
+  { thumbs = false }: { thumbs?: boolean } = {},
 ): PdfLoader {
   const rev = revision ? `&rev=${encodeURIComponent(revision)}` : "";
+  const size = thumbs ? "&size=thumb" : "";
   return async (contentUrl) => {
     const get = async (n: number) => {
-      const res = await fetchImpl(`${pagesBase}/${n}?w=${width}${rev}`, {
+      const res = await fetchImpl(`${pagesBase}/${n}?w=${width}${rev}${size}`, {
         cache: "no-store",
         credentials: "include",
       });
@@ -63,18 +79,44 @@ export function serverPageLoader(
       return res;
     };
 
-    let first: Response;
-    try {
-      first = await get(1);
-    } catch {
-      return fallback(contentUrl);
-    }
-    const count = Number(first.headers.get("x-page-count"));
-    if (!Number.isInteger(count) || count < 1) return fallback(contentUrl);
+    const countOf = (res: Response) => {
+      const n = Number(res.headers.get("x-page-count"));
+      return Number.isInteger(n) && n >= 1 ? n : null;
+    };
 
-    // Every page has its place in one queue, so however a view asks for them
-    // (in order, or all at once), each is fetched once, a few at a time.
-    const pages = new Map<number, Promise<Blob>>([[1, first.blob()]]);
+    // A kept small copy, or null. Never drawn for this: drawing one takes as
+    // long as drawing the page it would stand in for.
+    const small = async (n: number): Promise<Response | null> => {
+      const res = await fetchImpl(`${pagesBase}/${n}?w=${width}${rev}&size=thumb&kept=1`, {
+        cache: "no-store",
+        credentials: "include",
+      });
+      return res.status === 200 ? res : null;
+    };
+    const previews = new Map<number, Promise<Blob>>();
+    const pages = new Map<number, Promise<Blob>>();
+
+    let count: number | null = null;
+    if (revision && !thumbs) {
+      const look = await small(1).catch(() => null);
+      count = look && countOf(look);
+      if (look && count) previews.set(1, look.blob());
+    }
+    const quick = count !== null;
+    if (!count) {
+      let first: Response;
+      try {
+        first = await get(1);
+      } catch {
+        return fallback(contentUrl);
+      }
+      count = countOf(first);
+      if (!count) return fallback(contentUrl);
+      pages.set(1, first.blob());
+    }
+    const pageCount = count;
+
+    // Each page is fetched once, when first asked for, a few at a time.
     const starts: (() => void)[] = [];
     let inFlight = 0;
     let stopped = false;
@@ -84,38 +126,42 @@ export function serverPageLoader(
         starts.shift()!();
       }
     };
-    for (let n = 2; n <= count; n++) {
-      const page = new Promise<Blob>((resolve, reject) => {
-        starts.push(() => {
-          get(n)
-            .then((res) => res.blob())
-            .then(resolve, reject)
-            .finally(() => {
-              inFlight -= 1;
-              pump();
-            });
+    const pageAt = (n: number) => {
+      let page = pages.get(n);
+      if (!page) {
+        page = new Promise<Blob>((resolve, reject) => {
+          starts.push(() => {
+            get(n)
+              .then((res) => res.blob())
+              .then(resolve, reject)
+              .finally(() => {
+                inFlight -= 1;
+                pump();
+              });
+          });
         });
-      });
-      page.catch(() => {}); // The view hears of it when it draws the page.
-      pages.set(n, page);
-    }
-    pump();
+        pages.set(n, page);
+        pump();
+      }
+      return page;
+    };
 
     return {
-      numPages: count,
+      numPages: pageCount,
       async renderPage(n, canvas, cssWidth) {
-        const page = pages.get(n);
-        if (!page) throw new Error(`There is no page ${n}`);
-        const image = await decode(await page);
-        try {
-          const scale = Math.min(1, (cssWidth * DENSITY) / image.width);
-          canvas.width = Math.round(image.width * scale);
-          canvas.height = Math.round(image.height * scale);
-          canvas.getContext("2d")?.drawImage(image.source, 0, 0, canvas.width, canvas.height);
-        } finally {
-          image.release();
-        }
+        if (n < 1 || n > pageCount) throw new Error(`There is no page ${n}`);
+        await draw(await pageAt(n), canvas, cssWidth);
       },
+      previewPage: quick
+        ? async (n, canvas, cssWidth) => {
+            let look = previews.get(n);
+            if (!look) {
+              look = small(n).then((res) => res?.blob() ?? Promise.reject(new Error("No small copy")));
+              previews.set(n, look);
+            }
+            await draw(await look, canvas, cssWidth);
+          }
+        : undefined,
       // No pageSize: asking every placeholder's size up front fetched all the
       // pages at once, around the queue, and the queue then fetched them again
       // (28 requests for 16 pages, live). Placeholders keep the default page
@@ -123,6 +169,7 @@ export function serverPageLoader(
       destroy() {
         stopped = true;
         pages.clear();
+        previews.clear();
       },
     } satisfies LoadedPdf;
   };

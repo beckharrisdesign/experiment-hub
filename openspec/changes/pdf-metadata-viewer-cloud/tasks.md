@@ -116,7 +116,8 @@ Katy, 2026-11-24: "looking at a single doc seems to be generating images of the 
 - [x] 7f.2 Store, page route, commit carry-over, drawing ahead and clearing out in the sync (`lib/pdf-page-store.ts`, migration 032); the splitter uses the same images
 - [x] 7f.3 Apply migration 032 to the hub database — **applied 2026-11-24** with Katy's go: bucket private and JPEG only, row level security on, no policies on it or the table, no grants to the public keys
 - [~] 7f.4 Verify live — **2026-11-24** (#644), on PDF Tests. Right: the sync draws and keeps (208 images, 52 of 53 documents, part way through its first run); a 30-page scan's second open came wholly from storage; after a commit on `Sync-test-3-pages.pdf` its three pages were still kept ones, on one set; no session, no image (401). **Not fast enough:** that scan went from 58.6 s (first open, while the sync was also drawing) to 22.9 s, page 1 from 11.4 s to 2.6 s, and Split showed all 30 thumbnails in 18.1 s. Storage answers in about 0.4 s; the rest is the function sending full-size images at 0.35–0.6 MB/s (a static file on the same site: 2.5 MB/s). See 7f.5. Not checked: the clear-out of a changed or removed file
-- [ ] 7f.5 Send less: keep a small image of each page for Split's thumbnails, and have the preview fetch only the pages near what's on screen
+- [x] 7f.5 Send less — a small copy of each page (296 px) kept beside it, for Split's thumbnails and for the preview to show first and sharpen (Katy, 2026-11-24: "grabbing the images at mid to low resolution to start"); the preview fetches only pages within a screen of what's in view. Pages kept before this get their small copy from the kept page the first time it's asked for; nothing is redrawn and no migration is needed
+- [ ] 7f.6 Time it live again: the 30-page scan, opening and Split
 
 ## 7g. Names and tags when splitting
 

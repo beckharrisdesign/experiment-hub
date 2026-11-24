@@ -93,6 +93,13 @@ storage.
 - **THEN** the kept images are shown
 - **AND** the PDF is not downloaded from Drive to draw them
 
+#### Scenario: Looking through a long document
+
+- **WHEN** a user opens a document with many pages
+- **THEN** only the pages near what is on screen are sent, others as they come
+  near it
+- **AND** a kept page's small copy is shown until the page itself arrives
+
 #### Scenario: Opening a document whose pages are not kept yet
 
 - **WHEN** a user opens a document before its pages have been drawn
