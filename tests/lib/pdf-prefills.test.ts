@@ -80,6 +80,7 @@ beforeEach(() => {
     specials: ["original-scan"],
     peopleWithNames: [],
     vendorsWithNames: [{ name: "Foodmart", slug: "foodmart", aliases: [], categories: ["grocery"], location: "" }],
+    locations: [],
   });
 });
 
