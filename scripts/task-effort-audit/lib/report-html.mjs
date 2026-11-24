@@ -132,6 +132,30 @@ function evidenceLink(e) {
 
 const slug = (s) => String(s).replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
 
+/** MVDS principles this run gathered tagged evidence for. */
+function principlesSection(run, entries) {
+  const evidence = run.principles?.evidence ?? [];
+  if (!evidence.length) return '';
+  const indexByStep = {};
+  for (const e of entries) if (indexByStep[e.stepId] === undefined) indexByStep[e.stepId] = e.index;
+  const items = evidence
+    .map((p) => {
+      const steps = p.steps.map((id) => (indexByStep[id] !== undefined ? `<a href="#entry-${indexByStep[id]}">${esc(id)}</a>` : `<code>${esc(id)}</code>`));
+      const finds = p.findings.map((id) => `<a href="#finding-${esc(id)}">${esc(id)}</a>`);
+      const source = p.source.url ? `<a href="${esc(p.source.url)}" rel="noopener noreferrer">${esc(p.source.name)}</a>` : esc(p.source.name);
+      return `<li class="principle" id="principle-${esc(p.id)}">
+  <p class="principle-head"><strong>${esc(p.title)}</strong> <code>${esc(p.id)}</code></p>
+  <p class="muted">Source: ${source}${p.source.ref ? `, ${esc(p.source.ref)}` : ''}</p>
+  <p>${steps.length ? `Tagged steps: ${steps.join(', ')}.` : 'Tagged on the scenario.'} ${finds.length ? `Findings: ${finds.join(', ')}.` : 'No findings in this run.'}</p>
+</li>`;
+    })
+    .join('');
+  return `<section aria-labelledby="h-principles"><h2 id="h-principles">MVDS principles</h2>
+<p class="muted">Principles from your MVDS manifest (commit <code>${esc(run.principles.mvdsCommit)}</code>) that steps in this task are tagged as evidence for. A tag labels evidence. It is not a verdict on the principle, and nothing here is scored.</p>
+<ol class="principles">${items}</ol>
+</section>`;
+}
+
 function findings(run) {
   const tone = { observation: 'info', annotation: 'accent', hypothesis: 'muted' };
   const items = run.findings
@@ -141,6 +165,7 @@ function findings(run) {
   <p>${esc(sentence(f.statement))}</p>
   ${f.reviewRequired ? `<p class="review"><strong>Review:</strong> ${esc(f.reviewNote)}</p>` : ''}
   ${f.suggestion ? `<p class="suggestion"><strong>${esc(f.suggestion.label)}:</strong> ${esc(f.suggestion.text)}</p>` : ''}
+  ${f.principles?.length ? `<p class="principle-tags">MVDS: ${f.principles.map((pr) => `<a class="chip chip-principle" href="#principle-${esc(pr.id)}">${esc(pr.title)}</a>`).join(' ')}</p>` : ''}
   <p class="evidence">Evidence: ${f.evidence.map(evidenceLink).join(' · ')}</p>
 </li>`,
     )
@@ -258,6 +283,9 @@ table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nu
 th, td { text-align: left; vertical-align: top; padding: 8px; border-bottom: 1px solid var(--border); } th { color: var(--fg2); font-weight: 500; font-size: 12px; }
 .num { text-align: right; } tr.changed td { background: color-mix(in srgb, var(--warn) 10%, transparent); }
 .chip { display: inline-block; font-size: 11px; font-weight: 500; padding: 0 8px; border-radius: 999px; border: 1px solid currentColor; line-height: 18px; white-space: nowrap; }
+.chip-principle { color: var(--purple); text-decoration: none; white-space: normal; } .principle-tags { font-size: 13px; }
+ol.principles { list-style: none; padding: 0; margin: 0; display: grid; gap: 16px; }
+.principle { border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px; } .principle p { margin: 4px 0; } .principle:target { outline: 2px solid var(--accent); outline-offset: 4px; }
 .chip-muted { color: var(--fg2); } .chip-info { color: var(--accent); } .chip-accent { color: var(--purple); } .chip-warn { color: var(--warn); } .chip-bad { color: var(--bad); }
 ol.findings, ol.entries { list-style: none; padding: 0; margin: 0; }
 .finding { border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px; margin-bottom: 16px; background: var(--bg2); }
@@ -318,6 +346,7 @@ ${summary(run)}
 ${why}
 ${comparison(run)}
 ${findings(run)}
+${principlesSection(run, entries)}
 ${timeline(entries, images, extraShots)}
 ${context(run)}
 <section aria-labelledby="h-limits"><h2 id="h-limits">Limitations</h2><ul>${limits.map((l) => `<li>${esc(l)}</li>`).join('')}</ul></section>

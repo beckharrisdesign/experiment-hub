@@ -8,6 +8,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { z } from 'zod';
 import { ConfigError, canonicalJson, sha256 } from './util.mjs';
+import { loadCatalog, principleProblems } from './principles.mjs';
 
 // ---------------------------------------------------------------------------
 // Step vocabularies — the counting rules hang off these lists
@@ -87,6 +88,8 @@ const Step = z
       .strict()
       .optional(),
     annotations: Annotations.optional(),
+    // MVDS principle ids this step is evidence for (labels only; see principles.mjs).
+    principles: z.array(z.string()).optional(),
     direction: z.enum(['up', 'down']).optional(),
     amount: z.number().int().positive().optional(),
     screenshot: z.boolean().optional(),
@@ -109,6 +112,7 @@ const Scenario = z
     description: z.string().optional(),
     steps: z.array(Step).min(1),
     verify: z.array(Step).optional(),
+    principles: z.array(z.string()).optional(),
   })
   .strict();
 
@@ -296,8 +300,8 @@ export function semanticProblems(task, property) {
 
 /**
  * Editorial fields never change what runs, so editing them must not break a
- * baseline: top-level `name` and `notes`, and any `description` or `note`.
- * Everything else — including annotations — is part of the definition.
+ * baseline: top-level `name` and `notes`, and any `description`, `note`, or
+ * `principles` tag. Everything else — including annotations — is part of the definition.
  * Locator `target.name` is NOT editorial and stays in.
  */
 function stripEditorial(value, depth = 0) {
@@ -305,7 +309,8 @@ function stripEditorial(value, depth = 0) {
   if (value && typeof value === 'object') {
     const out = {};
     for (const [k, v] of Object.entries(value)) {
-      if (k === 'description' || k === 'note') continue;
+      // `principles` are evidence labels: they never change what runs or counts.
+      if (k === 'description' || k === 'note' || k === 'principles') continue;
       if (depth === 0 && (k === 'name' || k === 'notes' || k === 'propertyRef')) continue;
       out[k] = stripEditorial(v, depth + 1);
     }
@@ -334,7 +339,7 @@ export function propertyContextHash(property) {
 // ---------------------------------------------------------------------------
 
 /** Parse + validate already-loaded JSON. Throws ConfigError. */
-export function parseTaskAndProperty(rawTask, rawProperty) {
+export function parseTaskAndProperty(rawTask, rawProperty, catalog = loadCatalog()) {
   const t = TaskSchema.safeParse(rawTask);
   const pr = PropertySchema.safeParse(rawProperty);
   const problems = [
@@ -342,7 +347,7 @@ export function parseTaskAndProperty(rawTask, rawProperty) {
     ...(pr.success ? [] : zodProblems('property', pr.error)),
   ];
   if (problems.length) throw new ConfigError(problems);
-  const sem = semanticProblems(t.data, pr.data);
+  const sem = [...semanticProblems(t.data, pr.data), ...principleProblems(t.data, catalog)];
   if (sem.length) throw new ConfigError(sem);
   return { task: t.data, property: pr.data };
 }

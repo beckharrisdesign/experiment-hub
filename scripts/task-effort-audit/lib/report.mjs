@@ -79,8 +79,19 @@ export function renderReport(run) {
     L.push(`- **${f.id}** \`${f.key}\` *(${f.kind})* — ${f.statement}`);
     L.push(`  Evidence: ${ev}${f.reviewRequired ? ` · **Review:** ${f.reviewNote}` : ''}`);
     if (f.suggestion) L.push(`  _${f.suggestion.label}:_ ${f.suggestion.text}`);
+    if (f.principles?.length) L.push(`  MVDS principles: ${f.principles.map((p) => `${p.title} (\`${p.id}\`)`).join('; ')}`);
   }
   L.push('');
+  const evidence = run.principles?.evidence ?? [];
+  if (evidence.length) {
+    L.push('## MVDS principles', '');
+    L.push(`Tagged evidence in this run (catalog from MVDS \`${run.principles.mvdsCommit}\`). Tags label evidence; they are not verdicts on the principle.`, '');
+    for (const p of evidence) {
+      const where = [p.steps.length ? `steps ${p.steps.map((x) => `\`${x}\``).join(', ')}` : '', p.findings.length ? `findings ${p.findings.join(', ')}` : ''].filter(Boolean).join('; ');
+      L.push(`- **${p.title}** (\`${p.id}\`, ${p.source.name})${where ? `: ${where}` : ''}`);
+    }
+    L.push('');
+  }
   L.push('## Limitations', '');
   for (const l of run.comparison?.limitations ?? []) L.push(`- ${l}`);
   L.push(`- Browser duration ${ex.diagnostics.browserDurationMs} ms is diagnostic only — not human task time.`);

@@ -21,6 +21,7 @@ import { buildFindings } from './findings.mjs';
 import { compareToBaseline } from './compare.mjs';
 import { createRequestGuard, declaresWrites, definitionSafetyProblems, runAuthorizationProblems } from './safety.mjs';
 import { appendIndex, loadBaselines, runDirOf, writeJson } from './store.mjs';
+import { loadCatalog, summarizePrinciples } from './principles.mjs';
 import { renderReport } from './report.mjs';
 import { writeHtmlReport } from './report-html.mjs';
 import { AuthError, ConfigError, SafetyError, TOOL_VERSION, makeRunId } from './util.mjs';
@@ -412,12 +413,12 @@ export async function executeRun(opts) {
           } else if (step.do === 'assertValue') await pollUntil(() => loc.inputValue({ timeout: to }), value(step.value).value, to);
           else if (step.do === 'read') saved[step.saveAs] = ((await loc.textContent({ timeout: to })) ?? '').trim();
           const entry = ledger.record({ step, phase: 'verify', outcome: 'done', at, page: 'main' });
-          if (step.do !== 'goto' && step.do !== 'reload') run.verification.assertions.push({ stepId: step.id, do: step.do, outcome: 'passed', ledgerIndex: entry.index });
+          if (step.do !== 'goto' && step.do !== 'reload') run.verification.assertions.push({ stepId: step.id, do: step.do, outcome: 'passed', ledgerIndex: entry.index, ...(step.principles?.length ? { principles: step.principles } : {}) });
         } catch (e) {
           const f = classifyFailure({ step, error: e, remainingMs: deadline - Date.now(), stepTimeoutMs: limits.stepTimeoutMs });
           const shot = await shoot(vp, `verify-failed-${step.id}`);
           const entry = ledger.record({ step, phase: 'verify', outcome: 'failed', at, page: 'main', screenshot: shot, error: f.observed });
-          run.verification.assertions.push({ stepId: step.id, do: step.do, outcome: 'failed', category: f.category, observed: f.observed, screenshot: shot, ledgerIndex: entry.index });
+          run.verification.assertions.push({ stepId: step.id, do: step.do, outcome: 'failed', category: f.category, observed: f.observed, screenshot: shot, ledgerIndex: entry.index, ...(step.principles?.length ? { principles: step.principles } : {}) });
           verifyFailed = true;
           log(`${tag} ✗ verification "${step.id}" failed: ${f.observed}`);
           break;
@@ -478,6 +479,7 @@ export async function executeRun(opts) {
   // ---- record -------------------------------------------------------------
   run.executionContext.finishedAt = now().toISOString();
   run.metrics = computeMetrics(ledger.entries);
+  const catalog = loadCatalog();
   run.findings = buildFindings({
     taskId: task.id,
     scenario,
@@ -487,7 +489,14 @@ export async function executeRun(opts) {
     blockedRequests: run.safety.blockedRequests,
     cleanup: run.cleanup,
     failureScreenshot,
+    catalog,
+    scenarioPrinciples: sc.principles ?? [],
   });
+  // MVDS principles this run gathered evidence for (tags only; never counted).
+  run.principles = {
+    mvdsCommit: catalog.mvdsCommit,
+    evidence: summarizePrinciples({ entries: ledger.entries, findings: run.findings, verification: run.verification, scenarioPrinciples: sc.principles ?? [], catalog }),
+  };
   const baselines = await loadBaselines(dataDir, task.id, scenario);
   run.comparison = compareToBaseline(baselines?.current ?? null, run);
 

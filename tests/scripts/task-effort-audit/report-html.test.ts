@@ -246,3 +246,31 @@ describe("escaping", () => {
     expect(html).toContain("&lt;script&gt;alert(2)&lt;/script&gt;");
   });
 });
+
+// ---------------------------------------------------------------------------
+// MVDS principle tags
+// ---------------------------------------------------------------------------
+
+describe("MVDS principles", () => {
+  const principle = {
+    id: "recognition-rather-than-recall",
+    title: "Names that mean what they say",
+    source: { kind: "external", name: "Nielsen Norman Group", url: "https://www.nngroup.com/articles/ten-usability-heuristics/", ref: "Heuristic 6" },
+  };
+
+  it("links finding tags to a principles section whose step and finding links resolve", () => {
+    const run = fullRun();
+    run.findings[0].principles = [principle];
+    run.principles = { mvdsCommit: "dae12d7", evidence: [{ ...principle, steps: ["save"], findings: ["F1"] }] };
+    const doc = parse(renderHtmlReport(run, entries()));
+    expect(doc.querySelector(".principle-tags a")?.getAttribute("href")).toBe("#principle-recognition-rather-than-recall");
+    expect(doc.querySelector("#principle-recognition-rather-than-recall a[href^='https://www.nngroup.com']")).not.toBeNull();
+    expect(doc.body.textContent).toMatch(/not a verdict on the principle/);
+    expect(brokenAnchors(doc)).toEqual([]);
+  });
+
+  it("omits the section when nothing is tagged", () => {
+    const doc = parse(renderHtmlReport(fullRun(), entries()));
+    expect(doc.getElementById("h-principles")).toBeNull();
+  });
+});

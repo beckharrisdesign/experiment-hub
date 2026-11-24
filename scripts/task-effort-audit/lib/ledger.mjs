@@ -63,6 +63,7 @@ export function createLedger({ onChange } = {}) {
         ...(value !== undefined ? { value } : {}),
         ...(page ? { page } : {}),
         ...(step.annotations ? { annotations: step.annotations } : {}),
+        ...(step.principles?.length ? { principles: step.principles } : {}),
         ...(step.mutates ? { mutates: step.mutates } : {}),
         ...(conditional ? { conditional } : {}),
         ...(step.note ? { note: step.note } : {}),

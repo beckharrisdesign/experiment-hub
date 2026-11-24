@@ -6,6 +6,8 @@
  * No severity, user reaction, or business impact is ever generated.
  */
 
+import { resolvePrinciples } from './principles.mjs';
+
 const TRACE = { type: 'trace', ref: 'trace.zip' };
 
 function evidenceFor(entry) {
@@ -21,11 +23,22 @@ function suggestion(entry) {
 }
 
 /**
+ * MVDS principle tags (optional) ride along: a step's tags go on findings
+ * about that step; the recovery finding gets the scenario's tags plus those of
+ * the error-message check and the recovery steps that ran (not the step that
+ * induced the error); a failed verification gets its verify step's.
+ * Findings about the audit run itself (stops, blocked requests, cleanup) get none.
+ *
  * @param {{ taskId: string, scenario: string, entries: any[], failure: any, verification: any,
- *   blockedRequests?: any[], cleanup?: any, failureScreenshot?: string | null }} p
+ *   blockedRequests?: any[], cleanup?: any, failureScreenshot?: string | null,
+ *   catalog?: any, scenarioPrinciples?: string[] }} p
  */
-export function buildFindings({ taskId, scenario, entries, failure, verification, blockedRequests = [], cleanup, failureScreenshot = null }) {
+export function buildFindings({ taskId, scenario, entries, failure, verification, blockedRequests = [], cleanup, failureScreenshot = null, catalog = null, scenarioPrinciples = [] }) {
   const out = [];
+  const tags = (ids) => {
+    const resolved = resolvePrinciples(ids, catalog);
+    return resolved.length ? { principles: resolved } : {};
+  };
   const add = (f) => out.push({ id: `F${out.length + 1}`, taskId, scenario, ...f });
 
   for (const e of entries) {
@@ -41,6 +54,7 @@ export function buildFindings({ taskId, scenario, entries, failure, verification
         reviewRequired: true,
         reviewNote: 'Counted from a reviewed annotation, not detected by the runner. Confirm it still holds.',
         ...suggestion(e),
+        ...tags(e.principles),
       });
     }
     const cs = e.annotations?.contextSwitch;
@@ -54,6 +68,7 @@ export function buildFindings({ taskId, scenario, entries, failure, verification
         reviewRequired: true,
         reviewNote: 'Counted from a reviewed annotation, not detected by the runner. Confirm the boundary still applies.',
         ...suggestion(e),
+        ...tags(e.principles),
       });
     }
     if (e.conditional?.performed) {
@@ -65,6 +80,7 @@ export function buildFindings({ taskId, scenario, entries, failure, verification
         evidence: evidenceFor(e),
         reviewRequired: true,
         reviewNote: 'An added step can serve a legitimate purpose (e.g. preventing a mistake). Review before treating it as a regression.',
+        ...tags(e.principles),
       });
     }
   }
@@ -82,6 +98,12 @@ export function buildFindings({ taskId, scenario, entries, failure, verification
         ...evidenceFor(recovery[recovery.length - 1]),
       ],
       reviewRequired: false,
+      ...tags([
+        ...scenarioPrinciples,
+        ...entries
+          .filter((e) => e.outcome !== 'skipped' && (e.do === 'expectError' || e.phase === 'recovery'))
+          .flatMap((e) => e.principles ?? []),
+      ]),
     });
   }
 
@@ -114,6 +136,7 @@ export function buildFindings({ taskId, scenario, entries, failure, verification
       ],
       reviewRequired: true,
       reviewNote: 'The path reached its end but the intended final state was not confirmed. Root cause not established.',
+      ...tags(a.principles),
     });
   }
 

@@ -218,6 +218,7 @@ Two JSON files: a **property** and a **task** (see `audits/` for the working exa
   "phase": "path",                                 // path | error-induction | recovery
   "conditional": { "ifVisible": { ... }, "waitMs": 1500, "reason": "..." },
   "annotations": { "repeatedEntry": {...}, "contextSwitch": {...}, "suggestion": "..." },
+  "principles": ["error-prevention"],              // MVDS principle ids (labels only)
   "screenshot": true, "note": "editorial" }
 ```
 
@@ -262,6 +263,25 @@ Two JSON files: a **property** and a **task** (see `audits/` for the working exa
 - **Suggested habit:** prune runs older than ~30 days that aren't baselines
 
 ---
+
+## MVDS principle tags
+
+Steps, verify steps, and scenarios can carry `principles: [id, …]`, naming the MVDS principles they are evidence for. Example: `update-contact-email.json`.
+
+- **Must resolve.** Every id is checked against `mvds-principles.json`, a committed snapshot of your MVDS manifest, stamped with the MVDS commit. An unknown id fails `validate`.
+- **Guiding principles only.** The Nielsen heuristics plus `scale-to-the-data`, `declarations-must-resolve`, and the like. Rules MVDS enforces in code (tokens, layout, story coverage) are rejected, because the audit observes running interfaces, not source.
+- **Labels, not verdicts.** Tags never change what runs or counts, and they're excluded from the definition hash, so adding or editing them never breaks a baseline. Nothing is scored per principle.
+- **Where they show up:**
+  - Each finding carries the tags of its step.
+  - The recovery finding carries the scenario's tags plus those of the error-message check and the recovery steps.
+  - A failed verification carries its verify step's tags.
+  - Both reports add an "MVDS principles" section listing the tagged steps and findings for each principle, with a link to its source.
+  - All of this is recorded in `run.json#principles`.
+- **Refresh the catalog** after MVDS principles change, then commit `mvds-principles.json`:
+
+```bash
+pnpm audit:effort:sync-principles
+```
 
 ## Live-site example
 

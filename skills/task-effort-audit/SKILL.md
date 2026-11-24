@@ -63,6 +63,13 @@ pnpm audit:effort run --task scripts/task-effort-audit/audits/tasks/<task>.json 
 4. Annotate repeated entry / context switches only with a concrete `source` or `boundary`, and flag each annotation for Katy's review
 5. Run `validate`, then one `--headed` run
 
+### Tag MVDS principles
+- Add `principles: [id]` to a step, verify step, or scenario only where it is real evidence for that principle. The ids come from `scripts/task-effort-audit/mvds-principles.json`.
+- Only guiding principles are allowed; code-enforced ones are rejected.
+- Tags never affect counts or the definition hash.
+- Report them as "evidence tagged for X", never as a pass/fail on the principle.
+- If MVDS principles changed, run `pnpm audit:effort:sync-principles` and commit the snapshot.
+
 ### Compare / list
 - `pnpm audit:effort compare --run <id>`
 - `pnpm audit:effort list`
