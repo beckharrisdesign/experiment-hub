@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   getDriveHeadRevisionId: vi.fn(),
   downloadDriveFile: vi.fn(),
   renderPdfPage: vi.fn(),
+  shrinkJpeg: vi.fn(),
   getKeptPage: vi.fn(),
   keepPage: vi.fn(),
   after: vi.fn(),
@@ -36,7 +37,7 @@ vi.mock("@/lib/pdf-drive", async () => {
 });
 vi.mock("@/lib/pdf-render", async () => {
   const actual = await vi.importActual<typeof import("@/lib/pdf-render")>("@/lib/pdf-render");
-  return { ...actual, renderPdfPage: mocks.renderPdfPage };
+  return { ...actual, renderPdfPage: mocks.renderPdfPage, shrinkJpeg: mocks.shrinkJpeg };
 });
 
 import { GET } from "@/app/api/pdf-documents/id/[id]/pages/[page]/route";
@@ -79,10 +80,35 @@ describe("GET /api/pdf-documents/id/[id]/pages/[page]", () => {
   it("sends a kept page without asking Drive for anything", async () => {
     mocks.getKeptPage.mockResolvedValue({ jpeg: new Blob([new Uint8Array([1, 2])]), pageCount: 19 });
     const res = await call(ID, "2", "?w=560&rev=rev-1");
-    expect(mocks.getKeptPage).toHaveBeenCalledWith(ID, "rev-1", 2);
+    expect(mocks.getKeptPage).toHaveBeenCalledWith(ID, "rev-1", 2, "page");
     expect(res.status).toBe(200);
     expect(res.headers.get("x-page-count")).toBe("19");
     expect(res.headers.get("cache-control")).toBe("private, no-store");
+    expect(mocks.getValidAccessToken).not.toHaveBeenCalled();
+    expect(mocks.renderPdfPage).not.toHaveBeenCalled();
+  });
+
+  it("sends a small copy, and keeps one it had to make", async () => {
+    const later = vi.fn();
+    mocks.getKeptPage.mockResolvedValue({ jpeg: new Blob([new Uint8Array([1])]), pageCount: 19, later });
+    const res = await call(ID, "2", "?size=thumb&rev=rev-1");
+    expect(mocks.getKeptPage).toHaveBeenCalledWith(ID, "rev-1", 2, "thumb");
+    expect(res.status).toBe(200);
+    expect(mocks.after).toHaveBeenCalledWith(later);
+  });
+
+  it("draws the page itself when there's none, sending it small and keeping it whole", async () => {
+    mocks.shrinkJpeg.mockResolvedValue(new Uint8Array([9]));
+    const res = await call(ID, "2", "?size=thumb&rev=rev-1");
+    expect(mocks.renderPdfPage.mock.calls[0][2]).toBe(1120);
+    expect(new Uint8Array(await res.arrayBuffer())).toEqual(new Uint8Array([9]));
+    await mocks.after.mock.calls[0][0]();
+    expect(mocks.keepPage.mock.calls[0][3].jpeg).toEqual(new Uint8Array([0xff, 0xd8, 0xff, 0xe0]));
+  });
+
+  it("sends nothing, and draws nothing, when asked only for what's kept", async () => {
+    const res = await call(ID, "2", "?size=thumb&rev=rev-1&kept=1");
+    expect(res.status).toBe(204);
     expect(mocks.getValidAccessToken).not.toHaveBeenCalled();
     expect(mocks.renderPdfPage).not.toHaveBeenCalled();
   });

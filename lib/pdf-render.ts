@@ -10,7 +10,7 @@
  */
 import path from "node:path";
 import { existsSync, readdirSync } from "node:fs";
-import { createCanvas } from "@napi-rs/canvas";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
 
 /**
  * pdf.js's own runtime folders: standard fonts (for PDFs that name a font
@@ -119,6 +119,17 @@ export async function openPdf(bytes: ArrayBuffer | Uint8Array): Promise<OpenPdf>
       await task.destroy();
     },
   };
+}
+
+/** A smaller copy of a drawn page. */
+export async function shrinkJpeg(jpeg: Uint8Array, width: number): Promise<Uint8Array> {
+  const image = await loadImage(Buffer.from(jpeg));
+  const w = Math.min(width, image.width);
+  const canvas = createCanvas(w, Math.max(1, Math.round((image.height * w) / image.width)));
+  const context = canvas.getContext("2d");
+  context.imageSmoothingQuality = "high";
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  return new Uint8Array(await canvas.encode("jpeg", 78));
 }
 
 export async function renderPdfPage(

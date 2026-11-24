@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { openPdf, PageOutOfRange, renderPdfPage } from "@/lib/pdf-render";
+import { openPdf, PageOutOfRange, renderPdfPage, shrinkJpeg } from "@/lib/pdf-render";
 
 async function samplePdf(pages: number): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
@@ -22,6 +22,17 @@ describe("renderPdfPage", () => {
     expect(page.height).toBe(Math.round((792 * 560) / 612));
     // JPEG files start FF D8 FF.
     expect([...page.jpeg.slice(0, 3)]).toEqual([0xff, 0xd8, 0xff]);
+  });
+
+  it("makes a smaller copy of a drawn page, and never a bigger one", async () => {
+    const { jpeg } = await renderPdfPage(await samplePdf(1), 1, 600);
+    const small = await shrinkJpeg(jpeg, 296);
+    expect([...small.slice(0, 3)]).toEqual([0xff, 0xd8, 0xff]);
+    expect(small.byteLength).toBeLessThan(jpeg.byteLength);
+    const { loadImage } = await import("@napi-rs/canvas");
+    const image = await loadImage(Buffer.from(small));
+    expect([image.width, image.height]).toEqual([296, Math.round((776 * 296) / 600)]);
+    expect((await loadImage(Buffer.from(await shrinkJpeg(jpeg, 5000)))).width).toBe(600);
   });
 
   it("draws several pages from one opening", async () => {

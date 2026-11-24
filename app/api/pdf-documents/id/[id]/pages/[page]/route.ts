@@ -7,8 +7,15 @@ import {
   getDriveHeadRevisionId,
   getValidAccessToken,
 } from "@/lib/pdf-drive";
-import { getKeptPage, isRevision, keepPage, STORED_WIDTH } from "@/lib/pdf-page-store";
-import { PageOutOfRange, renderPdfPage } from "@/lib/pdf-render";
+import {
+  getKeptPage,
+  isRevision,
+  keepPage,
+  STORED_WIDTH,
+  THUMB_WIDTH,
+  type PageSize,
+} from "@/lib/pdf-page-store";
+import { PageOutOfRange, renderPdfPage, shrinkJpeg } from "@/lib/pdf-render";
 
 /**
  * One page of a document as a JPEG — the detail preview's pages (task 7c.3,
@@ -17,6 +24,8 @@ import { PageOutOfRange, renderPdfPage } from "@/lib/pdf-render";
  * With `?rev=`, the Drive revision the page was rendered against, a kept image
  * is sent if there is one (task 7f, design.md D14) and Drive isn't asked for
  * anything. Otherwise the page is drawn here, and kept for next time.
+ * `?size=thumb` sends its small copy instead, for the splitter, and for the
+ * preview to show first (7f.5); `?kept=1` sends nothing rather than draw.
  *
  * The function gets the file from Drive fast and sends to the browser slowly
  * (measured: whole 9.35 MB scan from Drive in under 0.5 s once started, then
@@ -67,11 +76,13 @@ export async function GET(
     : DEFAULT_WIDTH;
   const rev = request.nextUrl.searchParams.get("rev");
   const revision = isRevision(rev) ? rev : null;
+  const size: PageSize = request.nextUrl.searchParams.get("size") === "thumb" ? "thumb" : "page";
 
   if (revision) {
-    const kept = await getKeptPage(id, revision, pageNumber);
+    const kept = await getKeptPage(id, revision, pageNumber, size);
     if (kept && !kept.jpeg) return pastTheEnd(kept.pageCount);
     if (kept?.jpeg) {
+      if (kept.later) after(kept.later);
       return new NextResponse(kept.jpeg, {
         status: 200,
         headers: {
@@ -80,6 +91,10 @@ export async function GET(
         },
       });
     }
+  }
+
+  if (request.nextUrl.searchParams.get("kept") === "1") {
+    return new NextResponse(null, { status: 204, headers: { "Cache-Control": "private, no-store" } });
   }
 
   let document;
@@ -120,7 +135,13 @@ export async function GET(
 
   try {
     // Kept pages are one size, so one drawn to be kept is that size too.
-    const rendered = await renderPdfPage(bytes, pageNumber, revision ? STORED_WIDTH : width);
+    const rendered = await renderPdfPage(
+      bytes,
+      pageNumber,
+      revision ? STORED_WIDTH : size === "thumb" ? THUMB_WIDTH : width,
+    );
+    const jpeg =
+      revision && size === "thumb" ? await shrinkJpeg(rendered.jpeg, THUMB_WIDTH) : rendered.jpeg;
     if (revision) {
       const { driveFileId } = document;
       // After the answer is sent. The revision was read before this download
@@ -134,10 +155,10 @@ export async function GET(
         }
       });
     }
-    return new NextResponse(rendered.jpeg as unknown as BodyInit, {
+    return new NextResponse(jpeg as unknown as BodyInit, {
       status: 200,
       headers: {
-        ...imageHeaders(rendered.jpeg.byteLength, rendered.pageCount),
+        ...imageHeaders(jpeg.byteLength, rendered.pageCount),
         "Server-Timing": `drive;dur=${driveMs}, draw;dur=${since() - driveMs}`,
       },
     });

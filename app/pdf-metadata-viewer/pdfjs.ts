@@ -8,6 +8,8 @@
 export interface LoadedPdf {
   numPages: number;
   renderPage(pageNumber: number, canvas: HTMLCanvasElement, width: number): Promise<void>;
+  /** A quick, rough look at a page, to show until it's drawn. Rejects if there's none. */
+  previewPage?(pageNumber: number, canvas: HTMLCanvasElement, width: number): Promise<void>;
   /** A page's size in PDF points, so its place can be held before it's drawn. */
   pageSize?(pageNumber: number): Promise<{ width: number; height: number }>;
   destroy?(): void;
