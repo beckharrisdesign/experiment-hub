@@ -13,18 +13,19 @@ import { existsSync, readdirSync } from "node:fs";
 import { createCanvas } from "@napi-rs/canvas";
 
 /**
- * pdf.js's own fonts, for PDFs that name a standard font without embedding it.
- * Deployed, they are traced from the pnpm store (next.config.js), so look
- * there as well as through the node_modules symlink. Without them pdf.js still
- * draws the page, with substitute glyphs.
+ * pdf.js's own runtime folders: standard fonts (for PDFs that name a font
+ * without embedding it), WebAssembly decoders (JBIG2 and JPEG 2000, common in
+ * scans) and colour profiles. pdf.js reads them by path, so file tracing can't
+ * follow them; next.config.js traces them from the pnpm store, which is where
+ * they are found when deployed. Locally the node_modules symlink works too.
  */
-function standardFonts(): string | undefined {
+function pdfjsFolder(name: string): string | undefined {
   const modules = path.join(process.cwd(), "node_modules");
-  const candidates = [path.join(modules, "pdfjs-dist", "standard_fonts")];
+  const candidates = [path.join(modules, "pdfjs-dist", name)];
   try {
     for (const entry of readdirSync(path.join(modules, ".pnpm"))) {
       if (entry.startsWith("pdfjs-dist@")) {
-        candidates.push(path.join(modules, ".pnpm", entry, "node_modules", "pdfjs-dist", "standard_fonts"));
+        candidates.push(path.join(modules, ".pnpm", entry, "node_modules", "pdfjs-dist", name));
       }
     }
   } catch {
@@ -32,6 +33,18 @@ function standardFonts(): string | undefined {
   }
   const dir = candidates.find((d) => existsSync(d));
   return dir ? `${dir}${path.sep}` : undefined;
+}
+
+/**
+ * pdf.js in Node runs its worker in-process, loading it by a path it builds at
+ * runtime, which file tracing can't follow either: deployed, every page failed
+ * "Setting up fake worker failed: Cannot find module …/pdf.worker.mjs" (#636).
+ * Importing it here by name makes tracing include it, and pdf.js uses it.
+ */
+async function loadPdfjs() {
+  const g = globalThis as typeof globalThis & { pdfjsWorker?: unknown };
+  if (!g.pdfjsWorker) g.pdfjsWorker = await import("pdfjs-dist/legacy/build/pdf.worker.mjs");
+  return import("pdfjs-dist/legacy/build/pdf.mjs");
 }
 
 export class PageOutOfRange extends Error {
@@ -53,12 +66,14 @@ export async function renderPdfPage(
   pageNumber: number,
   width: number,
 ): Promise<RenderedPage> {
-  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const pdfjs = await loadPdfjs();
   const data = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
   const task = pdfjs.getDocument({
     data,
     useSystemFonts: false,
-    standardFontDataUrl: standardFonts(),
+    standardFontDataUrl: pdfjsFolder("standard_fonts"),
+    wasmUrl: pdfjsFolder("wasm"),
+    iccUrl: pdfjsFolder("iccs"),
   });
   try {
     const doc = await task.promise;
