@@ -7,7 +7,10 @@ const nextConfig = {
   // sharp is a native module — keep it external so its .so binaries are traced
   // into the serverless bundle (Etsy Listing Kit image generator). Without this
   // the linux-x64 libvips fails to load on Vercel.
-  serverExternalPackages: ['sharp'],
+  // pdf.js and its native canvas draw preview pages on the server
+  // (lib/pdf-render.ts); kept external so their worker, fonts and .node binary
+  // are loaded from node_modules at runtime rather than bundled.
+  serverExternalPackages: ['sharp', 'pdfjs-dist', '@napi-rs/canvas'],
   // File tracing misses libvips (loaded at the binary level via rpath, never
   // require()d), so force ONLY the libvips store dir into the Etsy Listing Kit
   // bundles. Deliberately narrow: including the sharp/sharp-linux-x64 store
@@ -20,7 +23,11 @@ const nextConfig = {
     // pages render every date as a dash (change-history-manifest).
     '/changes/**': ['data/change-history.json'],
     // AI suggestions read the tag vocabulary by a runtime path (lib/pdf-taxonomy.ts).
-    '/api/pdf-documents/**': ['config/pdf-metadata-viewer/tag-vocabulary.md'],
+    // pdf.js's standard fonts are read by a runtime path (lib/pdf-render.ts).
+    '/api/pdf-documents/**': [
+      'config/pdf-metadata-viewer/tag-vocabulary.md',
+      'node_modules/pdfjs-dist/standard_fonts/**',
+    ],
     '/etsy-listing-kit/**': [
       'node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/node_modules/@img/sharp-libvips-linux-x64/**',
       // Bundled fonts — serverless has none; without these, SVG text renders

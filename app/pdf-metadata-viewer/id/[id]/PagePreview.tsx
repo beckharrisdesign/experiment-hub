@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { loadWithPdfJs, type LoadedPdf, type PdfLoader } from "@/app/pdf-metadata-viewer/pdfjs";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { LoadedPdf, PdfLoader } from "@/app/pdf-metadata-viewer/pdfjs";
+import { serverPageLoader } from "@/app/pdf-metadata-viewer/page-images";
 
 /**
  * The detail page's preview: the document's pages as images, drawn with
@@ -94,7 +95,7 @@ export function PagePreview({
   storedPageCount,
   wasSplit,
   frameClass,
-  loadPdf = loadWithPdfJs,
+  loadPdf,
 }: {
   documentId: string;
   contentUrl: string;
@@ -104,6 +105,7 @@ export function PagePreview({
   wasSplit: boolean;
   /** The preview's height on the page, shared with the server layout. */
   frameClass: string;
+  /** Pages drawn on the server by default (falling back to pdf.js); a stub in tests. */
   loadPdf?: PdfLoader;
 }) {
   const [status, setStatus] = useState<Status>({ kind: "loading" });
@@ -112,10 +114,21 @@ export function PagePreview({
   const scroller = useRef<HTMLDivElement>(null);
   const pageRefs = useRef<(HTMLLIElement | null)[]>([]);
 
+  // The page's width on screen, in device pixels, so images come back sharp.
+  const load = useMemo<PdfLoader>(
+    () =>
+      loadPdf ??
+      serverPageLoader(
+        `/api/pdf-documents/id/${documentId}/pages`,
+        Math.round(PAGE_WIDTH * (typeof window === "undefined" ? 2 : Math.min(window.devicePixelRatio || 1, 2.5))),
+      ),
+    [loadPdf, documentId],
+  );
+
   useEffect(() => {
     let live = true;
     let loaded: LoadedPdf | null = null;
-    loadPdf(contentUrl)
+    load(contentUrl)
       .then((pdf) => {
         loaded = pdf;
         if (live) setStatus({ kind: "ready", pdf });
@@ -126,7 +139,7 @@ export function PagePreview({
       live = false;
       loaded?.destroy?.();
     };
-  }, [contentUrl, loadPdf]);
+  }, [contentUrl, load]);
 
   const settled = useCallback(() => setDrawn((n) => n + 1), []);
 

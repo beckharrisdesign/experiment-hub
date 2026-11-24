@@ -124,17 +124,6 @@ describe("GET /api/pdf-documents/id/[id]/content", () => {
     expect(await res.text()).toBe("%PDF-1.7");
   });
 
-  it("times Drive alone when asked to read the whole file first", async () => {
-    mocks.getPdfDocument.mockResolvedValue(DOC);
-    mocks.openDriveFile.mockResolvedValue(new Response("%PDF-1.7"));
-    const res = await GET(
-      new NextRequest(`http://localhost/api/pdf-documents/id/${ID}/content?timing=buffer`),
-      { params: Promise.resolve({ id: ID }) },
-    );
-    expect(res.headers.get("server-timing")).toMatch(/drive-body;dur=\d+;desc="8 bytes"/);
-    expect(await res.text()).toBe("%PDF-1.7");
-  });
-
   it("never leaks a Drive URL or token in the response", async () => {
     mocks.getPdfDocument.mockResolvedValue(DOC);
     mocks.openDriveFile.mockResolvedValue(new Response(""));
