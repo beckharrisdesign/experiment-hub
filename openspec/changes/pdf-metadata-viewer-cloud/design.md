@@ -948,11 +948,15 @@ a layout system stops being one.
 | `Proposed · Detail · Desktop 1440` | `34:289` |
 | `Proposed · Compare (conflict) · Desktop 1440` | `34:9` |
 | `Proposed · Detail · Mobile 480` | `40:3` — on `02.10`, approved 2026-08-14 |
+| `Proposed · Dashboard · Desktop 1440` finding documents (at rest, filtered, scrolled, nothing matches) | `77:178`, `78:54`, `78:486`, `78:268` — on `02.13`, awaiting a go |
+| `Proposed · Dashboard · Mobile 480 · filtered, scrolled to Documents` | `79:157` — on `02.13`, awaiting a go |
 
 Earlier pages hold the history: `02` first iteration, `02.1` Stat component,
 `02.2` document change leads, `02.3` contained width, `02.4` fewer borders,
 `02.5` contrast, `02.6` table idiom, `02.7` one table, `02.8` mirrored actions,
-`02.10` Detail at Mobile 480.
+`02.10` Detail at Mobile 480, `02.11` splitter, `02.12` image preview, `02.13` find
+in the list (MVDS `Input`, `Button`, `Badge` and `Select` instances carrying hub
+tokens).
 
 ### Mobile 480 — what the small breakpoint costs
 

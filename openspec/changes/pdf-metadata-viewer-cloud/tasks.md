@@ -98,6 +98,15 @@ New files reached the list only when the folder was chosen again, and their own 
 - [x] 7d.4 Hourly schedule (`.github/workflows/pdf-folder-sync.yml`), let in by a key derived from the service-role key, on that route and by POST only (`verifySyncKey`, middleware)
 - [x] 7d.5 Verify live: run the workflow by hand until the backlog drains and the list shows page counts; add a test PDF to the folder and see it arrive on the next run — **verified 2026-11-24** (#640). First run: 40 files in PDF Tests, 17 read, 0 failed, 0 left; the list went to a page count on all 38 rows (it had shown one for a minority). A made-up `Sync-test-3-pages.pdf` added to the folder arrived on the next run (`added: 1, read: 1`) listed with its title, keywords, and 3 pages, never opened. The 45 rows with no folder recorded (imports before 026) stay unread; the list doesn't show them
 
+## 7e. Find in the list
+
+The original list had sortable headers, a filter on every data column, and clickable keyword tags (`prototype/public/table-manager.js`). The port dropped all three without a decision recorded: no artifact here mentions sorting or searching the list. Katy asked for it reviewed and drafted (2026-11-24). Not carried over: one filter box per column (one search box instead), sort and filters lost on Back, and Previous / Next ignoring them.
+
+- [x] 7e.1 Draw it on a numbered Figma page (`02.13`), desktop and phone, from the live dashboard — **drawn 2026-11-24**: `02.13 Proposed — Find in the list` (76:8), frames 77:178 (at rest), 78:54 (filtered), 78:486 (scrolled), 78:268 (nothing matches), 79:157 (phone), and a behaviour note, 79:244
+- [ ] 7e.2 Explicit go on the rendered frames
+- [ ] 7e.3 Spec scenarios, then build it
+- [ ] 7e.4 Verify live
+
 ## 8. Write path
 
 - [x] 8.0 Capture the baseline on the first staged edit — read the file once, store `file_snapshot.embedded` and `drive_head_revision_id` together, fill the field columns; never re-capture while edits are pending. See `design.md` D8, "captured on first edit". **Done in #608, verified live 2026-11-20:** the first edit stored the file's five fields and its revision, and filled the title column from the file
