@@ -35,3 +35,31 @@ export function shownValues(
 export type FileValuesState =
   | { ok: true; embedded: InFileValues }
   | { ok: false; reason: "reauthorize" | "missing" | "unreadable" };
+
+/** The fields a document's row in the list carries. */
+export interface ListedDocument extends ShownValues {
+  pageCount: number | null;
+  fileBaseline: InFileValues | null;
+  driveRevisionId: string | null;
+  fileRead: { revision: string; embedded: InFileValues } | null;
+}
+
+/**
+ * What the list shows for a document (task 7d.3): the same values the detail
+ * page shows, without fetching anything. A saved read counts only while it is
+ * from the revision Drive last listed; the scheduled sync (lib/pdf-sync.ts)
+ * refreshes both, so a file that changed shows blanks only until the next run.
+ */
+export function listedValues(d: ListedDocument): ShownValues & { pageCount: number | null } {
+  const baselined = d.fileBaseline !== null;
+  const read = d.fileRead && d.fileRead.revision === d.driveRevisionId ? d.fileRead.embedded : undefined;
+  const fileFacts = baselined ? d.fileBaseline! : read;
+  const { title, subject, author, keywords } = shownValues(d, baselined, read);
+  return {
+    title,
+    subject,
+    author,
+    keywords,
+    pageCount: d.pageCount ?? (fileFacts && fileFacts.pageCount > 0 ? fileFacts.pageCount : null),
+  };
+}

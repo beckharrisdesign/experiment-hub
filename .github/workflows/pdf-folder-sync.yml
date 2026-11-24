@@ -1,0 +1,69 @@
+# Hourly folder sync for the PDF Organizer (pdf-metadata-viewer).
+#
+# Finds new PDFs in the chosen Drive folder and reads each unread file's own
+# values (page count, title, author, subject, keywords), so the list fills in
+# without opening files one by one. The work happens in the hub's own function
+# (POST /api/pdf-drive/sync, lib/pdf-sync.ts); this job only starts it, and no
+# document bytes or values pass through GitHub — the answer is counts.
+# openspec/changes/pdf-metadata-viewer-cloud — task 7d, design.md D12.
+#
+# Auth needs no credential of its own: the job derives the route's key from
+# SUPABASE_SERVICE_ROLE_KEY the way lib/pdf-auth.ts does (verifySyncKey), as
+# exec-function-daily.yml does for its route. Keep the label below in step with
+# SYNC_KEY_LABEL.
+#
+# Each run reads for about 40 s and leaves the rest for the next, so a large
+# backlog drains over a few hours rather than timing out.
+name: pdf-folder-sync
+
+on:
+  schedule:
+    # Minute 23, away from the top of the hour, when GitHub's queue is busiest.
+    - cron: "23 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pdf-folder-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    environment: "Production – experiment-hub"
+    timeout-minutes: 3
+    steps:
+      - name: Run the folder sync
+        env:
+          SITE_URL: https://labs.beckharrisdesign.com
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
+            echo "::error::SUPABASE_SERVICE_ROLE_KEY is not available to this job"
+            exit 1
+          fi
+
+          SYNC_KEY=$(printf '%s' 'pdf-metadata-viewer/folder-sync/v1' \
+            | openssl dgst -sha256 -hmac "$SUPABASE_SERVICE_ROLE_KEY" -r \
+            | cut -d' ' -f1)
+
+          status=$(curl -sS -o response.json -w '%{http_code}' --max-time 90 \
+            -X POST "${SITE_URL}/api/pdf-drive/sync" \
+            -H "x-pdf-sync-key: ${SYNC_KEY}")
+
+          echo "HTTP ${status}"
+          cat response.json
+          echo
+
+          if [ "$status" = "409" ]; then
+            echo "::error::Drive access needs re-authorizing — sign in to the PDF Organizer again"
+            exit 1
+          fi
+          if [ "$status" != "200" ]; then
+            echo "::error::the folder sync failed"
+            exit 1
+          fi

@@ -8,8 +8,11 @@ import { NextRequest, NextResponse } from "next/server";
 // against this file instead, which is correct under either root.
 import {
   PDF_SESSION_COOKIE,
+  PDF_SYNC_KEY_HEADER,
+  PDF_SYNC_PATH,
   isGatedPath,
   verifySession,
+  verifySyncKey,
 } from "./lib/pdf-auth";
 import {
   DEVICE_COOKIE,
@@ -34,6 +37,19 @@ export async function middleware(request: NextRequest) {
   // identically, for every gated path — the route handler never executes, so it
   // never opens a connection and never has a chance to 404 differently.
   if (isGatedPath(pathname)) {
+    // The scheduled folder sync: its key, on its one route, by POST only.
+    // Anything else falls through to the session check below.
+    if (
+      pathname === PDF_SYNC_PATH &&
+      request.method === "POST" &&
+      (await verifySyncKey(
+        request.headers.get(PDF_SYNC_KEY_HEADER),
+        process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
+      ))
+    ) {
+      return NextResponse.next();
+    }
+
     const session = await verifySession(
       request.cookies.get(PDF_SESSION_COOKIE)?.value,
       process.env.PDF_SESSION_SECRET ?? "",

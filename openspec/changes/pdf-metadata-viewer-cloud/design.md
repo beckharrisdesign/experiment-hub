@@ -621,6 +621,48 @@ Two consequences worth stating:
   real keywords, so import reads them, sets the columns, and drops them from the
   keyword list. That is a one-way migration on read, not a rewrite of the archive.
 
+### D12 — The folder is synced hourly, and the sync reads what each file says
+
+Added 2026-11-24 (task 7d). Until then a file reached the list only when the
+folder was chosen again in the picker, and its own values (page count, title,
+author, subject, keywords) only when someone opened it: 65 of 83 live rows
+listed no page count. That left "Listing documents" (document-metadata-store)
+unmet for most of the archive — the list could only show what nobody had read.
+
+**What runs.** `POST /api/pdf-drive/sync` (`lib/pdf-sync.ts`) does what a person
+would: list the folder and import it with `pdf_import_folder` (new rows, nothing
+else touched), then, for each file with nothing stored for the revision Drive
+just listed, download it, read it, and save the read (migration 031). Never-read
+files go first. Reads stop starting after 40 s, three at a time, so a backlog
+drains over a few runs instead of timing out one. Nothing but the values is
+kept; the bytes are dropped as in the detail page's read (D1).
+
+**What the list shows.** A never-edited row shows the saved read, if it is of
+the revision Drive last listed (`listedValues`, the list's twin of D8's
+`shownValues`); an edited row shows its stored values, as before. No migration:
+the read already lives in `file_snapshot.read`.
+
+**When.** Hourly, from GitHub Actions (`pdf-folder-sync.yml`), chosen over
+"when the list opens" by Katy on 2026-11-24 so a file dropped into Drive shows
+up even when the tool isn't open. GitHub rather than Vercel Cron because the
+hub's other schedules already run there and the credential below already
+exists there.
+
+**How the schedule gets in.** A schedule has no Google session, so the sync
+route alone also accepts a key derived from `SUPABASE_SERVICE_ROLE_KEY`
+(HMAC-SHA256 over a label of its own, checked in middleware before anything
+runs). This is a narrow exception to "Every route requires an authenticated
+session", and deliberately not a static secret that proves identity: it opens
+one route, by POST, whose answer is counts — no filename, no value, no bytes.
+Holding it lets someone make the server re-read the folder sooner, which costs
+Drive quota and nothing else. Its root already opens every table directly, so a
+leak escalates to nothing. Same pattern, different label, as the
+exec-function cron (`lib/exec-function/access.ts`).
+
+**Not designed in Figma.** Nothing on screen changes shape: the list's columns
+are the approved `02.9` frame `34:172`, now filled in. Micro-interaction-exempt
+under the Figma gate's rule for behaviour without new composition.
+
 ### D6 — Route layout
 
 Follows the hub's existing collision-avoiding convention (`app/api/experiments/id/[id]`),
