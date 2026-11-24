@@ -24,8 +24,9 @@ import {
 /**
  * Where a preview request's time goes, so the slow leg can be found (7c.3).
  * Every reply carries a Server-Timing header; a streamed reply logs its
- * transfer when it ends. `?timing=buffer` is a temporary diagnostic: it reads
- * the whole file from Drive before replying, which times Drive alone.
+ * transfer when it ends. (Measured with these: Drive is fast, the function's
+ * send to the browser is the slow leg, so preview pages are now drawn on the
+ * server — see the pages route.)
  */
 function stopwatch() {
   const started = performance.now();
@@ -136,14 +137,6 @@ export async function GET(
     `drive-headers;dur=${m.driveHeaders - m.token}`,
     `region;desc="${REGION}"`,
   ];
-
-  if (request.nextUrl.searchParams.get("timing") === "buffer") {
-    const bytes = await file.arrayBuffer();
-    timing.push(`drive-body;dur=${clock.since() - m.driveHeaders};desc="${bytes.byteLength} bytes"`);
-    headers["Server-Timing"] = timing.join(", ");
-    headers["Content-Length"] = String(bytes.byteLength);
-    return new NextResponse(bytes, { status: partial ? 206 : 200, headers });
-  }
 
   headers["Server-Timing"] = timing.join(", ");
   // Passed through as it arrives: the preview starts before the file is whole.
