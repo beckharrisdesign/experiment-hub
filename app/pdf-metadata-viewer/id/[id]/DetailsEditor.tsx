@@ -12,7 +12,7 @@ import { Button, Input, Label } from "@beckharrisdesign/mvds";
  * add or remove) and lands as a staged edit: saved here, not yet in the file.
  * The commit bar writes them into the PDF in Drive, or discards them.
  *
- * Suggest metadata asks the vision route for a title, subject and keywords and
+ * Suggest with AI asks the vision route for a title, subject and keywords and
  * puts them straight into the fields as one staged edit (Katy's call,
  * 2026-11-23, as frame 34:289 shows): reviewing them is the ordinary pending
  * state, and Discard undoes them. Keywords are added to the ones already there.
@@ -240,7 +240,7 @@ export function DetailsEditor({
           onClick={() => void suggest()}
         >
           <span aria-hidden>✦</span>
-          {status.kind === "suggesting" ? "Reading the document…" : "Suggest metadata"}
+          {status.kind === "suggesting" ? "Reading the document…" : "Suggest with AI"}
         </Button>
         {(Object.keys(LABELS) as TextField[]).map((field) => (
           <TextFieldEditor

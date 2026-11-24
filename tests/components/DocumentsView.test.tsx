@@ -126,6 +126,41 @@ describe("DocumentsView (task 7e)", () => {
     );
   });
 
+  it("reviews what is prefilled, apart from what is pending (task 7i)", () => {
+    const rows = [
+      ...ROWS,
+      row("p", {
+        title: "Foodmart receipt",
+        keywords: ["foodmart"],
+        state: "prefilled",
+        stateLabel: "Prefilled",
+        prefilledTitle: true,
+        prefilledKeywords: true,
+      }),
+      row("long", { state: "split", stateLabel: "Split first?", pageCount: 30 }),
+    ];
+    const props = { rows, pending: [{ id: "a", filename: "a.pdf" }], excluded: 0 };
+    const { unmount } = render(<DocumentsView {...props} initialView={DEFAULT_VIEW} />);
+    expect(table().getByText("Split first?")).toBeTruthy();
+    expect(table().getByRole("button", { name: "foodmart" }).className).toContain("border-dashed");
+    expect(screen.getAllByRole("link", { name: "Review prefilled" })[0].getAttribute("href")).toBe(
+      "/pdf-metadata-viewer?prefilled=1",
+    );
+    // Commit still counts only the one pending.
+    expect(screen.getAllByRole("button", { name: "Commit 1 document to Drive" }).length).toBeGreaterThan(0);
+    unmount();
+
+    render(<DocumentsView {...props} initialView={{ ...DEFAULT_VIEW, prefilled: true }} />);
+    expect(names()).toEqual(["p.pdf"]);
+    expect(screen.getByText("Prefilled documents")).toBeTruthy();
+    expect(table().getByRole("link", { name: "p.pdf" }).getAttribute("href")).toBe("/pdf-metadata-viewer/id/p?prefilled=1");
+  });
+
+  it("has no Review prefilled when nothing is", () => {
+    renderView();
+    expect(screen.queryByRole("link", { name: "Review prefilled" })).toBeNull();
+  });
+
   it("commits every pending document, whatever the list shows", () => {
     renderView({ q: "statement" });
     expect(names()).toEqual(["b.pdf"]);

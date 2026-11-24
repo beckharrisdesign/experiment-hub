@@ -33,7 +33,7 @@ const SAVE = "PATCH /api/pdf-documents/id/doc-1";
 beforeEach(() => refresh.mockClear());
 afterEach(() => vi.unstubAllGlobals());
 
-describe("Suggest metadata", () => {
+describe("Suggest with AI", () => {
   // Katy's call (2026-11-23): suggestions fill the fields as pending edits, as
   // frame 34:289 shows; review is the ordinary pending state, Discard undoes it.
   it("fills the fields as one staged edit, adding keywords to the ones already there", async () => {
@@ -45,7 +45,7 @@ describe("Suggest metadata", () => {
       [SAVE]: { status: 200, body: {} },
     });
     render(<DetailsEditor {...PROPS} />);
-    fireEvent.click(screen.getByRole("button", { name: /Suggest metadata/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Suggest with AI/ }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     const [, init] = fetchMock.mock.calls[1] as [string, RequestInit];
@@ -63,7 +63,7 @@ describe("Suggest metadata", () => {
       [SUGGEST]: { status: 200, body: { suggestions: { title: "HEB Receipt", subject: "", keywords: ["heb"] } } },
     });
     render(<DetailsEditor {...PROPS} />);
-    fireEvent.click(screen.getByRole("button", { name: /Suggest metadata/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Suggest with AI/ }));
     await waitFor(() => expect(screen.getByText(/Nothing to change/)).toBeTruthy());
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
@@ -76,7 +76,7 @@ describe("Suggest metadata", () => {
       },
     });
     render(<DetailsEditor {...PROPS} />);
-    fireEvent.click(screen.getByRole("button", { name: /Suggest metadata/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Suggest with AI/ }));
     await waitFor(() =>
       expect(screen.getByRole("alert").textContent).toContain("AI suggestions are off: no OpenAI key is configured"),
     );
@@ -84,12 +84,12 @@ describe("Suggest metadata", () => {
 
   it("can't be pressed while the editor is disabled", () => {
     render(<DetailsEditor {...PROPS} disabled />);
-    expect((screen.getByRole("button", { name: /Suggest metadata/ }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole("button", { name: /Suggest with AI/ }) as HTMLButtonElement).disabled).toBe(true);
   });
 
   it("is read-only with a note instead of the commit bar when locked", () => {
     render(<DetailsEditor {...PROPS} pendingCount={1} locked="This scan was split into parts. Edit the parts instead." />);
-    expect((screen.getByRole("button", { name: /Suggest metadata/ }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole("button", { name: /Suggest with AI/ }) as HTMLButtonElement).disabled).toBe(true);
     expect(screen.getByText("This scan was split into parts. Edit the parts instead.")).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Commit/ })).toBeNull();
   });

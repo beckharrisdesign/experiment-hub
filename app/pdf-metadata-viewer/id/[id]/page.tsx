@@ -8,12 +8,16 @@ import {
 import { getDriveConnection } from "@/lib/pdf-drive";
 import { checkFile, storedFileValues, type Problem } from "@/lib/pdf-file-read";
 import { toListRow } from "@/lib/pdf-list-rows";
+import { openPrefills } from "@/lib/pdf-prefills";
+import { asksToSplit } from "@/lib/pdf-prefill";
 import { applyListView, listViewQuery, parseListView, type ListRow, type RawParams } from "@/lib/pdf-list-view";
-import { shownValues } from "@/lib/pdf-shown-values";
+import { listedValues, shownValues } from "@/lib/pdf-shown-values";
 import { summarizePending } from "@/lib/pdf-staging";
 import { DetailsEditor } from "./DetailsEditor";
 import { DetailsFromFile } from "./FromFile";
 import { PagePreview } from "./PagePreview";
+import PrefillReview from "./PrefillReview";
+import SplitFirst from "./SplitFirst";
 
 /**
  * Hosted pdf-metadata-viewer — document detail.
@@ -100,10 +104,23 @@ export default async function PdfDocumentDetailPage({
   // document keeps its place even if an edit here took it out of that list.
   const view = parseListView(await searchParams);
   const listQuery = listViewQuery(view);
-  const list = applyListView(all.map(toListRow), view, document.id);
+  const prefills = await openPrefills(all);
+  const list = applyListView(
+    all.map((d) => toListRow(d, prefills.get(d.id))),
+    view,
+    document.id,
+  );
   const index = list.findIndex((d) => d.id === document.id);
   const previous = index > 0 ? list[index - 1] : null;
   const next = index >= 0 && index < list.length - 1 ? list[index + 1] : null;
+
+  // Filled in from its own text and waiting (task 7i): only an untouched document
+  // whose file is here, and whose values are known to put it beside.
+  const prefill = fresh && revision === document.driveRevisionId ? prefills.get(document.id) : undefined;
+  // The next one waiting, from here on and then from the top.
+  const after = index >= 0 ? [...list.slice(index + 1), ...list.slice(0, index)] : list;
+  const nextPrefilled = after.find((r) => r.state === "prefilled") ?? null;
+  const splitFirst = access.ok && asksToSplit(document);
 
   const pending = summarizePending(document);
   const edited = {
@@ -147,6 +164,15 @@ export default async function PdfDocumentDetailPage({
               <span className="inline-flex items-center gap-1.5 rounded-full bg-background-primary px-3 py-1 text-xs text-warning lg:order-5 lg:ml-auto">
                 <span aria-hidden className="size-1.5 rounded-full bg-warning" />
                 {pending.count} pending {pending.count === 1 ? "edit" : "edits"}
+              </span>
+            ) : prefill || splitFirst ? (
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs lg:order-5 lg:ml-auto ${
+                  prefill ? "bg-background-active text-text-secondary" : "bg-background-primary text-warning"
+                }`}
+              >
+                <span aria-hidden className={`size-1.5 rounded-full ${prefill ? "bg-text-secondary" : "bg-warning"}`} />
+                {prefill ? "Prefilled" : "Split first?"}
               </span>
             ) : null}
           </div>
@@ -202,7 +228,29 @@ export default async function PdfDocumentDetailPage({
           className="flex flex-col rounded-lg bg-background-secondary lg:w-[428px] lg:shrink-0 lg:rounded-none"
           aria-label="Details"
         >
-          {access.ok && !fresh ? (
+          {splitFirst ? (
+            <SplitFirst
+              documentId={document.id}
+              pageCount={listedValues(document).pageCount ?? 0}
+              splitUrl={`/pdf-metadata-viewer/id/${document.id}/split${listQuery}`}
+            />
+          ) : null}
+          {prefill && fresh && revision ? (
+            <PrefillReview
+              // A different document, or version, is a different answer.
+              key={`${document.id}@${revision}`}
+              documentId={document.id}
+              revision={revision}
+              values={shownValues(stored, baselined, fresh)}
+              prefill={prefill}
+              nextUrl={
+                nextPrefilled
+                  ? `/pdf-metadata-viewer/id/${nextPrefilled.id}${listQuery}`
+                  : `/pdf-metadata-viewer${listViewQuery({ ...view, prefilled: false })}`
+              }
+              nextIsDocument={nextPrefilled !== null}
+            />
+          ) : access.ok && !fresh ? (
             <DetailsFromFile
               documentId={document.id}
               listQuery={listQuery}
