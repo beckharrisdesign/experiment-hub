@@ -4,10 +4,11 @@ import {
   getPdfDocument,
   isUuid,
   listPdfDocuments,
-  type PdfDocument,
 } from "@/lib/pdf-documents";
 import { getDriveConnection } from "@/lib/pdf-drive";
 import { checkFile, storedFileValues, type Problem } from "@/lib/pdf-file-read";
+import { toListRow } from "@/lib/pdf-list-rows";
+import { applyListView, listViewQuery, parseListView, type ListRow, type RawParams } from "@/lib/pdf-list-view";
 import { shownValues } from "@/lib/pdf-shown-values";
 import { summarizePending } from "@/lib/pdf-staging";
 import { DetailsEditor } from "./DetailsEditor";
@@ -66,8 +67,10 @@ const FRAME = "h-[420px] w-full lg:h-[calc(100vh-185px)]";
 
 export default async function PdfDocumentDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<RawParams>;
 }) {
   const { id } = await params;
   if (!isUuid(id)) notFound();
@@ -92,11 +95,15 @@ export default async function PdfDocumentDetailPage({
   };
   const locked = document.supersededAt ? LOCKED_SPLIT : undefined;
 
-  // Previous/next follow the dashboard's own order, so stepping through here
-  // walks the same list the user just left.
-  const index = all.findIndex((d) => d.id === document.id);
-  const previous = index > 0 ? all[index - 1] : null;
-  const next = index >= 0 && index < all.length - 1 ? all[index + 1] : null;
+  // Previous/next follow the list as the user left it — searched, filtered and
+  // sorted the same way, from the same query string (design.md D13). This
+  // document keeps its place even if an edit here took it out of that list.
+  const view = parseListView(await searchParams);
+  const listQuery = listViewQuery(view);
+  const list = applyListView(all.map(toListRow), view, document.id);
+  const index = list.findIndex((d) => d.id === document.id);
+  const previous = index > 0 ? list[index - 1] : null;
+  const next = index >= 0 && index < list.length - 1 ? list[index + 1] : null;
 
   const pending = summarizePending(document);
   const edited = {
@@ -107,10 +114,10 @@ export default async function PdfDocumentDetailPage({
   const contentUrl = `/api/pdf-documents/id/${document.id}/content`;
   const filename = document.filename ?? "(unnamed)";
 
-  const stepLink = (target: PdfDocument | null, label: string, glyph: string) =>
+  const stepLink = (target: ListRow | null, label: string, glyph: string) =>
     target ? (
       <a
-        href={`/pdf-metadata-viewer/id/${target.id}`}
+        href={`/pdf-metadata-viewer/id/${target.id}${listQuery}`}
         className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md px-2 text-sm text-text-secondary hover:bg-background-active"
         aria-label={`${label}: ${target.filename ?? "(unnamed)"}`}
       >
@@ -132,7 +139,7 @@ export default async function PdfDocumentDetailPage({
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-6">
           <div className="flex items-center justify-between gap-4 lg:contents">
             <Button asChild variant="secondary" size="sm" className="lg:order-1">
-              <a href="/pdf-metadata-viewer">← All documents</a>
+              <a href={`/pdf-metadata-viewer${listQuery}`}>← All documents</a>
             </Button>
             {pending.count > 0 ? (
               // Frame 34:289: a warning dot and label on the dark pill. MVDS
@@ -164,6 +171,7 @@ export default async function PdfDocumentDetailPage({
               // the preview draws the file as it now is.
               key={document.driveRevisionId ?? "initial"}
               documentId={document.id}
+              listQuery={listQuery}
               contentUrl={contentUrl}
               filename={filename}
               storedPageCount={document.pageCount ?? fresh?.pageCount ?? null}
@@ -196,6 +204,7 @@ export default async function PdfDocumentDetailPage({
           {access.ok && !fresh ? (
             <DetailsFromFile
               documentId={document.id}
+              listQuery={listQuery}
               revision={revision}
               stored={stored}
               baselined={baselined}
@@ -206,6 +215,7 @@ export default async function PdfDocumentDetailPage({
           ) : (
             <DetailsEditor
               documentId={document.id}
+              listQuery={listQuery}
               values={shownValues(stored, baselined, fresh ?? undefined)}
               inFile={fresh ?? undefined}
               edited={edited}

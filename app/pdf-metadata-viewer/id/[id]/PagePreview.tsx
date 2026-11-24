@@ -90,6 +90,7 @@ function PageImage({
 
 export function PagePreview({
   documentId,
+  listQuery = "",
   contentUrl,
   filename,
   storedPageCount,
@@ -98,6 +99,8 @@ export function PagePreview({
   loadPdf,
 }: {
   documentId: string;
+  /** The list to go back to, as its query string ("" or "?…"). */
+  listQuery?: string;
   contentUrl: string;
   filename: string;
   /** Known before the file arrives (baseline or saved read); offers Split early. */
@@ -157,7 +160,7 @@ export function PagePreview({
 
   const numPages = status.kind === "ready" ? status.pdf.numPages : null;
   const pageCount = numPages ?? storedPageCount;
-  const splitUrl = `/pdf-metadata-viewer/id/${documentId}/split`;
+  const splitUrl = `/pdf-metadata-viewer/id/${documentId}/split${listQuery}`;
 
   return (
     <>

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Button } from "@beckharrisdesign/mvds";
 import { isUuid } from "@/lib/pdf-documents";
+import { listViewQuery, parseListView, type RawParams } from "@/lib/pdf-list-view";
 import { DriveFileMissing, DriveReauthorizationRequired } from "@/lib/pdf-drive";
 import { loadComparison, type Comparison } from "@/lib/pdf-resolve";
 import { summarizePending } from "@/lib/pdf-staging";
@@ -39,9 +40,17 @@ function Notice({ heading, body, children }: { heading: string; body: string; ch
   );
 }
 
-export default async function ComparePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ComparePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<RawParams>;
+}) {
   const { id } = await params;
   if (!isUuid(id)) notFound();
+  // Carried through so the way back leads to the list as it was left (D13).
+  const listQuery = listViewQuery(parseListView(await searchParams));
 
   let comparison: Comparison | null = null;
   let problem: { heading: string; body: string; reauthorize?: boolean } | null = null;
@@ -59,7 +68,7 @@ export default async function ComparePage({ params }: { params: Promise<{ id: st
   }
   if (!problem && !comparison) notFound();
 
-  const detailUrl = `/pdf-metadata-viewer/id/${id}`;
+  const detailUrl = `/pdf-metadata-viewer/id/${id}${listQuery}`;
   const filename = comparison?.document.filename ?? "document";
 
   return (
@@ -98,6 +107,7 @@ export default async function ComparePage({ params }: { params: Promise<{ id: st
             />
             <CompareView
               documentId={id}
+              listQuery={listQuery}
               fields={comparison.fields}
               pages={comparison.pages}
               seenRevision={comparison.drive.revision}

@@ -29,6 +29,8 @@ interface Values {
 
 export interface DetailsEditorProps {
   documentId: string;
+  /** The list to go back to, as its query string ("" or "?…"). */
+  listQuery?: string;
   values: Values;
   /** What the file says now; undefined when it could not be read. */
   inFile: Values | undefined;
@@ -88,6 +90,7 @@ export function suggestionEdits(current: Values, s: Suggestions): Partial<Values
 
 export function DetailsEditor({
   documentId,
+  listQuery = "",
   values,
   inFile,
   edited,
@@ -352,7 +355,7 @@ export function DetailsEditor({
               {status.conflict ? (
                 <>
                   {" "}
-                  <a href={`/pdf-metadata-viewer/id/${documentId}/compare`} className="underline">
+                  <a href={`/pdf-metadata-viewer/id/${documentId}/compare${listQuery}`} className="underline">
                     Compare the two versions
                   </a>
                 </>

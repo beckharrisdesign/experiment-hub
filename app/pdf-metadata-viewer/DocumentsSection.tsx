@@ -47,10 +47,18 @@ interface Props {
   excluded: number;
   /** The table is showing pending documents only. */
   reviewing: boolean;
+  /** Where Review pending / Show all goes, keeping the list's other choices. */
+  toggleHref?: string;
   children: ReactNode;
 }
 
-export function DocumentsSection({ pending, excluded, reviewing, children }: Props) {
+export function DocumentsSection({
+  pending,
+  excluded,
+  reviewing,
+  toggleHref = reviewing ? "/pdf-metadata-viewer" : "/pdf-metadata-viewer?pending=1",
+  children,
+}: Props) {
   const router = useRouter();
   const [run, setRun] = useState<Run>({ kind: "idle" });
   const count = pending.length;
@@ -93,7 +101,7 @@ export function DocumentsSection({ pending, excluded, reviewing, children }: Pro
   const actions = (
     <div className="flex flex-wrap items-center gap-3">
       <Button asChild variant="outline" className="min-h-11">
-        <a href={reviewing ? "/pdf-metadata-viewer" : "/pdf-metadata-viewer?pending=1"}>
+        <a href={toggleHref}>
           {reviewing ? "Show all documents" : "Review pending"}
         </a>
       </Button>
@@ -133,7 +141,8 @@ export function DocumentsSection({ pending, excluded, reviewing, children }: Pro
         </div>
       ) : null}
 
-      <p aria-live="polite" className="text-sm text-text-muted">
+      {/* Out of the flow while empty, so it leaves no gap. */}
+      <p aria-live="polite" className="text-sm text-text-muted empty:absolute">
         {run.kind === "running" ? `Writing ${run.done + 1} of ${run.total}: ${run.current}` : ""}
       </p>
 
