@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Button } from "@beckharrisdesign/mvds";
 import { getPdfDocument, isUuid, listSplitParts } from "@/lib/pdf-documents";
+import { listViewQuery, parseListView, type RawParams } from "@/lib/pdf-list-view";
 import { SplitView } from "./SplitView";
 
 /**
@@ -11,13 +12,21 @@ import { SplitView } from "./SplitView";
  */
 export const dynamic = "force-dynamic";
 
-export default async function SplitPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function SplitPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<RawParams>;
+}) {
   const { id } = await params;
   if (!isUuid(id)) notFound();
+  // Carried through so the way back leads to the list as it was left (D13).
+  const listQuery = listViewQuery(parseListView(await searchParams));
   const document = await getPdfDocument(id);
   if (!document) notFound();
 
-  const detailUrl = `/pdf-metadata-viewer/id/${id}`;
+  const detailUrl = `/pdf-metadata-viewer/id/${id}${listQuery}`;
   const filename = document.filename ?? "document";
   const parts = document.supersededAt ? await listSplitParts(id) : [];
 
@@ -45,7 +54,7 @@ export default async function SplitPage({ params }: { params: Promise<{ id: stri
               <ul className="flex flex-col gap-1 text-sm">
                 {parts.map((p) => (
                   <li key={p.id}>
-                    <a href={`/pdf-metadata-viewer/id/${p.id}`} className="text-text-primary underline">
+                    <a href={`/pdf-metadata-viewer/id/${p.id}${listQuery}`} className="text-text-primary underline">
                       {p.filename}
                     </a>
                   </li>
@@ -57,6 +66,7 @@ export default async function SplitPage({ params }: { params: Promise<{ id: stri
       ) : (
         <SplitView
           documentId={id}
+          listQuery={listQuery}
           filename={document.filename}
           contentUrl={`/api/pdf-documents/id/${id}/content`}
         />

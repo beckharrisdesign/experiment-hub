@@ -1,15 +1,16 @@
-import { Badge, Button, Inline, Stack } from "@beckharrisdesign/mvds";
+import { Button, Inline, Stack } from "@beckharrisdesign/mvds";
 import { listPdfDocuments, type PdfDocument } from "@/lib/pdf-documents";
 import { getDriveConnection, type DriveConnection } from "@/lib/pdf-drive";
-import { summarizePending } from "@/lib/pdf-staging";
-import { listedValues } from "@/lib/pdf-shown-values";
+import { toListRow } from "@/lib/pdf-list-rows";
+import { listViewQuery, parseListView, type RawParams } from "@/lib/pdf-list-view";
 import FolderPicker from "./FolderPicker";
-import { DocumentsSection } from "./DocumentsSection";
+import DocumentsView from "./DocumentsView";
 import { AttentionCard } from "./AttentionCard";
 
 /**
  * Hosted pdf-metadata-viewer dashboard.
- * openspec/changes/pdf-metadata-viewer-cloud — Figma `02.9`, frame `34:172`.
+ * openspec/changes/pdf-metadata-viewer-cloud — Figma `02.9`, frame `34:172`;
+ * finding documents, `02.13` (DocumentsView).
  *
  * Server component reading the working store directly: this runs in the same
  * process as the route handlers, so an HTTP round trip to its own API would buy
@@ -32,9 +33,6 @@ const TONE_CLASS: Record<Tone, string> = {
   danger: "text-error",
 };
 
-// Column headers are static — module scope, not rebuilt on every render.
-const TABLE_HEADERS = ["Filename", "Title", "Keywords", "Pages", "State"];
-
 interface StatProps {
   label: string;
   value: string;
@@ -47,74 +45,6 @@ function Stat({ label, value, tone = "default" }: StatProps) {
       <span className="text-xs font-medium text-text-muted">{label}</span>
       <span className={`text-3xl font-semibold ${TONE_CLASS[tone]}`}>{value}</span>
     </Stack>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Documents table
-// ---------------------------------------------------------------------------
-
-function StateCell({ document }: { document: PdfDocument }) {
-  if (document.hasPendingEdits) {
-    // Frame 34:172: the count in a warning pill, as on the detail page header.
-    const count = summarizePending(document).count;
-    return (
-      <span className="inline-flex items-center rounded-full bg-background-primary px-3 py-1 text-xs whitespace-nowrap text-warning">
-        {count > 0 ? `${count} pending ${count === 1 ? "edit" : "edits"}` : "Pending edits"}
-      </span>
-    );
-  }
-  if (document.committedAt) {
-    return <Badge variant="muted">Committed</Badge>;
-  }
-  return <Badge variant="muted">Not yet tagged</Badge>;
-}
-
-function DocumentsTable({ documents }: { documents: PdfDocument[] }) {
-  return (
-    <div className="overflow-x-auto rounded-lg bg-background-secondary">
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="border-b border-border">
-            {TABLE_HEADERS.map((h) => (
-              <th
-                key={h}
-                className="px-4 py-3 text-xs font-medium text-text-muted"
-                scope="col"
-              >
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {documents.map((d) => {
-            // What the file says fills a never-edited row (task 7d.3).
-            const shown = listedValues(d);
-            return (
-            <tr key={d.id} className="border-b border-border last:border-0">
-              <td className="px-4 py-3 text-text-primary">
-                <a
-                  href={`/pdf-metadata-viewer/id/${d.id}`}
-                  className="hover:underline"
-                >
-                  {d.filename ?? "(unnamed)"}
-                </a>
-              </td>
-              <td className="px-4 py-3 text-text-muted">{shown.title ?? "—"}</td>
-              <td className="px-4 py-3 text-text-muted">
-                {shown.keywords.length > 0 ? shown.keywords.join(", ") : "—"}
-              </td>
-              <td className="px-4 py-3 text-text-muted">{shown.pageCount ?? "—"}</td>
-              <td className="px-4 py-3">
-                <StateCell document={d} />
-              </td>
-            </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
   );
 }
 
@@ -159,10 +89,10 @@ function NeedsAttention({ documents }: { documents: PdfDocument[] }) {
 export default async function PdfMetadataViewerPage({
   searchParams,
 }: {
-  searchParams: Promise<{ pending?: string }>;
+  searchParams: Promise<RawParams>;
 }) {
-  // "Review pending" narrows the table to documents with edits to write.
-  const reviewing = (await searchParams).pending === "1";
+  // Search, keywords, sort, and Review pending (design.md D13).
+  const view = parseListView(await searchParams);
   let documents: PdfDocument[] = [];
   let loadError: string | null = null;
   let drive: DriveConnection = {
@@ -298,17 +228,14 @@ export default async function PdfMetadataViewerPage({
               ) : (
                 <>
                 {attention.length > 0 ? <NeedsAttention documents={attention} /> : null}
-                <DocumentsSection
+                <DocumentsView
+                  rows={documents.map(toListRow)}
                   excluded={documents.filter((d) => d.hasPendingEdits && excludedFromBulk(d)).length}
                   pending={documents
                     .filter((d) => d.hasPendingEdits && !excludedFromBulk(d))
                     .map((d) => ({ id: d.id, filename: d.filename ?? "(unnamed)" }))}
-                  reviewing={reviewing}
-                >
-                  <DocumentsTable
-                    documents={reviewing ? documents.filter((d) => d.hasPendingEdits) : documents}
-                  />
-                </DocumentsSection>
+                  initialView={view}
+                />
                 </>
               )}
             </>

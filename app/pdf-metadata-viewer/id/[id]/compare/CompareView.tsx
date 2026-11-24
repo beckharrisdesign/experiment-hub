@@ -36,6 +36,8 @@ function show(value: FieldComparison["was"]): string {
 
 interface Props {
   documentId: string;
+  /** The list to go back to, as its query string ("" or "?…"). */
+  listQuery?: string;
   fields: FieldComparison[];
   pages: { was: number; now: number } | null;
   seenRevision: string | null;
@@ -47,7 +49,7 @@ type Status =
   | { kind: "working"; action: "commit" | "discard" }
   | { kind: "error"; message: string; stale?: boolean; reauthorize?: boolean };
 
-export function CompareView({ documentId, fields, pages, seenRevision, contentUrl }: Props) {
+export function CompareView({ documentId, listQuery = "", fields, pages, seenRevision, contentUrl }: Props) {
   const router = useRouter();
   const [choices, setChoices] = useState<Choices>({});
   const [sameDocument, setSameDocument] = useState(false);
@@ -82,7 +84,7 @@ export function CompareView({ documentId, fields, pages, seenRevision, contentUr
         });
         return;
       }
-      router.push(`/pdf-metadata-viewer/id/${documentId}`);
+      router.push(`/pdf-metadata-viewer/id/${documentId}${listQuery}`);
       router.refresh();
     } catch {
       setStatus({ kind: "error", message: "Could not reach the server. Your edits are kept." });

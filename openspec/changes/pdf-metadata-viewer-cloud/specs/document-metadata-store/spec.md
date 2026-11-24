@@ -115,6 +115,54 @@ untenable once the bytes live behind a network.
 - **THEN** its metadata renders from the database
 - **AND** bytes are fetched only for rendering the page preview
 
+### Requirement: Documents can be found in the list
+
+The system SHALL let a user narrow the document list by searching and by
+keyword, and sort it by any column. The choices SHALL be kept in the page
+address, so that a reload, going back to the list, and stepping to the previous
+or next document all follow the list as the user left it.
+
+#### Scenario: Searching
+
+- **WHEN** a user types in the search box
+- **THEN** only documents containing every typed word remain, matched without
+  regard to case in the filename, title, subject, author, or any keyword
+- **AND** the list says how many of the documents match
+
+#### Scenario: Filtering by keyword
+
+- **WHEN** a user selects keywords in the list
+- **THEN** only documents carrying every selected keyword remain
+- **AND** each selected keyword can be removed on its own, or everything cleared
+  at once
+
+#### Scenario: Sorting
+
+- **WHEN** a user selects a column name
+- **THEN** the list is sorted by that column, and selecting it again reverses it
+- **AND** page counts sort as numbers, and blank values are last either way
+
+#### Scenario: Nothing matches
+
+- **WHEN** no document matches the search and keywords
+- **THEN** the list says so, naming what was searched for, and offers to clear it
+
+#### Scenario: Opening a document from a narrowed list
+
+- **WHEN** a user opens a document from a searched, filtered, or sorted list
+- **THEN** Previous and Next step through that list in that order
+- **AND** going back to all documents restores it
+
+#### Scenario: The open document stops matching
+
+- **WHEN** an edit to the open document means the list no longer includes it
+- **THEN** Previous and Next still step from the place it had
+
+#### Scenario: Committing from a narrowed list
+
+- **WHEN** a user commits all pending documents while the list is narrowed
+- **THEN** every pending document is attempted, including those not shown
+
 ### Requirement: Keyword values round-trip without corruption
 
 The system SHALL store keywords as a discrete ordered list rather than a

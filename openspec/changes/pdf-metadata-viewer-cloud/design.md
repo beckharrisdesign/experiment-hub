@@ -663,6 +663,33 @@ exec-function cron (`lib/exec-function/access.ts`).
 are the approved `02.9` frame `34:172`, now filled in. Micro-interaction-exempt
 under the Figma gate's rule for behaviour without new composition.
 
+### D13 — The list's search, sort, and keywords live in the page address (task 7e)
+
+The list is one folder, read whole from Postgres, so finding is done on rows
+already in the browser: nothing is fetched as the user types. The choices go in
+the query string (`q`, repeated `kw`, `sort`, `dir`, and the existing
+`pending=1`), replaced in place rather than pushed, so Back leaves the list
+instead of undoing keystrokes.
+
+The same query string travels with every link into a document and on to Split
+and Compare, and the detail page applies the same pure function
+(`lib/pdf-list-view.ts`) to the same rows to place Previous and Next. Two things
+follow from that:
+
+- **Filename order is the database's.** Rows arrive sorted by Postgres, and the
+  Filename sort keeps or reverses that order instead of comparing again in
+  JavaScript, whose collation differs.
+- **The open document always has a place.** Committing while reviewing pending,
+  or removing a keyword while filtering by it, would otherwise drop the open
+  document from its own list and lose Previous and Next.
+
+Bulk commit is untouched: its count is every pending document, whatever the list
+is showing (D4).
+
+The query string carries what was typed, so it reaches the server's request log.
+That log is the operator's own, and the archive is single-tenant (D5); nothing
+from a document's contents is put there.
+
 ### D6 — Route layout
 
 Follows the hub's existing collision-avoiding convention (`app/api/experiments/id/[id]`),
@@ -948,8 +975,8 @@ a layout system stops being one.
 | `Proposed · Detail · Desktop 1440` | `34:289` |
 | `Proposed · Compare (conflict) · Desktop 1440` | `34:9` |
 | `Proposed · Detail · Mobile 480` | `40:3` — on `02.10`, approved 2026-08-14 |
-| `Proposed · Dashboard · Desktop 1440` finding documents (at rest, filtered, scrolled, nothing matches) | `77:178`, `78:54`, `78:486`, `78:268` — on `02.13`, awaiting a go |
-| `Proposed · Dashboard · Mobile 480 · filtered, scrolled to Documents` | `79:157` — on `02.13`, awaiting a go |
+| `Proposed · Dashboard · Desktop 1440` finding documents (at rest, filtered, scrolled, nothing matches) | `77:178`, `78:54`, `78:486`, `78:268` — on `02.13`, approved 2026-11-24 |
+| `Proposed · Dashboard · Mobile 480 · filtered, scrolled to Documents` | `79:157` — on `02.13`, approved 2026-11-24 |
 
 Earlier pages hold the history: `02` first iteration, `02.1` Stat component,
 `02.2` document change leads, `02.3` contained width, `02.4` fewer borders,

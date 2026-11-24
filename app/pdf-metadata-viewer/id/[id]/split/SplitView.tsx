@@ -52,11 +52,14 @@ type Action =
 
 export function SplitView({
   documentId,
+  listQuery = "",
   filename,
   contentUrl,
   loadPdf = loadWithPdfJs,
 }: {
   documentId: string;
+  /** The list to go back to, as its query string ("" or "?…"). */
+  listQuery?: string;
   filename: string | null;
   contentUrl: string;
   loadPdf?: PdfLoader;
@@ -113,7 +116,11 @@ export function SplitView({
       }
       setAction({ kind: "idle" });
       // The new files are in the archive list; a single document goes back to its page.
-      router.push(what === "split" ? "/pdf-metadata-viewer" : `/pdf-metadata-viewer/id/${documentId}`);
+      router.push(
+        what === "split"
+          ? `/pdf-metadata-viewer${listQuery}`
+          : `/pdf-metadata-viewer/id/${documentId}${listQuery}`,
+      );
       router.refresh();
     } catch {
       setAction({ kind: "error", message: "Could not reach the server. Nothing changed." });
