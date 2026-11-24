@@ -223,15 +223,21 @@ function context(run) {
 </details></section>`;
 }
 
+const LIGHT = `--bg:#ffffff; --bg2:#f6f8fa; --bg3:#eaeef2; --fg:#1f2328; --fg2:#59636e; --fg3:#6e7781;
+  --border:#d1d9e0; --accent:#0969da; --ok:#1a7f37; --warn:#9a6700; --bad:#cf222e; --purple:#8250df; color-scheme: light;`;
+
 const STYLE = `
 :root { --bg:#0d1117; --bg2:#161b22; --bg3:#21262d; --fg:#c9d1d9; --fg2:#8b949e; --fg3:#6e7681; --border:#30363d;
   --accent:#58a6ff; --ok:#3fb950; --warn:#d29922; --bad:#f85149; --purple:#bc8cff; color-scheme: dark; }
-@media (prefers-color-scheme: light) { :root { --bg:#ffffff; --bg2:#f6f8fa; --bg3:#eaeef2; --fg:#1f2328; --fg2:#59636e; --fg3:#6e7781;
-  --border:#d1d9e0; --accent:#0969da; --ok:#1a7f37; --warn:#9a6700; --bad:#cf222e; --purple:#8250df; color-scheme: light; } }
+/* Dark-first (hub palette). Light follows the OS setting, and an explicit
+   data-theme from a host viewer wins in either direction. */
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { ${LIGHT} } }
+:root[data-theme="light"] { ${LIGHT} }
 * { box-sizing: border-box; }
 body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
-main { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
-@media (min-width: 768px) { main { padding: 40px 32px 80px; } }
+main { max-width: 960px; margin: 0 auto; padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+@media (min-width: 768px) { main { padding-block: 40px 80px; padding-left: max(32px, env(safe-area-inset-left, 0px)); padding-right: max(32px, env(safe-area-inset-right, 0px)); } }
 h1 { font-size: 24px; margin: 0 0 8px; } h2 { font-size: 18px; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
 h3 { font-size: 14px; margin: 24px 0 8px; color: var(--fg2); text-transform: uppercase; letter-spacing: .04em; }
 code { font-family: 'SF Mono', Monaco, Inconsolata, 'Fira Code', monospace; font-size: 12px; background: var(--bg3); padding: 1px 4px; border-radius: 4px; overflow-wrap: anywhere; }
@@ -293,7 +299,8 @@ export function renderHtmlReport(run, entries, images = {}) {
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
 <meta name="robots" content="noindex">
 <title>Task-effort audit: ${esc(run.task.name)}</title>
 <style>${STYLE}</style>
