@@ -37,7 +37,6 @@ describe("serverPageLoader", () => {
     await pdf.renderPage(1, canvas, 560);
     expect([canvas.width, canvas.height]).toEqual([1120, 1449]);
     expect(drawImage).toHaveBeenCalled();
-    expect(await pdf.pageSize?.(1)).toEqual({ width: 1120, height: 1449 });
   });
 
   it("hands over to pdf.js when the server can't draw the file", async () => {
@@ -54,5 +53,18 @@ describe("serverPageLoader", () => {
     const fetchImpl = vi.fn(async () => new Response(new Blob([new Uint8Array([1])])));
     await serverPageLoader(BASE, 1120, fallback, fetchImpl as unknown as typeof fetch)("/c");
     expect(fallback).toHaveBeenCalled();
+  });
+
+  // Live, 16 pages took 28 requests: sizes asked up front, then the queue again.
+  it("never fetches a page twice, and asks for no sizes up front", async () => {
+    const fetchImpl = vi.fn(async () => jpeg(8));
+    const pdf = await serverPageLoader(BASE, 1120, vi.fn(), fetchImpl as unknown as typeof fetch)("/c");
+    expect(pdf.pageSize).toBeUndefined();
+    const canvas = { width: 0, height: 0, getContext: () => ({ drawImage: vi.fn() }) } as unknown as HTMLCanvasElement;
+    // Draw page 6 out of turn, then every page in order.
+    await pdf.renderPage(6, canvas, 560);
+    for (let n = 1; n <= 8; n++) await pdf.renderPage(n, canvas, 560);
+    const asked = fetchImpl.mock.calls.map((c) => Number(String((c as unknown[])[0]).match(/pages\/(\d+)/)![1]));
+    expect(asked.sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
   });
 });
