@@ -5,14 +5,14 @@ import { DetailsEditor, type DetailsEditorProps } from "./DetailsEditor";
 import { shownValues, type FileValuesState, type ShownValues } from "@/lib/pdf-shown-values";
 
 /**
- * The parts of the detail page that need what the file itself says, when the
+ * The part of the detail page that needs what the file itself says, when the
  * stored copy may be stale. The page renders without them; these ask
  * `GET …/file` from the browser and fill in when it answers. Reading the file
  * means downloading all of it, so the page no longer waits for that.
  */
 
-// One read per document revision, shared by the details panel and the page
-// count, so the file is downloaded once per view.
+// One read per document revision, so a remount in the same view (after an
+// edit refreshes the page) doesn't download the file again.
 const reads = new Map<string, Promise<FileValuesState>>();
 
 function readFileValues(documentId: string, revision: string | null): Promise<FileValuesState> {
@@ -74,89 +74,5 @@ export function DetailsFromFile({
       disabled={!state.ok && !baselined}
       locked={locked}
     />
-  );
-}
-
-/**
- * Below the preview: the page count, the way into Split, and Open full size.
- * The count comes from the file only when it isn't stored, and stays blank
- * until known (Split is offered only once it is).
- */
-export function PreviewFooter({
-  documentId,
-  revision,
-  storedPageCount,
-  wasSplit,
-  contentUrl,
-}: {
-  documentId: string;
-  revision: string | null;
-  storedPageCount: number | null;
-  wasSplit: boolean;
-  contentUrl: string;
-}) {
-  return storedPageCount === null ? (
-    <FooterFromFile
-      documentId={documentId}
-      revision={revision}
-      wasSplit={wasSplit}
-      contentUrl={contentUrl}
-    />
-  ) : (
-    <Footer documentId={documentId} pageCount={storedPageCount} wasSplit={wasSplit} contentUrl={contentUrl} />
-  );
-}
-
-function FooterFromFile(props: {
-  documentId: string;
-  revision: string | null;
-  wasSplit: boolean;
-  contentUrl: string;
-}) {
-  const state = useFileValues(props.documentId, props.revision);
-  return <Footer {...props} pageCount={state?.ok ? state.embedded.pageCount : null} />;
-}
-
-function Footer({
-  documentId,
-  pageCount,
-  wasSplit,
-  contentUrl,
-}: {
-  documentId: string;
-  pageCount: number | null;
-  wasSplit: boolean;
-  contentUrl: string;
-}) {
-  return (
-    <div className="flex items-center justify-between text-xs text-text-muted">
-      <span className="flex items-center gap-4">
-        <span>{pageCount === null ? "" : `${pageCount} ${pageCount === 1 ? "page" : "pages"}`}</span>
-        {/* Split (Figma 02.11): offered for any multi-page scan not already split. */}
-        {wasSplit ? (
-          <a
-            href={`/pdf-metadata-viewer/id/${documentId}/split`}
-            className="inline-flex min-h-11 items-center text-warning hover:underline"
-          >
-            Split into parts — see them
-          </a>
-        ) : pageCount !== null && pageCount > 1 ? (
-          <a
-            href={`/pdf-metadata-viewer/id/${documentId}/split`}
-            className="inline-flex min-h-11 items-center text-text-secondary hover:underline"
-          >
-            Split pages
-          </a>
-        ) : null}
-      </span>
-      <a
-        href={contentUrl}
-        target="_blank"
-        rel="noopener"
-        className="inline-flex min-h-11 items-center text-text-secondary hover:underline"
-      >
-        Open full size
-      </a>
-    </div>
   );
 }
