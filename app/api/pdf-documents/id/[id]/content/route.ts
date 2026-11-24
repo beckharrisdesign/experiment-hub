@@ -3,9 +3,9 @@ import { getPdfDocument, isUuid } from "@/lib/pdf-documents";
 import {
   DriveFileMissing,
   DriveReauthorizationRequired,
-  downloadDriveFile,
   getDriveHeadRevisionId,
   getValidAccessToken,
+  openDriveFile,
 } from "@/lib/pdf-drive";
 
 /**
@@ -39,13 +39,22 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  let bytes: ArrayBuffer;
+  let file: Response;
   try {
     const accessToken = await getValidAccessToken();
     // Drive serves a trashed file's bytes; the revision read is what says it
-    // is gone (DriveFileMissing), so it comes first.
-    await getDriveHeadRevisionId(accessToken, document.driveFileId);
-    bytes = await downloadDriveFile(accessToken, document.driveFileId);
+    // is gone (DriveFileMissing). The two run side by side, and a file found
+    // gone is never sent: its download is cancelled before a byte passes on.
+    const [revision, download] = await Promise.allSettled([
+      getDriveHeadRevisionId(accessToken, document.driveFileId),
+      openDriveFile(accessToken, document.driveFileId),
+    ]);
+    if (revision.status === "rejected") {
+      if (download.status === "fulfilled") await download.value.body?.cancel();
+      throw revision.reason;
+    }
+    if (download.status === "rejected") throw download.reason;
+    file = download.value;
   } catch (error) {
     if (error instanceof DriveReauthorizationRequired) {
       return NextResponse.json(
@@ -70,15 +79,15 @@ export async function GET(
 
   // RFC 5987 form, because household filenames carry em dashes.
   const name = document.filename ?? "document.pdf";
-  return new NextResponse(bytes, {
-    status: 200,
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Length": String(bytes.byteLength),
-      "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(name)}`,
-      // Personal documents: never stored by a shared cache, and not by the
-      // browser's disk cache either.
-      "Cache-Control": "private, no-store",
-    },
-  });
+  const headers: Record<string, string> = {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(name)}`,
+    // Personal documents: never stored by a shared cache, and not by the
+    // browser's disk cache either.
+    "Cache-Control": "private, no-store",
+  };
+  const length = file.headers.get("content-length");
+  if (length) headers["Content-Length"] = length;
+  // Passed through as it arrives: the preview starts before the file is whole.
+  return new NextResponse(file.body, { status: 200, headers });
 }

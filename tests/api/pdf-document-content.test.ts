@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 const mocks = vi.hoisted(() => ({
   getPdfDocument: vi.fn(),
   getValidAccessToken: vi.fn(),
-  downloadDriveFile: vi.fn(),
+  openDriveFile: vi.fn(),
   getDriveHeadRevisionId: vi.fn(),
 }));
 
@@ -22,7 +22,7 @@ vi.mock("@/lib/pdf-drive", async () => {
   return {
     ...actual,
     getValidAccessToken: mocks.getValidAccessToken,
-    downloadDriveFile: mocks.downloadDriveFile,
+    openDriveFile: mocks.openDriveFile,
     getDriveHeadRevisionId: mocks.getDriveHeadRevisionId,
   };
 });
@@ -57,26 +57,27 @@ describe("GET /api/pdf-documents/id/[id]/content", () => {
     const res = await call("not-a-uuid");
     expect(res.status).toBe(404);
     expect(mocks.getPdfDocument).not.toHaveBeenCalled();
-    expect(mocks.downloadDriveFile).not.toHaveBeenCalled();
+    expect(mocks.openDriveFile).not.toHaveBeenCalled();
   });
 
   it("404s an unknown document without touching Drive", async () => {
     mocks.getPdfDocument.mockResolvedValue(null);
     const res = await call(ID);
     expect(res.status).toBe(404);
-    expect(mocks.downloadDriveFile).not.toHaveBeenCalled();
+    expect(mocks.openDriveFile).not.toHaveBeenCalled();
   });
 
   it("streams the bytes inline as a PDF that no cache keeps", async () => {
     mocks.getPdfDocument.mockResolvedValue(DOC);
-    mocks.downloadDriveFile.mockResolvedValue(
-      new TextEncoder().encode("%PDF-1.7").buffer,
+    mocks.openDriveFile.mockResolvedValue(
+      new Response("%PDF-1.7", { headers: { "content-length": "8" } }),
     );
 
     const res = await call(ID);
 
     expect(res.status).toBe(200);
-    expect(mocks.downloadDriveFile).toHaveBeenCalledWith("token-abc", "drive-abc");
+    expect(mocks.openDriveFile).toHaveBeenCalledWith("token-abc", "drive-abc");
+    expect(res.headers.get("content-length")).toBe("8");
     expect(res.headers.get("content-type")).toBe("application/pdf");
     expect(res.headers.get("cache-control")).toBe("private, no-store");
     expect(res.headers.get("content-disposition")).toBe(
@@ -87,7 +88,7 @@ describe("GET /api/pdf-documents/id/[id]/content", () => {
 
   it("never leaks a Drive URL or token in the response", async () => {
     mocks.getPdfDocument.mockResolvedValue(DOC);
-    mocks.downloadDriveFile.mockResolvedValue(new ArrayBuffer(0));
+    mocks.openDriveFile.mockResolvedValue(new Response(""));
     const res = await call(ID);
     const headers = JSON.stringify([...res.headers.entries()]);
     expect(headers).not.toContain("googleapis");
@@ -96,7 +97,7 @@ describe("GET /api/pdf-documents/id/[id]/content", () => {
 
   it("409s when the grant needs re-authorizing", async () => {
     mocks.getPdfDocument.mockResolvedValue(DOC);
-    mocks.downloadDriveFile.mockRejectedValue(
+    mocks.openDriveFile.mockRejectedValue(
       new DriveReauthorizationRequired("revoked"),
     );
     expect((await call(ID)).status).toBe(409);
@@ -104,22 +105,26 @@ describe("GET /api/pdf-documents/id/[id]/content", () => {
 
   it("410s a document whose file has left Drive, distinct from a bad id", async () => {
     mocks.getPdfDocument.mockResolvedValue(DOC);
-    mocks.downloadDriveFile.mockRejectedValue(new DriveFileMissing("gone"));
+    mocks.openDriveFile.mockRejectedValue(new DriveFileMissing("gone"));
     expect((await call(ID)).status).toBe(410);
   });
 
   // A trashed file is still downloadable; the revision read is what says it
-  // is gone, so it has to come first (and the bytes are never fetched).
-  it("410s a trashed file without downloading it", async () => {
+  // is gone. The download runs alongside it, so it is cancelled unsent.
+  it("410s a trashed file and sends none of its bytes", async () => {
     mocks.getPdfDocument.mockResolvedValue(DOC);
     mocks.getDriveHeadRevisionId.mockRejectedValue(new DriveFileMissing("trashed"));
-    expect((await call(ID)).status).toBe(410);
-    expect(mocks.downloadDriveFile).not.toHaveBeenCalled();
+    const cancel = vi.fn(async () => {});
+    mocks.openDriveFile.mockResolvedValue(new Response(new ReadableStream({ cancel })));
+    const res = await call(ID);
+    expect(res.status).toBe(410);
+    expect(await res.text()).not.toContain("%PDF");
+    expect(cancel).toHaveBeenCalled();
   });
 
   it("502s any other Drive failure", async () => {
     mocks.getPdfDocument.mockResolvedValue(DOC);
-    mocks.downloadDriveFile.mockRejectedValue(new Error("boom"));
+    mocks.openDriveFile.mockRejectedValue(new Error("boom"));
     expect((await call(ID)).status).toBe(502);
   });
 });
