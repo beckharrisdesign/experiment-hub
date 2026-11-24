@@ -40,8 +40,8 @@ const DOC = {
   filename: "2026-03-14 — Invoice — Utilities.pdf",
 };
 
-function call(id: string) {
-  return GET(new NextRequest(`http://localhost/api/pdf-documents/id/${id}/content`), {
+function call(id: string, headers: Record<string, string> = {}) {
+  return GET(new NextRequest(`http://localhost/api/pdf-documents/id/${id}/content`, { headers }), {
     params: Promise.resolve({ id }),
   });
 }
@@ -76,7 +76,7 @@ describe("GET /api/pdf-documents/id/[id]/content", () => {
     const res = await call(ID);
 
     expect(res.status).toBe(200);
-    expect(mocks.openDriveFile).toHaveBeenCalledWith("token-abc", "drive-abc");
+    expect(mocks.openDriveFile).toHaveBeenCalledWith("token-abc", "drive-abc", undefined);
     expect(res.headers.get("content-length")).toBe("8");
     expect(res.headers.get("content-type")).toBe("application/pdf");
     expect(res.headers.get("cache-control")).toBe("private, no-store");
@@ -84,6 +84,32 @@ describe("GET /api/pdf-documents/id/[id]/content", () => {
       `inline; filename*=UTF-8''${encodeURIComponent(DOC.filename)}`,
     );
     expect(await res.text()).toBe("%PDF-1.7");
+  });
+
+  // Task 7c.3: the preview fetches a large scan in byte ranges.
+  it("passes one byte range to Drive and answers with just those bytes", async () => {
+    mocks.getPdfDocument.mockResolvedValue(DOC);
+    mocks.openDriveFile.mockResolvedValue(
+      new Response("%PDF", {
+        status: 206,
+        headers: { "content-range": "bytes 0-3/9807226", "content-length": "4" },
+      }),
+    );
+    const res = await call(ID, { range: "bytes=0-3" });
+    expect(mocks.openDriveFile).toHaveBeenCalledWith("token-abc", "drive-abc", "bytes=0-3");
+    expect(res.status).toBe(206);
+    expect(res.headers.get("content-range")).toBe("bytes 0-3/9807226");
+    expect(res.headers.get("accept-ranges")).toBe("bytes");
+    expect(await res.text()).toBe("%PDF");
+  });
+
+  it("sends the whole file for a range it doesn't take", async () => {
+    mocks.getPdfDocument.mockResolvedValue(DOC);
+    mocks.openDriveFile.mockResolvedValue(new Response("%PDF-1.7"));
+    const res = await call(ID, { range: "bytes=0-3,10-20" });
+    expect(mocks.openDriveFile).toHaveBeenCalledWith("token-abc", "drive-abc", undefined);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("accept-ranges")).toBe("bytes");
   });
 
   it("never leaks a Drive URL or token in the response", async () => {

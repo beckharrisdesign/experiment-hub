@@ -15,13 +15,98 @@ export interface LoadedPdf {
 
 export type PdfLoader = (url: string) => Promise<LoadedPdf>;
 
+/** One megabyte: a scan's first page usually sits in a chunk or two. */
+export const CHUNK = 1 << 20;
+
+/** The total size from `Content-Range: bytes 0-1048575/9807226`. */
+export function totalFromContentRange(header: string | null): number | null {
+  const total = header?.match(/\/(\d+)\s*$/)?.[1];
+  return total ? Number(total) : null;
+}
+
+/** The parts of pdf.js's range transport this needs; a stub in tests. */
+export interface RangeTransport {
+  requestDataRange(begin: number, end: number): void;
+  onDataRange(begin: number, chunk: Uint8Array): void;
+}
+
+type Source =
+  | { data: Uint8Array }
+  | { length: number; initial: Uint8Array; fetchRange: (begin: number, end: number) => Promise<Uint8Array> };
+
+/**
+ * Ask for the first chunk only. The reply says how big the file is, so pdf.js
+ * can then ask for just the byte ranges a page needs, instead of the whole
+ * file before it draws anything (task 7c.3). A server that ignores the range
+ * sends the whole file, which is used as it is.
+ */
+export async function openRangedSource(url: string, fetchImpl: typeof fetch = fetch): Promise<Source> {
+  const get = (range: string) =>
+    fetchImpl(url, { headers: { Range: range }, credentials: "include", cache: "no-store" });
+  const first = await get(`bytes=0-${CHUNK - 1}`);
+  if (!first.ok) throw new Error(`The file couldn't be fetched (${first.status})`);
+  const initial = new Uint8Array(await first.arrayBuffer());
+  if (first.status !== 206) return { data: initial }; // the whole file, as sent
+  const length = totalFromContentRange(first.headers.get("content-range"));
+  if (length === null) {
+    // Part of the file with no total: it can't be ranged, so take all of it.
+    const whole = await fetchImpl(url, { credentials: "include", cache: "no-store" });
+    if (!whole.ok) throw new Error(`The file couldn't be fetched (${whole.status})`);
+    return { data: new Uint8Array(await whole.arrayBuffer()) };
+  }
+  if (initial.length >= length) return { data: initial };
+
+  const fetchRange = async (begin: number, end: number) => {
+    // Two tries: one dropped request shouldn't leave a page undrawn.
+    for (let attempt = 0; ; attempt++) {
+      try {
+        const res = await get(`bytes=${begin}-${end - 1}`);
+        if (!res.ok) throw new Error(String(res.status));
+        const bytes = new Uint8Array(await res.arrayBuffer());
+        // A whole file in reply to a range: take the part asked for.
+        return res.status === 206 ? bytes : bytes.slice(begin, end);
+      } catch (error) {
+        if (attempt >= 1) throw error;
+      }
+    }
+  };
+  return { length, initial, fetchRange };
+}
+
+/** Wire a ranged source to pdf.js's transport: each request is fetched and handed back. */
+export function connectTransport(
+  transport: RangeTransport,
+  fetchRange: (begin: number, end: number) => Promise<Uint8Array>,
+  onError: (error: unknown) => void = () => {},
+) {
+  transport.requestDataRange = (begin, end) => {
+    fetchRange(begin, end).then((chunk) => transport.onDataRange(begin, chunk), onError);
+  };
+}
+
 export const loadWithPdfJs: PdfLoader = async (url) => {
   const pdfjs = await import("pdfjs-dist");
   pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     "pdfjs-dist/build/pdf.worker.min.mjs",
     import.meta.url,
   ).toString();
-  const task = pdfjs.getDocument({ url, withCredentials: true });
+  const source = await openRangedSource(url);
+  let task;
+  if ("data" in source) {
+    task = pdfjs.getDocument({ data: source.data });
+  } else {
+    const transport = new pdfjs.PDFDataRangeTransport(source.length, source.initial);
+    connectTransport(transport, source.fetchRange, (error) =>
+      console.error("pdf preview: a byte range couldn't be fetched:", error),
+    );
+    task = pdfjs.getDocument({
+      range: transport,
+      rangeChunkSize: CHUNK,
+      // Fetch only what a drawn page needs; pages are drawn in order anyway.
+      disableAutoFetch: true,
+      disableStream: true,
+    });
+  }
   const doc = await task.promise;
   return {
     numPages: doc.numPages,

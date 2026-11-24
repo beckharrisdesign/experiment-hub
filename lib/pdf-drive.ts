@@ -464,8 +464,13 @@ export async function downloadDriveFile(
  * straight through, so the first bytes reach the browser while the rest are
  * still arriving, instead of after the whole file was held in memory.
  */
-export async function openDriveFile(accessToken: string, fileId: string): Promise<Response> {
-  return driveFileRequest(accessToken, fileId, "alt=media", "download");
+export async function openDriveFile(
+  accessToken: string,
+  fileId: string,
+  /** One byte range, `bytes=a-b`; Drive answers 206 with just those bytes. */
+  range?: string,
+): Promise<Response> {
+  return driveFileRequest(accessToken, fileId, "alt=media", "download", range ? { Range: range } : {});
 }
 
 /**
@@ -531,10 +536,11 @@ async function driveFileRequest(
   fileId: string,
   query: string,
   what: string,
+  extraHeaders: Record<string, string> = {},
 ): Promise<Response> {
   const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?${query}`;
   const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${accessToken}` },
+    headers: { Authorization: `Bearer ${accessToken}`, ...extraHeaders },
   });
 
   if (response.status === 401) {

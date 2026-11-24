@@ -21,6 +21,9 @@ import {
  * `/api/pdf-documents/*` `frame-ancestors 'self'` rather than the hub-wide
  * `'none'`; nothing frames it now.
  */
+/** One range of the form pdf.js asks for; anything else gets the whole file. */
+const SINGLE_RANGE = /^bytes=\d+-\d*$/;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -42,6 +45,11 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  // The preview asks for byte ranges, so a large scan's first page can be
+  // drawn without downloading the rest (task 7c.3).
+  const asked = request.headers.get("range");
+  const range = asked && SINGLE_RANGE.test(asked) ? asked : null;
+
   let file: Response;
   try {
     const accessToken = await getValidAccessToken();
@@ -50,7 +58,7 @@ export async function GET(
     // gone is never sent: its download is cancelled before a byte passes on.
     const [revision, download] = await Promise.allSettled([
       getDriveHeadRevisionId(accessToken, document.driveFileId),
-      openDriveFile(accessToken, document.driveFileId),
+      openDriveFile(accessToken, document.driveFileId, range ?? undefined),
     ]);
     if (revision.status === "rejected") {
       if (download.status === "fulfilled") await download.value.body?.cancel();
@@ -89,8 +97,12 @@ export async function GET(
     // browser's disk cache either.
     "Cache-Control": "private, no-store",
   };
+  headers["Accept-Ranges"] = "bytes";
   const length = file.headers.get("content-length");
   if (length) headers["Content-Length"] = length;
+  const contentRange = file.headers.get("content-range");
+  const partial = file.status === 206 && contentRange !== null;
+  if (partial) headers["Content-Range"] = contentRange;
   // Passed through as it arrives: the preview starts before the file is whole.
-  return new NextResponse(file.body, { status: 200, headers });
+  return new NextResponse(file.body, { status: partial ? 206 : 200, headers });
 }
