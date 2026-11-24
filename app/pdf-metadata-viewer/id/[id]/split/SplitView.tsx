@@ -25,23 +25,33 @@ export type { LoadedPdf, PdfLoader } from "@/app/pdf-metadata-viewer/pdfjs";
 const THUMB_WIDTH = 148;
 const NOTHING: ShownValues = { title: null, subject: null, author: null, keywords: [] };
 
-function Thumbnail({ pdf, pageNumber }: { pdf: LoadedPdf; pageNumber: number }) {
+function Thumbnail({ pdf, pageNumber }: { pdf: LoadedPdf | null; pageNumber: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const [failed, setFailed] = useState(false);
+  const [state, setState] = useState<"waiting" | "drawn" | "failed">("waiting");
   useEffect(() => {
-    if (!ref.current) return;
-    pdf.renderPage(pageNumber, ref.current, THUMB_WIDTH).catch(() => setFailed(true));
+    if (!pdf || !ref.current) return;
+    pdf.renderPage(pageNumber, ref.current, THUMB_WIDTH).then(
+      () => setState("drawn"),
+      () => setState("failed"),
+    );
   }, [pdf, pageNumber]);
-  return failed ? (
-    <div className="flex h-48 w-[148px] items-center justify-center rounded bg-white text-xs text-black/50">
-      Couldn&apos;t draw
-    </div>
-  ) : (
-    <canvas
-      ref={ref}
-      aria-label={`Page ${pageNumber}`}
-      className="h-auto w-[148px] rounded bg-white"
-    />
+  if (state === "failed") {
+    return (
+      <div className="flex h-48 w-[148px] items-center justify-center rounded bg-white text-xs text-black/50">
+        Couldn&apos;t draw
+      </div>
+    );
+  }
+  return (
+    <>
+      {/* Its place, until it is drawn (task 7j). */}
+      {state === "waiting" ? <div aria-hidden className="h-48 w-[148px] rounded bg-background-secondary" /> : null}
+      <canvas
+        ref={ref}
+        aria-label={`Page ${pageNumber}`}
+        className={state === "drawn" ? "h-auto w-[148px] rounded bg-white" : "hidden"}
+      />
+    </>
   );
 }
 
@@ -62,6 +72,7 @@ export function SplitView({
   contentUrl,
   values = NOTHING,
   revision = null,
+  knownPages = null,
   loadPdf: givenLoader,
 }: {
   documentId: string;
@@ -73,6 +84,8 @@ export function SplitView({
   values?: ShownValues;
   /** Drive's revision as the page found it; finds its kept images. */
   revision?: string | null;
+  /** How many pages it has, when already known: splitting needn't wait for them. */
+  knownPages?: number | null;
   /** Pages drawn on the server by default (falling back to pdf.js); a stub in tests. */
   loadPdf?: PdfLoader;
 }) {
@@ -114,8 +127,10 @@ export function SplitView({
   }, [contentUrl, loadPdf]);
 
   const pdf = status.kind === "ready" ? status.pdf : null;
-  const pageCount = pdf?.numPages ?? 1;
-  const sorted = [...breaks].sort((a, b) => a - b);
+  // The file's own count, once it is here, over the one known before.
+  const usable = pdf !== null || (status.kind === "loading" && knownPages !== null && knownPages > 1);
+  const pageCount = pdf?.numPages ?? (usable ? knownPages! : 1);
+  const sorted = breaks.filter((b) => b < pageCount).sort((a, b) => a - b);
   const parts = sorted.length > 0 ? planParts(pageCount, sorted) : [[1, pageCount] as [number, number]];
   const partOf = (page: number) => parts.findIndex(([a, b]) => page >= a && page <= b);
   const busy = action.kind === "working";
@@ -144,12 +159,9 @@ export function SplitView({
         return;
       }
       setAction({ kind: "idle" });
-      // The new files are in the archive list; a single document goes back to its page.
-      router.push(
-        what === "split"
-          ? `/pdf-metadata-viewer${listQuery}`
-          : `/pdf-metadata-viewer/id/${documentId}${listQuery}`,
-      );
+      // Back to the list either way (task 7j): the new files are in it, and so is
+      // the next scan to look at.
+      router.push(`/pdf-metadata-viewer${listQuery}`);
       router.refresh();
     } catch {
       setAction({ kind: "error", message: "Could not reach the server. Nothing changed." });
@@ -161,14 +173,14 @@ export function SplitView({
   return (
     <>
       <main className="flex flex-1 flex-col gap-6 px-4 pt-8 pb-8 lg:px-24">
-        {status.kind === "loading" ? (
+        {status.kind === "loading" && !usable ? (
           <p className="text-sm text-text-muted">Loading pages…</p>
         ) : status.kind === "unreadable" ? (
           <p role="alert" className="text-sm text-warning">
             {status.message}
           </p>
         ) : null}
-        {pdf ? (
+        {usable ? (
           <>
             <div className="flex flex-col gap-1">
               <h2 className="text-base font-semibold text-text-primary">
@@ -230,7 +242,7 @@ export function SplitView({
                         {/* Joins the part's bar across a gap that isn't a split. */}
                         <span
                           aria-hidden
-                          className={`mt-7 h-0.5 w-11 ${split ? "" : sorted.length > 0 ? "bg-accent-primary" : "bg-border"}`}
+                          className={`mt-8 h-0.5 w-11 ${split ? "" : sorted.length > 0 ? "bg-accent-primary" : "bg-border"}`}
                         />
                       </li>
                     ) : null}

@@ -3,7 +3,7 @@ import { Button } from "@beckharrisdesign/mvds";
 import { getPdfDocument, isUuid, listSplitParts } from "@/lib/pdf-documents";
 import { checkFile, readFile } from "@/lib/pdf-file-read";
 import { listViewQuery, parseListView, type RawParams } from "@/lib/pdf-list-view";
-import { shownValues } from "@/lib/pdf-shown-values";
+import { listedValues, shownValues } from "@/lib/pdf-shown-values";
 import { SplitView } from "./SplitView";
 
 /**
@@ -29,7 +29,6 @@ export default async function SplitPage({
   const document = await getPdfDocument(id);
   if (!document) notFound();
 
-  const detailUrl = `/pdf-metadata-viewer/id/${id}${listQuery}`;
   const filename = document.filename ?? "document";
   const parts = document.supersededAt ? await listSplitParts(id) : [];
   const access = document.supersededAt ? null : await checkFile(document);
@@ -52,7 +51,7 @@ export default async function SplitPage({
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-6">
           <div>
             <Button asChild variant="secondary" size="sm">
-              <a href={detailUrl}>← Back to document</a>
+              <a href={`/pdf-metadata-viewer${listQuery}`}>← All documents</a>
             </Button>
           </div>
           <h1 className="min-w-0 break-words text-lg text-text-primary">Split — {filename}</h1>
@@ -87,6 +86,8 @@ export default async function SplitPage({
           values={values}
           contentUrl={`/api/pdf-documents/id/${id}/content`}
           revision={access?.ok ? access.head : null}
+          // Known only for the file as it was last listed.
+          knownPages={access?.ok && access.head === document.driveRevisionId ? listedValues(document).pageCount : null}
         />
       )}
     </div>

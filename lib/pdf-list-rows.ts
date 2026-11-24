@@ -35,8 +35,18 @@ export function toListRow(d: PdfDocument, prefill?: Prefill): ListRow {
       prefilledKeywords: true,
     };
   } else if (asksToSplit(d)) {
-    state = "split";
-    stateLabel = "Split first?";
+    return {
+      id: d.id,
+      filename: d.filename,
+      title,
+      subject,
+      author,
+      keywords,
+      pageCount,
+      state: "split",
+      stateLabel: "Split first?",
+      revision: d.driveRevisionId,
+    };
   }
   return { id: d.id, filename: d.filename, title, subject, author, keywords, pageCount, state, stateLabel };
 }
