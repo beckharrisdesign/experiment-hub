@@ -5,14 +5,15 @@
  *
  * Ported from v1's `/api/split`, with what the design changed:
  *
- * - Parts are new Drive files beside the original, named as v1 named them
- *   (`name-001.pdf`, `-002`, …), and become document rows linked back by
+ * - Parts are new Drive files beside the original, named on the split page (task
+ *   7g) or as v1 named them (`name-001.pdf`, `-002`, …), and become document rows linked back by
  *   split_from_document_id and ordered by split_index.
  * - The original is not tagged `already-split` / `needs-deleting`, which
  *   rewrote its bytes and broke its baseline. It is marked superseded in the
  *   database and its file is left exactly as it was.
- * - Each part carries the original's title, subject, author and keywords as
- *   shown here (staged values included), so nothing typed is lost (7b.3).
+ * - Each part carries the original's subject, author and keywords as shown here
+ *   (staged values included), so nothing typed is lost (7b.3), unless the split
+ *   page says not to; and its own title (7g).
  *
  * All parts are uploaded before anything is recorded. If any upload fails, the
  * ones already made are moved to the trash, so a failure never leaves half a
@@ -28,7 +29,7 @@ import {
   getValidAccessToken,
   trashDriveFile,
 } from "@/lib/pdf-drive";
-import { InvalidSplit, partName, planParts } from "@/lib/pdf-split-plan";
+import { InvalidSplit, partName, planParts, safeFileName, type PartNaming } from "@/lib/pdf-split-plan";
 import {
   PdfNotWritable,
   readEmbeddedMetadata,
@@ -84,6 +85,13 @@ async function buildPart(
 
 export { InvalidSplit, partName, planParts };
 
+export interface SplitOptions {
+  /** One per part, in order. Without it, parts take the scan's title and name. */
+  parts?: PartNaming[];
+  /** What to copy to every part; all of it unless told otherwise. */
+  copy?: { subject?: boolean; author?: boolean; keywords?: boolean };
+}
+
 export interface SplitResult {
   outputs: string[];
 }
@@ -91,7 +99,11 @@ export interface SplitResult {
 /**
  * Split a document after the given pages. Null when there is no such document.
  */
-export async function splitPdfDocument(id: string, breaks: number[]): Promise<SplitResult | null> {
+export async function splitPdfDocument(
+  id: string,
+  breaks: number[],
+  { parts: naming, copy = {} }: SplitOptions = {},
+): Promise<SplitResult | null> {
   const document = await getPdfDocument(id);
   if (!document) return null;
   if (document.supersededAt) throw new AlreadySplit("This document was already split");
@@ -109,11 +121,14 @@ export async function splitPdfDocument(id: string, breaks: number[]): Promise<Sp
   const source = await PDFDocument.load(original, { ignoreEncryption: true, updateMetadata: false });
   if (source.isEncrypted) throw new PdfNotWritable("This PDF is encrypted, so it can't be split here");
   const parts = planParts(source.getPageCount(), breaks);
+  if (naming && naming.length !== parts.length) {
+    throw new InvalidSplit(`This split makes ${parts.length} files, but ${naming.length} were named`);
+  }
 
   // The values the detail page shows. Until a document's first edit its stored
   // fields are unread nulls, so the file's own metadata stands in (design D8).
   const inFile = document.fileBaseline ? null : await readEmbeddedMetadata(original);
-  const values: MetadataValues = inFile
+  const shown: MetadataValues = inFile
     ? {
         title: document.title ?? inFile.title,
         subject: document.subject ?? inFile.subject,
@@ -126,13 +141,25 @@ export async function splitPdfDocument(id: string, breaks: number[]): Promise<Sp
         author: document.author,
         keywords: document.keywords,
       };
+  const values: MetadataValues = {
+    ...shown,
+    subject: copy.subject === false ? null : shown.subject,
+    author: copy.author === false ? null : shown.author,
+    keywords: copy.keywords === false ? [] : shown.keywords,
+  };
   const parentId = document.driveFolderId ?? (await getDriveParent(accessToken, document.driveFileId));
 
   const created: Array<{ driveFileId: string; filename: string; revision: string | null; index: number; embedded: EmbeddedMetadata }> = [];
   try {
     for (const [i, range] of parts.entries()) {
-      const { bytes, embedded } = await buildPart(source, range, values);
-      const filename = partName(document.filename, i + 1);
+      const named = naming?.[i];
+      const { bytes, embedded } = await buildPart(
+        source,
+        range,
+        named ? { ...values, title: named.title } : values,
+      );
+      const stem = named ? safeFileName(named.filename.replace(/\.pdf$/i, "")) : "";
+      const filename = stem ? `${stem}.pdf` : partName(document.filename, i + 1);
       const file = await createDriveFile(accessToken, { name: filename, parentId, bytes });
       created.push({ driveFileId: file.id, filename, revision: file.revision, index: i + 1, embedded });
     }
