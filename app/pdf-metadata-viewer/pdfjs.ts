@@ -56,7 +56,7 @@ export async function openRangedSource(url: string, fetchImpl: typeof fetch = fe
   }
   if (initial.length >= length) return { data: initial };
 
-  const fetchRange = async (begin: number, end: number) => {
+  const fetchBytes = async (begin: number, end: number) => {
     // Two tries: one dropped request shouldn't leave a page undrawn.
     for (let attempt = 0; ; attempt++) {
       try {
@@ -70,7 +70,89 @@ export async function openRangedSource(url: string, fetchImpl: typeof fetch = fe
       }
     }
   };
-  return { length, initial, fetchRange };
+  return { length, initial, fetchRange: chunkedFetcher(length, initial, fetchBytes) };
+}
+
+/** How many chunks to fetch ahead of the one asked for, and at most at once. */
+export const AHEAD = 3;
+export const MAX_AHEAD_IN_FLIGHT = 4;
+
+/**
+ * Serve pdf.js's range requests from 1 MB chunks fetched ahead, side by side.
+ *
+ * Each request through the preview route costs 2–4 s, mostly the round trip
+ * to Drive rather than the bytes, and pdf.js asks for one chunk at a time. So
+ * as soon as the size is known, the end of the file (where a scan's page
+ * index lives) and the next chunks are fetched at once; each chunk pdf.js
+ * asks for starts the next few behind it. A chunk is dropped once delivered:
+ * pdf.js keeps its own copy.
+ */
+export function chunkedFetcher(
+  length: number,
+  initial: Uint8Array,
+  fetchBytes: (begin: number, end: number) => Promise<Uint8Array>,
+): (begin: number, end: number) => Promise<Uint8Array> {
+  const count = Math.ceil(length / CHUNK);
+  const chunks = new Map<number, Promise<Uint8Array>>([[0, Promise.resolve(initial.subarray(0, CHUNK))]]);
+  const delivered = new Set<number>();
+  let ahead = 0; // prefetches still in flight
+  let windowEnd = AHEAD; // fetch ahead up to this chunk
+
+  const start = (i: number) => {
+    let chunk = chunks.get(i);
+    if (!chunk) {
+      chunk = fetchBytes(i * CHUNK, Math.min((i + 1) * CHUNK, length));
+      chunks.set(i, chunk);
+      // A prefetch that fails is fetched again when it's actually asked for.
+      chunk.catch(() => chunks.delete(i));
+    }
+    return chunk;
+  };
+  // Fill free slots with the next chunks not yet fetched, up to the window.
+  const pump = () => {
+    for (let i = 1; i <= Math.min(windowEnd, count - 1) && ahead < MAX_AHEAD_IN_FLIGHT; i++) {
+      if (chunks.has(i) || delivered.has(i)) continue;
+      ahead += 1;
+      const done = () => {
+        ahead -= 1;
+        pump();
+      };
+      start(i).then(done, done);
+    }
+  };
+
+  // The end of the file first: a scan's page index lives there.
+  if (count > 1) {
+    ahead += 1;
+    const done = () => {
+      ahead -= 1;
+      pump();
+    };
+    start(count - 1).then(done, done);
+  }
+  pump();
+
+  return async (begin, end) => {
+    const first = Math.floor(begin / CHUNK);
+    const last = Math.floor((end - 1) / CHUNK);
+    const wanted: Promise<Uint8Array>[] = [];
+    for (let i = first; i <= last; i++) wanted.push(start(i));
+    windowEnd = Math.max(windowEnd, last + AHEAD);
+    pump();
+    const parts = await Promise.all(wanted);
+    for (let i = first; i <= last; i++) {
+      chunks.delete(i);
+      delivered.add(i);
+    }
+    const joined = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
+    let at = 0;
+    for (const p of parts) {
+      joined.set(p, at);
+      at += p.length;
+    }
+    const offset = first * CHUNK;
+    return joined.subarray(begin - offset, end - offset);
+  };
 }
 
 /** Wire a ranged source to pdf.js's transport: each request is fetched and handed back. */
