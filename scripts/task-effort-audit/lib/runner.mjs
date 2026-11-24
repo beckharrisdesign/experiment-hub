@@ -452,6 +452,7 @@ export async function executeRun(opts) {
 
     run.safety.mutationsPerformed = guard.mutations;
     run.safety.blockedRequests = guard.violations;
+    run.safety.suppressedRequests = guard.suppressed;
     run.safety.requestOrigins = [...guard.origins].filter((o) => o !== 'null');
     if (setupRan || guard.mutations.length) {
       if (!task.cleanup.length) {

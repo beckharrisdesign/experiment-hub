@@ -171,6 +171,9 @@ export const PropertySchema = z
     fixture: z.object({ module: z.string(), note: z.string().optional() }).strict().optional(),
     fixtureApi: z.object({ pathPrefix: z.string().startsWith('/') }).strict().optional(),
     readOnlyRequestAllowlist: z.array(z.string().url()).default([]),
+    // Reviewed side-effect requests (e.g. page-view counters) to block quietly
+    // instead of letting audit traffic write to a live property's analytics.
+    suppressRequests: z.array(z.string().url()).default([]),
     authProfiles: z.record(z.string(), AuthProfile),
     notes: z.string().optional(),
   })

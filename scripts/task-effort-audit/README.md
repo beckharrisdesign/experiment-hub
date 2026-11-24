@@ -181,7 +181,8 @@ Two JSON files: a **property** and a **task** (see `audits/` for the working exa
   "writesApprovalNote": "why this is safe to change",
   "fixture": { "module": "../../fixture/server.mjs" },   // local only; enables --fixture
   "fixtureApi": { "pathPrefix": "/__fixture/" },          // setup/cleanup may only call under this
-  "readOnlyRequestAllowlist": [],    // reviewed non-mutating POSTs (e.g. analytics beacons)
+  "readOnlyRequestAllowlist": [],    // reviewed POSTs that change nothing; let through
+  "suppressRequests": [],            // reviewed side effects (e.g. view counters); blocked quietly, recorded
   "authProfiles": {
     "fixture-owner": { "type": "none" },
     "test-account": { "type": "storageState", "pathEnv": "TEA_AUTH_MYAPP",
@@ -239,6 +240,7 @@ Two JSON files: a **property** and a **task** (see `audits/` for the working exa
   3. the run passes `--allow-writes`, **and**
   4. the request is same-origin during a step that declares `mutates`.
 - **Never production writes.** Even with every flag set.
+- **Side-effect requests on live sites:** list reviewed analytics/view-counter endpoints in `suppressRequests`. They're blocked without stopping the run (so audits don't inflate your stats) and listed in `run.json#safety.suppressedRequests`. Anything unlisted still stops the run as a safety stop. Note that GET-based analytics are not blocked.
 - **Always refused:**
   - Clicking anything labelled delete/remove/pay/purchase/send/place order/…
   - Mutation kinds other than `update`/`create`
@@ -260,6 +262,16 @@ Two JSON files: a **property** and a **task** (see `audits/` for the working exa
 - **Suggested habit:** prune runs older than ~30 days that aren't baselines
 
 ---
+
+## Live-site example
+
+`audits/tasks/bhd-find-design-function-case-study.json` runs read-only against beckharrisdesign.com: Home → Consulting → "Rebuilding a design function" (2 actions), verified by a fresh load of the case study. Its property suppresses the site's `POST /api/view` counter.
+
+```bash
+pnpm audit:effort run --task scripts/task-effort-audit/audits/tasks/bhd-find-design-function-case-study.json
+```
+
+> **First run on any live site:** expect a safety stop if the page sends POSTs (analytics, view counters). Read `run.json#safety.blockedRequests`, decide what each one is, then add it to `suppressRequests` (a side effect to avoid) or `readOnlyRequestAllowlist` (harmless) on the property.
 
 ## Adding a real property and task
 

@@ -229,6 +229,17 @@ describe("request guard", () => {
     ).toBe(false);
   });
 
+  it("quietly blocks reviewed side-effect requests without treating them as violations", () => {
+    const { task, property } = load(rawTask(), rawProperty({ suppressRequests: ["http://127.0.0.1:4789/api/view"] }));
+    const g = createRequestGuard({ task, property, allowWrites: false, getCurrentStep: () => ({ id: "open" }) });
+    expect(g.decide({ method: "POST", url: "http://127.0.0.1:4789/api/view" })).toMatchObject({ allow: false, suppressed: true });
+    expect(g.violations).toEqual([]);
+    expect(g.suppressed).toEqual([{ stepId: "open", method: "POST", url: "http://127.0.0.1:4789/api/view" }]);
+    // Anything else is still a violation.
+    expect(g.decide({ method: "POST", url: "http://127.0.0.1:4789/api/thing" }).allow).toBe(false);
+    expect(g.violations).toHaveLength(1);
+  });
+
   it("lets reviewed allowlisted requests through in read-only mode", () => {
     const { task, property } = load(
       rawTask(),

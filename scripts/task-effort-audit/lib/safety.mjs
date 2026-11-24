@@ -132,6 +132,7 @@ export function createRequestGuard({ task, property, allowWrites, getCurrentStep
   const writesOn = allowWrites && declaresWrites(task);
   const violations = [];
   const mutations = [];
+  const suppressed = []; // reviewed side-effect requests blocked quietly (not violations)
   const origins = new Set(); // every origin the browser contacted — evidence for the run record
 
   function decide({ method, url }) {
@@ -142,6 +143,10 @@ export function createRequestGuard({ task, property, allowWrites, getCurrentStep
       /* data: / blob: URLs */
     }
     if (SAFE_METHODS.has(m)) return { allow: true };
+    if (property.suppressRequests.some((prefix) => url.startsWith(prefix))) {
+      suppressed.push({ stepId: getCurrentStep()?.id ?? '(between steps)', method: m, url });
+      return { allow: false, suppressed: true, reason: 'reviewed side-effect request, blocked quietly' };
+    }
     if (property.readOnlyRequestAllowlist.some((prefix) => url.startsWith(prefix))) {
       return { allow: true, reason: 'allowlisted non-mutating request' };
     }
@@ -160,5 +165,5 @@ export function createRequestGuard({ task, property, allowWrites, getCurrentStep
     return { allow: true };
   }
 
-  return { decide, violations, mutations, origins };
+  return { decide, violations, mutations, suppressed, origins };
 }

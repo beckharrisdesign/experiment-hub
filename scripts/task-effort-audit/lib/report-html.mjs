@@ -208,7 +208,7 @@ function context(run) {
     ['Viewport / locale', `${c.viewport.width}×${c.viewport.height}, ${c.locale}`],
     ['Auth reference', c.authRef],
     ['Fixture variant', c.fixtureVariant ?? 'none'],
-    ['Safety', `${run.safety.mode}. Writes performed: ${run.safety.mutationsPerformed.length}. Blocked requests: ${run.safety.blockedRequests.length}.`],
+    ['Safety', `${run.safety.mode}. Writes performed: ${run.safety.mutationsPerformed.length}. Blocked requests: ${run.safety.blockedRequests.length}. Suppressed side-effect requests: ${(run.safety.suppressedRequests ?? []).length}.`],
     ['Hosts contacted', (run.safety.requestOrigins ?? []).join(', ') || 'none recorded'],
     ['Cleanup', `${run.cleanup.status}. ${run.cleanup.detail}`],
     ['Non-UI steps', (c.nonUiSteps ?? []).join(' | ')],

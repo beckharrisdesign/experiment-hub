@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "beckharrisdesign",
+  "name": "Beck Harris Design (live site)",
+  "baseUrl": "https://beckharrisdesign.com",
+  "environment": "production",
+  "writesApproved": false,
+  "notes": "Live public portfolio (Super rendering Notion). Read-only tasks only.",
+  "suppressRequests": ["https://beckharrisdesign.com/api/view"],
+  "readOnlyRequestAllowlist": [],
+  "authProfiles": {
+    "public-visitor": { "type": "none", "note": "Public pages; no login." }
+  }
+}
