@@ -91,6 +91,7 @@ function PageImage({
 export function PagePreview({
   documentId,
   listQuery = "",
+  revision = null,
   contentUrl,
   filename,
   storedPageCount,
@@ -101,6 +102,8 @@ export function PagePreview({
   documentId: string;
   /** The list to go back to, as its query string ("" or "?…"). */
   listQuery?: string;
+  /** Drive's revision as the page found it; finds its kept images. */
+  revision?: string | null;
   contentUrl: string;
   filename: string;
   /** Known before the file arrives (baseline or saved read); offers Split early. */
@@ -124,8 +127,11 @@ export function PagePreview({
       serverPageLoader(
         `/api/pdf-documents/id/${documentId}/pages`,
         Math.round(PAGE_WIDTH * (typeof window === "undefined" ? 2 : Math.min(window.devicePixelRatio || 1, 2.5))),
+        undefined,
+        undefined,
+        revision,
       ),
-    [loadPdf, documentId],
+    [loadPdf, documentId, revision],
   );
 
   useEffect(() => {

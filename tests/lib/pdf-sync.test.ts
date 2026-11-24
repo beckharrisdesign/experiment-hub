@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   listPdfDocuments: vi.fn(),
   rpc: vi.fn(),
   readFile: vi.fn(),
+  syncPages: vi.fn(),
 }));
 
 vi.mock("@/lib/pdf-documents", () => ({
@@ -17,7 +18,10 @@ vi.mock("@/lib/pdf-drive", () => ({
   getDriveConnection: mocks.getDriveConnection,
   getValidAccessToken: mocks.getValidAccessToken,
   listPdfsInFolder: mocks.listPdfsInFolder,
+  downloadDriveFile: vi.fn(),
+  getDriveHeadRevisionId: vi.fn(),
 }));
+vi.mock("@/lib/pdf-page-store", () => ({ syncPages: mocks.syncPages }));
 vi.mock("@/lib/pdf-file-read", async () => {
   const actual = await vi.importActual<typeof import("@/lib/pdf-file-read")>("@/lib/pdf-file-read");
   return { ...actual, readFile: mocks.readFile };
@@ -26,6 +30,7 @@ vi.mock("@/lib/pdf-file-read", async () => {
 import { needsRead, syncFolder } from "@/lib/pdf-sync";
 import type { PdfDocument } from "@/lib/pdf-documents";
 
+const PAGES = { pagesDrawn: 5, pagesWaiting: 0, setsRemoved: 0 };
 const VALUES = { title: "T", subject: null, author: null, keywords: [], pageCount: 2 };
 
 function file(id: string, head = `rev-${id}`) {
@@ -35,6 +40,11 @@ function doc(id: string, overrides: Partial<PdfDocument> = {}): PdfDocument {
   return {
     id: `doc-${id}`,
     driveFileId: id,
+    title: null,
+    subject: null,
+    author: null,
+    keywords: [],
+    pageCount: null,
     fileBaseline: null,
     driveRevisionId: `rev-${id}`,
     fileRead: null,
@@ -48,6 +58,7 @@ beforeEach(() => {
   mocks.getValidAccessToken.mockResolvedValue("token");
   mocks.rpc.mockResolvedValue({ data: { inserted: 1, total: 3 }, error: null });
   mocks.readFile.mockResolvedValue({ ok: true, embedded: VALUES });
+  mocks.syncPages.mockResolvedValue(PAGES);
 });
 
 describe("needsRead", () => {
@@ -102,7 +113,7 @@ describe("syncFolder", () => {
       accessToken: "token",
       head: "rev-a",
     });
-    expect(result).toEqual({ inFolder: 3, added: 1, read: 2, failed: 0, remaining: 0 });
+    expect(result).toEqual({ inFolder: 3, added: 1, read: 2, failed: 0, remaining: 0, pages: PAGES });
   });
 
   it("reads never-read files before changed ones", async () => {
@@ -139,6 +150,37 @@ describe("syncFolder", () => {
     const result = await syncFolder({ budgetMs: 1000, concurrency: 1, now: () => clock });
 
     expect(result).toMatchObject({ read: 2, remaining: 1 });
+  });
+
+  it("draws ahead for the listed documents, at the revision Drive listed", async () => {
+    mocks.listPdfsInFolder.mockResolvedValue([file("a", "rev-new"), file("split-original")]);
+    mocks.listPdfDocuments.mockResolvedValue([doc("a", { fileRead: { revision: "rev-a", embedded: VALUES } })]);
+    await syncFolder();
+    // A split original isn't listed, so its pages aren't kept.
+    expect(mocks.syncPages.mock.calls[0][0].wanted).toEqual([
+      { id: "doc-a", driveFileId: "a", revision: "rev-new", pageCount: 2 },
+    ]);
+  });
+
+  it("gives drawing only the time reading left", async () => {
+    mocks.listPdfsInFolder.mockResolvedValue([file("a")]);
+    mocks.listPdfDocuments.mockResolvedValue([doc("a")]);
+    let clock = 0;
+    mocks.readFile.mockImplementation(async () => {
+      clock += 1500;
+      return { ok: true, embedded: VALUES };
+    });
+    await syncFolder({ budgetMs: 1000, now: () => clock });
+    expect(mocks.syncPages.mock.calls[0][0].outOfTime()).toBe(true);
+  });
+
+  it("still reports the sync when drawing ahead fails", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.listPdfsInFolder.mockResolvedValue([file("a")]);
+    mocks.listPdfDocuments.mockResolvedValue([doc("a")]);
+    mocks.syncPages.mockRejectedValue(new Error("no such table"));
+    const result = await syncFolder();
+    expect(result).toEqual({ inFolder: 1, added: 1, read: 1, failed: 0, remaining: 0 });
   });
 
   it("fails loudly when the references can't be stored", async () => {

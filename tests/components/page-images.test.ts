@@ -22,6 +22,36 @@ describe("serverPageLoader", () => {
     expect((fetchImpl.mock.calls[0] as unknown[])[0]).toBe(`${BASE}/1?w=1120`);
   });
 
+  it("names the revision on screen, so kept images can be found", async () => {
+    const fetchImpl = vi.fn(async () => jpeg(1));
+    await serverPageLoader(BASE, 1120, vi.fn(), fetchImpl as unknown as typeof fetch, "rev-1")("/c");
+    expect((fetchImpl.mock.calls[0] as unknown[])[0]).toBe(`${BASE}/1?w=1120&rev=rev-1`);
+  });
+
+  it("draws a thumbnail small, not at the page's full size", async () => {
+    const fetchImpl = vi.fn(async () => jpeg(1));
+    const pdf = await serverPageLoader(BASE, 1120, vi.fn(), fetchImpl as unknown as typeof fetch)("/c");
+    const canvas = { width: 0, height: 0, getContext: () => ({ drawImage: vi.fn() }) } as unknown as HTMLCanvasElement;
+    await pdf.renderPage(1, canvas, 148);
+    expect([canvas.width, canvas.height]).toEqual([296, 383]);
+  });
+
+  it("fetches a few at a time even when every page is asked for at once, as Split does", async () => {
+    let now = 0;
+    let most = 0;
+    const fetchImpl = vi.fn(async () => {
+      most = Math.max(most, ++now);
+      await new Promise((r) => setTimeout(r, 1));
+      now -= 1;
+      return jpeg(30);
+    });
+    const pdf = await serverPageLoader(BASE, 1120, vi.fn(), fetchImpl as unknown as typeof fetch)("/c");
+    const canvas = () => ({ width: 0, height: 0, getContext: () => ({ drawImage: vi.fn() }) }) as unknown as HTMLCanvasElement;
+    await Promise.all(Array.from({ length: 30 }, (_, i) => pdf.renderPage(i + 1, canvas(), 148)));
+    expect(most).toBeLessThanOrEqual(PAGES_IN_FLIGHT);
+    expect(fetchImpl).toHaveBeenCalledTimes(30);
+  });
+
   it("fetches the rest a few at a time", async () => {
     const fetchImpl = vi.fn(async () => jpeg(10));
     await serverPageLoader(BASE, 1120, vi.fn(), fetchImpl as unknown as typeof fetch)("/c");

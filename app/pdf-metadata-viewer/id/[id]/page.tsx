@@ -172,6 +172,7 @@ export default async function PdfDocumentDetailPage({
               key={document.driveRevisionId ?? "initial"}
               documentId={document.id}
               listQuery={listQuery}
+              revision={revision}
               contentUrl={contentUrl}
               filename={filename}
               storedPageCount={document.pageCount ?? fresh?.pageCount ?? null}

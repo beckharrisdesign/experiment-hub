@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { PageOutOfRange, renderPdfPage } from "@/lib/pdf-render";
+import { openPdf, PageOutOfRange, renderPdfPage } from "@/lib/pdf-render";
 
 async function samplePdf(pages: number): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
@@ -22,6 +22,13 @@ describe("renderPdfPage", () => {
     expect(page.height).toBe(Math.round((792 * 560) / 612));
     // JPEG files start FF D8 FF.
     expect([...page.jpeg.slice(0, 3)]).toEqual([0xff, 0xd8, 0xff]);
+  });
+
+  it("draws several pages from one opening", async () => {
+    const pdf = await openPdf(await samplePdf(3));
+    expect(pdf.pageCount).toBe(3);
+    for (const n of [1, 3, 1]) expect((await pdf.draw(n, 200)).width).toBe(200);
+    await pdf.close();
   });
 
   // Deployed, pdf.js couldn't find its worker by path (#636); it's handed over instead.

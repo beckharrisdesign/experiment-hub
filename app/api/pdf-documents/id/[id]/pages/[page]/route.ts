@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { getPdfDocument, isUuid } from "@/lib/pdf-documents";
 import {
   DriveFileMissing,
@@ -7,16 +7,21 @@ import {
   getDriveHeadRevisionId,
   getValidAccessToken,
 } from "@/lib/pdf-drive";
+import { getKeptPage, isRevision, keepPage, STORED_WIDTH } from "@/lib/pdf-page-store";
 import { PageOutOfRange, renderPdfPage } from "@/lib/pdf-render";
 
 /**
- * One page of a document, drawn as a JPEG on the server — the detail
- * preview's pages (task 7c.3, Figma 02.12).
+ * One page of a document as a JPEG — the detail preview's pages (task 7c.3,
+ * Figma 02.12) and the splitter's.
+ *
+ * With `?rev=`, the Drive revision the page was rendered against, a kept image
+ * is sent if there is one (task 7f, design.md D14) and Drive isn't asked for
+ * anything. Otherwise the page is drawn here, and kept for next time.
  *
  * The function gets the file from Drive fast and sends to the browser slowly
  * (measured: whole 9.35 MB scan from Drive in under 0.5 s once started, then
  * about 0.85 MB/s on to the browser), so the page is drawn here and only the
- * image travels. Nothing is stored. `X-Page-Count` tells the preview how many
+ * image travels. `X-Page-Count` tells the preview how many
  * pages to ask for.
  *
  * Gated by middleware.ts, like the content route.
@@ -25,7 +30,24 @@ export const maxDuration = 60;
 
 const MIN_WIDTH = 120;
 const MAX_WIDTH = 1600;
-const DEFAULT_WIDTH = 1120;
+const DEFAULT_WIDTH = STORED_WIDTH;
+
+function imageHeaders(size: number, pageCount: number) {
+  return {
+    "Content-Type": "image/jpeg",
+    "Content-Length": String(size),
+    "X-Page-Count": String(pageCount),
+    // Personal documents: kept by no cache, the browser's included.
+    "Cache-Control": "private, no-store",
+  };
+}
+
+function pastTheEnd(pageCount: number) {
+  return NextResponse.json(
+    { error: new PageOutOfRange(pageCount).message, pageCount },
+    { status: 404, headers: { "X-Page-Count": String(pageCount) } },
+  );
+}
 
 export async function GET(
   request: NextRequest,
@@ -43,6 +65,22 @@ export async function GET(
   const width = Number.isFinite(askedWidth)
     ? Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, Math.round(askedWidth)))
     : DEFAULT_WIDTH;
+  const rev = request.nextUrl.searchParams.get("rev");
+  const revision = isRevision(rev) ? rev : null;
+
+  if (revision) {
+    const kept = await getKeptPage(id, revision, pageNumber);
+    if (kept && !kept.jpeg) return pastTheEnd(kept.pageCount);
+    if (kept?.jpeg) {
+      return new NextResponse(kept.jpeg, {
+        status: 200,
+        headers: {
+          ...imageHeaders(kept.jpeg.size, kept.pageCount),
+          "Server-Timing": `kept;dur=${since()}`,
+        },
+      });
+    }
+  }
 
   let document;
   try {
@@ -81,24 +119,31 @@ export async function GET(
   }
 
   try {
-    const rendered = await renderPdfPage(bytes, pageNumber, width);
+    // Kept pages are one size, so one drawn to be kept is that size too.
+    const rendered = await renderPdfPage(bytes, pageNumber, revision ? STORED_WIDTH : width);
+    if (revision) {
+      const { driveFileId } = document;
+      // After the answer is sent. The revision was read before this download
+      // started; if Drive still says the same now, these were its bytes.
+      after(async () => {
+        try {
+          const head = await getDriveHeadRevisionId(await getValidAccessToken(), driveFileId);
+          if (head === revision) await keepPage(id, revision, pageNumber, rendered);
+        } catch (error) {
+          console.warn(`pdf page: could not keep page ${pageNumber} of ${id}:`, error);
+        }
+      });
+    }
     return new NextResponse(rendered.jpeg as unknown as BodyInit, {
       status: 200,
       headers: {
-        "Content-Type": "image/jpeg",
-        "Content-Length": String(rendered.jpeg.byteLength),
-        "X-Page-Count": String(rendered.pageCount),
-        // Personal documents: kept by no cache, the browser's included.
-        "Cache-Control": "private, no-store",
+        ...imageHeaders(rendered.jpeg.byteLength, rendered.pageCount),
         "Server-Timing": `drive;dur=${driveMs}, draw;dur=${since() - driveMs}`,
       },
     });
   } catch (error) {
     if (error instanceof PageOutOfRange) {
-      return NextResponse.json(
-        { error: error.message, pageCount: error.pageCount },
-        { status: 404, headers: { "X-Page-Count": String(error.pageCount) } },
-      );
+      return pastTheEnd(error.pageCount);
     }
     console.error(`pdf page: could not draw page ${pageNumber} of ${id}:`, error);
     // 422: the file is there but can't be drawn here; the preview falls back to pdf.js.

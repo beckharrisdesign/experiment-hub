@@ -1,10 +1,11 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@beckharrisdesign/mvds";
 import { partName, planParts } from "@/lib/pdf-split-plan";
-import { loadWithPdfJs, type LoadedPdf, type PdfLoader } from "@/app/pdf-metadata-viewer/pdfjs";
+import { serverPageLoader } from "@/app/pdf-metadata-viewer/page-images";
+import type { LoadedPdf, PdfLoader } from "@/app/pdf-metadata-viewer/pdfjs";
 
 /**
  * The interactive half of Split — Figma `02.11`, frames 69:9 (breaks chosen)
@@ -19,6 +20,8 @@ import { loadWithPdfJs, type LoadedPdf, type PdfLoader } from "@/app/pdf-metadat
 export type { LoadedPdf, PdfLoader } from "@/app/pdf-metadata-viewer/pdfjs";
 
 const THUMB_WIDTH = 148;
+/** The size pages are kept at, so the preview's images serve here too. */
+const STORED_PAGE_WIDTH = 1120;
 
 function Thumbnail({ pdf, pageNumber }: { pdf: LoadedPdf; pageNumber: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -55,19 +58,36 @@ export function SplitView({
   listQuery = "",
   filename,
   contentUrl,
-  loadPdf = loadWithPdfJs,
+  revision = null,
+  loadPdf: givenLoader,
 }: {
   documentId: string;
   /** The list to go back to, as its query string ("" or "?…"). */
   listQuery?: string;
   filename: string | null;
   contentUrl: string;
+  /** Drive's revision as the page found it; finds its kept images. */
+  revision?: string | null;
+  /** Pages drawn on the server by default (falling back to pdf.js); a stub in tests. */
   loadPdf?: PdfLoader;
 }) {
   const router = useRouter();
   const [status, setStatus] = useState<Status>({ kind: "loading" });
   const [breaks, setBreaks] = useState<number[]>([]);
   const [action, setAction] = useState<Action>({ kind: "idle" });
+
+  const loadPdf = useMemo<PdfLoader>(
+    () =>
+      givenLoader ??
+      serverPageLoader(
+        `/api/pdf-documents/id/${documentId}/pages`,
+        STORED_PAGE_WIDTH,
+        undefined,
+        undefined,
+        revision,
+      ),
+    [givenLoader, documentId, revision],
+  );
 
   useEffect(() => {
     let live = true;

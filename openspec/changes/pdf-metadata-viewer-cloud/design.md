@@ -690,6 +690,49 @@ The query string carries what was typed, so it reaches the server's request log.
 That log is the operator's own, and the archive is single-tenant (D5); nothing
 from a document's contents is put there.
 
+### D14 — Drawn pages are kept, in private storage (task 7f)
+
+**Why.** Every page request downloaded the whole PDF from Drive (about 2.4 s),
+opened it, drew one page (about 1.25 s) and kept nothing, so a 19-page scan took
+over half a minute every time, and the splitter fetched it again to draw its own
+thumbnails. Katy asked for pages to be drawn once, and chose private storage
+over the browser's own cache on 2026-11-24: only drawing ahead makes the first
+open quick, and tagging is mostly first opens.
+
+**What is kept.** JPEGs, 1120 px wide, in the private bucket `pdf-pages`. The
+bucket has no storage policies, so row level security leaves it to the service
+role alone. Images leave it only through `GET …/pages/N`, behind the session
+gate, with `no-store` as before. No URL is ever signed. The PDF itself is still
+kept nowhere but Drive.
+
+**Which images are current.** `pdf_page_sets` (migration 032) maps a document
+and a Drive revision to a set of images. The page names the revision it was
+rendered against (`?rev=`), so a kept page needs no call to Drive at all, and an
+image of another version can't be shown for this one. An image is kept only when
+Drive reported that same revision both before and after the download.
+
+**A commit keeps its pages.** Committing writes metadata and makes a new
+revision. The new revision's row takes the old one's set, so nothing is copied
+or redrawn; images are deleted only once no row uses their set.
+
+**Drawing ahead.** The hourly sync (D12) uses the time its reads leave to draw
+missing pages, shortest documents first, one at a time, continuing where it
+stopped. The workflow calls it up to eight times an hour while there is work. A
+file pdf.js can't draw is remembered as such, and still opens in the browser's
+pdf.js. A page opened before the sync reaches it is drawn on request, and kept.
+
+**Clearing out.** The same run deletes sets for versions Drive no longer lists
+and documents no longer in the folder, images first and rows after, so a failure
+leaves a row to retry rather than images nothing points to. Split originals are
+not listed, so theirs go too. Rows newer than the run's start are left alone: a
+commit during it knows a newer revision than the listing does.
+
+**Failure.** Nothing here may fail what called it. With the store down, the
+table missing, or an upload refused, pages are drawn on request as before.
+
+**Size.** About 260 KB a page; the 381 pages listed on 2026-11-24 come to about
+100 MB.
+
 ### D6 — Route layout
 
 Follows the hub's existing collision-avoiding convention (`app/api/experiments/id/[id]`),

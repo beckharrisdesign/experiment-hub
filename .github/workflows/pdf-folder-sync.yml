@@ -2,7 +2,8 @@
 #
 # Finds new PDFs in the chosen Drive folder and reads each unread file's own
 # values (page count, title, author, subject, keywords), so the list fills in
-# without opening files one by one. The work happens in the hub's own function
+# without opening files one by one, then draws and keeps the pages of documents
+# not yet drawn (task 7f). The work happens in the hub's own function
 # (POST /api/pdf-drive/sync, lib/pdf-sync.ts); this job only starts it, and no
 # document bytes or values pass through GitHub — the answer is counts.
 # openspec/changes/pdf-metadata-viewer-cloud — task 7d, design.md D12.
@@ -12,8 +13,8 @@
 # exec-function-daily.yml does for its route. Keep the label below in step with
 # SYNC_KEY_LABEL.
 #
-# Each run reads for about 40 s and leaves the rest for the next, so a large
-# backlog drains over a few hours rather than timing out.
+# Each call works for about 40 s; the job makes up to eight while there is work
+# left, and leaves the rest for the next hour.
 name: pdf-folder-sync
 
 on:
@@ -33,7 +34,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     environment: "Production – experiment-hub"
-    timeout-minutes: 3
+    timeout-minutes: 12
     steps:
       - name: Run the folder sync
         env:
@@ -51,19 +52,28 @@ jobs:
             | openssl dgst -sha256 -hmac "$SUPABASE_SERVICE_ROLE_KEY" -r \
             | cut -d' ' -f1)
 
-          status=$(curl -sS -o response.json -w '%{http_code}' --max-time 90 \
-            -X POST "${SITE_URL}/api/pdf-drive/sync" \
-            -H "x-pdf-sync-key: ${SYNC_KEY}")
+          # Each call works for under a minute. Go on while it's getting
+          # somewhere and work is left, so a new scan's pages are ready within
+          # the hour rather than over several.
+          for round in 1 2 3 4 5 6 7 8; do
+            status=$(curl -sS -o response.json -w '%{http_code}' --max-time 90 \
+              -X POST "${SITE_URL}/api/pdf-drive/sync" \
+              -H "x-pdf-sync-key: ${SYNC_KEY}")
 
-          echo "HTTP ${status}"
-          cat response.json
-          echo
+            echo "Round ${round}: HTTP ${status}"
+            cat response.json
+            echo
 
-          if [ "$status" = "409" ]; then
-            echo "::error::Drive access needs re-authorizing — sign in to the PDF Organizer again"
-            exit 1
-          fi
-          if [ "$status" != "200" ]; then
-            echo "::error::the folder sync failed"
-            exit 1
-          fi
+            if [ "$status" = "409" ]; then
+              echo "::error::Drive access needs re-authorizing — sign in to the PDF Organizer again"
+              exit 1
+            fi
+            if [ "$status" != "200" ]; then
+              echo "::error::the folder sync failed"
+              exit 1
+            fi
+
+            left=$(jq '(.remaining // 0) + (.pages.pagesWaiting // 0)' response.json)
+            did=$(jq '(.read // 0) + (.pages.pagesDrawn // 0)' response.json)
+            if [ "$left" = "0" ] || [ "$did" = "0" ]; then break; fi
+          done
