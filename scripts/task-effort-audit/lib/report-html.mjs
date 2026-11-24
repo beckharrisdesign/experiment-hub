@@ -11,7 +11,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const esc = (v) =>
+export const esc = (v) =>
   String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 /** Capitalize the first letter: run-record strings often start lowercase. */
@@ -22,7 +22,7 @@ const sentence = (v) => {
 
 const fmtDelta = (d) => (d > 0 ? `+${d}` : `${d}`);
 
-function chip(text, tone = 'muted') {
+export function chip(text, tone = 'muted') {
   return `<span class="chip chip-${tone}">${esc(text)}</span>`;
 }
 
@@ -251,7 +251,7 @@ function context(run) {
 const LIGHT = `--bg:#ffffff; --bg2:#f6f8fa; --bg3:#eaeef2; --fg:#1f2328; --fg2:#59636e; --fg3:#6e7781;
   --border:#d1d9e0; --accent:#0969da; --ok:#1a7f37; --warn:#9a6700; --bad:#cf222e; --purple:#8250df; color-scheme: light;`;
 
-const STYLE = `
+export const STYLE = `
 :root { --bg:#0d1117; --bg2:#161b22; --bg3:#21262d; --fg:#c9d1d9; --fg2:#8b949e; --fg3:#6e7681; --border:#30363d;
   --accent:#58a6ff; --ok:#3fb950; --warn:#d29922; --bad:#f85149; --purple:#bc8cff; color-scheme: dark; }
 /* Dark-first (hub palette). Light follows the OS setting, and an explicit

@@ -70,6 +70,9 @@ pnpm audit:effort run --task scripts/task-effort-audit/audits/tasks/<task>.json 
 - Report them as "evidence tagged for X", never as a pass/fail on the principle.
 - If MVDS principles changed, run `pnpm audit:effort:sync-principles` and commit the snapshot.
 
+### See all results
+- Point Katy at `artifacts/task-effort-audit/index.html`. It's rebuilt after every run, or run `pnpm audit:effort dashboard`.
+
 ### Compare / list
 - `pnpm audit:effort compare --run <id>`
 - `pnpm audit:effort list`

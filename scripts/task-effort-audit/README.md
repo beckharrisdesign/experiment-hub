@@ -53,6 +53,7 @@ pnpm audit:effort list
 | `run --task <file> [--scenario normal] [--allow-writes] [--headed] [--slow-mo ms] [--fixture <variant>]` | Executes one scenario; writes a run directory; compares to the current baseline if one is compatible |
 | `validate --task <file> [--scenario name]` | Checks config + safety and prints each step and whether it counts |
 | `approve --run <runId> [--supersede] [--by name] [--note text]` | **The only way** a run becomes a baseline |
+| `dashboard` | Rebuilds `index.html`, the runs page: every task's latest run against its baseline, plus all runs, linking to each report. Also rebuilt after every run. |
 | `report --run <runId>` | Regenerates `report.md` and `report.html` from `run.json` + `actions.json` (e.g. for older runs) |
 | `compare --run <runId>` | Re-compares a run against the *current* baseline; writes `comparison-vs-<baselineRunId>.{json,md}` into the run dir |
 | `list [--limit 20] [--task id]` | Recent runs from the append-only index |
@@ -87,6 +88,7 @@ Each run lives in `artifacts/task-effort-audit/runs/<runId>/` (gitignored; only 
 | `trace.zip` | Playwright trace: `npx playwright show-trace <runDir>/trace.zip` |
 
 Also in the data dir:
+- **`index.html`** — the runs page. **Open this to see everything:** latest result per task (stopped and changed first), actions vs baseline, and links to every `report.html`.
 - **`index.jsonl`** — append-only `started` / `finished` events. A run with no `finished` event lists as *interrupted*.
 - **`baselines/`** — baseline records (described below)
 

@@ -24,6 +24,7 @@ import { appendIndex, loadBaselines, runDirOf, writeJson } from './store.mjs';
 import { loadCatalog, summarizePrinciples } from './principles.mjs';
 import { renderReport } from './report.mjs';
 import { writeHtmlReport } from './report-html.mjs';
+import { writeDashboard } from './dashboard.mjs';
 import { AuthError, ConfigError, SafetyError, TOOL_VERSION, makeRunId } from './util.mjs';
 
 export const EXIT = { OK: 0, RUN_FAILED: 1, CONFIG: 2, AUTH: 3 };
@@ -539,6 +540,8 @@ export async function executeRun(opts) {
     exitCode: run.exitCode,
     runDir: path.relative(process.cwd(), runDir),
   });
+  // Refresh the all-runs page. A failure here never affects this run's record.
+  await writeDashboard(dataDir).catch((e) => log(`${tag} ⚠ dashboard not updated: ${e.message}`));
   return { run, runDir, exitCode: run.exitCode };
 }
 

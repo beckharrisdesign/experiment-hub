@@ -7,6 +7,7 @@
  *   approve   --run <runId> [--supersede] [--by <name>] [--note <text>]
  *   compare   --run <runId>
  *   report    --run <runId>          (regenerate report.md + report.html)
+ *   dashboard                        (regenerate index.html: every task's latest run vs baseline)
  *   list      [--limit 20] [--task <taskId>]
  *   baselines --task <taskId> [--scenario normal]
  *
@@ -23,6 +24,7 @@ import { describeTarget } from './lib/ledger.mjs';
 import { compareToBaseline } from './lib/compare.mjs';
 import { renderComparison, renderReport } from './lib/report.mjs';
 import { writeHtmlReport } from './lib/report-html.mjs';
+import { writeDashboard } from './lib/dashboard.mjs';
 import { ApprovalError, approveBaseline, listRuns, loadBaselines, loadRun, readJson, resolveDataDir, runDirOf, writeJson } from './lib/store.mjs';
 import { AuthError, ConfigError, SafetyError } from './lib/util.mjs';
 
@@ -80,6 +82,7 @@ async function cmdRun(flags, dataDir) {
   console.log(`  report:   ${rel}/report.html  (open in a browser; also report.md)`);
   console.log(`  ledger:   ${rel}/actions.json`);
   console.log(`  trace:    npx playwright show-trace ${rel}/trace.zip`);
+  console.log(`  all runs: ${path.relative(process.cwd(), path.join(dataDir, 'index.html'))}`);
   console.log(`  exit:     ${exitCode}`);
   if (exitCode === EXIT.OK && run.comparison.status === 'no-baseline') {
     console.log(`\n  To approve as baseline: node scripts/task-effort-audit/cli.mjs approve --run ${run.runId}`);
@@ -150,6 +153,12 @@ async function cmdReport(flags, dataDir) {
   return EXIT.OK;
 }
 
+async function cmdDashboard(flags, dataDir) {
+  const file = await writeDashboard(dataDir);
+  console.log(`written: ${path.relative(process.cwd(), file)}  (open in a browser)`);
+  return EXIT.OK;
+}
+
 async function cmdList(flags, dataDir) {
   const runs = await listRuns(dataDir, { limit: Number(flags.limit ?? 20), taskId: typeof flags.task === 'string' ? flags.task : undefined });
   if (!runs.length) console.log(`no runs under ${dataDir}`);
@@ -174,9 +183,9 @@ async function cmdBaselines(flags, dataDir) {
 async function main() {
   const { cmd, flags } = parseArgs(process.argv.slice(2));
   const dataDir = resolveDataDir(typeof flags['data-dir'] === 'string' ? flags['data-dir'] : undefined);
-  const commands = { run: cmdRun, validate: cmdValidate, approve: cmdApprove, compare: cmdCompare, report: cmdReport, list: cmdList, baselines: cmdBaselines };
+  const commands = { run: cmdRun, validate: cmdValidate, approve: cmdApprove, compare: cmdCompare, report: cmdReport, dashboard: cmdDashboard, list: cmdList, baselines: cmdBaselines };
   if (!commands[cmd]) {
-    console.error('usage: cli.mjs <run|validate|approve|compare|report|list|baselines> [flags] — see scripts/task-effort-audit/README.md');
+    console.error('usage: cli.mjs <run|validate|approve|compare|report|dashboard|list|baselines> [flags] — see scripts/task-effort-audit/README.md');
     return EXIT.CONFIG;
   }
   try {
