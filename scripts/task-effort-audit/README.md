@@ -1,5 +1,7 @@
 # Task-effort audit (v1)
 
+> **Picking this up again?** Start with [docs/STATUS.md](docs/STATUS.md): what's done, what's next, and the open decisions.
+
 A deterministic regression audit of **interface-imposed work along a reviewed task path**.
 
 It answers one question per task: ***has this task become more burdensome, less burdensome, or broken since the approved baseline?***

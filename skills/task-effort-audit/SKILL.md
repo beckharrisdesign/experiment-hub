@@ -19,6 +19,8 @@ description: >-
 - [`README.md`](../../scripts/task-effort-audit/README.md) — commands, config format, counting rules
 - [`docs/PROJECT_CONTEXT.md`](../../scripts/task-effort-audit/docs/PROJECT_CONTEXT.md) — why it exists and what it must never claim
 
+**Start of a session:** read [`docs/STATUS.md`](../../scripts/task-effort-audit/docs/STATUS.md) for what's outstanding, and keep it current when you finish work.
+
 **Core question:** *Has this defined task become more burdensome, less burdensome, or broken since the approved baseline?*
 
 ## Hard rules
