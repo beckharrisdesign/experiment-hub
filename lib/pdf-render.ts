@@ -9,13 +9,29 @@
  * each image is drawn from Drive's bytes and sent, as the preview always was.
  */
 import path from "node:path";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { createCanvas } from "@napi-rs/canvas";
 
-/** pdf.js's own fonts, for PDFs that name a standard font without embedding it. */
+/**
+ * pdf.js's own fonts, for PDFs that name a standard font without embedding it.
+ * Deployed, they are traced from the pnpm store (next.config.js), so look
+ * there as well as through the node_modules symlink. Without them pdf.js still
+ * draws the page, with substitute glyphs.
+ */
 function standardFonts(): string | undefined {
-  const dir = path.join(process.cwd(), "node_modules", "pdfjs-dist", "standard_fonts");
-  return existsSync(dir) ? `${dir}${path.sep}` : undefined;
+  const modules = path.join(process.cwd(), "node_modules");
+  const candidates = [path.join(modules, "pdfjs-dist", "standard_fonts")];
+  try {
+    for (const entry of readdirSync(path.join(modules, ".pnpm"))) {
+      if (entry.startsWith("pdfjs-dist@")) {
+        candidates.push(path.join(modules, ".pnpm", entry, "node_modules", "pdfjs-dist", "standard_fonts"));
+      }
+    }
+  } catch {
+    // No pnpm store here: the symlinked path is all there is.
+  }
+  const dir = candidates.find((d) => existsSync(d));
+  return dir ? `${dir}${path.sep}` : undefined;
 }
 
 export class PageOutOfRange extends Error {
