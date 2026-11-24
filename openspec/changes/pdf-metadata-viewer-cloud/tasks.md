@@ -126,9 +126,22 @@ Katy, 2026-11-24: "there's an interesting tension between splitting a pdf before
 - [x] 7g.1 Draw it: `02.14 Proposed — Split names and tags` (81:8), then with the actions pinned, `02.15 Proposed — Split, actions always on screen` (83:23): frames 83:24 (tagged), 83:189 (not tagged), 83:368 (19 pages, scrolled), 83:694 (loading), note 83:344
 - [x] 7g.2 Explicit go — **"Looks right, build it", 2026-11-24**
 - [x] 7g.3 Spec, rules shared by the page and the server (`lib/pdf-split-plan.ts`), the panel, and the split route
-- [ ] 7g.4 Verify live on a made-up scan
+- [x] 7g.4 Verify live on a made-up scan — **verified 2026-11-24** (#645): `Sync-test-3-pages.pdf` split after page 1, one title edited, Subject left behind. "Sync test document 1.pdf" (1 page, title "Sync test document, 1 of 2") and "Sync test last two.pdf" (2 pages, title "Sync test: last two"), both with the keywords and author and no subject, in the file as well as here. Not checked live: 19 parts, and a phone beyond looking
 
 Not covered: the 19 parts already made keep their names; and a split still makes its files one after another inside one 60-second request, so a very long one could run out of time (19 parts did not).
+
+## 7h. Cached text (proposed, not approved)
+
+Katy, 2026-11-24: "or caching the ocr version of the pages for ai synthesis so that full image transfer isn't needed at every completion". Suggest downloads the whole PDF from Drive and sends all of it to OpenAI on every press. design.md D15. OCR was a non-goal of this change; this moves it in.
+
+- [ ] 7h.1 Katy's call on where scans are read (D15), which also settles that their text may be kept
+- [ ] 7h.2 Measure before building: how many pages already carry text; how long reading a kept page takes on the server; and, against `docs/ai-suggestions-rubric.md`, whether suggestions from text are as good as from the PDF. Real documents only with her go
+- [ ] 7h.3 Spec: text of pages may be kept; the same privacy rules as images
+- [ ] 7h.4 Keep text beside each page set (migration 033, applied only on her go); fill it in the sync after drawing
+- [ ] 7h.5 Suggest from text and one small page image, falling back to the PDF where there is too little text
+- [ ] 7h.6 Verify live; compare time and tokens per press
+
+Later, not part of this: searching inside documents, which the kept text would make possible.
 
 ## 8. Write path
 

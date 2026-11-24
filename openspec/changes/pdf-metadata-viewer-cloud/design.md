@@ -742,6 +742,45 @@ for the pages kept before this.
 **Size.** About 260 KB a page; the 381 pages listed on 2026-11-24 come to about
 100 MB.
 
+### D15 — Cached text for suggestions (proposed, task 7h)
+
+**Today.** Each press of Suggest downloads the whole PDF from Drive and sends
+all of it, base64, to OpenAI, whose model reads it afresh. Nothing is reused
+between presses. 42 of the 56 listed documents are a single page, so the saving
+on most is one download and one page image; the long scans (up to 119 pages) are
+where it adds up.
+
+**Proposed.** Keep the text of each page, keyed to its page set, so a commit
+carries it and the clear-out removes it exactly as it does images (D14). Suggest
+then sends the text, plus page 1's small image for what text can't say (a
+letterhead, a drawing, a photo), and neither Drive nor the PDF is touched. Where
+a document yields too little text it sends the PDF as now, so drawings and
+photographs lose nothing.
+
+**Where the text comes from.**
+
+1. Pages that already carry text (digital PDFs, scans a scanner app has read):
+   pdf.js reads it while the page is open to be drawn. Free, and exact.
+2. Scanned pages with none. Either:
+   - **On our own server** (recommended): tesseract.js on the kept page image, in
+     the sync's spare time. No cost per page and the image goes nowhere new. Weak
+     on handwriting. The hub uses it elsewhere (simple-seed-organizer), not yet
+     in this app; whether it fits the function's size and time is 7h.2's question.
+   - **OpenAI, once per page**: better on handwriting and photographs. Costs per
+     page, and puts every scanned page through OpenAI rather than only documents
+     someone presses Suggest on.
+
+Drive's own OCR was set aside: it works by making a Google Doc copy of each file.
+
+**The rule it changes.** The text of household documents would sit in the hub's
+database, behind row level security with no policies, reachable by the server
+alone. Text is easier to search and to leak than an image, so this is its own
+decision, not implied by D14.
+
+**What could sink it.** Suggestions from text might be worse. 7h.2 measures that
+first against the existing rubric; if they are, the answer is to send the kept
+page images instead of the PDF, which still saves the Drive download.
+
 ### D6 — Route layout
 
 Follows the hub's existing collision-avoiding convention (`app/api/experiments/id/[id]`),
