@@ -70,6 +70,7 @@ The hub uses Tailwind's default `md` and `lg` breakpoints as the canonical mobil
 ## UX patterns
 
 - **Lists** — Comfortable density, clear selection, empty states with helpful message.
+- **Tables** (founder, 2026-11-24) — cell text is top-left aligned unless it is a date or a numeric value, which align right. A column header matches its column's alignment, so the header text and the cell text share an edge (no invisible pill padding, and a sort arrow never sits between them). First applied in the PDF Organizer's document list.
 - **Forms** — Real-time validation, actionable errors, success confirmation; break long forms into steps.
 - **Loading** — Skeleton for structure, spinner for &lt; 1s, progress for longer; minimal animation.
 - **Errors** — Clear, actionable, contextual, recoverable (retry/cancel).

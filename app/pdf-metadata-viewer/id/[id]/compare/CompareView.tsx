@@ -192,7 +192,7 @@ export function CompareView({ documentId, listQuery = "", fields, pages, seenRev
             </thead>
             <tbody>
               {fields.map((f) => (
-                <tr key={f.field} className="border-b border-border last:border-0">
+                <tr key={f.field} className="border-b border-border align-top last:border-0">
                   <th scope="row" className="px-4 py-3 font-normal text-text-primary">
                     {LABELS[f.field]}
                   </th>
