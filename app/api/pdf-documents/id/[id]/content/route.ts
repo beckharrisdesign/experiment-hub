@@ -21,6 +21,26 @@ import {
  * `/api/pdf-documents/*` `frame-ancestors 'self'` rather than the hub-wide
  * `'none'`; nothing frames it now.
  */
+/**
+ * Where a preview request's time goes, so the slow leg can be found (7c.3).
+ * Every reply carries a Server-Timing header; a streamed reply logs its
+ * transfer when it ends. `?timing=buffer` is a temporary diagnostic: it reads
+ * the whole file from Drive before replying, which times Drive alone.
+ */
+function stopwatch() {
+  const started = performance.now();
+  const marks: Record<string, number> = {};
+  return {
+    mark: (name: string) => {
+      marks[name] = Math.round(performance.now() - started);
+    },
+    since: () => Math.round(performance.now() - started),
+    marks,
+  };
+}
+
+const REGION = process.env.VERCEL_REGION ?? "local";
+
 /** One range of the form pdf.js asks for; anything else gets the whole file. */
 const SINGLE_RANGE = /^bytes=\d+-\d*$/;
 
@@ -29,6 +49,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  const clock = stopwatch();
 
   if (!isUuid(id)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -44,6 +65,7 @@ export async function GET(
   if (!document) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  clock.mark("doc");
 
   // The preview asks for byte ranges, so a large scan's first page can be
   // drawn without downloading the rest (task 7c.3).
@@ -53,12 +75,15 @@ export async function GET(
   let file: Response;
   try {
     const accessToken = await getValidAccessToken();
+    clock.mark("token");
     // Drive serves a trashed file's bytes; the revision read is what says it
     // is gone (DriveFileMissing). The two run side by side, and a file found
     // gone is never sent: its download is cancelled before a byte passes on.
     const [revision, download] = await Promise.allSettled([
-      getDriveHeadRevisionId(accessToken, document.driveFileId),
-      openDriveFile(accessToken, document.driveFileId, range ?? undefined),
+      getDriveHeadRevisionId(accessToken, document.driveFileId).finally(() => clock.mark("revision")),
+      openDriveFile(accessToken, document.driveFileId, range ?? undefined).finally(() =>
+        clock.mark("driveHeaders"),
+      ),
     ]);
     if (revision.status === "rejected") {
       if (download.status === "fulfilled") await download.value.body?.cancel();
@@ -103,6 +128,40 @@ export async function GET(
   const contentRange = file.headers.get("content-range");
   const partial = file.status === 206 && contentRange !== null;
   if (partial) headers["Content-Range"] = contentRange;
+  const m = clock.marks;
+  const timing = [
+    `doc;dur=${m.doc}`,
+    `token;dur=${m.token - m.doc}`,
+    `revision;dur=${m.revision - m.token}`,
+    `drive-headers;dur=${m.driveHeaders - m.token}`,
+    `region;desc="${REGION}"`,
+  ];
+
+  if (request.nextUrl.searchParams.get("timing") === "buffer") {
+    const bytes = await file.arrayBuffer();
+    timing.push(`drive-body;dur=${clock.since() - m.driveHeaders};desc="${bytes.byteLength} bytes"`);
+    headers["Server-Timing"] = timing.join(", ");
+    headers["Content-Length"] = String(bytes.byteLength);
+    return new NextResponse(bytes, { status: partial ? 206 : 200, headers });
+  }
+
+  headers["Server-Timing"] = timing.join(", ");
   // Passed through as it arrives: the preview starts before the file is whole.
-  return new NextResponse(file.body, { status: partial ? 206 : 200, headers });
+  // Counted on the way, so the log says how long the transfer itself took.
+  let sent = 0;
+  const counted = file.body?.pipeThrough(
+    new TransformStream<Uint8Array, Uint8Array>({
+      transform(chunk, controller) {
+        sent += chunk.byteLength;
+        controller.enqueue(chunk);
+      },
+      flush() {
+        console.info(
+          "pdf content timing:",
+          JSON.stringify({ id, range, bytes: sent, transferMs: clock.since() - m.driveHeaders, region: REGION, ...m }),
+        );
+      },
+    }),
+  );
+  return new NextResponse(counted ?? null, { status: partial ? 206 : 200, headers });
 }
