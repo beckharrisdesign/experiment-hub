@@ -796,6 +796,12 @@ decision, not implied by D14.
 first against the existing rubric; if they are, the answer is to send the kept
 page images instead of the PDF, which still saves the Drive download.
 
+**What the comparison said (7h.6).** For one-page documents, most of the
+archive, text costs as much as the PDF and loses a little, so nothing is gained
+by switching. About 10,000 of the roughly 11,000 input tokens are the prompt,
+mainly the tag list, sent afresh after the document each time. The document
+itself is the small part.
+
 ### D16 — Suggestions made from kept text, waiting to be reviewed (being designed, task 7i)
 
 **Words.** On screen these are **Prefilled**; **Suggest** is only ever the AI,

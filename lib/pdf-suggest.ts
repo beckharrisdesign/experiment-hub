@@ -12,6 +12,9 @@
  *   posted them; the hub has no pdf.js renderer to do that.
  * - Or, only when asked to compare for now (task 7h), the document's kept text
  *   and a small image of its first page go instead.
+ * - What is the same for every document (guidelines, tags) goes first and what is
+ *   particular to one goes last, so OpenAI can reuse the opening of one request
+ *   in the next: it is about ten of every eleven thousand tokens (task 7h.7).
  * - No filename suggestion: renaming isn't ported yet, so a suggested name
  *   would have nowhere to go.
  * - The answer comes back through a strict JSON schema instead of being fished
@@ -57,6 +60,8 @@ export type SuggestSource = Uint8Array | { text: string; look: Uint8Array };
 /** What a request cost, as OpenAI counts it. */
 export interface Usage {
   inputTokens: number;
+  /** How many of those it reused from an earlier request, at a lower price. */
+  reusedTokens: number;
   outputTokens: number;
 }
 
@@ -85,11 +90,15 @@ export function filenameDate(filename: string | null): string | null {
   return null;
 }
 
+/** The same order every time, whatever order Notion answered in. */
+const inOrder = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+
 function entityLines(list: Array<{ name: string; slug: string; aliases: string[] }>): string {
   if (list.length === 0) return "  (none)";
-  return list
+  return [...list]
+    .sort((a, b) => inOrder(a.slug, b.slug))
     .map((e) => {
-      const aliases = e.aliases.length > 0 ? ` (also: ${e.aliases.join("; ")})` : "";
+      const aliases = e.aliases.length > 0 ? ` (also: ${[...e.aliases].sort(inOrder).join("; ")})` : "";
       return `  - "${e.name}"${aliases} → use slug: "${e.slug}"`;
     })
     .join("\n");
@@ -109,7 +118,7 @@ STATUS (use if applicable): ${t.statuses.join(", ")}
 
 SPECIAL FLAGS (use if applicable): ${t.specials.join(", ")}
 
-LOCATIONS (use if applicable): ${t.locations.join(", ")}
+LOCATIONS (use if applicable): ${[...t.locations].sort(inOrder).join(", ")}
 
 PEOPLE (REQUIRED if person found - match name or alias to slug):
 ${entityLines(t.peopleWithNames)}
@@ -121,17 +130,12 @@ ${entityLines(t.vendorsWithNames)}`;
 export const SYSTEM_MESSAGE =
   "You analyze scanned household documents and suggest metadata for them, choosing keywords only from the taxonomy you are given.";
 
-/** v1's main prompt, without the filename parts. */
-export function buildPrompt(input: SuggestInput, taxonomy: Taxonomy): string {
-  const date = filenameDate(input.filename);
-  return `Analyze this scanned document and suggest metadata values using the predefined tagging taxonomy.
-
-Current filename: ${input.filename ?? "(none)"}
-${date ? `- Date found in the filename: ${date}. Prefer it for time-period tags unless the document clearly shows a different date.\n` : ""}
-Current metadata:
-- Title: ${input.title || "(empty)"}
-- Subject: ${input.subject || "(empty)"}
-- Keywords: ${input.keywords.length > 0 ? input.keywords.join(", ") : "(empty)"}
+/**
+ * Everything that is the same for every document: v1's main prompt, without the
+ * filename parts. Byte for byte the same between requests, or it can't be reused.
+ */
+export function buildInstructions(taxonomy: Taxonomy): string {
+  return `${SYSTEM_MESSAGE} Use the predefined tagging taxonomy.
 
 ${taxonomyText(taxonomy)}
 
@@ -172,6 +176,19 @@ Entity matching:
 Consistency: the title, subject and keywords must describe the same document, and a vendor or person named in the title should appear in the keywords.`;
 }
 
+/** What is particular to one document. */
+export function buildPrompt(input: SuggestInput): string {
+  const date = filenameDate(input.filename);
+  return `Analyze this scanned document and suggest metadata values, following the guidelines and using the tagging taxonomy you were given.
+
+Current filename: ${input.filename ?? "(none)"}
+${date ? `- Date found in the filename: ${date}. Prefer it for time-period tags unless the document clearly shows a different date.\n` : ""}
+Current metadata:
+- Title: ${input.title || "(empty)"}
+- Subject: ${input.subject || "(empty)"}
+- Keywords: ${input.keywords.length > 0 ? input.keywords.join(", ") : "(empty)"}`;
+}
+
 const SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -188,7 +205,12 @@ const SCHEMA = {
 } as const;
 
 /** The request body, exported so a test can pin its shape without a network. */
-export function suggestRequest(source: SuggestSource, filename: string, prompt: string) {
+export function suggestRequest(
+  source: SuggestSource,
+  filename: string,
+  instructions: string,
+  prompt: string,
+) {
   const document =
     source instanceof Uint8Array
       ? [
@@ -211,7 +233,9 @@ export function suggestRequest(source: SuggestSource, filename: string, prompt: 
         ];
   return {
     model: suggestModel(),
-    instructions: SYSTEM_MESSAGE,
+    instructions,
+    // Sends these requests where the last one's opening is kept.
+    prompt_cache_key: "pdf-suggest",
     input: [{ role: "user", content: [...document, { type: "input_text", text: prompt }] }],
     text: { format: { type: "json_schema", name: "pdf_metadata_suggestions", strict: true, schema: SCHEMA } },
   };
@@ -310,7 +334,12 @@ export async function suggestWithUsage(
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify(
-      suggestRequest(source, input.filename ?? "document.pdf", buildPrompt(input, taxonomy)),
+      suggestRequest(
+        source,
+        input.filename ?? "document.pdf",
+        buildInstructions(taxonomy),
+        buildPrompt(input),
+      ),
     ),
   });
   if (!response.ok) {
@@ -318,13 +347,38 @@ export async function suggestWithUsage(
     console.error(`pdf suggest: OpenAI ${response.status}:`, detail.slice(0, 500));
     throw new SuggestionsFailed(`OpenAI refused the request (${response.status})`);
   }
-  const json = (await response.json()) as { usage?: { input_tokens?: unknown; output_tokens?: unknown } };
-  const { input_tokens: inputTokens, output_tokens: outputTokens } = json.usage ?? {};
+  const json = (await response.json()) as {
+    usage?: {
+      input_tokens?: unknown;
+      output_tokens?: unknown;
+      input_tokens_details?: { cached_tokens?: unknown };
+    };
+  };
+  const usage = usageOf(json.usage);
+  // Counts only, so the saving can be seen in what the button really does.
+  if (usage) {
+    console.log(
+      `pdf suggest: ${usage.inputTokens} tokens in, ${usage.reusedTokens} of them reused, ${usage.outputTokens} out`,
+    );
+  }
+  return { suggestions: parseSuggestions(json), usage };
+}
+
+function usageOf(
+  raw:
+    | {
+        input_tokens?: unknown;
+        output_tokens?: unknown;
+        input_tokens_details?: { cached_tokens?: unknown };
+      }
+    | undefined,
+): Usage | null {
+  const { input_tokens: input, output_tokens: output, input_tokens_details: details } = raw ?? {};
+  if (typeof input !== "number" || typeof output !== "number") return null;
+  const reused = details?.cached_tokens;
   return {
-    suggestions: parseSuggestions(json),
-    usage:
-      typeof inputTokens === "number" && typeof outputTokens === "number"
-        ? { inputTokens, outputTokens }
-        : null,
+    inputTokens: input,
+    reusedTokens: typeof reused === "number" ? reused : 0,
+    outputTokens: output,
   };
 }

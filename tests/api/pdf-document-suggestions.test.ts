@@ -103,7 +103,7 @@ describe("POST /api/pdf-documents/id/[id]/suggestions", () => {
   describe("comparing sources", () => {
     const ANSWER = {
       suggestions: { title: "HEB grocery receipt", subject: "Groceries", keywords: ["receipt"] },
-      usage: { inputTokens: 900, outputTokens: 80 },
+      usage: { inputTokens: 900, reusedTokens: 0, outputTokens: 80 },
     };
     beforeEach(() => {
       mocks.getPdfDocument.mockResolvedValue(DOC);

@@ -9,6 +9,7 @@ import {
   OPENAI_RESPONSES_URL,
   SuggestionsFailed,
   SuggestionsUnavailable,
+  buildInstructions,
   buildPrompt,
   cleanKeywords,
   filenameDate,
@@ -59,39 +60,67 @@ describe("filenameDate", () => {
   });
 });
 
-describe("buildPrompt", () => {
-  const prompt = buildPrompt(INPUT, TAXONOMY);
+describe("buildInstructions", () => {
+  const instructions = buildInstructions(TAXONOMY);
 
   it("gives the model the taxonomy, entity aliases included", () => {
-    expect(prompt).toContain("receipt, invoice");
-    expect(prompt).toContain('"Firstname Lastname" (also: Firstie) → use slug: "firstname-m-lastname"');
-    expect(prompt).toContain('"Foodmart" (also: FM) → use slug: "foodmart"');
+    expect(instructions).toContain("receipt, invoice");
+    expect(instructions).toContain('"Firstname Lastname" (also: Firstie) → use slug: "firstname-m-lastname"');
+    expect(instructions).toContain('"Foodmart" (also: FM) → use slug: "foodmart"');
   });
 
+  // v1's title rules, examples included. Dropping the examples in the port
+  // produced "Target return receipt, Cedar Park TX — May 1, 2025" live.
+  it("carries v1's title rules: sentence case, no commas, dates or places", () => {
+    expect(instructions).toContain("No commas, no dates and no places");
+    expect(instructions).toContain('GOOD: "Foodmart grocery receipt"');
+    expect(instructions).toContain('BAD: "Foodmart Grocery Receipt" (title case)');
+    expect(instructions).toContain("Consistency: the title, subject and keywords");
+  });
+
+  // Renaming isn't ported, so a suggested filename would have nowhere to go.
+  it("asks for no filename", () => {
+    expect(instructions).not.toMatch(/suggested[- ]filename/i);
+  });
+
+  // Task 7h.7: reused between requests only while it is exactly the same.
+  it("is the same whatever order the entities arrive in", () => {
+    const entity = (slug: string, aliases: string[] = []) => ({ name: slug.toUpperCase(), slug, aliases });
+    const one = {
+      ...TAXONOMY,
+      locations: ["b", "a"],
+      peopleWithNames: [entity("zoe", ["Z", "Y"]), entity("amy")],
+      vendorsWithNames: [entity("two"), entity("one")],
+    };
+    const other = {
+      ...one,
+      locations: ["a", "b"],
+      peopleWithNames: [entity("amy"), entity("zoe", ["Y", "Z"])],
+      vendorsWithNames: [entity("one"), entity("two")],
+    };
+    expect(buildInstructions(one)).toBe(buildInstructions(other));
+    expect(one.locations).toEqual(["b", "a"]);
+  });
+});
+
+describe("buildPrompt", () => {
   it("passes the current values and the filename date as context", () => {
+    const prompt = buildPrompt(INPUT);
     expect(prompt).toContain("Title: HEB");
     expect(prompt).toContain("Subject: (empty)");
     expect(prompt).toContain("Keywords: heb");
     expect(prompt).toContain("2025-05-01");
   });
 
-  // v1's title rules, examples included. Dropping the examples in the port
-  // produced "Target return receipt, Cedar Park TX — May 1, 2025" live.
-  it("carries v1's title rules: sentence case, no commas, dates or places", () => {
-    expect(prompt).toContain("No commas, no dates and no places");
-    expect(prompt).toContain('GOOD: "Foodmart grocery receipt"');
-    expect(prompt).toContain('BAD: "Foodmart Grocery Receipt" (title case)');
-  });
-
-  // Renaming isn't ported, so a suggested filename would have nowhere to go.
-  it("asks for no filename", () => {
-    expect(prompt).not.toMatch(/suggested[- ]filename/i);
+  it("leaves what never changes to the instructions", () => {
+    expect(buildPrompt(INPUT)).not.toContain("DOCUMENT TYPES");
+    expect(buildPrompt(INPUT).length).toBeLessThan(700);
   });
 });
 
 describe("suggestRequest", () => {
   it("sends the PDF itself as a file, with a strict schema for the answer", () => {
-    const body = suggestRequest(PDF, "a.pdf", "prompt");
+    const body = suggestRequest(PDF, "a.pdf", "rules", "prompt");
     const [file, text] = body.input[0].content as unknown[];
     expect(file).toEqual({ type: "input_file", filename: "a.pdf", file_data: "data:application/pdf;base64,JVBERg==" });
     expect(text).toEqual({ type: "input_text", text: "prompt" });
@@ -99,9 +128,19 @@ describe("suggestRequest", () => {
     expect(body.text.format.strict).toBe(true);
   });
 
+  // Task 7h.7: the fixed part has to open the request to be reused in the next.
+  it("opens with what never changes, and nothing of the document", () => {
+    const one = suggestRequest(PDF, "a.pdf", "rules", "about a");
+    const two = suggestRequest(new Uint8Array([9]), "b.pdf", "rules", "about b");
+    expect(one.instructions).toBe("rules");
+    expect({ ...one, input: null }).toEqual({ ...two, input: null });
+    expect(one.prompt_cache_key).toBe("pdf-suggest");
+    expect((one.input[0].content as unknown[]).at(-1)).toEqual({ type: "input_text", text: "about a" });
+  });
+
   // Task 7h.
   it("sends the document's text and a small look at it instead, when given those", () => {
-    const body = suggestRequest({ text: "--- Page 1 ---\nTotal due", look: new Uint8Array([1, 2]) }, "a.pdf", "prompt");
+    const body = suggestRequest({ text: "--- Page 1 ---\nTotal due", look: new Uint8Array([1, 2]) }, "a.pdf", "rules", "prompt");
     const content = body.input[0].content as Array<Record<string, string>>;
     expect(content.map((c) => c.type)).toEqual(["input_image", "input_text", "input_text"]);
     expect(content[0].image_url).toBe("data:image/jpeg;base64,AQI=");
@@ -114,9 +153,9 @@ describe("suggestRequest", () => {
 
   it("uses the hub's vision model unless the app overrides it", () => {
     delete process.env.PDF_OPENAI_MODEL;
-    expect(suggestRequest(PDF, "a.pdf", "p").model).toBe("gpt-5");
+    expect(suggestRequest(PDF, "a.pdf", "r", "p").model).toBe("gpt-5");
     process.env.PDF_OPENAI_MODEL = "some-other-model";
-    expect(suggestRequest(PDF, "a.pdf", "p").model).toBe("some-other-model");
+    expect(suggestRequest(PDF, "a.pdf", "r", "p").model).toBe("some-other-model");
   });
 });
 
@@ -198,10 +237,13 @@ describe("suggestMetadata", () => {
   });
 
   it("says what it cost, when OpenAI says", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
     process.env.OPENAI_API_KEY = "sk-test";
-    const json = { ...answer({ title: "T", subject: "S", keywords: [] }), usage: { input_tokens: 900, output_tokens: 80 } };
+    const json = { ...answer({ title: "T", subject: "S", keywords: [] }), usage: { input_tokens: 900, output_tokens: 80, input_tokens_details: { cached_tokens: 768 } } };
     const result = await suggestWithUsage({ text: "x", look: PDF }, INPUT, reply(json), async () => TAXONOMY);
-    expect(result.usage).toEqual({ inputTokens: 900, outputTokens: 80 });
+    expect(result.usage).toEqual({ inputTokens: 900, reusedTokens: 768, outputTokens: 80 });
+    const unsaid = { ...json, usage: { input_tokens: 900, output_tokens: 80 } };
+    expect((await suggestWithUsage(PDF, INPUT, reply(unsaid), async () => TAXONOMY)).usage?.reusedTokens).toBe(0);
     const without = await suggestWithUsage(PDF, INPUT, reply(answer({ title: "T" })), async () => TAXONOMY);
     expect(without.usage).toBeNull();
   });
