@@ -295,3 +295,24 @@ Write the tests first, and see them fail before the code that passes them.
       0 fail, 1 manual (1.13). At 2560, 1.16 reads "tiled 1920px 1081px
       repeat-x", full width, image hidden. Known: the tiles meet at a
       visible seam, because the art isn't drawn to repeat.
+- [x] 4.9 After #604 (Consulting seam, 500px Consulting and Labs heroes)
+      deploys, rerun the live measurement and check the hero heights.
+      Done 2026-11-19, with the served files matching `main`: 17 pass,
+      0 fail, 1 manual (1.13), the same readings as 4.8. Hero heights,
+      measured the way `fillTopHero` does: Consulting 501px and Labs
+      500px at 1440, 500px and 501px at 1920. No fill on phones, and
+      1.15 still finds Consulting's band unbroken (46px to the body).
+- [x] 4.10 After #606 (All Projects and the Labs score pill removed)
+      deploys, rerun the live check and measurement. Done 2026-11-20, with
+      the served files matching `main`: `check.mjs` in sync, 67/67
+      selectors present; the only misses are `--hero-cover-url` and
+      `--hero-cover-tile`, which #603 lists as self-defined. Measurement:
+      17 pass, 0 fail, 1 manual (1.13); nav highlight and breadcrumbs
+      (1.4–1.6) unchanged.
+- [x] 4.11 After #603 (default art for case studies without a cover)
+      deploys, rerun the live check and measurement. Done 2026-11-20, with
+      the served files and `hero/generic.png` matching `main`: `check.mjs`
+      in sync with 30/30 variables and 67/67 selectors, no misses.
+      Measurement: 17 pass, 0 fail, 1 manual (1.13). 1.17 reads
+      "generic.png 480px tall" at 1440 and "generic.png 390×200, 16px to
+      the title" at 390.
