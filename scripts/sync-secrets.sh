@@ -117,7 +117,11 @@ ETSY_SHOP_ID|op://BHD Labs/Etsy/shop id|gh
 #   inventory db            -> Etsy listings        : etsy-notion-sync only, not the website
 # One token can serve all three, but only if every database is shared with that
 # same integration — Notion grants access per page, not per workspace.
-NOTION_TOKEN|op://BHD Labs/Notion/token|gh
+#
+# Vercel added 2026-11-25; its copy was hand-set until then (#404). The site
+# reads experiments, history and entities with it, and hub edits write to
+# experiments, so "BHD Portfolio" must stay connected to all three.
+NOTION_TOKEN|op://BHD Labs/Notion/token|vercel,gh
 NOTION_INVENTORY_DB_ID|op://BHD Labs/Notion/inventory db id|gh
 NOTION_EXPERIMENTS_DATA_SOURCE_ID|op://BHD Labs/Notion/experiments data source id|vercel,gh
 NOTION_HISTORY_DATA_SOURCE_ID|op://BHD Labs/Notion/history data source id|vercel,gh
