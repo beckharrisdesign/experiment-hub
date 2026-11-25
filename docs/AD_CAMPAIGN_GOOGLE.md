@@ -207,17 +207,48 @@ Both campaigns stayed paused throughout.
 | `Sign-up` fallback value | $3 | $0 |
 | Auto-apply (account) | On for 20 of 21 types | Off for every type |
 | AI Max (`etsy-listing-kit-test1`) | On, with text customization | Off, including text customization and final URL expansion |
+| `SSO-validation-phase1` keywords | 27 broad from auto-apply, plus `"organizing seeds"` | Katy's original 4 enabled; the 27 paused, not removed |
+| `SSO-validation-phase1` locations | All countries and territories | United States and Canada |
 
 To save auto-apply changes, leave the page through **Overview** in the left menu and press
 **Save** in the dialog. Reloading or switching to the History tab discards them.
 
-Turning auto-apply off does not undo what it already did. Its history lists 63 times it added
-keywords, 4 times it removed redundant ones, and one each for Display Expansion and broad match,
-all in June 2026 or earlier. Which campaign they landed in was not checked.
+### What auto-apply had done, reviewed 2026-11-25
+
+Auto-apply's own history lists 63 times it added keywords, 4 times it removed redundant ones, and
+one each for Display Expansion and broad match. Turning it off undid none of that. In account
+change history, which shows two years and the two current campaigns, every auto-apply change is in
+`SSO-validation-phase1`:
+
+| Date | Who | Change |
+| --- | --- | --- |
+| Jun 22 | Katy | Campaign created with 4 keywords: exact and phrase `organizing seeds` and `organizing seed packets` |
+| Jun 22 | Auto-apply | Added 28 broad keywords and turned on Display |
+| Jun 23 | Katy | Turned Display off. Also removed United States and Canada, which left it targeting every country |
+| Jun 24 | Katy | Paused the campaign |
+| Jun 25 | Auto-apply | Removed 3 of the 4 original keywords and 1 broad keyword as redundant |
+
+The other 35 keyword additions did not show in that view, so where they went is unknown.
+
+The 27 broad keywords took 38 of the campaign's 40 clicks and $35.89 of its $38.67. Google shows
+the search behind 26 of the clicks:
+
+| Searches | Clicks | Cost |
+| --- | --- | --- |
+| Buying seeds ("online seeds store", "organic seeds for sale") | 13 | $11.29 |
+| Generic or other ("seeds", "seed identifier") | 10 | $9.00 |
+| Storing, preserving or tracking seeds | 3 | $2.94 |
+
+So that run says little about demand for an organizer. `etsy-listing-kit-test1` is clean: Katy added
+all 9 of its keywords. Display and AI Max are off on both campaigns.
+
+The empty `SSO-validation-phase1` goal was set to "Submit lead forms" when the campaign was created.
+Removing the old `SwiftSketchAI (web) FormSubmit` conversion on 2026-11-25 probably emptied it; that
+was not confirmed.
 
 **Still open before any spend:**
 
-- Review the keywords and Display Expansion auto-apply added. Both campaigns currently list
-  Google Search and Search partners, with no Display.
-- Check AI Max on `SSO-validation-phase1`.
+- `SSO-validation-phase1` uses "Presence or interest", which can show ads outside the United States
+  and Canada. Decide whether to switch it to "Presence".
+- The 3 re-added keywords were still under review by Google when last seen.
 - See one real sale record in Google Ads.
