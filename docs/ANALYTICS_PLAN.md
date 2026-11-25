@@ -37,9 +37,9 @@ Every step a visitor can *attempt* has a **start** event and a **terminal** even
 | `Etsy Listing Kit checkout started` | 7917759574 | Created 2026-11-25. GA4 import of `FormSubmit` from Beck Harris Design (506820302, `G-120M120GDY`), where it is a key event with no value. Sent by `trackFormSubmit()` on checkout submit; the name is case-sensitive. Begin checkout, secondary (reported, not bid on), one per click, no value. No `FormSubmit` reached that property in the 28 days before it was created. |
 | `SwiftSketchAI (web) FormSubmit` | 6657647682 | **Old import, removed in Google Ads 2026-11-25.** It read GA4 SwiftSketchAI (408528688), which receives no data, and had 0 conversions all-time. |
 
-`Sign-up` (7659388987, `AW-10904266222/dX8MCLuApMQcEO7Lx88o`) now belongs to simple-seed-organizer alone, which fires it when an account is created. Its fallback value is still the kit's $3, and the seed code sends no value, so each signup counts as $3 until that is changed in Google Ads.
+`Sign-up` (7659388987, `AW-10904266222/dX8MCLuApMQcEO7Lx88o`) now belongs to simple-seed-organizer alone, which fires it when an account is created. The seed code sends no value, so the fallback applies to every signup. It was the kit's $3 until 2026-11-25 and is now $0: signups still count, with no revenue attached.
 
-`Etsy Listing Kit purchase` and `Sign-up` are both in account-default goals. A campaign using the account defaults counts both kit sales and seed signups, so before either campaign is turned back on, set its goals to its own action.
+`Etsy Listing Kit purchase` and `Sign-up` are both in account-default goals, so a campaign using the account defaults would count both. Since 2026-11-25 each campaign has its own goal instead: `SSO-validation-phase1` uses Sign-ups (it had no goal selected), and `etsy-listing-kit-test1` uses Purchases (it was on Sign-ups). The kit campaign bids Maximize clicks, so its goal affects reporting only. A new campaign still starts from the account defaults, so set its goal too.
 
 **Consent:** client events respect the hub's `analytics_optout` (via `trackEvent`). The server purchase event is first-party (no cookie).
 
