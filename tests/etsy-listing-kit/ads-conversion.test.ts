@@ -46,13 +46,17 @@ describe("trackAdsConversion", () => {
     });
   });
 
-  it("send_to matches the snippet Google Ads shows for Sign-up", () => {
-    // Copied from the Sign-up action's event snippet in Ads account
+  it("send_to matches the snippet Google Ads shows for the kit's action", () => {
+    // Copied from the "Etsy Listing Kit purchase" event snippet in Ads account
     // 671-160-6591, read live 2026-11-25. Re-read it there before changing this.
     expect(ADS_CONVERSION_PURCHASE).toBe(
-      "AW-10904266222/dX8MCLuApMQcEO7Lx88o",
+      "AW-10904266222/824ACMGWur8dEO7Lx88o",
     );
     expect(GOOGLE_ADS_ID).toBe("AW-10904266222");
+  });
+
+  it("does not share Seed Organizer's Sign-up action", () => {
+    expect(ADS_CONVERSION_PURCHASE).not.toContain("dX8MCLuApMQcEO7Lx88o");
   });
 
   it("no-ops when gtag is not loaded", () => {

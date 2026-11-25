@@ -195,5 +195,6 @@ page shows a net cost of $56.02 for August, charged Sep 1; balance is $0.
 for these 30 clicks says nothing about sales. Use the orders query above. Details:
 [`ANALYTICS_PLAN.md`](ANALYTICS_PLAN.md).
 
-Still open before any spend: a separate conversion action for the kit, a working
-`FormSubmit` import, and auto-apply, which is still on for 20 of 21 recommendation types.
+The kit got its own conversion action, `Etsy Listing Kit purchase` (7917701953), on 2026-11-25.
+Still open before any spend: campaign goals set to it, a working `FormSubmit` import, and
+auto-apply, which is still on for 20 of 21 recommendation types.

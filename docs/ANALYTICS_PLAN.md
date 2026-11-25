@@ -33,10 +33,12 @@ Every step a visitor can *attempt* has a **start** event and a **terminal** even
 
 | Ads action | Id | How it is fed |
 | --- | --- | --- |
-| `Sign-up` | 7659388987 | Event snippet `AW-10904266222/dX8MCLuApMQcEO7Lx88o`, fired by `trackAdsConversion()` on the result page once the order reaches `fulfilled`. `transaction_id = order.id` dedupes refreshes. Last recorded 2026-06-24, before ELK fired it. |
+| `Etsy Listing Kit purchase` | 7917701953 | Created 2026-11-25. Event snippet `AW-10904266222/824ACMGWur8dEO7Lx88o`, fired by `trackAdsConversion()` on the result page once the order reaches `fulfilled`. `transaction_id = order.id` dedupes refreshes. Purchase, primary, counts every sale, uses the sale's value ($3 if missing), 90-day click window, data-driven. |
 | `FormSubmit` | 6657647682 | **Not working.** It imports from the GA4 property SwiftSketchAI (408528688), which receives no data. ELK sends `FormSubmit` to Beck Harris Design (506820302, `G-120M120GDY`). Needs a new import from that property. |
 
-⚠️ simple-seed-organizer fires the **same** `Sign-up` action when an account is created. A kit sale and a seed signup land in one number. **Before either campaign is turned back on,** create a separate action for the kit in Google Ads and put its label in `ADS_CONVERSION_PURCHASE`.
+`Sign-up` (7659388987, `AW-10904266222/dX8MCLuApMQcEO7Lx88o`) now belongs to simple-seed-organizer alone, which fires it when an account is created. Its fallback value is still the kit's $3, and the seed code sends no value, so each signup counts as $3 until that is changed in Google Ads.
+
+Both actions are in account-default goals. A campaign using the account defaults counts both kit sales and seed signups, so before either campaign is turned back on, set its goals to its own action.
 
 **Consent:** client events respect the hub's `analytics_optout` (via `trackEvent`). The server purchase event is first-party (no cookie).
 
