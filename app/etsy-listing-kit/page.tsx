@@ -60,7 +60,7 @@ export default function EtsyListingKitLanding() {
     if (!file) return;
     setCheckingOut(true); setError(null);
     track('checkout_started');
-    // Feeds the GA4-imported Ads conversion "FormSubmit" (6657647682).
+    // Feeds the Ads conversion "Etsy Listing Kit checkout started" (7917759574).
     trackFormSubmit();
     try {
       const fd = new FormData();
