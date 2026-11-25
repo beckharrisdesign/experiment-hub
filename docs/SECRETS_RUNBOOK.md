@@ -79,6 +79,7 @@ Verification after a push is Claude's job — just ask **"verify the ⟨vendor�
 | --- | --- | --- |
 | `NOTION_EXPERIMENTS_DATA_SOURCE_ID` | BHD Labs Database | hub experiment list + detail pages (public site) |
 | `NOTION_HISTORY_DATA_SOURCE_ID` | BHD Labs History | History band on detail pages (public site) |
+| `NOTION_ENTITIES_DATA_SOURCE_ID` | Entities | PDF tool suggestions |
 | `NOTION_INVENTORY_DB_ID` | Etsy listings | `etsy-notion-sync.yml` only — not the website |
 
 ## Intentionally empty
