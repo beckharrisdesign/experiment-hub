@@ -126,12 +126,9 @@ NOTION_ENTITIES_DATA_SOURCE_ID|op://BHD Labs/Notion/entities data source id|verc
 # on Vercel means every lookup answers "not-configured" and items keep the
 # model's price — safe, but silent. Item added 2026-11-03.
 COMPS_API_KEY|op://BHD Labs/CompsAPI Credentials/credential|vercel
-# Chromatic is MVDS's only CI secret, and it is the one piece of this vault
-# discipline that repo genuinely should inherit — docs/MVDS_INTEGRATION_REVIEW.md
-# concluded MVDS stays a standalone repo, so this row syncs OUTWARD to it rather
-# than pulling its code in here. Until the vault item exists this reports "not
-# filled in yet" and writes nothing, which is the safe default.
-CHROMATIC_PROJECT_TOKEN|op://BHD Labs/Chromatic/project token|gh-repo:beckharrisdesign/mvds
+# MVDS is not here on purpose: since 2026-11-09 it syncs its own secrets from
+# this vault (beckharrisdesign/mvds, scripts/sync-secrets.mjs). A Chromatic row
+# here would be a second writer for the same secret.
 VERCEL_TOKEN|op://BHD Labs/Vercel/token|gh
 VERCEL_ORG_ID|op://BHD Labs/Vercel/org id|gh
 VERCEL_PROJECT_ID|op://BHD Labs/Vercel/project id|gh

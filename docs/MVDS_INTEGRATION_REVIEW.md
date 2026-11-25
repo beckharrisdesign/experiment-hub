@@ -226,6 +226,10 @@ the failure mode `sync-secrets.sh`'s own header calls out:
 manifest row targeting the MVDS repo — this is the one piece of shared secret
 infra MVDS genuinely should inherit, and it needs no code move.
 
+**Resolved differently, 2026-11-09:** MVDS got its own sync from the same vault
+([mvds #139](https://github.com/beckharrisdesign/mvds/pull/139)), reading the item
+`Chromatic mvds`. The hub's row never had a value and is removed.
+
 ---
 
 ## 5. Recommendation
