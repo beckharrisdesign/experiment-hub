@@ -330,7 +330,7 @@ async function drawDocument(
   try {
     pdf = await openPdf(bytes);
   } catch (error) {
-    // Not drawable here: remember, so it isn't downloaded every hour. The
+    // Not drawable here: remember, so it isn't downloaded every run. The
     // preview still falls back to the browser's pdf.js.
     console.warn(`pdf pages: ${doc.id} can't be drawn:`, error);
     await finishSet(await ensureSet(doc.id, doc.revision, 1), null);

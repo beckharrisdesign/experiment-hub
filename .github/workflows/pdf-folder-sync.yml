@@ -1,4 +1,8 @@
-# Hourly folder sync for the PDF Organizer (pdf-metadata-viewer).
+# Folder sync for the PDF Organizer (pdf-metadata-viewer): the twice-daily check,
+# and the way to run it by hand. The clock is the database, every ten minutes
+# (supabase/migrations/035_pdf_sync_schedule.sql): GitHub ran this job twice in a
+# day when it was set for every hour. This one stays because its failures send an
+# email, and because any run gives the database's schedule its key.
 #
 # Finds new PDFs in the chosen Drive folder and reads each unread file's own
 # values (page count, title, author, subject, keywords), so the list fills in
@@ -14,13 +18,13 @@
 # SYNC_KEY_LABEL.
 #
 # Each call works for about 40 s; the job makes up to eight while there is work
-# left, and leaves the rest for the next hour.
+# left, and leaves the rest for the next run.
 name: pdf-folder-sync
 
 on:
   schedule:
     # Minute 23, away from the top of the hour, when GitHub's queue is busiest.
-    - cron: "23 * * * *"
+    - cron: "23 11,23 * * *"
   workflow_dispatch:
 
 permissions:
@@ -53,8 +57,7 @@ jobs:
             | cut -d' ' -f1)
 
           # Each call works for under a minute. Go on while it's getting
-          # somewhere and work is left, so a new scan's pages are ready within
-          # the hour rather than over several.
+          # somewhere and work is left, so a run by hand finishes what it can.
           for round in 1 2 3 4 5 6 7 8; do
             status=$(curl -sS -o response.json -w '%{http_code}' --max-time 90 \
               -X POST "${SITE_URL}/api/pdf-drive/sync" \

@@ -156,7 +156,7 @@ documents, medical ones included, in the hub's own database.
 #### Scenario: A page that can't be read
 
 - **WHEN** a page has nothing on it that can be read
-- **THEN** that is kept as such, and it is not read again every hour
+- **THEN** that is kept as such, and it is not read again every run
 
 #### Scenario: Metadata is committed
 
@@ -186,7 +186,7 @@ kept, under "Drawn pages are kept privately" below.
 #### Scenario: A file is added to the folder later
 
 - **WHEN** a PDF is added to the chosen folder in Drive
-- **THEN** within the hour a reference row is created for it, without anyone
+- **THEN** at the next scheduled sync, every ten minutes, a reference row is created for it, without anyone
   choosing the folder again
 - **AND** no PDF is copied into other storage
 

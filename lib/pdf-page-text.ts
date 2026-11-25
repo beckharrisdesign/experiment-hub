@@ -128,7 +128,7 @@ export async function syncText(options: TextSyncOptions): Promise<TextSyncResult
             text = tidyText(read.text);
             confidence = Math.max(0, Math.min(100, Math.round(read.confidence)));
           } catch (error) {
-            // Kept as nothing read, so one bad page isn't tried every hour.
+            // Kept as nothing read, so one bad page isn't tried every run.
             console.warn(`pdf text: page ${page} of ${set.documentId} couldn't be read:`, error);
             text = "";
             confidence = 0;

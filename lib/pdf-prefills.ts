@@ -98,7 +98,7 @@ export interface PrefillSyncResult {
 }
 
 /**
- * Work out what each untouched document's text says. Run again every hour, so a
+ * Work out what each untouched document's text says. Run again every sync, so a
  * vendor added to Entities is found on the documents already here; what was
  * dismissed is left alone.
  */

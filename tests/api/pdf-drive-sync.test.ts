@@ -1,13 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const mocks = vi.hoisted(() => ({ syncFolder: vi.fn() }));
+const mocks = vi.hoisted(() => ({ syncFolder: vi.fn(), keepSyncKey: vi.fn() }));
 vi.mock("@/lib/pdf-sync", () => ({ syncFolder: mocks.syncFolder }));
+vi.mock("@/lib/pdf-sync-key", () => ({ keepSyncKey: mocks.keepSyncKey }));
 
 import { POST } from "@/app/api/pdf-drive/sync/route";
 import { DriveReauthorizationRequired } from "@/lib/pdf-drive";
 
 beforeEach(() => {
   mocks.syncFolder.mockReset();
+  mocks.keepSyncKey.mockReset();
   vi.spyOn(console, "log").mockImplementation(() => {});
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
@@ -25,6 +27,12 @@ describe("POST /api/pdf-drive/sync", () => {
       failed: 0,
       remaining: 0,
     });
+  });
+
+  it("gives the schedule its key even when the sync can't run", async () => {
+    mocks.syncFolder.mockRejectedValue(new DriveReauthorizationRequired("revoked"));
+    await POST();
+    expect(mocks.keepSyncKey).toHaveBeenCalledTimes(1);
   });
 
   it("says when Drive needs signing in again", async () => {
