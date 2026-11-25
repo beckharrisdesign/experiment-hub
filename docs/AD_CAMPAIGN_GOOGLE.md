@@ -151,8 +151,9 @@ the lever is budget and CPC cap, and lowering the cap risks re-blocking delivery
 
 - **GA4 `G-120M120GDY` ↔ Ads `671-160-6591` linked** (Product links → Google Ads links;
   was "No links yet"). Personalized advertising on. **Not retroactive** — nothing before
-  Aug 9 backfills. Note the property lives under the `Beck Harris Design` GA account,
-  reachable only as `authuser=5`; the default Google session lands on a different property.
+  Aug 9 backfills. Note the property lives under the `Beck Harris Design` GA account.
+  As of 2026-11-25 the default session (`authuser=0`) reaches it: pick `Beck Harris Design`
+  in the account picker, which opens on Atlas.
 - **Auto-tagging: already `Yes`** — verified, no change needed. This is what puts `gclid`
   into `elk_orders.click_id`.
 - **`Sign-up` conversion value: was a fixed `$1`** → now **"Use different values" via
@@ -182,3 +183,17 @@ from elk_orders
 where created_at >= '2026-08-07'
 group by status;
 ```
+
+## Final state, read live 2026-11-25
+
+Campaign paused, and no account changes in the 30 days to 2026-11-24. All-time totals for
+`etsy-listing-kit-test1`: **972 impressions, 30 clicks, 3.09% CTR, $56.03**. Google's billing
+page shows a net cost of $56.02 for August, charged Sep 1; balance is $0.
+
+**The conversion repair of 2026-08-07 pointed at the wrong Ads id.** `Sign-up` belongs to
+`AW-10904266222`; the code sent to `AW-277034089` until 2026-11-25. So Google's 0 conversions
+for these 30 clicks says nothing about sales. Use the orders query above. Details:
+[`ANALYTICS_PLAN.md`](ANALYTICS_PLAN.md).
+
+Still open before any spend: a separate conversion action for the kit, a working
+`FormSubmit` import, and auto-apply, which is still on for 20 of 21 recommendation types.

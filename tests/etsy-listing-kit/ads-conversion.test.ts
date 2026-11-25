@@ -11,7 +11,7 @@ import {
   ADS_CONVERSION_PURCHASE,
   GA4_FORM_SUBMIT_EVENT,
 } from "@/lib/etsy-listing-kit/analytics";
-import { ELK_GOOGLE_ADS_ID, GOOGLE_ADS_ID } from "@/lib/analytics/ga";
+import { GOOGLE_ADS_ID } from "@/lib/analytics/ga";
 
 describe("trackAdsConversion", () => {
   // Minimal localStorage stand-in (jsdom's here lacks removeItem).
@@ -46,18 +46,13 @@ describe("trackAdsConversion", () => {
     });
   });
 
-  it("send_to is the standalone ELK Ads account + Sign-up conversion label", () => {
-    // Pinned against the Google Ads tag spec, not against whatever the code
-    // currently exports — this assertion is the thing that catches a drifted id.
-    expect(ADS_CONVERSION_PURCHASE).toBe("AW-277034089/dX8MCLuApMQcEO7Lx88o");
-    expect(ELK_GOOGLE_ADS_ID).toBe("AW-277034089");
-  });
-
-  it("does not bill the ELK conversion to the hub Ads account", () => {
-    // simple-seed-organizer uses the same label under the hub account; the
-    // account prefix is the only thing keeping the two actions apart.
-    expect(ELK_GOOGLE_ADS_ID).not.toBe(GOOGLE_ADS_ID);
-    expect(ADS_CONVERSION_PURCHASE.startsWith(GOOGLE_ADS_ID)).toBe(false);
+  it("send_to matches the snippet Google Ads shows for Sign-up", () => {
+    // Copied from the Sign-up action's event snippet in Ads account
+    // 671-160-6591, read live 2026-11-25. Re-read it there before changing this.
+    expect(ADS_CONVERSION_PURCHASE).toBe(
+      "AW-10904266222/dX8MCLuApMQcEO7Lx88o",
+    );
+    expect(GOOGLE_ADS_ID).toBe("AW-10904266222");
   });
 
   it("no-ops when gtag is not loaded", () => {
@@ -122,11 +117,10 @@ describe("trackFormSubmit (GA4 event imported as Ads conversion 6657647682)", ()
 });
 
 /**
- * Regression: the ELK account was briefly `gtag('config', …)`'d in the ROOT
- * layout, so every hub page (/heuristics, /prototypes, …) reported into the
- * standalone ELK Ads account — rebuilding the exact "ELK traffic looks like
- * general BHD Labs traffic" problem the separate account exists to solve, and
- * seeding its remarketing lists with visitors who never saw the product.
+ * Regression: from 2026-08-07 to 2026-11-25 the ELK segment configured
+ * AW-277034089, an id that does not belong to the Ads account the campaign runs
+ * in, so no ELK conversion could reach that account. One Ads id is configured,
+ * once, in the root layout.
  *
  * These assertions read source text rather than render, because the defect is
  * *where* the config statement lives — which rendering a component in isolation
@@ -136,20 +130,22 @@ describe("trackFormSubmit (GA4 event imported as Ads conversion 6657647682)", ()
 describe("Google Ads tag scoping", () => {
   const read = (p: string) => readFileSync(join(process.cwd(), p), "utf8");
 
-  it("root layout configures ONLY the hub Ads account", () => {
-    const src = read("app/layout.tsx");
-    expect(src).toContain("GOOGLE_ADS_ID");
-    expect(src).not.toContain(ELK_GOOGLE_ADS_ID);
-    expect(src).not.toContain("ELK_GOOGLE_ADS_ID");
+  it("root layout configures the Ads account", () => {
+    expect(read("app/layout.tsx")).toContain(
+      "gtag('config', '${GOOGLE_ADS_ID}')",
+    );
   });
 
-  it("ELK segment layout configures the ELK Ads account", () => {
-    const src = read("app/etsy-listing-kit/layout.tsx");
-    expect(src).toContain("ELK_GOOGLE_ADS_ID");
-    expect(src).toContain("gtag('config'");
+  it("ELK segment layout configures no Ads account of its own", () => {
+    expect(read("app/etsy-listing-kit/layout.tsx")).not.toContain("gtag(");
   });
 
-  it("no shared array re-introduces a config-everything list", () => {
-    expect(read("lib/analytics/ga.ts")).not.toContain("GOOGLE_ADS_IDS");
+  it.each([
+    "app/layout.tsx",
+    "app/etsy-listing-kit/layout.tsx",
+    "lib/analytics/ga.ts",
+    "lib/etsy-listing-kit/analytics.ts",
+  ])("%s does not send to the unrelated Ads id", (file) => {
+    expect(read(file)).not.toContain("AW-277034089");
   });
 });

@@ -5,16 +5,19 @@
  * system). The server-side verified purchase uses the GA4 Measurement Protocol.
  * All no-op safely when GA isn't configured — nothing is faked.
  */
-import { trackEvent, isOptedOut, ELK_GOOGLE_ADS_ID } from '../analytics/ga';
+import { trackEvent, isOptedOut, GOOGLE_ADS_ID } from '../analytics/ga';
 import { EXPERIMENT_ID, PRICE_CENTS, CURRENCY } from './config';
 
 /**
- * Google Ads conversion label: "Sign-up" action (id 7659388987) = paid image
- * view delivered. Scoped to the standalone ELK Ads account, NOT the hub account —
- * the same label string also exists under the hub account for simple-seed-organizer,
- * so the account prefix is what keeps the two conversion actions distinct.
+ * Google Ads conversion "Sign-up" (action id 7659388987) = paid image view
+ * delivered. Both halves come from the action's event snippet in Google Ads
+ * (account 671-160-6591), read live 2026-11-25.
+ *
+ * simple-seed-organizer fires this same action on account creation, so a kit
+ * sale and a seed signup land in one number. Give the kit its own action before
+ * either campaign is turned back on.
  */
-export const ADS_CONVERSION_PURCHASE = `${ELK_GOOGLE_ADS_ID}/dX8MCLuApMQcEO7Lx88o`;
+export const ADS_CONVERSION_PURCHASE = `${GOOGLE_ADS_ID}/dX8MCLuApMQcEO7Lx88o`;
 
 /**
  * GA4 event name backing the imported Ads conversion "FormSubmit" (id 6657647682).

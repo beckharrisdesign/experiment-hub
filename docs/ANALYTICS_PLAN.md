@@ -27,18 +27,16 @@ Every step a visitor can *attempt* has a **start** event and a **terminal** even
 
 **Attribution:** UTM params + `gclid`/`fbclid` captured on the landing, appended to the checkout `FormData`, persisted on the order row, and carried through Stripe. CAC = ad spend ÷ `purchase` count.
 
-**Google Ads conversions.** ELK runs its **own standalone Ads account, `AW-277034089`** — deliberately separate from the hub account (`AW-10904266222`) so ELK ad traffic and conversions stay distinguishable from general BHD Labs traffic.
+**Google Ads conversions.** One Ads id, `AW-10904266222`. It belongs to Ads account **671-160-6591**, where the `etsy-listing-kit-test1` campaign runs. It is `gtag('config', …)`'d once, in `app/layout.tsx`, which covers every hub page including ELK. Guarded by `tests/etsy-listing-kit/ads-conversion.test.ts`.
 
-**Where each account is configured — this matters.** The hub account is `gtag('config', …)`'d in `app/layout.tsx` (every page). The ELK account is configured in `app/etsy-listing-kit/layout.tsx`, which covers the ELK segment (landing + result) **and nothing else**. Configuring the ELK account in the root layout instead sends every hub pageview — `/heuristics`, `/prototypes`, … — into the ELK Ads account, which recreates the exact traffic-mixing problem the separate account exists to solve and seeds its remarketing lists with people who never saw the product. Guarded by tests in `tests/etsy-listing-kit/ads-conversion.test.ts` ("Google Ads tag scoping").
-
-Corollary for the Google Ads / GA4 admin UI: do **not** add `AW-277034089` as a destination on the "BHD Labs" Google tag. That tag loads on every hub page, so adding it there reintroduces the same leak from the config side.
+**Correction, 2026-11-25.** From 2026-08-07 (PR #363) this plan and the code said ELK had its own Ads account, `AW-277034089`. The `Sign-up` action's event snippet in 671-160-6591, read live, shows `AW-10904266222/dX8MCLuApMQcEO7Lx88o`. Nothing recorded says where `AW-277034089` came from, and its owner is unknown. While it was in place no ELK sale could reach `Sign-up`.
 
 | Ads action | Id | How it is fed |
 | --- | --- | --- |
-| `Sign-up` | 7659388987 | Event snippet `AW-277034089/dX8MCLuApMQcEO7Lx88o`, fired by `trackAdsConversion()` on the result page once the order reaches `fulfilled`. `transaction_id = order.id` dedupes refreshes. |
-| `FormSubmit` | 6657647682 | **GA4 import, no Ads snippet.** Needs a GA4 event named exactly `FormSubmit` (case-sensitive) — sent by `trackFormSubmit()` on checkout submit. Requires GA4 `G-120M120GDY` to be linked to `AW-277034089`; imported conversions lag hours and never appear in Ads realtime. |
+| `Sign-up` | 7659388987 | Event snippet `AW-10904266222/dX8MCLuApMQcEO7Lx88o`, fired by `trackAdsConversion()` on the result page once the order reaches `fulfilled`. `transaction_id = order.id` dedupes refreshes. Last recorded 2026-06-24, before ELK fired it. |
+| `FormSubmit` | 6657647682 | **Not working.** It imports from the GA4 property SwiftSketchAI (408528688), which receives no data. ELK sends `FormSubmit` to Beck Harris Design (506820302, `G-120M120GDY`). Needs a new import from that property. |
 
-⚠️ The label `dX8MCLuApMQcEO7Lx88o` is *also* used by simple-seed-organizer under the **hub** account. The account prefix is the only thing separating the two conversion actions — never collapse `GOOGLE_ADS_ID` and `ELK_GOOGLE_ADS_ID` into one constant.
+⚠️ simple-seed-organizer fires the **same** `Sign-up` action when an account is created. A kit sale and a seed signup land in one number. **Before either campaign is turned back on,** create a separate action for the kit in Google Ads and put its label in `ADS_CONVERSION_PURCHASE`.
 
 **Consent:** client events respect the hub's `analytics_optout` (via `trackEvent`). The server purchase event is first-party (no cookie).
 

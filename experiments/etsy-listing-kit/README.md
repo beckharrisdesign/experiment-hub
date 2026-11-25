@@ -31,7 +31,9 @@ outside the shop bought. The zero-sales Etsy question it pivoted toward continue
 experiment, not here.
 
 **Left as they are:** the `/etsy-listing-kit` route stays live in the hub, and the Stripe account,
-webhook and Google Ads account `AW-277034089` stay configured. The Ads campaign
+webhook and Google Ads id `AW-10904266222` (account 671-160-6591) stay configured. Until
+2026-11-25 the code used `AW-277034089`, which is not that account's id, so Google could not
+record kit sales. The Ads campaign
 `etsy-listing-kit-test1` is paused (confirmed by Katy, 2026-11-12).
 
 - **Funnel** lives in the hub app: `app/etsy-listing-kit/` (route `/etsy-listing-kit`), deploys to the Vercel production subdomain.
