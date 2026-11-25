@@ -112,7 +112,7 @@ Reference for Claude; the human playbook ends above this line.
 | OpenAI | `experiments/simple-seed-organizer/prototype/app/tests/openai-connection.test.ts` |
 | Stripe | ELK checkout |
 | Supabase experiment-hub | prod page load |
-| Supabase simple-seed-organizer | SSO live test in CI |
+| Supabase simple-seed-organizer | SSO live test, local only (not synced) |
 | Google OAuth | PDF viewer sign-in |
 | Notion / Etsy | dispatch `etsy-notion-sync.yml` |
 | GitHub dispatch token | hub "Sync now" button |

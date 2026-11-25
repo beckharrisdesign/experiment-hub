@@ -23,6 +23,11 @@
  * apply un-skipped the suite for the first time. Requires:
  *   SSO_SUPABASE_URL and SSO_SUPABASE_SERVICE_ROLE_KEY in the environment.
  * Skips automatically if either is missing (safe for local dev without secrets).
+ *
+ * LOCAL ONLY since 2026-11-25 (#404). CI does not pass these keys, so this
+ * always skips there. To run it, set both in your shell and run
+ * `pnpm run test:live tests/sso`. It writes to the real project and may create
+ * the test user below.
  */
 import { describe, it, expect, beforeAll, afterEach } from "vitest";
 import { createClient } from "@supabase/supabase-js";

@@ -134,8 +134,6 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
-          # Simple Seed Organizer runs its own Supabase project; its live test
-          # skips when these are absent rather than failing against hub tables.
-          SSO_SUPABASE_URL: ${{ secrets.SSO_SUPABASE_URL }}
-          SSO_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SSO_SUPABASE_SERVICE_ROLE_KEY }}
+          # Simple Seed Organizer's live test (tests/sso) is local-only: it
+          # needs that project's own keys, so it skips here by design.
         run: pnpm run test:live
