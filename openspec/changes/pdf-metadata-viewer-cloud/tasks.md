@@ -48,6 +48,10 @@ Each one changes work below it, so none should be discovered mid-build.
 - [ ] 4.7 Verify revoking the app in Google settings ends both sign-in and Drive access
 - [x] 4.8 Verify an unauthenticated request cannot distinguish a document that exists from one that does not — confirmed against a running server: `/api/pdf-documents` 401s, the page redirects to sign-in, and the open handshake path is not gated
 
+- [x] 4.9 Move to the shared hub project (design.md D9b) — **done 2026-11-25.** Console and vault by Katy; three values synced to Vercel 17:21 UTC; live from #660's deploy (run 45663954513), where `/api/pdf-drive/connect` names the `hub-web` client; signed in 17:32; folder sync run 45666141834 answered 200 eight times (199 in the folder, 0 failed). Not yet seen: a token refresh, the first due 18:32 UTC
+- [ ] 4.10 A grant from the shared project outlives seven days
+- [ ] 4.11 Retire the old client, its project and the `Google OAuth pdf-metadata-viewer` vault item, after 4.9 and 4.10
+
 ## 5. Drive connection
 
 - [x] 5.1 OAuth handshake storing the refresh token server-side — verified against the running server: four registered scopes, offline access, forced consent, 64-char state with an httpOnly cookie

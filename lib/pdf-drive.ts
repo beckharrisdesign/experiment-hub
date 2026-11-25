@@ -19,15 +19,12 @@ import { getPdfAdminClient } from "@/lib/pdf-documents";
  * the live grant on 2026-08-18 — Drive reported exactly one accessible item,
  * the folder itself, and zero files. See design.md D9.
  *
- * The consent screen is **External, in Testing status**, with a single listed
- * test user. A test user may consent to a restricted scope with no verification,
- * which is what makes this work today. Two consequences follow, both accepted
- * deliberately (D9a): refresh tokens expire after **seven days**, so
- * re-authorization is routine rather than exceptional; and publishing the app
- * later requires Google verification plus the CASA security assessment.
- *
- * Internal would have avoided both, at the cost of never serving an account
- * outside the Workspace domain. It was declined to keep that door open.
+ * The client is the hub's shared Web client, in the `bhd-experiment-hub`
+ * project (D9b): External, published, and not verified. Consent still works,
+ * behind Google's unverified-app warning, for up to 100 users over the
+ * project's lifetime. Google documents the seven-day refresh-token expiry for
+ * Testing status only, so it is not expected here. Verification, and possibly
+ * a security assessment, waits until that cap matters.
  */
 export const GOOGLE_SCOPES = [
   "openid",
