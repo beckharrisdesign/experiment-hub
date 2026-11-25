@@ -64,6 +64,7 @@ has no master copy and will go missing the same way.
 | Supabase simple-seed-organizer | [settings → API](https://supabase.com/dashboard/project/orlpgxqbesxvlhlkbnqy/settings/api) | same warning, other direction |
 | Google OAuth pdf-metadata-viewer | [console credentials](https://console.cloud.google.com/apis/credentials) → `pdf-metadata-viewer web` | reset is an **instant kill**, no grace — push to Vercel in the same sitting |
 | Notion | [integrations](https://www.notion.so/profile/integrations) → **BHD Portfolio** | needs Update/Insert **capabilities** + a connection to each database |
+| Resend | [API keys](https://resend.com/api-keys) | shown once, at creation. Pick **Sending access**, **all domains**: the assessment suite sends from `onboarding@resend.dev` until `EFA_EMAIL_FROM` is set, and a domain-limited key refuses that |
 | Figma | [Settings → Security → PATs](https://www.figma.com/developers/api#access-tokens) | |
 | GitHub | [fine-grained PATs](https://github.com/settings/tokens?type=beta) | prefer **editing** permissions (keeps the value) over regenerating |
 | Etsy | [etsy.com/developers/your-apps](https://www.etsy.com/developers/your-apps) | |
@@ -117,6 +118,7 @@ Reference for Claude; the human playbook ends above this line.
 | GitHub dispatch token | hub "Sync now" button |
 | Vercel | `deploy-hub.yml` |
 | PDF session | PDF viewer sign-in |
+| Resend | dispatch `exec-function-daily.yml` (emails Katy; check Resend shows the send), after a production deploy |
 
 ### Gotchas, each learned the hard way
 

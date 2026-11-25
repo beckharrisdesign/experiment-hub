@@ -67,6 +67,12 @@ SSO_SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase simple-seed-organizer/servi
 # vaulting it closes that gap. Not needed by Actions: the assessment suite's
 # cron derives its key from the service-role key, not from this.
 ADMIN_SECRET|op://BHD Labs/BHD Labs Admin Secret/password|vercel
+# Sends both experiments' email: Etsy Listing Kit order mail and the assessment
+# suite's daily link. Was a hand-set Vercel value that nothing tracked (#404).
+# Without it neither sends: the daily cron goes red (502), but order email only
+# logs, so a buyer's missing mail is silent. Production only: a preview should
+# not be able to email anyone.
+RESEND_API_KEY|op://BHD Labs/Resend/credential|vercel
 FIGMA_ACCESS_TOKEN|op://BHD Labs/Figma/access token|vercel
 GITHUB_DISPATCH_TOKEN|op://BHD Labs/GitHub/dispatch token|vercel
 GITHUB_TOKEN|op://BHD Labs/GitHub/api token|vercel
