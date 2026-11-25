@@ -172,7 +172,7 @@ the lever is budget and CPC cap, and lowering the cap risks re-blocking delivery
   delivery originally; add one (~$4) only as a safety rail, not as a throttle.
 - **Watch:** account-level **auto-apply** is on with "display expansion + 19 more
   recommendation types", and campaign-level **AI Max** is on — both let Google modify a
-  Search-only campaign on its own.
+  Search-only campaign on its own. *(Both turned off 2026-11-25, see the end of this doc.)*
 - Conversion actions in this account are named `SwiftSketchAI (web) …` — the account is
   partly repurposed from another project; don't assume every action belongs to ELK.
 
@@ -195,6 +195,29 @@ page shows a net cost of $56.02 for August, charged Sep 1; balance is $0.
 for these 30 clicks says nothing about sales. Use the orders query above. Details:
 [`ANALYTICS_PLAN.md`](ANALYTICS_PLAN.md).
 
-The kit got its own conversion action, `Etsy Listing Kit purchase` (7917701953), on 2026-11-25.
-Still open before any spend: campaign goals set to it, and auto-apply, which is still on
-for 20 of 21 recommendation types.
+### Settings changed 2026-11-25, each confirmed after a reload
+
+Both campaigns stayed paused throughout.
+
+| Setting | Before | Now |
+| --- | --- | --- |
+| Kit conversion action | Shared `Sign-up` | Own action, `Etsy Listing Kit purchase` (7917701953) |
+| `etsy-listing-kit-test1` goal | Sign-ups | Purchases |
+| `SSO-validation-phase1` goal | None selected | Sign-ups |
+| `Sign-up` fallback value | $3 | $0 |
+| Auto-apply (account) | On for 20 of 21 types | Off for every type |
+| AI Max (`etsy-listing-kit-test1`) | On, with text customization | Off, including text customization and final URL expansion |
+
+To save auto-apply changes, leave the page through **Overview** in the left menu and press
+**Save** in the dialog. Reloading or switching to the History tab discards them.
+
+Turning auto-apply off does not undo what it already did. Its history lists 63 times it added
+keywords, 4 times it removed redundant ones, and one each for Display Expansion and broad match,
+all in June 2026 or earlier. Which campaign they landed in was not checked.
+
+**Still open before any spend:**
+
+- Review the keywords and Display Expansion auto-apply added. Both campaigns currently list
+  Google Search and Search partners, with no Display.
+- Check AI Max on `SSO-validation-phase1`.
+- See one real sale record in Google Ads.
