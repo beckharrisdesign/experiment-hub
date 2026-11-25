@@ -76,9 +76,12 @@ RESEND_API_KEY|op://BHD Labs/Resend/credential|vercel
 FIGMA_ACCESS_TOKEN|op://BHD Labs/Figma/access token|vercel
 GITHUB_DISPATCH_TOKEN|op://BHD Labs/GitHub/dispatch token|vercel
 GITHUB_TOKEN|op://BHD Labs/GitHub/api token|vercel
-PDF_GOOGLE_CLIENT_ID|op://BHD Labs/Google OAuth pdf-metadata-viewer/client id|vercel
-PDF_GOOGLE_CLIENT_SECRET|op://BHD Labs/Google OAuth pdf-metadata-viewer/client secret|vercel
-PDF_GOOGLE_API_KEY|op://BHD Labs/Google OAuth pdf-metadata-viewer/api key|vercel
+# The shared Web client in the bhd-experiment-hub project ("hub-web"): sign-in
+# for every hub experiment, the PDF tool first. A second experiment adds its own
+# row pointing at this same item and its redirect URI to the same client.
+PDF_GOOGLE_CLIENT_ID|op://BHD Labs/Google OAuth hub-web/client id|vercel
+PDF_GOOGLE_CLIENT_SECRET|op://BHD Labs/Google OAuth hub-web/client secret|vercel
+PDF_GOOGLE_API_KEY|op://BHD Labs/Google OAuth hub-web/api key|vercel
 PDF_SESSION_SECRET|op://BHD Labs/PDF session/secret|vercel
 # Neither of the next two is a secret: a public callback URL that is visible in
 # the browser during the handshake, and an opaque account id that authenticates
@@ -87,17 +90,17 @@ PDF_SESSION_SECRET|op://BHD Labs/PDF session/secret|vercel
 #
 # Both were hand-set on 2026-08-18 and Vercel stored them as Sensitive, meaning
 # write-only — so nothing could read them back and a recreated project would
-# lose them with no trace. The redirect URI is reconstructable from the docs;
-# the sub is not. Recovering that one means deliberately failing a sign-in and
-# reading the rejected claim out of the runtime log, which is how it was
-# obtained in the first place.
+# lose them with no trace. Both belong to the PDF tool, so their fields carry its
+# name on the shared item. The redirect URI is in the docs. The sub is in
+# pdf_drive_grant.google_sub right after a sign-in; a token refresh blanks it.
+# Failing that, a refused sign-in logs it.
 #
 # Missing PDF_GOOGLE_REDIRECT_URI is what produced the production 503
 # "Google OAuth is not configured" on 2026-08-18: requireConfig() in
 # lib/pdf-drive.ts needs client id, secret AND redirect uri, and the sync
 # carried only the four vault-backed vars past it.
-PDF_GOOGLE_REDIRECT_URI|op://BHD Labs/Google OAuth pdf-metadata-viewer/redirect uri|vercel
-PDF_ALLOWED_GOOGLE_SUBS|op://BHD Labs/Google OAuth pdf-metadata-viewer/allowed sub|vercel
+PDF_GOOGLE_REDIRECT_URI|op://BHD Labs/Google OAuth hub-web/pdf redirect uri|vercel
+PDF_ALLOWED_GOOGLE_SUBS|op://BHD Labs/Google OAuth hub-web/pdf allowed sub|vercel
 ETSY_API_KEY|op://BHD Labs/Etsy/api key|gh
 ETSY_SHARED_SECRET|op://BHD Labs/Etsy/shared secret|gh
 ETSY_SHOP_ID|op://BHD Labs/Etsy/shop id|gh

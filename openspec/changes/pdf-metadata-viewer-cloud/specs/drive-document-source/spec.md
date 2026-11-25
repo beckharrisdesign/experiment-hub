@@ -317,7 +317,9 @@ verification but confines it to the Workspace domain; or User type **External**,
 which needs Google verification and the CASA security assessment before it can be
 published, and meanwhile expires refresh tokens every seven days in Testing
 status. The founder chose External/Testing on 2026-08-18, accepting the weekly
-re-consent now and the assessment at publish time. See D9a.
+re-consent now and the assessment at publish time. See D9a. Superseded
+2026-11-25: the tool moves to the hub's shared project, External and published
+but unverified. See D9b.
 
 #### Scenario: The grant outlives a single session
 
@@ -325,9 +327,9 @@ re-consent now and the assessment at publish time. See D9a.
 - **THEN** the user is prompted to re-authorize rather than shown a broken tool
 - **AND** staged edits and history survive the re-authorization
 
-This is not hypothetical under External/Testing: refresh tokens expire after
-seven days, so re-authorization is a routine event on that path, not an error
-case.
+Under External/Testing refresh tokens expire after seven days, so
+re-authorization is a routine event on that path, not an error case. A published
+app is not expected to expire that way (D9b), but a grant can still be revoked.
 
 #### Scenario: Granting access to an archive
 

@@ -45,7 +45,7 @@ Two PDF viewer variables qualify and are neither secret:
 | Variable | Why it is not a secret | Why it is vaulted anyway |
 | --- | --- | --- |
 | `PDF_GOOGLE_REDIRECT_URI` | a public URL, visible in the browser mid-handshake | Vercel stores it write-only, so it cannot be read back |
-| `PDF_ALLOWED_GOOGLE_SUBS` | an opaque account id; it authenticates nobody | recovering it means failing a sign-in on purpose and reading the rejected claim from the runtime log |
+| `PDF_ALLOWED_GOOGLE_SUBS` | an opaque account id; it authenticates nobody | readable from `pdf_drive_grant.google_sub` only between a sign-in and the next token refresh; otherwise it takes a refused sign-in and the runtime log |
 
 The failure this prevents: on 2026-08-18 production returned
 `{"error":"Google OAuth is not configured"}` because `PDF_GOOGLE_REDIRECT_URI`
@@ -62,7 +62,7 @@ has no master copy and will go missing the same way.
 | Stripe | [live keys](https://dashboard.stripe.com/apikeys) · [test keys](https://dashboard.stripe.com/test/apikeys) | rolls with a grace period. Webhook secrets are separate, under the **endpoint** |
 | Supabase experiment-hub | [settings → API](https://supabase.com/dashboard/project/ulqdjuiffpazzixnwwso/settings/api) | confirm the project name — keys look identical across projects |
 | Supabase simple-seed-organizer | [settings → API](https://supabase.com/dashboard/project/orlpgxqbesxvlhlkbnqy/settings/api) | same warning, other direction |
-| Google OAuth pdf-metadata-viewer | [console credentials](https://console.cloud.google.com/apis/credentials) → `pdf-metadata-viewer web` | reset is an **instant kill**, no grace — push to Vercel in the same sitting |
+| Google OAuth hub-web | [console clients](https://console.cloud.google.com/auth/clients?project=bhd-experiment-hub) → `hub-web` | reset is an **instant kill**, no grace — push to Vercel in the same sitting |
 | Notion | [integrations](https://www.notion.so/profile/integrations) → **BHD Portfolio** | needs Update/Insert **capabilities** + a connection to each database |
 | Resend | [API keys](https://resend.com/api-keys) | shown once, at creation. Pick **Sending access**, **all domains**: the assessment suite sends from `onboarding@resend.dev` until `EFA_EMAIL_FROM` is set, and a domain-limited key refuses that |
 | Figma | [Settings → Security → PATs](https://www.figma.com/developers/api#access-tokens) | |

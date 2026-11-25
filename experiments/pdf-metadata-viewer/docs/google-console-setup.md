@@ -1,5 +1,11 @@
 # Google Console setup
 
+> **Superseded in part, 2026-11-25.** The tool moves to the hub's shared project
+> `bhd-experiment-hub`, client `hub-web` (design.md D9b). Sections 2, 4 and 5
+> describe the original project, kept as the record and the way back. The APIs
+> (3), the Workspace setting (3a), the Picker key (3b) and the redirect URIs (5)
+> apply to the shared project too.
+
 Owner-only steps for the hosted instance. Everything here needs Console access;
 none of it can be done from a session.
 

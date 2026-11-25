@@ -34,9 +34,12 @@ record. See `docs/SECRETS_RUNBOOK.md`.
 The hub gets its **own Cloud project, `bhd-experiment-hub`** — a hub-level
 umbrella, not per-tool: Desktop clients for Katy-only tooling (this one) and,
 later, Web-application clients for experiments where external users sign in.
-One project = one consent-screen identity, many clients. **Do not reuse the
-pdf-metadata-viewer client or its project** — different scope, separate blast
-radius (and its verification standing stays isolated).
+One project = one consent-screen identity, many clients. *Changed 2026-11-25:*
+the PDF tool moves into this project on the shared Web client `hub-web`, at
+Katy's call ("Move it too"). This section used to say to keep the two apart. The
+cost is that full `drive`, a restricted scope, now sits on the shared consent
+screen, under Google's 100-user lifetime cap for unapproved scopes. See
+`openspec/changes/pdf-metadata-viewer-cloud/design.md` D9b.
 
 1. **Create the project**: console.cloud.google.com → project picker → New project → `bhd-experiment-hub`, no organization.
 2. **Enable the Google Ads API** in it (APIs & Services → Library → "Google Ads API").

@@ -562,6 +562,40 @@ a folder no longer chosen keep their rows and history, and come back if it is
 chosen again. The folder name is read from Drive, not taken from the browser,
 which also confirms the id is a folder. Migration 026.
 
+### D9b — The shared hub project, published and unverified
+
+**Decision, 2026-11-25: move the tool's Google client out of its own project and
+into `bhd-experiment-hub`, on one Web client, `hub-web`, that every hub
+experiment can use.** Founder: *"I'm hoping to manage the shared account that all
+hub experiments can use"*, then, offered the choice to keep this tool apart,
+*"Move it too."*
+
+This replaces D9a's Testing status and its separate project. The scope stays full
+`drive`. D9a called publishing a wall: verification plus CASA before the app
+could leave Testing. Google's help pages, read 2026-11-25, say less than that:
+
+- A published app that has not been verified can still request restricted
+  scopes. Users see the unverified-app warning first
+  ([Unverified apps](https://support.google.com/cloud/answer/7454865)).
+- The limit is 100 users over the project's lifetime, and it cannot be reset
+  ([Audience](https://support.google.com/cloud/answer/15549945)).
+- The seven-day refresh-token expiry is described for Testing only. The pages do
+  not say outright that it stops once published, so it counts as unproven until
+  a grant outlives a week.
+- Nothing read exempts the app from a security assessment if it is ever verified.
+- Not answered: whether a restricted scope here changes sign-in for other clients
+  in the project that ask only for basic scopes.
+
+**What it costs.** The cap is shared by every experiment in the project, and the
+consent screen carries a restricted scope. A single-user tool uses one of 100.
+
+**Unchanged.** Variable names, redirect URI, the allowlisted `sub` (Google's `sub`
+is the same across clients) and the four scopes. Only vault references move. The
+stored grant belongs to the old client, so Drive access stops at the first token
+refresh after the new client deploys, until the founder signs in again.
+
+**Way back.** The old client and its vault item stay until the move is verified.
+
 ### D10 — The splitter belongs in v2; its schema lands now, its screen later
 
 Splitting is not optional and not peripheral. An earlier draft here framed it as
