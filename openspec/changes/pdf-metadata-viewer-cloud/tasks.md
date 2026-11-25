@@ -48,7 +48,7 @@ Each one changes work below it, so none should be discovered mid-build.
 - [ ] 4.7 Verify revoking the app in Google settings ends both sign-in and Drive access
 - [x] 4.8 Verify an unauthenticated request cannot distinguish a document that exists from one that does not — confirmed against a running server: `/api/pdf-documents` 401s, the page redirects to sign-in, and the open handshake path is not gated
 
-- [~] 4.9 Move to the shared hub project (design.md D9b). Console and vault done by Katy 2026-11-25: Drive and Picker APIs, `hub-web`, scopes, Picker key; `client id` and `client secret` confirmed in `Google OAuth hub-web`, and the project read as External, In production, 0 of 100 users. Remaining: sync, deploy, sign in, one sync run with the new grant
+- [x] 4.9 Move to the shared hub project (design.md D9b) — **done 2026-11-25.** Console and vault by Katy; three values synced to Vercel 17:21 UTC; live from #660's deploy (run 45663954513), where `/api/pdf-drive/connect` names the `hub-web` client; signed in 17:32; folder sync run 45666141834 answered 200 eight times (199 in the folder, 0 failed). Not yet seen: a token refresh, the first due 18:32 UTC
 - [ ] 4.10 A grant from the shared project outlives seven days
 - [ ] 4.11 Retire the old client, its project and the `Google OAuth pdf-metadata-viewer` vault item, after 4.9 and 4.10
 
