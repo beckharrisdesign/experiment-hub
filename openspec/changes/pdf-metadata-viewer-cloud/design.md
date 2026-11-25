@@ -621,7 +621,7 @@ Two consequences worth stating:
   real keywords, so import reads them, sets the columns, and drops them from the
   keyword list. That is a one-way migration on read, not a rewrite of the archive.
 
-### D12 — The folder is synced hourly, and the sync reads what each file says
+### D12 — The folder is synced on a schedule, and the sync reads what each file says
 
 Added 2026-11-24 (task 7d). Until then a file reached the list only when the
 folder was chosen again in the picker, and its own values (page count, title,
@@ -642,11 +642,22 @@ the revision Drive last listed (`listedValues`, the list's twin of D8's
 `shownValues`); an edited row shows its stored values, as before. No migration:
 the read already lives in `file_snapshot.read`.
 
-**When.** Hourly, from GitHub Actions (`pdf-folder-sync.yml`), chosen over
+**When.** At first hourly, from GitHub Actions (`pdf-folder-sync.yml`), chosen over
 "when the list opens" by Katy on 2026-11-24 so a file dropped into Drive shows
 up even when the tool isn't open. GitHub rather than Vercel Cron because the
 hub's other schedules already run there and the credential below already
 exists there.
+
+**Every ten minutes, from the database (2026-11-25, task 7k).** GitHub ran the
+hourly job on schedule twice in its first day, and the hub's daily jobs there
+run 8 to 11 hours late. Vercel Cron is once a day on this plan. So pg_cron
+starts the sync (migration 035), ten minutes apart: a run with nothing to do
+takes under 5 s, and one with a backlog works for 40 s, so an hour holds about
+what the old job's eight rounds did. The GitHub job stays twice a day, because
+its failures send an email and it is the way to run one by hand. The database
+holds the derived key below, in Vault; the route puts it there on each run, so
+it is never copied by hand. Runs may overlap: page sets and images are
+upserted, and two at once agree on one.
 
 **How the schedule gets in.** A schedule has no Google session, so the sync
 route alone also accepts a key derived from `SUPABASE_SERVICE_ROLE_KEY`
@@ -715,7 +726,7 @@ Drive reported that same revision both before and after the download.
 revision. The new revision's row takes the old one's set, so nothing is copied
 or redrawn; images are deleted only once no row uses their set.
 
-**Drawing ahead.** The hourly sync (D12) uses the time its reads leave to draw
+**Drawing ahead.** The scheduled sync (D12) uses the time its reads leave to draw
 missing pages, shortest documents first, one at a time, continuing where it
 stopped. The workflow calls it up to eight times an hour while there is work. A
 file pdf.js can't draw is remembered as such, and still opens in the browser's

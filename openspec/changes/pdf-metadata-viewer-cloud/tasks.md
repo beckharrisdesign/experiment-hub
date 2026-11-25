@@ -169,9 +169,17 @@ Measured live on a 36-page scan: the document page has its buttons at 0.6 s, its
 - [x] 7j.4 The split page is usable before its images: places, gaps and names from the page count already known, when that is for the file as Drive holds it now. The file's own count wins once it is here
 - [x] 7j.5 Verify live, timed the same way — **live 2026-11-24** (#654), on the same 36-page scan, warm: buttons 0.04 s after the press, first page 0.4–0.5 s, the 17 in view 2.2 s; the split page shows its gaps by 0.7 s and its last image at 3.0–4.3 s. First run after the deploy: first page 1.2 s, split page 3.0 s to appear. All 4 rows open and draw. Not pressed on real documents: "It's one document" and a split
 - [x] 7j.6 Call them out at the top (Katy, 2026-11-24: "I want them called out at the top, in the same pattern as a conflict or a prefilled item") — **drawn 2026-11-24**: `02.19 Proposed — Split first, called out at the top` (90:20), frames 90:21 and 90:473 (phone), note 90:707. A count beside Prefilled; a card for each, as a conflict has, under its own heading. Katy on 02.19: "we don't need to show the tiny thumbs in the split alerts - just indicate that its a candidate. I cna't even see the docs at that scale -- just send me to the split dialogue". **Drawn again:** `02.20 Proposed — Split first, straight to the split page` (92:8), frames 92:9 and 92:322 (phone), note 92:448: each card one link to the split page, as a conflict's is to Compare; the list's pill goes there too, in place of the row that opened (7j.2). **"Yes, build it" (2026-11-24):** `SplitAlerts.tsx`; `SplitPeek.tsx` taken out **Live the same day** (#655): 3 cards (36, 36, 30 pages), each opening the split page. The text of all three was read at a confidence of 28–34, under the 50 a page needs, so prefilling may find nothing in them however they are answered
-- [x] 7j.7 A document whose file came with tags reads "Already tagged", not "Not yet tagged" (Katy, "Yes, relabel it", 2026-11-24): one of 119 pages with 7 tags said it was untagged
+- [x] 7j.7 A document whose file came with tags reads "Already tagged", not "Not yet tagged" (Katy, "Yes, relabel it", 2026-11-24): one of 119 pages with 7 tags said it was untagged — **live the same day** (#656)
 - [x] 7j.8 Split all and Split none (Katy, "i split view we need a split all, split none, option", 2026-11-24) — drawn as `02.21 Proposed — Split all, split none` (93:8), frames 93:9 and 93:174, note 93:339; **"Yes, build it"**. In the bar always on screen; Split none in place of Clear breaks. As Split all invites long splits, parts are uploaded four at a time instead of one, and a split that can't finish in time takes everything back rather than being stopped partway
-- [ ] 7j.9 Verify 7j.8 live on a made-up file in PDF Tests
+- [x] 7j.9 Verify 7j.8 live on a made-up file in PDF Tests — **verified 2026-11-25** (#657): a 6 MB, 36-page made-up file, Split all, in 16.7 s: 36 one-page files in Drive, recorded 1–36 in page order, none pending, the original replaced. Split none and Split all each turn off when there is nothing left to do. Not tried: a scan the size of the real ones (48–66 MB; the test upload stops at about 7 MB), estimated at 20–25 s from the real 17-file split of 2026-11-24
+
+## 7k. A schedule that runs on time
+
+GitHub ran the hourly sync (7d.4) on schedule twice in its first day; Katy: "Yes, fix it" (2026-11-25). design.md D12.
+
+- [x] 7k.1 The database starts the sync every ten minutes: pg_cron and pg_net, migration 035; the derived key in Vault, put there by the route (`lib/pdf-sync-key.ts`). The GitHub job to twice a day, as the check that emails
+- [ ] 7k.2 Apply 035 to the live database, on Katy's yes
+- [ ] 7k.3 Verify live: the key arrives on one run by hand, then runs ten minutes apart answer 200
 
 ## 8. Write path
 

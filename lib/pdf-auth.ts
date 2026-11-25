@@ -211,6 +211,7 @@ export function acceptGoogleIdentity(
  * the root from the vault, so nothing new is provisioned. The pattern is the
  * exec-function cron's (lib/exec-function/access.ts); the label keeps the two
  * keys apart. Keep the label in step with .github/workflows/pdf-folder-sync.yml.
+ * The database's schedule holds the derived key alone (lib/pdf-sync-key.ts).
  */
 export const PDF_SYNC_PATH = "/api/pdf-drive/sync";
 export const PDF_SYNC_KEY_HEADER = "x-pdf-sync-key";
