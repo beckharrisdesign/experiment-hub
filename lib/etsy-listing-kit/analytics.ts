@@ -9,15 +9,12 @@ import { trackEvent, isOptedOut, GOOGLE_ADS_ID } from '../analytics/ga';
 import { EXPERIMENT_ID, PRICE_CENTS, CURRENCY } from './config';
 
 /**
- * Google Ads conversion "Sign-up" (action id 7659388987) = paid image view
- * delivered. Both halves come from the action's event snippet in Google Ads
- * (account 671-160-6591), read live 2026-11-25.
- *
- * simple-seed-organizer fires this same action on account creation, so a kit
- * sale and a seed signup land in one number. Give the kit its own action before
- * either campaign is turned back on.
+ * Google Ads conversion "Etsy Listing Kit purchase" (action id 7917701953) =
+ * paid image view delivered. Both halves come from the action's event snippet
+ * in Google Ads (account 671-160-6591), read live 2026-11-25. Seed Organizer's
+ * signups go to a different action, "Sign-up".
  */
-export const ADS_CONVERSION_PURCHASE = `${GOOGLE_ADS_ID}/dX8MCLuApMQcEO7Lx88o`;
+export const ADS_CONVERSION_PURCHASE = `${GOOGLE_ADS_ID}/824ACMGWur8dEO7Lx88o`;
 
 /**
  * GA4 event name backing the imported Ads conversion "FormSubmit" (id 6657647682).
