@@ -196,5 +196,5 @@ for these 30 clicks says nothing about sales. Use the orders query above. Detail
 [`ANALYTICS_PLAN.md`](ANALYTICS_PLAN.md).
 
 The kit got its own conversion action, `Etsy Listing Kit purchase` (7917701953), on 2026-11-25.
-Still open before any spend: campaign goals set to it, the old SwiftSketchAI `FormSubmit` import removed, and
-auto-apply, which is still on for 20 of 21 recommendation types.
+Still open before any spend: campaign goals set to it, and auto-apply, which is still on
+for 20 of 21 recommendation types.
