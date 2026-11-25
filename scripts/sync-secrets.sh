@@ -27,6 +27,14 @@
 # directly, this script cannot see it and will report "unchanged" until the
 # vault value moves. Do not edit those dashboards by hand — that is the habit
 # this replaces.
+#
+# ---------------------------------------------------------------------------
+# Deliberately unmanaged
+#
+# OP_SERVICE_ACCOUNT_TOKEN is a GitHub secret this script reports as a possible
+# orphan. It is in use: deploy-hub.yml reads 1Password with it for preview
+# builds. It is left out because it is the credential that opens the vault, so
+# it is set by hand and should not be deleted.
 # ---------------------------------------------------------------------------
 
 set -euo pipefail
@@ -56,12 +64,9 @@ SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase experiment-hub/service role key
 # SUPABASE_URL in repo scope and un-skipped a suite that had silently skipped
 # on the missing URL since sso-zip-code-persistence.
 SUPABASE_PUBLISHABLE_KEY|op://BHD Labs/Supabase experiment-hub/publishable key|gh
-# Simple Seed Organizer is a second Supabase project (orlpgxqbesxvlhlkbnqy),
-# item-per-scope like "Google OAuth pdf-metadata-viewer". Keys must match
-# their project: the 2026-08-17 500s were the hub URL paired with the SSO
-# publishable key.
-SSO_SUPABASE_URL|op://BHD Labs/Supabase simple-seed-organizer/url|gh
-SSO_SUPABASE_SERVICE_ROLE_KEY|op://BHD Labs/Supabase simple-seed-organizer/service role key|gh
+# Simple Seed Organizer's own Supabase project is not here on purpose (#404).
+# Only its live test needs the pair, and that test is local-only since
+# 2026-11-25: it writes to the real project, and its key bypasses row security.
 # The hub's own admin password — what /admin/login checks, and what the
 # hub-edit cookie carries. Was a hand-set Vercel value that nothing tracked;
 # vaulting it closes that gap. Not needed by Actions: the assessment suite's
