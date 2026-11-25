@@ -17,7 +17,8 @@ import { EXPERIMENT_ID, PRICE_CENTS, CURRENCY } from './config';
 export const ADS_CONVERSION_PURCHASE = `${GOOGLE_ADS_ID}/824ACMGWur8dEO7Lx88o`;
 
 /**
- * GA4 event name backing the imported Ads conversion "FormSubmit" (id 6657647682).
+ * GA4 event name backing the imported Ads conversion "Etsy Listing Kit checkout
+ * started" (id 7917759574).
  * Must stay exactly this string — GA4 event names are case-sensitive and the Ads
  * import matches literally, so the usual snake_case convention does not apply here.
  */
@@ -89,7 +90,7 @@ export function attributionFromLocation(): Record<string, string | undefined> {
 }
 
 /**
- * GA4 `FormSubmit` — the event Google Ads imports as conversion 6657647682.
+ * GA4 `FormSubmit` — the event Google Ads imports as conversion 7917759574.
  * Fired on checkout submit (the pay button), alongside the snake_case
  * `checkout_started` funnel event: `checkout_started` is ours for funnel
  * analysis, `FormSubmit` exists solely to feed the Ads import. Keep both.
