@@ -11,6 +11,7 @@ import {
   InvalidSplit,
   SplitConflict,
   SplitNotRecorded,
+  SplitTooLong,
   splitPdfDocument,
   type SplitOptions,
 } from "@/lib/pdf-split";
@@ -97,6 +98,12 @@ export async function POST(
       return NextResponse.json(
         { error: "Not split: the file changed in Drive. Nothing was created.", conflict: true },
         { status: 409 },
+      );
+    }
+    if (error instanceof SplitTooLong) {
+      return NextResponse.json(
+        { error: `${error.message}. Nothing was left behind. Split it into fewer files, then split those.` },
+        { status: 422 },
       );
     }
     if (error instanceof DriveReauthorizationRequired) {

@@ -28,7 +28,7 @@ describe("SplitView", () => {
     await screen.findByText("No breaks yet");
     expect(screen.getByText("One file · pages 1–6")).toBeTruthy();
     expect((screen.getByRole("button", { name: "Choose where to split" }) as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.queryByRole("button", { name: "Clear breaks" })).toBeNull();
+    expect((screen.getByRole("button", { name: "Split none" }) as HTMLButtonElement).disabled).toBe(true);
   });
 
   it("keeps its actions on screen while the pages load, and beside them anything that goes wrong", async () => {
@@ -83,6 +83,33 @@ describe("SplitView", () => {
     expect(screen.getByText("File 2 · pages 3–5")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Split after page 2" }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByRole("button", { name: "Split into 3 files" })).toBeTruthy();
+  });
+
+  // Frames 93:9, 93:174.
+  it("splits at every gap, or at none, without writing anything", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    renderView();
+    const all = (await screen.findByRole("button", { name: "Split all" })) as HTMLButtonElement;
+    const none = screen.getByRole("button", { name: "Split none" }) as HTMLButtonElement;
+    await screen.findByText("No breaks yet");
+    fireEvent.click(all);
+    expect(screen.getByRole("button", { name: "Split into 6 files" })).toBeTruthy();
+    expect([all.disabled, none.disabled]).toEqual([true, false]);
+    // One gap can still be changed on its own.
+    fireEvent.click(screen.getByRole("button", { name: "Split after page 3" }));
+    expect(screen.getByRole("button", { name: "Split into 5 files" })).toBeTruthy();
+    expect(all.disabled).toBe(false);
+    fireEvent.click(none);
+    expect(screen.getByText("No breaks yet")).toBeTruthy();
+    expect([all.disabled, none.disabled]).toEqual([false, true]);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("can't split all before it's known how many pages there are", () => {
+    const never: PdfLoader = () => new Promise(() => {});
+    render(<SplitView documentId="doc-1" filename="a.pdf" contentUrl="/c" loadPdf={never} />);
+    expect((screen.getByRole("button", { name: "Split all" }) as HTMLButtonElement).disabled).toBe(true);
   });
 
   it("clicking a chosen gap again removes it", async () => {

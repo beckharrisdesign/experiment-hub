@@ -15,7 +15,8 @@
  *   (staged values included), so nothing typed is lost (7b.3), unless the split
  *   page says not to; and its own title (7g).
  *
- * All parts are uploaded before anything is recorded. If any upload fails, the
+ * All parts are uploaded, a few at a time, before anything is recorded. If any
+ * upload fails, or there are too many to finish in the time the request has, the
  * ones already made are moved to the trash, so a failure never leaves half a
  * split in Drive.
  */
@@ -62,6 +63,24 @@ export class SplitNotRecorded extends Error {
   }
 }
 
+/** Too many parts to make in one request; what was made has been taken back. */
+export class SplitTooLong extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SplitTooLong";
+  }
+}
+
+/** Uploads at once: one after another, 36 parts could outlast the request. */
+export const UPLOADS_AT_ONCE = 4;
+
+/**
+ * When to stop starting uploads, of the route's 60 seconds. What is left is for the
+ * ones in flight to finish and everything made to be taken back: a request stopped
+ * partway would leave files in Drive that nothing knows about.
+ */
+export const START_WITHIN_MS = 40_000;
+
 /** One part's bytes: its pages copied out, then the shared values written in. */
 async function buildPart(
   source: PDFDocument,
@@ -104,6 +123,7 @@ export async function splitPdfDocument(
   breaks: number[],
   { parts: naming, copy = {} }: SplitOptions = {},
 ): Promise<SplitResult | null> {
+  const started = Date.now();
   const document = await getPdfDocument(id);
   if (!document) return null;
   if (document.supersededAt) throw new AlreadySplit("This document was already split");
@@ -150,8 +170,16 @@ export async function splitPdfDocument(
   const parentId = document.driveFolderId ?? (await getDriveParent(accessToken, document.driveFileId));
 
   const created: Array<{ driveFileId: string; filename: string; revision: string | null; index: number; embedded: EmbeddedMetadata }> = [];
+  const uploads = new Set<Promise<void>>();
+  let failed: { error: unknown } | null = null;
   try {
+    // Built in order, one at a time; sent a few at a time.
     for (const [i, range] of parts.entries()) {
+      while (uploads.size >= UPLOADS_AT_ONCE) await Promise.race(uploads);
+      if (failed) break;
+      if (Date.now() - started > START_WITHIN_MS) {
+        throw new SplitTooLong(`Splitting into ${parts.length} files takes too long at once`);
+      }
       const named = naming?.[i];
       const { bytes, embedded } = await buildPart(
         source,
@@ -160,18 +188,36 @@ export async function splitPdfDocument(
       );
       const stem = named ? safeFileName(named.filename.replace(/\.pdf$/i, "")) : "";
       const filename = stem ? `${stem}.pdf` : partName(document.filename, i + 1);
-      const file = await createDriveFile(accessToken, { name: filename, parentId, bytes });
-      created.push({ driveFileId: file.id, filename, revision: file.revision, index: i + 1, embedded });
+      const upload: Promise<void> = createDriveFile(accessToken, { name: filename, parentId, bytes })
+        .then(
+          (file) => {
+            created.push({ driveFileId: file.id, filename, revision: file.revision, index: i + 1, embedded });
+          },
+          (error) => {
+            failed ??= { error };
+          },
+        )
+        .finally(() => uploads.delete(upload));
+      uploads.add(upload);
     }
   } catch (error) {
-    // Take back what was made, so a failed split leaves nothing behind.
-    for (const part of created) {
-      await trashDriveFile(accessToken, part.driveFileId).catch((e) =>
-        console.error(`pdf split: could not trash part ${part.driveFileId} of ${id}:`, e),
-      );
-    }
-    throw error;
+    failed ??= { error };
   }
+  // Before anything else: an upload still going would finish after the clean-up.
+  await Promise.all(uploads);
+  if (failed) {
+    // Take back what was made, so a failed split leaves nothing behind.
+    await Promise.all(
+      created.map((part) =>
+        trashDriveFile(accessToken, part.driveFileId).catch((e) =>
+          console.error(`pdf split: could not trash part ${part.driveFileId} of ${id}:`, e),
+        ),
+      ),
+    );
+    throw (failed as { error: unknown }).error;
+  }
+  // They finish in any order; they are recorded in page order.
+  created.sort((a, b) => a.index - b.index);
 
   const { data, error } = await getPdfAdminClient().rpc("pdf_record_split", {
     doc: id,
